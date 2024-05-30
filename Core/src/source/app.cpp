@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "rendering/log.hpp"
+#include "log.hpp"
 #include "resources/resource_manager.hpp"
 
 using namespace PC_CORE;

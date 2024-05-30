@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "app.hpp"
-#include "rendering/log.hpp"
-#include "vulkan/vulkan_debug_message.hpp"
+#include "log.hpp"
+#include "rendering/vulkan/vulkan_debug_message.hpp"
 
 using namespace PC_CORE;
 

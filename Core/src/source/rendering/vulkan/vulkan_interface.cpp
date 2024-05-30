@@ -3,7 +3,7 @@
 #include <stacktrace>
 
 #include "app.hpp"
-#include "rendering/log.hpp"
+#include "log.hpp"
 
 using namespace PC_CORE;
 

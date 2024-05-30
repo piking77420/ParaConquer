@@ -1,11 +1,11 @@
 
-//#include "app.hpp"
+#include "app.hpp"
 
 int main(int argc, char* argv[])
 {
-    //PC_CORE::App app;
+    PC_CORE::App app;
 
-    //app.Run();
+    app.Run();
     
     return 0;
 }

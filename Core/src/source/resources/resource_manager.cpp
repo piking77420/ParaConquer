@@ -1,7 +1,7 @@
 ﻿#include "resources/resource_manager.hpp"
 
 #include "resources/shader_source.h"
-#include "vulkan/vulkan_shader_compiler.hpp"
+#include "rendering/vulkan/vulkan_shader_compiler.hpp"
 
 using namespace PC_CORE;
 
