@@ -11,16 +11,15 @@ class VulkanShaderCompiler
 public:
     static void GetEnvironementVariable();
     
-    void CompileToSpv(const std::filesystem::path& _shaderSourcePath);
+    static bool CompileToSpv(const std::filesystem::path& _shaderSourcePath, const std::string& _extension, std::vector<char>* _data);
 
-    uint8_t* GetData();
-    
 private:
-    static inline std::string vulkanEnvironementPath = "";
+    static inline std::string vulkanEnvironementPath {};
     
     static inline constexpr const char* vulkanEnvironmentName = "VULKAN_SDK";
-        
-    uint8_t* m_Data = nullptr;
+
+    static void ReadFile(const std::string& _filename,std::vector<char>* data);
+
 };
 
 END_PCCORE

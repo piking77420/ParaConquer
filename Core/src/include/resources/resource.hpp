@@ -17,6 +17,8 @@ public:
     
     std::string format;
 
+    fs::path resourcePath;
+
     Guid guid;
     
     IResource();
@@ -26,18 +28,16 @@ public:
     virtual void Load(const fs::path& path) {};
 
     template <size_t _Size>
-    static bool IsFormatValid(std::array<std::string,_Size> _format, const fs::path& _path, uint32_t* _formatIndex);
+    static bool IsFormatValid(std::array<std::string,_Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex);
 
 };
 
 template <size_t _Size>
-bool IResource::IsFormatValid(std::array<std::string, _Size> _format, const fs::path& _path, uint32_t* _formatIndex)
+bool IResource::IsFormatValid(std::array<std::string, _Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
-    const std::string pathFormat = _path.stem().generic_string();
-    
     for (size_t i = 0; i < _format.size(); i++)
     {
-        if (_format[i] == pathFormat)
+        if (_format[i] == _fileFormat)
         {
             *_formatIndex = static_cast<uint32_t>(i);
             return true;

@@ -1,5 +1,7 @@
 ﻿#include "rendering/vulkan/vulkan_shader_compiler.hpp"
 
+#include <fstream>
+
 #include "log.hpp"
 
 using namespace PC_CORE;
@@ -24,19 +26,51 @@ void VulkanShaderCompiler::GetEnvironementVariable()
     }
 }
 
-void VulkanShaderCompiler::CompileToSpv(const std::filesystem::path& _shaderSourcePath)
+
+
+bool VulkanShaderCompiler::CompileToSpv(const std::filesystem::path& _shaderSourcePath, const std::string& _extension,std::vector<char>* _data)
 {
     if (vulkanEnvironementPath.empty())
     {
         PC_LOGERROR("vulkanEnvironementPath is empty while tryng compiling shader")
         exit(1);
+        return false;
     }
+    
+    std::string command = "C:\VulkanSDK\1.3.283.0";
+    std::string add = std::string("Bin32/glslc.exe " + _shaderSourcePath.generic_string() + " -o " + _shaderSourcePath.filename().generic_string());
 
+    for (size_t i = 0; i < add.size(); ++i)
+    {
+        command.push_back(add[i]);
+    }
+    
     //"C:/VulkanSDK/x.x.x.x/Bin32/glslc.exe shader.vert -o vert.spv"
-    system((vulkanEnvironementPath + "Bin32/glslc.exe " + _shaderSourcePath.generic_string() + " -o " + _shaderSourcePath.filename().generic_string()).c_str());
+    if (!system((command).c_str()))
+        return false;
+
+    // Load shader code
+    std::string spvPath = _shaderSourcePath.parent_path().generic_string() + '/' + _shaderSourcePath.filename().stem().generic_string() + '_' + _extension + ".spv"; 
+    
+    ReadFile(spvPath,_data);
+    
+    return true;
 }
 
-uint8_t* VulkanShaderCompiler::GetData()
+void VulkanShaderCompiler::ReadFile(const std::string& _filename, std::vector<char>* data)
 {
-    return m_Data;
+    std::ifstream file(_filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open())
+    {
+        throw std::runtime_error("failed to open file!");
+    }
+
+    const size_t fileSize = (size_t) file.tellg();
+    data->resize(fileSize);
+
+    file.seekg(0);
+    file.read(data->data(), fileSize);
+
+    file.close();
 }

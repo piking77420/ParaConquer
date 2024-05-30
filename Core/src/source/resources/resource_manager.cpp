@@ -1,6 +1,6 @@
 ﻿#include "resources/resource_manager.hpp"
 
-#include "resources/shader_source.h"
+#include "..\..\include\resources\shader_source.hpp"
 #include "rendering/vulkan/vulkan_shader_compiler.hpp"
 
 using namespace PC_CORE;
@@ -9,8 +9,8 @@ void ResourceManager::Init()
 {
     VulkanShaderCompiler::GetEnvironementVariable();
 
-    //ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.fragment");
-    //ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vertex");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.fragment");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vertex");
 
 }
 
