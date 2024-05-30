@@ -9,8 +9,8 @@ void ResourceManager::Init()
 {
     VulkanShaderCompiler::GetEnvironementVariable();
 
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.fragment");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vertex");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
 
 }
 

@@ -19,16 +19,16 @@ public:
 
     static inline  std::array<std::string, 5> ShaderSourceFormat
     {
-      ".vertex",
-      ".fragment",
-      ".geometry",
-      ".tesselation",
-      ".compute"
+      ".vert",
+      ".frag",
+      ".geom",
+      ".tess",
+      ".comp"
     };
     
     ShaderType shaderType;
     
-    std::vector<char> data;
+    std::vector<uint8_t> data;
     
     void Load(const fs::path& _path) override;
 private:

@@ -14,15 +14,15 @@ void VulkanShaderCompiler::GetEnvironementVariable()
 
     if (bufferCount == -1)
     {
-        PC_LOGERROR("vulkanEnvironementPath was not found")
+        PC_LOGERROR("vulkanEnvironmentPath was not found")
         exit(1);
     }
 
-    vulkanEnvironementPath.resize(bufferCount);
+    vulkanEnvironmentPath.resize(bufferCount);
 
     for (size_t i = 0; i < bufferCount; i++)
     {
-        vulkanEnvironementPath[i] = envVulkanName[i];
+        vulkanEnvironmentPath[i] = envVulkanName[i];
     }
 }
 
@@ -30,27 +30,29 @@ void VulkanShaderCompiler::GetEnvironementVariable()
 
 bool VulkanShaderCompiler::CompileToSpv(const std::filesystem::path& _shaderSourcePath, const std::string& _extension,std::vector<char>* _data)
 {
-    if (vulkanEnvironementPath.empty())
+    if (vulkanEnvironmentPath.empty())
     {
-        PC_LOGERROR("vulkanEnvironementPath is empty while tryng compiling shader")
+        PC_LOGERROR("vulkanEnvironmentPath is empty while tryng compiling shader")
         exit(1);
         return false;
     }
-    
-    std::string command = "C:\VulkanSDK\1.3.283.0";
-    std::string add = std::string("Bin32/glslc.exe " + _shaderSourcePath.generic_string() + " -o " + _shaderSourcePath.filename().generic_string());
-
-    for (size_t i = 0; i < add.size(); ++i)
-    {
-        command.push_back(add[i]);
-    }
-    
     //"C:/VulkanSDK/x.x.x.x/Bin32/glslc.exe shader.vert -o vert.spv"
-    if (!system((command).c_str()))
+
+    std::string command = std::string(vulkanEnvironmentPath).c_str();
+    command +=  std::string("/Bin/glslc.exe");
+
+    std::string file = _shaderSourcePath.filename().generic_string();
+
+    std::filesystem::path p = std::filesystem::current_path().parent_path();
+
+    std::string commandToSend = command + " " + p.generic_string() + '/' + _shaderSourcePath.generic_string() + " -o " + p.generic_string() + '/' + _shaderSourcePath.generic_string() + ".spv";
+
+    if (!system(commandToSend.data()))
         return false;
 
+    // TO DO set correct Path
     // Load shader code
-    std::string spvPath = _shaderSourcePath.parent_path().generic_string() + '/' + _shaderSourcePath.filename().stem().generic_string() + '_' + _extension + ".spv"; 
+     std::string spvPath = _shaderSourcePath.parent_path().generic_string() + '/' + _shaderSourcePath.filename().stem().generic_string() + '_' + _extension + ".spv"; 
     
     ReadFile(spvPath,_data);
     

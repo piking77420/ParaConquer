@@ -14,7 +14,7 @@ public:
     static bool CompileToSpv(const std::filesystem::path& _shaderSourcePath, const std::string& _extension, std::vector<char>* _data);
 
 private:
-    static inline std::string vulkanEnvironementPath {};
+    static inline std::string vulkanEnvironmentPath {};
     
     static inline constexpr const char* vulkanEnvironmentName = "VULKAN_SDK";
 
