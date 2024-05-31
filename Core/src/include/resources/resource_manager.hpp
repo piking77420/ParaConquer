@@ -20,6 +20,9 @@ public:
 
     template<class T>
     static T* CreateAndLoad(const fs::path& path);
+    
+    template<class T>
+    static T* Get(const std::string& _name);
 
 private:
     struct PathName
@@ -43,6 +46,17 @@ T* ResourceManager::CreateAndLoad(const fs::path& path)
     m_ResourcesMap.emplace(path,newR);
 
     return newR;
+}
+
+template <class T>
+T* ResourceManager::Get(const std::string& _name)
+{
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        if (it->second->name == _name)
+            return reinterpret_cast<T*>(it->second);
+    }
+   return nullptr;
 }
 
 END_PCCORE

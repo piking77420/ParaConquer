@@ -14,9 +14,20 @@ BEGIN_PCCORE
 class VulkanInterface
 {
 public:
-    uint32_t nbrOfImage = -1;
 
-    uint32_t queuefamily = -1;
+    static uint32_t GetCurrentFrame();
+
+    static uint32_t GetNbrOfImage();
+
+    static void ComputeNextFrame();
+    
+    static VulkanDevice GetDevice();
+
+    static VkSurfaceFormatKHR GetSwapChainImageFormat();
+
+    static VkFramebuffer GetSwapChainFramebuffer(uint32_t _index);
+
+    VulkanSwapchain vulkanSwapChapchain;
     
     void Init(GLFWwindow* window);
 
@@ -25,8 +36,15 @@ public:
     void AllocateCommandBuffers(size_t _nbr, VkCommandBuffer* _vkCommandBufferPtr);
 
     VkImage GetImage(uint32_t _index);
-    
+
 private:
+
+    static inline VulkanInterface* m_Instance = nullptr;
+
+    uint32_t nbrOfImage = -1;
+
+    uint32_t currentFrame = 0;
+    
     VulkanInstance vulkanInstance;
 #ifndef NDEBUG
     VulkanDebugMessage vulkanDebugMessage;
@@ -34,9 +52,7 @@ private:
 
     VulkanSurface vulkanSurface;
 
-    VulkanPhysicalDevices vulkanDevices;
-    
-    VulkanSwapchain vulkanChapchain;
+    VulkanPhysicalDevices VulkanPhysicalDevices;
     
     VulkanDevice vulkanDevice;
 

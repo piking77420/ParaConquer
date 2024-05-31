@@ -28,5 +28,6 @@ void App::Run()
     while (!windowHandle.ShouldClose())
     {
         windowHandle.PoolEvents();
+        renderer.RenderViewPort();
     }   
 }

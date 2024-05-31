@@ -33,7 +33,9 @@
     <ClInclude Include="src\include\rendering\vulkan\vulkan_instance.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_interface.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_physical_devices.hpp" />
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_render_pass.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_compiler.hpp" />
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_stage.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_surface.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_swapchain.hpp" />
     <ClInclude Include="src\include\resources\resource.hpp" />
@@ -52,7 +54,9 @@
     <ClCompile Include="src\source\rendering\vulkan\vulkan_instance.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_interface.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_physical_devices.cpp" />
+    <ClCompile Include="src\source\rendering\vulkan\vulkan_render_pass.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_compiler.cpp" />
+    <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_stage.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_surface.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_swapchain.cpp" />
     <ClCompile Include="src\source\resources\resource.cpp" />

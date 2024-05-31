@@ -15,9 +15,10 @@ void ShaderSource::Load(const fs::path& path)
         PC_LOGERROR("Shader invalid format")
     }
 
-    name = path.filename().stem().generic_string();
+    name = path.filename().generic_string();
     format = ShaderSourceFormat.at(formatIndex);
     resourcePath = path;
+    shaderType = static_cast<ShaderType>(formatIndex);
 
     if (!VulkanShaderCompiler::CompileToSpv(resourcePath, format, &data))
     {

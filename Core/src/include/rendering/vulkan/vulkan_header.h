@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <array>
 #include <vector>
 
 #include "core_header.hpp"
@@ -20,4 +21,5 @@ struct PhysicalDevice {
     VkPhysicalDeviceMemoryProperties memProps;
     std::vector<VkPresentModeKHR> presentModes;
     VkPhysicalDeviceFeatures features;
+
 };

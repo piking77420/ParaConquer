@@ -178,30 +178,61 @@ void VulkanPhysicalDevices::Init(VkInstance _instance, VkSurfaceKHR _surfaceKhr)
     
 }
 
-uint32_t VulkanPhysicalDevices::SelectDevice(const VkQueueFlags _RequiredQueueType, const bool _SupportsPresent)
+void VulkanPhysicalDevices::SelectDevice(const VkQueueFlags _RequiredQueueType, const bool _SupportsPresent)
 {
     Log::Debug("SelectDevice");
 
     for (uint32_t i = 0; i < m_Devices.size(); i++)
     {
-        for (uint32_t j = 0; j < m_Devices[i].qFamilyProps.size(); j++) {
+        // only select a gpu
+        if (m_Devices[i].devProps.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            continue;
+
+        
+        for (uint32_t j = 0; j < m_Devices[i].qFamilyProps.size(); j++)
+        {
+            
             const VkQueueFamilyProperties& QFamilyProp = m_Devices[i].qFamilyProps[j];
 
-            if ((QFamilyProp.queueFlags & _RequiredQueueType) && (static_cast<bool>(m_Devices[i].qSupportsPresent[j]) == _SupportsPresent)) {
+            if ((QFamilyProp.queueFlags & _RequiredQueueType) && (static_cast<bool>(m_Devices[i].qSupportsPresent[j]) == _SupportsPresent))
+            {
                 m_CurrentDevice = static_cast<int>(i);
                 const int QueueFamily = static_cast<int>(j);
 
                 Log::Debug("Current Device name is " + std::string(m_Devices[i].devProps.deviceName));
                 Log::Debug("Using GFX device " + std::to_string(m_CurrentDevice) + " and queue family " + std::to_string(QueueFamily));
-                return QueueFamily;
+                return;
             }
         }
     }
 
     VK_CHECK_ERROR(1,"Required queue type and supports present not found")
     
-    return 0;
 }
+
+uint32_t VulkanPhysicalDevices::GetQueueFamilliesIndex(VkQueueFlags _RequiredQueueType, bool _SupportsPresent) const
+{
+    const PhysicalDevice& physicalDevice = GetCurrentDevice();
+    
+    for (uint32_t i = 0; i < physicalDevice.qFamilyProps.size(); i++)
+    {
+  
+        const VkQueueFamilyProperties& QFamilyProp = physicalDevice.qFamilyProps[i];
+        
+        if (!_SupportsPresent && static_cast<bool>(physicalDevice.qSupportsPresent[i]) == _SupportsPresent)
+            continue;
+        
+
+        if ((QFamilyProp.queueFlags & _RequiredQueueType))
+        {
+            return i;
+        }
+    }
+
+    VK_CHECK_ERROR(1,"Required queue type and supports present not found")
+    return -1;
+}
+
 
 const PhysicalDevice& VulkanPhysicalDevices::GetCurrentDevice() const
 {

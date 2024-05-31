@@ -28,10 +28,11 @@ public:
     
     ShaderType shaderType;
     
-    std::vector<uint8_t> data;
+    std::vector<char> data;
     
     void Load(const fs::path& _path) override;
 private:
+
 };
 
 END_PCCORE

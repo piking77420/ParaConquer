@@ -33,29 +33,26 @@ bool VulkanShaderCompiler::CompileToSpv(const std::filesystem::path& _shaderSour
     if (vulkanEnvironmentPath.empty())
     {
         PC_LOGERROR("vulkanEnvironmentPath is empty while tryng compiling shader")
-        exit(1);
-        return false;
+
+        throw std::runtime_error("vulkanEnvironmentPath is empty while tryng compiling shader");
     }
+
+    /// TO DO SHADER C
     //"C:/VulkanSDK/x.x.x.x/Bin32/glslc.exe shader.vert -o vert.spv"
 
-    std::string command = std::string(vulkanEnvironmentPath).c_str();
+    std::string command = std::string(vulkanEnvironmentPath).c_str();  // NOLINT(readability-redundant-string-cstr)
     command +=  std::string("/Bin/glslc.exe");
-
     std::string file = _shaderSourcePath.filename().generic_string();
-
     std::filesystem::path p = std::filesystem::current_path().parent_path();
+    const std::string commandToSend = command + " " + _shaderSourcePath.generic_string() + " -o " + _shaderSourcePath.generic_string() + ".spv";
+    auto parentpa = std::filesystem::current_path();
+    system(commandToSend.data());
+        
 
-    std::string commandToSend = command + " " + p.generic_string() + '/' + _shaderSourcePath.generic_string() + " -o " + p.generic_string() + '/' + _shaderSourcePath.generic_string() + ".spv";
-
-    if (!system(commandToSend.data()))
-        return false;
-
-    // TO DO set correct Path
     // Load shader code
-     std::string spvPath = _shaderSourcePath.parent_path().generic_string() + '/' + _shaderSourcePath.filename().stem().generic_string() + '_' + _extension + ".spv"; 
-    
-    ReadFile(spvPath,_data);
-    
+    const std::string spvPath = _shaderSourcePath.parent_path().generic_string() + '/' + _shaderSourcePath.filename().stem().generic_string() + _extension + ".spv"; 
+    ReadFile(spvPath, _data);
+
     return true;
 }
 
