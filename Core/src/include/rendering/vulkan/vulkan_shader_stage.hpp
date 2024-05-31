@@ -11,7 +11,7 @@ class VulkanShaderStage
 public:
 	std::vector<VkPipelineShaderStageCreateInfo> vkPipelineShaderStageCreateInfo;
 	
-	void Init(const std::vector<ShaderSource*>& _shaderSource);
+	void Init(const std::vector<const ShaderSource*>& _shaderSource);
 
 	void Destroy(const VkDevice& _device);
 

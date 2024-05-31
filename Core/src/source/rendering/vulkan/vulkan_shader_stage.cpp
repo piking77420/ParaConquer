@@ -7,14 +7,14 @@
 
 using namespace PC_CORE;
 
-void VulkanShaderStage::Init(const std::vector<ShaderSource*>& _shaderSource)
+void VulkanShaderStage::Init(const std::vector<const ShaderSource*>& _shaderSource)
 {
     m_ShaderModules.clear();
     const VkDevice& device = VulkanInterface::GetDevice().device;
 
     // Check if shader type are unique in this pipeline no 2 vertex shader
     std::set<ShaderSource::ShaderType> shaderTypes;
-    for (ShaderSource* shader : _shaderSource)
+    for (const ShaderSource* shader : _shaderSource)
     {
         if (!shaderTypes.emplace(shader->shaderType).second)
         {
@@ -23,7 +23,7 @@ void VulkanShaderStage::Init(const std::vector<ShaderSource*>& _shaderSource)
         }
     }
     
-    for (ShaderSource* shader : _shaderSource)
+    for (const ShaderSource* shader : _shaderSource)
     {
         const std::vector<char>& shaderData = shader->data;
 

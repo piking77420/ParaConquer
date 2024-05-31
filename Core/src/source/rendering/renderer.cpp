@@ -12,13 +12,13 @@ void Renderer::Init(GLFWwindow* _window)
 {
     m_VulkanInterface.Init(_window);
     
-    m_CommandBuffers.resize(VulkanInterface::GetNbrOfImage());
-    m_VulkanInterface.AllocateCommandBuffers(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.data());
+    m_CommandBuffers.SetNbrofAllocation(VulkanInterface::GetNbrOfImage());
+    m_VulkanInterface.AllocateCommandBuffers(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.GetPtr());
 
-    ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
-    ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
+    const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
+    const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
 
-    m_VulkanShaderStage.Init({vertex, frag});
+    m_VulkanShaderStage.Init({ vertex, frag });
     m_VulkanRenderPass.Init(VulkanInterface::GetSwapChainImageFormat().format);
     CreateBasicGraphiPipeline();
     CreateAsyncObject();
@@ -59,7 +59,7 @@ void Renderer::RenderViewPort()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
 
-    VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore[VulkanInterface::GetCurrentFrame()]};
+    const VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore[VulkanInterface::GetCurrentFrame()]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
     
@@ -120,7 +120,7 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Vkpipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.pipeline);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -147,16 +147,17 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
 
 void Renderer::CreateBasicGraphiPipeline()
 {
+    
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+    VkResult res = vkCreatePipelineLayout(VulkanInterface::GetDevice().device, &pipelineLayoutInfo, nullptr, &VkPipelineLayout);
+    VK_CHECK_ERROR(res,"Failed To create GraphicPipeline")
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-    //auto bindingDescription = Vertex::getBindingDescription();
-    //auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
-    //vertexInputInfo.vertexBindingDescriptionCount = 1;
-    //vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    //vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    //vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -197,52 +198,22 @@ void Renderer::CreateBasicGraphiPipeline()
     colorBlending.blendConstants[1] = 0.0f;
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
-
-    std::vector<VkDynamicState> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-    };
-    VkPipelineDynamicStateCreateInfo dynamicState{};
-    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-    dynamicState.pDynamicStates = dynamicStates.data();        
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-    VkResult res =vkCreatePipelineLayout(VulkanInterface::GetDevice().device, &pipelineLayoutInfo, nullptr, &VkPipelineLayout);
-    VK_CHECK_ERROR(res,"Failed To create GraphicPipeline")
-
-
     VkGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = m_VulkanShaderStage.vkPipelineShaderStageCreateInfo.data();
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = VkPipelineLayout;
-    pipelineInfo.renderPass = m_VulkanRenderPass.renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    res = vkCreateGraphicsPipelines(VulkanInterface::GetDevice().device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &Vkpipeline);
-    VK_CHECK_ERROR(res,"Failed To create GraphicPipeline")
+    m_BasePipeline.Init(&pipelineInfo, m_VulkanShaderStage, VkPipelineLayout, m_VulkanInterface.vulkanSwapChapchain.mainRenderPass.renderPass);
     
 }
 
 void Renderer::CreateAsyncObject()
 {
-    m_ImageAvailableSemaphore.resize(VulkanInterface::GetNbrOfImage());
-    m_RenderFinishedSemaphore.resize(VulkanInterface::GetNbrOfImage());
-    m_InFlightFence.resize(VulkanInterface::GetNbrOfImage());
-
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -250,29 +221,17 @@ void Renderer::CreateAsyncObject()
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     // make the fence to not block at the start of the first frame to avoid to wait the fence infinitely
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    const VkDevice& device = VulkanInterface::GetDevice().device;
-
-    for (size_t i = 0; i < VulkanInterface::GetNbrOfImage() ; i++)
-    {
-        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
-           vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
-           vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFence[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create semaphores!");
-       }
-    }
+    
+    m_ImageAvailableSemaphore.Init(semaphoreInfo, VulkanInterface::GetNbrOfImage());
+    m_RenderFinishedSemaphore.Init(semaphoreInfo, VulkanInterface::GetNbrOfImage());
+    m_InFlightFence.Init(fenceInfo, VulkanInterface::GetNbrOfImage());
 
    
 }
 
 void Renderer::DestroyAsyncObject()
 {
-    const VkDevice& device = VulkanInterface::GetDevice().device;
-    
-    for (size_t i = 0; i < VulkanInterface::GetNbrOfImage() ; i++)
-    {
-        vkDestroySemaphore(device, m_ImageAvailableSemaphore[i], nullptr);
-        vkDestroySemaphore(device, m_RenderFinishedSemaphore[i], nullptr);
-        vkDestroyFence(device, m_InFlightFence[i], nullptr);
-    }
-
+    m_RenderFinishedSemaphore.Destroy();
+    m_InFlightFence.Destroy();
+    m_ImageAvailableSemaphore.Destroy();
 }
