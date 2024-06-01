@@ -7,7 +7,7 @@
 
 using namespace PC_CORE;
 
-void VulkanInterface::Init(GLFWwindow* window)
+void VulkanInterface::Init(Window* _window)
 {
     m_Instance = this;
     
@@ -15,7 +15,7 @@ void VulkanInterface::Init(GLFWwindow* window)
 #ifndef NDEBUG
     vulkanDebugMessage.Init(vulkanInstance.instance);
 #endif
-    vulkanSurface.Init(vulkanInstance.instance,window);
+    vulkanSurface.Init(vulkanInstance.instance,_window->window);
     VulkanPhysicalDevices.Init(vulkanInstance.instance, vulkanSurface.surfaceKhr);
     VulkanPhysicalDevices.SelectDevice(VK_QUEUE_GRAPHICS_BIT,true);
     vulkanDevice.Init(VulkanPhysicalDevices);
@@ -31,12 +31,12 @@ void VulkanInterface::Init(GLFWwindow* window)
     vulkanCommandPool.Init(vulkanDevice.device, &vkCommandPoolCreateInfo);
     
     // get the nbr of image for the swap chain
-    nbrOfImage = vulkanSwapChapchain.Init(VulkanPhysicalDevices.GetCurrentDevice(), vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr, vulkanDevice.device);
+    nbrOfImage = vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
 }
 
 void VulkanInterface::Destroy()
 {
-    vulkanSwapChapchain.Destroy(vulkanDevice.device);
+    vulkanSwapChapchain.Destroy();
     vulkanCommandPool.Destroy(vulkanDevice.device);
 
     vulkanDevice.Destroy();
@@ -67,6 +67,32 @@ VkFramebuffer VulkanInterface::GetSwapChainFramebuffer(uint32_t _index)
     return m_Instance->vulkanSwapChapchain.swapChainFramebuffers.at(_index);
 }
 
+VulkanSurface VulkanInterface::GetVulkanSurface()
+{
+    return m_Instance->vulkanSurface;
+}
+
+uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    const VkPhysicalDeviceMemoryProperties& memProperties = m_Instance->VulkanPhysicalDevices.GetCurrentDevice().memProps;
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void VulkanInterface::RecreateSwapChain(Window* _window)
+{
+    vulkanSwapChapchain.Destroy();
+    vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
+}
+
+
 uint32_t VulkanInterface::GetCurrentFrame()
 {
     return m_Instance->currentFrame;
@@ -85,5 +111,10 @@ void VulkanInterface::ComputeNextFrame()
 VulkanDevice VulkanInterface::GetDevice()
 {
     return m_Instance->vulkanDevice;
+}
+
+PhysicalDevice& VulkanInterface::GetPhysicalDevice()
+{
+    return m_Instance->VulkanPhysicalDevices.GetCurrentDevice();
 }
 

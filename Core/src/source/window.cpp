@@ -1,6 +1,14 @@
 ﻿#include "..\include\window.hpp"
 
+#include "app.hpp"
+
 using namespace PC_CORE;
+
+void Window::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    Window* app = static_cast<Window*>(glfwGetWindowUserPointer(window));
+    app->onResize = true;
+}
 
 void Window::Init()
 {
@@ -8,6 +16,9 @@ void Window::Init()
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     window = glfwCreateWindow(widht, height, "Vulkan window", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+    currentWindow = this;
 
 }
 
@@ -26,4 +37,17 @@ bool Window::ShouldClose()
 void Window::PoolEvents()
 {
     glfwPollEvents();
+}
+
+void Window::OnResize()
+{
+    int NewWidth = 0, NewHeight = 0;
+    glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
+    while (NewWidth == 0 || NewHeight == 0) {
+        glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
+        glfwWaitEvents();
+    }
+
+    widht = static_cast<uint32_t>(NewWidth);
+    height = static_cast<uint32_t>(NewHeight);
 }

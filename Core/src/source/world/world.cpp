@@ -9,13 +9,13 @@ void World::Run()
     
     if (run == false)
     {
-        //scene.Begin();
+        scene.Begin();
         run = true;
     }
 
     if (run)
     {
-        //scene.Update();
+        scene.Update();
     }
     
 }

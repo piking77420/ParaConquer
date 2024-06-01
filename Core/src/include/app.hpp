@@ -23,6 +23,8 @@ public:
 	~App();
 
 	void Run();
+
+	void HandleResize();
 };
 
 END_PCCORE

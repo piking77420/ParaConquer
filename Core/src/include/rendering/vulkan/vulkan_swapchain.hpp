@@ -21,10 +21,9 @@ public:
     
     VkSurfaceFormatKHR surfaceFormatKhr;
 
-    uint32_t Init(const PhysicalDevice& _physicalDevice, const uint32_t _qfamilyIndex, const VkSurfaceKHR& _surface, const VkDevice
-              _device);
+    uint32_t Init(uint32_t widht, uint32_t _height, const uint32_t _qfamilyIndex, const VkSurfaceKHR& _surface);
 
-    void Destroy(const VkDevice& _device);
+    void Destroy();
     
 private:
     uint32_t ChooseNumImages(const VkSurfaceCapabilitiesKHR& Capabilities);

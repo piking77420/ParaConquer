@@ -4,6 +4,7 @@
 #include <stacktrace>
 
 #include "log.hpp"
+#include "rendering/vulkan/vulkan_interface.hpp"
 
 using namespace PC_CORE;
 
@@ -117,15 +118,20 @@ void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
 }
 
 
-uint32_t VulkanSwapchain::Init(const PhysicalDevice& _physicalDevice, const uint32_t _qfamilyIndex,
-                               const VkSurfaceKHR& _surface,
-                               const VkDevice _device)
+uint32_t VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,const uint32_t _qfamilyIndex,
+                               const VkSurfaceKHR& _surface)
 {
     Log::Debug("Creating SwapChain");
+    swapChainExtent = {widht, _height};
+
+    // Update surfaceCaps 
+    PhysicalDevice& _physicalDevice = VulkanInterface::GetPhysicalDevice();
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice.physDevice, VulkanInterface::GetVulkanSurface().surfaceKhr, &_physicalDevice.surfaceCaps);
+
+    const VkDevice& device = VulkanInterface::GetDevice().device;
 
     const VkSurfaceCapabilitiesKHR& SurfaceCaps = _physicalDevice.surfaceCaps;
-    swapChainExtent = SurfaceCaps.currentExtent;
-
+    
     const uint32_t numSwapChainImages = ChooseNumImages(SurfaceCaps);
 
     const std::vector<VkPresentModeKHR>& PresentModes = _physicalDevice.presentModes;
@@ -154,12 +160,12 @@ uint32_t VulkanSwapchain::Init(const PhysicalDevice& _physicalDevice, const uint
         .clipped = VK_TRUE
     };
 
-    VkResult res = vkCreateSwapchainKHR(_device, &SwapChainCreateInfo, NULL, &swapchainKhr);
+    VkResult res = vkCreateSwapchainKHR(device, &SwapChainCreateInfo, NULL, &swapchainKhr);
     VK_CHECK_ERROR(res, "vkCreateSwapchainKHR");
     Log::Debug("Swap chain created");
 
     uint32_t NumSwapChainImages = 0;
-    res = vkGetSwapchainImagesKHR(_device, swapchainKhr, &NumSwapChainImages, NULL);
+    res = vkGetSwapchainImagesKHR(device, swapchainKhr, &NumSwapChainImages, NULL);
     VK_CHECK_ERROR(res, "vkGetSwapchainImagesKHR");
     assert(numSwapChainImages <= NumSwapChainImages);
     Log::Debug(
@@ -170,7 +176,7 @@ uint32_t VulkanSwapchain::Init(const PhysicalDevice& _physicalDevice, const uint
     swapChainFramebuffers.resize(NumSwapChainImages);
     swapChainImageView.resize(NumSwapChainImages);
     
-    res = vkGetSwapchainImagesKHR(_device, swapchainKhr, &NumSwapChainImages, swapChainImage.data());
+    res = vkGetSwapchainImagesKHR(device, swapchainKhr, &NumSwapChainImages, swapChainImage.data());
     VK_CHECK_ERROR(res, "vkGetSwapchainImagesKHR");
 
     // TODO wrapper
@@ -179,26 +185,38 @@ uint32_t VulkanSwapchain::Init(const PhysicalDevice& _physicalDevice, const uint
 
     for (uint32_t i = 0; i < NumSwapChainImages; i++)
     {
-        swapChainImageView[i] = CreateImageView(_device, swapChainImage[i], surfaceFormatKhr.format,
+        swapChainImageView[i] = CreateImageView(device, swapChainImage[i], surfaceFormatKhr.format,
                                                 VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, LayerCount,
                                                 MipLevels);
     }
 
-    mainRenderPass.Init(surfaceFormatKhr.format);
+    const Attachment color =
+        {
+        .attachementIndex = AttachementIndex::Color00,
+        .format = surfaceFormatKhr.format,
+        .clearOnLoad = true,
+        .write = true,
+        .imageLayoutDes = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL  
+        };
 
-    CreateFrameBuffer(_device);
+    mainRenderPass.Init({ color });
+
+    CreateFrameBuffer(device);
 
     return numSwapChainImages;
 }
 
-void VulkanSwapchain::Destroy(const VkDevice& _device)
+void VulkanSwapchain::Destroy()
 {
+    const VkDevice& device = VulkanInterface::GetDevice().device;
+    
     Log::Debug("Destroy swapChainImageView SwapChain");
     for (VkImageView& i : swapChainImageView)
     {
-        vkDestroyImageView(_device, i, nullptr);
+        vkDestroyImageView(device, i, nullptr);
     }
 
     Log::Debug("vkDestroySwapchainKHR");
-    vkDestroySwapchainKHR(_device, swapchainKhr, nullptr);
+    vkDestroySwapchainKHR(device, swapchainKhr, nullptr);
 }

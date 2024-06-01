@@ -242,3 +242,12 @@ const PhysicalDevice& VulkanPhysicalDevices::GetCurrentDevice() const
     }
     return m_Devices[m_CurrentDevice];
 }
+
+PhysicalDevice& VulkanPhysicalDevices::GetCurrentDevice()
+{
+    if (m_CurrentDevice < 0)
+    {
+        VK_CHECK_ERROR(1,"A physical device has not been selected");
+    }
+    return m_Devices[m_CurrentDevice];
+}

@@ -14,7 +14,6 @@ BEGIN_PCCORE
 class VulkanInterface
 {
 public:
-
     static uint32_t GetCurrentFrame();
 
     static uint32_t GetNbrOfImage();
@@ -23,19 +22,30 @@ public:
     
     static VulkanDevice GetDevice();
 
+    static PhysicalDevice& GetPhysicalDevice();
+
     static VkSurfaceFormatKHR GetSwapChainImageFormat();
 
     static VkFramebuffer GetSwapChainFramebuffer(uint32_t _index);
 
+    static VulkanSurface GetVulkanSurface();    
+
+
+    // to do move to physical device
+    static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    void RecreateSwapChain(Window* _window);
+
     VulkanSwapchain vulkanSwapChapchain;
     
-    void Init(GLFWwindow* window);
+    void Init(Window* _window);
 
     void Destroy();
 
     void AllocateCommandBuffers(size_t _nbr, VkCommandBuffer* _vkCommandBufferPtr);
 
     VkImage GetImage(uint32_t _index);
+
 
 private:
 
@@ -49,14 +59,14 @@ private:
 #ifndef NDEBUG
     VulkanDebugMessage vulkanDebugMessage;
 #endif
-
-    VulkanSurface vulkanSurface;
-
+    
     VulkanPhysicalDevices VulkanPhysicalDevices;
     
     VulkanDevice vulkanDevice;
 
     VulkanCommandPool vulkanCommandPool;
+
+    VulkanSurface vulkanSurface;
 
 };
 

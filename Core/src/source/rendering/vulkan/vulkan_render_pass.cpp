@@ -7,27 +7,27 @@
 
 using namespace PC_CORE;
 
-void VulkanRenderPass::Init(const VkFormat _vkFormat)
+void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
 {
-    // to do make wrapper
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = _vkFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    std::vector<VkAttachmentDescription> vkAttachmentDescription;
+    vkAttachmentDescription.resize(_attachments.size());
 
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    std::vector<VkAttachmentReference> vkAttachmentReferences;
+    vkAttachmentReferences.resize(_attachments.size());
+    
+    for (size_t i = 0; i < _attachments.size(); i++)
+    {
+        VkAttachmentDescription& attachmentDescription = vkAttachmentDescription[i];
+        VkAttachmentReference& attachmentReference = vkAttachmentReferences[i];
+
+        ParseAttachementDescriptor(_attachments[i], &attachmentDescription);
+        ParseAttachementReference(_attachments[i],&attachmentReference);
+    }
 
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.colorAttachmentCount = static_cast<uint32_t>(vkAttachmentReferences.size());
+    subpass.pColorAttachments = vkAttachmentReferences.data();
 
     VkSubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -39,8 +39,8 @@ void VulkanRenderPass::Init(const VkFormat _vkFormat)
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(vkAttachmentDescription.size());
+    renderPassInfo.pAttachments = vkAttachmentDescription.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;
@@ -56,4 +56,31 @@ void VulkanRenderPass::Init(const VkFormat _vkFormat)
 void VulkanRenderPass::Destroy()
 {
     vkDestroyRenderPass(VulkanInterface::GetDevice().device, renderPass, nullptr);
+}
+
+void VulkanRenderPass::ParseAttachementDescriptor(const Attachment& _in, VkAttachmentDescription* _out)
+{
+    _out->format = _in.format;
+    _out->samples = VK_SAMPLE_COUNT_1_BIT;
+    
+    _out->loadOp = _in.clearOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+    _out->storeOp = _in.write ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    
+    _out->stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    _out->stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    // TO DO FIX THIS 
+    _out->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    _out->finalLayout = _in.imageLayoutDes;
+}
+
+void VulkanRenderPass::ParseAttachementReference(const Attachment& _in, VkAttachmentReference* _out)
+{
+    
+    if (_in.attachementIndex != AttachementIndex::Depth && _in.attachementIndex != AttachementIndex::Stencil
+        && _in.attachementIndex != AttachementIndex::Max)
+    {
+        _out->attachment = static_cast<uint32_t>(_in.attachementIndex);
+    }
+    _out->layout = _in.imageLayoutRef;
 }

@@ -14,7 +14,7 @@ App::App()
     windowHandle.Init();
     ResourceManager::Init();
     
-    renderer.Init(windowHandle.window);
+    renderer.Init(&windowHandle);
 
     World::world = &world;
 
@@ -36,6 +36,17 @@ void App::Run()
     while (!windowHandle.ShouldClose())
     {
         windowHandle.PoolEvents();
+        HandleResize();
         renderer.RenderViewPort();
     }   
+}
+
+void App::HandleResize()
+{
+    if (windowHandle.onResize)
+    {
+        windowHandle.OnResize();
+        renderer.RecreateSwapChain(&windowHandle);
+        windowHandle.onResize = false;
+    }
 }

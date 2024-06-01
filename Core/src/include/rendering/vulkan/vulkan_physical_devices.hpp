@@ -16,6 +16,9 @@ public:
     
     const PhysicalDevice& GetCurrentDevice() const;
 
+    PhysicalDevice& GetCurrentDevice();
+
+    
 private:
     std::vector<PhysicalDevice> m_Devices;
 

@@ -2,13 +2,14 @@
 
 #include <string>
 
+#include "rendering/vertex.hpp"
 #include "app.hpp"
 #include "log.hpp"
 #include "resources/resource_manager.hpp"
 
 using namespace PC_CORE;
 
-void Renderer::Init(GLFWwindow* _window)
+void Renderer::Init(Window* _window)
 {
     m_VulkanInterface.Init(_window);
     
@@ -19,9 +20,16 @@ void Renderer::Init(GLFWwindow* _window)
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
 
     m_VulkanShaderStage.Init({ vertex, frag });
-    m_VulkanRenderPass.Init(VulkanInterface::GetSwapChainImageFormat().format);
     CreateBasicGraphiPipeline();
     CreateAsyncObject();
+    m_VertexBuffer.Init(vertices);
+}
+
+void Renderer::RecreateSwapChain(Window* _window)
+{
+    vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
+
+    m_VulkanInterface.RecreateSwapChain(_window);
 }
 
 void Renderer::Destroy()
@@ -30,6 +38,7 @@ void Renderer::Destroy()
     vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
     
     DestroyAsyncObject();
+    m_VertexBuffer.Destroy();
     m_VulkanInterface.Destroy();
 }
 // to do put fence and semaphore in swap chain
@@ -38,12 +47,13 @@ void Renderer::RenderViewPort()
     const VkDevice& device = VulkanInterface::GetDevice().device;
 
     vkWaitForFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()], VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()]);
     
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(device, m_VulkanInterface.vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()], VK_NULL_HANDLE, &imageIndex);
-    vkResetCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()],0);
+    VkResult result = vkAcquireNextImageKHR(device, m_VulkanInterface.vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()], VK_NULL_HANDLE, &imageIndex);
     
+    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()]);
+
+    vkResetCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()],0);
     RecordCommandBuffers(m_CommandBuffers[VulkanInterface::GetCurrentFrame()], imageIndex);
 
     VkSubmitInfo submitInfo{};
@@ -81,7 +91,7 @@ void Renderer::RenderViewPort()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(VulkanInterface::GetDevice().graphicsQueue.Queue, &presentInfo);
+     vkQueuePresentKHR(VulkanInterface::GetDevice().graphicsQueue.Queue, &presentInfo);
 }
 
 void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags)
@@ -136,7 +146,11 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     scissor.extent = m_VulkanInterface.vulkanSwapChapchain.swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);            
 
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    VkBuffer vertexBuffers[] = {m_VertexBuffer.vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
     
@@ -153,12 +167,21 @@ void Renderer::CreateBasicGraphiPipeline()
     pipelineLayoutInfo.setLayoutCount = 0;
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
     VkResult res = vkCreatePipelineLayout(VulkanInterface::GetDevice().device, &pipelineLayoutInfo, nullptr, &VkPipelineLayout);
     VK_CHECK_ERROR(res,"Failed To create GraphicPipeline")
 
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
+    /////////////////////////
+    
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -225,8 +248,6 @@ void Renderer::CreateAsyncObject()
     m_ImageAvailableSemaphore.Init(semaphoreInfo, VulkanInterface::GetNbrOfImage());
     m_RenderFinishedSemaphore.Init(semaphoreInfo, VulkanInterface::GetNbrOfImage());
     m_InFlightFence.Init(fenceInfo, VulkanInterface::GetNbrOfImage());
-
-   
 }
 
 void Renderer::DestroyAsyncObject()
