@@ -4,9 +4,10 @@
 #include "rendering/renderer.hpp"
 #include "window.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
+#include "world/world.hpp"
 
 BEGIN_PCCORE
-class App
+	class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
@@ -14,6 +15,8 @@ public:
 	Window windowHandle;
 
 	Renderer renderer;
+
+	World world;
 	
 	App();
 

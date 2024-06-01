@@ -4,6 +4,7 @@
 
 #include "log.hpp"
 #include "resources/resource_manager.hpp"
+#include "world/transform.hpp"
 
 using namespace PC_CORE;
 
@@ -14,6 +15,11 @@ App::App()
     ResourceManager::Init();
     
     renderer.Init(windowHandle.window);
+
+    World::world = &world;
+
+    const Entity entity = world.scene.CreateEntity();
+    world.scene.AddComponent<Transform>(entity);
 }
 
 App::~App()
@@ -21,6 +27,8 @@ App::~App()
     PC_LOG("App Destroy")
     windowHandle.Destroy();
     ResourceManager::Destroy();
+
+    delete ComponentRegister::componentRegisterMap;
 }
 
 void App::Run()
