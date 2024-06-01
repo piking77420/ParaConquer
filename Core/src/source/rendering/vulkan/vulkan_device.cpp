@@ -15,6 +15,7 @@ void VulkanDevice::Init(const VulkanPhysicalDevices& _physicalDevices)
 
     graphicsQueue.index = _physicalDevices.GetQueueFamilliesIndex(VK_QUEUE_GRAPHICS_BIT, true);
     computeQueue.index = _physicalDevices.GetQueueFamilliesIndex(VK_QUEUE_COMPUTE_BIT, false);
+    transferQueue.index = _physicalDevices.GetQueueFamilliesIndex(VK_QUEUE_TRANSFER_BIT, false);
 
     VkDeviceQueueCreateInfo qGInfo =
         {
@@ -36,9 +37,21 @@ void VulkanDevice::Init(const VulkanPhysicalDevices& _physicalDevices)
         .pQueuePriorities = &qCPriorities[0]
     };
 
-    std::array<VkDeviceQueueCreateInfo,1> queusInfos =
+    VkDeviceQueueCreateInfo qTInfo =
+        {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0, // must be zero
+        .queueFamilyIndex = transferQueue.index,
+        .queueCount = 1,
+        .pQueuePriorities = &qCPriorities[0]
+    };
+
+    std::array<VkDeviceQueueCreateInfo,3> queusInfos =
     {
-        qGInfo
+        qGInfo,
+        qCInfo,
+        qTInfo
     };
     
     constexpr std::array<const char*, 2> DevExts =
@@ -78,6 +91,7 @@ void VulkanDevice::Init(const VulkanPhysicalDevices& _physicalDevices)
 
     vkGetDeviceQueue(device, graphicsQueue.index, 0, &graphicsQueue.Queue);
     vkGetDeviceQueue(device, computeQueue.index, 0, &computeQueue.Queue);
+    vkGetDeviceQueue(device, transferQueue.index, 0, &transferQueue.Queue);
 
 }
 

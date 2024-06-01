@@ -14,6 +14,9 @@ BEGIN_PCCORE
 class VulkanInterface
 {
 public:
+
+    static inline VulkanInterface* instance = nullptr;
+    
     static uint32_t GetCurrentFrame();
 
     static uint32_t GetNbrOfImage();
@@ -28,28 +31,27 @@ public:
 
     static VkFramebuffer GetSwapChainFramebuffer(uint32_t _index);
 
-    static VulkanSurface GetVulkanSurface();    
-
-
+    static VulkanSurface GetVulkanSurface();
+    
     // to do move to physical device
     static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-    void RecreateSwapChain(Window* _window);
-
+    
     VulkanSwapchain vulkanSwapChapchain;
     
+    VulkanCommandPool vulkanCommandPoolGraphic;
+
+    VulkanCommandPool vulkanCommandPoolTransfert;
+
     void Init(Window* _window);
 
     void Destroy();
-
-    void AllocateCommandBuffers(size_t _nbr, VkCommandBuffer* _vkCommandBufferPtr);
-
+    
+    void RecreateSwapChain(Window* _window);
+    
     VkImage GetImage(uint32_t _index);
-
 
 private:
 
-    static inline VulkanInterface* m_Instance = nullptr;
 
     uint32_t nbrOfImage = -1;
 
@@ -64,10 +66,9 @@ private:
     
     VulkanDevice vulkanDevice;
 
-    VulkanCommandPool vulkanCommandPool;
 
     VulkanSurface vulkanSurface;
-
+    
 };
 
 END_PCCORE

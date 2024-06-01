@@ -13,8 +13,10 @@ public:
 
 	void Destroy(const VkDevice& _device);
 
-	void AllocCommandBuffer(const VkDevice& device, size_t _nbr, VkCommandBuffer*
+	void AllocCommandBuffer(size_t _nbr, VkCommandBuffer*
 	                        _commandBufferPtr) const;
+
+	void FreeCommandBuffers(size_t _nbr, VkCommandBuffer* _vkCommandBuffer);
 private:
 	VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 };

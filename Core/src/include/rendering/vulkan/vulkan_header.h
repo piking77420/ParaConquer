@@ -15,6 +15,7 @@ struct PhysicalDevice {
     VkPhysicalDevice physDevice;
     VkPhysicalDeviceProperties devProps;
     std::vector<VkQueueFamilyProperties> qFamilyProps;
+    mutable std::vector<bool> qFamilyPropsStatus; 
     std::vector<VkBool32> qSupportsPresent;
     std::vector<VkSurfaceFormatKHR> surfaceFormats;
     VkSurfaceCapabilitiesKHR surfaceCaps;

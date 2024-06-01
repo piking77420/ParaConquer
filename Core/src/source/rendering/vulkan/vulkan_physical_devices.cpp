@@ -104,6 +104,7 @@ void VulkanPhysicalDevices::Init(VkInstance _instance, VkSurfaceKHR _surfaceKhr)
 
         m_Devices[i].qFamilyProps.resize(numQFamilies);
         m_Devices[i].qSupportsPresent.resize(numQFamilies);
+        m_Devices[i].qFamilyPropsStatus.resize(numQFamilies);
 
         vkGetPhysicalDeviceQueueFamilyProperties(m_Devices[i].physDevice, &numQFamilies, m_Devices[i].qFamilyProps.data());
 
@@ -216,15 +217,18 @@ uint32_t VulkanPhysicalDevices::GetQueueFamilliesIndex(VkQueueFlags _RequiredQue
     
     for (uint32_t i = 0; i < physicalDevice.qFamilyProps.size(); i++)
     {
-  
         const VkQueueFamilyProperties& QFamilyProp = physicalDevice.qFamilyProps[i];
+
+        if (physicalDevice.qFamilyPropsStatus[i])
+            continue;
         
-        if (!_SupportsPresent && static_cast<bool>(physicalDevice.qSupportsPresent[i]) == _SupportsPresent)
+        if (!_SupportsPresent && static_cast<bool>(physicalDevice.qSupportsPresent[i]) == _SupportsPresent && physicalDevice.qFamilyPropsStatus[i])
             continue;
         
 
         if ((QFamilyProp.queueFlags & _RequiredQueueType))
         {
+            physicalDevice.qFamilyPropsStatus[i] = true;
             return i;
         }
     }

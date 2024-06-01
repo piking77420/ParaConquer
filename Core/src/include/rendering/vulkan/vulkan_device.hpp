@@ -19,6 +19,8 @@ public:
 
     QueuAndIndex computeQueue;
 
+    QueuAndIndex transferQueue;
+
     
     void Init(const VulkanPhysicalDevices& _physicalDevice);
 

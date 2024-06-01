@@ -3,6 +3,7 @@
 #include <string>
 
 #include "log.hpp"
+#include "rendering/vulkan/vulkan_interface.hpp"
 
 using namespace PC_CORE;
 
@@ -20,7 +21,7 @@ void VulkanCommandPool::Destroy(const VkDevice& _device)
 	vkDestroyCommandPool(_device, m_CommandPool, nullptr);
 }
 
-void VulkanCommandPool::AllocCommandBuffer(const VkDevice& device, size_t _nbr, VkCommandBuffer* _commandBufferPtr) const
+void VulkanCommandPool::AllocCommandBuffer(size_t _nbr, VkCommandBuffer* _commandBufferPtr) const
 {
 	const VkCommandBufferAllocateInfo vkCommandBufferAllocateInfo =
 	{
@@ -30,9 +31,14 @@ void VulkanCommandPool::AllocCommandBuffer(const VkDevice& device, size_t _nbr, 
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = static_cast<uint32_t>(_nbr)
 	};
-	const VkResult result = vkAllocateCommandBuffers(device, &vkCommandBufferAllocateInfo, _commandBufferPtr);
+	const VkResult result = vkAllocateCommandBuffers(VulkanInterface::GetDevice().device, &vkCommandBufferAllocateInfo, _commandBufferPtr);
 
 	VK_CHECK_ERROR(result,"vkCreateCommandPool")
 
 	Log::Debug("Command buffer pool created");
+}
+
+void VulkanCommandPool::FreeCommandBuffers(size_t _nbr, VkCommandBuffer* _vkCommandBuffer)
+{
+	vkFreeCommandBuffers(VulkanInterface::GetDevice().device, m_CommandPool, static_cast<uint32_t>(_nbr), _vkCommandBuffer);
 }

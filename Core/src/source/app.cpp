@@ -38,6 +38,7 @@ void App::Run()
         windowHandle.PoolEvents();
         HandleResize();
         renderer.RenderViewPort();
+       
     }   
 }
 

@@ -9,7 +9,7 @@ using namespace PC_CORE;
 
 void VulkanInterface::Init(Window* _window)
 {
-    m_Instance = this;
+    instance = this;
     
     vulkanInstance.Init();
 #ifndef NDEBUG
@@ -20,15 +20,23 @@ void VulkanInterface::Init(Window* _window)
     VulkanPhysicalDevices.SelectDevice(VK_QUEUE_GRAPHICS_BIT,true);
     vulkanDevice.Init(VulkanPhysicalDevices);
 
-    const VkCommandPoolCreateInfo vkCommandPoolCreateInfo =
+    const VkCommandPoolCreateInfo vkCommandPoolCreateInfoGraphic =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext = nullptr,
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         .queueFamilyIndex = vulkanDevice.graphicsQueue.index
     };
-    
-    vulkanCommandPool.Init(vulkanDevice.device, &vkCommandPoolCreateInfo);
+    vulkanCommandPoolGraphic.Init(vulkanDevice.device, &vkCommandPoolCreateInfoGraphic);
+
+    const VkCommandPoolCreateInfo vkCommandPoolCreateInfoTransfer =
+    {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = vulkanDevice.transferQueue.index
+    };
+    vulkanCommandPoolTransfert.Init(vulkanDevice.device, &vkCommandPoolCreateInfoTransfer);
     
     // get the nbr of image for the swap chain
     nbrOfImage = vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
@@ -37,7 +45,7 @@ void VulkanInterface::Init(Window* _window)
 void VulkanInterface::Destroy()
 {
     vulkanSwapChapchain.Destroy();
-    vulkanCommandPool.Destroy(vulkanDevice.device);
+    vulkanCommandPoolGraphic.Destroy(vulkanDevice.device);
 
     vulkanDevice.Destroy();
     vulkanSurface.Destroy(vulkanInstance.instance);
@@ -47,11 +55,6 @@ void VulkanInterface::Destroy()
     vulkanInstance.Destroy();
 }
 
-void VulkanInterface::AllocateCommandBuffers(size_t _nbr, VkCommandBuffer* _vkCommandBufferPtr)
-{
-    vulkanCommandPool.AllocCommandBuffer(vulkanDevice.device, _nbr, _vkCommandBufferPtr);
-}
-
 VkImage VulkanInterface::GetImage(uint32_t _index)
 {
     return vulkanSwapChapchain.swapChainImage.at(_index);
@@ -59,22 +62,22 @@ VkImage VulkanInterface::GetImage(uint32_t _index)
 
 VkSurfaceFormatKHR VulkanInterface::GetSwapChainImageFormat()
 {
-    return m_Instance->vulkanSwapChapchain.surfaceFormatKhr;
+    return instance->vulkanSwapChapchain.surfaceFormatKhr;
 }
 
 VkFramebuffer VulkanInterface::GetSwapChainFramebuffer(uint32_t _index)
 {
-    return m_Instance->vulkanSwapChapchain.swapChainFramebuffers.at(_index);
+    return instance->vulkanSwapChapchain.swapChainFramebuffers.at(_index);
 }
 
 VulkanSurface VulkanInterface::GetVulkanSurface()
 {
-    return m_Instance->vulkanSurface;
+    return instance->vulkanSurface;
 }
 
 uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
-    const VkPhysicalDeviceMemoryProperties& memProperties = m_Instance->VulkanPhysicalDevices.GetCurrentDevice().memProps;
+    const VkPhysicalDeviceMemoryProperties& memProperties = instance->VulkanPhysicalDevices.GetCurrentDevice().memProps;
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
     {
@@ -95,26 +98,26 @@ void VulkanInterface::RecreateSwapChain(Window* _window)
 
 uint32_t VulkanInterface::GetCurrentFrame()
 {
-    return m_Instance->currentFrame;
+    return instance->currentFrame;
 }
 
 uint32_t VulkanInterface::GetNbrOfImage()
 {
-    return m_Instance->nbrOfImage;
+    return instance->nbrOfImage;
 }
 
 void VulkanInterface::ComputeNextFrame()
 {
-    m_Instance->currentFrame = (m_Instance->currentFrame + 1) % m_Instance->nbrOfImage;
+    instance->currentFrame = (instance->currentFrame + 1) % instance->nbrOfImage;
 }
 
 VulkanDevice VulkanInterface::GetDevice()
 {
-    return m_Instance->vulkanDevice;
+    return instance->vulkanDevice;
 }
 
 PhysicalDevice& VulkanInterface::GetPhysicalDevice()
 {
-    return m_Instance->VulkanPhysicalDevices.GetCurrentDevice();
+    return instance->VulkanPhysicalDevices.GetCurrentDevice();
 }
 

@@ -9,12 +9,24 @@
 
 using namespace PC_CORE;
 
+std::vector<Vertex> vertices =
+   {
+    {{-0.5f, -0.5f,0.f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f,0.f}, {0.0f, 1.0f}},
+    {{0.5f, 0.5f,0.f}, {0.0f, 0.0f}},
+    {{-0.5f, 0.5f,0.f}}, {1.0f, 1.0f}
+   };
+
+const std::vector<uint32_t> indices = {
+    0, 1, 2, 2, 3, 0
+};
+
 void Renderer::Init(Window* _window)
 {
     m_VulkanInterface.Init(_window);
     
     m_CommandBuffers.SetNbrofAllocation(VulkanInterface::GetNbrOfImage());
-    m_VulkanInterface.AllocateCommandBuffers(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.GetPtr());
+    m_VulkanInterface.vulkanCommandPoolGraphic.AllocCommandBuffer(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.GetPtr());
 
     const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
@@ -23,6 +35,7 @@ void Renderer::Init(Window* _window)
     CreateBasicGraphiPipeline();
     CreateAsyncObject();
     m_VertexBuffer.Init(vertices);
+    m_IndexBuffer.Init(indices);
 }
 
 void Renderer::RecreateSwapChain(Window* _window)
@@ -39,6 +52,7 @@ void Renderer::Destroy()
     
     DestroyAsyncObject();
     m_VertexBuffer.Destroy();
+    m_IndexBuffer.Destroy();
     m_VulkanInterface.Destroy();
 }
 // to do put fence and semaphore in swap chain
@@ -146,11 +160,13 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     scissor.extent = m_VulkanInterface.vulkanSwapChapchain.swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);            
 
-    VkBuffer vertexBuffers[] = {m_VertexBuffer.vertexBuffer};
+    VkBuffer vertexBuffers[] = {m_VertexBuffer.GetHandle()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
     

@@ -2,9 +2,10 @@
 #include "vulkan/vulkan_interface.hpp"
 #include <GLFW/glfw3.h>
 
-#include "vulkan/vertex_buffer.hpp"
+#include "vulkan\vulkan_vertex_buffer.hpp"
 #include "vulkan/vulkan_command_buffer.hpp"
 #include "vulkan/vulkan_fence.hpp"
+#include "vulkan/vulkan_index_buffer.hpp"
 #include "vulkan/vulkan_pipeline.hpp"
 #include "vulkan/vulkan_render_pass.hpp"
 #include "vulkan/vulkan_semaphore.h"
@@ -22,13 +23,6 @@ public:
     void Destroy();
 
     void RenderViewPort();
-    
-    const std::vector<Vertex> vertices =
-    {
-        {{0.0f, -1.0f,0.f}, {1.0f, 0.0f}},
-        {{0.5f, 0.5f,0.f}, {0.0f, 1.0f}},
-        {{-0.5f, 0.5f,0.f}, {0.0f, 0.0f}}
-    };
 
 private:
     VulkanInterface m_VulkanInterface = {};
@@ -47,7 +41,9 @@ private:
     
     VulkanFence m_InFlightFence;
 
-    VertexBuffer m_VertexBuffer;
+    VulkanVertexBuffer m_VertexBuffer;
+
+    VulkanIndexBuffer m_IndexBuffer;
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
