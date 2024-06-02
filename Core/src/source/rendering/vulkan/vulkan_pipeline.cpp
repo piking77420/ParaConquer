@@ -30,7 +30,22 @@ void VulkanPipeline::Init(const VkGraphicsPipelineCreateInfo* _vkGraphicsPipelin
     vkGraphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     
     
-    VkResult res = vkCreateGraphicsPipelines(VulkanInterface::GetDevice().device, VK_NULL_HANDLE, 1, &vkGraphicsPipelineCreateInfo, nullptr, &pipeline);
+    VkResult res = vkCreateGraphicsPipelines(VulkanInterface::GetDevice().device, VK_NULL_HANDLE, 1, &vkGraphicsPipelineCreateInfo, nullptr, &m_Pipeline);
     VK_CHECK_ERROR(res,"Failed To create GraphicPipeline")
     
+}
+
+void VulkanPipeline::Destroy()
+{
+    vkDestroyPipeline(VulkanInterface::GetDevice().device, m_Pipeline, nullptr);
+}
+
+VkPipeline& VulkanPipeline::Get()
+{
+    return m_Pipeline;
+}
+
+const VkPipeline VulkanPipeline::Get() const
+{
+    return m_Pipeline;
 }

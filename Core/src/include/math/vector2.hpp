@@ -103,17 +103,17 @@ public:
     }
 
     
-    TOOLBOX_INLINE DataType& operator[](size_t _index)
+    TOOLBOX_INLINE DataType& operator[](size_t index)
     {
-        return *(GetPtr() + _index);
+        return *static_cast<T*>(&x + index);
     }
 
-    TOOLBOX_INLINE DataType operator[](size_t _index) const
+    TOOLBOX_INLINE const DataType& operator[](size_t index) const
     {
-        return *(GetPtr() + _index);
+        return *static_cast<const T*>(&x + index);
     }
 
-    TOOLBOX_INLINE bool operator==(const Vector2& _other)
+    TOOLBOX_INLINE bool operator==(const Vector2& _other) const
     {
         return IsEqualTo(x,_other.x) && IsEqualTo(y,_other.y);
     }

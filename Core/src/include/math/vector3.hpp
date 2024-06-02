@@ -39,19 +39,20 @@ public:
         const DataType mag = Magnitude();
         
         if (IsEqualTo<DataType>(mag,static_cast<T>(1)))
-            return this;
+            return *this;
         
         const DataType InvMagnitude = static_cast<T>(1) / mag;
         
         return { x * InvMagnitude, y * InvMagnitude, z * InvMagnitude};    
     }
-    
+
+
     constexpr static DataType Dot(const Vector3& _v1, const Vector3& _v2)
     {
         return _v1.x * _v2.x + _v1.y * _v2.y + _v1.z * _v2.z;         
     }
 
-    constexpr static DataType Cross(const Vector3& _v1, const Vector3& _v2)
+    constexpr static Vector3 Cross(const Vector3& _v1, const Vector3& _v2)
     {
         return Vector3(_v1.y * _v2.z - _v1.z * _v2.y,
         _v1.z * _v2.x - _v1.x * _v2.z,
@@ -80,22 +81,22 @@ public:
         return {-x, -y, -z};
     }
 
-    Vector3 operator+(const Vector3& other)
+    Vector3 operator+(const Vector3& other) const
     {
         return {x + other.x , y + other.y, z + other.z};
     }
 
-    Vector3 operator-(const Vector3& other)
+    Vector3 operator-(const Vector3& other) const
     {
         return {x - other.x , y - other.y, z - other.z};
     }
 
-    Vector3 operator*(const Vector3& other)
+    Vector3 operator*(const Vector3& other) const
     {
         return {x * other.x , y * other.y, z * other.z};
     }
 
-    Vector3 operator/(const Vector3& other)
+    Vector3 operator/(const Vector3& other) const
     {
         return {x / other.x , y / other.y, z / other.z};
     }
@@ -150,15 +151,15 @@ public:
     
     TOOLBOX_INLINE DataType& operator[](size_t index)
     {
-        return *(GetPtr() + index);
+        return *static_cast<T*>(&x + index);
     }
 
-    TOOLBOX_INLINE DataType operator[](size_t index) const
+    TOOLBOX_INLINE const DataType& operator[](size_t index) const
     {
-        return *(GetPtr() + index);
+        return *static_cast<const T*>(&x + index);
     }
 
-    TOOLBOX_INLINE bool operator==(const Vector3& _other)
+    TOOLBOX_INLINE bool operator==(const Vector3& _other) const
     {
         return IsEqualTo(x,_other.x) && IsEqualTo(y,_other.y) && IsEqualTo(z,_other.z);
     }
@@ -169,7 +170,7 @@ public:
     }
     
 
-    static constexpr Vector3 Zero() { return Vector3(0); };
+    static constexpr Vector3 Zero() { return Vector3(static_cast<T>(0)); };
 
     static constexpr Vector3 UnitX() { return { 1, 0 ,0 }; };
     

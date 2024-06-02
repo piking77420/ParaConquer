@@ -7,9 +7,6 @@ BEGIN_PCCORE
 class VulkanDebugMessage
 {
 public:
-
-    static constexpr bool PrintInfo = false;
-    
     static VkBool32 VulkanMessageDebug(
     VkDebugUtilsMessageSeverityFlagBitsEXT           messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT                  messageTypes,

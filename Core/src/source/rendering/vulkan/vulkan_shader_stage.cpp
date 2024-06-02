@@ -73,11 +73,13 @@ VkShaderStageFlagBits VulkanShaderStage::ShaderTypeTOVukan(ShaderSource::ShaderT
     return VK_SHADER_STAGE_VERTEX_BIT;
 }
 
-void VulkanShaderStage::Destroy(const VkDevice& _device)
+void VulkanShaderStage::Destroy()
 {
+    const VkDevice& device = VulkanInterface::GetDevice().device;
+
     for (const ShaderWithModule& shader : m_ShaderModules)
     {
-        vkDestroyShaderModule(_device, shader.vkShaderModule, nullptr);
+        vkDestroyShaderModule(device, shader.vkShaderModule, nullptr);
     }
 
     vkPipelineShaderStageCreateInfo.clear();

@@ -11,7 +11,7 @@ using namespace PC_CORE;
 void PC_CORE::VulkanBuffer::Destroy()
 {
     if (m_Buffer != VK_NULL_HANDLE)
-        vkDestroyBuffer(VulkanInterface::GetDevice().device, m_Buffer, nullptr);
+        vmaDestroyBuffer(VulkanInterface::GetAllocator(), m_Buffer, m_Allocation);
     
 }
 
@@ -42,7 +42,7 @@ void VulkanBuffer::CreateBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocation,
     void* data;
     vmaMapMemory(VulkanInterface::GetAllocator(), *_allocation, &data);
 
-    memcpy(data, _data, bufferInfo.size);
+    memcpy(data, _data, _size);
 
     vmaUnmapMemory(VulkanInterface::GetAllocator(), *_allocation);
 }

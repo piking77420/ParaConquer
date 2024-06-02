@@ -27,54 +27,54 @@ void MatrixCast(const F& _from, T* _to)
 template <class T>
 void RotationMatrix(float _angle, Matrix2x2<T>* _matrix)
 {
-    *_matrix[0][0] = std::cos(_angle);
-    *_matrix[0][1] = std::sin(_angle);
+    (*_matrix)[0][0] = std::cos(_angle);
+    (*_matrix)[0][1] = std::sin(_angle);
 
-    *_matrix[1][0] = -std::sin(_angle);
-    *_matrix[1][1] = std::cos(_angle);
+    (*_matrix)[1][0] = -std::sin(_angle);
+    (*_matrix)[1][1] = std::cos(_angle);
 }
 
 template <class T>
 void RotationMatrix2D(float _angle, Matrix3x3<T>* _matrix)
 {
-    *_matrix[0][0] = std::cos(_angle);
-    *_matrix[1][0] = -std::sin(_angle);
-    *_matrix[2][0] = 0.f;
-    *_matrix[0][1] = std::sin(_angle);
-    *_matrix[1][1] = std::cos(_angle);
-    *_matrix[2][1] = 0.f;
-    *_matrix[0][2] = 0.f;
-    *_matrix[1][2] = 0.f;
-    *_matrix[2][2] = 1.f;
+    (*_matrix)[0][0] = std::cos(_angle);
+    (*_matrix)[1][0] = -std::sin(_angle);
+    (*_matrix)[2][0] = 0.f;
+    (*_matrix)[0][1] = std::sin(_angle);
+    (*_matrix)[1][1] = std::cos(_angle);
+    (*_matrix)[2][1] = 0.f;
+    (*_matrix)[0][2] = 0.f;
+    (*_matrix)[1][2] = 0.f;
+    (*_matrix)[2][2] = 1.f;
 }
 
 
 template <class T>
 void RotationXMatrix3D(float _angleX, Matrix3x3<T>* _matrix)
 {
-    *_matrix[0][0] = 1;
-    *_matrix[1][0] = 0;
-    *_matrix[2][0] = 0.f;
-    *_matrix[0][1] = 0;
-    *_matrix[1][1] = std::cos(_angleX);
-    *_matrix[2][1] = -std::sin(_angleX);
-    *_matrix[0][2] = 0.f;
-    *_matrix[1][2] = std::sin(_angleX);
-    *_matrix[2][2] = std::cos(_angleX);
+    (*_matrix)[0][0] = 1;
+    (*_matrix)[1][0] = 0;
+    (*_matrix)[2][0] = 0.f;
+    (*_matrix)[0][1] = 0;
+    (*_matrix)[1][1] = std::cos(_angleX);
+    (*_matrix)[2][1] = -std::sin(_angleX);
+    (*_matrix)[0][2] = 0.f;
+    (*_matrix)[1][2] = std::sin(_angleX);
+    (*_matrix)[2][2] = std::cos(_angleX);
 }
 
 template <class T>
 void RotationYMatrix3D(float _angleY, Matrix3x3<T>* _matrix)
 {
-    *_matrix[0][0] = std::cos(_angleY);
-    *_matrix[1][0] = 0.f;
-    *_matrix[2][0] = std::sin(_angleY);
-    *_matrix[0][1] = 0.f;
-    *_matrix[1][1] = 1.f;
-    *_matrix[2][1] = 0.f;
-    *_matrix[0][2] = -std::sin(_angleY);
-    *_matrix[1][2] = 0.f;
-    *_matrix[2][2] = std::cos(_angleY);
+    (*_matrix)[0][0] = std::cos(_angleY);
+    (*_matrix)[1][0] = 0.f;
+    (*_matrix)[2][0] = std::sin(_angleY);
+    (*_matrix)[0][1] = 0.f;
+    (*_matrix)[1][1] = 1.f;
+    (*_matrix)[2][1] = 0.f;
+    (*_matrix)[0][2] = -std::sin(_angleY);
+    (*_matrix)[1][2] = 0.f;
+    (*_matrix)[2][2] = std::cos(_angleY);
 }
 
 template <class T>
@@ -106,15 +106,9 @@ void RotationMatrix3D(const Vector3f& _angle, Matrix4x4<T>* matrix)
     Matrix3x3<T> m3;
     RotationMatrix3D(_angle, &m3);
 
-    for (int i = 0; i < 3; i++)
-    {
-        for (int k = 0; k < 3; k++)
-        {
-            matrix[i][k] = m3[i][k];
-        }
-    }
+    MatrixCast<T,Matrix3x3<T>,Matrix4x4<T>>(m3, matrix);
     
-    matrix[3][3] = 1.f;
+    (*matrix)[3][3] = 1.f;
 }
 
 // Scaling //
@@ -133,15 +127,15 @@ void ScaleMatrix2D(const Vector2f& _scaling, Matrix3x3<T>* matrix)
     Matrix2x2<T> m2;
     ScaleMatrix2D(_scaling,&m2);
     MatrixCast<T,decltype(m2),decltype(*matrix)>()>(m2,matrix);
-    matrix[2][2] = 1.f;
+    (*matrix)[2][2] = 1.f;
 }
 
 template <class T>
-void ScaleMatrix3D(const Vector3f& _scaling, Matrix3x3<T>* matrix)
+void ScaleMatrix3D(const Vector3f& _scaling, Matrix3x3<T>* _matrix)
 {
-    for (size_t i = 0; i < matrix->data.size() - 1; ++i)
+    for (size_t i = 0; i < _matrix->data.size(); ++i)
     {
-        matrix[i][i] = _scaling[i];
+        (*_matrix)[i][i] = _scaling[i];
     }
 }
 
@@ -150,15 +144,15 @@ void ScaleMatrix3D(const Vector3f& _scaling, Matrix4x4<T>* _matrix)
 {
     Matrix3x3<T> m3;
     ScaleMatrix3D(_scaling, &m3);
-    MatrixCast<T,decltype(m3),decltype(*_matrix)>(m3,_matrix);
-    _matrix[3][3] = 1.f;
+    MatrixCast<T,Matrix3x3<T>,Matrix4x4<T>>(m3,_matrix);
+    (*_matrix)[3][3] = 1.f;
 }
 
 // Translation //
 template <class T>
 void TranslationMatrix2D(const Vector2f& _translation, Matrix2x2<T>* _matrix)
 {
-    _matrix[1] = _translation;
+    (*_matrix)[1] = _translation;
 }
 
 template <class T>
@@ -166,33 +160,33 @@ void TranslationMatrix2D(const Vector2f& _translation, Matrix3x3<T>* _matrix)
 {
     Matrix2x2<T> m2;
     TranslationMatrix2D(_translation, &m2);
-    MatrixCast<T,decltype(m2), decltype(*_matrix)>>(m2,_matrix);
-    _matrix[2][2] = 1.f;
+    MatrixCast<T,Matrix2x2<T>, Matrix3x3<T>>(m2,_matrix);
+    (*_matrix)[2][2] = 1.f;
 }
 
 template <class T>
 void TranslationMatrix3D(const Vector3f& _translation, Matrix3x3<T>* _matrix)
 {
-    _matrix[2] = _translation;
+    (*_matrix)[2] = _translation;
 }
 
 template <class T>
-void TranslationMatrix3D(const Vector2f& _translation, Matrix4x4<T>* _matrix)
+void TranslationMatrix3D(const Vector3f& _translation, Matrix4x4<T>* _matrix)
 {
     Matrix3x3<T> m2;
-    TranslationMatrix2D(_translation, &m2);
-    MatrixCast<T,decltype(m2),decltype(*_matrix)>(m2,_matrix);
-    _matrix[3][3] = 1.f;
+    TranslationMatrix3D(_translation, &m2);
+    MatrixCast<T,Matrix3x3<T>,Matrix4x4<T>>(m2,_matrix);
+    (*_matrix)[3][3] = 1.f;
 }
 
 
 // Graphic //
 template <typename T>
-void LookAtRh(const Vector3<T>& _eye, const Vector3<T>& _center, const Vector3<T>& _up, Matrix4x4<T>* _matrix)
+void LookAtRH(const Vector3<T>& _eye, const Vector3<T>& _center, const Vector3<T>& _up, Matrix4x4<T>* _matrix)
 {
-    Vector3<T> const f((_center - _eye).Normalize);
-    Vector3<T> const s(Vector3<T>::Cross(f, _up).Normalize);
-    Vector3<T> const u(Vector3<T>::Cross(s, f));
+    Vector3<T> f = (_center - _eye).Normalize();
+    Vector3<T> s = Vector3<T>::Cross(f, _up).Normalize();
+    Vector3<T> u(Vector3<T>::Cross(s, f));
 
     Matrix4x4<T> result = Matrix4x4<T>::Identity();
     result[0][0] = s.x;
@@ -208,7 +202,7 @@ void LookAtRh(const Vector3<T>& _eye, const Vector3<T>& _center, const Vector3<T
     result[3][1] = -Vector3<T>::Dot(u, _eye);
     result[3][2] = Vector3<T>::Dot(f, _eye);
 
-    *_matrix = result;
+    (*_matrix) = result;
 }
 
 
@@ -228,7 +222,7 @@ void PerspectiveMatrix(const float fov, const float aspect, const float Near, co
         {r00, 0.f, 0.f, 0.f},
         {0.f, r11, 0.f, 0.f},
         {0.f, 0.f, r22, -1.0f},
-        {0, 0, r32, 1.f}
+        {0, 0, r32, 0.f}
     };
 };
 
@@ -528,16 +522,18 @@ void Trs2D(const Vector2<T>& _translation, const T& _rotation,const Vector2<T>& 
 }
 
 template<typename T>
-void Trs3D(const Vector3<T>& _translation, const Vector3<T>& _rotation,const Vector3<T>& _scale,Matrix4x4<T>* _outModel)
+void Trs3D(const Vector3<T>& _translation, const Vector3<T>& _rotation,const Vector3<T>& _scale, Matrix4x4<T>* _outModel)
 {
-    Matrix3x3<T> rot;
-    Matrix3x3<T> scale;
+    Matrix4x4<T> rot;
+    Matrix4x4<T> scale;
+    Matrix4x4<T> translation;
 
+    TranslationMatrix3D(_translation,&translation);
     RotationMatrix3D(_rotation, &rot);
-    ScaleMatrix3D(_rotation, &scale);
+    ScaleMatrix3D(_scale, &scale);
     
     *_outModel = rot * scale;
-    *_outModel[Matrix4x4<T>::Size] = {_translation.x,_translation.y,_translation.z, static_cast<T>(1)};
+    (*_outModel)[Matrix4x4<T>::Size - 1] = { _translation.x, _translation.y, _translation.z, static_cast<T>(1) };
 }
 
 template<typename T>

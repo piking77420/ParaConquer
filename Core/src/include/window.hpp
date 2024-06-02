@@ -29,6 +29,8 @@ public:
 
     void OnResize();
 
+    float GetAspect() const;
+
     static inline Window* currentWindow;
 };
 END_PCCORE

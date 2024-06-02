@@ -148,12 +148,12 @@ using DataType = T;
     
     TOOLBOX_INLINE DataType& operator[](size_t index)
     {
-        return *(GetPtr() + index);
+        return *static_cast<T*>(&x + index);
     }
 
-    TOOLBOX_INLINE DataType operator[](size_t index) const
+    TOOLBOX_INLINE const DataType& operator[](size_t index) const
     {
-        return *(GetPtr() + index);
+        return *static_cast<const T*>(&x + index);
     }
     
     TOOLBOX_INLINE bool operator==(const Vector4& _other)

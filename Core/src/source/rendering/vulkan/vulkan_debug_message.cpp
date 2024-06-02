@@ -10,10 +10,11 @@ VkBool32 PC_CORE::VulkanDebugMessage::VulkanMessageDebug(VkDebugUtilsMessageSeve
     VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData)
 {
-    if (!PrintInfo && messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+    /*
+    if (!messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
     {
        return VK_FALSE;
-    }
+    }*/
     
     printf("Debug callback: %s\n", pCallbackData->pMessage);
     printf("  Severity %s\n", GetSeverity(messageSeverity));

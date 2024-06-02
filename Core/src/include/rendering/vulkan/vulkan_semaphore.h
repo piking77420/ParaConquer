@@ -11,7 +11,6 @@ class VulkanSemaphore
 {
 public:
     VkSemaphore semaphore = VK_NULL_HANDLE;
-
     
     void Init(const VkSemaphoreCreateInfo& semaphoreCreateInfo);
     

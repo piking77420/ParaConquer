@@ -12,12 +12,12 @@ App::App()
 {
     PC_LOG("App Init")
     windowHandle.Init();
-    ResourceManager::Init();
     
+    VulkanInterface::InitInterface(&windowHandle);
+    ResourceManager::Init();
     renderer.Init(&windowHandle);
 
     World::world = &world;
-
     const Entity entity = world.scene.CreateEntity();
     world.scene.AddComponent<Transform>(entity);
 }
@@ -26,8 +26,10 @@ App::~App()
 {
     PC_LOG("App Destroy")
     windowHandle.Destroy();
+    renderer.Destroy();
     ResourceManager::Destroy();
-
+    VulkanInterface::DestroyInterface();
+    
     delete ComponentRegister::componentRegisterMap;
 }
 

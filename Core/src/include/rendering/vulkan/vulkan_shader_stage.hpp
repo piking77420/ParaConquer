@@ -13,7 +13,7 @@ public:
 	
 	void Init(const std::vector<const ShaderSource*>& _shaderSource);
 
-	void Destroy(const VkDevice& _device);
+	void Destroy();
 
 private:
 	struct ShaderWithModule

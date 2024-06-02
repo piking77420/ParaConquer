@@ -9,7 +9,7 @@ BEGIN_PCCORE
 class VulkanBuffer
 {
 public:
-    void Destroy();
+    virtual void Destroy();
 
     VulkanBuffer() = default;
 

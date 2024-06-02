@@ -9,18 +9,6 @@ public:
     using DataType = T;
     using Vec = Vector4<DataType>;
     static constexpr size_t Size = 4;
-
-    static Matrix4x4 Identity()
-    {
-        Matrix4x4 result;
-
-        for (int i = 0; i < data.size(); i++)
-        {
-            result[i][i] = 1.f;
-        }
-
-        return result;
-    }
     
     std::array<Vec,Size> data;
 
@@ -28,6 +16,18 @@ public:
 
     ~Matrix4x4() = default;
 
+    static Matrix4x4 Identity()
+    {
+        Matrix4x4 result;
+        
+        for (int i = 0; i < Size; i++)
+        {
+            result[i][i] = 1.f;
+        }
+
+        return result;
+    }
+    
     constexpr Matrix4x4(const DataType x1, const DataType y1, const DataType z1, const DataType w1,
         const DataType x2, const DataType y2, const DataType z2, const DataType w2,
         const DataType x3, const DataType y3, const DataType z3, const DataType w3,
@@ -82,7 +82,7 @@ public:
         data[3] = _vec1;
     }
 
-    TOOLBOX_INLINE Vec operator[](size_t _size) const
+    TOOLBOX_INLINE const Vec& operator[](size_t _size) const
     {
         return data[_size];
     }

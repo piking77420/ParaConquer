@@ -9,12 +9,16 @@
 #include "log.hpp"
 
 using namespace PC_CORE;
+VulkanInterface::VulkanInterface()
+{
+    instance = this;
+}
+
+
 
 void VulkanInterface::Init(Window* _window)
 {
-    instance = this;
-    
-    vulkanInstance.Init();
+    instance->vulkanInstance.Init();
 #ifndef NDEBUG
     vulkanDebugMessage.Init(vulkanInstance.instance);
 #endif
@@ -109,6 +113,16 @@ uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
     }
 
     throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void VulkanInterface::InitInterface(Window* _window)
+{
+    instance->Init(_window);
+}
+
+void VulkanInterface::DestroyInterface()
+{
+    instance->Destroy();
 }
 
 void VulkanInterface::RecreateSwapChain(Window* _window)

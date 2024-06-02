@@ -2,18 +2,23 @@
 #include "vulkan/vulkan_interface.hpp"
 #include <GLFW/glfw3.h>
 
+#include "gpu_typedef.hpp"
+#include "resources/mesh.hpp"
 #include "vulkan\vulkan_vertex_buffer.hpp"
 #include "vulkan/vulkan_command_buffer.hpp"
+#include "vulkan/vulkan_descriptor_set_layout.hpp"
 #include "vulkan/vulkan_fence.hpp"
 #include "vulkan/vulkan_index_buffer.hpp"
 #include "vulkan/vulkan_pipeline.hpp"
+#include "vulkan/vulkan_pipeline_layout.hpp"
 #include "vulkan/vulkan_render_pass.hpp"
 #include "vulkan/vulkan_semaphore.h"
 #include "vulkan/vulkan_shader_stage.hpp"
+#include "vulkan/vulkan_uniform_buffer.h"
 
 
 BEGIN_PCCORE
-class Renderer
+    class Renderer
 {
 public:
     void Init(Window* _window);
@@ -31,9 +36,19 @@ private:
     
     VulkanPipeline m_BasePipeline;
     
-    VkPipelineLayout VkPipelineLayout = VK_NULL_HANDLE;
+    VulkankPipelineLayout m_VkPipelineLayout;
+
+    VulkanDescriptorSetLayout m_DescriptorSetLayout;
 
     VulkanShaderStage m_VulkanShaderStage;
+
+    UniformBufferObject UniformBufferObject;
+
+    VkDescriptorPool descriptorPool;
+    
+    std::vector<VulkanUniformBuffer> m_UniformBuffers;
+
+    std::vector<VkDescriptorSet> descriptorSets;
     
     std::vector<VulkanSemaphore> m_ImageAvailableSemaphore;
     
@@ -41,10 +56,8 @@ private:
     
     std::vector<VulkanFence> m_InFlightFence;
 
-    VulkanVertexBuffer m_VertexBuffer;
-
-    VulkanIndexBuffer m_IndexBuffer;
-
+    Mesh* sphere = nullptr; 
+    
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
     void RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex);
@@ -54,6 +67,14 @@ private:
     void CreateAsyncObject();
 
     void DestroyAsyncObject();
+
+    void CreateDescriptorSetLayout();
+
+    void UpdateUniformBuffer(uint32_t _currentFrame);
+
+    void CreateDescriptorPool();
+    
+    void CreateDescriptorSets();
 };
 
 END_PCCORE

@@ -51,3 +51,8 @@ void Window::OnResize()
     widht = static_cast<uint32_t>(NewWidth);
     height = static_cast<uint32_t>(NewHeight);
 }
+
+float Window::GetAspect() const
+{
+    return static_cast<float>(widht) / static_cast<float>(height);
+}

@@ -16,6 +16,8 @@ class VulkanInterface
 {
 public:
 
+    VulkanInterface();
+
     static inline VulkanInterface* instance = nullptr;
     
     static uint32_t GetCurrentFrame();
@@ -38,22 +40,28 @@ public:
     
     // to do move to physical device
     static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    static void InitInterface(Window* _window);
+
+    static void DestroyInterface();
     
     VulkanSwapchain vulkanSwapChapchain;
     
     VulkanCommandPool vulkanCommandPoolGraphic;
 
     VulkanCommandPool vulkanCommandPoolTransfert;
-
-    void Init(Window* _window);
-
-    void Destroy();
+    
     
     void RecreateSwapChain(Window* _window);
     
     VkImage GetImage(uint32_t _index);
 
 private:
+
+    void Init(Window* _window);
+
+    void Destroy();
+    
     uint32_t nbrOfImage = -1;
 
     uint32_t currentFrame = 0;

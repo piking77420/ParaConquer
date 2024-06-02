@@ -7,13 +7,17 @@ BEGIN_PCCORE
     class VulkanPipeline
 {
 public:
-    VkPipeline pipeline = VK_NULL_HANDLE;
-    
-
     void Init(const VkGraphicsPipelineCreateInfo* _vkGraphicsPipelineCreateInfo, const VulkanShaderStage& _vulkanShaderStage, const
               VkPipelineLayout& _pipelineLayout, const VkRenderPass _renderPass);
+
+    void Destroy();
+
+    VkPipeline& Get();
+
+    const VkPipeline Get() const;
     
 private:
+    VkPipeline m_Pipeline = VK_NULL_HANDLE;
 };
 
 END_PCCORE
