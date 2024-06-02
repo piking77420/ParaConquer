@@ -108,11 +108,11 @@ public:
     
     std::string ToString() const
     {
-        return data[0].x + " " + data[1].x + " " + data[2].x
+        return std::to_string(data[0].x) + " " + std::to_string(data[1].x) + " " + std::to_string(data[2].x)
+         + '\n'
+         + std::to_string(data[0].y) + " " + std::to_string(data[1].y) + " " + std::to_string(data[2].y)
          + '\n' +
-         + data[0].y + " " + data[1].y + " " + data[2].y
-         + '\n' +
-         + data[0].z + " " + data[1].z + " " + data[2].z
+          std::to_string(data[0].z) + " " + std::to_string(data[1].z) + " " + std::to_string(data[2].z)
          + '\n' ;
     }
 };

@@ -14,11 +14,10 @@ void ResourceManager::Init()
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
 
 
-    //ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube.obj");
-    //ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/quad.obj");
+    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube.obj");
+    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/quad.obj");
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/sphere.obj");
-    //ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/viking_room.obj");
-
+    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/viking_room.obj");
 }
 
 void ResourceManager::Destroy()

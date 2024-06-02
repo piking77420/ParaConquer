@@ -11,6 +11,17 @@
 using namespace PC_CORE;
 
 
+const std::vector<Vertex> vertices = {
+    {{-0.5f, -0.5f,0.f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f,0.f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.5f,0.f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.5f,0.f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+};
+const std::vector<uint32_t> indices = {
+    0, 1, 2, 2, 3, 0
+};
+
+
 void Renderer::Init(Window* _window)
 {
     m_CommandBuffers.SetNbrofAllocation(VulkanInterface::GetNbrOfImage());
@@ -18,11 +29,12 @@ void Renderer::Init(Window* _window)
 
     const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
-
-    sphere = ResourceManager::Get<Mesh>("sphere.obj");
-
+    
     m_VulkanShaderStage.Init({ vertex, frag });
     CreateAsyncObject();
+
+    vulkanVertexBuffer.Init(vertices);
+    vulkanIndexBuffer.Init(indices);
     
     m_UniformBuffers.resize(VulkanInterface::GetNbrOfImage());
     for(VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
@@ -55,6 +67,9 @@ void Renderer::Destroy()
     
     vkDestroyDescriptorPool(VulkanInterface::GetDevice().device, descriptorPool, nullptr);
     m_DescriptorSetLayout.Destroy();
+
+    vulkanIndexBuffer.Destroy();
+    vulkanVertexBuffer.Destroy();
 
     m_VulkanShaderStage.Destroy();
     m_VkPipelineLayout.Destroy();
@@ -168,16 +183,16 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     scissor.extent = m_VulkanInterface.vulkanSwapChapchain.swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    const VkBuffer vertexBuffers[] = {sphere->vulkanVertexBuffer.GetHandle()};
+    const VkBuffer vertexBuffers[] = {vulkanVertexBuffer.GetHandle()};
     const VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
         1, &descriptorSets[VulkanInterface::GetCurrentFrame()], 0, nullptr);
     
-    vkCmdBindIndexBuffer(commandBuffer, sphere->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(sphere->indicies.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, indices.size(), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
     
@@ -302,6 +317,7 @@ void Renderer::UpdateUniformBuffer(uint32_t _currentFrame)
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
     
     Vector3f pos(0.f,0.f,0.f);
     Vector3f rot(90.0f,90.0f,90.0f);

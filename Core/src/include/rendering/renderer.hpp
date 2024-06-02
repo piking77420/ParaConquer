@@ -56,8 +56,10 @@ private:
     
     std::vector<VulkanFence> m_InFlightFence;
 
-    Mesh* sphere = nullptr; 
+    VulkanIndexBuffer vulkanIndexBuffer;
     
+    VulkanVertexBuffer vulkanVertexBuffer;
+
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
     void RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex);

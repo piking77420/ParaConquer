@@ -109,6 +109,20 @@ public:
         return result;
     }
 
+    Matrix4x4 Transpose() const
+    {
+        Matrix4x4 result = 0;
+
+        for (size_t i = 0; i < 4; i++)
+        {
+            for (size_t j = 0; j < 4; j++)
+            {
+                result[i][j] = data[j][i];
+            }
+        }
+        return result;
+    }
+    
     Vec operator*(const Vec& _vector4)
     {
         Vec result = 0;

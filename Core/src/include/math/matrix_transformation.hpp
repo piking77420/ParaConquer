@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include "toolbox_typedef.hpp"
 
 template<typename D,typename F,typename T>
@@ -52,35 +53,49 @@ void RotationMatrix2D(float _angle, Matrix3x3<T>* _matrix)
 template <class T>
 void RotationXMatrix3D(float _angleX, Matrix3x3<T>* _matrix)
 {
-    (*_matrix)[0][0] = 1;
-    (*_matrix)[1][0] = 0;
-    (*_matrix)[2][0] = 0.f;
-    (*_matrix)[0][1] = 0;
-    (*_matrix)[1][1] = std::cos(_angleX);
-    (*_matrix)[2][1] = -std::sin(_angleX);
-    (*_matrix)[0][2] = 0.f;
-    (*_matrix)[1][2] = std::sin(_angleX);
-    (*_matrix)[2][2] = std::cos(_angleX);
+    (*_matrix)[0].x = static_cast<T>(1);
+    (*_matrix)[0].y = 0;
+    (*_matrix)[0].z = 0;
+
+    (*_matrix)[1].x = 0;
+    (*_matrix)[1].y = std::cos(_angleX);
+    (*_matrix)[1].z = std::sin(_angleX);
+
+    (*_matrix)[2].x = 0;
+    (*_matrix)[2].y = -std::sin(_angleX);
+    (*_matrix)[2].z = std::cos(_angleX);
 }
 
 template <class T>
 void RotationYMatrix3D(float _angleY, Matrix3x3<T>* _matrix)
 {
-    (*_matrix)[0][0] = std::cos(_angleY);
-    (*_matrix)[1][0] = 0.f;
-    (*_matrix)[2][0] = std::sin(_angleY);
-    (*_matrix)[0][1] = 0.f;
-    (*_matrix)[1][1] = 1.f;
-    (*_matrix)[2][1] = 0.f;
-    (*_matrix)[0][2] = -std::sin(_angleY);
-    (*_matrix)[1][2] = 0.f;
-    (*_matrix)[2][2] = std::cos(_angleY);
+    (*_matrix)[0].x = std::cos(_angleY);
+    (*_matrix)[0].y = 0;
+    (*_matrix)[0].z = -std::sin(_angleY);
+
+    (*_matrix)[1].x = 0;
+    (*_matrix)[1].y = static_cast<T>(1);
+    (*_matrix)[1].z = 0;
+
+    (*_matrix)[2].x = std::sin(_angleY);
+    (*_matrix)[2].y = 0;
+    (*_matrix)[2].z = std::cos(_angleY);
 }
 
 template <class T>
 void RotationZMatrix3D(float _angleZ, Matrix3x3<T>* _matrix)
 {
-    RotationMatrix2D<T>(_angleZ, _matrix);
+    (*_matrix)[0].x = std::cos(_angleZ);
+    (*_matrix)[0].y = std::sin(_angleZ);
+    (*_matrix)[0].z = 0;
+
+    (*_matrix)[1].x = -std::sin(_angleZ);
+    (*_matrix)[1].y = std::cos(_angleZ);
+    (*_matrix)[1].z = 0;
+
+    (*_matrix)[2].x = 0;
+    (*_matrix)[2].y = 0;
+    (*_matrix)[2].z = static_cast<T>(1);
 }
 
 template <class T>
@@ -91,6 +106,7 @@ void RotationMatrix3D(float _angleX, float _angleY, float _angleZ, Matrix3x3<T>*
     RotationYMatrix3D(_angleY, &y);
     RotationZMatrix3D(_angleZ, &z);
 
+    
     *matrix = x * y * z;
 }
 
@@ -209,19 +225,19 @@ void LookAtRH(const Vector3<T>& _eye, const Vector3<T>& _center, const Vector3<T
 template <typename T>
 void PerspectiveMatrix(const float fov, const float aspect, const float Near, const float Far, Matrix4x4<T>* _outMatrix)
 {
-    const T fFovRad = static_cast<T>(1) / std::tanf(fov / 2.f);
+    const T fFovRad = static_cast<T>(1) / std::tanf(fov / static_cast<T>(2.f));
     const T zdiff = Near - Far;
 
     const T r00 = fFovRad / aspect;
     const T r11 = fFovRad;
 
     const T r22 = (Far + Near) / zdiff;
-    const T r32 = (2 * Far * Near) / zdiff;
+    const T r32 = (static_cast<T>(2) * Far * Near) / zdiff;
 
     *_outMatrix = {
         {r00, 0.f, 0.f, 0.f},
         {0.f, r11, 0.f, 0.f},
-        {0.f, 0.f, r22, -1.0f},
+        {0.f, 0.f, r22, static_cast<T>(-1.0)},
         {0, 0, r32, 0.f}
     };
 };
