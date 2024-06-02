@@ -7,18 +7,22 @@
 
 using namespace PC_CORE;
 
-void VulkanCommandPool::Init(const VkDevice& _device, const VkCommandPoolCreateInfo* _vkCommandPoolCreateInfo)
+void VulkanCommandPool::Init(const VkCommandPoolCreateInfo* _vkCommandPoolCreateInfo)
 {
-	const VkResult result = vkCreateCommandPool(_device, _vkCommandPoolCreateInfo, nullptr, &m_CommandPool);
+	const VkDevice& device = VulkanInterface::GetDevice().device;
+
+	const VkResult result = vkCreateCommandPool(device, _vkCommandPoolCreateInfo, nullptr, &m_CommandPool);
 
 	VK_CHECK_ERROR(result,"vkCreateCommandPool")
 
 	Log::Debug("Command buffer pool created");
 }
 
-void VulkanCommandPool::Destroy(const VkDevice& _device)
+void VulkanCommandPool::Destroy()
 {
-	vkDestroyCommandPool(_device, m_CommandPool, nullptr);
+	const VkDevice& device = VulkanInterface::GetDevice().device;
+
+	vkDestroyCommandPool(device, m_CommandPool, nullptr);
 }
 
 void VulkanCommandPool::AllocCommandBuffer(size_t _nbr, VkCommandBuffer* _commandBufferPtr) const

@@ -9,9 +9,9 @@ BEGIN_PCCORE
 class VulkanCommandPool
 {
 public:
-	void Init(const VkDevice& _device, const VkCommandPoolCreateInfo* _vkCommandPoolCreateInfo);
+	void Init(const VkCommandPoolCreateInfo* _vkCommandPoolCreateInfo);
 
-	void Destroy(const VkDevice& _device);
+	void Destroy();
 
 	void AllocCommandBuffer(size_t _nbr, VkCommandBuffer*
 	                        _commandBufferPtr) const;

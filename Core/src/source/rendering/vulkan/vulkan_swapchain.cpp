@@ -118,34 +118,45 @@ void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
 }
 
 
-uint32_t VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,const uint32_t _qfamilyIndex,
+void VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,const uint32_t _qfamilyIndex,
                                const VkSurfaceKHR& _surface)
 {
-    Log::Debug("Creating SwapChain");
-    swapChainExtent = {widht, _height};
-
-    // Update surfaceCaps 
     PhysicalDevice& _physicalDevice = VulkanInterface::GetPhysicalDevice();
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice.physDevice, VulkanInterface::GetVulkanSurface().surfaceKhr, &_physicalDevice.surfaceCaps);
-
-    const VkDevice& device = VulkanInterface::GetDevice().device;
-
-    const VkSurfaceCapabilitiesKHR& SurfaceCaps = _physicalDevice.surfaceCaps;
+    surfaceFormatKhr = ChooseSurfaceFormatAndColorSpace(_physicalDevice.surfaceFormats);
     
-    const uint32_t numSwapChainImages = ChooseNumImages(SurfaceCaps);
+    const VkDevice& device = VulkanInterface::GetDevice().device;
+    const VkSurfaceCapabilitiesKHR& SurfaceCaps = _physicalDevice.surfaceCaps;
+    nbrOfImage = ChooseNumImages(SurfaceCaps);
+    
+ 
+    InitRenderPass();
+    InitSwapChain(widht, _height, _qfamilyIndex, _surface);
+}
+
+void VulkanSwapchain::InitSwapChain(uint32_t widht, uint32_t _height, const uint32_t _qfamilyIndex,
+    const VkSurfaceKHR& _surface)
+{
+     Log::Debug("Creating SwapChain");
+     swapChainExtent = {widht, _height};
+    
+    PhysicalDevice& _physicalDevice = VulkanInterface::GetPhysicalDevice();
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice.physDevice, VulkanInterface::GetVulkanSurface().surfaceKhr, &_physicalDevice.surfaceCaps);
+    
+    const VkDevice& device = VulkanInterface::GetDevice().device;
+    const VkSurfaceCapabilitiesKHR& SurfaceCaps = _physicalDevice.surfaceCaps;
+    // Update surfaceCaps 
 
     const std::vector<VkPresentModeKHR>& PresentModes = _physicalDevice.presentModes;
     const VkPresentModeKHR PresentMode = ChoosePresentMode(PresentModes);
-
-    surfaceFormatKhr = ChooseSurfaceFormatAndColorSpace(_physicalDevice.surfaceFormats);
-
+    
     const VkSwapchainCreateInfoKHR SwapChainCreateInfo =
     {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext = nullptr,
         .flags = 0,
         .surface = _surface,
-        .minImageCount = numSwapChainImages,
+        .minImageCount = nbrOfImage,
         .imageFormat = surfaceFormatKhr.format,
         .imageColorSpace = surfaceFormatKhr.colorSpace,
         .imageExtent = swapChainExtent,
@@ -167,9 +178,9 @@ uint32_t VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,con
     uint32_t NumSwapChainImages = 0;
     res = vkGetSwapchainImagesKHR(device, swapchainKhr, &NumSwapChainImages, NULL);
     VK_CHECK_ERROR(res, "vkGetSwapchainImagesKHR");
-    assert(numSwapChainImages <= NumSwapChainImages);
+    assert(nbrOfImage <= NumSwapChainImages);
     Log::Debug(
-        "Requested " + std::to_string(numSwapChainImages) + " images, created " + std::to_string(NumSwapChainImages) +
+        "Requested " + std::to_string(nbrOfImage) + " images, created " + std::to_string(NumSwapChainImages) +
         " images");
 
     swapChainImage.resize(NumSwapChainImages);
@@ -190,8 +201,14 @@ uint32_t VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,con
                                                 MipLevels);
     }
 
+
+    CreateFrameBuffer(device);
+}
+
+void VulkanSwapchain::InitRenderPass()
+{
     const Attachment color =
-        {
+    {
         .attachementIndex = AttachementIndex::Color00,
         .format = surfaceFormatKhr.format,
         .clearOnLoad = true,
@@ -202,12 +219,9 @@ uint32_t VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,con
 
     mainRenderPass.Init({ color });
 
-    CreateFrameBuffer(device);
-
-    return numSwapChainImages;
 }
 
-void VulkanSwapchain::Destroy()
+void VulkanSwapchain::DestroySwapChain()
 {
     const VkDevice& device = VulkanInterface::GetDevice().device;
     
@@ -217,6 +231,17 @@ void VulkanSwapchain::Destroy()
         vkDestroyImageView(device, i, nullptr);
     }
 
+    Log::Debug("Destroy swapChainFrammeBuffer SwapChain");
+    for (VkFramebuffer& i : swapChainFramebuffers)
+    {
+        vkDestroyFramebuffer(device, i, nullptr);
+    }
     Log::Debug("vkDestroySwapchainKHR");
     vkDestroySwapchainKHR(device, swapchainKhr, nullptr);
+}
+
+void VulkanSwapchain::Destroy()
+{
+    DestroySwapChain();
+    mainRenderPass.Destroy();
 }

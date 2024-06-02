@@ -281,8 +281,6 @@ void Renderer::CreateAsyncObject()
         m_RenderFinishedSemaphore[i].Init(semaphoreInfo);
         m_InFlightFence[i].Init(fenceInfo);
     }
-
-    CreateDescriptorSetLayout();
 }
 
 void Renderer::DestroyAsyncObject()

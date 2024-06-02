@@ -21,10 +21,18 @@ public:
     
     VkSurfaceFormatKHR surfaceFormatKhr;
 
-    uint32_t Init(uint32_t widht, uint32_t _height, const uint32_t _qfamilyIndex, const VkSurfaceKHR& _surface);
+    uint32_t nbrOfImage = -1;
+
+    void Init(uint32_t widht, uint32_t _height, const uint32_t _qfamilyIndex, const VkSurfaceKHR& _surface);
 
     void Destroy();
     
+    void InitSwapChain(uint32_t widht, uint32_t _height, const uint32_t _qfamilyIndex, const VkSurfaceKHR& _surface);
+
+    void InitRenderPass();
+
+    void DestroySwapChain();
+
 private:
     uint32_t ChooseNumImages(const VkSurfaceCapabilitiesKHR& Capabilities);
     

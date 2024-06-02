@@ -51,7 +51,6 @@ public:
 
     VulkanCommandPool vulkanCommandPoolTransfert;
     
-    
     void RecreateSwapChain(Window* _window);
     
     VkImage GetImage(uint32_t _index);
@@ -62,8 +61,6 @@ private:
 
     void Destroy();
     
-    uint32_t nbrOfImage = -1;
-
     uint32_t currentFrame = 0;
     
     VulkanInstance vulkanInstance;

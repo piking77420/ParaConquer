@@ -14,8 +14,6 @@ VulkanInterface::VulkanInterface()
     instance = this;
 }
 
-
-
 void VulkanInterface::Init(Window* _window)
 {
     instance->vulkanInstance.Init();
@@ -47,7 +45,7 @@ void VulkanInterface::Init(Window* _window)
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         .queueFamilyIndex = vulkanDevice.graphicsQueue.index
     };
-    vulkanCommandPoolGraphic.Init(vulkanDevice.device, &vkCommandPoolCreateInfoGraphic);
+    vulkanCommandPoolGraphic.Init(&vkCommandPoolCreateInfoGraphic);
 
     const VkCommandPoolCreateInfo vkCommandPoolCreateInfoTransfer =
     {
@@ -56,16 +54,17 @@ void VulkanInterface::Init(Window* _window)
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         .queueFamilyIndex = vulkanDevice.transferQueue.index
     };
-    vulkanCommandPoolTransfert.Init(vulkanDevice.device, &vkCommandPoolCreateInfoTransfer);
+    vulkanCommandPoolTransfert.Init(&vkCommandPoolCreateInfoTransfer);
     
     // get the nbr of image for the swap chain
-    nbrOfImage = vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
+    vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
 }
 
 void VulkanInterface::Destroy()
 {
     vulkanSwapChapchain.Destroy();
-    vulkanCommandPoolGraphic.Destroy(vulkanDevice.device);
+    vulkanCommandPoolGraphic.Destroy();
+    vulkanCommandPoolTransfert.Destroy();
 
     vmaDestroyAllocator(vmaAllocator);
     vulkanDevice.Destroy();
@@ -127,8 +126,8 @@ void VulkanInterface::DestroyInterface()
 
 void VulkanInterface::RecreateSwapChain(Window* _window)
 {
-    vulkanSwapChapchain.Destroy();
-    vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
+    vulkanSwapChapchain.DestroySwapChain();
+    vulkanSwapChapchain.InitSwapChain(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
 }
 
 
@@ -139,12 +138,12 @@ uint32_t VulkanInterface::GetCurrentFrame()
 
 uint32_t VulkanInterface::GetNbrOfImage()
 {
-    return instance->nbrOfImage;
+    return instance->vulkanSwapChapchain.nbrOfImage;
 }
 
 void VulkanInterface::ComputeNextFrame()
 {
-    instance->currentFrame = (instance->currentFrame + 1) % instance->nbrOfImage;
+    instance->currentFrame = (instance->currentFrame + 1) % instance->vulkanSwapChapchain.nbrOfImage;
 }
 
 VulkanDevice VulkanInterface::GetDevice()
