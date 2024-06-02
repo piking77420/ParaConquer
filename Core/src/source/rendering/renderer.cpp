@@ -142,11 +142,11 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_VulkanInterface.vulkanSwapChapchain.mainRenderPass.renderPass;
-    renderPassInfo.framebuffer = m_VulkanInterface.GetSwapChainFramebuffer(imageIndex);
+    renderPassInfo.framebuffer = VulkanInterface::GetSwapChainFramebuffer(imageIndex);
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = m_VulkanInterface.vulkanSwapChapchain.swapChainExtent;
 
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    const VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
@@ -296,13 +296,6 @@ void Renderer::DestroyAsyncObject()
     
 }
 
-void Renderer::CreateDescriptorSetLayout()
-{
-    VkDescriptorSetLayoutBinding uboLayoutBinding = VulkanUniformBuffer::GetLayoutBinding(0,1 ,
-        VK_SHADER_STAGE_VERTEX_BIT);
-    m_DescriptorSetLayout.Init({uboLayoutBinding});
-}
-
 void Renderer::UpdateUniformBuffer(uint32_t _currentFrame)
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
@@ -324,6 +317,13 @@ void Renderer::UpdateUniformBuffer(uint32_t _currentFrame)
 
     m_UniformBuffers[_currentFrame].Update(&UniformBufferObject.model.data[0].x,sizeof(UniformBufferObject));
     
+}
+
+void Renderer::CreateDescriptorSetLayout()
+{
+    VkDescriptorSetLayoutBinding uboLayoutBinding = VulkanUniformBuffer::GetLayoutBinding(0,1 ,
+        VK_SHADER_STAGE_VERTEX_BIT);
+    m_DescriptorSetLayout.Init({uboLayoutBinding});
 }
 
 void Renderer::CreateDescriptorPool()
