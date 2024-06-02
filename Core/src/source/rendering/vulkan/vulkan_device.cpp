@@ -57,7 +57,7 @@ void VulkanDevice::Init(const VulkanPhysicalDevices& _physicalDevices)
     constexpr std::array<const char*, 2> DevExts =
     {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
+        VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
     };
     
     if (physicalDevice.features.geometryShader == VK_FALSE)

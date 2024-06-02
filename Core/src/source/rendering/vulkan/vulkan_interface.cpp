@@ -1,4 +1,7 @@
 ﻿#include "rendering\vulkan\vulkan_interface.hpp"
+#define VMA_IMPLEMENTATION
+#define VMA_VULKAN_VERSION 1003000 // Vulkan 1.2
+#include <vma/vk_mem_alloc.h>
 
 #include <stacktrace>
 
@@ -19,6 +22,19 @@ void VulkanInterface::Init(Window* _window)
     VulkanPhysicalDevices.Init(vulkanInstance.instance, vulkanSurface.surfaceKhr);
     VulkanPhysicalDevices.SelectDevice(VK_QUEUE_GRAPHICS_BIT,true);
     vulkanDevice.Init(VulkanPhysicalDevices);
+
+    VmaVulkanFunctions vulkanFunctions = {};
+    vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+    vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+    VmaAllocatorCreateInfo allocatorCreateInfo = {};
+    allocatorCreateInfo.physicalDevice = VulkanPhysicalDevices.GetCurrentDevice().physDevice;
+    allocatorCreateInfo.device = vulkanDevice.device;
+    allocatorCreateInfo.instance = vulkanInstance.instance;
+    allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+    
+    
+    vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
 
     const VkCommandPoolCreateInfo vkCommandPoolCreateInfoGraphic =
     {
@@ -47,6 +63,7 @@ void VulkanInterface::Destroy()
     vulkanSwapChapchain.Destroy();
     vulkanCommandPoolGraphic.Destroy(vulkanDevice.device);
 
+    vmaDestroyAllocator(vmaAllocator);
     vulkanDevice.Destroy();
     vulkanSurface.Destroy(vulkanInstance.instance);
 #ifndef NDEBUG
@@ -73,6 +90,11 @@ VkFramebuffer VulkanInterface::GetSwapChainFramebuffer(uint32_t _index)
 VulkanSurface VulkanInterface::GetVulkanSurface()
 {
     return instance->vulkanSurface;
+}
+
+VmaAllocator VulkanInterface::GetAllocator()
+{
+    return instance->vmaAllocator;
 }
 
 uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)

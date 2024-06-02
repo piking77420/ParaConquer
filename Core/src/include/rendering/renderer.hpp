@@ -35,11 +35,11 @@ private:
 
     VulkanShaderStage m_VulkanShaderStage;
     
-    VulkanSemaphore m_ImageAvailableSemaphore;
+    std::vector<VulkanSemaphore> m_ImageAvailableSemaphore;
     
-    VulkanSemaphore m_RenderFinishedSemaphore;
+    std::vector<VulkanSemaphore> m_RenderFinishedSemaphore;
     
-    VulkanFence m_InFlightFence;
+    std::vector<VulkanFence> m_InFlightFence;
 
     VulkanVertexBuffer m_VertexBuffer;
 

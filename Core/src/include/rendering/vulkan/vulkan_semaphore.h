@@ -10,18 +10,13 @@ BEGIN_PCCORE
 class VulkanSemaphore
 {
 public:
-    void Init(const VkSemaphoreCreateInfo& semaphoreCreateInfo, size_t nbr);
+    VkSemaphore semaphore = VK_NULL_HANDLE;
 
-    VkSemaphore& operator[](size_t index);
-
-    const VkSemaphore& operator[](size_t index) const;
-
-    VkSemaphore* GetPtr();
-
+    
+    void Init(const VkSemaphoreCreateInfo& semaphoreCreateInfo);
+    
     void Destroy();
-
 private:
-    std::vector<VkSemaphore> m_Semaphores;
 };
 
 END_PCCORE

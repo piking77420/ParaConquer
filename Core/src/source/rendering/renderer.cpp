@@ -60,12 +60,12 @@ void Renderer::RenderViewPort()
 {
     const VkDevice& device = VulkanInterface::GetDevice().device;
 
-    vkWaitForFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences, VK_TRUE, UINT64_MAX);
     
     uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(device, m_VulkanInterface.vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device, m_VulkanInterface.vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore, VK_NULL_HANDLE, &imageIndex);
     
-    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()]);
+    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences);
 
     vkResetCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()],0);
     RecordCommandBuffers(m_CommandBuffers[VulkanInterface::GetCurrentFrame()], imageIndex);
@@ -74,7 +74,7 @@ void Renderer::RenderViewPort()
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 
-    const VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()]};
+    const VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -83,12 +83,12 @@ void Renderer::RenderViewPort()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
 
-    const VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore[VulkanInterface::GetCurrentFrame()]};
+    const VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore[VulkanInterface::GetCurrentFrame()].semaphore};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
     
 
-    if (vkQueueSubmit(VulkanInterface::GetDevice().graphicsQueue.Queue, 1, &submitInfo, m_InFlightFence[VulkanInterface::GetCurrentFrame()]) != VK_SUCCESS)
+    if (vkQueueSubmit(VulkanInterface::GetDevice().graphicsQueue.Queue, 1, &submitInfo, m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
@@ -260,15 +260,29 @@ void Renderer::CreateAsyncObject()
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     // make the fence to not block at the start of the first frame to avoid to wait the fence infinitely
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    const size_t nbrOfImage = VulkanInterface::GetNbrOfImage();
+    m_ImageAvailableSemaphore.resize(nbrOfImage);
+    m_RenderFinishedSemaphore.resize(nbrOfImage);
+    m_InFlightFence.resize(nbrOfImage);
     
-    m_ImageAvailableSemaphore.Init(semaphoreInfo, VulkanInterface::GetNbrOfImage());
-    m_RenderFinishedSemaphore.Init(semaphoreInfo, VulkanInterface::GetNbrOfImage());
-    m_InFlightFence.Init(fenceInfo, VulkanInterface::GetNbrOfImage());
+    for (size_t i = 0; i <  VulkanInterface::GetNbrOfImage(); i++)
+    {
+        m_ImageAvailableSemaphore[i].Init(semaphoreInfo);
+        m_RenderFinishedSemaphore[i].Init(semaphoreInfo);
+        m_InFlightFence[i].Init(fenceInfo);
+    }
 }
 
 void Renderer::DestroyAsyncObject()
 {
-    m_RenderFinishedSemaphore.Destroy();
-    m_InFlightFence.Destroy();
-    m_ImageAvailableSemaphore.Destroy();
+    const size_t nbrOfImage = VulkanInterface::GetNbrOfImage();
+    
+    for (size_t i = 0; i <  VulkanInterface::GetNbrOfImage(); i++)
+    {
+        m_ImageAvailableSemaphore[i].Destroy();
+        m_RenderFinishedSemaphore[i].Destroy();
+        m_InFlightFence[i].Destroy();
+    }
+    
 }

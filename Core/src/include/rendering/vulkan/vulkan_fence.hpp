@@ -8,18 +8,11 @@ class VulkanFence
 {
 public:
 
-    void Init(const VkFenceCreateInfo& _semaphoreCreateInfo, size_t _nbr);
-
-    VkFence& operator[](size_t _index);
-
-    const VkFence& operator[](size_t _index) const;
-
-    VkFence* GetPtr();
-
-    void Destroy();
+    VkFence fences = VK_NULL_HANDLE;
     
-private:
-    std::vector<VkFence> m_Fences;
+    void Init(const VkFenceCreateInfo& _semaphoreCreateInfo);
+    
+    void Destroy();
 };
 
 END_PCCORE

@@ -8,7 +8,6 @@ BEGIN_PCCORE
 class VulkanIndexBuffer : public VulkanBuffer
 {
 public:
-
     void Init(const std::vector<uint32_t>& _indicies);
     
 };

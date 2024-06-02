@@ -4,6 +4,7 @@
 #include "vulkan_instance.hpp"
 #include "vulkan_surface.hpp"
 #include <GLFW/glfw3.h>
+#include <vma/vk_mem_alloc.h>
 
 #include "vulkan_command_pool.hpp"
 #include "vulkan_device.hpp"
@@ -32,6 +33,8 @@ public:
     static VkFramebuffer GetSwapChainFramebuffer(uint32_t _index);
 
     static VulkanSurface GetVulkanSurface();
+
+    static VmaAllocator GetAllocator();
     
     // to do move to physical device
     static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -51,8 +54,6 @@ public:
     VkImage GetImage(uint32_t _index);
 
 private:
-
-
     uint32_t nbrOfImage = -1;
 
     uint32_t currentFrame = 0;
@@ -65,9 +66,10 @@ private:
     VulkanPhysicalDevices VulkanPhysicalDevices;
     
     VulkanDevice vulkanDevice;
-
-
+    
     VulkanSurface vulkanSurface;
+
+    VmaAllocator vmaAllocator;
     
 };
 
