@@ -8,16 +8,24 @@
 
 using namespace PC_CORE;
 
+Texture::~Texture()
+{
+    vulkanTexture.Destroy();
+}
+
 void Texture::Load(const fs::path& path)
 {
-    int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(path.generic_string().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
+    stbi_uc* pixels = stbi_load(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
+    VkDeviceSize dataImageSize=  {};
+    dataImageSize = textureSize.x * textureSize.y * 4;
 
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");
         throw std::runtime_error("failed to load texture image!");
     }
-    
+
+
+    vulkanTexture.Init(pixels, dataImageSize, textureSize);
+
 }

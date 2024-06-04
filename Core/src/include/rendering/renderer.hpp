@@ -59,6 +59,7 @@ private:
     VulkanIndexBuffer vulkanIndexBuffer;
     
     VulkanVertexBuffer vulkanVertexBuffer;
+    
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 

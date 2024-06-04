@@ -1,2 +1,1 @@
-﻿  main.cpp
-  ParaConquer.vcxproj -> D:\Data\Project\ParaConquer\x64\Debug\ParaConquer.exe
+﻿LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'Core.lib'

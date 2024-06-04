@@ -65,6 +65,7 @@
     <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_stage.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_surface.hpp" />
     <ClInclude Include="src\include\rendering\vulkan\vulkan_swapchain.hpp" />
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_wrapper.hpp" />
     <ClInclude Include="src\include\resources\mesh.hpp" />
     <ClInclude Include="src\include\resources\resource.hpp" />
     <ClInclude Include="src\include\resources\resource_manager.hpp" />
@@ -123,7 +124,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -199,7 +200,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -275,7 +276,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -353,7 +354,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -429,7 +430,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -506,7 +507,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -582,7 +583,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -658,7 +659,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -742,7 +743,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -783,6 +784,7 @@
     <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_stage.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_surface.cpp" />
     <ClCompile Include="src\source\rendering\vulkan\vulkan_swapchain.cpp" />
+    <ClCompile Include="src\source\rendering\vulkan\vulkan_wrapper.cpp" />
     <ClCompile Include="src\source\resources\mesh.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -822,7 +824,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -901,7 +903,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -978,7 +980,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -1054,7 +1056,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -1130,7 +1132,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -1206,7 +1208,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -1282,7 +1284,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -1358,7 +1360,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -1434,7 +1436,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>

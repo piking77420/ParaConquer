@@ -21,8 +21,7 @@ protected:
     VkBuffer m_Buffer = VK_NULL_HANDLE;
     VmaAllocation m_Allocation = VK_NULL_HANDLE;
 
-    static void CreateBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocation,VkBufferUsageFlags _vkBufferUsageFlags,
-        VmaMemoryUsage _vmaMemoryUsage,void const* data, size_t _size);
+
 };
 
 END_PCCORE

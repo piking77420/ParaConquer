@@ -1,12 +1,13 @@
 ﻿#include "rendering/vulkan/vulkan_uniform_buffer.h"
 
 #include "rendering/vulkan/vulkan_interface.hpp"
+#include "rendering/vulkan/vulkan_wrapper.hpp"
 
 using namespace PC_CORE;
 
 void VulkanUniformBuffer::Init(void const* _data, size_t _size)
 {
-    CreateBuffer(&m_Buffer,&m_Allocation, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU,_data, _size);
+    CreateBufferVma(&m_Buffer,&m_Allocation, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU,_data, _size);
     vmaMapMemory(VulkanInterface::GetAllocator(), m_Allocation, &m_MapMemory);
     
 }
