@@ -6,6 +6,7 @@
 #include "app.hpp"
 #include "log.hpp"
 #include "math/matrix_transformation.hpp"
+#include "rendering/vulkan/vulkan_texture_sampler.hpp"
 #include "resources/resource_manager.hpp"
 
 using namespace PC_CORE;
@@ -24,13 +25,15 @@ const std::vector<uint32_t> indices = {
 
 void Renderer::Init(Window* _window)
 {
-    m_CommandBuffers.SetNbrofAllocation(VulkanInterface::GetNbrOfImage());
-    m_VulkanInterface.vulkanCommandPoolGraphic.AllocCommandBuffer(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.GetPtr());
+    m_CommandBuffers.resize(VulkanInterface::GetNbrOfImage());
+    VulkanInterface::vulkanCommandPoolGraphic.AllocCommandBuffer(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.data());
 
     const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
     
     m_VulkanShaderStage.Init({ vertex, frag });
+    diamondtexture = ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
+    
     CreateAsyncObject();
 
     vulkanVertexBuffer.Init(vertices);
@@ -52,7 +55,7 @@ void Renderer::RecreateSwapChain(Window* _window)
 {
     vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
 
-    m_VulkanInterface.RecreateSwapChain(_window);
+    VulkanInterface::RecreateSwapChain(_window);
 }
 
 void Renderer::Destroy()
@@ -84,7 +87,7 @@ void Renderer::RenderViewPort()
     vkWaitForFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences, VK_TRUE, UINT64_MAX);
     
     uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(device, m_VulkanInterface.vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore, VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device, VulkanInterface::vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore, VK_NULL_HANDLE, &imageIndex);
     
     vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences);
 
@@ -123,7 +126,7 @@ void Renderer::RenderViewPort()
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    const VkSwapchainKHR swapChains[] = {m_VulkanInterface.vulkanSwapChapchain.swapchainKhr};
+    const VkSwapchainKHR swapChains[] = {VulkanInterface::vulkanSwapChapchain.swapchainKhr};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -156,10 +159,10 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_VulkanInterface.vulkanSwapChapchain.mainRenderPass.renderPass;
+    renderPassInfo.renderPass = VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass;
     renderPassInfo.framebuffer = VulkanInterface::GetSwapChainFramebuffer(imageIndex);
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = m_VulkanInterface.vulkanSwapChapchain.swapChainExtent;
+    renderPassInfo.renderArea.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
 
     const VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
@@ -172,15 +175,15 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(m_VulkanInterface.vulkanSwapChapchain.swapChainExtent.width);
-    viewport.height = static_cast<float>(m_VulkanInterface.vulkanSwapChapchain.swapChainExtent.height);
+    viewport.width = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.width);
+    viewport.height = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = m_VulkanInterface.vulkanSwapChapchain.swapChainExtent;
+    scissor.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     const VkBuffer vertexBuffers[] = {vulkanVertexBuffer.GetHandle()};
@@ -271,7 +274,7 @@ void Renderer::CreateBasicGraphiPipeline()
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     m_BasePipeline.Init(&pipelineInfo, m_VulkanShaderStage, m_VkPipelineLayout.Get(),
-        m_VulkanInterface.vulkanSwapChapchain.mainRenderPass.renderPass);
+        VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass);
     
 }
 
@@ -339,19 +342,22 @@ void Renderer::CreateDescriptorSetLayout()
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding = VulkanUniformBuffer::GetLayoutBinding(0,1 ,
         VK_SHADER_STAGE_VERTEX_BIT);
-    m_DescriptorSetLayout.Init({uboLayoutBinding});
+    VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(0,1,VK_SHADER_STAGE_FRAGMENT_BIT);
+    m_DescriptorSetLayout.Init({uboLayoutBinding , samplerLayoutBinding});
 }
 
 void Renderer::CreateDescriptorPool()
 {
-    VkDescriptorPoolSize poolSize{};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
-    
+    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
+
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = 1;
-    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
 
     const VkResult result = vkCreateDescriptorPool(VulkanInterface::GetDevice().device, &poolInfo, nullptr, &descriptorPool);
@@ -377,20 +383,35 @@ void Renderer::CreateDescriptorSets()
 
     for (size_t i = 0; i < VulkanInterface::GetNbrOfImage(); i++)
     {
+        
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = m_UniformBuffers[i].GetHandle();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        VkWriteDescriptorSet descriptorWrite{};
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = descriptorSets[i];
-        descriptorWrite.dstBinding = 0;
-        descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrite.descriptorCount = 1;
-        descriptorWrite.pBufferInfo = &bufferInfo;
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
-        vkUpdateDescriptorSets(VulkanInterface::GetDevice().device, 1, &descriptorWrite, 0, nullptr);
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = diamondtexture->vulkanTexture.textureImageView;
+        imageInfo.sampler = diamondtexture->vulkanTexture.vulkanTextureSampler.textureSampler;
+        
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = descriptorSets[i];
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].descriptorCount = 1;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = descriptorSets[i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].pImageInfo = &imageInfo;
+        
+       vkUpdateDescriptorSets(VulkanInterface::GetDevice().device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
 }

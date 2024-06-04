@@ -9,14 +9,12 @@
 #include "log.hpp"
 
 using namespace PC_CORE;
-VulkanInterface::VulkanInterface()
-{
-    instance = this;
-}
+
 
 void VulkanInterface::Init(Window* _window)
 {
-    instance->vulkanInstance.Init();
+    
+    vulkanInstance.Init();
 #ifndef NDEBUG
     vulkanDebugMessage.Init(vulkanInstance.instance);
 #endif
@@ -82,27 +80,27 @@ VkImage VulkanInterface::GetImage(uint32_t _index)
 
 VkSurfaceFormatKHR VulkanInterface::GetSwapChainImageFormat()
 {
-    return instance->vulkanSwapChapchain.surfaceFormatKhr;
+    return vulkanSwapChapchain.surfaceFormatKhr;
 }
 
 VkFramebuffer VulkanInterface::GetSwapChainFramebuffer(uint32_t _index)
 {
-    return instance->vulkanSwapChapchain.swapChainFramebuffers.at(_index);
+    return vulkanSwapChapchain.swapChainFramebuffers.at(_index);
 }
 
 VulkanSurface VulkanInterface::GetVulkanSurface()
 {
-    return instance->vulkanSurface;
+    return vulkanSurface;
 }
 
 VmaAllocator VulkanInterface::GetAllocator()
 {
-    return instance->vmaAllocator;
+    return vmaAllocator;
 }
 
 uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
-    const VkPhysicalDeviceMemoryProperties& memProperties = instance->VulkanPhysicalDevices.GetCurrentDevice().memProps;
+    const VkPhysicalDeviceMemoryProperties& memProperties = VulkanPhysicalDevices.GetCurrentDevice().memProps;
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
     {
@@ -114,15 +112,6 @@ uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void VulkanInterface::InitInterface(Window* _window)
-{
-    instance->Init(_window);
-}
-
-void VulkanInterface::DestroyInterface()
-{
-    instance->Destroy();
-}
 
 void VulkanInterface::RecreateSwapChain(Window* _window)
 {
@@ -133,26 +122,26 @@ void VulkanInterface::RecreateSwapChain(Window* _window)
 
 uint32_t VulkanInterface::GetCurrentFrame()
 {
-    return instance->currentFrame;
+    return currentFrame;
 }
 
 uint32_t VulkanInterface::GetNbrOfImage()
 {
-    return instance->vulkanSwapChapchain.nbrOfImage;
+    return vulkanSwapChapchain.nbrOfImage;
 }
 
 void VulkanInterface::ComputeNextFrame()
 {
-    instance->currentFrame = (instance->currentFrame + 1) % instance->vulkanSwapChapchain.nbrOfImage;
+    currentFrame = (currentFrame + 1) % vulkanSwapChapchain.nbrOfImage;
 }
 
 VulkanDevice VulkanInterface::GetDevice()
 {
-    return instance->vulkanDevice;
+    return vulkanDevice;
 }
 
 PhysicalDevice& VulkanInterface::GetPhysicalDevice()
 {
-    return instance->VulkanPhysicalDevices.GetCurrentDevice();
+    return VulkanPhysicalDevices.GetCurrentDevice();
 }
 

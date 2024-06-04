@@ -5,6 +5,7 @@
 
 #include "log.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
+#include "rendering/vulkan/vulkan_wrapper.hpp"
 
 using namespace PC_CORE;
 
@@ -61,38 +62,6 @@ VkSurfaceFormatKHR VulkanSwapchain::ChooseSurfaceFormatAndColorSpace(
     return SurfaceFormats[0];
 }
 
-VkImageView VulkanSwapchain::CreateImageView(VkDevice Device, VkImage Image, VkFormat Format,
-                                             VkImageAspectFlags AspectFlags, VkImageViewType ViewType,
-                                             uint32_t LayerCount, uint32_t mipLevels)
-{
-    const VkImageViewCreateInfo ViewInfo =
-    {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .image = Image,
-        .viewType = ViewType,
-        .format = Format,
-        .components = {
-            .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .a = VK_COMPONENT_SWIZZLE_IDENTITY
-        },
-        .subresourceRange = {
-            .aspectMask = AspectFlags,
-            .baseMipLevel = 0,
-            .levelCount = mipLevels,
-            .baseArrayLayer = 0,
-            .layerCount = LayerCount
-        }
-    };
-
-    VkImageView ImageView = VK_NULL_HANDLE;
-    const VkResult res = vkCreateImageView(Device, &ViewInfo, NULL, &ImageView);
-    VK_CHECK_ERROR(res, "vkCreateImageView");
-    return ImageView;
-}
 
 void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
 {
@@ -196,9 +165,7 @@ void VulkanSwapchain::InitSwapChain(uint32_t widht, uint32_t _height, const uint
 
     for (uint32_t i = 0; i < NumSwapChainImages; i++)
     {
-        swapChainImageView[i] = CreateImageView(device, swapChainImage[i], surfaceFormatKhr.format,
-                                                VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, LayerCount,
-                                                MipLevels);
+        CreateImageView(swapChainImage[i], surfaceFormatKhr.format,&swapChainImageView[i]);
     }
 
 

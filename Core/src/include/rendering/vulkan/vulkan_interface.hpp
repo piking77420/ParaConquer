@@ -16,9 +16,9 @@ class VulkanInterface
 {
 public:
 
-    VulkanInterface();
+    static void Init(Window* _window);
 
-    static inline VulkanInterface* instance = nullptr;
+    static void Destroy();
     
     static uint32_t GetCurrentFrame();
 
@@ -40,41 +40,33 @@ public:
     
     // to do move to physical device
     static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    
+    static inline VulkanSwapchain vulkanSwapChapchain;
+    
+    static inline VulkanCommandPool vulkanCommandPoolGraphic;
 
-    static void InitInterface(Window* _window);
-
-    static void DestroyInterface();
+    static inline VulkanCommandPool vulkanCommandPoolTransfert;
     
-    VulkanSwapchain vulkanSwapChapchain;
+    static void RecreateSwapChain(Window* _window);
     
-    VulkanCommandPool vulkanCommandPoolGraphic;
-
-    VulkanCommandPool vulkanCommandPoolTransfert;
-    
-    void RecreateSwapChain(Window* _window);
-    
-    VkImage GetImage(uint32_t _index);
+    static VkImage GetImage(uint32_t _index);
 
 private:
-
-    void Init(Window* _window);
-
-    void Destroy();
     
-    uint32_t currentFrame = 0;
+    static inline uint32_t currentFrame = 0;
     
-    VulkanInstance vulkanInstance;
+    static inline VulkanInstance vulkanInstance;
 #ifndef NDEBUG
-    VulkanDebugMessage vulkanDebugMessage;
+    static inline VulkanDebugMessage vulkanDebugMessage;
 #endif
     
-    VulkanPhysicalDevices VulkanPhysicalDevices;
+    static inline VulkanPhysicalDevices VulkanPhysicalDevices;
     
-    VulkanDevice vulkanDevice;
+    static inline VulkanDevice vulkanDevice;
     
-    VulkanSurface vulkanSurface;
+    static inline VulkanSurface vulkanSurface;
 
-    VmaAllocator vmaAllocator;
+    static inline VmaAllocator vmaAllocator;
     
 };
 

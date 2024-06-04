@@ -4,8 +4,8 @@
 
 #include "gpu_typedef.hpp"
 #include "resources/mesh.hpp"
+#include "resources/texture.hpp"
 #include "vulkan\vulkan_vertex_buffer.hpp"
-#include "vulkan/vulkan_command_buffer.hpp"
 #include "vulkan/vulkan_descriptor_set_layout.hpp"
 #include "vulkan/vulkan_fence.hpp"
 #include "vulkan/vulkan_index_buffer.hpp"
@@ -30,9 +30,7 @@ public:
     void RenderViewPort();
 
 private:
-    VulkanInterface m_VulkanInterface = {};
-
-    VulkanCommandBuffer m_CommandBuffers;
+    std::vector<VkCommandBuffer> m_CommandBuffers;
     
     VulkanPipeline m_BasePipeline;
     
@@ -59,6 +57,8 @@ private:
     VulkanIndexBuffer vulkanIndexBuffer;
     
     VulkanVertexBuffer vulkanVertexBuffer;
+
+    Texture* diamondtexture = nullptr;
     
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);

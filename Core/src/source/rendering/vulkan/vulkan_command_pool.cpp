@@ -25,6 +25,39 @@ void VulkanCommandPool::Destroy()
 	vkDestroyCommandPool(device, m_CommandPool, nullptr);
 }
 
+void VulkanCommandPool::BeginSingleCommand()
+{
+	const VkCommandBufferAllocateInfo vkCommandBufferAllocateInfo =
+	{
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+		.pNext = nullptr,
+		.commandPool = m_CommandPool,
+		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+		.commandBufferCount = static_cast<uint32_t>(1)
+	};
+	const VkResult result = vkAllocateCommandBuffers(VulkanInterface::GetDevice().device, &vkCommandBufferAllocateInfo, &m_SingleCommandBuffer);
+	VK_CHECK_ERROR(result,"vkCreateCommandPool")
+}
+
+
+void VulkanCommandPool::GetSingleCommandBuffer(VkCommandBuffer* commandBuffer)
+{
+	*commandBuffer = m_SingleCommandBuffer;
+}
+
+void VulkanCommandPool::SubmitSingleCommandBuffer(VkQueue queue)
+{
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_SingleCommandBuffer;
+
+	vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(queue);
+
+	vkFreeCommandBuffers(VulkanInterface::GetDevice().device, m_CommandPool, 1, &m_SingleCommandBuffer);
+}
+
 void VulkanCommandPool::AllocCommandBuffer(size_t _nbr, VkCommandBuffer* _commandBufferPtr) const
 {
 	const VkCommandBufferAllocateInfo vkCommandBufferAllocateInfo =

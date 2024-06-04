@@ -39,10 +39,7 @@ private:
     VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& PresentModes);
     
     VkSurfaceFormatKHR ChooseSurfaceFormatAndColorSpace(const std::vector<VkSurfaceFormatKHR>& SurfaceFormats);
-
-    VkImageView CreateImageView(VkDevice Device, VkImage Image, VkFormat Format, VkImageAspectFlags AspectFlags,
-                            VkImageViewType ViewType, uint32_t LayerCount, uint32_t mipLevels);
-
+    
     void CreateFrameBuffer(const VkDevice& _device);
 };
 

@@ -13,7 +13,7 @@ App::App()
     PC_LOG("App Init")
     windowHandle.Init();
     
-    VulkanInterface::InitInterface(&windowHandle);
+    VulkanInterface::Init(&windowHandle);
     ResourceManager::Init();
     renderer.Init(&windowHandle);
 
@@ -28,7 +28,7 @@ App::~App()
     windowHandle.Destroy();
     renderer.Destroy();
     ResourceManager::Destroy();
-    VulkanInterface::DestroyInterface();
+    VulkanInterface::Destroy();
     
     delete ComponentRegister::componentRegisterMap;
 }

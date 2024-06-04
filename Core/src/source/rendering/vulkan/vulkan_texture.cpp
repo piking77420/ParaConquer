@@ -2,6 +2,7 @@
 
 #include "log.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
+#include "rendering/vulkan/vulkan_wrapper.hpp"
 
 using namespace PC_CORE;
 
@@ -20,41 +21,36 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
     imgCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     imgCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
  
-    VmaAllocationCreateInfo allocCreateInfo = {};
+    VmaAllocationCreateInfo allocCreateInfo = {}; VMA_ALLOCATION_CREATE_HOST_ACCESS
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
     allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
     allocCreateInfo.priority = 1.0f;
- 
-    VkImage img;
-    VmaAllocation alloc;
-    
-    const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imgCreateInfo, &allocCreateInfo, &img, &alloc, nullptr);
-    VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
-    
 
+    
+    const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imgCreateInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
+    VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
     
     
     VkBufferCreateInfo bufCreateInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-    bufCreateInfo.size = 65536;
+    bufCreateInfo.size = _dataSize;
     bufCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
  
     VmaAllocationCreateInfo buffAllocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
     allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
         VMA_ALLOCATION_CREATE_MAPPED_BIT;
- 
-    VkBuffer buf;
-    VmaAllocation allocbuff;
-    VmaAllocationInfo allocInfo;
-    vmaCreateBuffer(VulkanInterface::GetAllocator(), &bufCreateInfo, &buffAllocCreateInfo, &buf, &allocbuff, &allocInfo);
- 
-    memcpy(allocInfo.pMappedData, _data, _dataSize);
+    
+    vmaCopyMemoryToAllocation(VulkanInterface::GetAllocator(),_data, allocation,0, _dataSize);
+
+    
+    CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_UNORM, &textureImageView);
+
+    vulkanTextureSampler.Init();
 }
 
 void VulkanTexture::Destroy()
 {
-}
-
-VulkanTexture::~VulkanTexture()
-{
+    vulkanTextureSampler.Destroy();
+    vmaDestroyImage(VulkanInterface::GetAllocator(), textureImage, allocation);
+    vkDestroyImageView(VulkanInterface::GetDevice().device, textureImageView, nullptr);
 }

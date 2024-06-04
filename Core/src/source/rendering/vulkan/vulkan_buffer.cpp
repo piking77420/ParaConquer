@@ -3,7 +3,6 @@
 #include <string>
 
 #include "log.hpp"
-#include "rendering/vulkan/vulkan_command_buffer.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
 
 using namespace PC_CORE;
