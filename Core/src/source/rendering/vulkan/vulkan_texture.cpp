@@ -8,46 +8,56 @@ using namespace PC_CORE;
 
 void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _imageSize)
 {
-    VkImageCreateInfo imgCreateInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
-    imgCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    imgCreateInfo.extent.width = _imageSize.x;
-    imgCreateInfo.extent.height = _imageSize.y;
-    imgCreateInfo.extent.depth = 1;
-    imgCreateInfo.mipLevels = 1;
-    imgCreateInfo.arrayLayers = 1;
-    imgCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-    imgCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imgCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imgCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    imgCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
- 
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = _imageSize.x;
+    imageInfo.extent.height = _imageSize.y;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+
     VmaAllocationCreateInfo allocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
     allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
     allocCreateInfo.priority = 1.0f;
 
     
-    const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imgCreateInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
+    const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
-    
-    
-    VkBufferCreateInfo bufCreateInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-    bufCreateInfo.size = _dataSize;
-    bufCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
- 
-    VmaAllocationCreateInfo buffAllocCreateInfo = {};
-    allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-    allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-        VMA_ALLOCATION_CREATE_MAPPED_BIT;
-    
-    vmaCopyMemoryToAllocation(VulkanInterface::GetAllocator(),_data, allocation,0, _dataSize);
 
+    // to do create staging buffer to send to gpu
     
+
+    VkBuffer stagingbuffer;
+    VmaAllocation stagingAllocation;
+
+    CreateBufferVma(&stagingbuffer, &stagingAllocation, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VMA_MEMORY_USAGE_CPU_ONLY, _dataSize);
+
+
+    void* data;
+    vmaMapMemory(VulkanInterface::GetAllocator(), stagingAllocation, &data);
+    memcpy(data, _data, _dataSize);
+    vmaUnmapMemory(VulkanInterface::GetAllocator(), stagingAllocation);
+
+
+    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    CopyBufferToImage(stagingbuffer, textureImage, static_cast<uint32_t>(_imageSize.x), static_cast<uint32_t>(_imageSize.y));
+    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    vmaDestroyBuffer(VulkanInterface::GetAllocator(), stagingbuffer, stagingAllocation);
+
     CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_UNORM, &textureImageView);
 
-    const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;
-    
-    VkSamplerCreateInfo samplerInfo =
+    const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
+    const  VkSamplerCreateInfo samplerInfo =
        {
         .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         .pNext = nullptr,
@@ -67,8 +77,8 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
         .unnormalizedCoordinates = VK_FALSE 
         };
 
-    vula
-
+   VulkanInterface::vulkanTextureSampler.CreateSampler(samplerInfo, &samplerId);
+    
 }
 
 void VulkanTexture::Destroy()

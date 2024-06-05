@@ -24,7 +24,7 @@ void VulkanTextureSampler::CreateSampler(const VkSamplerCreateInfo& _vkSamplerCr
     // Check if there alraly one
     uint32_t idToReturn = -1;
     
-    if (CountainSamplerInfo(_vkSamplerCreateInfo, &idToReturn))
+    if (!CountainSamplerInfo(_vkSamplerCreateInfo, &idToReturn))
     {
         VkSampler vkSampler = {};
         const VkResult result = vkCreateSampler(VulkanInterface::GetDevice().device, &_vkSamplerCreateInfo, nullptr, &vkSampler);
@@ -36,6 +36,14 @@ void VulkanTextureSampler::CreateSampler(const VkSamplerCreateInfo& _vkSamplerCr
 
     // else return the id 
     *_outId = idToReturn;
+}
+
+const VkSampler VulkanTextureSampler::Get(uint32_t _samplerId)
+{
+    if (!m_textureSamplerId.contains(_samplerId))
+        return VK_NULL_HANDLE;
+
+    return m_textureSamplerId.at(_samplerId).textureSampler;
 }
 
 void VulkanTextureSampler::Destroy()
@@ -64,11 +72,10 @@ bool VulkanTextureSampler::CountainSamplerInfo(const VkSamplerCreateInfo& _vkSam
     {   
         if (it->second.samplerInfo == _vkSamplerCreateInfo)
         {
-            *_outId = it->first; 
+            *_outId = it->first;
             return true;
         }
     }
     *_outId = static_cast<uint32_t>(m_textureSamplerId.size());
-    
     return false;
 }

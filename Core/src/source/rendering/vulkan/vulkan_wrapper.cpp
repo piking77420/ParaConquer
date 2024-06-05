@@ -8,7 +8,7 @@
 using namespace PC_CORE;
 
 void PC_CORE::CreateBufferVma(VkBuffer* _vkBuffer, VmaAllocation* _allocation, VkBufferUsageFlags _vkBufferUsageFlags,
-    VmaMemoryUsage _vmaMemoryUsage, void const* _data, size_t _size)
+    VmaMemoryUsage _vmaMemoryUsage, size_t _size)
 {
     //allocate vertex buffer
     VkBufferCreateInfo bufferInfo = {};
@@ -25,22 +25,15 @@ void PC_CORE::CreateBufferVma(VkBuffer* _vkBuffer, VmaAllocation* _allocation, V
     //allocate the buffer
     VkResult result = vmaCreateBuffer(VulkanInterface::GetAllocator(), &bufferInfo, &vmaallocInfo, _vkBuffer, _allocation, nullptr);
     VK_CHECK_ERROR(result,"Failded to createBuffer");
-    
-    void* data;
-    vmaMapMemory(VulkanInterface::GetAllocator(), *_allocation, &data);
-
-    memcpy(data, _data, _size);
-
-    vmaUnmapMemory(VulkanInterface::GetAllocator(), *_allocation);
 }
 
 void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLayout _oldLayout,
     VkImageLayout _newLayout)
 {
-    VulkanInterface::vulkanCommandPoolGraphic.BeginSingleCommand();
+    VulkanInterface::vulkanCommandPoolTransfert.BeginSingleCommand();
 
     VkCommandBuffer commandBuffer;
-    VulkanInterface::vulkanCommandPoolGraphic.GetSingleCommandBuffer(&commandBuffer);
+    VulkanInterface::vulkanCommandPoolTransfert.GetSingleCommandBuffer(&commandBuffer);
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -64,26 +57,28 @@ void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLay
 
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    } else if (_oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && _newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    }
+    else if (_oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && _newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    } else {
+    }
+    else {
         throw std::invalid_argument("unsupported layout transition!");
     }
 
     vkCmdPipelineBarrier(
-    commandBuffer,
-            sourceStage, destinationStage,
-    0,
-    0, nullptr,
-    0, nullptr,
-    1, &barrier
+        commandBuffer,
+        sourceStage, destinationStage,
+        0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier
     );
 
-    VulkanInterface::vulkanCommandPoolGraphic.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().transferQueue.Queue);
+    VulkanInterface::vulkanCommandPoolTransfert.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().transferQueue.Queue);
 
 }
 
@@ -106,4 +101,30 @@ void PC_CORE::CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vk
     VK_CHECK_ERROR(result,"failed to create image view!");
     
     *_vkImageView = imageView;
+}
+
+void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _width, uint32_t _height)
+{
+    VulkanInterface::vulkanCommandPoolTransfert.BeginSingleCommand();
+    VkCommandBuffer cmdbuffer = {};
+    VulkanInterface::vulkanCommandPoolTransfert.GetSingleCommandBuffer(&cmdbuffer);
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+    region.imageOffset = {0, 0, 0};
+    region.imageExtent = {
+        _width,
+        _height,
+        1
+    };
+
+    vkCmdCopyBufferToImage(cmdbuffer, _buffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    VulkanInterface::vulkanCommandPoolTransfert.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().transferQueue.Queue);
 }

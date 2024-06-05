@@ -54,7 +54,6 @@ public:
 
     static inline VulkanTextureSampler vulkanTextureSampler;
 
-
 private:
     
     static inline uint32_t currentFrame = 0;

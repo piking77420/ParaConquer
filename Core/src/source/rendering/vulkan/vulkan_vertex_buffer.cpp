@@ -8,6 +8,5 @@ using namespace PC_CORE;
 
 void VulkanVertexBuffer::Init(const std::vector<Vertex>& vertices)
 {
-	CreateBufferVma(&m_Buffer , &m_Allocation,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_TO_GPU,
-		vertices.data(), sizeof(vertices[0]) * vertices.size());
+	CreateGpuBuffer(&m_Buffer, &m_Allocation, vertices.data(), sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }

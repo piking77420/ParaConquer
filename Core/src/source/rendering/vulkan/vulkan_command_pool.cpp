@@ -37,6 +37,14 @@ void VulkanCommandPool::BeginSingleCommand()
 	};
 	const VkResult result = vkAllocateCommandBuffers(VulkanInterface::GetDevice().device, &vkCommandBufferAllocateInfo, &m_SingleCommandBuffer);
 	VK_CHECK_ERROR(result,"vkCreateCommandPool")
+
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(m_SingleCommandBuffer, &beginInfo);
+
 }
 
 
@@ -47,6 +55,8 @@ void VulkanCommandPool::GetSingleCommandBuffer(VkCommandBuffer* commandBuffer)
 
 void VulkanCommandPool::SubmitSingleCommandBuffer(VkQueue queue)
 {
+	vkEndCommandBuffer(m_SingleCommandBuffer);
+
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;

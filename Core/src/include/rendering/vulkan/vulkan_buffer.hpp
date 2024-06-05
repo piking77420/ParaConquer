@@ -9,6 +9,8 @@ BEGIN_PCCORE
 class VulkanBuffer
 {
 public:
+    static void CreateGpuBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocation, void const* _data, const size_t _dataSize, VkBufferUsageFlagBits _usage);
+    
     virtual void Destroy();
 
     VulkanBuffer() = default;
@@ -16,6 +18,7 @@ public:
     virtual ~VulkanBuffer() = default;
 
     VkBuffer GetHandle();
+
     
 protected:
     VkBuffer m_Buffer = VK_NULL_HANDLE;

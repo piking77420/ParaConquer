@@ -19,9 +19,10 @@ public:
         VkSampler textureSampler = VK_NULL_HANDLE;
     };
     
-    
     void CreateSampler(const VkSamplerCreateInfo& _vkSamplerCreateInfo, uint32_t* _outId);
 
+    const VkSampler Get(uint32_t _samplerId);
+    
     void Destroy();
     
 private:

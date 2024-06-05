@@ -383,18 +383,19 @@ void Renderer::CreateDescriptorSets()
 
     for (size_t i = 0; i < VulkanInterface::GetNbrOfImage(); i++)
     {
-        
+       
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = m_UniformBuffers[i].GetHandle();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = diamondtexture->vulkanTexture.textureImageView;
-        imageInfo.sampler = diamondtexture->vulkanTexture.vulkanTextureSampler.textureSampler;
+        imageInfo.sampler = VulkanInterface::vulkanTextureSampler.Get(diamondtexture->vulkanTexture.samplerId);
         
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = descriptorSets[i];

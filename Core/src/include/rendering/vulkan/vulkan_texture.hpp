@@ -16,8 +16,8 @@ public:
 
     VkImageView textureImageView = VK_NULL_HANDLE;
 
-    VulkanTextureSampler vulkanTextureSampler;
-        
+    uint32_t samplerId = -1;
+    
     void Init(void const* const _data, size_t _dataSize, Vector2i _imageSize);
     
     void Destroy();

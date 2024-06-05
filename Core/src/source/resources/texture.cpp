@@ -12,7 +12,6 @@ Texture::~Texture()
 {
     vulkanTexture.Destroy();
 }
-
 void Texture::Load(const fs::path& path)
 {
     stbi_uc* pixels = stbi_load(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
@@ -26,5 +25,7 @@ void Texture::Load(const fs::path& path)
     }
     
     vulkanTexture.Init(pixels, dataImageSize, textureSize);
+
+    stbi_image_free(pixels);
 
 }
