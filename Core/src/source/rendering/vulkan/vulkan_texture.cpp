@@ -21,7 +21,7 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
     imgCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     imgCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
  
-    VmaAllocationCreateInfo allocCreateInfo = {}; VMA_ALLOCATION_CREATE_HOST_ACCESS
+    VmaAllocationCreateInfo allocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
     allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
     allocCreateInfo.priority = 1.0f;
@@ -45,12 +45,34 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
     
     CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_UNORM, &textureImageView);
 
-    vulkanTextureSampler.Init();
+    const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;
+    
+    VkSamplerCreateInfo samplerInfo =
+       {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_ALWAYS,
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE 
+        };
+
+    vula
+
 }
 
 void VulkanTexture::Destroy()
 {
-    vulkanTextureSampler.Destroy();
     vmaDestroyImage(VulkanInterface::GetAllocator(), textureImage, allocation);
     vkDestroyImageView(VulkanInterface::GetDevice().device, textureImageView, nullptr);
 }

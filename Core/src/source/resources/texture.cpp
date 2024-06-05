@@ -24,8 +24,7 @@ void Texture::Load(const fs::path& path)
         PC_LOGERROR("failed to load texture image!");
         throw std::runtime_error("failed to load texture image!");
     }
-
-
+    
     vulkanTexture.Init(pixels, dataImageSize, textureSize);
 
 }

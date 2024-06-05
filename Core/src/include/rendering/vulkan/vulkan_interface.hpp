@@ -10,9 +10,10 @@
 #include "vulkan_device.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "vulkan_swapchain.hpp"
+#include "vulkan_texture_sampler.hpp"
 
 BEGIN_PCCORE
-class VulkanInterface
+    class VulkanInterface
 {
 public:
 
@@ -37,6 +38,10 @@ public:
     static VulkanSurface GetVulkanSurface();
 
     static VmaAllocator GetAllocator();
+
+    static void RecreateSwapChain(Window* _window);
+       
+    static VkImage GetImage(uint32_t _index);
     
     // to do move to physical device
     static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -46,10 +51,9 @@ public:
     static inline VulkanCommandPool vulkanCommandPoolGraphic;
 
     static inline VulkanCommandPool vulkanCommandPoolTransfert;
-    
-    static void RecreateSwapChain(Window* _window);
-    
-    static VkImage GetImage(uint32_t _index);
+
+    static inline VulkanTextureSampler vulkanTextureSampler;
+
 
 private:
     

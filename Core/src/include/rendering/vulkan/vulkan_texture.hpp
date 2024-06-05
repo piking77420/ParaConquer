@@ -6,6 +6,7 @@
 #include "math/toolbox_typedef.hpp"
 
 BEGIN_PCCORE
+
 class VulkanTexture
 {
 public:
