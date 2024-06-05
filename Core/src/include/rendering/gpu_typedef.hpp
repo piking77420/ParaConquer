@@ -2,14 +2,15 @@
 
 
 #include "core_header.hpp"
+#include "glm/fwd.hpp"
 #include "math/toolbox_typedef.hpp"
+#include <glm/glm.hpp>
 
 
 struct alignas(16) UniformBufferObject
 {
-    Matrix4x4f model = Matrix4x4f::Identity();
-    Matrix4x4f view = Matrix4x4f::Identity();
-    Matrix4x4f proj = Matrix4x4f::Identity();
+    glm::mat4 model = glm::mat4(1.f);
+    glm::mat4 view = glm::mat4(1.f);
+    glm::mat4 proj = glm::mat4(1.f);
 };
-
 

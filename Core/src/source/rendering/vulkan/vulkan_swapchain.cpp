@@ -65,11 +65,11 @@ VkSurfaceFormatKHR VulkanSwapchain::ChooseSurfaceFormatAndColorSpace(
 
 void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
 {
-    for (size_t i = 0; i < swapChainImageView.size(); i++)
+    for (size_t i = 0; i < swapChainImages.size(); i++)
     {
         const VkImageView attachments[] =
         {
-            swapChainImageView[i]
+            swapChainImages[i].vulkanTexture.textureImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
@@ -151,24 +151,25 @@ void VulkanSwapchain::InitSwapChain(uint32_t widht, uint32_t _height, const uint
     Log::Debug(
         "Requested " + std::to_string(nbrOfImage) + " images, created " + std::to_string(NumSwapChainImages) +
         " images");
-
-    swapChainImage.resize(NumSwapChainImages);
+    swapChainImages.resize(NumSwapChainImages);
     swapChainFramebuffers.resize(NumSwapChainImages);
-    swapChainImageView.resize(NumSwapChainImages);
-    
-    res = vkGetSwapchainImagesKHR(device, swapchainKhr, &NumSwapChainImages, swapChainImage.data());
+
+
+    // Create Object
+    std::vector<VkImage> images;
+    images.resize(swapChainImages.size());
+    res = vkGetSwapchainImagesKHR(device, swapchainKhr, &NumSwapChainImages, images.data());
     VK_CHECK_ERROR(res, "vkGetSwapchainImagesKHR");
-
-    // TODO wrapper
-    int32_t LayerCount = 1;
-    int32_t MipLevels = 1;
-
-    for (uint32_t i = 0; i < NumSwapChainImages; i++)
+    for (size_t i = 0; i < images.size(); i++)
     {
-        CreateImageView(swapChainImage[i], surfaceFormatKhr.format,&swapChainImageView[i]);
+        swapChainImages[i].vulkanTexture.textureImage = images[i];
     }
-
-
+  
+    for (auto&& it : swapChainImages)
+    {
+        CreateImageView(it.vulkanTexture.textureImage, surfaceFormatKhr.format, &it.vulkanTexture.textureImageView);
+    }
+    
     CreateFrameBuffer(device);
 }
 
@@ -192,12 +193,6 @@ void VulkanSwapchain::DestroySwapChain()
 {
     const VkDevice& device = VulkanInterface::GetDevice().device;
     
-    Log::Debug("Destroy swapChainImageView SwapChain");
-    for (VkImageView& i : swapChainImageView)
-    {
-        vkDestroyImageView(device, i, nullptr);
-    }
-
     Log::Debug("Destroy swapChainFrammeBuffer SwapChain");
     for (VkFramebuffer& i : swapChainFramebuffers)
     {
@@ -205,6 +200,8 @@ void VulkanSwapchain::DestroySwapChain()
     }
     Log::Debug("vkDestroySwapchainKHR");
     vkDestroySwapchainKHR(device, swapchainKhr, nullptr);
+
+    Log::Debug("Destroy swapChainImageView SwapChain");
 }
 
 void VulkanSwapchain::Destroy()

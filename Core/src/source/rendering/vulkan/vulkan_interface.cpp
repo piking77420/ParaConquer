@@ -75,7 +75,7 @@ void VulkanInterface::Destroy()
 
 VkImage VulkanInterface::GetImage(uint32_t _index)
 {
-    return vulkanSwapChapchain.swapChainImage.at(_index);
+    return vulkanSwapChapchain.swapChainImages.at(_index).vulkanTexture.textureImage;
 }
 
 VkSurfaceFormatKHR VulkanInterface::GetSwapChainImageFormat()

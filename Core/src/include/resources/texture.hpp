@@ -18,7 +18,6 @@ public:
     ~Texture() override;
     
     void Load(const fs::path& path) override;
-    
 };
 
 END_PCCORE

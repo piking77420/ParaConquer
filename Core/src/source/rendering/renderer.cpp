@@ -8,20 +8,29 @@
 #include "math/matrix_transformation.hpp"
 #include "rendering/vulkan/vulkan_texture_sampler.hpp"
 #include "resources/resource_manager.hpp"
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace PC_CORE;
 
-
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f,0.f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f,0.f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f,0.f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f,0.f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-};
-const std::vector<uint32_t> indices = {
-    0, 1, 2, 2, 3, 0
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 
+const std::vector<uint32_t> indices = {
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4
+};
 
 void Renderer::Init(Window* _window)
 {
@@ -321,20 +330,12 @@ void Renderer::UpdateUniformBuffer(uint32_t _currentFrame)
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    
-    Vector3f pos(0.f,0.f,0.f);
-    Vector3f rot(90.0f,90.0f,90.0f);
-    Vector3f scale(1.f,1.f,1.f);
-    rot *= time * 0.016f;
-    
-    Trs3D(pos,rot,scale,&UniformBufferObject.model);
-    LookAtRH({2.0f, 2.0f, 2.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 1.0f},&UniformBufferObject.view);
-
-    float aspect = Window::currentWindow->GetAspect();
-    PerspectiveMatrix(45.0f * Deg2Rad,aspect,0.1f,1000.f,&UniformBufferObject.proj);
+    UniformBufferObject.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    UniformBufferObject.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    UniformBufferObject.proj = glm::perspective(glm::radians(45.0f), Window::currentWindow->GetAspect(), 0.1f, 10.0f);
     UniformBufferObject.proj[1][1] *= -1;
 
-    m_UniformBuffers[_currentFrame].Update(&UniformBufferObject.model.data[0].x,sizeof(UniformBufferObject));
+    m_UniformBuffers[_currentFrame].Update(&UniformBufferObject,sizeof(UniformBufferObject));
     
 }
 
@@ -342,7 +343,7 @@ void Renderer::CreateDescriptorSetLayout()
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding = VulkanUniformBuffer::GetLayoutBinding(0,1 ,
         VK_SHADER_STAGE_VERTEX_BIT);
-    VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(0,1,VK_SHADER_STAGE_FRAGMENT_BIT);
+    VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(1,1,VK_SHADER_STAGE_FRAGMENT_BIT);
     m_DescriptorSetLayout.Init({uboLayoutBinding , samplerLayoutBinding});
 }
 

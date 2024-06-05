@@ -66,11 +66,17 @@ void VulkanDevice::Init(const VulkanPhysicalDevices& _physicalDevices)
 
     if (physicalDevice.features.tessellationShader == VK_FALSE)
         PC_LOGERROR("The Tessellation Shader is not supported!")
+
+    
+    if (physicalDevice.features.samplerAnisotropy == VK_FALSE)
+        PC_LOGERROR("The Anisotropy filter is not supported!")
+    
     
     
     VkPhysicalDeviceFeatures DeviceFeatures = { 0 };
     DeviceFeatures.geometryShader = VK_TRUE;
     DeviceFeatures.tessellationShader = VK_TRUE;
+    DeviceFeatures.samplerAnisotropy = VK_TRUE;
 
     const VkDeviceCreateInfo DeviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,

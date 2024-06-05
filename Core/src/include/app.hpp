@@ -7,7 +7,7 @@
 #include "world/world.hpp"
 
 BEGIN_PCCORE
-	class App
+class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";

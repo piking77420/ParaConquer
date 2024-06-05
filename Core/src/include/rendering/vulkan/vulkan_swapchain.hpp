@@ -2,6 +2,7 @@
 
 #include "vulkan_header.h"
 #include "vulkan_render_pass.hpp"
+#include "resources/texture.hpp"
 
 BEGIN_PCCORE
     class VulkanSwapchain
@@ -10,11 +11,9 @@ public:
     VkSwapchainKHR swapchainKhr;
 
     VkExtent2D swapChainExtent;
-    
-    std::vector<VkImage> swapChainImage;
-    
-    std::vector<VkImageView> swapChainImageView;
-    
+
+    std::vector<Texture> swapChainImages;
+
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VulkanRenderPass mainRenderPass;

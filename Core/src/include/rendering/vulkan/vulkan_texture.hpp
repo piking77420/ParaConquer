@@ -19,6 +19,10 @@ public:
     uint32_t samplerId = -1;
     
     void Init(void const* const _data, size_t _dataSize, Vector2i _imageSize);
+
+    void Init(size_t _dataSize, Vector2i _imageSize);
+
+    void Init(VkImageCreateInfo _imageInfo, size_t _dataSize, Vector2i _imageSize);
     
     void Destroy();
     
