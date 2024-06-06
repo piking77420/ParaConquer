@@ -12,7 +12,7 @@ public:
 
     VkExtent2D swapChainExtent;
 
-    std::vector<Texture> swapChainImages;
+    std::vector<VulkanTexture> swapChainImages;
 
     std::vector<VkFramebuffer> swapChainFramebuffers;
 

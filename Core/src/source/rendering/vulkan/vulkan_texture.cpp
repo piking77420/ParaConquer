@@ -94,7 +94,6 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-
     VmaAllocationCreateInfo allocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
     allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
@@ -103,7 +102,6 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
     
-    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_SRGB, &textureImageView);
 
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
@@ -130,7 +128,7 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
    VulkanInterface::vulkanTextureSampler.CreateSampler(samplerInfo, &samplerId);
 }
 
-void VulkanTexture::Init(VkImageCreateInfo _imageInfo, size_t _dataSize, Vector2i _imageSize)
+void VulkanTexture::Init(VkImageCreateInfo _imageInfo)
 {
     VmaAllocationCreateInfo allocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -139,9 +137,10 @@ void VulkanTexture::Init(VkImageCreateInfo _imageInfo, size_t _dataSize, Vector2
     
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &_imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
-    
-    TransitionImageLayout(textureImage, _imageInfo.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     CreateImageView(textureImage,_imageInfo.format, &textureImageView);
+
 
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
     const  VkSamplerCreateInfo samplerInfo =
@@ -169,8 +168,21 @@ void VulkanTexture::Init(VkImageCreateInfo _imageInfo, size_t _dataSize, Vector2
 
 void VulkanTexture::Destroy()
 {
-    if (allocation != VK_NULL_HANDLE)
+    if (textureImageView != VK_NULL_HANDLE)
+    {
+        vkDestroyImageView(VulkanInterface::GetDevice().device, textureImageView, nullptr);
+        textureImageView = VK_NULL_HANDLE;
+    }
+
+    bool hasDestroyVma = false;
+
+    if (allocation != VK_NULL_HANDLE) 
+    {
         vmaDestroyImage(VulkanInterface::GetAllocator(), textureImage, allocation);
-    
-    vkDestroyImageView(VulkanInterface::GetDevice().device, textureImageView, nullptr);
+        textureImage = VK_NULL_HANDLE;
+        hasDestroyVma = true;
+    }
+    if (textureImage != VK_NULL_HANDLE && !hasDestroyVma)
+        vkDestroyImage(VulkanInterface::GetDevice().device, textureImage, nullptr);
+
 }

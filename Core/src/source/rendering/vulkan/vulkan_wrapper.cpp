@@ -63,7 +63,16 @@ void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLay
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT; 
-    } else {
+    } 
+    else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;  // For reading memory in the presentation engine
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;   // No previous commands to wait for
+        destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT; // Wait until all prior commands are complete
+    }
+    else {
         throw std::invalid_argument("Unsupported layout transition!");
     }
 

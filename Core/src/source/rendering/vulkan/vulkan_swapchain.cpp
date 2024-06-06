@@ -69,7 +69,7 @@ void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
     {
         const VkImageView attachments[] =
         {
-            swapChainImages[i].vulkanTexture.textureImageView
+            swapChainImages[i].textureImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
@@ -153,22 +153,46 @@ void VulkanSwapchain::InitSwapChain(uint32_t widht, uint32_t _height, const uint
         " images");
     swapChainImages.resize(NumSwapChainImages);
     swapChainFramebuffers.resize(NumSwapChainImages);
+    
+    /*
+    const VkImageCreateInfo swapChainCreateImageInfo =
+    {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = surfaceFormatKhr.format,
+        .extent = { swapChainExtent.width, swapChainExtent.height, 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 1,
+        .pQueueFamilyIndices = &_qfamilyIndex,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+    };
 
+    for (size_t i = 0; i < swapChainImages.size(); i++)
+    {
+        swapChainImages[i].vulkanTexture.Init(swapChainCreateImageInfo);
+    }
+    */
 
     // Create Object
+
     std::vector<VkImage> images;
     images.resize(swapChainImages.size());
+
     res = vkGetSwapchainImagesKHR(device, swapchainKhr, &NumSwapChainImages, images.data());
     VK_CHECK_ERROR(res, "vkGetSwapchainImagesKHR");
     for (size_t i = 0; i < images.size(); i++)
     {
-        swapChainImages[i].vulkanTexture.textureImage = images[i];
+        swapChainImages[i].textureImage = images[i];
+        CreateImageView(swapChainImages[i].textureImage, surfaceFormatKhr.format, &swapChainImages[i].textureImageView);
     }
   
-    for (auto&& it : swapChainImages)
-    {
-        CreateImageView(it.vulkanTexture.textureImage, surfaceFormatKhr.format, &it.vulkanTexture.textureImageView);
-    }
     
     CreateFrameBuffer(device);
 }
@@ -191,21 +215,30 @@ void VulkanSwapchain::InitRenderPass()
 
 void VulkanSwapchain::DestroySwapChain()
 {
+
     const VkDevice& device = VulkanInterface::GetDevice().device;
-    
+   
+    for (VulkanTexture& tex : swapChainImages)
+    {
+        tex.Destroy();
+    }
+
     Log::Debug("Destroy swapChainFrammeBuffer SwapChain");
     for (VkFramebuffer& i : swapChainFramebuffers)
     {
         vkDestroyFramebuffer(device, i, nullptr);
     }
+    Log::Debug("Destroy swapChainImageView SwapChain");
+    
+
     Log::Debug("vkDestroySwapchainKHR");
     vkDestroySwapchainKHR(device, swapchainKhr, nullptr);
 
-    Log::Debug("Destroy swapChainImageView SwapChain");
 }
 
 void VulkanSwapchain::Destroy()
 {
     DestroySwapChain();
     mainRenderPass.Destroy();
+
 }

@@ -22,7 +22,7 @@ public:
 
     void Init(size_t _dataSize, Vector2i _imageSize);
 
-    void Init(VkImageCreateInfo _imageInfo, size_t _dataSize, Vector2i _imageSize);
+    void Init(VkImageCreateInfo _imageInfo);
     
     void Destroy();
     
