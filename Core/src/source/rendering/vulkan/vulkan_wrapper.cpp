@@ -89,14 +89,14 @@ void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLay
 
 }
 
-void PC_CORE::CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vkImageView)
+void PC_CORE::CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vkImageView , VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = _image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = _format;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;

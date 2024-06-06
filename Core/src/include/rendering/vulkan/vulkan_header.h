@@ -22,5 +22,4 @@ struct PhysicalDevice {
     VkPhysicalDeviceMemoryProperties memProps;
     std::vector<VkPresentModeKHR> presentModes;
     VkPhysicalDeviceFeatures features;
-
 };

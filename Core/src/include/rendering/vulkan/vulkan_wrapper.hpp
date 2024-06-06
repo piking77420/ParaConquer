@@ -10,7 +10,7 @@ void CreateBufferVma(VkBuffer* _vkBuffer, VmaAllocation* _allocation,VkBufferUsa
 
 void TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLayout _oldLayout, VkImageLayout _newLayout);
 
-void CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vkImageView);
+void CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vkImageView,VkImageAspectFlags aspectFlags);
 
 void CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _width, uint32_t _height);
 

@@ -18,6 +18,12 @@ public:
 
     PhysicalDevice& GetCurrentDevice();
 
+    VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates,
+        VkImageTiling tiling, VkFormatFeatureFlags features) const;
+
+    VkFormat FindDepthFormat() const;
+
+    bool HasStencilComponent(VkFormat format);
     
 private:
     std::vector<PhysicalDevice> m_Devices;

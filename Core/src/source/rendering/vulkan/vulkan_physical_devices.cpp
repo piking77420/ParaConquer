@@ -1,6 +1,7 @@
 ﻿#include "..\..\..\include\rendering\vulkan\vulkan_physical_devices.hpp"
 
 #include <cassert>
+#include <stdexcept>
 
 #include "log.hpp"
 
@@ -254,4 +255,39 @@ PhysicalDevice& VulkanPhysicalDevices::GetCurrentDevice()
         VK_CHECK_ERROR(1,"A physical device has not been selected");
     }
     return m_Devices[m_CurrentDevice];
+}
+
+VkFormat VulkanPhysicalDevices::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling,
+    VkFormatFeatureFlags features) const
+{
+    const PhysicalDevice&  physDevice = GetCurrentDevice();
+
+    for (const VkFormat& format : candidates)
+    {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(physDevice.physDevice, format, &props);
+
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+        {
+            return format;
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+        {
+            return format;
+        }
+    }
+    throw std::runtime_error("failed to find supported format!");
+}
+
+VkFormat VulkanPhysicalDevices::FindDepthFormat() const
+{
+    return FindSupportedFormat(
+      {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+          VK_IMAGE_TILING_OPTIMAL,
+          VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+      );
+}
+
+bool VulkanPhysicalDevices::HasStencilComponent(VkFormat format)
+{
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }

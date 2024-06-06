@@ -19,16 +19,16 @@ void VulkanInterface::Init(Window* _window)
     vulkanDebugMessage.Init(vulkanInstance.instance);
 #endif
     vulkanSurface.Init(vulkanInstance.instance,_window->window);
-    VulkanPhysicalDevices.Init(vulkanInstance.instance, vulkanSurface.surfaceKhr);
-    VulkanPhysicalDevices.SelectDevice(VK_QUEUE_GRAPHICS_BIT,true);
-    vulkanDevice.Init(VulkanPhysicalDevices);
+    vulkanPhysicalDevices.Init(vulkanInstance.instance, vulkanSurface.surfaceKhr);
+    vulkanPhysicalDevices.SelectDevice(VK_QUEUE_GRAPHICS_BIT,true);
+    vulkanDevice.Init(vulkanPhysicalDevices);
 
     VmaVulkanFunctions vulkanFunctions = {};
     vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
     vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
-    allocatorCreateInfo.physicalDevice = VulkanPhysicalDevices.GetCurrentDevice().physDevice;
+    allocatorCreateInfo.physicalDevice = vulkanPhysicalDevices.GetCurrentDevice().physDevice;
     allocatorCreateInfo.device = vulkanDevice.device;
     allocatorCreateInfo.instance = vulkanInstance.instance;
     allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
@@ -63,6 +63,7 @@ void VulkanInterface::Destroy()
     vulkanSwapChapchain.Destroy();
     vulkanCommandPoolGraphic.Destroy();
     vulkanCommandPoolTransfert.Destroy();
+    vulkanTextureSampler.Destroy();
 
     vmaDestroyAllocator(vmaAllocator);
     vulkanDevice.Destroy();
@@ -75,7 +76,7 @@ void VulkanInterface::Destroy()
 
 VkImage VulkanInterface::GetImage(uint32_t _index)
 {
-    return vulkanSwapChapchain.swapChainImages.at(_index).textureImage;
+    return vulkanSwapChapchain.swapChainImages.at(_index).image;
 }
 
 VkSurfaceFormatKHR VulkanInterface::GetSwapChainImageFormat()
@@ -100,7 +101,7 @@ VmaAllocator VulkanInterface::GetAllocator()
 
 uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
-    const VkPhysicalDeviceMemoryProperties& memProperties = VulkanPhysicalDevices.GetCurrentDevice().memProps;
+    const VkPhysicalDeviceMemoryProperties& memProperties = vulkanPhysicalDevices.GetCurrentDevice().memProps;
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
     {
@@ -142,6 +143,6 @@ VulkanDevice VulkanInterface::GetDevice()
 
 PhysicalDevice& VulkanInterface::GetPhysicalDevice()
 {
-    return VulkanPhysicalDevices.GetCurrentDevice();
+    return vulkanPhysicalDevices.GetCurrentDevice();
 }
 

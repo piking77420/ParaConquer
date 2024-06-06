@@ -50,7 +50,7 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
 
     vmaDestroyBuffer(VulkanInterface::GetAllocator(), stagingbuffer, stagingAllocation);
 
-    CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_SRGB, &textureImageView);
+    CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_SRGB, &textureImageView, VK_IMAGE_ASPECT_COLOR_BIT);
 
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
     const  VkSamplerCreateInfo samplerInfo =
@@ -102,7 +102,7 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
     
-    CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_SRGB, &textureImageView);
+    CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_SRGB, &textureImageView,VK_IMAGE_ASPECT_COLOR_BIT);
 
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
     const  VkSamplerCreateInfo samplerInfo =
@@ -128,7 +128,7 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
    VulkanInterface::vulkanTextureSampler.CreateSampler(samplerInfo, &samplerId);
 }
 
-void VulkanTexture::Init(VkImageCreateInfo _imageInfo)
+void VulkanTexture::Init(VkImageCreateInfo _imageInfo , const VkImageAspectFlags aspectFlags)
 {
     VmaAllocationCreateInfo allocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -137,11 +137,8 @@ void VulkanTexture::Init(VkImageCreateInfo _imageInfo)
     
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &_imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
-
-    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    CreateImageView(textureImage,_imageInfo.format, &textureImageView);
-
-
+    CreateImageView(textureImage,_imageInfo.format, &textureImageView, aspectFlags);
+    
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
     const  VkSamplerCreateInfo samplerInfo =
        {

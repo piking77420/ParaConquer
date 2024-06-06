@@ -28,8 +28,8 @@ BEGIN_PCCORE
         VkFormat format;
         bool clearOnLoad = false;
         bool write = false;
-        VkImageLayout imageLayoutDes = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         VkImageLayout imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        VkImageLayout imageLayoutDes = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     };
 
     class VulkanRenderPass
@@ -43,7 +43,11 @@ BEGIN_PCCORE
         VkRenderPass renderPass = VK_NULL_HANDLE;
     private:
         void ParseAttachementDescriptor(const Attachment& _in, VkAttachmentDescription* _out);
-        void ParseAttachementReference(const Attachment& _in, VkAttachmentReference* _out);
+        
+        void ParseAttachementReference(const Attachment& _in, std::vector<VkAttachmentReference>* _outColor,
+            std::vector<VkAttachmentReference>* _outDepth, const size_t _index);
+        
+        void ParseAttachementType(const std::vector<Attachment>& _attachments,uint32_t* nbrOfColorPass, uint32_t* nbrOfDepth ,uint32_t* ResolveAttachments);
 
     };
 

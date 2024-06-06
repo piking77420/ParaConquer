@@ -11,23 +11,6 @@
 
 using namespace PC_CORE;
 
-const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-};
-
-const std::vector<uint32_t> indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4
-};
-
 void Renderer::Init(Window* _window)
 {
     m_CommandBuffers.resize(VulkanInterface::GetNbrOfImage());
@@ -38,11 +21,8 @@ void Renderer::Init(Window* _window)
     
     m_VulkanShaderStage.Init({ vertex, frag });
     diamondtexture = ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
-    
+    mesh = ResourceManager::Get<Mesh>("cube.obj");
     CreateAsyncObject();
-
-    vulkanVertexBuffer.Init(vertices);
-    vulkanIndexBuffer.Init(indices);
     
     m_UniformBuffers.resize(VulkanInterface::GetNbrOfImage());
     for(VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
@@ -75,9 +55,6 @@ void Renderer::Destroy()
     
     vkDestroyDescriptorPool(VulkanInterface::GetDevice().device, descriptorPool, nullptr);
     m_DescriptorSetLayout.Destroy();
-
-    vulkanIndexBuffer.Destroy();
-    vulkanVertexBuffer.Destroy();
 
     m_VulkanShaderStage.Destroy();
     m_VkPipelineLayout.Destroy();
@@ -169,9 +146,12 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
 
-    const VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+
+    renderPassInfo.clearValueCount = clearValues.size();
+    renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -191,16 +171,16 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     scissor.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    const VkBuffer vertexBuffers[] = {vulkanVertexBuffer.GetHandle()};
+    const VkBuffer vertexBuffers[] = {mesh->vulkanVertexBuffer.GetHandle()};
     const VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
         1, &descriptorSets[VulkanInterface::GetCurrentFrame()], 0, nullptr);
     
-    vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(commandBuffer, mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     
-    vkCmdDrawIndexed(commandBuffer, indices.size(), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, mesh->indicies.size(), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
     
@@ -247,7 +227,15 @@ void Renderer::CreateBasicGraphiPipeline()
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
-
+    
+    VkPipelineDepthStencilStateCreateInfo depthStencil{};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.stencilTestEnable = VK_FALSE;
+    
     VkPipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;
@@ -271,6 +259,7 @@ void Renderer::CreateBasicGraphiPipeline()
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;

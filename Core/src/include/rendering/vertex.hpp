@@ -53,6 +53,8 @@ inline bool operator==(const Vertex& _v1,const Vertex& _v2){
 
 END_PCCORE
 
+
+
 namespace std {
     using namespace PC_CORE;
     template <>

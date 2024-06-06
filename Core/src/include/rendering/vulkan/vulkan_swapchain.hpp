@@ -7,15 +7,26 @@
 BEGIN_PCCORE
     class VulkanSwapchain
 {
+private:
+    struct SwapChainImage
+    {
+        VkImage image = VK_NULL_HANDLE;
+        VkImageView imageView = VK_NULL_HANDLE;
+    };
+    
 public:
     VkSwapchainKHR swapchainKhr;
 
     VkExtent2D swapChainExtent;
-
-    std::vector<VulkanTexture> swapChainImages;
+    
+    std::vector<SwapChainImage> swapChainImages;
 
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
+    VkFormat depthFormat;
+
+    VulkanTexture depthImage;
+    
     VulkanRenderPass mainRenderPass;
     
     VkSurfaceFormatKHR surfaceFormatKhr;
@@ -33,6 +44,9 @@ public:
     void DestroySwapChain();
 
 private:
+
+    void _forceinline InitDepthBuffer();
+    
     uint32_t ChooseNumImages(const VkSurfaceCapabilitiesKHR& Capabilities);
     
     VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& PresentModes);

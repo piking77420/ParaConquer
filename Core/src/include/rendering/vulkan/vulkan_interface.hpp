@@ -54,6 +54,8 @@ public:
 
     static inline VulkanTextureSampler vulkanTextureSampler;
 
+    static inline VulkanPhysicalDevices vulkanPhysicalDevices;
+
 private:
     
     static inline uint32_t currentFrame = 0;
@@ -63,7 +65,6 @@ private:
     static inline VulkanDebugMessage vulkanDebugMessage;
 #endif
     
-    static inline VulkanPhysicalDevices VulkanPhysicalDevices;
     
     static inline VulkanDevice vulkanDevice;
     

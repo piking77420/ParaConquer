@@ -54,12 +54,9 @@ private:
     
     std::vector<VulkanFence> m_InFlightFence;
 
-    VulkanIndexBuffer vulkanIndexBuffer;
+    Mesh* mesh = nullptr;
     
-    VulkanVertexBuffer vulkanVertexBuffer;
-
     Texture* diamondtexture = nullptr;
-    
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
