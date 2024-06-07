@@ -179,8 +179,8 @@ void VulkanSwapchain::InitRenderPass()
         .format = surfaceFormatKhr.format,
         .clearOnLoad = true,
         .write = true,
-        .imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .imageLayoutDes = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        .imageLayoutRef = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .imageLayoutDes = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
     };
 
     const Attachment depth =
@@ -241,7 +241,7 @@ void VulkanSwapchain::InitDepthBuffer()
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
     };
     
-    depthImage.Init(depthBufferCreateInfo);
+    depthImage.Init(depthBufferCreateInfo, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void VulkanSwapchain::Destroy()

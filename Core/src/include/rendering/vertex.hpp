@@ -13,6 +13,10 @@ struct Vertex
     Vector3f normal;
     Vector2f textureCoord;
 
+    bool operator==(const Vertex& other) const {
+        return position == other.position && normal == other.normal && textureCoord == other.textureCoord;
+    }
+
     static VkVertexInputBindingDescription GetBindingDescription()
     {
         VkVertexInputBindingDescription bindingDescription{};
@@ -46,11 +50,6 @@ struct Vertex
     }
 };
 
-inline bool operator==(const Vertex& _v1,const Vertex& _v2){
-    return _v1.position == _v2.position && _v1.normal == _v2.normal && _v1.textureCoord == _v2.textureCoord;
-}
-
-
 END_PCCORE
 
 
@@ -59,25 +58,25 @@ namespace std {
     using namespace PC_CORE;
     template <>
     struct hash<Vertex> {
-        size_t operator()(const Vertex& vertex) const {
+        size_t operator()(const Vertex& _vertex) const {
             // Combine the hashes of pos, normal, and texCoord using a hash function
             size_t hashValue = 0;
-            hash_combine(hashValue, vertex.position.x);
-            hash_combine(hashValue, vertex.position.y);
-            hash_combine(hashValue, vertex.position.z);
-            hash_combine(hashValue, vertex.normal.x);
-            hash_combine(hashValue, vertex.normal.y);
-            hash_combine(hashValue, vertex.normal.z);
-            hash_combine(hashValue, vertex.textureCoord.x);
-            hash_combine(hashValue, vertex.textureCoord.y);
+            hash_combine(hashValue, _vertex.position.x);
+            hash_combine(hashValue, _vertex.position.y);
+            hash_combine(hashValue, _vertex.position.z);
+            hash_combine(hashValue, _vertex.normal.x);
+            hash_combine(hashValue, _vertex.normal.y);
+            hash_combine(hashValue, _vertex.normal.z);
+            hash_combine(hashValue, _vertex.textureCoord.x);
+            hash_combine(hashValue, _vertex.textureCoord.y);
             return hashValue;
         }
 
         // Hash combine function to combine multiple hash values
         template <typename T>
-        void hash_combine(size_t& seed, const T& value) const {
+        void hash_combine(size_t& _seed, const T& _value) const {
             std::hash<T> hasher;
-            seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            _seed ^= hasher(_value) + 0x9e3779b9 + (_seed << 6) + (_seed >> 2);
         }
     };
 }

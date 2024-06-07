@@ -115,7 +115,7 @@ public:
 
     TOOLBOX_INLINE bool operator==(const Vector2& _other) const
     {
-        return IsEqualTo(x,_other.x) && IsEqualTo(y,_other.y);
+        return x == _other.x && y == _other.y;
     }
     
     TOOLBOX_INLINE bool operator!=(const Vector2& _other)

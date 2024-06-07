@@ -13,8 +13,7 @@ void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
     uint32_t nbrOfDepth = 0;
     uint32_t nbrOfResolve = 0;
     ParseAttachementType(_attachments, &nbrOfColorAtt, &nbrOfDepth, &nbrOfResolve);
-
-
+    
     if (nbrOfDepth > 1)
     {
         PC_LOGERROR("nbrOfDepth attachemnt is superior to one");
@@ -43,18 +42,16 @@ void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
     subpass.colorAttachmentCount = static_cast<uint32_t>(vkColorAttachmentReferences.size());
     subpass.pColorAttachments = vkColorAttachmentReferences.data();
     subpass.pDepthStencilAttachment = vkDepthAttachmentReferences.data();
+    
 
     // TO DO FIX srcStageMask dstStageMask dstAccessMask to not be hardcoded
     VkSubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.srcAccessMask = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -88,7 +85,7 @@ void VulkanRenderPass::ParseAttachementDescriptor(const Attachment& _in, VkAttac
     _out->stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
     // TO DO FIX THIS 
-    _out->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    _out->initialLayout = _in.imageLayoutRef;
     _out->finalLayout = _in.imageLayoutDes;
 }
 
@@ -97,7 +94,7 @@ void VulkanRenderPass::ParseAttachementReference(const Attachment& _in, std::vec
 {
     VkAttachmentReference vkAttachmentReference;
     vkAttachmentReference.attachment = static_cast<uint32_t>(_index);
-    vkAttachmentReference.layout = _in.imageLayoutRef;
+    vkAttachmentReference.layout = _in.imageLayoutDes;
     
     switch (_in.attachementIndex)
     {
