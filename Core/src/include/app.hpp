@@ -3,12 +3,15 @@
 #include "core_header.hpp"
 #include "rendering/renderer.hpp"
 #include "window.hpp"
+#include "rendering/camera.hpp"
 #include "rendering/vulkan/vulkan_imgui.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "world/world.hpp"
+#include "input/low_pass_filter.hpp"
+#include "world/transform.hpp"
 
 BEGIN_PCCORE
-class App
+	class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
@@ -20,6 +23,14 @@ public:
 	VulkanImgui vulkanImgui; 
 
 	World world;
+
+	Camera camera;
+	
+	float cameraSpeed = 5.f;
+	float pitch = 0.f;
+	float yaw = 0.f;
+
+	LowPassFilter<Vector2f, 12> deltass;
 	
 	App();
 
@@ -28,6 +39,12 @@ public:
 	void Run();
 
 	void HandleResize();
+private:
+	void MoveCam();
+
+	void MoveObject();
+
+	Transform* transform = nullptr;
 };
 
 END_PCCORE

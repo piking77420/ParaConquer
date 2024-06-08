@@ -29,6 +29,12 @@ BEGIN_PCCORE
         bool RemoveComponent(Entity entity);
 
         template <typename T>
+        T* GetComponent(Entity entity);
+        
+        template <typename T>
+        const T* GetComponent(Entity entity) const;
+        
+        template <typename T>
         T* AddSystem();
 
         template <typename T>
@@ -59,10 +65,15 @@ BEGIN_PCCORE
         std::vector<System*> systems;
 
         Component* AddComponentInternal(uint32_t _componentId, Entity _entity);
+        
+        Component* GetComponentInternal(uint32_t _componentId, Entity _entity);
+
+        const Component* GetComponentInternal(uint32_t _componentId, Entity _entity) const;
+
 
         bool RemoveComponentInternal(uint32_t _componentId, Entity _entity);
 
-        bool HadComponent(Entity _entity, uint32_t _componentId, uint32_t* _outIndexinDataArray);
+        bool HadComponent(Entity _entity, uint32_t _componentId, uint32_t* _outIndexinDataArray) const;
     };
 
     template <typename T>
@@ -77,6 +88,20 @@ BEGIN_PCCORE
     {
         assert(ComponentHandle<T>::componentID >= 0);
         return RemoveComponentInternal(ComponentHandle<T>::componentID, _entity);
+    }
+
+    template <typename T>
+    T* Scene::GetComponent(Entity entity)
+    {
+        assert(ComponentHandle<T>::componentID >= 0);
+        return reinterpret_cast<T*>(GetComponentInternal(ComponentHandle<T>::componentID, entity));
+    }
+
+    template <typename T>
+    const T* Scene::GetComponent(Entity entity) const
+    {
+        assert(ComponentHandle<T>::componentID >= 0);
+        return reinterpret_cast<const T*>(GetComponentInternal(ComponentHandle<T>::componentID, entity));
     }
 
     template <typename T>

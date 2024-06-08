@@ -8,7 +8,7 @@
 BEGIN_PCCORE
 
 
-using CreateFunc = void (*)(std::vector<uint8_t>* _compdata, size_t _index, Entity _entity, void** _ptr);
+using CreateFunc = void (*)(std::vector<uint8_t>* _compdata, size_t _index, Entity _entity);
 using DeleteFunc = void (*)(void* _ptr);
 
 class ComponentRegister
@@ -18,7 +18,7 @@ public:
     static uint32_t RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc);
 
     template<typename  T>
-    static void CreateComponent(std::vector<uint8_t>* _compdata, size_t _index, Entity _entity, void** _ptr);
+    static void CreateComponent(std::vector<uint8_t>* _compdata, size_t _index, Entity _entity);
 
     static CreateFunc GetCreateFunc(uint32_t _componentId);
 
@@ -51,9 +51,9 @@ uint32_t ComponentRegister::RegisterComponent(CreateFunc _createFunc, DeleteFunc
     return index;
 }
 template<typename  T>
-void ComponentRegister::CreateComponent(std::vector<uint8_t>* _compData, size_t _index, Entity _entity, void** _ptr)
+void ComponentRegister::CreateComponent(std::vector<uint8_t>* _compData, size_t _index, Entity _entity)
 {
-    T* ptrToNew = new(&_compData[_index])T();
+    T* ptrToNew = new(&_compData->at(_index))T();
     ptrToNew->componentHolder.entityID = _entity;
 }
 

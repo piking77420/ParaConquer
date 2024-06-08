@@ -8,6 +8,7 @@
 #include "math/matrix_transformation.hpp"
 #include "rendering/vulkan/vulkan_texture_sampler.hpp"
 #include "resources/resource_manager.hpp"
+#include "world/transform.hpp"
 
 using namespace PC_CORE;
 
@@ -61,9 +62,14 @@ void Renderer::Destroy()
     m_BasePipeline.Destroy();
     DestroyAsyncObject();
 }
+
+
 // to do put fence and semaphore in swap chain
-void Renderer::RenderViewPort()
+void Renderer::RenderViewPort(const Camera& _camera, const World& _world)
 {
+    m_CurrentCamera = &_camera;
+    m_CurrentWorld = &_world;
+    
     const VkDevice& device = VulkanInterface::GetDevice().device;
 
     vkWaitForFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences, VK_TRUE, UINT64_MAX);
@@ -113,8 +119,9 @@ void Renderer::RenderViewPort()
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
+    
 
-     vkQueuePresentKHR(VulkanInterface::GetDevice().graphicsQueue.Queue, &presentInfo);
+    vkQueuePresentKHR(VulkanInterface::GetDevice().graphicsQueue.Queue, &presentInfo);
 }
 
 void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags)
@@ -310,22 +317,13 @@ void Renderer::DestroyAsyncObject()
 
 void Renderer::UpdateUniformBuffer(uint32_t _currentFrame)
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
+    const Transform* transform = m_CurrentWorld->scene.GetComponent<Transform>(0);
     
-    Vector3f pos(0.f,0.f,0.f);
-    Vector3f rot(0,0.f,90.0f);
-    Vector3f scale(1.f,1.f,1.f);
-    rot *= time * 0.016f;
-    
-    Trs3D(pos,rot,scale,&UniformBufferObject.model);
-    LookAtRH({2.0f, 2.0f, 2.0f},{0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 1.0f},&UniformBufferObject.view);
+    Trs3D(transform->localPosition,transform->localRotation ,transform->scale,&UniformBufferObject.model);
+    LookAtRH(m_CurrentCamera->position,m_CurrentCamera->position + m_CurrentCamera->front,m_CurrentCamera->up, &UniformBufferObject.view);
 
     float aspect = Window::currentWindow->GetAspect();
-    PerspectiveMatrix(45.0f * Deg2Rad,aspect,0.1f,1000.f,&UniformBufferObject.proj);
+    PerspectiveMatrix(m_CurrentCamera->fov * Deg2Rad, aspect,m_CurrentCamera->near,m_CurrentCamera->far,&UniformBufferObject.proj);
     UniformBufferObject.proj[1][1] *= -1;
 
     m_UniformBuffers[_currentFrame].Update(&UniformBufferObject.model.data[0].x,sizeof(UniformBufferObject));

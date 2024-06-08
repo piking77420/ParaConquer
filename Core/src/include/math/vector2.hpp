@@ -57,47 +57,47 @@ public:
         return _v1.x * _v2.y -  _v1.y * _v2.x;
     }
 
-    Vector2 operator-()
+    Vector2 operator-() const
     {
         return {-x, -y};
     }
 
-    Vector2 operator+(const Vector2 _other)
+    Vector2 operator+(const Vector2 _other) const
     {
         return {x + _other.x , y + _other.y};
     }
 
-    Vector2 operator-(const Vector2 other)
+    Vector2 operator-(const Vector2 other) const
     {
         return {x - other.x , y - other.y};
     }
 
-    Vector2 operator*(const Vector2 _other)
+    Vector2 operator*(const Vector2 _other) const
     {
         return {x * _other.x , y * _other.y};
     }
 
-    Vector2 operator/(const Vector2 _other)
+    Vector2 operator/(const Vector2 _other) const
     {
         return {x / _other.x , y / _other.y};
     }
 
-    Vector2 operator+(DataType _value)
+    Vector2 operator+(DataType _value) const
     {
         return {x + _value , y + _value};
     }
     
-    Vector2 operator-(DataType _value)
+    Vector2 operator-(DataType _value) const
     {
         return {x - _value , y - _value};
     }
     
-    Vector2 operator*(DataType _value)
+    Vector2 operator*(DataType _value) const
     {
         return {x * _value , y * _value};
     }
     
-    Vector2 operator/(DataType _value)
+    Vector2 operator/(DataType _value) const
     {
         return {x / _value , y / _value};
     }

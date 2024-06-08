@@ -2,6 +2,7 @@
 #include "vulkan/vulkan_interface.hpp"
 #include <GLFW/glfw3.h>
 
+#include "camera.hpp"
 #include "gpu_typedef.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
@@ -15,6 +16,7 @@
 #include "vulkan/vulkan_semaphore.h"
 #include "vulkan/vulkan_shader_stage.hpp"
 #include "vulkan/vulkan_uniform_buffer.h"
+#include "world/world.hpp"
 
 
 BEGIN_PCCORE
@@ -27,7 +29,7 @@ public:
 
     void Destroy();
 
-    void RenderViewPort();
+    void RenderViewPort(const Camera& _camera,const World& _world);
 
 private:
     std::vector<VkCommandBuffer> m_CommandBuffers;
@@ -57,6 +59,9 @@ private:
     Mesh* mesh = nullptr;
     
     Texture* diamondtexture = nullptr;
+
+    const Camera* m_CurrentCamera;
+    const World* m_CurrentWorld;
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 

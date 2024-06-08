@@ -109,6 +109,39 @@ void RotationMatrix3D(float _angleX, float _angleY, float _angleZ, Matrix3x3<T>*
     
     *matrix = x * y * z;
 }
+template <class T>
+void RotationMatrix3D(const Quaternion<T>& _quaternion, Matrix3x3<T>* matrix)
+{
+    const T b = _quaternion.imaginary.x;
+    const T c = _quaternion.imaginary.y;
+    const T d = _quaternion.imaginary.z;
+    const T a = _quaternion.real;
+
+    const T aa = a * a;
+    const T bb = b * b;
+    const T cc = c * c;
+    const T dd = d * d;
+
+    const T bc = b * c;
+    const T da = d * a;
+    const T bd = b * d;
+    const T ca = c * a;
+    const T ba = b * a;
+    const T cd = c * d;
+    
+    (*matrix)[0].x = 2.f * (aa + bb) - 1.f;
+    (*matrix)[0].y = 2.f * (bc + da);
+    (*matrix)[0].z = 2.f * (bd - ca);
+
+    (*matrix)[1].x = 2.f * (bc - da);
+    (*matrix)[1].y = 2.f * (aa + cc) - 1.f;
+    (*matrix)[1].z = 2.f * (cd + ba);
+
+    (*matrix)[2].x = 2.f * (bd + ca);
+    (*matrix)[2].y = 2.f * (cd - ba);
+    (*matrix)[2].z = 2.f * (aa + dd) - 1.f;
+}
+
 
 template <class T>
 void RotationMatrix3D(const Vector3f& _angle, Matrix3x3<T>* matrix)
@@ -126,6 +159,15 @@ void RotationMatrix3D(const Vector3f& _angle, Matrix4x4<T>* matrix)
     
     (*matrix)[3][3] = 1.f;
 }
+template <class T>
+void RotationMatrix3D(const Quaternion<T>& _quaternion, Matrix4x4<T>* matrix)
+{
+    Matrix3x3<T> m3;
+    RotationMatrix3D(_quaternion, &m3);
+    MatrixCast<T,Matrix3x3<T>,Matrix4x4<T>>(m3, matrix);
+    (*matrix)[3][3] = 1.f;
+}
+
 
 // Scaling //
 template <class T>
@@ -542,9 +584,7 @@ void Trs3D(const Vector3<T>& _translation, const Vector3<T>& _rotation,const Vec
 {
     Matrix4x4<T> rot;
     Matrix4x4<T> scale;
-    Matrix4x4<T> translation;
 
-    TranslationMatrix3D(_translation,&translation);
     RotationMatrix3D(_rotation, &rot);
     ScaleMatrix3D(_scale, &scale);
     
@@ -555,14 +595,14 @@ void Trs3D(const Vector3<T>& _translation, const Vector3<T>& _rotation,const Vec
 template<typename T>
 void Trs3D(const Vector3<T>& _translation, const Quaternion<T>& _rotation,const Vector3<T>& _scale,Matrix4x4<T>* _outModel)
 {
-    Matrix3x3<T> rot;
-    Matrix3x3<T> scale;
+    Matrix4x4<T> rot;
+    Matrix4x4<T> scale;
 
-    ToMatrix(_rotation, &rot);
-    ScaleMatrix3D(_rotation, &scale);
+    RotationMatrix3D(_rotation, &rot);
+    ScaleMatrix3D(_scale, &scale);
     
     *_outModel = rot * scale;
-    *_outModel[Matrix4x4<T>::Size] = {_translation.x,_translation.y,_translation.z, static_cast<T>(1)};
+    (*_outModel)[Matrix4x4<T>::Size - 1] = { _translation.x, _translation.y, _translation.z, static_cast<T>(1) };
 }
 
 

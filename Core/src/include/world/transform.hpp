@@ -19,11 +19,9 @@ public:
     
     Vector3f scale = 1.f;
     
-private:
-    Vector3f m_LocalPosition;
+    Vector3f localPosition;
 
-    Quaterionf m_LocalRotation = Quaterionf::Identity();
-
+    Quaterionf localRotation = Quaterionf::Identity();
     
 };
 
