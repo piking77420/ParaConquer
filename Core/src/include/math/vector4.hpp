@@ -158,7 +158,7 @@ using DataType = T;
     
     TOOLBOX_INLINE bool operator==(const Vector4& _other)
     {
-        return IsEqualTo(x,_other.x) && IsEqualTo(y,_other.y) && IsEqualTo(z,_other.z) && IsEqualTo(w,_other.w);
+        return x == _other.x && y == _other.y && z == _other.z && w == _other.w;
     }
     
     TOOLBOX_INLINE bool operator!=(const Vector4& _other)

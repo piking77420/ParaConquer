@@ -45,24 +45,6 @@ VkPresentModeKHR VulkanSwapchain::ChoosePresentMode(const std::vector<VkPresentM
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkSurfaceFormatKHR VulkanSwapchain::ChooseSurfaceFormatAndColorSpace(
-    const std::vector<VkSurfaceFormatKHR>& SurfaceFormats)
-{
-    Log::Debug("Choose Surface Format And ColorSpace");
-
-    for (int32_t i = 0; i < SurfaceFormats.size(); i++)
-    {
-        if ((SurfaceFormats[i].format == VK_FORMAT_B8G8R8A8_SRGB) &&
-            (SurfaceFormats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR))
-        {
-            return SurfaceFormats[i];
-        }
-    }
-
-    return SurfaceFormats[0];
-}
-
-
 void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
 {
     for (size_t i = 0; i < swapChainImages.size(); i++)
@@ -93,14 +75,25 @@ void VulkanSwapchain::Init(const uint32_t widht , const uint32_t _height,const u
 {
     PhysicalDevice& _physicalDevice = VulkanInterface::GetPhysicalDevice();
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice.physDevice, VulkanInterface::GetVulkanSurface().surfaceKhr, &_physicalDevice.surfaceCaps);
-    surfaceFormatKhr = ChooseSurfaceFormatAndColorSpace(_physicalDevice.surfaceFormats);
+
+    
+    std::vector<VkSurfaceFormatKHR> formats =
+        {
+        {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR},
+        {VK_FORMAT_B8G8R8A8_SRGB,VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }
+        };
+    
+    const bool resultFormat = VulkanInterface::vulkanPhysicalDevices.IsPresentFormatIsValid(formats,&surfaceFormatKhr);
+    if (!resultFormat)
+    {
+        PC_LOGERROR("None of VkSurfaceFormatKHR asked is been support by the device !!")
+    }
     depthFormat = VulkanInterface::vulkanPhysicalDevices.FindDepthFormat();
+
     
     const VkDevice& device = VulkanInterface::GetDevice().device;
     const VkSurfaceCapabilitiesKHR& SurfaceCaps = _physicalDevice.surfaceCaps;
     nbrOfImage = ChooseNumImages(SurfaceCaps);
-    
- 
     InitRenderPass();
     InitSwapChain(widht, _height, _qfamilyIndex, _surface);
 }
@@ -179,8 +172,9 @@ void VulkanSwapchain::InitRenderPass()
         .format = surfaceFormatKhr.format,
         .clearOnLoad = true,
         .write = true,
-        .imageLayoutRef = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        .imageLayoutDes = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .imageLayoutInit = VK_IMAGE_LAYOUT_UNDEFINED,
+        .imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .imageLayoutFinal = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     };
 
     const Attachment depth =
@@ -189,8 +183,9 @@ void VulkanSwapchain::InitRenderPass()
         .format = depthFormat,
         .clearOnLoad = true,
         .write = true,
-        .imageLayoutRef = VK_IMAGE_LAYOUT_UNDEFINED,
-        .imageLayoutDes = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+        .imageLayoutInit = VK_IMAGE_LAYOUT_UNDEFINED,
+        .imageLayoutRef = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        .imageLayoutFinal = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     };
 
     mainRenderPass.Init({ color, depth});

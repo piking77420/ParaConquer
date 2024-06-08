@@ -51,8 +51,6 @@ private:
     
     VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& PresentModes);
     
-    VkSurfaceFormatKHR ChooseSurfaceFormatAndColorSpace(const std::vector<VkSurfaceFormatKHR>& SurfaceFormats);
-    
     void CreateFrameBuffer(const VkDevice& _device);
 };
 

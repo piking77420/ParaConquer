@@ -138,7 +138,7 @@ void VulkanTexture::Init(VkImageCreateInfo _imageInfo , const VkImageAspectFlags
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &_imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
     CreateImageView(textureImage,_imageInfo.format, &textureImageView, aspectFlags);
-    
+
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
     const  VkSamplerCreateInfo samplerInfo =
        {

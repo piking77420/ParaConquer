@@ -181,12 +181,12 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
     vkCmdBindIndexBuffer(commandBuffer, mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     
     vkCmdDrawIndexed(commandBuffer, mesh->indicies.size(), 1, 0, 0, 0);
-
-    vkCmdEndRenderPass(commandBuffer);
     
+    VulkanImgui::Render(&commandBuffer);
+    
+    vkCmdEndRenderPass(commandBuffer);
     const VkResult r = vkEndCommandBuffer(commandBuffer);
     VK_CHECK_ERROR(r,"Failed to begin EndCommandBuffer")
-    
 }
 
 void Renderer::CreateBasicGraphiPipeline()

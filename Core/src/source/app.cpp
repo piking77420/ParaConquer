@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "imgui.h"
 #include "log.hpp"
 #include "resources/resource_manager.hpp"
 #include "world/transform.hpp"
@@ -16,6 +17,7 @@ App::App()
     VulkanInterface::Init(&windowHandle);
     ResourceManager::Init();
     renderer.Init(&windowHandle);
+    vulkanImgui.Init(windowHandle);
 
     World::world = &world;
     const Entity entity = world.scene.CreateEntity();
@@ -25,20 +27,26 @@ App::App()
 App::~App()
 {
     PC_LOG("App Destroy")
-    windowHandle.Destroy();
     renderer.Destroy();
+    // Wait tha the device has been stop by the destroy render func
+    vulkanImgui.Destroy();
     ResourceManager::Destroy();
     VulkanInterface::Destroy();
+    windowHandle.Destroy();
     
     delete ComponentRegister::componentRegisterMap;
 }
 
 void App::Run()
 {
+    bool showWindow = true;
     while (!windowHandle.ShouldClose())
     {
         windowHandle.PoolEvents();
         HandleResize();
+        vulkanImgui.NewFrame();
+
+        ImGui::ShowDemoWindow(&showWindow);
         renderer.RenderViewPort();
        
     }   

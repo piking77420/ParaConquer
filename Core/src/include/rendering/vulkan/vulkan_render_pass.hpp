@@ -28,8 +28,9 @@ BEGIN_PCCORE
         VkFormat format;
         bool clearOnLoad = false;
         bool write = false;
-        VkImageLayout imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        VkImageLayout imageLayoutDes = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        VkImageLayout imageLayoutInit = VK_IMAGE_LAYOUT_UNDEFINED;
+        VkImageLayout imageLayoutRef = VK_IMAGE_LAYOUT_UNDEFINED;
+        VkImageLayout imageLayoutFinal = VK_IMAGE_LAYOUT_UNDEFINED;
     };
 
     class VulkanRenderPass

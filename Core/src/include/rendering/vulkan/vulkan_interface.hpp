@@ -56,8 +56,6 @@ public:
 
     static inline VulkanPhysicalDevices vulkanPhysicalDevices;
 
-private:
-    
     static inline uint32_t currentFrame = 0;
     
     static inline VulkanInstance vulkanInstance;
@@ -65,13 +63,11 @@ private:
     static inline VulkanDebugMessage vulkanDebugMessage;
 #endif
     
-    
     static inline VulkanDevice vulkanDevice;
     
     static inline VulkanSurface vulkanSurface;
 
     static inline VmaAllocator vmaAllocator;
-    
 };
 
 END_PCCORE

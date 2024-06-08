@@ -291,3 +291,28 @@ bool VulkanPhysicalDevices::HasStencilComponent(VkFormat format)
 {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
+
+bool VulkanPhysicalDevices::IsPresentFormatIsValid(const std::vector<VkSurfaceFormatKHR>& _requestedFormats,
+    VkSurfaceFormatKHR* _selectedFormat) const
+{
+    const std::vector<VkSurfaceFormatKHR>& supportedFormats = GetCurrentDevice().surfaceFormats;
+    
+    for (size_t i = 0; i < _requestedFormats.size(); i++)
+    {
+        const VkSurfaceFormatKHR asquedFormat =  _requestedFormats[i];
+        for (size_t k = 0; k < supportedFormats.size(); k++)
+        {
+            const VkSurfaceFormatKHR supported =  supportedFormats[k];
+
+            if (asquedFormat.format == supported.format &&
+                asquedFormat.colorSpace == supported.colorSpace)
+            {
+                *_selectedFormat = asquedFormat;
+                return true;
+            }
+        }
+    }
+
+    *_selectedFormat = supportedFormats[0];
+    return false;
+}

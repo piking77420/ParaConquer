@@ -85,8 +85,8 @@ void VulkanRenderPass::ParseAttachementDescriptor(const Attachment& _in, VkAttac
     _out->stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
     // TO DO FIX THIS 
-    _out->initialLayout = _in.imageLayoutRef;
-    _out->finalLayout = _in.imageLayoutDes;
+    _out->initialLayout = _in.imageLayoutInit;
+    _out->finalLayout = _in.imageLayoutFinal;
 }
 
 void VulkanRenderPass::ParseAttachementReference(const Attachment& _in, std::vector<VkAttachmentReference>* _outColor,
@@ -94,7 +94,7 @@ void VulkanRenderPass::ParseAttachementReference(const Attachment& _in, std::vec
 {
     VkAttachmentReference vkAttachmentReference;
     vkAttachmentReference.attachment = static_cast<uint32_t>(_index);
-    vkAttachmentReference.layout = _in.imageLayoutDes;
+    vkAttachmentReference.layout = _in.imageLayoutRef;
     
     switch (_in.attachementIndex)
     {

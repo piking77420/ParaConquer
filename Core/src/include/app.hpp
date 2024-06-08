@@ -3,6 +3,7 @@
 #include "core_header.hpp"
 #include "rendering/renderer.hpp"
 #include "window.hpp"
+#include "rendering/vulkan/vulkan_imgui.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "world/world.hpp"
 
@@ -15,6 +16,8 @@ public:
 	Window windowHandle;
 
 	Renderer renderer;
+
+	VulkanImgui vulkanImgui; 
 
 	World world;
 	
