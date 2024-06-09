@@ -7,12 +7,15 @@
 
 using namespace PC_CORE;
 
-void VulkankPipelineLayout::Init(const std::vector<VkDescriptorSetLayout>& _vkDescriptorSetLayouts)
+void VulkankPipelineLayout::Init(const std::vector<VkDescriptorSetLayout>& _vkDescriptorSetLayouts,
+    const std::vector<VkPushConstantRange> _vkPushConstantRange)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = _vkDescriptorSetLayouts.size();
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(_vkDescriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts = _vkDescriptorSetLayouts.data();
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vkPushConstantRange.size());
+    pipelineLayoutInfo.pPushConstantRanges = _vkPushConstantRange.data();
 
     VkResult res = vkCreatePipelineLayout(VulkanInterface::GetDevice().device, &pipelineLayoutInfo, nullptr, &m_VkPipelineLayout);
     VK_CHECK_ERROR(res,"Failed To create GraphicPipeline")

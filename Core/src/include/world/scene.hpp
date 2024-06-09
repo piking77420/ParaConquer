@@ -33,7 +33,10 @@ BEGIN_PCCORE
         
         template <typename T>
         const T* GetComponent(Entity entity) const;
-        
+
+        template<typename T>
+        void GetComponentData(std::vector<T>** _data) const;
+
         template <typename T>
         T* AddSystem();
 
@@ -102,6 +105,13 @@ BEGIN_PCCORE
     {
         assert(ComponentHandle<T>::componentID >= 0);
         return reinterpret_cast<const T*>(GetComponentInternal(ComponentHandle<T>::componentID, entity));
+    }
+
+    template <typename T>
+    void Scene::GetComponentData(std::vector<T>** _data) const
+    {
+        assert(ComponentHandle<T>::componentID >= 0);
+        *_data = reinterpret_cast< std::vector<T>*>(&m_ComponentData[ComponentHandle<T>::componentID]);
     }
 
     template <typename T>

@@ -44,7 +44,7 @@ private:
 
 	void MoveObject();
 
-	Transform* transform = nullptr;
+	std::vector<Transform*> transforms;
 };
 
 END_PCCORE

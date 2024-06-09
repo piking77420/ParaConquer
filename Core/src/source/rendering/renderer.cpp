@@ -14,6 +14,8 @@ using namespace PC_CORE;
 
 void Renderer::Init(Window* _window)
 {
+    m_MatrixMeshs.resize(MAX_ENTITIES);
+    
     m_CommandBuffers.resize(VulkanInterface::GetNbrOfImage());
     VulkanInterface::vulkanCommandPoolGraphic.AllocCommandBuffer(VulkanInterface::GetNbrOfImage(), m_CommandBuffers.data());
 
@@ -22,13 +24,17 @@ void Renderer::Init(Window* _window)
     
     m_VulkanShaderStage.Init({ vertex, frag });
     diamondtexture = ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
-    mesh = ResourceManager::Get<Mesh>("cube.obj");
     CreateAsyncObject();
     
     m_UniformBuffers.resize(VulkanInterface::GetNbrOfImage());
     for(VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
     {
         uniformBuffer.Init(&UniformBufferObject, sizeof(UniformBufferObject));
+    }
+    m_ShaderStorages.resize(VulkanInterface::GetNbrOfImage());
+    for(VulkanShaderStorageBuffer& shaderStorageBuffer : m_ShaderStorages)
+    {
+        shaderStorageBuffer.Init(m_MatrixMeshs.size() * sizeof(MatrixMeshes));
     }
     
     CreateDescriptorSetLayout();
@@ -52,6 +58,11 @@ void Renderer::Destroy()
     for(VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
     {
         uniformBuffer.Destroy();
+    }
+
+    for(VulkanShaderStorageBuffer& vulkanShaderStorageBuffer : m_ShaderStorages)
+    {
+        vulkanShaderStorageBuffer.Destroy();
     }
     
     vkDestroyDescriptorPool(VulkanInterface::GetDevice().device, descriptorPool, nullptr);
@@ -141,7 +152,12 @@ void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBuffe
 
 void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
+    ForwardPass(commandBuffer, imageIndex);
     
+}
+
+void Renderer::ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+{
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     BeginCommandBuffer(commandBuffer,0);
@@ -164,30 +180,21 @@ void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imag
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.width);
-    viewport.height = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    const VkBuffer vertexBuffers[] = {mesh->vulkanVertexBuffer.GetHandle()};
-    const VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    std::vector<StaticMesh>* meshes;
+    m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
     
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
-        1, &descriptorSets[VulkanInterface::GetCurrentFrame()], 0, nullptr);
-    
-    vkCmdBindIndexBuffer(commandBuffer, mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-    
-    vkCmdDrawIndexed(commandBuffer, mesh->indicies.size(), 1, 0, 0, 0);
+    for (size_t i = 0; i < meshes->size(); i++)
+    {
+        const StaticMesh& staticMesh = meshes->at(i);
+        
+        if (!IsValid(staticMesh.componentHolder))
+            continue;
+            
+        const Entity& entity = staticMesh.componentHolder.entityID;
+        const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(entity);
+        DrawStatisMesh(commandBuffer, imageIndex, staticMesh, transform, entity);
+        
+    }
     
     VulkanImgui::Render(&commandBuffer);
     
@@ -202,8 +209,12 @@ void Renderer::CreateBasicGraphiPipeline()
     {
         m_DescriptorSetLayout.Get()
     };
-    
-    m_VkPipelineLayout.Init(vkDescriptorSetLayouts);
+    VkPushConstantRange pushConstant;
+    pushConstant.offset = 0;
+    pushConstant.size = sizeof(int32_t);
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    m_VkPipelineLayout.Init(vkDescriptorSetLayouts, {pushConstant});
     /////////////////////////
     
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -215,6 +226,8 @@ void Renderer::CreateBasicGraphiPipeline()
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
     viewportState.scissorCount = 1;
+    
+
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -317,6 +330,8 @@ void Renderer::DestroyAsyncObject()
 
 void Renderer::UpdateUniformBuffer(uint32_t _currentFrame)
 {
+    ComputeModelAndNormalInvertMatrix(_currentFrame);
+    
     const Transform* transform = m_CurrentWorld->scene.GetComponent<Transform>(0);
     
     Trs3D(transform->localPosition,transform->localRotation ,transform->scale,&UniformBufferObject.model);
@@ -335,17 +350,22 @@ void Renderer::CreateDescriptorSetLayout()
     VkDescriptorSetLayoutBinding uboLayoutBinding = VulkanUniformBuffer::GetLayoutBinding(0,1 ,
         VK_SHADER_STAGE_VERTEX_BIT);
     VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(1,1,VK_SHADER_STAGE_FRAGMENT_BIT);
-    m_DescriptorSetLayout.Init({uboLayoutBinding , samplerLayoutBinding});
+    VkDescriptorSetLayoutBinding shaderBufferStorage = VulkanShaderStorageBuffer::GetLayoutBinding(2,1, VK_SHADER_STAGE_VERTEX_BIT);
+    
+    m_DescriptorSetLayout.Init({uboLayoutBinding , samplerLayoutBinding, shaderBufferStorage});
 }
 
 void Renderer::CreateDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+    std::array<VkDescriptorPoolSize, 3> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
+    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    poolSizes[2].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
 
+    
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -376,7 +396,7 @@ void Renderer::CreateDescriptorSets()
     for (size_t i = 0; i < VulkanInterface::GetNbrOfImage(); i++)
     {
        
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
 
         VkDescriptorBufferInfo bufferInfo{};
@@ -388,6 +408,12 @@ void Renderer::CreateDescriptorSets()
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = diamondtexture->vulkanTexture.textureImageView;
         imageInfo.sampler = VulkanInterface::vulkanTextureSampler.Get(diamondtexture->vulkanTexture.samplerId);
+
+                
+        VkDescriptorBufferInfo shaderStoragebufferInfo{};
+        shaderStoragebufferInfo.buffer = m_ShaderStorages[i].GetHandle();
+        shaderStoragebufferInfo.offset = 0;
+        shaderStoragebufferInfo.range = m_MatrixMeshs.size() * sizeof(MatrixMeshes);
         
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = descriptorSets[i];
@@ -404,7 +430,65 @@ void Renderer::CreateDescriptorSets()
         descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrites[1].descriptorCount = 1;
         descriptorWrites[1].pImageInfo = &imageInfo;
+
+        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[2].dstSet = descriptorSets[i];
+        descriptorWrites[2].dstBinding = 2;
+        descriptorWrites[2].dstArrayElement = 0;
+        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        descriptorWrites[2].descriptorCount = 1;
+        descriptorWrites[2].pBufferInfo = &shaderStoragebufferInfo;
         
        vkUpdateDescriptorSets(VulkanInterface::GetDevice().device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
+}
+
+void Renderer::ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame)
+{
+    const Scene& scene = m_CurrentWorld->scene;
+    std::vector<Transform>* m_transforms = nullptr;
+    scene.GetComponentData<Transform>(&m_transforms);
+    
+    for (int i = 0; i < m_transforms->size(); ++i)
+    {
+        const Transform& transform = m_transforms->at(i);
+
+        if (!IsValid(transform.componentHolder))
+            continue;
+        
+        
+        MatrixMeshes& matricies = m_MatrixMeshs[transform.componentHolder.entityID];
+        Trs3D(transform.localPosition,transform.localRotation ,transform.scale, &matricies.model);
+        RotationMatrix3D(transform.localRotation,&matricies.modelNormalMatrix);
+    }
+
+    m_ShaderStorages[_currentFrame].Update(m_MatrixMeshs.data(),sizeof(m_MatrixMeshs[0]) * m_MatrixMeshs.size());
+}
+
+void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
+    const Transform& transform, const Entity& entity)
+{
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.width);
+    viewport.height = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    const VkBuffer vertexBuffers[] = {staticMesh.mesh->vulkanVertexBuffer.GetHandle()};
+    const VkDeviceSize offsets[] = {0};
+    
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
+        1, &descriptorSets[VulkanInterface::GetCurrentFrame()], 0, nullptr);
+    
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, staticMesh.mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdPushConstants(commandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int32_t), &entity);
+    vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->indicies.size(), 1, 0, 0, 0);
 }

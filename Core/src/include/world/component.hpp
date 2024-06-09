@@ -17,6 +17,11 @@ struct ComponentHandle : public Component
     static inline uint32_t componentID {ComponentRegister::template RegisterComponent<T>(ComponentRegister::template CreateComponent<T>, ComponentRegister::template FreeComponent<T>)};
 };
 
+bool inline IsValid(Component component)
+{
+    return component.entityID != NULL_ENTITY;
+}
+
 END_PCCORE
 
 #define MAKE_COMPONENT(x) \

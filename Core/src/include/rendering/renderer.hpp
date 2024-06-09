@@ -15,7 +15,10 @@
 #include "vulkan/vulkan_render_pass.hpp"
 #include "vulkan/vulkan_semaphore.h"
 #include "vulkan/vulkan_shader_stage.hpp"
+#include "vulkan/vulkan_shader_storage_buffer.hpp"
 #include "vulkan/vulkan_uniform_buffer.h"
+#include "world/static_mesh.hpp"
+#include "world/transform.hpp"
 #include "world/world.hpp"
 
 
@@ -48,6 +51,10 @@ private:
     
     std::vector<VulkanUniformBuffer> m_UniformBuffers;
 
+    std::vector<VulkanShaderStorageBuffer> m_ShaderStorages;
+
+    std::vector<MatrixMeshes> m_MatrixMeshs;
+
     std::vector<VkDescriptorSet> descriptorSets;
     
     std::vector<VulkanSemaphore> m_ImageAvailableSemaphore;
@@ -55,8 +62,6 @@ private:
     std::vector<VulkanSemaphore> m_RenderFinishedSemaphore;
     
     std::vector<VulkanFence> m_InFlightFence;
-
-    Mesh* mesh = nullptr;
     
     Texture* diamondtexture = nullptr;
 
@@ -66,6 +71,8 @@ private:
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
     void RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+    void ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void CreateBasicGraphiPipeline();
 
@@ -80,6 +87,11 @@ private:
     void CreateDescriptorPool();
     
     void CreateDescriptorSets();
+
+    void ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame);
+
+    void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
+    const Transform& transform, const Entity& entity);
 };
 
 END_PCCORE

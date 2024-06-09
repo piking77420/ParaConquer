@@ -20,7 +20,14 @@ App::App()
 
     World::world = &world;
     const Entity entity = world.scene.CreateEntity();
-    transform = world.scene.AddComponent<Transform>(entity);
+    transforms.push_back(world.scene.AddComponent<Transform>(entity));
+    StaticMesh* staticMesh =world.scene.AddComponent<StaticMesh>(entity);
+    staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+
+    const Entity entity2 = world.scene.CreateEntity();
+    transforms.push_back(world.scene.AddComponent<Transform>(entity2));
+    StaticMesh* staticMesh2 =world.scene.AddComponent<StaticMesh>(entity2);
+    staticMesh2->mesh = ResourceManager::Get<Mesh>("cube.obj");
 }
 
 App::~App()
@@ -64,14 +71,20 @@ void App::HandleResize()
 
 void App::MoveCam()
 {
-    auto io = ImGui::GetIO();
-    
+    const auto io = ImGui::GetIO();
 
+
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        deltass.Reset();
+    }
+
+    
     if (ImGui::IsMouseDown(ImGuiPopupFlags_MouseButtonRight))
     {
         Vector2f vec = { -io.MouseDelta.x , -io.MouseDelta.y };
         deltass.AddSample(vec);
-        Vector2f avarage = deltass.GetAvarage<Vector2f>();
+        const Vector2f avarage = deltass.GetAvarage<Vector2f>();
         yaw += avarage.x;
         pitch += avarage.y;
 
@@ -89,10 +102,6 @@ void App::MoveCam()
         camera.front.z = std::sin(pitch * Deg2Rad);
         camera.front = camera.front.Normalize();
 
-    }
-    if (ImGui::IsMouseReleased(ImGuiPopupFlags_MouseButtonRight))
-    {
-        deltass.Reset();
     }
 
     const Vector3f right = Vector3f::Cross(camera.front, Vector3f::UnitZ());
@@ -135,11 +144,20 @@ void App::MoveObject()
 {
     if (ImGui::Begin("MoveObject"))
     {
-        if (transform != nullptr)
+        for (Transform* transform : transforms)
         {
-            ImGui::DragFloat3("Position",transform->localPosition.GetPtr(),1.f, -10000.f, 10000.f);
-            ImGui::DragFloat3("Scale",transform->scale.GetPtr(),1.f, -10000.f, 10000.f);
+            if (transform != nullptr)
+            {
+                ImGui::PushID(transform->componentHolder.entityID);
+                
+                ImGui::DragFloat3("Position",transform->localPosition.GetPtr(),1.f, -10000.f, 10000.f);
+                ImGui::DragFloat3("Rotation",transform->localRotation.GetPtr(),1.f, -10000.f, 10000.f);
+                ImGui::DragFloat3("Scale",transform->scale.GetPtr(),1.f, -10000.f, 10000.f);
+                ImGui::PopID();
+            }
         }
+        
+        
         ImGui::End();
     }
 }

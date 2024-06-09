@@ -7,7 +7,8 @@ BEGIN_PCCORE
 class VulkankPipelineLayout
 {
 public:
-    void Init(const std::vector<VkDescriptorSetLayout>& _vkDescriptorSetLayouts);
+    void Init(const std::vector<VkDescriptorSetLayout>& _vkDescriptorSetLayouts,
+    const std::vector<VkPushConstantRange> _vkPushConstantRange = {});
 
     void Destroy();
 

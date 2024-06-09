@@ -12,3 +12,10 @@ struct alignas(16) UniformBufferObject
     Matrix4x4f proj = Matrix4x4f::Identity();
 };
 
+
+struct alignas(16) MatrixMeshes
+{
+    Matrix4x4f model = Matrix4x4f::Identity();
+    Matrix3x3f modelNormalMatrix = Matrix3x3f::Identity();
+
+};

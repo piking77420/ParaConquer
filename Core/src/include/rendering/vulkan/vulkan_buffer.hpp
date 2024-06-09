@@ -11,13 +11,15 @@ class VulkanBuffer
 public:
     static void CreateGpuBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocation, void const* _data, const size_t _dataSize, VkBufferUsageFlagBits _usage);
     
+    static void CreateGpuBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocation, const size_t _dataSize, VkBufferUsageFlagBits _usage);
+
     virtual void Destroy();
 
     VulkanBuffer() = default;
 
     virtual ~VulkanBuffer() = default;
 
-    VkBuffer GetHandle();
+    VkBuffer& GetHandle();
 
     
 protected:
