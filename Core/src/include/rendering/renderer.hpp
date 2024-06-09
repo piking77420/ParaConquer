@@ -23,7 +23,7 @@
 
 
 BEGIN_PCCORE
-    class Renderer
+    class  Renderer
 {
 public:
     void Init(Window* _window);
@@ -47,7 +47,7 @@ private:
 
     UniformBufferObject UniformBufferObject;
 
-    VkDescriptorPool descriptorPool;
+    VkDescriptorPool vkDescriptorPool = VK_NULL_HANDLE;  
     
     std::vector<VulkanUniformBuffer> m_UniformBuffers;
 
@@ -63,10 +63,9 @@ private:
     
     std::vector<VulkanFence> m_InFlightFence;
     
-    Texture* diamondtexture = nullptr;
-
-    const Camera* m_CurrentCamera;
-    const World* m_CurrentWorld;
+    const Camera* m_CurrentCamera = nullptr;
+    
+    const World* m_CurrentWorld = nullptr;
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
@@ -83,8 +82,6 @@ private:
     void CreateDescriptorSetLayout();
 
     void UpdateUniformBuffer(uint32_t _currentFrame);
-
-    void CreateDescriptorPool();
     
     void CreateDescriptorSets();
 

@@ -8,6 +8,7 @@
 
 #include "vulkan_command_pool.hpp"
 #include "vulkan_device.hpp"
+#include "vulkan_material_manager.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "vulkan_swapchain.hpp"
 #include "vulkan_texture_sampler.hpp"
@@ -68,6 +69,8 @@ public:
     static inline VulkanSurface vulkanSurface;
 
     static inline VmaAllocator vmaAllocator;
+
+    static inline VulkanMaterialManager vulkanMaterialManager;
 };
 
 END_PCCORE

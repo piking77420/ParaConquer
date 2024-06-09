@@ -56,10 +56,12 @@ void VulkanInterface::Init(Window* _window)
     
     // get the nbr of image for the swap chain
     vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
+    vulkanMaterialManager.Init();
 }
 
 void VulkanInterface::Destroy()
 {
+    vulkanMaterialManager.Destroy();
     vulkanSwapChapchain.Destroy();
     vulkanCommandPoolGraphic.Destroy();
     vulkanCommandPoolTransfert.Destroy();

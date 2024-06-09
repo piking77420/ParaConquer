@@ -7,7 +7,7 @@ struct MeshesMatrix
     mat3 NormalInvert;
 }; 
 
-layout(std430, set = 0, binding = 2) buffer MeshesMatrixsBuffer 
+layout(std430, set = 0, binding = 1) buffer MeshesMatrixsBuffer 
 {
     MeshesMatrix meshesMatrix[MAX_ENTITIES]; // Corrected the name to meshesMatrix
 };

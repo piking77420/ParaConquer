@@ -20,6 +20,9 @@ public:
 
     template<class T>
     static T* CreateAndLoad(const fs::path& path);
+
+    template<class T>
+    static void Add(const std::string& _name,T* _resource);
     
     template<class T>
     static T* Get(const std::string& _name);
@@ -46,6 +49,13 @@ T* ResourceManager::CreateAndLoad(const fs::path& path)
     m_ResourcesMap.emplace(path,newR);
 
     return newR;
+}
+
+template <class T>
+void ResourceManager::Add(const std::string& _name,T* _resource)
+{
+    _resource->name = _name;
+    m_ResourcesMap.emplace(_name,_resource);
 }
 
 template <class T>

@@ -23,7 +23,6 @@ void Renderer::Init(Window* _window)
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
     
     m_VulkanShaderStage.Init({ vertex, frag });
-    diamondtexture = ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
     CreateAsyncObject();
     
     m_UniformBuffers.resize(VulkanInterface::GetNbrOfImage());
@@ -38,7 +37,6 @@ void Renderer::Init(Window* _window)
     }
     
     CreateDescriptorSetLayout();
-    CreateDescriptorPool();
     CreateDescriptorSets();
     CreateBasicGraphiPipeline();
 }
@@ -65,7 +63,6 @@ void Renderer::Destroy()
         vulkanShaderStorageBuffer.Destroy();
     }
     
-    vkDestroyDescriptorPool(VulkanInterface::GetDevice().device, descriptorPool, nullptr);
     m_DescriptorSetLayout.Destroy();
 
     m_VulkanShaderStage.Destroy();
@@ -207,7 +204,8 @@ void Renderer::CreateBasicGraphiPipeline()
 {
     std::vector<VkDescriptorSetLayout> vkDescriptorSetLayouts =
     {
-        m_DescriptorSetLayout.Get()
+        m_DescriptorSetLayout.Get(),
+        VulkanInterface::vulkanMaterialManager.descriptorSetLayout.Get()
     };
     VkPushConstantRange pushConstant;
     pushConstant.offset = 0;
@@ -235,7 +233,7 @@ void Renderer::CreateBasicGraphiPipeline()
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.cullMode = VK_CULL_MODE_NONE;
     rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -349,95 +347,42 @@ void Renderer::CreateDescriptorSetLayout()
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding = VulkanUniformBuffer::GetLayoutBinding(0,1 ,
         VK_SHADER_STAGE_VERTEX_BIT);
-    VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(1,1,VK_SHADER_STAGE_FRAGMENT_BIT);
-    VkDescriptorSetLayoutBinding shaderBufferStorage = VulkanShaderStorageBuffer::GetLayoutBinding(2,1, VK_SHADER_STAGE_VERTEX_BIT);
+    VkDescriptorSetLayoutBinding shaderBufferStorage = VulkanShaderStorageBuffer::GetLayoutBinding(1,1, VK_SHADER_STAGE_VERTEX_BIT);
     
-    m_DescriptorSetLayout.Init({uboLayoutBinding , samplerLayoutBinding, shaderBufferStorage});
+    m_DescriptorSetLayout.Init({uboLayoutBinding , shaderBufferStorage});
 }
-
-void Renderer::CreateDescriptorPool()
-{
-    std::array<VkDescriptorPoolSize, 3> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
-    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSizes[2].descriptorCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
-
-    
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
-
-    const VkResult result = vkCreateDescriptorPool(VulkanInterface::GetDevice().device, &poolInfo, nullptr, &descriptorPool);
-    VK_CHECK_ERROR(result,"failed to create descriptor pool!");
-}
-  
 
 void Renderer::CreateDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> layouts(VulkanInterface::GetNbrOfImage(), m_DescriptorSetLayout.Get());
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(VulkanInterface::GetNbrOfImage());
-    allocInfo.pSetLayouts = layouts.data();
-
     descriptorSets.resize(VulkanInterface::GetNbrOfImage());
+    m_DescriptorSetLayout.CreateDesciptorPool(&vkDescriptorPool);
+    m_DescriptorSetLayout.CreateDescriptorSet(vkDescriptorPool,descriptorSets.size(),descriptorSets.data());
     
-    if (vkAllocateDescriptorSets(VulkanInterface::GetDevice().device, &allocInfo, descriptorSets.data()) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate descriptor sets!");
-    }
-
     for (size_t i = 0; i < VulkanInterface::GetNbrOfImage(); i++)
     {
        
-        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
-
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = m_UniformBuffers[i].GetHandle();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = diamondtexture->vulkanTexture.textureImageView;
-        imageInfo.sampler = VulkanInterface::vulkanTextureSampler.Get(diamondtexture->vulkanTexture.samplerId);
-
-                
+        
+        m_UniformBuffers[i].Bind(&descriptorWrites[0], descriptorSets[i],
+            0, 0, 1, 0,sizeof(UniformBufferObject),
+            bufferInfo);
+        
         VkDescriptorBufferInfo shaderStoragebufferInfo{};
         shaderStoragebufferInfo.buffer = m_ShaderStorages[i].GetHandle();
         shaderStoragebufferInfo.offset = 0;
         shaderStoragebufferInfo.range = m_MatrixMeshs.size() * sizeof(MatrixMeshes);
-        
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[1].dstSet = descriptorSets[i];
         descriptorWrites[1].dstBinding = 1;
         descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[2].dstSet = descriptorSets[i];
-        descriptorWrites[2].dstBinding = 2;
-        descriptorWrites[2].dstArrayElement = 0;
-        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        descriptorWrites[2].descriptorCount = 1;
-        descriptorWrites[2].pBufferInfo = &shaderStoragebufferInfo;
+        descriptorWrites[1].pBufferInfo = &shaderStoragebufferInfo;
         
        vkUpdateDescriptorSets(VulkanInterface::GetDevice().device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
@@ -483,9 +428,12 @@ void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     const VkBuffer vertexBuffers[] = {staticMesh.mesh->vulkanVertexBuffer.GetHandle()};
     const VkDeviceSize offsets[] = {0};
+
     
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
         1, &descriptorSets[VulkanInterface::GetCurrentFrame()], 0, nullptr);
+    VulkanInterface::vulkanMaterialManager.BindMaterialDescriptorSet(commandBuffer, *staticMesh.material,m_VkPipelineLayout.Get());
+
     
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, staticMesh.mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);

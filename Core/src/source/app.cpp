@@ -17,17 +17,31 @@ App::App()
     ResourceManager::Init();
     renderer.Init(&windowHandle);
     vulkanImgui.Init(windowHandle);
+    
+    Texture* diamondtexture = ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
+    Texture* emerauldBlock = ResourceManager::CreateAndLoad<Texture>("assets/textures/viking_room.png");
+
+    Material* material = new Material;
+    material->Load({emerauldBlock});
+    ResourceManager::Add<Material>("baseMaterial",material);
+
+    Material* material2 = new Material;
+    material2->Load({diamondtexture});
+    ResourceManager::Add<Material>("baseMaterial2",material2);
 
     World::world = &world;
     const Entity entity = world.scene.CreateEntity();
     transforms.push_back(world.scene.AddComponent<Transform>(entity));
     StaticMesh* staticMesh =world.scene.AddComponent<StaticMesh>(entity);
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    staticMesh->material = material;
 
     const Entity entity2 = world.scene.CreateEntity();
     transforms.push_back(world.scene.AddComponent<Transform>(entity2));
     StaticMesh* staticMesh2 =world.scene.AddComponent<StaticMesh>(entity2);
-    staticMesh2->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    staticMesh2->mesh = ResourceManager::Get<Mesh>("viking_room.obj");
+    staticMesh2->material = material2;
+
 }
 
 App::~App()
@@ -45,7 +59,6 @@ App::~App()
 
 void App::Run()
 {
-    bool showWindow = true;
     while (!windowHandle.ShouldClose())
     {
         windowHandle.PoolEvents();
@@ -53,7 +66,6 @@ void App::Run()
         vulkanImgui.NewFrame();
         MoveCam();
         MoveObject();
-        ImGui::ShowDemoWindow(&showWindow);
         renderer.RenderViewPort(camera, world);
        
     }   
@@ -149,7 +161,7 @@ void App::MoveObject()
             if (transform != nullptr)
             {
                 ImGui::PushID(transform->componentHolder.entityID);
-                
+                ImGui::Text("entity %d",transform->componentHolder.entityID);
                 ImGui::DragFloat3("Position",transform->localPosition.GetPtr(),1.f, -10000.f, 10000.f);
                 ImGui::DragFloat3("Rotation",transform->localRotation.GetPtr(),1.f, -10000.f, 10000.f);
                 ImGui::DragFloat3("Scale",transform->scale.GetPtr(),1.f, -10000.f, 10000.f);

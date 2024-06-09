@@ -11,6 +11,8 @@ public:
     
     void Load(const fs::path& path) override;
 
+    void Load(std::vector<Texture*> textures);
+
     Texture* albedo = nullptr;
 };
 

@@ -51,6 +51,9 @@
     <ClInclude Include="src\externals\include\tiny_obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\input\low_pass_filter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\include\math\complex.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -123,6 +126,9 @@
     <ClInclude Include="src\include\rendering\vulkan\vulkan_interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_material_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_physical_devices.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -142,6 +148,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_stage.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_storage_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_surface.hpp">
@@ -177,6 +186,9 @@
     <ClInclude Include="src\include\rendering\vertex.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\resources\material.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\include\resources\mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -202,6 +214,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\world\scene_graph.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\world\static_mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\world\system.hpp">
@@ -231,9 +246,6 @@
     <ClInclude Include="src\include\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\input\low_pass_filter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\externals\lib\source\imgui.cpp">
@@ -255,6 +267,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\externals\lib\source\imgui_widgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\input\low_pass_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_buffer.cpp">
@@ -290,6 +305,9 @@
     <ClCompile Include="src\source\rendering\vulkan\vulkan_interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\rendering\vulkan\vulkan_material_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_physical_devices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -309,6 +327,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_stage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_storage_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_surface.cpp">
@@ -341,6 +362,9 @@
     <ClCompile Include="src\source\rendering\vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\resources\material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\source\resources\mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -368,6 +392,9 @@
     <ClCompile Include="src\source\world\scene_graph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\world\static_mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\source\world\system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -387,9 +414,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\input\low_pass_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
