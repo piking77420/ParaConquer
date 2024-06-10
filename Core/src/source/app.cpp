@@ -11,7 +11,7 @@
 using namespace PC_CORE;
 
 
-App::App()
+void App::Init()
 {
     PC_LOG("App Init")
     windowHandle.Init();
@@ -21,14 +21,14 @@ App::App()
     renderer.Init(&windowHandle);
     vulkanImgui.Init(windowHandle);
     
-   InitScene();
+    InitScene();
 }
 
-App::~App()
+void App::Destroy()
 {
     PC_LOG("App Destroy")
     renderer.Destroy();
-    // Wait tha the device has been stop by the destroy render func
+    // Wait the device has been stop by the destroy render func
     vulkanImgui.Destroy();
     ResourceManager::Destroy();
     VulkanInterface::Destroy();
@@ -37,18 +37,22 @@ App::~App()
     delete ComponentRegister::componentRegisterMap;
 }
 
+
 void App::Run()
 {
+    /*
+    VulkanViewport vulkanViewport;
+
     while (!windowHandle.ShouldClose())
     {
         windowHandle.PoolEvents();
         HandleResize();
         vulkanImgui.NewFrame();
-        MoveCam();
         MoveObject();
-        renderer.RenderViewPort(camera, world);
-       
-    }   
+        renderer.BeginFrame();
+        renderer.RenderViewPort(camera, vulkanViewport, world);
+        renderer.SwapBuffers();
+    } */  
 }
 
 void App::HandleResize()
@@ -61,76 +65,6 @@ void App::HandleResize()
     }
 }
 
-void App::MoveCam()
-{
-    const auto io = ImGui::GetIO();
-
-
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-    {
-        deltass.Reset();
-    }
-
-    
-    if (ImGui::IsMouseDown(ImGuiPopupFlags_MouseButtonRight))
-    {
-        Vector2f vec = { -io.MouseDelta.x , -io.MouseDelta.y };
-        deltass.AddSample(vec);
-        const Vector2f avarage = deltass.GetAvarage<Vector2f>();
-        yaw += avarage.x;
-        pitch += avarage.y;
-
-
-        constexpr float MaxPitch = 89.f;
-
-
-        if (pitch > MaxPitch)
-            pitch = MaxPitch;
-        if (pitch < -MaxPitch)
-            pitch = -MaxPitch;
-
-        camera.front.x = std::cos(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
-        camera.front.y = std::sin(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
-        camera.front.z = std::sin(pitch * Deg2Rad);
-        camera.front = camera.front.Normalize();
-
-    }
-
-    const Vector3f right = Vector3f::Cross(camera.front, Vector3f::UnitZ());
-    camera.up = Vector3f::Cross(right, camera.front).Normalize();
-
-
-    Vector3f addVector;
-    
-    if (ImGui::IsKeyDown(ImGuiKey_W))
-    {
-        addVector += camera.front; 
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_S))
-    {
-        addVector -= camera.front; 
-    }
-
-    if (ImGui::IsKeyDown(ImGuiKey_A))
-    {
-        addVector -= right; 
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_D))
-    {
-         addVector += right; 
-    }
-
-    if (ImGui::IsKeyDown(ImGuiKey_Space))
-    {
-        addVector +=  camera.up; 
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
-    {
-        addVector -=  camera.up; 
-    }
-
-    camera.position += addVector * io.DeltaTime * cameraSpeed;
-}
 
 void App::MoveObject()
 {

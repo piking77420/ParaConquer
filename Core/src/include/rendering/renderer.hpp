@@ -19,6 +19,7 @@
 #include "vulkan/vulkan_shader_stage.hpp"
 #include "vulkan/vulkan_shader_storage_buffer.hpp"
 #include "vulkan/vulkan_uniform_buffer.h"
+#include "vulkan/vulkan_viewport.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "world/world.hpp"
@@ -34,9 +35,16 @@ public:
 
     void Destroy();
 
-    void RenderViewPort(const Camera& _camera,const World& _world);
+    void BeginFrame();
+
+    void RenderViewPort(const Camera& _camera,
+        const VulkanViewport& viewport,const World& _world);
+
+    void SwapBuffers();
 
 private:
+    uint32_t m_ImageIndex = 0;
+    
     std::vector<VkCommandBuffer> m_CommandBuffers;
     
     VulkanPipeline m_BasePipeline;

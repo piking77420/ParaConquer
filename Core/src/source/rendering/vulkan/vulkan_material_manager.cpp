@@ -64,6 +64,7 @@ void VulkanMaterialManager::BindMaterialDescriptorSet(VkCommandBuffer _commandBu
 void VulkanMaterialManager::Destroy()
 {
     m_MaterialCache.clear();
+    vulkanDescriptorPool.Destroy();
     descriptorSetLayout.Destroy();
 }
 

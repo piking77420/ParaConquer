@@ -34,6 +34,8 @@ void DrawGizmos::DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _ima
 
 void DrawGizmos::Destroy()
 {
+    m_DescriptorPool.Destroy();
+    m_VulkanShaderStageGizmo.Destroy();
     m_GizmoPipeline.Destroy();
     m_VkPipelineLayout.Destroy();
     m_DescriptorSetLayout.Destroy();

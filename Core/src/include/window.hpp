@@ -11,7 +11,7 @@ public:
 
     static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
     
-    uint32_t widht = 800;
+    uint32_t widht = 800; 
 
     uint32_t height = 600;
 

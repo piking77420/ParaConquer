@@ -12,7 +12,7 @@
 #include "world/transform.hpp"
 
 BEGIN_PCCORE
-	class App
+class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
@@ -25,24 +25,18 @@ public:
 
 	World world;
 
-	Camera camera;
+	virtual void Init();
+
+	virtual void Destroy();
 	
-	float cameraSpeed = 5.f;
-	float pitch = 0.f;
-	float yaw = 0.f;
+	App() = default;
 
-	LowPassFilter<Vector2f, 12> deltass;
-	
-	App();
+	~App() = default;
 
-	~App();
-
-	void Run();
+	virtual void Run();
 
 	void HandleResize();
-private:
-	void MoveCam();
-
+protected:
 	void MoveObject();
 
 	void InitScene();

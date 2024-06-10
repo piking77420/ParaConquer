@@ -8,6 +8,7 @@
 #include "math/matrix_transformation.hpp"
 #include "rendering/light.hpp"
 #include "rendering/vulkan/vulkan_texture_sampler.hpp"
+#include "rendering/vulkan/vulkan_viewport.hpp"
 #include "resources/resource_manager.hpp"
 #include "world/transform.hpp"
 
@@ -43,12 +44,12 @@ void Renderer::Destroy()
     // Wait the gpu 
     vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
     delete m_GpuLights; 
+    drawGizmos.Destroy();
 
     for(VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
     {
         uniformBuffer.Destroy();
     }
-
     for(VulkanShaderStorageBuffer& vulkanShaderStorageBuffer : m_ModelMatriciesShaderStorages)
     {
         vulkanShaderStorageBuffer.Destroy();
@@ -67,30 +68,32 @@ void Renderer::Destroy()
     DestroyAsyncObject();
 }
 
+void Renderer::BeginFrame()
+{
+    const VkDevice& device = VulkanInterface::GetDevice().device;
+    const uint32_t currentFrame = VulkanInterface::GetCurrentFrame();
+    vkWaitForFences(device, 1, &m_InFlightFence[currentFrame].fences, VK_TRUE, UINT64_MAX);
+    VkResult result = vkAcquireNextImageKHR(device, VulkanInterface::vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore, VK_NULL_HANDLE, &m_ImageIndex);
+    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences);
+    
+    vkResetCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()],0);
+}
 
-// to do put fence and semaphore in swap chain
-void Renderer::RenderViewPort(const Camera& _camera, const World& _world)
+
+void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& viewport,
+    const World& _world)
 {
     m_CurrentCamera = &_camera;
     m_CurrentWorld = &_world;
     
-    const VkDevice& device = VulkanInterface::GetDevice().device;
-
-    vkWaitForFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences, VK_TRUE, UINT64_MAX);
-    
-    uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(device, VulkanInterface::vulkanSwapChapchain.swapchainKhr, UINT64_MAX, m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore, VK_NULL_HANDLE, &imageIndex);
-    
-    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences);
     UpdateBuffers(VulkanInterface::GetCurrentFrame());
-    vkResetCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()],0);
-    
-    RecordCommandBuffers(m_CommandBuffers[VulkanInterface::GetCurrentFrame()], imageIndex);
+    RecordCommandBuffers(m_CommandBuffers[VulkanInterface::GetCurrentFrame()], m_ImageIndex);
+}
 
+void Renderer::SwapBuffers()
+{
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-
     const VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
@@ -119,11 +122,13 @@ void Renderer::RenderViewPort(const Camera& _camera, const World& _world)
     const VkSwapchainKHR swapChains[] = {VulkanInterface::vulkanSwapChapchain.swapchainKhr};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pImageIndices = &m_ImageIndex;
     presentInfo.pResults = nullptr; // Optional
     
 
     vkQueuePresentKHR(VulkanInterface::GetDevice().graphicsQueue.Queue, &presentInfo);
+    
+    VulkanInterface::ComputeNextFrame();
 }
 
 void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags)
