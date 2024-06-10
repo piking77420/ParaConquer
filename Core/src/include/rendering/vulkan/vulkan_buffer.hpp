@@ -21,6 +21,8 @@ public:
 
     VkBuffer& GetHandle();
 
+    const VkBuffer& GetHandle() const;
+
     
 protected:
     VkBuffer m_Buffer = VK_NULL_HANDLE;

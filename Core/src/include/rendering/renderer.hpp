@@ -3,9 +3,11 @@
 #include <GLFW/glfw3.h>
 
 #include "camera.hpp"
+#include "draw_gizmos.hpp"
 #include "gpu_typedef.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
+#include "vulkan/vulkan_descriptor_pool.hpp"
 #include "vulkan\vulkan_vertex_buffer.hpp"
 #include "vulkan/vulkan_descriptor_set_layout.hpp"
 #include "vulkan/vulkan_fence.hpp"
@@ -23,7 +25,7 @@
 
 
 BEGIN_PCCORE
-    class  Renderer
+class  Renderer
 {
 public:
     void Init(Window* _window);
@@ -43,17 +45,21 @@ private:
 
     VulkanDescriptorSetLayout m_DescriptorSetLayout;
 
+    VulkanDescriptorPool m_DescriptorPool;
+
     VulkanShaderStage m_VulkanShaderStage;
 
-    UniformBufferObject UniformBufferObject;
-
-    VkDescriptorPool vkDescriptorPool = VK_NULL_HANDLE;  
+    CameraBuffer cameraBuffer;
     
     std::vector<VulkanUniformBuffer> m_UniformBuffers;
 
-    std::vector<VulkanShaderStorageBuffer> m_ShaderStorages;
+    std::vector<VulkanShaderStorageBuffer> m_ModelMatriciesShaderStorages;
+    
+    std::vector<VulkanShaderStorageBuffer> m_ShaderStoragesLight;
 
     std::vector<MatrixMeshes> m_MatrixMeshs;
+
+    GpuLight* m_GpuLights = nullptr;
 
     std::vector<VkDescriptorSet> descriptorSets;
     
@@ -66,6 +72,8 @@ private:
     const Camera* m_CurrentCamera = nullptr;
     
     const World* m_CurrentWorld = nullptr;
+
+    DrawGizmos drawGizmos;
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
@@ -81,7 +89,9 @@ private:
 
     void CreateDescriptorSetLayout();
 
-    void UpdateUniformBuffer(uint32_t _currentFrame);
+    void UpdateBuffers(uint32_t _currentFrame);
+
+    void UpdateLightBuffer(uint32_t _currentFrame);
     
     void CreateDescriptorSets();
 
@@ -89,6 +99,10 @@ private:
 
     void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
     const Transform& transform, const Entity& entity);
+
+    void InitBuffers();
+
+    friend DrawGizmos;
 };
 
 END_PCCORE

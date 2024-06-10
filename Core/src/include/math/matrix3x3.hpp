@@ -43,7 +43,13 @@ public:
         data[2].x = x3;
         data[2].y = y3;
         data[2].z = z3;
-        
+    }
+
+    constexpr Matrix3x3(const Vec& _vec1 , const Vec& _vec2 , const Vec& _vec3)
+    {
+        data[0] = _vec1;
+        data[1] = _vec2;
+        data[2] = _vec3;
     }
     constexpr Matrix3x3(DataType _value)
     {
@@ -115,4 +121,19 @@ public:
           std::to_string(data[0].z) + " " + std::to_string(data[1].z) + " " + std::to_string(data[2].z)
          + '\n' ;
     }
+
+    Matrix3x3 Transpose() const
+    {
+        Matrix3x3 result = 0;
+
+        for (size_t i = 0; i < Size; i++)
+        {
+            for (size_t j = 0; j < Size; j++)
+            {
+                result[i][j] = data[j][i];
+            }
+        }
+        return result;
+    }
+    
 };

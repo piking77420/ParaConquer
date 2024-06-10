@@ -1,5 +1,6 @@
 ﻿#include "rendering\vulkan\vulkan_material_manager.hpp"
 
+#include "rendering/gpu_typedef.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "resources/material.hpp"
 
@@ -9,16 +10,15 @@ void VulkanMaterialManager::Init()
 {
     VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(0,1,VK_SHADER_STAGE_FRAGMENT_BIT);
     descriptorSetLayout.Init({samplerLayoutBinding});
+    vulkanDescriptorPool.Init(descriptorSetLayout.GetLayoutBinding(), MAX_MATERIAL_COUNT);
 }
 
 void VulkanMaterialManager::CreateMaterial(const Material& material)
 {
     LowLevelMaterial lowLevelMaterial;
-    descriptorSetLayout.CreateDesciptorPool(&lowLevelMaterial.descriptorPool);
     lowLevelMaterial.descriptorSets.resize(VulkanInterface::GetNbrOfImage());
     
-    descriptorSetLayout.CreateDescriptorSet(lowLevelMaterial.descriptorPool,
-        lowLevelMaterial.descriptorSets.size(),lowLevelMaterial.descriptorSets.data());
+    vulkanDescriptorPool.CreateDescriptorSet(descriptorSetLayout.Get(), lowLevelMaterial.descriptorSets.size(),lowLevelMaterial.descriptorSets.data());
     
     std::vector<VkWriteDescriptorSet> descriptorWrites;
     descriptorWrites.resize(1);
@@ -63,11 +63,6 @@ void VulkanMaterialManager::BindMaterialDescriptorSet(VkCommandBuffer _commandBu
 
 void VulkanMaterialManager::Destroy()
 {
-    for (auto it = m_MaterialCache.begin(); it != m_MaterialCache.end(); it++)
-    {
-        vkDestroyDescriptorPool(VulkanInterface::GetDevice().device, it->second.descriptorPool, nullptr);
-    }
-    
     m_MaterialCache.clear();
     descriptorSetLayout.Destroy();
 }

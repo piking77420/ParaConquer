@@ -123,23 +123,23 @@ void RotationMatrix3D(const Quaternion<T>& _quaternion, Matrix3x3<T>* matrix)
     const T dd = d * d;
 
     const T bc = b * c;
-    const T da = d * a;
+    const T ad = a * d;
     const T bd = b * d;
-    const T ca = c * a;
-    const T ba = b * a;
+    const T ac = a * c;
+    const T ab = a * b;
     const T cd = c * d;
-    
-    (*matrix)[0].x = 2.f * (aa + bb) - 1.f;
-    (*matrix)[0].y = 2.f * (bc + da);
-    (*matrix)[0].z = 2.f * (bd - ca);
 
-    (*matrix)[1].x = 2.f * (bc - da);
-    (*matrix)[1].y = 2.f * (aa + cc) - 1.f;
-    (*matrix)[1].z = 2.f * (cd + ba);
+    (*matrix)[0].x = aa + bb - cc - dd;
+    (*matrix)[0].y = 2.f * (bc - ad);
+    (*matrix)[0].z = 2.f * (bd + ac);
 
-    (*matrix)[2].x = 2.f * (bd + ca);
-    (*matrix)[2].y = 2.f * (cd - ba);
-    (*matrix)[2].z = 2.f * (aa + dd) - 1.f;
+    (*matrix)[1].x = 2.f * (bc + ad);
+    (*matrix)[1].y = aa - bb + cc - dd;
+    (*matrix)[1].z = 2.f * (cd - ab);
+
+    (*matrix)[2].x = 2.f * (bd - ac);
+    (*matrix)[2].y = 2.f * (cd + ab);
+    (*matrix)[2].z = aa - bb - cc + dd;
 }
 
 
@@ -346,7 +346,7 @@ T Determinant(const Matrix4x4<T>& matrix)
     T result = 0;
 
     Matrix3x3<T> m0;
-    m0[0].x = matrix.Colums[1].y;
+    m0[0].x = matrix[1].y;
     m0[1].x = matrix[2].y;
     m0[2].x = matrix[3].y;
     m0[0].y = matrix[1].z;
@@ -403,7 +403,7 @@ T Determinant(const Matrix4x4<T>& matrix)
 template <class T>
 Matrix4x4<T> AdjoinMatrix(const Matrix4x4<T>& matrix)
 {
-    Matrix4x4<T> copy = matrix.Transposate();
+    Matrix4x4<T> copy = matrix.Transpose();
     Matrix4x4<T> minor;
 
     Matrix3x3 m1 = Matrix3x3(Vector3(copy[1][1], copy[1][2], copy[1][3]), Vector3(copy[2][1], copy[2][2], copy[2][3]),

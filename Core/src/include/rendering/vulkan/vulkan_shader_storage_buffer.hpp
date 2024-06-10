@@ -15,6 +15,10 @@ public:
 
     void Destroy() override;
 
+    void Bind(VkWriteDescriptorSet* _vkWriteDescriptorSet, const VkDescriptorSet& _vkDescriptorSet,
+    uint32_t _dstBinding, uint32_t _dstArrayElement, uint32_t _descriptorCount,
+    const VkDescriptorBufferInfo& bufferInfo) const;
+
 private:
     void* m_MapMemory = nullptr;
 

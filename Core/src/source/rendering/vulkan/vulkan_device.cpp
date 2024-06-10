@@ -71,13 +71,15 @@ void VulkanDevice::Init(const VulkanPhysicalDevices& _physicalDevices)
     if (physicalDevice.features.samplerAnisotropy == VK_FALSE)
         PC_LOGERROR("The Anisotropy filter is not supported!")
     
-    
+    if (physicalDevice.features.fillModeNonSolid == VK_FALSE)
+        PC_LOGERROR("The FillModeNonSolid is not supported!")
     
     VkPhysicalDeviceFeatures DeviceFeatures = { 0 };
     DeviceFeatures.geometryShader = VK_TRUE;
     DeviceFeatures.tessellationShader = VK_TRUE;
     DeviceFeatures.samplerAnisotropy = VK_TRUE;
-
+    DeviceFeatures.fillModeNonSolid = VK_TRUE;
+    
     const VkDeviceCreateInfo DeviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = nullptr,

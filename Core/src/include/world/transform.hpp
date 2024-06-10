@@ -15,13 +15,13 @@ public:
     
     Vector3f position;
 
-    Quaterionf rotation = Quaterionf::Identity();
+    Quaternionf rotation = Quaternionf::Identity();
     
     Vector3f scale = 1.f;
     
     Vector3f localPosition;
 
-    Vector3f localRotation;
+    Quaternionf localRotation = Quaternionf::Identity();
     
 };
 

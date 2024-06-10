@@ -37,6 +37,7 @@ using Matrix4x4f = Matrix4x4<float>;
 using Matrix4x4i = Matrix4x4<int>;
 using Matrix4x4d = Matrix4x4<double>;
 
-using Quaterionf = Quaternion<float>;
-using Quaterioni = Quaternion<int>;
-using Quateriond = Quaternion<double>;
+using Quaternionf = Quaternion<float>;
+using Quaternioni = Quaternion<int>;
+using Quaterniond = Quaternion<double>;
+    

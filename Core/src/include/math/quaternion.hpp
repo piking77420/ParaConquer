@@ -49,12 +49,12 @@ public:
         return q1.imaginary.x * q2.imaginary.x + q1.imaginary.y * q2.imaginary.y + q1.imaginary.z * q2.imaginary.z + q1.real * q2.real;
     }
     
-    Quaternion Normalize()
+    Quaternion Normalize() const
     {
         const DataType mag = Magnitude();
 
         if (IsEqualTo<DataType>(mag,static_cast<T>(1)))
-            return this;
+            return *this;
 
         const DataType InvMagnitude = static_cast<T>(1) / mag;
         
@@ -92,7 +92,7 @@ public:
         return {imaginary - _other.imaginary, real - _other.real};
     }
 
-    Quaternion operator*(const Quaternion& _other)
+    Quaternion operator*(const Quaternion& _other) const 
     {
         const DataType newReal = real * _other.real
         - decltype(imaginary)::Dot(imaginary, _other.imaginary);
@@ -107,6 +107,13 @@ public:
         + imaginary.x * _other.imaginary.y + real * _other.imaginary.z;
         
         return { { i, j, k}, newReal};
+    }
+
+    Vec3 operator*(const Vec3& _vec) const 
+    {
+        Quaternion vecQuat(_vec.x, _vec.y, _vec.z,0.f);
+        Quaternion resQuat = (*this) * vecQuat * Conjugate();
+        return resQuat.imaginary;
     }
 
     Quaternion operator+(float _value)

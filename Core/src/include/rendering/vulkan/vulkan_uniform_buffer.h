@@ -16,8 +16,8 @@ public:
 
     void Update(void const* _data, size_t _size);
 
-    void Bind(VkWriteDescriptorSet* _vkWriteDescriptorSet, const VkDescriptorSet& _vkDescriptorSet,
-    uint32_t _dstBinding, uint32_t _dstArrayElement, uint32_t _descriptorCount, size_t _offset, size_t _size,
+    void Bind(VkWriteDescriptorSet* _vkWriteDescriptorSet,
+    const VkDescriptorSet& _vkDescriptorSet, uint32_t _dstBinding, uint32_t _dstArrayElement, uint32_t _descriptorCount,
     const VkDescriptorBufferInfo& bufferInfo) const;
 
 private:

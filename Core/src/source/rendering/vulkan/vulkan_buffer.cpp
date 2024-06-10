@@ -22,6 +22,11 @@ VkBuffer& VulkanBuffer::GetHandle()
     return m_Buffer;
 }
 
+const VkBuffer& VulkanBuffer::GetHandle() const
+{
+    return m_Buffer;
+}
+
 void VulkanBuffer::CreateGpuBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocation,void const* _data, const size_t _dataSize , VkBufferUsageFlagBits _usage)
 {
     if (_data == nullptr)

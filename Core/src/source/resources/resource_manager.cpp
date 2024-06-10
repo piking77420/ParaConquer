@@ -13,6 +13,8 @@ void ResourceManager::Init()
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
 
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/gizmo.frag");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/gizmo.vert");
 
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube.obj");
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/quad.obj");

@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "vulkan_descriptor_pool.hpp"
 #include "vulkan_descriptor_set_layout.hpp"
 #include "vulkan_header.h"
 #include "resources/material.hpp"
@@ -14,6 +15,8 @@ class VulkanMaterialManager
 public:
     
     VulkanDescriptorSetLayout descriptorSetLayout;
+
+    VulkanDescriptorPool vulkanDescriptorPool;
     
     void Init();
     
@@ -28,7 +31,6 @@ private:
     struct LowLevelMaterial
     {
         std::vector<VkDescriptorSet> descriptorSets;
-        VkDescriptorPool descriptorPool;
     };
     
     std::unordered_map<Guid, LowLevelMaterial> m_MaterialCache;

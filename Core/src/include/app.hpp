@@ -8,6 +8,7 @@
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "world/world.hpp"
 #include "input/low_pass_filter.hpp"
+#include "rendering/light.hpp"
 #include "world/transform.hpp"
 
 BEGIN_PCCORE
@@ -44,7 +45,11 @@ private:
 
 	void MoveObject();
 
+	void InitScene();
+
 	std::vector<Transform*> transforms;
+
+	DirLight* dirLight = nullptr;
 };
 
 END_PCCORE

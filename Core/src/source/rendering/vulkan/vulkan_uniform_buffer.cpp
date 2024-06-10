@@ -17,8 +17,9 @@ void VulkanUniformBuffer::Update(void const* _data, size_t _size)
     memcpy(m_MapMemory, _data, _size);
 }
 
-void VulkanUniformBuffer::Bind(VkWriteDescriptorSet* _vkWriteDescriptorSet, const VkDescriptorSet& _vkDescriptorSet,
-    uint32_t _dstBinding, uint32_t _dstArrayElement, uint32_t _descriptorCount, size_t _offset, size_t _size , const VkDescriptorBufferInfo& bufferInfo) const
+void VulkanUniformBuffer::Bind(VkWriteDescriptorSet* _vkWriteDescriptorSet,
+    const VkDescriptorSet& _vkDescriptorSet, uint32_t _dstBinding, uint32_t _dstArrayElement, uint32_t _descriptorCount,
+    const VkDescriptorBufferInfo& bufferInfo) const
 {
  
     _vkWriteDescriptorSet->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
