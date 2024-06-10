@@ -13,14 +13,15 @@ WorldViewWindow::WorldViewWindow(Editor& _editor)
 void WorldViewWindow::Update()
 {
     EditorWindow::Update();
+
+    const Vector2i windowSize = { static_cast<int32_t>(ImGui::GetWindowWidth()) ,
+        static_cast<int32_t>(ImGui::GetWindowHeight()) };
+    
+    viewport.HandleResize(windowSize);
     ShowViewPort();
 }
 
 void WorldViewWindow::ShowViewPort()
 {
-    ImGui::Begin("Viewport");
-
     
-
-    ImGui::End();
 }

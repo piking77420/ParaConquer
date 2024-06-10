@@ -15,8 +15,8 @@ using namespace PC_CORE;
 
 void Editor::Init()
 {
-    InitEditorWindows();
     App::Init();
+    InitEditorWindows();
 }
 
 void Editor::Destroy()
@@ -38,12 +38,19 @@ void Editor::Run()
         vulkanImgui.NewFrame();
         MoveObject();
         renderer.BeginFrame();
-        
+
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
+            editorWindow->Begin();
             editorWindow->Update();
+            editorWindow->End();
+            
+        }
+        for (EditorWindow* editorWindow : m_EditorWindows)
+        {
             editorWindow->Render();
         }
+       
         renderer.SwapBuffers();
     }   
 }
@@ -51,5 +58,6 @@ void Editor::Run()
 void Editor::InitEditorWindows()
 {
     m_EditorWindows.push_back(new EditWorldWindow(*this));
+    m_EditorWindows[0]->name = "EditorWindow";
 }
 

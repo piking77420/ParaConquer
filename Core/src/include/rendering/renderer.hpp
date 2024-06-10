@@ -42,6 +42,8 @@ public:
 
     void SwapBuffers();
 
+    VulkanRenderPass forwarPass;
+
 private:
     uint32_t m_ImageIndex = 0;
     
@@ -83,11 +85,15 @@ private:
 
     DrawGizmos drawGizmos;
 
+    void InitForwardPass();
+
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
 
     void RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+    void DrawInImage(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void CreateBasicGraphiPipeline();
 

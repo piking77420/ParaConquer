@@ -79,7 +79,7 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
 
 void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
 {
-     VkImageCreateInfo imageInfo{};
+    VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.extent.width = _imageSize.x;
