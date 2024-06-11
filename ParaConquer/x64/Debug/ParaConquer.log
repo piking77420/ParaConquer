@@ -1,2 +1,60 @@
 ﻿  main.cpp
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(12,11): warning C4244: 'initializing': conversion from 'float' to 'T', possible loss of data
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(12,11): warning C4244:         with
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(12,11): warning C4244:         [
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(12,11): warning C4244:             T=unsigned int
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(12,11): warning C4244:         ]
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(13,11): warning C4244: 'initializing': conversion from 'float' to 'T', possible loss of data
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(13,11): warning C4244:         with
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(13,11): warning C4244:         [
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(13,11): warning C4244:             T=unsigned int
+D:\Data\Project\ParaConquer\Core\src\include\math\vector2.hpp(13,11): warning C4244:         ]
+Core.lib(scene.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(scene.obj)' or at ''; linking object as if no debug info
+Core.lib(scene_graph.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(scene_graph.obj)' or at ''; linking object as if no debug info
+Core.lib(app.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(app.obj)' or at ''; linking object as if no debug info
+Core.lib(component_register.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(component_register.obj)' or at ''; linking object as if no debug info
+Core.lib(log.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(log.obj)' or at ''; linking object as if no debug info
+Core.lib(window.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(window.obj)' or at ''; linking object as if no debug info
+Core.lib(resource.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(resource.obj)' or at ''; linking object as if no debug info
+Core.lib(texture.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(texture.obj)' or at ''; linking object as if no debug info
+Core.lib(material.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(material.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_interface.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_interface.obj)' or at ''; linking object as if no debug info
+Core.lib(renderer.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(renderer.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_imgui.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_imgui.obj)' or at ''; linking object as if no debug info
+Core.lib(imgui.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(imgui.obj)' or at ''; linking object as if no debug info
+Core.lib(imgui_widgets.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(imgui_widgets.obj)' or at ''; linking object as if no debug info
+Core.lib(resource_manager.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(resource_manager.obj)' or at ''; linking object as if no debug info
+Core.lib(guid.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(guid.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_texture.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_texture.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_material_manager.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_material_manager.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_debug_message.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_debug_message.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_instance.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_instance.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_surface.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_surface.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_command_pool.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_command_pool.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_physical_devices.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_physical_devices.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_device.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_device.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_texture_sampler.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_texture_sampler.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_swapchain.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_swapchain.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_descriptor_pool.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_descriptor_pool.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_descriptor_set_layout.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_descriptor_set_layout.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_buffer.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_buffer.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_render_pass.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_render_pass.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_shader_stage.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_shader_stage.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_pipeline.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_pipeline.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_pipeline_layout.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_pipeline_layout.obj)' or at ''; linking object as if no debug info
+Core.lib(draw_gizmos.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(draw_gizmos.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_fence.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_fence.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_semaphore.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_semaphore.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_shader_storage_buffer.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_shader_storage_buffer.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_uniform_buffer.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_uniform_buffer.obj)' or at ''; linking object as if no debug info
+Core.lib(imgui_draw.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(imgui_draw.obj)' or at ''; linking object as if no debug info
+Core.lib(imgui_impl_glfw.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(imgui_impl_glfw.obj)' or at ''; linking object as if no debug info
+Core.lib(imgui_impl_vulkan.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(imgui_impl_vulkan.obj)' or at ''; linking object as if no debug info
+Core.lib(imgui_tables.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(imgui_tables.obj)' or at ''; linking object as if no debug info
+Core.lib(shader_source.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(shader_source.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_shader_compiler.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_shader_compiler.obj)' or at ''; linking object as if no debug info
+Core.lib(mesh.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(mesh.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_wrapper.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_wrapper.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_index_buffer.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_index_buffer.obj)' or at ''; linking object as if no debug info
+Core.lib(vulkan_vertex_buffer.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(vulkan_vertex_buffer.obj)' or at ''; linking object as if no debug info
   ParaConquer.vcxproj -> D:\Data\Project\ParaConquer\x64\Debug\ParaConquer.exe

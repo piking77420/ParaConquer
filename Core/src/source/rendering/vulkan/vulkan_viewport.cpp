@@ -62,7 +62,7 @@ void VulkanViewport::CreateViewPortImageAndFrameBuffer()
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass;
-        framebufferInfo.attachmentCount = attachments.size();
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = viewPortSize.x;
         framebufferInfo.height = viewPortSize.y;

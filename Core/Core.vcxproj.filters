@@ -90,6 +90,9 @@
     <ClInclude Include="src\include\math\vector4.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\physics\sphere_collider.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -171,13 +174,22 @@
     <ClInclude Include="src\include\rendering\vulkan\vulkan_vertex_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_viewport.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_wrapper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\rendering\draw_gizmos.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\include\rendering\gpu_typedef.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\light.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\renderer.hpp">
@@ -272,6 +284,9 @@
     <ClCompile Include="src\source\input\low_pass_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\physics\sphere_collider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -350,10 +365,19 @@
     <ClCompile Include="src\source\rendering\vulkan\vulkan_vertex_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\rendering\vulkan\vulkan_viewport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_wrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\draw_gizmos.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\renderer.cpp">

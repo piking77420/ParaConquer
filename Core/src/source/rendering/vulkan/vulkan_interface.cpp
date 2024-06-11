@@ -55,7 +55,7 @@ void VulkanInterface::Init(Window* _window)
     vulkanCommandPoolTransfert.Init(&vkCommandPoolCreateInfoTransfer);
     
     // get the nbr of image for the swap chain
-    vulkanSwapChapchain.Init(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
+    vulkanSwapChapchain.Init(_window->windowSize.x, _window->windowSize.y, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
     vulkanMaterialManager.Init();
 }
 
@@ -119,7 +119,7 @@ uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
 void VulkanInterface::RecreateSwapChain(Window* _window)
 {
     vulkanSwapChapchain.DestroySwapChain();
-    vulkanSwapChapchain.InitSwapChain(_window->widht, _window->height, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
+    vulkanSwapChapchain.InitSwapChain(_window->windowSize.x, _window->windowSize.y, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
 }
 
 

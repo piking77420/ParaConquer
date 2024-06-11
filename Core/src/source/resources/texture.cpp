@@ -25,7 +25,9 @@ void Texture::Load(const fs::path& path)
     }
     
     vulkanTexture.Init(pixels, dataImageSize, textureSize);
-
     stbi_image_free(pixels);
 
+
+    name = path.filename().generic_string();
+    format = path.extension().generic_string();
 }

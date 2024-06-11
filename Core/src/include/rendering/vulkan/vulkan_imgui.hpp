@@ -14,11 +14,15 @@ public:
 
     void NewFrame() const;
 
+    void EndFrame() const;
+
     static void Render(VkCommandBuffer* _commandBuffer);
 
     void RenderDrawData();
 
 private:
+
+    void Theme();
 
     static void CheckErrorImgui(VkResult _err);
     

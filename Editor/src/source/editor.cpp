@@ -3,6 +3,7 @@
 #include "edit_world_window.hpp"
 #include "world_view_window.hpp"
 #include "Imgui/imgui.h"
+#include "Imgui/imgui_impl_vulkan.h"
 #include "resources/resource_manager.hpp"
 
 namespace PC_CORE
@@ -13,10 +14,19 @@ namespace PC_CORE
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
+
 void Editor::Init()
 {
     App::Init();
     InitEditorWindows();
+    Texture* d = ResourceManager::Get<Texture>("diamond_block.jpg");
+    m_Dset.resize(1);
+    for (VkDescriptorSet& s : m_Dset)
+    {
+        s = ImGui_ImplVulkan_AddTexture(VulkanInterface::vulkanTextureSampler.Get(d->vulkanTexture.samplerId), d->vulkanTexture.textureImageView
+       , VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+    
 }
 
 void Editor::Destroy()
@@ -39,6 +49,11 @@ void Editor::Run()
         MoveObject();
         renderer.BeginFrame();
 
+        ImGui::Begin("Test");
+        ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+        ImGui::Image(m_Dset[0], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
+        ImGui::End();
+        
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Begin();
@@ -50,7 +65,7 @@ void Editor::Run()
         {
             editorWindow->Render();
         }
-       
+        vulkanImgui.EndFrame();
         renderer.SwapBuffers();
     }   
 }
