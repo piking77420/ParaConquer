@@ -17,9 +17,6 @@ public:
     void EndFrame() const;
 
     static void Render(VkCommandBuffer* _commandBuffer);
-
-    void RenderDrawData();
-
 private:
 
     void Theme();

@@ -50,7 +50,7 @@ void Editor::Run()
         renderer.BeginFrame();
 
         ImGui::Begin("Test");
-        ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+        const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         ImGui::Image(m_Dset[0], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
         ImGui::End();
         

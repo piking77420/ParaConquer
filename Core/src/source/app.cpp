@@ -89,8 +89,8 @@ void App::MoveObject()
 
 void App::InitScene()
 {
-    Texture* diamondtexture = ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
-    Texture* emerauldBlock = ResourceManager::CreateAndLoad<Texture>("assets/textures/viking_room.png");
+    Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
+    Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
 
     Material* material = new Material;
     material->Load({emerauldBlock});

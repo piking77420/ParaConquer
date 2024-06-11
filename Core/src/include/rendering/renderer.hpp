@@ -4,6 +4,7 @@
 
 #include "camera.hpp"
 #include "draw_gizmos.hpp"
+#include "draw_quad.hpp"
 #include "gpu_typedef.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
@@ -41,13 +42,15 @@ public:
         const VulkanViewport& viewport,const World& _world);
 
     void SwapBuffers();
-
-    VulkanRenderPass forwarPass;
+    
+    VulkanRenderPass forwardPass;
 
 private:
     uint32_t m_ImageIndex = 0;
     
     std::vector<VkCommandBuffer> m_CommandBuffers;
+
+    
     
     VulkanPipeline m_BasePipeline;
     
@@ -82,9 +85,11 @@ private:
     const Camera* m_CurrentCamera = nullptr;
     
     const World* m_CurrentWorld = nullptr;
-
+    
     DrawGizmos drawGizmos;
 
+    DrawQuad drawQuad;
+    
     void InitForwardPass();
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
@@ -92,9 +97,9 @@ private:
     void RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     void ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
-    void DrawInImage(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
+    
+    void DrawToViewPort(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    
     void CreateBasicGraphiPipeline();
 
     void CreateAsyncObject();

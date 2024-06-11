@@ -38,6 +38,28 @@ void VulkanTextureSampler::CreateSampler(const VkSamplerCreateInfo& _vkSamplerCr
     *_outId = idToReturn;
 }
 
+void VulkanTextureSampler::CreateBasicSampler()
+{
+    defaultSampler.samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    defaultSampler.samplerInfo.magFilter = VK_FILTER_LINEAR;
+    defaultSampler.samplerInfo.minFilter = VK_FILTER_LINEAR;
+    defaultSampler.samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    defaultSampler.samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    defaultSampler.samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    defaultSampler.samplerInfo.anisotropyEnable = VK_FALSE;
+    defaultSampler.samplerInfo.maxAnisotropy = 1.0f;
+    defaultSampler.samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    defaultSampler.samplerInfo.unnormalizedCoordinates = VK_FALSE;
+    defaultSampler.samplerInfo.compareEnable = VK_FALSE;
+    defaultSampler.samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    defaultSampler.samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    defaultSampler.samplerInfo.mipLodBias = 0.0f;
+    defaultSampler.samplerInfo.minLod = 0.0f;
+    defaultSampler.samplerInfo.maxLod = 0.0f;
+
+    const VkResult result = vkCreateSampler(VulkanInterface::GetDevice().device, &defaultSampler.samplerInfo, nullptr, &defaultSampler.textureSampler);
+}
+
 const VkSampler VulkanTextureSampler::Get(uint32_t _samplerId)
 {
     if (!m_textureSamplerId.contains(_samplerId))

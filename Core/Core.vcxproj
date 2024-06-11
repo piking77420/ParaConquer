@@ -59,6 +59,7 @@
     <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
     <ClInclude Include="src\include\rendering\draw_gizmos.hpp" />
+    <ClInclude Include="src\include\rendering\draw_quad.hpp" />
     <ClInclude Include="src\include\rendering\gpu_typedef.hpp" />
     <ClInclude Include="src\include\rendering\light.hpp" />
     <ClInclude Include="src\include\rendering\renderer.hpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="src\source\physics\sphere_collider.cpp" />
     <ClCompile Include="src\source\rendering\camera.cpp" />
     <ClCompile Include="src\source\rendering\draw_gizmos.cpp" />
+    <ClCompile Include="src\source\rendering\draw_quad.cpp" />
     <ClCompile Include="src\source\rendering\light.cpp" />
     <ClCompile Include="src\source\rendering\renderer.cpp" />
     <ClCompile Include="src\source\rendering\vertex.cpp" />

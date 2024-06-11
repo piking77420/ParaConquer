@@ -30,6 +30,7 @@ layout(location = 0) out vec3 fragPos;
 layout(location = 1) out vec3 fragNormal;
 layout(location = 2) out vec2 fragTexCoord;
 
+
 void main() 
 {
     vec4 fragPosition = meshesMatrix[ps.meshesMatrixIndex].model * vec4(inPosition, 1.0);

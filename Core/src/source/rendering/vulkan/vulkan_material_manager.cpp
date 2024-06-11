@@ -39,8 +39,6 @@ void VulkanMaterialManager::CreateMaterial(const Material& material)
             vkWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             vkWriteDescriptorSet.descriptorCount = 1;
             vkWriteDescriptorSet.pImageInfo = &imageInfo;
-
-
         }
         vkUpdateDescriptorSets(VulkanInterface::GetDevice().device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
@@ -48,7 +46,7 @@ void VulkanMaterialManager::CreateMaterial(const Material& material)
     m_MaterialCache.insert({material.guid,lowLevelMaterial});
 }
 
-void VulkanMaterialManager::BindMaterialDescriptorSet(VkCommandBuffer _commandBuffer,
+void VulkanMaterialManager::BindMaterialDescriptorSet(VkCommandBuffer _commandBuffer,uint32_t _firstSet,
         const Material& material , VkPipelineLayout _VkPipelineLayout)
 {
     if (!m_MaterialCache.contains(material.guid))
@@ -56,7 +54,7 @@ void VulkanMaterialManager::BindMaterialDescriptorSet(VkCommandBuffer _commandBu
     
     const std::vector<VkDescriptorSet>& descriptorSets =  m_MaterialCache.at(material.guid).descriptorSets;
 
-    vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _VkPipelineLayout,1 ,
+    vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _VkPipelineLayout,_firstSet ,
     1, &descriptorSets[VulkanInterface::GetCurrentFrame()], 0, nullptr);
 
 }

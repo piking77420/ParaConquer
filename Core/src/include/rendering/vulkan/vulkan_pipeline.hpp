@@ -18,6 +18,7 @@ public:
     
 private:
     VkPipeline m_Pipeline = VK_NULL_HANDLE;
+    
 };
 
 END_PCCORE
