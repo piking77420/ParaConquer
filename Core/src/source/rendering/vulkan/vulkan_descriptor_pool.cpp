@@ -55,8 +55,6 @@ void VulkanDescriptorPool::CreateDescriptorSet(VkDescriptorSetLayout _setLayout,
     allocInfo.descriptorSetCount = _nbr;
     allocInfo.pSetLayouts = layouts.data();
     
-    if (vkAllocateDescriptorSets(VulkanInterface::GetDevice().device, &allocInfo, _data) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate descriptor sets!");
-    }
+    const VkResult result = vkAllocateDescriptorSets(VulkanInterface::GetDevice().device, &allocInfo, _data);
+    VK_CHECK_ERROR(result, "vkAllocateDescriptorSets")
 }

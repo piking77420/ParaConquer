@@ -16,7 +16,8 @@ WorldViewWindow::WorldViewWindow(Editor& _editor)
     
     for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
     {
-        m_ImaguiDescriptorSet[i] = _editor.renderer.drawQuad.DrawQuadAddTexture(viewport.viewPortTexture[i]);
+        m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
+            ,viewport.forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 }
 
@@ -30,11 +31,10 @@ void WorldViewWindow::Update()
     if (viewport.OnResize(windowSize))
     {
         // TODO LEARB MULTITHREAD IN ORDER TO REMOVE THIS 
-        
         for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
         {
             m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
-                ,viewport.viewPortTexture[i].textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                ,viewport.forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
     }
     ShowViewPort();

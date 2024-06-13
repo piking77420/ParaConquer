@@ -54,16 +54,16 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
 
     if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 
-        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
-        queue = &device.transferQueue.Queue;
+        commandPool = &VulkanInterface::vulkanCommandPoolGraphic;
+        queue = &device.graphicsQueue.Queue;
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     } else if (_oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && _newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
-        queue = &device.transferQueue.Queue;
+        commandPool = &VulkanInterface::vulkanCommandPoolGraphic;
+        queue = &device.graphicsQueue.Queue;
 
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -73,8 +73,8 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
     }
     else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
     {
-        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
-        queue = &device.transferQueue.Queue;
+        commandPool = &VulkanInterface::vulkanCommandPoolGraphic;
+        queue = &device.graphicsQueue.Queue;
 
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
@@ -84,8 +84,8 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
     }
     else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
     {
-        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
-        queue = &device.transferQueue.Queue;
+        commandPool = &VulkanInterface::vulkanCommandPoolGraphic;
+        queue = &device.graphicsQueue.Queue;
 
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
@@ -146,9 +146,9 @@ void PC_CORE::CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vk
 
 void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _width, uint32_t _height)
 {
-    VulkanInterface::vulkanCommandPoolTransfert.BeginSingleCommand();
+    VulkanInterface::vulkanCommandPoolGraphic.BeginSingleCommand();
     VkCommandBuffer cmdbuffer = {};
-    VulkanInterface::vulkanCommandPoolTransfert.GetSingleCommandBuffer(&cmdbuffer);
+    VulkanInterface::vulkanCommandPoolGraphic.GetSingleCommandBuffer(&cmdbuffer);
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -167,5 +167,5 @@ void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _widt
 
     vkCmdCopyBufferToImage(cmdbuffer, _buffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    VulkanInterface::vulkanCommandPoolTransfert.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().transferQueue.Queue);
+    VulkanInterface::vulkanCommandPoolGraphic.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().graphicsQueue.Queue);
 }

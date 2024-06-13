@@ -44,16 +44,16 @@ void VulkanBuffer::CreateGpuBuffer(VkBuffer* _vkBuffer, VmaAllocation* _allocati
 
         CreateBufferVma(_vkBuffer ,_allocation, _usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, _dataSize);
 
-        VulkanInterface::vulkanCommandPoolTransfert.BeginSingleCommand();
+        VulkanInterface::vulkanCommandPoolGraphic.BeginSingleCommand();
         VkCommandBuffer cmdbuffer = {};
-        VulkanInterface::vulkanCommandPoolTransfert.GetSingleCommandBuffer(&cmdbuffer);
+        VulkanInterface::vulkanCommandPoolGraphic.GetSingleCommandBuffer(&cmdbuffer);
 
         VkBufferCopy copy;
         copy.dstOffset = 0;
         copy.srcOffset = 0;
         copy.size = _dataSize;
         vkCmdCopyBuffer(cmdbuffer, stagingBuffer, *_vkBuffer,1,&copy);
-        VulkanInterface::vulkanCommandPoolTransfert.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().transferQueue.Queue);
+        VulkanInterface::vulkanCommandPoolGraphic.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().graphicsQueue.Queue);
 
         vmaDestroyBuffer(VulkanInterface::GetAllocator(), stagingBuffer, stagingAllocation);
 

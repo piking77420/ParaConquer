@@ -45,12 +45,13 @@ void VulkanInterface::Init(Window* _window)
     };
     vulkanCommandPoolGraphic.Init(&vkCommandPoolCreateInfoGraphic);
 
+    /*
     const VkCommandPoolCreateInfo vkCommandPoolCreateInfoTransfer =
     {
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext = nullptr,
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = vulkanDevice.transferQueue.index
+        .queueFamilyIndex = vulkanDevice.graphicsQueue.index
     };
     vulkanCommandPoolTransfert.Init(&vkCommandPoolCreateInfoTransfer);
 
@@ -64,7 +65,7 @@ void VulkanInterface::Init(Window* _window)
 
     vulkanCommandPoolViewPort.Init(&vkCommandPoolCreateInfoFoRenderViewport);
     vulkanCommandPoolImgui.Init(&vkCommandPoolCreateInfoFoRenderViewport);
-
+*/
     
     // get the nbr of image for the swap chain
     vulkanSwapChapchain.Init(_window->windowSize.x, _window->windowSize.y, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
@@ -77,8 +78,8 @@ void VulkanInterface::Destroy()
     vulkanMaterialManager.Destroy();
     vulkanSwapChapchain.Destroy();
     vulkanCommandPoolGraphic.Destroy();
-    vulkanCommandPoolTransfert.Destroy();
-    vulkanCommandPoolImgui.Destroy();
+    //vulkanCommandPoolTransfert.Destroy();
+    //vulkanCommandPoolImgui.Destroy();
     vulkanCommandPoolViewPort.Destroy();
     vulkanTextureSampler.Destroy();
 

@@ -19,14 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="src\include\world\world_header_typedef.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\include\world\system\" />
-    <Folder Include="src\source\math\" />
-    <Folder Include="src\source\world\system\" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
@@ -111,6 +103,11 @@
     <ClInclude Include="src\include\world\world_header_typedef.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="src\externals\lib\Debug\glfw3.lib" />
+    <Content Include="src\externals\lib\Debug\glfw3.pdb" />
+    <Content Include="src\externals\lib\Release\glfw3.lib" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="src\externals\lib\source\imgui.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui_demo.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui_draw.cpp" />
@@ -172,6 +169,11 @@
     <ClCompile Include="src\source\world\system.cpp" />
     <ClCompile Include="src\source\world\transform.cpp" />
     <ClCompile Include="src\source\world\world.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\include\world\system\" />
+    <Folder Include="src\source\math\" />
+    <Folder Include="src\source\world\system\" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

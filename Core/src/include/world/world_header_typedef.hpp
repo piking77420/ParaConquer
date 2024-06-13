@@ -2,7 +2,7 @@
 
 #include "core_header.hpp"
 
-constexpr size_t MAX_ENTITIES = 10000;
+constexpr size_t MAX_ENTITIES = 100;
 constexpr uint32_t NULL_ENTITY = -1;
 constexpr uint32_t NULL_COMPONENT = -1;
 

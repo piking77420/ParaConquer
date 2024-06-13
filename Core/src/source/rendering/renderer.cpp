@@ -220,6 +220,7 @@ void Renderer::InitForwardPass()
         .imageLayoutFinal = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
 
+    
     const Attachment depth =
     {
         .attachementIndex = AttachementIndex::Depth,
@@ -231,7 +232,7 @@ void Renderer::InitForwardPass()
         .imageLayoutFinal = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     };
 
-    forwardPass.Init({color, depth});
+    forwardPass.Init({color});
 }
 
 void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags)
@@ -271,7 +272,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
 
 
-    std::vector<StaticMesh>* meshes;
+    std::vector<StaticMesh>* meshes = nullptr;
     m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
 
     for (size_t i = 0; i < meshes->size(); i++)
@@ -293,8 +294,8 @@ void Renderer::DrawToViewPort(VkCommandBuffer commandBuffer)
 {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_CurrentViewport->viewPortRenderPass.renderPass;
-    renderPassInfo.framebuffer = m_CurrentViewport->framebuffers.at(m_ImageIndex);
+    renderPassInfo.renderPass = forwardPass.renderPass;
+    renderPassInfo.framebuffer = m_CurrentViewport->forwardAttachments.at(m_ImageIndex).framebuffer;
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = { static_cast<uint32_t>(m_CurrentViewport->viewPortSize.x),
        static_cast<uint32_t>(m_CurrentViewport->viewPortSize.y) } ;
@@ -302,13 +303,32 @@ void Renderer::DrawToViewPort(VkCommandBuffer commandBuffer)
 
     std::array<VkClearValue, 1> clearValues{};
     clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-
+    //clearValues[0].depthStencil = {1.0, 0};
     renderPassInfo.clearValueCount = clearValues.size();
     renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    drawQuad.Draw(commandBuffer, m_CurrentViewport->forwardDescritporSet.at(m_ImageIndex));
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
+
+
+    std::vector<StaticMesh>* meshes;
+    m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
+
+    for (size_t i = 0; i < meshes->size(); i++)
+    {
+        const StaticMesh& staticMesh = meshes->at(i);
+
+        if (!IsValid(staticMesh.componentHolder))
+            continue;
+
+        const Entity& entity = staticMesh.componentHolder.entityID;
+        const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(entity);
+        DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
+    }
+    drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex);
+
+    //drawQuad.Draw(commandBuffer, m_CurrentViewport->forwardDescritporSet.at(m_ImageIndex));
     vkCmdEndRenderPass(commandBuffer);
 }
 

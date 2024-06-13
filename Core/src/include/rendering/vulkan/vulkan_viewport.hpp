@@ -23,17 +23,11 @@ private:
     
 public:
     Vector2i viewPortSize = {800,600};
-
-    std::vector<VulkanTexture> viewPortTexture;
-
-    std::vector<VkFramebuffer> framebuffers;
-
-    std::vector<ForwardAttachment> forwardAttachments;
+    
+    std::vector<ForwardAttachment> forwardAttachments;  
 
     std::vector<VkDescriptorSet> forwardDescritporSet;
-
-    VulkanRenderPass viewPortRenderPass;
-
+    
     Renderer* renderer = nullptr;
     
     bool isEditor = true;

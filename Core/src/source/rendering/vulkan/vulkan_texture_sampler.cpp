@@ -78,13 +78,17 @@ void VulkanTextureSampler::Destroy()
 
 bool operator==(const VkSamplerCreateInfo& lhs, const VkSamplerCreateInfo& rhs)
 {
-    return lhs.flags == rhs.flags && lhs.anisotropyEnable == rhs.anisotropyEnable &&
-        lhs.borderColor == rhs.borderColor && lhs.compareEnable == rhs.compareEnable && lhs.compareOp == rhs.compareOp
-    && lhs.magFilter == rhs.magFilter && lhs.maxAnisotropy == rhs.maxAnisotropy && lhs.maxLod == rhs.maxLod &&
-        lhs.minFilter == rhs.minFilter && lhs.minLod == rhs.minLod && lhs.mipmapMode && rhs.mipmapMode
-    && lhs.sType == rhs.sType && lhs.unnormalizedCoordinates == rhs.unnormalizedCoordinates &&
-        lhs.addressModeU == rhs.addressModeU && lhs.addressModeV == rhs.addressModeV && lhs.addressModeW == rhs.addressModeW &&
-            lhs.mipLodBias == rhs.mipLodBias;
+    return lhs.flags == rhs.flags &&
+           lhs.magFilter == rhs.magFilter &&
+           lhs.minFilter == rhs.minFilter &&
+           lhs.addressModeU == rhs.addressModeU &&
+           lhs.addressModeV == rhs.addressModeV &&
+           lhs.addressModeW == rhs.addressModeW &&
+           lhs.anisotropyEnable == rhs.anisotropyEnable &&
+           lhs.compareEnable == rhs.compareEnable &&
+           lhs.borderColor == rhs.borderColor &&
+           lhs.unnormalizedCoordinates == rhs.unnormalizedCoordinates &&
+           lhs.sType == rhs.sType;
 }
 
 bool VulkanTextureSampler::CountainSamplerInfo(const VkSamplerCreateInfo& _vkSamplerCreateInfo, uint32_t *_outId)
