@@ -8,7 +8,7 @@ BEGIN_PCCORE
 void CreateBufferVma(VkBuffer* _vkBuffer, VmaAllocation* _allocation,VkBufferUsageFlags _vkBufferUsageFlags,
     VmaMemoryUsage _vmaMemoryUsage, size_t _size);
 
-void TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLayout _oldLayout, VkImageLayout _newLayout);
+void TransitionImageLayout(VkImage _image, VkImageAspectFlags _aspectFlags, VkFormat _format, VkImageLayout _oldLayout, VkImageLayout _newLayout);
 
 void CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vkImageView,VkImageAspectFlags aspectFlags);
 

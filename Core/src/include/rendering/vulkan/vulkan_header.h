@@ -5,11 +5,14 @@
 
 #include "core_header.hpp"
 #include <vulkan/vulkan.h>
-
+#include <stdexcept>
 
 #define VK_CHECK_ERROR(x,message)\
     if (x != VK_SUCCESS) \
+    {\
         Log::Error(message,__FILE__,std::to_string(__LINE__).c_str());\
+        throw std::runtime_error(message);\
+    }\
 
 struct PhysicalDevice {
     VkPhysicalDevice physDevice;

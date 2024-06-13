@@ -2,28 +2,46 @@
 
 #include "log.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
+#include "rendering/renderer.hpp"
 
-using namespace PC_CORE; 
+using namespace PC_CORE;
 
-VulkanViewport::VulkanViewport()
+void VulkanViewport::Init()
 {
+    const Attachment color =
+    {
+        .attachementIndex = AttachementIndex::Color00,
+        .format = VulkanInterface::vulkanSwapChapchain.surfaceFormatKhr.format,
+        .clearOnLoad = true,
+        .write = true,
+        .imageLayoutInit = VK_IMAGE_LAYOUT_UNDEFINED,
+        .imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .imageLayoutFinal = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    };
+    
+    
+    viewPortRenderPass.Init({color});
+
+    
     CreateViewPortImageAndFrameBuffer();
 }
 
-VulkanViewport::~VulkanViewport()
+void VulkanViewport::Destroy()
 {
     DestroyViewPortImageAndFrameBuffer();
 }
 
-void VulkanViewport::HandleResize(Vector2i _windowSize)
+bool VulkanViewport::OnResize(Vector2i _windowSize)
 {
     if (_windowSize == viewPortSize)
-        return;
+        return false;
 
     Log::Debug("ResizeViewPort");
     viewPortSize = _windowSize;
     DestroyViewPortImageAndFrameBuffer();
     CreateViewPortImageAndFrameBuffer();
+
+    return true;
 }
 
 void VulkanViewport::CreateViewPortImageAndFrameBuffer()
@@ -45,11 +63,14 @@ void VulkanViewport::CreateViewPortImageAndFrameBuffer()
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = VK_IMAGE_TILING_LINEAR,
         .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+       .queueFamilyIndexCount = 1,
+       .pQueueFamilyIndices = &VulkanInterface::GetDevice().transferQueue.index,
     };
 
     for (VulkanTexture& v : viewPortTexture)
     {
-        v.Init(vkImageCreateInfo);
+        v.Init(vkImageCreateInfo, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     }
 
     for (uint32_t i = 0; i < framebuffers.size(); ++i)
@@ -61,7 +82,7 @@ void VulkanViewport::CreateViewPortImageAndFrameBuffer()
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass;
+        framebufferInfo.renderPass = viewPortRenderPass.renderPass;
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = viewPortSize.x;
@@ -71,6 +92,8 @@ void VulkanViewport::CreateViewPortImageAndFrameBuffer()
         const VkResult res = vkCreateFramebuffer(VulkanInterface::GetDevice().device, &framebufferInfo, nullptr, &framebuffers[i]);
         VK_CHECK_ERROR(res,"failed to create framebuffer!");
     }
+    
+    InitForward();
 }
 
 void VulkanViewport::DestroyViewPortImageAndFrameBuffer()
@@ -83,5 +106,94 @@ void VulkanViewport::DestroyViewPortImageAndFrameBuffer()
     for (VkFramebuffer& i : framebuffers)
     {
         vkDestroyFramebuffer(VulkanInterface::GetDevice().device, i, nullptr);
+    }
+
+    DestroyForward();
+}
+
+void VulkanViewport::InitForward()
+{
+    const uint32_t nbrOfImage = VulkanInterface::GetNbrOfImage(); 
+    forwardAttachments.resize(nbrOfImage);
+    forwardDescritporSet.resize(nbrOfImage);
+
+    VkImageCreateInfo  vkImageCreateInfoColor
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .imageType = VK_IMAGE_TYPE_2D,
+            .format = VulkanInterface::vulkanSwapChapchain.surfaceFormatKhr.format,
+            .extent = {static_cast<uint32_t>(viewPortSize.x), static_cast<uint32_t>(viewPortSize.y),static_cast<uint32_t>(1)},
+            .mipLevels = 1,
+            .arrayLayers = 1,
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .tiling = VK_IMAGE_TILING_LINEAR,
+            .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 1,
+            .pQueueFamilyIndices = &VulkanInterface::GetDevice().graphicsQueue.index,
+             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+
+    VkImageCreateInfo  vkImageCreateInfoDepth
+        {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+           .pNext = nullptr,
+           .flags = 0,
+           .imageType = VK_IMAGE_TYPE_2D,
+           .format = VulkanInterface::vulkanSwapChapchain.depthFormat,
+            .extent = {static_cast<uint32_t>(viewPortSize.x), static_cast<uint32_t>(viewPortSize.y),static_cast<uint32_t>(1)},
+           .mipLevels = 1,
+           .arrayLayers = 1,
+           .samples = VK_SAMPLE_COUNT_1_BIT,
+           .tiling = VK_IMAGE_TILING_OPTIMAL,
+           .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 1,
+            .pQueueFamilyIndices = &VulkanInterface::GetDevice().graphicsQueue.index,
+           .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+    
+    for (size_t i = 0 ; i < forwardAttachments.size(); i++)
+    {
+        ForwardAttachment& fwdAtt = forwardAttachments[i];
+        
+        fwdAtt.colorImage.Init(vkImageCreateInfoColor, VK_IMAGE_ASPECT_COLOR_BIT , VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        fwdAtt.depth.Init(vkImageCreateInfoDepth, VK_IMAGE_ASPECT_DEPTH_BIT);
+        
+        const std::array<VkImageView,2> attachments =
+        {
+            fwdAtt.colorImage.textureImageView,
+            fwdAtt.depth.textureImageView
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = Renderer::forwardPass.renderPass;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = viewPortSize.x;
+        framebufferInfo.height = viewPortSize.y;
+        framebufferInfo.layers = 1;
+
+        const VkResult res = vkCreateFramebuffer(VulkanInterface::GetDevice().device, &framebufferInfo, nullptr, &fwdAtt.framebuffer);
+        VK_CHECK_ERROR(res,"failed to create framebuffer!");
+
+        forwardDescritporSet[i] = renderer->drawQuad.DrawQuadAddTexture(fwdAtt.colorImage); 
+        
+    }  
+    
+}
+
+void VulkanViewport::DestroyForward()
+{
+    for (size_t i = 0 ; i < forwardAttachments.size(); i++)
+    {
+        ForwardAttachment& fwdAtt = forwardAttachments[i];
+        fwdAtt.colorImage.Destroy();
+        fwdAtt.depth.Destroy();
+        vkDestroyFramebuffer(VulkanInterface::GetDevice().device, fwdAtt.framebuffer, nullptr);
+
     }
 }

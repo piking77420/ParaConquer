@@ -25,8 +25,8 @@
 #include "world/transform.hpp"
 #include "world/world.hpp"
 
-
 BEGIN_PCCORE
+
 class  Renderer
 {
 public:
@@ -39,18 +39,28 @@ public:
     void BeginFrame();
 
     void RenderViewPort(const Camera& _camera,
-        const VulkanViewport& viewport,const World& _world);
-
+        const VulkanViewport& _viewport,const World& _world);
+        
     void SwapBuffers();
+
+    void WaitGPU() const
+    {
+        vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
+    }
     
-    VulkanRenderPass forwardPass;
+    DrawQuad drawQuad;
+    
+    static inline VulkanRenderPass forwardPass;
+
+    VkCommandBuffer* GetCurrentCommandBuffer()
+    {
+        return &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
+    }
 
 private:
     uint32_t m_ImageIndex = 0;
     
     std::vector<VkCommandBuffer> m_CommandBuffers;
-
-    
     
     VulkanPipeline m_BasePipeline;
     
@@ -85,20 +95,21 @@ private:
     const Camera* m_CurrentCamera = nullptr;
     
     const World* m_CurrentWorld = nullptr;
+
+    const VulkanViewport* m_CurrentViewport = nullptr;
     
     DrawGizmos drawGizmos;
 
-    DrawQuad drawQuad;
+    void RenderSwapChain();
+
     
     void InitForwardPass();
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
-
-    void RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
-    void ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+        
+    void ForwardPass(VkCommandBuffer commandBuffer);
     
-    void DrawToViewPort(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void DrawToViewPort(VkCommandBuffer commandBuffer);
     
     void CreateBasicGraphiPipeline();
 
@@ -120,7 +131,7 @@ private:
     const Transform& transform, const Entity& entity);
 
     void InitBuffers();
-
+    
     friend DrawGizmos;
 };
 

@@ -5,7 +5,12 @@
 
 PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor) : WorldViewWindow(_editor)
 {
-    
+
+}
+
+PC_EDITOR_CORE::EditWorldWindow::~EditWorldWindow()
+{
+    viewport.Destroy();
 }
 
 void PC_EDITOR_CORE::EditWorldWindow::Render()

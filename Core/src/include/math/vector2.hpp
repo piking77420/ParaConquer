@@ -9,8 +9,8 @@ class Vector2
 public:
     using DataType = T;
     
-    T x = 0.f;
-    T y = 0.f;
+    T x = static_cast<T>(0);
+    T y = static_cast<T>(0);
 
     constexpr Vector2() = default;
 

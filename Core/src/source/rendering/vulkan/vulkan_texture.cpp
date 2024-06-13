@@ -44,9 +44,9 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
     
 
-    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    TransitionImageLayout(textureImage,VK_IMAGE_ASPECT_COLOR_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     CopyBufferToImage(stagingbuffer, textureImage, static_cast<uint32_t>(_imageSize.x), static_cast<uint32_t>(_imageSize.y));
-    TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    TransitionImageLayout(textureImage,VK_IMAGE_ASPECT_COLOR_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     vmaDestroyBuffer(VulkanInterface::GetAllocator(), stagingbuffer, stagingAllocation);
 
@@ -101,7 +101,7 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
     
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
-    
+
     CreateImageView(textureImage,VK_FORMAT_R8G8B8A8_SRGB, &textureImageView,VK_IMAGE_ASPECT_COLOR_BIT);
 
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
@@ -128,7 +128,7 @@ void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
    VulkanInterface::vulkanTextureSampler.CreateSampler(samplerInfo, &samplerId);
 }
 
-void VulkanTexture::Init(VkImageCreateInfo _imageInfo , const VkImageAspectFlags aspectFlags)
+void VulkanTexture::Init(VkImageCreateInfo _imageInfo , const VkImageAspectFlags aspectFlags,VkImageLayout  _imageLayout)
 {
     VmaAllocationCreateInfo allocCreateInfo = {};
     allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -138,6 +138,9 @@ void VulkanTexture::Init(VkImageCreateInfo _imageInfo , const VkImageAspectFlags
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &_imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
     CreateImageView(textureImage,_imageInfo.format, &textureImageView, aspectFlags);
+    
+    if (_imageLayout != VK_IMAGE_LAYOUT_UNDEFINED)
+        TransitionImageLayout(textureImage, aspectFlags, _imageInfo.format, _imageInfo.initialLayout, _imageLayout);
 
     const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
     const  VkSamplerCreateInfo samplerInfo =

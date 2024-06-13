@@ -22,7 +22,7 @@ public:
 
     void Init(size_t _dataSize, Vector2i _imageSize);
 
-    void Init(VkImageCreateInfo _imageInfo , VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+    void Init(VkImageCreateInfo _imageInfo , VkImageAspectFlags aspectFlags, VkImageLayout  _imageLayout = VK_IMAGE_LAYOUT_UNDEFINED);
     
     void Destroy();
     

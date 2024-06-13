@@ -28,8 +28,8 @@ public:
 
     static void ComputeNextFrame();
     
-    static VulkanDevice GetDevice();
-
+    static VulkanDevice& GetDevice();
+    
     static PhysicalDevice& GetPhysicalDevice();
 
     static VkSurfaceFormatKHR GetSwapChainImageFormat();
@@ -51,7 +51,12 @@ public:
     
     static inline VulkanCommandPool vulkanCommandPoolGraphic;
 
-    static inline VulkanCommandPool vulkanCommandPoolTransfert;
+    static inline VulkanCommandPool vulkanCommandPoolViewPort;
+
+    //static inline VulkanCommandPool vulkanCommandPoolImgui;
+    
+    //static inline VulkanCommandPool vulkanCommandPoolTransfert;
+
 
     static inline VulkanTextureSampler vulkanTextureSampler;
 

@@ -19,6 +19,7 @@ public:
     
     void Update() override;
 
+    std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
 
 protected:
     void ShowViewPort();

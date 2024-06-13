@@ -53,6 +53,18 @@ void VulkanInterface::Init(Window* _window)
         .queueFamilyIndex = vulkanDevice.transferQueue.index
     };
     vulkanCommandPoolTransfert.Init(&vkCommandPoolCreateInfoTransfer);
+
+    const VkCommandPoolCreateInfo vkCommandPoolCreateInfoFoRenderViewport =
+      {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = vulkanDevice.graphicsQueue.index
+    };
+
+    vulkanCommandPoolViewPort.Init(&vkCommandPoolCreateInfoFoRenderViewport);
+    vulkanCommandPoolImgui.Init(&vkCommandPoolCreateInfoFoRenderViewport);
+
     
     // get the nbr of image for the swap chain
     vulkanSwapChapchain.Init(_window->windowSize.x, _window->windowSize.y, vulkanDevice.graphicsQueue.index, vulkanSurface.surfaceKhr);
@@ -66,6 +78,8 @@ void VulkanInterface::Destroy()
     vulkanSwapChapchain.Destroy();
     vulkanCommandPoolGraphic.Destroy();
     vulkanCommandPoolTransfert.Destroy();
+    vulkanCommandPoolImgui.Destroy();
+    vulkanCommandPoolViewPort.Destroy();
     vulkanTextureSampler.Destroy();
 
     vmaDestroyAllocator(vmaAllocator);
@@ -139,7 +153,7 @@ void VulkanInterface::ComputeNextFrame()
     currentFrame = (currentFrame + 1) % vulkanSwapChapchain.nbrOfImage;
 }
 
-VulkanDevice VulkanInterface::GetDevice()
+VulkanDevice& VulkanInterface::GetDevice()
 {
     return vulkanDevice;
 }

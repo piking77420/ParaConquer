@@ -45,7 +45,6 @@ void Renderer::RecreateSwapChain(Window* _window)
 void Renderer::Destroy()
 {
     // Wait the gpu 
-    vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
     delete m_GpuLights;
     drawGizmos.Destroy();
     drawQuad.Destroy();
@@ -74,30 +73,60 @@ void Renderer::Destroy()
 
 void Renderer::BeginFrame()
 {
+    
     const VkDevice& device = VulkanInterface::GetDevice().device;
     const uint32_t currentFrame = VulkanInterface::GetCurrentFrame();
     vkWaitForFences(device, 1, &m_InFlightFence[currentFrame].fences, VK_TRUE, UINT64_MAX);
     VkResult result = vkAcquireNextImageKHR(device, VulkanInterface::vulkanSwapChapchain.swapchainKhr, UINT64_MAX,
-                                            m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore,
+                                            m_ImageAvailableSemaphore[currentFrame].semaphore,
                                             VK_NULL_HANDLE, &m_ImageIndex);
-    vkResetFences(device, 1, &m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences);
+     result = vkResetFences(device, 1, &m_InFlightFence[currentFrame].fences);
 
-    vkResetCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()], 0);
+     result = vkResetCommandBuffer(m_CommandBuffers[currentFrame], 0);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    BeginCommandBuffer(m_CommandBuffers[currentFrame], 0);
 }
 
 
-void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& viewport,
+void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& _viewport,
                               const World& _world)
 {
     m_CurrentCamera = &_camera;
     m_CurrentWorld = &_world;
+    m_CurrentViewport =  &_viewport;
+
+    const VkCommandBuffer& vkCommandBuffer = m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(_viewport.viewPortSize.x);
+    viewport.height = static_cast<float>(_viewport.viewPortSize.y);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(vkCommandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = {static_cast<uint32_t>(_viewport.viewPortSize.x),
+        static_cast<uint32_t>(_viewport.viewPortSize.y) };
+    
+    vkCmdSetScissor(vkCommandBuffer, 0, 1, &scissor);
 
     UpdateBuffers(VulkanInterface::GetCurrentFrame());
-    RecordCommandBuffers(m_CommandBuffers[VulkanInterface::GetCurrentFrame()], m_ImageIndex);
+    //ForwardPass(vkCommandBuffer);
+    DrawToViewPort(vkCommandBuffer);
 }
 
 void Renderer::SwapBuffers()
 {
+    RenderSwapChain();
+    
+    const VkResult r = vkEndCommandBuffer(m_CommandBuffers[VulkanInterface::GetCurrentFrame()]);
+    VK_CHECK_ERROR(r, "Failed to begin EndCommandBuffer")
+    
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     const VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore[VulkanInterface::GetCurrentFrame()].semaphore};
@@ -114,11 +143,9 @@ void Renderer::SwapBuffers()
     submitInfo.pSignalSemaphores = signalSemaphores;
 
 
-    if (vkQueueSubmit(VulkanInterface::GetDevice().graphicsQueue.Queue, 1, &submitInfo,
-                      m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
+    const VkResult result = vkQueueSubmit(VulkanInterface::GetDevice().graphicsQueue.Queue, 1, &submitInfo,
+                      m_InFlightFence[VulkanInterface::GetCurrentFrame()].fences);
+   VK_CHECK_ERROR(result, "failed to vkQueueSubmit")
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -138,6 +165,47 @@ void Renderer::SwapBuffers()
     VulkanInterface::ComputeNextFrame();
 }
 
+void Renderer::RenderSwapChain()
+{
+    const VkCommandBuffer& vkCommandBuffer = m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = VulkanInterface::vulkanSwapChapchain.swapchainRenderPass.renderPass;
+    renderPassInfo.framebuffer = VulkanInterface::GetSwapChainFramebuffer(m_ImageIndex);
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+
+    renderPassInfo.clearValueCount = clearValues.size();
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.width);
+    viewport.height = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(vkCommandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
+    vkCmdSetScissor(vkCommandBuffer, 0, 1, &scissor);
+    
+    // DrawSwapChain Image if real game
+    
+    VulkanImgui::Render(GetCurrentCommandBuffer());
+    vkCmdEndRenderPass(vkCommandBuffer);
+}
+
+
 
 void Renderer::InitForwardPass()
 {
@@ -149,7 +217,7 @@ void Renderer::InitForwardPass()
         .write = true,
         .imageLayoutInit = VK_IMAGE_LAYOUT_UNDEFINED,
         .imageLayoutRef = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .imageLayoutFinal = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .imageLayoutFinal = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
 
     const Attachment depth =
@@ -177,27 +245,19 @@ void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBuffe
     };
 
     const VkResult r = vkBeginCommandBuffer(_commandBuffer, &vkCommandBufferBeginInfo);
-
     VK_CHECK_ERROR(r, "Failed to begin CommandBuffer")
 }
 
-void Renderer::RecordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex)
-{
-    ForwardPass(commandBuffer, imageIndex);
-}
 
-void Renderer::ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
 {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    BeginCommandBuffer(commandBuffer, 0);
-
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass;
-    renderPassInfo.framebuffer = VulkanInterface::GetSwapChainFramebuffer(imageIndex);
+    renderPassInfo.renderPass = forwardPass.renderPass;
+    renderPassInfo.framebuffer = m_CurrentViewport->forwardAttachments.at(m_ImageIndex).framebuffer;
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
+    renderPassInfo.renderArea.extent = { static_cast<uint32_t>(m_CurrentViewport->viewPortSize.x),
+       static_cast<uint32_t>(m_CurrentViewport->viewPortSize.y) } ;
 
     std::array<VkClearValue, 2> clearValues{};
     clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -209,6 +269,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex)
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
+
 
     std::vector<StaticMesh>* meshes;
     m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
@@ -222,20 +283,33 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 
         const Entity& entity = staticMesh.componentHolder.entityID;
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(entity);
-        DrawStatisMesh(commandBuffer, imageIndex, staticMesh, transform, entity);
+        DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
     }
-    drawGizmos.DrawGizmosForward(commandBuffer, imageIndex);
-    //drawQuad.Draw(commandBuffer,test);
-
-    VulkanImgui::Render(&commandBuffer);
+    drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex);
     vkCmdEndRenderPass(commandBuffer);
-    const VkResult r = vkEndCommandBuffer(commandBuffer);
-    VK_CHECK_ERROR(r, "Failed to begin EndCommandBuffer")
 }
 
-void Renderer::DrawToViewPort(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+void Renderer::DrawToViewPort(VkCommandBuffer commandBuffer)
 {
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = m_CurrentViewport->viewPortRenderPass.renderPass;
+    renderPassInfo.framebuffer = m_CurrentViewport->framebuffers.at(m_ImageIndex);
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = { static_cast<uint32_t>(m_CurrentViewport->viewPortSize.x),
+       static_cast<uint32_t>(m_CurrentViewport->viewPortSize.y) } ;
     
+
+    std::array<VkClearValue, 1> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+
+    renderPassInfo.clearValueCount = clearValues.size();
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    drawQuad.Draw(commandBuffer, m_CurrentViewport->forwardDescritporSet.at(m_ImageIndex));
+    vkCmdEndRenderPass(commandBuffer);
 }
 
 
@@ -276,7 +350,7 @@ void Renderer::CreateBasicGraphiPipeline()
     pipelineInfo.pDepthStencilState = &depthStencil;
 
     m_BasePipeline.Init(&pipelineInfo, m_VulkanShaderStage, m_VkPipelineLayout.Get(),
-                        VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass);
+                        forwardPass.renderPass);
 }
 
 void Renderer::CreateAsyncObject()
@@ -472,19 +546,7 @@ void Renderer::ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame)
 void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
                               const Transform& transform, const Entity& entity)
 {
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.width);
-    viewport.height = static_cast<float>(VulkanInterface::vulkanSwapChapchain.swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = VulkanInterface::vulkanSwapChapchain.swapChainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     const VkBuffer vertexBuffers[] = {staticMesh.mesh->vulkanVertexBuffer.GetHandle()};
     const VkDeviceSize offsets[] = {0};
 
@@ -524,3 +586,4 @@ void Renderer::InitBuffers()
         shaderStorageBuffer.Init(sizeof(GpuLight));
     }
 }
+

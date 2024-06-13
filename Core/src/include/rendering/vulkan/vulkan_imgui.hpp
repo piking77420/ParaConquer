@@ -18,7 +18,6 @@ public:
 
     static void Render(VkCommandBuffer* _commandBuffer);
 private:
-
     void Theme();
 
     static void CheckErrorImgui(VkResult _err);

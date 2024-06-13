@@ -67,12 +67,14 @@ void Editor::Run()
         }
         vulkanImgui.EndFrame();
         renderer.SwapBuffers();
-    }   
+    }
+    renderer.WaitGPU();
 }
 
 void Editor::InitEditorWindows()
 {
-    m_EditorWindows.push_back(new EditWorldWindow(*this));
+    EditWorldWindow* edw = new EditWorldWindow(*this);
+    m_EditorWindows.push_back(edw);
     m_EditorWindows[0]->name = "EditorWindow";
 }
 

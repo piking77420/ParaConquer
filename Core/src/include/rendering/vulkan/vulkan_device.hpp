@@ -16,10 +16,11 @@ public:
     VkDevice device = VK_NULL_HANDLE;
 
     QueuAndIndex graphicsQueue;
+    
 
-    QueuAndIndex computeQueue;
+    //QueuAndIndex computeQueue;
 
-    QueuAndIndex transferQueue;
+    //QueuAndIndex transferQueue;
 
     
     void Init(const VulkanPhysicalDevices& _physicalDevice);

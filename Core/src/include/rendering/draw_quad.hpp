@@ -25,7 +25,10 @@ public:
 
     void Destroy();
 
-    VkDescriptorSet DrawQuadAddTexture(const VulkanTexture& _vulkanTexture);
+    VkDescriptorSet DrawQuadAddTexture(const VulkanTexture& _vulkanTexture) const;
+
+    VkDescriptorSet DrawQuadAddTexture(const VkImageView& imageView) const; 
+
 private:
     VulkanShaderStage m_VulkanShaderStage;
     

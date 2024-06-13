@@ -24,10 +24,8 @@ public:
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VkFormat depthFormat;
-
-    VulkanTexture depthImage;
     
-    VulkanRenderPass mainRenderPass;
+    VulkanRenderPass swapchainRenderPass;
     
     VkSurfaceFormatKHR surfaceFormatKhr;
 
@@ -43,9 +41,8 @@ public:
 
     void DestroySwapChain();
 
-private:
 
-    void _forceinline InitDepthBuffer();
+private:
     
     uint32_t ChooseNumImages(const VkSurfaceCapabilitiesKHR& Capabilities);
     

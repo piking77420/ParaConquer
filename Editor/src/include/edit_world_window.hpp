@@ -11,7 +11,7 @@ public:
 
     explicit EditWorldWindow(Editor& _editor);
     
-    ~EditWorldWindow() override = default;
+    ~EditWorldWindow() override ;
 
     void Render() override;
     

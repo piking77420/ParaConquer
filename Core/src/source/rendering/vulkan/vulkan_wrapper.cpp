@@ -27,13 +27,14 @@ void PC_CORE::CreateBufferVma(VkBuffer* _vkBuffer, VmaAllocation* _allocation, V
     VK_CHECK_ERROR(result,"Failded to createBuffer");
 }
 
-void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLayout _oldLayout,
+void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _aspectFlags , VkFormat _format, VkImageLayout _oldLayout,
     VkImageLayout _newLayout)
 {
-    VulkanInterface::vulkanCommandPoolTransfert.BeginSingleCommand();
 
+    VulkanCommandPool* commandPool = nullptr; 
     VkCommandBuffer commandBuffer;
-    VulkanInterface::vulkanCommandPoolTransfert.GetSingleCommandBuffer(&commandBuffer);
+    VkQueue* queue = nullptr;
+    VulkanDevice& device = VulkanInterface::GetDevice();
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -42,7 +43,7 @@ void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLay
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = _image;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.aspectMask = _aspectFlags;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
@@ -52,30 +53,63 @@ void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLay
     VkPipelineStageFlags destinationStage;
 
     if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+
+        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
+        queue = &device.transferQueue.Queue;
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     } else if (_oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && _newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
+        queue = &device.transferQueue.Queue;
+
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT; 
     }
-    else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+    else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+    {
+        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
+        queue = &device.transferQueue.Queue;
 
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    
-    } else {
+    }
+    else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        commandPool = &VulkanInterface::vulkanCommandPoolTransfert;
+        queue = &device.transferQueue.Queue;
+
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    }
+    else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+    {
+        commandPool = &VulkanInterface::vulkanCommandPoolGraphic;
+        queue = &device.graphicsQueue.Queue;
+
+        barrier.srcAccessMask = 0;  // No access flags required, since we're transitioning from UNDEFINED
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    }
+    else {
         throw std::invalid_argument("Unsupported layout transition!");
     }
 
+    commandPool->BeginSingleCommand();
+    commandPool->GetSingleCommandBuffer(&commandBuffer);
     vkCmdPipelineBarrier(
         commandBuffer,
         sourceStage, destinationStage,
@@ -85,7 +119,7 @@ void PC_CORE::TransitionImageLayout(VkImage _image, VkFormat _format, VkImageLay
         1, &barrier
     );
 
-    VulkanInterface::vulkanCommandPoolTransfert.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().transferQueue.Queue);
+    commandPool->SubmitSingleCommandBuffer(*queue);
 
 }
 

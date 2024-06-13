@@ -14,8 +14,7 @@ void VulkanImgui::Init(const PC_CORE::Window& _window)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
+
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 	Theme();
@@ -55,7 +54,7 @@ void VulkanImgui::Init(const PC_CORE::Window& _window)
     init_info.Queue = VulkanInterface::vulkanDevice.graphicsQueue.Queue;
     init_info.PipelineCache = nullptr;
     init_info.DescriptorPool = m_DescriptorPool;
-    init_info.RenderPass = VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass;
+    init_info.RenderPass = VulkanInterface::vulkanSwapChapchain.swapchainRenderPass.renderPass;
     init_info.Subpass = 0;
     init_info.MinImageCount = VulkanInterface::vulkanSwapChapchain.nbrOfImage;
     init_info.ImageCount = VulkanInterface::vulkanSwapChapchain.nbrOfImage;
@@ -82,18 +81,11 @@ void VulkanImgui::NewFrame() const
 
 void VulkanImgui::EndFrame() const
 {
-	const ImGuiIO& io = ImGui::GetIO();
-	
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-	}
+	ImGui::Render();
 }
 
 void VulkanImgui::Render(VkCommandBuffer* _commandBuffer)
 {
-    ImGui::Render();
     ImDrawData* draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(draw_data, *_commandBuffer);
 }

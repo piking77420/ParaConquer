@@ -27,6 +27,9 @@ void DrawGizmos::Init(PC_CORE::Renderer* renderer)
 
 void DrawGizmos::DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _imageIndex)
 {
+    if (!m_Renderer->m_CurrentViewport->isEditor)
+        return;
+        
     currentCommandBuffer = &_commandBuffer;
     imageIndex = _imageIndex;
     DrawSphere();
@@ -94,7 +97,7 @@ void DrawGizmos::CreateGraphiPipeline()
     pipelineInfo.pRasterizationState = &rasterizer;
 
     m_GizmoPipeline.Init(&pipelineInfo, m_VulkanShaderStageGizmo, m_VkPipelineLayout.Get(),
-        VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass);
+                         PC_CORE::Renderer::forwardPass.renderPass);
     
 }
 

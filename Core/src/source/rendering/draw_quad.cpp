@@ -1,5 +1,6 @@
 ﻿#include "rendering/draw_quad.hpp"
 
+#include "rendering/renderer.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "resources/resource_manager.hpp"
 
@@ -36,14 +37,19 @@ void DrawQuad::Destroy()
     m_DescriptorPool.Destroy();
 }
 
-VkDescriptorSet DrawQuad::DrawQuadAddTexture(const VulkanTexture& _vulkanTexture)
+VkDescriptorSet DrawQuad::DrawQuadAddTexture(const VulkanTexture& _vulkanTexture) const
+{
+   return DrawQuadAddTexture(_vulkanTexture.textureImageView);
+}
+ 
+VkDescriptorSet DrawQuad::DrawQuadAddTexture(const VkImageView& imageView) const
 {
     VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
     m_DescriptorPool.CreateDescriptorSet(m_DescriptorSetLayout.Get(), 1, &descriptorSet);
     
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = _vulkanTexture.textureImageView;
+    imageInfo.imageView = imageView;
     imageInfo.sampler = VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler;
     
     VkWriteDescriptorSet vkWriteDescriptorSet;
@@ -86,24 +92,14 @@ void DrawQuad::CreateGraphiPipeline()
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
     
-    VkPipelineDepthStencilStateCreateInfo depthStencil {};
-    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
-    depthStencil.depthWriteEnable = VK_TRUE;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.stencilTestEnable = VK_FALSE;
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.pNext = nullptr;
     pipelineInfo.pVertexInputState = &vertexInputInfo;
-    // TODO REMOVE IT
-    pipelineInfo.pDepthStencilState = &depthStencil;
 
     m_Pipeline.Init(&pipelineInfo, m_VulkanShaderStage, m_VkPipelineLayout.Get(),
-                        VulkanInterface::vulkanSwapChapchain.mainRenderPass.renderPass);
+                        VulkanInterface::vulkanSwapChapchain.swapchainRenderPass.renderPass);
 }
 
 void DrawQuad::InitDescriptor()

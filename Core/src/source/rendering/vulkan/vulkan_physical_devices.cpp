@@ -183,13 +183,13 @@ void VulkanPhysicalDevices::Init(VkInstance _instance, VkSurfaceKHR _surfaceKhr)
 void VulkanPhysicalDevices::SelectDevice(const VkQueueFlags _RequiredQueueType, const bool _SupportsPresent)
 {
     Log::Debug("SelectDevice");
+    
 
     for (uint32_t i = 0; i < m_Devices.size(); i++)
     {
         // only select a gpu
         if (m_Devices[i].devProps.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
             continue;
-
         
         for (uint32_t j = 0; j < m_Devices[i].qFamilyProps.size(); j++)
         {
