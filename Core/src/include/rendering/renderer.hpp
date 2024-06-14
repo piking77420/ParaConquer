@@ -106,10 +106,8 @@ private:
     void InitForwardPass();
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
-        
-    void ForwardPass(VkCommandBuffer commandBuffer);
     
-    void DrawToViewPort(VkCommandBuffer commandBuffer);
+    void ForwardPass(VkCommandBuffer commandBuffer);
     
     void CreateBasicGraphiPipeline();
 

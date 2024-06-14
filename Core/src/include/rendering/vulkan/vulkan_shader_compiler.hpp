@@ -17,7 +17,9 @@ private:
     static inline std::string vulkanEnvironmentPath {};
     
     static inline constexpr const char* vulkanEnvironmentName = "VULKAN_SDK";
-
+    
+    static inline constexpr const char* vulkanShaderCache = "ShaderSpvCache";
+    
     static void ReadFile(const std::string& _filename,std::vector<char>* data);
 
 };

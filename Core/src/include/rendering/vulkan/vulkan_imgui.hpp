@@ -20,6 +20,10 @@ public:
 private:
     void Theme();
 
+    void DockSpace() const;
+
+    void EndDockSpace() const;
+
     static void CheckErrorImgui(VkResult _err);
     
     VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;

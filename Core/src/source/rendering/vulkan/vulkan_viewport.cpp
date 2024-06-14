@@ -93,12 +93,12 @@ void VulkanViewport::InitForward()
         ForwardAttachment& fwdAtt = forwardAttachments[i];
         
         fwdAtt.colorImage.Init(vkImageCreateInfoColor, VK_IMAGE_ASPECT_COLOR_BIT , VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-       // fwdAtt.depth.Init(vkImageCreateInfoDepth, VK_IMAGE_ASPECT_DEPTH_BIT);
+        fwdAtt.depth.Init(vkImageCreateInfoDepth, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         
-        const std::array<VkImageView,1> attachments =
+        const std::array<VkImageView,2> attachments =
         {
             fwdAtt.colorImage.textureImageView,
-            //fwdAtt.depth.textureImageView
+            fwdAtt.depth.textureImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};

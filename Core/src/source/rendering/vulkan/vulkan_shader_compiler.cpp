@@ -39,19 +39,18 @@ bool VulkanShaderCompiler::CompileToSpv(const std::filesystem::path& _shaderSour
 
     /// TO DO SHADER C
     //"C:/VulkanSDK/x.x.x.x/Bin32/glslc.exe shader.vert -o vert.spv"
+    std::string shaderName = _shaderSourcePath.filename().generic_string();
+    std::string shaderSpvPath = std::string(vulkanShaderCache) + "/" +  shaderName + ".spv";
 
     std::string command = std::string(vulkanEnvironmentPath).c_str();  // NOLINT(readability-redundant-string-cstr)
     command +=  std::string("/Bin/glslc.exe");
     std::string file = _shaderSourcePath.filename().generic_string();
     std::filesystem::path p = std::filesystem::current_path().parent_path();
-    const std::string commandToSend = command + " " + _shaderSourcePath.generic_string() + " -o " + _shaderSourcePath.generic_string() + ".spv";
-    auto parentpa = std::filesystem::current_path();
+    const std::string commandToSend = command + " " + _shaderSourcePath.generic_string() + " -o " + shaderSpvPath;
+    
     system(commandToSend.data());
-        
-
-    // Load shader code
-    const std::string spvPath = _shaderSourcePath.parent_path().generic_string() + '/' + _shaderSourcePath.filename().stem().generic_string() + _extension + ".spv"; 
-    ReadFile(spvPath, _data);
+    
+    ReadFile(shaderSpvPath, _data);
 
     return true;
 }

@@ -14,11 +14,7 @@ void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
     uint32_t nbrOfResolve = 0;
     ParseAttachementType(_attachments, &nbrOfColorAtt, &nbrOfDepth, &nbrOfResolve);
     
-    if (nbrOfDepth > 1)
-    {
-        PC_LOGERROR("nbrOfDepth attachemnt is superior to one");
-        throw std::runtime_error("nbrOfDepth attachemnt is superior to one");
-    }
+  
 
     std::vector<VkAttachmentReference> vkColorAttachmentReferences;
     vkColorAttachmentReferences.reserve(nbrOfColorAtt);

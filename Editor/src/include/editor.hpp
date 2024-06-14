@@ -5,7 +5,7 @@
 #include "editor_window.hpp"
 
 BEGIN_EDITOR_PCCORE
-    class Editor : public PC_CORE::App
+class Editor : public PC_CORE::App
 {
 public:
     void Init() override;
@@ -21,8 +21,6 @@ public:
     void InitEditorWindows();
 
     std::vector<EditorWindow*> m_EditorWindows;
-
-    std::vector<VkDescriptorSet> m_Dset;
 };
 
 END_PCCORE

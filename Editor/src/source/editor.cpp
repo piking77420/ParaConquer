@@ -1,6 +1,7 @@
 ﻿#include "editor.hpp"
 
 #include "edit_world_window.hpp"
+#include "profiler.hpp"
 #include "world_view_window.hpp"
 #include "Imgui/imgui.h"
 #include "Imgui/imgui_impl_vulkan.h"
@@ -19,14 +20,6 @@ void Editor::Init()
 {
     App::Init();
     InitEditorWindows();
-    Texture* d = ResourceManager::Get<Texture>("diamond_block.jpg");
-    m_Dset.resize(1);
-    for (VkDescriptorSet& s : m_Dset)
-    {
-        s = ImGui_ImplVulkan_AddTexture(VulkanInterface::vulkanTextureSampler.Get(d->vulkanTexture.samplerId), d->vulkanTexture.textureImageView
-       , VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    }
-    
 }
 
 void Editor::Destroy()
@@ -48,11 +41,6 @@ void Editor::Run()
         vulkanImgui.NewFrame();
         MoveObject();
         renderer.BeginFrame();
-
-        ImGui::Begin("Test");
-        const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-        ImGui::Image(m_Dset[0], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
-        ImGui::End();
         
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
@@ -75,6 +63,7 @@ void Editor::InitEditorWindows()
 {
     EditWorldWindow* edw = new EditWorldWindow(*this);
     m_EditorWindows.push_back(edw);
+    m_EditorWindows.push_back(new Profiler(*this));
     m_EditorWindows[0]->name = "EditorWindow";
 }
 

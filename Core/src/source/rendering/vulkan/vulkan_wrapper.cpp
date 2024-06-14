@@ -31,10 +31,10 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
     VkImageLayout _newLayout)
 {
 
-    VulkanCommandPool* commandPool = nullptr; 
+    VulkanCommandPool* commandPool = &VulkanInterface::vulkanCommandPoolGraphic; 
     VkCommandBuffer commandBuffer;
-    VkQueue* queue = nullptr;
-    VulkanDevice& device = VulkanInterface::GetDevice();
+    const VulkanDevice& device = VulkanInterface::GetDevice();
+    const VkQueue* queue = &device.graphicsQueue.Queue;
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -104,6 +104,13 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     }
+    else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    } 
     else {
         throw std::invalid_argument("Unsupported layout transition!");
     }

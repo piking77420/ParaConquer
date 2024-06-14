@@ -14,6 +14,7 @@ void VulkanImgui::Init(const PC_CORE::Window& _window)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -77,10 +78,12 @@ void VulkanImgui::NewFrame() const
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+	DockSpace();	
 }
 
 void VulkanImgui::EndFrame() const
 {
+	EndDockSpace();
 	ImGui::Render();
 }
 
@@ -184,6 +187,48 @@ void VulkanImgui::Theme()
 	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	
 
+}
+
+void VulkanImgui::DockSpace() const
+{
+	static bool dockspaceOpen = true;
+	static bool
+	 optFullscreenPersistant = true;
+	const bool
+	 optFullscreen = optFullscreenPersistant;
+	
+	ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+	if (optFullscreen)
+		dockspaceFlags |= ImGuiDockNodeFlags_PassthruCentralNode;
+	
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (optFullscreen)
+	{
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
+
+		windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+	}
+
+	// Begin docking layout
+	ImGui::Begin("DockSpace Demo", &dockspaceOpen, windowFlags);
+	
+	if (optFullscreen)
+		ImGui::PopStyleVar(3);
+
+	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
+	ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), dockspaceFlags);
+}
+
+void VulkanImgui::EndDockSpace() const
+{
+	ImGui::End();
 }
 
 void VulkanImgui::CheckErrorImgui(VkResult err)
