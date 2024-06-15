@@ -37,7 +37,8 @@ BEGIN_PCCORE
     {
     public:
         
-        void Init(const std::vector<Attachment>& _attachments);
+        void Init(const std::vector<Attachment>& _attachments ,
+            uint32_t _renderOtion);
     
         void Destroy();
     

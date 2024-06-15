@@ -3,11 +3,18 @@
 
 void PC_CORE::Timer::StartTimer(const char* name)
 {
-    timePasses.emplace_back(name, std::chrono::system_clock::now());
+    timePasses.emplace_back(name, std::chrono::high_resolution_clock::now());
 }
 
 void PC_CORE::Timer::EndTimer()
 {
-    TimePass& time_pass =  timePasses.at(timePasses.size() - 1);
-    time_pass.time -= std::chrono::duration_cast<std::chrono::milliseconds>(time_pass.time.time_since_epoch());
+    TimePass& time_pass = timePasses.back();
+    auto end = std::chrono::high_resolution_clock::now();
+    time_pass.elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - time_pass.time).count();
+    
+}
+
+void PC_CORE::Timer::Clear()
+{
+    timePasses.clear();
 }

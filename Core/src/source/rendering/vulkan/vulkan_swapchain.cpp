@@ -49,9 +49,10 @@ void VulkanSwapchain::CreateFrameBuffer(const VkDevice& _device)
 {
     for (size_t i = 0; i < swapChainImages.size(); i++)
     {
-        const std::array<VkImageView, 1> attachments =
+        const std::array<VkImageView, 2> attachments =
         {
             swapChainImages[i].imageView,
+            depthAttachment.textureImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
@@ -156,9 +157,29 @@ void VulkanSwapchain::InitSwapChain(uint32_t widht, uint32_t _height, const uint
     for (size_t i = 0; i < images.size(); i++)
     {
         swapChainImages[i].image = images[i];
-        CreateImageView(swapChainImages[i].image, surfaceFormatKhr.format, &swapChainImages[i].imageView, VK_IMAGE_ASPECT_COLOR_BIT);
+        CreateImageView(VK_IMAGE_VIEW_TYPE_2D, swapChainImages[i].image, surfaceFormatKhr.format, &swapChainImages[i].imageView, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
-    
+
+    VkImageCreateInfo  vkImageCreateInfoDepth
+     {
+         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = VulkanInterface::vulkanSwapChapchain.depthFormat,
+         .extent = {swapChainExtent.width ,swapChainExtent.height , 1} ,
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+         .queueFamilyIndexCount = 1,
+         .pQueueFamilyIndices = &VulkanInterface::GetDevice().graphicsQueue.index,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+     };
+
+    depthAttachment.Init(vkImageCreateInfoDepth,VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     CreateFrameBuffer(device);
 }
 
@@ -175,14 +196,26 @@ void VulkanSwapchain::InitRenderPass()
         .imageLayoutFinal = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     };
     
-    swapchainRenderPass.Init({ color});
+    const Attachment depth =
+{
+        .attachementIndex = AttachementIndex::Depth,
+        .format =  VulkanInterface::vulkanSwapChapchain.depthFormat,
+        .clearOnLoad = true,
+        .write = false,
+        .imageLayoutInit = VK_IMAGE_LAYOUT_UNDEFINED,   
+        .imageLayoutRef = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        .imageLayoutFinal = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
+
+    
+    swapchainRenderPass.Init({ color , depth},0);
 }
 
 void VulkanSwapchain::DestroySwapChain()
 {
 
     const VkDevice& device = VulkanInterface::GetDevice().device;
-
+    depthAttachment.Destroy();
 
     Log::Debug("Destroy swapChainImageView SwapChain");
     for (SwapChainImage& i :swapChainImages)

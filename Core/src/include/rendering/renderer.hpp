@@ -61,6 +61,10 @@ private:
     uint32_t m_ImageIndex = 0;
     
     std::vector<VkCommandBuffer> m_CommandBuffers;
+
+    std::vector<VkCommandBuffer> m_ForwardCommandBuffers;
+
+    VulkanCommandPool fwdCommandPool;
     
     VulkanPipeline m_BasePipeline;
     

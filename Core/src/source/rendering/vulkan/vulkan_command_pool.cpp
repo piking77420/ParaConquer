@@ -27,6 +27,7 @@ void VulkanCommandPool::Destroy()
 
 void VulkanCommandPool::BeginSingleCommand()
 {
+	
 	const VkCommandBufferAllocateInfo vkCommandBufferAllocateInfo =
 	{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -35,7 +36,7 @@ void VulkanCommandPool::BeginSingleCommand()
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = static_cast<uint32_t>(1)
 	};
-	const VkResult result = vkAllocateCommandBuffers(VulkanInterface::GetDevice().device, &vkCommandBufferAllocateInfo, &m_SingleCommandBuffer);
+	VkResult result = vkAllocateCommandBuffers(VulkanInterface::GetDevice().device, &vkCommandBufferAllocateInfo, &m_SingleCommandBuffer);
 	VK_CHECK_ERROR(result,"vkCreateCommandPool")
 
 
@@ -43,7 +44,8 @@ void VulkanCommandPool::BeginSingleCommand()
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	vkBeginCommandBuffer(m_SingleCommandBuffer, &beginInfo);
+	result = vkBeginCommandBuffer(m_SingleCommandBuffer, &beginInfo);
+	VK_CHECK_ERROR(result,"vkBeginCommandBuffer BeginSingleCommand")
 
 }
 
@@ -55,17 +57,20 @@ void VulkanCommandPool::GetSingleCommandBuffer(VkCommandBuffer* commandBuffer)
 
 void VulkanCommandPool::SubmitSingleCommandBuffer(VkQueue queue)
 {
-	vkEndCommandBuffer(m_SingleCommandBuffer);
+	VkResult result = vkEndCommandBuffer(m_SingleCommandBuffer);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &m_SingleCommandBuffer;
 
-	vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(queue);
+	result = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+	VK_CHECK_ERROR(result,"vkQueueSubmit SubmitSingleCommandBuffer")
 
-	vkFreeCommandBuffers(VulkanInterface::GetDevice().device, m_CommandPool, 1, &m_SingleCommandBuffer);
+	result =  vkQueueWaitIdle(queue);
+	VK_CHECK_ERROR(result,"vkQueueWaitIdle(queue) SubmitSingleCommandBuffer")
+
+	FreeCommandBuffers(1,&m_SingleCommandBuffer);
 }
 
 void VulkanCommandPool::AllocCommandBuffer(size_t _nbr, VkCommandBuffer* _commandBufferPtr) const

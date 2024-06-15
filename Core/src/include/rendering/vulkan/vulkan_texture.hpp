@@ -23,6 +23,8 @@ public:
     void Init(size_t _dataSize, Vector2i _imageSize);
 
     void Init(VkImageCreateInfo _imageInfo , VkImageAspectFlags aspectFlags, VkImageLayout  _imageLayout = VK_IMAGE_LAYOUT_UNDEFINED);
+
+    void Init(std::array<void*,6> _cubeMapsData, size_t width , size_t height);
     
     void Destroy();
     

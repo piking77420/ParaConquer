@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "editor.hpp"
 #include "Imgui/imgui.h"
 #include "time/timer.hpp"
 
@@ -18,15 +19,15 @@ void PC_EDITOR_CORE::Profiler::Update()
     
     ImGui::Begin("Profiler");
 
+    ImGui::Text("Fps : %.2f", m_Editor->io->Framerate);
 
-    for (int i = 0; i < timers.size(); ++i)
+    for (size_t i = 0; i < timers.size(); ++i)
     {
         std::string name = timers.at(i).timePassname;
-        //auto duration = std::to_string(timers.at(i).time);
-
-        //ImGui::Text()
+        ImGui::Text("Pass %s = %.2lf ms", name.c_str(), static_cast<double>(timers.at(i).elapsed_ms));
     }
     
 
     ImGui::End();
+    PC_CORE::Timer::Clear();
 }

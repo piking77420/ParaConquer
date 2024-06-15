@@ -87,18 +87,19 @@ void VulkanViewport::InitForward()
             .pQueueFamilyIndices = &VulkanInterface::GetDevice().graphicsQueue.index,
            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         };
-    
+
+
+    depthAttachment.Init(vkImageCreateInfoDepth, VK_IMAGE_ASPECT_DEPTH_BIT , VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     for (size_t i = 0 ; i < forwardAttachments.size(); i++)
     {
         ForwardAttachment& fwdAtt = forwardAttachments[i];
         
         fwdAtt.colorImage.Init(vkImageCreateInfoColor, VK_IMAGE_ASPECT_COLOR_BIT , VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        fwdAtt.depth.Init(vkImageCreateInfoDepth, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         
         const std::array<VkImageView,2> attachments =
         {
             fwdAtt.colorImage.textureImageView,
-            fwdAtt.depth.textureImageView
+            depthAttachment.textureImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
@@ -121,11 +122,12 @@ void VulkanViewport::InitForward()
 
 void VulkanViewport::DestroyForward()
 {
+    depthAttachment.Destroy();
+
     for (size_t i = 0 ; i < forwardAttachments.size(); i++)
     {
         ForwardAttachment& fwdAtt = forwardAttachments[i];
         fwdAtt.colorImage.Destroy();
-        fwdAtt.depth.Destroy();
         vkDestroyFramebuffer(VulkanInterface::GetDevice().device, fwdAtt.framebuffer, nullptr);
 
     }

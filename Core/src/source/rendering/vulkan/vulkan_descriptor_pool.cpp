@@ -16,7 +16,7 @@ void VulkanDescriptorPool::Init(const std::vector<VkDescriptorSetLayoutBinding>&
     for (size_t i = 0; i < poolSizes.size(); i++)
     {
         poolSizes[i].type =  _vkDescriptorSetLayoutBindings[i].descriptorType;
-        poolSizes[i].descriptorCount = _vkDescriptorSetLayoutBindings[i].descriptorCount;
+        poolSizes[i].descriptorCount = m_MaxAllocationFromPool;
     }
     
     VkDescriptorPoolCreateInfo poolInfo{};

@@ -18,6 +18,9 @@ public:
     ~Texture() override;
     
     void Load(const fs::path& path) override;
+
+    void Load(std::array<std::string,6>& _maps);
+
 };
 
 END_PCCORE

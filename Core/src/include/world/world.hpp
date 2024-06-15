@@ -3,6 +3,7 @@
 
 #include "scene.hpp"
 #include "scene_graph.hpp"
+#include "skybox.hpp"
 #include "world_header_typedef.hpp"
 
 BEGIN_PCCORE
@@ -16,11 +17,13 @@ public:
 
     SceneGraph sceneGraph;
 
+    Skybox skybox;
+
     bool begin = false;
 
     bool run = false;
 
-    World() = default;
+    World();
     
     ~World() = default;
     

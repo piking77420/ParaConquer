@@ -22,9 +22,7 @@ public:
 	Renderer renderer;
 
 	VulkanImgui vulkanImgui; 
-
-	World world;
-
+	
 	virtual void Init();
 
 	virtual void Destroy();
@@ -39,7 +37,6 @@ public:
 protected:
 	void MoveObject();
 
-	void InitScene();
 
 	std::vector<Transform*> transforms;
 

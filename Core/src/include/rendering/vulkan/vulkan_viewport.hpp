@@ -17,14 +17,15 @@ private:
     struct ForwardAttachment
     {
         VulkanTexture colorImage;
-        VulkanTexture depth;
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
     };
     
 public:
     Vector2i viewPortSize = {800,600};
     
-    std::vector<ForwardAttachment> forwardAttachments;  
+    std::vector<ForwardAttachment> forwardAttachments;
+    VulkanTexture depthAttachment;
+
 
     std::vector<VkDescriptorSet> forwardDescritporSet;
     

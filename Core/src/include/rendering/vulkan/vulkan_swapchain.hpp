@@ -20,6 +20,7 @@ public:
     VkExtent2D swapChainExtent;
     
     std::vector<SwapChainImage> swapChainImages;
+    VulkanTexture depthAttachment;
 
     std::vector<VkFramebuffer> swapChainFramebuffers;
 

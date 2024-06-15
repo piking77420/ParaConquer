@@ -28,7 +28,7 @@ void PC_CORE::CreateBufferVma(VkBuffer* _vkBuffer, VmaAllocation* _allocation, V
 }
 
 void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _aspectFlags , VkFormat _format, VkImageLayout _oldLayout,
-    VkImageLayout _newLayout)
+    VkImageLayout _newLayout , uint32_t _layerCount)
 {
 
     VulkanCommandPool* commandPool = &VulkanInterface::vulkanCommandPoolGraphic; 
@@ -47,7 +47,7 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.layerCount = _layerCount;
 
     VkPipelineStageFlags sourceStage;
     VkPipelineStageFlags destinationStage;
@@ -105,6 +105,9 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
         destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     }
     else if (_oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && _newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        commandPool = &VulkanInterface::vulkanCommandPoolGraphic;
+        queue = &device.graphicsQueue.Queue;
+
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
@@ -130,18 +133,18 @@ void PC_CORE::TransitionImageLayout(VkImage _image, const VkImageAspectFlags _as
 
 }
 
-void PC_CORE::CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vkImageView,VkImageAspectFlags aspectFlags)
+void PC_CORE::CreateImageView(VkImageViewType _vkImageViewType, VkImage _image, VkFormat _format, VkImageView* _vkImageView,VkImageAspectFlags aspectFlags, uint32_t _layerCout)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = _image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.viewType = _vkImageViewType;
     viewInfo.format = _format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
+    viewInfo.subresourceRange.layerCount = _layerCout;
 
     VkImageView imageView;
     VkResult result = vkCreateImageView(VulkanInterface::GetDevice().device, &viewInfo, nullptr, &imageView);
@@ -151,7 +154,18 @@ void PC_CORE::CreateImageView(VkImage _image, VkFormat _format, VkImageView* _vk
     *_vkImageView = imageView;
 }
 
-void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _width, uint32_t _height)
+void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, const std::vector<VkBufferImageCopy>& _region)
+{
+    VulkanInterface::vulkanCommandPoolGraphic.BeginSingleCommand();
+    VkCommandBuffer cmdbuffer = {};
+    VulkanInterface::vulkanCommandPoolGraphic.GetSingleCommandBuffer(&cmdbuffer);
+    
+    vkCmdCopyBufferToImage(cmdbuffer, _buffer, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(_region.size()), _region.data());
+
+    VulkanInterface::vulkanCommandPoolGraphic.SubmitSingleCommandBuffer(VulkanInterface::GetDevice().graphicsQueue.Queue);
+}
+
+void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _width, uint32_t _height , uint32_t layer)
 {
     VulkanInterface::vulkanCommandPoolGraphic.BeginSingleCommand();
     VkCommandBuffer cmdbuffer = {};
@@ -164,7 +178,7 @@ void PC_CORE::CopyBufferToImage(VkBuffer _buffer, VkImage _image, uint32_t _widt
     region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
+    region.imageSubresource.layerCount = layer;
     region.imageOffset = {0, 0, 0};
     region.imageExtent = {
         _width,

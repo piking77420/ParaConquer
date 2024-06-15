@@ -7,15 +7,13 @@
 
 using namespace PC_CORE;
 
-void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
+void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments , uint32_t _renderOption)
 {
     uint32_t nbrOfColorAtt = 0;
     uint32_t nbrOfDepth = 0;
     uint32_t nbrOfResolve = 0;
     ParseAttachementType(_attachments, &nbrOfColorAtt, &nbrOfDepth, &nbrOfResolve);
     
-  
-
     std::vector<VkAttachmentReference> vkColorAttachmentReferences;
     vkColorAttachmentReferences.reserve(nbrOfColorAtt);
     
@@ -39,15 +37,26 @@ void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
     subpass.pColorAttachments = vkColorAttachmentReferences.data();
     subpass.pDepthStencilAttachment = vkDepthAttachmentReferences.data();
     
+    std::array<VkSubpassDependency,2> dependencies = {};
+    
+    // Dependency from external operations to the first subpass
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependencies[0].srcAccessMask = 0;  // Since we are coming from an external source, no previous access flags needed
+    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-    // TO DO FIX srcStageMask dstStageMask dstAccessMask to not be hardcoded
-    VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    // Dependency from the first subpass to external operations
+    dependencies[1].srcSubpass = 0;
+    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependencies[1].dstAccessMask = 0;  // Since we are transitioning to an external source, no destination access flags needed
+    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -55,8 +64,8 @@ void VulkanRenderPass::Init(const std::vector<Attachment>& _attachments)
     renderPassInfo.pAttachments = vkAttachmentDescription.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
+    renderPassInfo.dependencyCount = dependencies.size();
+    renderPassInfo.pDependencies = dependencies.data();
 
     const VkResult r = vkCreateRenderPass(VulkanInterface::GetDevice().device, &renderPassInfo, nullptr, &renderPass);
 
