@@ -26,13 +26,13 @@ public:
     bool HasStencilComponent(VkFormat format);
 
     bool IsPresentFormatIsValid(const std::vector<VkSurfaceFormatKHR>& _requestedFormats, VkSurfaceFormatKHR* _selectedFormat) const;
+
     
+
 private:
     std::vector<PhysicalDevice> m_Devices;
 
     int32_t m_CurrentDevice = -1;
-
-    void ComputeQueue(const PhysicalDevice& queue);
 };
 
 END_PCCORE

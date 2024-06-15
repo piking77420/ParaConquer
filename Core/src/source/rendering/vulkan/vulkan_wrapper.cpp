@@ -142,7 +142,7 @@ void PC_CORE::CreateImageView(VkImageViewType _vkImageViewType, VkImage _image, 
     viewInfo.format = _format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.levelCount = 1; 
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = _layerCout;
 

@@ -8,5 +8,4 @@ using namespace PC_CORE;
 void Skybox::Load(std::array<std::string, 6>& _maps)
 {
     texture.Load(_maps);
-    SkyboxRender::UpdateDescritptorSet()
 }

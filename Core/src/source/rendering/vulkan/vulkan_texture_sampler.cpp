@@ -74,6 +74,8 @@ void VulkanTextureSampler::Destroy()
     {   
         vkDestroySampler(VulkanInterface::GetDevice().device, it->second.textureSampler, nullptr);
     }
+    vkDestroySampler(VulkanInterface::GetDevice().device, defaultSampler.textureSampler, nullptr);
+
 }
 
 bool operator==(const VkSamplerCreateInfo& lhs, const VkSamplerCreateInfo& rhs)

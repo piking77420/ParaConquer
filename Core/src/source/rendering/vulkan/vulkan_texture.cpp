@@ -138,6 +138,7 @@ void VulkanTexture::Init(VkImageCreateInfo _imageInfo , const VkImageAspectFlags
     
     const VkResult result = vmaCreateImage(VulkanInterface::GetAllocator(), &_imageInfo, &allocCreateInfo, &textureImage, &allocation, nullptr);
     VK_CHECK_ERROR(result,"vmaCreateImage failed on create image")
+
     CreateImageView(VK_IMAGE_VIEW_TYPE_2D, textureImage,_imageInfo.format, &textureImageView, aspectFlags, _imageInfo.arrayLayers);
     
     if (_imageLayout != VK_IMAGE_LAYOUT_UNDEFINED)

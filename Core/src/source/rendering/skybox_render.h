@@ -10,7 +10,7 @@ BEGIN_PCCORE
     class Renderer;
 
 class SkyboxRender
-{
+{   
 public:
     void Init(Renderer* _renderer);
 
