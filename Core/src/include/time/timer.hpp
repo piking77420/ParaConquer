@@ -12,13 +12,13 @@ BEGIN_PCCORE
 #ifndef NDEBUG
 #define BEGIN_TIMER(x) Timer::StartTimer(x);
 #else
-#define BEGIN_TIMER(x) ((void)0)
+#define BEGIN_TIMER(x) ((void)0);
 #endif
 
 #ifndef NDEBUG
 #define END_TIMER() Timer::EndTimer();
 #else
-#define END_TIMER() ((void)0)
+#define END_TIMER() ((void)0);
 #endif
 
 class Timer

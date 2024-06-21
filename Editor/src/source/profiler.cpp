@@ -6,7 +6,7 @@
 #include "Imgui/imgui.h"
 #include "time/timer.hpp"
 
-PC_EDITOR_CORE::Profiler::Profiler(Editor& _editor) : EditorWindow(_editor)
+PC_EDITOR_CORE::Profiler::Profiler(Editor& _editor, const std::string& _name) : EditorWindow(_editor,_name)
 {
     
 }
@@ -25,6 +25,7 @@ void PC_EDITOR_CORE::Profiler::Update()
     {
         std::string name = timers.at(i).timePassname;
         ImGui::Text("Pass %s = %.2lf ms", name.c_str(), static_cast<double>(timers.at(i).elapsed_ms));
+        
     }
     
 

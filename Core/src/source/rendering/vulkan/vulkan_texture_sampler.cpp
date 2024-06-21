@@ -40,6 +40,8 @@ void VulkanTextureSampler::CreateSampler(const VkSamplerCreateInfo& _vkSamplerCr
 
 void VulkanTextureSampler::CreateBasicSampler()
 {
+    const VkPhysicalDeviceProperties& properties = VulkanInterface::GetPhysicalDevice().devProps;    
+
     defaultSampler.samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     defaultSampler.samplerInfo.magFilter = VK_FILTER_LINEAR;
     defaultSampler.samplerInfo.minFilter = VK_FILTER_LINEAR;
@@ -47,7 +49,7 @@ void VulkanTextureSampler::CreateBasicSampler()
     defaultSampler.samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     defaultSampler.samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     defaultSampler.samplerInfo.anisotropyEnable = VK_FALSE;
-    defaultSampler.samplerInfo.maxAnisotropy = 1.0f;
+    defaultSampler.samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
     defaultSampler.samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     defaultSampler.samplerInfo.unnormalizedCoordinates = VK_FALSE;
     defaultSampler.samplerInfo.compareEnable = VK_FALSE;

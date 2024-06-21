@@ -10,7 +10,6 @@ public:
     using Vec = Vector4<DataType>;
     static constexpr size_t Size = 4;
     
-    std::array<Vec,Size> data;
 
     constexpr Matrix4x4() = default;
 
@@ -28,30 +27,30 @@ public:
         return result;
     }
     
-    constexpr Matrix4x4(const DataType x1, const DataType y1, const DataType z1, const DataType w1,
-        const DataType x2, const DataType y2, const DataType z2, const DataType w2,
-        const DataType x3, const DataType y3, const DataType z3, const DataType w3,
-         const DataType x4, const DataType y4, const DataType z4, const DataType w4)
+    constexpr Matrix4x4(DataType x1, DataType y1, DataType z1, DataType w1,
+        DataType x2, DataType y2, DataType z2, DataType w2,
+        DataType x3, DataType y3, DataType z3, DataType w3,
+         DataType x4, DataType y4, DataType z4, DataType w4)
     {
-        data[0].x = x1;
-        data[0].y = y1;
-        data[0].z = z1;
-        data[0].w = w1;
+        m_Data[0].x = x1;
+        m_Data[0].y = y1;
+        m_Data[0].z = z1;
+        m_Data[0].w = w1;
 
-        data[1].x = x2;
-        data[1].y = y2;
-        data[1].z = z2;
-        data[1].w = w2;
+        m_Data[1].x = x2;
+        m_Data[1].y = y2;
+        m_Data[1].z = z2;
+        m_Data[1].w = w2;
 
-        data[2].x = x3;
-        data[2].y = y3;
-        data[2].z = z3;
-        data[2].w = w3;
+        m_Data[2].x = x3;
+        m_Data[2].y = y3;
+        m_Data[2].z = z3;
+        m_Data[2].w = w3;
 
-        data[3].x = x4;
-        data[3].y = y4;
-        data[3].z = z4;
-        data[3].w = w4;
+        m_Data[3].x = x4;
+        m_Data[3].y = y4;
+        m_Data[3].z = z4;
+        m_Data[3].w = w4;
 
     }
     constexpr Matrix4x4(DataType _value)
@@ -60,41 +59,52 @@ public:
         {
             for (size_t k = 0; k < 4; k++)
             {
-                data[i][k] = _value;
+                m_Data[i][k] = _value;
             }
         }
     }
     
     constexpr Matrix4x4(const Vec _vec1, const Vec _vec2, const Vec _vec3, const Vec _vec4)
     {
-        data[0] = _vec1;
-        data[1] = _vec2;
-        data[2] = _vec3;
-        data[3] = _vec4;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec2;
+        m_Data[2] = _vec3;
+        m_Data[3] = _vec4;
 
     }
     
     constexpr Matrix4x4(const Vec _vec1)
     {
-        data[0] = _vec1;
-        data[1] = _vec1;
-        data[2] = _vec1;
-        data[3] = _vec1;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec1;
+        m_Data[2] = _vec1;
+        m_Data[3] = _vec1;
     }
+
+    constexpr TOOLBOX_INLINE const DataType* GetPtr() const noexcept
+    {
+        return &m_Data[0][0];
+    }
+
+    TOOLBOX_INLINE DataType* GetPtr() noexcept
+    {
+        return &m_Data[0][0];
+    }
+
 
     TOOLBOX_INLINE const Vec& operator[](size_t _size) const
     {
-        return data[_size];
+        return m_Data[_size];
     }
 
     TOOLBOX_INLINE Vec& operator[](size_t _size)
     {
-        return data[_size];
+        return m_Data[_size];
     }
 
-    Matrix4x4 operator*(const Matrix4x4& _other)
+    Matrix4x4 operator*(const Matrix4x4& _other) const
     {
-        Matrix4x4 result = 0;
+        Matrix4x4 result = {};
         
         for (size_t i = 0; i < 4; i++)
         {
@@ -102,7 +112,7 @@ public:
             {
                 for (size_t k = 0; k < 4; k++)
                 {
-                    result.data[i][j] += data[i][k] * _other.data[k][j];
+                    result.m_Data[i][j] += m_Data[i][k] * _other.m_Data[k][j];
                 }
             }
         }
@@ -117,7 +127,7 @@ public:
         {
             for (size_t j = 0; j < 4; j++)
             {
-                result[i][j] = data[j][i];
+                result[i][j] = m_Data[j][i];
             }
         }
         return result;
@@ -127,14 +137,32 @@ public:
     {
         Vec result = 0;
         
-        for (size_t i = 0; i < Size; ++i)
+        for (size_t i = 0; i < Size; i++)
         {
-            for (size_t j = 0; j < Size; ++j) {
-                result.data[i] += data[i][j] * _vector4.data[j];
+            for (size_t j = 0; j < Size; j++)
+            {
+                result[i] += m_Data[i][j] * _vector4[j];
             }
         }
         
         return result;
+    }
+
+    bool operator==(const Matrix4x4& _other) const
+    {
+        
+        for (size_t i = 0; i < Size; ++i)
+        {
+            for (size_t j = 0; j < Size; ++j) 
+            {
+               if (m_Data[i][j] != _other[i][j])
+               {
+                   return false;
+               }
+            }
+        }
+
+        return true;
     }
 
     void operator*=(Matrix4x4 _m2)
@@ -144,20 +172,45 @@ public:
 
     Vector4<T> Trace()
     {
-        return {data[0][0],data[1][1],data[2][2]};
+        return {m_Data[0][0], m_Data[1][1], m_Data[2][2], m_Data[3][3]};
     }
 
     std::string ToString() const
     {
-        return std::to_string(data[0].x) + " " + std::to_string(data[1].x) + " " + std::to_string(data[2].x) + " " + std::to_string(data[3].x)
+        return std::to_string(m_Data[0].x) + " " + std::to_string(m_Data[1].x) + " " + std::to_string(m_Data[2].x) + " " + std::to_string(m_Data[3].x)
          + '\n'
-         + std::to_string(data[0].y) + " " + std::to_string(data[1].y) + " " + std::to_string(data[2].y) + " " + std::to_string(data[3].y)
+         + std::to_string(m_Data[0].y) + " " + std::to_string(m_Data[1].y) + " " + std::to_string(m_Data[2].y) + " " + std::to_string(m_Data[3].y)
          + '\n'
-         + std::to_string(data[0].z) + " " + std::to_string(data[1].z) + " " + std::to_string(data[2].z) + " " + std::to_string(data[3].z)
+         + std::to_string(m_Data[0].z) + " " + std::to_string(m_Data[1].z) + " " + std::to_string(m_Data[2].z) + " " + std::to_string(m_Data[3].z)
          + '\n'
-         + std::to_string(data[0].w) + " " + std::to_string(data[1].w) + " " + std::to_string(data[2].w) + " " + std::to_string(data[3].w)
+         + std::to_string(m_Data[0].w) + " " + std::to_string(m_Data[1].w) + " " + std::to_string(m_Data[2].w) + " " + std::to_string(m_Data[3].w)
          + '\n';
     }
+private:
+        std::array<Vec, Size> m_Data;
+
 };
 
     
+
+template <typename T>
+TOOLBOX_INLINE Matrix4x4<T> Multiply(const Matrix4x4<T>& matrix, const T _scalar)
+{
+    Matrix4x4<T> result;
+    Matrix4x4<T> m = matrix.Transpose();
+
+    const __m512 a = _mm512_set_ps(m[3][3], m[3][2], m[3][1], m[3][0],
+        m[2][3], m[2][2], m[2][1], m[2][0],
+        m[1][3], m[1][2], m[1][1], m[1][0],
+        m[0][3], m[0][2], m[0][1], m[0][0]);
+
+    const __m512 b = _mm512_set_ps(_scalar, _scalar, _scalar, _scalar,
+        _scalar, _scalar, _scalar, _scalar,
+        _scalar, _scalar, _scalar, _scalar,
+        _scalar, _scalar, _scalar, _scalar);
+
+    const __m512 result__m512 = _mm512_mul_ps(a, b);
+    _mm512_store_ps(result.GetPtr(), result__m512);
+
+    return result;
+}

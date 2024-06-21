@@ -12,7 +12,7 @@ public:
 
     static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
     
-    Vector2ui windowSize = {800,600}; 
+    Vector2ui windowSize = {1680,1050}; 
 
     GLFWwindow* window = nullptr;
 

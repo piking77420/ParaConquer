@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <immintrin.h>
 #include <stacktrace>
 
 #include "toolbox_headerfile.hpp"
@@ -20,19 +21,29 @@ public:
 
     ~Vector2() = default;
 
-    constexpr DataType* GetPtr()
+    TOOLBOX_INLINE constexpr DataType* GetPtr()
     {
         return &x;
     }
 
-    constexpr const DataType* GetPtr() const
+    TOOLBOX_INLINE constexpr const DataType* GetPtr() const
     {
         return &x;
     }
-
-    DataType Magnitude() const 
+    constexpr static TOOLBOX_INLINE DataType Dot(const Vector2 _v1, const Vector2 _v2)
     {
-        return std::sqrt(x * x + y * y);
+        return _v1.x * _v2.x + _v1.y * _v2.y;
+    }
+
+    TOOLBOX_INLINE DataType MagnitudeSquare() const
+    {
+        Vector2 v = *this;
+        return Dot(v, v);
+    }
+
+    TOOLBOX_INLINE DataType Magnitude() const
+    {
+        return std::sqrt(MagnitudeSquare());
     }
 
     TOOLBOX_INLINE Vector2 Normalize() const
@@ -40,64 +51,150 @@ public:
         const DataType mag = Magnitude();
         
         if (IsEqualTo<DataType>(mag,static_cast<T>(1)))
-            return this;
+            return *this;
         
         const DataType InvMagnitude = static_cast<T>(1) / mag;
         
         return { x * InvMagnitude, y * InvMagnitude};    
     }
 
-    constexpr static TOOLBOX_INLINE DataType Dot(const Vector2 _v1, const Vector2 _v2)
-    {
-        return _v1.x * _v2.x + _v1.y * _v2.y;         
-    }
+    
     
     constexpr static TOOLBOX_INLINE DataType Cross(const Vector2 _v1, const Vector2 _v2)
     {
         return _v1.x * _v2.y -  _v1.y * _v2.x;
     }
 
-    Vector2 operator-() const
+    TOOLBOX_INLINE Vector2 operator-() const
     {
         return {-x, -y};
     }
 
-    Vector2 operator+(const Vector2 _other) const
+    TOOLBOX_INLINE Vector2 operator+(const Vector2 _other) const
     {
-        return {x + _other.x , y + _other.y};
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_add_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        return {res[0] , res[1]};
     }
 
-    Vector2 operator-(const Vector2 other) const
+    
+    TOOLBOX_INLINE Vector2 operator-(const Vector2 _other) const
     {
-        return {x - other.x , y - other.y};
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_sub_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        return {res[0] , res[1]};
     }
 
-    Vector2 operator*(const Vector2 _other) const
+    TOOLBOX_INLINE Vector2 operator*(const Vector2 _other) const
     {
-        return {x * _other.x , y * _other.y};
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_mul_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        return {res[0] , res[1]};
     }
 
-    Vector2 operator/(const Vector2 _other) const
+    TOOLBOX_INLINE Vector2 operator/(const Vector2 _other) const
     {
-        return {x / _other.x , y / _other.y};
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_div_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        return {res[0] , res[1]};
     }
 
-    Vector2 operator+(DataType _value) const
+    TOOLBOX_INLINE void operator+=(const Vector2 _other)
+    {
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_add_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        x = res[0];
+        y = res[1];
+    }
+
+    TOOLBOX_INLINE void operator-=(const Vector2 _other)
+    {
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_sub_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        x = res[0];
+        y = res[1];
+    }
+
+    TOOLBOX_INLINE void operator*=(const Vector2 _other)
+    {
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_mul_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        x = res[0];
+        y = res[1];
+    }
+
+    TOOLBOX_INLINE void operator/=(const Vector2 _other)
+    {
+        const __m128 a = _mm_set_ps(0.0f, 0.0f, y, x);
+        const __m128 b = _mm_set_ps(0.0f, 0.0f, _other.y, _other.x);
+
+        const __m128 result = _mm_div_ps(a, b);
+            
+        float res[4];
+        _mm_store_ps(res, result);
+            
+        x = res[0];
+        y = res[1];
+    }
+
+    TOOLBOX_INLINE Vector2 operator+(DataType _value) const
     {
         return {x + _value , y + _value};
     }
     
-    Vector2 operator-(DataType _value) const
+    TOOLBOX_INLINE Vector2 operator-(DataType _value) const
     {
         return {x - _value , y - _value};
     }
     
-    Vector2 operator*(DataType _value) const
+    TOOLBOX_INLINE Vector2 operator*(DataType _value) const
     {
         return {x * _value , y * _value};
     }
     
-    Vector2 operator/(DataType _value) const
+    TOOLBOX_INLINE Vector2 operator/(DataType _value) const
     {
         return {x / _value , y / _value};
     }
@@ -120,12 +217,12 @@ public:
     
     TOOLBOX_INLINE bool operator!=(const Vector2& _other)
     {
-        return !(this == _other);
+        return x != _other.x || y != _other.y;
     }
 
     std::string ToString() const
     {
-       return  "X : " + std::to_string(x) + ", Y : " << std::to_string(y) + '\n';
+       return  "X : " + std::to_string(x) + ", Y : " + std::to_string(y) + '\n';
     }
 private:
     

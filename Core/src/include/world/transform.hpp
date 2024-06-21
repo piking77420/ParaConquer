@@ -21,7 +21,7 @@ public:
     
     Vector3f localPosition;
 
-    Quaternionf localRotation = Quaternionf::Identity();
+    Vector3f localRotation;
     
 };
 

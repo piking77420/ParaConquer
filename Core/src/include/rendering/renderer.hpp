@@ -6,6 +6,7 @@
 #include "draw_gizmos.hpp"
 #include "draw_quad.hpp"
 #include "gpu_typedef.hpp"
+#include "../../source/rendering/skybox_render.h"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
 #include "vulkan/vulkan_descriptor_pool.hpp"
@@ -27,16 +28,24 @@
 
 BEGIN_PCCORE
 
-class  Renderer
+class Renderer
 {
 public:
+    DrawQuad drawQuad;
+
+    SkyboxRender skyboxRender;
+    
+    std::array<VulkanRenderPass,RenderPass::COUNT> renderPasses;
+    
+    std::vector<VulkanUniformBuffer> m_CameraBuffers;
+    
     void Init(Window* _window);
 
     void RecreateSwapChain(Window* _window);
 
     void Destroy();
 
-    void BeginFrame();
+    void BeginFrame(const World& world);
 
     void RenderViewPort(const Camera& _camera,
         const VulkanViewport& _viewport,const World& _world);
@@ -48,17 +57,21 @@ public:
         vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
     }
     
-    DrawQuad drawQuad;
-    
-    static inline VulkanRenderPass forwardPass;
-
     VkCommandBuffer* GetCurrentCommandBuffer()
     {
         return &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
     }
 
 private:
+    struct AsyncObjet
+    {
+        std::vector<VulkanSemaphore> m_ImageAvailableSemaphore;
+        std::vector<VulkanSemaphore> m_RenderFinishedSemaphore;
+        std::vector<VulkanFence> m_InFlightFence;
+    };
     uint32_t m_ImageIndex = 0;
+
+    AsyncObjet asyncObjet;
     
     std::vector<VkCommandBuffer> m_CommandBuffers;
 
@@ -78,23 +91,14 @@ private:
 
     CameraBuffer cameraBuffer;
     
-    std::vector<VulkanUniformBuffer> m_UniformBuffers;
-
     std::vector<VulkanShaderStorageBuffer> m_ModelMatriciesShaderStorages;
     
     std::vector<VulkanShaderStorageBuffer> m_ShaderStoragesLight;
-
-    std::vector<MatrixMeshes> m_MatrixMeshs;
-
+    
     GpuLight* m_GpuLights = nullptr;
 
     std::vector<VkDescriptorSet> descriptorSets;
     
-    std::vector<VulkanSemaphore> m_ImageAvailableSemaphore;
-    
-    std::vector<VulkanSemaphore> m_RenderFinishedSemaphore;
-    
-    std::vector<VulkanFence> m_InFlightFence;
     
     const Camera* m_CurrentCamera = nullptr;
     
@@ -105,7 +109,6 @@ private:
     DrawGizmos drawGizmos;
 
     void RenderSwapChain();
-
     
     void InitForwardPass();
 
@@ -121,7 +124,7 @@ private:
 
     void CreateDescriptorSetLayout();
 
-    void UpdateBuffers(uint32_t _currentFrame);
+    void UpdateCameraBuffer(uint32_t _currentFrame);
 
     void UpdateLightBuffer(uint32_t _currentFrame);
     
@@ -131,6 +134,8 @@ private:
 
     void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
     const Transform& transform, const Entity& entity);
+
+    void UpdateWorldBuffers();
 
     void InitBuffers();
     

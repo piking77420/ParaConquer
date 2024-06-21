@@ -89,6 +89,23 @@ public:
         *this = *this * _m2;
     }
 
+    bool operator==(const Matrix2x2& _other) const
+    {
+
+        for (size_t i = 0; i < Size; ++i)
+        {
+            for (size_t j = 0; j < Size; ++j)
+            {
+                if (data[i][j] != _other[i][j])
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     Vector2<T> Trace()
     {
         return {data[0][0],data[1][1],data[2][2]};

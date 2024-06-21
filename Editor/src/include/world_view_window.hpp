@@ -13,17 +13,17 @@ public:
 
     PC_CORE::Camera camera;
 
-    explicit WorldViewWindow(Editor& _editor);
+    explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 
     ~WorldViewWindow() override = default;
     
     void Update() override;
+    
+    void Render() override;
 
     std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
 
-
-protected:
-    void ShowViewPort();
+public:
 };
 
 END_EDITOR_PCCORE

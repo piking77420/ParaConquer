@@ -7,13 +7,22 @@
 static constexpr size_t MAX_MATERIAL_COUNT = 100; 
 static constexpr size_t MAX_POINTLIGHT_COUNT = 10; 
 static constexpr size_t MAX_SPOTLIGHT_COUNT = 10; 
-static constexpr size_t MAX_DIRLIGHT_COUNT = 1; 
+static constexpr size_t MAX_DIRLIGHT_COUNT = 1;
+
+
+enum RenderPass
+{
+    FORWARD,
+    GBUFFER,
+    COUNT
+};
 
 
 struct alignas(16) CameraBuffer
 {
     Matrix4x4f view = Matrix4x4f::Identity();
     Matrix4x4f proj = Matrix4x4f::Identity();
+    Vector3f cameraPos = {};
 };
 
 

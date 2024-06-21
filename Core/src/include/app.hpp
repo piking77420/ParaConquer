@@ -21,7 +21,7 @@ public:
 
 	Renderer renderer;
 
-	VulkanImgui vulkanImgui; 
+	VulkanImgui vulkanImgui;
 	
 	virtual void Init();
 
@@ -34,10 +34,11 @@ public:
 	virtual void Run();
 
 	void HandleResize();
+
+	static inline App* instance = nullptr;
+
 protected:
-	void MoveObject();
-
-
+	
 	std::vector<Transform*> transforms;
 
 	DirLight* dirLight = nullptr;

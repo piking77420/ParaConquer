@@ -14,8 +14,9 @@ using namespace PC_CORE;
 void App::Init()
 {
     PC_LOG("App Init")
-    windowHandle.Init();
+    instance = this;
     
+    windowHandle.Init();
     VulkanInterface::Init(&windowHandle);
     ResourceManager::Init();
     renderer.Init(&windowHandle);
@@ -60,28 +61,6 @@ void App::HandleResize()
         windowHandle.OnResize();
         renderer.RecreateSwapChain(&windowHandle);
         windowHandle.onResize = false;
-    }
-}
-
-
-void App::MoveObject()
-{
-    if (ImGui::Begin("MoveObject"))
-    {
-        for (Transform* transform : transforms)
-        {
-            if (transform != nullptr)
-            {
-                ImGui::PushID(transform->componentHolder.entityID);
-                ImGui::Text("entity %d",transform->componentHolder.entityID);
-                ImGui::DragFloat3("Position",transform->localPosition.GetPtr(),1.f, -10000.f, 10000.f);
-                ImGui::DragFloat4("Rotation",transform->localRotation.imaginary.GetPtr(),1.f, -10000.f, 10000.f);
-                ImGui::DragFloat3("Scale",transform->scale.GetPtr(),1.f, -10000.f, 10000.f);
-                ImGui::PopID();
-            }
-        }
-
-        ImGui::End();
     }
 }
 

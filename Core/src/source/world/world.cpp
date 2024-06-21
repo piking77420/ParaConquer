@@ -19,17 +19,18 @@ World::World()
 
 void World::Run()
 {
-    if (!begin)
-        return;
-
-    if (run == false)
+    sceneGraph.UpdateTransforms(&scene);
+    
+    if (begin && run == false)
     {
         scene.Begin();
         run = true;
     }
-
+    
     if (run)
     {
         scene.Update();
     }
+    
+    sceneGraph.UpdateMatrix(&scene);
 }

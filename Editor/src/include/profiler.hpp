@@ -9,7 +9,7 @@ BEGIN_EDITOR_PCCORE
 {
 public:
    
-    Profiler(Editor& _editor);
+    Profiler(Editor& _editor, const std::string& _name);
 
     ~Profiler() = default;
     

@@ -9,12 +9,22 @@ BEGIN_PCCORE
 class Skybox
 {
 public:
+    enum class SkyBoxType
+    {
+        CubeMap,
+        Procedural
+    };
+
+    SkyBoxType skyboxType = SkyBoxType::CubeMap;
+    
+    Texture* texture = nullptr;
+    
     void Load(std::array<std::string,6>& _maps);
 
-private:
-    Texture texture;
+    Skybox() = default;
 
-    uint32_t desciptorId = -1;
+    ~Skybox();
+    
 };
 
 END_PCCORE

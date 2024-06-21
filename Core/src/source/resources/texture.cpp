@@ -35,7 +35,6 @@ void Texture::Load(const fs::path& path)
 void Texture::Load(std::array<std::string, 6>& _maps)
 {
     std::array<void*, 6> datas = {};
-
     for (size_t i = 0; i < datas.size(); i++)
     {
         datas[i] = stbi_load(_maps[i].c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);

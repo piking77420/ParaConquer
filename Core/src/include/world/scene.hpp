@@ -37,7 +37,6 @@ BEGIN_PCCORE
         template<typename T>
         void GetComponentData(std::vector<T>** _data) const;
         
-
         template <typename T>
         T* AddSystem();
 
@@ -54,7 +53,7 @@ BEGIN_PCCORE
         Scene();
 
         ~Scene();
-
+    
     private:
         struct EntityAndComponentIndex
         {

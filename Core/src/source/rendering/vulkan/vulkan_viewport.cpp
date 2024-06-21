@@ -1,5 +1,6 @@
 ﻿#include "rendering/vulkan/vulkan_viewport.hpp"
 
+#include "app.hpp"
 #include "log.hpp"
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "rendering/renderer.hpp"
@@ -8,8 +9,6 @@ using namespace PC_CORE;
 
 void VulkanViewport::Init()
 {
-
-    
     CreateViewPortImageAndFrameBuffer();
 }
 
@@ -20,12 +19,6 @@ void VulkanViewport::Destroy()
 
 bool VulkanViewport::OnResize(Vector2i _windowSize)
 {
-    if (_windowSize == viewPortSize)
-        return false;
-
-    renderer->WaitGPU();
-
-    Log::Debug("ResizeViewPort");
     viewPortSize = _windowSize;
     DestroyViewPortImageAndFrameBuffer();
     CreateViewPortImageAndFrameBuffer();
@@ -104,7 +97,7 @@ void VulkanViewport::InitForward()
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = Renderer::forwardPass.renderPass;
+        framebufferInfo.renderPass = App::instance->renderer.renderPasses.at(FORWARD).renderPass;
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = viewPortSize.x;

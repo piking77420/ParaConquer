@@ -1,7 +1,10 @@
 ﻿#include "editor.hpp"
 
 #include "edit_world_window.hpp"
+#include "hierachy.hpp"
+#include "inspector.hpp"
 #include "profiler.hpp"
+#include "scene_button.hpp"
 #include "world_view_window.hpp"
 #include "Imgui/imgui.h"
 #include "Imgui/imgui_impl_vulkan.h"
@@ -27,10 +30,11 @@ void Editor::Init()
 
 void Editor::Destroy()
 {
+    delete World::world;
+    
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
-    delete World::world;
     App::Destroy();
 }
 
@@ -72,19 +76,25 @@ void Editor::Run()
 {
     while (!windowHandle.ShouldClose())
     {
+        World* currentWorld = World::world;
+        
         windowHandle.PoolEvents();
         HandleResize();
         vulkanImgui.NewFrame();
-        MoveObject();
-        renderer.BeginFrame();
+
+        if (currentWorld != nullptr)
+            renderer.BeginFrame(*currentWorld);
         
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Begin();
             editorWindow->Update();
             editorWindow->End();
-            
         }
+        
+        if (World::world != nullptr)
+            World::world->Run();
+        
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Render();
@@ -97,9 +107,11 @@ void Editor::Run()
 
 void Editor::InitEditorWindows()
 {
-    EditWorldWindow* edw = new EditWorldWindow(*this);
-    m_EditorWindows.push_back(edw);
-    m_EditorWindows.push_back(new Profiler(*this));
-    m_EditorWindows[0]->name = "EditorWindow";
+    m_EditorWindows.push_back(new EditWorldWindow(*this,"Scene"));
+    m_EditorWindows.push_back(new Profiler(*this,"Profiler"));
+    m_EditorWindows.push_back(new Inspector(*this,"Inspector"));
+    m_EditorWindows.push_back(new Hierachy(*this,"Hierachy"));
+    m_EditorWindows.push_back(new SceneButton(*this,"SceneButton"));
+
 }
 

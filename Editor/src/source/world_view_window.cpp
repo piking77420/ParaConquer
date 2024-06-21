@@ -7,8 +7,8 @@
 
 using namespace PC_EDITOR_CORE; 
 
-WorldViewWindow::WorldViewWindow(Editor& _editor)
-: EditorWindow(_editor)
+WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
+: EditorWindow(_editor,_name)
 {
     viewport.renderer = &_editor.renderer;
     viewport.Init();
@@ -24,26 +24,26 @@ WorldViewWindow::WorldViewWindow(Editor& _editor)
 void WorldViewWindow::Update()
 {
     EditorWindow::Update();
-
-    const Vector2i windowSize = { static_cast<int32_t>(ImGui::GetWindowWidth()) ,
-        static_cast<int32_t>(ImGui::GetWindowHeight()) };
-    
-    if (viewport.OnResize(windowSize))
+    if (resize)
     {
-        // TODO LEARB MULTITHREAD IN ORDER TO REMOVE THIS 
+        m_Editor->renderer.WaitGPU();
+        viewport.OnResize({static_cast<int>(size.x),static_cast<int>(size.y) } );
         for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
         {
+            ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
             m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
                 ,viewport.forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
     }
-    ShowViewPort();
+
+    const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    ImGui::Image(m_ImaguiDescriptorSet.at(PC_CORE::VulkanInterface::GetCurrentFrame()), ImVec2{viewportPanelSize.x, viewportPanelSize.y} ,    ImVec2(0, 1), 
+            ImVec2(1, 0));
+
 }
 
-void WorldViewWindow::ShowViewPort()
+void WorldViewWindow::Render()
 {
-
-    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(m_ImaguiDescriptorSet.at(PC_CORE::VulkanInterface::GetCurrentFrame()), ImVec2{viewportPanelSize.x, viewportPanelSize.y});
-
+    EditorWindow::Render();
+    m_Editor->renderer.RenderViewPort(camera, viewport, *PC_CORE::World::world);
 }

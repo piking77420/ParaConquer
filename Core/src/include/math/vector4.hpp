@@ -156,7 +156,7 @@ using DataType = T;
         return *static_cast<const T*>(&x + index);
     }
     
-    TOOLBOX_INLINE bool operator==(const Vector4& _other)
+    TOOLBOX_INLINE bool operator==(const Vector4& _other) const
     {
         return x == _other.x && y == _other.y && z == _other.z && w == _other.w;
     }

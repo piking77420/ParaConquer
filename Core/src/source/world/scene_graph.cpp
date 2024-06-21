@@ -1,22 +1,100 @@
 ﻿#include "world/scene_graph.hpp"
 
+#include "math/matrix_transformation.hpp"
+#include "rendering/gpu_typedef.hpp"
+#include "world/transform.hpp"
+
 using namespace PC_CORE;
 
 SceneGraph::SceneGraph()
 {
-    matrixBuffer.resize(MAX_ENTITIES);
+    globalMatricies.resize(MAX_ENTITIES);
 }
 
 SceneGraph::~SceneGraph()
 {
+
 }
 
-void SceneGraph::UpdateTransform(Scene* _scene)
+void SceneGraph::UpdateTransforms(Scene* _scene)
 {
+    const Scene& scene = *_scene;
+    scene.GetComponentData<Transform>(&m_transforms);
 
+    for (int i = 0; i < m_transforms->size(); ++i)
+    {
+        Transform& transform = m_transforms->at(i);
+
+        if (!IsValid(transform.componentHolder))
+            continue;
+
+        if (HasParent(transform))
+        {
+            
+        }
+        else
+        {
+            transform.position = transform.localPosition;
+            transform.rotation = Quaternionf::FromEuleur(transform.localRotation);
+        }
+        
+        
+    }
+
+    
 }
 
 void SceneGraph::UpdateMatrix(Scene* _scene)
 {
+    const Scene& scene = *_scene;
 
+    for (int i = 0; i < m_transforms->size(); ++i)
+    {
+        Transform& transform = m_transforms->at(i);
+
+        if (!IsValid(transform.componentHolder))
+            continue;
+
+        MatrixMeshes& matricies = globalMatricies[transform.componentHolder.entityID];
+        Trs3D(transform.position, transform.rotation.Normalize(), transform.scale, &matricies.model);
+        Matrix4x4f invertedModel;
+        Invert<float>(matricies.model, &invertedModel);
+        matricies.modelNormalMatrix = invertedModel.Transpose();
+    }
+
+}
+
+size_t SceneGraph::MatrixMeshesSize()
+{
+    return sizeof(MatrixMeshes) * MAX_ENTITIES;
+}
+
+
+const Transform* SceneGraph::GetParent(const Transform* transform)
+{
+    for (int i = 0; i < m_transforms->size(); ++i)
+    {
+        Transform& transform = m_transforms->at(i);
+
+        if (transform.componentHolder.entityID != transform.parentId)
+            continue;
+        
+        if (!IsValid(transform.componentHolder))
+        {
+            PC_LOGERROR("This entity parent was found but the parent is invalid")
+            return nullptr;
+        }
+
+        return &transform;
+        
+    }
+
+    
+    PC_LOGERROR("This entity parent is invalid")
+    return nullptr;
+}
+
+bool SceneGraph::HasParent(const Transform& transform)
+{
+    return transform.parentId != NULL_ENTITY;
 }

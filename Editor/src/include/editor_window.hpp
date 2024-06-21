@@ -3,6 +3,8 @@
 #include <string>
 
 #include "editor_header.hpp"
+#include "Imgui/imgui.h"
+#include "math/toolbox_typedef.hpp"
 
 namespace PC_EDITOR_CORE
 {
@@ -14,15 +16,27 @@ class EditorWindow
 {
 public:
 
-    std::string name = "EditorWindow";
+    ImGuiWindowFlags windowFlags;
     
-    EditorWindow(Editor& _editor);
+    std::string name = "EditorWindow";
+
+    bool isOpen = true;
+
+    Vector2f size;
+
+    Vector2f position;
+
+    bool resize = false;
+    
+    EditorWindow(Editor& _editor, const std::string& _name);
     
     virtual ~EditorWindow() = default;
 
     void Begin();
     
     void End();
+
+    void GetInfo();
     
     virtual void Render() {};
     

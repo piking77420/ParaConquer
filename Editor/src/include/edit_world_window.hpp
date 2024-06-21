@@ -9,11 +9,9 @@ class EditWorldWindow : public WorldViewWindow
 {
 public:
 
-    explicit EditWorldWindow(Editor& _editor);
+    explicit EditWorldWindow(Editor& _editor, const std::string& _name);
     
     ~EditWorldWindow() override ;
-
-    void Render() override;
     
     void Update() override;
 

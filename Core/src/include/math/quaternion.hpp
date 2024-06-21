@@ -171,6 +171,12 @@ public:
         *this = *this / _value;
     }
 
+    TOOLBOX_INLINE bool operator==(const Quaternion& _other) const
+    {
+        return IsEqualTo(imaginary.x, _other.imaginary.x) && IsEqualTo(imaginary.y, _other.imaginary.y) && IsEqualTo(imaginary.z, _other.imaginary.z)
+            && IsEqualTo(real, _other.real);
+    }
+
     Vec3 ToEulerAngles() const
     {
         DataType y = std::atan2(2.f * imaginary.x * real + 2.f * imaginary.y * imaginary.z, 1 - 2.f * (imaginary.z * imaginary.z + real * real));
@@ -187,13 +193,13 @@ public:
         
         if constexpr (std::is_floating_point_v<T>)
         {
-            c = Vector3(std::cos(eulerAngle.x * 0.5f), std::cos(eulerAngle.y * 0.5f), std::cos(eulerAngle.z * 0.5f));
-            s = Vector3(std::sin(eulerAngle.x * 0.5f), std::sin(eulerAngle.y * 0.5f), std::sin(eulerAngle.z * 0.5f));
+            c = Vec3(std::cos(eulerAngle.x * 0.5f), std::cos(eulerAngle.y * 0.5f), std::cos(eulerAngle.z * 0.5f));
+            s = Vec3(std::sin(eulerAngle.x * 0.5f), std::sin(eulerAngle.y * 0.5f), std::sin(eulerAngle.z * 0.5f));
         }
         else
         {
-            c = Vector3(std::cos(eulerAngle.x / static_cast<T>(2)), std::cos(eulerAngle.y / static_cast<T>(2)), std::cos(eulerAngle.z / static_cast<T>(2)));
-            s = Vector3(std::sin(eulerAngle.x / static_cast<T>(2)), std::sin(eulerAngle.y / static_cast<T>(2)), std::sin(eulerAngle.z / static_cast<T>(2)));
+            c = Vec3(std::cos(eulerAngle.x / static_cast<T>(2)), std::cos(eulerAngle.y / static_cast<T>(2)), std::cos(eulerAngle.z / static_cast<T>(2)));
+            s = Vec3(std::sin(eulerAngle.x / static_cast<T>(2)), std::sin(eulerAngle.y / static_cast<T>(2)), std::sin(eulerAngle.z / static_cast<T>(2)));
         }
         
         DataType i = s.x * c.y * c.z + c.x * s.y * s.z;

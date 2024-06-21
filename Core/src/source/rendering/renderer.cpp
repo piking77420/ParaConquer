@@ -10,9 +10,7 @@
 #include "rendering/vulkan/vulkan_texture_sampler.hpp"
 #include "rendering/vulkan/vulkan_viewport.hpp"
 #include "resources/resource_manager.hpp"
-#ifndef  NDEBUG
 #include "time/timer.hpp"
-#endif
 #include <thread>
 
 #include "world/transform.hpp"
@@ -27,7 +25,6 @@ void Renderer::Init(Window* _window)
     m_VulkanShaderStage.Init({vertex, frag});
 
     InitForwardPass();
-    m_MatrixMeshs.resize(MAX_ENTITIES);
     m_CommandBuffers.resize(VulkanInterface::GetNbrOfImage());
     VulkanInterface::vulkanCommandPoolGraphic.AllocCommandBuffer(VulkanInterface::GetNbrOfImage(),
                                                                  m_CommandBuffers.data());
@@ -49,6 +46,7 @@ void Renderer::Init(Window* _window)
     CreateBasicGraphiPipeline();
     drawGizmos.Init(this);
     drawQuad.Init(this);
+    skyboxRender.Init(this);
 }
 
 void Renderer::RecreateSwapChain(Window* _window)
@@ -64,8 +62,9 @@ void Renderer::Destroy()
     delete m_GpuLights;
     drawGizmos.Destroy();
     drawQuad.Destroy();
+    skyboxRender.Destroy();
 
-    for (VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
+    for (VulkanUniformBuffer& uniformBuffer : m_CameraBuffers)
     {
         uniformBuffer.Destroy();
     }
@@ -77,7 +76,7 @@ void Renderer::Destroy()
     {
         vulkanShaderStorageBuffer.Destroy();
     }
-    forwardPass.Destroy();
+    renderPasses.at(FORWARD).Destroy();
     m_DescriptorSetLayout.Destroy();
     m_DescriptorPool.Destroy();
     fwdCommandPool.Destroy();
@@ -88,21 +87,21 @@ void Renderer::Destroy()
     DestroyAsyncObject();
 }
 
-void Renderer::BeginFrame()
+void Renderer::BeginFrame(const World& world)
 {
     const VkDevice& device = VulkanInterface::GetDevice().device;
     const uint32_t currentFrame = VulkanInterface::GetCurrentFrame();
 
-    VkResult result = vkWaitForFences(device, 1, &m_InFlightFence[currentFrame].fences, VK_TRUE, UINT64_MAX);
+    VkResult result = vkWaitForFences(device, 1, &asyncObjet.m_InFlightFence[currentFrame].fences, VK_TRUE, UINT64_MAX);
 
     VK_CHECK_ERROR(result, "vkWaitForFences")
     
     result = vkAcquireNextImageKHR(device, VulkanInterface::vulkanSwapChapchain.swapchainKhr, UINT64_MAX,
-                                   m_ImageAvailableSemaphore[currentFrame].semaphore,
+                                   asyncObjet.m_ImageAvailableSemaphore[currentFrame].semaphore,
                                    VK_NULL_HANDLE, &m_ImageIndex);
     
     VK_CHECK_ERROR(result, "vkAcquireNextImageKHR")
-    result = vkResetFences(device, 1, &m_InFlightFence[currentFrame].fences);
+    result = vkResetFences(device, 1, &asyncObjet.m_InFlightFence[currentFrame].fences);
     VK_CHECK_ERROR(result, "vkResetFences")
     
     result = vkResetCommandBuffer(m_CommandBuffers[currentFrame], 0);
@@ -110,6 +109,9 @@ void Renderer::BeginFrame()
     
     result = vkResetCommandBuffer(m_ForwardCommandBuffers[currentFrame], 0);
     VK_CHECK_ERROR(result, "m_ForwardCommandBuffers[currentFrame]")
+    
+    m_CurrentWorld = &world;
+    UpdateWorldBuffers();
 }
 
 
@@ -120,7 +122,7 @@ void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& _view
     m_CurrentWorld = &_world;
     m_CurrentViewport = &_viewport;
 
-    UpdateBuffers(VulkanInterface::GetCurrentFrame());
+    UpdateCameraBuffer(VulkanInterface::GetCurrentFrame());
 
     const uint32_t currentFrame = VulkanInterface::GetCurrentFrame();
     const VkCommandBuffer& vkCommandBuffer = m_ForwardCommandBuffers[VulkanInterface::GetCurrentFrame()];
@@ -164,7 +166,7 @@ void Renderer::SwapBuffers()
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    const VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore[currentFrame].semaphore};
+    const VkSemaphore waitSemaphores[] = {asyncObjet.m_ImageAvailableSemaphore[currentFrame].semaphore};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -176,13 +178,13 @@ void Renderer::SwapBuffers()
     submitInfo.commandBufferCount = commandBuffers.size();
     submitInfo.pCommandBuffers = commandBuffers.data();
 
-    const VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore[currentFrame].semaphore};
+    const VkSemaphore signalSemaphores[] = {asyncObjet.m_RenderFinishedSemaphore[currentFrame].semaphore};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     // Submit command buffer
     VkResult result = vkQueueSubmit(VulkanInterface::GetDevice().graphicsQueue.Queue, 1, &submitInfo,
-                                    m_InFlightFence[currentFrame].fences);
+                                    asyncObjet.m_InFlightFence[currentFrame].fences);
 
     VK_CHECK_ERROR(result, "failed to vkQueueSubmit");
 
@@ -285,7 +287,7 @@ void Renderer::InitForwardPass()
         color,depth
     };
     
-    forwardPass.Init(attachments, 0); //, depth});
+    renderPasses.at(FORWARD).Init(attachments, 0); //, depth});
 }
 
 void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags)
@@ -307,7 +309,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
 {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = forwardPass.renderPass;
+    renderPassInfo.renderPass = renderPasses.at(FORWARD).renderPass;
     renderPassInfo.framebuffer = m_CurrentViewport->forwardAttachments.at(m_ImageIndex).framebuffer;
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = {
@@ -341,6 +343,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
         DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
     }
     drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex);
+    skyboxRender.DrawSkybox(commandBuffer, m_CurrentWorld->skybox);
 
     //drawQuad.Draw(commandBuffer, m_CurrentViewport->forwardDescritporSet.at(m_ImageIndex));
     vkCmdEndRenderPass(commandBuffer);
@@ -384,7 +387,7 @@ void Renderer::CreateBasicGraphiPipeline()
     pipelineInfo.pDepthStencilState = &depthStencil;
 
     m_BasePipeline.Init(&pipelineInfo, m_VulkanShaderStage, m_VkPipelineLayout.Get(),
-                        forwardPass.renderPass);
+                        renderPasses.at(FORWARD).renderPass);
 }
 
 void Renderer::CreateAsyncObject()
@@ -398,15 +401,15 @@ void Renderer::CreateAsyncObject()
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     const size_t nbrOfImage = VulkanInterface::GetNbrOfImage();
-    m_ImageAvailableSemaphore.resize(nbrOfImage);
-    m_RenderFinishedSemaphore.resize(nbrOfImage);
-    m_InFlightFence.resize(nbrOfImage);
+    asyncObjet.m_ImageAvailableSemaphore.resize(nbrOfImage);
+    asyncObjet.m_RenderFinishedSemaphore.resize(nbrOfImage);
+    asyncObjet.m_InFlightFence.resize(nbrOfImage);
 
     for (size_t i = 0; i < VulkanInterface::GetNbrOfImage(); i++)
     {
-        m_ImageAvailableSemaphore[i].Init(semaphoreInfo);
-        m_RenderFinishedSemaphore[i].Init(semaphoreInfo);
-        m_InFlightFence[i].Init(fenceInfo);
+        asyncObjet.m_ImageAvailableSemaphore[i].Init(semaphoreInfo);
+        asyncObjet.m_RenderFinishedSemaphore[i].Init(semaphoreInfo);
+        asyncObjet.m_InFlightFence[i].Init(fenceInfo);
     }
 }
 
@@ -416,23 +419,23 @@ void Renderer::DestroyAsyncObject()
 
     for (size_t i = 0; i < nbrOfImage; i++)
     {
-        m_ImageAvailableSemaphore[i].Destroy();
-        m_RenderFinishedSemaphore[i].Destroy();
-        m_InFlightFence[i].Destroy();
+        asyncObjet.m_ImageAvailableSemaphore[i].Destroy();
+        asyncObjet.m_RenderFinishedSemaphore[i].Destroy();
+        asyncObjet.m_InFlightFence[i].Destroy();
     }
 }
 
-void Renderer::UpdateBuffers(uint32_t _currentFrame)
+void Renderer::UpdateCameraBuffer(uint32_t _currentFrame)
 {
-    ComputeModelAndNormalInvertMatrix(_currentFrame);
-    UpdateLightBuffer(_currentFrame);
+    cameraBuffer.cameraPos = m_CurrentCamera->position;
+
     LookAtRH(m_CurrentCamera->position, m_CurrentCamera->position + m_CurrentCamera->front, m_CurrentCamera->up,
              &cameraBuffer.view);
     const float aspect = Window::currentWindow->GetAspect();
     PerspectiveMatrix(m_CurrentCamera->fov * Deg2Rad, aspect, m_CurrentCamera->near, m_CurrentCamera->far,
                       &cameraBuffer.proj);
-    cameraBuffer.proj[1][1] *= -1;
-    m_UniformBuffers[_currentFrame].Update(&cameraBuffer.view.data[0].x, sizeof(cameraBuffer));
+    m_CameraBuffers[_currentFrame].Update(&cameraBuffer.view[0][0], sizeof(cameraBuffer));
+    
 }
 
 void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
@@ -460,7 +463,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
 
-        Vector3f dir = transform.localRotation * -Vector3f::UnitZ();
+        Vector3f dir = transform.rotation * -Vector3f::UnitY();
 
         m_GpuLights->gpuDirLights[i].direction = dir.Normalize();
         m_GpuLights->gpuDirLights[i].color = dirlights->at(i).color;
@@ -488,7 +491,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
-        Vector3f dir = transform.localRotation * -Vector3f::UnitZ();
+        Vector3f dir = transform.rotation * -Vector3f::UnitY();
         m_GpuLights->gpuSpotLight[i].position = transform.position;
         m_GpuLights->gpuSpotLight[i].direction = dir;
         m_GpuLights->gpuSpotLight[i].color = spotLights->at(i).color;
@@ -527,18 +530,18 @@ void Renderer::CreateDescriptorSets()
         std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_UniformBuffers[i].GetHandle();
+        bufferInfo.buffer = m_CameraBuffers[i].GetHandle();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(cameraBuffer);
 
-        m_UniformBuffers[i].Bind(&descriptorWrites[0], descriptorSets[i],
+        m_CameraBuffers[i].Bind(&descriptorWrites[0], descriptorSets[i],
                                  0, 0, 1,
                                  bufferInfo);
 
         VkDescriptorBufferInfo modelMatriciesInfo{};
         modelMatriciesInfo.buffer = m_ModelMatriciesShaderStorages[i].GetHandle();
         modelMatriciesInfo.offset = 0;
-        modelMatriciesInfo.range = sizeof(MatrixMeshes) * m_MatrixMeshs.size();
+        modelMatriciesInfo.range = SceneGraph::MatrixMeshesSize();
 
         m_ModelMatriciesShaderStorages[i].Bind(descriptorWrites.data() + 1, descriptorSets[i], 1, 0, 1,
                                                modelMatriciesInfo);
@@ -558,28 +561,11 @@ void Renderer::CreateDescriptorSets()
 
 void Renderer::ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame)
 {
-    BEGIN_TIMER("Update Matrix ToGpu")
-
-    const Scene& scene = m_CurrentWorld->scene;
-    std::vector<Transform>* m_transforms = nullptr;
-    scene.GetComponentData<Transform>(&m_transforms);
-
-    for (int i = 0; i < m_transforms->size(); ++i)
-    {
-        const Transform& transform = m_transforms->at(i);
-
-        if (!IsValid(transform.componentHolder))
-            continue;
-
-        MatrixMeshes& matricies = m_MatrixMeshs[transform.componentHolder.entityID];
-        Trs3D(transform.localPosition, transform.localRotation.Normalize(), transform.scale, &matricies.model);
-        Matrix4x4f invertedModel;
-        Invert<float>(matricies.model, &invertedModel);
-        matricies.modelNormalMatrix = invertedModel.Transpose();
-    }
-
-    m_ModelMatriciesShaderStorages[_currentFrame].Update(m_MatrixMeshs.data(),
-                                                         sizeof(m_MatrixMeshs[0]) * m_MatrixMeshs.size());
+    BEGIN_TIMER("Update Matricies ToGpu")
+    const SceneGraph& sceneGraph = m_CurrentWorld->sceneGraph;
+    
+    m_ModelMatriciesShaderStorages[_currentFrame].Update(sceneGraph.globalMatricies.data(),
+                                                         sizeof(sceneGraph.globalMatricies[0]) * sceneGraph.globalMatricies.size());
     END_TIMER()
 }
 
@@ -603,12 +589,19 @@ void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex
     vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->indicies.size(), 1, 0, 0, 0);
 }
 
+void Renderer::UpdateWorldBuffers()
+{
+    const uint32_t currentFrame = VulkanInterface::GetCurrentFrame();
+    ComputeModelAndNormalInvertMatrix(currentFrame);
+    UpdateLightBuffer(currentFrame);
+}
+
 void Renderer::InitBuffers()
 {
     const size_t nbrOfImage = VulkanInterface::GetNbrOfImage();
 
-    m_UniformBuffers.resize(nbrOfImage);
-    for (VulkanUniformBuffer& uniformBuffer : m_UniformBuffers)
+    m_CameraBuffers.resize(nbrOfImage);
+    for (VulkanUniformBuffer& uniformBuffer : m_CameraBuffers)
     {
         uniformBuffer.Init(&cameraBuffer, sizeof(cameraBuffer));
     }
@@ -616,7 +609,7 @@ void Renderer::InitBuffers()
     m_ModelMatriciesShaderStorages.resize(nbrOfImage);
     for (VulkanShaderStorageBuffer& shaderStorageBuffer : m_ModelMatriciesShaderStorages)
     {
-        shaderStorageBuffer.Init(m_MatrixMeshs.size() * sizeof(MatrixMeshes));
+        shaderStorageBuffer.Init(SceneGraph::MatrixMeshesSize());
     }
 
     m_ShaderStoragesLight.resize(nbrOfImage);

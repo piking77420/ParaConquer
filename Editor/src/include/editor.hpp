@@ -26,6 +26,8 @@ public:
     std::vector<EditorWindow*> m_EditorWindows;
     
     ImGuiIO* io = nullptr;
+
+    Entity selected = NULL_ENTITY;
 };
 
 END_PCCORE

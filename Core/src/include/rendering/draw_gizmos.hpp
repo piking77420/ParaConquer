@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "physics/sphere_collider.hpp"
 #include "resources/mesh.hpp"
 #include "vulkan/vulkan_descriptor_pool.hpp"
 #include "vulkan/vulkan_descriptor_set_layout.hpp"
@@ -10,6 +11,7 @@
 
 
 BEGIN_PCCORE
+    class Scene;
     class Renderer;
 
 class DrawGizmos
@@ -52,9 +54,12 @@ private:
     
     void CreateGraphiPipeline();
 
-    void DrawSphere();
+    void DrawColliders();
 
     void InitDescriptor();
+
+    void DrawSphereCollider(const std::vector<SphereCollider>& sphereColliders , const Scene& scene);
+    
 };
 
 END_PCCORE

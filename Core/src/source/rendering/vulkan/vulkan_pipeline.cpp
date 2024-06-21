@@ -12,7 +12,10 @@ void VulkanPipeline::Init(const VkGraphicsPipelineCreateInfo* _vkGraphicsPipelin
 {
     VkGraphicsPipelineCreateInfo vkGraphicsPipelineCreateInfo = *_vkGraphicsPipelineCreateInfo;
 
-  
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -70,6 +73,9 @@ void VulkanPipeline::Init(const VkGraphicsPipelineCreateInfo* _vkGraphicsPipelin
 
     if (vkGraphicsPipelineCreateInfo.pColorBlendState == VK_NULL_HANDLE)
         vkGraphicsPipelineCreateInfo.pColorBlendState = &colorBlending;
+
+    if (vkGraphicsPipelineCreateInfo.pVertexInputState == VK_NULL_HANDLE)
+        vkGraphicsPipelineCreateInfo.pVertexInputState = &vertexInputInfo;
 
     
     constexpr std::array<VkDynamicState, 2> dynamicStates =
