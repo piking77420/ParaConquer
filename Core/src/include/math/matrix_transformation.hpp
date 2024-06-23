@@ -15,9 +15,9 @@ void MatrixCast(const F& _from, T* _to)
     
     constexpr size_t size = std::min(F::Size,T::Size);
     
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
-        for (size_t k = 0; k < size; k++)
+        for (int k = 0; k < size; k++)
         {
             (*_to)[i][k] = _from[i][k];
         }
@@ -173,7 +173,7 @@ void RotationMatrix3D(const Quaternion<T>& _quaternion, Matrix4x4<T>* matrix)
 template <class T>
 void ScaleMatrix2D(const Vector2f& _scaling, Matrix2x2<T>* matrix)
 {
-    for (size_t i = 0; i < matrix->data.size() - 1; ++i)
+    for (size_t i = 0; i < Matrix2x2<T>::Size - 1; ++i)
     {
         matrix[i][i] = _scaling[i];
     }
@@ -191,7 +191,7 @@ void ScaleMatrix2D(const Vector2f& _scaling, Matrix3x3<T>* matrix)
 template <class T>
 void ScaleMatrix3D(const Vector3f& _scaling, Matrix3x3<T>* _matrix)
 {
-    for (size_t i = 0; i < _matrix->data.size(); ++i)
+    for (size_t i = 0; i < Matrix3x3<T>::Size; ++i)
     {
         (*_matrix)[i][i] = _scaling[i];
     }

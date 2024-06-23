@@ -39,9 +39,13 @@ void Hierachy::ShowGraph()
     {
         if (!PC_CORE::IsValid(transforms->at(i).componentHolder))
             continue;
+
+        auto entityInternal = world.scene.GetEntityInternal(transforms->at(i).componentHolder.entityID);
             
-        if (ImGui::Button(("Entity " + std::to_string(i)).c_str()))
+        if (ImGui::Button(entityInternal->name.c_str()))
+        {
             m_Editor->selected = static_cast<uint32_t>(i);
+        }
         
     }
     

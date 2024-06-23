@@ -12,6 +12,7 @@ static constexpr size_t MAX_DIRLIGHT_COUNT = 1;
 
 enum RenderPass
 {
+    COLORONLY,
     FORWARD,
     GBUFFER,
     COUNT

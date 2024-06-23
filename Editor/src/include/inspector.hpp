@@ -15,7 +15,8 @@ public:
 
 private:
     void Show();
-    
+
+    void OnInput();
 };
 
 END_EDITOR_PCCORE

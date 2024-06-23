@@ -14,7 +14,7 @@ public:
     {
         Matrix2x2 result;
 
-        for (int i = 0; i < data.size(); ++i)
+        for (int i = 0; i < m_Data.size(); ++i)
         {
             result[i][i] = 1.f;
         }
@@ -22,7 +22,6 @@ public:
         return result;
     }
     
-    std::array<Vec,Size> data;
 
     constexpr Matrix2x2() = default;
 
@@ -30,54 +29,54 @@ public:
 
     constexpr Matrix2x2(DataType x1, DataType y1, DataType x2, DataType y2)
     {
-        data[0].x = x1;
-        data[0].y = y1;
+        m_Data[0].x = x1;
+        m_Data[0].y = y1;
         
-        data[1].x = x2;
-        data[1].y = y2;
+        m_Data[1].x = x2;
+        m_Data[1].y = y2;
     }
     constexpr Matrix2x2(DataType _value)
     {
-        data[0].x = _value;
-        data[0].y = _value;
+        m_Data[0].x = _value;
+        m_Data[0].y = _value;
         
-        data[1].x = _value;
-        data[1].y = _value;
+        m_Data[1].x = _value;
+        m_Data[1].y = _value;
     }
     
     constexpr Matrix2x2(Vec _vec1,Vec _vec2)
     {
-        data[0] = _vec1;
-        data[1] = _vec2;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec2;
     }
     
     constexpr Matrix2x2(Vec _vec1)
     {
-        data[0] = _vec1;
-        data[1] = _vec1;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec1;
     }
 
     TOOLBOX_INLINE Vec operator[](size_t _size) const
     {
-        return data[_size];
+        return m_Data[_size];
     }
 
     TOOLBOX_INLINE Vec& operator[](size_t _size)
     {
-        return data[_size];
+        return m_Data[_size];
     }
 
-    Matrix2x2 operator*(Matrix2x2 other)
+    Matrix2x2 operator*(const Matrix2x2& _other)
     {
         Matrix2x2 result = 0;
-        
-        for (size_t i = 0; i < 2; i++)
+
+        for (size_t rows = 0; rows < Size; rows++)
         {
-            for (size_t j = 0; j < 2; j++)
+            for (size_t coloms = 0; coloms < Size; coloms++)
             {
-                for (size_t k = 0; k < 2; k++)
+                for (size_t dot = 0; dot < Size; dot++)
                 {
-                    result.data[i][j] += data[i][k] * other.data[k][j];
+                    result[coloms][rows] += m_Data[dot][rows] * _other[coloms][dot];
                 }
             }
         }
@@ -96,7 +95,7 @@ public:
         {
             for (size_t j = 0; j < Size; ++j)
             {
-                if (data[i][j] != _other[i][j])
+                if (m_Data[i][j] != _other[i][j])
                 {
                     return false;
                 }
@@ -108,15 +107,17 @@ public:
 
     Vector2<T> Trace()
     {
-        return {data[0][0],data[1][1],data[2][2]};
+        return {m_Data[0][0],m_Data[1][1],m_Data[2][2]};
     }
 
     std::string ToString() const
     {
-        return  std::to_string(data[0].x) + " " + std::to_string(data[1].x) + " "
+        return  std::to_string(m_Data[0].x) + " " + std::to_string(m_Data[1].x) + " "
          + '\n'
-         + std::to_string(data[0].y) + " " + std::to_string(data[1].y) + " "
+         + std::to_string(m_Data[0].y) + " " + std::to_string(m_Data[1].y) + " "
          + '\n';
     }
+private:
+        std::array<Vec, Size> m_Data;
 
 };

@@ -24,7 +24,7 @@ void Renderer::Init(Window* _window)
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
     m_VulkanShaderStage.Init({vertex, frag});
 
-    InitForwardPass();
+    InitRenderPasses();
     m_CommandBuffers.resize(VulkanInterface::GetNbrOfImage());
     VulkanInterface::vulkanCommandPoolGraphic.AllocCommandBuffer(VulkanInterface::GetNbrOfImage(),
                                                                  m_CommandBuffers.data());
@@ -256,7 +256,7 @@ void Renderer::RenderSwapChain()
 }
 
 
-void Renderer::InitForwardPass()
+void Renderer::InitRenderPasses()
 {
     const Attachment color =
     {
@@ -281,13 +281,19 @@ void Renderer::InitForwardPass()
         .imageLayoutFinal = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     };
     
-
-    std::vector<Attachment> attachments  =
+    std::vector<Attachment> attachmentsColor  =
+    {
+        color
+    };
+    std::vector<Attachment> attachmentsfwd  =
     {
         color,depth
     };
+   
+
+    renderPasses.at(COLORONLY).Init(attachmentsColor, 0);
+    renderPasses.at(FORWARD).Init(attachmentsfwd, 0); //, depth});
     
-    renderPasses.at(FORWARD).Init(attachments, 0); //, depth});
 }
 
 void Renderer::BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags)

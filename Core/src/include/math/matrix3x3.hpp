@@ -10,7 +10,6 @@ public:
     using Vec = Vector3<DataType>;
     static constexpr size_t Size = 3;
 
-    std::array<Vec,Size> data;
 
     constexpr Matrix3x3() = default;
 
@@ -32,24 +31,24 @@ public:
         DataType x2, DataType y2, DataType z2,
         DataType x3, DataType y3, DataType z3)
     {
-        data[0].x = x1;
-        data[0].y = y1;
-        data[0].z = z1;
+        m_Data[0].x = x1;
+        m_Data[0].y = y1;
+        m_Data[0].z = z1;
 
-        data[1].x = x2;
-        data[1].y = y2;
-        data[1].z = z2;
+        m_Data[1].x = x2;
+        m_Data[1].y = y2;
+        m_Data[1].z = z2;
 
-        data[2].x = x3;
-        data[2].y = y3;
-        data[2].z = z3;
+        m_Data[2].x = x3;
+        m_Data[2].y = y3;
+        m_Data[2].z = z3;
     }
 
     constexpr Matrix3x3(const Vec& _vec1 , const Vec& _vec2 , const Vec& _vec3)
     {
-        data[0] = _vec1;
-        data[1] = _vec2;
-        data[2] = _vec3;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec2;
+        m_Data[2] = _vec3;
     }
     constexpr Matrix3x3(DataType _value)
     {
@@ -57,45 +56,46 @@ public:
         {
             for (int k = 0; k < 3; k++)
             {
-                data[i][k] = _value;
+                m_Data[i][k] = _value;
             }
         }
     }
     
     constexpr Matrix3x3(Vec _vec1,Vec _vec2)
     {
-        data[0] = _vec1;
-        data[1] = _vec2;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec2;
     }
     
     constexpr Matrix3x3(Vec _vec1)
     {
-        data[0] = _vec1;
-        data[1] = _vec1;
+        m_Data[0] = _vec1;
+        m_Data[1] = _vec1;
     }
     
 
     TOOLBOX_INLINE Vec operator[](size_t _size) const
     {
-        return data[_size];
+        return m_Data[_size];
     }
 
     TOOLBOX_INLINE Vec& operator[](size_t _size)
     {
-        return data[_size];
+        return m_Data[_size];
     }
 
-    Matrix3x3 operator*(const Matrix3x3& other)
+    Matrix3x3 operator*(const Matrix3x3& _other)
     {
-        Matrix3x3 result = 0;
+        Matrix3x3 result = {};
         
-        for (size_t i = 0; i < 3; i++)
+
+        for (size_t rows = 0; rows < Size; rows++)
         {
-            for (size_t j = 0; j < 3; j++)
+            for (size_t coloms = 0; coloms < Size; coloms++)
             {
-                for (size_t k = 0; k < 3; k++)
+                for (size_t dot = 0; dot < Size; dot++)
                 {
-                    result.data[i][j] += data[i][k] * other.data[k][j];
+                    result.m_Data[coloms][rows] += m_Data[dot][rows] * _other[coloms][dot];
                 }
             }
         }
@@ -114,7 +114,7 @@ public:
         {
             for (size_t j = 0; j < Size; ++j)
             {
-                if (data[i][j] != _other[i][j])
+                if (m_Data[i][j] != _other[i][j])
                 {
                     return false;
                 }
@@ -126,16 +126,16 @@ public:
 
     Vector3<T> Trace()
     {
-        return {data[0][0],data[1][1],data[2][2]};
+        return {m_Data[0][0],m_Data[1][1],m_Data[2][2]};
     }
     
     std::string ToString() const
     {
-        return std::to_string(data[0].x) + " " + std::to_string(data[1].x) + " " + std::to_string(data[2].x)
+        return std::to_string(m_Data[0].x) + " " + std::to_string(m_Data[1].x) + " " + std::to_string(m_Data[2].x)
          + '\n'
-         + std::to_string(data[0].y) + " " + std::to_string(data[1].y) + " " + std::to_string(data[2].y)
+         + std::to_string(m_Data[0].y) + " " + std::to_string(m_Data[1].y) + " " + std::to_string(m_Data[2].y)
          + '\n' +
-          std::to_string(data[0].z) + " " + std::to_string(data[1].z) + " " + std::to_string(data[2].z)
+          std::to_string(m_Data[0].z) + " " + std::to_string(m_Data[1].z) + " " + std::to_string(m_Data[2].z)
          + '\n' ;
     }
 
@@ -147,10 +147,13 @@ public:
         {
             for (size_t j = 0; j < Size; j++)
             {
-                result[i][j] = data[j][i];
+                result[i][j] = m_Data[j][i];
             }
         }
         return result;
     }
+ private:
+        std::array<Vec, Size> m_Data;
+
     
 };

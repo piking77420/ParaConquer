@@ -110,7 +110,7 @@ private:
 
     void RenderSwapChain();
     
-    void InitForwardPass();
+    void InitRenderPasses();
 
     void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
     

@@ -19,14 +19,20 @@ private:
         VulkanTexture colorImage;
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
     };
+
+    struct ViewPortFinalImage
+    {
+        VulkanTexture colorImage;
+        VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    };
     
 public:
     Vector2i viewPortSize = {800,600};
+    std::vector <ViewPortFinalImage> viewPortFinalImageAttachment;
     
     std::vector<ForwardAttachment> forwardAttachments;
     VulkanTexture depthAttachment;
-
-
+    
     std::vector<VkDescriptorSet> forwardDescritporSet;
     
     Renderer* renderer = nullptr;
@@ -47,6 +53,10 @@ protected:
     void InitForward();
 
     void DestroyForward();
+
+    void InitFinalImage();
+
+    void DestroyFinalImage();
 };
 
 END_PCCORE

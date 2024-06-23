@@ -15,6 +15,7 @@ Entity Scene::CreateEntity()
         if (!m_entities[i].isEnable)
         {
             m_entities[i].isEnable = true;
+            m_entities[i].name = "Entity " + std::to_string(i); 
             return i;
         }
     }
@@ -55,6 +56,22 @@ void Scene::Begin()
     }
 }
 
+Scene::EntityInternal* Scene::GetEntityInternal(Entity _entity)
+{
+    if (!m_entities.at(_entity).isEnable)
+        return nullptr;
+
+    return &m_entities.at(_entity);
+}
+
+const Scene::EntityInternal* Scene::GetEntityInternal(Entity _entity) const
+{
+    if (!m_entities.at(_entity).isEnable)
+        return nullptr;
+
+    return &m_entities.at(_entity);
+}
+
 Scene::Scene()
 {
     // init Component Data
@@ -74,7 +91,7 @@ Scene::Scene()
     }
 
     // init entities
-    for (EntityAndComponentIndex& entity : m_entities)
+    for (EntityInternal& entity : m_entities)
     {
         entity.componentIdIndexInDataArray = new uint32_t[NbrOfComponentType];
         for (size_t i = 0; i < NbrOfComponentType; i++)
@@ -86,7 +103,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-    for (EntityAndComponentIndex& entity : m_entities)
+    for (EntityInternal& entity : m_entities)
     {
         delete[] entity.componentIdIndexInDataArray;
         entity.componentIdIndexInDataArray = nullptr;

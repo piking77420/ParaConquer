@@ -1,5 +1,6 @@
 ﻿#include "editor.hpp"
 
+#include "asset_browser.hpp"
 #include "edit_world_window.hpp"
 #include "hierachy.hpp"
 #include "inspector.hpp"
@@ -55,21 +56,30 @@ void Editor::InitScene()
     ResourceManager::Add<Material>("baseMaterial2",material2);
 
     const Entity entity = world.scene.CreateEntity();
-    transforms.push_back(world.scene.AddComponent<Transform>(entity));
+    world.scene.AddComponent<Transform>(entity);
     StaticMesh* staticMesh =world.scene.AddComponent<StaticMesh>(entity);
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material;
 
     const Entity entity2 = world.scene.CreateEntity();
-    transforms.push_back(world.scene.AddComponent<Transform>(entity2));
+    world.scene.AddComponent<Transform>(entity2);
     StaticMesh* staticMesh2 = world.scene.AddComponent<StaticMesh>(entity2);
     staticMesh2->mesh = ResourceManager::Get<Mesh>("viking_room.obj");
     staticMesh2->material = material2;
     world.scene.AddComponent<SphereCollider>(entity2);
 
     const Entity entity3 = world.scene.CreateEntity();
-    transforms.push_back(world.scene.AddComponent<Transform>(entity3));
-    dirLight = world.scene.AddComponent<DirLight>(entity3);
+    world.scene.AddComponent<Transform>(entity3);
+    auto dir = world.scene.AddComponent<DirLight>(entity3);
+    world.scene.GetEntityInternal(entity3)->name = "DirectionalLight";
+    dir->intensity = 4.f;
+
+    const Entity plane = world.scene.CreateEntity();
+    Transform* ptr = world.scene.AddComponent<Transform>(plane);
+    staticMesh = world.scene.AddComponent<StaticMesh>(plane);
+    staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    staticMesh->material = material2;
+    ptr->scale = {20,1,20};
 }
 
 void Editor::Run()
@@ -112,6 +122,7 @@ void Editor::InitEditorWindows()
     m_EditorWindows.push_back(new Inspector(*this,"Inspector"));
     m_EditorWindows.push_back(new Hierachy(*this,"Hierachy"));
     m_EditorWindows.push_back(new SceneButton(*this,"SceneButton"));
+    m_EditorWindows.push_back(new AssetBrowser(*this,"AssetBrowser"));
 
 }
 

@@ -105,17 +105,18 @@ public:
     Matrix4x4 operator*(const Matrix4x4& _other) const
     {
         Matrix4x4 result = {};
-        
-        for (size_t i = 0; i < 4; i++)
+   
+        for (size_t rows = 0; rows < Size; rows++)
         {
-            for (size_t j = 0; j < 4; j++)
+            for (size_t coloms = 0; coloms < Size; coloms++)
             {
-                for (size_t k = 0; k < 4; k++)
+                for (size_t dot = 0; dot < Size; dot++)
                 {
-                    result.m_Data[i][j] += m_Data[i][k] * _other.m_Data[k][j];
+                    result.m_Data[coloms][rows] += m_Data[dot][rows] * _other.m_Data[coloms][dot];
                 }
             }
         }
+
         return result;
     }
 

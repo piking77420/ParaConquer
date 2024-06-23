@@ -95,7 +95,7 @@ public:
     }
 
 
-    Vector3 operator-()
+    Vector3 operator-() const
     {
         return {-x, -y, -z};
     }

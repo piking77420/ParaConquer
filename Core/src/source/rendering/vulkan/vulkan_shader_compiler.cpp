@@ -8,6 +8,8 @@ using namespace PC_CORE;
 
 void VulkanShaderCompiler::GetEnvironementVariable()
 {
+
+    
     char* envVulkanName = nullptr;
     size_t bufferCount = -1;
     _dupenv_s(&envVulkanName, &bufferCount,"VULKAN_SDK");

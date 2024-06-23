@@ -27,6 +27,8 @@ public:
 
     virtual void Load(const fs::path& path) = 0;
 
+    virtual void WriteFile(const fs::path& path) {};
+
     template <size_t _Size>
     static bool IsFormatValid(std::array<std::string,_Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex);
 

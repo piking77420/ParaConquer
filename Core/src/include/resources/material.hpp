@@ -7,6 +7,8 @@ BEGIN_PCCORE
 class Material : public IResource
 {
 public:
+    void WriteFile(const fs::path& path) override;
+
     ~Material() override = default;
     
     void Load(const fs::path& path) override;

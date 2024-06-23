@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <map>
 #include <vector>
+#include <typeinfo>
 
 #include "core_header.hpp"
 #include "world_header_typedef.hpp"
@@ -32,21 +33,22 @@ public:
     static uint32_t GetNbrOfComponentType();
     
 
-    struct RegisterComponentFunc
+    struct RegisterComponentBackend
     {
         size_t size;
         CreateFunc createFunc;
         DeleteFunc deleteFunc;
+        const char* name;
     };
     
-    static inline std::map<uint32_t, RegisterComponentFunc>* componentRegisterMap = new std::map<uint32_t, RegisterComponentFunc>();
+    static inline std::map<uint32_t, RegisterComponentBackend>* componentRegisterMap = new std::map<uint32_t, RegisterComponentBackend>();
 };
 
 template <typename T>
 uint32_t ComponentRegister::RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc)
 {
     uint32_t index = static_cast<uint32_t>(componentRegisterMap->size());
-    componentRegisterMap->insert({index , {sizeof(T), _createFunc, _deleteFunc}});
+    componentRegisterMap->insert({index , {sizeof(T), _createFunc, _deleteFunc, typeid(T).name() }});
 
     return index;
 }

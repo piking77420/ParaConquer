@@ -12,25 +12,26 @@ using namespace PC_CORE;
 void VulkanInstance::Init()
 {
     std::vector<const char*> layers = 
-    {
-#ifndef  NDEBUG
-        "VK_LAYER_KHRONOS_validation"
-#endif
-    };
-  
-    std::vector<const char*> extensions = {
-        VK_KHR_SURFACE_EXTENSION_NAME,
-#if defined (_WIN32)
-        "VK_KHR_win32_surface",
-#endif
-#if defined (__APPLE__)
-        "VK_MVK_macos_surface",
-#endif
-#if defined (__linux__)
-        "VK_KHR_xcb_surface",
-#endif
-        VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-    };
+          {
+      #ifndef  NDEBUG
+              "VK_LAYER_KHRONOS_validation"
+      #endif
+          };
+        
+          std::vector<const char*> extensions = {
+              VK_KHR_SURFACE_EXTENSION_NAME,
+      #if defined (_WIN32)
+              "VK_KHR_win32_surface",
+      #endif
+      #if defined (__APPLE__)
+              "VK_MVK_macos_surface",
+      #endif
+      #if defined (__linux__)
+              "VK_KHR_xcb_surface",
+      #endif
+              VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+              
+          };
     
     VkApplicationInfo AppInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,

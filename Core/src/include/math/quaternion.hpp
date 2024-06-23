@@ -41,7 +41,7 @@ public:
 
     Quaternion Conjugate() const
     {
-        return {imaginary, -real};
+        return {-imaginary, real};
     }
     
     static constexpr DataType DotProduct(const Quaternion& q1, const Quaternion& q2)
@@ -95,7 +95,7 @@ public:
     Quaternion operator*(const Quaternion& _other) const 
     {
         const DataType newReal = real * _other.real
-        - decltype(imaginary)::Dot(imaginary, _other.imaginary);
+        - Vec3::Dot(imaginary, _other.imaginary);
 
         const DataType i = imaginary.x * _other.real + real * _other.imaginary.x
         - imaginary.z * _other.imaginary.y + imaginary.y * _other.imaginary.z;
@@ -112,7 +112,7 @@ public:
     Vec3 operator*(const Vec3& _vec) const 
     {
         Quaternion vecQuat(_vec.x, _vec.y, _vec.z,0.f);
-        Quaternion resQuat = (*this) * vecQuat * Conjugate();
+        Quaternion resQuat = Conjugate() * vecQuat * (*this);
         return resQuat.imaginary;
     }
 

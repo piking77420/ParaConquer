@@ -6,6 +6,11 @@
 
 using namespace PC_CORE;
 
+void Material::WriteFile(const fs::path& path)
+{
+    IResource::WriteFile(path);
+}
+
 void Material::Load(const fs::path& path)
 {
     throw std::runtime_error("error");

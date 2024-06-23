@@ -38,10 +38,6 @@ public:
 	static inline App* instance = nullptr;
 
 protected:
-	
-	std::vector<Transform*> transforms;
-
-	DirLight* dirLight = nullptr;
 };
 
 END_PCCORE

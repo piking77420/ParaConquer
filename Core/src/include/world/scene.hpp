@@ -17,7 +17,15 @@ BEGIN_PCCORE
 
     class Scene
     {
+    private:
+        struct EntityInternal
+        {
+            bool isEnable = false;
+            uint32_t* componentIdIndexInDataArray = nullptr;
+            std::string name = "";
+        };
     public:
+        
         Entity CreateEntity();
 
         bool RemoveEntity(Entity _entity);
@@ -50,31 +58,29 @@ BEGIN_PCCORE
 
         void Begin();
 
+        EntityInternal* GetEntityInternal(Entity _entity);
+
+        const EntityInternal* GetEntityInternal(Entity _entity) const ;
+
+        Component* AddComponentInternal(uint32_t _componentId, Entity _entity);
+
+        bool RemoveComponentInternal(uint32_t _componentId, Entity _entity);
+        
         Scene();
 
         ~Scene();
     
     private:
-        struct EntityAndComponentIndex
-        {
-            bool isEnable = false;
-            uint32_t* componentIdIndexInDataArray = nullptr;
-        };
-
+        
         std::vector<uint8_t>* m_ComponentData = nullptr;
 
-        std::array<EntityAndComponentIndex, MAX_ENTITIES> m_entities;
+        std::array<EntityInternal, MAX_ENTITIES> m_entities;
 
         std::vector<System*> systems;
-
-        Component* AddComponentInternal(uint32_t _componentId, Entity _entity);
         
         Component* GetComponentInternal(uint32_t _componentId, Entity _entity);
 
         const Component* GetComponentInternal(uint32_t _componentId, Entity _entity) const;
-
-
-        bool RemoveComponentInternal(uint32_t _componentId, Entity _entity);
 
         bool HadComponent(Entity _entity, uint32_t _componentId, uint32_t* _outIndexinDataArray) const;
     };

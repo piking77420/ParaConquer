@@ -270,6 +270,9 @@
     <ClInclude Include="src\source\rendering\skybox_render.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\rendering\skydom.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\externals\lib\source\imgui.cpp">
@@ -462,6 +465,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\skydom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
