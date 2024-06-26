@@ -9,7 +9,9 @@ using namespace PC_CORE;
 void VulkanMaterialManager::Init()
 {
     VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(0,1,VK_SHADER_STAGE_FRAGMENT_BIT);
-    descriptorSetLayout.Init({samplerLayoutBinding});
+    VkDescriptorSetLayoutBinding materialUniform = VulkanUniformBuffer::GetLayoutBinding(1,1,VK_SHADER_STAGE_FRAGMENT_BIT , nullptr , true);
+
+    descriptorSetLayout.Init({samplerLayoutBinding ,materialUniform});
     vulkanDescriptorPool.Init(descriptorSetLayout.GetLayoutBinding(), MAX_MATERIAL_COUNT);
 }
 
@@ -39,6 +41,7 @@ void VulkanMaterialManager::CreateMaterial(const Material& material)
             vkWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             vkWriteDescriptorSet.descriptorCount = 1;
             vkWriteDescriptorSet.pImageInfo = &imageInfo;
+            
         }
         vkUpdateDescriptorSets(VulkanInterface::GetDevice().device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }

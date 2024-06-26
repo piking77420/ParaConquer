@@ -10,9 +10,9 @@ class VulkanUniformBuffer : public VulkanBuffer
 public:
     void Destroy() override;
 
-    static VkDescriptorSetLayoutBinding GetLayoutBinding(uint32_t binding, uint32_t descriptorCount, VkShaderStageFlags  stageFlags,const VkSampler* pImmutableSamplers = nullptr);
+    static VkDescriptorSetLayoutBinding GetLayoutBinding(uint32_t binding, uint32_t descriptorCount, VkShaderStageFlags  stageFlags,const VkSampler* pImmutableSamplers = nullptr, bool _isDynamic);
     
-    void Init(void const* _data, size_t _size);
+    void Init(void const* _data, size_t _size, bool _isDynamic);
 
     void Update(void const* _data, size_t _size);
 
@@ -20,8 +20,11 @@ public:
     const VkDescriptorSet& _vkDescriptorSet, uint32_t _dstBinding, uint32_t _dstArrayElement, uint32_t _descriptorCount,
     const VkDescriptorBufferInfo& bufferInfo) const;
 
+
 private:
     void* m_MapMemory = nullptr;
+
+    bool m_IsDynamic = false; 
 };
 
 END_PCCORE

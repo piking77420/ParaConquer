@@ -58,3 +58,8 @@ void VulkanDescriptorPool::CreateDescriptorSet(VkDescriptorSetLayout _setLayout,
     const VkResult result = vkAllocateDescriptorSets(VulkanInterface::GetDevice().device, &allocInfo, _data);
     VK_CHECK_ERROR(result, "vkAllocateDescriptorSets")
 }
+
+void VulkanDescriptorPool::DestroyDescriptorSet(uint32_t _nbr, VkDescriptorSet* _descriptorSet) const
+{
+    vkFreeDescriptorSets(VulkanInterface::GetDevice().device, m_VkDescriptorPool, _nbr, _descriptorSet);
+}

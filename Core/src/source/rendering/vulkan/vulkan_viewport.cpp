@@ -11,7 +11,6 @@ void VulkanViewport::Init()
 {
     const uint32_t nbrOfImage = VulkanInterface::GetNbrOfImage(); 
     forwardAttachments.resize(nbrOfImage);
-    forwardDescritporSet.resize(nbrOfImage);
     viewPortFinalImageAttachment.resize(nbrOfImage);
     
     CreateViewPortImageAndFrameBuffer();
@@ -110,8 +109,7 @@ void VulkanViewport::InitForward()
         const VkResult res = vkCreateFramebuffer(VulkanInterface::GetDevice().device, &framebufferInfo, nullptr, &fwdAtt.framebuffer);
         VK_CHECK_ERROR(res,"failed to create framebuffer!");
 
-        //forwardDescritporSet[i] = renderer->drawQuad.DrawQuadAddTexture(fwdAtt.colorImage); 
-        
+        //fwdAtt.drawQuadDescriptorSet = renderer->drawQuad.DrawQuadAddTexture(fwdAtt.colorImage); 
     }  
     
 }
@@ -124,6 +122,7 @@ void VulkanViewport::DestroyForward()
     {
         ForwardAttachment& fwdAtt = forwardAttachments[i];
         fwdAtt.colorImage.Destroy();
+        //renderer->drawQuad.FreeDescriptorSet(fwdAtt.drawQuadDescriptorSet); 
         vkDestroyFramebuffer(VulkanInterface::GetDevice().device, fwdAtt.framebuffer, nullptr);
     }
 }
@@ -137,7 +136,7 @@ void VulkanViewport::InitFinalImage()
          .pNext = nullptr,
          .flags = 0,
          .imageType = VK_IMAGE_TYPE_2D,
-         .format = VK_FORMAT_R64G64B64A64_SFLOAT,
+         .format = VulkanInterface::vulkanSwapChapchain.surfaceFormatKhr.format,
          .extent = {static_cast<uint32_t>(viewPortSize.x), static_cast<uint32_t>(viewPortSize.y),static_cast<uint32_t>(1)},
          .mipLevels = 1,
          .arrayLayers = 1,

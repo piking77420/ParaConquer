@@ -2,6 +2,7 @@
 
 #include "component.hpp"
 #include "core_header.hpp"
+#include "reflection/reflector.hpp"
 #include "math/quaternion.hpp"
 #include "math/toolbox_typedef.hpp"
 
@@ -13,7 +14,7 @@ public:
 
     Entity parentId = NULL_ENTITY;
     
-    Vector3f position;
+    Vector3f position; 
 
     Quaternionf rotation = Quaternionf::Identity();
     
@@ -23,6 +24,9 @@ public:
 
     Vector3f localRotation;
     
-};
+}; 
+REFLECT(Transform, localPosition)
+REFLECT(Transform, localRotation)
+REFLECT(Transform, scale)
 
 END_PCCORE

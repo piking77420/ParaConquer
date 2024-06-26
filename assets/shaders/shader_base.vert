@@ -9,7 +9,7 @@ struct MeshesMatrix
 
 layout(std430, set = 0, binding = 1) buffer MeshesMatrixsBuffer 
 {
-    MeshesMatrix meshesMatrix[MAX_ENTITIES]; // Corrected the name to meshesMatrix
+    MeshesMatrix meshesMatrix[MAX_ENTITIES]; 
 };
 
 layout(push_constant) uniform pushConstant 

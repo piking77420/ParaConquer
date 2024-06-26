@@ -5,6 +5,7 @@
 #include "vulkan_descriptor_pool.hpp"
 #include "vulkan_descriptor_set_layout.hpp"
 #include "vulkan_header.h"
+#include "vulkan_uniform_buffer.h"
 #include "resources/material.hpp"
 
 BEGIN_PCCORE
@@ -30,6 +31,7 @@ public:
 private:
     struct LowLevelMaterial
     {
+        std::vector<VulkanUniformBuffer> vulkanUniformBuffer;
         std::vector<VkDescriptorSet> descriptorSets;
     };
     

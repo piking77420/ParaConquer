@@ -17,6 +17,9 @@ public:
     VkDescriptorPool& Get();
 
     void CreateDescriptorSet(VkDescriptorSetLayout _setLayout, uint32_t _nbr, VkDescriptorSet* _data) const;
+
+    void DestroyDescriptorSet(uint32_t _nbr, VkDescriptorSet* _descriptorSet) const;
+
 private:
     VkDescriptorPool m_VkDescriptorPool = VK_NULL_HANDLE;
 

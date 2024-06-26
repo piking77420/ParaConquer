@@ -15,7 +15,8 @@ Entity Scene::CreateEntity()
         if (!m_entities[i].isEnable)
         {
             m_entities[i].isEnable = true;
-            m_entities[i].name = "Entity " + std::to_string(i); 
+            m_entities[i].name = "Entity " + std::to_string(i);
+            
             return i;
         }
     }
@@ -38,6 +39,12 @@ bool Scene::RemoveEntity(Entity _entity)
     }
 
     return true;
+}
+
+void Scene::GetComponentDataRaw(uint32_t _componentiD, std::vector<uint8_t>** _data) const
+{
+    assert(_componentiD >= 0);
+    *_data = &m_ComponentData[_componentiD];
 }
 
 void Scene::Update()

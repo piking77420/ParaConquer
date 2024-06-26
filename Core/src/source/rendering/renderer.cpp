@@ -76,7 +76,10 @@ void Renderer::Destroy()
     {
         vulkanShaderStorageBuffer.Destroy();
     }
-    renderPasses.at(FORWARD).Destroy();
+    for (VulkanRenderPass& renderPass : renderPasses)
+    {
+        renderPass.Destroy();
+    }
     m_DescriptorSetLayout.Destroy();
     m_DescriptorPool.Destroy();
     fwdCommandPool.Destroy();
@@ -269,7 +272,6 @@ void Renderer::InitRenderPasses()
         .imageLayoutFinal = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
 
-
     const Attachment depth =
     {
         .attachementIndex = AttachementIndex::Depth,
@@ -289,8 +291,7 @@ void Renderer::InitRenderPasses()
     {
         color,depth
     };
-   
-
+    
     renderPasses.at(COLORONLY).Init(attachmentsColor, 0);
     renderPasses.at(FORWARD).Init(attachmentsfwd, 0); //, depth});
     
@@ -350,8 +351,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
     }
     drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex);
     skyboxRender.DrawSkybox(commandBuffer, m_CurrentWorld->skybox);
-
-    //drawQuad.Draw(commandBuffer, m_CurrentViewport->forwardDescritporSet.at(m_ImageIndex));
+    
     vkCmdEndRenderPass(commandBuffer);
 }
 
@@ -609,7 +609,7 @@ void Renderer::InitBuffers()
     m_CameraBuffers.resize(nbrOfImage);
     for (VulkanUniformBuffer& uniformBuffer : m_CameraBuffers)
     {
-        uniformBuffer.Init(&cameraBuffer, sizeof(cameraBuffer));
+        uniformBuffer.Init(&cameraBuffer, sizeof(cameraBuffer), false);
     }
 
     m_ModelMatriciesShaderStorages.resize(nbrOfImage);

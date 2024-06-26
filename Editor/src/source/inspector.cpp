@@ -23,15 +23,39 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-    PC_CORE::Transform* transform = PC_CORE::World::world->scene.GetComponent<PC_CORE::Transform>(m_Editor->selected);
-    if (transform == nullptr)
-        return;
-    const auto entityInternal = PC_CORE::World::world->scene.GetEntityInternal(transform->componentHolder.entityID);
-    ImGui::PushID(transform->componentHolder.entityID);
-    ImGui::Text(("entity " + entityInternal->name).c_str());
-    ImGui::DragFloat3("Position",transform->localPosition.GetPtr(),1.f, -10000.f, 10000.f);
-    ImGui::DragFloat3("Rotation",transform->localRotation.GetPtr(),1.f / Rad2Deg, -10000.f, 10000.f);
-    ImGui::DragFloat3("Scale",transform->scale.GetPtr(),1.f, -10000.f, 10000.f);
+    const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = PC_CORE::ComponentRegister::componentRegisterMap;
+
+
+    auto entityInternal = PC_CORE::World::world->scene.GetEntityInternal(m_Editor->selected);
+    ImGui::Text(entityInternal->name.c_str());
+    ImGui::PushID(entityInternal->name.c_str());
+    
+    for (size_t i = 0; i < componentMap->size(); i++)
+    {
+        std::vector<uint8_t>* componentData = nullptr;
+        PC_CORE::World::world->scene.GetComponentDataRaw(static_cast<uint32_t>(i), &componentData);
+
+        const uint32_t ComponnentIndex = entityInternal->componentIdIndexInDataArray[i];
+        if (ComponnentIndex == NULL_COMPONENT)
+            continue;
+
+        const PC_CORE::ComponentRegister::RegisterComponentBackend& componentBackend = componentMap->at(i);
+        const size_t componentIndextoUint = ComponnentIndex;
+        void* currentComponent = &componentData->at(componentIndextoUint);
+        
+        if (componentMap->at(static_cast<uint32_t>(i)).reflecteds.empty())
+            continue;
+        
+        ImGui::Text(componentBackend.name);
+        for (const PC_CORE::ReflectionType& refl : componentMap->at(static_cast<uint32_t>(i)).reflecteds)
+        {
+         
+            ImGui::PushID(i);
+            ShowReflectedType(currentComponent, refl);
+            PC_CORE::Transform* transform = static_cast<PC_CORE::Transform*>(currentComponent);
+            ImGui::PopID();
+        }
+    }
     ImGui::PopID();
 }
 
@@ -50,7 +74,7 @@ void Inspector::OnInput()
         ImGui::SeparatorText("Component");
         for (size_t i = 0; i < componentMap->size(); i++)
         {
-            if (ImGui::Selectable(componentMap->at(i).name))
+            if (ImGui::Selectable(componentMap->at(static_cast<uint32_t>(i)).name))
             {
                 if (PC_CORE::World::world != nullptr)
                 {
@@ -60,5 +84,41 @@ void Inspector::OnInput()
         }
             
         ImGui::EndPopup();
+    }
+}
+
+void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& reflection)
+{
+    void* dataPosition = static_cast<char*>(begin) + reflection.offset;
+    const Vector3f* ref = nullptr;
+
+    switch (reflection.datatype)
+    {
+    case PC_CORE::DataType::UNKNOW:
+        break;
+    case PC_CORE::DataType::INT:
+        ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition));
+        break;
+    case PC_CORE::DataType::UINT:
+        ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition),1, 0);
+        break;
+    case PC_CORE::DataType::FLOAT:
+        ImGui::DragFloat(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        break;
+    case PC_CORE::DataType::DOUBLE:
+        //ImGui::DragFloat(reflection.name, static_cast<double*>(dataPosition),1, 0);
+        break;
+    case PC_CORE::DataType::VEC2:
+        ImGui::DragFloat2(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        break;
+    case PC_CORE::DataType::VEC3:
+        ref = static_cast<Vector3f*>(dataPosition);
+        ImGui::DragFloat3(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        break;
+    case PC_CORE::DataType::VEC4:
+        ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        break;
+    case PC_CORE::DataType::COUT:
+        break;
     }
 }

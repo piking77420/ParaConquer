@@ -27,7 +27,9 @@ public:
 
     VkDescriptorSet DrawQuadAddTexture(const VulkanTexture& _vulkanTexture) const;
 
-    VkDescriptorSet DrawQuadAddTexture(const VkImageView& imageView) const; 
+    VkDescriptorSet DrawQuadAddTexture(const VkImageView& imageView) const;
+
+    void FreeDescriptorSet(VkDescriptorSet _vkDescriptorSet) const; 
 
 private:
     VulkanShaderStage m_VulkanShaderStage;

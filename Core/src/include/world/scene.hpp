@@ -44,6 +44,8 @@ BEGIN_PCCORE
 
         template<typename T>
         void GetComponentData(std::vector<T>** _data) const;
+
+        void GetComponentDataRaw(uint32_t _componentiD, std::vector<uint8_t>** _data) const;
         
         template <typename T>
         T* AddSystem();

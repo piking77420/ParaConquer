@@ -11,20 +11,23 @@ namespace PC_CORE
 }
 
 BEGIN_PCCORE
-    class VulkanViewport
+class VulkanViewport
 {
 private:
     struct ForwardAttachment
     {
         VulkanTexture colorImage;
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
+        //VkDescriptorSet drawQuadDescriptorSet;
     };
+
 
     struct ViewPortFinalImage
     {
         VulkanTexture colorImage;
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
     };
+
     
 public:
     Vector2i viewPortSize = {800,600};
@@ -32,8 +35,6 @@ public:
     
     std::vector<ForwardAttachment> forwardAttachments;
     VulkanTexture depthAttachment;
-    
-    std::vector<VkDescriptorSet> forwardDescritporSet;
     
     Renderer* renderer = nullptr;
     

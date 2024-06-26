@@ -273,6 +273,12 @@
     <ClInclude Include="src\include\rendering\skydom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\world\reflected_type.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\reflection\reflection_typedef.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\externals\lib\source\imgui.cpp">
@@ -468,6 +474,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\skydom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\world\reflected_type.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

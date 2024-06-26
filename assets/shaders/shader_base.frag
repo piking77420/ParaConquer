@@ -14,7 +14,11 @@ layout(std430, set = 0, binding = 2) buffer GpuLightBuffer
 };
 
 
-layout(set = 1,binding = 0) uniform sampler2D texSampler;
+layout(std140, set = 1,binding = 1) uniform MaterialUBO 
+{
+    Material material;
+};
+layout(set = 1,binding = 0) uniform sampler2D albedo;
 
 
 layout(location = 0) in vec3 fragPos;
@@ -45,7 +49,7 @@ vec3 ComputeDirLight()
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
         vec3 specular = 0.3 * spec;*/
 
-        result += (ambient + diffuse) * gpuDirLights[i].color * gpuDirLights[i].intensity * texture(texSampler, fragTexCoord).rgb;
+        result += (ambient + diffuse) * gpuDirLights[i].color * gpuDirLights[i].intensity * texture(albedo, fragTexCoord).rgb;
     }
     
     

@@ -19,6 +19,7 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
         m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
             ,viewport.forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
+    
 }
 
 void WorldViewWindow::Update()

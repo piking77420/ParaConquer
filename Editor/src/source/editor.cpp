@@ -27,6 +27,7 @@ void Editor::Init()
 
     World::world = new World;
     InitScene();
+
 }
 
 void Editor::Destroy()
@@ -42,6 +43,9 @@ void Editor::Destroy()
 
 void Editor::InitScene()
 {
+    std::vector<Transform>* m_transforms = nullptr;
+
+    
     World& world = *World::world;
 
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
@@ -56,7 +60,10 @@ void Editor::InitScene()
     ResourceManager::Add<Material>("baseMaterial2",material2);
 
     const Entity entity = world.scene.CreateEntity();
-    world.scene.AddComponent<Transform>(entity);
+    Transform* trans = world.scene.AddComponent<Transform>(entity);
+    trans->position = {0.f,5.f,0.f};
+
+    world.scene.GetComponentData<Transform>(&m_transforms);
     StaticMesh* staticMesh =world.scene.AddComponent<StaticMesh>(entity);
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material;

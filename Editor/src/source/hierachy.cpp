@@ -20,11 +20,6 @@ void Hierachy::Update()
 
 void Hierachy::ShowGraph()
 {
-    if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && !ImGui::IsWindowFocused())
-    {
-        m_Editor->selected = NULL_ENTITY;
-    }
-
     
     if (PC_CORE::World::world == nullptr)
         return;
@@ -35,6 +30,8 @@ void Hierachy::ShowGraph()
     std::vector<PC_CORE::Transform>* transforms = nullptr;
     scene.GetComponentData<PC_CORE::Transform>(&transforms);
 
+    bool hasSelected = false;
+    
     for (size_t i = 0 ; i < transforms->size(); i++)
     {
         if (!PC_CORE::IsValid(transforms->at(i).componentHolder))
@@ -45,8 +42,17 @@ void Hierachy::ShowGraph()
         if (ImGui::Button(entityInternal->name.c_str()))
         {
             m_Editor->selected = static_cast<uint32_t>(i);
+            hasSelected = true;
         }
         
+    }
+
+    if (!hasSelected)
+    {
+        if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowFocused())
+        {
+            m_Editor->selected = NULL_ENTITY;
+        }
     }
     
 }

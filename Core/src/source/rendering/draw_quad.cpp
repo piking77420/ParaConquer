@@ -69,6 +69,11 @@ VkDescriptorSet DrawQuad::DrawQuadAddTexture(const VkImageView& imageView) const
     return descriptorSet;
 }
 
+void DrawQuad::FreeDescriptorSet(VkDescriptorSet _vkDescriptorSet) const
+{
+  m_DescriptorPool.DestroyDescriptorSet(1 ,&_vkDescriptorSet);
+}
+
 void DrawQuad::InitShader()
 {
     const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("draw_texture.vert");

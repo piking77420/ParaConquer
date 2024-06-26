@@ -5,6 +5,8 @@
 
 #include "core_header.hpp"
 #include "world_header_typedef.hpp"
+#include "reflection/reflection_typedef.hpp"
+//#include "reflected_type.hpp"
 
 BEGIN_PCCORE
 
@@ -17,7 +19,7 @@ class ComponentRegister
 public:
     template<typename T>
     static uint32_t RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc);
-
+    
     template<typename  T>
     static void CreateComponent(std::vector<uint8_t>* _compdata, size_t _index, Entity _entity);
 
@@ -32,13 +34,13 @@ public:
 
     static uint32_t GetNbrOfComponentType();
     
-
     struct RegisterComponentBackend
     {
         size_t size;
         CreateFunc createFunc;
         DeleteFunc deleteFunc;
         const char* name;
+        std::vector<ReflectionType> reflecteds;
     };
     
     static inline std::map<uint32_t, RegisterComponentBackend>* componentRegisterMap = new std::map<uint32_t, RegisterComponentBackend>();
@@ -65,5 +67,6 @@ void ComponentRegister::FreeComponent(void* ptr)
     T* component = reinterpret_cast<T*>(ptr);
     component->~T();
 }
+
 
 END_PCCORE

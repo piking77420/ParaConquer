@@ -95,10 +95,9 @@ private:
     
     std::vector<VulkanShaderStorageBuffer> m_ShaderStoragesLight;
     
-    GpuLight* m_GpuLights = nullptr;
-
     std::vector<VkDescriptorSet> descriptorSets;
     
+    GpuLight* m_GpuLights = nullptr;
     
     const Camera* m_CurrentCamera = nullptr;
     

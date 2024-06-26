@@ -15,6 +15,7 @@ template<typename T>
 struct ComponentHandle : public Component
 {
     static inline uint32_t componentID {ComponentRegister::template RegisterComponent<T>(ComponentRegister::template CreateComponent<T>, ComponentRegister::template FreeComponent<T>)};
+
 };
 
 bool inline IsValid(Component component)
@@ -26,3 +27,5 @@ END_PCCORE
 
 #define MAKE_COMPONENT(x) \
 PC_CORE::ComponentHandle<x> componentHolder;
+
+

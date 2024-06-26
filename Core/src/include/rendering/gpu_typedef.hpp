@@ -58,6 +58,14 @@ struct alignas(16) GpuSpothLight
     float intensity;
 };
 
+struct alignas(16) GPUMaterial
+{
+    Vector4f albedo;
+    Vector4f metallicSpecularRoughessAnisotropy;
+    Vector4f emmisiveColorAo;
+};
+
+
 struct alignas(16) GpuLight
 {
     int32_t nbrOfDirLight = -1;
