@@ -9,19 +9,22 @@ BEGIN_EDITOR_PCCORE
 class WorldViewWindow : public EditorWindow
 {
 public:
-    PC_CORE::VulkanViewport viewport;
-
     PC_CORE::Camera camera;
 
+    uint32_t viewportId = -1;
+
+    std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
+    
+    const PC_CORE::ViewPort* viewPort = nullptr;
+    
     explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 
-    ~WorldViewWindow() override = default;
+    ~WorldViewWindow() override;
     
     void Update() override;
     
     void Render() override;
 
-    std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
 
 public:
 };

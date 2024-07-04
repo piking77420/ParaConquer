@@ -25,9 +25,9 @@ void DrawGizmos::Init(PC_CORE::Renderer* renderer)
     sphere = ResourceManager::Get<Mesh>("sphere.obj");
 }
 
-void DrawGizmos::DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _imageIndex)
+void DrawGizmos::DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _imageIndex , const ViewPort& viewPort)
 {
-    if (!m_Renderer->m_CurrentViewport->isEditor)
+    if (!viewPort.isEditor)
         return;
         
     currentCommandBuffer = &_commandBuffer;

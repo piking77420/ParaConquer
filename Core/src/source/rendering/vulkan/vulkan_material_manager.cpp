@@ -9,7 +9,7 @@ using namespace PC_CORE;
 void VulkanMaterialManager::Init()
 {
     VkDescriptorSetLayoutBinding samplerLayoutBinding = VulkanTextureSampler::GetDescriptorSetLayoutBinding(0,1,VK_SHADER_STAGE_FRAGMENT_BIT);
-    VkDescriptorSetLayoutBinding materialUniform = VulkanUniformBuffer::GetLayoutBinding(1,1,VK_SHADER_STAGE_FRAGMENT_BIT , nullptr , true);
+    VkDescriptorSetLayoutBinding materialUniform = VulkanUniformBuffer::GetLayoutBinding(1,1,VK_SHADER_STAGE_FRAGMENT_BIT , nullptr);
 
     descriptorSetLayout.Init({samplerLayoutBinding ,materialUniform});
     vulkanDescriptorPool.Init(descriptorSetLayout.GetLayoutBinding(), MAX_MATERIAL_COUNT);

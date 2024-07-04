@@ -5,10 +5,8 @@
 
 using namespace PC_CORE;
 
-void VulkanUniformBuffer::Init(void const* _data, size_t _size, bool _isDynamic)
+void VulkanUniformBuffer::Init(void const* _data, size_t _size)
 {
-    m_IsDynamic = _isDynamic;
-    
     CreateBufferVma(&m_Buffer,&m_Allocation, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU , _size);
     vmaMapMemory(VulkanInterface::GetAllocator(), m_Allocation, &m_MapMemory);
     memcpy(m_MapMemory, _data, _size);
@@ -28,7 +26,7 @@ void VulkanUniformBuffer::Bind(VkWriteDescriptorSet* _vkWriteDescriptorSet,
     _vkWriteDescriptorSet->dstSet = _vkDescriptorSet;
     _vkWriteDescriptorSet->dstBinding = _dstBinding;
     _vkWriteDescriptorSet->dstArrayElement = _dstArrayElement;
-    _vkWriteDescriptorSet->descriptorType = m_IsDynamic ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    _vkWriteDescriptorSet->descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     _vkWriteDescriptorSet->descriptorCount = _descriptorCount;
     _vkWriteDescriptorSet->pBufferInfo = &bufferInfo;
 }
@@ -40,11 +38,11 @@ void VulkanUniformBuffer::Destroy()
 }
 
 VkDescriptorSetLayoutBinding VulkanUniformBuffer::GetLayoutBinding(uint32_t _binding,
-                                                                   uint32_t _descriptorCount, VkShaderStageFlags _stageFlags, const VkSampler* _pImmutableSamplers,bool _isDynamic)
+                                                                   uint32_t _descriptorCount, VkShaderStageFlags _stageFlags, const VkSampler* _pImmutableSamplers)
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = _binding;
-    uboLayoutBinding.descriptorType = _isDynamic ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboLayoutBinding.descriptorCount = _descriptorCount;
     uboLayoutBinding.stageFlags = _stageFlags;
     uboLayoutBinding.pImmutableSamplers = _pImmutableSamplers; // Optional

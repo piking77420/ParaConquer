@@ -20,6 +20,7 @@ using namespace PC_CORE;
 void Renderer::Init(Window* _window)
 {
     m_GpuLights = new GpuLight;
+    vulkanViewport.Init(this);
     const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
     m_VulkanShaderStage.Init({vertex, frag});
@@ -60,6 +61,7 @@ void Renderer::Destroy()
 {
     // Wait the gpu 
     delete m_GpuLights;
+    vulkanViewport.Destroy();
     drawGizmos.Destroy();
     drawQuad.Destroy();
     skyboxRender.Destroy();
@@ -118,12 +120,12 @@ void Renderer::BeginFrame(const World& world)
 }
 
 
-void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& _viewport,
+void Renderer::RenderViewPort(const Camera& _camera, const uint32_t viewPortId,
                               const World& _world)
 {
     m_CurrentCamera = &_camera;
     m_CurrentWorld = &_world;
-    m_CurrentViewport = &_viewport;
+    m_CurrentViewport = &vulkanViewport.GetViewPort(viewPortId);
 
     UpdateCameraBuffer(VulkanInterface::GetCurrentFrame());
 
@@ -138,8 +140,8 @@ void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& _view
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(_viewport.viewPortSize.x);
-    viewport.height = static_cast<float>(_viewport.viewPortSize.y);
+    viewport.width = static_cast<float>(m_CurrentViewport->viewPortSize.x);
+    viewport.height = static_cast<float>(m_CurrentViewport->viewPortSize.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(vkCommandBuffer, 0, 1, &viewport);
@@ -147,8 +149,8 @@ void Renderer::RenderViewPort(const Camera& _camera, const VulkanViewport& _view
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = {
-        static_cast<uint32_t>(_viewport.viewPortSize.x),
-        static_cast<uint32_t>(_viewport.viewPortSize.y)
+        static_cast<uint32_t>(m_CurrentViewport->viewPortSize.x),
+        static_cast<uint32_t>(m_CurrentViewport->viewPortSize.y)
     };
 
     vkCmdSetScissor(vkCommandBuffer, 0, 1, &scissor);
@@ -349,7 +351,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(entity);
         DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
     }
-    drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex);
+    drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex, *m_CurrentViewport);
     skyboxRender.DrawSkybox(commandBuffer, m_CurrentWorld->skybox);
     
     vkCmdEndRenderPass(commandBuffer);
@@ -609,7 +611,7 @@ void Renderer::InitBuffers()
     m_CameraBuffers.resize(nbrOfImage);
     for (VulkanUniformBuffer& uniformBuffer : m_CameraBuffers)
     {
-        uniformBuffer.Init(&cameraBuffer, sizeof(cameraBuffer), false);
+        uniformBuffer.Init(&cameraBuffer, sizeof(cameraBuffer));
     }
 
     m_ModelMatriciesShaderStorages.resize(nbrOfImage);

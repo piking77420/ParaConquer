@@ -8,6 +8,7 @@
 #include "vulkan/vulkan_pipeline.hpp"
 #include "vulkan/vulkan_pipeline_layout.hpp"
 #include "vulkan/vulkan_shader_stage.hpp"
+#include "vulkan/vulkan_viewport.hpp"
 
 
 BEGIN_PCCORE
@@ -19,7 +20,7 @@ class DrawGizmos
 public:
     void Init(Renderer* renderer);
 
-    void DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _imageIndex);
+    void DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _imageIndex, const ViewPort& viewPort);
 
     void Destroy();
 

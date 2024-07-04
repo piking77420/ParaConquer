@@ -10,9 +10,9 @@ class VulkanUniformBuffer : public VulkanBuffer
 public:
     void Destroy() override;
 
-    static VkDescriptorSetLayoutBinding GetLayoutBinding(uint32_t binding, uint32_t descriptorCount, VkShaderStageFlags  stageFlags,const VkSampler* pImmutableSamplers = nullptr, bool _isDynamic);
+    static VkDescriptorSetLayoutBinding GetLayoutBinding(uint32_t binding, uint32_t descriptorCount, VkShaderStageFlags  stageFlags,const VkSampler* pImmutableSamplers = nullptr);
     
-    void Init(void const* _data, size_t _size, bool _isDynamic);
+    void Init(void const* _data, size_t _size);
 
     void Update(void const* _data, size_t _size);
 

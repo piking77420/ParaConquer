@@ -11,7 +11,7 @@ public:
 
     explicit EditWorldWindow(Editor& _editor, const std::string& _name);
     
-    ~EditWorldWindow() override ;
+    ~EditWorldWindow() override = default;
     
     void Update() override;
 

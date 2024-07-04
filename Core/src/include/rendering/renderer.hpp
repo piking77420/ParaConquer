@@ -34,6 +34,8 @@ public:
     DrawQuad drawQuad;
 
     SkyboxRender skyboxRender;
+
+    VulkanViewport vulkanViewport;
     
     std::array<VulkanRenderPass,RenderPass::COUNT> renderPasses;
     
@@ -48,7 +50,7 @@ public:
     void BeginFrame(const World& world);
 
     void RenderViewPort(const Camera& _camera,
-        const VulkanViewport& _viewport,const World& _world);
+        const uint32_t viewPortId,const World& _world);
         
     void SwapBuffers();
 
@@ -103,7 +105,7 @@ private:
     
     const World* m_CurrentWorld = nullptr;
 
-    const VulkanViewport* m_CurrentViewport = nullptr;
+    const ViewPort* m_CurrentViewport = nullptr;
     
     DrawGizmos drawGizmos;
 

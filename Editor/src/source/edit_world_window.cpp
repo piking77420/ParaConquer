@@ -8,10 +8,6 @@ PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::str
 
 }
 
-PC_EDITOR_CORE::EditWorldWindow::~EditWorldWindow()
-{
-    viewport.Destroy();
-}
 
 
 void PC_EDITOR_CORE::EditWorldWindow::Update()

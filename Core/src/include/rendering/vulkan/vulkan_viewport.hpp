@@ -11,53 +11,60 @@ namespace PC_CORE
 }
 
 BEGIN_PCCORE
+
+struct ForwardAttachment
+{
+    VulkanTexture colorImage;
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    //VkDescriptorSet drawQuadDescriptorSet;
+};
+struct ViewPortFinalImage
+{
+    VulkanTexture colorImage;
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+};
+struct ViewPort
+{
+    Vector2i viewPortSize = {800,600};
+    std::vector<ForwardAttachment> forwardAttachments;
+    std::vector<ViewPortFinalImage> viewPortFinalImageAttachment;
+    VulkanTexture depthAttachment;
+    bool isEditor = true;
+};
+    
+
 class VulkanViewport
 {
-private:
-    struct ForwardAttachment
-    {
-        VulkanTexture colorImage;
-        VkFramebuffer framebuffer = VK_NULL_HANDLE;
-        //VkDescriptorSet drawQuadDescriptorSet;
-    };
-
-
-    struct ViewPortFinalImage
-    {
-        VulkanTexture colorImage;
-        VkFramebuffer framebuffer = VK_NULL_HANDLE;
-    };
-
-    
 public:
-    Vector2i viewPortSize = {800,600};
-    std::vector <ViewPortFinalImage> viewPortFinalImageAttachment;
     
-    std::vector<ForwardAttachment> forwardAttachments;
-    VulkanTexture depthAttachment;
-    
-    Renderer* renderer = nullptr;
-    
-    bool isEditor = true;
 
-    void Init();
+    void Init(Renderer* renderer);
+
+    uint32_t CreateViewPort(bool isIsEditor);
+
+    void DestroyViewPort(uint32_t _viewpPortid);
+
+    const ViewPort& GetViewPort(uint32_t _id) const;
 
     void Destroy();
     
-    bool OnResize(Vector2i _windowSize);
+    bool OnResize(uint32_t viewportId, Vector2i _windowSize);
 protected:
+    std::map<uint32_t,ViewPort*> m_ViewPorts;
+
+    Renderer* m_RendererRef = nullptr;
     
-    void CreateViewPortImageAndFrameBuffer();
+    void CreateViewPortImageAndFrameBuffer(ViewPort* viewPort);
 
-    void DestroyViewPortImageAndFrameBuffer();
+    void DestroyViewPortImageAndFrameBuffer(ViewPort* viewPort);
 
-    void InitForward();
+    void InitForward(ViewPort* viewPort);
 
-    void DestroyForward();
+    void DestroyForward(ViewPort* viewPort);
 
-    void InitFinalImage();
+    void InitFinalImage(ViewPort* viewPort);
 
-    void DestroyFinalImage();
+    void DestroyFinalImage(ViewPort* viewPort);
 };
 
 END_PCCORE

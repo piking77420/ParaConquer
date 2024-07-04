@@ -45,6 +45,21 @@
     <ClInclude Include="src\externals\include\Imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\externals\include\shaderc\env.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\shaderc\shaderc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\shaderc\shaderc.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\shaderc\status.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\shaderc\visibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\externals\include\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -91,6 +106,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\physics\sphere_collider.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\reflection\reflection_typedef.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\reflection\reflector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_buffer.hpp">
@@ -168,9 +189,6 @@
     <ClInclude Include="src\include\rendering\vulkan\vulkan_texture_sampler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_uniform_buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\rendering\vulkan\vulkan_vertex_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -195,7 +213,7 @@
     <ClInclude Include="src\include\rendering\light.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\rendering\renderer.hpp">
+    <ClInclude Include="src\include\rendering\skydom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\vertex.hpp">
@@ -270,13 +288,13 @@
     <ClInclude Include="src\source\rendering\skybox_render.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\rendering\skydom.hpp">
+    <ClInclude Include="src\include\rendering\vulkan\vulkan_uniform_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\world\reflected_type.hpp">
+    <ClInclude Include="src\include\rendering\renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\reflection\reflection_typedef.hpp">
+    <ClInclude Include="C:\Users\bonga\Desktop\renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -306,6 +324,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\physics\sphere_collider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\reflection\reflector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\vulkan\vulkan_buffer.cpp">
@@ -410,6 +431,9 @@
     <ClCompile Include="src\source\rendering\skybox_render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\rendering\skydom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\source\rendering\vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -473,11 +497,10 @@
     <ClCompile Include="src\source\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\rendering\skydom.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\world\reflected_type.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\include\math\vector2.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
