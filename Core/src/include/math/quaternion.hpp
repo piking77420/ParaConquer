@@ -31,7 +31,7 @@ public:
 
     DataType MagnitudeSquare() const 
     {
-        return imaginary.Magnitude() + real * real;
+        return imaginary.MagnitudeSquare() + real * real;
     }
     
     DataType Magnitude() const 

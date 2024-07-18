@@ -21,7 +21,7 @@ BEGIN_PCCORE
         struct EntityInternal
         {
             bool isEnable = false;
-            uint32_t* componentIdIndexInDataArray = nullptr;
+            std::vector<uint32_t> componentIdIndexInDataArray;
             std::string name = "";
         };
     public:

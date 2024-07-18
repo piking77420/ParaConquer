@@ -46,7 +46,7 @@ void Inspector::Show()
         if (componentMap->at(static_cast<uint32_t>(i)).reflecteds.empty())
             continue;
         
-        ImGui::Text(componentBackend.name);
+        ImGui::Text(componentBackend.name.c_str());
         for (const PC_CORE::ReflectionType& refl : componentMap->at(static_cast<uint32_t>(i)).reflecteds)
         {
          
@@ -74,7 +74,7 @@ void Inspector::OnInput()
         ImGui::SeparatorText("Component");
         for (size_t i = 0; i < componentMap->size(); i++)
         {
-            if (ImGui::Selectable(componentMap->at(static_cast<uint32_t>(i)).name))
+            if (ImGui::Selectable(componentMap->at(static_cast<uint32_t>(i)).name.c_str()))
             {
                 if (PC_CORE::World::world != nullptr)
                 {
@@ -100,23 +100,23 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& re
         ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition));
         break;
     case PC_CORE::DataType::UINT:
-        ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition),1, 0);
+        ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::FLOAT:
-        ImGui::DragFloat(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        ImGui::DragFloat(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::DOUBLE:
         //ImGui::DragFloat(reflection.name, static_cast<double*>(dataPosition),1, 0);
         break;
     case PC_CORE::DataType::VEC2:
-        ImGui::DragFloat2(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        ImGui::DragFloat2(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::VEC3:
         ref = static_cast<Vector3f*>(dataPosition);
-        ImGui::DragFloat3(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        ImGui::DragFloat3(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::VEC4:
-        ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),1, 0);
+        ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::COUT:
         break;

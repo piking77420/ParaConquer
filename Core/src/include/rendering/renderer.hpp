@@ -99,7 +99,7 @@ private:
     
     std::vector<VkDescriptorSet> descriptorSets;
     
-    GpuLight* m_GpuLights = nullptr;
+    GpuLight m_GpuLights;
     
     const Camera* m_CurrentCamera = nullptr;
     

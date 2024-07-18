@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <map>
+#include <string>
 #include <vector>
 #include <typeinfo>
 
@@ -17,6 +18,17 @@ using DeleteFunc = void (*)(void* _ptr);
 class ComponentRegister
 {
 public:
+    struct RegisterComponentBackend
+    {
+        size_t size;
+        CreateFunc createFunc;
+        DeleteFunc deleteFunc;
+        std::string name;
+        std::vector<ReflectionType> reflecteds;
+    };
+    
+    static inline std::map<uint32_t, RegisterComponentBackend>* componentRegisterMap = new std::map<uint32_t, RegisterComponentBackend>();
+
     template<typename T>
     static uint32_t RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc);
     
@@ -34,23 +46,15 @@ public:
 
     static uint32_t GetNbrOfComponentType();
     
-    struct RegisterComponentBackend
-    {
-        size_t size;
-        CreateFunc createFunc;
-        DeleteFunc deleteFunc;
-        const char* name;
-        std::vector<ReflectionType> reflecteds;
-    };
-    
-    static inline std::map<uint32_t, RegisterComponentBackend>* componentRegisterMap = new std::map<uint32_t, RegisterComponentBackend>();
+private:
+    static std::string GetCorrectComponentName(const std::string& _name);
 };
 
 template <typename T>
 uint32_t ComponentRegister::RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc)
 {
     uint32_t index = static_cast<uint32_t>(componentRegisterMap->size());
-    componentRegisterMap->insert({index , {sizeof(T), _createFunc, _deleteFunc, typeid(T).name() }});
+    componentRegisterMap->insert({index , {sizeof(T), _createFunc, _deleteFunc, GetCorrectComponentName(typeid(T).name()) }});
 
     return index;
 }

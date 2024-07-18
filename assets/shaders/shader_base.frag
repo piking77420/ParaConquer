@@ -1,6 +1,8 @@
 #version 450
 
 #include "include/gpu_light_typedef.glsl"
+#include "include/pbr.glsl"
+
 
 layout(std430, set = 0, binding = 2) buffer GpuLightBuffer  
 {

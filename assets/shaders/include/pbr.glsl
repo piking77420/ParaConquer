@@ -6,25 +6,18 @@ struct Material
 };
 
 
-
-
 const float PI = 3.14159265359;
 const float InvPI = 1 / PI;
 
 
-float DistributionGGX(vec3 N, vec3 H, float roughness)
+float D_GGX ( float NdotH , float m )
 {
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-
-    float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-
-    return nom / denom;
+ // Divide by PI is apply later
+ float m2 = m * m ;
+ float f = ( NdotH * m2 - NdotH ) * NdotH + 1;
+ return m2 / (f * f) ;
 }
+
 // ----------------------------------------------------------------------------
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
@@ -37,17 +30,26 @@ float GeometrySchlickGGX(float NdotV, float roughness)
     return nom / denom;
 }
 // ----------------------------------------------------------------------------
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
 
-    return ggx1 * ggx2;
-}
-// ----------------------------------------------------------------------------
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+float V_SmithGGXCorrelated (float NdotL , float NdotV , float alphaG )
 {
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+    //Original formulation of G_SmithGGX Correlated
+    //float lambda_v = ( -1 + sqrt ( alphaG2 * (1 - NdotL2 ) / NdotL2 + 1)) * 0.5 f;
+    //float lambda_l = ( -1 + sqrt ( alphaG2 * (1 - NdotV2 ) / NdotV2 + 1)) * 0.5 f;
+    //G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l );
+    //V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * NdotL * NdotV );
+
+    // This is the optimize version
+    float alphaG2 = alphaG * alphaG ;
+    // Caution : the " NdotL *" and " NdotV *" are explicitely inversed , this is not a mistake .
+    float Lambda_GGXV = NdotL * sqrt (( - NdotV * alphaG2 + NdotV ) * NdotV + alphaG2 );
+    float Lambda_GGXL = NdotV * sqrt (( - NdotL * alphaG2 + NdotL ) * NdotL + alphaG2 );
+
+ return 0.5f / ( Lambda_GGXV + Lambda_GGXL );
+}
+
+// ----------------------------------------------------------------------------
+vec3 F_Schlick (vec3 f0 ,float f90 ,float u )
+{
+	return f0 + ( f90 - f0 ) * pow (1.f - u , 5.f);
 }

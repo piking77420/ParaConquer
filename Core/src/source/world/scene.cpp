@@ -100,7 +100,7 @@ Scene::Scene()
     // init entities
     for (EntityInternal& entity : m_entities)
     {
-        entity.componentIdIndexInDataArray = new uint32_t[NbrOfComponentType];
+        entity.componentIdIndexInDataArray.resize(NbrOfComponentType);
         for (size_t i = 0; i < NbrOfComponentType; i++)
         {
             entity.componentIdIndexInDataArray[i] = NULL_COMPONENT;
@@ -110,12 +110,6 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-    for (EntityInternal& entity : m_entities)
-    {
-        delete[] entity.componentIdIndexInDataArray;
-        entity.componentIdIndexInDataArray = nullptr;
-    }
-
     delete[] m_ComponentData;
 }
 

@@ -7,6 +7,20 @@ BEGIN_PCCORE
 class Material : public IResource
 {
 public:
+    Texture* albedo = nullptr;
+
+    Vector3f color = {0.5f, 0.5f, 0.5f};
+
+    float roughness = 0.f;
+    
+    float metallic = 0.f;
+    
+    float anisotropy = 0.f;
+    
+    Vector3f emmisive = {};
+    
+    float ambiantOcculusion = 0.f;
+    
     void WriteFile(const fs::path& path) override;
 
     ~Material() override = default;
@@ -15,19 +29,6 @@ public:
 
     void Load(std::vector<Texture*> textures);
 
-    Texture* albedo = nullptr;
-
-    Vector3f color = {0.5f, 0.5f, 0.5f};
-
-    float metallic = 0.f;
-    
-    float roughness = 0.f;
-    
-    float anisotropy = 0.f;
-    
-    Vector3f emmisive = {};
-    
-    float ambiantOcculusion = 0.f;
 };
 
 END_PCCORE

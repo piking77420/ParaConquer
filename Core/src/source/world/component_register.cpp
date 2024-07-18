@@ -41,3 +41,24 @@ uint32_t PC_CORE::ComponentRegister::GetNbrOfComponentType()
 {
     return static_cast<uint32_t>(componentRegisterMap->size());
 }
+
+std::string PC_CORE::ComponentRegister::GetCorrectComponentName(const std::string& _name)
+{
+    const size_t firstIndex = _name.find_first_of("::",0);
+    std::string out;
+
+    if (firstIndex)
+    {
+        for (size_t i = firstIndex + 2; i < _name.size(); i++)
+            out.push_back(_name[i]); 
+    }
+    else
+    {
+        const size_t secondIndex = _name.find_first_of(" ",0);
+        
+        for (size_t i = secondIndex; i < _name.size(); i++)
+            out.push_back(_name[i]); 
+    }
+    
+    return out; 
+}

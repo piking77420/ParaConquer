@@ -18,7 +18,6 @@ public:
     
     void UpdateTransforms(Scene* _scene);
     
-
     void UpdateMatrix(Scene* _scene);
 
     static size_t MatrixMeshesSize();
