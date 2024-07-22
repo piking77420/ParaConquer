@@ -71,6 +71,7 @@ void Inspector::OnInput()
     ImGui::SameLine();
     if (ImGui::BeginPopup("Components"))
     {
+        
         ImGui::SeparatorText("Component");
         for (size_t i = 0; i < componentMap->size(); i++)
         {
