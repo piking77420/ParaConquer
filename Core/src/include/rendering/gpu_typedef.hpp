@@ -2,7 +2,7 @@
 
 
 #include "core_header.hpp"
-#include "math/toolbox_typedef.hpp"
+#include <math/toolbox_typedef.hpp>
 
 static constexpr size_t MAX_MATERIAL_COUNT = 100; 
 static constexpr size_t MAX_POINTLIGHT_COUNT = 10; 
@@ -21,48 +21,48 @@ enum RenderPass
 
 struct alignas(16) CameraBuffer
 {
-    Matrix4x4f view = Matrix4x4f::Identity();
-    Matrix4x4f proj = Matrix4x4f::Identity();
-    Vector3f cameraPos = {};
+    Tbx::Matrix4x4f view = Tbx::Matrix4x4f::Identity();
+    Tbx::Matrix4x4f proj = Tbx::Matrix4x4f::Identity();
+    Tbx::Vector3f cameraPos = {};
 };
 
 
 struct alignas(16) MatrixMeshes
 {
-    Matrix4x4f model = Matrix4x4f::Identity();
-    Matrix4x4f modelNormalMatrix = Matrix4x4f::Identity();
+    Tbx::Matrix4x4f model = Tbx::Matrix4x4f::Identity();
+    Tbx::Matrix4x4f modelNormalMatrix = Tbx::Matrix4x4f::Identity();
 };
 
 struct alignas(16) GpuDirLight
 {
-    Vector3f direction;
+    Tbx::Vector3f direction;
     float _pad0;
-    Vector3f color;
+    Tbx::Vector3f color;
     float intensity;
-    
+
 };
 struct alignas(16) GpuPointLight
 {
-    Vector3f position;
+    Tbx::Vector3f position;
     float _pad0;
-    Vector3f color;
+    Tbx::Vector3f color;
     float intensity;
 };
 struct alignas(16) GpuSpothLight
 {
-    Vector3f direction;
+    Tbx::Vector3f direction;
     float _pad0;
-    Vector3f position;
+    Tbx::Vector3f position;
     float _pad1;
-    Vector3f color;
+    Tbx::Vector3f color;
     float intensity;
 };
 
 struct alignas(16) GPUMaterial
 {
-    Vector4f albedo;
-    Vector4f metallicSpecularRoughessAnisotropy;
-    Vector4f emmisiveColorAo;
+    Tbx::Vector4f albedo;
+    Tbx::Vector4f metallicSpecularRoughessAnisotropy;
+    Tbx::Vector4f emmisiveColorAo;
 };
 
 

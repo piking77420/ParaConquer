@@ -91,7 +91,6 @@ void Inspector::OnInput()
 void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& reflection)
 {
     void* dataPosition = static_cast<char*>(begin) + reflection.offset;
-    const Vector3f* ref = nullptr;
 
     switch (reflection.datatype)
     {
@@ -113,7 +112,6 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& re
         ImGui::DragFloat2(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::VEC3:
-        ref = static_cast<Vector3f*>(dataPosition);
         ImGui::DragFloat3(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::VEC4:

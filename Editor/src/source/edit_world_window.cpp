@@ -31,9 +31,9 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCamera()
     
     if (ImGui::IsMouseDown(ImGuiPopupFlags_MouseButtonRight))
     {
-        Vector2f vec = { io.MouseDelta.x , -io.MouseDelta.y };
+        Tbx::Vector2f vec = { io.MouseDelta.x , -io.MouseDelta.y };
         deltass.AddSample(vec);
-        const Vector2f avarage = deltass.GetAvarage<Vector2f>();
+        const Tbx::Vector2f avarage = deltass.GetAvarage<Tbx::Vector2f>();
         yaw += avarage.x;
         pitch += avarage.y;
         
@@ -51,11 +51,11 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCamera()
 
     }
 
-    const Vector3f right = Vector3f::Cross(camera.front, Vector3f::UnitY());
-    camera.up = Vector3f::Cross(right, camera.front).Normalize();
+    const Tbx::Vector3f right = Tbx::Vector3f::Cross(camera.front, Tbx::Vector3f::UnitY());
+    camera.up = Tbx::Vector3f::Cross(right, camera.front).Normalize();
 
 
-    Vector3f addVector;
+    Tbx::Vector3f addVector;
     
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {

@@ -17,16 +17,16 @@ public:
         COUNT
     };
     
-    void SetRendering(Vector2f _screenPos, Vector2f _screenSize);
+    void SetRendering(Tbx::Vector2f _screenPos, Tbx::Vector2f _screenSize);
 
-    bool Manipulate(const Matrix4x4f& _proj, const Matrix4x4f& _view,Matrix4x4f* _model);
+    bool Manipulate(const Tbx::Matrix4x4f& _proj, const Tbx::Matrix4x4f& _view, Tbx::Matrix4x4f* _model);
 
     void Draw();
 
 private:
     
-    Vector2f screenPos;
-    Vector2f screeSize;
+    Tbx::Vector2f screenPos;
+    Tbx::Vector2f screeSize;
     
 };
 END_EDITOR_PCCORE

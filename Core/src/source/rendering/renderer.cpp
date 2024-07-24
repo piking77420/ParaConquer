@@ -435,7 +435,7 @@ void Renderer::UpdateCameraBuffer(uint32_t _currentFrame)
 {
     cameraBuffer.cameraPos = m_CurrentCamera->position;
 
-    LookAtRH(m_CurrentCamera->position, m_CurrentCamera->position + m_CurrentCamera->front, m_CurrentCamera->up,
+    Tbx::LookAtRH<float>(m_CurrentCamera->position, m_CurrentCamera->position + m_CurrentCamera->front, m_CurrentCamera->up,
              &cameraBuffer.view);
     const float aspect = Window::currentWindow->GetAspect();
     PerspectiveMatrix(m_CurrentCamera->fov * Deg2Rad, aspect, m_CurrentCamera->near, m_CurrentCamera->far,
@@ -469,7 +469,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
 
-        Vector3f dir = transform.rotation * -Vector3f::UnitY();
+        Tbx::Vector3f dir = transform.rotation * -Tbx::Vector3f::UnitY();
 
         m_GpuLights.gpuDirLights[i].direction = dir.Normalize();
         m_GpuLights.gpuDirLights[i].color = dirlights->at(i).color;
@@ -497,7 +497,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
-        Vector3f dir = transform.rotation * -Vector3f::UnitY();
+        Tbx::Vector3f dir = transform.rotation * -Tbx::Vector3f::UnitY();
         m_GpuLights.gpuSpotLight[i].position = transform.position;
         m_GpuLights.gpuSpotLight[i].direction = dir;
         m_GpuLights.gpuSpotLight[i].color = spotLights->at(i).color;

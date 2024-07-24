@@ -9,7 +9,7 @@ class Material : public IResource
 public:
     Texture* albedo = nullptr;
 
-    Vector3f color = {0.5f, 0.5f, 0.5f};
+    Tbx::Vector3f color = {0.5f, 0.5f, 0.5f};
 
     float roughness = 0.f;
     
@@ -17,7 +17,7 @@ public:
     
     float anisotropy = 0.f;
     
-    Vector3f emmisive = {};
+    Tbx::Vector3f emmisive = {};
     
     float ambiantOcculusion = 0.f;
     

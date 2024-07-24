@@ -161,9 +161,9 @@ void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereCol
         if (!transform)
             continue;
         
-        Vector3f color = {0.f,1.f,0.f};
-        Matrix4x4f trs;
-        Trs3D<float>(transform->localPosition, Quaternionf::Identity(), sphereCollider.radius * 0.5f, &trs);
+        Tbx::Vector3f color = {0.f,1.f,0.f};
+        Tbx::Matrix4x4f trs;
+        Trs3D<float>(transform->localPosition, Tbx::Quaternionf::Identity(), sphereCollider.radius * 0.5f, &trs);
 
         const GizmoStruct gizmoStruct =
             {

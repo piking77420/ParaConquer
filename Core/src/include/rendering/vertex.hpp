@@ -9,9 +9,9 @@ BEGIN_PCCORE
 
 struct Vertex
 {
-    Vector3f position;
-    Vector3f normal;
-    Vector2f textureCoord;
+    Tbx::Vector3f position;
+    Tbx::Vector3f normal;
+    Tbx::Vector2f textureCoord;
 
     bool operator==(const Vertex& other) const {
         return position == other.position && normal == other.normal && textureCoord == other.textureCoord;

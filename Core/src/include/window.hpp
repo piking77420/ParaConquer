@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include "core_header.hpp"
-#include "math/toolbox_typedef.hpp"
+#include <math/toolbox_typedef.hpp>
 
 BEGIN_PCCORE
     class Window
@@ -12,7 +12,7 @@ public:
 
     static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
     
-    Vector2ui windowSize = {1680,1050}; 
+    Tbx::Vector2ui windowSize = {1680,1050};
 
     GLFWwindow* window = nullptr;
 
@@ -38,9 +38,9 @@ private:
     
     const GLFWvidmode* mode = nullptr;
 
-    Vector2ui oldPos;
-    Vector2ui oldSize;
-    Vector2ui monitorSize;
+    Tbx::Vector2ui oldPos;
+    Tbx::Vector2ui oldSize;
+    Tbx::Vector2ui monitorSize;
 
 };
 END_PCCORE

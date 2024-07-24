@@ -14,15 +14,15 @@ public:
 
     Entity parentId = NULL_ENTITY;
     
-    Vector3f position; 
+    Tbx::Vector3f position;
 
-    Quaternionf rotation = Quaternionf::Identity();
-    
-    Vector3f scale = 1.f;
-    
-    Vector3f localPosition;
+    Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
 
-    Vector3f localRotation;
+    Tbx::Vector3f scale = 1.f;
+
+    Tbx::Vector3f localPosition;
+
+    Tbx::Vector3f localRotation;
     
 }; 
 REFLECT(Transform, localPosition)

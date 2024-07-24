@@ -35,7 +35,7 @@ void SceneGraph::UpdateTransforms(Scene* _scene)
         else
         {
             transform.position = transform.localPosition;
-            transform.rotation = Quaternionf::FromEuleur(transform.localRotation);
+            transform.rotation = Tbx::Quaternionf::FromEuleur(transform.localRotation);
         }
         
         
@@ -57,7 +57,7 @@ void SceneGraph::UpdateMatrix(Scene* _scene)
 
         MatrixMeshes& matricies = globalMatricies[transform.componentHolder.entityID];
         Trs3D(transform.position, transform.rotation.Normalize(), transform.scale, &matricies.model);
-        Matrix4x4f invertedModel;
+        Tbx::Matrix4x4f invertedModel;
         Invert<float>(matricies.model, &invertedModel);
         matricies.modelNormalMatrix = invertedModel.Transpose();
     }

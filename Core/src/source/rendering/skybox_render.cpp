@@ -230,7 +230,7 @@ void SkyboxRender::InitProceduralBackend()
                                               nbrOfFrames);
     VkPushConstantRange pushConstantMatrix;
     pushConstantMatrix.offset = 0;
-    pushConstantMatrix.size = sizeof(Matrix4x4f);
+    pushConstantMatrix.size = sizeof(Tbx::Matrix4x4f);
     pushConstantMatrix.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     std::vector<VkDescriptorSetLayout> vkDescriptorSetLayouts =
     {

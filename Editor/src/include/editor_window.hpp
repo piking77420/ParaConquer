@@ -4,7 +4,7 @@
 
 #include "editor_header.hpp"
 #include "Imgui/imgui.h"
-#include "math/toolbox_typedef.hpp"
+#include <math/toolbox_typedef.hpp>
 
 namespace PC_EDITOR_CORE
 {
@@ -22,9 +22,9 @@ public:
 
     bool isOpen = true;
 
-    Vector2f size;
+    Tbx::Vector2f size;
 
-    Vector2f position;
+    Tbx::Vector2f position;
 
     bool resize = false;
     

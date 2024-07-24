@@ -25,7 +25,7 @@ struct ViewPortFinalImage
 };
 struct ViewPort
 {
-    Vector2i viewPortSize = {800,600};
+    Tbx::Vector2i viewPortSize = {800,600};
     std::vector<ForwardAttachment> forwardAttachments;
     std::vector<ViewPortFinalImage> viewPortFinalImageAttachment;
     VulkanTexture depthAttachment;
@@ -48,7 +48,7 @@ public:
 
     void Destroy();
     
-    bool OnResize(uint32_t viewportId, Vector2i _windowSize);
+    bool OnResize(uint32_t viewportId, Tbx::Vector2i _windowSize);
 protected:
     std::map<uint32_t,ViewPort*> m_ViewPorts;
 

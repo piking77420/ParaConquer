@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 
+
 #define BEGIN_PCCORE namespace PC_CORE {
 #define END_PCCORE }
 
@@ -12,3 +13,4 @@ type(const type& other) noexcept = default;             \
 type(type&& other) noexcept = default;                  \
 type& operator=(const type& other) noexcept = default;  \
 type& operator=(type&& other) noexcept = default;
+

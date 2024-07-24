@@ -32,7 +32,7 @@ Reflector Reflector::Create(size_t _size, size_t _offset, const char* _name)
     const Reflector reflected = {};
     const DataType datatype  = TypeToDataType<MemberType>();
 
-    reflected.RegisterInternal(ComponentHandle<ComponentType>::componentID,_size,_offset, datatype , _name);
+    reflected.RegisterInternal(ComponentHandle<ComponentType>::componentID,_size, _offset, datatype , _name);
     return reflected;
 }
 
@@ -57,19 +57,19 @@ DataType Reflector::TypeToDataType()
     {
         type = DataType::DOUBLE;
     }
-    else if constexpr (std::is_same_v<T, Vector2f>)
+    else if constexpr (std::is_same_v<T, Tbx::Vector2f>)
     {
         type = DataType::VEC2;
     }
-    else if constexpr (std::is_same_v<T, Vector3f>)
+    else if constexpr (std::is_same_v<T, Tbx::Vector3f>)
     {
         type = DataType::VEC3;
     }
-    else if constexpr (std::is_same_v<T, Vector4f>)
+    else if constexpr (std::is_same_v<T, Tbx::Vector4f>)
     {
         type = DataType::VEC4;
     }
-    else if constexpr (std::is_same_v<T, Quaternionf>)
+    else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
     {
         type = DataType::INT;
     }

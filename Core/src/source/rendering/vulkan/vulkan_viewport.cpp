@@ -50,7 +50,7 @@ void VulkanViewport::Destroy()
     }
 }
 
-bool VulkanViewport::OnResize(uint32_t viewportId, Vector2i _windowSize)
+bool VulkanViewport::OnResize(uint32_t viewportId, Tbx::Vector2i _windowSize)
 {
     if (!m_ViewPorts.contains(viewportId))
     {

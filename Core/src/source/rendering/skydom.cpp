@@ -104,7 +104,7 @@ void Skydom::Destroy()
 }
 
 // Spherical Mapping with Normals
-Vector2f Skydom::GetTextCoord(float _nx, float _ny)
+Tbx::Vector2f Skydom::GetTextCoord(float _nx, float _ny)
 {
     const float u = (std::asin(_nx) / static_cast<float>(M_PI)) + 0.5f;
     const float v = (std::asin(_ny) / static_cast<float>(M_PI)) + 0.5f;

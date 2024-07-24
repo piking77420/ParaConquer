@@ -6,7 +6,7 @@
 
 using namespace PC_CORE;
 
-void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _imageSize)
+void VulkanTexture::Init(void const* const _data, size_t _dataSize , Tbx::Vector2i _imageSize)
 {
     VkBuffer stagingbuffer;
     VmaAllocation stagingAllocation;
@@ -78,7 +78,7 @@ void VulkanTexture::Init(void const* const _data, size_t _dataSize , Vector2i _i
     
 }
 
-void VulkanTexture::Init(size_t _dataSize, Vector2i _imageSize)
+void VulkanTexture::Init(size_t _dataSize, Tbx::Vector2i _imageSize)
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

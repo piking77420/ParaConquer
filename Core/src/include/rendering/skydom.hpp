@@ -19,7 +19,7 @@ public:
     void Destroy();
 
 private:
-    Vector2f GetTextCoord(float _nx, float _ny);
+    Tbx::Vector2f GetTextCoord(float _nx, float _ny);
 };
 
 END_PCCORE

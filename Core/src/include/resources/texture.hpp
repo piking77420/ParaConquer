@@ -9,7 +9,7 @@ BEGIN_PCCORE
     class Texture : public IResource
 {
 public:
-    Vector2i textureSize;
+    Tbx::Vector2i textureSize;
     
     int textureChannel = -1;
     

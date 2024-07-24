@@ -27,7 +27,7 @@ void EditorWindow::GetInfo()
     ImVec2 imPos = ImGui::GetWindowPos();
     ImVec2 imSize = ImGui::GetWindowSize();
 
-    Vector2f newSize = { imSize.x , imSize.y};
+    Tbx::Vector2f newSize = { imSize.x , imSize.y};
     
     if (newSize != size)
         resize = true;

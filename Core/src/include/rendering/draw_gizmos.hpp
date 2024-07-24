@@ -27,8 +27,8 @@ public:
 private:
     struct alignas(16) GizmoStruct
     {
-        Matrix4x4f trs;
-        Vector3f color;
+        Tbx::Matrix4x4f trs;
+        Tbx::Vector3f color;
     };
     
     const Renderer* m_Renderer = nullptr;
