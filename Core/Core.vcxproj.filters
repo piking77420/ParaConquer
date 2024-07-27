@@ -63,7 +63,7 @@
     <ClInclude Include="src\externals\include\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\externals\include\tiny_obj_loader.h">
+    <ClInclude Include="src\externals\include\OBJ_Loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\input\low_pass_filter.hpp">
@@ -259,6 +259,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\bonga\Desktop\renderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\lua\lauxlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\lua\lualib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\lua\lua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\lua\lua.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\lua\luaconf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\scripting\scripting_lua.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\assert.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -459,6 +480,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\scripting\scripting_lua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\pc_assert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

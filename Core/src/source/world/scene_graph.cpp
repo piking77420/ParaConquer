@@ -57,9 +57,8 @@ void SceneGraph::UpdateMatrix(Scene* _scene)
 
         MatrixMeshes& matricies = globalMatricies[transform.componentHolder.entityID];
         Trs3D(transform.position, transform.rotation.Normalize(), transform.scale, &matricies.model);
-        Tbx::Matrix4x4f invertedModel;
-        Invert<float>(matricies.model, &invertedModel);
-        matricies.modelNormalMatrix = invertedModel.Transpose();
+        Invert<float>(matricies.model, &matricies.modelNormalMatrix);
+        matricies.modelNormalMatrix = matricies.modelNormalMatrix.Transpose();
     }
 
 }

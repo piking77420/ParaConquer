@@ -30,6 +30,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\bonga\Desktop\renderer.hpp" />
+    <ClInclude Include="src\include\assert.hpp" />
+    <ClInclude Include="src\include\scripting\scripting_lua.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
@@ -40,13 +42,18 @@
     <ClInclude Include="src\externals\include\Imgui\imstb_rectpack.h" />
     <ClInclude Include="src\externals\include\Imgui\imstb_textedit.h" />
     <ClInclude Include="src\externals\include\Imgui\imstb_truetype.h" />
+    <ClInclude Include="src\externals\include\lua\lauxlib.h" />
+    <ClInclude Include="src\externals\include\lua\lua.h" />
+    <ClInclude Include="src\externals\include\lua\lua.hpp" />
+    <ClInclude Include="src\externals\include\lua\luaconf.h" />
+    <ClInclude Include="src\externals\include\lua\lualib.h" />
     <ClInclude Include="src\externals\include\shaderc\env.h" />
     <ClInclude Include="src\externals\include\shaderc\shaderc.h" />
     <ClInclude Include="src\externals\include\shaderc\shaderc.hpp" />
     <ClInclude Include="src\externals\include\shaderc\status.h" />
     <ClInclude Include="src\externals\include\shaderc\visibility.h" />
     <ClInclude Include="src\externals\include\stb_image.h" />
-    <ClInclude Include="src\externals\include\tiny_obj_loader.h" />
+    <ClInclude Include="src\externals\include\OBJ_Loader.h" />
     <ClInclude Include="src\include\app.hpp" />
     <ClInclude Include="src\include\core_header.hpp" />
     <ClInclude Include="src\include\guid.hpp" />
@@ -113,6 +120,8 @@
     <ClInclude Include="src\source\rendering\skybox_render.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\source\pc_assert.cpp" />
+    <ClCompile Include="src\source\scripting\scripting_lua.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui_demo.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui_draw.cpp" />
@@ -239,21 +248,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL = 2</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL = 2;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;%(AdditionalIncludeDirectories);src\externals\include\Imgui;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -265,9 +278,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PreBuildEvent>
+      <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -275,7 +291,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;_ITERATOR_DEBUG_LEVEL = 0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;_ITERATOR_DEBUG_LEVEL = 0;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -292,15 +308,18 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;lua54.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PreBuildEvent>
+      <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;%(AdditionalIncludeDirectories);src\externals\include\Imgui;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -312,9 +331,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PreBuildEvent>
+      <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -322,7 +344,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;_ITERATOR_DEBUG_LEVEL = 0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;_ITERATOR_DEBUG_LEVEL = 0;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -339,9 +361,12 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;lua54.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PreBuildEvent>
+      <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

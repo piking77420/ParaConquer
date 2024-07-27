@@ -469,7 +469,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
 
-        Tbx::Vector3f dir = transform.rotation * -Tbx::Vector3f::UnitY();
+        Tbx::Vector3f dir = transform.rotation * Tbx::Vector3f::UnitY();
 
         m_GpuLights.gpuDirLights[i].direction = dir.Normalize();
         m_GpuLights.gpuDirLights[i].color = dirlights->at(i).color;

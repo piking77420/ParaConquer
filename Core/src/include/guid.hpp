@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 #include <format>
-#include <sstream>
 #include <string>
 
 #include "core_header.hpp"

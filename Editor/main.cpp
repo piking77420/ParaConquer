@@ -4,11 +4,14 @@
 #include "editor.hpp"
 
 #include "world/transform.hpp"
+#include "scripting/scripting_lua.hpp"
+
+using namespace PC_EDITOR_CORE;
+using namespace PC_CORE;
 
 int main(int argc, char* argv[])
 {
-    PC_EDITOR_CORE::Editor editor;
-
+    Editor editor;
 
     editor.Init();
     editor.Run();

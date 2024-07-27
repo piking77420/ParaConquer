@@ -8,8 +8,8 @@
 #include "rendering/vulkan/vulkan_interface.hpp"
 #include "world/world.hpp"
 #include "input/low_pass_filter.hpp"
-#include "rendering/light.hpp"
-#include "world/transform.hpp"
+#include "scripting/scripting_lua.hpp"
+
 
 BEGIN_PCCORE
 class App
@@ -22,6 +22,8 @@ public:
 	Renderer renderer;
 
 	VulkanImgui vulkanImgui;
+
+	ScriptingLua scriptingLua;
 	
 	virtual void Init();
 

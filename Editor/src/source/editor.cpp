@@ -11,6 +11,7 @@
 #include "Imgui/imgui_impl_vulkan.h"
 #include "physics/sphere_collider.hpp"
 #include "resources/resource_manager.hpp"
+#include "rendering/light.hpp"
 
 
 
@@ -43,9 +44,7 @@ void Editor::Destroy()
 
 void Editor::InitScene()
 {
-    std::vector<Transform>* m_transforms = nullptr;
 
-    
     World& world = *World::world;
 
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
@@ -61,19 +60,12 @@ void Editor::InitScene()
 
     const Entity entity = world.scene.CreateEntity();
     Transform* trans = world.scene.AddComponent<Transform>(entity);
-    trans->position = {0.f,5.f,0.f};
+    trans->localPosition = {0.f,4.f,0.f};
 
-    world.scene.GetComponentData<Transform>(&m_transforms);
+    
     StaticMesh* staticMesh =world.scene.AddComponent<StaticMesh>(entity);
-    staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    staticMesh->mesh = ResourceManager::Get<Mesh>("sphere.obj");
     staticMesh->material = material;
-
-    const Entity entity2 = world.scene.CreateEntity();
-    world.scene.AddComponent<Transform>(entity2);
-    StaticMesh* staticMesh2 = world.scene.AddComponent<StaticMesh>(entity2);
-    staticMesh2->mesh = ResourceManager::Get<Mesh>("viking_room.obj");
-    staticMesh2->material = material2;
-    world.scene.AddComponent<SphereCollider>(entity2);
 
     const Entity entity3 = world.scene.CreateEntity();
     world.scene.AddComponent<Transform>(entity3);
@@ -86,7 +78,7 @@ void Editor::InitScene()
     staticMesh = world.scene.AddComponent<StaticMesh>(plane);
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material2;
-    ptr->scale = {20,1,20};
+    //ptr->scale = {20,1,20};
 }
 
 void Editor::Run()

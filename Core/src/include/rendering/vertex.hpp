@@ -54,8 +54,10 @@ END_PCCORE
 
 
 
+
 namespace std {
     using namespace PC_CORE;
+
     template <>
     struct hash<Vertex> {
         size_t operator()(const Vertex& _vertex) const {
@@ -72,6 +74,7 @@ namespace std {
             return hashValue;
         }
 
+    private:
         // Hash combine function to combine multiple hash values
         template <typename T>
         void hash_combine(size_t& _seed, const T& _value) const {

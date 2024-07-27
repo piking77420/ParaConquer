@@ -8,6 +8,9 @@
 #include "rendering/light.hpp"
 #include "resources/resource_manager.hpp"
 
+#include "lua/lua.hpp"
+
+
 using namespace PC_CORE;
 
 
@@ -15,6 +18,7 @@ void App::Init()
 {
     PC_LOG("App Init")
     instance = this;
+   
     
     windowHandle.Init();
     VulkanInterface::Init(&windowHandle);

@@ -52,6 +52,7 @@ vec3 ComputeDirLight()
         vec3 specular = 0.3 * spec;*/
 
         result += (ambient + diffuse) * gpuDirLights[i].color * gpuDirLights[i].intensity * texture(albedo, fragTexCoord).rgb;
+        //result += vec3(norm * 0.5 + 0.5);
     }
     
     
