@@ -16,15 +16,25 @@ public:
     void Update() override;
 
 protected:
-    void MoveCamera();
+    void MoveCameraUpDate();
     
-    PC_CORE::LowPassFilter<Tbx::Vector2f, 4> deltass;
+    PC_CORE::LowPassFilter<Tbx::Vector2f, 8> deltass;
+
+    Tbx::Vector3f cameraSpeed;
+
+    float cameraSpeedValue = 150.f;
+
+    float drag = 0.99f;
     
-    float cameraSpeed = 5.f;
-    
-    float pitch = 0.f;
+    float pitch = 0.0f;
     
     float yaw = 0.f;
+
+    void RotateCamera(float _deltatime);
+
+    void CameratMovment(float _deltatime);
+
+    void CameraChangeSpeed();
 };
 
 END_EDITOR_PCCORE

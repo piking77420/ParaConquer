@@ -58,7 +58,9 @@ void Renderer::RecreateSwapChain(Window* _window)
 
 void Renderer::Destroy()
 {
-    // Wait the gpu 
+    // Wait the gpu
+    vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
+    
     vulkanViewport.Destroy();
     drawGizmos.Destroy();
     drawQuad.Destroy();
@@ -335,7 +337,7 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
 
-    std::vector<StaticMesh>* meshes = nullptr;
+    const std::vector<StaticMesh>* meshes = nullptr;
     m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
 
     for (size_t i = 0; i < meshes->size(); i++)
@@ -448,9 +450,9 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
 {
    BEGIN_TIMER("LightPassBuffer")
 
-    std::vector<DirLight>* dirlights = nullptr;
-    std::vector<PointLight>* pointLights = nullptr;
-    std::vector<SpotLight>* spotLights = nullptr;
+   const std::vector<DirLight>* dirlights = nullptr;
+   const std::vector<PointLight>* pointLights = nullptr;
+   const std::vector<SpotLight>* spotLights = nullptr;
 
     m_CurrentWorld->scene.GetComponentData<DirLight>(&dirlights);
     m_CurrentWorld->scene.GetComponentData<PointLight>(&pointLights);
@@ -464,7 +466,10 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     for (uint32_t i = 0; i < dirlights->size(); i++)
     {
         if (!IsValid(dirlights->at(i).componentHolder))
+        {
+            m_GpuLights.gpuDirLights[i] = {};
             continue;
+        }
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
@@ -480,10 +485,13 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     for (uint32_t i = 0; i < pointLights->size(); i++)
     {
         if (!IsValid(pointLights->at(i).componentHolder))
+        {
+            m_GpuLights.gpuSpotLight[i] = {};
             continue;
+        }
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
-            dirlights->at(i).componentHolder.entityID);
+            pointLights->at(i).componentHolder.entityID);
         m_GpuLights.gpuPointLights[i].position = transform.position;
         m_GpuLights.gpuDirLights[i].color = pointLights->at(i).color;
         m_GpuLights.gpuDirLights[i].intensity = pointLights->at(i).intensity;
@@ -493,7 +501,10 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     for (uint32_t i = 0; i < spotLights->size(); i++)
     {
         if (!IsValid(spotLights->at(i).componentHolder))
+        {
+            m_GpuLights.gpuSpotLight[i] = {};
             continue;
+        }
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);

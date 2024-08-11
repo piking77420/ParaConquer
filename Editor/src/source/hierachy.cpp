@@ -27,7 +27,7 @@ void Hierachy::ShowGraph()
     PC_CORE::World& world = *PC_CORE::World::world;
     const PC_CORE::Scene& scene = world.scene;
 
-    std::vector<PC_CORE::Transform>* transforms = nullptr;
+    const std::vector<PC_CORE::Transform>* transforms = nullptr;
     scene.GetComponentData<PC_CORE::Transform>(&transforms);
 
     bool hasSelected = false;

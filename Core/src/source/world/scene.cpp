@@ -41,10 +41,16 @@ bool Scene::RemoveEntity(Entity _entity)
     return true;
 }
 
-void Scene::GetComponentDataRaw(uint32_t _componentiD, std::vector<uint8_t>** _data) const
+void Scene::GetComponentDataRaw(uint32_t _componentiD, const std::vector<uint8_t>** _data) const
 {
     assert(_componentiD >= 0);
-    *_data = &m_ComponentData[_componentiD];
+    *_data = &m_ComponentData.at(_componentiD);
+}
+
+void Scene::GetComponentDataRaw(uint32_t _componentiD, std::vector<uint8_t>** _data)
+{
+    assert(_componentiD >= 0);
+    *_data = &m_ComponentData.at(_componentiD);
 }
 
 void Scene::Update()
@@ -82,7 +88,7 @@ const Scene::EntityInternal* Scene::GetEntityInternal(Entity _entity) const
 Scene::Scene()
 {
     // init Component Data
-    m_ComponentData = new std::vector<uint8_t>[ComponentRegister::GetNbrOfComponentType()];
+    m_ComponentData.resize(ComponentRegister::GetNbrOfComponentType());
     const uint32_t NbrOfComponentType = ComponentRegister::GetNbrOfComponentType();
 
     for (size_t i = 0; i < NbrOfComponentType; i++)
@@ -108,22 +114,32 @@ Scene::Scene()
     }
 }
 
+
 Scene::~Scene()
 {
-    delete[] m_ComponentData;
+    for (size_t ent = 0; ent < m_entities.size(); ent++)
+    {
+        if (!m_entities[ent].isEnable)
+            continue;
+            
+        for (size_t comp = 0; comp < m_entities[ent].componentIdIndexInDataArray.size(); comp++)
+        {
+            RemoveComponentInternal(static_cast<uint32_t>(comp), static_cast<uint32_t>(ent));
+        }
+    }
 }
 
 Component* Scene::AddComponentInternal(uint32_t _componentId, Entity _entity)
 {
     if (!m_entities.at(_entity).isEnable)
     {
-        PC_LOGERROR("This entity is not enable")
+        //PC_LOGERROR("This entity is not enable")
         return nullptr;
     }
 
     if (HadComponent(_entity, _componentId, nullptr))
     {
-        PC_LOGERROR("This entity has alrealy this component")
+        //PC_LOGERROR("This entity has alrealy this component")
         return nullptr;
     }
 
@@ -181,56 +197,37 @@ const Component* Scene::GetComponentInternal(uint32_t _componentId, Entity _enti
         return nullptr;
     }
 
-    return reinterpret_cast<Component*>(&m_ComponentData[_componentId].at(indexInData));
+    return reinterpret_cast<const Component*>(&m_ComponentData.at(_componentId).at(indexInData));
 }
 
 bool Scene::RemoveComponentInternal(uint32_t _componentId, Entity _entity)
 {
     if (!m_entities.at(_entity).isEnable)
     {
-        PC_LOGERROR("This entity is not enable")
         return false;
     }
 
-    if (!HadComponent(_entity, _componentId, nullptr))
+    uint32_t index;
+    if (!HadComponent(_entity, _componentId, &index))
     {
-        PC_LOGERROR("This entity doesn't have this component")
         return false;
     }
-
     std::vector<uint8_t>* componentArray = &m_ComponentData[_componentId];
-    const size_t sizeComponent = ComponentRegister::GetSize(_componentId);
-    for (size_t i = 0; i < componentArray->size(); i += sizeComponent)
-    {
-        Component* component = reinterpret_cast<Component*>(&((*componentArray)[i]));
-        // To be component valid to add the component entity id need to be Null
-        if (component->entityID == _entity)
-        {
-            component->entityID = NULL_ENTITY;
-            // add  the compoentn index to the entity
-            m_entities.at(_entity).componentIdIndexInDataArray[_componentId] = NULL_COMPONENT;
-            const DeleteFunc deleteFunc = ComponentRegister::GetDeleteFunc(_componentId);
-            deleteFunc(component);
-            return true;
-        }
-    }
-
-    PC_LOGERROR("Souldn't be here at removeComponent")
-    return false;
+    const DeleteFunc deleteFunc = ComponentRegister::GetDeleteFunc(_componentId);
+    
+    deleteFunc(&componentArray->at(index));
+    m_entities.at(_entity).componentIdIndexInDataArray.at(_componentId) = NULL_COMPONENT;
+    
+    Component* c = reinterpret_cast<Component*>(&componentArray->at(index));
+    c->entityID = NULL_ENTITY;
+    
+    return true;
 }
+
+
 
 bool Scene::HadComponent(Entity _entity, uint32_t _componentId, uint32_t* _outIndexinDataArray) const
 {
-    if (!m_entities.at(_entity).isEnable)
-    {
-        if (_outIndexinDataArray)
-        {
-            *_outIndexinDataArray = NULL_COMPONENT;
-        }
-
-        return false;
-    }
-
     if (m_entities.at(_entity).componentIdIndexInDataArray[_componentId] == NULL_COMPONENT)
     {
         if (_outIndexinDataArray)
@@ -241,7 +238,8 @@ bool Scene::HadComponent(Entity _entity, uint32_t _componentId, uint32_t* _outIn
         return false;
     }
 
-    *_outIndexinDataArray = m_entities.at(_entity).componentIdIndexInDataArray[_componentId];
+    if (_outIndexinDataArray != nullptr)
+        *_outIndexinDataArray = m_entities.at(_entity).componentIdIndexInDataArray.at(_componentId);
 
     return true;
 }

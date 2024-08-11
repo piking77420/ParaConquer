@@ -20,10 +20,12 @@ public:
     Texture* texture = nullptr;
     
     void Load(std::array<std::string,6>& _maps);
+    
+    void Destroy();
 
     Skybox() = default;
 
-    ~Skybox();
+    ~Skybox() = default;
     
 };
 

@@ -5,7 +5,7 @@ using namespace PC_CORE;
 
 void Reflector::RegisterInternal(uint32_t _componentID, size_t _size, size_t _offset, DataType _datatype, const char* _name)
 {
-    ComponentRegister::componentRegisterMap->at(_componentID).reflecteds.push_back
+    ComponentRegister::componentRegisterMap.at(_componentID).reflecteds.push_back
     (
         {
             .name = _name,

@@ -5,10 +5,10 @@
 #include "scene_graph.hpp"
 #include "skybox.hpp"
 #include "world_header_typedef.hpp"
+#include "physics/physics_wrapper.hpp"
 
 BEGIN_PCCORE
-
-class World
+    class World
 {
 public:
     static inline World* world = nullptr;
@@ -19,15 +19,21 @@ public:
 
     Skybox skybox;
 
+    PhysicsWrapper physicsWrapper;
+
     bool begin = false;
 
     bool run = false;
 
-    World();
+    World() = default;
     
     ~World() = default;
-    
-    void Run();
+
+    void Begin();
+
+    void Update();
+
+    void LoadSkyBox();
 
 private:
 };

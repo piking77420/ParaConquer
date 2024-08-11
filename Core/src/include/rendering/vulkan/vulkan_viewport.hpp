@@ -36,8 +36,6 @@ struct ViewPort
 class VulkanViewport
 {
 public:
-    
-
     void Init(Renderer* renderer);
 
     uint32_t CreateViewPort(bool isIsEditor);
@@ -49,6 +47,7 @@ public:
     void Destroy();
     
     bool OnResize(uint32_t viewportId, Tbx::Vector2i _windowSize);
+    
 protected:
     std::map<uint32_t,ViewPort*> m_ViewPorts;
 

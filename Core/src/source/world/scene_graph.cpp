@@ -11,14 +11,10 @@ SceneGraph::SceneGraph()
     globalMatricies.resize(MAX_ENTITIES);
 }
 
-SceneGraph::~SceneGraph()
-{
-
-}
 
 void SceneGraph::UpdateTransforms(Scene* _scene)
 {
-    const Scene& scene = *_scene;
+    Scene& scene = *_scene;
     scene.GetComponentData<Transform>(&m_transforms);
 
     for (int i = 0; i < m_transforms->size(); ++i)

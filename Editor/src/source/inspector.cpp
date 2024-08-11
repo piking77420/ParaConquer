@@ -23,7 +23,7 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-    const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = PC_CORE::ComponentRegister::componentRegisterMap;
+    const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = &PC_CORE::ComponentRegister::componentRegisterMap;
 
 
     auto entityInternal = PC_CORE::World::world->scene.GetEntityInternal(m_Editor->selected);
@@ -45,16 +45,19 @@ void Inspector::Show()
         
         if (componentMap->at(static_cast<uint32_t>(i)).reflecteds.empty())
             continue;
-        
+        ImGui::PushID(i);
+
+        ImGui::Spacing();
         ImGui::Text(componentBackend.name.c_str());
+        DeleteButton(m_Editor->selected, static_cast<uint32_t>(i));
         for (const PC_CORE::ReflectionType& refl : componentMap->at(static_cast<uint32_t>(i)).reflecteds)
         {
-         
-            ImGui::PushID(i);
+            ImGui::PushID("Refleted Type");
             ShowReflectedType(currentComponent, refl);
-            PC_CORE::Transform* transform = static_cast<PC_CORE::Transform*>(currentComponent);
             ImGui::PopID();
         }
+        ImGui::PopID();
+
     }
     ImGui::PopID();
 }
@@ -66,7 +69,7 @@ void Inspector::OnInput()
         ImGui::OpenPopup("Components");
     }
 
-    const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = PC_CORE::ComponentRegister::componentRegisterMap;
+    const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = &PC_CORE::ComponentRegister::componentRegisterMap;
     
     ImGui::SameLine();
     if (ImGui::BeginPopup("Components"))
@@ -119,5 +122,13 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& re
         break;
     case PC_CORE::DataType::COUT:
         break;
+    }
+}
+
+void Inspector::DeleteButton(Entity _entity, uint32_t _componentId)
+{
+    if (ImGui::SmallButton("Delete Component"))
+    {
+        m_Editor->world.scene.RemoveComponentInternal(_componentId, _entity);
     }
 }

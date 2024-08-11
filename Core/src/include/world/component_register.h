@@ -27,7 +27,7 @@ public:
         std::vector<ReflectionType> reflecteds;
     };
     
-    static inline std::map<uint32_t, RegisterComponentBackend>* componentRegisterMap = new std::map<uint32_t, RegisterComponentBackend>();
+    static inline std::map<uint32_t, RegisterComponentBackend> componentRegisterMap;
 
     template<typename T>
     static uint32_t RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc);
@@ -53,8 +53,8 @@ private:
 template <typename T>
 uint32_t ComponentRegister::RegisterComponent(CreateFunc _createFunc, DeleteFunc _deleteFunc)
 {
-    uint32_t index = static_cast<uint32_t>(componentRegisterMap->size());
-    componentRegisterMap->insert({index , {sizeof(T), _createFunc, _deleteFunc, GetCorrectComponentName(typeid(T).name()) }});
+    uint32_t index = static_cast<uint32_t>(componentRegisterMap.size());
+    componentRegisterMap.insert({index , {sizeof(T), _createFunc, _deleteFunc, GetCorrectComponentName(typeid(T).name()) }});
 
     return index;
 }

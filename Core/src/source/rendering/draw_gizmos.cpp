@@ -105,7 +105,7 @@ void DrawGizmos::CreateGraphiPipeline()
 void DrawGizmos::DrawColliders()
 {
     const Scene& scene = m_Renderer->m_CurrentWorld->scene;
-    std::vector<SphereCollider>* sphereColliders = nullptr;
+    const std::vector<SphereCollider>* sphereColliders = nullptr;
     scene.GetComponentData<SphereCollider>(&sphereColliders);
     DrawSphereCollider(*sphereColliders,scene);
     

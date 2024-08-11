@@ -9,6 +9,7 @@
 #include "world/world.hpp"
 #include "input/low_pass_filter.hpp"
 #include "scripting/scripting_lua.hpp"
+#include <core/physics_engine.h>
 
 
 BEGIN_PCCORE
@@ -17,6 +18,8 @@ class App
 public:
 	static constexpr const char* appName = "ParaConquer";
 	
+	World world;
+	
 	Window windowHandle;
 
 	Renderer renderer;
@@ -24,6 +27,8 @@ public:
 	VulkanImgui vulkanImgui;
 
 	ScriptingLua scriptingLua;
+
+	PhysicsWrapper physicsWrapper;
 	
 	virtual void Init();
 
@@ -34,10 +39,13 @@ public:
 	~App() = default;
 
 	virtual void Run();
+	
+	void WorldLoop();
 
 	void HandleResize();
 
 	static inline App* instance = nullptr;
+
 
 protected:
 };

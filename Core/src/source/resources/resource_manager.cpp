@@ -31,6 +31,7 @@ void ResourceManager::Init()
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/quad.obj");
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/sphere.obj");
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/viking_room.obj");
+    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube_map.obj");
 
     ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
     ResourceManager::CreateAndLoad<Texture>("assets/textures/viking_room.png");

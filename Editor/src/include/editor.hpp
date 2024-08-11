@@ -7,6 +7,9 @@
 #include "world/transform.hpp"
 
 BEGIN_EDITOR_PCCORE
+
+
+
 class Editor : public PC_CORE::App
 {
 public:
@@ -18,7 +21,9 @@ public:
 
     ~Editor() = default;
     
-    void InitScene();
+    void InitTestScene();
+
+    void DestroyTestScene();
     
     void Run() override;
 

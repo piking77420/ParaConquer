@@ -50,7 +50,7 @@ void SkyboxRender::Destroy()
 
 void SkyboxRender::InitCubeMapBackend()
 {
-    m_SkyBoxCubMapBackend.cubeMesh = ResourceManager::Get<Mesh>("cube.obj");;
+    m_SkyBoxCubMapBackend.cubeMesh = ResourceManager::Get<Mesh>("cube_map.obj");;
 
     // Shader
     ShaderSource* shaderVert = ResourceManager::Get<ShaderSource>("skybox.vert");

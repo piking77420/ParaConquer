@@ -12,7 +12,7 @@
 #include "physics/sphere_collider.hpp"
 #include "resources/resource_manager.hpp"
 #include "rendering/light.hpp"
-
+#include "time/core_time.hpp"
 
 
 using namespace PC_EDITOR_CORE;
@@ -26,15 +26,11 @@ void Editor::Init()
     InitEditorWindows();
 
 
-    World::world = new World;
-    InitScene();
-
+    InitTestScene();
 }
 
 void Editor::Destroy()
 {
-    delete World::world;
-    
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
@@ -42,28 +38,26 @@ void Editor::Destroy()
 }
 
 
-void Editor::InitScene()
+void Editor::InitTestScene()
 {
-
-    World& world = *World::world;
-
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
 
     Material* material = new Material;
     material->Load({emerauldBlock});
-    ResourceManager::Add<Material>("baseMaterial",material);
+    ResourceManager::Add<Material>("baseMaterial", material);
 
     Material* material2 = new Material;
     material2->Load({diamondtexture});
-    ResourceManager::Add<Material>("baseMaterial2",material2);
+    ResourceManager::Add<Material>("baseMaterial2", material2);
 
     const Entity entity = world.scene.CreateEntity();
+    world.scene.GetEntityInternal(entity)->name = "Ball";
     Transform* trans = world.scene.AddComponent<Transform>(entity);
-    trans->localPosition = {0.f,4.f,0.f};
+    trans->localPosition = {0.f, 4.f, 0.f};
 
-    
-    StaticMesh* staticMesh =world.scene.AddComponent<StaticMesh>(entity);
+
+    StaticMesh* staticMesh = world.scene.AddComponent<StaticMesh>(entity);
     staticMesh->mesh = ResourceManager::Get<Mesh>("sphere.obj");
     staticMesh->material = material;
 
@@ -78,32 +72,41 @@ void Editor::InitScene()
     staticMesh = world.scene.AddComponent<StaticMesh>(plane);
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material2;
-    //ptr->scale = {20,1,20};
+    ptr->scale = {20, 1, 20};
+}
+
+void Editor::DestroyTestScene()
+{
+    world.scene.~Scene();
+    world.scene = Scene();
+    ResourceManager::Delete<Material>("baseMaterial");
+    ResourceManager::Delete<Material>("baseMaterial2");
 }
 
 void Editor::Run()
 {
     while (!windowHandle.ShouldClose())
     {
-        World* currentWorld = World::world;
-        
+        const World* currentWorld = World::world;
         windowHandle.PoolEvents();
+        PC_CORE::Time::UpdateTime();
         HandleResize();
+        
         vulkanImgui.NewFrame();
 
         if (currentWorld != nullptr)
             renderer.BeginFrame(*currentWorld);
-        
+
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Begin();
             editorWindow->Update();
             editorWindow->End();
         }
-        
+
         if (World::world != nullptr)
-            World::world->Run();
-        
+            WorldLoop();
+
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Render();
@@ -116,12 +119,10 @@ void Editor::Run()
 
 void Editor::InitEditorWindows()
 {
-    m_EditorWindows.push_back(new EditWorldWindow(*this,"Scene"));
-    m_EditorWindows.push_back(new Profiler(*this,"Profiler"));
-    m_EditorWindows.push_back(new Inspector(*this,"Inspector"));
-    m_EditorWindows.push_back(new Hierachy(*this,"Hierachy"));
-    m_EditorWindows.push_back(new SceneButton(*this,"SceneButton"));
-    m_EditorWindows.push_back(new AssetBrowser(*this,"AssetBrowser"));
-
+    m_EditorWindows.push_back(new EditWorldWindow(*this, "Scene"));
+    m_EditorWindows.push_back(new Profiler(*this, "Profiler"));
+    m_EditorWindows.push_back(new Inspector(*this, "Inspector"));
+    m_EditorWindows.push_back(new Hierachy(*this, "Hierachy"));
+    m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
+    m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
 }
-

@@ -24,6 +24,9 @@ BEGIN_PCCORE
             std::vector<uint32_t> componentIdIndexInDataArray;
             std::string name = "";
         };
+
+        using ComponentDataArray = std::vector<std::vector<uint8_t>>;
+        
     public:
         
         Entity CreateEntity();
@@ -43,9 +46,14 @@ BEGIN_PCCORE
         const T* GetComponent(Entity entity) const;
 
         template<typename T>
-        void GetComponentData(std::vector<T>** _data) const;
+        void GetComponentData(const std::vector<T>** _data) const;
 
-        void GetComponentDataRaw(uint32_t _componentiD, std::vector<uint8_t>** _data) const;
+        template<typename T>
+        void GetComponentData(std::vector<T>** _data);
+
+        void GetComponentDataRaw(uint32_t _componentiD, const std::vector<uint8_t>** _data) const;
+
+        void GetComponentDataRaw(uint32_t _componentiD, std::vector<uint8_t>** _data);
         
         template <typename T>
         T* AddSystem();
@@ -72,9 +80,10 @@ BEGIN_PCCORE
 
         ~Scene();
     
+    
     private:
         
-        std::vector<uint8_t>* m_ComponentData = nullptr;
+        ComponentDataArray m_ComponentData;
 
         std::array<EntityInternal, MAX_ENTITIES> m_entities;
 
@@ -116,10 +125,17 @@ BEGIN_PCCORE
     }
 
     template <typename T>
-    void Scene::GetComponentData(std::vector<T>** _data) const
+    void Scene::GetComponentData(const std::vector<T>** _data) const
     {
         assert(ComponentHandle<T>::componentID >= 0);
-        *_data = reinterpret_cast< std::vector<T>*>(&m_ComponentData[ComponentHandle<T>::componentID]);
+        *_data = reinterpret_cast<const std::vector<T>*>(&m_ComponentData.at(ComponentHandle<T>::componentID));
+    }
+
+    template <typename T>
+    void Scene::GetComponentData(std::vector<T>** _data)
+    {
+        assert(ComponentHandle<T>::componentID >= 0);
+        *_data = reinterpret_cast<std::vector<T>*>(&m_ComponentData.at(ComponentHandle<T>::componentID));
     }
 
     template <typename T>

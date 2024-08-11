@@ -1,5 +1,6 @@
 ﻿#include "scene_button.hpp"
 
+#include "editor.hpp"
 #include "world/world.hpp"
 
 using namespace PC_EDITOR_CORE;
@@ -18,13 +19,32 @@ void SceneButton::Update()
 
 void SceneButton::OnEdit()
 {
-    PC_CORE::World* world = PC_CORE::World::world;
-    
+    PC_CORE::World& world = m_Editor->world;
+
+    const std::string buttonName = world.begin ? "Reset" : "Play";
+
     ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f);
-    if (ImGui::Button("Play"))
+    if (ImGui::Button(buttonName.c_str()))
     {
-        world->begin = true;
+        if (!world.begin)
+        {
+            world.begin = true;
+            world.run = true;
+        }
+        else
+        {
+            world.begin = false;
+            world.run = false;
+            m_Editor->DestroyTestScene();
+            m_Editor->InitTestScene();
+        }
     }
     ImGui::SameLine();
-    ImGui::Button("Reset");
+    if (ImGui::Button("Pause"))
+    {
+        if (world.begin)
+        {
+            world.run = !world.run;
+        }
+    }
 }

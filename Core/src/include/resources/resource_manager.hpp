@@ -27,6 +27,9 @@ public:
     template<class T>
     static T* Get(const std::string& _name);
 
+    template<class T>
+    static bool Delete(const std::string& _name);
+
 private:
     struct PathName
     {
@@ -67,6 +70,22 @@ T* ResourceManager::Get(const std::string& _name)
             return reinterpret_cast<T*>(it->second);
     }
    return nullptr;
+}
+
+template <class T>
+bool ResourceManager::Delete(const std::string& _name)
+{
+
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        if (it->second->name == _name)
+        {
+            delete it->second;
+            m_ResourcesMap.erase(it);
+            return true;
+        }
+    }
+    return false;
 }
 
 END_PCCORE

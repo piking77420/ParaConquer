@@ -9,6 +9,8 @@ struct SphereCollider
 {
     MAKE_COMPONENT(SphereCollider)
 
+    bool isTrigger = false;
+    
     float radius = 1.f;
 };
 

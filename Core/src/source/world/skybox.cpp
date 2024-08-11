@@ -24,7 +24,7 @@ void Skybox::Load(std::array<std::string, 6>& _maps)
     App::instance->renderer.skyboxRender.CreateSkyboxBackend(*this);
 }
 
-Skybox::~Skybox()
+void Skybox::Destroy()
 {
     delete texture;
 }

@@ -7,14 +7,14 @@
 #include "rendering/gpu_typedef.hpp"
 
 BEGIN_PCCORE
-    class SceneGraph
+class SceneGraph
 {
 public:
     std::vector<MatrixMeshes> globalMatricies;
     
     SceneGraph();
 
-    ~SceneGraph();
+    ~SceneGraph() = default;
     
     void UpdateTransforms(Scene* _scene);
     
