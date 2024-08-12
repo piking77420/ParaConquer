@@ -3,7 +3,6 @@
 #include "app.hpp"
 #include "editor.hpp"
 
-#include "world/transform.hpp"
 
 int main(int argc, char* argv[])
 {

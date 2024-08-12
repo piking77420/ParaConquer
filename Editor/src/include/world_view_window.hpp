@@ -6,6 +6,7 @@
 #include "rendering/vulkan/vulkan_viewport.hpp"
 
 BEGIN_EDITOR_PCCORE
+
 class WorldViewWindow : public EditorWindow
 {
 public:

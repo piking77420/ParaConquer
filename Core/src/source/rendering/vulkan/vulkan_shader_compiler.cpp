@@ -50,8 +50,14 @@ bool VulkanShaderCompiler::CompileToSpv(const std::filesystem::path& _shaderSour
     std::filesystem::path p = std::filesystem::current_path().parent_path();
     const std::string commandToSend = command + " " + _shaderSourcePath.generic_string() + " -o " + shaderSpvPath;
     
-    system(commandToSend.data());
-    
+    const int result = system(commandToSend.data());
+
+    if (result != 0)
+    {
+        PC_LOGERROR(std::string("SysCall error for compiling shader to spv" + shaderName).c_str());
+        return false;
+    }
+
     ReadFile(shaderSpvPath, _data);
 
     return true;

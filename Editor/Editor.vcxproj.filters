@@ -18,19 +18,16 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\editor_window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\editor.cpp">
+    <ClCompile Include="src\source\world_view_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\edit_world_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\world_view_window.cpp">
+    <ClCompile Include="src\source\editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\asset_browser.cpp">
+    <ClCompile Include="src\source\editor_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\hierachy.cpp">
@@ -51,21 +48,24 @@
     <ClCompile Include="src\source\transform_gizmo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\asset_browser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\include\editor_window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\include\editor.hpp">
+    <ClInclude Include="src\include\world_view_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\edit_world_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\world_view_window.hpp">
+    <ClInclude Include="src\include\editor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\asset_browser.hpp">
+    <ClInclude Include="src\include\editor_header.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\editor_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\hierachy.hpp">
@@ -86,7 +86,7 @@
     <ClInclude Include="src\include\transform_gizmo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\editor_header.hpp">
+    <ClInclude Include="src\include\asset_browser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
