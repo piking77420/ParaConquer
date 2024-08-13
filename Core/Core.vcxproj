@@ -29,7 +29,6 @@
     <Folder Include="src\source\world\system\" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\bonga\Desktop\renderer.hpp" />
     <ClInclude Include="src\include\assert.hpp" />
     <ClInclude Include="src\include\physics\physics_wrapper.hpp" />
     <ClInclude Include="src\include\scripting\scripting_lua.hpp" />
@@ -219,7 +218,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(IntDir)Core.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
@@ -401,7 +400,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>src\externals\include;src\include;%(AdditionalIncludeDirectories);src\externals\include\Imgui;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\externals\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);src\externals\include\Imgui;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
@@ -415,7 +414,8 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
-      <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
+      <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -426,7 +426,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;_ITERATOR_DEBUG_LEVEL = 0;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>src\externals\include;src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\externals\include;$(ProjectDir)src\include;src\externals\include\Imgui</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -445,7 +445,8 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
-      <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
+      <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
