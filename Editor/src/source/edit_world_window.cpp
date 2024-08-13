@@ -2,6 +2,7 @@
 
 #include "editor.hpp"
 #include "Imgui/imgui.h"
+#include "time/core_time.hpp"
 
 using namespace PC_EDITOR_CORE;
 
@@ -21,16 +22,15 @@ void PC_EDITOR_CORE::EditWorldWindow::Update()
 
 void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
 {
-    const auto io = ImGui::GetIO();
-
-
+    const float deltatime = PC_CORE::Time::DeltaTime();
+    
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
         deltass.Reset();
     }
 
-    RotateCamera(io.DeltaTime);
-    CameratMovment(io.DeltaTime);
+    RotateCamera(deltatime);
+    CameratMovment(deltatime);
     CameraChangeSpeed();
 }
 

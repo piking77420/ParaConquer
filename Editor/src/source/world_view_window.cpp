@@ -45,7 +45,7 @@ void WorldViewWindow::Update()
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(m_ImaguiDescriptorSet.at(PC_CORE::VulkanInterface::GetCurrentFrame()), ImVec2{viewportPanelSize.x, viewportPanelSize.y} ,    ImVec2(0, 1), 
+    ImGui::Image(m_ImaguiDescriptorSet.at(PC_CORE::VulkanInterface::GetCurrentFrame()), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
             ImVec2(1, 0));
 
 }
