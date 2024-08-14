@@ -14,6 +14,10 @@ public:
 
     void UpdatePhysics(float _deltatime, Scene* _scene);
 
+    static void AddForce(uint32_t _id, Tbx::Vector3f force);
+
+    static void AddImpulse(uint32_t _id, Tbx::Vector3f force);
+    
     PhysicsWrapper();
 
     ~PhysicsWrapper();

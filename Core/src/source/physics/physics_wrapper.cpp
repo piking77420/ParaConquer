@@ -12,18 +12,25 @@ void PhysicsWrapper::InitPhysicBody(Scene* _scene)
 
 void PhysicsWrapper::UpdatePhysics(float _deltatime, Scene* _scene)
 {
-    float accumulateTime = _deltatime;
-    
-    while (accumulateTime >= timeStep)
-    {
         physicsEngine.Update(timeStep);
-        accumulateTime -= timeStep;
-    }
+}
+
+void PhysicsWrapper::AddForce(uint32_t _id, Tbx::Vector3f force)
+{
+    
+}
+
+void PhysicsWrapper::AddImpulse(uint32_t _id, Tbx::Vector3f force)
+{
 }
 
 PhysicsWrapper::PhysicsWrapper()
 {
-    physicsEngine.Initialize({timeStep});
+    MotionCore::PhyscicsEngineInitilizationParameters initilizationParameters =
+        {
+        .timeStep = timeStep
+        };
+    physicsEngine.Initialize(&initilizationParameters);
 }
 
 PhysicsWrapper::~PhysicsWrapper()
@@ -37,3 +44,4 @@ void PhysicsWrapper::InitSphereCollider(Scene* scene)
     scene->GetComponentData<SphereCollider>(&sphereColliders);
 
 }
+
