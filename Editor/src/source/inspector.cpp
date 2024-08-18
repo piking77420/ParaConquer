@@ -99,6 +99,9 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& re
     {
     case PC_CORE::DataType::UNKNOW:
         break;
+    case PC_CORE::DataType::BOOL:
+        ImGui::Checkbox(reflection.name, static_cast<bool*>(dataPosition));
+        break;
     case PC_CORE::DataType::INT:
         ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition));
         break;
@@ -118,6 +121,9 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& re
         ImGui::DragFloat3(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::VEC4:
+        ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
+        break;
+    case PC_CORE::DataType::QUAT:
         ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
         break;
     case PC_CORE::DataType::COUT:

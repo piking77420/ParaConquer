@@ -9,6 +9,7 @@
 #include "world_view_window.hpp"
 #include "Imgui/imgui.h"
 #include "Imgui/imgui_impl_vulkan.h"
+#include "physics/rigid_body.hpp"
 #include "physics/sphere_collider.hpp"
 #include "resources/resource_manager.hpp"
 #include "rendering/light.hpp"
@@ -26,6 +27,7 @@ void Editor::Init()
     InitEditorWindows();
 
 
+    InitMaterial();
     InitTestScene();
 }
 
@@ -38,29 +40,37 @@ void Editor::Destroy()
 }
 
 
-void Editor::InitTestScene()
+void Editor::InitMaterial()
 {
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
-
     Material* material = new Material;
     material->Load({emerauldBlock});
     ResourceManager::Add<Material>("baseMaterial", material);
-
     Material* material2 = new Material;
     material2->Load({diamondtexture});
     ResourceManager::Add<Material>("baseMaterial2", material2);
+}
 
+
+void Editor::InitTestScene()
+{
+    const Material* material = ResourceManager::Get<Material>("baseMaterial");
+    const Material* material2 = ResourceManager::Get<Material>("baseMaterial2");
+    
+    // Ball
     const Entity entity = world.scene.CreateEntity();
-    world.scene.GetEntityInternal(entity)->name = "Ball";
+    world.scene.GetEntityInternal(entity)->name = "cubeOid";
     Transform* trans = world.scene.AddComponent<Transform>(entity);
-    trans->localPosition = {0.f, 4.f, 0.f};
-
-
+    trans->position = {0.f, 4.f, 0.f};
+    
     StaticMesh* staticMesh = world.scene.AddComponent<StaticMesh>(entity);
-    staticMesh->mesh = ResourceManager::Get<Mesh>("sphere.obj");
+    staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material;
-
+    world.scene.AddComponent<BoxCollider>(entity);
+    world.scene.AddComponent<RigidBody>(entity);
+    
+    //
     const Entity entity3 = world.scene.CreateEntity();
     world.scene.AddComponent<Transform>(entity3);
     auto dir = world.scene.AddComponent<DirLight>(entity3);
@@ -77,10 +87,11 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
+    world.physicsWrapper.DestroyBodies(&world.scene);
     world.scene.~Scene();
     world.scene = Scene();
-    ResourceManager::Delete<Material>("baseMaterial");
-    ResourceManager::Delete<Material>("baseMaterial2");
+    const Material* material = ResourceManager::Get<Material>("baseMaterial");
+    const Material* material2 = ResourceManager::Get<Material>("baseMaterial2");
 }
 
 void Editor::Run()
@@ -105,7 +116,11 @@ void Editor::Run()
         }
 
         if (World::world != nullptr)
+        {
             WorldLoop();
+            renderer.UpdateWorldBuffers();
+        }
+            
 
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
@@ -114,7 +129,7 @@ void Editor::Run()
         vulkanImgui.EndFrame();
         renderer.SwapBuffers();
     }
-    renderer.WaitGPU();
+   renderer.WaitGPU();
 }
 
 void Editor::InitEditorWindows()
@@ -126,3 +141,4 @@ void Editor::InitEditorWindows()
     m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
     m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
 }
+

@@ -19,14 +19,9 @@ public:
     Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
 
     Tbx::Vector3f scale = 1.f;
-
-    Tbx::Vector3f localPosition;
-
-    Tbx::Vector3f localRotation;
-    
 }; 
-REFLECT(Transform, localPosition)
-REFLECT(Transform, localRotation)
+REFLECT(Transform, position)
+REFLECT(Transform, rotation)
 REFLECT(Transform, scale)
 
 END_PCCORE

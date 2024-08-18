@@ -63,6 +63,8 @@ public:
     {
         return &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
     }
+    
+    void UpdateWorldBuffers();
 
 private:
     struct AsyncObjet
@@ -136,7 +138,6 @@ private:
     void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
     const Transform& transform, const Entity& entity);
 
-    void UpdateWorldBuffers();
 
     void InitBuffers();
     

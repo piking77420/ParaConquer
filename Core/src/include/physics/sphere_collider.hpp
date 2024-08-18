@@ -9,11 +9,16 @@ struct SphereCollider
 {
     MAKE_COMPONENT(SphereCollider)
 
+    uint32_t body_Id = -1;
+
+    bool draw = false;
+
     bool isTrigger = false;
     
-    float radius = 1.f;
+    float radius = 2.f;
 };
 
-REFLECT(SphereCollider,radius)
+REFLECT(SphereCollider, draw)
+REFLECT(SphereCollider, radius)
 
 END_PCCORE

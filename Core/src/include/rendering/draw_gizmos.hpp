@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "physics/box_collider.hpp"
 #include "physics/sphere_collider.hpp"
 #include "resources/mesh.hpp"
 #include "vulkan/vulkan_descriptor_pool.hpp"
@@ -50,17 +51,21 @@ private:
     uint32_t imageIndex = 0;
 
     Mesh* sphere = nullptr;
+
+    Mesh* cubeBoid = nullptr;
     
     void InitShader();
     
     void CreateGraphiPipeline();
-
+    
     void DrawColliders();
 
     void InitDescriptor();
 
     void DrawSphereCollider(const std::vector<SphereCollider>& sphereColliders , const Scene& scene);
-    
+
+    void DrawBoxCollider(const std::vector<BoxCollider>& sphereColliders , const Scene& scene);
+
 };
 
 END_PCCORE

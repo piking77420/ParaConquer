@@ -29,7 +29,6 @@ void SceneButton::OnEdit()
         if (!world.begin)
         {
             world.begin = true;
-            world.run = true;
         }
         else
         {

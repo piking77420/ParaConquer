@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "log.hpp"
+#include "physics/physics_wrapper.hpp"
 
 using namespace PC_CORE;
 

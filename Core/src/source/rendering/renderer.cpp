@@ -116,7 +116,6 @@ void Renderer::BeginFrame(const World& world)
     VK_CHECK_ERROR(result, "m_ForwardCommandBuffers[currentFrame]")
     
     m_CurrentWorld = &world;
-    UpdateWorldBuffers();
 }
 
 

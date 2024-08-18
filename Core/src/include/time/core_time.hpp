@@ -13,6 +13,8 @@ public:
 
     static void UpdateTime();
 
+    static void Init();
+
 private:
     static inline double currentTime = 0.f;
 

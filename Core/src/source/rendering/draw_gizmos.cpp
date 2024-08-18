@@ -23,6 +23,7 @@ void DrawGizmos::Init(PC_CORE::Renderer* renderer)
     InitDescriptor();
     CreateGraphiPipeline();
     sphere = ResourceManager::Get<Mesh>("sphere.obj");
+    cubeBoid = ResourceManager::Get<Mesh>("cube.obj");
 }
 
 void DrawGizmos::DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _imageIndex , const ViewPort& viewPort)
@@ -32,7 +33,7 @@ void DrawGizmos::DrawGizmosForward(VkCommandBuffer _commandBuffer, uint32_t _ima
         
     currentCommandBuffer = &_commandBuffer;
     imageIndex = _imageIndex;
-    vkCmdBindPipeline(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GizmoPipeline.Get());
+    
     DrawColliders();
 }
 
@@ -107,8 +108,15 @@ void DrawGizmos::DrawColliders()
     const Scene& scene = m_Renderer->m_CurrentWorld->scene;
     const std::vector<SphereCollider>* sphereColliders = nullptr;
     scene.GetComponentData<SphereCollider>(&sphereColliders);
-    DrawSphereCollider(*sphereColliders,scene);
+    const std::vector<BoxCollider>* boxCollider = nullptr;
+    scene.GetComponentData<BoxCollider>(&boxCollider);
+
+    vkCmdBindPipeline(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GizmoPipeline.Get());
+    vkCmdBindDescriptorSets(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
+           1, &m_DescriptorSet[VulkanInterface::GetCurrentFrame()], 0, nullptr);
     
+    DrawSphereCollider(*sphereColliders,scene);
+    DrawBoxCollider(*boxCollider, scene);
 }
 
 void DrawGizmos::InitDescriptor()
@@ -143,27 +151,25 @@ void DrawGizmos::InitDescriptor()
 void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereColliders, const Scene& scene)
 {
     const VkBuffer vertexBuffers[] = { sphere->vulkanVertexBuffer.GetHandle()};
-    const VkDeviceSize offsets[] = {0};
-        
+    constexpr VkDeviceSize offsets[] = {0};
+    
     vkCmdBindVertexBuffers(*currentCommandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(*currentCommandBuffer, sphere->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-    vkCmdBindDescriptorSets(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
-               1, &m_DescriptorSet[VulkanInterface::GetCurrentFrame()], 0, nullptr);
-    
     for (size_t i = 0; i < sphereColliders.size(); i++)
     {
         const SphereCollider& sphereCollider = sphereColliders.at(i);
         
-        if (!IsValid(sphereCollider.componentHolder))
+        if (!sphereCollider.draw || !IsValid(sphereCollider.componentHolder))
             continue;
 
         const Transform* transform = scene.GetComponent<Transform>(sphereCollider.componentHolder.entityID);
         if (!transform)
             continue;
-        
-        Tbx::Vector3f color = {0.f,1.f,0.f};
+
+        const Tbx::Vector3f color = {0.f,1.f,0.f};
         Tbx::Matrix4x4f trs;
-        Trs3D<float>(transform->localPosition, Tbx::Quaternionf::Identity(), sphereCollider.radius * 0.5f, &trs);
+        constexpr float zFightingOffSet = 0.001f;
+        Trs3D<float>(transform->position, Tbx::Quaternionf::Identity(), sphereCollider.radius * 0.5f + zFightingOffSet, &trs);
 
         const GizmoStruct gizmoStruct =
             {
@@ -174,5 +180,40 @@ void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereCol
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(GizmoStruct), &gizmoStruct);
         vkCmdDrawIndexed(*currentCommandBuffer, sphere->indicies.size(), 1, 0, 0, 0);
+    }
+}
+
+void DrawGizmos::DrawBoxCollider(const std::vector<BoxCollider>& _boxCollider, const Scene& scene)
+{
+    const VkBuffer vertexBuffers[] = { cubeBoid->vulkanVertexBuffer.GetHandle()};
+    constexpr VkDeviceSize offsets[] = {0};
+    
+    vkCmdBindVertexBuffers(*currentCommandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(*currentCommandBuffer, cubeBoid->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+
+    for (size_t i = 0; i < _boxCollider.size(); i++)
+    {
+        const BoxCollider& box = _boxCollider.at(i);
+        
+        if (!box.draw || !IsValid(box.componentHolder))
+            continue;
+
+        const Transform* transform = scene.GetComponent<Transform>(box.componentHolder.entityID);
+        if (!transform)
+            continue;
+
+        const Tbx::Vector3f color = {0.f,1.f,0.f};
+        Tbx::Matrix4x4f trs;
+        Trs3D<float>(transform->position + box.center, transform->rotation.Normalize(), box.size, &trs);
+
+        const GizmoStruct gizmoStruct =
+            {
+            trs,
+            color
+            };
+        
+        vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0, sizeof(GizmoStruct), &gizmoStruct);
+        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->indicies.size(), 1, 0, 0, 0);
     }
 }

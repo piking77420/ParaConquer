@@ -19,6 +19,7 @@ void App::Init()
 {
     PC_LOG("App Init")
     instance = this;
+    Time::Init();
     World::world = &world;
    
     windowHandle.Init();
@@ -65,16 +66,16 @@ void App::Run()
 void App::WorldLoop()
 {
     world.sceneGraph.UpdateTransforms(&world.scene);
-    if (world.run && world.begin == false)
+    if (!world.run && world.begin == true)
     {
-        physicsWrapper.InitPhysicBody(&world.scene);
+        physicsWrapper.InitBodies(&world.scene);
         world.Begin();
         world.run = true;
     }
     
     if (world.run)
     {
-        physicsWrapper.UpdatePhysics(PC_CORE::Time::GetTime(), &world.scene);
+        physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
         world.Update();
     }
     
