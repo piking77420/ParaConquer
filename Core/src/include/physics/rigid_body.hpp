@@ -10,16 +10,19 @@ struct RigidBody
 {
     MAKE_COMPONENT(RigidBody);
 
+    bool useGravity = true;
+
     float mass = 1.f;
 
     float restitutionCoef = 1.f;
 
-    float damping = 0.1f;
+    float damping = 0.90f;
 
     float angularDamping = 0.1f;
 };
 
 REFLECT(RigidBody, mass);
+REFLECT(RigidBody, useGravity);
 REFLECT(RigidBody, restitutionCoef);
 REFLECT(RigidBody, damping);
 REFLECT(RigidBody, angularDamping);

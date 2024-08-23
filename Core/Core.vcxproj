@@ -32,6 +32,7 @@
     <ClInclude Include="src\include\physics\box_collider.hpp" />
     <ClInclude Include="src\include\physics\physics_wrapper.hpp" />
     <ClInclude Include="src\include\physics\rigid_body.hpp" />
+    <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\scripting\scripting_lua.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
@@ -60,7 +61,6 @@
     <ClInclude Include="src\include\guid.hpp" />
     <ClInclude Include="src\include\input\low_pass_filter.hpp" />
     <ClInclude Include="src\include\log.hpp" />
-    <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\reflection\reflection_typedef.hpp" />
     <ClInclude Include="src\include\reflection\reflector.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
@@ -123,161 +123,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\pc_assert.cpp" />
-    <ClCompile Include="src\source\physics\box_collider.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>x64\Debug\Core.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;;;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Data\Isart\Projet\C++\ParaConquer\Core\src\externals\include;C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/FS </AdditionalOptions>
-      <LibCompiled>true</LibCompiled>
-    </ClCompile>
+    <ClCompile Include="src\source\physics\box_collider.cpp" />
     <ClCompile Include="src\source\physics\physics_wrapper.cpp" />
-    <ClCompile Include="src\source\physics\rigid_body.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\Core.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>x64\Debug\Core.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;;;LUA_BUILD_AS_DLL</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Data\Isart\Projet\C++\ParaConquer\Core\src\externals\include;C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/FS </AdditionalOptions>
-      <LibCompiled>true</LibCompiled>
-    </ClCompile>
+    <ClCompile Include="src\source\physics\rigid_body.cpp" />
+    <ClCompile Include="src\source\physics\sphere_collider.cpp" />
     <ClCompile Include="src\source\scripting\scripting_lua.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui_demo.cpp" />
@@ -290,7 +139,6 @@
     <ClCompile Include="src\source\guid.cpp" />
     <ClCompile Include="src\source\input\low_pass_filter.cpp" />
     <ClCompile Include="src\source\log.cpp" />
-    <ClCompile Include="src\source\physics\sphere_collider.cpp" />
     <ClCompile Include="src\source\reflection\reflector.cpp" />
     <ClCompile Include="src\source\rendering\camera.cpp" />
     <ClCompile Include="src\source\rendering\draw_gizmos.cpp" />

@@ -83,7 +83,7 @@ DataType Reflector::TypeToDataType()
     }
     else
     {
-        static_assert("NotSupported type");
+        assert("NotSupportedType")
     }
 
     return type; 

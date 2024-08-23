@@ -95,6 +95,7 @@ void VulkanImgui::Render(VkCommandBuffer* _commandBuffer)
 
 void VulkanImgui::Theme()
 {
+	return;
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 	ImGuiStyle& style = ImGui::GetStyle();

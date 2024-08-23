@@ -66,10 +66,12 @@ void App::Run()
 void App::WorldLoop()
 {
     world.sceneGraph.UpdateTransforms(&world.scene);
-    if (!world.run && world.begin == true)
+    
+    if (world.begin)
     {
         physicsWrapper.InitBodies(&world.scene);
         world.Begin();
+        world.begin = false;
         world.run = true;
     }
     
