@@ -179,7 +179,7 @@ void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereCol
         
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(GizmoStruct), &gizmoStruct);
-        vkCmdDrawIndexed(*currentCommandBuffer, sphere->indicies.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(*currentCommandBuffer, sphere->GetNbrOfIndicies(), 1, 0, 0, 0);
     }
 }
 
@@ -214,7 +214,7 @@ void DrawGizmos::DrawBoxCollider(const std::vector<BoxCollider>& _boxCollider, c
         
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(GizmoStruct), &gizmoStruct);
-        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->indicies.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->GetNbrOfIndicies(), 1, 0, 0, 0);
     }
 }
 
@@ -252,7 +252,7 @@ void DrawGizmos::DrawAABBCollider(const std::vector<BoxCollider>& _boxColliders,
         
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(GizmoStruct), &gizmoStruct);
-        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->indicies.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->GetNbrOfIndicies(), 1, 0, 0, 0);
     }
     
     
@@ -281,7 +281,7 @@ void DrawGizmos::DrawAABBCollider(const std::vector<BoxCollider>& _boxColliders,
         
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
            0, sizeof(GizmoStruct), &gizmoStruct);
-        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->indicies.size(), 1, 0, 0, 0);
+        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->GetNbrOfIndicies(), 1, 0, 0, 0);
     }
 }
 

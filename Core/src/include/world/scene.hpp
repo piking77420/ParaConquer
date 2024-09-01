@@ -85,7 +85,7 @@ BEGIN_PCCORE
         
         ComponentDataArray m_ComponentData;
 
-        std::array<EntityInternal, MAX_ENTITIES> m_entities;
+        std::vector<EntityInternal> m_entities;
 
         std::vector<System*> systems;
         

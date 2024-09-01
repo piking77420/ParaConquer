@@ -19,8 +19,6 @@ public:
 
     Skybox skybox;
 
-    PhysicsWrapper physicsWrapper;
-
     bool begin = false;
 
     bool run = false;

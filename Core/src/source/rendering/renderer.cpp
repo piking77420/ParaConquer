@@ -19,6 +19,7 @@ using namespace PC_CORE;
 
 void Renderer::Init(Window* _window)
 {
+    m_GpuLights = new GpuLight();
     vulkanViewport.Init(this);
     const ShaderSource* vertex = ResourceManager::Get<ShaderSource>("shader_base.vert");
     const ShaderSource* frag = ResourceManager::Get<ShaderSource>("shader_base.frag");
@@ -58,6 +59,7 @@ void Renderer::RecreateSwapChain(Window* _window)
 
 void Renderer::Destroy()
 {
+    delete m_GpuLights;
     // Wait the gpu
     vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
     
@@ -466,7 +468,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     {
         if (!IsValid(dirlights->at(i).componentHolder))
         {
-            m_GpuLights.gpuDirLights[i] = {};
+            m_GpuLights->gpuDirLights[i] = {};
             continue;
         }
 
@@ -475,9 +477,9 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
 
         Tbx::Vector3f dir = transform.rotation * Tbx::Vector3f::UnitY();
 
-        m_GpuLights.gpuDirLights[i].direction = dir.Normalize();
-        m_GpuLights.gpuDirLights[i].color = dirlights->at(i).color;
-        m_GpuLights.gpuDirLights[i].intensity = dirlights->at(i).intensity;
+        m_GpuLights->gpuDirLights[i].direction = dir.Normalize();
+        m_GpuLights->gpuDirLights[i].color = dirlights->at(i).color;
+        m_GpuLights->gpuDirLights[i].intensity = dirlights->at(i).intensity;
         nbrOfDirLight++;
     }
 
@@ -485,15 +487,15 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     {
         if (!IsValid(pointLights->at(i).componentHolder))
         {
-            m_GpuLights.gpuSpotLight[i] = {};
+            m_GpuLights->gpuSpotLight[i] = {};
             continue;
         }
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             pointLights->at(i).componentHolder.entityID);
-        m_GpuLights.gpuPointLights[i].position = transform.position;
-        m_GpuLights.gpuDirLights[i].color = pointLights->at(i).color;
-        m_GpuLights.gpuDirLights[i].intensity = pointLights->at(i).intensity;
+        m_GpuLights->gpuPointLights[i].position = transform.position;
+        m_GpuLights->gpuDirLights[i].color = pointLights->at(i).color;
+        m_GpuLights->gpuDirLights[i].intensity = pointLights->at(i).intensity;
         nbrOfPointLight++;
     }
 
@@ -501,25 +503,25 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     {
         if (!IsValid(spotLights->at(i).componentHolder))
         {
-            m_GpuLights.gpuSpotLight[i] = {};
+            m_GpuLights->gpuSpotLight[i] = {};
             continue;
         }
 
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
             dirlights->at(i).componentHolder.entityID);
         Tbx::Vector3f dir = transform.rotation * -Tbx::Vector3f::UnitY();
-        m_GpuLights.gpuSpotLight[i].position = transform.position;
-        m_GpuLights.gpuSpotLight[i].direction = dir;
-        m_GpuLights.gpuSpotLight[i].color = spotLights->at(i).color;
-        m_GpuLights.gpuSpotLight[i].intensity = spotLights->at(i).intensity;
+        m_GpuLights->gpuSpotLight[i].position = transform.position;
+        m_GpuLights->gpuSpotLight[i].direction = dir;
+        m_GpuLights->gpuSpotLight[i].color = spotLights->at(i).color;
+        m_GpuLights->gpuSpotLight[i].intensity = spotLights->at(i).intensity;
         nbrOfSpotLight++;
     }
 
-    m_GpuLights.nbrOfDirLight = static_cast<int32_t>(nbrOfDirLight);
-    m_GpuLights.nbrOfPointLight = static_cast<int32_t>(nbrOfPointLight);
-    m_GpuLights.nbrOfSpotLight = static_cast<int32_t>(nbrOfSpotLight);
+    m_GpuLights->nbrOfDirLight = static_cast<int32_t>(nbrOfDirLight);
+    m_GpuLights->nbrOfPointLight = static_cast<int32_t>(nbrOfPointLight);
+    m_GpuLights->nbrOfSpotLight = static_cast<int32_t>(nbrOfSpotLight);
 
-    m_ShaderStoragesLight[_currentFrame].Update(&m_GpuLights, sizeof(GpuLight));
+    m_ShaderStoragesLight[_currentFrame].Update(m_GpuLights, sizeof(GpuLight));
     END_TIMER()
 }
 
@@ -602,7 +604,7 @@ void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex
     vkCmdBindIndexBuffer(commandBuffer, staticMesh.mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     vkCmdPushConstants(commandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int32_t),
                        &entity);
-    vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->indicies.size(), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->GetNbrOfIndicies(), 1, 0, 0, 0);
 }
 
 void Renderer::UpdateWorldBuffers()
