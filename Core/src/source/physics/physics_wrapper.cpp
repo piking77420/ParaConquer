@@ -109,8 +109,7 @@ void PhysicsWrapper::InitSphereCollider(Scene* scene)
                 .restitutionCoeff = rigidBody->restitutionCoef
                 }
             };
-
-        _bodyCreateInfo.bodyTypeInfo.position = transform->position;
+        
         _bodyCreateInfo.bodyTypeInfo.data.sphere.radius = s.radius;
         _bodyCreateInfo.bodyTypeInfo.bodyType = MotionCore::SPHERE;
         
@@ -154,9 +153,9 @@ void PhysicsWrapper::InitBoxCollider(Scene* _scene)
                 .restitutionCoeff = rigidBody->restitutionCoef
                 }
             };
-
-        _bodyCreateInfo.bodyTypeInfo.position = box.center;
-        _bodyCreateInfo.bodyTypeInfo.data.aabb.extend = box.size * 0.5f;
+        
+        _bodyCreateInfo.bodyTypeInfo.data.obb.extend = box.size * 0.5f;
+        Tbx::RotationMatrix3D(static_cast<Tbx::Quaternion<MotionCore::numeric>>(transform->rotation), &_bodyCreateInfo.bodyTypeInfo.data.obb.orientationMatrix);
         _bodyCreateInfo.bodyTypeInfo.bodyType = MotionCore::BOX;
         
         box.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);

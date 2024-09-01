@@ -12,11 +12,14 @@ struct BoxCollider
     uint32_t body_Id = -1;
 
     bool draw = false;
+
+    bool drawAABB = false;
     
     Tbx::Vector3f size = Tbx::Vector3f(1.f);
     Tbx::Vector3f center;
 };
 
+REFLECT(BoxCollider, drawAABB)
 REFLECT(BoxCollider, draw)
 REFLECT(BoxCollider, size)
 REFLECT(BoxCollider, center)

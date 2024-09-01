@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <cassert>
+
 #include "world/component.hpp"
 #include "core_header.hpp"
 #include <functional> // For std::function
@@ -83,7 +85,7 @@ DataType Reflector::TypeToDataType()
     }
     else
     {
-        assert("NotSupportedType")
+        assert("NotSupportedType");
     }
 
     return type; 

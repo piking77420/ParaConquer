@@ -30,6 +30,7 @@
   <ItemGroup>
     <ClInclude Include="src\include\assert.hpp" />
     <ClInclude Include="src\include\physics\box_collider.hpp" />
+    <ClInclude Include="src\include\physics\physics.h" />
     <ClInclude Include="src\include\physics\physics_wrapper.hpp" />
     <ClInclude Include="src\include\physics\rigid_body.hpp" />
     <ClInclude Include="src\include\physics\sphere_collider.hpp" />

@@ -10,6 +10,7 @@
 #include "vulkan/vulkan_pipeline_layout.hpp"
 #include "vulkan/vulkan_shader_stage.hpp"
 #include "vulkan/vulkan_viewport.hpp"
+#include "world/transform.hpp"
 
 
 BEGIN_PCCORE
@@ -31,6 +32,8 @@ private:
         Tbx::Matrix4x4f trs;
         Tbx::Vector3f color;
     };
+
+    static constexpr float zFightingOffSet = 0.001f;
     
     const Renderer* m_Renderer = nullptr;
 
@@ -64,7 +67,18 @@ private:
 
     void DrawSphereCollider(const std::vector<SphereCollider>& sphereColliders , const Scene& scene);
 
-    void DrawBoxCollider(const std::vector<BoxCollider>& sphereColliders , const Scene& scene);
+    void DrawBoxCollider(const std::vector<BoxCollider>& boxColliders , const Scene& scene);
+
+    void DrawAABBCollider(const std::vector<BoxCollider>& _boxColliders , const std::vector<SphereCollider>& _sphereColliders, const Scene& scene);
+
+    struct OutAABB
+    {
+        Tbx::Vector3f center;
+        Tbx::Vector3f extent;   
+    };
+    
+    OutAABB  GetAABBFromSphereCollider(const Transform& _transform, const SphereCollider& _sphere);
+    OutAABB GetAABBFromBoxCollider(const Transform& _transform, const BoxCollider& _boxCollider);
 
 };
 

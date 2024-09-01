@@ -13,11 +13,17 @@ struct SphereCollider
 
     bool draw = false;
 
+    bool drawAABB = false;
+
     bool isTrigger = false;
     
     float radius = 2.f;
+
+    Tbx::Vector3f center;
 };
 
+REFLECT(SphereCollider, center)
+REFLECT(SphereCollider, drawAABB)
 REFLECT(SphereCollider, draw)
 REFLECT(SphereCollider, radius)
 
