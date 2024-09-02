@@ -25,12 +25,6 @@ void Editor::Init()
     io = &ImGui::GetIO();
     InitEditorWindows();
     InitTestScene();
-
-    auto it = Reflector::GetType<Transform>();
-        
-
-    it = Reflector::GetType<Transform>();
-
 }
 
 void Editor::Destroy()

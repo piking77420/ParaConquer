@@ -2,11 +2,11 @@
 #include <vector>
 
 #include "core_header.hpp"
-#include "entity_register.h"
 #include "ecs/ecs_header.h"
 
 BEGIN_PCCORE
-	class SparseSet
+
+class SparseSet
 {
 public:
 	uint8_t* GetData();
@@ -17,14 +17,24 @@ public:
 
 	size_t GetDensity() const;
 
-	void Alloc(EntityId entity_id);
+	uint8_t* Alloc(EntityId entity_id);
+
+	void Free(EntityId entity_id);
+
+	const uint8_t* GetEntityData(EntityId entity_id) const;
+
+	uint8_t* GetEntityData(EntityId entity_id);
+
+	bool Empty() const;
+
+	SparseSet() = default;
+
+	~SparseSet() = default;
 	
 	SparseSet(size_t _densitySize);
 
 	SparseSet(size_t _densitySize, size_t _size);
-
-	SparseSet(size_t _densitySize, size_t _size, CreateFunc _createFunc, DeleteFunc _deleteFunc);
-
+	
 	template<typename T>
 	T* begin()
 	{
@@ -51,15 +61,17 @@ public:
 	}
 
 private:
+	static constexpr  uint32_t NULL_INDEX = -1;
+
+	
+	/**
+	 * Size of one item store
+	 */
 	size_t m_Density;
 	
 	std::vector<uint8_t> m_Dense;
 
 	std::vector<EntityId> m_SparseList;
-
-	CreateFunc m_CreateFunc;
-
-	DeleteFunc m_DeleteFunc;
 };
 
 

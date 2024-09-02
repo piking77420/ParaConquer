@@ -33,7 +33,7 @@ public:
     
     ImGuiIO* io = nullptr;
 
-    //Entity selected = NULL_ENTITY;
+    EntityId selected = INVALID_ENTITY_ID;
 };
 
 END_PCCORE

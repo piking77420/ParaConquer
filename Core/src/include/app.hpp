@@ -11,9 +11,11 @@
 #include "scripting/scripting_lua.hpp"
 #include <core/physics_engine.h>
 
+#include "ecs/ecs_context.h"
+
 
 BEGIN_PCCORE
-class App
+	class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
@@ -43,6 +45,8 @@ public:
 	void WorldLoop();
 
 	void HandleResize();
+
+	void RegisterComponent();
 
 	static inline App* instance = nullptr;
 

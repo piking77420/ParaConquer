@@ -1,29 +1,45 @@
 ﻿#pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 
 #include "core_header.hpp"
 #include "ecs_header.h"
+#include "sparse_sets.hpp"
 
 BEGIN_PCCORE
 
-using CreateFunc = void (*)(std::vector<uint8_t>* _compdata, size_t _index, EntityId _entity);
-using DeleteFunc = void (*)(void* _ptr);
-
-    struct CreateRegisterComponentInfo
+    class EntityRegister
     {
-        uint32_t reflectHash = -1;
-        std::string name;
+    public:
+        uint8_t* GetComponentData(uint32_t _componentKey);
+
+        uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey);
+
+        const uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey) const;
+
+        uint8_t* CreateComponent(EntityId _entityID, uint32_t _componentKey);
+
+        void DeleteComponent(EntityId _entityID, uint32_t _componentKey);
+        
+        EntityId CreateEntity();
+
+        void DestroyEntity(EntityId entityId);
+
+        EntityRegister();
+
+        ~EntityRegister() = default;
+
+    private:
+        struct SparsetKey
+        {
+            uint32_t key;
+            SparseSet sparse;
+        };
+        std::array<EntityId, MAX_ENTITIES> m_Entities;
+
+        std::vector<SparsetKey> sparseSets;
     };
-
-class EntityRegister
-{
-public:
-    void RegisterComponent(const CreateRegisterComponentInfo& _CreateRegisterComponentInfo);
-
-private:
-    //std::vector<SparseSetsComponent> sparseSets;
-};
 
 END_PCCORE

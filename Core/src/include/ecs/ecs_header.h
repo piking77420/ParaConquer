@@ -8,3 +8,4 @@ constexpr EntityId MAX_ENTITIES = 100;
 
 #define IsValidEntityId(entityId) \
     assert((entityId) != INVALID_ENTITY_ID && (entityId) < MAX_ENTITIES);\
+

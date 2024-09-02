@@ -23,6 +23,6 @@ public:
     void Load(std::array<std::string,6>& _maps);
 };
 
-REFLECT(Texture, textureSize)
+REFLECT_MEMBER(Texture, textureSize)
 
 END_PCCORE

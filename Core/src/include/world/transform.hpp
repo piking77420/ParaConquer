@@ -1,24 +1,17 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "ecs/ecs_front.h"
 #include "reflection/reflector.hpp"
 #include "math/quaternion.hpp"
 #include "math/toolbox_typedef.hpp"
 
 BEGIN_PCCORE
 
-struct BLABLA
-{
-    float x;
-    float g;
-};
 
-class Transform
-{
-public:
-    //MAKE_COMPONENT(Transform)
+MAKE_ECS_COMPONENT(Transform)
 
-    //Entity parentId = NULL_ENTITY;
+    EntityId parentId = INVALID_ENTITY_ID;
     
     Tbx::Vector3f position;
 
@@ -28,17 +21,12 @@ public:
 
     Tbx::Vector3f localPosition;
 
-    BLABLA blal;
-
     Tbx::Vector3f localRotation;
-    
-}; 
-REFLECT(Transform, localPosition)
-REFLECT(Transform, blal)
-REFLECT(BLABLA, x)
-REFLECT(BLABLA, g)
-
-//REFLECT(Transform, localRotation)
-//REFLECT(Transform, scale)
+private:
+    int x = 0; 
+};
+REFLECT_MEMBER(Transform, localPosition)
+REFLECT_MEMBER(Transform, localRotation)
+REFLECT_MEMBER(Transform, scale)
 
 END_PCCORE

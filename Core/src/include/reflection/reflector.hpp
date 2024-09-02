@@ -42,11 +42,16 @@ public:
     template<typename T>
     static const ReflectedType& GetType();
 
+    template<typename T>
+    static uint32_t GetKey();
+
     static const ReflectedType& GetTypeFromHash(uint32_t _hash);
 
     template<typename Holder, typename MemberType>
-    static Members ReflectEntry(size_t _offset, const char* _holderName, const char* _memberName);
+    static Members ReflectMember(size_t _offset, const char* _holderName, const char* _memberName);
 
+    template<typename Holder>
+    static ReflectedType* ReflectType();
     
 private:
     template <typename T>
@@ -60,18 +65,26 @@ private:
 };
 
 
+template <typename T>
+uint32_t Reflector::GetKey()
+{
+    return KR_v2_hash(GetCorrectNameFromTypeId(typeid(T).name()).c_str());
+}
 
 template <typename T>
 const ReflectedType& Reflector::GetType()
 {
-    const uint32_t key = KR_v2_hash(GetCorrectNameFromTypeId(typeid(T).name()).c_str());
+    const uint32_t key = GetKey<T>();
     
     return m_RelfectionMap.at(key);
 }
 
+
+
 template <typename Holder, typename MemberType>
-Members Reflector::ReflectEntry(size_t _offset, const char* _holderName, const char* _memberName)
+Members Reflector::ReflectMember(size_t _offset, const char* _holderName, const char* _memberName)
 {
+  
     const std::string holderNameS = GetCorrectNameFromTypeId(_holderName);
     const std::string memberNameS = GetCorrectNameFromTypeId(_memberName);
 
@@ -99,8 +112,6 @@ Members Reflector::ReflectEntry(size_t _offset, const char* _holderName, const c
     const uint32_t hashMemnber = KR_v2_hash(memberNameS.c_str());
     
     const bool DoesContainMemberType = m_RelfectionMap.contains(hashMemnber);
-
-    
     if (!DoesContainMemberType)
     {
         // Create New Node in map
@@ -124,6 +135,30 @@ Members Reflector::ReflectEntry(size_t _offset, const char* _holderName, const c
     it->membersKey.push_back({_offset, hashMemnber});
 
     return {};
+}
+
+template <typename Holder>
+ReflectedType* Reflector::ReflectType()
+{
+    const std::string holderNameS = GetCorrectNameFromTypeId(typeid(Holder).name());
+    const uint32_t hashCodeHolder = KR_v2_hash(holderNameS.c_str());
+
+    const bool containType = m_RelfectionMap.contains(hashCodeHolder);
+
+    if (containType)
+        return &m_RelfectionMap.at(hashCodeHolder);
+    
+    const ReflectedType holderData =
+        {
+        .dataNature = TypeToDataType<Holder>(),
+        .name = holderNameS,
+        .dataSize = sizeof(Holder),
+        .membersKey = {}
+        };
+        
+    m_RelfectionMap.insert({hashCodeHolder,holderData});
+
+    return &m_RelfectionMap.at(hashCodeHolder);
 }
 
 
@@ -189,8 +224,27 @@ DataType Reflector::TypeToDataType()
     return type; 
 }
 
-#define REFLECT(CurrentType, memberName) \
-inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectEntry<CurrentType, decltype(CurrentType::memberName)>(offsetof(CurrentType, memberName), typeid(CurrentType).name(), typeid(decltype(CurrentType::memberName)).name());\
+#define REFLECT(CurrentType) \
+inline ReflectedType* reflectInfo#CurrentType = Reflector::ReflectType<CurrentType>();\
+
+#define REFLECT_MEMBER(CurrentType, memberName) \
+inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName)>(offsetof(CurrentType, memberName), typeid(CurrentType).name(), typeid(decltype(CurrentType::memberName)).name());\
+
+template <typename Tag>
+typename Tag::type saved_private_v;
+
+template <typename Tag, typename Tag::type x>
+bool save_private_v = (saved_private_v<Tag> = x);
+
+#define GetPrivateVariable(className, memberName) \
+struct Widget_##memberName##_ { \
+using type = decltype(&className::memberName); \
+}; \
+template bool save_private_v<typename Widget_##memberName##_::type, &className::memberName>;\
+
+#define GetPrivateFunc(privateVarMember)\
+struct Widget_f_ { using type = int (Widget::*)() const; };\
+template bool save_private_v<Widget_f_, &Widget::f_>;\
 
 END_PCCORE
 

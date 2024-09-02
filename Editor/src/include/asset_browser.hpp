@@ -5,7 +5,7 @@
 #include "resources/resource.hpp"
 
 BEGIN_EDITOR_PCCORE
-    class AssetBrowser : public EditorWindow
+class AssetBrowser : public EditorWindow
 {
 public:
     AssetBrowser(Editor& _editor, const std::string& _name);

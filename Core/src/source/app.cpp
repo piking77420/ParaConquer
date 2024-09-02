@@ -91,4 +91,3 @@ void App::HandleResize()
     }
 }
 
-
