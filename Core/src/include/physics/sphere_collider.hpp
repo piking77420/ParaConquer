@@ -1,19 +1,16 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "ecs/component.h"
 #include "reflection/reflector.hpp"
-#include "world/component.hpp"
 
 BEGIN_PCCORE
-struct SphereCollider
+struct SphereCollider : public Component
 {
-    MAKE_COMPONENT(SphereCollider)
 
     bool isTrigger = false;
     
     float radius = 1.f;
 };
-
-REFLECT(SphereCollider,radius)
 
 END_PCCORE

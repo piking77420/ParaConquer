@@ -3,11 +3,11 @@
 #include <cassert>
 
 #include "log.hpp"
-#include "world/component.hpp"
-#include "world/component_register.h"
+//#include "world/component.hpp"
+//#include "world/component_register.h"
 
 using namespace PC_CORE;
-
+/*
 Entity Scene::CreateEntity()
 {
     for (uint32_t i = 0; i < m_entities.size(); ++i)
@@ -243,3 +243,12 @@ bool Scene::HadComponent(Entity _entity, uint32_t _componentId, uint32_t* _outIn
 
     return true;
 }
+*/
+void Scene::Begin()
+{
+}
+
+void Scene::Update()
+{
+}
+

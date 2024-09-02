@@ -7,12 +7,16 @@ enum class DataType
 {
     UNKNOW,
     INT,
+    VEC2I,
+    VEC3I,
     UINT,
     FLOAT,
     DOUBLE,
     VEC2,
     VEC3,
     VEC4,
+    COMPOSITE,
+    Vector,
     
     COUT
 };

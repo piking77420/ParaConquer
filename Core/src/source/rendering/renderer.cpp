@@ -337,6 +337,8 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
 
+    // TODO Update ECS
+    /*
     const std::vector<StaticMesh>* meshes = nullptr;
     m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
 
@@ -351,9 +353,9 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
         const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(entity);
         DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
     }
+    */
     drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex, *m_CurrentViewport);
     skyboxRender.DrawSkybox(commandBuffer, m_CurrentWorld->skybox);
-    
     vkCmdEndRenderPass(commandBuffer);
 }
 
@@ -453,7 +455,8 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
    const std::vector<DirLight>* dirlights = nullptr;
    const std::vector<PointLight>* pointLights = nullptr;
    const std::vector<SpotLight>* spotLights = nullptr;
-
+    // TODO Update ECS
+/*
     m_CurrentWorld->scene.GetComponentData<DirLight>(&dirlights);
     m_CurrentWorld->scene.GetComponentData<PointLight>(&pointLights);
     m_CurrentWorld->scene.GetComponentData<SpotLight>(&spotLights);
@@ -520,7 +523,7 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
     m_GpuLights.nbrOfPointLight = static_cast<int32_t>(nbrOfPointLight);
     m_GpuLights.nbrOfSpotLight = static_cast<int32_t>(nbrOfSpotLight);
 
-    m_ShaderStoragesLight[_currentFrame].Update(&m_GpuLights, sizeof(GpuLight));
+    m_ShaderStoragesLight[_currentFrame].Update(&m_GpuLights, sizeof(GpuLight));*/
     END_TIMER()
 }
 
@@ -586,6 +589,9 @@ void Renderer::ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame)
     END_TIMER()
 }
 
+// TODO
+//
+/*
 void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
                               const Transform& transform, const Entity& entity)
 {
@@ -604,7 +610,7 @@ void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex
     vkCmdPushConstants(commandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int32_t),
                        &entity);
     vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->indicies.size(), 1, 0, 0, 0);
-}
+}*/
 
 void Renderer::UpdateWorldBuffers()
 {

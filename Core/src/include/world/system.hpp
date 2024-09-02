@@ -1,7 +1,6 @@
 ﻿#pragma once
 
-#include "world_header_typedef.hpp"
-
+#include "core_header.hpp"
 
 BEGIN_PCCORE
 class Scene;

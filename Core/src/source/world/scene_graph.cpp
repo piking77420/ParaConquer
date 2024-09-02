@@ -1,5 +1,6 @@
 ﻿#include "world/scene_graph.hpp"
 
+#include "ecs/ecs_header.h"
 #include "math/matrix_transformation.hpp"
 #include "rendering/gpu_typedef.hpp"
 #include "world/transform.hpp"
@@ -14,6 +15,8 @@ SceneGraph::SceneGraph()
 
 void SceneGraph::UpdateTransforms(Scene* _scene)
 {
+    // TODO Update ECS 
+    /*
     Scene& scene = *_scene;
     scene.GetComponentData<Transform>(&m_transforms);
 
@@ -37,11 +40,13 @@ void SceneGraph::UpdateTransforms(Scene* _scene)
         
     }
 
-    
+    */
 }
 
 void SceneGraph::UpdateMatrix(Scene* _scene)
 {
+    // TODO Update ECS
+    /*
     const Scene& scene = *_scene;
 
     for (int i = 0; i < m_transforms->size(); ++i)
@@ -56,7 +61,7 @@ void SceneGraph::UpdateMatrix(Scene* _scene)
         Invert<float>(matricies.model, &matricies.modelNormalMatrix);
         matricies.modelNormalMatrix = matricies.modelNormalMatrix.Transpose();
     }
-
+    */
 }
 
 size_t SceneGraph::MatrixMeshesSize()
@@ -67,6 +72,9 @@ size_t SceneGraph::MatrixMeshesSize()
 
 const Transform* SceneGraph::GetParent(const Transform* transform)
 {
+    // TODO Update ECS
+    /*
+    
     for (int i = 0; i < m_transforms->size(); ++i)
     {
         Transform& transform = m_transforms->at(i);
@@ -85,11 +93,11 @@ const Transform* SceneGraph::GetParent(const Transform* transform)
     }
 
     
-    PC_LOGERROR("This entity parent is invalid")
+    PC_LOGERROR("This entity parent is invalid")*/
     return nullptr;
 }
 
 bool SceneGraph::HasParent(const Transform& transform)
 {
-    return transform.parentId != NULL_ENTITY;
+    return false;//transform.parentId != NULL_ENTITY;
 }

@@ -20,7 +20,8 @@ void Hierachy::Update()
 
 void Hierachy::ShowGraph()
 {
-    
+    // TODO Update ECS
+    /*
     if (PC_CORE::World::world == nullptr)
         return;
     
@@ -54,5 +55,5 @@ void Hierachy::ShowGraph()
             m_Editor->selected = NULL_ENTITY;
         }
     }
-    
+    */
 }

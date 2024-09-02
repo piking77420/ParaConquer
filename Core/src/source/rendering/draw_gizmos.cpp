@@ -104,11 +104,13 @@ void DrawGizmos::CreateGraphiPipeline()
 
 void DrawGizmos::DrawColliders()
 {
+    // TODO Update ECS
+    /*
     const Scene& scene = m_Renderer->m_CurrentWorld->scene;
     const std::vector<SphereCollider>* sphereColliders = nullptr;
     scene.GetComponentData<SphereCollider>(&sphereColliders);
     DrawSphereCollider(*sphereColliders,scene);
-    
+    */
 }
 
 void DrawGizmos::InitDescriptor()
@@ -149,7 +151,8 @@ void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereCol
     vkCmdBindIndexBuffer(*currentCommandBuffer, sphere->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
                1, &m_DescriptorSet[VulkanInterface::GetCurrentFrame()], 0, nullptr);
-    
+    // TODO Update ECS
+    /*
     for (size_t i = 0; i < sphereColliders.size(); i++)
     {
         const SphereCollider& sphereCollider = sphereColliders.at(i);
@@ -174,5 +177,5 @@ void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereCol
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(GizmoStruct), &gizmoStruct);
         vkCmdDrawIndexed(*currentCommandBuffer, sphere->indicies.size(), 1, 0, 0, 0);
-    }
+    }*/
 }

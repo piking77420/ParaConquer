@@ -2,7 +2,6 @@
 
 #include "scene.hpp"
 #include "transform.hpp"
-#include "world_header_typedef.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "rendering/gpu_typedef.hpp"
 

@@ -4,7 +4,6 @@
 #include "scene.hpp"
 #include "scene_graph.hpp"
 #include "skybox.hpp"
-#include "world_header_typedef.hpp"
 #include "physics/physics_wrapper.hpp"
 
 BEGIN_PCCORE
@@ -18,9 +17,7 @@ public:
     SceneGraph sceneGraph;
 
     Skybox skybox;
-
-    PhysicsWrapper physicsWrapper;
-
+    
     bool begin = false;
 
     bool run = false;

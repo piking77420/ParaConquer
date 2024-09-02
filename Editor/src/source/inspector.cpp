@@ -9,8 +9,8 @@ void Inspector::Update()
 {
     EditorWindow::Update();
     
-    if(m_Editor->selected == NULL_ENTITY)
-        return;
+    //if(m_Editor->selected == NULL_ENTITY)
+      //  return;
 
     Show();
     OnInput();
@@ -23,6 +23,8 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
+    // TODO Update ECS
+    /*
     const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = &PC_CORE::ComponentRegister::componentRegisterMap;
 
 
@@ -60,10 +62,12 @@ void Inspector::Show()
 
     }
     ImGui::PopID();
+    */
 }
 
 void Inspector::OnInput()
 {
+    /*
     if (ButtonCenteredOnLine("Add Component"))
     {
         ImGui::OpenPopup("Components");
@@ -89,6 +93,7 @@ void Inspector::OnInput()
             
         ImGui::EndPopup();
     }
+    */
 }
 
 void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& reflection)
@@ -125,10 +130,11 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& re
     }
 }
 
+    /*
 void Inspector::DeleteButton(Entity _entity, uint32_t _componentId)
 {
     if (ImGui::SmallButton("Delete Component"))
     {
         m_Editor->world.scene.RemoveComponentInternal(_componentId, _entity);
-    }
 }
+    }*/

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "component.hpp"
 #include "core_header.hpp"
 #include "resources/material.hpp"
 #include "resources/mesh.hpp"
@@ -10,7 +9,7 @@ class StaticMesh
 {
 public:
 
-    MAKE_COMPONENT(StaticMesh)
+    //MAKE_COMPONENT(StaticMesh)
 
     Mesh* mesh = nullptr;
 

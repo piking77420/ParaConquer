@@ -24,9 +24,13 @@ void Editor::Init()
     App::Init();
     io = &ImGui::GetIO();
     InitEditorWindows();
-
-
     InitTestScene();
+
+    auto it = Reflector::GetType<Transform>();
+        
+
+    it = Reflector::GetType<Transform>();
+
 }
 
 void Editor::Destroy()
@@ -40,6 +44,7 @@ void Editor::Destroy()
 
 void Editor::InitTestScene()
 {
+    /*
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
 
@@ -72,13 +77,13 @@ void Editor::InitTestScene()
     staticMesh = world.scene.AddComponent<StaticMesh>(plane);
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material2;
-    ptr->scale = {20, 1, 20};
+    ptr->scale = {20, 1, 20};*/
 }
 
 void Editor::DestroyTestScene()
 {
-    world.scene.~Scene();
-    world.scene = Scene();
+    //world.scene.~Scene();
+    //world.scene = Scene();
     ResourceManager::Delete<Material>("baseMaterial");
     ResourceManager::Delete<Material>("baseMaterial2");
 }

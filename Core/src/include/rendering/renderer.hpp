@@ -133,8 +133,9 @@ private:
 
     void ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame);
 
-    void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
-    const Transform& transform, const Entity& entity);
+    // TODO
+    //void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
+    //const Transform& transform, const Entity& entity);
 
     void UpdateWorldBuffers();
 

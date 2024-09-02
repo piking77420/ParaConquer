@@ -40,8 +40,8 @@ PhysicsWrapper::~PhysicsWrapper()
 
 void PhysicsWrapper::InitSphereCollider(Scene* scene)
 {
-    std::vector<SphereCollider>* sphereColliders = nullptr;
-    scene->GetComponentData<SphereCollider>(&sphereColliders);
+    //std::vector<SphereCollider>* sphereColliders = nullptr;
+    //scene->GetComponentData<SphereCollider>(&sphereColliders);
 
 }
 

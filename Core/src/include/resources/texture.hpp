@@ -3,10 +3,11 @@
 #include "core_header.hpp"
 #include "resource.hpp"
 #include "math/toolbox_typedef.hpp"
+#include "reflection/reflector.hpp"
 #include "rendering/vulkan/vulkan_texture.hpp"
 
 BEGIN_PCCORE
-    class Texture : public IResource
+class Texture : public IResource
 {
 public:
     Tbx::Vector2i textureSize;
@@ -20,7 +21,8 @@ public:
     void Load(const fs::path& path) override;
 
     void Load(std::array<std::string,6>& _maps);
-
 };
+
+REFLECT(Texture, textureSize)
 
 END_PCCORE
