@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
 #include <functional> // For std::function
+#include <optional>
 
 #include "log.hpp"
 #include "math/toolbox_typedef.hpp"
@@ -20,10 +21,13 @@ struct Members
     
 struct ReflectedType
 {
+    uint32_t HashKey;
     DataType dataNature;
     std::string name;
     size_t dataSize;
     std::vector<Members> membersKey;
+    // Dont Support MultiHirietence
+    std::vector<uint32_t> inheritenceKey;
 };
 
 struct ComponentBackend
@@ -40,18 +44,24 @@ public:
     ~Reflector() = delete;
 
     template<typename T>
-    static const ReflectedType& GetType();
+    PC_CORE_API static const ReflectedType& GetType();
 
     template<typename T>
-    static uint32_t GetKey();
+    PC_CORE_API static uint32_t GetKey();
 
-    static const ReflectedType& GetTypeFromHash(uint32_t _hash);
+    PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
 
     template<typename Holder, typename MemberType>
-    static Members ReflectMember(size_t _offset, const char* _holderName, const char* _memberName);
+    PC_CORE_API static Members ReflectMember(size_t _offset, const char* _holderName, const char* _memberName);
 
-    template<typename Holder>
-    static ReflectedType* ReflectType();
+    template<typename Holder, typename BaseClass = void>
+    PC_CORE_API static ReflectedType* ReflectType();
+
+    template <typename T>
+    PC_CORE_API static uint32_t GetHash();
+    
+    template <typename T>
+    PC_CORE_API static std::vector<const ReflectedType*> GetAllTypesFrom();
     
 private:
     template <typename T>
@@ -62,6 +72,16 @@ private:
     static std::string GetCorrectNameFromTypeId(const std::string& _name);
    
     static inline std::unordered_map<uint32_t, ReflectedType> m_RelfectionMap;
+
+    template <typename  T>
+    static void AddType();
+    
+    template <typename T>
+    static uint32_t GetHash(std::string* _name);
+
+    template <typename T>
+    static bool ContaintType();
+
 };
 
 
@@ -80,64 +100,25 @@ const ReflectedType& Reflector::GetType()
 }
 
 
-
 template <typename Holder, typename MemberType>
 Members Reflector::ReflectMember(size_t _offset, const char* _holderName, const char* _memberName)
 {
-  
-    const std::string holderNameS = GetCorrectNameFromTypeId(_holderName);
-    const std::string memberNameS = GetCorrectNameFromTypeId(_memberName);
-
-    const uint32_t hashCodeHolder = KR_v2_hash(holderNameS.c_str());
-    bool containType = m_RelfectionMap.contains(hashCodeHolder);
-    
-    if (!containType)
+    if (!ContaintType<Holder>())
     {
-        // Create New Node in map
-        const ReflectedType holderData =
-            {
-            .dataNature = TypeToDataType<Holder>(),
-            .name = holderNameS,
-            .dataSize = sizeof(Holder),
-            .membersKey = {}
-            };
-        
-        m_RelfectionMap.insert({hashCodeHolder,holderData});
+        PC_LOGERROR("ReflectMember Holder member not found");
+        return {};
     }
-
-    auto holderData = m_RelfectionMap.at(hashCodeHolder);
     
-    // if map not Contain hash then add it for both map and holder vector
-    // else just add the hash to the vector holder
-    const uint32_t hashMemnber = KR_v2_hash(memberNameS.c_str());
-    
-    const bool DoesContainMemberType = m_RelfectionMap.contains(hashMemnber);
-    if (!DoesContainMemberType)
+    if (!ContaintType<MemberType>())
     {
-        // Create New Node in map
-        const ReflectedType mememberMetaData =
-            {
-            .dataNature = TypeToDataType<MemberType>(),
-            .name = memberNameS,
-            .dataSize = sizeof(MemberType),
-            .membersKey = {},
-            };
-        m_RelfectionMap.insert({hashMemnber,mememberMetaData});
+        AddType<MemberType>();
     }
-    // ADD to the holder types
-    auto* it = &m_RelfectionMap.at(hashCodeHolder);
-    const Members newMember =
-        {
-        .offset = _offset,
-        .key = hashMemnber
-        };
-    
-    it->membersKey.push_back({_offset, hashMemnber});
-
+    // Add to sub member
+    m_RelfectionMap.at(GetHash<Holder>()).membersKey.push_back({_offset, GetHash<MemberType>()});
     return {};
 }
 
-template <typename Holder>
+template <typename Holder, typename BaseClass = void>
 ReflectedType* Reflector::ReflectType()
 {
     const std::string holderNameS = GetCorrectNameFromTypeId(typeid(Holder).name());
@@ -148,17 +129,96 @@ ReflectedType* Reflector::ReflectType()
     if (containType)
         return &m_RelfectionMap.at(hashCodeHolder);
     
-    const ReflectedType holderData =
+    ReflectedType holderData =
         {
         .dataNature = TypeToDataType<Holder>(),
         .name = holderNameS,
         .dataSize = sizeof(Holder),
         .membersKey = {}
         };
-        
+
+   
+
+    // Add base class to current class and all hieritance
+    if constexpr(!std::is_same_v<void,BaseClass> || std::is_base_of_v<BaseClass, Holder>)
+    {
+        if (!ContaintType<BaseClass>())
+        {
+            AddType<BaseClass>();
+        }
+
+        const uint32_t hashCodeBaseClass = GetHash<BaseClass>();
+        holderData.inheritenceKey.push_back(hashCodeBaseClass);
+        auto baseClass = m_RelfectionMap.at(hashCodeBaseClass);
+        holderData.inheritenceKey.insert(holderData.inheritenceKey.end(), baseClass.inheritenceKey.begin(), baseClass.inheritenceKey.end());
+    }
     m_RelfectionMap.insert({hashCodeHolder,holderData});
 
     return &m_RelfectionMap.at(hashCodeHolder);
+}
+
+template <typename T>
+uint32_t Reflector::GetHash()
+{
+    const std::string holderNameS = GetCorrectNameFromTypeId(typeid(T).name());
+    const uint32_t hashCodeHolder = KR_v2_hash(holderNameS.c_str());
+    return hashCodeHolder;
+}
+
+template <typename T>
+std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
+{
+    const uint32_t hashCode = GetHash<T>();
+    std::vector<const ReflectedType*> types;
+
+    for (auto it = m_RelfectionMap.begin(); it != m_RelfectionMap.end(); it++)
+    {
+        for (size_t i = 0; i < it->second.inheritenceKey.size(); i++)
+        {
+            if (it->second.inheritenceKey[i] == hashCode)
+            {
+                types.push_back(&it->second);
+            }
+        }
+    }
+
+    return types;
+}
+
+template <typename T>
+void Reflector::AddType()
+{
+    std::string name;
+    const uint32_t hashCode = GetHash<T>(&name);
+    const bool DoesContainType = m_RelfectionMap.contains(hashCode);
+    
+    if (!DoesContainType)
+    {
+        // Create New Node in map
+        const ReflectedType mememberMetaData =
+            {
+            .HashKey = hashCode,
+            .dataNature = TypeToDataType<T>(),
+            .name = name,
+            .dataSize = sizeof(T),
+            .membersKey = {},
+            };
+        m_RelfectionMap.insert({hashCode,mememberMetaData});
+    }
+}
+
+template <typename T>
+uint32_t Reflector::GetHash(std::string* _name)
+{
+    *_name = GetCorrectNameFromTypeId(typeid(T).name());
+    const uint32_t hashCodeHolder = KR_v2_hash(_name->c_str());
+    return hashCodeHolder;
+}
+
+template <typename T>
+bool Reflector::ContaintType()
+{
+    return m_RelfectionMap.contains(GetHash<T>());
 }
 
 
@@ -224,8 +284,9 @@ DataType Reflector::TypeToDataType()
     return type; 
 }
 
-#define REFLECT(CurrentType) \
-inline ReflectedType* reflectInfo#CurrentType = Reflector::ReflectType<CurrentType>();\
+
+#define REFLECT(CurrentType, ...) \
+inline ReflectedType* reflectInfo##CurrentType = Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
 
 #define REFLECT_MEMBER(CurrentType, memberName) \
 inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName)>(offsetof(CurrentType, memberName), typeid(CurrentType).name(), typeid(decltype(CurrentType::memberName)).name());\

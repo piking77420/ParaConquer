@@ -20,17 +20,19 @@ BEGIN_PCCORE
 public:
 	static constexpr const char* appName = "ParaConquer";
 	
-	World world;
-	
 	Window windowHandle;
 
 	Renderer renderer;
-
+	
 	VulkanImgui vulkanImgui;
 
 	ScriptingLua scriptingLua;
 
 	PhysicsWrapper physicsWrapper;
+
+	World world;
+	
+	EcsContext ecsContext;
 	
 	virtual void Init();
 
@@ -46,7 +48,7 @@ public:
 
 	void HandleResize();
 
-	void RegisterComponent();
+	void InitEcs();
 
 	static inline App* instance = nullptr;
 

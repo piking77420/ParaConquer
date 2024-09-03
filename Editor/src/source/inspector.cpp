@@ -25,17 +25,16 @@ void Inspector::Show()
 {
     // TODO Update ECS
     /*
-    const std::map<uint32_t, PC_CORE::ComponentRegister::RegisterComponentBackend>* componentMap = &PC_CORE::ComponentRegister::componentRegisterMap;
+    auto vec = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
 
-
-    auto entityInternal = PC_CORE::World::world->scene.GetEntityInternal(m_Editor->selected);
+    auto entityInternal = PC_CORE::World::world->scene.GetEntityInternal(m_Editor->m_Selected);
     ImGui::Text(entityInternal->name.c_str());
     ImGui::PushID(entityInternal->name.c_str());
     
-    for (size_t i = 0; i < componentMap->size(); i++)
+    for (size_t i = 0; i < vec.size(); i++)
     {
         std::vector<uint8_t>* componentData = nullptr;
-        PC_CORE::World::world->scene.GetComponentDataRaw(static_cast<uint32_t>(i), &componentData);
+        PC_CORE::World::world->scene.GetData(static_cast<uint32_t>(i), &componentData);
 
         const uint32_t ComponnentIndex = entityInternal->componentIdIndexInDataArray[i];
         if (ComponnentIndex == NULL_COMPONENT)
@@ -51,7 +50,7 @@ void Inspector::Show()
 
         ImGui::Spacing();
         ImGui::Text(componentBackend.name.c_str());
-        DeleteButton(m_Editor->selected, static_cast<uint32_t>(i));
+        DeleteButton(m_Editor->m_Selected, static_cast<uint32_t>(i));
         for (const PC_CORE::ReflectionType& refl : componentMap->at(static_cast<uint32_t>(i)).reflecteds)
         {
             ImGui::PushID("Refleted Type");
@@ -62,7 +61,7 @@ void Inspector::Show()
 
     }
     ImGui::PopID();
-    */
+ */   
 }
 
 void Inspector::OnInput()

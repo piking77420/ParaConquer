@@ -2,7 +2,7 @@
 
 using namespace PC_CORE;
 
-const ReflectedType& Reflector::GetTypeFromHash(uint32_t _hash)
+const ReflectedType& Reflector::GetType(uint32_t _hash)
 {
     return m_RelfectionMap.at(_hash);
 }

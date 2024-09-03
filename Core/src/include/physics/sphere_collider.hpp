@@ -5,12 +5,13 @@
 #include "reflection/reflector.hpp"
 
 BEGIN_PCCORE
-struct SphereCollider : public Component
-{
+
+MAKE_ECS_COMPONENT(SphereCollider)
 
     bool isTrigger = false;
     
     float radius = 1.f;
 };
+REFLECT(SphereCollider,Component)
 
 END_PCCORE

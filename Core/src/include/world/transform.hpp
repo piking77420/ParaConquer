@@ -2,7 +2,6 @@
 
 #include "core_header.hpp"
 #include "ecs/ecs_front.h"
-#include "reflection/reflector.hpp"
 #include "math/quaternion.hpp"
 #include "math/toolbox_typedef.hpp"
 
@@ -25,6 +24,7 @@ MAKE_ECS_COMPONENT(Transform)
 private:
     int x = 0; 
 };
+REFLECT(Transform, Component)
 REFLECT_MEMBER(Transform, localPosition)
 REFLECT_MEMBER(Transform, localRotation)
 REFLECT_MEMBER(Transform, scale)

@@ -38,6 +38,7 @@ void Editor::Destroy()
 
 void Editor::InitTestScene()
 {
+    Scene& scene = world.scene;
     /*
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
@@ -72,6 +73,10 @@ void Editor::InitTestScene()
     staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     staticMesh->material = material2;
     ptr->scale = {20, 1, 20};*/
+    
+    EntityId id = scene.CreateEntity("test");
+    scene.AddComponent<Transform>(id);
+    
 }
 
 void Editor::DestroyTestScene()

@@ -26,6 +26,7 @@ void App::Init()
     ResourceManager::Init();
     renderer.Init(&windowHandle);
     vulkanImgui.Init(windowHandle);
+    InitEcs();
 
     world.LoadSkyBox();
 }
@@ -89,5 +90,10 @@ void App::HandleResize()
         renderer.RecreateSwapChain(&windowHandle);
         windowHandle.onResize = false;
     }
+}
+
+void App::InitEcs()
+{
+   
 }
 

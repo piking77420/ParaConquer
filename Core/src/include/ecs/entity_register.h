@@ -13,8 +13,10 @@ BEGIN_PCCORE
     class EntityRegister
     {
     public:
-        uint8_t* GetComponentData(uint32_t _componentKey);
+        uint8_t* GetComponentData(uint32_t _componentKey, size_t* _sizeInByte);
 
+        const uint8_t* GetComponentData(uint32_t _componentKey, size_t* _sizeInByte) const;
+    
         uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey);
 
         const uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey) const;
@@ -26,6 +28,8 @@ BEGIN_PCCORE
         EntityId CreateEntity();
 
         void DestroyEntity(EntityId entityId);
+
+        bool IsValid(EntityId entityId) const;
 
         EntityRegister();
 
@@ -40,6 +44,10 @@ BEGIN_PCCORE
         std::array<EntityId, MAX_ENTITIES> m_Entities;
 
         std::vector<SparsetKey> sparseSets;
+
+        SparseSet* GetSparsetFromKey(uint32_t _key);
+
+        const SparseSet* GetSparsetFromKey(uint32_t _key) const;
     };
 
 END_PCCORE

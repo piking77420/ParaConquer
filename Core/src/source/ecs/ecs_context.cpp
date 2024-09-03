@@ -1,9 +1,29 @@
 ﻿#include "ecs/ecs_context.h"
+#include "ecs/ecs_front.h"
 
-bool PC_CORE::EcsContext::RegisterComponent(const EcsComponent& _ecsComponent)
+namespace PC_CORE
 {
-    m_ECSComponentsDataInfo.push_back(_ecsComponent);
-    return true;
+    struct Component;
+}
+
+PC_CORE::EcsContext::EcsContext()
+{
+    auto vec = Reflector::GetAllTypesFrom<Component>();
+    
+    for (auto& component : vec)
+    {
+        const EcsComponent ecsComponent =
+            {
+            .size = component->dataSize,
+            .key = component->HashKey,
+            };
+        
+        m_ECSComponentsDataInfo.emplace_back(ecsComponent);
+    }
+}
+
+PC_CORE::EcsContext::~EcsContext()
+{
 }
 
 const std::vector<PC_CORE::EcsComponent>& PC_CORE::EcsContext::GetComponentsDataInfo()

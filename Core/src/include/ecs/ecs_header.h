@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include "reflection/reflector.hpp"
+
 #include <cassert>
 
 using EntityId = uint32_t;

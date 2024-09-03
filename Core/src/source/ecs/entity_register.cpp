@@ -1,31 +1,39 @@
 ﻿#include "ecs/entity_register.h"
 
 #include "log.hpp"
+#include "ecs/component.h"
 #include "ecs/ecs_context.h"
 
-uint8_t* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey)
+uint8_t* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey, size_t* _sizeInByte)
 {
-    return sparseSets.at(_componentKey).sparse.GetData();
+    return GetSparsetFromKey(_componentKey)->GetData();
+}
+
+const uint8_t* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey, size_t* _sizeInByte) const
+{
+    return GetSparsetFromKey(_componentKey)->GetData();
 }
 
 uint8_t* PC_CORE::EntityRegister::GetComponent(EntityId _entityID, uint32_t _componentKey)
 {
-    return sparseSets.at(_componentKey).sparse.GetEntityData(_entityID);   
+    return GetSparsetFromKey(_componentKey)->GetEntityData(_entityID);   
 }
 
 const uint8_t* PC_CORE::EntityRegister::GetComponent(EntityId _entityID, uint32_t _componentKey) const
 {
-    return sparseSets.at(_componentKey).sparse.GetEntityData(_entityID);   
+    return GetSparsetFromKey(_componentKey)->GetEntityData(_entityID);   
 }
 
 uint8_t* PC_CORE::EntityRegister::CreateComponent(EntityId _entityID, uint32_t _componentKey)
 {
-    return sparseSets.at(_componentKey).sparse.Alloc(_entityID);
+    Component* newComponent = reinterpret_cast<Component*>(GetSparsetFromKey(_componentKey)->Alloc(_entityID));
+    newComponent->entityId = _entityID;
+    return reinterpret_cast<uint8_t*>(newComponent);
 }
 
 void PC_CORE::EntityRegister::DeleteComponent(EntityId _entityID, uint32_t _componentKey)
 {
-    return sparseSets.at(_componentKey).sparse.Free(_entityID);
+    return GetSparsetFromKey(_componentKey)->Free(_entityID);
 }
 
 EntityId PC_CORE::EntityRegister::CreateEntity()
@@ -45,12 +53,17 @@ EntityId PC_CORE::EntityRegister::CreateEntity()
 
 void PC_CORE::EntityRegister::DestroyEntity(EntityId entityId)
 {
-    for (size_t i = 0; i < sparseSets.size(); ++i)
+    for (auto& sparseSet : sparseSets)
     {
-        sparseSets.at(i).sparse.Free(entityId);
+        sparseSet.sparse.Free(entityId);
     }
 
     m_Entities.at(entityId) = INVALID_ENTITY_ID;
+}
+
+bool PC_CORE::EntityRegister::IsValid(EntityId entityId) const
+{
+    return m_Entities.at(entityId) != INVALID_ENTITY_ID;
 }
 
 PC_CORE::EntityRegister::EntityRegister() 
@@ -65,4 +78,24 @@ PC_CORE::EntityRegister::EntityRegister()
     {
         m_Entities.at(i) = INVALID_ENTITY_ID;
     }
+}
+
+PC_CORE::SparseSet* PC_CORE::EntityRegister::GetSparsetFromKey(uint32_t _key)
+{
+    auto it = std::ranges::find_if(sparseSets,[_key](const SparsetKey& sparsetKey)
+    {
+        return sparsetKey.key == _key;
+    });
+
+    return &it->sparse;
+}
+
+const PC_CORE::SparseSet* PC_CORE::EntityRegister::GetSparsetFromKey(uint32_t _key) const
+{
+    auto it = std::ranges::find_if(sparseSets,[_key](const SparsetKey& sparsetKey)
+    {
+        return sparsetKey.key == _key;
+    });
+
+    return &it->sparse;
 }
