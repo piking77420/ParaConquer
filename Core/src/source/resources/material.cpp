@@ -11,6 +11,11 @@ void Material::WriteFile(const fs::path& path)
     IResource::WriteFile(path);
 }
 
+Material::~Material()
+{
+   
+}
+
 void Material::Load(const fs::path& path)
 {
     throw std::runtime_error("error");

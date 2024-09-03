@@ -29,6 +29,8 @@ public:
 
     void InitEditorWindows();
 
+    void InitMaterial();
+
     std::vector<EditorWindow*> m_EditorWindows;
     
     ImGuiIO* io = nullptr;

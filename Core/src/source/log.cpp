@@ -21,5 +21,5 @@ void Log::Error(const std::string& message, const char* file, const char* line)
     std::filesystem::path p = std::filesystem::path(std::string(file));
     
     std::cout << ANSI_COLOR_RED << message << ' '
-    << '[' << p.filename().generic_string().c_str() << ',' << ' ' << line << ']'<< '\n';
+    << '[' << p.filename().generic_string().c_str() << ',' << ' ' << line << ']'<< '\n' << ANSI_COLOR_RESET;
 }

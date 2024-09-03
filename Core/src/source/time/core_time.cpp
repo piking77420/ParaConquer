@@ -16,7 +16,12 @@ float Time::DeltaTime()
 
 void Time::UpdateTime()
 {
-    const double currentFrame  = glfwGetTime();
+    const double currentFrame = glfwGetTime();
     deltaTime = currentFrame - currentTime;
     currentTime = currentFrame;
+}
+
+void Time::Init()
+{
+    currentTime = glfwGetTime();
 }

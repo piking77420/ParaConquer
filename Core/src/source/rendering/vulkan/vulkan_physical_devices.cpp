@@ -190,9 +190,6 @@ void VulkanPhysicalDevices::SelectDevice(const VkQueueFlags _RequiredQueueType, 
         // only select a gpu
         if (m_Devices[i].devProps.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
             continue;
-
-        //if (i != 1)
-          //  continue;
         
         for (uint32_t j = 0; j < m_Devices[i].qFamilyProps.size(); j++)
         {

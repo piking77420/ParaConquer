@@ -6,6 +6,7 @@ BEGIN_PCCORE
 enum class DataType
 {
     UNKNOW,
+    BOOL,
     INT,
     UINT,
     FLOAT,
@@ -13,6 +14,7 @@ enum class DataType
     VEC2,
     VEC3,
     VEC4,
+    QUAT,
     
     COUT
 };

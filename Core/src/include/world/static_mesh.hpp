@@ -14,7 +14,7 @@ public:
 
     Mesh* mesh = nullptr;
 
-    Material* material = nullptr ;
+    const Material* material = nullptr ;
     
 };
 

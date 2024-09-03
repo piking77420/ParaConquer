@@ -87,6 +87,8 @@ const Scene::EntityInternal* Scene::GetEntityInternal(Entity _entity) const
 
 Scene::Scene()
 {
+    m_entities.resize(MAX_ENTITIES);
+
     // init Component Data
     m_ComponentData.resize(ComponentRegister::GetNbrOfComponentType());
     const uint32_t NbrOfComponentType = ComponentRegister::GetNbrOfComponentType();
@@ -117,6 +119,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
+    return;
     for (size_t ent = 0; ent < m_entities.size(); ent++)
     {
         if (!m_entities[ent].isEnable)

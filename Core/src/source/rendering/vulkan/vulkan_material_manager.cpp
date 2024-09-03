@@ -49,8 +49,22 @@ void VulkanMaterialManager::CreateMaterial(const Material& material)
     m_MaterialCache.insert({material.guid,lowLevelMaterial});
 }
 
+void VulkanMaterialManager::DestroyMaterial(const Material& material)
+{
+    if (!m_MaterialCache.contains(material.guid))
+        return;
+
+    LowLevelMaterial* lowMaterail = &m_MaterialCache.at(material.guid);
+
+    vkFreeDescriptorSets(VulkanInterface::GetDevice().device,
+        vulkanDescriptorPool.Get(),static_cast<uint32_t>(lowMaterail->descriptorSets.size()), lowMaterail->descriptorSets.data());
+
+    for (size_t i = 0; i < lowMaterail->vulkanUniformBuffer.size(); i++)
+        lowMaterail->vulkanUniformBuffer[i].Destroy();
+}
+
 void VulkanMaterialManager::BindMaterialDescriptorSet(VkCommandBuffer _commandBuffer,uint32_t _firstSet,
-        const Material& material , VkPipelineLayout _VkPipelineLayout)
+                                                      const Material& material , VkPipelineLayout _VkPipelineLayout) const
 {
     if (!m_MaterialCache.contains(material.guid))
         return;

@@ -24,7 +24,7 @@ protected:
 
     float cameraSpeedValue = 150.f;
 
-    float drag = 0.95f;
+    float drag = 0.99f;
     
     float pitch = 0.0f;
     

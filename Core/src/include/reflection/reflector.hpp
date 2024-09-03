@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <cassert>
+
 #include "world/component.hpp"
 #include "core_header.hpp"
 #include <functional> // For std::function
@@ -40,8 +42,12 @@ template <typename T>
 DataType Reflector::TypeToDataType()
 {
     DataType type = {};
-    
-    if constexpr (std::is_same_v<T, int>)
+
+    if constexpr (std::is_same_v<T, bool>)
+    {
+        type = DataType::BOOL;
+    }
+    else if constexpr (std::is_same_v<T, int>)
     {
         type = DataType::INT;
     }
@@ -71,11 +77,15 @@ DataType Reflector::TypeToDataType()
     }
     else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
     {
+        type = DataType::QUAT;
+    }
+    else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
+    {
         type = DataType::INT;
     }
     else
     {
-        static_assert("NotSupported type");
+        assert("NotSupportedType");
     }
 
     return type; 
