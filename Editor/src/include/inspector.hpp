@@ -2,6 +2,7 @@
 
 #include "edit_world_window.hpp"
 #include "reflection/reflection_typedef.hpp"
+#include "world/scene.hpp"
 
 BEGIN_EDITOR_PCCORE
     class Inspector : public EditorWindow
@@ -18,9 +19,9 @@ private:
 
     void OnInput();
 
-    void ShowReflectedType(void* begin,const PC_CORE::ReflectionType& reflection);
+    void ShowReflectedType(void* begin, const PC_CORE::Members& _members);
 
-    //void DeleteButton(Entity _entity, uint32_t _componentId);
+    void DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId);
 };
 
 END_EDITOR_PCCORE

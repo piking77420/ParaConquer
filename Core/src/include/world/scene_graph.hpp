@@ -26,8 +26,6 @@ public:
     static inline bool HasParent(const Transform& transform);    
 
 private:
-    std::vector<Transform>* m_transforms = nullptr;
-
 };
 
 END_PCCORE

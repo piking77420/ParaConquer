@@ -339,22 +339,23 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
 
     // TODO Update ECS
-    /*
-    const std::vector<StaticMesh>* meshes = nullptr;
-    m_CurrentWorld->scene.GetComponentData<StaticMesh>(&meshes);
 
-    for (size_t i = 0; i < meshes->size(); i++)
+    
+    size_t size = 0;
+    const uint8_t* data = m_CurrentWorld->scene.GetData<StaticMesh>(&size);
+
+    for (size_t i = 0; i < size; i++)
     {
-        const StaticMesh& staticMesh = meshes->at(i);
-
-        if (!IsValid(staticMesh.componentHolder))
+        const StaticMesh& staticMesh = *reinterpret_cast<const StaticMesh*>(data + i * sizeof(StaticMesh));
+        const Entity& entity = *m_CurrentWorld->scene.GetEntity(staticMesh.entityId);
+        const Transform& transform = m_CurrentWorld->scene.Get<Transform>(entity.ecsId);
+        
+        if (staticMesh.material == nullptr || staticMesh.mesh == nullptr)
             continue;
-
-        const Entity& entity = staticMesh.componentHolder.entityID;
-        const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(entity);
+        
         DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
     }
-    */
+    
     drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex, *m_CurrentViewport);
     skyboxRender.DrawSkybox(commandBuffer, m_CurrentWorld->skybox);
     vkCmdEndRenderPass(commandBuffer);
@@ -590,10 +591,6 @@ void Renderer::ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame)
     END_TIMER()
 }
 
-// TODO
-//
-
-    /*
 void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
                               const Transform& transform, const Entity& entity)
 {
@@ -609,11 +606,12 @@ void Renderer::DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex
 
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, staticMesh.mesh->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
+    // Push ecs id to find correct matrix
     vkCmdPushConstants(commandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int32_t),
-                       &entity);
-    vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->indicies.size(), 1, 0, 0, 0);
+                       &entity.ecsId);
+    vkCmdDrawIndexed(commandBuffer, staticMesh.mesh->GetNbrOfIndicies(), 1, 0, 0, 0);
 }
-    */
+    
 
 void Renderer::UpdateWorldBuffers()
 {

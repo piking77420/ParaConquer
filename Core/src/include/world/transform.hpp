@@ -18,15 +18,14 @@ MAKE_ECS_COMPONENT(Transform)
 
     Tbx::Vector3f scale = 1.f;
 
+// tmpr
     Tbx::Vector3f localPosition;
 
     Tbx::Vector3f localRotation;
-private:
-    int x = 0; 
 };
 REFLECT(Transform, Component)
-REFLECT_MEMBER(Transform, localPosition)
-REFLECT_MEMBER(Transform, localRotation)
+REFLECT_MEMBER(Transform, position)
+REFLECT_MEMBER(Transform, rotation)
 REFLECT_MEMBER(Transform, scale)
 
 END_PCCORE

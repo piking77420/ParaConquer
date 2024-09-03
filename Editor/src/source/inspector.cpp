@@ -9,8 +9,8 @@ void Inspector::Update()
 {
     EditorWindow::Update();
     
-    //if(m_Editor->selected == NULL_ENTITY)
-      //  return;
+    if(m_Editor->m_Selected == nullptr)
+        return;
 
     Show();
     OnInput();
@@ -23,45 +23,43 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-    // TODO Update ECS
-    /*
+    PC_CORE::Scene* scene = &m_Editor->world.scene;
     auto vec = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
 
-    auto entityInternal = PC_CORE::World::world->scene.GetEntityInternal(m_Editor->m_Selected);
-    ImGui::Text(entityInternal->name.c_str());
-    ImGui::PushID(entityInternal->name.c_str());
-    
+    PC_CORE::Entity* selected = m_Editor->m_Selected;
+    const char* selectedName = selected->name.c_str();
+    ImGui::Text(selectedName);
+    ImGui::PushID(selectedName); 
+
     for (size_t i = 0; i < vec.size(); i++)
     {
-        std::vector<uint8_t>* componentData = nullptr;
-        PC_CORE::World::world->scene.GetData(static_cast<uint32_t>(i), &componentData);
+        const uint32_t currentKeyComponent = vec[i]->HashKey;
 
-        const uint32_t ComponnentIndex = entityInternal->componentIdIndexInDataArray[i];
-        if (ComponnentIndex == NULL_COMPONENT)
-            continue;
+        if (!scene->HasComponent(selected->ecsId, currentKeyComponent))
+            continue; 
 
-        const PC_CORE::ComponentRegister::RegisterComponentBackend& componentBackend = componentMap->at(i);
-        const size_t componentIndextoUint = ComponnentIndex;
-        void* currentComponent = &componentData->at(componentIndextoUint);
-        
-        if (componentMap->at(static_cast<uint32_t>(i)).reflecteds.empty())
-            continue;
-        ImGui::PushID(i);
+        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->Get(selected->ecsId, currentKeyComponent));
+        auto relfectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
 
+        const char* componentName = vec[i]->name.c_str();
+        // Component
+        ImGui::Text(componentName);
         ImGui::Spacing();
-        ImGui::Text(componentBackend.name.c_str());
-        DeleteButton(m_Editor->m_Selected, static_cast<uint32_t>(i));
-        for (const PC_CORE::ReflectionType& refl : componentMap->at(static_cast<uint32_t>(i)).reflecteds)
+    
+        ImGui::PushID(i); 
+        for (PC_CORE::Members& m : relfectedMember.membersKey)
         {
-            ImGui::PushID("Refleted Type");
-            ShowReflectedType(currentComponent, refl);
-            ImGui::PopID();
+            ImGui::PushID((relfectedMember.name).c_str()); 
+            ShowReflectedType(component, m); 
+            ImGui::PopID(); 
+            ImGui::Spacing();
         }
-        ImGui::PopID();
-
+        ImGui::PopID(); // Pop the ID for the loop index
+        DeleteButton(m_Editor->m_Selected, static_cast<uint32_t>(i));
     }
-    ImGui::PopID();
- */   
+
+    ImGui::PopID(); 
+ 
 }
 
 void Inspector::OnInput()
@@ -94,52 +92,62 @@ void Inspector::OnInput()
     }
     */
 }
-
-void Inspector::ShowReflectedType(void* begin, const PC_CORE::ReflectionType& reflection)
+void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 {
-    void* dataPosition = static_cast<char*>(begin) + reflection.offset;
-
-    switch (reflection.datatype)
+    void* dataPosition = static_cast<char*>(begin) + _members.offset;
+    const char* membersName = _members.membersName.c_str();
+    
+    switch (_members.dataNature)
     {
-    case PC_CORE::DataType::UNKNOW:
+    case PC_CORE::DataNature::UNKNOW:
         break;
-    case PC_CORE::DataType::BOOL:
-        ImGui::Checkbox(reflection.name, static_cast<bool*>(dataPosition));
+    case PC_CORE::DataNature::BOOL:
+        ImGui::Checkbox(membersName, static_cast<bool*>(dataPosition));
         break;
-    case PC_CORE::DataType::INT:
-        ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition));
+    case PC_CORE::DataNature::INT:
+        ImGui::DragInt(membersName, static_cast<int*>(dataPosition));
         break;
-    case PC_CORE::DataType::UINT:
-        ImGui::DragInt(reflection.name, static_cast<int*>(dataPosition),0.1, 0);
+    case PC_CORE::DataNature::UINT:
+        ImGui::DragInt(membersName, static_cast<int*>(dataPosition),0.1, 0);
         break;
-    case PC_CORE::DataType::FLOAT:
-        ImGui::DragFloat(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
+    case PC_CORE::DataNature::FLOAT:
+        ImGui::DragFloat(membersName, static_cast<float*>(dataPosition),0.1, 0);
         break;
-    case PC_CORE::DataType::DOUBLE:
-        //ImGui::DragFloat(reflection.name, static_cast<double*>(dataPosition),1, 0);
+    case PC_CORE::DataNature::DOUBLE:
+        //ImGui::DragFloat(membersName, static_cast<double*>(dataPosition),1, 0);
         break;
-    case PC_CORE::DataType::VEC2:
-        ImGui::DragFloat2(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
+    case PC_CORE::DataNature::VEC2:
+        ImGui::DragFloat2(membersName, static_cast<float*>(dataPosition),0.1, 0);
         break;
-    case PC_CORE::DataType::VEC3:
-        ImGui::DragFloat3(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
+    case PC_CORE::DataNature::VEC3:
+        ImGui::DragFloat3(membersName, static_cast<float*>(dataPosition),0.1, 0);
         break;
-    case PC_CORE::DataType::VEC4:
-        ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
+    case PC_CORE::DataNature::VEC4:
+    case PC_CORE::DataNature::QUAT:
+        ImGui::DragFloat4(membersName, static_cast<float*>(dataPosition),0.1, 0);
         break;
-    case PC_CORE::DataType::QUAT:
-        ImGui::DragFloat4(reflection.name, static_cast<float*>(dataPosition),0.1, 0);
+    case PC_CORE::DataNature::COMPOSITE:
+        for (const PC_CORE::Members& m : PC_CORE::Reflector::GetType(_members.key).membersKey)
+        {
+            void* DatadataPosition = static_cast<char*>(dataPosition) + m.offset;
+            ImGui::PushID((m.membersName).c_str());
+            ShowReflectedType(DatadataPosition, m);
+            ImGui::PopID();
+            ImGui::Spacing();
+        }
         break;
-    case PC_CORE::DataType::COUT:
+    case PC_CORE::DataNature::COUT:
         break;
     }
+
 }
 
-    /*
-void Inspector::DeleteButton(Entity _entity, uint32_t _componentId)
+    
+void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
 {
     if (ImGui::SmallButton("Delete Component"))
     {
-        m_Editor->world.scene.RemoveComponentInternal(_componentId, _entity);
+        m_Editor->world.scene.RemoveComponent(_entity->ecsId, _componentId);
+    }
 }
-    }*/
+    

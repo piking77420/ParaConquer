@@ -41,12 +41,21 @@ BEGIN_PCCORE
     
         template<typename T>
         const T& Get(EntityId _entityId) const;
+
+        void* Get(EntityId _entityId, uint32_t _componentKey);
         
         template<typename T>
-        void AddComponent(EntityId _entityId);
+        T* AddComponent(EntityId _entityId);
     
         template<typename T>
         void RemoveComponent(EntityId _entityId);
+
+        void RemoveComponent(EntityId _entityId, uint32_t _componentKey);
+
+        template<typename T>
+        bool HasComponent(EntityId _entityId) const;
+
+        bool HasComponent(EntityId _entityId, uint32_t _componentKey) const;
     
         template<typename T>
         uint8_t* GetData(size_t* _bufferSizeT);
@@ -55,7 +64,7 @@ BEGIN_PCCORE
         const uint8_t* GetData(size_t* _bufferSizeT) const;
 
         // ReturnComponent Data from a component key and _bufferSizeT is the nbr of component
-        uint8_t* GetData(uint32_t _componentKey, size_t _componentSize, size_t* _bufferSizeT);
+        uint8_t* GetData(uint32_t _componentKey, size_t* _bufferSizeT);
 
         // TODO make it private
         EntityRegister m_EntityRegister;
@@ -79,17 +88,22 @@ BEGIN_PCCORE
     }
 
     template <typename T>
-    void Scene::AddComponent(EntityId _entityId)
+    T* Scene::AddComponent(EntityId _entityId)
     {
         const uint32_t key = Reflector::GetKey<T>();
-        m_EntityRegister.CreateComponent(_entityId, key);
+        return reinterpret_cast<T*>(m_EntityRegister.CreateComponent(_entityId, key));
     }
 
     template <typename T>
     void Scene::RemoveComponent(EntityId _entityId)
     {
-        const uint32_t key = Reflector::GetKey<T>();
-        m_EntityRegister.DeleteComponent(_entityId, key);
+        RemoveComponent(_entityId, Reflector::GetKey<T>());
+    }
+
+    template <typename T>
+    bool Scene::HasComponent(EntityId _entityId) const
+    {
+        return m_EntityRegister.IsEntityHasComponent(_entityId, Reflector::GetKey<T>());
     }
 
     // Return 
@@ -97,9 +111,7 @@ BEGIN_PCCORE
     uint8_t* Scene::GetData(size_t* _bufferSizeT)
     {
         const uint32_t key = Reflector::GetKey<T>();
-        size_t dataSize = 0; 
-        uint8_t* data = m_EntityRegister.GetComponentData(key, &dataSize);
-        *_bufferSizeT = dataSize / sizeof(T);
+        uint8_t* data = m_EntityRegister.GetComponentData(key, _bufferSizeT);
         return data;
     }
 
@@ -107,9 +119,7 @@ BEGIN_PCCORE
     const uint8_t* Scene::GetData(size_t* _bufferSizeT) const
     {
         const uint32_t key = Reflector::GetKey<T>();
-        size_t dataSize = 0; 
-        const uint8_t* data = m_EntityRegister.GetComponentData(key, &dataSize);
-        *_bufferSizeT = dataSize / sizeof(T);
+        const uint8_t* data = m_EntityRegister.GetComponentData(key, _bufferSizeT);
         return data;
     }
 

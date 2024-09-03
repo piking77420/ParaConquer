@@ -4,6 +4,7 @@
 
 #include "core_header.hpp"
 #include "guid.hpp"
+#include "log.hpp"
 #include "resource.hpp"
 
 BEGIN_PCCORE
@@ -69,6 +70,8 @@ T* ResourceManager::Get(const std::string& _name)
         if (it->second->name == _name)
             return reinterpret_cast<T*>(it->second);
     }
+    PC_LOGERROR("There is no resource with this name " + _name);
+    
    return nullptr;
 }
 

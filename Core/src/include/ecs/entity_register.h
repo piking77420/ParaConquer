@@ -13,9 +13,9 @@ BEGIN_PCCORE
     class EntityRegister
     {
     public:
-        uint8_t* GetComponentData(uint32_t _componentKey, size_t* _sizeInByte);
+        uint8_t* GetComponentData(uint32_t _componentKey, size_t* _size);
 
-        const uint8_t* GetComponentData(uint32_t _componentKey, size_t* _sizeInByte) const;
+        const uint8_t* GetComponentData(uint32_t _componentKey, size_t* _size) const;
     
         uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey);
 
@@ -29,7 +29,9 @@ BEGIN_PCCORE
 
         void DestroyEntity(EntityId entityId);
 
-        bool IsValid(EntityId entityId) const;
+        bool IsEntityIdValid(EntityId entityId) const;
+
+        bool IsEntityHasComponent(EntityId entityId, uint32_t _componentKey) const;
 
         EntityRegister();
 

@@ -7,6 +7,11 @@ const ReflectedType& Reflector::GetType(uint32_t _hash)
     return m_RelfectionMap.at(_hash);
 }
 
+bool Reflector::IsTrivial(DataNature _data)
+{
+    return _data != DataNature::COMPOSITE && _data != DataNature::CONTAINER;
+}
+
 uint32_t Reflector::KR_v2_hash(const char* s)
 {
     // Source: https://stackoverflow.com/a/45641002/5407270

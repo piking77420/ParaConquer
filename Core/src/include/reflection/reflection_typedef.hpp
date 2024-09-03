@@ -3,7 +3,7 @@
 
 BEGIN_PCCORE
 
-enum class DataType
+enum class DataNature
 {
     UNKNOW,
     BOOL,
@@ -18,7 +18,7 @@ enum class DataType
     VEC4,
     QUAT,
     COMPOSITE,
-    Vector,
+    CONTAINER,
     
     COUT
 };
@@ -32,7 +32,7 @@ enum class ReflectionFlag
 struct MemberDescriptor
 {
     size_t nbr;
-    DataType type;
+    DataNature type;
 };
 
 
@@ -42,7 +42,7 @@ struct ReflectionType
     const char* name = {};
     size_t size = {};
     size_t offset = {};
-    DataType datatype = DataType::UNKNOW;
+    DataNature datatype = DataNature::UNKNOW;
 };
 
 END_PCCORE

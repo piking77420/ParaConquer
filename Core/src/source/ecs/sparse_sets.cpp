@@ -101,7 +101,6 @@ PC_CORE::SparseSet::SparseSet(size_t _densitySize) : m_Density(_densitySize)
 
 PC_CORE::SparseSet::SparseSet(size_t _densitySize, size_t _size) : m_Density(_densitySize)
 {
-    m_Dense.resize(_size * _densitySize);
     m_SparseList.resize(_size);
     for (size_t i = 0; i < _size; i++)
     {

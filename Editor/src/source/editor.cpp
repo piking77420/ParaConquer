@@ -57,8 +57,16 @@ void Editor::InitMaterial()
 void Editor::InitTestScene()
 {
     Scene& scene = world.scene;
-    EntityId id = scene.CreateEntity("test");
-    scene.AddComponent<Transform>(id);
+
+    for (size_t i = 0; i < MAX_ENTITIES; ++i)
+    {
+        EntityId id = scene.CreateEntity("test " + std::to_string(i));
+        scene.AddComponent<Transform>(id);
+        StaticMesh* static_mesh = scene.AddComponent<StaticMesh>(id);
+        static_mesh->material = ResourceManager::Get<Material>("baseMaterial");
+        static_mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    }
+    
     
 }
 

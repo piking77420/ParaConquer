@@ -17,6 +17,8 @@ using DeleteFunc = void (*)();
 
 struct Members
 {
+    DataNature dataNature;
+    std::string membersName;
     size_t offset;
     uint32_t key;
 };
@@ -24,12 +26,13 @@ struct Members
 struct ReflectedType
 {
     uint32_t HashKey;
-    DataType dataNature;
+    DataNature dataNature;
     std::string name;
     size_t dataSize;
     std::vector<Members> membersKey;
     // Dont Support MultiHirietence
     std::vector<uint32_t> inheritenceKey;
+  
 };
 
 struct ComponentBackend
@@ -46,28 +49,30 @@ public:
     ~Reflector() = delete;
 
     template<typename T>
-    PC_CORE_API static const ReflectedType& GetType();
+    static const ReflectedType& GetType();
 
     template<typename T>
-    PC_CORE_API static uint32_t GetKey();
+    static uint32_t GetKey();
 
-    PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
+    static const ReflectedType& GetType(uint32_t _hash);
 
     template<typename Holder, typename MemberType>
-    PC_CORE_API static Members ReflectMember(size_t _offset, const char* _holderName, const char* _memberName);
+    static Members ReflectMember(size_t _offset, const char* _memberName);
 
     template<typename Holder, typename BaseClass = void>
-    PC_CORE_API static ReflectedType* ReflectType();
+    static ReflectedType* ReflectType();
 
     template <typename T>
-    PC_CORE_API static uint32_t GetHash();
+    static uint32_t GetHash();
     
     template <typename T>
-    PC_CORE_API static std::vector<const ReflectedType*> GetAllTypesFrom();
+    static std::vector<const ReflectedType*> GetAllTypesFrom();
+
+    PC_CORE_API static bool IsTrivial(DataNature _data); 
     
 private:
     template <typename T>
-    static DataType TypeToDataType();
+    static DataNature TypeToDataNature();
     
     static uint32_t KR_v2_hash(const char *s);
     
@@ -103,7 +108,7 @@ const ReflectedType& Reflector::GetType()
 
 
 template <typename Holder, typename MemberType>
-Members Reflector::ReflectMember(size_t _offset, const char* _holderName, const char* _memberName)
+Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
     if (!ContaintType<Holder>())
     {
@@ -116,8 +121,15 @@ Members Reflector::ReflectMember(size_t _offset, const char* _holderName, const 
         AddType<MemberType>();
     }
     // Add to sub member
-    m_RelfectionMap.at(GetHash<Holder>()).membersKey.push_back({_offset, GetHash<MemberType>()});
-    return {};
+    const Members members =
+        {
+        .dataNature = TypeToDataNature<MemberType>(),
+        .membersName = _memberName,
+        .offset = _offset,
+        .key = GetHash<MemberType>()
+        };
+    m_RelfectionMap.at(GetHash<Holder>()).membersKey.push_back(members);
+    return members;
 }
 
 template <typename Holder, typename BaseClass = void>
@@ -133,7 +145,8 @@ ReflectedType* Reflector::ReflectType()
     
     ReflectedType holderData =
         {
-        .dataNature = TypeToDataType<Holder>(),
+        .HashKey = hashCodeHolder,
+        .dataNature = TypeToDataNature<Holder>(),
         .name = holderNameS,
         .dataSize = sizeof(Holder),
         .membersKey = {}
@@ -200,7 +213,7 @@ void Reflector::AddType()
         const ReflectedType mememberMetaData =
             {
             .HashKey = hashCode,
-            .dataNature = TypeToDataType<T>(),
+            .dataNature = TypeToDataNature<T>(),
             .name = name,
             .dataSize = sizeof(T),
             .membersKey = {},
@@ -225,69 +238,69 @@ bool Reflector::ContaintType()
 
 
 template <typename T>
-DataType Reflector::TypeToDataType()
+DataNature Reflector::TypeToDataNature()
 {
-    DataType type = {};
+    DataNature type = {};
 
     if constexpr (std::is_same_v<T, bool>)
     {
-        type = DataType::BOOL;
+        type = DataNature::BOOL;
     }
     else if constexpr (std::is_same_v<T, int>)
     {
-        type = DataType::INT;
+        type = DataNature::INT;
     }
     if constexpr (std::is_same_v<T, Tbx::Vector2i>)
     {
-        type = DataType::VEC2I;
+        type = DataNature::VEC2I;
     }
     if constexpr (std::is_same_v<T, Tbx::Vector3i>)
     {
-        type = DataType::VEC3I;
+        type = DataNature::VEC3I;
     }
     else if constexpr (std::is_same_v<T, uint32_t>)
     {
-        type = DataType::UINT;
+        type = DataNature::UINT;
     }
     else if constexpr (std::is_same_v<T, float>) 
     {
-        type = DataType::FLOAT;
+        type = DataNature::FLOAT;
     }
     else if constexpr (std::is_same_v<T, double>)
     {
-        type = DataType::DOUBLE;
+        type = DataNature::DOUBLE;
     }
     else if constexpr (std::is_same_v<T, Tbx::Vector2f>)
     {
-        type = DataType::VEC2;
+        type = DataNature::VEC2;
     }
     else if constexpr (std::is_same_v<T, Tbx::Vector3f>)
     {
-        type = DataType::VEC3;
+        type = DataNature::VEC3;
     }
     else if constexpr (std::is_same_v<T, Tbx::Vector4f>)
     {
-        type = DataType::VEC4;
+        type = DataNature::VEC4;
     }
     else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
     {
-        type = DataType::QUAT;
+        type = DataNature::QUAT;
     }
     else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
     {
-        type = DataType::INT;
+        type = DataNature::INT;
     }
     else if constexpr (std::is_class_v<T>)
     {
-        type = DataType::COMPOSITE;
+        type = DataNature::COMPOSITE;
     }
     else if constexpr (std::is_same_v<T, std::vector<T>>)
     {
-        type = DataType::Vector;
+        type = DataNature::CONTAINER;
     }
     else
     {
-        type = DataType::UNKNOW;
+        type = DataNature::UNKNOW;
         static_assert("NotSupported type");
     }
 
@@ -299,7 +312,7 @@ DataType Reflector::TypeToDataType()
 inline ReflectedType* reflectInfo##CurrentType = Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
 
 #define REFLECT_MEMBER(CurrentType, memberName) \
-inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName)>(offsetof(CurrentType, memberName), typeid(CurrentType).name(), typeid(decltype(CurrentType::memberName)).name());\
+inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName)>(offsetof(CurrentType, memberName), #memberName);\
 
 template <typename Tag>
 typename Tag::type saved_private_v;

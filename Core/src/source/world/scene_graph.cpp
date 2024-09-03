@@ -15,7 +15,6 @@ SceneGraph::SceneGraph()
 
 void SceneGraph::UpdateTransforms(Scene* _scene)
 {
-    // TODO Update ECS 
     /*
     Scene& scene = *_scene;
     scene.GetComponentData<Transform>(&m_transforms);
@@ -37,23 +36,20 @@ void SceneGraph::UpdateTransforms(Scene* _scene)
 
 void SceneGraph::UpdateMatrix(Scene* _scene)
 {
-    // TODO Update ECS
-    /*
     const Scene& scene = *_scene;
+    size_t size = 0;
+    const uint8_t* data = scene.GetData<Transform>(&size);
 
-    for (int i = 0; i < m_transforms->size(); ++i)
+    for (size_t i = 0; i < size; i++)
     {
-        Transform& transform = m_transforms->at(i);
-
-        if (!IsValid(transform.componentHolder))
-            continue;
-
-        MatrixMeshes& matricies = globalMatricies[transform.componentHolder.entityID];
-        Trs3D(transform.position, transform.rotation.Normalize(), transform.scale, &matricies.model);
+        const Transform* transform = reinterpret_cast<const Transform*>(data + i * sizeof(Transform));
+        
+        MatrixMeshes& matricies = globalMatricies[transform->entityId];
+        Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &matricies.model);
         Invert<float>(matricies.model, &matricies.modelNormalMatrix);
         matricies.modelNormalMatrix = matricies.modelNormalMatrix.Transpose();
     }
-    */
+    
 }
 
 size_t SceneGraph::MatrixMeshesSize()
@@ -91,5 +87,5 @@ const Transform* SceneGraph::GetParent(const Transform* transform)
 
 bool SceneGraph::HasParent(const Transform& transform)
 {
-    return false;//transform.parentId != NULL_ENTITY;
+    return transform.parentId != INVALID_ENTITY_ID;
 }

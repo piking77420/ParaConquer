@@ -43,7 +43,6 @@ void Hierachy::ShowGraph()
             m_Editor->m_Selected = entity;
             hasSelected = true;
         }
-        
     }
 
     if (!hasSelected)

@@ -30,7 +30,7 @@ EntityId Scene::CreateEntity(const std::string& name)
 
 const Entity* Scene::GetEntity(EntityId _id) const
 {
-    if (!m_EntityRegister.IsValid(_id))
+    if (!m_EntityRegister.IsEntityIdValid(_id))
         return nullptr;
 
     return &*std::ranges::find_if(m_Entities, [_id](const Entity& e){return e.ecsId == _id;});
@@ -38,17 +38,30 @@ const Entity* Scene::GetEntity(EntityId _id) const
 
 Entity* Scene::GetEntity(EntityId _id)
 {
-    if (!m_EntityRegister.IsValid(_id))
+    if (!m_EntityRegister.IsEntityIdValid(_id))
         return nullptr;
 
     return &*std::ranges::find_if(m_Entities, [_id](const Entity& e){return e.ecsId == _id;});
 }
 
-uint8_t* Scene::GetData(uint32_t _componentKey, size_t _componentSize, size_t* _bufferSizeT)
+void* Scene::Get(EntityId _entityId, uint32_t _componentKey)
 {
-    size_t dataSize = 0; 
-    uint8_t* data = m_EntityRegister.GetComponentData(_componentKey, &dataSize);
-    *_bufferSizeT = dataSize / _componentSize;
+    return reinterpret_cast<void*>(m_EntityRegister.GetComponent(_entityId, _componentKey));
+}
+
+void Scene::RemoveComponent(EntityId _entityId, uint32_t _componentKey)
+{
+    m_EntityRegister.DeleteComponent(_entityId, _componentKey);
+}
+
+bool Scene::HasComponent(EntityId _entityId, uint32_t _componentKey) const
+{
+    return m_EntityRegister.IsEntityHasComponent(_entityId, _componentKey);
+}
+
+uint8_t* Scene::GetData(uint32_t _componentKey ,size_t* _bufferSizeT)
+{
+    uint8_t* data = m_EntityRegister.GetComponentData(_componentKey, _bufferSizeT);
     return data;
 }
 

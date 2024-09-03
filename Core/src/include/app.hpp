@@ -29,11 +29,9 @@ public:
 	ScriptingLua scriptingLua;
 
 	PhysicsWrapper physicsWrapper;
-
+	
 	World world;
-	
-	EcsContext ecsContext;
-	
+		
 	virtual void Init();
 
 	virtual void Destroy();
@@ -47,9 +45,7 @@ public:
 	void WorldLoop();
 
 	void HandleResize();
-
-	void InitEcs();
-
+	
 	static inline App* instance = nullptr;
 
 
