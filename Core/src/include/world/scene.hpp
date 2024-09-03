@@ -41,13 +41,7 @@ BEGIN_PCCORE
     
         template<typename T>
         const T& Get(EntityId _entityId) const;
-
-        template<typename T>
-        const T& Create(EntityId _entityId);
-    
-        template<typename T>
-        const T& Delete(EntityId _entityId);
-
+        
         template<typename T>
         void AddComponent(EntityId _entityId);
     

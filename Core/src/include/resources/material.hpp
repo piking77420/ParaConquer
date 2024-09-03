@@ -23,7 +23,7 @@ public:
     
     void WriteFile(const fs::path& path) override;
 
-    ~Material() override = default;
+    ~Material() override;
     
     void Load(const fs::path& path) override;
 

@@ -27,6 +27,7 @@
   <ItemGroup>
     <Folder Include="src\include\data_structures\" />
     <Folder Include="src\source\data_structures\" />
+    <Folder Include="src\include\world\system\" />
     <Folder Include="src\source\world\system\" />
   </ItemGroup>
   <ItemGroup>
@@ -36,7 +37,11 @@
     <ClInclude Include="src\include\ecs\ecs_header.h" />
     <ClInclude Include="src\include\ecs\entity_register.h" />
     <ClInclude Include="src\include\ecs\sparse_sets.hpp" />
+    <ClInclude Include="src\include\physics\box_collider.hpp" />
+    <ClInclude Include="src\include\physics\physics.h" />
     <ClInclude Include="src\include\physics\physics_wrapper.hpp" />
+    <ClInclude Include="src\include\physics\rigid_body.hpp" />
+    <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\scripting\scripting_lua.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
@@ -65,7 +70,6 @@
     <ClInclude Include="src\include\guid.hpp" />
     <ClInclude Include="src\include\input\low_pass_filter.hpp" />
     <ClInclude Include="src\include\log.hpp" />
-    <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\reflection\reflection_typedef.hpp" />
     <ClInclude Include="src\include\reflection\reflector.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
@@ -433,7 +437,10 @@
       <LibCompiled>true</LibCompiled>
     </ClCompile>
     <ClCompile Include="src\source\pc_assert.cpp" />
+    <ClCompile Include="src\source\physics\box_collider.cpp" />
     <ClCompile Include="src\source\physics\physics_wrapper.cpp" />
+    <ClCompile Include="src\source\physics\rigid_body.cpp" />
+    <ClCompile Include="src\source\physics\sphere_collider.cpp" />
     <ClCompile Include="src\source\scripting\scripting_lua.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui.cpp" />
     <ClCompile Include="src\externals\lib\source\imgui_demo.cpp" />
@@ -446,7 +453,6 @@
     <ClCompile Include="src\source\guid.cpp" />
     <ClCompile Include="src\source\input\low_pass_filter.cpp" />
     <ClCompile Include="src\source\log.cpp" />
-    <ClCompile Include="src\source\physics\sphere_collider.cpp" />
     <ClCompile Include="src\source\reflection\reflector.cpp" />
     <ClCompile Include="src\source\rendering\camera.cpp" />
     <ClCompile Include="src\source\rendering\draw_gizmos.cpp" />

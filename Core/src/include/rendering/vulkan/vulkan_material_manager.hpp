@@ -25,8 +25,10 @@ public:
 
     void CreateMaterial(const Material& material);
 
+    void DestroyMaterial(const Material& material);
+
     void BindMaterialDescriptorSet(VkCommandBuffer _commandBuffer,uint32_t _firstSet,
-        const Material& material , VkPipelineLayout _VkPipelineLayout);
+        const Material& material , VkPipelineLayout _VkPipelineLayout) const;
 
 private:
     struct LowLevelMaterial

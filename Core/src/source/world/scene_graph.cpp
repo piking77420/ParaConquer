@@ -27,15 +27,7 @@ void SceneGraph::UpdateTransforms(Scene* _scene)
         if (!IsValid(transform.componentHolder))
             continue;
 
-        if (HasParent(transform))
-        {
-            
-        }
-        else
-        {
-            transform.position = transform.localPosition;
-            transform.rotation = Tbx::Quaternionf::FromEuleur(transform.localRotation);
-        }
+        // TODO
         
         
     }

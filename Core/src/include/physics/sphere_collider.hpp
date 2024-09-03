@@ -8,10 +8,23 @@ BEGIN_PCCORE
 
 MAKE_ECS_COMPONENT(SphereCollider)
 
+    uint32_t body_Id = -1;
+
+    bool draw = false;
+
+    bool drawAABB = false;
+
     bool isTrigger = false;
     
-    float radius = 1.f;
+    float radius = 2.f;
+
+    Tbx::Vector3f center;
 };
+/*
 REFLECT(SphereCollider,Component)
+REFLECT(SphereCollider, center)
+REFLECT(SphereCollider, drawAABB)
+REFLECT(SphereCollider, draw)
+REFLECT(SphereCollider, radius)*/
 
 END_PCCORE

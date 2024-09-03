@@ -25,9 +25,6 @@ public:
         ".gltf",
       };
 
-    std::vector<Vertex> verticies;
-
-    std::vector<uint32_t> indicies;
 
     VulkanVertexBuffer vulkanVertexBuffer;
 
@@ -39,8 +36,19 @@ public:
     
     void Load(const fs::path& path) override;
 
+    uint32_t GetNbrOfVerticies() const;
+
+    uint32_t GetNbrOfIndicies() const;
+
+
 private:
-    void LoadObj(const std::string& path);
+    void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);
+
+    uint32_t nbrOfVertices = 0;
+
+    uint32_t nbrOfIndices = 0;
+
+
 
 };
 

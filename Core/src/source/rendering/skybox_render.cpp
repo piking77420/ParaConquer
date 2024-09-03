@@ -129,7 +129,7 @@ void SkyboxRender::DrawSkyboxCubemap(VkCommandBuffer commandBuffer)
     vkCmdBindIndexBuffer(commandBuffer, m_SkyBoxCubMapBackend.cubeMesh->vulkanIndexBuffer.GetHandle(), 0,
                          VK_INDEX_TYPE_UINT32);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_SkyBoxCubMapBackend.cubeMesh->indicies.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_SkyBoxCubMapBackend.cubeMesh->GetNbrOfIndicies()), 1, 0, 0, 0);
 }
 
 void SkyboxRender::CreateProcuralDescriptorSetBackend(const Skybox& skybox)

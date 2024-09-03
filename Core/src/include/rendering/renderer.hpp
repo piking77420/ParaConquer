@@ -63,6 +63,8 @@ public:
     {
         return &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
     }
+    
+    void UpdateWorldBuffers();
 
 private:
     struct AsyncObjet
@@ -99,7 +101,7 @@ private:
     
     std::vector<VkDescriptorSet> descriptorSets;
     
-    GpuLight m_GpuLights;
+    GpuLight* m_GpuLights;
     
     const Camera* m_CurrentCamera = nullptr;
     
@@ -137,7 +139,6 @@ private:
     //void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
     //const Transform& transform, const Entity& entity);
 
-    void UpdateWorldBuffers();
 
     void InitBuffers();
     

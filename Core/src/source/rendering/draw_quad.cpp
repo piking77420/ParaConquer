@@ -25,7 +25,7 @@ void DrawQuad::Draw(VkCommandBuffer _commandBuffer, VkDescriptorSet _descriptorS
     const VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(_commandBuffer, 0, 1, &quad->vulkanVertexBuffer.GetHandle(), offsets);
     vkCmdBindIndexBuffer(_commandBuffer, quad->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(_commandBuffer, quad->indicies.size(), 1, 0, 0, 0);
+    vkCmdDrawIndexed(_commandBuffer, quad->GetNbrOfIndicies(), 1, 0, 0, 0);
 }
 
 void DrawQuad::Destroy()

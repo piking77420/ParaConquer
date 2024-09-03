@@ -24,6 +24,9 @@ void Editor::Init()
     App::Init();
     io = &ImGui::GetIO();
     InitEditorWindows();
+
+
+    InitMaterial();
     InitTestScene();
 }
 
@@ -36,13 +39,11 @@ void Editor::Destroy()
 }
 
 
-void Editor::InitTestScene()
+void Editor::InitMaterial()
 {
-    Scene& scene = world.scene;
-    /*
+    
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
-
     Material* material = new Material;
     material->Load({emerauldBlock});
     ResourceManager::Add<Material>("baseMaterial", material);
@@ -50,30 +51,12 @@ void Editor::InitTestScene()
     Material* material2 = new Material;
     material2->Load({diamondtexture});
     ResourceManager::Add<Material>("baseMaterial2", material2);
-
-    const Entity entity = world.scene.CreateEntity();
-    world.scene.GetEntityInternal(entity)->name = "Ball";
-    Transform* trans = world.scene.AddComponent<Transform>(entity);
-    trans->localPosition = {0.f, 4.f, 0.f};
-
-
-    StaticMesh* staticMesh = world.scene.AddComponent<StaticMesh>(entity);
-    staticMesh->mesh = ResourceManager::Get<Mesh>("sphere.obj");
-    staticMesh->material = material;
-
-    const Entity entity3 = world.scene.CreateEntity();
-    world.scene.AddComponent<Transform>(entity3);
-    auto dir = world.scene.AddComponent<DirLight>(entity3);
-    world.scene.GetEntityInternal(entity3)->name = "DirectionalLight";
-    dir->intensity = 4.f;
-
-    const Entity plane = world.scene.CreateEntity();
-    Transform* ptr = world.scene.AddComponent<Transform>(plane);
-    staticMesh = world.scene.AddComponent<StaticMesh>(plane);
-    staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
-    staticMesh->material = material2;
-    ptr->scale = {20, 1, 20};*/
     
+}
+
+void Editor::InitTestScene()
+{
+    Scene& scene = world.scene;
     EntityId id = scene.CreateEntity("test");
     scene.AddComponent<Transform>(id);
     
@@ -81,8 +64,9 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
-    //world.scene.~Scene();
-    //world.scene = Scene();
+    physicsWrapper.DestroyBodies(&world.scene);
+    world.scene.~Scene();
+    world.scene = Scene();
     ResourceManager::Delete<Material>("baseMaterial");
     ResourceManager::Delete<Material>("baseMaterial2");
 }
@@ -109,7 +93,11 @@ void Editor::Run()
         }
 
         if (World::world != nullptr)
+        {
             WorldLoop();
+            renderer.UpdateWorldBuffers();
+        }
+            
 
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
@@ -118,7 +106,7 @@ void Editor::Run()
         vulkanImgui.EndFrame();
         renderer.SwapBuffers();
     }
-    renderer.WaitGPU();
+   renderer.WaitGPU();
 }
 
 void Editor::InitEditorWindows()

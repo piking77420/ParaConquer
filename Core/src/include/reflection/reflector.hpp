@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include <cassert>
+
 #include <functional> // For std::function
 #include <optional>
 
@@ -226,8 +228,12 @@ template <typename T>
 DataType Reflector::TypeToDataType()
 {
     DataType type = {};
-    
-    if constexpr (std::is_same_v<T, int>)
+
+    if constexpr (std::is_same_v<T, bool>)
+    {
+        type = DataType::BOOL;
+    }
+    else if constexpr (std::is_same_v<T, int>)
     {
         type = DataType::INT;
     }
@@ -262,6 +268,10 @@ DataType Reflector::TypeToDataType()
     else if constexpr (std::is_same_v<T, Tbx::Vector4f>)
     {
         type = DataType::VEC4;
+    }
+    else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
+    {
+        type = DataType::QUAT;
     }
     else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
     {

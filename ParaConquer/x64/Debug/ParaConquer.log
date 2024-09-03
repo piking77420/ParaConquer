@@ -20,4 +20,4 @@ Core.lib(win32_joystick.obj) : warning LNK4099: PDB '' was not found with 'Core.
 Core.lib(null_monitor.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(null_monitor.obj)' or at ''; linking object as if no debug info
 Core.lib(null_window.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(null_window.obj)' or at ''; linking object as if no debug info
 Core.lib(null_joystick.obj) : warning LNK4099: PDB '' was not found with 'Core.lib(null_joystick.obj)' or at ''; linking object as if no debug info
-  ParaConquer.vcxproj -> C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\ParaConquer.exe
+  ParaConquer.vcxproj -> D:\Data\Project\ParaConquer\x64\Debug\ParaConquer.exe
