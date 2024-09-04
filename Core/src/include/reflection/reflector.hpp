@@ -40,7 +40,7 @@ struct ReflectedType
     DataNature dataNature;
     std::string name;
     size_t dataSize;
-    std::vector<Members> membersKey;
+    std::vector<Members> members;
     // Dont Support MultiHirietence
     std::vector<uint32_t> inheritenceKey;
     CreateFunc createFunc;
@@ -176,7 +176,7 @@ ReflectedType* Reflector::ReflectType()
         .dataNature = TypeToDataNature<Holder>(),
         .name = holderNameS,
         .dataSize = sizeof(Holder),
-        .membersKey = {},
+        .members = {},
         .createFunc = &ReflectedCreateFunc<Holder>,
         .deleteFunc = &ReflectedCreateFunc<Holder>,
         };
@@ -245,7 +245,7 @@ void Reflector::AddType()
             .dataNature = TypeToDataNature<T>(),
             .name = name,
             .dataSize = sizeof(T),
-            .membersKey = {},
+            .members = {},
             .createFunc = &ReflectedCreateFunc<T>,
             .deleteFunc = &ReflectedDeleteFunc<T>,
             };

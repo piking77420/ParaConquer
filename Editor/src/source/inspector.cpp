@@ -47,7 +47,7 @@ void Inspector::Show()
         ImGui::Spacing();
     
         ImGui::PushID(i); 
-        for (PC_CORE::Members& m : relfectedMember.membersKey)
+        for (PC_CORE::Members& m : relfectedMember.members)
         {
             ImGui::PushID((relfectedMember.name).c_str()); 
             ShowReflectedType(component, m); 
@@ -139,7 +139,7 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
         }
         break;
     case PC_CORE::DataNature::COMPOSITE:
-        for (const PC_CORE::Members& m : PC_CORE::Reflector::GetType(_members.typeKey).membersKey)
+        for (const PC_CORE::Members& m : PC_CORE::Reflector::GetType(_members.typeKey).members)
         {
             void* DatadataPosition = static_cast<char*>(dataPosition) + m.offset;
             ImGui::PushID((m.membersName).c_str());
