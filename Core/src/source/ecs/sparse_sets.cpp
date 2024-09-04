@@ -35,7 +35,12 @@ uint8_t* PC_CORE::SparseSet::Alloc(EntityId _entityId)
     const size_t denseSize = m_Dense.size();
     m_SparseList.at(_entityId) = static_cast<uint32_t>(m_Dense.size());
     m_Dense.resize(denseSize + m_Density);
-    return m_Dense.data() + denseSize;
+    uint8_t* newItemData = m_Dense.data() + denseSize;
+    
+    if (m_CreateFunc != nullptr)
+        m_CreateFunc(newItemData);
+    
+    return newItemData;
 }
 
 void PC_CORE::SparseSet::Free(EntityId _entityId)
@@ -68,6 +73,10 @@ void PC_CORE::SparseSet::Free(EntityId _entityId)
         }
     }
 
+    //Call Destructor
+    if (m_DeleteFunc != nullptr)
+        m_DeleteFunc(&m_Dense.at(index));
+    
     std::swap(m_Dense.at(index), m_Dense.at(EntitylastIndex));
     m_SparseList.at(lastEntity) = static_cast<uint32_t>(index);
     m_SparseList.at(_entityId) = NULL_INDEX;
@@ -99,7 +108,8 @@ PC_CORE::SparseSet::SparseSet(size_t _densitySize) : m_Density(_densitySize)
 {
 }
 
-PC_CORE::SparseSet::SparseSet(size_t _densitySize, size_t _size) : m_Density(_densitySize)
+PC_CORE::SparseSet::SparseSet(size_t _densitySize, size_t _size, SparsetCreateFunc _sparsetCreateFunc
+        ,SparsetDeleteFunc _sparsetDeleteFunc) : m_Density(_densitySize) , m_CreateFunc(_sparsetCreateFunc) , m_DeleteFunc(_sparsetDeleteFunc)
 {
     m_SparseList.resize(_size);
     for (size_t i = 0; i < _size; i++)

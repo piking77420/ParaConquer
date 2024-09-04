@@ -6,13 +6,16 @@
 
 BEGIN_PCCORE
 
+using SparsetCreateFunc = void (*)(void*);
+using SparsetDeleteFunc = void (*)(void*);
+
 class SparseSet
 {
 public:
 	uint8_t* GetData();
 
 	const uint8_t* GetData() const;
-
+	
 	size_t GetSize() const;
 
 	size_t GetDensity() const;
@@ -33,7 +36,8 @@ public:
 	
 	SparseSet(size_t _densitySize);
 
-	SparseSet(size_t _densitySize, size_t _size);
+	SparseSet(size_t _densitySize, size_t _size , SparsetCreateFunc _sparsetCreateFunc
+		,SparsetDeleteFunc _sparsetDeleteFunc);
 	
 	template<typename T>
 	T* begin()
@@ -72,6 +76,10 @@ private:
 	std::vector<uint8_t> m_Dense;
 
 	std::vector<EntityId> m_SparseList;
+
+	SparsetCreateFunc m_CreateFunc;
+
+	SparsetDeleteFunc m_DeleteFunc;
 };
 
 

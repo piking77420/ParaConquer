@@ -12,8 +12,8 @@
 
 BEGIN_PCCORE
 
-using CreateFunc = void (*)();
-using DeleteFunc = void (*)();
+using CreateFunc = void (*)(void*);
+using DeleteFunc = void (*)(void*);
 
 struct Members
 {
@@ -32,6 +32,8 @@ struct ReflectedType
     std::vector<Members> membersKey;
     // Dont Support MultiHirietence
     std::vector<uint32_t> inheritenceKey;
+    CreateFunc createFunc;
+    DeleteFunc deleteFunc;
   
 };
 
@@ -89,6 +91,17 @@ private:
     template <typename T>
     static bool ContaintType();
 
+    template <typename T>
+    static void ReflectedCreateFunc(void* _class)
+    {
+        new (_class) T();
+    }
+
+    template <typename T>
+    static void ReflectedDeleteFunc(void* _class)
+    {
+        static_cast<T*>(_class)->~T();
+    }
 };
 
 
@@ -149,7 +162,9 @@ ReflectedType* Reflector::ReflectType()
         .dataNature = TypeToDataNature<Holder>(),
         .name = holderNameS,
         .dataSize = sizeof(Holder),
-        .membersKey = {}
+        .membersKey = {},
+        .createFunc = &ReflectedCreateFunc<Holder>,
+        .deleteFunc = &ReflectedCreateFunc<Holder>,
         };
 
    
@@ -217,6 +232,8 @@ void Reflector::AddType()
             .name = name,
             .dataSize = sizeof(T),
             .membersKey = {},
+            .createFunc = &ReflectedCreateFunc<T>,
+            .deleteFunc = &ReflectedDeleteFunc<T>,
             };
         m_RelfectionMap.insert({hashCode,mememberMetaData});
     }

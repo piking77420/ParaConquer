@@ -16,6 +16,8 @@ PC_CORE::EcsContext::EcsContext()
             {
             .size = component->dataSize,
             .key = component->HashKey,
+            .Createfunc = component->createFunc,
+            .Deletefunc = component->deleteFunc,
             };
         
         m_ECSComponentsDataInfo.emplace_back(ecsComponent);

@@ -80,7 +80,7 @@ PC_CORE::EntityRegister::EntityRegister()
     const std::vector<EcsComponent>& components = EcsContext::GetComponentsDataInfo();
     for (const EcsComponent& ecsComponent : components)
     {
-        sparseSets.push_back({ecsComponent.key, SparseSet(ecsComponent.size, MAX_ENTITIES)});
+        sparseSets.push_back({ecsComponent.key, SparseSet(ecsComponent.size, MAX_ENTITIES, ecsComponent.Createfunc, ecsComponent.Deletefunc )});
     }
     
     for (size_t i = 0; i < m_Entities.size(); ++i)
