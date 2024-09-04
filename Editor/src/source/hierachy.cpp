@@ -28,15 +28,14 @@ void Hierachy::ShowGraph()
     PC_CORE::World& world = *PC_CORE::World::world;
     PC_CORE::Scene& scene = world.scene;
 
-    size_t nbr = 0;
-    const uint8_t* transformData = scene.GetData<PC_CORE::Transform>(&nbr);
+   
+    std::vector<PC_CORE::Transform>& transforms = *scene.GetData<PC_CORE::Transform>();
 
     bool hasSelected = false;
     
-    for (size_t i = 0; i < nbr; i++)
+    for (PC_CORE::Transform& transform : transforms)
     {
-        const PC_CORE::Transform* transform = reinterpret_cast<const PC_CORE::Transform*>(transformData + sizeof(PC_CORE::Transform) * i);
-        PC_CORE::Entity* entity = scene.GetEntity(transform->entityId);
+        PC_CORE::Entity* entity = scene.GetEntity(transform.entityId);
         
         if (ImGui::Button(entity->name.c_str()))
         {

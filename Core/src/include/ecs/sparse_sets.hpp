@@ -12,9 +12,10 @@ using SparsetDeleteFunc = void (*)(void*);
 class SparseSet
 {
 public:
-	uint8_t* GetData();
 
-	const uint8_t* GetData() const;
+	std::vector<uint8_t>* GetData();
+
+	const std::vector<uint8_t>* GetData() const;
 	
 	size_t GetSize() const;
 

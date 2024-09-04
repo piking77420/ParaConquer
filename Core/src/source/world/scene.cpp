@@ -59,9 +59,8 @@ bool Scene::HasComponent(EntityId _entityId, uint32_t _componentKey) const
     return m_EntityRegister.IsEntityHasComponent(_entityId, _componentKey);
 }
 
-uint8_t* Scene::GetData(uint32_t _componentKey ,size_t* _bufferSizeT)
+void PC_CORE::Scene::AddComponent(EntityId _entityId, uint32_t _componentKey)
 {
-    uint8_t* data = m_EntityRegister.GetComponentData(_componentKey, _bufferSizeT);
-    return data;
+    m_EntityRegister.CreateComponent(_entityId, _componentKey);
 }
 

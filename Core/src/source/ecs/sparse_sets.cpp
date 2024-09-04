@@ -5,14 +5,14 @@
 #include "log.hpp"
 
 
-uint8_t* PC_CORE::SparseSet::GetData()
+std::vector<uint8_t>* PC_CORE::SparseSet::GetData()
 {
-    return m_Dense.data();
+    return &m_Dense;
 }
 
-const uint8_t* PC_CORE::SparseSet::GetData() const
+const std::vector<uint8_t>* PC_CORE::SparseSet::GetData() const
 {
-    return m_Dense.data();
+    return &m_Dense;
 }
 
 size_t PC_CORE::SparseSet::GetSize() const

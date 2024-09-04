@@ -7,7 +7,6 @@
 #include "log.hpp"
 #include "math/matrix_transformation.hpp"
 #include "rendering/light.hpp"
-#include "rendering/vulkan/vulkan_texture_sampler.hpp"
 #include "rendering/vulkan/vulkan_viewport.hpp"
 #include "resources/resource_manager.hpp"
 #include "time/timer.hpp"
@@ -129,15 +128,11 @@ void Renderer::RenderViewPort(const Camera& _camera, const uint32_t viewPortId,
     m_CurrentViewport = &vulkanViewport.GetViewPort(viewPortId);
 
     UpdateCameraBuffer(VulkanInterface::GetCurrentFrame());
-
-    const uint32_t currentFrame = VulkanInterface::GetCurrentFrame();
     const VkCommandBuffer& vkCommandBuffer = m_ForwardCommandBuffers[VulkanInterface::GetCurrentFrame()];
-
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     BeginCommandBuffer(vkCommandBuffer, 0);
-
-
+    
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -147,17 +142,19 @@ void Renderer::RenderViewPort(const Camera& _camera, const uint32_t viewPortId,
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(vkCommandBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = {
-        static_cast<uint32_t>(m_CurrentViewport->viewPortSize.x),
-        static_cast<uint32_t>(m_CurrentViewport->viewPortSize.y)
-    };
-
+    const VkRect2D scissor =
+        {
+        .offset = {0, 0},
+        .extent =
+            {
+            .width = static_cast<uint32_t>(m_CurrentViewport->viewPortSize.x),
+            .height = static_cast<uint32_t>(m_CurrentViewport->viewPortSize.y)
+            }
+        };
     vkCmdSetScissor(vkCommandBuffer, 0, 1, &scissor);
-
+    
     ForwardPass(vkCommandBuffer);
-
+    
     const VkResult r = vkEndCommandBuffer(vkCommandBuffer);
     VK_CHECK_ERROR(r, "Failed to begin EndCommandBuffer")
 }
@@ -181,7 +178,7 @@ void Renderer::SwapBuffers()
     std::vector<VkCommandBuffer> commandBuffers = {
         m_ForwardCommandBuffers[currentFrame], m_CommandBuffers[currentFrame]
     };
-    submitInfo.commandBufferCount = commandBuffers.size();
+    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
     submitInfo.pCommandBuffers = commandBuffers.data();
 
     const VkSemaphore signalSemaphores[] = {asyncObjet.m_RenderFinishedSemaphore[currentFrame].semaphore};
@@ -193,8 +190,7 @@ void Renderer::SwapBuffers()
                                     asyncObjet.m_InFlightFence[currentFrame].fences);
 
     VK_CHECK_ERROR(result, "failed to vkQueueSubmit");
-
-
+    
     // Setup present info for presentation
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -220,8 +216,7 @@ void Renderer::RenderSwapChain()
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     BeginCommandBuffer(vkCommandBuffer, 0);
-
-
+    
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = VulkanInterface::vulkanSwapChapchain.swapchainRenderPass.renderPass;
@@ -338,22 +333,18 @@ void Renderer::ForwardPass(VkCommandBuffer commandBuffer)
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BasePipeline.Get());
 
-    // TODO Update ECS
+    const std::vector<StaticMesh>& staticMeshes = *m_CurrentWorld->scene.GetData<StaticMesh>();
 
-    
-    size_t size = 0;
-    const uint8_t* data = m_CurrentWorld->scene.GetData<StaticMesh>(&size);
-
-    for (size_t i = 0; i < size; i++)
+    for (const StaticMesh& staticMesh : staticMeshes)
     {
-        const StaticMesh& staticMesh = *reinterpret_cast<const StaticMesh*>(data + i * sizeof(StaticMesh));
         const Entity& entity = *m_CurrentWorld->scene.GetEntity(staticMesh.entityId);
-        const Transform& transform = m_CurrentWorld->scene.Get<Transform>(entity.ecsId);
-        
         if (staticMesh.material == nullptr || staticMesh.mesh == nullptr)
             continue;
+        if (!m_CurrentWorld->scene.HasComponent<Transform>(staticMesh.entityId))
+            continue;
         
-        DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, transform, entity);
+        const Transform* transform = m_CurrentWorld->scene.Get<Transform>(entity.ecsId);
+        DrawStatisMesh(commandBuffer, m_ImageIndex, staticMesh, *transform, entity);
     }
     
     drawGizmos.DrawGizmosForward(commandBuffer, m_ImageIndex, *m_CurrentViewport);
@@ -454,78 +445,77 @@ void Renderer::UpdateLightBuffer(uint32_t _currentFrame)
 {
    BEGIN_TIMER("LightPassBuffer")
 
-   const std::vector<DirLight>* dirlights = nullptr;
-   const std::vector<PointLight>* pointLights = nullptr;
-   const std::vector<SpotLight>* spotLights = nullptr;
+   const std::vector<DirLight>* dirlights = m_CurrentWorld->scene.GetData<DirLight>();
+   const std::vector<PointLight>* pointLights = m_CurrentWorld->scene.GetData<PointLight>();
+   const std::vector<SpotLight>* spotLights =  m_CurrentWorld->scene.GetData<SpotLight>();
     // TODO Update ECS
-/*
-    m_CurrentWorld->scene.GetComponentData<DirLight>(&dirlights);
-    m_CurrentWorld->scene.GetComponentData<PointLight>(&pointLights);
-    m_CurrentWorld->scene.GetComponentData<SpotLight>(&spotLights);
-
-    // Set nbr
-    uint32_t nbrOfDirLight = 0;
-    uint32_t nbrOfPointLight = 0;
-    uint32_t nbrOfSpotLight = 0;
-
-    for (uint32_t i = 0; i < dirlights->size(); i++)
+    
+    for (uint32_t i = 0; i < MAX_DIRLIGHT_COUNT; i++)
     {
-        if (!IsValid(dirlights->at(i).componentHolder))
+        if (i >= dirlights->size())
         {
             m_GpuLights->gpuDirLights[i] = {};
             continue;
         }
+        if (!m_CurrentWorld->scene.HasComponent<DirLight>(dirlights->at(i).entityId) ||
+            !m_CurrentWorld->scene.HasComponent<Transform>(dirlights->at(i).entityId))
+            continue;
+        
+        const Transform* transform = m_CurrentWorld->scene.Get<Transform>(
+            dirlights->at(i).entityId);
 
-        const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
-            dirlights->at(i).componentHolder.entityID);
-
-        Tbx::Vector3f dir = transform.rotation * Tbx::Vector3f::UnitY();
+        const Tbx::Vector3f dir = transform->rotation * Tbx::Vector3f::UnitY();
 
         m_GpuLights->gpuDirLights[i].direction = dir.Normalize();
         m_GpuLights->gpuDirLights[i].color = dirlights->at(i).color;
         m_GpuLights->gpuDirLights[i].intensity = dirlights->at(i).intensity;
-        nbrOfDirLight++;
     }
 
-    for (uint32_t i = 0; i < pointLights->size(); i++)
+    for (uint32_t i = 0; i < MAX_POINTLIGHT_COUNT; i++)
     {
-        if (!IsValid(pointLights->at(i).componentHolder))
+        if (i >= pointLights->size())
         {
-            m_GpuLights->gpuSpotLight[i] = {};
+            m_GpuLights->gpuPointLights[i] = {};
             continue;
         }
-
-        const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
-            pointLights->at(i).componentHolder.entityID);
-        m_GpuLights->gpuPointLights[i].position = transform.position;
+        
+        if (!m_CurrentWorld->scene.HasComponent<PointLight>(pointLights->at(i).entityId))
+            continue;
+        
+        
+        const Transform* transform = m_CurrentWorld->scene.Get<Transform>(
+            pointLights->at(i).entityId);
+        m_GpuLights->gpuPointLights[i].position = transform->position;
         m_GpuLights->gpuDirLights[i].color = pointLights->at(i).color;
         m_GpuLights->gpuDirLights[i].intensity = pointLights->at(i).intensity;
-        nbrOfPointLight++;
     }
 
-    for (uint32_t i = 0; i < spotLights->size(); i++)
+    for (uint32_t i = 0; i < MAX_SPOTLIGHT_COUNT; i++)
     {
-        if (!IsValid(spotLights->at(i).componentHolder))
+        if (i >= spotLights->size())
         {
             m_GpuLights->gpuSpotLight[i] = {};
             continue;
         }
 
-        const Transform& transform = *m_CurrentWorld->scene.GetComponent<Transform>(
-            dirlights->at(i).componentHolder.entityID);
-        Tbx::Vector3f dir = transform.rotation * -Tbx::Vector3f::UnitY();
-        m_GpuLights->gpuSpotLight[i].position = transform.position;
+        if (!m_CurrentWorld->scene.HasComponent<SpotLight>(spotLights->at(i).entityId))
+            continue;
+        
+        const Transform* transform = m_CurrentWorld->scene.Get<Transform>(
+            dirlights->at(i).entityId);
+        
+        const Tbx::Vector3f dir = transform->rotation * -Tbx::Vector3f::UnitY();
+        m_GpuLights->gpuSpotLight[i].position = transform->position;
         m_GpuLights->gpuSpotLight[i].direction = dir;
         m_GpuLights->gpuSpotLight[i].color = spotLights->at(i).color;
         m_GpuLights->gpuSpotLight[i].intensity = spotLights->at(i).intensity;
-        nbrOfSpotLight++;
     }
 
-    m_GpuLights->nbrOfDirLight = static_cast<int32_t>(nbrOfDirLight);
-    m_GpuLights->nbrOfPointLight = static_cast<int32_t>(nbrOfPointLight);
-    m_GpuLights->nbrOfSpotLight = static_cast<int32_t>(nbrOfSpotLight);
+    m_GpuLights->nbrOfDirLight = static_cast<int32_t>(dirlights->size());
+    m_GpuLights->nbrOfPointLight = static_cast<int32_t>(pointLights->size());
+    m_GpuLights->nbrOfSpotLight = static_cast<int32_t>(spotLights->size());
 
-    m_ShaderStoragesLight[_currentFrame].Update(&m_GpuLights, sizeof(GpuLight));*/
+    m_ShaderStoragesLight[_currentFrame].Update(m_GpuLights, sizeof(GpuLight));
     END_TIMER()
 }
 

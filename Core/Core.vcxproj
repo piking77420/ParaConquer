@@ -31,6 +31,10 @@
     <Folder Include="src\source\world\system\" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\externals\include\RapidXML\rapidxml.hpp" />
+    <ClInclude Include="src\externals\include\RapidXML\RapidXMLSTD.hpp" />
+    <ClInclude Include="src\externals\include\RapidXML\rapidxml_print.hpp" />
+    <ClInclude Include="src\externals\include\RapidXML\rapidxml_utils.hpp" />
     <ClInclude Include="src\include\assert.hpp" />
     <ClInclude Include="src\include\ecs\component.h" />
     <ClInclude Include="src\include\ecs\ecs_context.h" />
@@ -672,7 +676,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalDependencies>RapidXML.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
@@ -702,7 +706,7 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalDependencies>RapidXML.lib;glfw3.lib;vulkan-1.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
@@ -726,7 +730,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalDependencies>RapidXML.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
@@ -757,7 +761,7 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalDependencies>RapidXML.lib;glfw3.lib;vulkan-1.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>

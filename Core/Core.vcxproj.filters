@@ -225,9 +225,6 @@
     <ClInclude Include="src\include\world\world.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\world\world_header_typedef.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -288,10 +285,31 @@
     <ClInclude Include="src\include\ecs\entity_register.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\ecs\sparse_sets_component.h">
+    <ClInclude Include="src\include\ecs\ecs_context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\data_structures\sparse_sets.hpp">
+    <ClInclude Include="src\include\ecs\sparse_sets.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\physics\box_collider.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\physics\physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\physics\rigid_body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\RapidXML\rapidxml.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\RapidXML\RapidXMLSTD.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\RapidXML\rapidxml_utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\RapidXML\rapidxml_print.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -500,22 +518,22 @@
     <ClCompile Include="src\source\time\core_time.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\include\ecs\component.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\ecs\component.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\ecs\component_register.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\ecs\entity_register.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\ecs\sparse_sets_component.cpp">
+    <ClCompile Include="src\source\ecs\ecs_context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\data_structures\sparse_sets.cpp">
+    <ClCompile Include="src\source\ecs\sparse_sets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\physics\box_collider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\physics\rigid_body.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

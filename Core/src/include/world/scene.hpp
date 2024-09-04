@@ -37,15 +37,17 @@ BEGIN_PCCORE
         Entity* GetEntity(EntityId _id);
     
         template <class T>
-        T& Get(EntityId _entityId);
+        T* Get(EntityId _entityId);
     
         template<typename T>
-        const T& Get(EntityId _entityId) const;
+        const T* Get(EntityId _entityId) const;
 
         void* Get(EntityId _entityId, uint32_t _componentKey);
         
         template<typename T>
         T* AddComponent(EntityId _entityId);
+
+        void AddComponent(EntityId _entityId, uint32_t _componentKey);
     
         template<typename T>
         void RemoveComponent(EntityId _entityId);
@@ -58,14 +60,11 @@ BEGIN_PCCORE
         bool HasComponent(EntityId _entityId, uint32_t _componentKey) const;
     
         template<typename T>
-        uint8_t* GetData(size_t* _bufferSizeT);
+        std::vector<T>* GetData();
 
         template<typename T>
-        const uint8_t* GetData(size_t* _bufferSizeT) const;
-
-        // ReturnComponent Data from a component key and _bufferSizeT is the nbr of component
-        uint8_t* GetData(uint32_t _componentKey, size_t* _bufferSizeT);
-
+        const std::vector<T>* GetData() const;
+        
         // TODO make it private
         EntityRegister m_EntityRegister;
         
@@ -74,17 +73,17 @@ BEGIN_PCCORE
     };
 
     template <typename T>
-    T& Scene::Get(EntityId _entityId)
+    T* Scene::Get(EntityId _entityId)
     {
         const uint32_t key = Reflector::GetKey<T>();
-        return *reinterpret_cast<T*>(m_EntityRegister.GetComponent(_entityId, key));
+        return reinterpret_cast<T*>(m_EntityRegister.GetComponent(_entityId, key));
     }
 
     template <typename T>
-    const T& Scene::Get(EntityId _entityId) const
+    const T* Scene::Get(EntityId _entityId) const
     {
         const uint32_t key = Reflector::GetKey<T>();
-        return *reinterpret_cast<const T*>(m_EntityRegister.GetComponent(_entityId, key));
+        return reinterpret_cast<const T*>(m_EntityRegister.GetComponent(_entityId, key));
     }
 
     template <typename T>
@@ -93,6 +92,8 @@ BEGIN_PCCORE
         const uint32_t key = Reflector::GetKey<T>();
         return reinterpret_cast<T*>(m_EntityRegister.CreateComponent(_entityId, key));
     }
+
+   
 
     template <typename T>
     void Scene::RemoveComponent(EntityId _entityId)
@@ -106,22 +107,18 @@ BEGIN_PCCORE
         return m_EntityRegister.IsEntityHasComponent(_entityId, Reflector::GetKey<T>());
     }
 
-    // Return 
     template <typename T>
-    uint8_t* Scene::GetData(size_t* _bufferSizeT)
+    std::vector<T>* Scene::GetData()
     {
         const uint32_t key = Reflector::GetKey<T>();
-        uint8_t* data = m_EntityRegister.GetComponentData(key, _bufferSizeT);
-        return data;
+        return reinterpret_cast<std::vector<T>*>(m_EntityRegister.GetComponentData(key));
     }
 
     template <typename T>
-    const uint8_t* Scene::GetData(size_t* _bufferSizeT) const
+    const std::vector<T>* Scene::GetData() const
     {
         const uint32_t key = Reflector::GetKey<T>();
-        const uint8_t* data = m_EntityRegister.GetComponentData(key, _bufferSizeT);
-        return data;
+        return reinterpret_cast<const std::vector<T>*>(m_EntityRegister.GetComponentData(key));
     }
-
 
 END_PCCORE

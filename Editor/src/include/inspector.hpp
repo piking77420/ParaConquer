@@ -22,6 +22,8 @@ private:
     void ShowReflectedType(void* begin, const PC_CORE::Members& _members);
 
     void DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId);
+
+    std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
 };
 
 END_EDITOR_PCCORE

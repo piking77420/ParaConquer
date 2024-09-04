@@ -13,9 +13,9 @@ BEGIN_PCCORE
     class EntityRegister
     {
     public:
-        uint8_t* GetComponentData(uint32_t _componentKey, size_t* _size);
+        std::vector<uint8_t>* GetComponentData(uint32_t _componentKey);
 
-        const uint8_t* GetComponentData(uint32_t _componentKey, size_t* _size) const;
+        const std::vector<uint8_t>* GetComponentData(uint32_t _componentKey) const;
     
         uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey);
 

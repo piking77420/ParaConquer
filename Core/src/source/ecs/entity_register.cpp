@@ -4,17 +4,15 @@
 #include "ecs/component.h"
 #include "ecs/ecs_context.h"
 
-uint8_t* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey, size_t* _size)
+std::vector<uint8_t>* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey)
 {
     SparseSet* sparseSet = GetSparsetFromKey(_componentKey);
-    *_size = sparseSet->GetSize();
     return sparseSet->GetData();
 }
 
-const uint8_t* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey, size_t* _size) const
+const std::vector<uint8_t>* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey) const
 {
     const SparseSet* sparseSet = GetSparsetFromKey(_componentKey);
-    *_size = sparseSet->GetSize();
     return sparseSet->GetData();
 }
 

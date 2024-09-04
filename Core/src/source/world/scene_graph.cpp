@@ -36,16 +36,14 @@ void SceneGraph::UpdateTransforms(Scene* _scene)
 
 void SceneGraph::UpdateMatrix(Scene* _scene)
 {
-    const Scene& scene = *_scene;
-    size_t size = 0;
-    const uint8_t* data = scene.GetData<Transform>(&size);
+     Scene& scene = *_scene;
+    
+    std::vector<Transform>& transforms = *scene.GetData<Transform>();
 
-    for (size_t i = 0; i < size; i++)
+    for (Transform& transform : transforms)
     {
-        const Transform* transform = reinterpret_cast<const Transform*>(data + i * sizeof(Transform));
-        
-        MatrixMeshes& matricies = globalMatricies[transform->entityId];
-        Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &matricies.model);
+        MatrixMeshes& matricies = globalMatricies[transform.entityId];
+        Trs3D(transform.position, transform.rotation.Normalize(), transform.scale, &matricies.model);
         Invert<float>(matricies.model, &matricies.modelNormalMatrix);
         matricies.modelNormalMatrix = matricies.modelNormalMatrix.Transpose();
     }

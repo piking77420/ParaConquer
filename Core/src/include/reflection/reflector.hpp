@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include <functional> // For std::function
+#include <iostream>
 #include <optional>
 
 #include "log.hpp"
@@ -15,12 +16,22 @@ BEGIN_PCCORE
 using CreateFunc = void (*)(void*);
 using DeleteFunc = void (*)(void*);
 
+enum MemberEnumFlag
+{
+    NONE,
+    NOTSERIALIZE,
+    COLOR,
+    
+};
+
+
 struct Members
 {
     DataNature dataNature;
     std::string membersName;
-    size_t offset;
-    uint32_t key;
+    size_t offset = 0;
+    uint32_t typeKey = 0;
+    uintmax_t enumFlag = 0;
 };
     
 struct ReflectedType
@@ -58,7 +69,7 @@ public:
 
     static const ReflectedType& GetType(uint32_t _hash);
 
-    template<typename Holder, typename MemberType>
+    template<typename Holder, typename MemberType, MemberEnumFlag enumFlag = NONE>
     static Members ReflectMember(size_t _offset, const char* _memberName);
 
     template<typename Holder, typename BaseClass = void>
@@ -120,7 +131,7 @@ const ReflectedType& Reflector::GetType()
 }
 
 
-template <typename Holder, typename MemberType>
+template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag = NONE>
 Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
     if (!ContaintType<Holder>())
@@ -139,8 +150,11 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
         .dataNature = TypeToDataNature<MemberType>(),
         .membersName = _memberName,
         .offset = _offset,
-        .key = GetHash<MemberType>()
+        .typeKey = GetHash<MemberType>(),
+        .enumFlag = memberEnumFlag
         };
+
+    
     m_RelfectionMap.at(GetHash<Holder>()).membersKey.push_back(members);
     return members;
 }
@@ -267,11 +281,11 @@ DataNature Reflector::TypeToDataNature()
     {
         type = DataNature::INT;
     }
-    if constexpr (std::is_same_v<T, Tbx::Vector2i>)
+    else if constexpr (std::is_same_v<T, Tbx::Vector2i>)
     {
         type = DataNature::VEC2I;
     }
-    if constexpr (std::is_same_v<T, Tbx::Vector3i>)
+    else if constexpr (std::is_same_v<T, Tbx::Vector3i>)
     {
         type = DataNature::VEC3I;
     }
@@ -328,8 +342,8 @@ DataNature Reflector::TypeToDataNature()
 #define REFLECT(CurrentType, ...) \
 inline ReflectedType* reflectInfo##CurrentType = Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
 
-#define REFLECT_MEMBER(CurrentType, memberName) \
-inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName)>(offsetof(CurrentType, memberName), #memberName);\
+#define REFLECT_MEMBER(CurrentType, memberName, ...) \
+inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName),##__VA_ARGS__>(offsetof(CurrentType, memberName), #memberName);\
 
 template <typename Tag>
 typename Tag::type saved_private_v;

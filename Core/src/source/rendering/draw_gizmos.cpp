@@ -105,20 +105,16 @@ void DrawGizmos::CreateGraphiPipeline()
 
 void DrawGizmos::DrawColliders()
 {
-    // TODO Update ECS
-    /*
     const Scene& scene = m_Renderer->m_CurrentWorld->scene;
-    const std::vector<SphereCollider>* sphereColliders = nullptr;
-    scene.GetComponentData<SphereCollider>(&sphereColliders);
-    const std::vector<BoxCollider>* boxCollider = nullptr;
-    scene.GetComponentData<BoxCollider>(&boxCollider);
-
+    const std::vector<SphereCollider>* sphereColliders = scene.GetData<SphereCollider>();
+    const std::vector<BoxCollider>* boxCollider = scene.GetData<BoxCollider>();
     vkCmdBindPipeline(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GizmoPipeline.Get());
     vkCmdBindDescriptorSets(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
            1, &m_DescriptorSet[VulkanInterface::GetCurrentFrame()], 0, nullptr);
     
     DrawSphereCollider(*sphereColliders,scene);
-    */
+    DrawBoxCollider(*boxCollider, scene);
+    DrawAABBCollider(*boxCollider, *sphereColliders, scene);
 }
 
 void DrawGizmos::InitDescriptor()
@@ -159,22 +155,22 @@ void DrawGizmos::DrawSphereCollider(const std::vector<SphereCollider>& sphereCol
     vkCmdBindIndexBuffer(*currentCommandBuffer, sphere->vulkanIndexBuffer.GetHandle(), 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(*currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipelineLayout.Get(), 0,
                1, &m_DescriptorSet[VulkanInterface::GetCurrentFrame()], 0, nullptr);
-    // TODO Update ECS
-    /*
+    
     for (size_t i = 0; i < sphereColliders.size(); i++)
     {
         const SphereCollider& sphereCollider = sphereColliders.at(i);
         
-        if (!sphereCollider.draw || !IsValid(sphereCollider.componentHolder))
+        if (!sphereCollider.draw || !scene.HasComponent<SphereCollider>(sphereCollider.entityId)
+            || !scene.HasComponent<Transform>(sphereCollider.entityId))
             continue;
 
-        const Transform* transform = scene.GetComponent<Transform>(sphereCollider.componentHolder.entityID);
+        const Transform* transform = scene.Get<Transform>(sphereCollider.entityId);
         if (!transform)
             continue;
 
         const Tbx::Vector3f color = {0.f,1.f,0.f};
         Tbx::Matrix4x4f trs;
-        Trs3D<float>(transform->position, Tbx::Quaternionf::Identity(), sphereCollider.radius * 2.f + zFightingOffSet, &trs);
+        Trs3D<float>(transform->position + sphereColliders[i].center, Tbx::Quaternionf::Identity(), sphereCollider.radius * 2.f + zFightingOffSet, &trs);
 
         const GizmoStruct gizmoStruct =
             {
@@ -200,10 +196,12 @@ void DrawGizmos::DrawBoxCollider(const std::vector<BoxCollider>& _boxCollider, c
     {
         const BoxCollider& box = _boxCollider.at(i);
         
-        if (!box.draw || !IsValid(box.componentHolder))
+        if (!box.draw || !scene.HasComponent<BoxCollider>(box.entityId)
+          || !scene.HasComponent<Transform>(box.entityId))
             continue;
 
-        const Transform* transform = scene.GetComponent<Transform>(box.componentHolder.entityID);
+
+        const Transform* transform = scene.Get<Transform>(box.entityId);
         if (!transform)
             continue;
 
@@ -236,10 +234,11 @@ void DrawGizmos::DrawAABBCollider(const std::vector<BoxCollider>& _boxColliders,
     {
         const BoxCollider& box = _boxColliders.at(i);
         
-        if (!box.drawAABB || !IsValid(box.componentHolder))
+        if (!box.drawAABB || !scene.HasComponent<BoxCollider>(box.entityId)
+         || !scene.HasComponent<Transform>(box.entityId))
             continue;
 
-        const Transform* transform = scene.GetComponent<Transform>(box.componentHolder.entityID);
+        const Transform* transform = scene.Get<Transform>(box.entityId);
         if (!transform)
             continue;
 
@@ -265,10 +264,11 @@ void DrawGizmos::DrawAABBCollider(const std::vector<BoxCollider>& _boxColliders,
     {
         const SphereCollider& sphereCollider = _sphereColliders.at(i);
         
-        if (!sphereCollider.drawAABB || !IsValid(sphereCollider.componentHolder))
+        if (!sphereCollider.drawAABB || !scene.HasComponent<SphereCollider>(sphereCollider.entityId)
+             || !scene.HasComponent<Transform>(sphereCollider.entityId))
             continue;
 
-        const Transform* transform = scene.GetComponent<Transform>(sphereCollider.componentHolder.entityID);
+        const Transform* transform = scene.Get<Transform>(sphereCollider.entityId);
         if (!transform)
             continue;
 
@@ -286,8 +286,8 @@ void DrawGizmos::DrawAABBCollider(const std::vector<BoxCollider>& _boxColliders,
         
         vkCmdPushConstants(*currentCommandBuffer, m_VkPipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(GizmoStruct), &gizmoStruct);
-        vkCmdDrawIndexed(*currentCommandBuffer, sphere->indicies.size(), 1, 0, 0, 0);
-    }*/
+        vkCmdDrawIndexed(*currentCommandBuffer, cubeBoid->GetNbrOfIndicies(), 1, 0, 0, 0);
+    }
 }
 
 DrawGizmos::OutAABB DrawGizmos::GetAABBFromSphereCollider(const Transform& _transform, const SphereCollider& _sphere)

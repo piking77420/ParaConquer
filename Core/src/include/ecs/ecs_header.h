@@ -6,7 +6,7 @@
 
 using EntityId = uint32_t;
 constexpr EntityId INVALID_ENTITY_ID = -1;
-constexpr EntityId MAX_ENTITIES = 50;
+constexpr EntityId MAX_ENTITIES = 150;
 
 #define IsValidEntityId(entityId) \
     assert((entityId) != INVALID_ENTITY_ID && (entityId) < MAX_ENTITIES);\

@@ -58,7 +58,11 @@ void Editor::InitTestScene()
 {
     Scene& scene = world.scene;
 
-    for (size_t i = 0; i < MAX_ENTITIES; ++i)
+    EntityId dirLigthId = scene.CreateEntity("dirLigth");
+    scene.AddComponent<DirLight>(dirLigthId);
+    scene.AddComponent<Transform>(dirLigthId);
+
+    for (size_t i = 0; i < 20; ++i)
     {
         EntityId id = scene.CreateEntity("test " + std::to_string(i));
         scene.AddComponent<Transform>(id);
