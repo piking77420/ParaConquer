@@ -17,6 +17,7 @@ void PC_CORE::Serializer::Serializing(uint32_t _TypeKey)
 
 void PC_CORE::Serializer::SerializeMember(const Members& _members)
 {
+    const ReflectedType& MemberReflection = Reflector::GetType(_members.typeKey);
     switch (_members.dataNature)
     {
     case DataNature::UNKNOW:
@@ -44,7 +45,7 @@ void PC_CORE::Serializer::SerializeMember(const Members& _members)
     case DataNature::QUAT:
         break;
     case DataNature::COMPOSITE:
-        const ReflectedType& MemberReflection = Reflector::GetType(_members.typeKey);
+         
         for (const Members& members : MemberReflection.members)
         {
             SerializeMember(_members);

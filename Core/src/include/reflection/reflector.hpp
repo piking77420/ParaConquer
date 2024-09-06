@@ -155,7 +155,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
         };
 
     
-    m_RelfectionMap.at(GetHash<Holder>()).membersKey.push_back(members);
+    m_RelfectionMap.at(GetHash<Holder>()).members.push_back(members);
     return members;
 }
 
