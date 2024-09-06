@@ -15,6 +15,7 @@ BEGIN_PCCORE
 
 using CreateFunc = void (*)(void*);
 using DeleteFunc = void (*)(void*);
+using SerializeFunc = std::string (*)(const void*);
 
 enum MemberEnumFlag
 {
@@ -43,16 +44,13 @@ struct ReflectedType
     std::vector<Members> members;
     // Dont Support MultiHirietence
     std::vector<uint32_t> inheritenceKey;
-    CreateFunc createFunc;
-    DeleteFunc deleteFunc;
-  
-};
-
-struct ComponentBackend
-{
+    
     CreateFunc createFunc = nullptr;
     DeleteFunc deleteFunc = nullptr;
+    
+    SerializeFunc serializeFunc = nullptr;     
 };
+
 
 class Reflector
 {
@@ -113,6 +111,7 @@ private:
     {
         static_cast<T*>(_class)->~T();
     }
+    
 };
 
 
@@ -162,26 +161,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 template <typename Holder, typename BaseClass = void>
 ReflectedType* Reflector::ReflectType()
 {
-    const std::string holderNameS = GetCorrectNameFromTypeId(typeid(Holder).name());
-    const uint32_t hashCodeHolder = KR_v2_hash(holderNameS.c_str());
-
-    const bool containType = m_RelfectionMap.contains(hashCodeHolder);
-
-    if (containType)
-        return &m_RelfectionMap.at(hashCodeHolder);
-    
-    ReflectedType holderData =
-        {
-        .HashKey = hashCodeHolder,
-        .dataNature = TypeToDataNature<Holder>(),
-        .name = holderNameS,
-        .dataSize = sizeof(Holder),
-        .members = {},
-        .createFunc = &ReflectedCreateFunc<Holder>,
-        .deleteFunc = &ReflectedCreateFunc<Holder>,
-        };
-
-   
+    AddType<Holder>();
 
     // Add base class to current class and all hieritance
     if constexpr(!std::is_same_v<void,BaseClass> || std::is_base_of_v<BaseClass, Holder>)
@@ -191,14 +171,21 @@ ReflectedType* Reflector::ReflectType()
             AddType<BaseClass>();
         }
 
-        const uint32_t hashCodeBaseClass = GetHash<BaseClass>();
-        holderData.inheritenceKey.push_back(hashCodeBaseClass);
-        auto baseClass = m_RelfectionMap.at(hashCodeBaseClass);
-        holderData.inheritenceKey.insert(holderData.inheritenceKey.end(), baseClass.inheritenceKey.begin(), baseClass.inheritenceKey.end());
-    }
-    m_RelfectionMap.insert({hashCodeHolder,holderData});
+        const uint32_t TypeKey = GetKey<Holder>();
+        auto it = m_RelfectionMap.find(TypeKey);
+        const uint32_t baseKey = GetKey<BaseClass>();
 
-    return &m_RelfectionMap.at(hashCodeHolder);
+        if (it != m_RelfectionMap.end())
+        {
+            it->second.inheritenceKey.push_back(baseKey);
+            auto& baseClass = m_RelfectionMap.at(baseKey);
+            it->second.inheritenceKey.insert(it->second.inheritenceKey.end(), baseClass.inheritenceKey.begin(), baseClass.inheritenceKey.end());
+        }
+
+  
+    }
+
+    return &m_RelfectionMap.at(GetKey<Holder>());
 }
 
 template <typename T>
@@ -232,13 +219,11 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 template <typename T>
 void Reflector::AddType()
 {
-    std::string name;
-    const uint32_t hashCode = GetHash<T>(&name);
-    const bool DoesContainType = m_RelfectionMap.contains(hashCode);
-    
-    if (!DoesContainType)
+    if (!ContaintType<T>())
     {
         // Create New Node in map
+        std::string name;
+        const uint32_t hashCode = GetHash<T>(&name);
         const ReflectedType mememberMetaData =
             {
             .HashKey = hashCode,
@@ -266,6 +251,7 @@ bool Reflector::ContaintType()
 {
     return m_RelfectionMap.contains(GetHash<T>());
 }
+
 
 
 template <typename T>

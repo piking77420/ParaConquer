@@ -15,18 +15,9 @@ public:
     static void Serialize(const fs::path& _fileToSerialize);
     
 private:
-    struct SerializeContex
-    {
-        void* currentFile = nullptr;
-        void* currentDocument = nullptr;
-    };
-
-    
-    static void Serializing(uint32_t _TypeKey);
+    static void Serializing(const fs::path& _fileToSerialize, uint32_t _typeKey);
 
     static void SerializeMember(const Members& _members);
-
-    static void SerializeBegin(const fs::path& _fileToSerialize);
     
     static void SerializeEnd();
 
@@ -38,8 +29,7 @@ private:
 template <typename T>
 void Serializer::Serialize(const fs::path& _fileToSerialize)
 {
-    SerializeBegin(_fileToSerialize);
-    SerializeEnd();
+    
 }
 
 END_PCCORE

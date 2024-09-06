@@ -54,8 +54,8 @@ void Inspector::Show()
             ImGui::PopID(); 
             ImGui::Spacing();
         }
-        ImGui::PopID(); // Pop the ID for the loop index
         DeleteButton(m_Editor->m_Selected, m_ReflectedTypes[i]->HashKey);
+        ImGui::PopID(); // Pop the ID for the loop index
     }
 
     ImGui::PopID(); 

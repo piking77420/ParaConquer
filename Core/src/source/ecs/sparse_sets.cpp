@@ -47,40 +47,39 @@ void PC_CORE::SparseSet::Free(EntityId _entityId)
 {
     if (Empty())
         return;
-    
+
+    // Index of item that we want to delete
     const size_t index = m_SparseList.at(_entityId);
     if (index == NULL_INDEX)
     {
        return;
     }
 
-    if (index == 0)
-    {
-        m_Dense.pop_back();
-        m_SparseList.at(_entityId) = NULL_INDEX;
-        return;
-    }
-
     // Find Last entity who has the last dense element
-    size_t lastEntity = -1;
-    size_t EntitylastIndex = 0;
+    uint32_t lastEntity = -1;
+    uint32_t EntitylastIndex = 0;
     for (size_t ent = 0; ent < m_SparseList.size(); ent++)
     {
         if (m_SparseList.at(ent) != NULL_INDEX && EntitylastIndex < m_SparseList.at(ent))
         {
             EntitylastIndex = m_SparseList.at(ent);
-            lastEntity = ent;
+            lastEntity = static_cast<uint32_t>(ent);
         }
     }
-
+    
     //Call Destructor
     if (m_DeleteFunc != nullptr)
+    {
         m_DeleteFunc(&m_Dense.at(index));
-    
-    std::swap(m_Dense.at(index), m_Dense.at(EntitylastIndex));
-    m_SparseList.at(lastEntity) = static_cast<uint32_t>(index);
-    m_SparseList.at(_entityId) = NULL_INDEX;
-    m_Dense.pop_back();
+        m_SparseList.at(_entityId) = NULL_INDEX;
+    }
+
+    if (EntitylastIndex != NULL_INDEX && EntitylastIndex != index)
+    {
+        std::swap(m_Dense.at(index), m_Dense.at(EntitylastIndex));
+        m_SparseList.at(lastEntity) = static_cast<uint32_t>(index);
+    }
+    m_Dense.resize(m_Dense.size() - m_Density);
 }
 
 const uint8_t* PC_CORE::SparseSet::GetEntityData(EntityId entity_id) const

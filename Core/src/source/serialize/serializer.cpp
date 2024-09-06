@@ -3,15 +3,35 @@
 #include <RapidXML/rapidxml.hpp>
 
 #include "RapidXML/RapidXMLSTD.hpp"
+#include "resources/resource.hpp"
 
-void PC_CORE::Serializer::Serializing(uint32_t _TypeKey)
+struct SerializeContex
 {
-    const ReflectedType& reflection = Reflector::GetType(_TypeKey);
+    XMLDocument* xmlDoc;
+    XMLElement* root;
+};
 
-    for (const Members& members : reflection.members)
+struct DeserializeContex
+{
+    
+};
+
+constexpr uint32_t XmlVersion = 1;
+
+
+void PC_CORE::Serializer::Serializing(const fs::path& _fileToSerialize, uint32_t _typeKey)
+{
+    std::string err;
+    
+    SerializeContex serializeContex;
+    serializeContex.xmlDoc = CreateXML(XmlVersion, "utf-8", err);
+    
+    if (serializeContex.xmlDoc == nullptr)
     {
-        SerializeMember(members);
+        throw std::runtime_error("Failed to create serialize context" + err) ;
     }
+
+   // serializeContex.root = CreateElement()
     
 }
 
@@ -57,19 +77,6 @@ void PC_CORE::Serializer::SerializeMember(const Members& _members)
         break;
     default: ;
     }
-}
-
-void PC_CORE::Serializer::SerializeBegin(const fs::path& _fileToSerialize)
-{
-    std::string err;
-    currentFile = OpenXMLFile(_fileToSerialize.generic_string(), err);
-
-    if (currentFile == nullptr)
-    {
-        PC_LOGERROR("Failed to open XML file "  + _fileToSerialize.generic_string() + '\n' + err);
-        return;
-    }
-    
 }
 
 void PC_CORE::Serializer::SerializeEnd()
