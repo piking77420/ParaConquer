@@ -11,9 +11,8 @@
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/serialize/serializer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/serialize/serializer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/New Microsoft Word Document.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj.filters" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/ecs/ecs_context.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/ecs/ecs_context.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,16 +70,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "C++ Project.Editor.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "dev",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;C++ Project.Editor.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="C++ Project.Editor">
     <configuration name="Editor" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -202,6 +201,8 @@
       <option name="presentableId" value="Default" />
       <updated>1725482409305</updated>
       <workItem from="1725482412806" duration="145000" />
+      <workItem from="1725619527268" duration="33000" />
+      <workItem from="1725619575120" duration="67000" />
     </task>
     <servers />
   </component>
