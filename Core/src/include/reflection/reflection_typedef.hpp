@@ -3,9 +3,16 @@
 
 BEGIN_PCCORE
 
+
+using CreateFunc = void (*)(void*);
+using DeleteFunc = void (*)(void*);
+using SerializeFunc = std::string (*)(const void*);
+using DerializeFunc = void (*)(void*, const std::string&);
+
 enum class DataNature
 {
-    UNKNOW,
+    UNKNOWN,
+    CHAR,
     BOOL,
     INT,
     VEC2I,
@@ -17,32 +24,58 @@ enum class DataNature
     VEC3,
     VEC4,
     QUAT,
-    CONTAINER,
-    COMPOSITE,
+    RESOURCE,
+    STRING,
     
     COUNT
 };
 
-enum class ReflectionFlag
+enum TypeFlag
 {
+    NONEFlAG,
+    COMPOSITE,  // Composite of trivial type
+    ARRAY,      // An array
+    POINTER     // A pointer to an object
+};
+
+struct TypeInfo
+{
+    DataNature dataNature;
+    uint32_t typeInfoFlags;  // Flags that represent different type properties
+};
+
+enum MemberEnumFlag
+{
+    NONE,
+    NOTSERIALIZE,
     COLOR,
-    SLIDERANGLES
 };
 
-struct MemberDescriptor
+struct Members
 {
-    size_t nbr;
-    DataNature type;
+    uint32_t typeKey = 0;
+    std::string membersName;
+    size_t offset = 0;
+    uintmax_t enumFlag = 0;
 };
-
-
-
-struct ReflectionType
+    
+struct ReflectedType
 {
-    const char* name = {};
-    size_t size = {};
-    size_t offset = {};
-    DataNature datatype = DataNature::UNKNOW;
+    uint32_t HashKey;
+    TypeInfo typeInfo;
+    
+    std::string name;
+    size_t typeSize;
+    
+    std::vector<Members> members;
+    // Dont Support MultiHirietence
+    std::vector<uint32_t> inheritenceKey;
+    
+    CreateFunc createFunc = nullptr;
+    DeleteFunc deleteFunc = nullptr;
+    
+    SerializeFunc serializeFunc = nullptr;
+    
 };
 
 END_PCCORE

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
 #include <cassert>
+#include <type_traits>
 
 #include <functional> // For std::function
 #include <iostream>
@@ -13,44 +14,8 @@
 
 BEGIN_PCCORE
 
-using CreateFunc = void (*)(void*);
-using DeleteFunc = void (*)(void*);
-using SerializeFunc = std::string (*)(const void*);
-
-enum MemberEnumFlag
-{
-    NONE,
-    NOTSERIALIZE,
-    COLOR,
-    
-};
-
-
-struct Members
-{
-    DataNature dataNature;
-    std::string membersName;
-    size_t offset = 0;
-    uint32_t typeKey = 0;
-    uintmax_t enumFlag = 0;
-};
-    
-struct ReflectedType
-{
-    uint32_t HashKey;
-    DataNature dataNature;
-    std::string name;
-    size_t typeSize;
-    std::vector<Members> members;
-    // Dont Support MultiHirietence
-    std::vector<uint32_t> inheritenceKey;
-    
-    CreateFunc createFunc = nullptr;
-    DeleteFunc deleteFunc = nullptr;
-    
-    SerializeFunc serializeFunc = nullptr;     
-};
-
+#define IsTypeOfOrSubType(x)\
+std::is_same_v<T, x> || std::is_same_v<std::remove_all_extents_t<T>, x>\
 
 class Reflector
 {
@@ -64,6 +29,9 @@ public:
 
     template<typename T>
     static uint32_t GetKey();
+
+    template <typename T>
+    static TypeInfo GetTypeInfo();
 
     static const ReflectedType& GetType(uint32_t _hash);
 
@@ -79,11 +47,10 @@ public:
     template <typename T>
     static std::vector<const ReflectedType*> GetAllTypesFrom();
 
-    PC_CORE_API static bool IsTrivial(DataNature _data); 
-    
-private:
     template <typename T>
-    static DataNature TypeToDataNature();
+    static bool isTrivialType();
+
+private:
     
     static uint32_t KR_v2_hash(const char *s);
     
@@ -99,6 +66,12 @@ private:
 
     template <typename T>
     static bool ContaintType();
+    
+    template <class T>
+    static DataNature TypeToDataNature();
+
+    template <class T>
+    static uint32_t GetTypeInfoFlags();
 
     template <typename T>
     static void ReflectedCreateFunc(void* _class)
@@ -135,7 +108,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
     if (!ContaintType<Holder>())
     {
-        PC_LOGERROR("ReflectMember Holder member not found");
+        PC_LOGERROR("ReflectMember Holder member not found")
         return {};
     }
     
@@ -146,10 +119,9 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     // Add to sub member
     const Members members =
         {
-        .dataNature = TypeToDataNature<MemberType>(),
+        .typeKey = GetHash<MemberType>(),
         .membersName = _memberName,
         .offset = _offset,
-        .typeKey = GetHash<MemberType>(),
         .enumFlag = memberEnumFlag
         };
 
@@ -181,8 +153,7 @@ ReflectedType* Reflector::ReflectType()
             auto& baseClass = m_RelfectionMap.at(baseKey);
             it->second.inheritenceKey.insert(it->second.inheritenceKey.end(), baseClass.inheritenceKey.begin(), baseClass.inheritenceKey.end());
         }
-
-  
+        
     }
 
     return &m_RelfectionMap.at(GetKey<Holder>());
@@ -217,6 +188,19 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 }
 
 template <typename T>
+bool Reflector::isTrivialType()
+{
+    DataNature dataNature = TypeToDataNature<T>();
+    return dataNature != DataNature::UNKNOWN && dataNature != DataNature::RESOURCE;
+}
+
+template <typename T>
+TypeInfo Reflector::GetTypeInfo()
+{
+    return {TypeToDataNature<T>(), GetTypeInfoFlags<T>()};
+}
+
+template <typename T>
 void Reflector::AddType()
 {
     if (!ContaintType<T>())
@@ -227,7 +211,7 @@ void Reflector::AddType()
         const ReflectedType mememberMetaData =
             {
             .HashKey = hashCode,
-            .dataNature = TypeToDataNature<T>(),
+            .typeInfo = GetTypeInfo<T>(),
             .name = name,
             .typeSize = sizeof(T),
             .members = {},
@@ -259,71 +243,87 @@ DataNature Reflector::TypeToDataNature()
 {
     DataNature type = {};
 
-    if constexpr (std::is_same_v<T, bool>)
+    if constexpr (IsTypeOfOrSubType(char))
+    {
+        type = DataNature::CHAR;
+    }
+    if constexpr (IsTypeOfOrSubType(bool))
     {
         type = DataNature::BOOL;
     }
-    else if constexpr (std::is_same_v<T, int>)
+    else if constexpr (IsTypeOfOrSubType(int))
     {
         type = DataNature::INT;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Vector2i>)
+    else if constexpr (IsTypeOfOrSubType(Tbx::Vector2i))
     {
         type = DataNature::VEC2I;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Vector3i>)
+    else if constexpr (IsTypeOfOrSubType(Tbx::Vector3i))
     {
         type = DataNature::VEC3I;
     }
-    else if constexpr (std::is_same_v<T, uint32_t>)
+    else if constexpr (IsTypeOfOrSubType(uint32_t))
     {
         type = DataNature::UINT;
     }
-    else if constexpr (std::is_same_v<T, float>) 
+    else if constexpr (IsTypeOfOrSubType(float)) 
     {
         type = DataNature::FLOAT;
     }
-    else if constexpr (std::is_same_v<T, double>)
+    else if constexpr (IsTypeOfOrSubType(double))
     {
         type = DataNature::DOUBLE;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Vector2f>)
+    else if constexpr (IsTypeOfOrSubType(Tbx::Vector2f))
     {
         type = DataNature::VEC2;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Vector3f>)
+    else if constexpr (IsTypeOfOrSubType(Tbx::Vector3f))
     {
         type = DataNature::VEC3;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Vector4f>)
+    else if constexpr (IsTypeOfOrSubType(Tbx::Vector4f))
     {
         type = DataNature::VEC4;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
+    else if constexpr (IsTypeOfOrSubType(Tbx::Quaternionf))
     {
         type = DataNature::QUAT;
     }
-    else if constexpr (std::is_same_v<T, Tbx::Quaternionf>)
+    else if constexpr (IsTypeOfOrSubType(std::string))
     {
-        type = DataNature::INT;
-    }
-    else if constexpr (std::is_class_v<T>)
-    {
-        type = DataNature::COMPOSITE;
-    }
-    else if constexpr (std::is_same_v<T, std::vector<T>>)
-    {
-        type = DataNature::CONTAINER;
+        type = DataNature::STRING;
     }
     else
     {
-        type = DataNature::UNKNOW;
-        static_assert("NotSupported type");
+        type = DataNature::UNKNOWN;
     }
 
     return type; 
 }
 
+template <class T>
+uint32_t Reflector::GetTypeInfoFlags()
+{
+    uint32_t type = 0;
+    
+    if constexpr (std::is_class_v<T>)
+    {
+        if (!isTrivialType<T>())
+            type |= static_cast<uint32_t>(TypeFlag::COMPOSITE);
+    }
+    if constexpr (std::is_bounded_array_v<T>)
+    {
+        type |= static_cast<uint32_t>(TypeFlag::ARRAY);
+    }
+    if constexpr (std::is_pointer_v<T>)
+    {
+        type |= static_cast<uint32_t>(TypeFlag::POINTER);
+    }
+
+    return type;
+}
 
 #define REFLECT(CurrentType, ...) \
 inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\

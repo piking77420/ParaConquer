@@ -23,6 +23,8 @@ private:
 
     void DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId);
 
+    void PrintArray(void* begin, const PC_CORE::Members& _members);
+
     std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
 };
 

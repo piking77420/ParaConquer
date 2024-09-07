@@ -109,6 +109,12 @@ void Editor::Run()
 
         if (ImGui::Begin("Test Serialization"))
         {
+            ImGui::Text("Test2");
+            ImGui::DragInt("caca", &serialize_test.test2.caca, 0.1f);
+            ImGui::DragFloat("x", &serialize_test.test2.x, 0.1f);
+            ImGui::InputText("string ", serialize_test.test2.name.data(), serialize_test.test2.name.size());
+
+            ImGui::Spacing();
             ImGui::DragFloat("fvalue", &serialize_test.fvalue, 0.1f);
             ImGui::DragInt("value", &serialize_test.value, 0.1f);
 

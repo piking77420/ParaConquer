@@ -27,9 +27,10 @@ void Inspector::Show()
     PC_CORE::Scene* scene = &m_Editor->world.scene;
 
     PC_CORE::Entity* selected = m_Editor->m_Selected;
-    const char* selectedName = selected->name.c_str();
-    ImGui::Text(selectedName);
-    ImGui::PushID(selectedName); 
+
+    std::string* string = &selected->name;
+    ImGui::InputText(" ", string->data(), string->size());
+    ImGui::PushID(string->c_str()); 
 
     for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
     {
@@ -94,63 +95,83 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 {
     void* dataPosition = static_cast<char*>(begin) + _members.offset;
     const char* membersName = _members.membersName.c_str();
-    
-    switch (_members.dataNature)
+    const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_members.typeKey);
+
+    if (type.typeInfo.typeInfoFlags & PC_CORE::TypeFlag::COMPOSITE)
     {
-    case PC_CORE::DataNature::UNKNOW:
-        break;
-    case PC_CORE::DataNature::BOOL:
-        ImGui::Checkbox(membersName, static_cast<bool*>(dataPosition));
-        break;
-    case PC_CORE::DataNature::INT:
-        ImGui::DragInt(membersName, static_cast<int*>(dataPosition));
-        break;
-    case PC_CORE::DataNature::UINT:
-        ImGui::DragInt(membersName, static_cast<int*>(dataPosition),0.1, 0);
-        break;
-    case PC_CORE::DataNature::FLOAT:
-        ImGui::DragFloat(membersName, static_cast<float*>(dataPosition),0.1, 0);
-        break;
-    case PC_CORE::DataNature::DOUBLE:
-        //ImGui::DragFloat(membersName, static_cast<double*>(dataPosition),1, 0);
-        break;
-    case PC_CORE::DataNature::VEC2:
-        ImGui::DragFloat2(membersName, static_cast<float*>(dataPosition),0.1, 0);
-        break;
-    case PC_CORE::DataNature::VEC3:
-        if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
+        for (const PC_CORE::Members& m : type.members)
         {
-            ImGui::ColorPicker3(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
-        }
-        else
-        {
-            ImGui::DragFloat3(membersName, static_cast<float*>(dataPosition),0.1, 0);
-        }
-        break;
-    case PC_CORE::DataNature::VEC4:
-    case PC_CORE::DataNature::QUAT:
-        if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
-        {
-            ImGui::ColorPicker4(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
-        }
-        else
-        {
-            ImGui::DragFloat4(membersName, static_cast<float*>(dataPosition),0.1, 0);
-        }
-        break;
-    case PC_CORE::DataNature::COMPOSITE:
-        for (const PC_CORE::Members& m : PC_CORE::Reflector::GetType(_members.typeKey).members)
-        {
-            void* DatadataPosition = static_cast<char*>(dataPosition) + m.offset;
+            void* dataPosMember = static_cast<uint8_t*>(dataPosition) + m.offset;
             ImGui::PushID((m.membersName).c_str());
-            ShowReflectedType(DatadataPosition, m);
+            ShowReflectedType(dataPosMember, m);
             ImGui::PopID();
             ImGui::Spacing();
         }
-        break;
-    case PC_CORE::DataNature::COUNT:
-        break;
-    default: ;
+    }
+    else if (type.typeInfo.typeInfoFlags & PC_CORE::TypeFlag::ARRAY)
+    {
+       
+    }
+    else
+    {
+        switch (type.typeInfo.dataNature)
+        {
+        case PC_CORE::DataNature::UNKNOWN:
+            break;
+        case PC_CORE::DataNature::BOOL:
+            ImGui::Checkbox(membersName, static_cast<bool*>(dataPosition));
+            break;
+        case PC_CORE::DataNature::INT:
+            ImGui::DragInt(membersName, static_cast<int*>(dataPosition));
+            break;
+        case PC_CORE::DataNature::UINT:
+            ImGui::DragInt(membersName, static_cast<int*>(dataPosition),0.1, 0);
+            break;
+        case PC_CORE::DataNature::FLOAT:
+            ImGui::DragFloat(membersName, static_cast<float*>(dataPosition),0.1, 0);
+            break;
+        case PC_CORE::DataNature::DOUBLE:
+            //ImGui::DragFloat(membersName, static_cast<double*>(dataPosition),1, 0);
+                break;
+        case PC_CORE::DataNature::VEC2:
+            ImGui::DragFloat2(membersName, static_cast<float*>(dataPosition),0.1, 0);
+            break;
+        case PC_CORE::DataNature::VEC3:
+            if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
+            {
+                ImGui::ColorPicker3(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
+            }
+            else
+            {
+                ImGui::DragFloat3(membersName, static_cast<float*>(dataPosition),0.1, 0);
+            }
+            break;
+        case PC_CORE::DataNature::VEC4:
+        case PC_CORE::DataNature::QUAT:
+            if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
+            {
+                ImGui::ColorPicker4(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
+            }
+            else
+            {
+                ImGui::DragFloat4(membersName, static_cast<float*>(dataPosition),0.1, 0);
+            }
+            break;
+        case PC_CORE::DataNature::STRING :
+            {
+             
+                std::string* string = static_cast<std::string*>(dataPosition);
+                ImGui::InputText(membersName, string->data(), string->size());
+                break;   
+            }
+        case PC_CORE::DataNature::COUNT:
+            {
+                
+            }
+            break;
+        default: ;
+        }
+        
     }
 
 }
@@ -162,5 +183,10 @@ void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
     {
         m_Editor->world.scene.RemoveComponent(_entity->ecsId, _componentId);
     }
+}
+
+void Inspector::PrintArray(void* begin, const PC_CORE::Members& _members)
+{
+    
 }
     

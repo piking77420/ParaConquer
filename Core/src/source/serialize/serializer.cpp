@@ -22,12 +22,9 @@ constexpr bool boolAlpha1b = true;
 
 std::string DataNatureToString(DataNature _dataNature, const void* _dataPtr)
 {
-    if (_dataNature == DataNature::COMPOSITE)
-        return "";
-
     switch (_dataNature)
     {
-    case DataNature::UNKNOW:
+    case DataNature::UNKNOWN:
         break;
     case DataNature::BOOL:
         {
@@ -88,6 +85,9 @@ std::string DataNatureToString(DataNature _dataNature, const void* _dataPtr)
             return "w :" + std::to_string(quatf.real) + ", i :" + std::to_string(quatf.imaginary.x) + ", j :" +
                 std::to_string(quatf.imaginary.y) + ", k :" + std::to_string(quatf.imaginary.z);
         }
+    case DataNature::STRING:
+        return *static_cast<const std::string*>(_dataPtr);
+        break;
     }
     return "";
 }
@@ -97,14 +97,11 @@ std::string DataNatureToString(DataNature _dataNature, const void* _dataPtr)
 
 void StringToValue(uint8_t* _dataPtr, DataNature _dataNature, const std::string& _dataString)
 {
-    if (_dataNature == DataNature::COMPOSITE)
-        return;
-
     // Container and compisite are not undle yet
 
     switch (_dataNature)
     {
-    case DataNature::UNKNOW:
+    case DataNature::UNKNOWN:
         break;
     case DataNature::BOOL:
         *reinterpret_cast<bool*>(_dataPtr) = _dataString == boolAlpha0s ? boolAlpha1b : boolAlpha0b;
@@ -133,6 +130,9 @@ void StringToValue(uint8_t* _dataPtr, DataNature _dataNature, const std::string&
         break;
     case DataNature::QUAT:
         break;
+    case  DataNature::STRING :
+        *reinterpret_cast<std::string*>(_dataPtr) = _dataString;
+        break;
     case DataNature::COUNT:
         break;
     }
@@ -146,22 +146,25 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
 {
     if (_members.enumFlag & NOTSERIALIZE)
         return;
+    
     const uint8_t* memberPtr = _objetPtr + _members.offset;
+    const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
 
-    if (_members.dataNature != DataNature::COMPOSITE)
+    if (!(reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
     {
+        
         XMLAttributte* newAttribute = CreateAttribute(_document, _members.membersName,
-            DataNatureToString(_members.dataNature, memberPtr), _err);
+            DataNatureToString(reflectionType.typeInfo.dataNature, memberPtr), _err);
         AddAttributeToElement(_currentElement, newAttribute, _err);
     }
     else
     {
-        const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
-        for (auto& member : reflectionType.members)
+        XMLElement* newElement = CreateElement(_document, _members.membersName, "", _err);
+        AddElementToElement(_currentElement, newElement, _err);
+        
+        for (auto& memberMembers : reflectionType.members)
         {
-            XMLElement* newElement = CreateElement(_document, _members.membersName, "", _err);
-            AddElementToElement(_currentElement, newElement, _err);
-            SerializeMember(_document, memberPtr, newElement, member, _err);
+            SerializeMember(_document, memberPtr, newElement, memberMembers, _err);
         }
     }
 }
@@ -206,17 +209,17 @@ void DeserializeMember(uint8_t* _objetPtr, XMLElement* _currentElement,
                      const Members& _members
                      , std::string& _err)
 {
-    uint8_t* memberPtr = _objetPtr + _members.offset;
-    
     if (_members.enumFlag & NOTSERIALIZE)
        return;
+    
+    uint8_t* memberPtr = _objetPtr + _members.offset;
+    const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
 
     // Is a trivial type
-    if (_members.dataNature != DataNature::COMPOSITE)
+    if (!(reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
     {
         XMLAttributte* newAttribute = _currentElement->first_attribute(_members.membersName.c_str());
-        StringToValue(memberPtr, _members.dataNature, newAttribute->value());
-        
+        StringToValue(memberPtr, reflectionType.typeInfo.dataNature, newAttribute->value());
     }
     else
     {

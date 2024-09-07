@@ -7,10 +7,6 @@ const ReflectedType& Reflector::GetType(uint32_t _hash)
     return m_RelfectionMap.at(_hash);
 }
 
-bool Reflector::IsTrivial(DataNature _data)
-{
-    return _data != DataNature::COMPOSITE && _data != DataNature::CONTAINER;
-}
 
 uint32_t Reflector::KR_v2_hash(const char* s)
 {
@@ -24,10 +20,11 @@ uint32_t Reflector::KR_v2_hash(const char* s)
 
 std::string Reflector::GetCorrectNameFromTypeId(const std::string& _name)
 {
+    // Remove the nameSpace
     const size_t firstIndex = _name.find_first_of("::",0);
     std::string out;
 
-    if (firstIndex)
+    if (firstIndex != std::numeric_limits<size_t>::max())
     {
         for (size_t i = firstIndex + 2; i < _name.size(); i++)
             out.push_back(_name[i]); 
@@ -35,9 +32,15 @@ std::string Reflector::GetCorrectNameFromTypeId(const std::string& _name)
     else
     {
         const size_t secondIndex = _name.find_first_of(" ",0);
-        
-        for (size_t i = secondIndex; i < _name.size(); i++)
-            out.push_back(_name[i]); 
+        if (firstIndex != std::numeric_limits<size_t>::max())
+        {
+            for (size_t i = secondIndex; i < _name.size(); i++)
+                out.push_back(_name[i]); 
+        }
+        else
+        {
+            return _name;
+        }
     }
     
     return out; 
