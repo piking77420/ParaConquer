@@ -17,10 +17,10 @@ enum class DataNature
     VEC3,
     VEC4,
     QUAT,
-    COMPOSITE,
     CONTAINER,
+    COMPOSITE,
     
-    COUT
+    COUNT
 };
 
 enum class ReflectionFlag

@@ -12,24 +12,27 @@ class Serializer
 {
 public:
     template<typename T>
-    static void Serialize(const fs::path& _fileToSerialize);
+    static void Serialize(const T& _object, const fs::path& _fileToSerialize);
+    
+    template<typename T>
+    static void DeSerialize(T* _object, const fs::path& _file);
     
 private:
-    static void Serializing(const fs::path& _fileToSerialize, uint32_t _typeKey);
+    static void Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, uint32_t _typeKey);
 
-    static void SerializeMember(const Members& _members);
-    
-    static void SerializeEnd();
-
-    static inline void* currentFile = nullptr;
-
-    static inline size_t currentFileSize = 0;
+    static void Derializing(uint8_t* objetPtr, const fs::path& _fileToSerialize, uint32_t _typeKey);
 };
 
 template <typename T>
-void Serializer::Serialize(const fs::path& _fileToSerialize)
+void Serializer::Serialize(const T& _object, const fs::path& _fileToSerialize)
 {
-    
+    Serializing(reinterpret_cast<const uint8_t*>(&_object), _fileToSerialize, Reflector::GetKey<T>());
+}
+
+template <typename T>
+void Serializer::DeSerialize(T* _object,const fs::path& _file)
+{
+    Derializing(reinterpret_cast<uint8_t*>(_object), _file, Reflector::GetKey<T>());
 }
 
 END_PCCORE

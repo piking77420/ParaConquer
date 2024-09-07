@@ -148,7 +148,7 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
             ImGui::Spacing();
         }
         break;
-    case PC_CORE::DataNature::COUT:
+    case PC_CORE::DataNature::COUNT:
         break;
     default: ;
     }

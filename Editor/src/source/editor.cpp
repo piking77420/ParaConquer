@@ -12,6 +12,7 @@
 #include "physics/sphere_collider.hpp"
 #include "resources/resource_manager.hpp"
 #include "rendering/light.hpp"
+#include "serialize/serializer.h"
 #include "time/core_time.hpp"
 
 
@@ -83,6 +84,8 @@ void Editor::DestroyTestScene()
     ResourceManager::Delete<Material>("baseMaterial2");
 }
 
+SerializeTest serialize_test;
+
 void Editor::Run()
 {
     while (!windowHandle.ShouldClose())
@@ -102,6 +105,23 @@ void Editor::Run()
             editorWindow->Begin();
             editorWindow->Update();
             editorWindow->End();
+        }
+
+        if (ImGui::Begin("Test Serialization"))
+        {
+            ImGui::DragFloat("fvalue", &serialize_test.fvalue, 0.1f);
+            ImGui::DragInt("value", &serialize_test.value, 0.1f);
+
+            if (ImGui::Button("Serialize"))
+            {
+                Serializer::Serialize<SerializeTest>(serialize_test, "TestSerialize.meta");
+            }
+            if (ImGui::Button("Deserialize"))
+            {
+                Serializer::DeSerialize<SerializeTest>(&serialize_test, "TestSerialize.meta");
+            }
+            
+            ImGui::End();
         }
 
         if (World::world != nullptr)

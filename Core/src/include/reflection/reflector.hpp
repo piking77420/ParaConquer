@@ -40,7 +40,7 @@ struct ReflectedType
     uint32_t HashKey;
     DataNature dataNature;
     std::string name;
-    size_t dataSize;
+    size_t typeSize;
     std::vector<Members> members;
     // Dont Support MultiHirietence
     std::vector<uint32_t> inheritenceKey;
@@ -157,7 +157,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     m_RelfectionMap.at(GetHash<Holder>()).members.push_back(members);
     return members;
 }
-
+// to do fix warning
 template <typename Holder, typename BaseClass = void>
 ReflectedType* Reflector::ReflectType()
 {
@@ -229,7 +229,7 @@ void Reflector::AddType()
             .HashKey = hashCode,
             .dataNature = TypeToDataNature<T>(),
             .name = name,
-            .dataSize = sizeof(T),
+            .typeSize = sizeof(T),
             .members = {},
             .createFunc = &ReflectedCreateFunc<T>,
             .deleteFunc = &ReflectedDeleteFunc<T>,
@@ -326,10 +326,10 @@ DataNature Reflector::TypeToDataNature()
 
 
 #define REFLECT(CurrentType, ...) \
-inline ReflectedType* reflectInfo##CurrentType = Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
+inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
 
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
-inline Members CurrentType##_##memberName##_reflected = Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName),##__VA_ARGS__>(offsetof(CurrentType, memberName), #memberName);\
+inline PC_CORE::Members CurrentType##_##memberName##_reflected = PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName),##__VA_ARGS__>(offsetof(CurrentType, memberName), #memberName);\
 
 template <typename Tag>
 typename Tag::type saved_private_v;

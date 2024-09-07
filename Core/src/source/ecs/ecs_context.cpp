@@ -14,7 +14,7 @@ PC_CORE::EcsContext::EcsContext()
     {
         const EcsComponent ecsComponent =
             {
-            .size = component->dataSize,
+            .size = component->typeSize,
             .key = component->HashKey,
             .Createfunc = component->createFunc,
             .Deletefunc = component->deleteFunc,
