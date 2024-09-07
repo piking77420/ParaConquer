@@ -35,13 +35,21 @@ enum TypeFlag
     NONEFlAG,
     COMPOSITE,  // Composite of trivial type
     ARRAY,      // An array
+    VECTOR, // An vector
     POINTER     // A pointer to an object
+};
+
+struct ArrayInfo
+{
+    uint32_t typeKeyOfTheArray;
+    size_t sizeOfTheArray;
 };
 
 struct TypeInfo
 {
     DataNature dataNature;
     uint32_t typeInfoFlags;  // Flags that represent different type properties
+    ArrayInfo arrayInfo;
 };
 
 enum MemberEnumFlag
@@ -77,5 +85,7 @@ struct ReflectedType
     SerializeFunc serializeFunc = nullptr;
     
 };
+
+
 
 END_PCCORE

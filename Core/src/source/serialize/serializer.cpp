@@ -20,6 +20,7 @@ constexpr bool boolAlpha1b = true;
 
 #pragma region SerializationType
 
+
 std::string DataNatureToString(DataNature _dataNature, const void* _dataPtr)
 {
     switch (_dataNature)
@@ -150,14 +151,7 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
     const uint8_t* memberPtr = _objetPtr + _members.offset;
     const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
 
-    if (!(reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
-    {
-        
-        XMLAttributte* newAttribute = CreateAttribute(_document, _members.membersName,
-            DataNatureToString(reflectionType.typeInfo.dataNature, memberPtr), _err);
-        AddAttributeToElement(_currentElement, newAttribute, _err);
-    }
-    else
+    if ((reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
     {
         XMLElement* newElement = CreateElement(_document, _members.membersName, "", _err);
         AddElementToElement(_currentElement, newElement, _err);
@@ -166,6 +160,16 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
         {
             SerializeMember(_document, memberPtr, newElement, memberMembers, _err);
         }
+    }
+    else if ((reflectionType.typeInfo.typeInfoFlags & TypeFlag::VECTOR))
+    {
+        
+    }
+    else
+    {
+        XMLAttributte* newAttribute = CreateAttribute(_document, _members.membersName,
+           DataNatureToString(reflectionType.typeInfo.dataNature, memberPtr), _err);
+        AddAttributeToElement(_currentElement, newAttribute, _err);
     }
 }
 

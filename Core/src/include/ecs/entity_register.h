@@ -10,6 +10,15 @@
 
 BEGIN_PCCORE
 
+    struct SparsetKey
+    {
+        uint32_t key;
+        SparseSet sparse;
+    };
+    REFLECT(SparsetKey)
+    REFLECT_MEMBER(SparsetKey, key)
+           
+
     class EntityRegister
     {
     public:
@@ -38,11 +47,8 @@ BEGIN_PCCORE
         ~EntityRegister() = default;
 
     private:
-        struct SparsetKey
-        {
-            uint32_t key;
-            SparseSet sparse;
-        };
+        
+        
         std::array<EntityId, MAX_ENTITIES> m_Entities;
 
         std::vector<SparsetKey> sparseSets;
@@ -51,5 +57,6 @@ BEGIN_PCCORE
 
         const SparseSet* GetSparsetFromKey(uint32_t _key) const;
     };
+
 
 END_PCCORE

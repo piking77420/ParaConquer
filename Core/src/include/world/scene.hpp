@@ -18,6 +18,10 @@ BEGIN_PCCORE
         std::string name;
         EntityId ecsId;
     };
+    REFLECT(Entity)
+    REFLECT_MEMBER(Entity, name)
+    REFLECT_MEMBER(Entity, ecsId)
+    
     
     class Scene
     {

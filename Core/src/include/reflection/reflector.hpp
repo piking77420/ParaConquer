@@ -12,7 +12,33 @@
 #include "reflection/reflection_typedef.hpp"
 
 
+
 BEGIN_PCCORE
+
+// Chat gpt
+template<typename T>
+struct is_vector : std::false_type {};
+
+// Specialization (for vectors)
+template<typename T>
+struct is_vector<std::vector<T>> : std::true_type {};
+
+// Convenience variable template
+template<typename T>
+inline constexpr bool is_vector_v = is_vector<std::decay_t<T>>::value;
+
+// Primary template (for all types except std::array)
+template<typename T>
+struct is_std_array : std::false_type {};
+
+// Specialization for std::array
+template<typename T, std::size_t N>
+struct is_std_array<std::array<T, N>> : std::true_type {};
+
+// Convenience variable template
+template<typename T>
+inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
+
 
 #define IsTypeOfOrSubType(x)\
 std::is_same_v<T, x> || std::is_same_v<std::remove_all_extents_t<T>, x>\
@@ -73,6 +99,9 @@ private:
     template <class T>
     static uint32_t GetTypeInfoFlags();
 
+    template <class T>
+    static void GetArrayInfoFromType(TypeInfo* _typeInfo);
+
     template <typename T>
     static void ReflectedCreateFunc(void* _class)
     {
@@ -129,7 +158,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     m_RelfectionMap.at(GetHash<Holder>()).members.push_back(members);
     return members;
 }
-// to do fix warning
+// to do fix warning with void 
 template <typename Holder, typename BaseClass = void>
 ReflectedType* Reflector::ReflectType()
 {
@@ -307,9 +336,14 @@ template <class T>
 uint32_t Reflector::GetTypeInfoFlags()
 {
     uint32_t type = 0;
-    
+
+    if constexpr (is_vector_v<T>)
+    {
+        type = TypeFlag::VECTOR;
+    }
     if constexpr (std::is_class_v<T>)
     {
+        // Avoid String to be composite
         if (!isTrivialType<T>())
             type |= static_cast<uint32_t>(TypeFlag::COMPOSITE);
     }
@@ -321,8 +355,27 @@ uint32_t Reflector::GetTypeInfoFlags()
     {
         type |= static_cast<uint32_t>(TypeFlag::POINTER);
     }
+    
 
     return type;
+}
+
+template <class T>
+void Reflector::GetArrayInfoFromType(TypeInfo* _typeInfo)
+{
+    if constexpr (is_vector_v<T>)
+    {
+        
+    }
+    else if constexpr (std::is_bounded_array_v<T>)
+    {
+        
+    }
+    else
+    {
+        
+    }
+    
 }
 
 #define REFLECT(CurrentType, ...) \
