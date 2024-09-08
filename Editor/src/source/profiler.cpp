@@ -17,9 +17,9 @@ void PC_EDITOR_CORE::Profiler::Update()
 
     const std::vector<PC_CORE::Timer::TimePass>& timers = PC_CORE::Timer::timePasses;
     
-    ImGui::Begin("Profiler");
+    //ImGui::Begin("Profiler");
 
-    ImGui::Text("Fps : %.2f", m_Editor->io->Framerate);
+    //ImGui::Text("Fps : %.2f", m_Editor->io->Framerate);
 
     for (size_t i = 0; i < timers.size(); ++i)
     {
@@ -29,6 +29,6 @@ void PC_EDITOR_CORE::Profiler::Update()
     }
     
 
-    ImGui::End();
+    //ImGui::End();
     PC_CORE::Timer::Clear();
 }

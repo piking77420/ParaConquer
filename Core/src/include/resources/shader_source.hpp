@@ -3,7 +3,8 @@
 
 
 BEGIN_PCCORE
-    class ShaderSource : public IResource
+
+class ShaderSource : public IResource
 {
 public:
     enum class ShaderType 

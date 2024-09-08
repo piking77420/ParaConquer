@@ -11,8 +11,8 @@ using namespace PC_CORE;
 
 Mesh::~Mesh()
 {
-    vulkanVertexBuffer.Destroy();
-    vulkanIndexBuffer.Destroy();
+    //vulkanVertexBuffer.Destroy();
+    //vulkanIndexBuffer.Destroy();
 }
 
 void Mesh::Load(const fs::path& path)
@@ -45,8 +45,8 @@ void Mesh::Load(const fs::path& path)
     nbrOfVertices = static_cast<uint32_t>(verticies.size());
     nbrOfIndices = static_cast<uint32_t>(indicies.size());
     
-    vulkanVertexBuffer.Init(verticies);
-    vulkanIndexBuffer.Init(indicies);
+    //vulkanVertexBuffer.Init(verticies);
+    //vulkanIndexBuffer.Init(indicies);
 }
 
 uint32_t Mesh::GetNbrOfVerticies() const

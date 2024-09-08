@@ -13,6 +13,7 @@ SceneButton::SceneButton(Editor& _editor, const std::string& _name) : EditorWind
 void SceneButton::Update()
 {
     EditorWindow::Update();
+    return;
     OnEdit();
 }
 

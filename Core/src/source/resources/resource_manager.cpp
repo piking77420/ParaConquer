@@ -2,7 +2,6 @@
 
 #include "stb_image.h"
 #include "..\..\include\resources\shader_source.hpp"
-#include "rendering/vulkan/vulkan_shader_compiler.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
 
@@ -10,7 +9,7 @@ using namespace PC_CORE;
 
 void ResourceManager::Init()
 {
-    VulkanShaderCompiler::GetEnvironementVariable();
+    //VulkanShaderCompiler::GetEnvironementVariable();
 
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");

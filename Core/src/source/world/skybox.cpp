@@ -1,8 +1,7 @@
 ﻿#include "world/skybox.hpp"
 
 #include "app.hpp"
-#include "../rendering/skybox_render.h"
-#include "rendering/vulkan/vulkan_texture.hpp"
+
 #include "resources/resource_manager.hpp"
 
 using namespace PC_CORE;
@@ -21,7 +20,7 @@ void Skybox::Load(std::array<std::string, 6>& _maps)
 
     }
     
-    App::instance->renderer.skyboxRender.CreateSkyboxBackend(*this);
+    //App::instance->renderer.skyboxRender.CreateSkyboxBackend(*this);
 }
 
 void Skybox::Destroy()

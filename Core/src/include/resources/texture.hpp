@@ -4,7 +4,6 @@
 #include "resource.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "reflection/reflector.hpp"
-#include "rendering/vulkan/vulkan_texture.hpp"
 
 BEGIN_PCCORE
 class Texture : public IResource
@@ -14,7 +13,7 @@ public:
     
     int textureChannel = -1;
     
-    VulkanTexture vulkanTexture;
+    //VulkanTexture vulkanTexture;
     
     ~Texture() override;
     

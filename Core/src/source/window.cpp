@@ -43,6 +43,7 @@ bool Window::ShouldClose()
 void Window::PoolEvents()
 {
     glfwPollEvents();
+    return;
     
     if (ImGui::IsKeyReleased(ImGuiKey_F11))
     {

@@ -15,6 +15,7 @@ Hierachy::Hierachy(Editor& _editor, const std::string& _name) : EditorWindow(_ed
 void Hierachy::Update()
 {
     EditorWindow::Update();
+    return;
     ShowGraph();
 }
 

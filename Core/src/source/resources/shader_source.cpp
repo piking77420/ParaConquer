@@ -1,7 +1,6 @@
 ﻿#include "resources/shader_source.hpp"
 
 #include "log.hpp"
-#include "rendering/vulkan/vulkan_shader_compiler.hpp"
 
 using namespace PC_CORE;
 
@@ -20,8 +19,9 @@ void ShaderSource::Load(const fs::path& path)
     resourcePath = path;
     shaderType = static_cast<ShaderType>(formatIndex);
 
+    /*
     if (!VulkanShaderCompiler::CompileToSpv(resourcePath, format, &data))
     {
         PC_LOGERROR("Failed to CompileToSpv")
-    }
+    }*/
 }

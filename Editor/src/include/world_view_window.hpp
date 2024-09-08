@@ -3,7 +3,7 @@
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "rendering/camera.hpp"
-#include "rendering/vulkan/vulkan_viewport.hpp"
+
 
 BEGIN_EDITOR_PCCORE
 
@@ -14,9 +14,9 @@ public:
 
     uint32_t viewportId = -1;
 
-    std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
+    //std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
     
-    const PC_CORE::ViewPort* viewPort = nullptr;
+    //const PC_CORE::ViewPort* viewPort = nullptr;
     
     explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 

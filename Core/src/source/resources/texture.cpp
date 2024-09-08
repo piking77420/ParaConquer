@@ -3,20 +3,19 @@
 #include <stb_image.h>
 
 #include "log.hpp"
-#include "rendering/vulkan/vulkan_buffer.hpp"
-#include "rendering/vulkan/vulkan_interface.hpp"
+
 
 using namespace PC_CORE;
 
 Texture::~Texture()
 {
-    vulkanTexture.Destroy();
+    //vulkanTexture.Destroy();
 }
 void Texture::Load(const fs::path& path)
 {
     stbi_uc* pixels = stbi_load(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
-    VkDeviceSize dataImageSize=  {};
-    dataImageSize = textureSize.x * textureSize.y * 4;
+    //VkDeviceSize dataImageSize=  {};
+   // dataImageSize = textureSize.x * textureSize.y * 4;
 
     if (!pixels)
     {
@@ -24,7 +23,7 @@ void Texture::Load(const fs::path& path)
         throw std::runtime_error("failed to load texture image!");
     }
     
-    vulkanTexture.Init(pixels, dataImageSize, textureSize);
+    //vulkanTexture.Init(pixels, dataImageSize, textureSize);
     stbi_image_free(pixels);
 
 
@@ -39,7 +38,7 @@ void Texture::Load(std::array<std::string, 6>& _maps)
     {
         datas[i] = stbi_load(_maps[i].c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
     }
-    vulkanTexture.Init(datas, textureSize.x , textureSize.y);
+    //vulkanTexture.Init(datas, textureSize.x , textureSize.y);
     for (size_t i = 0; i < datas.size(); i++)
     {
         stbi_image_free(datas[i]);

@@ -4,8 +4,6 @@
 #include "rendering/renderer.hpp"
 #include "window.hpp"
 #include "rendering/camera.hpp"
-#include "rendering/vulkan/vulkan_imgui.hpp"
-#include "rendering/vulkan/vulkan_interface.hpp"
 #include "world/world.hpp"
 #include "input/low_pass_filter.hpp"
 #include "scripting/scripting_lua.hpp"
@@ -23,8 +21,6 @@ public:
 	Window windowHandle;
 
 	Renderer renderer;
-	
-	VulkanImgui vulkanImgui;
 
 	ScriptingLua scriptingLua;
 

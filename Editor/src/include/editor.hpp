@@ -33,8 +33,6 @@ public:
 
     std::vector<EditorWindow*> m_EditorWindows;
     
-    ImGuiIO* io = nullptr;
-
     PC_CORE::Entity* m_Selected = nullptr;
 };
 

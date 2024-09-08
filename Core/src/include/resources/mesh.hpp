@@ -3,8 +3,6 @@
 #include "core_header.hpp"
 #include "resource.hpp"
 #include "rendering/vertex.hpp"
-#include "rendering/vulkan/vulkan_index_buffer.hpp"
-#include "rendering/vulkan/vulkan_vertex_buffer.hpp"
 
 BEGIN_PCCORE
 class Mesh : public IResource
@@ -26,9 +24,9 @@ public:
       };
 
 
-    VulkanVertexBuffer vulkanVertexBuffer;
+    //VulkanVertexBuffer vulkanVertexBuffer;
 
-    VulkanIndexBuffer vulkanIndexBuffer;
+    //VulkanIndexBuffer vulkanIndexBuffer;
 
     MeshFormat meshFormat;
     

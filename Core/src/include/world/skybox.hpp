@@ -2,7 +2,6 @@
 #include <string>
 
 #include "core_header.hpp"
-#include "rendering/vulkan/vulkan_texture.hpp"
 #include "resources/texture.hpp"
 
 BEGIN_PCCORE

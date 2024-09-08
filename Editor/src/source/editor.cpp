@@ -14,6 +14,7 @@
 #include "rendering/light.hpp"
 #include "serialize/serializer.h"
 #include "time/core_time.hpp"
+#include "resources/material.hpp"
 
 
 using namespace PC_EDITOR_CORE;
@@ -23,7 +24,6 @@ using namespace PC_CORE;
 void Editor::Init()
 {
     App::Init();
-    io = &ImGui::GetIO();
     InitEditorWindows();
 
 
@@ -67,9 +67,9 @@ void Editor::InitTestScene()
     {
         EntityId id = scene.CreateEntity("test " + std::to_string(i));
         scene.AddComponent<Transform>(id);
-        StaticMesh* static_mesh = scene.AddComponent<StaticMesh>(id);
-        static_mesh->material = ResourceManager::Get<Material>("baseMaterial");
-        static_mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+        //StaticMesh* static_mesh = scene.AddComponent<StaticMesh>(id);
+        //static_mesh->material = ResourceManager::Get<Material>("baseMaterial");
+        //static_mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     }
     
     
@@ -93,11 +93,11 @@ void Editor::Run()
         PC_CORE::Time::UpdateTime();
         HandleResize();
         
-        vulkanImgui.NewFrame();
+        /*vulkanImgui.NewFrame();
 
         if (currentWorld != nullptr)
             renderer.BeginFrame(*currentWorld);
-
+            */
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Begin();
@@ -108,17 +108,17 @@ void Editor::Run()
         if (World::world != nullptr)
         {
             WorldLoop();
-            renderer.UpdateWorldBuffers();
+            //renderer.UpdateWorldBuffers();
         }
         
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Render();
         }
-        vulkanImgui.EndFrame();
-        renderer.SwapBuffers();
+        /*vulkanImgui.EndFrame();
+        renderer.SwapBuffers();*/
     }
-   renderer.WaitGPU();
+  // renderer.WaitGPU();
 }
 
 void Editor::InitEditorWindows()

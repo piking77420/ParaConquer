@@ -79,42 +79,11 @@
     <ClInclude Include="src\include\reflection\reflection_typedef.hpp" />
     <ClInclude Include="src\include\reflection\reflector.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
-    <ClInclude Include="src\include\rendering\draw_gizmos.hpp" />
-    <ClInclude Include="src\include\rendering\draw_quad.hpp" />
     <ClInclude Include="src\include\rendering\gpu_typedef.hpp" />
     <ClInclude Include="src\include\rendering\light.hpp" />
     <ClInclude Include="src\include\rendering\renderer.hpp" />
     <ClInclude Include="src\include\rendering\skydom.hpp" />
     <ClInclude Include="src\include\rendering\vertex.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_buffer.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_command_pool.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_debug_message.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_descriptor_pool.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_descriptor_set_layout.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_device.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_fence.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_header.h" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_imgui.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_index_buffer.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_instance.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_interface.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_material_manager.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_physical_devices.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_pipeline.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_pipeline_layout.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_render_pass.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_semaphore.h" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_compiler.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_stage.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_shader_storage_buffer.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_surface.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_swapchain.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_texture.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_texture_sampler.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_uniform_buffer.h" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_vertex_buffer.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_viewport.hpp" />
-    <ClInclude Include="src\include\rendering\vulkan\vulkan_wrapper.hpp" />
     <ClInclude Include="src\include\resources\material.hpp" />
     <ClInclude Include="src\include\resources\mesh.hpp" />
     <ClInclude Include="src\include\resources\resource.hpp" />
@@ -132,7 +101,6 @@
     <ClInclude Include="src\include\world\system.hpp" />
     <ClInclude Include="src\include\world\transform.hpp" />
     <ClInclude Include="src\include\world\world.hpp" />
-    <ClInclude Include="src\source\rendering\skybox_render.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\ecs\component.cpp" />
@@ -159,41 +127,10 @@
     <ClCompile Include="src\source\log.cpp" />
     <ClCompile Include="src\source\reflection\reflector.cpp" />
     <ClCompile Include="src\source\rendering\camera.cpp" />
-    <ClCompile Include="src\source\rendering\draw_gizmos.cpp" />
-    <ClCompile Include="src\source\rendering\draw_quad.cpp" />
     <ClCompile Include="src\source\rendering\light.cpp" />
     <ClCompile Include="src\source\rendering\renderer.cpp" />
-    <ClCompile Include="src\source\rendering\skybox_render.cpp" />
     <ClCompile Include="src\source\rendering\skydom.cpp" />
     <ClCompile Include="src\source\rendering\vertex.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_command_pool.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_debug_message.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_descriptor_pool.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_descriptor_set_layout.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_device.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_fence.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_imgui.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_index_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_instance.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_interface.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_material_manager.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_physical_devices.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_pipeline.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_pipeline_layout.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_render_pass.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_semaphore.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_compiler.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_stage.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_shader_storage_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_surface.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_swapchain.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_texture.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_texture_sampler.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_uniform_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_vertex_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_viewport.cpp" />
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_wrapper.cpp" />
     <ClCompile Include="src\source\resources\material.cpp" />
     <ClCompile Include="src\source\resources\mesh.cpp" />
     <ClCompile Include="src\source\resources\resource.cpp" />
@@ -292,6 +229,9 @@
     <ProjectReference Include="..\MotionCore\MotionCore\MotionCore.vcxproj">
       <Project>{72ef56bb-45d6-4cfb-8f3e-fbe16b9b1889}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\VulkanCore\VulkanCore.vcxproj">
+      <Project>{476d325f-61ab-44de-9eef-557e49552f88}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -346,19 +286,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -377,8 +317,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>RapidXML.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidXML.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
@@ -407,8 +347,8 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>RapidXML.lib;glfw3.lib;vulkan-1.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidXML.lib;glfw3.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
@@ -431,8 +371,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>RapidXML.lib;vulkan-1.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidXML.lib;glfw3.lib;%(AdditionalDependencies);lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
@@ -462,8 +402,8 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>RapidXML.lib;glfw3.lib;vulkan-1.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RapidXML.lib;glfw3.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
       <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"

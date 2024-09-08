@@ -23,10 +23,7 @@ void App::Init()
     World::world = &world;
    
     windowHandle.Init();
-    VulkanInterface::Init(&windowHandle);
     ResourceManager::Init();
-    renderer.Init(&windowHandle);
-    vulkanImgui.Init(windowHandle);
     world.LoadSkyBox();
 }
 
@@ -35,11 +32,7 @@ void App::Destroy()
     PC_LOG("App Destroy")
     // TODO only use Destructor
     world.skybox.Destroy();
-    renderer.Destroy();
-    // Wait the device has been stop by the destroy render func
-    vulkanImgui.Destroy();
     ResourceManager::Destroy();
-    VulkanInterface::Destroy();
     windowHandle.Destroy();
 }
 
@@ -87,7 +80,7 @@ void App::HandleResize()
     if (windowHandle.onResize)
     {
         windowHandle.OnResize();
-        renderer.RecreateSwapChain(&windowHandle);
+        //renderer.RecreateSwapChain(&windowHandle);
         windowHandle.onResize = false;
     }
 }

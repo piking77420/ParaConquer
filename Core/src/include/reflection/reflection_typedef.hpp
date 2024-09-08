@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include <vector>
 
 BEGIN_PCCORE
 

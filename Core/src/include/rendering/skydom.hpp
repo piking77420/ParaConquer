@@ -4,13 +4,12 @@
 
 #include "core_header.hpp"
 #include "vertex.hpp"
-#include "vulkan/vulkan_vertex_buffer.hpp"
 
 BEGIN_PCCORE
     class Skydom
 {
 public:
-    VulkanVertexBuffer m_VulkanVertexBuffer;
+    //VulkanVertexBuffer m_VulkanVertexBuffer;
 
     uint32_t nbrOfVerticies = -1;
     

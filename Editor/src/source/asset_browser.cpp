@@ -17,6 +17,7 @@ void PC_EDITOR_CORE::AssetBrowser::Update()
 
 void AssetBrowser::RenderBrowser()
 {
+    return;
     float columnSpacing = 100;
     float padding = 16.f;
     float thumbailSize = 64;

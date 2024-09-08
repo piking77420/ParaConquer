@@ -15,8 +15,8 @@ void PC_EDITOR_CORE::EditWorldWindow::Update()
 {
     WorldViewWindow::Update();
 
-    if(ImGui::IsWindowFocused())
-        MoveCameraUpDate();
+    //if(ImGui::IsWindowFocused())
+      //  MoveCameraUpDate();
 
 }
 
