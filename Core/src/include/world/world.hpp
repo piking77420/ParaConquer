@@ -24,15 +24,15 @@ public:
 
     bool run = false;
 
-    World() = default;
+    PC_CORE_API World() = default;
     
-    ~World() = default;
+    PC_CORE_API ~World() = default;
 
-    void Begin();
+    PC_CORE_API void Begin();
 
-    void Update();
+    PC_CORE_API void Update();
 
-    void LoadSkyBox();
+    PC_CORE_API void LoadSkyBox();
 
 private:
 };

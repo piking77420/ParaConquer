@@ -15,15 +15,15 @@ public:
 
     ~SceneGraph() = default;
     
-    void UpdateTransforms(Scene* _scene);
+    PC_CORE_API void UpdateTransforms(Scene* _scene);
     
-    void UpdateMatrix(Scene* _scene);
+    PC_CORE_API void UpdateMatrix(Scene* _scene);
 
-    static size_t MatrixMeshesSize();
+    PC_CORE_API static size_t MatrixMeshesSize();
     
-    const Transform* GetParent(const Transform* transform);
+    PC_CORE_API const Transform* GetParent(const Transform* transform);
 
-    static inline bool HasParent(const Transform& transform);    
+    PC_CORE_API static inline bool HasParent(const Transform& transform);
 
 private:
 };

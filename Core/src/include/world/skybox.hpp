@@ -18,9 +18,9 @@ public:
     
     Texture* texture = nullptr;
     
-    void Load(std::array<std::string,6>& _maps);
+    PC_CORE_API void Load(std::array<std::string,6>& _maps);
     
-    void Destroy();
+    PC_CORE_API void Destroy();
 
     Skybox() = default;
 

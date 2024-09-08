@@ -21,13 +21,13 @@ public:
     
     float ambiantOcculusion = 0.f;
     
-    void WriteFile(const fs::path& path) override;
+    PC_CORE_API void WriteFile(const fs::path& path) override;
 
-    ~Material() override;
+    PC_CORE_API ~Material() override;
     
-    void Load(const fs::path& path) override;
+    PC_CORE_API void Load(const fs::path& path) override;
 
-    void Load(std::vector<Texture*> textures);
+    PC_CORE_API void Load(std::vector<Texture*> textures);
 
 };
 

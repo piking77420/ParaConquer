@@ -15,9 +15,9 @@ public:
 
     ~ResourceManager() = delete;
 
-    static void Init();
+    PC_CORE_API static void Init();
 
-    static void Destroy();
+    PC_CORE_API static void Destroy();
 
     template<class T>
     static T* CreateAndLoad(const fs::path& path);
@@ -38,7 +38,7 @@ private:
         std::string name = {};
     };
     
-    static inline std::map<fs::path, IResource*> m_ResourcesMap;
+    PC_CORE_API static inline std::map<fs::path, IResource*> m_ResourcesMap;
 };
 
 template <class T>

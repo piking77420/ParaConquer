@@ -12,7 +12,7 @@ struct Vertex
     Tbx::Vector3f normal;
     Tbx::Vector2f textureCoord;
 
-    bool operator==(const Vertex& other) const {
+    PC_CORE_API bool operator==(const Vertex& other) const {
         return position == other.position && normal == other.normal && textureCoord == other.textureCoord;
     }
 

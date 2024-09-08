@@ -8,9 +8,6 @@ namespace VK_NP
 	{
 	public:
 		
-		VULKA_API 
-
-
 		VULKA_API VulkanApp() = delete;
 
 		VULKA_API ~VulkanApp() = delete;

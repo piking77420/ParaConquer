@@ -8,16 +8,19 @@
 #define BEGIN_PCCORE namespace PC_CORE {
 #define END_PCCORE }
 
-#if 0
+#ifdef PC_CORE_DLL
 
-#ifdef PCCORE_DLL
+#ifdef PC_CORE_EXPORT 
 #define PC_CORE_API __declspec(dllexport)
-#else
+#elif PC_CORE_IMPORT
 #define PC_CORE_API __declspec(dllimport)
 #endif
 #else
 #define PC_CORE_API
-#endif
+#endif // PC_CORE_API
+
+
+
 
 #define DEFAULT_COPY_MOVE_OPERATIONS(type)         \
 type(const type& other) noexcept = default;             \

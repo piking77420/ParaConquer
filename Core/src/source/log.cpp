@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <iostream>
 
+using namespace PC_CORE;
+
+
 void Log::Debug(const std::string& message, const char* file, const char* line)
 {
     std::filesystem::path p = std::filesystem::path(std::string(file));

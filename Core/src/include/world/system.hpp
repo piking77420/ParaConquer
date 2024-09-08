@@ -11,11 +11,11 @@ public:
     
     System() = default;
     
-    virtual ~System() = 0;
+    PC_CORE_API virtual ~System() = 0;
 
-    virtual void Begin(Scene* scene) = 0;
+    PC_CORE_API virtual void Begin(Scene* scene) = 0;
 
-    virtual void Update(Scene* scene) = 0;
+    PC_CORE_API virtual void Update(Scene* scene) = 0;
 };
 
 END_PCCORE

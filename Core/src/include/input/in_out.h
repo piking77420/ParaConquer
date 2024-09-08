@@ -9,11 +9,11 @@ BEGIN_PCCORE
 class InOut
 {
 public:
-    static void PrintOut(const std::string& _string);
+    PC_CORE_API static void PrintOut(const std::string& _string);
 
-    static void PrintOut(const std::wstring& _string);
+    PC_CORE_API static void PrintOut(const std::wstring& _string);
 
-    static void PrintOut(std::string&& _string);
+    PC_CORE_API static void PrintOut(std::string&& _string);
 private:
     
 };

@@ -24,25 +24,25 @@ public:
     static Guid FromString(const char* str);
     
     [[nodiscard]]
-    uint32_t GetData1() const;
+    PC_CORE_API uint32_t GetData1() const;
     
     [[nodiscard]]
-    uint16_t GetData2() const;
+    PC_CORE_API uint16_t GetData2() const;
     
     [[nodiscard]]
-    uint16_t GetData3() const;
+    PC_CORE_API uint16_t GetData3() const;
     
     [[nodiscard]]
-    const std::array<uint8_t, Data4Size>& GetData4() const;
+    PC_CORE_API const std::array<uint8_t, Data4Size>& GetData4() const;
 
    
     [[nodiscard]]
-    bool operator==(const Guid& other) const;
+    PC_CORE_API bool operator==(const Guid& other) const;
     
     [[nodiscard]]
-    bool operator!=(const Guid& other) const;
+    PC_CORE_API bool operator!=(const Guid& other) const;
 
-    explicit operator std::string() const;
+    PC_CORE_API explicit operator std::string() const;
 
 private:
     uint32_t m_Data1 = 0;

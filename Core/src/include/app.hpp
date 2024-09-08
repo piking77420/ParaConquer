@@ -28,21 +28,21 @@ public:
 	
 	World world;
 		
-	virtual void Init();
+	PC_CORE_API virtual void Init();
 
-	virtual void Destroy();
+	PC_CORE_API virtual void Destroy();
 	
-	App() = default;
+	PC_CORE_API App() = default;
 
-	~App() = default;
+	PC_CORE_API ~App() = default;
 
-	virtual void Run();
+	PC_CORE_API virtual void Run();
 	
-	void WorldLoop();
+	PC_CORE_API void WorldLoop();
 
-	void HandleResize();
+	PC_CORE_API void HandleResize();
 	
-	static inline App* instance = nullptr;
+	PC_CORE_API static inline App* instance = nullptr;
 
 
 protected:

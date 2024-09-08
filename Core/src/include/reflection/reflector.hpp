@@ -82,7 +82,7 @@ private:
     
     static std::string GetCorrectNameFromTypeId(const std::string& _name);
    
-    static inline std::unordered_map<uint32_t, ReflectedType> m_RelfectionMap;
+    PC_CORE_API static inline std::unordered_map<uint32_t, ReflectedType> m_RelfectionMap;
 
     template <typename  T>
     static void AddType();

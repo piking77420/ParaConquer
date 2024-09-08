@@ -21,13 +21,13 @@ public:
 
     Guid guid;
     
-    IResource();
+    PC_CORE_API IResource();
     
-    virtual ~IResource() = default;
+    PC_CORE_API virtual ~IResource() = default;
 
-    virtual void Load(const fs::path& path) = 0;
+    PC_CORE_API virtual void Load(const fs::path& path) = 0;
 
-    virtual void WriteFile(const fs::path& path) {};
+    PC_CORE_API virtual void WriteFile(const fs::path& path) {};
 
     template <size_t _Size>
     static bool IsFormatValid(std::array<std::string,_Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex);

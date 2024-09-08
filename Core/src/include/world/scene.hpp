@@ -34,11 +34,11 @@ BEGIN_PCCORE
         
         ~Scene() = default;
 
-        EntityId CreateEntity(const std::string& name);
+        PC_CORE_API EntityId CreateEntity(const std::string& name);
 
-        const Entity* GetEntity(EntityId _id) const;
+        PC_CORE_API const Entity* GetEntity(EntityId _id) const;
 
-        Entity* GetEntity(EntityId _id);
+        PC_CORE_API Entity* GetEntity(EntityId _id);
     
         template <class T>
         T* Get(EntityId _entityId);
@@ -51,17 +51,17 @@ BEGIN_PCCORE
         template<typename T>
         T* AddComponent(EntityId _entityId);
 
-        void AddComponent(EntityId _entityId, uint32_t _componentKey);
+        PC_CORE_API void AddComponent(EntityId _entityId, uint32_t _componentKey);
     
         template<typename T>
         void RemoveComponent(EntityId _entityId);
 
-        void RemoveComponent(EntityId _entityId, uint32_t _componentKey);
+        PC_CORE_API void RemoveComponent(EntityId _entityId, uint32_t _componentKey);
 
         template<typename T>
         bool HasComponent(EntityId _entityId) const;
 
-        bool HasComponent(EntityId _entityId, uint32_t _componentKey) const;
+        PC_CORE_API bool HasComponent(EntityId _entityId, uint32_t _componentKey) const;
     
         template<typename T>
         std::vector<T>* GetData();

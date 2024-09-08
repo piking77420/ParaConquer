@@ -10,7 +10,7 @@ BEGIN_PCCORE
 public:
     bool FullScreen = false; 
 
-    static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+    PC_CORE_API static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
     
     Tbx::Vector2ui windowSize = {1680,1050};
 
@@ -18,19 +18,19 @@ public:
 
     bool onResize = false;
     
-    void Init();
+    PC_CORE_API void Init();
 
-    void Destroy();
+    PC_CORE_API void Destroy();
 
-    bool ShouldClose();
+    PC_CORE_API bool ShouldClose();
 
-    void PoolEvents();
+    PC_CORE_API void PoolEvents();
 
-    void OnResize();
+    PC_CORE_API void OnResize();
 
-    float GetAspect() const;
+    PC_CORE_API float GetAspect() const;
 
-    void CreateWindow();
+    PC_CORE_API void CreateWindow();
     
     static inline Window* currentWindow;
 private:

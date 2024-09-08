@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <cassert>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #ifdef VULKAN_DLL
 

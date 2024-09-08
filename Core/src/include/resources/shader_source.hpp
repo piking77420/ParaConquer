@@ -31,7 +31,7 @@ public:
     
     std::vector<char> data;
     
-    void Load(const fs::path& _path) override;
+    PC_CORE_API void Load(const fs::path& _path) override;
 private:
 
 };

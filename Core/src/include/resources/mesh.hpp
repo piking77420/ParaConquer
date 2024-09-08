@@ -30,9 +30,9 @@ public:
 
     MeshFormat meshFormat;
     
-    ~Mesh() override;
+    PC_CORE_API ~Mesh() override;
     
-    void Load(const fs::path& path) override;
+    PC_CORE_API void Load(const fs::path& path) override;
 
     uint32_t GetNbrOfVerticies() const;
 
