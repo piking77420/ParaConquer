@@ -13,31 +13,31 @@ class SparseSet
 {
 public:
 
-	std::vector<uint8_t>* GetData();
+	PC_CORE_API std::vector<uint8_t>* GetData();
 
-	const std::vector<uint8_t>* GetData() const;
+	PC_CORE_API const std::vector<uint8_t>* GetData() const;
 	
-	size_t GetSize() const;
+	PC_CORE_API size_t GetSize() const;
 
-	size_t GetDensity() const;
+	PC_CORE_API size_t GetDensity() const;
 
-	uint8_t* Alloc(EntityId entity_id);
+	PC_CORE_API uint8_t* Alloc(EntityId entity_id);
 
-	void Free(EntityId entity_id);
+	PC_CORE_API void Free(EntityId entity_id);
 
-	const uint8_t* GetEntityData(EntityId entity_id) const;
+	PC_CORE_API const uint8_t* GetEntityData(EntityId entity_id) const;
 
-	uint8_t* GetEntityData(EntityId entity_id);
+	PC_CORE_API uint8_t* GetEntityData(EntityId entity_id);
 
-	bool Empty() const;
+	PC_CORE_API bool Empty() const;
 
-	SparseSet() = default;
+	PC_CORE_API SparseSet() = default;
 
-	~SparseSet() = default;
+	PC_CORE_API ~SparseSet() = default;
 	
-	SparseSet(size_t _densitySize);
+	PC_CORE_API SparseSet(size_t _densitySize);
 
-	SparseSet(size_t _densitySize, size_t _size , SparsetCreateFunc _sparsetCreateFunc
+	PC_CORE_API SparseSet(size_t _densitySize, size_t _size , SparsetCreateFunc _sparsetCreateFunc
 		,SparsetDeleteFunc _sparsetDeleteFunc);
 	
 	template<typename T>

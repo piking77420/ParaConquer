@@ -9,13 +9,10 @@
 #include "world_view_window.hpp"
 #include "Imgui/imgui.h"
 #include "Imgui/imgui_impl_vulkan.h"
-#include "physics/sphere_collider.hpp"
-#include "resources/resource_manager.hpp"
-#include "rendering/light.hpp"
-#include "serialize/serializer.h"
-#include "time/core_time.hpp"
 #include "resources/material.hpp"
-
+#include "time/core_time.hpp"
+#include <resources/resource_manager.hpp>
+#include "rendering/light.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;

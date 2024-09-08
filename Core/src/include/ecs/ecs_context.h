@@ -19,14 +19,14 @@ struct EcsComponent
 class EcsContext
 {
 public:
-    EcsContext();
+    PC_CORE_API EcsContext();
 
-    ~EcsContext();
+    PC_CORE_API ~EcsContext();
     
-    static const std::vector<EcsComponent>& GetComponentsDataInfo();
+    PC_CORE_API static const std::vector<EcsComponent>& GetComponentsDataInfo();
     
 private:
-    static inline std::vector<EcsComponent> m_ECSComponentsDataInfo;
+    PC_CORE_API static inline std::vector<EcsComponent> m_ECSComponentsDataInfo;
 };
 
 END_PCCORE

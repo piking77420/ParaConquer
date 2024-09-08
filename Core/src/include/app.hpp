@@ -5,7 +5,6 @@
 #include "window.hpp"
 #include "rendering/camera.hpp"
 #include "world/world.hpp"
-#include "input/low_pass_filter.hpp"
 #include "scripting/scripting_lua.hpp"
 #include <core/physics_engine.h>
 

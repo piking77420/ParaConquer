@@ -22,29 +22,29 @@ BEGIN_PCCORE
     class EntityRegister
     {
     public:
-        std::vector<uint8_t>* GetComponentData(uint32_t _componentKey);
+        PC_CORE_API std::vector<uint8_t>* GetComponentData(uint32_t _componentKey);
 
-        const std::vector<uint8_t>* GetComponentData(uint32_t _componentKey) const;
+        PC_CORE_API const std::vector<uint8_t>* GetComponentData(uint32_t _componentKey) const;
     
-        uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey);
+        PC_CORE_API uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey);
 
-        const uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey) const;
+        PC_CORE_API const uint8_t* GetComponent(EntityId _entityID, uint32_t _componentKey) const;
 
-        uint8_t* CreateComponent(EntityId _entityID, uint32_t _componentKey);
+        PC_CORE_API uint8_t* CreateComponent(EntityId _entityID, uint32_t _componentKey);
 
-        void DeleteComponent(EntityId _entityID, uint32_t _componentKey);
+        PC_CORE_API void DeleteComponent(EntityId _entityID, uint32_t _componentKey);
         
-        EntityId CreateEntity();
+        PC_CORE_API EntityId CreateEntity();
 
-        void DestroyEntity(EntityId entityId);
+        PC_CORE_API void DestroyEntity(EntityId entityId);
 
-        bool IsEntityIdValid(EntityId entityId) const;
+        PC_CORE_API bool IsEntityIdValid(EntityId entityId) const;
 
-        bool IsEntityHasComponent(EntityId entityId, uint32_t _componentKey) const;
+        PC_CORE_API bool IsEntityHasComponent(EntityId entityId, uint32_t _componentKey) const;
 
-        EntityRegister();
+        PC_CORE_API EntityRegister();
 
-        ~EntityRegister() = default;
+        PC_CORE_API ~EntityRegister() = default;
 
     private:
         

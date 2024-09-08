@@ -12,100 +12,21 @@
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj.filters" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/externals/include/Imgui/imgui.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/externals/include/Imgui/imgui.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/reflection/reflection_typedef.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/reflection/reflection_typedef.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/draw_gizmos.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/draw_quad.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/skydom.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/skydom.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vertex.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/vertex.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_buffer.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_command_pool.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_debug_message.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_descriptor_pool.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_descriptor_set_layout.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_device.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_fence.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_header.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_imgui.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_index_buffer.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_instance.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_interface.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_material_manager.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_physical_devices.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_pipeline.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_pipeline_layout.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_render_pass.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_semaphore.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_shader_compiler.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_shader_stage.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_shader_storage_buffer.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_surface.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_swapchain.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_texture.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_texture_sampler.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_uniform_buffer.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_vertex_buffer.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_viewport.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/vulkan/vulkan_wrapper.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/mesh.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/mesh.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/shader_source.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/shader_source.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/texture.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/texture.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/world/skybox.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/world/skybox.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/draw_gizmos.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/draw_quad.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/skybox_render.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/skybox_render.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/skydom.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/skydom.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_buffer.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_command_pool.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_debug_message.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_descriptor_pool.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_descriptor_set_layout.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_device.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_fence.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_imgui.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_index_buffer.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_instance.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_interface.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_material_manager.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_physical_devices.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_pipeline.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_pipeline_layout.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_render_pass.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_semaphore.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_shader_compiler.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_shader_stage.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_shader_storage_buffer.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_surface.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_swapchain.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_texture.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_texture_sampler.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_uniform_buffer.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_vertex_buffer.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_viewport.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/vulkan/vulkan_wrapper.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/mesh.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/mesh.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/shader_source.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/shader_source.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/texture.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/window.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/world/skybox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/world/skybox.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/include/editor.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/editor.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/asset_browser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/asset_browser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/edit_world_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/edit_world_window.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/core_header.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/core_header.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/input/low_pass_filter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/input/low_pass_filter.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/Editor.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/Editor.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/src/include/transform_gizmo.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/transform_gizmo.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Editor/src/source/editor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/editor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/editor_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/editor_window.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/hierachy.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/hierachy.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/profiler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/profiler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/scene_button.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/scene_button.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer.sln" beforeDir="false" afterPath="$PROJECT_DIR$/ParaConquer.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" beforeDir="false" afterPath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.tlog/CL.command.1.tlog" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.tlog/ParaConquer.lastbuildstate" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/vc143.idb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/vc143.pdb" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,18 +101,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "C++ Project.Editor.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "rework__vulkan",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;C++ Project.Editor.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;rework__vulkan&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="C++ Project.Editor">
     <configuration name="Editor" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -324,6 +245,10 @@
       <workItem from="1725711039786" duration="12360000" />
       <workItem from="1725731307663" duration="268000" />
       <workItem from="1725731591461" duration="2123000" />
+      <workItem from="1725812173444" duration="45000" />
+      <workItem from="1725812235742" duration="24000" />
+      <workItem from="1725812759581" duration="646000" />
+      <workItem from="1725814079389" duration="1975000" />
     </task>
     <servers />
   </component>

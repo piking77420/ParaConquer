@@ -17,9 +17,9 @@ public:
     using Type = T;
 
 
-    PC_CORE_API LowPassFilter() = default;
+    LowPassFilter() = default;
 
-    PC_CORE_API ~LowPassFilter() = default;
+    ~LowPassFilter() = default;
 
     template <typename U>
     U GetAvarage() const
@@ -29,7 +29,7 @@ public:
         return m_Sum / Size;
     }
 
-    PC_CORE_API void AddSample(T sample)
+    void AddSample(T sample)
     {
         m_Sum = m_Sum - m_Data[m_CurrentFrameIndex];
         m_Data.at(m_CurrentFrameIndex) = sample;
@@ -40,7 +40,7 @@ public:
             m_CurrentFrameIndex = 0;
     }
 
-    PC_CORE_API void Reset()
+    void Reset()
     {
         for (T& t : m_Data)
         {

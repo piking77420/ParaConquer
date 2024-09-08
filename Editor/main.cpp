@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include "core_header.hpp"
 #include "app.hpp"
 #include "editor.hpp"
 #include "math/utils.hpp"

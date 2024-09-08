@@ -111,9 +111,6 @@
     <ClInclude Include="src\include\resources\texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\time\timer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\world\scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -177,9 +174,6 @@
     <ClInclude Include="src\include\physics\physics_wrapper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\time\core_time.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\physics\box_collider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -223,6 +217,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\serialize\serializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\time\timer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\time\core_time.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -362,8 +362,19 @@
     <ClCompile Include="src\source\serialize\serializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\rendering\vulkan\vulkan_material_manager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="src\externals\lib\Release\glfw3.lib" />
+    <Library Include="src\externals\lib\Release\lua54.lib" />
+    <Library Include="src\externals\lib\Release\RapidXML.lib" />
+    <Library Include="src\externals\lib\Debug\glfw3.lib" />
+    <Library Include="src\externals\lib\Debug\lua54.lib" />
+    <Library Include="src\externals\lib\Debug\RapidXML.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\externals\lib\Release\RapidXML.pdb" />
+    <None Include="src\externals\lib\Debug\glfw3.pdb" />
+    <None Include="src\externals\lib\Debug\RapidXML.idb" />
+    <None Include="src\externals\lib\Debug\RapidXML.pdb" />
   </ItemGroup>
 </Project>

@@ -59,7 +59,7 @@ public:
     template <typename T>
     static TypeInfo GetTypeInfo();
 
-    static const ReflectedType& GetType(uint32_t _hash);
+    PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
 
     template<typename Holder, typename MemberType, MemberEnumFlag enumFlag = NONE>
     static Members ReflectMember(size_t _offset, const char* _memberName);
@@ -78,9 +78,9 @@ public:
 
 private:
     
-    static uint32_t KR_v2_hash(const char *s);
+    PC_CORE_API static uint32_t KR_v2_hash(const char *s);
     
-    static std::string GetCorrectNameFromTypeId(const std::string& _name);
+    PC_CORE_API static std::string GetCorrectNameFromTypeId(const std::string& _name);
    
     PC_CORE_API static inline std::unordered_map<uint32_t, ReflectedType> m_RelfectionMap;
 
@@ -132,7 +132,7 @@ const ReflectedType& Reflector::GetType()
 }
 
 
-template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag = NONE>
+template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag>
 Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
     if (!ContaintType<Holder>())

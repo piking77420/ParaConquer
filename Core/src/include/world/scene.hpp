@@ -26,13 +26,13 @@ BEGIN_PCCORE
     class Scene
     {
     public:
-        void Begin();
+        PC_CORE_API void Begin();
         
-        void Update();
+        PC_CORE_API void Update();
 
-        Scene() = default;
+        PC_CORE_API Scene() = default;
         
-        ~Scene() = default;
+        PC_CORE_API ~Scene() = default;
 
         PC_CORE_API EntityId CreateEntity(const std::string& name);
 
@@ -46,7 +46,7 @@ BEGIN_PCCORE
         template<typename T>
         const T* Get(EntityId _entityId) const;
 
-        void* Get(EntityId _entityId, uint32_t _componentKey);
+        PC_CORE_API void* Get(EntityId _entityId, uint32_t _componentKey);
         
         template<typename T>
         T* AddComponent(EntityId _entityId);

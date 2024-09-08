@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "editor_header.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "rendering/vulkan/vulkan_shader_stage.hpp"
 
 BEGIN_EDITOR_PCCORE
 // TODO 
