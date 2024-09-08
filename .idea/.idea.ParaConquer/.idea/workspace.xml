@@ -10,23 +10,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj.filters" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/externals/include/Imgui/imgui.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/externals/include/Imgui/imgui.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/core_header.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/core_header.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/input/low_pass_filter.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/input/low_pass_filter.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/Editor.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/Editor.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/include/transform_gizmo.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/transform_gizmo.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/editor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/editor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" beforeDir="false" afterPath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.tlog/CL.command.1.tlog" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.tlog/ParaConquer.lastbuildstate" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/vc143.idb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/vc143.pdb" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -249,6 +233,7 @@
       <workItem from="1725812235742" duration="24000" />
       <workItem from="1725812759581" duration="646000" />
       <workItem from="1725814079389" duration="1975000" />
+      <workItem from="1725817304432" duration="1089000" />
     </task>
     <servers />
   </component>

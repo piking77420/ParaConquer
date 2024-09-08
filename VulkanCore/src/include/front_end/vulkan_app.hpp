@@ -8,9 +8,9 @@ namespace VK_NP
 	{
 	public:
 		
-		VULKA_API VulkanApp() = delete;
+		VULKA_API VulkanApp();
 
-		VULKA_API ~VulkanApp() = delete;
+		VULKA_API ~VulkanApp();
 
 	private:
 		const char* m_AppName = nullptr;
