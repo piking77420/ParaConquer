@@ -163,7 +163,7 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
     }
     else if ((reflectionType.typeInfo.typeInfoFlags & TypeFlag::VECTOR))
     {
-        
+        // TODO MAKE VECTOR
     }
     else
     {

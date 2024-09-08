@@ -84,8 +84,6 @@ void Editor::DestroyTestScene()
     ResourceManager::Delete<Material>("baseMaterial2");
 }
 
-SerializeTest serialize_test;
-
 void Editor::Run()
 {
     while (!windowHandle.ShouldClose())
@@ -107,29 +105,12 @@ void Editor::Run()
             editorWindow->End();
         }
 
-        if (ImGui::Begin("Test Serialization"))
-        {
-           
-            
-            if (ImGui::Button("Serialize"))
-            {
-                Serializer::Serialize<SerializeTest>(serialize_test, "TestSerialize.meta");
-            }
-            if (ImGui::Button("Deserialize"))
-            {
-                Serializer::DeSerialize<SerializeTest>(&serialize_test, "TestSerialize.meta");
-            }
-            
-            ImGui::End();
-        }
-
         if (World::world != nullptr)
         {
             WorldLoop();
             renderer.UpdateWorldBuffers();
         }
-            
-
+        
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Render();

@@ -237,16 +237,22 @@ void Reflector::AddType()
         // Create New Node in map
         std::string name;
         const uint32_t hashCode = GetHash<T>(&name);
-        const ReflectedType mememberMetaData =
+        ReflectedType mememberMetaData =
             {
             .HashKey = hashCode,
             .typeInfo = GetTypeInfo<T>(),
             .name = name,
             .typeSize = sizeof(T),
             .members = {},
-            .createFunc = &ReflectedCreateFunc<T>,
-            .deleteFunc = &ReflectedDeleteFunc<T>,
             };
+
+        if constexpr (!std::is_abstract_v<T>)
+        {
+            mememberMetaData.createFunc = &ReflectedCreateFunc<T>;
+            mememberMetaData.deleteFunc = &ReflectedDeleteFunc<T>;
+        }
+
+        
         m_RelfectionMap.insert({hashCode,mememberMetaData});
     }
 }

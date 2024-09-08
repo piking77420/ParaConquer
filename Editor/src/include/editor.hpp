@@ -10,16 +10,6 @@
 BEGIN_EDITOR_PCCORE
 
 
-
-struct SerializeTest
-{
-    std::vector<int> value;
-};
-
-REFLECT(SerializeTest)
-REFLECT_MEMBER(SerializeTest,value)
-
-
 class Editor : public PC_CORE::App
 {
 public:
