@@ -1,7 +1,6 @@
 ﻿#include "hierachy.hpp"
 
 #include "editor.hpp"
-#include "Imgui/imgui.h"
 #include "world/transform.hpp"
 #include "world/world.hpp"
 
@@ -37,20 +36,21 @@ void Hierachy::ShowGraph()
     for (PC_CORE::Transform& transform : transforms)
     {
         PC_CORE::Entity* entity = scene.GetEntity(transform.entityId);
-        
+        /*
         if (ImGui::Button(entity->name.c_str()))
         {
             m_Editor->m_Selected = entity;
             hasSelected = true;
-        }
+        }*/
     }
 
     if (!hasSelected)
     {
+        /*
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowFocused())
         {
             m_Editor->m_Selected = nullptr;
-        }
+        }*/
     }
     
 }

@@ -2,14 +2,13 @@
 
 #include "ecs/ecs_header.h"
 #include "math/matrix_transformation.hpp"
-#include "rendering/gpu_typedef.hpp"
 #include "world/transform.hpp"
 
 using namespace PC_CORE;
 
 SceneGraph::SceneGraph()
 {
-    globalMatricies.resize(MAX_ENTITIES);
+    //globalMatricies.resize(MAX_ENTITIES);
 }
 
 
@@ -40,19 +39,20 @@ void SceneGraph::UpdateMatrix(Scene* _scene)
     
     std::vector<Transform>& transforms = *scene.GetData<Transform>();
 
+    /*
     for (Transform& transform : transforms)
     {
         MatrixMeshes& matricies = globalMatricies[transform.entityId];
         Trs3D(transform.position, transform.rotation.Normalize(), transform.scale, &matricies.model);
         Invert<float>(matricies.model, &matricies.modelNormalMatrix);
         matricies.modelNormalMatrix = matricies.modelNormalMatrix.Transpose();
-    }
+    }*/
     
 }
 
 size_t SceneGraph::MatrixMeshesSize()
 {
-    return sizeof(MatrixMeshes) * MAX_ENTITIES;
+    return 0;
 }
 
 

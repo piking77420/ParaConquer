@@ -1,15 +1,18 @@
 #pragma once
 
+#include "vulkan_harware_wrapper.hpp"
 #include "vulkan_header.h"
 
 namespace VK_NP
 {
-	class VulkanCore
+	class VulkanMain
 	{
 	public:
+		VULKA_API VulkanMain() = default;
 
-		VulkanCore() = default;
+		VULKA_API ~VulkanMain() = default;
 
-		~VulkanCore() = default;
+	private:
+		VulkanHarwareWrapper m_vulkanHarwareWrapper;
 	};
 }

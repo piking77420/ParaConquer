@@ -75,23 +75,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
-    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\</IncludePath>
+    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath);$(SolutionDir)CoreIO/src/externals/include</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
-    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\</IncludePath>
+    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath);$(SolutionDir)CoreIO/src/externals/include</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
-    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(SolutionDir)CoreIO/src/externals/include;$(IncludePath);$(SolutionDir)CoreIO/src/include</IncludePath>
+    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(SolutionDir)CoreIO;$(ExecutablePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)VulkanCore\src\include\</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath)</IncludePath>
-    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(SolutionDir)CoreIO/src/externals/include;$(IncludePath);$(SolutionDir)CoreIO/src/include</IncludePath>
+    <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(SolutionDir)CoreIO;$(ExecutablePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)VulkanCore\src\include\</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -99,7 +99,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)PC_CORE_IMPORTPC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;IMGUI_API_IMPORT;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)PC_CORE_IMPORTPC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;IMGUI_API_IMPORT;;CORE_IO_IMPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include</AdditionalIncludeDirectories>
@@ -119,7 +119,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);IMGUI_API_IMPORT;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);IMGUI_API_IMPORT;PC_CORE_IMPORT;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
@@ -141,7 +141,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0PC_CORE_IMPORTPC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;IMGUI_API_IMPORT;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0PC_CORE_IMPORTPC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;IMGUI_API_IMPORT;;CORE_IO_IMPORT;;CORE_IO_EXPORT;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include</AdditionalIncludeDirectories>
@@ -163,7 +163,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;PC_CORE_IMPORT;IMGUI_API_IMPORT;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;PC_CORE_IMPORT;IMGUI_API_IMPORT;CORE_IO_IMPORT;;CORE_IO_EXPORT;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>

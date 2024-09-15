@@ -7,12 +7,11 @@
 #include "profiler.hpp"
 #include "scene_button.hpp"
 #include "world_view_window.hpp"
-#include "Imgui/imgui.h"
-#include "Imgui/imgui_impl_vulkan.h"
 #include "resources/material.hpp"
 #include "time/core_time.hpp"
 #include <resources/resource_manager.hpp>
 #include "rendering/light.hpp"
+#include "io/core_io.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -22,8 +21,6 @@ void Editor::Init()
 {
     App::Init();
     InitEditorWindows();
-
-
     InitMaterial();
     InitTestScene();
 }
@@ -83,18 +80,19 @@ void Editor::DestroyTestScene()
 
 void Editor::Run()
 {
-    while (!windowHandle.ShouldClose())
+    while (!window->ShouldClose())
     {
         const World* currentWorld = World::world;
-        windowHandle.PoolEvents();
+        PC_CORE::CoreIo::PoolEvent();
+        window->Update();
         PC_CORE::Time::UpdateTime();
-        HandleResize();
         
         /*vulkanImgui.NewFrame();
 
         if (currentWorld != nullptr)
             renderer.BeginFrame(*currentWorld);
             */
+        
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Begin();

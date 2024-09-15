@@ -1,8 +1,7 @@
 ﻿#include "world_view_window.hpp"
 
 #include "editor.hpp"
-#include "Imgui/imgui.h"
-#include "Imgui/imgui_impl_vulkan.h"
+
 
 using namespace PC_EDITOR_CORE; 
 

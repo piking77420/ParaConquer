@@ -1,6 +1,5 @@
 #pragma once
-#include "vulkan_header.h"
-
+#include "back_end/vulkan_main.h"
 
 namespace VK_NP
 {
@@ -15,7 +14,7 @@ namespace VK_NP
 	private:
 		const char* m_AppName = nullptr;
 
-		
+		VK_NP::VulkanMain m_VulkanMain;
 	};
 
 

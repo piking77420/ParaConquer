@@ -28,6 +28,7 @@ void Inspector::Show()
 
     PC_CORE::Entity* selected = m_Editor->m_Selected;
 
+    /*
     std::string* string = &selected->name;
     ImGui::InputText(" ", string->data(), string->size());
     ImGui::PushID(string->c_str()); 
@@ -60,11 +61,12 @@ void Inspector::Show()
     }
 
     ImGui::PopID(); 
- 
+ */
 }
 
 void Inspector::OnInput()
 {
+    /*
     if (ButtonCenteredOnLine("Add Component"))
     {
         ImGui::OpenPopup("Components");
@@ -89,10 +91,11 @@ void Inspector::OnInput()
             
         ImGui::EndPopup();
     }
-    
+    */
 }
 void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 {
+    /*
     void* dataPosition = static_cast<char*>(begin) + _members.offset;
     const char* membersName = _members.membersName.c_str();
     const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_members.typeKey);
@@ -173,16 +176,17 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
         }
         
     }
-
+    */
 }
 
     
 void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
 {
+    /*
     if (ImGui::SmallButton("Delete Component"))
     {
         m_Editor->world.scene.RemoveComponent(_entity->ecsId, _componentId);
-    }
+    }*/
 }
 
 void Inspector::PrintArray(void* begin, const PC_CORE::Members& _members)

@@ -1,7 +1,6 @@
 ﻿#include "time/core_time.hpp"
 
-#include "GLFW/glfw3.h"
-
+#include <GLFW/glfw3.h>
 
 float PC_CORE::Time::GetTime()
 {
@@ -15,6 +14,7 @@ float PC_CORE::Time::DeltaTime()
 
 void PC_CORE::Time::UpdateTime()
 {
+    
     const double currentFrame = glfwGetTime();
     deltaTime = currentFrame - currentTime;
     currentTime = currentFrame;

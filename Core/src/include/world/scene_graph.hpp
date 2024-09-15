@@ -3,13 +3,12 @@
 #include "scene.hpp"
 #include "transform.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "rendering/gpu_typedef.hpp"
 
 BEGIN_PCCORE
 class SceneGraph
 {
 public:
-    std::vector<MatrixMeshes> globalMatricies;
+    //std::vector<MatrixMeshes> globalMatricies;
     
     SceneGraph();
 

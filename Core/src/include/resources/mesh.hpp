@@ -34,9 +34,9 @@ public:
     
     PC_CORE_API void Load(const fs::path& path) override;
 
-    uint32_t GetNbrOfVerticies() const;
+    PC_CORE_API uint32_t GetNbrOfVerticies() const;
 
-    uint32_t GetNbrOfIndicies() const;
+    PC_CORE_API uint32_t GetNbrOfIndicies() const;
 
 
 private:

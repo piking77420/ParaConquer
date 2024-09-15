@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "imgui.h"
 #include "log.hpp"
 #include "physics/sphere_collider.hpp"
 #include "rendering/light.hpp"
@@ -10,6 +9,7 @@
 
 #include "lua/lua.hpp"
 #include "time/core_time.hpp"
+#include <io/core_io.hpp>
 
 
 using namespace PC_CORE;
@@ -21,8 +21,9 @@ void App::Init()
     instance = this;
     Time::Init();
     World::world = &world;
-   
-    windowHandle.Init();
+    CoreIo::Init();
+    window = new Window("Para Conquer Editor");
+    
     ResourceManager::Init();
     world.LoadSkyBox();
 }
@@ -33,7 +34,7 @@ void App::Destroy()
     // TODO only use Destructor
     world.skybox.Destroy();
     ResourceManager::Destroy();
-    windowHandle.Destroy();
+    CoreIo::Destroy();
 }
 
 
@@ -75,12 +76,3 @@ void App::WorldLoop()
     world.sceneGraph.UpdateMatrix(&world.scene);
 }
 
-void App::HandleResize()
-{
-    if (windowHandle.onResize)
-    {
-        windowHandle.OnResize();
-        //renderer.RecreateSwapChain(&windowHandle);
-        windowHandle.onResize = false;
-    }
-}

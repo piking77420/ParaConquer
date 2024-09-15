@@ -1,38 +1,14 @@
-﻿#include "..\include\window.hpp"
+﻿#include "io/window.hpp"
 
-#include <complex.h>
+#include <GLFW/glfw3.h>
 
-#include "app.hpp"
-#include "imgui.h"
 
 using namespace PC_CORE;
 
-void Window::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+void Window::FramebufferResizeCallback(GLFWwindow* _window, int width, int height)
 {
-    Window* app = static_cast<Window*>(glfwGetWindowUserPointer(window));
-    app->onResize = true;
-}
-
-void Window::Init()
-{
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    monitor = glfwGetPrimaryMonitor();
-    mode = glfwGetVideoMode(monitor);
-    monitorSize = { static_cast<uint32_t>(mode->width), static_cast<uint32_t>(mode->height)}; 
-    CreateWindow();
-    
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
-    currentWindow = this;
-
-}
-
-void Window::Destroy()
-{
-    glfwDestroyWindow(window);
-
-    glfwTerminate();
+    Window* window = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    window->onResize = true;
 }
 
 bool Window::ShouldClose()
@@ -40,15 +16,13 @@ bool Window::ShouldClose()
     return glfwWindowShouldClose(window);
 }
 
-void Window::PoolEvents()
+void Window::Update()
 {
-    glfwPollEvents();
-    return;
     
-    if (ImGui::IsKeyReleased(ImGuiKey_F11))
+    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
     {
         FullScreen = !FullScreen;
-        
+
         if (FullScreen)
         {
             oldSize = windowSize;
@@ -66,22 +40,25 @@ void Window::PoolEvents()
             glfwSetWindowMonitor(window, NULL, static_cast<int32_t>(oldPos.x), static_cast<int32_t>(oldPos.y),
             static_cast<int32_t>(windowSize.y),static_cast<int32_t>(windowSize.y), mode->refreshRate);
         }
-        
     }
+    HandleResize();
+
 }
 
-void Window::OnResize()
+void Window::HandleResize()
 {
-    
-    int NewWidth = 0, NewHeight = 0;
-    glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
-    while (NewWidth == 0 || NewHeight == 0) {
+    if (onResize)
+    {
+        int NewWidth = 0, NewHeight = 0;
         glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
-        glfwWaitEvents();
+        while (NewWidth == 0 || NewHeight == 0) {
+            glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
+            glfwWaitEvents();
+        }
+        windowSize.x = static_cast<uint32_t>(NewWidth);
+        windowSize.y = static_cast<uint32_t>(NewHeight);
+        onResize = false;
     }
-
-    windowSize.x = static_cast<uint32_t>(NewWidth);
-    windowSize.y = static_cast<uint32_t>(NewHeight);
 }
 
 float Window::GetAspect() const
@@ -89,19 +66,31 @@ float Window::GetAspect() const
     return static_cast<float>(windowSize.x) / static_cast<float>(windowSize.y);
 }
 
-void Window::CreateWindow()
+Window::Window(const char* _windowName) : m_WindowName(_windowName)
 {
+    monitor = glfwGetPrimaryMonitor();
+    mode = glfwGetVideoMode(monitor);
+    monitorSize = { static_cast<uint32_t>(mode->width), static_cast<uint32_t>(mode->height)};
+    
     if (FullScreen)
     {
         windowSize.x = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->width);
         windowSize.y = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->height);
         window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
-                                           static_cast<int32_t>(windowSize.y), App::appName,
+                                           static_cast<int32_t>(windowSize.y), m_WindowName.c_str(),
                                             glfwGetPrimaryMonitor(), nullptr);
     }
     else
     {
         window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
-                                           static_cast<int32_t>(windowSize.y), "Vulkan window", nullptr, nullptr);
+                                           static_cast<int32_t>(windowSize.y), m_WindowName.c_str(), nullptr, nullptr);
     }
+
+    glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+    glfwSetWindowUserPointer(window, this);
+}
+
+Window::~Window()
+{
+    glfwDestroyWindow(window);
 }

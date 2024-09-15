@@ -3,7 +3,6 @@
 #include <string>
 
 #include "editor_header.hpp"
-#include "Imgui/imgui.h"
 #include <math/toolbox_typedef.hpp>
 
 namespace PC_EDITOR_CORE
@@ -16,7 +15,7 @@ class EditorWindow
 {
 public:
 
-    ImGuiWindowFlags windowFlags;
+    //ImGuiWindowFlags windowFlags;
     
     std::string name = "EditorWindow";
 

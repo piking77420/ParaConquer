@@ -3,14 +3,13 @@
 #include "app.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
-#include "Imgui/imgui.h"
 #include "world/transform.hpp"
 #include "reflection/reflector.hpp"
 
 BEGIN_EDITOR_PCCORE
 
 
-class Editor : public PC_CORE::App
+class Editor :  public PC_CORE::App
 {
 public:
     void Init() override;

@@ -2,12 +2,12 @@
 
 #include "core_header.hpp"
 #include "rendering/renderer.hpp"
-#include "window.hpp"
 #include "rendering/camera.hpp"
 #include "world/world.hpp"
 #include "scripting/scripting_lua.hpp"
 #include <core/physics_engine.h>
 
+#include "io/window.hpp"
 #include "ecs/ecs_context.h"
 
 
@@ -16,9 +16,9 @@ BEGIN_PCCORE
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
-	
-	Window windowHandle;
 
+	Window* window = nullptr;
+	
 	Renderer renderer;
 
 	ScriptingLua scriptingLua;
@@ -38,8 +38,6 @@ public:
 	PC_CORE_API virtual void Run();
 	
 	PC_CORE_API void WorldLoop();
-
-	PC_CORE_API void HandleResize();
 	
 	PC_CORE_API static inline App* instance = nullptr;
 

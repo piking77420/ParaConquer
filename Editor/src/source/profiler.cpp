@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "editor.hpp"
-#include "Imgui/imgui.h"
 #include "time/timer.hpp"
 
 PC_EDITOR_CORE::Profiler::Profiler(Editor& _editor, const std::string& _name) : EditorWindow(_editor,_name)
@@ -24,7 +23,7 @@ void PC_EDITOR_CORE::Profiler::Update()
     for (size_t i = 0; i < timers.size(); ++i)
     {
         std::string name = timers.at(i).timePassname;
-        ImGui::Text("Pass %s = %.2lf ms", name.c_str(), static_cast<double>(timers.at(i).elapsed_ms));
+       // ImGui::Text("Pass %s = %.2lf ms", name.c_str(), static_cast<double>(timers.at(i).elapsed_ms));
         
     }
     
