@@ -207,6 +207,9 @@
     <ClInclude Include="src\include\io\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\rendering\RHI.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\physics\sphere_collider.cpp">
@@ -327,6 +330,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\io\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\RHI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

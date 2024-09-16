@@ -33,6 +33,12 @@
     <ClInclude Include="src\externals\include\spirv_reflect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\back_end\vulkan_physical_devices.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\back_end\vulkan_present_chain.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\back_end\vulkan_main.cpp">
@@ -45,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\back_end\vulkan_harware_wrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\back_end\vulkan_physical_devices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\back_end\vulkan_present_chain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -15,7 +15,7 @@ Mesh::~Mesh()
     //vulkanIndexBuffer.Destroy();
 }
 
-void Mesh::Load(const fs::path& path)
+void Mesh::SetPath(const fs::path& path)
 {
     std::string format = std::filesystem::path(path).extension().generic_string();
     uint32_t formatIndex = -1;

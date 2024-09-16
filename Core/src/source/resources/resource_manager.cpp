@@ -11,6 +11,7 @@ void ResourceManager::Init()
 {
     //VulkanShaderCompiler::GetEnvironementVariable();
 
+    /*
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
 
@@ -24,7 +25,10 @@ void ResourceManager::Init()
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/draw_texture.vert");
 
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.frag");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.vert");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.vert");*/
+    
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
+    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
 
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube.obj");
     ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/quad.obj");

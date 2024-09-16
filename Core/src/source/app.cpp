@@ -19,11 +19,13 @@ void App::Init()
 {
     PC_LOG("App Init")
     instance = this;
-    Time::Init();
-    World::world = &world;
+
     CoreIo::Init();
     window = new Window("Para Conquer Editor");
-    
+    renderer.Init(GraphicAPI::VULKAN, window);
+
+    World::world = &world;
+    Time::Init();
     ResourceManager::Init();
     world.LoadSkyBox();
 }
@@ -31,9 +33,13 @@ void App::Init()
 void App::Destroy()
 {
     PC_LOG("App Destroy")
-    // TODO only use Destructor
+
     world.skybox.Destroy();
     ResourceManager::Destroy();
+
+
+    renderer.Destroy();
+    delete window;
     CoreIo::Destroy();
 }
 

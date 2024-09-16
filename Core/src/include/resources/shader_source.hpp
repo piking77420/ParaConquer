@@ -29,11 +29,18 @@ public:
     
     ShaderType shaderType;
     
-    std::vector<char> data;
-    
-    PC_CORE_API void Load(const fs::path& _path) override;
-private:
+    PC_CORE_API void SetPath(const fs::path& _path) override;
 
-};
+    std::vector<uint8_t> GetData() override;
+    
+    void WriteFile(const fs::path& path) override;
+
+    PC_CORE_API ~ShaderSource() override;
+    
+private:
+    std::vector<char> m_DataChar;
+
+    static std::vector<char> ReadFile(const std::string& _filename);
+   
 
 END_PCCORE

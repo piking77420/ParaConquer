@@ -13,13 +13,13 @@ void Window::FramebufferResizeCallback(GLFWwindow* _window, int width, int heigh
 
 bool Window::ShouldClose()
 {
-    return glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(m_Window);
 }
 
 void Window::Update()
 {
     
-    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
+    if (glfwGetKey(m_Window, GLFW_KEY_F11) == GLFW_PRESS)
     {
         FullScreen = !FullScreen;
 
@@ -28,16 +28,16 @@ void Window::Update()
             oldSize = windowSize;
             windowSize = monitorSize;
             int x,y;
-            glfwGetWindowPos(window,&x,&y);
+            glfwGetWindowPos(m_Window,&x,&y);
             oldPos = {static_cast<uint32_t>(x),static_cast<uint32_t>(y)};
             
-            glfwSetWindowMonitor(window, monitor, 0, 0,
+            glfwSetWindowMonitor(m_Window, monitor, 0, 0,
                 static_cast<int32_t>(windowSize.x), static_cast<int32_t>(windowSize.y), mode->refreshRate);
         }
         else
         {
             windowSize = oldSize;
-            glfwSetWindowMonitor(window, NULL, static_cast<int32_t>(oldPos.x), static_cast<int32_t>(oldPos.y),
+            glfwSetWindowMonitor(m_Window, NULL, static_cast<int32_t>(oldPos.x), static_cast<int32_t>(oldPos.y),
             static_cast<int32_t>(windowSize.y),static_cast<int32_t>(windowSize.y), mode->refreshRate);
         }
     }
@@ -50,9 +50,9 @@ void Window::HandleResize()
     if (onResize)
     {
         int NewWidth = 0, NewHeight = 0;
-        glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
+        glfwGetFramebufferSize(m_Window, &NewWidth, &NewHeight);
         while (NewWidth == 0 || NewHeight == 0) {
-            glfwGetFramebufferSize(window, &NewWidth, &NewHeight);
+            glfwGetFramebufferSize(m_Window, &NewWidth, &NewHeight);
             glfwWaitEvents();
         }
         windowSize.x = static_cast<uint32_t>(NewWidth);
@@ -66,6 +66,11 @@ float Window::GetAspect() const
     return static_cast<float>(windowSize.x) / static_cast<float>(windowSize.y);
 }
 
+GLFWwindow* Window::GetHandle()
+{
+    return m_Window;
+}
+
 Window::Window(const char* _windowName) : m_WindowName(_windowName)
 {
     monitor = glfwGetPrimaryMonitor();
@@ -76,21 +81,21 @@ Window::Window(const char* _windowName) : m_WindowName(_windowName)
     {
         windowSize.x = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->width);
         windowSize.y = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->height);
-        window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
+        m_Window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
                                            static_cast<int32_t>(windowSize.y), m_WindowName.c_str(),
                                             glfwGetPrimaryMonitor(), nullptr);
     }
     else
     {
-        window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
+        m_Window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
                                            static_cast<int32_t>(windowSize.y), m_WindowName.c_str(), nullptr, nullptr);
     }
 
-    glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
-    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(m_Window, FramebufferResizeCallback);
+    glfwSetWindowUserPointer(m_Window, this);
 }
 
 Window::~Window()
 {
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(m_Window);
 }

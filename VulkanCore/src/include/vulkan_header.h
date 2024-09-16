@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <cassert>
 
+#define VK_USE_PLATFORM_WIN32_KHR 
+#define NOMINMAX
 #include <vulkan/vulkan.hpp>
 
 #include <unordered_map>
@@ -30,6 +32,23 @@ constexpr bool ENABLE_VALIDATION_LAYERS = true;
 #else
 constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
+
+constexpr uint32_t INVALID_QUEU = std::numeric_limits<uint32_t>::max();
+
+struct VulkanAppCreateInfo
+{
+    const char* appName;
+    const char* engineName;
+    void* windowPtr;
+};
+
+struct SwapChainSupportDetails
+{
+    vk::SurfaceCapabilitiesKHR capabilities;
+    std::vector<vk::SurfaceFormatKHR> formats;
+    std::vector<vk::PresentModeKHR> presentModes;
+};
+
 
 
 namespace VK_NP
@@ -80,7 +99,7 @@ static std::unordered_map<VkResult, std::string> ErrorDescriptions = {
 
 static bool VulkanCheckErrorStatus(vk::Result x, const char* file, int line)
 {
-    if(x != vk::Result::eSuccess)
+    if (x != vk::Result::eSuccess)
     {
         std::cout << "\033[1;31;49m **Vulkan Function Call Error** Description : \033[0m" << ErrorDescriptions[static_cast<VkResult>(x)] << " \033[2;90;49m [at Line : " << line << " in File : " << file << "\033[0m]" << std::endl;
         return true;

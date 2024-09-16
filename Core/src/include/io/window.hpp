@@ -23,6 +23,8 @@ BEGIN_PCCORE
 
         PC_CORE_API float GetAspect() const;
 
+        PC_CORE_API GLFWwindow* GetHandle();
+
         PC_CORE_API Window(const char* _windowName);
 
         PC_CORE_API ~Window();
@@ -32,7 +34,7 @@ BEGIN_PCCORE
 
         GLFWmonitor* monitor = nullptr;
 
-        GLFWwindow* window = nullptr;
+        GLFWwindow* m_Window = nullptr;
 
         const GLFWvidmode* mode = nullptr;
 

@@ -13,7 +13,7 @@ Material::~Material()
    
 }
 
-void Material::Load(const fs::path& path)
+void Material::SetPath(const fs::path& path)
 {
     throw std::runtime_error("error");
 }

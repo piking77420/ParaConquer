@@ -25,8 +25,10 @@ public:
     
     PC_CORE_API virtual ~IResource() = default;
 
-    PC_CORE_API virtual void Load(const fs::path& path) = 0;
+    PC_CORE_API virtual void SetPath(const fs::path& path) = 0;
 
+    PC_CORE_API virtual std::vector<uint8_t> GetData() = 0;
+    
     PC_CORE_API virtual void WriteFile(const fs::path& path) {};
 
     template <size_t _Size>

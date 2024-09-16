@@ -23,6 +23,7 @@
     <Content Include="src\externals\lib\Debug\glfw3.pdb" />
     <Content Include="src\externals\lib\Release\glfw3.lib" />
     <Content Include="src\include\ecs\ecs_front.h" />
+    <Content Include="src\include\rendering\rhi_typedef.h" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\include\data_structures\" />
@@ -31,6 +32,7 @@
     <Folder Include="src\source\world\system\" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\rendering\RHI.hpp" />
     <ClInclude Include="src\externals\include\RapidXML\rapidxml.hpp" />
     <ClInclude Include="src\externals\include\RapidXML\RapidXMLSTD.hpp" />
     <ClInclude Include="src\externals\include\RapidXML\rapidxml_print.hpp" />
@@ -97,6 +99,7 @@
     <ClInclude Include="src\include\world\world.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\source\rendering\RHI.cpp" />
     <ClCompile Include="src\source\ecs\component.cpp" />
     <ClCompile Include="src\source\ecs\ecs_context.cpp" />
     <ClCompile Include="src\source\ecs\entity_register.cpp" />
