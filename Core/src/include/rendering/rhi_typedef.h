@@ -1,10 +1,15 @@
 ﻿#pragma once
 
+#include <string>
+
 #include "core_header.hpp"
+#include <vector>
+#include <array>
+
 
 BEGIN_PCCORE
 
-enum class LowLevelShaderType 
+enum class LowLevelShaderStageType 
         {
             VERTEX,
             FRAGMENT,
@@ -12,10 +17,10 @@ enum class LowLevelShaderType
             TESSELATION,
             COMPUTE,
 
-            SHADERTYPEMAX
+            COUNT
         };
 
-        constexpr const char* ShaderSourceFormat[5]
+        const std::array<std::string, 5> ShaderSourceFormat
         {
             ".vert",
             ".frag",
@@ -24,17 +29,40 @@ enum class LowLevelShaderType
             ".comp"
           };
 
-struct ShaderSourceCode
-{
-    uint8_t* Data;
-    uint32_t Size;
-};
+
 
 struct ShaderSourceAndPath
 {
-    ShaderSourceCode shaderSourceCode;
+    std::vector<uint8_t> shaderSourceCode;
     const char* shaderSourceCodePath;
 };
-        
+
+enum ShaderProgrammInfoFlag
+{
+  // TO DO   
+};
+
+struct ProgramShaderCreateInfo
+{
+    std::string prograShaderName;
+    std::int64_t programShaderFlag;
+};
+
+
+    static inline LowLevelShaderStageType ShaderFormatToShaderType(const char* _formatWithPoint)
+    {
+        for (int i = 0; i < static_cast<int>(LowLevelShaderStageType::COUNT); i++)
+        {
+            if (_stricmp(_formatWithPoint, ShaderSourceFormat[i].c_str()) == 0)
+            {
+                return static_cast<LowLevelShaderStageType>(i);
+            }
+        }
+    
+        // Return a default value or handle the error when no match is found
+       return LowLevelShaderStageType::COUNT;
+    }
+    
+
 
 END_PCCORE

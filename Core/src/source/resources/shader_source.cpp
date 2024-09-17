@@ -2,13 +2,13 @@
 
 #include <fstream>
 
-#include "log.hpp"
-#include "rendering/RHI.hpp"
 
 using namespace PC_CORE;
 
-void ShaderSource::SetPath(const fs::path& path)
+void ShaderSource::SetPath(const fs::path& _path)
 {
+    path = _path;
+    
     uint32_t formatIndex = -1;
     const std::string currentFormat = path.filename().extension().generic_string();
     
@@ -18,20 +18,19 @@ void ShaderSource::SetPath(const fs::path& path)
     }
 
     name = path.filename().generic_string();
-    format = ShaderSourceFormat.at(formatIndex);
-    resourcePath = path;
-    shaderType = static_cast<ShaderType>(formatIndex);
+    format = ShaderSourceFormat[formatIndex];
+    shaderType = static_cast<LowLevelShaderStageType>(formatIndex);
 }
 
 std::vector<uint8_t> ShaderSource::GetData()
 {
-    if (resourcePath.empty())
+    if (path.empty())
     {
         PC_LOGERROR("Resource path is empty while trying to get data from it")
         return {};
     }
     
-    ReadFile(resourcePath.generic_string());
+    ReadFile(path.generic_string());
 }
 
 void ShaderSource::WriteFile(const fs::path& path)
@@ -44,21 +43,34 @@ ShaderSource::~ShaderSource()
     
 }
 
-std::vector<char> ShaderSource::ReadFile(const std::string& _filename)
+std::vector<uint8_t> ShaderSource::ReadFile(const std::string& _filename)
 {
-    std::ifstream file(_filename, std::ios::ate | std::ios::binary);
     
-    if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
+    // Open file in binary mode at the end of the file to get the file size easily
+    std::ifstream file(_filename, std::ios::ate | std::ios::binary);
+
+    // Check if the file was opened successfully
+    if (!file.is_open()) 
+    {
+        throw std::runtime_error("Failed to open file: " + _filename);
     }
 
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
+    // Get the size of the file
+    size_t fileSize = static_cast<size_t>(file.tellg());
+    
+    // Create a buffer of the appropriate size
+    std::vector<uint8_t> buffer(fileSize);
 
+    // Move to the beginning of the file
     file.seekg(0);
-    file.read(buffer.data(), fileSize);
 
+    // Read the file data into the buffer
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), fileSize))
+    {
+        throw std::runtime_error("Failed to read file: " + _filename);
+    }
+
+    // Close the file
     file.close();
-
     return buffer;
 }

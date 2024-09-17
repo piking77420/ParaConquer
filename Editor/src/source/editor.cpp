@@ -36,7 +36,7 @@ void Editor::Destroy()
 
 void Editor::InitMaterial()
 {
-    
+    /*
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
     Material* material = new Material;
@@ -45,12 +45,13 @@ void Editor::InitMaterial()
 
     Material* material2 = new Material;
     material2->Load({diamondtexture});
-    ResourceManager::Add<Material>("baseMaterial2", material2);
+    ResourceManager::Add<Material>("baseMaterial2", material2);*/
     
 }
 
 void Editor::InitTestScene()
 {
+    /*
     Scene& scene = world.scene;
 
     EntityId dirLigthId = scene.CreateEntity("dirLigth");
@@ -66,7 +67,7 @@ void Editor::InitTestScene()
         //static_mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
     }
     
-    
+    */
 }
 
 void Editor::DestroyTestScene()
@@ -74,8 +75,8 @@ void Editor::DestroyTestScene()
     physicsWrapper.DestroyBodies(&world.scene);
     world.scene.~Scene();
     world.scene = Scene();
-    ResourceManager::Delete<Material>("baseMaterial");
-    ResourceManager::Delete<Material>("baseMaterial2");
+    //ResourceManager::Delete<Material>("baseMaterial");
+    //ResourceManager::Delete<Material>("baseMaterial2");
 }
 
 void Editor::Run()

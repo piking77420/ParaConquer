@@ -14,7 +14,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionCore", "MotionCore\MotionCore\MotionCore.vcxproj", "{72EF56BB-45D6-4CFB-8F3E-FBE16B9B1889}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanAPI", "VulkanCore\VulkanCore.vcxproj", "{476D325F-61AB-44DE-9EEF-557E49552F88}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VulkanAPI", "VulkanAPI\VulkanVulkanAPI.vcxproj", "{476D325F-61AB-44DE-9EEF-557E49552F88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "rhi_typedef.h"
@@ -17,22 +18,23 @@ public:
 	
 	PC_CORE_API virtual void SwapBuffers() {};
 
-	static PC_CORE_API bool CompileShaderSource(const std::vector<ShaderSourceAndPath>& _shaderSource)
+	static PC_CORE_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo, const std::vector<ShaderSourceAndPath>& _shaderSource)
 	{
-		return m_Instance->InstanceCompileShadersSource(_shaderSource);
+		m_Instance->InstanceCreateShader(_programShaderCreateInfo, _shaderSource);
 	}
 
-	static PC_CORE_API bool DestroyShader(uint32_t _shaderHandle)
+	static PC_CORE_API bool DestroyShader(const std::string& _shaderProgramName)
 	{
-		return m_Instance->InstanceDestroyShader(_shaderHandle);
+		return m_Instance->InstanceDestroyShader(_shaderProgramName);
 	}
 
-private:
+protected:
 	static RHI* m_Instance;
 
-	PC_CORE_API virtual bool InstanceCompileShadersSource(const std::vector<ShaderSourceAndPath>& _shaderSource) = 0;
+	PC_CORE_API virtual void InstanceCreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>&
+	                                                      _shaderSource) = 0;
 
-	PC_CORE_API virtual bool InstanceDestroyShader(uint32_t _shaderHandle) = 0;
+	PC_CORE_API virtual bool InstanceDestroyShader(const std::string& _shaderProgramName) = 0;
 };
 
 END_PCCORE

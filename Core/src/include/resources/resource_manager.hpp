@@ -20,7 +20,7 @@ public:
     PC_CORE_API static void Destroy();
 
     template<class T>
-    static T* CreateAndLoad(const fs::path& path);
+    static T* Create(const fs::path& path);
 
     template<class T>
     static void Add(const std::string& _name,T* _resource);
@@ -42,14 +42,12 @@ private:
 };
 
 template <class T>
-T* ResourceManager::CreateAndLoad(const fs::path& path)
+T* ResourceManager::Create(const fs::path& path)
 {
     static_assert(std::is_base_of_v<IResource,T>,"T is not a resource");
     
     T* newR = new T;
-    newR->Load(path);
-    
-    
+   
     m_ResourcesMap.emplace(path,newR);
 
     return newR;

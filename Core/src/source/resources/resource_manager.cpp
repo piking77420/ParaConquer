@@ -27,18 +27,19 @@ void ResourceManager::Init()
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.frag");
     ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.vert");*/
     
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
+    ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+    ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
-    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube.obj");
-    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/quad.obj");
-    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/sphere.obj");
-    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/viking_room.obj");
-    ResourceManager::CreateAndLoad<Mesh>("assets/meshs/obj/cube_map.obj");
+    /*
+    ResourceManager::Create<Mesh>("assets/meshs/obj/cube.obj");
+    ResourceManager::Create<Mesh>("assets/meshs/obj/quad.obj");
+    ResourceManager::Create<Mesh>("assets/meshs/obj/sphere.obj");
+    ResourceManager::Create<Mesh>("assets/meshs/obj/viking_room.obj");
+    ResourceManager::Create<Mesh>("assets/meshs/obj/cube_map.obj");
 
-    ResourceManager::CreateAndLoad<Texture>("assets/textures/diamond_block.jpg");
-    ResourceManager::CreateAndLoad<Texture>("assets/textures/viking_room.png");
-    ResourceManager::CreateAndLoad<Texture>("assets/textures/skydom.png");
+    ResourceManager::Create<Texture>("assets/textures/diamond_block.jpg");
+    ResourceManager::Create<Texture>("assets/textures/viking_room.png");
+    ResourceManager::Create<Texture>("assets/textures/skydom.png");*/
 
 }
 

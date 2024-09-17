@@ -3,6 +3,7 @@
 #include "core_header.hpp"
 #include <filesystem>
 #include <array>
+#include "log.hpp"
 
 #include "guid.hpp"
 
@@ -17,7 +18,7 @@ public:
     
     std::string format;
 
-    fs::path resourcePath;
+    fs::path path;
 
     Guid guid;
     
@@ -25,19 +26,19 @@ public:
     
     PC_CORE_API virtual ~IResource() = default;
 
-    PC_CORE_API virtual void SetPath(const fs::path& path) = 0;
+    PC_CORE_API virtual void SetPath(const fs::path& path) {};
 
-    PC_CORE_API virtual std::vector<uint8_t> GetData() = 0;
+    PC_CORE_API virtual std::vector<uint8_t> GetData() { return {}; };
     
     PC_CORE_API virtual void WriteFile(const fs::path& path) {};
 
     template <size_t _Size>
-    static bool IsFormatValid(std::array<std::string,_Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex);
+    static bool IsFormatValid(const std::array<std::string,_Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
 
 };
 
 template <size_t _Size>
-bool IResource::IsFormatValid(std::array<std::string, _Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex)
+bool IResource::IsFormatValid(const std::array<std::string, _Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
     for (size_t i = 0; i < _format.size(); i++)
     {

@@ -21,8 +21,11 @@ public:
     void Destroy();
    
 private:
-    
     void InitRhi(GraphicAPI _graphicAPI, Window* _window);
+
+    void InitShader();
+
+    std::string mainShader = "mainShader";
 };
 
 END_PCCORE

@@ -365,26 +365,26 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\externals\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include;$(SolutionDir)VulkanAPI\src\include</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\externals\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include;$(SolutionDir)VulkanAPI\src\include</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\externals\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include;$(SolutionDir)VulkanAPI\src\include</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)VulkanCore\src\include\;$(VULKAN_SDK)\Include;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\externals\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include;$(SolutionDir)VulkanAPI\src\include</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL = 2;LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;;_ITERATOR_DEBUG_LEVEL = 0</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;%(AdditionalIncludeDirectories);src\externals\include\Imgui;;PC_CORE_EXPORT;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -411,7 +411,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;_ITERATOR_DEBUG_LEVEL = 0;LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;;src\externals\include\Imgui;;PC_CORE_EXPORT;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
