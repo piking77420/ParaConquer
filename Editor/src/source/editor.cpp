@@ -119,7 +119,8 @@ void Editor::Run()
         /*vulkanImgui.EndFrame();
         renderer.SwapBuffers();*/
     }
-  // renderer.WaitGPU();
+
+    renderer.WaitDevice();
 }
 
 void Editor::InitEditorWindows()

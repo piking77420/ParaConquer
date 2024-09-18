@@ -37,5 +37,9 @@ namespace VK_NP
 
         static SwapChainSupportDetails QuerySwapChainSupport(vk::PhysicalDevice  _physicalDevice, vk::SurfaceKHR _surface);
 
+#ifdef _DEBUG
+        void PrintPhysicalDeviceProperties(vk::PhysicalDevice _physicalDevice);
+#endif
+
     };
 }

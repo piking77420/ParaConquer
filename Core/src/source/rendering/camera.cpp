@@ -64,7 +64,7 @@ Tbx::Matrix4x4f Camera::GetViewMatrix() const
 Tbx::Matrix4x4f Camera::GetProjectionMatrix() const
 {
     Tbx::Matrix4x4f projectionMatrix;
-    m_ProjectionType == ProjectionType::PERSPECTIVE ? Tbx::PerspectiveMatrix(m_Fov, m_Aspect ,m_Near, m_Far, &projectionMatrix) : Tbx::OrthoGraphicMatrix<float>(m_LeftRightScreen.x,m_LeftRightScreen.y , m_BottomTopScreen.x,  m_BottomTopScreen.y, m_Near, m_Far, &projectionMatrix);
+    m_ProjectionType == ProjectionType::PERSPECTIVE ? Tbx::PerspectiveMatrix(m_Fov, m_Aspect ,m_Near, m_Far, &projectionMatrix) : Tbx::OrthoGraphicMatrix(m_LeftRightScreen.x,m_LeftRightScreen.y , m_BottomTopScreen.x,  m_BottomTopScreen.y, m_Near, m_Far, &projectionMatrix);
     return projectionMatrix;
 }
 

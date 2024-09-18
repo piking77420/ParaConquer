@@ -9,27 +9,31 @@ VK_NP::VulkanPresentChain::VulkanPresentChain(const VulkanAppCreateInfo& _vulkan
     if (m_VulkanPresentChainIntance == nullptr)
         m_VulkanPresentChainIntance = this;
 
-    m_DeviceConstPtr = &VulkanHarwareWrapper::GetDevice();
+    m_DeviceConstPtr = VulkanHarwareWrapper::GetDevice();
     
-   
     CreateSwapchain(_vulkanMainCreateInfo.windowPtr);
     CreateSyncObject();
 }
 
 VK_NP::VulkanPresentChain::~VulkanPresentChain()
 {
-    m_DeviceConstPtr->destroySemaphore(m_SwapChainSyncObject.imageAvailableSemaphore);
-    m_DeviceConstPtr->destroySemaphore(m_SwapChainSyncObject.renderFinishedSemaphore);
-    m_DeviceConstPtr->destroyFence(m_SwapChainSyncObject.inFlightFence);
+    DestroySwapchain();
+
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        m_DeviceConstPtr.destroySemaphore(m_SwapChainSyncObject[i].imageAvailableSemaphore);
+        m_DeviceConstPtr.destroySemaphore(m_SwapChainSyncObject[i].renderFinishedSemaphore);
+        m_DeviceConstPtr.destroyFence(m_SwapChainSyncObject[i].inFlightFence);
+    }
     
-    m_DeviceConstPtr->destroyRenderPass(m_RenderPass);
+    m_DeviceConstPtr.destroyRenderPass(m_RenderPass);
 }
 
 void VK_NP::VulkanPresentChain::RecreateSwapChain(void* _glfwWindowPtr)
 {
     HandleMinimize(_glfwWindowPtr);
     
-    m_DeviceConstPtr->waitIdle();
+    m_DeviceConstPtr.waitIdle();
     
     DestroySwapchain();
     CreateSwapchain(_glfwWindowPtr);
@@ -85,7 +89,7 @@ void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr)
     CreateRenderPass();
     // Create SwapChain Image
     m_SwapchainImages = device.getSwapchainImagesKHR(m_SwapchainKhr);
-    CreateSwapchainImages(m_DeviceConstPtr->;
+    CreateSwapchainImages(m_DeviceConstPtr);
     CreateFramebuffers();
     
 }
@@ -95,49 +99,50 @@ void VK_NP::VulkanPresentChain::DestroySwapchain()
 
     for (auto& framebuffer : m_SwapChainFramebuffers)
     {
-        m_DeviceConstPtr->destroyFramebuffer(framebuffer, nullptr);
+        m_DeviceConstPtr.destroyFramebuffer(framebuffer, nullptr);
     }
     
     for (auto& imageView : m_SwapChainImageViews)
     {
-        m_DeviceConstPtr->destroyImageView(imageView, nullptr);
+        m_DeviceConstPtr.destroyImageView(imageView, nullptr);
     }
     
-    m_DeviceConstPtr->destroySwapchainKHR(m_SwapchainKhr);
+    m_DeviceConstPtr.destroySwapchainKHR(m_SwapchainKhr);
 }
 
 
-void VK_NP::VulkanPresentChain::WaitForAvailableImage()
+void VK_NP::VulkanPresentChain::WaitForAvailableImage(uint32_t _currentFrame)
 {
-    VK_CALL(m_DeviceConstPtr->waitForFences(1, &m_SwapChainSyncObject.inFlightFence, VK_TRUE, UINT64_MAX));
+    VK_CALL(m_DeviceConstPtr.waitForFences(1, &m_SwapChainSyncObject[_currentFrame].inFlightFence, VK_TRUE, UINT64_MAX));
 
-    VK_CALL(m_DeviceConstPtr->resetFences(1, &m_SwapChainSyncObject.inFlightFence));
+    VK_CALL(m_DeviceConstPtr.resetFences(1, &m_SwapChainSyncObject[_currentFrame].inFlightFence));
 }
 
-void VK_NP::VulkanPresentChain::AquireNetImageKHR()
+void VK_NP::VulkanPresentChain::AquireNetImageKHR(uint32_t _currentFrame)
 {
-    VK_CALL(m_DeviceConstPtr->acquireNextImageKHR(m_SwapchainKhr, UINT64_MAX, m_SwapChainSyncObject.imageAvailableSemaphore, m_SwapChainSyncObject.inFlightFence, &m_ImageIndex));
+    
+    VK_CALL(m_DeviceConstPtr.acquireNextImageKHR(m_SwapchainKhr, UINT64_MAX, m_SwapChainSyncObject[_currentFrame].imageAvailableSemaphore, VK_NULL_HANDLE,  &m_ImageIndex));
 }
 
 
-void VK_NP::VulkanPresentChain::SwapBuffer()
+void VK_NP::VulkanPresentChain::SwapBuffer(uint32_t _currentFrame)
 {
-    PresentNewImage();
+    PresentNewImage(_currentFrame);
 }
 
-vk::Semaphore* VK_NP::VulkanPresentChain::GetImageAvailableSemaphore()
+vk::Semaphore* VK_NP::VulkanPresentChain::GetImageAvailableSemaphore(uint32_t _currentFrame)
 {
-    return &m_SwapChainSyncObject.imageAvailableSemaphore;
+    return &m_SwapChainSyncObject[static_cast<size_t>(_currentFrame)].imageAvailableSemaphore;
 }
 
-vk::Semaphore* VK_NP::VulkanPresentChain::GetRenderFinishedSemaphore()
+vk::Semaphore* VK_NP::VulkanPresentChain::GetRenderFinishedSemaphore(uint32_t _currentFrame)
 {
-    return &m_SwapChainSyncObject.renderFinishedSemaphore;
+    return &m_SwapChainSyncObject[static_cast<size_t>(_currentFrame)].renderFinishedSemaphore;
 }
 
-vk::Fence* VK_NP::VulkanPresentChain::GetInFlightFence()
+vk::Fence* VK_NP::VulkanPresentChain::GetInFlightFence(uint32_t _currentFrame)
 {
-    return &m_SwapChainSyncObject.inFlightFence;
+    return &m_SwapChainSyncObject[static_cast<size_t>(_currentFrame)].inFlightFence;
 }
 
 uint32_t VK_NP::VulkanPresentChain::GetImageIndex()
@@ -334,23 +339,26 @@ void VK_NP::VulkanPresentChain::CreateSyncObject()
     vk::FenceCreateInfo fenceCreateInfo;
     fenceCreateInfo.sType = vk::StructureType::eFenceCreateInfo;
     fenceCreateInfo.flags = vk::FenceCreateFlagBits::eSignaled;
-    
-    VK_CALL(m_DeviceConstPtr->createSemaphore(&semaphoreCreateInfo,nullptr , &m_SwapChainSyncObject.imageAvailableSemaphore));
-    VK_CALL(m_DeviceConstPtr->createSemaphore(&semaphoreCreateInfo, nullptr, &m_SwapChainSyncObject.renderFinishedSemaphore));
-    VK_CALL(m_DeviceConstPtr->createFence(&fenceCreateInfo, nullptr, &m_SwapChainSyncObject.inFlightFence));
+
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VK_CALL(m_DeviceConstPtr.createSemaphore(&semaphoreCreateInfo,nullptr , &m_SwapChainSyncObject[i].imageAvailableSemaphore));
+        VK_CALL(m_DeviceConstPtr.createSemaphore(&semaphoreCreateInfo, nullptr, &m_SwapChainSyncObject[i].renderFinishedSemaphore));
+        VK_CALL(m_DeviceConstPtr.createFence(&fenceCreateInfo, nullptr, &m_SwapChainSyncObject[i].inFlightFence));
+    }
 }
 
-void VK_NP::VulkanPresentChain::PresentNewImage()
+void VK_NP::VulkanPresentChain::PresentNewImage(uint32_t _currentFrame)
 {
     vk::PresentInfoKHR presentInfo{};
-    presentInfo.sType = vk::StructureType::eDisplayPresentInfoKHR;
+    presentInfo.sType = vk::StructureType::ePresentInfoKHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &m_SwapChainSyncObject.renderFinishedSemaphore;
+    presentInfo.pWaitSemaphores = &m_SwapChainSyncObject[_currentFrame].renderFinishedSemaphore;
 
     vk::SwapchainKHR swapChains[] = {m_SwapchainKhr};
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
+    presentInfo.pSwapchains = swapChains;   
 
     presentInfo.pImageIndices = &m_ImageIndex;
 

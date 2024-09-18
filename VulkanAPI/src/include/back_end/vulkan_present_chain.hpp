@@ -19,17 +19,17 @@ namespace VK_NP
 
         void DestroySwapchain();
 
-        void AquireNetImageKHR();
+        void AquireNetImageKHR(uint32_t _currentFrame);
 
-        void WaitForAvailableImage();
+        void WaitForAvailableImage(uint32_t _currentFrame);
 
-        void SwapBuffer();
+        void SwapBuffer(uint32_t _currentFrame);
 
-        vk::Semaphore* GetImageAvailableSemaphore();
+        vk::Semaphore* GetImageAvailableSemaphore(uint32_t _currentFrame);
 
-        vk::Semaphore* GetRenderFinishedSemaphore();
+        vk::Semaphore* GetRenderFinishedSemaphore(uint32_t _currentFrame);
 
-        vk::Fence* GetInFlightFence();
+        vk::Fence* GetInFlightFence(uint32_t _currentFrame);
 
         static uint32_t GetImageIndex();
 
@@ -62,9 +62,9 @@ namespace VK_NP
 
         vk::SwapchainKHR m_SwapchainKhr;
 
-        SwapChainSyncObject m_SwapChainSyncObject;
+        std::array<SwapChainSyncObject, MAX_FRAMES_IN_FLIGHT> m_SwapChainSyncObject;
 
-        vk::Device* m_DeviceConstPtr = nullptr;
+        vk::Device m_DeviceConstPtr = nullptr;
 
         std::vector<vk::Image> m_SwapchainImages;
 
@@ -90,7 +90,7 @@ namespace VK_NP
 
         void CreateSyncObject();
 
-        void PresentNewImage();
+        void PresentNewImage(uint32_t _currentFrame);
 
         static VulkanPresentChain* m_VulkanPresentChainIntance;
     };

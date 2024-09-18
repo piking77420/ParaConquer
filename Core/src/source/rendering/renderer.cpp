@@ -42,6 +42,11 @@ void Renderer::SwapBuffers()
     RHI::SwapBuffers();
 }
 
+PC_CORE_API void Renderer::WaitDevice()
+{
+    RHI::WaitDevice();
+}
+
 void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
 {
     switch (_graphicAPI)

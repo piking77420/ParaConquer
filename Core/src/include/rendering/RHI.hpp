@@ -52,6 +52,10 @@ public:
 		m_Instance->InstanceEndRender();
 	}
 
+	static PC_CORE_API void WaitDevice()
+	{
+		m_Instance->InstanceWaitDevice();
+	}
 
 
 protected:
@@ -71,6 +75,10 @@ protected:
 	PC_CORE_API virtual void InstanceSwapBuffers() {};
 
 	PC_CORE_API virtual void InstanceBindShaderProgram(const std::string& _shaderProgramName) {};
+
+
+	PC_CORE_API virtual void InstanceWaitDevice() {};
+
 	
 };
 

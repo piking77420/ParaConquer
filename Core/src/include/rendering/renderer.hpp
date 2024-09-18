@@ -4,9 +4,9 @@
 #include <front_end/vulkan_app.hpp>
 
 BEGIN_PCCORE
-    class Window;
+class Window;
 
-    enum class GraphicAPI
+enum class GraphicAPI
 {
     NONE,
     VULKAN,
@@ -23,11 +23,12 @@ public:
     PC_CORE_API void Render();
 
     PC_CORE_API void BeginFrame();
-
-
+    
     PC_CORE_API void EndFrame();
 
     PC_CORE_API void SwapBuffers();
+
+    PC_CORE_API void WaitDevice();
 private:
     PC_CORE_API void InitRhi(GraphicAPI _graphicAPI, Window* _window);
 

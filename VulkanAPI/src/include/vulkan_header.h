@@ -24,7 +24,7 @@
 #define VULKA_API __declspec(dllimport)
 #endif
 #else
-#define VULKA_API
+#define VULKAN_API
 #endif // VULKAN_DLL
 
 #ifdef _DEBUG
@@ -32,6 +32,8 @@ constexpr bool ENABLE_VALIDATION_LAYERS = true;
 #else
 constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
+
+constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 3;
 
 constexpr uint32_t INVALID_QUEU = std::numeric_limits<uint32_t>::max();
 
@@ -47,6 +49,12 @@ struct SwapChainSupportDetails
     vk::SurfaceCapabilitiesKHR capabilities;
     std::vector<vk::SurfaceFormatKHR> formats;
     std::vector<vk::PresentModeKHR> presentModes;
+};
+
+struct VulkanContext
+{
+    uint32_t imageIndex = 0;
+    uint32_t currentFrame = 0;
 };
 
 

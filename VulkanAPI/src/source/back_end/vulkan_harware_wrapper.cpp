@@ -46,13 +46,6 @@ VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vu
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(m_PhysicalDevices.GetSelectedPhysicalDevice(), &properties);
 
-    uint32_t apiVersion = properties.apiVersion;
-    std::cout << "Vulkan API Version: "
-        << VK_VERSION_MAJOR(apiVersion) << "."
-        << VK_VERSION_MINOR(apiVersion) << "."
-        << VK_VERSION_PATCH(apiVersion) << std::endl;
-
-
 }
 
 VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()

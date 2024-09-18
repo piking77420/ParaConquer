@@ -323,9 +323,6 @@
     <ClCompile Include="src\source\serialize\serializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\rendering\viewport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\io\core_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -333,6 +330,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\RHI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\viewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -11,28 +11,28 @@ namespace VK_NP
 	class VulkanMain
 	{
 	public:
-		VULKA_API VulkanMain(const VulkanAppCreateInfo& vulkanMainCreateInfo);
+		VULKAN_API VulkanMain(const VulkanAppCreateInfo& vulkanMainCreateInfo);
 
-		VULKA_API ~VulkanMain();
+		VULKAN_API ~VulkanMain();
 
-		VULKA_API void SwapBuffers();
+		VULKAN_API void SwapBuffers();
 
-		VULKA_API void BeginDraw();
+		VULKAN_API void BeginDraw();
 
-		VULKA_API void BindProgram(const std::string& _shaderName);
+		VULKAN_API void BindProgram(const std::string& _shaderName);
 		
-		VULKA_API void Draw();
+		VULKAN_API void Draw();
 
-		VULKA_API void EnDraw();
+		VULKAN_API void EnDraw();
 
-		VULKA_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
+		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
-		VULKA_API bool DestroyShader(const std::string&  _shaderName);
+		VULKAN_API bool DestroyShader(const std::string&  _shaderName);
+
+		VULKAN_API void WaitDevice();
 
 
 	private:
-	
-		
 		VulkanHarwareWrapper m_vulkanHardwareWrapper;
 
 		VulkanPresentChain m_vulkanPresentChain;
@@ -41,13 +41,17 @@ namespace VK_NP
 
 		vk::CommandPool m_CommandPool;
 
-		vk::CommandBuffer m_CommandBuffer;
-		
+		std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
+
+		// current image index in swapchain
 		uint32_t imageIndex = 0;
 
-		VULKA_API void CreateCommandPool();
+		// currennt frame inflight
+		uint32_t m_CurrentFrame = 0;
+		
+		VULKAN_API void CreateCommandPool();
 
-		VULKA_API void CreateCommandBuffer();
+		VULKAN_API void CreateCommandBuffer();
 
 	};
 }

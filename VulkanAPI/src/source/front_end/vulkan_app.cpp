@@ -30,7 +30,7 @@ void VK_NP::VulkanApp::InstanceRender()
     m_VulkanMain.Draw();
 }
 
-VULKA_API void VK_NP::VulkanApp::InstanceBindShaderProgram(const std::string& _shaderProgramName)
+VULKAN_API void VK_NP::VulkanApp::InstanceBindShaderProgram(const std::string& _shaderProgramName)
 {
     m_VulkanMain.BindProgram(_shaderProgramName);
 }
@@ -44,5 +44,10 @@ void VK_NP::VulkanApp::InstanceCreateShader(const PC_CORE::ProgramShaderCreateIn
 bool VK_NP::VulkanApp::InstanceDestroyShader(const std::string& _shaderProgramName)
 {
     return m_VulkanMain.DestroyShader(_shaderProgramName);
+}
+
+VULKAN_API void VK_NP::VulkanApp::InstanceWaitDevice()
+{
+    m_VulkanMain.WaitDevice();
 }
 
