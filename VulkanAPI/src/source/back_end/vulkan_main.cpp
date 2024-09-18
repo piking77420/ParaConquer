@@ -45,6 +45,9 @@ void VK_NP::VulkanMain::BindProgram(const std::string& _shaderName)
 void VK_NP::VulkanMain::SwapBuffers()
 {
     m_vulkanPresentChain.SwapBuffer(m_CurrentFrame);
+    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    // that fix issue on fifo present mode
+    WaitDevice();
 }
 
 void VK_NP::VulkanMain::BeginDraw()
@@ -129,7 +132,6 @@ void VK_NP::VulkanMain::EnDraw()
 
     VK_CALL(m_vulkanHardwareWrapper.GetGraphicQueue().submit(1, &submitInfo, *m_vulkanPresentChain.GetInFlightFence(m_CurrentFrame)));
 
-    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 

@@ -43,9 +43,6 @@ VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vu
     m_PhysicalDevices.ChoosePhysicalDevice(m_Instance, m_Surface, deviceExtensions);
     CreateDevice();
 
-    VkPhysicalDeviceProperties properties;
-    vkGetPhysicalDeviceProperties(m_PhysicalDevices.GetSelectedPhysicalDevice(), &properties);
-
 }
 
 VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()
@@ -166,9 +163,6 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice()
     vkDevicecreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     vkDevicecreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    vkDevicecreateInfo.pEnabledFeatures = &deviceFeatures;
-    vkDevicecreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    vkDevicecreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 #pragma region DeviceLayer
 #ifdef _DEBUG

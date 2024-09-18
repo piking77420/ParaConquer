@@ -61,7 +61,7 @@ bool VK_NP::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::Physica
 VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
     const vk::PhysicalDevice _physicalDevice, const vk::SurfaceKHR _surface)
 {
-    QueuFamiliesIndicies indices;
+    QueuFamiliesIndicies indices = { INVALID_QUEU, INVALID_QUEU }; // Initialize to invalid indices
 
     std::vector<vk::QueueFamilyProperties> queueFamilies = _physicalDevice.getQueueFamilyProperties();
 
@@ -74,16 +74,19 @@ VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
         }
 
         vk::Bool32 presentSupport = false;
-        VK_CALL(
-            static_cast<vk::Result>(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, i, _surface, &presentSupport)
-            ));
+        VK_CALL(static_cast<vk::Result>(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, i, _surface, &presentSupport)));
         if (presentSupport)
         {
             indices.presentFamily = i;
         }
+
+        /*
+        if (indices.graphicsFamily != INVALID_QUEU && indices.presentFamily != INVALID_QUEU) {
+            break;
+        }*/
+
         i++;
     }
-
 
     return indices;
 }
