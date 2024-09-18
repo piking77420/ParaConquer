@@ -1,0 +1,2 @@
+VulkanAPI/src/externals/debug/*.lib filter=lfs diff=lfs merge=lfs -text
+VulkanAPI/src/externals/release/*.lib filter=lfs diff=lfs merge=lfs -text
