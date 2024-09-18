@@ -16,7 +16,6 @@ public:
 
 	PC_CORE_API virtual ~RHI() {};
 	
-	PC_CORE_API virtual void SwapBuffers() {};
 
 	static PC_CORE_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo, const std::vector<ShaderSourceAndPath>& _shaderSource)
 	{
@@ -28,6 +27,33 @@ public:
 		return m_Instance->InstanceDestroyShader(_shaderProgramName);
 	}
 
+	static PC_CORE_API void BindShaderProgram(const std::string& _shaderProgramName)
+	{
+		m_Instance->InstanceBindShaderProgram(_shaderProgramName);
+	}
+
+	static PC_CORE_API void SwapBuffers()
+	{
+		m_Instance->InstanceSwapBuffers();
+	}
+
+	static PC_CORE_API void BeginDraw()
+	{
+		m_Instance->InstanceBeginRender();
+	}
+
+	static PC_CORE_API void Render()
+	{
+		m_Instance->InstanceRender();
+	}
+	
+	static PC_CORE_API void EndDraw()
+	{
+		m_Instance->InstanceEndRender();
+	}
+
+
+
 protected:
 	static RHI* m_Instance;
 
@@ -35,6 +61,17 @@ protected:
 	                                                      _shaderSource) = 0;
 
 	PC_CORE_API virtual bool InstanceDestroyShader(const std::string& _shaderProgramName) = 0;
+
+	PC_CORE_API virtual  void InstanceBeginRender() {};
+	
+	PC_CORE_API virtual  void InstanceRender() {};
+	
+	PC_CORE_API virtual  void InstanceEndRender() {};
+
+	PC_CORE_API virtual void InstanceSwapBuffers() {};
+
+	PC_CORE_API virtual void InstanceBindShaderProgram(const std::string& _shaderProgramName) {};
+	
 };
 
 END_PCCORE

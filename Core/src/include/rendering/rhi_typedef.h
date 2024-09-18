@@ -33,8 +33,8 @@ enum class LowLevelShaderStageType
 
 struct ShaderSourceAndPath
 {
-    std::vector<uint8_t> shaderSourceCode;
-    const char* shaderSourceCodePath;
+    std::vector<char> shaderSourceCode;
+    std::string shaderSourceCodePath;
 };
 
 enum ShaderProgrammInfoFlag

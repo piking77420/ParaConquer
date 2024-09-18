@@ -15,6 +15,11 @@ namespace VK_NP
     class VulkanHarwareWrapper
     {
     public:
+
+        static vk::Queue GetGraphicQueue();
+
+        static vk::Queue GetPresentQueu();
+        
         VulkanHarwareWrapper(const VulkanAppCreateInfo& vulkanMainCreateInfo);
 
         ~VulkanHarwareWrapper();
@@ -71,11 +76,11 @@ namespace VK_NP
 
         VmaAllocator vmaAllocator;
         
-        vk::Queue m_GraphicQueue;
-
-        vk::Queue m_PresentQueue;
-
         vk::SurfaceKHR m_Surface;
+
+        vk::Queue graphicQueue;
+
+        vk::Queue presentQueue;
 
         static VulkanHarwareWrapper* m_VulkanHarwareWrapperInstance;
     };

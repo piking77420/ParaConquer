@@ -15,7 +15,7 @@ public:
 
     ~ResourceManager() = delete;
 
-    PC_CORE_API static void Init();
+    PC_CORE_API static void InitPath();
 
     PC_CORE_API static void Destroy();
 
@@ -47,6 +47,7 @@ T* ResourceManager::Create(const fs::path& path)
     static_assert(std::is_base_of_v<IResource,T>,"T is not a resource");
     
     T* newR = new T;
+    newR->SetPath(path);
    
     m_ResourcesMap.emplace(path,newR);
 

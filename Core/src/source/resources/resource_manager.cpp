@@ -7,7 +7,7 @@
 
 using namespace PC_CORE;
 
-void ResourceManager::Init()
+void ResourceManager::InitPath()
 {
     //VulkanShaderCompiler::GetEnvironementVariable();
 

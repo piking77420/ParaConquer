@@ -18,6 +18,8 @@ namespace VK_NP
 
         bool DestroyShader(const std::string& _shaderName);
 
+        void BindProgram(const std::string& _shaderName, vk::CommandBuffer _commandBuffer);
+
         VulkanShaderManager();
 
         ~VulkanShaderManager();
@@ -30,7 +32,7 @@ namespace VK_NP
             SpvReflectShaderModule reflectShaderModule;
         };
 
-        struct ShaderInternalBack
+        struct ShaderInternal
         {
             std::vector<ShaderStageInfo> shaderStages;
 
@@ -38,27 +40,28 @@ namespace VK_NP
             vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
         };
 
-
-        std::unordered_map<std::string, ShaderInternalBack> m_InternalShadersMap;
+        VulkanShaderCompiler m_ShaderCompiler;
+        
+        std::unordered_map<std::string, ShaderInternal> m_InternalShadersMap;
 
         vk::Device m_Device;
 
         vk::Extent2D m_SwapChainExtent;
 
-        void ShaderReflexion(ShaderInternalBack* _shaderInternalBack,
+        void DestroyInternalShaders(ShaderInternal* _shaderInternalBack);
+
+        static void FillShaderInfo(ShaderInternal* _shaderInternalBack,
                              const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
-        void CreatePipelineFromModule(const std::vector<ShaderStageInfo>& shaderStages,
-                                      const std::vector<vk::ShaderModule>& _shaderModules, vk::Pipeline* _ooutPipeline, vk::PipelineLayout* _outLayout);
+        void CreatePipelineFromModule(const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::Pipeline* _outPipeline, vk::PipelineLayout* _outLayout);
 
         void CreateModuleForProgram(const std::string _shaderName,
                                     const ShaderStageInfo& shaderStageInfo, const std::vector<uint8_t>& _shaderCode,
                                     vk::ShaderModule* _pipileLineModulee);
 
+        VkPipelineShaderStageCreateInfo GetShaderStageCreateInfo();
         
-        // Static func
-        static vk::PipelineShaderStageCreateInfo CreateShaderStageCreateInfoFromSource(
-            PC_CORE::LowLevelShaderStageType type, const SpvReflectShaderModule& _spvReflectShaderModule);
+        static vk::PipelineShaderStageCreateInfo FromSourceToModule();
 
         static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::LowLevelShaderStageType _shaderType);
     };

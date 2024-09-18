@@ -21,6 +21,16 @@ const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
+vk::Queue VK_NP::VulkanHarwareWrapper::GetGraphicQueue()
+{
+    return m_VulkanHarwareWrapperInstance->graphicQueue;
+}
+
+vk::Queue VK_NP::VulkanHarwareWrapper::GetPresentQueu()
+{
+    return m_VulkanHarwareWrapperInstance->presentQueue;
+}
+
 VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vulkanMainCreateInfo)
 {
     m_VulkanHarwareWrapperInstance = this;
@@ -32,6 +42,17 @@ VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vu
 #endif
     m_PhysicalDevices.ChoosePhysicalDevice(m_Instance, m_Surface, deviceExtensions);
     CreateDevice();
+
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(m_PhysicalDevices.GetSelectedPhysicalDevice(), &properties);
+
+    uint32_t apiVersion = properties.apiVersion;
+    std::cout << "Vulkan API Version: "
+        << VK_VERSION_MAJOR(apiVersion) << "."
+        << VK_VERSION_MINOR(apiVersion) << "."
+        << VK_VERSION_PATCH(apiVersion) << std::endl;
+
+
 }
 
 VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()
@@ -113,6 +134,9 @@ void VK_NP::VulkanHarwareWrapper::CreateInstance(const char* _AppName, const cha
 
     vk::Result result = vk::createInstance(&createInfo, nullptr, &m_Instance);
     VK_CALL(result);
+
+
+
 }
 
 void VK_NP::VulkanHarwareWrapper::CreateDevice()
@@ -169,8 +193,8 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice()
 #pragma endregion DeviceLayer
     
     VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &m_Device));
-    m_Device.getQueue(queuFamiliesIndicies.graphicsFamily, 0, &m_GraphicQueue);
-    m_Device.getQueue(queuFamiliesIndicies.presentFamily, 0, &m_PresentQueue);
+    m_Device.getQueue(queuFamiliesIndicies.graphicsFamily, 0, &graphicQueue);
+    m_Device.getQueue(queuFamiliesIndicies.presentFamily, 0, &presentQueue);
 }
 
 

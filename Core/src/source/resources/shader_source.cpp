@@ -22,7 +22,7 @@ void ShaderSource::SetPath(const fs::path& _path)
     shaderType = static_cast<LowLevelShaderStageType>(formatIndex);
 }
 
-std::vector<uint8_t> ShaderSource::GetData()
+std::vector<char> ShaderSource::GetShaderSourceFile()
 {
     if (path.empty())
     {
@@ -30,7 +30,7 @@ std::vector<uint8_t> ShaderSource::GetData()
         return {};
     }
     
-    ReadFile(path.generic_string());
+   return ReadFileAsChar(path.generic_string());
 }
 
 void ShaderSource::WriteFile(const fs::path& path)
@@ -43,7 +43,7 @@ ShaderSource::~ShaderSource()
     
 }
 
-std::vector<uint8_t> ShaderSource::ReadFile(const std::string& _filename)
+std::vector<char> ShaderSource::ReadFileAsChar(const std::string& _filename)
 {
     
     // Open file in binary mode at the end of the file to get the file size easily
@@ -58,17 +58,21 @@ std::vector<uint8_t> ShaderSource::ReadFile(const std::string& _filename)
     // Get the size of the file
     size_t fileSize = static_cast<size_t>(file.tellg());
     
-    // Create a buffer of the appropriate size
-    std::vector<uint8_t> buffer(fileSize);
+
+    // Create a buffer of the appropriate size + 1 for '\0'
+    std::vector<char> buffer(fileSize + 1);
 
     // Move to the beginning of the file
     file.seekg(0);
+
 
     // Read the file data into the buffer
     if (!file.read(reinterpret_cast<char*>(buffer.data()), fileSize))
     {
         throw std::runtime_error("Failed to read file: " + _filename);
     }
+    // Make sure that our data end with end of cahr
+    buffer[fileSize] = '\0';
 
     // Close the file
     file.close();

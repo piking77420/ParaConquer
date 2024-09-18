@@ -19,11 +19,34 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\externals\include\glslang\arrays.h" />
+    <ClInclude Include="src\externals\include\glslang\BaseTypes.h" />
+    <ClInclude Include="src\externals\include\glslang\Common.h" />
+    <ClInclude Include="src\externals\include\glslang\ConstantUnion.h" />
+    <ClInclude Include="src\externals\include\glslang\glslang_c_interface.h" />
+    <ClInclude Include="src\externals\include\glslang\glslang_c_shader_types.h" />
+    <ClInclude Include="src\externals\include\glslang\InfoSink.h" />
+    <ClInclude Include="src\externals\include\glslang\InitializeGlobals.h" />
+    <ClInclude Include="src\externals\include\glslang\intermediate.h" />
+    <ClInclude Include="src\externals\include\glslang\PoolAlloc.h" />
+    <ClInclude Include="src\externals\include\glslang\ResourceLimits.h" />
+    <ClInclude Include="src\externals\include\glslang\resource_limits_c.h" />
+    <ClInclude Include="src\externals\include\glslang\ShaderLang.h" />
+    <ClInclude Include="src\externals\include\glslang\ShHandle.h" />
+    <ClInclude Include="src\externals\include\glslang\SpirvIntrinsics.h" />
+    <ClInclude Include="src\externals\include\glslang\Types.h" />
+    <ClInclude Include="src\externals\include\glslang\visibility.h" />
     <ClInclude Include="src\externals\include\shaderc\env.h" />
     <ClInclude Include="src\externals\include\shaderc\shaderc.h" />
     <ClInclude Include="src\externals\include\shaderc\shaderc.hpp" />
     <ClInclude Include="src\externals\include\shaderc\status.h" />
     <ClInclude Include="src\externals\include\shaderc\visibility.h" />
+    <ClInclude Include="src\externals\include\spirv-tools\instrument.hpp" />
+    <ClInclude Include="src\externals\include\spirv-tools\libspirv.h" />
+    <ClInclude Include="src\externals\include\spirv-tools\libspirv.hpp" />
+    <ClInclude Include="src\externals\include\spirv-tools\linker.hpp" />
+    <ClInclude Include="src\externals\include\spirv-tools\linter.hpp" />
+    <ClInclude Include="src\externals\include\spirv-tools\optimizer.hpp" />
     <ClInclude Include="src\externals\include\spirv_reflect.h" />
     <ClInclude Include="src\include\back_end\vulkan_harware_wrapper.hpp" />
     <ClInclude Include="src\include\back_end\vulkan_main.h" />
@@ -41,6 +64,7 @@
     <ClCompile Include="src\source\back_end\vulkan_physical_devices.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_present_chain.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_shader_compiler.cpp" />
+    <ClCompile Include="src\source\back_end\vulkan_shader_manager.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_app.cpp" />
     <ClCompile Include="src\source\pch.cpp" />
   </ItemGroup>
@@ -103,26 +127,26 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;CORE_IO_IMPORT;_ITERATOR_DEBUG_LEVEL=2;_ITERATOR_DEBUG_LEVEL = 0_ITERATOR_DEBUG_LEVEL = 2</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;CORE_IO_IMPORT;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -135,7 +159,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;glslang.lib;;shaderc.lib;shaderc_util.lib;SPIRV-Tools.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;glslang.lib;;shaderc.lib;shaderc_util.lib;SPIRV-Tools.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -145,7 +169,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);;CORE_IO_IMPORT;_ITERATOR_DEBUG_LEVEL=2</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);;CORE_IO_IMPORT;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -168,7 +192,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)_ITERATOR_DEBUG_LEVEL = 2</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -181,7 +205,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;glslang-default-resource-limitsd.lib;</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -191,7 +215,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions);SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;_ITERATOR_DEBUG_LEVEL=2</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions);SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

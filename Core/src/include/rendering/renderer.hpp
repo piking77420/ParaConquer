@@ -16,14 +16,22 @@ BEGIN_PCCORE
 class Renderer
 {
 public:
-    void Init(GraphicAPI _graphicAPI, Window* _window);
+    PC_CORE_API void Init(GraphicAPI _graphicAPI, Window* _window);
 
-    void Destroy();
-   
+    PC_CORE_API void Destroy();
+
+    PC_CORE_API void Render();
+
+    PC_CORE_API void BeginFrame();
+
+
+    PC_CORE_API void EndFrame();
+
+    PC_CORE_API void SwapBuffers();
 private:
-    void InitRhi(GraphicAPI _graphicAPI, Window* _window);
+    PC_CORE_API void InitRhi(GraphicAPI _graphicAPI, Window* _window);
 
-    void InitShader();
+    PC_CORE_API void InitShader();
 
     std::string mainShader = "mainShader";
 };

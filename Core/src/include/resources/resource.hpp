@@ -28,7 +28,7 @@ public:
 
     PC_CORE_API virtual void SetPath(const fs::path& path) {};
 
-    PC_CORE_API virtual std::vector<uint8_t> GetData() { return {}; };
+    PC_CORE_API virtual std::vector<char> GetData() { return {}; };
     
     PC_CORE_API virtual void WriteFile(const fs::path& path) {};
 

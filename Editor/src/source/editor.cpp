@@ -88,6 +88,7 @@ void Editor::Run()
         window->Update();
         PC_CORE::Time::UpdateTime();
         
+        renderer.BeginFrame();
         /*vulkanImgui.NewFrame();
 
         if (currentWorld != nullptr)
@@ -111,6 +112,10 @@ void Editor::Run()
         {
             editorWindow->Render();
         }
+        renderer.Render();
+        
+        renderer.EndFrame();
+        renderer.SwapBuffers();
         /*vulkanImgui.EndFrame();
         renderer.SwapBuffers();*/
     }

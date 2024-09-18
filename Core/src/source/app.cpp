@@ -19,14 +19,14 @@ void App::Init()
 {
     PC_LOG("App Init")
     instance = this;
-
     CoreIo::Init();
     window = new Window("Para Conquer Editor");
+    ResourceManager::InitPath();
+    
     renderer.Init(GraphicAPI::VULKAN, window);
-
     World::world = &world;
     Time::Init();
-    ResourceManager::Init();
+    
     world.LoadSkyBox();
 }
 

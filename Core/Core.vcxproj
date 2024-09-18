@@ -384,7 +384,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;;_ITERATOR_DEBUG_LEVEL = 0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;%(AdditionalIncludeDirectories);src\externals\include\Imgui;;PC_CORE_EXPORT;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -411,7 +411,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL=0;LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);LUA_BUILD_AS_DLL;PC_CORE_DLLPC_CORE_EXPORT;;PC_CORE_EXPORT;;IMGUI_API_EXPORT;;PC_CORE_EXPORT;;CORE_IO_IMPORT;CORE_IO_EXPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>src\externals\include;src\include;;src\externals\include\Imgui;;PC_CORE_EXPORT;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -468,7 +468,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_ITERATOR_DEBUG_LEVEL = 0;LUA_BUILD_AS_DLL;PC_CORE_DLL;PC_CORE_EXPORT;IMGUI_API_EXPORT;PC_CORE_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);LUA_BUILD_AS_DLL;PC_CORE_DLL;PC_CORE_EXPORT;IMGUI_API_EXPORT;PC_CORE_EXPORT;;_CRT_SECURE_NO_DEPRECATE;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src\externals\include;$(ProjectDir)src\include;src\externals\include\Imgui;PC_CORE_EXPORT;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>

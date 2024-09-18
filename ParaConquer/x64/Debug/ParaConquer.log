@@ -1,1 +1,4 @@
-﻿
+﻿  main.cpp
+D:\Data\Project\ParaConquer\Core\src\include\rendering\renderer.hpp(4,10): error C1083: Cannot open include file: 'front_end/vulkan_app.hpp': No such file or directory
+  (compiling source file 'main.cpp')
+  

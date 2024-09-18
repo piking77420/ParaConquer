@@ -14,8 +14,17 @@ namespace VK_NP
 
 		VULKA_API ~VulkanApp() override;
 
-		VULKA_API void SwapBuffers() override;
-	
+		VULKA_API void InstanceSwapBuffers() override;
+
+		VULKA_API void InstanceBeginRender() override;
+		
+		VULKA_API void InstanceEndRender() override;
+
+		VULKA_API void InstanceRender() override;
+
+		VULKA_API void InstanceBindShaderProgram(const std::string& _shaderProgramName) override;
+
+		
 	private:
 		VK_NP::VulkanMain m_VulkanMain;
 

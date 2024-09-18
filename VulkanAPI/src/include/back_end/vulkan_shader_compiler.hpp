@@ -2,18 +2,22 @@
 
 #include "vulkan_header.h"
 #include "rhi_typedef.h"
+#include <spirv_reflect.h>
 
 namespace VK_NP
 {
-    
     class VulkanShaderCompiler
     {
     public:
-        
-        static void CompileShaderToSpv(const std::string _shaderName, const std::string& shaderSource, PC_CORE::LowLevelShaderStageType  _lowLevelShaderStage, std::vector<uint32_t>* _sprivSource);
-        
+        VulkanShaderCompiler();
+
+        ~VulkanShaderCompiler();
+
+        void CreateModuleFromSource(const char* _source,
+                                    PC_CORE::LowLevelShaderStageType _lowLevelShaderStage,
+                                    SpvReflectShaderModule* _ReflectedModule, vk::ShaderModule* _shaderModule);
+
     private:
-
+        vk::Device m_Device;
     };
-
 }

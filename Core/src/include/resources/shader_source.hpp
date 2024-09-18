@@ -12,14 +12,14 @@ public:
 
     PC_CORE_API void SetPath(const fs::path& _path) override;
 
-    std::vector<uint8_t> GetData() override;
+    std::vector<char> GetShaderSourceFile();
 
     void WriteFile(const fs::path& path) override;
 
     PC_CORE_API ~ShaderSource() override;
 
 private:
-    static std::vector<uint8_t> ReadFile(const std::string& _filename);
+    static std::vector<char> ReadFileAsChar(const std::string& _filename);
 
 };
 
