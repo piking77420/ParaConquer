@@ -127,8 +127,9 @@ void VK_NP::VulkanPresentChain::WaitForAvailableImage(uint32_t _currentFrame)
 
 void VK_NP::VulkanPresentChain::AquireNetImageKHR(uint32_t _currentFrame)
 {
-    
-    VK_CALL(m_DeviceConstPtr.acquireNextImageKHR(m_SwapchainKhr, UINT64_MAX, m_SwapChainSyncObject[_currentFrame].imageAvailableSemaphore, VK_NULL_HANDLE,  &m_ImageIndex));
+    uint32_t index = -1;
+    VK_CALL(m_DeviceConstPtr.acquireNextImageKHR(m_SwapchainKhr, UINT64_MAX, m_SwapChainSyncObject[_currentFrame].imageAvailableSemaphore, VK_NULL_HANDLE,  &index));
+    m_ImageIndex = index;
 }
 
 
@@ -172,9 +173,9 @@ vk::RenderPass VK_NP::VulkanPresentChain::GetRenderPassTmpr()
     return m_VulkanPresentChainIntance->m_RenderPass;
 }
 
-vk::Framebuffer VK_NP::VulkanPresentChain::GetFramebuffer(size_t index)
+vk::Framebuffer VK_NP::VulkanPresentChain::GetFramebuffer()
 {
-    return  m_VulkanPresentChainIntance->m_SwapChainFramebuffers.at(index);
+    return  m_VulkanPresentChainIntance->m_SwapChainFramebuffers.at(m_VulkanPresentChainIntance->m_ImageIndex);
 }
 
 vk::SurfaceFormatKHR VK_NP::VulkanPresentChain::ChooseSwapSurfaceFormat(

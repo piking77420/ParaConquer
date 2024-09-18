@@ -47,7 +47,7 @@ void VK_NP::VulkanMain::SwapBuffers()
     m_vulkanPresentChain.SwapBuffer(m_CurrentFrame);
     m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     // that fix issue on fifo present mode
-    WaitDevice();
+   // WaitDevice();
 }
 
 void VK_NP::VulkanMain::BeginDraw()
@@ -70,7 +70,7 @@ void VK_NP::VulkanMain::BeginDraw()
     vk::RenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
     renderPassInfo.renderPass = m_vulkanPresentChain.GetRenderPassTmpr();
-    renderPassInfo.framebuffer = m_vulkanPresentChain.GetFramebuffer(imageIndex);
+    renderPassInfo.framebuffer = m_vulkanPresentChain.GetFramebuffer();
 
     renderPassInfo.renderArea.offset = vk::Offset2D(0);
     renderPassInfo.renderArea.extent = m_vulkanPresentChain.GetExtent();

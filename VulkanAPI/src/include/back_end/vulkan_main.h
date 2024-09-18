@@ -43,9 +43,6 @@ namespace VK_NP
 
 		std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
 
-		// current image index in swapchain
-		uint32_t imageIndex = 0;
-
 		// currennt frame inflight
 		uint32_t m_CurrentFrame = 0;
 		

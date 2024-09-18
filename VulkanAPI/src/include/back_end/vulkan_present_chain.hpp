@@ -39,7 +39,7 @@ namespace VK_NP
 
         static vk::RenderPass GetRenderPassTmpr();
 
-        static vk::Framebuffer GetFramebuffer(size_t index);
+        static vk::Framebuffer GetFramebuffer();
 
     private:
         struct SwapChainSyncObject
@@ -58,7 +58,7 @@ namespace VK_NP
 
         uint32_t m_SwapchainImageCount;
 
-        uint32_t m_ImageIndex;
+        uint32_t m_ImageIndex = std::numeric_limits<uint32_t>::max();
 
         vk::SwapchainKHR m_SwapchainKhr;
 
