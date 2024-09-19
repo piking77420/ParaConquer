@@ -85,16 +85,11 @@ void Editor::Run()
     {
         const World* currentWorld = World::world;
         PC_CORE::CoreIo::PoolEvent();
-        window->Update();
+        window->PoolEvents();
         PC_CORE::Time::UpdateTime();
         
         renderer.BeginFrame();
-        /*vulkanImgui.NewFrame();
-
-        if (currentWorld != nullptr)
-            renderer.BeginFrame(*currentWorld);
-            */
-        
+       
         for (EditorWindow* editorWindow : m_EditorWindows)
         {
             editorWindow->Begin();
@@ -105,7 +100,6 @@ void Editor::Run()
         if (World::world != nullptr)
         {
             WorldLoop();
-            //renderer.UpdateWorldBuffers();
         }
         
         for (EditorWindow* editorWindow : m_EditorWindows)
@@ -113,11 +107,8 @@ void Editor::Run()
             editorWindow->Render();
         }
         renderer.Render();
-        
         renderer.EndFrame();
         renderer.SwapBuffers();
-        /*vulkanImgui.EndFrame();
-        renderer.SwapBuffers();*/
     }
 
     renderer.WaitDevice();

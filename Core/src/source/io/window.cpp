@@ -2,6 +2,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "rendering/RHI.hpp"
+
 
 using namespace PC_CORE;
 
@@ -16,9 +18,10 @@ bool Window::ShouldClose()
     return glfwWindowShouldClose(m_Window);
 }
 
-void Window::Update()
+void Window::PoolEvents()
 {
-    
+    HandleResize();
+
     if (glfwGetKey(m_Window, GLFW_KEY_F11) == GLFW_PRESS)
     {
         FullScreen = !FullScreen;
@@ -41,22 +44,22 @@ void Window::Update()
             static_cast<int32_t>(windowSize.y),static_cast<int32_t>(windowSize.y), mode->refreshRate);
         }
     }
-    HandleResize();
-
 }
 
 void Window::HandleResize()
 {
     if (onResize)
     {
-        int NewWidth = 0, NewHeight = 0;
-        glfwGetFramebufferSize(m_Window, &NewWidth, &NewHeight);
-        while (NewWidth == 0 || NewHeight == 0) {
-            glfwGetFramebufferSize(m_Window, &NewWidth, &NewHeight);
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(m_Window, &width, &height);
+        while (width == 0 || height == 0)
+        {
+            glfwGetFramebufferSize(m_Window, &width, &height);
             glfwWaitEvents();
         }
-        windowSize.x = static_cast<uint32_t>(NewWidth);
-        windowSize.y = static_cast<uint32_t>(NewHeight);
+        windowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+        
+        RHI::RecreateSwapChain(m_Window, windowSize.x, windowSize.y);
         onResize = false;
     }
 }

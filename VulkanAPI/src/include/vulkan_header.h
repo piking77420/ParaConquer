@@ -7,14 +7,11 @@
 #include <stdexcept>
 #include <cassert>
 
-#define VK_USE_PLATFORM_WIN32_KHR 
-#define NOMINMAX
-#include <vulkan/vulkan.hpp>
-
 #include <unordered_map>
 #include <vector>
 #include <iostream>
 
+#include "vulkan_typedef.h"
 
 #ifdef VULKAN_DLL
 
@@ -32,32 +29,6 @@ constexpr bool ENABLE_VALIDATION_LAYERS = true;
 #else
 constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
-
-constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-
-constexpr uint32_t INVALID_QUEU = std::numeric_limits<uint32_t>::max();
-
-struct VulkanAppCreateInfo
-{
-    const char* appName;
-    const char* engineName;
-    void* windowPtr;
-};
-
-struct SwapChainSupportDetails
-{
-    vk::SurfaceCapabilitiesKHR capabilities;
-    std::vector<vk::SurfaceFormatKHR> formats;
-    std::vector<vk::PresentModeKHR> presentModes;
-};
-
-struct VulkanContext
-{
-    uint32_t imageIndex = 0;
-    uint32_t currentFrame = 0;
-};
-
-
 
 namespace VK_NP
 {

@@ -20,6 +20,9 @@ namespace VK_NP
 
         void BindProgram(const std::string& _shaderName, vk::CommandBuffer _commandBuffer);
 
+        void ReloadShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
+                                                 const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
+
         VulkanShaderManager();
 
         ~VulkanShaderManager();

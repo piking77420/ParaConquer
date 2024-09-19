@@ -125,6 +125,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -168,6 +169,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

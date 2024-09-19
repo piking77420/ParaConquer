@@ -4,7 +4,10 @@
 #include <vma/vk_mem_alloc.h>
 
 #include "vulkan_physical_devices.hpp"
-
+#define VMA_IMPLEMENTATION
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
+#include <vma/vk_mem_alloc.h>
 
 namespace VK_NP
 {
@@ -33,6 +36,7 @@ namespace VK_NP
         static vk::SurfaceKHR GetSurface();
 
         static SwapChainSupportDetails GetSwapChainSupportDetailsSurface();
+
 
     private:
         void CreateInstance(const char* _AppName, const char* _EngineNamee);
@@ -73,14 +77,14 @@ namespace VK_NP
         VulkanPhysicalDevices m_PhysicalDevices;
 
         vk::Device m_Device;
-
-        VmaAllocator vmaAllocator;
         
         vk::SurfaceKHR m_Surface;
 
         vk::Queue graphicQueue;
 
         vk::Queue presentQueue;
+
+        VmaAllocator m_VmaAllocator;
 
         static VulkanHarwareWrapper* m_VulkanHarwareWrapperInstance;
     };

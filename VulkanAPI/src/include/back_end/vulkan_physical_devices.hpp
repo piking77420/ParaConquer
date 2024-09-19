@@ -17,7 +17,7 @@ namespace VK_NP
 
         QueuFamiliesIndicies GetQueueFamiliesIndicies() const;
 
-        SwapChainSupportDetails GetSwapChainSupport() const;
+        SwapChainSupportDetails GetSwapChainSupport(vk::SurfaceKHR _surface);
 
         void ChoosePhysicalDevice(vk::Instance _instance, vk::SurfaceKHR _SurfaceKHR ,
             std::vector<const char*> _deviceExtensions);

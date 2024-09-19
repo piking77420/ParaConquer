@@ -24,7 +24,9 @@ namespace VK_NP
 
 		VULKAN_API void InstanceBindShaderProgram(const std::string& _shaderProgramName) override;
 
-		
+		VULKAN_API void InstanceRecreateSwapChain(void* _glfwWindowptr , uint32_t _newWidht, uint32_t _newHeight) override;
+
+	
 	private:
 		VK_NP::VulkanMain m_VulkanMain;
 

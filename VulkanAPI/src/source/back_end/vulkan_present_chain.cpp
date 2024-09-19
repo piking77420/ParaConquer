@@ -29,12 +29,9 @@ VK_NP::VulkanPresentChain::~VulkanPresentChain()
     m_DeviceConstPtr.destroyRenderPass(m_RenderPass);
 }
 
-void VK_NP::VulkanPresentChain::RecreateSwapChain(void* _glfwWindowPtr)
+void VK_NP::VulkanPresentChain::RecreateSwapChain(void* _glfwWindowPtr  ,uint32_t _newWidht, uint32_t _newHeight)
 {
-    HandleMinimize(_glfwWindowPtr);
-    
     m_DeviceConstPtr.waitIdle();
-    
     DestroySwapchain();
     CreateSwapchain(_glfwWindowPtr);
 }
@@ -46,8 +43,7 @@ void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr)
     auto surface = VulkanHarwareWrapper::GetSurface();
     auto swapChainSupportDetails = VulkanHarwareWrapper::GetSwapChainSupportDetailsSurface();
     QueuFamiliesIndicies queuFamiliesIndicies = phyDevice.GetQueueFamiliesIndicies();
-
-
+        
     uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
     
     m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
@@ -113,6 +109,7 @@ void VK_NP::VulkanPresentChain::DestroySwapchain()
     {
         m_DeviceConstPtr.destroyImageView(imageView, nullptr);
     }
+
     
     m_DeviceConstPtr.destroySwapchainKHR(m_SwapchainKhr);
 }
@@ -259,18 +256,7 @@ void VK_NP::VulkanPresentChain::CreateSwapchainImages(const vk::Device _device)
     }
 }
 
-void VK_NP::VulkanPresentChain::HandleMinimize(void* _windowPtr)
-{
-    int width = 0, height = 0;
-    GLFWwindow* wwindow = static_cast<GLFWwindow*>(_windowPtr);
-    glfwGetFramebufferSize(wwindow, &width, &height);
-    while (width == 0 || height == 0)
-    {
-        glfwGetFramebufferSize(wwindow, &width, &height);
-        glfwWaitEvents();
-    }
 
-}
 
 void VK_NP::VulkanPresentChain::CreateFramebuffers()
 {

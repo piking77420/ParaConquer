@@ -14,8 +14,9 @@ VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::GetQueueFamiliesIndici
     return m_QueuFamiliesIndicies;
 }
 
-SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::GetSwapChainSupport() const
+SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::GetSwapChainSupport(vk::SurfaceKHR _surface)
 {
+    m_SwapChainSupportDetails = QuerySwapChainSupport(m_SelectedPhysicalDevice, _surface);
     return m_SwapChainSupportDetails;
 }
 

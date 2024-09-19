@@ -35,6 +35,11 @@ VULKAN_API void VK_NP::VulkanApp::InstanceBindShaderProgram(const std::string& _
     m_VulkanMain.BindProgram(_shaderProgramName);
 }
 
+void VK_NP::VulkanApp::InstanceRecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
+{
+    m_VulkanMain.RecreateSwapChain(_glfwWindowptr, _newWidht, _newHeight);
+}
+
 
 void VK_NP::VulkanApp::InstanceCreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
 {

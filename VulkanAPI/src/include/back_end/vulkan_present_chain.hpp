@@ -13,7 +13,7 @@ namespace VK_NP
 
         ~VulkanPresentChain();
 
-        void RecreateSwapChain(void* _glfwWindowPtr);
+        void RecreateSwapChain(void* _glfwWindowPtr, uint32_t _newWidht, uint32_t _newHeight);
 
         void CreateSwapchain(void* _glfwWindowPtr);
 
@@ -48,7 +48,7 @@ namespace VK_NP
             vk::Semaphore renderFinishedSemaphore;
             vk::Fence inFlightFence;
         };
-		
+        
         
         vk::SurfaceFormatKHR m_SurfaceFormat;
 
@@ -81,9 +81,7 @@ namespace VK_NP
         vk::Extent2D ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities);
 
         void CreateSwapchainImages(vk::Device _device);
-
-        void HandleMinimize(void* _windowPtr);
-
+        
         void CreateFramebuffers();
 
         void CreateRenderPass();

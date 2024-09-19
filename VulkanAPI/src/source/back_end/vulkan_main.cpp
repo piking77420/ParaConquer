@@ -35,6 +35,11 @@ VULKAN_API void VK_NP::VulkanMain::WaitDevice()
     m_vulkanHardwareWrapper.GetDevice().waitIdle();
 }
 
+void VK_NP::VulkanMain::RecreateSwapChain(void* _glfwWindowPtr , uint32_t _newWidht, uint32_t _newHeight)
+{
+    m_vulkanPresentChain.RecreateSwapChain(_glfwWindowPtr, _newWidht, _newHeight);
+}
+
 void VK_NP::VulkanMain::BindProgram(const std::string& _shaderName)
 {
     m_vulkanShaderManager.BindProgram(_shaderName, m_CommandBuffer[m_CurrentFrame]);
@@ -46,8 +51,6 @@ void VK_NP::VulkanMain::SwapBuffers()
 {
     m_vulkanPresentChain.SwapBuffer(m_CurrentFrame);
     m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-    // that fix issue on fifo present mode
-   // WaitDevice();
 }
 
 void VK_NP::VulkanMain::BeginDraw()

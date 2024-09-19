@@ -31,6 +31,7 @@ namespace VK_NP
 
 		VULKAN_API void WaitDevice();
 
+		VULKAN_API void RecreateSwapChain(void* _glfwWindowPtr , uint32_t _newWidht, uint32_t _newHeight);
 
 	private:
 		VulkanHarwareWrapper m_vulkanHardwareWrapper;

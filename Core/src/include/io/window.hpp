@@ -19,7 +19,7 @@ BEGIN_PCCORE
 
         PC_CORE_API bool ShouldClose();
 
-        PC_CORE_API void Update();
+        PC_CORE_API void PoolEvents();
 
         PC_CORE_API float GetAspect() const;
 

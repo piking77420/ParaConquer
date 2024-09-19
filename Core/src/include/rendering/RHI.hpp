@@ -57,6 +57,11 @@ public:
 		m_Instance->InstanceWaitDevice();
 	}
 
+	static PC_CORE_API void RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
+	{
+		m_Instance->InstanceRecreateSwapChain(_glfwWindowptr, _newWidht, _newHeight);
+	}
+
 
 protected:
 	static RHI* m_Instance;
@@ -75,11 +80,11 @@ protected:
 	PC_CORE_API virtual void InstanceSwapBuffers() {};
 
 	PC_CORE_API virtual void InstanceBindShaderProgram(const std::string& _shaderProgramName) {};
-
-
+	
 	PC_CORE_API virtual void InstanceWaitDevice() {};
 
-	
+	PC_CORE_API virtual void InstanceRecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight) {};
+
 };
 
 END_PCCORE

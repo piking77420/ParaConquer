@@ -21,9 +21,18 @@ void VulkanShaderManager::BindProgram(const std::string& _shaderName,vk::Command
     _commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, shaderInternal.pipeline);
 }
 
+void VulkanShaderManager::ReloadShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
+                                                 const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
+{
+    if (!DestroyShader(_programShaderCreatInfo.prograShaderName))
+        return;
+
+    CreateShaderFromSource(_programShaderCreatInfo, _shaderSource);
+}
+
 
 bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
-                                                        const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
+                                                 const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
 {
     ShaderInternal shaderInternalBack = {};
     // determine shader stage type and name
