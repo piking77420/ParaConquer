@@ -2,69 +2,72 @@
 #include "back_end/vulkan_harware_wrapper.hpp"
 #include "GLFW/glfw3.h"
 
-VK_NP::VulkanPresentChain* VK_NP::VulkanPresentChain::m_VulkanPresentChainIntance = nullptr; 
-
 VK_NP::VulkanPresentChain::VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo)
 {
-    if (m_VulkanPresentChainIntance == nullptr)
-        m_VulkanPresentChainIntance = this;
-
-    m_DeviceConstPtr = VulkanHarwareWrapper::GetDevice();
+    VulkanContext* vulkanContext = VulkanContext::currentContext; 
     
-    CreateSwapchain(_vulkanMainCreateInfo.windowPtr);
-    CreateSyncObject();
+    CreateSwapchain(_vulkanMainCreateInfo.windowPtr, vulkanContext);
+    CreateSyncObject(vulkanContext);
+}
+
+
+void VK_NP::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext)
+{
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        _vulkanContext->device.destroySemaphore(_vulkanContext->m_syncObject[i].imageAvailableSemaphore);
+        _vulkanContext->device.destroySemaphore(_vulkanContext->m_syncObject[i].renderFinishedSemaphore);
+        _vulkanContext->device.destroyFence(_vulkanContext->m_syncObject[i].inFlightFence);
+    }
 }
 
 VK_NP::VulkanPresentChain::~VulkanPresentChain()
 {
-    DestroySwapchain();
+    VulkanContext* vulkanContext = VulkanContext::currentContext; 
 
-    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        m_DeviceConstPtr.destroySemaphore(m_SwapChainSyncObject[i].imageAvailableSemaphore);
-        m_DeviceConstPtr.destroySemaphore(m_SwapChainSyncObject[i].renderFinishedSemaphore);
-        m_DeviceConstPtr.destroyFence(m_SwapChainSyncObject[i].inFlightFence);
-    }
-    
-    m_DeviceConstPtr.destroyRenderPass(m_RenderPass);
+    DestroySyncObject(vulkanContext);
+    DestroySwapchain(vulkanContext);
+    vulkanContext->device.destroyRenderPass(vulkanContext->swapChainRenderPass);
 }
 
 void VK_NP::VulkanPresentChain::RecreateSwapChain(void* _glfwWindowPtr  ,uint32_t _newWidht, uint32_t _newHeight)
 {
-    m_DeviceConstPtr.waitIdle();
-    DestroySwapchain();
-    CreateSwapchain(_glfwWindowPtr);
+    VulkanContext* vulkanContext = VulkanContext::currentContext; 
+
+    vulkanContext->device.waitIdle();
+    DestroySwapchain(vulkanContext);
+    CreateSwapchain(_glfwWindowPtr, vulkanContext);
 }
 
-void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr)
+void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanContext* _vulkanContext)
 {
-    auto phyDevice = VulkanHarwareWrapper::GetPhysicalDevices();
-    auto device = VulkanHarwareWrapper::GetDevice();
-    auto surface = VulkanHarwareWrapper::GetSurface();
-    auto swapChainSupportDetails = VulkanHarwareWrapper::GetSwapChainSupportDetailsSurface();
-    QueuFamiliesIndicies queuFamiliesIndicies = phyDevice.GetQueueFamiliesIndicies();
+    vk::PhysicalDevice phyDevice = _vulkanContext->physicalDevice;
+    vk::Device device = _vulkanContext->device;
+    vk::SurfaceKHR surface = _vulkanContext->surface;
+    const SwapChainSupportDetails& swapChainSupportDetails = _vulkanContext->swapChainSupportDetails;
+    const QueuFamiliesIndicies& queuFamiliesIndicies = _vulkanContext->queuFamiliesIndicies;
         
     uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
     
-    m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
-    m_PresentMode = ChoosePresentMode(swapChainSupportDetails.presentModes);
-    m_Extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr), swapChainSupportDetails.capabilities);
+    _vulkanContext->m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
+    _vulkanContext->m_PresentMode = ChoosePresentMode(swapChainSupportDetails.presentModes);
+    _vulkanContext->m_Extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr), swapChainSupportDetails.capabilities);
 
-    m_SwapchainImageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
+    _vulkanContext->swapChainImageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
     
-     if (swapChainSupportDetails.capabilities.maxImageCount > 0 && m_SwapchainImageCount > swapChainSupportDetails.capabilities.maxImageCount)
+     if (swapChainSupportDetails.capabilities.maxImageCount > 0 && _vulkanContext->swapChainImageCount > swapChainSupportDetails.capabilities.maxImageCount)
      {
-         m_SwapchainImageCount = swapChainSupportDetails.capabilities.maxImageCount;
+         _vulkanContext->swapChainImageCount = swapChainSupportDetails.capabilities.maxImageCount;
     }
 
     
     vk::SwapchainCreateInfoKHR swapChainCreateInfo;
     swapChainCreateInfo.sType = vk::StructureType::eSwapchainCreateInfoKHR;
     swapChainCreateInfo.surface = surface;
-    swapChainCreateInfo.minImageCount = m_SwapchainImageCount;
-    swapChainCreateInfo.imageFormat = m_SurfaceFormat.format;
-    swapChainCreateInfo.imageColorSpace = m_SurfaceFormat.colorSpace;
-    swapChainCreateInfo.imageExtent = m_Extent2D;
+    swapChainCreateInfo.minImageCount = _vulkanContext->swapChainImageCount;
+    swapChainCreateInfo.imageFormat = _vulkanContext->m_SurfaceFormat.format;
+    swapChainCreateInfo.imageColorSpace = _vulkanContext->m_SurfaceFormat.colorSpace;
+    swapChainCreateInfo.imageExtent = _vulkanContext->m_Extent2D;
     swapChainCreateInfo.imageArrayLayers = 1;
     // MAY CHANGE IN FUTURE
     swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
@@ -81,98 +84,60 @@ void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr)
     swapChainCreateInfo.preTransform = swapChainSupportDetails.capabilities.currentTransform;
     swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
 
-    swapChainCreateInfo.presentMode = m_PresentMode;
+    swapChainCreateInfo.presentMode = _vulkanContext->m_PresentMode;
     swapChainCreateInfo.clipped = vk::True;
     swapChainCreateInfo.oldSwapchain = nullptr;
 
-    VK_CALL(device.createSwapchainKHR(&swapChainCreateInfo, nullptr, &m_SwapchainKhr));
+    VK_CALL(device.createSwapchainKHR(&swapChainCreateInfo, nullptr, &_vulkanContext->swapChain));
 
    
     // Important to be here tmpr
-    CreateRenderPass();
+    CreateRenderPass(_vulkanContext);
     // Create SwapChain Image
-    m_SwapchainImages = device.getSwapchainImagesKHR(m_SwapchainKhr);
-    CreateSwapchainImages(m_DeviceConstPtr);
-    CreateFramebuffers();
+    _vulkanContext->m_SwapchainImages = device.getSwapchainImagesKHR(_vulkanContext->swapChain);
+    CreateSwapchainImages(_vulkanContext);
+    CreateFramebuffers(_vulkanContext);
     
 }
 
-void VK_NP::VulkanPresentChain::DestroySwapchain()
+void VK_NP::VulkanPresentChain::DestroySwapchain(VulkanContext* _vulkanContext)
 {
 
-    for (auto& framebuffer : m_SwapChainFramebuffers)
+    for (auto& framebuffer : _vulkanContext->m_SwapChainFramebuffers)
     {
-        m_DeviceConstPtr.destroyFramebuffer(framebuffer, nullptr);
+        _vulkanContext->device.destroyFramebuffer(framebuffer, nullptr);
     }
     
-    for (auto& imageView : m_SwapChainImageViews)
+    for (auto& imageView : _vulkanContext->m_SwapChainImageViews)
     {
-        m_DeviceConstPtr.destroyImageView(imageView, nullptr);
+        _vulkanContext->device.destroyImageView(imageView, nullptr);
     }
 
     
-    m_DeviceConstPtr.destroySwapchainKHR(m_SwapchainKhr);
+    _vulkanContext->device.destroySwapchainKHR(_vulkanContext->swapChain);
 }
 
 
-void VK_NP::VulkanPresentChain::WaitForAvailableImage(uint32_t _currentFrame)
+void VK_NP::VulkanPresentChain::WaitForAvailableImage(VulkanContext* _vulkanContext)
 {
-    VK_CALL(m_DeviceConstPtr.waitForFences(1, &m_SwapChainSyncObject[_currentFrame].inFlightFence, VK_TRUE, UINT64_MAX));
+    const uint32_t currentFrame = _vulkanContext->currentFrame;
+    VK_CALL(_vulkanContext->device.waitForFences(1, &_vulkanContext->m_syncObject[currentFrame].inFlightFence, VK_TRUE, UINT64_MAX));
 
-    VK_CALL(m_DeviceConstPtr.resetFences(1, &m_SwapChainSyncObject[_currentFrame].inFlightFence));
+    VK_CALL(_vulkanContext->device.resetFences(1, &_vulkanContext->m_syncObject[currentFrame].inFlightFence));
 }
 
-void VK_NP::VulkanPresentChain::AquireNetImageKHR(uint32_t _currentFrame)
+void VK_NP::VulkanPresentChain::AquireNetImageKHR(VulkanContext* _vulkanContext)
 {
+    const uint32_t currentFrame = _vulkanContext->currentFrame;
     uint32_t index = -1;
-    VK_CALL(m_DeviceConstPtr.acquireNextImageKHR(m_SwapchainKhr, UINT64_MAX, m_SwapChainSyncObject[_currentFrame].imageAvailableSemaphore, VK_NULL_HANDLE,  &index));
-    m_ImageIndex = index;
+    VK_CALL(_vulkanContext->device.acquireNextImageKHR(_vulkanContext->swapChain, UINT64_MAX, _vulkanContext->m_syncObject[currentFrame].imageAvailableSemaphore, VK_NULL_HANDLE,  &index));
+    _vulkanContext->imageIndex = index;
 }
 
 
-void VK_NP::VulkanPresentChain::SwapBuffer(uint32_t _currentFrame)
+void VK_NP::VulkanPresentChain::SwapBuffer(VulkanContext* _vulkanContext)
 {
-    PresentNewImage(_currentFrame);
-}
-
-vk::Semaphore* VK_NP::VulkanPresentChain::GetImageAvailableSemaphore(uint32_t _currentFrame)
-{
-    return &m_SwapChainSyncObject[static_cast<size_t>(_currentFrame)].imageAvailableSemaphore;
-}
-
-vk::Semaphore* VK_NP::VulkanPresentChain::GetRenderFinishedSemaphore(uint32_t _currentFrame)
-{
-    return &m_SwapChainSyncObject[static_cast<size_t>(_currentFrame)].renderFinishedSemaphore;
-}
-
-vk::Fence* VK_NP::VulkanPresentChain::GetInFlightFence(uint32_t _currentFrame)
-{
-    return &m_SwapChainSyncObject[static_cast<size_t>(_currentFrame)].inFlightFence;
-}
-
-uint32_t VK_NP::VulkanPresentChain::GetImageIndex()
-{
-    return m_VulkanPresentChainIntance->m_ImageIndex;
-}
-
-vk::Extent2D VK_NP::VulkanPresentChain::GetExtent()
-{
-    return m_VulkanPresentChainIntance->m_Extent2D;
-}
-
-vk::Format VK_NP::VulkanPresentChain::GetSwapChainFormat()
-{
-    return m_VulkanPresentChainIntance->m_SurfaceFormat.format;
-}
-
-vk::RenderPass VK_NP::VulkanPresentChain::GetRenderPassTmpr()
-{
-    return m_VulkanPresentChainIntance->m_RenderPass;
-}
-
-vk::Framebuffer VK_NP::VulkanPresentChain::GetFramebuffer()
-{
-    return  m_VulkanPresentChainIntance->m_SwapChainFramebuffers.at(m_VulkanPresentChainIntance->m_ImageIndex);
+    PresentNewImage(_vulkanContext);
 }
 
 vk::SurfaceFormatKHR VK_NP::VulkanPresentChain::ChooseSwapSurfaceFormat(
@@ -206,13 +171,6 @@ vk::PresentModeKHR VK_NP::VulkanPresentChain::ChoosePresentMode(
 
 vk::Extent2D VK_NP::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities)
 {
-
-    if (_capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-    {
-        return _capabilities.currentExtent;
-    }
-    else
-    {
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
@@ -226,20 +184,20 @@ vk::Extent2D VK_NP::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, co
         actualExtent.height = std::clamp(actualExtent.height, _capabilities.minImageExtent.height, _capabilities.maxImageExtent.height);
 
         return actualExtent;
-    }
+    
 }
 
-void VK_NP::VulkanPresentChain::CreateSwapchainImages(const vk::Device _device)
+void VK_NP::VulkanPresentChain::CreateSwapchainImages(VulkanContext* _vulkanContext)
 {
-    m_SwapChainImageViews.resize(m_SwapchainImageCount);
+    _vulkanContext->m_SwapChainImageViews.resize(_vulkanContext->swapChainImageCount);
 
-    for (size_t i = 0; i < m_SwapchainImages.size(); i++)
+    for (size_t i = 0; i < _vulkanContext->m_SwapchainImages.size(); i++)
     {
         vk::ImageViewCreateInfo viewInfo = {};
         viewInfo.sType = vk::StructureType::eImageViewCreateInfo;
-        viewInfo.image = m_SwapchainImages[i];
+        viewInfo.image = _vulkanContext->m_SwapchainImages[i];
         viewInfo.viewType = vk::ImageViewType::e2D;
-        viewInfo.format = m_SurfaceFormat.format;
+        viewInfo.format = _vulkanContext->m_SurfaceFormat.format;
 
         viewInfo.components.r = vk::ComponentSwizzle::eIdentity;
         viewInfo.components.g = vk::ComponentSwizzle::eIdentity;
@@ -252,43 +210,40 @@ void VK_NP::VulkanPresentChain::CreateSwapchainImages(const vk::Device _device)
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        VK_CALL(_device.createImageView(&viewInfo, nullptr, &m_SwapChainImageViews[i]));
+        VK_CALL(_vulkanContext->device.createImageView(&viewInfo, nullptr, &_vulkanContext->m_SwapChainImageViews[i]));
     }
 }
 
 
 
-void VK_NP::VulkanPresentChain::CreateFramebuffers()
+void VK_NP::VulkanPresentChain::CreateFramebuffers(VulkanContext* _vulkanContext)
 {
-    m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
+    _vulkanContext->m_SwapChainFramebuffers.resize(_vulkanContext->m_SwapchainImages.size());
     
-    auto device = VulkanHarwareWrapper::GetDevice();
     
-    for (size_t i = 0; i < m_SwapChainImageViews.size(); i++)
+    for (size_t i = 0; i < _vulkanContext->m_SwapChainFramebuffers.size(); i++)
     {
         vk::ImageView attachments[] = {
-            m_SwapChainImageViews[i]
+            _vulkanContext->m_SwapChainImageViews[i]
         };
 
         vk::FramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
-        framebufferInfo.renderPass = m_RenderPass;
+        framebufferInfo.renderPass = _vulkanContext->swapChainRenderPass;
         framebufferInfo.attachmentCount = 1;
         framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = m_Extent2D.width;
-        framebufferInfo.height = m_Extent2D.height;
+        framebufferInfo.width = _vulkanContext->m_Extent2D.width;
+        framebufferInfo.height = _vulkanContext->m_Extent2D.height;
         framebufferInfo.layers = 1;
         
-        VK_CALL(device.createFramebuffer(&framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]));
+        VK_CALL(_vulkanContext->device.createFramebuffer(&framebufferInfo, nullptr, &_vulkanContext->m_SwapChainFramebuffers[i]));
     }
 }
 
-void VK_NP::VulkanPresentChain::CreateRenderPass()
+void VK_NP::VulkanPresentChain::CreateRenderPass(VulkanContext* _vulkanContext)
 {
-    auto device = VulkanHarwareWrapper::GetDevice();  // Assuming this returns a vk::Device
-
     vk::AttachmentDescription colorAttachment{};
-    colorAttachment.format = m_SurfaceFormat.format;  
+    colorAttachment.format = _vulkanContext->m_SurfaceFormat.format;  
     colorAttachment.samples = vk::SampleCountFlagBits::e1;
     colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
     colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
@@ -323,10 +278,10 @@ void VK_NP::VulkanPresentChain::CreateRenderPass()
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;  
 
-    m_RenderPass = device.createRenderPass(renderPassInfo);
+    _vulkanContext->swapChainRenderPass = _vulkanContext->device.createRenderPass(renderPassInfo);
 }
 
-void VK_NP::VulkanPresentChain::CreateSyncObject()
+void VK_NP::VulkanPresentChain::CreateSyncObject(VulkanContext* _vulkanContext)
 {
 
     vk::SemaphoreCreateInfo semaphoreCreateInfo;
@@ -338,27 +293,29 @@ void VK_NP::VulkanPresentChain::CreateSyncObject()
 
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        VK_CALL(m_DeviceConstPtr.createSemaphore(&semaphoreCreateInfo,nullptr , &m_SwapChainSyncObject[i].imageAvailableSemaphore));
-        VK_CALL(m_DeviceConstPtr.createSemaphore(&semaphoreCreateInfo, nullptr, &m_SwapChainSyncObject[i].renderFinishedSemaphore));
-        VK_CALL(m_DeviceConstPtr.createFence(&fenceCreateInfo, nullptr, &m_SwapChainSyncObject[i].inFlightFence));
+        VK_CALL(_vulkanContext->device.createSemaphore(&semaphoreCreateInfo,nullptr , &_vulkanContext->m_syncObject[i].imageAvailableSemaphore));
+        VK_CALL(_vulkanContext->device.createSemaphore(&semaphoreCreateInfo, nullptr, &_vulkanContext->m_syncObject[i].renderFinishedSemaphore));
+        VK_CALL(_vulkanContext->device.createFence(&fenceCreateInfo, nullptr, &_vulkanContext->m_syncObject[i].inFlightFence));
     }
 }
 
-void VK_NP::VulkanPresentChain::PresentNewImage(uint32_t _currentFrame)
+
+
+void VK_NP::VulkanPresentChain::PresentNewImage(VulkanContext* _vulkanContext)
 {
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &m_SwapChainSyncObject[_currentFrame].renderFinishedSemaphore;
+    presentInfo.pWaitSemaphores = &_vulkanContext->m_syncObject[_vulkanContext->currentFrame].renderFinishedSemaphore;
 
     // Swapchain and image index
-    vk::SwapchainKHR swapChains[] = {m_SwapchainKhr};
+    vk::SwapchainKHR swapChains[] = {_vulkanContext->swapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &m_ImageIndex;
+    presentInfo.pImageIndices = &_vulkanContext->imageIndex;
 
-    vk::Result result = VulkanHarwareWrapper::GetPresentQueu().presentKHR(&presentInfo);
+    vk::Result result =_vulkanContext->presentQueue.presentKHR(&presentInfo);
 }
 
 

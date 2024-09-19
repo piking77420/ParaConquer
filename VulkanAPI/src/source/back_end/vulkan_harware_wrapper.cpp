@@ -10,8 +10,6 @@
 
 
 
-VK_NP::VulkanHarwareWrapper* VK_NP::VulkanHarwareWrapper::m_VulkanHarwareWrapperInstance = nullptr;
-
 #ifdef _DEBUG
 constexpr std::array<const char*, 1> validationLayers = {
 	"VK_LAYER_KHRONOS_validation",
@@ -22,70 +20,38 @@ const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-vk::Queue VK_NP::VulkanHarwareWrapper::GetGraphicQueue()
-{
-	return m_VulkanHarwareWrapperInstance->graphicQueue;
-}
-
-vk::Queue VK_NP::VulkanHarwareWrapper::GetPresentQueu()
-{
-	return m_VulkanHarwareWrapperInstance->presentQueue;
-}
 
 VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vulkanMainCreateInfo)
 {
-	m_VulkanHarwareWrapperInstance = this;
+	VulkanContext* currentContext = VulkanContext::currentContext;
 
-	CreateInstance(_vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
-	CreateSurface(_vulkanMainCreateInfo.windowPtr);
+	CreateInstance(&currentContext->instance, _vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
+	currentContext->surface = CreateSurface(currentContext->instance, _vulkanMainCreateInfo.windowPtr);
 #ifdef _DEBUG
-	SetUpDebugMessenger();
+	SetUpDebugMessenger(currentContext->instance, &currentContext->m_DebugMessenger);
 #endif
-	m_PhysicalDevices.ChoosePhysicalDevice(m_Instance, m_Surface, deviceExtensions);
-	CreateDevice();
-	InitVulkanAllocator();
+	currentContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(currentContext, deviceExtensions);
+	currentContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(currentContext->physicalDevice, currentContext->surface);
+	CreateDevice(currentContext);
+	//InitVulkanAllocator(currentContext);
 
 }
 
 VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()
 {
+	VulkanContext* currentContext = VulkanContext::currentContext;
 
-	vmaDestroyAllocator(m_VmaAllocator);
-	m_Device.destroy();
+	//vmaDestroyAllocator(currentContext->allocator);
+	currentContext->device.destroy();
 #ifdef _DEBUG
-	DestroyDebugUtilsMessengerEXT(m_Instance, &m_DebugMessenger, nullptr);
+	DestroyDebugUtilsMessengerEXT(currentContext->instance, &currentContext->m_DebugMessenger, nullptr);
 #endif
-	m_Instance.destroySurfaceKHR(m_Surface);
-	m_Instance.destroy(nullptr);
-}
-
-vk::Instance VK_NP::VulkanHarwareWrapper::GetInstance()
-{
-	return m_VulkanHarwareWrapperInstance->m_Instance;
-}
-
-vk::Device VK_NP::VulkanHarwareWrapper::GetDevice()
-{
-	return m_VulkanHarwareWrapperInstance->m_Device;
-}
-
-const VK_NP::VulkanPhysicalDevices& VK_NP::VulkanHarwareWrapper::GetPhysicalDevices()
-{
-	return m_VulkanHarwareWrapperInstance->m_PhysicalDevices;
+	currentContext->instance.destroySurfaceKHR(currentContext->surface);
+	currentContext->instance.destroy(nullptr);
 }
 
 
-vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::GetSurface()
-{
-	return m_VulkanHarwareWrapperInstance->m_Surface;
-}
-
-SwapChainSupportDetails VK_NP::VulkanHarwareWrapper::GetSwapChainSupportDetailsSurface()
-{
-	return m_VulkanHarwareWrapperInstance->m_PhysicalDevices.GetSwapChainSupport(m_VulkanHarwareWrapperInstance->m_Surface);
-}
-
-void VK_NP::VulkanHarwareWrapper::CreateInstance(const char* _AppName, const char* _EngineName)
+void VK_NP::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, const char* _AppName, const char* _EngineName)
 {
 	vk::ApplicationInfo appInfo = {};
 
@@ -126,20 +92,17 @@ void VK_NP::VulkanHarwareWrapper::CreateInstance(const char* _AppName, const cha
 	}
 #endif
 
-	vk::Result result = vk::createInstance(&createInfo, nullptr, &m_Instance);
-	VK_CALL(result);
-
-
-
+	VK_CALL(vk::createInstance(&createInfo, nullptr, _outInstance));
 }
 
-void VK_NP::VulkanHarwareWrapper::CreateDevice()
+void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 {
-	vk::PhysicalDevice physicalDevice = m_PhysicalDevices.GetSelectedPhysicalDevice();
-	const QueuFamiliesIndicies queuFamiliesIndicies = m_PhysicalDevices.GetQueueFamiliesIndicies();
+	vk::PhysicalDevice physicalDevice = _vulkanContext->physicalDevice;
 	vk::PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.getFeatures();
 
-	std::vector<uint32_t> uniqueQueueFamilyIndices = { queuFamiliesIndicies.graphicsFamily , queuFamiliesIndicies.presentFamily };
+	std::vector<uint32_t> uniqueQueueFamilyIndices = { _vulkanContext->queuFamiliesIndicies.graphicsFamily ,
+		_vulkanContext->queuFamiliesIndicies.presentFamily };
+
 	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 
 
@@ -183,14 +146,15 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice()
 #endif
 #pragma endregion DeviceLayer
 
-	VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &m_Device));
-	m_Device.getQueue(queuFamiliesIndicies.graphicsFamily, 0, &graphicQueue);
-	m_Device.getQueue(queuFamiliesIndicies.presentFamily, 0, &presentQueue);
+	VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &_vulkanContext->device));
+	_vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0, &_vulkanContext->graphicQueue);
+	_vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0, &_vulkanContext->presentQueue);
 }
 
 
-void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator()
+void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanContext)
 {
+	/*
 	VmaVulkanFunctions vulkanFunctions = {};
 	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
 	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
@@ -198,23 +162,23 @@ void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator()
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
 	allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
-	allocatorCreateInfo.physicalDevice = m_PhysicalDevices.GetSelectedPhysicalDevice();
-	allocatorCreateInfo.device = m_Device;
-	allocatorCreateInfo.instance = m_Instance;
+	allocatorCreateInfo.physicalDevice = _vulkanContext->physicalDevice;
+	allocatorCreateInfo.device = _vulkanContext->device;
+	allocatorCreateInfo.instance = _vulkanContext->instance;
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
 	VmaAllocator allocator;
-	vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+	vmaCreateAllocator(&allocatorCreateInfo, &allocator);*/
 }
 
-void VK_NP::VulkanHarwareWrapper::CreateSurface(void* _windowPtr)
+vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentInstance, void* _windowPtr)
 {
 	VkWin32SurfaceCreateInfoKHR   createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	createInfo.hwnd = glfwGetWin32Window(static_cast<GLFWwindow*>(_windowPtr));
 	createInfo.hinstance = GetModuleHandle(nullptr);
 
-	m_Surface = VulkanHarwareWrapper::GetInstance().createWin32SurfaceKHR(createInfo, nullptr);
+	return _currentInstance.createWin32SurfaceKHR(createInfo, nullptr);
 }
 
 std::vector<const char*> VK_NP::VulkanHarwareWrapper::GetRequiredExtensions() const
@@ -307,7 +271,7 @@ VkBool32 VK_NP::VulkanHarwareWrapper::DebugCallback(VkDebugUtilsMessageSeverityF
 	return VK_FALSE;
 }
 
-void VK_NP::VulkanHarwareWrapper::SetUpDebugMessenger()
+void VK_NP::VulkanHarwareWrapper::SetUpDebugMessenger(vk::Instance _instance, vk::DebugUtilsMessengerEXT* _debugUtilsMessengerEXT)
 {
 	if constexpr (!ENABLE_VALIDATION_LAYERS)
 		return;
@@ -326,7 +290,7 @@ void VK_NP::VulkanHarwareWrapper::SetUpDebugMessenger()
 	createInfo.pfnUserCallback = DebugCallback;
 	createInfo.pUserData = nullptr; // O
 
-	VK_CALL(CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger));
+	VK_CALL(CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, _debugUtilsMessengerEXT));
 }
 
 

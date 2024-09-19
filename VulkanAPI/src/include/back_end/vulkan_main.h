@@ -34,6 +34,8 @@ namespace VK_NP
 		VULKAN_API void RecreateSwapChain(void* _glfwWindowPtr , uint32_t _newWidht, uint32_t _newHeight);
 
 	private:
+		VulkanContext m_VulkanContext;
+		
 		VulkanHarwareWrapper m_vulkanHardwareWrapper;
 
 		VulkanPresentChain m_vulkanPresentChain;
@@ -43,9 +45,6 @@ namespace VK_NP
 		vk::CommandPool m_CommandPool;
 
 		std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
-
-		// currennt frame inflight
-		uint32_t m_CurrentFrame = 0;
 		
 		VULKAN_API void CreateCommandPool();
 

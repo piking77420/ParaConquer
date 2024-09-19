@@ -43,7 +43,7 @@ glslang_stage_t GetShaderStageToGlslangStage(PC_CORE::LowLevelShaderStageType _l
 VK_NP::VulkanShaderCompiler::VulkanShaderCompiler()
 {
     glslang_initialize_process();
-    m_Device = VulkanHarwareWrapper::GetDevice();
+    m_Device = VulkanContext::currentContext->device;
 }
 
 VK_NP::VulkanShaderCompiler::~VulkanShaderCompiler()

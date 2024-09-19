@@ -69,6 +69,7 @@
     <ClCompile Include="src\source\back_end\vulkan_shader_manager.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_app.cpp" />
     <ClCompile Include="src\source\pch.cpp" />
+    <ClCompile Include="src\source\vulkan_typedef.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreIO\CoreIO.vcxproj">

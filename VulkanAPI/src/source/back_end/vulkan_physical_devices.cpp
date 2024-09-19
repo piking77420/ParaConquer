@@ -4,24 +4,10 @@
 
 #include <set>
 
-vk::PhysicalDevice VK_NP::VulkanPhysicalDevices::GetSelectedPhysicalDevice() const
-{
-    return m_SelectedPhysicalDevice;
-}
-
-VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::GetQueueFamiliesIndicies() const
-{
-    return m_QueuFamiliesIndicies;
-}
-
-SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::GetSwapChainSupport(vk::SurfaceKHR _surface)
-{
-    m_SwapChainSupportDetails = QuerySwapChainSupport(m_SelectedPhysicalDevice, _surface);
-    return m_SwapChainSupportDetails;
-}
 
 bool VK_NP::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface,
-                                                    std::vector<const char*> _deviceExtensions)
+                                                    std::vector<const char*> _deviceExtensions, QueuFamiliesIndicies* _outQueuFamiliesIndicies,
+    SwapChainSupportDetails* _swapChainSupportDetails)
 {
     vk::PhysicalDeviceProperties physicalDeviceProperties = _physicalDevice.getProperties();
     vk::PhysicalDeviceFeatures physicalDeviceFeatures = _physicalDevice.getFeatures();
@@ -37,8 +23,8 @@ bool VK_NP::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physical
         swapChainAdequate)
         return false;
 
-    m_QueuFamiliesIndicies = indices;
-    m_SwapChainSupportDetails = swapChainSupportDetails;
+    *_outQueuFamiliesIndicies = indices;
+    *_swapChainSupportDetails = swapChainSupportDetails;
 
     return true;
 }
@@ -81,18 +67,13 @@ VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
             indices.presentFamily = i;
         }
 
-        /*
-        if (indices.graphicsFamily != INVALID_QUEU && indices.presentFamily != INVALID_QUEU) {
-            break;
-        }*/
-
         i++;
     }
 
     return indices;
 }
 
-SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::QuerySwapChainSupport(
+VK_NP::SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::QuerySwapChainSupport(
     const vk::PhysicalDevice _physicalDevice, const vk::SurfaceKHR _surface)
 {
     SwapChainSupportDetails swapChainSupportDetails;
@@ -125,26 +106,30 @@ void VK_NP::VulkanPhysicalDevices::PrintPhysicalDeviceProperties(vk::PhysicalDev
         '\n';
 }
 #endif
-void VK_NP::VulkanPhysicalDevices::ChoosePhysicalDevice(const vk::Instance _instance, const vk::SurfaceKHR _SurfaceKHR,
+vk::PhysicalDevice VK_NP::VulkanPhysicalDevices::ChoosePhysicalDevice(VulkanContext* _vulkanContext,
                                                         std::vector<const char*> _deviceExtensions)
 {
-    std::vector<vk::PhysicalDevice> devices = _instance.enumeratePhysicalDevices();
+    std::vector<vk::PhysicalDevice> devices = _vulkanContext->instance.enumeratePhysicalDevices();
+    vk::PhysicalDevice returnPhysicalDevice = VK_NULL_HANDLE;
 
     for (auto& phyDevice : devices)
     {
-        if (IsSuitableDevice(phyDevice, _SurfaceKHR, _deviceExtensions))
+        if (IsSuitableDevice(phyDevice, _vulkanContext->surface, _deviceExtensions,
+            &_vulkanContext->queuFamiliesIndicies, &_vulkanContext->swapChainSupportDetails))
         {
-            m_SelectedPhysicalDevice = phyDevice;
+            returnPhysicalDevice = phyDevice;
             break;
         }
     }
 
-    if (m_SelectedPhysicalDevice == VK_NULL_HANDLE)
+    if (returnPhysicalDevice == VK_NULL_HANDLE)
     {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 
 #ifdef _DEBUG
-    PrintPhysicalDeviceProperties(m_SelectedPhysicalDevice);
+    PrintPhysicalDeviceProperties(returnPhysicalDevice);
 #endif
+
+    return returnPhysicalDevice;
 }

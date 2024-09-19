@@ -13,9 +13,7 @@ VK_NP::VulkanMain::VulkanMain(const VulkanAppCreateInfo& vulkanMainCreateInfo) :
 
 VK_NP::VulkanMain::~VulkanMain()
 {
-    auto device = m_vulkanHardwareWrapper.GetDevice();
-    device.destroyCommandPool(m_CommandPool);
-
+    m_VulkanContext.device.destroyCommandPool(m_CommandPool);
 }
 
 #pragma region Shader
@@ -32,51 +30,52 @@ bool VK_NP::VulkanMain::DestroyShader(const std::string& _shaderName)
 
 VULKAN_API void VK_NP::VulkanMain::WaitDevice()
 {
-    m_vulkanHardwareWrapper.GetDevice().waitIdle();
+    m_VulkanContext.device.waitIdle();
 }
 
 void VK_NP::VulkanMain::RecreateSwapChain(void* _glfwWindowPtr , uint32_t _newWidht, uint32_t _newHeight)
 {
+    m_VulkanContext.swapChainSupportDetails = m_vulkanHardwareWrapper.m_VulkanPhysicalDevices.QuerySwapChainSupport(m_VulkanContext.physicalDevice, m_VulkanContext.surface);
     m_vulkanPresentChain.RecreateSwapChain(_glfwWindowPtr, _newWidht, _newHeight);
 }
 
 void VK_NP::VulkanMain::BindProgram(const std::string& _shaderName)
 {
-    m_vulkanShaderManager.BindProgram(_shaderName, m_CommandBuffer[m_CurrentFrame]);
+    m_vulkanShaderManager.BindProgram(_shaderName, m_CommandBuffer[m_VulkanContext.currentFrame]);
 }
 
 #pragma endregion Shader
 
 void VK_NP::VulkanMain::SwapBuffers()
 {
-    m_vulkanPresentChain.SwapBuffer(m_CurrentFrame);
-    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    m_vulkanPresentChain.SwapBuffer(&m_VulkanContext);
+    m_VulkanContext.currentFrame = (m_VulkanContext.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void VK_NP::VulkanMain::BeginDraw()
 {
     // wait for new image 
-    m_vulkanPresentChain.WaitForAvailableImage(m_CurrentFrame);
-    m_vulkanPresentChain.AquireNetImageKHR(m_CurrentFrame);
+    m_vulkanPresentChain.WaitForAvailableImage(&m_VulkanContext);
+    m_vulkanPresentChain.AquireNetImageKHR(&m_VulkanContext);
 
     // reset command buffer
-    m_CommandBuffer[m_CurrentFrame].reset();
+    m_CommandBuffer[m_VulkanContext.currentFrame].reset();
     
     vk::CommandBufferBeginInfo beginInfo{};
     beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
     beginInfo.pInheritanceInfo = nullptr; // Optional
 
-    VK_CALL(m_CommandBuffer[m_CurrentFrame].begin(&beginInfo));
+    VK_CALL(m_CommandBuffer[m_VulkanContext.currentFrame].begin(&beginInfo));
 
     // SOUDLE DO IT HERE
 
     vk::RenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
-    renderPassInfo.renderPass = m_vulkanPresentChain.GetRenderPassTmpr();
-    renderPassInfo.framebuffer = m_vulkanPresentChain.GetFramebuffer();
+    renderPassInfo.renderPass = m_VulkanContext.swapChainRenderPass;
+    renderPassInfo.framebuffer = m_VulkanContext.m_SwapChainFramebuffers[m_VulkanContext.imageIndex];
 
     renderPassInfo.renderArea.offset = vk::Offset2D(0);
-    renderPassInfo.renderArea.extent = m_vulkanPresentChain.GetExtent();
+    renderPassInfo.renderArea.extent = m_VulkanContext.m_Extent2D;
     
     vk::ClearValue clearColor = vk::ClearColorValue({ 0.0f, 0.0f, 0.0f, 1.0f });
       
@@ -85,7 +84,7 @@ void VK_NP::VulkanMain::BeginDraw()
 
     vk::SubpassContents subpassContents = vk::SubpassContents::eInline;
 
-   m_CommandBuffer[m_CurrentFrame].beginRenderPass(&renderPassInfo, subpassContents);
+   m_CommandBuffer[m_VulkanContext.currentFrame].beginRenderPass(&renderPassInfo, subpassContents);
    
 }
 
@@ -93,7 +92,7 @@ void VK_NP::VulkanMain::BeginDraw()
 
 void VK_NP::VulkanMain::Draw()
 {
-    auto extend = m_vulkanPresentChain.GetExtent();
+    const vk::Extent2D& extend = m_VulkanContext.m_Extent2D;
     
     vk::Viewport viewport{};
     viewport.x = 0.0f;
@@ -102,38 +101,39 @@ void VK_NP::VulkanMain::Draw()
     viewport.height = static_cast<float>(extend.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    m_CommandBuffer[m_CurrentFrame].setViewport(0, 1, &viewport);
+    m_CommandBuffer[m_VulkanContext.currentFrame].setViewport(0, 1, &viewport);
 
     vk::Rect2D scissor{};
     scissor.offset = vk::Offset2D(0,0);
     scissor.extent = extend;
-    m_CommandBuffer[m_CurrentFrame].setScissor(0, 1, &scissor);
+    m_CommandBuffer[m_VulkanContext.currentFrame].setScissor(0, 1, &scissor);
 
-    m_CommandBuffer[m_CurrentFrame].draw(3, 1, 0, 0);
+    m_CommandBuffer[m_VulkanContext.currentFrame].draw(3, 1, 0, 0);
 
 }
 
 void VK_NP::VulkanMain::EnDraw()
 {
-    m_CommandBuffer[m_CurrentFrame].endRenderPass();
-    m_CommandBuffer[m_CurrentFrame].end();
+    m_CommandBuffer[m_VulkanContext.currentFrame].endRenderPass();
+    m_CommandBuffer[m_VulkanContext.currentFrame].end();
 
 
     vk::SubmitInfo submitInfo{};
     submitInfo.sType = vk::StructureType::eSubmitInfo;
 
-    vk::Semaphore waitSemaphores[] = { *m_vulkanPresentChain.GetImageAvailableSemaphore(m_CurrentFrame) };
+    
+    vk::Semaphore waitSemaphores[] = { m_VulkanContext.m_syncObject.at(m_VulkanContext.currentFrame).imageAvailableSemaphore };
     vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_CommandBuffer[m_CurrentFrame];
+    submitInfo.pCommandBuffers = &m_CommandBuffer[m_VulkanContext.currentFrame];
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = m_vulkanPresentChain.GetRenderFinishedSemaphore(m_CurrentFrame);
+    submitInfo.pSignalSemaphores = &m_VulkanContext.m_syncObject.at(m_VulkanContext.currentFrame).renderFinishedSemaphore;
 
-    VK_CALL(m_vulkanHardwareWrapper.GetGraphicQueue().submit(1, &submitInfo, *m_vulkanPresentChain.GetInFlightFence(m_CurrentFrame)));
+    VK_CALL(m_VulkanContext.graphicQueue.submit(1, &submitInfo, m_VulkanContext.m_syncObject.at(m_VulkanContext.currentFrame).inFlightFence));
 
 }
 
@@ -143,9 +143,9 @@ void VK_NP::VulkanMain::CreateCommandPool()
     vk::CommandPoolCreateInfo commandPoolCreateInfo;
     commandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
     commandPoolCreateInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-    commandPoolCreateInfo.queueFamilyIndex = m_vulkanHardwareWrapper.GetPhysicalDevices().GetQueueFamiliesIndicies().graphicsFamily;
+    commandPoolCreateInfo.queueFamilyIndex = m_VulkanContext.queuFamiliesIndicies.graphicsFamily;
 
-    VK_CALL(m_vulkanHardwareWrapper.GetDevice().createCommandPool(&commandPoolCreateInfo, nullptr, &m_CommandPool)); 
+    VK_CALL(m_VulkanContext.device.createCommandPool(&commandPoolCreateInfo, nullptr, &m_CommandPool)); 
 }
 
 void VK_NP::VulkanMain::CreateCommandBuffer()
@@ -156,7 +156,7 @@ void VK_NP::VulkanMain::CreateCommandBuffer()
     allocInfo.level = vk::CommandBufferLevel::ePrimary;
     allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-    VK_CALL(m_vulkanHardwareWrapper.GetDevice().allocateCommandBuffers(&allocInfo, m_CommandBuffer.data()));
+    VK_CALL(m_VulkanContext.device.allocateCommandBuffers(&allocInfo, m_CommandBuffer.data()));
 }
 
 

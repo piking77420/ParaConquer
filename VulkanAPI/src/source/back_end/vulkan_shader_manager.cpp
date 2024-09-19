@@ -193,7 +193,7 @@ void VulkanShaderManager::CreatePipelineFromModule(const std::vector<vk::Pipelin
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = *_outLayout;
-    pipelineInfo.renderPass = VulkanPresentChain::GetRenderPassTmpr();
+    pipelineInfo.renderPass = VulkanContext::currentContext->swapChainRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -238,8 +238,8 @@ bool VulkanShaderManager::DestroyShader(const std::string& _shaderName)
 
 VulkanShaderManager::VulkanShaderManager()
 {
-    m_Device = VulkanHarwareWrapper::GetDevice();
-    m_SwapChainExtent = VulkanPresentChain::GetExtent();
+    m_Device = VulkanContext::currentContext->device;
+    m_SwapChainExtent = VulkanContext::currentContext->m_Extent2D;
 }
 
 VulkanShaderManager::~VulkanShaderManager()

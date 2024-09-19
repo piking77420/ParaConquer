@@ -55,7 +55,7 @@ void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
         break;
     case PC_CORE::GraphicAPI::VULKAN:
         {
-            VulkanAppCreateInfo createInfo =
+            VK_NP::VulkanAppCreateInfo createInfo =
             {
                 .appName = "Editor",
                 .engineName = "ParaConquer Engine",

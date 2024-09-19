@@ -1,13 +1,9 @@
 ﻿#pragma once
 
 #include "vulkan_header.h"
-#include <vma/vk_mem_alloc.h>
 
 #include "vulkan_physical_devices.hpp"
-#define VMA_IMPLEMENTATION
-#define VMA_STATIC_VULKAN_FUNCTIONS 0
-#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
-#include <vma/vk_mem_alloc.h>
+
 
 namespace VK_NP
 {
@@ -18,34 +14,21 @@ namespace VK_NP
     class VulkanHarwareWrapper
     {
     public:
+        VulkanPhysicalDevices m_VulkanPhysicalDevices;
 
-        static vk::Queue GetGraphicQueue();
-
-        static vk::Queue GetPresentQueu();
-        
         VulkanHarwareWrapper(const VulkanAppCreateInfo& vulkanMainCreateInfo);
-
+    
         ~VulkanHarwareWrapper();
-
-        static vk::Instance GetInstance();
-
-        static vk::Device GetDevice();
-
-        static const VulkanPhysicalDevices& GetPhysicalDevices();
-
-        static vk::SurfaceKHR GetSurface();
-
-        static SwapChainSupportDetails GetSwapChainSupportDetailsSurface();
-
-
     private:
-        void CreateInstance(const char* _AppName, const char* _EngineNamee);
 
-        void CreateDevice();
 
-        void InitVulkanAllocator();
+        void CreateInstance(vk::Instance* _outInstance, const char* _AppName, const char* _EngineNamee);
 
-        void CreateSurface(void* _windowPtr);
+        void CreateDevice(VulkanContext* _vulkanContext);
+
+        void InitVulkanAllocator(VulkanContext* _vulkanContext);
+
+        vk::SurfaceKHR CreateSurface(vk::Instance _currentInstance, void* _windowPtr);
 
         std::vector<const char*> GetRequiredExtensions() const;
 
@@ -66,26 +49,10 @@ namespace VK_NP
                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                             void* pUserData);
 
-        void SetUpDebugMessenger();
+        void SetUpDebugMessenger(vk::Instance _instance, vk::DebugUtilsMessengerEXT* _debugUtilsMessengerEXT);
         
-        vk::DebugUtilsMessengerEXT m_DebugMessenger;
 #endif
 #pragma endregion DebugCallBack
 
-        vk::Instance m_Instance;
-
-        VulkanPhysicalDevices m_PhysicalDevices;
-
-        vk::Device m_Device;
-        
-        vk::SurfaceKHR m_Surface;
-
-        vk::Queue graphicQueue;
-
-        vk::Queue presentQueue;
-
-        VmaAllocator m_VmaAllocator;
-
-        static VulkanHarwareWrapper* m_VulkanHarwareWrapperInstance;
     };
 }

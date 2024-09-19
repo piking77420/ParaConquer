@@ -15,81 +15,34 @@ namespace VK_NP
 
         void RecreateSwapChain(void* _glfwWindowPtr, uint32_t _newWidht, uint32_t _newHeight);
 
-        void CreateSwapchain(void* _glfwWindowPtr);
+        void CreateSwapchain(void* _glfwWindowPtr, VulkanContext* _vulkanContext);
 
-        void DestroySwapchain();
+        void DestroySwapchain(VulkanContext* _vulkanContext);
 
-        void AquireNetImageKHR(uint32_t _currentFrame);
+        void AquireNetImageKHR(VulkanContext* _vulkanContext);
 
-        void WaitForAvailableImage(uint32_t _currentFrame);
+        void WaitForAvailableImage(VulkanContext* _vulkanContext);
 
-        void SwapBuffer(uint32_t _currentFrame);
-
-        vk::Semaphore* GetImageAvailableSemaphore(uint32_t _currentFrame);
-
-        vk::Semaphore* GetRenderFinishedSemaphore(uint32_t _currentFrame);
-
-        vk::Fence* GetInFlightFence(uint32_t _currentFrame);
-
-        static uint32_t GetImageIndex();
-
-        static vk::Extent2D GetExtent();
-
-        static vk::Format GetSwapChainFormat();
-
-        static vk::RenderPass GetRenderPassTmpr();
-
-        static vk::Framebuffer GetFramebuffer();
-
+        void SwapBuffer(VulkanContext* _vulkanContext);
+    
     private:
-        struct SwapChainSyncObject
-        {
-            vk::Semaphore imageAvailableSemaphore;
-            vk::Semaphore renderFinishedSemaphore;
-            vk::Fence inFlightFence;
-        };
         
-        
-        vk::SurfaceFormatKHR m_SurfaceFormat;
-
-        vk::PresentModeKHR m_PresentMode;
-
-        vk::Extent2D m_Extent2D;
-
-        uint32_t m_SwapchainImageCount;
-
-        uint32_t m_ImageIndex = std::numeric_limits<uint32_t>::max();
-
-        vk::SwapchainKHR m_SwapchainKhr;
-
-        std::array<SwapChainSyncObject, MAX_FRAMES_IN_FLIGHT> m_SwapChainSyncObject;
-
-        vk::Device m_DeviceConstPtr = nullptr;
-
-        std::vector<vk::Image> m_SwapchainImages;
-
-        std::vector<vk::ImageView> m_SwapChainImageViews;
-
-        std::vector<vk::Framebuffer> m_SwapChainFramebuffers;
-
-        vk::RenderPass m_RenderPass;
-
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& _availableFormats);
 
         vk::PresentModeKHR ChoosePresentMode(const std::vector<vk::PresentModeKHR>& _availablePresentModes);
 
         vk::Extent2D ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities);
 
-        void CreateSwapchainImages(vk::Device _device);
+        void CreateSwapchainImages(VulkanContext* _vulkanContext);
         
-        void CreateFramebuffers();
+        void CreateFramebuffers(VulkanContext* _vulkanContext);
 
-        void CreateRenderPass();
+        void CreateRenderPass(VulkanContext* _vulkanContext);
 
-        void CreateSyncObject();
+        void CreateSyncObject(VulkanContext* _vulkanContext);
 
-        void PresentNewImage(uint32_t _currentFrame);
+        void DestroySyncObject(VulkanContext* _vulkanContext);
 
-        static VulkanPresentChain* m_VulkanPresentChainIntance;
+        void PresentNewImage(VulkanContext* _vulkanContext);
     };
 }
