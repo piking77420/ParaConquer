@@ -33,7 +33,7 @@ VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vu
 	currentContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(currentContext, deviceExtensions);
 	currentContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(currentContext->physicalDevice, currentContext->surface);
 	CreateDevice(currentContext);
-	//InitVulkanAllocator(currentContext);
+	InitVulkanAllocator(currentContext);
 
 }
 
@@ -41,7 +41,7 @@ VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()
 {
 	VulkanContext* currentContext = VulkanContext::currentContext;
 
-	//vmaDestroyAllocator(currentContext->allocator);
+	vmaDestroyAllocator(currentContext->allocator);
 	currentContext->device.destroy();
 #ifdef _DEBUG
 	DestroyDebugUtilsMessengerEXT(currentContext->instance, &currentContext->m_DebugMessenger, nullptr);
@@ -154,21 +154,21 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 
 void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanContext)
 {
-	/*
+	
 	VmaVulkanFunctions vulkanFunctions = {};
 	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
 	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
 
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
 	allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 	allocatorCreateInfo.physicalDevice = _vulkanContext->physicalDevice;
 	allocatorCreateInfo.device = _vulkanContext->device;
 	allocatorCreateInfo.instance = _vulkanContext->instance;
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
 	VmaAllocator allocator;
-	vmaCreateAllocator(&allocatorCreateInfo, &allocator);*/
+	vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 }
 
 vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentInstance, void* _windowPtr)

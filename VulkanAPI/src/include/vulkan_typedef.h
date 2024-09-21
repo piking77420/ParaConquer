@@ -3,10 +3,7 @@
 #define NOMINMAX
 #include <vulkan/vulkan.hpp>
 
-#define VMA_IMPLEMENTATION
-//#define VMA_STATIC_VULKAN_FUNCTIONS 0
-//#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
-//#include <vma/vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 namespace VK_NP
 {
@@ -47,7 +44,7 @@ namespace VK_NP
         vk::Instance instance;
         vk::Device device;
         vk::PhysicalDevice physicalDevice;
-        //VmaAllocator allocator;
+        VmaAllocator allocator;
 #pragma region DebugCallBack
 #ifdef _DEBUG
         vk::DebugUtilsMessengerEXT m_DebugMessenger;

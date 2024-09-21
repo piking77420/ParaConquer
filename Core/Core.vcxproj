@@ -53,6 +53,7 @@
     <ClInclude Include="src\include\physics\rigid_body.hpp" />
     <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\rendering\rendering_typedef.h" />
+    <ClInclude Include="src\include\rendering\shader_typedef.h" />
     <ClInclude Include="src\include\rendering\viewport.hpp" />
     <ClInclude Include="src\include\scripting\scripting_lua.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
