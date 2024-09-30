@@ -20,9 +20,6 @@ namespace VK_NP
 
         void BindProgram(const std::string& _shaderName, vk::CommandBuffer _commandBuffer);
 
-        void ReloadShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
-                                                 const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
-
         VulkanShaderManager();
 
         ~VulkanShaderManager();
@@ -51,21 +48,24 @@ namespace VK_NP
 
         vk::Extent2D m_SwapChainExtent;
 
+        vk::CommandPool m_CommandPool;
+
+        vk::CommandBuffer m_CommandBuffer;
+
         void DestroyInternalShaders(ShaderInternal* _shaderInternalBack);
 
         static void FillShaderInfo(ShaderInternal* _shaderInternalBack,
                              const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
-        void CreatePipelineFromModule(const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::Pipeline* _outPipeline, vk::PipelineLayout* _outLayout);
+        void CreatePipelineGraphicPointFromModule(const PC_CORE::ShaderInfo& ShaderInfo,
+            const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);
 
-        void CreateModuleForProgram(const std::string _shaderName,
-                                    const ShaderStageInfo& shaderStageInfo, const std::vector<uint8_t>& _shaderCode,
-                                    vk::ShaderModule* _pipileLineModulee);
-
-        VkPipelineShaderStageCreateInfo GetShaderStageCreateInfo();
+        void CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
         
-        static vk::PipelineShaderStageCreateInfo FromSourceToModule();
-
+        vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
+            _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);
+        
         static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::LowLevelShaderStageType _shaderType);
+        
     };
 }

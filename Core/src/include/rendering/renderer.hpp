@@ -3,13 +3,16 @@
 
 #include <front_end/vulkan_app.hpp>
 
+#include "resources/shader_program.h"
+
 BEGIN_PCCORE
-class Window;
+    class Window;
 
 enum class GraphicAPI
 {
     NONE,
     VULKAN,
+    DX3D12,
     COUNT
 };
 
@@ -34,7 +37,11 @@ private:
 
     PC_CORE_API void InitShader();
 
-    std::string mainShader = "mainShader";
+    PC_CORE_API void InitBuffer();
+
+    ShaderProgram* m_MainShader;
+
+    Window* Windowtpr;
 };
 
 END_PCCORE

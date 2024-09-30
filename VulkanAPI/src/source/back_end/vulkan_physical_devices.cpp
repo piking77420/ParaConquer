@@ -3,11 +3,12 @@
 
 
 #include <set>
+#include <utility>
 
 
 bool VK_NP::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface,
-                                                    std::vector<const char*> _deviceExtensions, QueuFamiliesIndicies* _outQueuFamiliesIndicies,
-    SwapChainSupportDetails* _swapChainSupportDetails)
+                                                    std::vector<const char*> _deviceExtensions,  QueuFamiliesIndicies* _outQueuFamiliesIndicies,
+                                                    SwapChainSupportDetails* _swapChainSupportDetails)
 {
     vk::PhysicalDeviceProperties physicalDeviceProperties = _physicalDevice.getProperties();
     vk::PhysicalDeviceFeatures physicalDeviceFeatures = _physicalDevice.getFeatures();
@@ -15,12 +16,13 @@ bool VK_NP::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physical
     const QueuFamiliesIndicies indices = FindQueuFamillies(_physicalDevice, _surface);
     const SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(_physicalDevice, _surface);
 
-    bool extensionsSupported = CheckDeviceExtensionSupport(_physicalDevice, _deviceExtensions);
+    bool extensionsSupported = CheckDeviceExtensionSupport(_physicalDevice, std::move(_deviceExtensions));
     bool swapChainAdequate = !swapChainSupportDetails.formats.empty() && !swapChainSupportDetails.presentModes.empty();
-
+    bool featuresCheck = HasAllNeededFeatures(physicalDeviceFeatures);
+    
     if (physicalDeviceProperties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu ||
         indices.graphicsFamily == INVALID_QUEU || indices.presentFamily == INVALID_QUEU || !extensionsSupported || !
-        swapChainAdequate)
+        swapChainAdequate || featuresCheck)
         return false;
 
     *_outQueuFamiliesIndicies = indices;
@@ -33,8 +35,7 @@ bool VK_NP::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::Physica
                                                                std::vector<const char*> _deviceExtensions)
 {
     std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
-
-
+    
     std::set<std::string> requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
 
     for (const auto& extension : availableExtensions)
@@ -44,6 +45,13 @@ bool VK_NP::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::Physica
 
     return requiredExtensions.empty();
 }
+
+bool VK_NP::VulkanPhysicalDevices::HasAllNeededFeatures(const vk::PhysicalDeviceFeatures& physicalDeviceFeatures)
+{
+    return !physicalDeviceFeatures.geometryShader || !physicalDeviceFeatures.samplerAnisotropy
+    || !physicalDeviceFeatures.imageCubeArray;
+}
+
 
 VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
     const vk::PhysicalDevice _physicalDevice, const vk::SurfaceKHR _surface)
@@ -58,6 +66,11 @@ VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
         if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
         {
             indices.graphicsFamily = i;
+        }
+
+        if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
+        {
+            indices.transferFamily = i;
         }
 
         vk::Bool32 presentSupport = false;

@@ -30,6 +30,7 @@ namespace VK_NP
     {
         uint32_t graphicsFamily = INVALID_QUEU;
         uint32_t presentFamily = INVALID_QUEU;
+        uint32_t transferFamily = INVALID_QUEU;
     };
 
     struct SwapChainSyncObject
@@ -54,6 +55,7 @@ namespace VK_NP
         QueuFamiliesIndicies queuFamiliesIndicies;
         vk::Queue presentQueue;
         vk::Queue graphicQueue;
+        vk::Queue transferQueu;
 
         // SwapChain
         vk::SwapchainKHR swapChain;

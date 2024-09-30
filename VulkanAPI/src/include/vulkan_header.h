@@ -11,7 +11,9 @@
 #include <vector>
 #include <iostream>
 
+#include "shader_typedef.h"
 #include "vulkan_typedef.h"
+#include "rhi_typedef.h"
 
 #ifdef VULKAN_DLL
 
@@ -103,6 +105,10 @@ static std::ostream& operator,(std::ostream& out, std::ostream&(*f)(std::ostream
   out << f;
   return out;
 }
+
+    vk::Format RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat);
+
+    
     
 }
 

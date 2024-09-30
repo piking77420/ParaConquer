@@ -35,6 +35,7 @@ VULKAN_API void VK_NP::VulkanApp::InstanceBindShaderProgram(const std::string& _
     m_VulkanMain.BindProgram(_shaderProgramName);
 }
 
+
 void VK_NP::VulkanApp::InstanceRecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
 {
     m_VulkanMain.RecreateSwapChain(_glfwWindowptr, _newWidht, _newHeight);
@@ -54,5 +55,10 @@ bool VK_NP::VulkanApp::InstanceDestroyShader(const std::string& _shaderProgramNa
 VULKAN_API void VK_NP::VulkanApp::InstanceWaitDevice()
 {
     m_VulkanMain.WaitDevice();
+}
+
+uint32_t VK_NP::VulkanApp::InstanceBufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
+{
+   return m_VulkanMain.bufferMap.CreateBuffer(static_cast<uint32_t>(_size), _data, _usage);
 }
 

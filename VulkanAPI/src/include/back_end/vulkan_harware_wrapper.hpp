@@ -19,8 +19,9 @@ namespace VK_NP
         VulkanHarwareWrapper(const VulkanAppCreateInfo& vulkanMainCreateInfo);
     
         ~VulkanHarwareWrapper();
-    private:
 
+        static std::vector<vk::DynamicState> GetDynamicState();
+    private:
 
         void CreateInstance(vk::Instance* _outInstance, const char* _AppName, const char* _EngineNamee);
 

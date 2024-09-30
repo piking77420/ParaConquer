@@ -9,7 +9,7 @@ namespace VK_NP
     {
     public:
         [[nodiscard]]
-        vk::PhysicalDevice ChoosePhysicalDevice(VulkanContext* _vulkanContext ,
+        vk::PhysicalDevice ChoosePhysicalDevice(VulkanContext* _vulkanContext, 
             std::vector<const char*> _deviceExtensions);
 
         QueuFamiliesIndicies FindQueuFamillies(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface);
@@ -21,8 +21,8 @@ namespace VK_NP
             std::vector<const char*> _deviceExtensions, QueuFamiliesIndicies* _outQueuFamiliesIndicies, SwapChainSupportDetails* _swapChainSupportDetails);
 
         bool CheckDeviceExtensionSupport(vk::PhysicalDevice device, std::vector<const char*> _deviceExtensions);
-        
 
+        bool HasAllNeededFeatures(const vk::PhysicalDeviceFeatures& physicalDeviceFeatures);
 
 #ifdef _DEBUG
         void PrintPhysicalDeviceProperties(vk::PhysicalDevice _physicalDevice);

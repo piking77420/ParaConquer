@@ -24,6 +24,9 @@ public:
 
     template<class T>
     static void Add(const std::string& _name,T* _resource);
+
+    template<class T>
+    static void Add(T* _resource);
     
     template<class T>
     static T* Get(const std::string& _name);
@@ -55,10 +58,16 @@ T* ResourceManager::Create(const fs::path& path)
 }
 
 template <class T>
-void ResourceManager::Add(const std::string& _name,T* _resource)
+void ResourceManager::Add(const std::string& _name, T* _resource)
 {
     _resource->name = _name;
     m_ResourcesMap.emplace(_name,_resource);
+}
+
+template <class T>
+void ResourceManager::Add(T* _resource)
+{
+    m_ResourcesMap.emplace(_resource->name, _resource);
 }
 
 template <class T>

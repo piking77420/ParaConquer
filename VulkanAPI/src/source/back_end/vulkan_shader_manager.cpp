@@ -21,25 +21,18 @@ void VulkanShaderManager::BindProgram(const std::string& _shaderName,vk::Command
     _commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, shaderInternal.pipeline);
 }
 
-void VulkanShaderManager::ReloadShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
-                                                 const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
-{
-    if (!DestroyShader(_programShaderCreatInfo.prograShaderName))
-        return;
-
-    CreateShaderFromSource(_programShaderCreatInfo, _shaderSource);
-}
-
 
 bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
                                                  const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
 {
-    ShaderInternal shaderInternalBack = {};
+    m_InternalShadersMap.insert({ _programShaderCreatInfo.prograShaderName,{} });
+    ShaderInternal* shaderInternalBack = &m_InternalShadersMap.at(_programShaderCreatInfo.prograShaderName);
+
     // determine shader stage type and name
-    FillShaderInfo(&shaderInternalBack, _shaderSource);
-    std::vector<ShaderStageInfo>& shaderStagesInfo = shaderInternalBack.shaderStages;
-    std::vector<vk::ShaderModule> shaderModules(shaderInternalBack.shaderStages.size());
-    std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesCreateInfos(shaderInternalBack.shaderStages.size());
+    FillShaderInfo(shaderInternalBack, _shaderSource);
+    std::vector<ShaderStageInfo>& shaderStagesInfo = shaderInternalBack->shaderStages;
+    std::vector<vk::ShaderModule> shaderModules(shaderInternalBack->shaderStages.size());
+    std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesCreateInfos(shaderInternalBack->shaderStages.size());
 
     for (uint32_t i = 0; i < _shaderSource.size(); i++)
     {
@@ -52,12 +45,13 @@ bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCre
         shaderStagesCreateInfos.at(i).stage = ShaderBitFromType(shaderStage);
         shaderStagesCreateInfos.at(i).module = shaderModules[i];
         shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
-    }
 
+    }
     
-    CreatePipelineFromModule(shaderStagesCreateInfos, &shaderInternalBack.pipeline, &shaderInternalBack.pipelineLayout);
+    CreatePipelineLayoutFromSpvReflectModule(VK_NP::VulkanContext::currentContext->device, shaderInternalBack);
+    CreatePipelineGraphicPointFromModule(_programShaderCreatInfo.shaderInfo,
+        shaderStagesCreateInfos, shaderInternalBack->pipelineLayout, &shaderInternalBack->pipeline);
     
-    m_InternalShadersMap.insert({ _programShaderCreatInfo.prograShaderName,shaderInternalBack });
 
     // graphic and layout as been created no need module modules then
     for (auto& module : shaderModules)
@@ -88,13 +82,11 @@ void VulkanShaderManager::FillShaderInfo(ShaderInternal* _shaderInternalBack,
     }
 }
 
-void VulkanShaderManager::CreatePipelineFromModule(const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::Pipeline* _outPipeline, vk::PipelineLayout* _outLayout)
+void VulkanShaderManager::CreatePipelineGraphicPointFromModule(const PC_CORE::ShaderInfo& ShaderInfo
+    ,const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline)
 {
-    const std::vector<vk::DynamicState> dynamicStates =
-        {
-          vk::DynamicState::eViewport,
-          vk::DynamicState::eScissor,
-        };
+    // Stais call for dynamic state
+    auto dynamicStates = VulkanHarwareWrapper::GetDynamicState();
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -169,12 +161,11 @@ void VulkanShaderManager::CreatePipelineFromModule(const std::vector<vk::Pipelin
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-    *_outLayout = m_Device.createPipelineLayout(pipelineLayoutInfo, nullptr);
-
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-    vertexInputInfo.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    
+    std::vector<vk::VertexInputBindingDescription> vertexInputBindingDescription{};
+    std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions{};
+    vk::PipelineVertexInputStateCreateInfo vertexInputInfo = GetVertexInputStateCreateInfoFromShaderStruct(std::get<PC_CORE::ShaderGraphicPointInfo>(ShaderInfo.shaderInfoData),
+        &vertexInputBindingDescription, &vertexInputAttributeDescriptions);
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo;
@@ -192,13 +183,53 @@ void VulkanShaderManager::CreatePipelineFromModule(const std::vector<vk::Pipelin
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = *_outLayout;
+    pipelineInfo.layout = _pipelineLayout;
     pipelineInfo.renderPass = VulkanContext::currentContext->swapChainRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     VK_CALL(m_Device.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, _outPipeline));
     
+}
+
+
+vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo,
+                                                                                                          std::vector<vk::VertexInputBindingDescription>* _bindingDescriptions,
+                                                                                                          std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions)
+{
+    size_t vertexBindingDescriptionCount = _shaderGraphicPointInfo.vertexInputBindingDescrition.size();
+    _bindingDescriptions->resize(vertexBindingDescriptionCount);
+
+    
+    for (size_t i = 0; i < vertexBindingDescriptionCount; i++)
+    {
+        const PC_CORE::VertexInputBindingDescrition& vertexInputBindingDescrition = _shaderGraphicPointInfo.vertexInputBindingDescrition[i];
+        const size_t vertexAttributeCount = vertexInputBindingDescrition.vertexBindingDescriptions.size();
+        
+        _attributeDescriptions->resize(_attributeDescriptions->size() + vertexAttributeCount);
+
+       for (size_t j = 0; j < vertexAttributeCount; j++)
+       {
+            const PC_CORE::VertexAttributeDescription& attributeDesription = vertexInputBindingDescrition.vertexBindingDescriptions[j];
+           
+           _attributeDescriptions->at(j).binding = attributeDesription.binding;
+           _attributeDescriptions->at(j).location = attributeDesription.location;
+           _attributeDescriptions->at(j).format = VK_NP::RhiFomatToVkFormat(attributeDesription.format);
+           _attributeDescriptions->at(j).offset = attributeDesription.offset;
+       }
+    }
+
+    vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
+    pipelineVertexInputStateCreateInfo.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo;
+    // Out binding description
+    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(_bindingDescriptions->size());
+    pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = _bindingDescriptions->data();
+
+    // Out attribute Description
+    pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(_attributeDescriptions->size());
+    pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = _attributeDescriptions->data();
+    
+    return pipelineVertexInputStateCreateInfo;
 }
 
 
@@ -279,3 +310,25 @@ vk::ShaderStageFlagBits VulkanShaderManager::ShaderBitFromType(const PC_CORE::Lo
 }
 
 #pragma endregion PARSING
+
+#pragma region SpvReflect
+void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal)
+{
+    const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
+
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
+    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
+    pipelineLayoutInfo.setLayoutCount = 0; // Optional
+    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
+    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+    
+
+    for (size_t i = 0; i < shaderStageInfos.size(); i++)
+    {
+        const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+    }
+
+    _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+}
+#pragma endregion s

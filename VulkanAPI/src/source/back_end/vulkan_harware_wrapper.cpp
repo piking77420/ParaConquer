@@ -1,199 +1,215 @@
 ﻿#include "back_end/vulkan_harware_wrapper.hpp"
 
 
-
-
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <windows.h>
 
 
-
 #ifdef _DEBUG
 constexpr std::array<const char*, 1> validationLayers = {
-	"VK_LAYER_KHRONOS_validation",
+    "VK_LAYER_KHRONOS_validation",
 };
 #endif
 
 const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
 
 VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vulkanMainCreateInfo)
 {
-	VulkanContext* currentContext = VulkanContext::currentContext;
+    VulkanContext* currentContext = VulkanContext::currentContext;
 
-	CreateInstance(&currentContext->instance, _vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
-	currentContext->surface = CreateSurface(currentContext->instance, _vulkanMainCreateInfo.windowPtr);
+    CreateInstance(&currentContext->instance, _vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
+    currentContext->surface = CreateSurface(currentContext->instance, _vulkanMainCreateInfo.windowPtr);
 #ifdef _DEBUG
-	SetUpDebugMessenger(currentContext->instance, &currentContext->m_DebugMessenger);
+    SetUpDebugMessenger(currentContext->instance, &currentContext->m_DebugMessenger);
 #endif
-	currentContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(currentContext, deviceExtensions);
-	currentContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(currentContext->physicalDevice, currentContext->surface);
-	CreateDevice(currentContext);
-	InitVulkanAllocator(currentContext);
-
+    currentContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(currentContext,  deviceExtensions);
+    currentContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(
+        currentContext->physicalDevice, currentContext->surface);
+    CreateDevice(currentContext);
+    InitVulkanAllocator(currentContext);
 }
 
 VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()
 {
-	VulkanContext* currentContext = VulkanContext::currentContext;
+    VulkanContext* currentContext = VulkanContext::currentContext;
 
-	vmaDestroyAllocator(currentContext->allocator);
-	currentContext->device.destroy();
+    vmaDestroyAllocator(currentContext->allocator);
+    currentContext->device.destroy();
 #ifdef _DEBUG
-	DestroyDebugUtilsMessengerEXT(currentContext->instance, &currentContext->m_DebugMessenger, nullptr);
+    DestroyDebugUtilsMessengerEXT(currentContext->instance, &currentContext->m_DebugMessenger, nullptr);
 #endif
-	currentContext->instance.destroySurfaceKHR(currentContext->surface);
-	currentContext->instance.destroy(nullptr);
+    currentContext->instance.destroySurfaceKHR(currentContext->surface);
+    currentContext->instance.destroy(nullptr);
+}
+
+std::vector<vk::DynamicState> VK_NP::VulkanHarwareWrapper::GetDynamicState()
+{
+    return
+    {
+        vk::DynamicState::eViewport,
+        vk::DynamicState::eScissor,
+        vk::DynamicState::eCullMode,
+        vk::DynamicState::eFrontFace,
+        vk::DynamicState::eStencilOp,
+    };
 }
 
 
-void VK_NP::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, const char* _AppName, const char* _EngineName)
+void VK_NP::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, const char* _AppName,
+                                                 const char* _EngineName)
 {
-	vk::ApplicationInfo appInfo = {};
+    vk::ApplicationInfo appInfo = {};
 
-	appInfo.sType = vk::StructureType::eApplicationInfo,
-		appInfo.pNext = nullptr,
-		appInfo.pApplicationName = _AppName,
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-		appInfo.pEngineName = _EngineName,
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0),
-		appInfo.apiVersion = VK_API_VERSION_1_3;
+    appInfo.sType = vk::StructureType::eApplicationInfo,
+        appInfo.pNext = nullptr,
+        appInfo.pApplicationName = _AppName,
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+        appInfo.pEngineName = _EngineName,
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0),
+        appInfo.apiVersion = VK_API_VERSION_1_3;
 
-	std::vector<const char*> extensions = GetRequiredExtensions();
+    std::vector<const char*> extensions = GetRequiredExtensions();
 
-	vk::InstanceCreateInfo createInfo = {};
+    vk::InstanceCreateInfo createInfo = {};
 
-	createInfo.sType = vk::StructureType::eInstanceCreateInfo;
-	createInfo.pNext = nullptr;
-	createInfo.flags = {};
-	createInfo.pApplicationInfo = &appInfo;
-	createInfo.enabledLayerCount = 0;
-	createInfo.ppEnabledLayerNames = 0;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
+    createInfo.sType = vk::StructureType::eInstanceCreateInfo;
+    createInfo.pNext = nullptr;
+    createInfo.flags = {};
+    createInfo.pApplicationInfo = &appInfo;
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = 0;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    createInfo.ppEnabledExtensionNames = extensions.data();
 
 #ifdef _DEBUG
-	if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayer())
-	{
-		throw std::runtime_error("validation layers requested, but not available!");
-	}
-	if (ENABLE_VALIDATION_LAYERS)
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	}
-	else
-	{
-		createInfo.enabledLayerCount = 0;
-	}
+    if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayer())
+    {
+        throw std::runtime_error("validation layers requested, but not available!");
+    }
+    if (ENABLE_VALIDATION_LAYERS)
+    {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else
+    {
+        createInfo.enabledLayerCount = 0;
+    }
 #endif
 
-	VK_CALL(vk::createInstance(&createInfo, nullptr, _outInstance));
+    VK_CALL(vk::createInstance(&createInfo, nullptr, _outInstance));
 }
 
 void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 {
-	vk::PhysicalDevice physicalDevice = _vulkanContext->physicalDevice;
-	vk::PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.getFeatures();
+    vk::PhysicalDevice physicalDevice = _vulkanContext->physicalDevice;
+    vk::PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.getFeatures();
 
-	std::vector<uint32_t> uniqueQueueFamilyIndices = { _vulkanContext->queuFamiliesIndicies.graphicsFamily ,
-		_vulkanContext->queuFamiliesIndicies.presentFamily };
+    std::vector<uint32_t> uniqueQueueFamilyIndices = {
+        _vulkanContext->queuFamiliesIndicies.graphicsFamily,
+        _vulkanContext->queuFamiliesIndicies.presentFamily,
+        _vulkanContext->queuFamiliesIndicies.transferFamily
+    };
 
-	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
 
 
+    for (uint32_t uniqueQueueFamilyIndex : uniqueQueueFamilyIndices)
+    {
+        vk::DeviceQueueCreateInfo queueCreateInfo = {};
+        queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
+        queueCreateInfo.queueFamilyIndex = uniqueQueueFamilyIndex;
+        queueCreateInfo.queueCount = 1;
+        float queuePriority = 1.0f;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
 
-	for (uint32_t uniqueQueueFamilyIndex : uniqueQueueFamilyIndices)
-	{
-		vk::DeviceQueueCreateInfo queueCreateInfo = {};
-		queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
-		queueCreateInfo.queueFamilyIndex = uniqueQueueFamilyIndex;
-		queueCreateInfo.queueCount = 1;
-		float queuePriority = 1.0f;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
 
-		queueCreateInfos.push_back(queueCreateInfo);
-	}
+    vk::PhysicalDeviceFeatures deviceFeatures = {};
 
-	vk::PhysicalDeviceFeatures deviceFeatures = {};
-
-	vk::DeviceCreateInfo vkDevicecreateInfo = {};
-	vkDevicecreateInfo.pQueueCreateInfos = queueCreateInfos.data();
-	vkDevicecreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	vkDevicecreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
-	vkDevicecreateInfo.enabledExtensionCount = 0;
-	vkDevicecreateInfo.pEnabledFeatures = &deviceFeatures;
-	vkDevicecreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-	vkDevicecreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    vk::DeviceCreateInfo vkDevicecreateInfo = {};
+    vkDevicecreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+    vkDevicecreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    vkDevicecreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
+    vkDevicecreateInfo.enabledExtensionCount = 0;
+    vkDevicecreateInfo.pEnabledFeatures = &deviceFeatures;
+    vkDevicecreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    vkDevicecreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 
 #pragma region DeviceLayer
 #ifdef _DEBUG
-	if constexpr (ENABLE_VALIDATION_LAYERS)
-	{
-		vkDevicecreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		vkDevicecreateInfo.ppEnabledLayerNames = validationLayers.data();
-	}
-	else
-	{
-		vkDevicecreateInfo.enabledLayerCount = 0;
-
-	}
+    if constexpr (ENABLE_VALIDATION_LAYERS)
+    {
+        vkDevicecreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        vkDevicecreateInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else
+    {
+        vkDevicecreateInfo.enabledLayerCount = 0;
+    }
 #endif
 #pragma endregion DeviceLayer
 
-	VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &_vulkanContext->device));
-	_vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0, &_vulkanContext->graphicQueue);
-	_vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0, &_vulkanContext->presentQueue);
+    VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &_vulkanContext->device));
+    _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0,
+                                    &_vulkanContext->graphicQueue);
+    
+    _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0,
+                                    &_vulkanContext->presentQueue);
+    
+    _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.transferFamily, 0,
+                                    &_vulkanContext->transferQueu);
 }
 
 
 void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanContext)
 {
-	
-	VmaVulkanFunctions vulkanFunctions = {};
-	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+    VmaVulkanFunctions vulkanFunctions = {};
+    vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+    vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
 
-	VmaAllocatorCreateInfo allocatorCreateInfo = {};
-	allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-	allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
-	allocatorCreateInfo.physicalDevice = _vulkanContext->physicalDevice;
-	allocatorCreateInfo.device = _vulkanContext->device;
-	allocatorCreateInfo.instance = _vulkanContext->instance;
-	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+    VmaAllocatorCreateInfo allocatorCreateInfo = {};
+    allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+    allocatorCreateInfo.physicalDevice = _vulkanContext->physicalDevice;
+    allocatorCreateInfo.device = _vulkanContext->device;
+    allocatorCreateInfo.instance = _vulkanContext->instance;
+    allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
-	VmaAllocator allocator;
-	vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+    VmaAllocator allocator;
+    vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 }
 
 vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentInstance, void* _windowPtr)
 {
-	VkWin32SurfaceCreateInfoKHR   createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	createInfo.hwnd = glfwGetWin32Window(static_cast<GLFWwindow*>(_windowPtr));
-	createInfo.hinstance = GetModuleHandle(nullptr);
+    VkWin32SurfaceCreateInfoKHR createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    createInfo.hwnd = glfwGetWin32Window(static_cast<GLFWwindow*>(_windowPtr));
+    createInfo.hinstance = GetModuleHandle(nullptr);
 
-	return _currentInstance.createWin32SurfaceKHR(createInfo, nullptr);
+    return _currentInstance.createWin32SurfaceKHR(createInfo, nullptr);
 }
 
 std::vector<const char*> VK_NP::VulkanHarwareWrapper::GetRequiredExtensions() const
 {
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if constexpr (ENABLE_VALIDATION_LAYERS)
-	{
-		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
+    if constexpr (ENABLE_VALIDATION_LAYERS)
+    {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
 
-	return extensions;
+    return extensions;
 }
 
 #pragma region DebugCallBack
@@ -202,95 +218,97 @@ std::vector<const char*> VK_NP::VulkanHarwareWrapper::GetRequiredExtensions() co
 
 bool VK_NP::VulkanHarwareWrapper::CheckValidationLayer()
 {
-	uint32_t layerCount;
-	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-	std::vector<VkLayerProperties> availableLayers(layerCount);
-	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : validationLayers)
-	{
-		bool layerFound = false;
+    for (const char* layerName : validationLayers)
+    {
+        bool layerFound = false;
 
-		for (const auto& layerProperties : availableLayers)
-		{
-			if (strcmp(layerName, layerProperties.layerName) == 0)
-			{
-				layerFound = true;
-				break;
-			}
-		}
+        for (const auto& layerProperties : availableLayers)
+        {
+            if (strcmp(layerName, layerProperties.layerName) == 0)
+            {
+                layerFound = true;
+                break;
+            }
+        }
 
-		if (!layerFound)
-		{
-			return false;
-		}
-	}
+        if (!layerFound)
+        {
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
 vk::Result VK_NP::VulkanHarwareWrapper::CreateDebugUtilsMessengerEXT(const vk::Instance _instance,
-	const vk::DebugUtilsMessengerCreateInfoEXT*
-	pCreateInfo,
-	const vk::AllocationCallbacks* pAllocator,
-	vk::DebugUtilsMessengerEXT* pDebugMessenger)
+                                                                     const vk::DebugUtilsMessengerCreateInfoEXT*
+                                                                     pCreateInfo,
+                                                                     const vk::AllocationCallbacks* pAllocator,
+                                                                     vk::DebugUtilsMessengerEXT* pDebugMessenger)
 {
-	// Ensure the instance supports VK_EXT_debug_utils extension
-	if (!_instance)
-	{
-		return vk::Result::eErrorInitializationFailed;
-	}
+    // Ensure the instance supports VK_EXT_debug_utils extension
+    if (!_instance)
+    {
+        return vk::Result::eErrorInitializationFailed;
+    }
 
-	vk::DispatchLoaderDynamic dldi(_instance, vkGetInstanceProcAddr);
+    vk::DispatchLoaderDynamic dldi(_instance, vkGetInstanceProcAddr);
 
-	return _instance.createDebugUtilsMessengerEXT(pCreateInfo, pAllocator, pDebugMessenger, dldi);
+    return _instance.createDebugUtilsMessengerEXT(pCreateInfo, pAllocator, pDebugMessenger, dldi);
 }
 
 void VK_NP::VulkanHarwareWrapper::DestroyDebugUtilsMessengerEXT(const vk::Instance _instance,
-	vk::DebugUtilsMessengerEXT* pDebugMessenger,
-	const vk::AllocationCallbacks* pAllocator)
+                                                                vk::DebugUtilsMessengerEXT* pDebugMessenger,
+                                                                const vk::AllocationCallbacks* pAllocator)
 {
-	// Create the DispatchLoaderDynamic to load the extension functions
-	vk::DispatchLoaderDynamic dldi(_instance, vkGetInstanceProcAddr);
+    // Create the DispatchLoaderDynamic to load the extension functions
+    vk::DispatchLoaderDynamic dldi(_instance, vkGetInstanceProcAddr);
 
-	// Call destroyDebugUtilsMessengerEXT using the dynamic loader
-	if (pDebugMessenger != nullptr)
-	{
-		_instance.destroyDebugUtilsMessengerEXT(*pDebugMessenger, pAllocator, dldi);
-	}
+    // Call destroyDebugUtilsMessengerEXT using the dynamic loader
+    if (pDebugMessenger != nullptr)
+    {
+        _instance.destroyDebugUtilsMessengerEXT(*pDebugMessenger, pAllocator, dldi);
+    }
 }
 
 VkBool32 VK_NP::VulkanHarwareWrapper::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT messageType,
-	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-	void* pUserData)
+                                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                    void* pUserData)
 {
-	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
-	return VK_FALSE;
+    return VK_FALSE;
 }
 
-void VK_NP::VulkanHarwareWrapper::SetUpDebugMessenger(vk::Instance _instance, vk::DebugUtilsMessengerEXT* _debugUtilsMessengerEXT)
+void VK_NP::VulkanHarwareWrapper::SetUpDebugMessenger(vk::Instance _instance,
+                                                      vk::DebugUtilsMessengerEXT* _debugUtilsMessengerEXT)
 {
-	if constexpr (!ENABLE_VALIDATION_LAYERS)
-		return;
+    if constexpr (!ENABLE_VALIDATION_LAYERS)
+        return;
 
-	vk::DebugUtilsMessengerCreateInfoEXT createInfo = {};
+    vk::DebugUtilsMessengerCreateInfoEXT createInfo = {};
 
-	createInfo.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
+    createInfo.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
 
-	createInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-		vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
-		| vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+    createInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+        | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-	createInfo.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
-		| vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
+    createInfo.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+        | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
 
-	createInfo.pfnUserCallback = DebugCallback;
-	createInfo.pUserData = nullptr; // O
+    createInfo.pfnUserCallback = DebugCallback;
+    createInfo.pUserData = nullptr; // O
 
-	VK_CALL(CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, _debugUtilsMessengerEXT));
+    VK_CALL(CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, _debugUtilsMessengerEXT));
 }
 
 

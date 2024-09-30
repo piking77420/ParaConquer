@@ -3,10 +3,10 @@
 #include "math/toolbox_typedef.hpp"
 
 #include "core_header.hpp"
+#include "shader_typedef.h"
 
 BEGIN_PCCORE
-
-struct Vertex
+    struct Vertex
 {
     Tbx::Vector3f position;
     Tbx::Vector3f normal;
@@ -15,7 +15,9 @@ struct Vertex
     PC_CORE_API bool operator==(const Vertex& other) const {
         return position == other.position && normal == other.normal && textureCoord == other.textureCoord;
     }
-
+    
+    static VertexInputBindingDescrition GetBindingDescrition(uint32_t _binding);
+   
 };
 
 END_PCCORE

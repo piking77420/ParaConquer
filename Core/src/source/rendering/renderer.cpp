@@ -4,10 +4,18 @@
 #include "io/window.hpp"
 #include "world/transform.hpp"
 #include "io/window.hpp"
+#include "rendering/gpu_buffer.h"
+#include "rendering/vertex.hpp"
 #include "resources/resource_manager.hpp"
 #include "resources/shader_source.hpp"
 
 using namespace PC_CORE;
+
+const std::vector<Vertex> vertices = {
+    {{0.0f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {}},
+    {{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {}},
+    {{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {}}
+};
 
 
 void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
@@ -28,8 +36,21 @@ void Renderer::Render()
 
 void Renderer::BeginFrame()
 {
+    static bool firstTime = false;
+    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_SPACE) == GLFW_PRESS && !firstTime)
+    {
+        m_MainShader->Reload();
+        firstTime = true;
+    }
+
+    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_SPACE) == GLFW_RELEASE && firstTime)
+    {
+        firstTime = false;
+    }
+
+
     RHI::BeginDraw();
-    RHI::BindShaderProgram(mainShader);
+    m_MainShader->Bind();
 }
 
 void Renderer::EndFrame()
@@ -49,6 +70,8 @@ PC_CORE_API void Renderer::WaitDevice()
 
 void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
 {
+    Windowtpr = _window;
+
     switch (_graphicAPI)
     {
     case PC_CORE::GraphicAPI::NONE:
@@ -61,11 +84,12 @@ void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
                 .engineName = "ParaConquer Engine",
                 .windowPtr = _window->GetHandle()
             };
-
             RHI::MakeInstance(new VK_NP::VulkanApp(createInfo));
         }
         break;
     case PC_CORE::GraphicAPI::COUNT:
+        break;
+    case GraphicAPI::DX3D12:
         break;
     default:
         break;
@@ -77,30 +101,20 @@ void Renderer::InitShader()
     ShaderSource* mainShaderVertex = ResourceManager::Get<ShaderSource>("main.vert");
     ShaderSource* mainShaderFrag = ResourceManager::Get<ShaderSource>("main.frag");
 
-    PC_CORE::ProgramShaderCreateInfo createInfo =
-        {
-        .prograShaderName = mainShader,
-        .programShaderFlag = 0
-        };
+    PC_CORE::ProgramShaderCreateInfo createInfo{};
+    createInfo.prograShaderName = "mainShader";
 
-    ShaderSourceAndPath vertexData =
-        {
-        .shaderSourceCode = mainShaderVertex->GetShaderSourceFile(),
-        .shaderSourceCodePath = mainShaderVertex->path.generic_string().c_str()
-        };
+    createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
+    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexInputBindingDescrition.push_back(
+        Vertex::GetBindingDescrition(0));
 
-    ShaderSourceAndPath framgmentData =
-        {
-        .shaderSourceCode = mainShaderFrag->GetShaderSourceFile(),
-        .shaderSourceCodePath = mainShaderFrag->path.generic_string().c_str()
-        };
+    m_MainShader = new ShaderProgram(createInfo, {mainShaderVertex, mainShaderFrag});
+    ResourceManager::Add<ShaderProgram>(m_MainShader);
+}
 
-    std::vector<ShaderSourceAndPath> sourceAndPaths =
-        {
-        vertexData,
-        framgmentData
-        };
-    
-    RHI::CreateShader(createInfo, {vertexData, framgmentData});
-    
+void Renderer::InitBuffer()
+{
+    return;
+    VertexBuffer vertexBuffer;
+    vertexBuffer.Alloc(sizeof(vertices[0]) * vertices.size(), vertices[0].position.GetPtr());
 }

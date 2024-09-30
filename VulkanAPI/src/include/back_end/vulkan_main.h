@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vulkan_buffer_map.hpp"
+#include "vulkan_command_factory.hpp"
 #include "vulkan_harware_wrapper.hpp"
 #include "vulkan_header.h"
 #include "vulkan_present_chain.hpp"
@@ -11,6 +13,7 @@ namespace VK_NP
 	class VulkanMain
 	{
 	public:
+		
 		VULKAN_API VulkanMain(const VulkanAppCreateInfo& vulkanMainCreateInfo);
 
 		VULKAN_API ~VulkanMain();
@@ -28,7 +31,7 @@ namespace VK_NP
 		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
 		VULKAN_API bool DestroyShader(const std::string&  _shaderName);
-
+		
 		VULKAN_API void WaitDevice();
 
 		VULKAN_API void RecreateSwapChain(void* _glfwWindowPtr , uint32_t _newWidht, uint32_t _newHeight);
@@ -42,13 +45,13 @@ namespace VK_NP
 
 		VulkanShaderManager m_vulkanShaderManager;
 
-		vk::CommandPool m_CommandPool;
+		VulkanCommandFactory m_SwapChainCommandFactory;
 
 		std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
-		
-		VULKAN_API void CreateCommandPool();
 
-		VULKAN_API void CreateCommandBuffer();
+	public:
+		// INIT ORDER
+		VulkanBufferMap bufferMap;
 
 	};
 }

@@ -23,6 +23,8 @@ public:
     Guid guid;
     
     PC_CORE_API IResource();
+
+    PC_CORE_API IResource(std::string _name, std::string _format, fs::path _path, Guid _guid);
     
     PC_CORE_API virtual ~IResource() = default;
 

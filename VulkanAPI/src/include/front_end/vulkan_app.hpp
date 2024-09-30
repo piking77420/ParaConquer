@@ -36,6 +36,8 @@ namespace VK_NP
 
 		VULKAN_API void InstanceWaitDevice() override;
 
+		VULKAN_API uint32_t InstanceBufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
+
 	};
 
 
