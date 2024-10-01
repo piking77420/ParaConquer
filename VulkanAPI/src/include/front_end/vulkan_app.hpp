@@ -26,6 +26,8 @@ namespace VK_NP
 
 		VULKAN_API void InstanceRecreateSwapChain(void* _glfwWindowptr , uint32_t _newWidht, uint32_t _newHeight) override;
 
+		VULKAN_API void InstancePushConstant(const std::string& _shaderProgramName,
+			const std::string& _pushConstantName, const void* _data, uint32_t _size) override;
 	
 	private:
 		VK_NP::VulkanMain m_VulkanMain;

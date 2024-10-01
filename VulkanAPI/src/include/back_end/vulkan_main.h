@@ -30,6 +30,8 @@ namespace VK_NP
 
 		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
+		VULKAN_API void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value, size_t _size);
+
 		VULKAN_API bool DestroyShader(const std::string&  _shaderName);
 		
 		VULKAN_API void WaitDevice();
@@ -48,6 +50,11 @@ namespace VK_NP
 		VulkanCommandFactory m_SwapChainCommandFactory;
 
 		std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
+
+		vk::CommandBuffer m_BindCommandBuffer = VK_NULL_HANDLE;
+
+		void BindCommandBuffer(vk::CommandBuffer _commandBuffer);
+		
 
 	public:
 		// INIT ORDER

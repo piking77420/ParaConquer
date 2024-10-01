@@ -41,6 +41,12 @@ void VK_NP::VulkanApp::InstanceRecreateSwapChain(void* _glfwWindowptr, uint32_t 
     m_VulkanMain.RecreateSwapChain(_glfwWindowptr, _newWidht, _newHeight);
 }
 
+void VK_NP::VulkanApp::InstancePushConstant(const std::string& _shaderProgramName,
+            const std::string& _pushConstantName, const void* _data, uint32_t _size)
+{
+    m_VulkanMain.PushConstant(_shaderProgramName, _pushConstantName.c_str(), _data, _size);
+}
+
 
 void VK_NP::VulkanApp::InstanceCreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
 {

@@ -12,7 +12,7 @@ namespace VK_NP
         vk::Buffer bufferHandle;
         VmaAllocation allocation;
     };
-    // this class is responsable for creating buffer and destroying it
+    // This class is responsable for creating buffer and destroying it
     // should bind this buffer tho
     class VulkanBufferMap
     {

@@ -20,6 +20,9 @@ namespace VK_NP
 
         void BindProgram(const std::string& _shaderName, vk::CommandBuffer _commandBuffer);
 
+        void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
+            size_t _size, vk::CommandBuffer _commandBuffer);
+
         VulkanShaderManager();
 
         ~VulkanShaderManager();
@@ -31,10 +34,19 @@ namespace VK_NP
             PC_CORE::LowLevelShaderStageType shaderStage;
             SpvReflectShaderModule reflectShaderModule;
         };
-
+      
+        struct ReflectBlockVariable
+        {
+            vk::ShaderStageFlags stageFlags;
+            std::string name;
+            size_t size;
+            std::vector<SpvReflectBlockVariable> blocks;
+        };
+        
         struct ShaderInternal
         {
             std::vector<ShaderStageInfo> shaderStages;
+            std::vector<PushConstantInternal> pushConstantsShader;
 
             vk::Pipeline pipeline = VK_NULL_HANDLE;
             vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -48,10 +60,8 @@ namespace VK_NP
 
         vk::Extent2D m_SwapChainExtent;
 
-        vk::CommandPool m_CommandPool;
-
-        vk::CommandBuffer m_CommandBuffer;
-
+        ShaderInternal* GetShaderInternal(const std::string& _shaderName);
+        
         void DestroyInternalShaders(ShaderInternal* _shaderInternalBack);
 
         static void FillShaderInfo(ShaderInternal* _shaderInternalBack,

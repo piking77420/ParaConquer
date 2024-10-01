@@ -51,6 +51,9 @@ void Renderer::BeginFrame()
 
     RHI::BeginDraw();
     m_MainShader->Bind();
+
+    Tbx::Vector3f color = {1,0,1};
+    m_MainShader->PushVector3("colorS", &color);
 }
 
 void Renderer::EndFrame()

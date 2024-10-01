@@ -1,5 +1,6 @@
 ﻿#include "resources/shader_program.h"
 
+#include "math/matrix2x2.hpp"
 #include "rendering/RHI.hpp"
 
 using namespace PC_CORE;
@@ -32,6 +33,12 @@ void ShaderProgram::Bind()
         RHI::BindShaderProgram(name);
 }
 
+void ShaderProgram::PushVector3(const char* _name, void* _data)
+{
+    if (!name.empty())
+        RHI::PushConstants(name, _name, _data, 3 * sizeof(float));
+}
+
 void ShaderProgram::CreateShader()
 {
     std::vector<ShaderSourceAndPath> sourceAndPaths;
@@ -39,7 +46,7 @@ void ShaderProgram::CreateShader()
 
     for (size_t i = 0; i < m_ShaderSources.size(); i++)
     {
-        sourceAndPaths[i].shaderSourceCodePath = m_ShaderSources[i]->path.generic_string().c_str();
+        sourceAndPaths[i].shaderSourceCodePath = m_ShaderSources[i]->path.generic_string();
         sourceAndPaths[i].shaderSourceCode = m_ShaderSources[i]->GetShaderSourceFile();
     }
 

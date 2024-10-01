@@ -19,7 +19,9 @@ public:
     void Reload();
 
     void Bind();
-    
+
+    void PushVector3(const char* _name, void* _data);
+
 private:
 
     void CreateShader();

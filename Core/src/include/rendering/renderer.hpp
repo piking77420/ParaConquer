@@ -39,9 +39,9 @@ private:
 
     PC_CORE_API void InitBuffer();
 
-    ShaderProgram* m_MainShader;
+    ShaderProgram* m_MainShader = nullptr;
 
-    Window* Windowtpr;
+    Window* Windowtpr = nullptr;
 };
 
 END_PCCORE

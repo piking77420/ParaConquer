@@ -55,6 +55,7 @@
     <ClInclude Include="src\include\physics\rigid_body.hpp" />
     <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\rendering\rendering_typedef.h" />
+    <ClInclude Include="src\include\rendering\rhi_typedef.h" />
     <ClInclude Include="src\include\rendering\shader_typedef.h" />
     <ClInclude Include="src\include\rendering\viewport.hpp" />
     <ClInclude Include="src\include\resources\shader_program.h" />
@@ -472,6 +473,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -527,7 +529,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

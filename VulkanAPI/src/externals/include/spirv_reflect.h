@@ -619,7 +619,7 @@ typedef struct SpvReflectShaderModule {
     SpvReflectTypeDescription*      type_descriptions;
   } * _internal;
 
-} SpvReflectShaderModule;
+}  SpvReflectShaderModule;
 
 #if defined(__cplusplus)
 extern "C" {

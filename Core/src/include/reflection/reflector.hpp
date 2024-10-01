@@ -158,8 +158,9 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     m_RelfectionMap.at(GetHash<Holder>()).members.push_back(members);
     return members;
 }
+
 // to do fix warning with void 
-template <typename Holder, typename BaseClass = void>
+template <typename Holder, typename BaseClass>
 ReflectedType* Reflector::ReflectType()
 {
     AddType<Holder>();

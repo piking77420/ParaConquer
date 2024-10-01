@@ -42,3 +42,4 @@ Guid::operator std::string() const
 {
 	return std::format("{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}", m_Data1, m_Data2, m_Data3, m_Data4[0], m_Data4[1], m_Data4[2], m_Data4[3], m_Data4[4], m_Data4[5], m_Data4[6], m_Data4[7]);
 }
+

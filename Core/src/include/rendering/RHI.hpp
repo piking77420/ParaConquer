@@ -19,7 +19,6 @@ public:
 
 	PC_CORE_API virtual ~RHI() {};
 	
-
 	static PC_CORE_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo, const std::vector<ShaderSourceAndPath>& _shaderSource)
 	{
 		m_Instance->InstanceCreateShader(_programShaderCreateInfo, _shaderSource);
@@ -65,6 +64,12 @@ public:
 		m_Instance->InstanceRecreateSwapChain(_glfwWindowptr, _newWidht, _newHeight);
 	}
 
+	static PC_CORE_API void PushConstants(const std::string& _shaderProgramName, const std::string& _pushConstantsName,
+		const void* _data, uint32_t _size)
+	{
+		m_Instance->InstancePushConstant(_shaderProgramName, _pushConstantsName, _data, _size);
+	}
+
 	
 #pragma region Buffer
 
@@ -84,6 +89,9 @@ protected:
 	
 	PC_CORE_API virtual bool InstanceDestroyShader(const std::string& _shaderProgramName) = 0;
 
+	PC_CORE_API virtual void InstancePushConstant(const std::string& _shaderProgramName, const std::string& _pushConstantsName, 
+		const void* _data, uint32_t _size) = 0;
+	
 	PC_CORE_API virtual  void InstanceBeginRender() {};
 	
 	PC_CORE_API virtual  void InstanceRender() {};

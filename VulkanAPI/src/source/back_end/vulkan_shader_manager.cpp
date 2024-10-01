@@ -12,13 +12,42 @@ using namespace VK_NP;
 
 void VulkanShaderManager::BindProgram(const std::string& _shaderName,vk::CommandBuffer _commandBuffer)
 {
+    ShaderInternal* shaderInternal = GetShaderInternal(_shaderName);
+    
+    if (shaderInternal != nullptr)
+        _commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, shaderInternal->pipeline);
+}
+
+VulkanShaderManager::ShaderInternal* VulkanShaderManager::GetShaderInternal(const std::string& _shaderName)
+{
     if (!m_InternalShadersMap.contains(_shaderName))
     {
         assert(false, "Missing shader name");
     }
 
-    ShaderInternal& shaderInternal = m_InternalShadersMap[_shaderName];
-    _commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, shaderInternal.pipeline);
+    return &m_InternalShadersMap[_shaderName];
+}
+
+
+void VulkanShaderManager::PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
+    size_t _size, vk::CommandBuffer _commandBuffer)
+{
+    ShaderInternal* shaderInternal = GetShaderInternal(_shaderName);
+    
+    std::vector<PushConstantInternal>::iterator it = std::ranges::find_if(shaderInternal->pushConstantsShader,
+                                                                          [&](const PushConstantInternal& _pushConstant)
+                                                                          {
+                                                                              return pushConstantName == _pushConstant.name;
+                                                                          });
+
+    if (it == shaderInternal->pushConstantsShader.end())
+        return;
+    
+    const PushConstantInternal& pushConstantInternal = *it;
+    assert(_size == pushConstantInternal.size, "Size mismatch in push constant range");
+    
+    _commandBuffer.pushConstants(shaderInternal->pipelineLayout, pushConstantInternal.stageFlags, static_cast<uint32_t>(pushConstantInternal.offset)
+        , static_cast<uint32_t>(pushConstantInternal.size), _value);
 }
 
 
@@ -233,6 +262,7 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
 }
 
 
+
 void VulkanShaderManager::DestroyInternalShaders(VulkanShaderManager::ShaderInternal* _shaderInternalBack)
 {
     // destroy each reflected spv module
@@ -315,20 +345,67 @@ vk::ShaderStageFlagBits VulkanShaderManager::ShaderBitFromType(const PC_CORE::Lo
 void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal)
 {
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
+    auto& pushConstants = _shaderInternal->pushConstantsShader;
+   
+
+    uint32_t pushConstantSize = 0;
+    for (size_t i = 0; i < shaderStageInfos.size(); i++)
+    {
+        const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+        pushConstantSize += spvReflectShaderModule.push_constant_block_count; 
+    }
+   
+
+    // for each shader
+    for (size_t i = 0; i < shaderStageInfos.size(); i++)
+    {
+        const SpvReflectShaderModule& spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+
+        // for each Block
+        for (size_t j = 0; j < spvReflectShaderModule.push_constant_block_count; j++)
+        {
+            SpvReflectBlockVariable* spvReflectBlockVariable = &spvReflectShaderModule.push_constant_blocks[j];
+            // for each member 
+            for (size_t k = 0; k < spvReflectBlockVariable->member_count; k++)
+            {
+                SpvReflectBlockVariable* member = &spvReflectBlockVariable->members[k];
+                SpvReflectBlockVariable* lookUpMember = &spvReflectBlockVariable->members[k].members[0];
+                if (member->member_count != 0)
+                {
+                    while (true)
+                    {
+                        
+                    }
+                }
+                
+                
+                PushConstantInternal pushConstantInternal  =
+                    {
+                    .name = member->name,
+                    .stageFlags = static_cast<vk::ShaderStageFlags>(spvReflectShaderModule.shader_stage),
+                    .size = member->offset,
+                    .offset = member->size
+                    };
+                pushConstants.push_back(pushConstantInternal);
+            }
+        }
+    }
+
+
+    std::vector<vk::PushConstantRange> pushConstantRanges;
+    pushConstantRanges.reserve(pushConstants.size());
+
+    for (size_t i = 0; i < pushConstants.size(); i++)
+    {
+        pushConstantRanges.emplace_back(pushConstants[i].stageFlags, pushConstants[i].offset, pushConstants[i].size);
+    }
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
     pipelineLayoutInfo.setLayoutCount = 0; // Optional
     pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
-    
-
-    for (size_t i = 0; i < shaderStageInfos.size(); i++)
-    {
-        const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
-    }
-
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()); // Optional
+    pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data(); // Optional
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
 }
-#pragma endregion s
+#pragma endregion SpvReflect
