@@ -3,6 +3,7 @@
 #include "rhi_typedef.h"
 #include "vulkan_header.h"
 #include <spirv_reflect.h>
+#include <stack>
 
 
 #include "vulkan_shader_compiler.hpp"
@@ -40,13 +41,16 @@ namespace VK_NP
             vk::ShaderStageFlags stageFlags;
             std::string name;
             size_t size;
-            std::vector<SpvReflectBlockVariable> blocks;
+            size_t localOffset;
+            size_t globalOffset;
+            
+            std::vector<ReflectBlockVariable> blocks;
         };
         
         struct ShaderInternal
         {
             std::vector<ShaderStageInfo> shaderStages;
-            std::vector<PushConstantInternal> pushConstantsShader;
+            std::vector<ReflectBlockVariable> reflectBlockVariables;
 
             vk::Pipeline pipeline = VK_NULL_HANDLE;
             vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -71,6 +75,8 @@ namespace VK_NP
             const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);
 
         void CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
+
+        void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable, std::vector<ReflectBlockVariable>& _reflectBlockVariableParent, vk::ShaderStageFlags _stageFlags);
         
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
             _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);

@@ -11,27 +11,9 @@
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj.filters" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/reflection/reflector.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/RHI.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/shader_program.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/shader_program.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/guid.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/guid.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/Editor.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/Editor.vcxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.exe.recipe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/externals/include/spirv_reflect.h" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/externals/include/spirv_reflect.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_buffer_map.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_buffer_map.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_main.h" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_main.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_shader_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_shader_manager.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_shader_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_shader_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.vert" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.vert" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -370,7 +352,9 @@
       <workItem from="1727768522845" duration="32000" />
       <workItem from="1727768633694" duration="45000" />
       <workItem from="1727768687514" duration="9205000" />
-      <workItem from="1727796395015" duration="2317000" />
+      <workItem from="1727796395015" duration="2355000" />
+      <workItem from="1727892815696" duration="18000" />
+      <workItem from="1727892845094" duration="5085000" />
     </task>
     <servers />
   </component>

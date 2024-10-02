@@ -1,6 +1,7 @@
 ﻿#include "back_end/vulkan_shader_manager.hpp"
 
 #include <filesystem>
+#include <stack>
 
 #include "back_end/vulkan_harware_wrapper.hpp"
 #include <shaderc/shaderc.hpp>
@@ -34,16 +35,16 @@ void VulkanShaderManager::PushConstant(const std::string& _shaderName, const cha
 {
     ShaderInternal* shaderInternal = GetShaderInternal(_shaderName);
     
-    std::vector<PushConstantInternal>::iterator it = std::ranges::find_if(shaderInternal->pushConstantsShader,
-                                                                          [&](const PushConstantInternal& _pushConstant)
+    std::vector<ReflectBlockVariable>::iterator it = std::ranges::find_if(shaderInternal->reflectBlockVariables,
+                                                                          [&](const ReflectBlockVariable& _pushConstant)
                                                                           {
                                                                               return pushConstantName == _pushConstant.name;
                                                                           });
 
-    if (it == shaderInternal->pushConstantsShader.end())
+    if (it == shaderInternal->reflectBlockVariables.end())
         return;
     
-    const PushConstantInternal& pushConstantInternal = *it;
+    const ReflectBlockVariable& pushConstantInternal = *it;
     assert(_size == pushConstantInternal.size, "Size mismatch in push constant range");
     
     _commandBuffer.pushConstants(shaderInternal->pipelineLayout, pushConstantInternal.stageFlags, static_cast<uint32_t>(pushConstantInternal.offset)
@@ -345,7 +346,7 @@ vk::ShaderStageFlagBits VulkanShaderManager::ShaderBitFromType(const PC_CORE::Lo
 void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal)
 {
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
-    auto& pushConstants = _shaderInternal->pushConstantsShader;
+    std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
    
 
     uint32_t pushConstantSize = 0;
@@ -354,50 +355,41 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
         const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
         pushConstantSize += spvReflectShaderModule.push_constant_block_count; 
     }
-   
+    reflectBlockVariables.resize(pushConstantSize);
 
     // for each shader
     for (size_t i = 0; i < shaderStageInfos.size(); i++)
     {
         const SpvReflectShaderModule& spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
-
         // for each Block
         for (size_t j = 0; j < spvReflectShaderModule.push_constant_block_count; j++)
         {
+            /*
+            size_t relflectedBlockVariableIndex = i + j;
+            ReflectBlockVariable* reflectBlockVariable = &reflectBlockVariables[relflectedBlockVariableIndex];
             SpvReflectBlockVariable* spvReflectBlockVariable = &spvReflectShaderModule.push_constant_blocks[j];
+            reflectBlockVariable->name = spvReflectBlockVariable->name;
+
+            
+            if (spvReflectBlockVariable->member_count == 0)
+                continue;
+            
             // for each member 
             for (size_t k = 0; k < spvReflectBlockVariable->member_count; k++)
             {
-                SpvReflectBlockVariable* member = &spvReflectBlockVariable->members[k];
-                SpvReflectBlockVariable* lookUpMember = &spvReflectBlockVariable->members[k].members[0];
-                if (member->member_count != 0)
-                {
-                    while (true)
-                    {
-                        
-                    }
-                }
                 
-                
-                PushConstantInternal pushConstantInternal  =
-                    {
-                    .name = member->name,
-                    .stageFlags = static_cast<vk::ShaderStageFlags>(spvReflectShaderModule.shader_stage),
-                    .size = member->offset,
-                    .offset = member->size
-                    };
-                pushConstants.push_back(pushConstantInternal);
-            }
+                ReflectMember(&spvReflectBlockVariable[i], reflectBlockVariable->blocks, static_cast<vk::ShaderStageFlagBits>(spvReflectShaderModule.shader_stage));
+            }*/
         }
     }
 
 
     std::vector<vk::PushConstantRange> pushConstantRanges;
-    pushConstantRanges.reserve(pushConstants.size());
+    pushConstantRanges.reserve(reflectBlockVariables.size());
 
-    for (size_t i = 0; i < pushConstants.size(); i++)
+    for (size_t i = 0; i < reflectBlockVariables.size(); i++)
     {
-        pushConstantRanges.emplace_back(pushConstants[i].stageFlags, pushConstants[i].offset, pushConstants[i].size);
+        pushConstantRanges.emplace_back(reflectBlockVariables[i].stageFlags, reflectBlockVariables[i]., reflectBlockVariables[i].size);
     }
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -407,5 +399,27 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data(); // Optional
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+}
+
+void VulkanShaderManager::ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,
+    std::vector<ReflectBlockVariable>& _reflectBlockVariableParent, vk::ShaderStageFlags _stageFlags)
+{
+    /*
+    if (spvReflectBlockVariable->member_count == 0)
+        return;
+    
+    _reflectBlockVariableParent.reserve(spvReflectBlockVariable->member_count);
+    for (size_t i = 0; i < spvReflectBlockVariable->member_count; i++)
+    {
+        SpvReflectBlockVariable* spvReflectBlockVariableChild = &spvReflectBlockVariableChild->members[i];
+        _reflectBlockVariableParent.emplace_back(_stageFlags, spvReflectBlockVariableChild->name, spvReflectBlockVariableChild->size);
+        _reflectBlockVariableParent[i].localOffset = spvReflectBlockVariableChild->offset;
+        
+        _reflectBlockVariableParent[i].globalOffset = spvReflectBlockVariableChild->offset;
+
+        
+        ReflectMember(spvReflectBlockVariableChild, _reflectBlockVariableParent[i].blocks, _stageFlags);
+    }*/
+    
 }
 #pragma endregion SpvReflect
