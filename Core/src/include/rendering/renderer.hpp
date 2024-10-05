@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
 
-#include <front_end/vulkan_app.hpp>
+#include "front_end/vulkan_app.hpp"
 
 #include "resources/shader_program.h"
 
@@ -42,6 +42,8 @@ private:
     ShaderProgram* m_MainShader = nullptr;
 
     Window* Windowtpr = nullptr;
+
+    RHI* m_RhiRef = nullptr; 
 };
 
 END_PCCORE

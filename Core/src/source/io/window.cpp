@@ -59,7 +59,7 @@ void Window::HandleResize()
         }
         windowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
         
-        RHI::RecreateSwapChain(m_Window, windowSize.x, windowSize.y);
+        RHI::GetInstance()->RecreateSwapChain(m_Window, windowSize.x, windowSize.y);
         onResize = false;
     }
 }

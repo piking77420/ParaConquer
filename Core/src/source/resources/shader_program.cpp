@@ -30,14 +30,15 @@ void ShaderProgram::Reload()
 void ShaderProgram::Bind()
 {
     if (!name.empty())
-        RHI::BindShaderProgram(name);
+        RHI::GetInstance()->BindShaderProgram(name);
 }
 
 void ShaderProgram::PushVector3(const char* _name, void* _data)
 {
     if (!name.empty())
-        RHI::PushConstants(name, _name, _data, 3 * sizeof(float));
-}
+    {
+        RHI::GetInstance()->PushConstants(name, _name, _data, 3 * sizeof(float));
+    }}
 
 void ShaderProgram::CreateShader()
 {
@@ -55,12 +56,12 @@ void ShaderProgram::CreateShader()
         name,
         m_ShaderInfo
         };
-    RHI::CreateShader(programShaderCreateInfo, sourceAndPaths);
+    RHI::GetInstance()->CreateShader(programShaderCreateInfo, sourceAndPaths);
 
 }
 
 void ShaderProgram::DestroyShader()
 {
     if (!name.empty())
-        RHI::DestroyShader(name);
+        RHI::GetInstance()->DestroyShader(name);
 }

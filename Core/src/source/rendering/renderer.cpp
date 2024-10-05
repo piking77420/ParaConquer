@@ -21,6 +21,7 @@ const std::vector<Vertex> vertices = {
 void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 {
     InitRhi(_graphicAPI, _window);
+    m_RhiRef = RHI::GetInstance();
     InitShader();
 }
 
@@ -31,7 +32,7 @@ void Renderer::Destroy()
 
 void Renderer::Render()
 {
-    RHI::Render();
+    m_RhiRef->Render();
 }
 
 void Renderer::BeginFrame()
@@ -49,26 +50,26 @@ void Renderer::BeginFrame()
     }
 
 
-    RHI::BeginDraw();
+    m_RhiRef->BeginRender();
     m_MainShader->Bind();
 
     Tbx::Vector3f color = {1,0,1};
-    m_MainShader->PushVector3("colorS", &color);
+    m_MainShader->PushVector3("PushConstants", &color);
 }
 
 void Renderer::EndFrame()
 {
-    RHI::EndDraw();
+    m_RhiRef->EndRender();
 }
 
 void Renderer::SwapBuffers()
 {
-    RHI::SwapBuffers();
+    m_RhiRef->SwapBuffers();
 }
 
-PC_CORE_API void Renderer::WaitDevice()
+void Renderer::WaitDevice()
 {
-    RHI::WaitDevice();
+    m_RhiRef->WaitDevice();
 }
 
 void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)

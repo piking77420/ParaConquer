@@ -21,4 +21,8 @@ void RHI::DestroyInstance()
 	delete m_Instance;
 }
 
+RHI* const RHI::GetInstance()
+{
+	return m_Instance;
+}
 

@@ -25,7 +25,7 @@ template <GPU_BUFFER_USAGE T>
 void GpuBuffer<T>::Alloc(size_t size, const void* _data)
 {
     m_Size = size;
-    RHI::BufferData(size, _data, T);
+    RHI::GetInstance()->BufferData(size, _data, T);
 }
 
 

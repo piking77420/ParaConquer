@@ -102,7 +102,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\VulkanAPI.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\VulkanAPI.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\VulkanAPI.pch</PrecompiledHeaderOutputFile>
@@ -135,7 +135,7 @@
       <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;_UNICODE;UNICODE;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\Core\src\include;D:\Data\Project\ParaConquer\Core\src\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;C:\Data\Isart\Projet\C++\ParaConquer\VulkanAPI\src\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LibCompiled>true</LibCompiled>
     </ClCompile>
@@ -178,7 +178,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ObjectFileName>x64\Debug\</ObjectFileName>
       <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\VulkanAPI.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>C:\Data\Isart\Projet\C++\ParaConquer\x64\Debug\VulkanAPI.pdb</ProgramDataBaseFileName>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>x64\Debug\VulkanAPI.pch</PrecompiledHeaderOutputFile>
@@ -211,7 +211,7 @@
       <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;_UNICODE;UNICODE;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\Core\src\include;D:\Data\Project\ParaConquer\Core\src\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;C:\Data\Isart\Projet\C++\ParaConquer\VulkanAPI\src\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LibCompiled>true</LibCompiled>
     </ClCompile>
@@ -355,7 +355,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\include;$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\include;$(SolutionDir)Core\src\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

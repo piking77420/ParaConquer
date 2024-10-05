@@ -41,10 +41,9 @@ namespace VK_NP
             vk::ShaderStageFlags stageFlags;
             std::string name;
             size_t size;
-            size_t localOffset;
-            size_t globalOffset;
+            size_t absoluteOffSet;
             
-            std::vector<ReflectBlockVariable> blocks;
+            std::vector<ReflectBlockVariable> members;
         };
         
         struct ShaderInternal
@@ -76,7 +75,8 @@ namespace VK_NP
 
         void CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
 
-        void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable, std::vector<ReflectBlockVariable>& _reflectBlockVariableParent, vk::ShaderStageFlags _stageFlags);
+        static void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,
+        ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags);
         
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
             _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);
