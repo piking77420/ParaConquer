@@ -8,7 +8,6 @@
 BEGIN_PCCORE
 
 MAKE_ECS_COMPONENT(DirLight)
-    //MAKE_COMPONENT(DirLight)
     Tbx::Vector3f color =  {1.f,1.f,1.f};
     float intensity = 1.f;
 };
@@ -25,7 +24,6 @@ REFLECT_MEMBER(PointLight, color)
 REFLECT_MEMBER(PointLight, intensity)
 
 MAKE_ECS_COMPONENT(SpotLight)
-    //MAKE_COMPONENT(SpotLight)
     Tbx::Vector3f color = {1.f,1.f,1.f};
     float intensity = 1.f;
 };

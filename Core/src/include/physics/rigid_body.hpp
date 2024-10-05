@@ -1,13 +1,12 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "ecs/ecs_front.h"
 #include "reflection/reflector.hpp"
 
 BEGIN_PCCORE
 
-struct RigidBody
-{
-    //MAKE_COMPONENT(RigidBody);
+MAKE_ECS_COMPONENT(RigidBody)
 
     bool useGravity = true;
 
@@ -19,11 +18,12 @@ struct RigidBody
 
     float angularDamping = 0.1f;
 };
-/*
-REFLECT(RigidBody, mass);
-REFLECT(RigidBody, useGravity);
-REFLECT(RigidBody, restitutionCoef);
-REFLECT(RigidBody, damping);
-REFLECT(RigidBody, angularDamping);
-*/
+
+
+REFLECT(RigidBody, Component);
+REFLECT_MEMBER(RigidBody, useGravity);
+REFLECT_MEMBER(RigidBody, restitutionCoef);
+REFLECT_MEMBER(RigidBody, damping);
+REFLECT_MEMBER(RigidBody, angularDamping);
+
 END_PCCORE

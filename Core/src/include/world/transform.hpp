@@ -10,22 +10,23 @@ BEGIN_PCCORE
 
 MAKE_ECS_COMPONENT(Transform)
 
-    EntityId parentId = INVALID_ENTITY_ID;
-    
-    Tbx::Vector3f position;
+EntityId parentId = INVALID_ENTITY_ID;
 
-    Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
+Tbx::Vector3f position;
 
-    Tbx::Vector3f scale = 1.f;
+Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
+
+Tbx::Vector3f scale = 1.f;
 
 // tmpr
-    Tbx::Vector3f localPosition;
+Tbx::Vector3f localPosition;
 
-    Tbx::Vector3f localRotation;
+Tbx::Vector3f localRotation;
 };
-REFLECT(Transform, Component)
-REFLECT_MEMBER(Transform, position)
-REFLECT_MEMBER(Transform, rotation)
-REFLECT_MEMBER(Transform, scale)
+
+//REFLECT(Transform, Component)
+//REFLECT_MEMBER(Transform, position)
+//REFLECT_MEMBER(Transform, rotation)
+//REFLECT_MEMBER(Transform, scale)
 
 END_PCCORE

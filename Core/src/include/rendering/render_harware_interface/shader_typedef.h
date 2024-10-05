@@ -9,6 +9,26 @@
 #include <variant>
 
 BEGIN_PCCORE
+
+#pragma region RHIFORMAT
+enum class RHIFormat
+{
+    UNDIFINED,
+    R8_UNORM,
+    R8_SNORM,
+    R8_USCALED,
+
+    R32G32_SFLOAT,
+    R32G32B32_SFLOAT,
+
+    COUNT
+};
+
+#pragma endregion
+
+    
+#pragma region Shader
+
     enum class LowLevelShaderStageType
     {
         VERTEX,
@@ -44,22 +64,6 @@ BEGIN_PCCORE
 
         COUT
     };
-
-#pragma region RHIFORMAT
-    enum class RHIFormat
-    {
-        UNDIFINED,
-        R8_UNORM,
-        R8_SNORM,
-        R8_USCALED,
-
-        R32G32_SFLOAT,
-        R32G32B32_SFLOAT,
-
-        COUNT
-    };
-
-#pragma endregion
 
     struct VertexAttributeDescription
     {
@@ -119,6 +123,10 @@ BEGIN_PCCORE
         // Return a default value or handle the error when no match is found
         return LowLevelShaderStageType::COUNT;
     }
+
+#pragma endregion Shader
+
+
 
 
 END_PCCORE

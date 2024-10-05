@@ -4,8 +4,8 @@
 #include "io/window.hpp"
 #include "world/transform.hpp"
 #include "io/window.hpp"
-#include "rendering/gpu_buffer.h"
-#include "rendering/vertex.hpp"
+#include "rendering/render_harware_interface/gpu_buffer.h"
+#include "rendering/render_harware_interface/vertex.hpp"
 #include "resources/resource_manager.hpp"
 #include "resources/shader_source.hpp"
 
@@ -53,7 +53,7 @@ void Renderer::BeginFrame()
     m_RhiRef->BeginRender();
     m_MainShader->Bind();
 
-    Tbx::Vector3f color = {1,0,1};
+    Tbx::Vector3f color = {0,0,1};
     m_MainShader->PushVector3("PushConstants", &color);
 }
 

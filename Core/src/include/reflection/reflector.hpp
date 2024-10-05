@@ -385,8 +385,10 @@ void Reflector::GetArrayInfoFromType(TypeInfo* _typeInfo)
     
 }
 
+
 #define REFLECT(CurrentType, ...) \
 inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
+
 
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
 inline PC_CORE::Members CurrentType##_##memberName##_reflected = PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName),##__VA_ARGS__>(offsetof(CurrentType, memberName), #memberName);\

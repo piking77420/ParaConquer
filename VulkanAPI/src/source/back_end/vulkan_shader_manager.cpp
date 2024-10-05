@@ -24,6 +24,7 @@ VulkanShaderManager::ShaderInternal* VulkanShaderManager::GetShaderInternal(cons
     if (!m_InternalShadersMap.contains(_shaderName))
     {
         assert(false, "Missing shader name");
+        return  nullptr;
     }
 
     return &m_InternalShadersMap[_shaderName];
@@ -91,7 +92,7 @@ bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCre
         m_Device.destroyShaderModule(module);
     }
 
-    m_InternalShadersMap.insert({ _programShaderCreatInfo.prograShaderName, {} });
+    m_InternalShadersMap.insert({ _programShaderCreatInfo.prograShaderName, shaderInternalBack });
 
     return true;
 }

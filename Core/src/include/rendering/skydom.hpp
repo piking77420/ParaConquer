@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "core_header.hpp"
-#include "vertex.hpp"
+#include "rendering/render_harware_interface/vertex.hpp"
 
 BEGIN_PCCORE
     class Skydom

@@ -1,7 +1,7 @@
 ﻿#include "resources/shader_program.h"
 
 #include "math/matrix2x2.hpp"
-#include "rendering/RHI.hpp"
+#include "rendering/render_harware_interface/RHI.hpp"
 
 using namespace PC_CORE;
 

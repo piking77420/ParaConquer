@@ -8,7 +8,7 @@ namespace VK_NP
     {
     public:
     
-        void CreateCommandBuffer(vk::CommandBuffer* _buffers, uint32_t _bufferCount, vk::CommandBufferLevel _commandBufferLevel);
+        void AllocCommandBuffer(vk::CommandBuffer* _buffers, uint32_t _bufferCount, vk::CommandBufferLevel _commandBufferLevel);
 
         
         VulkanCommandFactory(uint32_t _queuFamliesIndicies, vk::CommandPoolCreateFlagBits _createFlagBits);

@@ -1,4 +1,4 @@
-﻿#include "rendering/vertex.hpp"
+﻿#include "rendering/render_harware_interface/vertex.hpp"
 
 PC_CORE::VertexInputBindingDescrition PC_CORE::Vertex::GetBindingDescrition(uint32_t _binding)
 {

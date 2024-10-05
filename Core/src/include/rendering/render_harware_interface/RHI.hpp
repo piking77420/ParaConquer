@@ -59,12 +59,36 @@ public:
 	{
 	}
 
-	virtual  PC_CORE_API void PushConstants(const std::string& _shaderProgramName, const std::string& _pushConstantsName,
+	virtual PC_CORE_API void PushConstants(const std::string& _shaderProgramName, const std::string& _pushConstantsName,
 		const void* _data, uint32_t _size)
 	{
 	}
 
+#pragma region CommandPool
 
+	virtual PC_CORE_API void CreateCommandPool(const CommandPoolCreateInfo& _commandPoolCreateInfo, void** _commandPoolHandle)
+	{
+
+	}
+
+	virtual PC_CORE_API void DestroyCommandPool(void** _commandPoolHandle)
+	{
+
+	}
+
+	virtual PC_CORE_API void AllocCommandBuffer(void* _commandPoolHandle, CommandBuffer* _commandBufferHandle,
+		uint32_t _commandBufferAllocationCount)
+	{
+
+	}
+
+	virtual PC_CORE_API void FreeCommandPool(void* _commandPoolHandle, CommandBuffer* _commandBufferHandle,
+		uint32_t _commandBufferFreeAllocationCount)
+	{
+
+	}
+
+#pragma endregion CommandPool
 	
 #pragma region Buffer
 

@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "rendering/RHI.hpp"
+#include "rendering/render_harware_interface/RHI.hpp"
 
 
 using namespace PC_CORE;

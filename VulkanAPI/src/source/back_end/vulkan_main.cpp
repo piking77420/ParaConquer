@@ -9,7 +9,7 @@ VK_NP::VulkanMain::VulkanMain(const VulkanAppCreateInfo& vulkanMainCreateInfo) :
 {
     m_SwapChainCommandFactory = VulkanCommandFactory(m_VulkanContext.queuFamiliesIndicies.graphicsFamily,
         vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-    m_SwapChainCommandFactory.CreateCommandBuffer(m_CommandBuffer.data(), static_cast<uint32_t>(m_CommandBuffer.size()),
+    m_SwapChainCommandFactory.AllocCommandBuffer(m_CommandBuffer.data(), static_cast<uint32_t>(m_CommandBuffer.size()),
         vk::CommandBufferLevel::ePrimary);
 }
 

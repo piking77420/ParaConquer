@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "rendering/RHI.hpp"
+#include "rendering/render_harware_interface/RHI.hpp"
 
 #include "back_end/vulkan_main.h"
 

@@ -2,7 +2,7 @@
 
 using namespace VK_NP;
 
-void VulkanCommandFactory::CreateCommandBuffer(vk::CommandBuffer* _buffers, uint32_t _bufferCount, vk::CommandBufferLevel _commandBufferLevel)
+void VulkanCommandFactory::AllocCommandBuffer(vk::CommandBuffer* _buffers, uint32_t _bufferCount, vk::CommandBufferLevel _commandBufferLevel)
 {
     vk::CommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
@@ -23,6 +23,7 @@ VulkanCommandFactory::VulkanCommandFactory(uint32_t _queuFamliesIndicies, vk::Co
     commandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
     commandPoolCreateInfo.queueFamilyIndex = _queuFamliesIndicies;
     commandPoolCreateInfo.flags = _createFlagBits;
+
     
     m_CommandPool = m_Device.createCommandPool(commandPoolCreateInfo, nullptr);
     
