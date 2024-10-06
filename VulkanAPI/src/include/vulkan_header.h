@@ -142,6 +142,8 @@ static std::ostream& operator,(std::ostream& out, std::ostream&(*f)(std::ostream
 }
 
     vk::Format RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat);
+
+    vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
 }
 
 

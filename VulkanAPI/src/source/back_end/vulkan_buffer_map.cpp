@@ -2,76 +2,85 @@
 
 
 
-uint32_t VK_NP::VulkanBufferMap::CreateBuffer(uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage)
+VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage)
 {
     VulkanContext* context = VulkanContext::currentContext;
     VmaAllocator allocator = context->allocator;
 
-    VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.pNext = nullptr;
     bufferInfo.size = _size;
-    bufferInfo.usage = static_cast<VkBufferUsageFlags>(GetVulkanUsage(usage));
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Add usage as needed
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Adjust sharing mode if needed
 
+    
     VmaAllocationCreateInfo allocInfo = {};
-    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
     BufferInternal bufferInternal {};
     bufferInternal.size = _size;
     bufferInternal.usage = usage;
 
     // Create The BufferObject
-    VkBuffer bufferC;
-    vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &bufferC, &bufferInternal.allocation, nullptr);
-    bufferInternal.bufferHandle = bufferC;
+    VkBuffer bufferC =  VK_NULL_HANDLE;
+    
+    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &bufferC, &bufferInternal.allocation,
+        nullptr)));
     
     // COPY USER DATA TO MAPPED DATA
+    void* data;
+    vmaMapMemory(allocator, bufferInternal.allocation, &data);
+
+    memcpy(data, _data, _size);
+
+    //vmaUnmapMemory(allocator, bufferInternal.allocation);
     
 
-    const uint32_t id = static_cast<uint32_t>(m_BuffersMap.size());
-    m_BuffersMap.insert({id, bufferInternal});
+    vk::Buffer buffer = bufferC;
+    m_BuffersMap.insert({buffer, bufferInternal});
 
-    return id;
+    return buffer;
 }
 
-const VK_NP::BufferInternal& VK_NP::VulkanBufferMap::GetBufferUsage(uint32_t _bufferId, PC_CORE::GPU_BUFFER_USAGE _bufferUsage)
+const VK_NP::BufferInternal& VK_NP::VulkanBufferMap::GetBufferUsage(BufferKeyHandle _bufferKeyHandle)
 {
 
-    if (!m_BuffersMap.contains(_bufferId))
+    if (!m_BuffersMap.contains(_bufferKeyHandle))
         throw std::runtime_error("Buffer does not exist in vulkan Buffer Map");
 
-    const BufferInternal* bufferInternal = &m_BuffersMap.at(_bufferId);
-        
-    if (bufferInternal->usage != _bufferUsage)
-        throw std::runtime_error("trying to bind a buffer as a vertex buffer but his usage don't say hit is one");
+    const BufferInternal* bufferInternal = &m_BuffersMap.at(_bufferKeyHandle);
 
     return *bufferInternal;
 }
 
 
-void VK_NP::VulkanBufferMap::DestroyBuffer(uint32_t _bufferId)
+bool VK_NP::VulkanBufferMap::DestroyBuffer(BufferKeyHandle bufferKeyHandle)
 {
+    if (!m_BuffersMap.contains(bufferKeyHandle))
+    {
+        throw std::runtime_error("Buffer does not exist in vulkan Buffer Map");
+        return false;
+    }
+
     VulkanContext* context = VulkanContext::currentContext;
     VmaAllocator allocator = context->allocator;
-
-    if (!m_BuffersMap.contains(_bufferId))
-        throw std::runtime_error("Buffer does not exist in vulkan Buffer Map");
-
-    auto& buffer = m_BuffersMap.at(_bufferId);
-    vmaDestroyBuffer(allocator, buffer.bufferHandle, nullptr);
     
+    auto& buffer = m_BuffersMap.at(bufferKeyHandle);
+    vmaDestroyBuffer(allocator, CastObjectToVkObject<vk::Buffer>(bufferKeyHandle), nullptr);
+    
+    m_BuffersMap.erase(bufferKeyHandle);
+
+    return true;
 }
 
-VK_NP::VulkanBufferMap::VulkanBufferMap()
-{
 
+VK_NP::VulkanBufferMap::~VulkanBufferMap()
+{
     for (auto& pair : m_BuffersMap)
     {
         DestroyBuffer(pair.first);
     }
-}
-
-VK_NP::VulkanBufferMap::~VulkanBufferMap()
-{
-    
 }
 
 

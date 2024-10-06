@@ -23,20 +23,23 @@ BEGIN_PCCORE
 
         PC_CORE_API float GetAspect() const;
 
+        Tbx::Vector2ui GetWindowSize() const;
+    
         PC_CORE_API GLFWwindow* GetHandle();
 
         PC_CORE_API Window(const char* _windowName);
 
         PC_CORE_API ~Window();
+
     
     private:
-        Tbx::Vector2ui windowSize = {1680, 1050};
+        Tbx::Vector2ui m_WindowSize = {1680, 1050};
 
-        GLFWmonitor* monitor = nullptr;
+        GLFWmonitor* m_Monitor = nullptr;
 
         GLFWwindow* m_Window = nullptr;
 
-        const GLFWvidmode* mode = nullptr;
+        const GLFWvidmode* Mode = nullptr;
 
         Tbx::Vector2ui oldPos;
         Tbx::Vector2ui oldSize;

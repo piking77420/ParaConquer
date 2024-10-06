@@ -7,6 +7,7 @@
 #include <shaderc/shaderc.hpp>
 
 #include "back_end/vulkan_present_chain.hpp"
+#include "render_harware_interface/vertex.hpp"
 
 
 using namespace VK_NP;
@@ -201,11 +202,13 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(const PC_CORE::Sh
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
 
+    
     std::vector<vk::VertexInputBindingDescription> vertexInputBindingDescription{};
     std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions{};
     vk::PipelineVertexInputStateCreateInfo vertexInputInfo = GetVertexInputStateCreateInfoFromShaderStruct(
         std::get<PC_CORE::ShaderGraphicPointInfo>(ShaderInfo.shaderInfoData),
         &vertexInputBindingDescription, &vertexInputAttributeDescriptions);
+    
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo;
@@ -214,7 +217,7 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(const PC_CORE::Sh
 
     vk::GraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
-    pipelineInfo.stageCount = 2;
+    pipelineInfo.stageCount = static_cast<uint32_t>(_shaderStageCreateInfos.size());
     pipelineInfo.pStages = _shaderStageCreateInfos.data();
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
@@ -237,28 +240,26 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
     std::vector<vk::VertexInputBindingDescription>* _bindingDescriptions,
     std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions)
 {
-    size_t vertexBindingDescriptionCount = _shaderGraphicPointInfo.vertexInputBindingDescrition.size();
-    _bindingDescriptions->resize(vertexBindingDescriptionCount);
 
-
-    for (size_t i = 0; i < vertexBindingDescriptionCount; i++)
+    // Biding Description
+    _bindingDescriptions->resize(_shaderGraphicPointInfo.vertexInputBindingDescritions.size());
+    for (size_t i = 0; i < _shaderGraphicPointInfo.vertexInputBindingDescritions.size(); i++)
     {
-        const PC_CORE::VertexInputBindingDescrition& vertexInputBindingDescrition = _shaderGraphicPointInfo.
-            vertexInputBindingDescrition[i];
-        const size_t vertexAttributeCount = vertexInputBindingDescrition.vertexBindingDescriptions.size();
+        _bindingDescriptions->at(i).binding = _shaderGraphicPointInfo.vertexInputBindingDescritions[i].binding;
+        _bindingDescriptions->at(i).stride = _shaderGraphicPointInfo.vertexInputBindingDescritions[i].stride;
+        _bindingDescriptions->at(i).inputRate = RhiInputRateToVkInputRate(_shaderGraphicPointInfo.vertexInputBindingDescritions[i].vertexInputRate);
 
-        _attributeDescriptions->resize(_attributeDescriptions->size() + vertexAttributeCount);
-
-        for (size_t j = 0; j < vertexAttributeCount; j++)
-        {
-            const PC_CORE::VertexAttributeDescription& attributeDesription = vertexInputBindingDescrition.
-                vertexBindingDescriptions[j];
-
-            _attributeDescriptions->at(j).binding = attributeDesription.binding;
-            _attributeDescriptions->at(j).location = attributeDesription.location;
-            _attributeDescriptions->at(j).format = VK_NP::RhiFomatToVkFormat(attributeDesription.format);
-            _attributeDescriptions->at(j).offset = attributeDesription.offset;
-        }
+    }
+    // Attribute description
+    _attributeDescriptions->resize(_shaderGraphicPointInfo.vertexAttributeDescriptions.size());
+    for (size_t i = 0; i < _shaderGraphicPointInfo.vertexAttributeDescriptions.size(); i++)
+    {
+        const PC_CORE::VertexAttributeDescription& attributeDesription = _shaderGraphicPointInfo.vertexAttributeDescriptions[i];
+            
+        _attributeDescriptions->at(i).binding = attributeDesription.binding;
+        _attributeDescriptions->at(i).location = attributeDesription.location;
+        _attributeDescriptions->at(i).format = VK_NP::RhiFomatToVkFormat(attributeDesription.format);
+        _attributeDescriptions->at(i).offset = attributeDesription.offset;
     }
 
     vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};

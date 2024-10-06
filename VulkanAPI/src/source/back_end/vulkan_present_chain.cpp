@@ -42,12 +42,15 @@ void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCont
 {
     vk::PhysicalDevice phyDevice = _vulkanContext->physicalDevice;
     vk::Device device = _vulkanContext->device;
+    // need to do this
+    _vulkanContext->swapChainSupportDetails = VulkanPhysicalDevices::QuerySwapChainSupport(phyDevice, _vulkanContext->surface);
+    
     vk::SurfaceKHR surface = _vulkanContext->surface;
     const SwapChainSupportDetails& swapChainSupportDetails = _vulkanContext->swapChainSupportDetails;
     const QueuFamiliesIndicies& queuFamiliesIndicies = _vulkanContext->queuFamiliesIndicies;
-        
-    uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
+
     
+    uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
     _vulkanContext->m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
     _vulkanContext->m_PresentMode = ChoosePresentMode(swapChainSupportDetails.presentModes);
     _vulkanContext->m_Extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr), swapChainSupportDetails.capabilities);

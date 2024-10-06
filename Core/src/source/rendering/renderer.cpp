@@ -11,18 +11,13 @@
 
 using namespace PC_CORE;
 
-const std::vector<Vertex> vertices = {
-    {{0.0f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {}},
-    {{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {}},
-    {{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {}}
-};
-
 
 void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 {
     InitRhi(_graphicAPI, _window);
     m_RhiRef = RHI::GetInstance();
     InitShader();
+    InitBuffer();
 
     CommandPoolCreateInfo commandPoolCreateInfo =
         {
@@ -35,13 +30,40 @@ void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 void Renderer::Destroy()
 {
     m_SwapChainCommandPool.FreeCommandBuffers(m_SwapChainCommandBuffers.data(), m_SwapChainCommandBuffers.size());
+    vertexBuffer.~GpuBuffer();
     
     RHI::DestroyInstance();
 }
 
 void Renderer::Render()
 {
-    m_RhiRef->Render();
+    Tbx::Vector2ui windowSize = Windowtpr->GetWindowSize();
+    ViewPort viewport =
+        {
+        .position = {},
+        .width = static_cast<float>(windowSize.x),
+        .height = static_cast<float>(windowSize.y),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+        };
+
+    ScissorRect ScissorRect;
+    ScissorRect.offset = {},
+    ScissorRect.extend = {
+       windowSize.x,
+       windowSize.y
+    };
+    
+    m_RhiRef->SetScissor(*m_CommandBuffer, ScissorRect);
+    
+    m_RhiRef->SetViewPort(*m_CommandBuffer, viewport);
+    
+    m_MainShader->Bind(*m_CommandBuffer);
+    //Tbx::Vector3f color = {0,0,1};
+    //m_MainShader->PushVector3(*m_CommandBuffer,"PushConstants", &color);
+
+    vertexBuffer.Bind(*m_CommandBuffer);
+    m_RhiRef->Draw(*m_CommandBuffer,3, 1, 0, 0);
 }
 
 void Renderer::BeginFrame()
@@ -59,14 +81,10 @@ void Renderer::BeginFrame()
     }
 
     m_RhiRef->WaitForAquireImage();
-
     m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(m_RhiRef->GetCurrentImage()));
+
     
     m_RhiRef->BeginRender(*m_CommandBuffer);
-    m_MainShader->Bind(*m_CommandBuffer);
-
-    Tbx::Vector3f color = {0,0,1};
-    m_MainShader->PushVector3(*m_CommandBuffer,"PushConstants", &color);
 }
 
 
@@ -119,8 +137,10 @@ void Renderer::InitShader()
     createInfo.prograShaderName = "mainShader";
 
     createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
-    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexInputBindingDescrition.push_back(
+    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexInputBindingDescritions.push_back(
         Vertex::GetBindingDescrition(0));
+    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0);
+     
 
     m_MainShader = new ShaderProgram(createInfo, {mainShaderVertex, mainShaderFrag});
     ResourceManager::Add<ShaderProgram>(m_MainShader);
@@ -128,7 +148,12 @@ void Renderer::InitShader()
 
 void Renderer::InitBuffer()
 {
-    return;
-    VertexBuffer vertexBuffer;
-    vertexBuffer.Alloc(sizeof(vertices[0]) * vertices.size(), vertices[0].position.GetPtr());
+    
+    const std::vector<Vertex> vertices = {
+        {{0.0f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1,0}},
+        {{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0,1}},
+        {{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1,1}}
+    };
+
+    vertexBuffer = VertexBuffer(sizeof(vertices[0]) * vertices.size(), vertices[0].position.GetPtr());
 }

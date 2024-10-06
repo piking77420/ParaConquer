@@ -17,7 +17,9 @@ BEGIN_PCCORE
     }
     
     static VertexInputBindingDescrition GetBindingDescrition(uint32_t _binding);
-   
+
+    static std::vector<VertexAttributeDescription> GetAttributeDescriptions(uint32_t _binding);
+    
 };
 
 END_PCCORE

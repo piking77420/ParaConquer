@@ -7,33 +7,31 @@ namespace VK_NP
     struct BufferInternal
     {
         size_t size;
-        PC_CORE::GPU_BUFFER_USAGE usage;
-            
-        vk::Buffer bufferHandle;
         VmaAllocation allocation;
+        PC_CORE::GPU_BUFFER_USAGE usage;
     };
     // This class is responsable for creating buffer and destroying it
     // should bind this buffer tho
     class VulkanBufferMap
     {
     public:
+        using BufferKeyHandle = PC_CORE::GPUBufferHandle;
         
-        uint32_t CreateBuffer(uint32_t _size, const void* data, PC_CORE::GPU_BUFFER_USAGE usage);
+        BufferKeyHandle CreateBuffer(uint32_t _size, const void* data, PC_CORE::GPU_BUFFER_USAGE usage);
         
-        const BufferInternal& GetBufferUsage(uint32_t _bufferId, PC_CORE::GPU_BUFFER_USAGE _bufferUsage);
+        const BufferInternal& GetBufferUsage(BufferKeyHandle _bufferKeyHandle);
 
-        void DestroyBuffer(uint32_t _bufferId);
+        bool DestroyBuffer(BufferKeyHandle _bufferKeyHandle);
 
-        VulkanBufferMap();
+        VulkanBufferMap() = default;
 
         ~VulkanBufferMap();
     private:
-        
         void CopyDataToBuffer(BufferInternal* _bufferInternal, const void* _data);
         
         vk::BufferUsageFlags GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage);
         
-        std::unordered_map<uint32_t, BufferInternal> m_BuffersMap;
+        std::unordered_map<BufferKeyHandle, BufferInternal> m_BuffersMap;
         
     };
 

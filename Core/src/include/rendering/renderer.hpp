@@ -3,6 +3,7 @@
 
 #include "front_end/vulkan_app.hpp"
 #include "render_harware_interface/command_pool.hpp"
+#include "render_harware_interface/gpu_buffer.h"
 
 #include "resources/shader_program.h"
 
@@ -28,7 +29,6 @@ public:
 
     PC_CORE_API void BeginFrame();
     
-
     PC_CORE_API void SwapBuffers();
 
     PC_CORE_API void WaitDevice();
@@ -50,6 +50,8 @@ private:
     RHI* m_RhiRef = nullptr;
 
     CommandBufferHandle* m_CommandBuffer = nullptr;
+
+    PC_CORE::VertexBuffer vertexBuffer;
 };
 
 END_PCCORE

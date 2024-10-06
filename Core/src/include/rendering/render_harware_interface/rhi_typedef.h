@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 #include "shader_typedef.h"
+#include "math/toolbox_typedef.hpp"
 #include "rendering/render_harware_interface/buffer_typedef.h"
+
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -30,6 +32,7 @@ struct CommandPoolCreateInfo
 using ObjectHandle = void*;
 using CommandBufferHandle = ObjectHandle;
 using CommandPoolHandle = ObjectHandle;
+using GPUBufferHandle = ObjectHandle;
 
 enum class CommandBufferFlags
 {
@@ -40,6 +43,22 @@ enum class CommandBufferFlags
 };
 
 ENUM_FLAGS(CommandBufferFlags)
+
+
+struct ViewPort
+{
+    Tbx::Vector2f position;
+    float width;
+    float height;
+    float minDepth;
+    float maxDepth;
+};
+
+struct ScissorRect
+{
+    Tbx::Vector2f offset;
+    Tbx::Vector2ui extend;
+};
 
 
 END_PCCORE

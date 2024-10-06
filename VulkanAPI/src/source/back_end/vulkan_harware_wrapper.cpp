@@ -53,9 +53,6 @@ std::vector<vk::DynamicState> VK_NP::VulkanHarwareWrapper::GetDynamicState()
     {
         vk::DynamicState::eViewport,
         vk::DynamicState::eScissor,
-        vk::DynamicState::eCullMode,
-        vk::DynamicState::eFrontFace,
-        vk::DynamicState::eStencilOp,
     };
 }
 
@@ -184,7 +181,9 @@ void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanCont
     allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
     VmaAllocator allocator;
-    vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+    VK_CALL(static_cast<vk::Result>(vmaCreateAllocator(&allocatorCreateInfo, &allocator)));
+
+    _vulkanContext->allocator = allocator;
 }
 
 vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentInstance, void* _windowPtr)

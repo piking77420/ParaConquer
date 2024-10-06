@@ -33,12 +33,6 @@ public:
 	{
 		
 	}
-
-	
-	PC_CORE_API virtual void Render()
-	{
-		
-	}
 	
 	static RHI* const GetInstance(); 
 	
@@ -106,13 +100,42 @@ public:
 	
 #pragma region Buffer
 
-	virtual PC_CORE_API uint32_t BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
+	virtual PC_CORE_API GPUBufferHandle BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
 	{
-		return -1;
+		return nullptr;
 	}
 
-#pragma endregion	Buffer
+	virtual PC_CORE_API bool DestroyBuffer(GPUBufferHandle _handle)
+	{
+		return false;
+	}
 
+	virtual PC_CORE_API void BindBuffer(CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+	{
+		return;
+	}
+
+#pragma endregion Buffer
+
+	virtual PC_CORE_API void SetViewPort(CommandBufferHandle _commandBufferHandle, const PC_CORE::ViewPort& _viewPort)
+	{
+		
+	}
+	
+	virtual PC_CORE_API void SetScissor(CommandBufferHandle _commandBufferHandle, const PC_CORE::ScissorRect& _scissorRect)
+	{
+		
+	}
+
+#pragma region DrawFunction
+	
+	virtual PC_CORE_API void Draw(CommandBufferHandle _commandBufferHandle,
+		uint32_t _vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+	{
+		
+	}
+	
+#pragma endregion DrawFunction
 
 protected:
 	static RHI* m_Instance;

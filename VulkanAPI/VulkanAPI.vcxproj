@@ -161,7 +161,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(SolutionDir)MotionCore\MotionCore\include\math</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -184,7 +184,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(SolutionDir)MotionCore\MotionCore\include\math</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -207,7 +207,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)src\include;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\include;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(SolutionDir)MotionCore\MotionCore\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -231,7 +231,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(SolutionDir)MotionCore\MotionCore\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

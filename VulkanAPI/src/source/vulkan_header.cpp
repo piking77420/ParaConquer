@@ -1,5 +1,6 @@
 ﻿#include "vulkan_header.h"
 
+
 vk::Format VK_NP::RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 {
     // TODO
@@ -33,5 +34,20 @@ vk::Format VK_NP::RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat)
     }
 
     return format;
+}
+
+vk::VertexInputRate VK_NP::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
+{
+    switch (_vertexInputRate)
+    {
+    case PC_CORE::VertexInputRate::VERTEX:
+        return vk::VertexInputRate::eVertex;
+    case PC_CORE::VertexInputRate::INSTANCE:
+        return vk::VertexInputRate::eInstance;
+    case PC_CORE::VertexInputRate::COUNT:
+        throw std::invalid_argument("VertexInputRate::COUNT VertexInputRate");
+    default: ;
+        throw std::invalid_argument("Invalid VertexInputRate");
+      }
 }
 

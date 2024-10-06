@@ -2,37 +2,37 @@
 
 PC_CORE::VertexInputBindingDescrition PC_CORE::Vertex::GetBindingDescrition(uint32_t _binding)
 {
-    VertexInputBindingDescrition vertexInputBindingDescrition =
+    return
+    {
+        .binding = _binding,
+        .stride = sizeof(Vertex),
+        .vertexInputRate = VertexInputRate::VERTEX
+    };
+}
+
+std::vector<PC_CORE::VertexAttributeDescription> PC_CORE::Vertex::GetAttributeDescriptions(uint32_t _binding)
+{
+    return
+    {
         {
             .binding = _binding,
-            .stride = sizeof(Vertex),
-            .vertexBindingDescriptions = {}
-        };
+            .location = 0,
+            .format = RHIFormat::R32G32B32_SFLOAT,
+            .offset = offsetof(Vertex, position)
+        },
+        {
+            .binding = _binding,
+            .location = 1,
+            .format = RHIFormat::R32G32B32_SFLOAT,
+            .offset = offsetof(Vertex, normal)
+        },
+        {
+            .binding = _binding,
+            .location = 2,
+            .format = RHIFormat::R32G32_SFLOAT,
+            .offset = offsetof(Vertex, textureCoord)
+        }
 
-    vertexInputBindingDescrition.vertexBindingDescriptions.resize(3);
-    vertexInputBindingDescrition.vertexBindingDescriptions[0] = 
-    {
-    .binding = _binding,
-    .location = 0,
-    .format = RHIFormat::R32G32B32_SFLOAT,
-    .offset = offsetof(Vertex, position)
+
     };
-
-    vertexInputBindingDescrition.vertexBindingDescriptions[1] = 
-    {
-        .binding = _binding,
-        .location = 1,
-        .format = RHIFormat::R32G32B32_SFLOAT,
-        .offset = offsetof(Vertex, normal)
-    };
-
-    vertexInputBindingDescrition.vertexBindingDescriptions[2] = 
-    {
-        .binding = _binding,
-        .location = 2,
-        .format = RHIFormat::R32G32_SFLOAT,
-        .offset = offsetof(Vertex, textureCoord)
-    };
-
-    return vertexInputBindingDescrition;
 }

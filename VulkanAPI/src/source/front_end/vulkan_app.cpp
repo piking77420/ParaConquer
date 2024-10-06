@@ -37,29 +37,6 @@ void VK_NP::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
     m_BindCommandBuffer.beginRenderPass(&renderPassInfo, subpassContents);
 }
 
-void VK_NP::VulkanApp::Render()
-{
-    const vk::Extent2D& extend = m_VulkanContext.m_Extent2D;
-
-    vk::Viewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(extend.width);
-    viewport.height = static_cast<float>(extend.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    m_BindCommandBuffer.setViewport(0, 1, &viewport);
-
-    vk::Rect2D scissor{};
-    scissor.offset = vk::Offset2D(0, 0);
-    scissor.extent = extend;
-    
-    m_BindCommandBuffer.setScissor(0, 1, &scissor);
-
-    m_BindCommandBuffer.draw(3, 1, 0, 0);
-    
-}
-
 void VK_NP::VulkanApp::EndRender()
 {
     m_BindCommandBuffer.endRenderPass();
@@ -130,9 +107,41 @@ VULKAN_API void VK_NP::VulkanApp::WaitDevice()
     m_VulkanContext.device.waitIdle();
 }
 
-uint32_t VK_NP::VulkanApp::BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
+PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
 {
    return bufferMap.CreateBuffer(static_cast<uint32_t>(_size), _data, _usage);
+}
+
+bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
+{
+    return bufferMap.DestroyBuffer(_handle);
+}
+
+void VK_NP::VulkanApp::BindBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+{
+    auto& bufferInfo = bufferMap.GetBufferUsage(_handle);
+    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
+    
+    vk::Buffer vkBuffer[] =
+        {
+        CastObjectToVkObject<vk::Buffer>(_handle)
+    };
+    vk::DeviceSize offset[]= {0};
+    
+    switch (bufferInfo.usage)
+    {
+    case PC_CORE::GPU_BUFFER_USAGE::VERTEX:
+        vkCommandBuffer.bindVertexBuffers(0, 1, vkBuffer, offset);
+        break;
+    case PC_CORE::GPU_BUFFER_USAGE::INDEX:
+        break;
+    case PC_CORE::GPU_BUFFER_USAGE::UNIFORM:
+        break;
+    case PC_CORE::GPU_BUFFER_USAGE::SHADER_STORAGE:
+        break;
+    case PC_CORE::GPU_BUFFER_USAGE::TRANSFERT:
+        break;
+    }
 }
 
 #pragma region CommandPool Functions
@@ -181,6 +190,45 @@ void VK_NP::VulkanApp::FreeCommandBuffers(PC_CORE::CommandPoolHandle _commandPoo
 
     VulkanContext::currentContext->device.freeCommandBuffers(commandPool, _commandBufferFreeAllocationCount,
         vkCommandBuffer);
+}
+
+void VK_NP::VulkanApp::SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHandle,
+    const PC_CORE::ViewPort& _viewPort)
+{
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
+    
+    vk::Viewport viewport{};
+    viewport.x = _viewPort.position.x;
+    viewport.y = _viewPort.position.y;
+    viewport.width = static_cast<float>(_viewPort.width);
+    viewport.height = static_cast<float>(_viewPort.height);
+    viewport.minDepth = _viewPort.minDepth;
+    viewport.maxDepth = _viewPort.maxDepth;
+    commandBuffer.setViewport(0, 1, &viewport);
+
+}
+
+void VK_NP::VulkanApp::SetScissor(PC_CORE::CommandBufferHandle _commandBufferHandle,
+    const PC_CORE::ScissorRect& _scissorRect)
+{
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
+
+    vk::Rect2D scissor{};
+    scissor.offset.x = _scissorRect.offset.x;
+    scissor.offset.x = _scissorRect.offset.x;
+
+    scissor.extent.width = _scissorRect.extend.x;
+    scissor.extent.height = _scissorRect.extend.y;
+
+    commandBuffer.setScissor(0, 1, &scissor);
+    
+}
+
+void VK_NP::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _vertexCount,
+    uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
+    commandBuffer.draw(_vertexCount, instanceCount, firstVertex, firstInstance);
 }
 #pragma endregion CommandPool Functions
 

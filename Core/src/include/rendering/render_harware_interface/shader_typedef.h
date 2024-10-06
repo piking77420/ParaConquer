@@ -8,25 +8,25 @@
 #include <array>
 #include <variant>
 
+
 BEGIN_PCCORE
-
 #pragma region RHIFORMAT
-enum class RHIFormat
-{
-    UNDIFINED,
-    R8_UNORM,
-    R8_SNORM,
-    R8_USCALED,
+    enum class RHIFormat
+    {
+        UNDIFINED,
+        R8_UNORM,
+        R8_SNORM,
+        R8_USCALED,
 
-    R32G32_SFLOAT,
-    R32G32B32_SFLOAT,
+        R32G32_SFLOAT,
+        R32G32B32_SFLOAT,
 
-    COUNT
-};
+        COUNT
+    };
 
 #pragma endregion
 
-    
+
 #pragma region Shader
 
     enum class LowLevelShaderStageType
@@ -65,6 +65,21 @@ enum class RHIFormat
         COUT
     };
 
+    enum class VertexInputRate
+    {
+        VERTEX = 0,
+        INSTANCE = 1,
+
+        COUNT
+    };
+
+    struct VertexInputBindingDescrition
+    {
+        uint32_t binding = 0;
+        uint32_t stride = 0;
+        VertexInputRate vertexInputRate = VertexInputRate::VERTEX;
+    };
+
     struct VertexAttributeDescription
     {
         uint32_t binding = 0;
@@ -73,18 +88,11 @@ enum class RHIFormat
         uint32_t offset = 0;
     };
 
-    struct VertexInputBindingDescrition
-    {
-        uint32_t binding = 0;
-        uint32_t stride = 0;
-
-        std::vector<VertexAttributeDescription> vertexBindingDescriptions;
-    };
-
 
     struct ShaderGraphicPointInfo
     {
-        std::vector<VertexInputBindingDescrition> vertexInputBindingDescrition;
+        std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
+        std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
     };
 
     struct ShaderRayTracingInfo
@@ -125,8 +133,6 @@ enum class RHIFormat
     }
 
 #pragma endregion Shader
-
-
 
 
 END_PCCORE

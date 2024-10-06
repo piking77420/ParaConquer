@@ -28,20 +28,20 @@ void Window::PoolEvents()
 
         if (FullScreen)
         {
-            oldSize = windowSize;
-            windowSize = monitorSize;
+            oldSize = m_WindowSize;
+            m_WindowSize = monitorSize;
             int x,y;
             glfwGetWindowPos(m_Window,&x,&y);
             oldPos = {static_cast<uint32_t>(x),static_cast<uint32_t>(y)};
             
-            glfwSetWindowMonitor(m_Window, monitor, 0, 0,
-                static_cast<int32_t>(windowSize.x), static_cast<int32_t>(windowSize.y), mode->refreshRate);
+            glfwSetWindowMonitor(m_Window, m_Monitor, 0, 0,
+                static_cast<int32_t>(m_WindowSize.x), static_cast<int32_t>(m_WindowSize.y), Mode->refreshRate);
         }
         else
         {
-            windowSize = oldSize;
+            m_WindowSize = oldSize;
             glfwSetWindowMonitor(m_Window, NULL, static_cast<int32_t>(oldPos.x), static_cast<int32_t>(oldPos.y),
-            static_cast<int32_t>(windowSize.y),static_cast<int32_t>(windowSize.y), mode->refreshRate);
+            static_cast<int32_t>(m_WindowSize.y),static_cast<int32_t>(m_WindowSize.y), Mode->refreshRate);
         }
     }
 }
@@ -57,16 +57,21 @@ void Window::HandleResize()
             glfwGetFramebufferSize(m_Window, &width, &height);
             glfwWaitEvents();
         }
-        windowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-        
-        RHI::GetInstance()->RecreateSwapChain(m_Window, windowSize.x, windowSize.y);
+        RHI::GetInstance()->WaitDevice();
+        m_WindowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+        RHI::GetInstance()->RecreateSwapChain(m_Window, m_WindowSize.x, m_WindowSize.y);
         onResize = false;
     }
 }
 
 float Window::GetAspect() const
 {
-    return static_cast<float>(windowSize.x) / static_cast<float>(windowSize.y);
+    return static_cast<float>(m_WindowSize.x) / static_cast<float>(m_WindowSize.y);
+}
+
+Tbx::Vector2ui Window::GetWindowSize() const
+{
+    return m_WindowSize;
 }
 
 GLFWwindow* Window::GetHandle()
@@ -76,22 +81,22 @@ GLFWwindow* Window::GetHandle()
 
 Window::Window(const char* _windowName) : m_WindowName(_windowName)
 {
-    monitor = glfwGetPrimaryMonitor();
-    mode = glfwGetVideoMode(monitor);
-    monitorSize = { static_cast<uint32_t>(mode->width), static_cast<uint32_t>(mode->height)};
+    m_Monitor = glfwGetPrimaryMonitor();
+    Mode = glfwGetVideoMode(m_Monitor);
+    monitorSize = { static_cast<uint32_t>(Mode->width), static_cast<uint32_t>(Mode->height)};
     
     if (FullScreen)
     {
-        windowSize.x = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->width);
-        windowSize.y = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->height);
-        m_Window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
-                                           static_cast<int32_t>(windowSize.y), m_WindowName.c_str(),
+        m_WindowSize.x = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->width);
+        m_WindowSize.y = static_cast<uint32_t>(glfwGetVideoMode(glfwGetPrimaryMonitor())->height);
+        m_Window = glfwCreateWindow(static_cast<int32_t>(m_WindowSize.x),
+                                           static_cast<int32_t>(m_WindowSize.y), m_WindowName.c_str(),
                                             glfwGetPrimaryMonitor(), nullptr);
     }
     else
     {
-        m_Window = glfwCreateWindow(static_cast<int32_t>(windowSize.x),
-                                           static_cast<int32_t>(windowSize.y), m_WindowName.c_str(), nullptr, nullptr);
+        m_Window = glfwCreateWindow(static_cast<int32_t>(m_WindowSize.x),
+                                           static_cast<int32_t>(m_WindowSize.y), m_WindowName.c_str(), nullptr, nullptr);
     }
 
     glfwSetFramebufferSizeCallback(m_Window, FramebufferResizeCallback);
