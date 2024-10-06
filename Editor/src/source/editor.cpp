@@ -107,7 +107,6 @@ void Editor::Run()
             editorWindow->Render();
         }
         renderer.Render();
-        renderer.EndFrame();
         renderer.SwapBuffers();
     }
 

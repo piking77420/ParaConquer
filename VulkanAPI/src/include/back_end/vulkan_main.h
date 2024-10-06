@@ -18,11 +18,13 @@ namespace VK_NP
 
 		VULKAN_API ~VulkanMain();
 
+		VULKAN_API void WaitForAquireImage();
+
 		VULKAN_API void SwapBuffers();
 
 		VULKAN_API void BeginDraw();
 
-		VULKAN_API void BindProgram(const std::string& _shaderName);
+		//VULKAN_API void BindProgram(PC_CORE::CommandBufferHandle _commandBuffer,const std::string& _shaderName);
 		
 		VULKAN_API void Draw();
 

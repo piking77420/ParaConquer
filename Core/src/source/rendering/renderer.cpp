@@ -23,10 +23,19 @@ void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
     InitRhi(_graphicAPI, _window);
     m_RhiRef = RHI::GetInstance();
     InitShader();
+
+    CommandPoolCreateInfo commandPoolCreateInfo =
+        {
+        
+        };
+    m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
+    m_SwapChainCommandPool.AllocCommandBuffers(m_SwapChainCommandBuffers.data(),m_SwapChainCommandBuffers.size());
 }
 
 void Renderer::Destroy()
 {
+    m_SwapChainCommandPool.FreeCommandBuffers(m_SwapChainCommandBuffers.data(), m_SwapChainCommandBuffers.size());
+    
     RHI::DestroyInstance();
 }
 
@@ -49,22 +58,23 @@ void Renderer::BeginFrame()
         firstTime = false;
     }
 
+    m_RhiRef->WaitForAquireImage();
 
-    m_RhiRef->BeginRender();
-    m_MainShader->Bind();
+    m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(m_RhiRef->GetCurrentImage()));
+    
+    m_RhiRef->BeginRender(*m_CommandBuffer);
+    m_MainShader->Bind(*m_CommandBuffer);
 
     Tbx::Vector3f color = {0,0,1};
-    m_MainShader->PushVector3("PushConstants", &color);
+    m_MainShader->PushVector3(*m_CommandBuffer,"PushConstants", &color);
 }
 
-void Renderer::EndFrame()
-{
-    m_RhiRef->EndRender();
-}
+
 
 void Renderer::SwapBuffers()
 {
-    m_RhiRef->SwapBuffers();
+    m_RhiRef->EndRender();
+    m_RhiRef->SwapBuffers(m_CommandBuffer, 1);
 }
 
 void Renderer::WaitDevice()

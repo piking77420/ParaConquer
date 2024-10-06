@@ -11,7 +11,7 @@
 
 using namespace VK_NP;
 
-void VulkanShaderManager::BindProgram(const std::string& _shaderName, vk::CommandBuffer _commandBuffer)
+void VulkanShaderManager::BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName)
 {
     ShaderInternal* shaderInternal = GetShaderInternal(_shaderName);
 

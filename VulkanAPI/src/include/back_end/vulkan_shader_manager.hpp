@@ -19,7 +19,7 @@ namespace VK_NP
 
         bool DestroyShader(const std::string& _shaderName);
 
-        void BindProgram(const std::string& _shaderName, vk::CommandBuffer _commandBuffer);
+        void BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName);
 
         void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
             size_t _size, vk::CommandBuffer _commandBuffer);

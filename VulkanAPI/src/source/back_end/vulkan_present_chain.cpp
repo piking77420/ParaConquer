@@ -34,7 +34,6 @@ void VK_NP::VulkanPresentChain::RecreateSwapChain(void* _glfwWindowPtr  ,uint32_
 {
     VulkanContext* vulkanContext = VulkanContext::currentContext; 
 
-    vulkanContext->device.waitIdle();
     DestroySwapchain(vulkanContext);
     CreateSwapchain(_glfwWindowPtr, vulkanContext);
 }
@@ -135,8 +134,31 @@ void VK_NP::VulkanPresentChain::AquireNetImageKHR(VulkanContext* _vulkanContext)
 }
 
 
-void VK_NP::VulkanPresentChain::SwapBuffer(VulkanContext* _vulkanContext)
+void VK_NP::VulkanPresentChain::SwapBuffer(vk::CommandBuffer* _commandBuffers, uint32_t _bufferCount,
+    VulkanContext* _vulkanContext)
 {
+    vk::SubmitInfo submitInfo{};
+    submitInfo.sType = vk::StructureType::eSubmitInfo;
+
+
+    vk::Semaphore waitSemaphores[] = {
+        _vulkanContext->m_syncObject.at(_vulkanContext->currentFrame).imageAvailableSemaphore
+    };
+    vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = _bufferCount;
+    submitInfo.pCommandBuffers = _commandBuffers;
+
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &_vulkanContext->m_syncObject.at(_vulkanContext->currentFrame).
+                                                    renderFinishedSemaphore;
+
+    
+    VK_CALL(_vulkanContext->graphicQueue.submit(1, &submitInfo,
+        _vulkanContext->m_syncObject.at(_vulkanContext->currentFrame).inFlightFence));
+    
     PresentNewImage(_vulkanContext);
 }
 

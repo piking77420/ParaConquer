@@ -2,6 +2,7 @@
 #include "core_header.hpp"
 
 #include "front_end/vulkan_app.hpp"
+#include "render_harware_interface/command_pool.hpp"
 
 #include "resources/shader_program.h"
 
@@ -27,7 +28,6 @@ public:
 
     PC_CORE_API void BeginFrame();
     
-    PC_CORE_API void EndFrame();
 
     PC_CORE_API void SwapBuffers();
 
@@ -39,11 +39,17 @@ private:
 
     PC_CORE_API void InitBuffer();
 
+    CommandPool m_SwapChainCommandPool;
+    
+    std::array<CommandBufferHandle, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
+
     ShaderProgram* m_MainShader = nullptr;
 
     Window* Windowtpr = nullptr;
 
-    RHI* m_RhiRef = nullptr; 
+    RHI* m_RhiRef = nullptr;
+
+    CommandBufferHandle* m_CommandBuffer = nullptr;
 };
 
 END_PCCORE

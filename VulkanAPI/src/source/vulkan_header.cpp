@@ -34,3 +34,4 @@ vk::Format VK_NP::RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 
     return format;
 }
+

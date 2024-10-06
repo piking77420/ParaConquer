@@ -23,7 +23,7 @@ namespace VK_NP
 
         void WaitForAvailableImage(VulkanContext* _vulkanContext);
 
-        void SwapBuffer(VulkanContext* _vulkanContext);
+        void SwapBuffer(vk::CommandBuffer* _commandBuffers, uint32_t _bufferCount, VulkanContext* _vulkanContext);
     
     private:
         

@@ -18,9 +18,9 @@ public:
 
     void Reload();
 
-    void Bind();
+    void Bind(CommandBufferHandle _commandBuffer);
 
-    void PushVector3(const char* _name, void* _data);
+    void PushVector3(CommandBufferHandle _commandBuffer, const char* _name, void* _data);
 
 private:
 

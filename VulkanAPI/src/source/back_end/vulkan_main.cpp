@@ -17,6 +17,12 @@ VK_NP::VulkanMain::~VulkanMain()
 {
 }
 
+void VK_NP::VulkanMain::WaitForAquireImage()
+{
+    m_vulkanPresentChain.WaitForAvailableImage(&m_VulkanContext);
+    m_vulkanPresentChain.AquireNetImageKHR(&m_VulkanContext);
+}
+
 #pragma region Shader
 
 void VK_NP::VulkanMain::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo,
@@ -56,26 +62,23 @@ void VK_NP::VulkanMain::BindCommandBuffer(vk::CommandBuffer _commandBuffer)
 {
     m_BindCommandBuffer = _commandBuffer;
 }
-
+/*
 void VK_NP::VulkanMain::BindProgram(const std::string& _shaderName)
 {
     m_vulkanShaderManager.BindProgram(_shaderName, m_CommandBuffer[m_VulkanContext.currentFrame]);
-}
+}*/
 
 #pragma endregion Shader
 
 void VK_NP::VulkanMain::SwapBuffers()
 {
-    m_vulkanPresentChain.SwapBuffer(&m_VulkanContext);
-    m_VulkanContext.currentFrame = (m_VulkanContext.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+   // m_vulkanPresentChain.SwapBuffer(&m_VulkanContext);
+    //m_VulkanContext.currentFrame = (m_VulkanContext.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void VK_NP::VulkanMain::BeginDraw()
 {
-    // wait for new image 
-    m_vulkanPresentChain.WaitForAvailableImage(&m_VulkanContext);
-    m_vulkanPresentChain.AquireNetImageKHR(&m_VulkanContext);
-
+    /*
     // reset command buffer
     BindCommandBuffer(m_CommandBuffer[m_VulkanContext.currentFrame]);
     m_BindCommandBuffer.reset();
@@ -103,12 +106,13 @@ void VK_NP::VulkanMain::BeginDraw()
 
     vk::SubpassContents subpassContents = vk::SubpassContents::eInline;
 
-    m_BindCommandBuffer.beginRenderPass(&renderPassInfo, subpassContents);
+    m_BindCommandBuffer.beginRenderPass(&renderPassInfo, subpassContents);*/
 }
 
 
 void VK_NP::VulkanMain::Draw()
 {
+    /*
     BindCommandBuffer(m_CommandBuffer[m_VulkanContext.currentFrame]);
 
     const vk::Extent2D& extend = m_VulkanContext.m_Extent2D;
@@ -127,11 +131,12 @@ void VK_NP::VulkanMain::Draw()
     scissor.extent = extend;
     m_CommandBuffer[m_VulkanContext.currentFrame].setScissor(0, 1, &scissor);
 
-    m_CommandBuffer[m_VulkanContext.currentFrame].draw(3, 1, 0, 0);
+    m_CommandBuffer[m_VulkanContext.currentFrame].draw(3, 1, 0, 0);*/
 }
 
 void VK_NP::VulkanMain::EnDraw()
 {
+    /*
     BindCommandBuffer(m_CommandBuffer[m_VulkanContext.currentFrame]);
 
     m_BindCommandBuffer.endRenderPass();
@@ -159,5 +164,6 @@ void VK_NP::VulkanMain::EnDraw()
     VK_CALL(
         m_VulkanContext.graphicQueue.submit(1, &submitInfo, m_VulkanContext.m_syncObject.at(m_VulkanContext.currentFrame
         ).inFlightFence));
+        */
 }
 

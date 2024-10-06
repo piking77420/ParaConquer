@@ -1,4 +1,6 @@
-﻿
+﻿#pragma once
+#include "render_harware_interface/rhi_typedef.h"
+
 #define VK_USE_PLATFORM_WIN32_KHR 
 #define NOMINMAX
 #include <vulkan/vulkan.hpp>
@@ -7,9 +9,6 @@
 
 namespace VK_NP
 {
-
-    constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-
     constexpr uint32_t INVALID_QUEU = std::numeric_limits<uint32_t>::max();
 
     struct VulkanAppCreateInfo

@@ -27,17 +27,17 @@ void ShaderProgram::Reload()
     CreateShader();
 }
 
-void ShaderProgram::Bind()
+void ShaderProgram::Bind(CommandBufferHandle _commandBuffer)
 {
     if (!name.empty())
-        RHI::GetInstance()->BindShaderProgram(name);
+        RHI::GetInstance()->BindShaderProgram(_commandBuffer, name);
 }
 
-void ShaderProgram::PushVector3(const char* _name, void* _data)
+void ShaderProgram::PushVector3(CommandBufferHandle _commandBuffer, const char* _name, void* _data)
 {
     if (!name.empty())
     {
-        RHI::GetInstance()->PushConstants(name, _name, _data, 3 * sizeof(float));
+        RHI::GetInstance()->PushConstants(_commandBuffer, name, _name, _data, 3 * sizeof(float));
     }}
 
 void ShaderProgram::CreateShader()
@@ -56,8 +56,8 @@ void ShaderProgram::CreateShader()
         name,
         m_ShaderInfo
         };
+    
     RHI::GetInstance()->CreateShader(programShaderCreateInfo, sourceAndPaths);
-
 }
 
 void ShaderProgram::DestroyShader()
