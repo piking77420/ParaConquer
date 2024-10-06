@@ -21,7 +21,7 @@ void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 
     CommandPoolCreateInfo commandPoolCreateInfo =
         {
-        
+            .queuTypeUsage = QueuType::GRAPHICS
         };
     m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
     m_SwapChainCommandPool.AllocCommandBuffers(m_SwapChainCommandBuffers.data(),m_SwapChainCommandBuffers.size());

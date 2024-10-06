@@ -10,22 +10,25 @@ constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 BEGIN_PCCORE
 
-enum class CommandPoolUsage
+enum class QueuType
 {
     NONE,
     GRAPHICS,
     COMPUTE,
+    TRANSFERT,
     SPARSE_BINDING,
     VIDEO_DECODE,
-    OPTICAL_FLOW
-    
+    VIDEO_ENCODE,
+    OPTICAL_FLOW,
+
+    COUT
 };
-ENUM_FLAGS(CommandPoolUsage)
+ENUM_FLAGS(QueuType)
 
     
 struct CommandPoolCreateInfo
 {
-    CommandPoolUsage commandPoolUsage;
+    QueuType queuTypeUsage;
 };
 
 

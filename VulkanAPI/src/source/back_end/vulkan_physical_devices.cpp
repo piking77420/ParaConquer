@@ -56,7 +56,7 @@ bool VK_NP::VulkanPhysicalDevices::HasAllNeededFeatures(const vk::PhysicalDevice
 VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
     const vk::PhysicalDevice _physicalDevice, const vk::SurfaceKHR _surface)
 {
-    QueuFamiliesIndicies indices = { INVALID_QUEU, INVALID_QUEU }; // Initialize to invalid indices
+    QueuFamiliesIndicies indices;
 
     std::vector<vk::QueueFamilyProperties> queueFamilies = _physicalDevice.getQueueFamilyProperties();
 

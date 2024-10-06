@@ -7,6 +7,7 @@
 
 #include <vma/vk_mem_alloc.h>
 
+
 namespace VK_NP
 {
     constexpr uint32_t INVALID_QUEU = std::numeric_limits<uint32_t>::max();
@@ -52,8 +53,9 @@ namespace VK_NP
 #pragma endregion DebugCallBack
 
         QueuFamiliesIndicies queuFamiliesIndicies;
-        vk::Queue presentQueue;
+
         vk::Queue graphicQueue;
+        vk::Queue presentQueue;
         vk::Queue transferQueu;
 
         // SwapChain

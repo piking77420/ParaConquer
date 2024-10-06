@@ -155,14 +155,11 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 #pragma endregion DeviceLayer
 
     VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &_vulkanContext->device));
-    _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0,
-                                    &_vulkanContext->graphicQueue);
     
-    _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0,
-                                    &_vulkanContext->presentQueue);
-    
-    _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.transferFamily, 0,
-                                    &_vulkanContext->transferQueu);
+    _vulkanContext->graphicQueue = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0);
+    _vulkanContext->presentQueue = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0);
+    _vulkanContext->transferQueu = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.transferFamily, 0);
+
 }
 
 

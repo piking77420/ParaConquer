@@ -84,5 +84,8 @@ void GpuBuffer<T>::Bind(CommandBufferHandle _commandBufferHandle) const
 
 
 using VertexBuffer = GpuBuffer<GPU_BUFFER_USAGE::VERTEX>;
+using IndexBuffer = GpuBuffer<GPU_BUFFER_USAGE::INDEX>;
+using UniformBuffer = GpuBuffer<GPU_BUFFER_USAGE::UNIFORM>;
+using ShaderStorageBuffer = GpuBuffer<GPU_BUFFER_USAGE::SHADER_STORAGE>;
 
 END_PCCORE

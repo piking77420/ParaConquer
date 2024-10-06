@@ -11,32 +11,30 @@ VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(uin
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.pNext = nullptr;
     bufferInfo.size = _size;
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Add usage as needed
+    bufferInfo.usage = static_cast<VkBufferUsageFlags>(GetVulkanUsage(usage)) | VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Add usage as needed
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Adjust sharing mode if needed
-
     
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-    BufferInternal bufferInternal {};
-    bufferInternal.size = _size;
-    bufferInternal.usage = usage;
-
-    // Create The BufferObject
+    VmaAllocation allocation;
     VkBuffer bufferC =  VK_NULL_HANDLE;
     
-    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &bufferC, &bufferInternal.allocation,
+    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &bufferC, &allocation,
         nullptr)));
     
     // COPY USER DATA TO MAPPED DATA
     void* data;
-    vmaMapMemory(allocator, bufferInternal.allocation, &data);
-
+    vmaMapMemory(allocator, allocation, &data);
     memcpy(data, _data, _size);
-
-    //vmaUnmapMemory(allocator, bufferInternal.allocation);
+    vmaUnmapMemory(allocator, allocation);
     
 
+    BufferInternal bufferInternal =
+        {
+        .size = _size,
+        .allocation = allocation,
+        .usage = usage
+        };
     vk::Buffer buffer = bufferC;
     m_BuffersMap.insert({buffer, bufferInternal});
 

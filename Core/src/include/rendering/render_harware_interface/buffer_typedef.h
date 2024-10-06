@@ -6,17 +6,14 @@ BEGIN_PCCORE
 
 enum class GPU_BUFFER_USAGE
 {
+    NONE,
     VERTEX,
     INDEX,
     UNIFORM,
     SHADER_STORAGE,
     TRANSFERT,
-    
-};
 
-enum class BUFFER_FLAG
-{
-    
+    COUNT
 };
 
 

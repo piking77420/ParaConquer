@@ -149,11 +149,19 @@ void VK_NP::VulkanApp::BindBuffer(PC_CORE::CommandBufferHandle _commandBuffer, P
 void VK_NP::VulkanApp:: CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
     PC_CORE::CommandPoolHandle* _commandPoolHandle)
 {
+    VulkanContext *vulkanContext = VulkanContext::currentContext;
+    uint32_t queufamilyIndex = -1;
+
+    if (_commandPoolCreateInfo.queuTypeUsage & PC_CORE::QueuType::GRAPHICS)
+        queufamilyIndex = vulkanContext->queuFamiliesIndicies.graphicsFamily;
+
+    if (_commandPoolCreateInfo.queuTypeUsage & PC_CORE::QueuType::TRANSFERT)
+        queufamilyIndex = vulkanContext->queuFamiliesIndicies.graphicsFamily;
+    
     vk::CommandPoolCreateInfo _vkcommandPoolCreateInfo;
     _vkcommandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
     _vkcommandPoolCreateInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-    // TODO MAKE A WRAPPING FROM COMMAND POOL USAGE TO QUEUE FAMILILES
-    _vkcommandPoolCreateInfo.queueFamilyIndex = 0;
+    _vkcommandPoolCreateInfo.queueFamilyIndex = queufamilyIndex;
 
     vk::CommandPool commandPool = VulkanContext::currentContext->device.createCommandPool(_vkcommandPoolCreateInfo, nullptr);
     *_commandPoolHandle = commandPool;
