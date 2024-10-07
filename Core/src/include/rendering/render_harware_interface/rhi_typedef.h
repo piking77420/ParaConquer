@@ -26,11 +26,6 @@ enum class QueuType
 ENUM_FLAGS(QueuType)
 
     
-struct CommandPoolCreateInfo
-{
-    QueuType queuTypeUsage;
-};
-
 
 using ObjectHandle = void*;
 using CommandBufferHandle = ObjectHandle;
@@ -62,6 +57,15 @@ struct ScissorRect
     Tbx::Vector2f offset;
     Tbx::Vector2ui extend;
 };
+
+struct CommandBufferCreateInfo
+{
+    QueuType queuType;
+    CommandBufferFlags commandBufferFlags;
+    // possibly nbr Of this commandBuffer
+    uint32_t commandBufferCount;
+};
+
 
 
 END_PCCORE

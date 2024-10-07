@@ -11,11 +11,15 @@
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/gpu_buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/gpu_buffer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/gpu_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/gpu_buffer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/command_pool.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_pool.cpp" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/vulkan_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/vulkan_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_buffer_map.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_buffer_map.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1815,6 +1819,8 @@
       <workItem from="1728131333321" duration="6196000" />
       <workItem from="1728142274267" duration="6659000" />
       <workItem from="1728201158335" duration="25880000" />
+      <workItem from="1728283448383" duration="54000" />
+      <workItem from="1728283513676" duration="1562000" />
     </task>
     <servers />
   </component>

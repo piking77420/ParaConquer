@@ -72,31 +72,19 @@ public:
 	{
 	}
 
-#pragma region CommandPool
+#pragma region CommandBuffer
 
-	virtual PC_CORE_API void CreateCommandPool(const CommandPoolCreateInfo& _commandPoolCreateInfo, CommandPoolHandle* _commandPoolHandle)
+	virtual PC_CORE_API void AllocateCommandBuffer(CommandBufferHandle* _commandBuffer, const CommandBufferCreateInfo& _createInfo)
 	{
-
+		
+	}
+	
+	virtual PC_CORE_API void FreeCommandBuffer(CommandBufferHandle _commandBuffer)
+	{
+		
 	}
 
-	virtual PC_CORE_API void DestroyCommandPool(CommandPoolHandle _commandPoolHandle)
-	{
-
-	}
-
-	virtual PC_CORE_API void AllocCommandBuffers(CommandPoolHandle _commandPoolHandle, CommandBufferHandle* _commandBufferHandle,
-		uint32_t _commandBufferAllocationCount)
-	{
-
-	}
-
-	virtual PC_CORE_API void FreeCommandBuffers(CommandPoolHandle _commandPoolHandle, const PC_CORE::CommandBufferHandle* _commandBufferHandle,
-		uint32_t _commandBufferFreeAllocationCount)
-	{
-
-	}
-
-#pragma endregion CommandPool
+#pragma endregion CommandBuffer
 	
 #pragma region Buffer
 

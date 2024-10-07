@@ -44,16 +44,10 @@ namespace VK_NP
 		void BindBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle) override;
 
 #pragma region CommandPool Functions
-		VULKAN_API void CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
-			PC_CORE::CommandPoolHandle* _commandPoolHandle) override;
-		
-		VULKAN_API void DestroyCommandPool(PC_CORE::CommandPoolHandle _commandPoolHandle) override;
-		
-		VULKAN_API void AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle, PC_CORE::CommandBufferHandle* _commandBufferHandle,
-			uint32_t _commandBufferAllocationCount) override;
+		VULKAN_API void AllocateCommandBuffer(PC_CORE::CommandBufferHandle* _commandBufferHandle,
+			const PC_CORE::CommandBufferCreateInfo& _createInfo) override;
 
-		VULKAN_API void FreeCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle, const PC_CORE::CommandBufferHandle* _commandBufferHandle,
-			uint32_t _commandBufferFreeAllocationCount) override;
+		VULKAN_API void FreeCommandBuffer(PC_CORE::CommandBufferHandle _commandBuffer) override;
 #pragma endregion CommandPool Functions
 
 
@@ -82,6 +76,8 @@ namespace VK_NP
 		VulkanShaderManager m_vulkanShaderManager;
 		
 		vk::CommandBuffer m_BindCommandBuffer = VK_NULL_HANDLE;
+		
+		CommandPoolUsage GetCommandPool(vk::CommandPoolCreateFlagBits _createFlagBits);
 		
 	};
 

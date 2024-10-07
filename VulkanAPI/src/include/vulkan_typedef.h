@@ -3,6 +3,7 @@
 
 #define VK_USE_PLATFORM_WIN32_KHR 
 #define NOMINMAX
+#include <unordered_map>
 #include <vulkan/vulkan.hpp>
 
 #include <vma/vk_mem_alloc.h>
@@ -38,6 +39,13 @@ namespace VK_NP
         vk::Semaphore imageAvailableSemaphore;
         vk::Semaphore renderFinishedSemaphore;
         vk::Fence inFlightFence;
+    };
+
+    struct CommandPoolUsage
+    {
+        vk::CommandPool pool;
+        uint32_t maxCommandBuffers;
+        uint32_t currentAllocateCommandBuffer;
     };
 
     struct VulkanContext
@@ -76,10 +84,10 @@ namespace VK_NP
         uint32_t imageIndex = 0;
         uint32_t currentFrame = 0;
 
+        std::unordered_map<vk::CommandPoolCreateFlags, CommandPoolUsage> m_CommandPool   ;
+
         vk::RenderPass swapChainRenderPass;
-
         
-
         static VulkanContext* currentContext;
 
         VulkanContext();

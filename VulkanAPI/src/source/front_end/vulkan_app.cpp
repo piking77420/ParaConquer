@@ -144,10 +144,18 @@ void VK_NP::VulkanApp::BindBuffer(PC_CORE::CommandBufferHandle _commandBuffer, P
     }
 }
 
-#pragma region CommandPool Functions
+void VK_NP::VulkanApp::AllocateCommandBuffer(PC_CORE::CommandBufferHandle* _commandBufferHandle,
+    const PC_CORE::CommandBufferCreateInfo& _createInfo)
+{
+}
+
+void VK_NP::VulkanApp::FreeCommandBuffer(PC_CORE::CommandBufferHandle _commandBuffer)
+{
+}
+
 
 void VK_NP::VulkanApp:: CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
-    PC_CORE::CommandPoolHandle* _commandPoolHandle)
+                                          PC_CORE::CommandPoolHandle* _commandPoolHandle)
 {
     VulkanContext *vulkanContext = VulkanContext::currentContext;
     uint32_t queufamilyIndex = -1;
@@ -200,6 +208,8 @@ void VK_NP::VulkanApp::FreeCommandBuffers(PC_CORE::CommandPoolHandle _commandPoo
         vkCommandBuffer);
 }
 
+#pragma region CommandBuffer Functions
+
 void VK_NP::VulkanApp::SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHandle,
     const PC_CORE::ViewPort& _viewPort)
 {
@@ -238,5 +248,11 @@ void VK_NP::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, u
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
     commandBuffer.draw(_vertexCount, instanceCount, firstVertex, firstInstance);
 }
+#pragma endregion CommandBuffer Functions
+
+#pragma region CommandPool Functions
+
+
+ 
 #pragma endregion CommandPool Functions
 
