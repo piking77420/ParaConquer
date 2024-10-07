@@ -78,6 +78,8 @@ namespace VK_NP
 
         vk::RenderPass swapChainRenderPass;
 
+        
+
         static VulkanContext* currentContext;
 
         VulkanContext();

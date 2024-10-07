@@ -21,9 +21,9 @@ public:
     ~GpuBuffer();
 
     bool HasAllocation() const;
-
-    void Bind(CommandBufferHandle _commandBufferHandle) const;
     
+    void Bind(CommandBufferHandle _commandBufferHandle) const;
+
 private:
     size_t m_Size = 0;
 

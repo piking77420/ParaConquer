@@ -1,8 +1,8 @@
 ﻿#include "back_end/vulkan_buffer_map.hpp"
 
 
-
-VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage)
+VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(
+    uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage)
 {
     VulkanContext* context = VulkanContext::currentContext;
     VmaAllocator allocator = context->allocator;
@@ -11,39 +11,49 @@ VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(uin
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.pNext = nullptr;
     bufferInfo.size = _size;
-    bufferInfo.usage = static_cast<VkBufferUsageFlags>(GetVulkanUsage(usage)) | VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Add usage as needed
+    bufferInfo.usage = static_cast<VkBufferUsageFlags>(GetVulkanUsage(usage)) | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    // Add usage as needed
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Adjust sharing mode if needed
-    
+
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     VmaAllocation allocation;
-    VkBuffer bufferC =  VK_NULL_HANDLE;
-    
+    VkBuffer bufferC = VK_NULL_HANDLE;
+
     VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &bufferC, &allocation,
         nullptr)));
-    
-    // COPY USER DATA TO MAPPED DATA
-    void* data;
-    vmaMapMemory(allocator, allocation, &data);
-    memcpy(data, _data, _size);
-    vmaUnmapMemory(allocator, allocation);
-    
 
-    BufferInternal bufferInternal =
+    VkMemoryPropertyFlags memPropFlags;
+    vmaGetAllocationMemoryProperties(allocator, allocation, &memPropFlags);
+
+    if (memPropFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+    {
+        // COPY USER DATA TO MAPPED DATA
+        void* data;
+        vmaMapMemory(allocator, allocation, &data);
+        memcpy(data, _data, _size);
+        vmaUnmapMemory(allocator, allocation);
+        BufferInternal bufferInternal =
         {
-        .size = _size,
-        .allocation = allocation,
-        .usage = usage
+            .size = _size,
+            .allocation = allocation,
+            .usage = usage
         };
-    vk::Buffer buffer = bufferC;
-    m_BuffersMap.insert({buffer, bufferInternal});
+        vk::Buffer buffer = bufferC;
+        m_BuffersMap.insert({buffer, bufferInternal});
 
-    return buffer;
+        return buffer;
+    }
+    else
+    {
+        vk::CommandBuffer commandBuffer;
+        
+        
+    }
 }
 
 const VK_NP::BufferInternal& VK_NP::VulkanBufferMap::GetBufferUsage(BufferKeyHandle _bufferKeyHandle)
 {
-
     if (!m_BuffersMap.contains(_bufferKeyHandle))
         throw std::runtime_error("Buffer does not exist in vulkan Buffer Map");
 
@@ -63,10 +73,10 @@ bool VK_NP::VulkanBufferMap::DestroyBuffer(BufferKeyHandle bufferKeyHandle)
 
     VulkanContext* context = VulkanContext::currentContext;
     VmaAllocator allocator = context->allocator;
-    
+
     auto& buffer = m_BuffersMap.at(bufferKeyHandle);
     vmaDestroyBuffer(allocator, CastObjectToVkObject<vk::Buffer>(bufferKeyHandle), nullptr);
-    
+
     m_BuffersMap.erase(bufferKeyHandle);
 
     return true;
@@ -157,23 +167,22 @@ void VK_NP::VulkanBufferMap::CopyDataToBuffer(BufferInternal* _bufferInternal, c
             0, 0, nullptr, 1, &bufMemBarrier2, 0, nullptr);
     }
     */
-    
 }
 
 vk::BufferUsageFlags VK_NP::VulkanBufferMap::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
 {
     using namespace PC_CORE;
-    vk::BufferUsageFlags vkBufferUsageFlags = {};  
-    
+    vk::BufferUsageFlags vkBufferUsageFlags = {};
+
     if (usage & GPU_BUFFER_USAGE::INDEX)
     {
-        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;  // Now you can use |=
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer; // Now you can use |=
     }
-    if (usage & GPU_BUFFER_USAGE::VERTEX) 
+    if (usage & GPU_BUFFER_USAGE::VERTEX)
     {
-        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;  // Add more usage flags if needed
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer; // Add more usage flags if needed
     }
-    
+
     if (usage & GPU_BUFFER_USAGE::UNIFORM)
     {
         vkBufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
