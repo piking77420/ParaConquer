@@ -9,7 +9,7 @@ namespace VK_NP
     class VulkanPresentChain
     {
     public:
-        VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo);
+        VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext);
 
         ~VulkanPresentChain();
 

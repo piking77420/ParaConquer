@@ -18,20 +18,19 @@ const std::vector<const char*> deviceExtensions = {
 };
 
 
-VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vulkanMainCreateInfo)
+VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
 {
-    VulkanContext* currentContext = VulkanContext::currentContext;
 
-    CreateInstance(&currentContext->instance, _vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
-    currentContext->surface = CreateSurface(currentContext->instance, _vulkanMainCreateInfo.windowPtr);
+    CreateInstance(&_vulkanContext->instance, _vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
+    _vulkanContext->surface = CreateSurface(_vulkanContext->instance, _vulkanMainCreateInfo.windowPtr);
 #ifdef _DEBUG
-    SetUpDebugMessenger(currentContext->instance, &currentContext->m_DebugMessenger);
+    SetUpDebugMessenger(_vulkanContext->instance, &_vulkanContext->m_DebugMessenger);
 #endif
-    currentContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(currentContext,  deviceExtensions);
-    currentContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(
-        currentContext->physicalDevice, currentContext->surface);
-    CreateDevice(currentContext);
-    InitVulkanAllocator(currentContext);
+    _vulkanContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(_vulkanContext,  deviceExtensions);
+    _vulkanContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(
+        _vulkanContext->physicalDevice, _vulkanContext->surface);
+    CreateDevice(_vulkanContext);
+    InitVulkanAllocator(_vulkanContext);
 }
 
 VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()

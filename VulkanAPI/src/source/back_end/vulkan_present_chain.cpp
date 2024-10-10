@@ -2,12 +2,11 @@
 #include "back_end/vulkan_harware_wrapper.hpp"
 #include "GLFW/glfw3.h"
 
-VK_NP::VulkanPresentChain::VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo)
+VK_NP::VulkanPresentChain::VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
 {
-    VulkanContext* vulkanContext = VulkanContext::currentContext; 
     
-    CreateSwapchain(_vulkanMainCreateInfo.windowPtr, vulkanContext);
-    CreateSyncObject(vulkanContext);
+    CreateSwapchain(_vulkanMainCreateInfo.windowPtr, _vulkanContext);
+    CreateSyncObject(_vulkanContext);
 }
 
 
@@ -339,8 +338,8 @@ void VK_NP::VulkanPresentChain::PresentNewImage(VulkanContext* _vulkanContext)
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &_vulkanContext->imageIndex;
-
-    vk::Result result =_vulkanContext->presentQueue.presentKHR(&presentInfo);
+    
+    VK_CALL(_vulkanContext->presentQueue.presentKHR(&presentInfo));
 }
 
 

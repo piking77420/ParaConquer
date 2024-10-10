@@ -43,8 +43,8 @@ void VK_NP::VulkanApp::EndRender()
     m_BindCommandBuffer.end();
 }
 
-VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo) :  m_vulkanHardwareWrapper(vulkanMainCreateInfo)
-                                                                                , m_vulkanPresentChain(vulkanMainCreateInfo)
+VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo) :  m_vulkanHardwareWrapper(vulkanMainCreateInfo, &m_VulkanContext)
+                                                                                , m_vulkanPresentChain(vulkanMainCreateInfo,&m_VulkanContext)
 {
 }
 

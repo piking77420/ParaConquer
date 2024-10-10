@@ -4,7 +4,7 @@
 #include "front_end/vulkan_app.hpp"
 
 VK_NP::VulkanMain::VulkanMain(const VulkanAppCreateInfo& vulkanMainCreateInfo) :
-    m_vulkanHardwareWrapper(vulkanMainCreateInfo)
+    m_vulkanHardwareWrapper(vulkanMainCreateInfo, m_VulkanContext)
     , m_vulkanPresentChain(vulkanMainCreateInfo)
 {
     m_SwapChainCommandFactory = VulkanCommandFactory(m_VulkanContext.queuFamiliesIndicies.graphicsFamily,

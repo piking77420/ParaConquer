@@ -16,7 +16,7 @@ namespace VK_NP
     public:
         VulkanPhysicalDevices m_VulkanPhysicalDevices;
 
-        VulkanHarwareWrapper(const VulkanAppCreateInfo& vulkanMainCreateInfo);
+        VulkanHarwareWrapper(const VulkanAppCreateInfo& vulkanMainCreateInfo, VulkanContext* _vulkanContext);
     
         ~VulkanHarwareWrapper();
 

@@ -31,8 +31,9 @@ using ObjectHandle = void*;
 using CommandBufferHandle = ObjectHandle;
 using CommandPoolHandle = ObjectHandle;
 using GPUBufferHandle = ObjectHandle;
+constexpr void* INVALID_HANDLE = nullptr;
 
-enum class CommandBufferFlags
+enum class CommandPoolBufferFlag
 {
     NONE,
     RESET,
@@ -40,7 +41,7 @@ enum class CommandBufferFlags
     COUNT
 };
 
-ENUM_FLAGS(CommandBufferFlags)
+ENUM_FLAGS(CommandPoolBufferFlag)
 
 
 struct ViewPort
@@ -58,12 +59,12 @@ struct ScissorRect
     Tbx::Vector2ui extend;
 };
 
-struct CommandBufferCreateInfo
+
+struct CommandPoolCreateInfo
 {
-    QueuType queuType;
-    CommandBufferFlags commandBufferFlags;
-    // possibly nbr Of this commandBuffer
-    uint32_t commandBufferCount;
+    QueuType queueType = QueuType::NONE;
+    CommandPoolBufferFlag commandPoolBufferFlag;
+    uint32_t commandBufferCount = 0;
 };
 
 
