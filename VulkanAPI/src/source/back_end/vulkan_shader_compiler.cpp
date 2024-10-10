@@ -43,7 +43,6 @@ glslang_stage_t GetShaderStageToGlslangStage(PC_CORE::LowLevelShaderStageType _l
 VK_NP::VulkanShaderCompiler::VulkanShaderCompiler()
 {
     glslang_initialize_process();
-    m_Device = VulkanContext::currentContext->device;
 }
 
 VK_NP::VulkanShaderCompiler::~VulkanShaderCompiler()
@@ -51,7 +50,7 @@ VK_NP::VulkanShaderCompiler::~VulkanShaderCompiler()
     glslang_finalize_process();
 }
 
-void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(const char* _source,
+void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, const char* _source,
                                                          PC_CORE::LowLevelShaderStageType _lowLevelShaderStage,SpvReflectShaderModule* _ReflectedModule,
                                                          vk::ShaderModule* _shaderModule)
 {
@@ -128,7 +127,7 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(const char* _source,
     spvReflectCreateShaderModule(spvCodeSize, spvPointer, _ReflectedModule);
 
     
-    *_shaderModule = m_Device.createShaderModule(moduleCreateInfo, nullptr);
+    *_shaderModule = _device.createShaderModule(moduleCreateInfo, nullptr);
 
     glslang_shader_delete(shader);
     glslang_program_delete(program);

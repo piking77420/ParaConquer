@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "command_buffer.h"
 #include "rhi_typedef.h"
 
 
@@ -74,21 +75,34 @@ public:
 
 #pragma region CommandBuffer
 
-	virtual PC_CORE_API void AllocateCommandBuffer(CommandBufferHandle* _commandBuffer, const CommandBufferCreateInfo& _createInfo)
+	virtual PC_CORE_API void AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle,
+	                                             PC_CORE::CommandBufferCreateInfo _commandBufferCreateInfo)
 	{
 		
 	}
 	
-	virtual PC_CORE_API void FreeCommandBuffer(CommandBufferHandle _commandBuffer)
+	virtual PC_CORE_API void FreeCommandBuffer(CommandPoolHandle _commandPoolHandle, CommandBuffer* _commandBuffer, uint32_t _commandBufferCount)
 	{
 		
 	}
+
+	virtual PC_CORE_API void CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
+							   PC_CORE::CommandPoolHandle* _commandPoolHandle)
+	{
+		
+	}
+
+	virtual PC_CORE_API void DestroyCommandPool(PC_CORE::CommandPoolHandle _commandPoolHandle)
+	{
+		
+	}
+
 
 #pragma endregion CommandBuffer
 	
 #pragma region Buffer
 
-	virtual PC_CORE_API GPUBufferHandle BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
+	virtual PC_CORE_API GPUBufferHandle BufferData(CommandPool* _commandPool, size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
 	{
 		return nullptr;
 	}
@@ -98,7 +112,7 @@ public:
 		return false;
 	}
 
-	virtual PC_CORE_API void BindBuffer(CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+	virtual PC_CORE_API void BindVertexBuffer(CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
 	{
 		return;
 	}

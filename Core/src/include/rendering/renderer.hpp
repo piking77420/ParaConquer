@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include "buffer/vertex_buffer.hpp"
 
 #include "front_end/vulkan_app.hpp"
 #include "render_harware_interface/command_pool.hpp"
-#include "render_harware_interface/gpu_buffer.h"
 
 #include "resources/shader_program.h"
 
@@ -40,8 +40,10 @@ private:
     PC_CORE_API void InitBuffer();
 
     CommandPool m_SwapChainCommandPool;
+
+    CommandPool m_TransfertPool;
     
-    std::array<CommandBufferHandle, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
+    std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
 
     ShaderProgram* m_MainShader = nullptr;
 
@@ -49,9 +51,11 @@ private:
 
     RHI* m_RhiRef = nullptr;
 
-    CommandBufferHandle* m_CommandBuffer = nullptr;
+    CommandBuffer* m_CommandBuffer = nullptr;
 
     PC_CORE::VertexBuffer vertexBuffer;
+
+    void InitCommandPools();
 };
 
 END_PCCORE

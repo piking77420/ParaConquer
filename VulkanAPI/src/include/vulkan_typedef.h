@@ -3,6 +3,7 @@
 
 #define VK_USE_PLATFORM_WIN32_KHR 
 #define NOMINMAX
+#include <map>
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
 
@@ -32,6 +33,7 @@ namespace VK_NP
         uint32_t graphicsFamily = INVALID_QUEU;
         uint32_t presentFamily = INVALID_QUEU;
         uint32_t transferFamily = INVALID_QUEU;
+        uint32_t computeFamily = INVALID_QUEU;
     };
 
     struct SwapChainSyncObject
@@ -41,12 +43,14 @@ namespace VK_NP
         vk::Fence inFlightFence;
     };
 
-    struct CommandPoolUsage
+
+    struct VkQueues
     {
-        vk::CommandPool pool;
-        uint32_t maxCommandBuffers;
-        uint32_t currentAllocateCommandBuffer;
+        vk::Queue graphicQueue;
+        vk::Queue presentQueue;
+        vk::Queue transferQueu;
     };
+    
 
     struct VulkanContext
     {
@@ -60,13 +64,7 @@ namespace VK_NP
 #endif
 #pragma endregion DebugCallBack
 
-        QueuFamiliesIndicies queuFamiliesIndicies;
-
-        vk::Queue graphicQueue;
-        vk::Queue presentQueue;
-        vk::Queue transferQueu;
-
-        // SwapChain
+#pragma region SwapChainData
         vk::SwapchainKHR swapChain;
         vk::SurfaceKHR surface;
         vk::SurfaceFormatKHR m_SurfaceFormat;
@@ -78,22 +76,21 @@ namespace VK_NP
         std::vector<vk::ImageView> m_SwapChainImageViews;
         std::vector<vk::Framebuffer> m_SwapChainFramebuffers;
         std::array<SwapChainSyncObject, MAX_FRAMES_IN_FLIGHT> m_syncObject;
-
-        SwapChainSupportDetails swapChainSupportDetails;
-
         uint32_t imageIndex = 0;
         uint32_t currentFrame = 0;
-
-        std::unordered_map<vk::CommandPoolCreateFlags, CommandPoolUsage> m_CommandPool   ;
-
-        vk::RenderPass swapChainRenderPass;
+        SwapChainSupportDetails swapChainSupportDetails;
+#pragma endregion SwapChainData
+   
+#pragma region Queues 
+        QueuFamiliesIndicies queuFamiliesIndicies;
+        VkQueues vkQueues;
+#pragma endregion Queues
         
-        static VulkanContext* currentContext;
-
-        VulkanContext();
-
+        
+        vk::RenderPass swapChainRenderPass;
     };
 
 
+    using VULKAND_DELETE_FUNC = void(VulkanContext*);
 
 }

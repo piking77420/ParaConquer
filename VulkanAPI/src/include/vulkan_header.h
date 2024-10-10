@@ -32,6 +32,7 @@ constexpr bool ENABLE_VALIDATION_LAYERS = true;
 constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
+
 template <typename T, typename OBJ>
 T CastObjectToVkObject(OBJ _handle)
 {
@@ -144,6 +145,11 @@ static std::ostream& operator,(std::ostream& out, std::ostream&(*f)(std::ostream
     vk::Format RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat);
 
     vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
+
+    vk::CommandPoolCreateFlagBits CommandPoolCreateFlagBitsToVulkan(PC_CORE::CommandPoolBufferFlag _flag);
+    
+    uint32_t GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType);
+
 }
 
 

@@ -37,6 +37,8 @@ enum class CommandPoolBufferFlag
 {
     NONE,
     RESET,
+    TRANSIENT,
+    PROTECTED,
 
     COUNT
 };
@@ -64,7 +66,15 @@ struct CommandPoolCreateInfo
 {
     QueuType queueType = QueuType::NONE;
     CommandPoolBufferFlag commandPoolBufferFlag;
-    uint32_t commandBufferCount = 0;
+    uint32_t maxCommandBufferCount = 0;
+};
+
+enum class CommandBufferlevel
+{
+    PRIMARY,
+    SECONDARY,
+
+    COUT
 };
 
 

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "command_buffer.h"
 #include "rhi_typedef.h"
 
 BEGIN_PCCORE
@@ -10,7 +11,7 @@ public:
 
     CommandPool(CommandPool&& other) noexcept;
 
-    CommandPool operator=(CommandPool&& other) noexcept;
+    CommandPool& operator=(CommandPool&& other) noexcept;
     
     CommandPool(const CommandPoolCreateInfo& _commandPoolCreateInfo);
     
@@ -18,8 +19,14 @@ public:
 
     ~CommandPool();
 
+    CommandPoolHandle GetHandle() const;
+
+    void AllocCommandBuffer(const PC_CORE::CommandBufferCreateInfo& _commandBufferCreateInfo);
+
+    void DestroyCommandBuffer(CommandBuffer* _commandBuffer, uint32_t _commandBufferCount);
+
 private:
-    ObjectHandle m_hCommandPool = INVALID_HANDLE;
+    CommandPoolHandle m_hCommandPool = INVALID_HANDLE;
 };
 
 END_PCCORE

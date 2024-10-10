@@ -4,7 +4,6 @@
 #include "io/window.hpp"
 #include "world/transform.hpp"
 #include "io/window.hpp"
-#include "rendering/render_harware_interface/gpu_buffer.h"
 #include "rendering/render_harware_interface/vertex.hpp"
 #include "resources/resource_manager.hpp"
 #include "resources/shader_source.hpp"
@@ -16,21 +15,23 @@ void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 {
     InitRhi(_graphicAPI, _window);
     m_RhiRef = RHI::GetInstance();
+    InitCommandPools();
     InitShader();
     InitBuffer();
 
-    CommandPoolCreateInfo commandPoolCreateInfo =
+
+    const CommandBufferCreateInfo commandBufferCreateInfo =
         {
-            .queuTypeUsage = QueuType::GRAPHICS
+        .commandBufferPtr = m_SwapChainCommandBuffers.data(),
+        .commandBufferCount = static_cast<uint32_t>(m_SwapChainCommandBuffers.size()),
+        .commandBufferlevel = CommandBufferlevel::PRIMARY
         };
-    m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
-    m_SwapChainCommandPool.AllocCommandBuffers(m_SwapChainCommandBuffers.data(),m_SwapChainCommandBuffers.size());
+    m_SwapChainCommandPool.AllocCommandBuffer(commandBufferCreateInfo);
 }
 
 void Renderer::Destroy()
 {
-    m_SwapChainCommandPool.FreeCommandBuffers(m_SwapChainCommandBuffers.data(), m_SwapChainCommandBuffers.size());
-    vertexBuffer.~GpuBuffer();
+    m_SwapChainCommandPool.DestroyCommandBuffer(m_SwapChainCommandBuffers.data(), m_SwapChainCommandBuffers.size());
     
     RHI::DestroyInstance();
 }
@@ -54,16 +55,16 @@ void Renderer::Render()
        windowSize.y
     };
     
-    m_RhiRef->SetScissor(*m_CommandBuffer, ScissorRect);
+    m_RhiRef->SetScissor(m_CommandBuffer->handle, ScissorRect);
     
-    m_RhiRef->SetViewPort(*m_CommandBuffer, viewport);
+    m_RhiRef->SetViewPort(m_CommandBuffer->handle, viewport);
     
-    m_MainShader->Bind(*m_CommandBuffer);
-    //Tbx::Vector3f color = {0,0,1};
-    //m_MainShader->PushVector3(*m_CommandBuffer,"PushConstants", &color);
+    m_MainShader->Bind(m_CommandBuffer->handle);
+    Tbx::Vector3f color = {0,0,1};
+    m_MainShader->PushVector3(m_CommandBuffer->handle,"PushConstants", &color);
 
-    vertexBuffer.Bind(*m_CommandBuffer);
-    m_RhiRef->Draw(*m_CommandBuffer,3, 1, 0, 0);
+    m_CommandBuffer->BindVertexBuffer(vertexBuffer);
+    m_RhiRef->Draw(m_CommandBuffer->handle,3, 1, 0, 0);
 }
 
 void Renderer::BeginFrame()
@@ -84,7 +85,7 @@ void Renderer::BeginFrame()
     m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(m_RhiRef->GetCurrentImage()));
 
     
-    m_RhiRef->BeginRender(*m_CommandBuffer);
+    m_RhiRef->BeginRender(m_CommandBuffer->handle);
 }
 
 
@@ -92,7 +93,7 @@ void Renderer::BeginFrame()
 void Renderer::SwapBuffers()
 {
     m_RhiRef->EndRender();
-    m_RhiRef->SwapBuffers(m_CommandBuffer, 1);
+    m_RhiRef->SwapBuffers(&m_CommandBuffer->handle, 1);
 }
 
 void Renderer::WaitDevice()
@@ -155,5 +156,17 @@ void Renderer::InitBuffer()
         {{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1,1}}
     };
 
-    vertexBuffer = VertexBuffer(sizeof(vertices[0]) * vertices.size(), vertices[0].position.GetPtr());
+    vertexBuffer = VertexBuffer(&m_TransfertPool ,vertices);
+}
+
+void Renderer::InitCommandPools()
+{
+    CommandPoolCreateInfo commandPoolCreateInfo =
+    {
+        .queueType = QueuType::GRAPHICS
+    };
+    m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
+
+    commandPoolCreateInfo.queueType = QueuType::TRANSFERT;
+    m_TransfertPool = CommandPool(commandPoolCreateInfo);
 }

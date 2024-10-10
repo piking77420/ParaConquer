@@ -115,6 +115,7 @@ BEGIN_PCCORE
     {
         std::string prograShaderName;
         ShaderInfo shaderInfo;
+        // there shoulbe a renderpass handle
     };
 
 

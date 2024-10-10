@@ -14,19 +14,21 @@ namespace VK_NP
     class VulkanShaderManager
     {
     public:
-        bool CreateShaderFromSource(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
+        bool CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass ,const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
                                     const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
-        bool DestroyShader(const std::string& _shaderName);
+        bool DestroyShader(vk::Device _device, const std::string& _shaderName);
 
         void BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName);
 
         void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
             size_t _size, vk::CommandBuffer _commandBuffer);
 
-        VulkanShaderManager();
 
-        ~VulkanShaderManager();
+        void Init(VulkanContext* _vulkanContext);
+
+        void Destroy(VulkanContext* _vulkanContext);
+    
 
     private:
         struct ShaderStageInfo
@@ -58,19 +60,15 @@ namespace VK_NP
         VulkanShaderCompiler m_ShaderCompiler;
         
         std::unordered_map<std::string, ShaderInternal> m_InternalShadersMap;
-
-        vk::Device m_Device;
-
-        vk::Extent2D m_SwapChainExtent;
-
+        
         ShaderInternal* GetShaderInternal(const std::string& _shaderName);
         
-        void DestroyInternalShaders(ShaderInternal* _shaderInternalBack);
+        void DestroyInternalShaders(vk::Device _device, ShaderInternal* _shaderInternalBack);
 
         static void FillShaderInfo(ShaderInternal* _shaderInternalBack,
                              const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
 
-        void CreatePipelineGraphicPointFromModule(const PC_CORE::ShaderInfo& ShaderInfo,
+        void CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& ShaderInfo,
             const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);
 
         void CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);

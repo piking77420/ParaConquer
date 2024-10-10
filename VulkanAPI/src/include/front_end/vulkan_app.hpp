@@ -1,8 +1,13 @@
 ﻿#pragma once
 
-#include "rendering/render_harware_interface/RHI.hpp"
+#include <functional>
 
-#include "back_end/vulkan_main.h"
+#include "rendering/render_harware_interface/RHI.hpp"
+#include "vulkan_header.h"
+#include "back_end/vulkan_buffer_map.hpp"
+#include "back_end/vulkan_harware_wrapper.hpp"
+#include "back_end/vulkan_present_chain.hpp"
+#include "back_end/vulkan_shader_manager.hpp"
 
 namespace VK_NP
 {
@@ -37,17 +42,23 @@ namespace VK_NP
 		VULKAN_API bool DestroyShader(const std::string& _shaderProgramName) override;
 #pragma endregion Shader
 		
-		VULKAN_API PC_CORE::GPUBufferHandle BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
+		VULKAN_API PC_CORE::GPUBufferHandle BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
 
 		VULKAN_API bool DestroyBuffer(PC_CORE::GPUBufferHandle _handle) override;
 
-		void BindBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle) override;
+		VULKAN_API void BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle) override;
 
 #pragma region CommandPool Functions
-		VULKAN_API void AllocateCommandBuffer(PC_CORE::CommandBufferHandle* _commandBufferHandle,
-			const PC_CORE::CommandBufferCreateInfo& _createInfo) override;
+		VULKAN_API void FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoolHandle, PC_CORE::CommandBuffer* _commandBuffer, uint32_t _commandBufferCount) override;
+		
+		VULKAN_API void CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
+		                       PC_CORE::CommandPoolHandle* _commandPoolHandle) override;
+		
+		VULKAN_API void DestroyCommandPool(PC_CORE::CommandPoolHandle _commandPoolHandle) override;
+		
+		 PC_CORE_API void AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle,
+														 PC_CORE::CommandBufferCreateInfo _commandBufferCreateInfo) override;
 
-		VULKAN_API void FreeCommandBuffer(PC_CORE::CommandBufferHandle _commandBuffer) override;
 #pragma endregion CommandPool Functions
 
 
@@ -77,8 +88,9 @@ namespace VK_NP
 		
 		vk::CommandBuffer m_BindCommandBuffer = VK_NULL_HANDLE;
 		
-		CommandPoolUsage GetCommandPool(vk::CommandPoolCreateFlagBits _createFlagBits);
-		
+		std::vector<std::function<void(VulkanContext*)>> m_DeleteFunction;
+
+		void InitBaseObject();
 	};
 
 

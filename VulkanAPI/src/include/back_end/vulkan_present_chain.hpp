@@ -9,11 +9,12 @@ namespace VK_NP
     class VulkanPresentChain
     {
     public:
-        VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext);
+        
+        void Init(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext);
 
-        ~VulkanPresentChain();
+        void Destroy(VulkanContext* _context);
 
-        void RecreateSwapChain(void* _glfwWindowPtr, uint32_t _newWidht, uint32_t _newHeight);
+        void RecreateSwapChain(VulkanContext* _context, void* _glfwWindowPtr, uint32_t _newWidht, uint32_t _newHeight);
 
         void CreateSwapchain(void* _glfwWindowPtr, VulkanContext* _vulkanContext);
 

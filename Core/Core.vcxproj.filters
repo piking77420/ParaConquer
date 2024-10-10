@@ -21,25 +21,7 @@
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\externals\include\shaderc\env.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\externals\include\shaderc\shaderc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\externals\include\shaderc\shaderc.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\externals\include\shaderc\status.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\externals\include\shaderc\visibility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\externals\include\stb_image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\externals\include\OBJ_Loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\input\low_pass_filter.hpp">
@@ -210,9 +192,6 @@
     <ClInclude Include="src\include\rendering\render_harware_interface\buffer_typedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\rendering\render_harware_interface\gpu_buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\rendering\render_harware_interface\RHI.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -226,6 +205,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\render_harware_interface\command_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\buffer\gpu_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\buffer\index_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\buffer\shader_storage.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\buffer\uniform_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\buffer\vertex_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\render_harware_interface\command_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -350,9 +347,6 @@
     <ClCompile Include="src\source\resources\shader_program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\rendering\render_harware_interface\gpu_buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\rendering\render_harware_interface\RHI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -360,6 +354,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\render_harware_interface\command_pool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\buffer\index_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\buffer\shader_storage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\buffer\uniform_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\buffer\vertex_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\render_harware_interface\command_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

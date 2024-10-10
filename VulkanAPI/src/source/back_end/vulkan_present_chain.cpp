@@ -2,13 +2,6 @@
 #include "back_end/vulkan_harware_wrapper.hpp"
 #include "GLFW/glfw3.h"
 
-VK_NP::VulkanPresentChain::VulkanPresentChain(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
-{
-    
-    CreateSwapchain(_vulkanMainCreateInfo.windowPtr, _vulkanContext);
-    CreateSyncObject(_vulkanContext);
-}
-
 
 void VK_NP::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext)
 {
@@ -20,21 +13,24 @@ void VK_NP::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext)
     }
 }
 
-VK_NP::VulkanPresentChain::~VulkanPresentChain()
-{
-    VulkanContext* vulkanContext = VulkanContext::currentContext; 
 
-    DestroySyncObject(vulkanContext);
-    DestroySwapchain(vulkanContext);
-    vulkanContext->device.destroyRenderPass(vulkanContext->swapChainRenderPass);
+void VK_NP::VulkanPresentChain::Init(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
+{
+    CreateSwapchain(_vulkanMainCreateInfo.windowPtr, _vulkanContext);
+    CreateSyncObject(_vulkanContext);
 }
 
-void VK_NP::VulkanPresentChain::RecreateSwapChain(void* _glfwWindowPtr  ,uint32_t _newWidht, uint32_t _newHeight)
+void VK_NP::VulkanPresentChain::Destroy(VulkanContext* _context)
 {
-    VulkanContext* vulkanContext = VulkanContext::currentContext; 
+    DestroySyncObject(_context);
+    DestroySwapchain(_context);
+    _context->device.destroyRenderPass(_context->swapChainRenderPass);
+}
 
-    DestroySwapchain(vulkanContext);
-    CreateSwapchain(_glfwWindowPtr, vulkanContext);
+void VK_NP::VulkanPresentChain::RecreateSwapChain(VulkanContext* _context, void* _glfwWindowPtr ,uint32_t _newWidht, uint32_t _newHeight)
+{
+    DestroySwapchain(_context);
+    CreateSwapchain(_glfwWindowPtr, _context);
 }
 
 void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanContext* _vulkanContext)
@@ -158,7 +154,7 @@ void VK_NP::VulkanPresentChain::SwapBuffer(vk::CommandBuffer* _commandBuffers, u
                                                     renderFinishedSemaphore;
 
     
-    VK_CALL(_vulkanContext->graphicQueue.submit(1, &submitInfo,
+    VK_CALL(_vulkanContext->vkQueues.graphicQueue.submit(1, &submitInfo,
         _vulkanContext->m_syncObject.at(_vulkanContext->currentFrame).inFlightFence));
     
     PresentNewImage(_vulkanContext);
@@ -339,7 +335,7 @@ void VK_NP::VulkanPresentChain::PresentNewImage(VulkanContext* _vulkanContext)
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &_vulkanContext->imageIndex;
     
-    VK_CALL(_vulkanContext->presentQueue.presentKHR(&presentInfo));
+    VK_CALL(_vulkanContext->vkQueues.presentQueue.presentKHR(&presentInfo));
 }
 
 

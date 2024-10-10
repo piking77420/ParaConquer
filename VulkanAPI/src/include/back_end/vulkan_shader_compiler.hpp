@@ -13,11 +13,10 @@ namespace VK_NP
 
         ~VulkanShaderCompiler();
 
-        void CreateModuleFromSource(const char* _source,
+        void CreateModuleFromSource(vk::Device _device, const char* _source,
                                     PC_CORE::LowLevelShaderStageType _lowLevelShaderStage,
                                     SpvReflectShaderModule* _ReflectedModule, vk::ShaderModule* _shaderModule);
 
     private:
-        vk::Device m_Device;
     };
 }

@@ -43,13 +43,23 @@ void VK_NP::VulkanApp::EndRender()
     m_BindCommandBuffer.end();
 }
 
-VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo) :  m_vulkanHardwareWrapper(vulkanMainCreateInfo, &m_VulkanContext)
-                                                                                , m_vulkanPresentChain(vulkanMainCreateInfo,&m_VulkanContext)
+VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
 {
+    m_vulkanHardwareWrapper.Init(vulkanMainCreateInfo, &m_VulkanContext);
+    m_DeleteFunction.push_back(std::bind(&VulkanHarwareWrapper::Destroy, &m_vulkanHardwareWrapper, std::placeholders::_1));
+    m_vulkanPresentChain.Init(vulkanMainCreateInfo, &m_VulkanContext);
+    m_DeleteFunction.push_back(std::bind(&VulkanPresentChain::Destroy, &m_vulkanPresentChain, std::placeholders::_1));
+
+    m_vulkanShaderManager.Init(&m_VulkanContext);
+    m_DeleteFunction.push_back(std::bind(&VulkanShaderManager::Destroy, &m_vulkanShaderManager, std::placeholders::_1));
+
+    m_DeleteFunction.push_back(std::bind(&VulkanBufferMap::Destroy, &bufferMap, std::placeholders::_1));
 }
 
 VK_NP::VulkanApp::~VulkanApp()
 {
+    for (auto& it : m_DeleteFunction)
+        it(&m_VulkanContext);
 }
 
 void VK_NP::VulkanApp::WaitForAquireImage()
@@ -87,19 +97,19 @@ void VK_NP::VulkanApp::PushConstants(PC_CORE::CommandBufferHandle _commandBuffer
 void VK_NP::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
 {
     WaitDevice();
-    m_vulkanPresentChain.RecreateSwapChain(_glfwWindowptr, _newWidht, _newHeight);
+    m_vulkanPresentChain.RecreateSwapChain(&m_VulkanContext, _glfwWindowptr, _newWidht, _newHeight);
 }
 
 
 
 void VK_NP::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
 {
-    m_vulkanShaderManager.CreateShaderFromSource(programShaderCreateInfo, _shaderSource);
+    m_vulkanShaderManager.CreateShaderFromSource(m_VulkanContext.device, m_VulkanContext.swapChainRenderPass,programShaderCreateInfo, _shaderSource);
 }
 
 bool VK_NP::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
 {
-    return m_vulkanShaderManager.DestroyShader(_shaderProgramName);
+    return m_vulkanShaderManager.DestroyShader(m_VulkanContext.device, _shaderProgramName);
 }
 
 VULKAN_API void VK_NP::VulkanApp::WaitDevice()
@@ -107,83 +117,53 @@ VULKAN_API void VK_NP::VulkanApp::WaitDevice()
     m_VulkanContext.device.waitIdle();
 }
 
-PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
+PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
 {
-   return bufferMap.CreateBuffer(static_cast<uint32_t>(_size), _data, _usage);
+    vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPool->GetHandle());
+    
+   return bufferMap.CreateBuffer(&m_VulkanContext, commandPool,static_cast<uint32_t>(_size), _data, _usage);
 }
 
 bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
 {
-    return bufferMap.DestroyBuffer(_handle);
+    return bufferMap.DestroyBuffer(&m_VulkanContext, _handle);
 }
 
-void VK_NP::VulkanApp::BindBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
 {
-    auto& bufferInfo = bufferMap.GetBufferUsage(_handle);
     vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
-    
+
     vk::Buffer vkBuffer[] =
-        {
+    {
         CastObjectToVkObject<vk::Buffer>(_handle)
     };
-    vk::DeviceSize offset[]= {0};
+    vk::DeviceSize deviceOffSet[] = {0};
     
-    switch (bufferInfo.usage)
-    {
-    case PC_CORE::GPU_BUFFER_USAGE::VERTEX:
-        vkCommandBuffer.bindVertexBuffers(0, 1, vkBuffer, offset);
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::INDEX:
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::UNIFORM:
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::SHADER_STORAGE:
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::TRANSFERT:
-        break;
-    }
-}
-
-void VK_NP::VulkanApp::AllocateCommandBuffer(PC_CORE::CommandBufferHandle* _commandBufferHandle,
-    const PC_CORE::CommandBufferCreateInfo& _createInfo)
-{
-}
-
-void VK_NP::VulkanApp::FreeCommandBuffer(PC_CORE::CommandBufferHandle _commandBuffer)
-{
+    vkCommandBuffer.bindVertexBuffers(0, 1, vkBuffer, deviceOffSet);
 }
 
 
 void VK_NP::VulkanApp:: CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
                                           PC_CORE::CommandPoolHandle* _commandPoolHandle)
 {
-    VulkanContext *vulkanContext = VulkanContext::currentContext;
-    uint32_t queufamilyIndex = -1;
-
-    if (_commandPoolCreateInfo.queuTypeUsage & PC_CORE::QueuType::GRAPHICS)
-        queufamilyIndex = vulkanContext->queuFamiliesIndicies.graphicsFamily;
-
-    if (_commandPoolCreateInfo.queuTypeUsage & PC_CORE::QueuType::TRANSFERT)
-        queufamilyIndex = vulkanContext->queuFamiliesIndicies.graphicsFamily;
+    vk::CommandPoolCreateInfo createInfo{};
+    createInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+    createInfo.flags = CommandPoolCreateFlagBitsToVulkan(_commandPoolCreateInfo.commandPoolBufferFlag);
+    createInfo.queueFamilyIndex = GetQueueFamiliesIndexFromType(&m_VulkanContext, _commandPoolCreateInfo.queueType);
     
-    vk::CommandPoolCreateInfo _vkcommandPoolCreateInfo;
-    _vkcommandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
-    _vkcommandPoolCreateInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-    _vkcommandPoolCreateInfo.queueFamilyIndex = queufamilyIndex;
-
-    vk::CommandPool commandPool = VulkanContext::currentContext->device.createCommandPool(_vkcommandPoolCreateInfo, nullptr);
-    *_commandPoolHandle = commandPool;
+    vk::CommandPool* vkCommandPool = CastObjectToVkObject<vk::CommandPool*>(_commandPoolHandle);
+    *vkCommandPool = m_VulkanContext.device.createCommandPool(createInfo, nullptr);
+    
 }
 
 void VK_NP::VulkanApp::DestroyCommandPool(PC_CORE::CommandPoolHandle _commandPoolHandle)
 {
-    vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
-
-    VulkanContext::currentContext->device.destroyCommandPool(commandPool);
+    vk::CommandPool vkCommandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
+    m_VulkanContext.device.destroyCommandPool(vkCommandPool);
 }
 
-void VK_NP::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle, PC_CORE::CommandBufferHandle* _commandBuffer,
-    uint32_t _commandBufferAllocationCount)
+void VK_NP::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle,
+                                           PC_CORE::CommandBufferCreateInfo _commandBufferCreateInfo)
 {
     vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
 
@@ -191,22 +171,26 @@ void VK_NP::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPo
     commandBufferAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     commandBufferAllocateInfo.commandPool = commandPool;
     commandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
-    commandBufferAllocateInfo.commandBufferCount = _commandBufferAllocationCount;
+    commandBufferAllocateInfo.commandBufferCount = _commandBufferCreateInfo.commandBufferCount;
+
     
-    vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer*>(_commandBuffer);
-    VK_CALL(VulkanContext::currentContext->device.allocateCommandBuffers(&commandBufferAllocateInfo,
+    vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer*>(_commandBufferCreateInfo.commandBufferPtr);
+    VK_CALL(m_VulkanContext.device.allocateCommandBuffers(&commandBufferAllocateInfo,
         vkCommandBuffer));
 }
 
-void VK_NP::VulkanApp::FreeCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle, const PC_CORE::CommandBufferHandle* _commandBuffer,
-    uint32_t _commandBufferFreeAllocationCount)
+void VK_NP::VulkanApp::FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoolHandle,
+    PC_CORE::CommandBuffer* _commandBuffer, uint32_t _commandBufferCount)
 {
     vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
     const vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObjectConst<const vk::CommandBuffer*>(_commandBuffer);
 
-    VulkanContext::currentContext->device.freeCommandBuffers(commandPool, _commandBufferFreeAllocationCount,
+    m_VulkanContext.device.freeCommandBuffers(commandPool, _commandBufferCount,
         vkCommandBuffer);
 }
+
+
+
 
 #pragma region CommandBuffer Functions
 
@@ -248,6 +232,9 @@ void VK_NP::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, u
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
     commandBuffer.draw(_vertexCount, instanceCount, firstVertex, firstInstance);
 }
+
+
+
 #pragma endregion CommandBuffer Functions
 
 #pragma region CommandPool Functions
@@ -256,3 +243,10 @@ void VK_NP::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, u
  
 #pragma endregion CommandPool Functions
 
+#pragma region InitBaseObject
+
+void VK_NP::VulkanApp::InitBaseObject()
+{
+    
+}
+#pragma endregion InitBaseObject

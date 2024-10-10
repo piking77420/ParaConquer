@@ -51,3 +51,45 @@ vk::VertexInputRate VK_NP::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _v
       }
 }
 
+vk::CommandPoolCreateFlagBits VK_NP::CommandPoolCreateFlagBitsToVulkan(
+    PC_CORE::CommandPoolBufferFlag _flag)
+{
+    vk::CommandPoolCreateFlagBits commandPoolCreateFlagBits {};
+
+    if (_flag & PC_CORE::CommandPoolBufferFlag::RESET)
+        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+
+    if (_flag & PC_CORE::CommandPoolBufferFlag::TRANSIENT)
+        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eTransient;
+
+    if (_flag & PC_CORE::CommandPoolBufferFlag::PROTECTED)
+        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eProtected;
+
+    return commandPoolCreateFlagBits;
+}
+
+uint32_t VK_NP::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType)
+{
+    uint32_t queueFamiliesIndex = 0;
+    
+    if (queueType & PC_CORE::QueuType::GRAPHICS && queueType & PC_CORE::QueuType::TRANSFERT)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
+    }
+    else if (queueType & PC_CORE::QueuType::TRANSFERT)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.transferFamily;
+    }
+    else if (queueType & PC_CORE::QueuType::GRAPHICS)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
+    }
+    else if(queueType & PC_CORE::QueuType::COMPUTE)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.computeFamily;
+    }
+  
+    return queueFamiliesIndex;
+}
+
+

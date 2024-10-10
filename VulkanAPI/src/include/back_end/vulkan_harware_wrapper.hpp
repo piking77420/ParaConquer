@@ -15,11 +15,11 @@ namespace VK_NP
     {
     public:
         VulkanPhysicalDevices m_VulkanPhysicalDevices;
-
-        VulkanHarwareWrapper(const VulkanAppCreateInfo& vulkanMainCreateInfo, VulkanContext* _vulkanContext);
-    
-        ~VulkanHarwareWrapper();
-
+        
+        void Init(const VulkanAppCreateInfo& vulkanMainCreateInfo, VulkanContext* _vulkanContext);
+        
+        void Destroy(VulkanContext* _context);
+        
         static std::vector<vk::DynamicState> GetDynamicState();
     private:
 

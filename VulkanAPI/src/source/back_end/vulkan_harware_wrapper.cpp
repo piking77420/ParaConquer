@@ -18,11 +18,11 @@ const std::vector<const char*> deviceExtensions = {
 };
 
 
-VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
-{
 
-    CreateInstance(&_vulkanContext->instance, _vulkanMainCreateInfo.appName, _vulkanMainCreateInfo.engineName);
-    _vulkanContext->surface = CreateSurface(_vulkanContext->instance, _vulkanMainCreateInfo.windowPtr);
+void VK_NP::VulkanHarwareWrapper::Init(const VulkanAppCreateInfo& vulkanMainCreateInfo, VulkanContext* _vulkanContext)
+{
+    CreateInstance(&_vulkanContext->instance, vulkanMainCreateInfo.appName, vulkanMainCreateInfo.engineName);
+    _vulkanContext->surface = CreateSurface(_vulkanContext->instance, vulkanMainCreateInfo.windowPtr);
 #ifdef _DEBUG
     SetUpDebugMessenger(_vulkanContext->instance, &_vulkanContext->m_DebugMessenger);
 #endif
@@ -33,17 +33,15 @@ VK_NP::VulkanHarwareWrapper::VulkanHarwareWrapper(const VulkanAppCreateInfo& _vu
     InitVulkanAllocator(_vulkanContext);
 }
 
-VK_NP::VulkanHarwareWrapper::~VulkanHarwareWrapper()
+void VK_NP::VulkanHarwareWrapper::Destroy(VulkanContext* _context)
 {
-    VulkanContext* currentContext = VulkanContext::currentContext;
-
-    vmaDestroyAllocator(currentContext->allocator);
-    currentContext->device.destroy();
+    vmaDestroyAllocator(_context->allocator);
+    _context->device.destroy();
 #ifdef _DEBUG
-    DestroyDebugUtilsMessengerEXT(currentContext->instance, &currentContext->m_DebugMessenger, nullptr);
+    DestroyDebugUtilsMessengerEXT(_context->instance, &_context->m_DebugMessenger, nullptr);
 #endif
-    currentContext->instance.destroySurfaceKHR(currentContext->surface);
-    currentContext->instance.destroy(nullptr);
+    _context->instance.destroySurfaceKHR(_context->surface);
+    _context->instance.destroy(nullptr);
 }
 
 std::vector<vk::DynamicState> VK_NP::VulkanHarwareWrapper::GetDynamicState()
@@ -155,9 +153,9 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 
     VK_CALL(physicalDevice.createDevice(&vkDevicecreateInfo, nullptr, &_vulkanContext->device));
     
-    _vulkanContext->graphicQueue = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0);
-    _vulkanContext->presentQueue = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0);
-    _vulkanContext->transferQueu = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.transferFamily, 0);
+    _vulkanContext->vkQueues.graphicQueue = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.graphicsFamily, 0);
+    _vulkanContext->vkQueues.presentQueue = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.presentFamily, 0);
+    _vulkanContext->vkQueues.transferQueu = _vulkanContext->device.getQueue(_vulkanContext->queuFamiliesIndicies.transferFamily, 0);
 
 }
 

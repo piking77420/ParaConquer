@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "vulkan_header.h"
+#include "render_harware_interface/command_pool.hpp"
 
 namespace VK_NP
 {
@@ -10,24 +11,23 @@ namespace VK_NP
         VmaAllocation allocation;
         PC_CORE::GPU_BUFFER_USAGE usage;
     };
-    // This class is responsable for creating buffer and destroying it
-    // should bind this buffer tho
+
     class VulkanBufferMap
     {
     public:
         using BufferKeyHandle = PC_CORE::GPUBufferHandle;
         
-        BufferKeyHandle CreateBuffer(uint32_t _size, const void* data, PC_CORE::GPU_BUFFER_USAGE usage);
+        BufferKeyHandle CreateBuffer(VulkanContext* _context, vk::CommandPool _commandPool, uint32_t _size, const void* data, PC_CORE::GPU_BUFFER_USAGE usage);
         
         const BufferInternal& GetBufferUsage(BufferKeyHandle _bufferKeyHandle);
 
-        bool DestroyBuffer(BufferKeyHandle _bufferKeyHandle);
+        bool DestroyBuffer(VulkanContext* _context, BufferKeyHandle _bufferKeyHandle);
+        
+        void Init(VulkanContext* _vulkanContext);
 
-        VulkanBufferMap() = default;
-
-        ~VulkanBufferMap();
+        void Destroy(VulkanContext* _vulkanContext);
+        
     private:
-        void CopyDataToBuffer(BufferInternal* _bufferInternal, const void* _data);
         
         vk::BufferUsageFlags GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage);
         

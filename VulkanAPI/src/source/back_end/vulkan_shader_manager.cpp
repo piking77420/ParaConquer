@@ -12,6 +12,21 @@
 
 using namespace VK_NP;
 
+void VulkanShaderManager::Init(VulkanContext* _vulkanContext)
+{
+    
+}
+
+void VulkanShaderManager::Destroy(VulkanContext* _vulkanContext)
+{
+    // for each shader programm
+    for (auto it = m_InternalShadersMap.begin(); it != m_InternalShadersMap.end(); it++)
+    {
+        DestroyInternalShaders(_vulkanContext->device, &it->second);
+    }
+}
+
+
 void VulkanShaderManager::BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName)
 {
     ShaderInternal* shaderInternal = GetShaderInternal(_shaderName);
@@ -56,7 +71,9 @@ void VulkanShaderManager::PushConstant(const std::string& _shaderName, const cha
 }
 
 
-bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
+
+
+bool VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass, const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
                                                  const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
 {
     ShaderInternal shaderInternalBack = {};
@@ -71,7 +88,7 @@ bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCre
     {
         PC_CORE::LowLevelShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
         // SOURCE TO MODULE and get spv reflection
-        m_ShaderCompiler.CreateModuleFromSource(_shaderSource[i].shaderSourceCode.data(),
+        m_ShaderCompiler.CreateModuleFromSource(_device, _shaderSource[i].shaderSourceCode.data(),
                                                 shaderStage, &shaderStagesInfo.at(i).reflectShaderModule,
                                                 &shaderModules[i]);
 
@@ -81,8 +98,8 @@ bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCre
         shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
     }
 
-    CreatePipelineLayoutFromSpvReflectModule(VK_NP::VulkanContext::currentContext->device, &shaderInternalBack);
-    CreatePipelineGraphicPointFromModule(_programShaderCreatInfo.shaderInfo,
+    CreatePipelineLayoutFromSpvReflectModule(_device, &shaderInternalBack);
+    CreatePipelineGraphicPointFromModule(_device, _tmprRenderPass, _programShaderCreatInfo.shaderInfo,
                                          shaderStagesCreateInfos, shaderInternalBack.pipelineLayout,
                                          &shaderInternalBack.pipeline);
 
@@ -90,7 +107,7 @@ bool VulkanShaderManager::CreateShaderFromSource(const PC_CORE::ProgramShaderCre
     // graphic and layout as been created no need module modules then
     for (auto& module : shaderModules)
     {
-        m_Device.destroyShaderModule(module);
+        _device.destroyShaderModule(module);
     }
 
     m_InternalShadersMap.insert({ _programShaderCreatInfo.prograShaderName, shaderInternalBack });
@@ -118,7 +135,7 @@ void VulkanShaderManager::FillShaderInfo(ShaderInternal* _shaderInternalBack,
     }
 }
 
-void VulkanShaderManager::CreatePipelineGraphicPointFromModule(const PC_CORE::ShaderInfo& ShaderInfo
+void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& ShaderInfo
                                                                , const std::vector<vk::PipelineShaderStageCreateInfo>&
                                                                _shaderStageCreateInfos,
                                                                vk::PipelineLayout _pipelineLayout,
@@ -127,17 +144,10 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(const PC_CORE::Sh
     // Stais call for dynamic state
     auto dynamicStates = VulkanHarwareWrapper::GetDynamicState();
 
+    // DYNAMIC STATE SO DONT CARE
     VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(m_SwapChainExtent.width);
-    viewport.height = static_cast<float>(m_SwapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
     VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = m_SwapChainExtent;
+ 
 
     vk::PipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
@@ -227,11 +237,11 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(const PC_CORE::Sh
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = _pipelineLayout;
-    pipelineInfo.renderPass = VulkanContext::currentContext->swapChainRenderPass;
+    pipelineInfo.renderPass = _renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    VK_CALL(m_Device.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, _outPipeline));
+    VK_CALL(_device.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, _outPipeline));
 }
 
 
@@ -278,7 +288,7 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
 }
 
 
-void VulkanShaderManager::DestroyInternalShaders(VulkanShaderManager::ShaderInternal* _shaderInternalBack)
+void VulkanShaderManager::DestroyInternalShaders(vk::Device _device, VulkanShaderManager::ShaderInternal* _shaderInternalBack)
 {
     // destroy each reflected spv module
     for (auto& s : _shaderInternalBack->shaderStages)
@@ -290,40 +300,25 @@ void VulkanShaderManager::DestroyInternalShaders(VulkanShaderManager::ShaderInte
     }
     // Destroy pipeline
     if (_shaderInternalBack->pipeline != VK_NULL_HANDLE)
-        m_Device.destroyPipeline(_shaderInternalBack->pipeline);
+        _device.destroyPipeline(_shaderInternalBack->pipeline);
 
     // Destroy pipelune layout
     if (_shaderInternalBack->pipelineLayout != VK_NULL_HANDLE)
-        m_Device.destroyPipelineLayout(_shaderInternalBack->pipelineLayout);
+        _device.destroyPipelineLayout(_shaderInternalBack->pipelineLayout);
 }
 
 
-bool VulkanShaderManager::DestroyShader(const std::string& _shaderName)
+bool VulkanShaderManager::DestroyShader(vk::Device _device, const std::string& _shaderName)
 {
     const bool success = m_InternalShadersMap.contains(_shaderName);
     if (!success)
         return success;
 
     auto it = m_InternalShadersMap.at(_shaderName);
-    DestroyInternalShaders(&it);
+    DestroyInternalShaders(_device, &it);
 
     m_InternalShadersMap.erase(_shaderName);
     return true;
-}
-
-VulkanShaderManager::VulkanShaderManager()
-{
-    m_Device = VulkanContext::currentContext->device;
-    m_SwapChainExtent = VulkanContext::currentContext->m_Extent2D;
-}
-
-VulkanShaderManager::~VulkanShaderManager()
-{
-    // for each shader programm
-    for (auto it = m_InternalShadersMap.begin(); it != m_InternalShadersMap.end(); it++)
-    {
-        DestroyInternalShaders(&it->second);
-    }
 }
 
 #pragma region PARSING

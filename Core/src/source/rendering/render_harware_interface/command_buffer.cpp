@@ -2,16 +2,7 @@
 
 #include "rendering/render_harware_interface/RHI.hpp"
 
-PC_CORE::CommandBuffer::CommandBuffer(const CommandBufferCreateInfo& _commandBufferCreateInfo)
+void PC_CORE::CommandBuffer::BindVertexBuffer(const VertexBuffer& _buffer)
 {
-    RHI::GetInstance()->AllocateCommandBuffer(m_Handle,_commandBufferCreateInfo)
-}
-
-PC_CORE::CommandBuffer::CommandBuffer()
-{
-    
-}
-
-PC_CORE::CommandBuffer::~CommandBuffer()
-{
+    RHI::GetInstance()->BindVertexBuffer(handle, _buffer.handleId);
 }

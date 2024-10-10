@@ -51,9 +51,7 @@
     <ClInclude Include="src\externals\include\spirv\spirv_reflect.h" />
     <ClInclude Include="src\externals\include\spirv_reflect.h" />
     <ClInclude Include="src\include\back_end\vulkan_buffer_map.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_command_factory.hpp" />
     <ClInclude Include="src\include\back_end\vulkan_harware_wrapper.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_main.h" />
     <ClInclude Include="src\include\back_end\vulkan_physical_devices.hpp" />
     <ClInclude Include="src\include\back_end\vulkan_present_chain.hpp" />
     <ClInclude Include="src\include\back_end\vulkan_shader_compiler.hpp" />
@@ -71,9 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\back_end\vulkan_buffer_map.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_command_factory.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_harware_wrapper.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_main.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_physical_devices.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_present_chain.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_shader_compiler.cpp" />
