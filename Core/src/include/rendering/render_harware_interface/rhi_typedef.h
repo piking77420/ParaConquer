@@ -25,8 +25,7 @@ enum class QueuType
 };
 ENUM_FLAGS(QueuType)
 
-    
-
+   
 using ObjectHandle = void*;
 using CommandBufferHandle = ObjectHandle;
 using CommandPoolHandle = ObjectHandle;
@@ -74,8 +73,24 @@ enum class CommandBufferlevel
     COUT
 };
 
+#pragma region LOG_TYPE
+
+    enum class LogType
+    {
+        INFO,
+        WARNING,
+        ERROR
+    };
+
+
+
+#pragma endregion
+
 
 
 END_PCCORE
 
 #define CastToObject(type, handle) type(reinterpret_cast<typename type::CType>(handle))
+
+#define GLOBAL_DESCRIPTOR 0
+#define INSTANCE_DESCRIPTOR 1

@@ -5,13 +5,27 @@
 
 BEGIN_PCCORE
 
-class IndexBuffer 
+class IndexBuffer : public GPUBuffer
 {
 public:
 
-  
-private:
+    IndexBuffer(IndexBuffer&& _other) noexcept;
+   
+    IndexBuffer& operator=(IndexBuffer&& _other) noexcept;
     
+    IndexBuffer(CommandPool* _transfertPool, const std::vector<uint32_t>& _indicies);
+    
+    IndexBuffer();
+    
+    ~IndexBuffer();
+
+    inline uint32_t GetNbrOfIndicies()
+    {
+        return m_IndiciesCount;
+    }
+    
+private:
+    uint32_t m_IndiciesCount = 0;
 };
 
 END_PCCORE

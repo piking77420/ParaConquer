@@ -1,12 +1,13 @@
 ﻿#include "rendering/renderer.hpp"
-#include "rendering/renderer.hpp"
 
 #include "io/window.hpp"
 #include "world/transform.hpp"
-#include "io/window.hpp"
 #include "rendering/render_harware_interface/vertex.hpp"
 #include "resources/resource_manager.hpp"
 #include "resources/shader_source.hpp"
+
+#undef ERROR
+
 
 using namespace PC_CORE;
 
@@ -31,8 +32,9 @@ void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 
 void Renderer::Destroy()
 {
-    m_SwapChainCommandPool.DestroyCommandBuffer(m_SwapChainCommandBuffers.data(), m_SwapChainCommandBuffers.size());
-    
+    m_SwapChainCommandPool.~CommandPool();
+    m_TransfertPool.~CommandPool();
+
     RHI::DestroyInstance();
 }
 
@@ -63,8 +65,9 @@ void Renderer::Render()
     Tbx::Vector3f color = {0,0,1};
     m_MainShader->PushVector3(m_CommandBuffer->handle,"PushConstants", &color);
 
-    m_CommandBuffer->BindVertexBuffer(vertexBuffer);
-    m_RhiRef->Draw(m_CommandBuffer->handle,3, 1, 0, 0);
+    m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0 ,1);
+    m_CommandBuffer->BindIndexBuffer(indexBuffer);
+    m_RhiRef->DrawIndexed(m_CommandBuffer->handle, indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
 }
 
 void Renderer::BeginFrame()
@@ -101,6 +104,20 @@ void Renderer::WaitDevice()
     m_RhiRef->WaitDevice();
 }
 
+void Renderer::RenderLog(LogType _logType, const char* _message)
+{
+    switch (_logType)
+    {
+    case LogType::INFO:
+        PC_LOG(_message)
+        break;
+    case LogType::ERROR:
+        PC_LOGERROR(_message)
+        break;
+    default: ;
+    }
+}
+
 void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
 {
     Windowtpr = _window;
@@ -115,7 +132,8 @@ void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
             {
                 .appName = "Editor",
                 .engineName = "ParaConquer Engine",
-                .windowPtr = _window->GetHandle()
+                .windowPtr = _window->GetHandle(),
+                .logCallback = &Renderer::RenderLog,
             };
             RHI::MakeInstance(new VK_NP::VulkanApp(createInfo));
         }
@@ -149,14 +167,19 @@ void Renderer::InitShader()
 
 void Renderer::InitBuffer()
 {
-    
     const std::vector<Vertex> vertices = {
-        {{0.0f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1,0}},
-        {{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0,1}},
-        {{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1,1}}
+        {{-0.5f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1,0}},
+        {{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0,1}},
+        {{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1,1}},
+            {{-0.5f, 0.5f,0.f}, {1.0f, 1.0f, 1.0f},{1,1}}
     };
 
     vertexBuffer = VertexBuffer(&m_TransfertPool ,vertices);
+
+    const std::vector<uint32_t> indices = {
+        0, 1, 2, 2, 3, 0
+    };
+    indexBuffer = IndexBuffer(&m_TransfertPool, indices);
 }
 
 void Renderer::InitCommandPools()

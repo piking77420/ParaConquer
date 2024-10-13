@@ -19,7 +19,14 @@ public:
     
     ~VertexBuffer();
 
-    
+
+    inline uint32_t GetNbrOfVerticies()
+    {
+        return m_VertexCount;
+    }
+
+private:
+    uint32_t m_VertexCount = 0;
 };
 
 END_PCCORE

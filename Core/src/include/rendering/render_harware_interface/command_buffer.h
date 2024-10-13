@@ -2,6 +2,7 @@
 
 #include "core_header.hpp"
 #include "rhi_typedef.h"
+#include "rendering/buffer/index_buffer.hpp"
 #include "rendering/buffer/vertex_buffer.hpp"
 
 BEGIN_PCCORE
@@ -21,7 +22,9 @@ public:
 
     ~CommandBuffer() = default;
 
-    void BindVertexBuffer(const VertexBuffer& _buffer);
+    void BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount);
+
+    void BindIndexBuffer(const IndexBuffer& _indexBuffer);
     
     ObjectHandle handle = nullptr;
 };

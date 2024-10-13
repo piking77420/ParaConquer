@@ -8,9 +8,11 @@ PC_CORE::VertexBuffer::VertexBuffer(VertexBuffer&& _other) noexcept
     size = _other.size;
     handleId = _other.handleId;
     usage = _other.usage;
+    m_VertexCount = _other.m_VertexCount;
 
     _other.handleId = nullptr;
     _other.size = 0;
+    _other.m_VertexCount = 0;
 
     return;
 }
@@ -20,17 +22,20 @@ PC_CORE::VertexBuffer& PC_CORE::VertexBuffer::operator=(VertexBuffer&& _other) n
     size = _other.size;
     handleId = _other.handleId;
     usage = _other.usage;
+    m_VertexCount = _other.m_VertexCount;
 
     _other.handleId = nullptr;
     _other.size = 0;
-    
+    _other.m_VertexCount = 0;
+
     return *this;
 }
 
 PC_CORE::VertexBuffer::VertexBuffer(CommandPool* _transfertPool, const std::vector<Vertex>& _vertices)
 {
     usage = BUFFER_USAGE_VERTEX;
-    size = _vertices.size() * sizeof(Vertex);
+    m_VertexCount = _vertices.size();
+    size = m_VertexCount * sizeof(Vertex);
     handleId = RHI::GetInstance()->BufferData(_transfertPool, size, _vertices.data(), usage);
 }
 
@@ -49,4 +54,5 @@ PC_CORE::VertexBuffer::~VertexBuffer()
     RHI::GetInstance()->DestroyBuffer(handleId);
     handleId = nullptr;
     size = 0;
+    m_VertexCount = 0;
 }

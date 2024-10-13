@@ -9,6 +9,8 @@
 
 #include <vma/vk_mem_alloc.h>
 
+#include "render_harware_interface/RHI.hpp"
+
 
 namespace VK_NP
 {
@@ -19,6 +21,7 @@ namespace VK_NP
         const char* appName;
         const char* engineName;
         void* windowPtr;
+        PC_CORE::RHI_LOG_CALLBACK* logCallback;
     };
 
     struct SwapChainSupportDetails

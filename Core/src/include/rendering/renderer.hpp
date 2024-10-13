@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include "buffer/index_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
 
 #include "front_end/vulkan_app.hpp"
@@ -21,6 +22,8 @@ enum class GraphicAPI
 class Renderer
 {
 public:
+    static PC_CORE_API void RenderLog(LogType _logType, const char* _message);
+public:
     PC_CORE_API void Init(GraphicAPI _graphicAPI, Window* _window);
 
     PC_CORE_API void Destroy();
@@ -32,6 +35,7 @@ public:
     PC_CORE_API void SwapBuffers();
 
     PC_CORE_API void WaitDevice();
+
 private:
     PC_CORE_API void InitRhi(GraphicAPI _graphicAPI, Window* _window);
 
@@ -54,6 +58,8 @@ private:
     CommandBuffer* m_CommandBuffer = nullptr;
 
     PC_CORE::VertexBuffer vertexBuffer;
+
+    IndexBuffer indexBuffer;
 
     void InitCommandPools();
 };

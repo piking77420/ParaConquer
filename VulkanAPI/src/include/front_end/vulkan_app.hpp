@@ -14,6 +14,7 @@ namespace VK_NP
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
+
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -46,7 +47,9 @@ namespace VK_NP
 
 		VULKAN_API bool DestroyBuffer(PC_CORE::GPUBufferHandle _handle) override;
 
-		VULKAN_API void BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle) override;
+		VULKAN_API void BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer,uint32_t _firstBinding, uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle) override;
+
+		VULKAN_API void BindIndexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle) override;
 
 #pragma region CommandPool Functions
 		VULKAN_API void FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoolHandle, PC_CORE::CommandBuffer* _commandBuffer, uint32_t _commandBufferCount) override;
@@ -74,6 +77,10 @@ namespace VK_NP
 
 		void Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _vertexCount, uint32_t instanceCount,
 			uint32_t firstVertex, uint32_t firstInstance) override;
+
+		void DrawIndexed(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _indiciesCount,
+			uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffSet, uint32_t firstInstance) override;
+		
 #pragma endregion DrawFunction
 	private:
 		VulkanContext m_VulkanContext;
@@ -88,7 +95,7 @@ namespace VK_NP
 		
 		vk::CommandBuffer m_BindCommandBuffer = VK_NULL_HANDLE;
 		
-		std::vector<std::function<void(VulkanContext*)>> m_DeleteFunction;
+		std::stack<std::function<void(VulkanContext*)>> m_DeleteFunction;
 
 		void InitBaseObject();
 	};

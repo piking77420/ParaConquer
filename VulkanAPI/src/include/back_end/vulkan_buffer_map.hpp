@@ -34,10 +34,14 @@ namespace VK_NP
 
         vk::BufferUsageFlags GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage);
         
-        void CreateBufferAndAlloc(VulkanContext* _context, uint32_t _size, const void* data, VkBufferUsageFlags _vkBufferUsageFlags,
+        void CreateBufferAndAlloc(VulkanContext* _context, uint32_t _size, VkBufferUsageFlags _vkBufferUsageFlags,
+            VmaMemoryUsage vmaMemoryUsage, VmaAllocationCreateFlags vmaAllocationCreateFlagBits,
             vk::Buffer* _buffer, VmaAllocation* _allocation , VmaAllocationInfo* _allocationInfo);
 
-        
+        BufferKeyHandle CreateGPUBufferFromCPU(VulkanContext* _context, vk::CommandPool _commandPool, uint32_t _size, const void* data, PC_CORE::GPU_BUFFER_USAGE usage);
+
+        BufferKeyHandle CreateCpuBuffer(VulkanContext* _context, vk::CommandPool _commandPool, uint32_t _size, const void* data, PC_CORE::GPU_BUFFER_USAGE usage);
+
     };
 
 }

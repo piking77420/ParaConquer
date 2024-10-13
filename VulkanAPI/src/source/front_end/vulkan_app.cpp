@@ -45,21 +45,26 @@ void VK_NP::VulkanApp::EndRender()
 
 VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
 {
+    
+    m_LogCallback = vulkanMainCreateInfo.logCallback;
     m_vulkanHardwareWrapper.Init(vulkanMainCreateInfo, &m_VulkanContext);
-    m_DeleteFunction.push_back(std::bind(&VulkanHarwareWrapper::Destroy, &m_vulkanHardwareWrapper, std::placeholders::_1));
+    m_DeleteFunction.push(std::bind(&VulkanHarwareWrapper::Destroy, &m_vulkanHardwareWrapper, std::placeholders::_1));
     m_vulkanPresentChain.Init(vulkanMainCreateInfo, &m_VulkanContext);
-    m_DeleteFunction.push_back(std::bind(&VulkanPresentChain::Destroy, &m_vulkanPresentChain, std::placeholders::_1));
+    m_DeleteFunction.push(std::bind(&VulkanPresentChain::Destroy, &m_vulkanPresentChain, std::placeholders::_1));
 
     m_vulkanShaderManager.Init(&m_VulkanContext);
-    m_DeleteFunction.push_back(std::bind(&VulkanShaderManager::Destroy, &m_vulkanShaderManager, std::placeholders::_1));
+    m_DeleteFunction.push(std::bind(&VulkanShaderManager::Destroy, &m_vulkanShaderManager, std::placeholders::_1));
 
-    m_DeleteFunction.push_back(std::bind(&VulkanBufferMap::Destroy, &bufferMap, std::placeholders::_1));
+    m_DeleteFunction.push(std::bind(&VulkanBufferMap::Destroy, &bufferMap, std::placeholders::_1));
 }
 
 VK_NP::VulkanApp::~VulkanApp()
 {
-    for (auto& it : m_DeleteFunction)
-        it(&m_VulkanContext);
+    while (!m_DeleteFunction.empty())
+    {
+        m_DeleteFunction.top()(&m_VulkanContext);
+        m_DeleteFunction.pop();
+    }
 }
 
 void VK_NP::VulkanApp::WaitForAquireImage()
@@ -129,7 +134,7 @@ bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
     return bufferMap.DestroyBuffer(&m_VulkanContext, _handle);
 }
 
-void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, uint32_t _firstBinding, uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle)
 {
     vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
 
@@ -140,6 +145,15 @@ void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuf
     vk::DeviceSize deviceOffSet[] = {0};
     
     vkCommandBuffer.bindVertexBuffers(0, 1, vkBuffer, deviceOffSet);
+}
+
+void VK_NP::VulkanApp::BindIndexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+{
+    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
+    
+    vk::DeviceSize deviceOffSet[] = {0};
+    
+    vkCommandBuffer.bindIndexBuffer( CastObjectToVkObject<vk::Buffer>(_handle), deviceOffSet[0], vk::IndexType::eUint32);
 }
 
 
@@ -234,6 +248,12 @@ void VK_NP::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, u
     commandBuffer.draw(_vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
+void VK_NP::VulkanApp::DrawIndexed(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _indiciesCount,
+    uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffSet, uint32_t firstInstance)
+{
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
+    commandBuffer.drawIndexed(_indiciesCount, instanceCount, firstIndex, vertexOffSet, firstInstance);
+}
 
 
 #pragma endregion CommandBuffer Functions
