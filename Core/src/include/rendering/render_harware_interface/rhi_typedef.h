@@ -33,17 +33,15 @@ using CommandPoolHandle = ObjectHandle;
 using GPUBufferHandle = ObjectHandle;
 constexpr void* INVALID_HANDLE = nullptr;
 
-enum class CommandPoolBufferFlag
+enum CommandPoolBufferFlag
 {
-    NONE,
-    RESET,
-    TRANSIENT,
-    PROTECTED,
+    COMMAND_POOL_BUFFER_NONE = 0,
+    COMMAND_POOL_BUFFER_RESET = 1 << 0,
+    COMMAND_POOL_BUFFER_TRANSIENT = 1 << 1,
+    COMMAND_POOL_BUFFER_PROTECTED = 1 << 2,
 
-    COUNT
+    COMMAND_POOL_BUFFER_COUNT = std::numeric_limits<int>::max()
 };
-
-ENUM_FLAGS(CommandPoolBufferFlag)
 
 
 struct ViewPort
@@ -66,7 +64,6 @@ struct CommandPoolCreateInfo
 {
     QueuType queueType = QueuType::NONE;
     CommandPoolBufferFlag commandPoolBufferFlag;
-    uint32_t maxCommandBufferCount = 0;
 };
 
 enum class CommandBufferlevel

@@ -56,13 +56,13 @@ vk::CommandPoolCreateFlagBits VK_NP::CommandPoolCreateFlagBitsToVulkan(
 {
     vk::CommandPoolCreateFlagBits commandPoolCreateFlagBits {};
 
-    if (_flag & PC_CORE::CommandPoolBufferFlag::RESET)
+    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_RESET)
         commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
-    if (_flag & PC_CORE::CommandPoolBufferFlag::TRANSIENT)
+    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_TRANSIENT)
         commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eTransient;
 
-    if (_flag & PC_CORE::CommandPoolBufferFlag::PROTECTED)
+    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_PROTECTED)
         commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eProtected;
 
     return commandPoolCreateFlagBits;

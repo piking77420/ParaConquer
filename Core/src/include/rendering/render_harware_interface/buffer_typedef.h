@@ -4,19 +4,20 @@
 
 BEGIN_PCCORE
 
-enum class GPU_BUFFER_USAGE
+enum GPU_BUFFER_USAGE : int
 {
-    NONE,
-    VERTEX,
-    INDEX,
-    UNIFORM,
-    SHADER_STORAGE,
-    TRANSFERT,
+    BUFFER_USAGE_NONE           = 0,
+    BUFFER_USAGE_VERTEX         = 1 << 0,  // 1
+    BUFFER_USAGE_INDEX          = 1 << 1,  // 2
+    BUFFER_USAGE_UNIFORM        = 1 << 2,  // 4
+    BUFFER_USAGE_SHADER_STORAGE = 1 << 3,  // 8
+    BUFFER_USAGE_TRANSFERT_SRC      = 1 << 4,  // 16
+    BUFFER_USAGE_TRANSFERT_DST      = 1 << 5,  // 16
 
     COUNT
 };
 
 
-ENUM_FLAGS(GPU_BUFFER_USAGE);
+//ENUM_FLAGS(GPU_BUFFER_USAGE);
 
 END_PCCORE

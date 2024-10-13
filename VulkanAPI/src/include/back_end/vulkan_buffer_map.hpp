@@ -9,6 +9,7 @@ namespace VK_NP
     {
         size_t size;
         VmaAllocation allocation;
+        VmaAllocationInfo allocationInfo;
         PC_CORE::GPU_BUFFER_USAGE usage;
     };
 
@@ -28,10 +29,14 @@ namespace VK_NP
         void Destroy(VulkanContext* _vulkanContext);
         
     private:
-        
+
+        std::unordered_map<BufferKeyHandle, BufferInternal> m_BuffersMap;
+
         vk::BufferUsageFlags GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage);
         
-        std::unordered_map<BufferKeyHandle, BufferInternal> m_BuffersMap;
+        void CreateBufferAndAlloc(VulkanContext* _context, uint32_t _size, const void* data, VkBufferUsageFlags _vkBufferUsageFlags,
+            vk::Buffer* _buffer, VmaAllocation* _allocation , VmaAllocationInfo* _allocationInfo);
+
         
     };
 

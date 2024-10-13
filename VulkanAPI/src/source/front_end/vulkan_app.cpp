@@ -170,6 +170,7 @@ void VK_NP::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPo
     vk::CommandBufferAllocateInfo commandBufferAllocateInfo;
     commandBufferAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     commandBufferAllocateInfo.commandPool = commandPool;
+    //TODO ACTTEPR ENUM FOR THI
     commandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
     commandBufferAllocateInfo.commandBufferCount = _commandBufferCreateInfo.commandBufferCount;
 
@@ -217,7 +218,7 @@ void VK_NP::VulkanApp::SetScissor(PC_CORE::CommandBufferHandle _commandBufferHan
 
     vk::Rect2D scissor{};
     scissor.offset.x = _scissorRect.offset.x;
-    scissor.offset.x = _scissorRect.offset.x;
+    scissor.offset.y = _scissorRect.offset.y;
 
     scissor.extent.width = _scissorRect.extend.x;
     scissor.extent.height = _scissorRect.extend.y;

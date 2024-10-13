@@ -163,7 +163,8 @@ void Renderer::InitCommandPools()
 {
     CommandPoolCreateInfo commandPoolCreateInfo =
     {
-        .queueType = QueuType::GRAPHICS
+        .queueType = QueuType::GRAPHICS,
+        .commandPoolBufferFlag = COMMAND_POOL_BUFFER_RESET,
     };
     m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
 

@@ -29,16 +29,16 @@ PC_CORE::VertexBuffer& PC_CORE::VertexBuffer::operator=(VertexBuffer&& _other) n
 
 PC_CORE::VertexBuffer::VertexBuffer(CommandPool* _transfertPool, const std::vector<Vertex>& _vertices)
 {
-    usage = GPU_BUFFER_USAGE::VERTEX;
+    usage = BUFFER_USAGE_VERTEX;
     size = _vertices.size() * sizeof(Vertex);
-    handleId = RHI::GetInstance()->BufferData(_transfertPool, _vertices.size(), _vertices.data(), GPU_BUFFER_USAGE::VERTEX);
+    handleId = RHI::GetInstance()->BufferData(_transfertPool, size, _vertices.data(), usage);
 }
 
 
 
 PC_CORE::VertexBuffer::VertexBuffer()
 {
-    usage = GPU_BUFFER_USAGE::VERTEX;
+    usage = BUFFER_USAGE_VERTEX;
 }
 
 PC_CORE::VertexBuffer::~VertexBuffer()
