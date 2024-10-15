@@ -75,6 +75,7 @@ void Renderer::BeginFrame()
     static bool firstTime = false;
     if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_SPACE) == GLFW_PRESS && !firstTime)
     {
+        m_RhiRef->WaitDevice();
         m_MainShader->Reload();
         firstTime = true;
     }

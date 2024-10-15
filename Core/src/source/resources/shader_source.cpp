@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "rendering/render_harware_interface/RHI.hpp"
+
 
 using namespace PC_CORE;
 
@@ -38,14 +40,10 @@ void ShaderSource::WriteFile(const fs::path& path)
     IResource::WriteFile(path);
 }
 
-ShaderSource::~ShaderSource()
-{
-    
-}
+
 
 std::vector<char> ShaderSource::ReadFileAsChar(const std::string& _filename)
 {
-    
     // Open file in binary mode at the end of the file to get the file size easily
     std::ifstream file(_filename, std::ios::ate | std::ios::binary);
 

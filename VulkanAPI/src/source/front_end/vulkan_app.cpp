@@ -107,7 +107,7 @@ void VK_NP::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidh
 
 
 
-void VK_NP::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
+void VK_NP::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
 {
     m_vulkanShaderManager.CreateShaderFromSource(m_VulkanContext.device, m_VulkanContext.swapChainRenderPass,programShaderCreateInfo, _shaderSource);
 }
@@ -116,6 +116,7 @@ bool VK_NP::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
 {
     return m_vulkanShaderManager.DestroyShader(m_VulkanContext.device, _shaderProgramName);
 }
+
 
 VULKAN_API void VK_NP::VulkanApp::WaitDevice()
 {

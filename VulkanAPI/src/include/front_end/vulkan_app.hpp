@@ -38,9 +38,10 @@ namespace VK_NP
 #pragma region Shader
 		VULKAN_API void BindShaderProgram(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName) override;
 
-		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource) override;
+		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource) override;
 		
 		VULKAN_API bool DestroyShader(const std::string& _shaderProgramName) override;
+
 #pragma endregion Shader
 		
 		VULKAN_API PC_CORE::GPUBufferHandle BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;

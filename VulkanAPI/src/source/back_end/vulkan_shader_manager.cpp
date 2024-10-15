@@ -74,57 +74,15 @@ void VulkanShaderManager::PushConstant(const std::string& _shaderName, const cha
 }
 
 
-bool VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass,
-                                                 const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
-                                                 const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
-{
-    ShaderInternal shaderInternalBack = {};
-
-    // determine shader stage type and name
-    FillShaderInfo(&shaderInternalBack, _shaderSource);
-    std::vector<ShaderStageInfo>& shaderStagesInfo = shaderInternalBack.shaderStages;
-    std::vector<vk::ShaderModule> shaderModules(shaderInternalBack.shaderStages.size());
-    std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesCreateInfos(shaderInternalBack.shaderStages.size());
-
-    for (uint32_t i = 0; i < _shaderSource.size(); i++)
-    {
-        PC_CORE::LowLevelShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
-        // SOURCE TO MODULE and get spv reflection
-        m_ShaderCompiler.CreateModuleFromSource(_device, _shaderSource[i].shaderSourceCode.data(),
-                                                shaderStage, &shaderStagesInfo.at(i).reflectShaderModule,
-                                                &shaderModules[i]);
-
-        shaderStagesCreateInfos.at(i).sType = vk::StructureType::ePipelineShaderStageCreateInfo;
-        shaderStagesCreateInfos.at(i).stage = ShaderBitFromType(shaderStage);
-        shaderStagesCreateInfos.at(i).module = shaderModules[i];
-        shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
-    }
-
-    CreatePipelineLayoutFromSpvReflectModule(_device, &shaderInternalBack);
-    CreatePipelineGraphicPointFromModule(_device, _tmprRenderPass, _programShaderCreatInfo.shaderInfo,
-                                         shaderStagesCreateInfos, shaderInternalBack.pipelineLayout,
-                                         &shaderInternalBack.pipeline);
-
-
-    // graphic and layout as been created no need module modules then
-    for (auto& module : shaderModules)
-    {
-        _device.destroyShaderModule(module);
-    }
-
-    m_InternalShadersMap.insert({_programShaderCreatInfo.prograShaderName, shaderInternalBack});
-
-    return true;
-}
 
 void VulkanShaderManager::FillShaderInfo(ShaderInternal* _shaderInternalBack,
-                                         const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource)
+                                         const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
 {
     _shaderInternalBack->shaderStages.resize(_shaderSource.size());
 
     for (uint32_t i = 0; i < _shaderSource.size(); i++)
     {
-        const PC_CORE::ShaderSourceAndPath& sourceCodeAndPath = _shaderSource[i];
+        const PC_CORE::ShaderSourcePath& sourceCodeAndPath = _shaderSource[i];
         std::filesystem::path path = std::filesystem::path(sourceCodeAndPath.shaderSourceCodePath);
 
         // Get TypeFromFormat
@@ -311,6 +269,47 @@ void VulkanShaderManager::DestroyInternalShaders(vk::Device _device,
 }
 
 
+bool VK_NP::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass, const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
+{
+    ShaderInternal shaderInternalBack = {};
+
+    // determine shader stage type and name
+    FillShaderInfo(&shaderInternalBack, _shaderSource);
+    std::vector<ShaderStageInfo>& shaderStagesInfo = shaderInternalBack.shaderStages;
+    std::vector<vk::ShaderModule> shaderModules(shaderInternalBack.shaderStages.size());
+    std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesCreateInfos(shaderInternalBack.shaderStages.size());
+
+    for (uint32_t i = 0; i < _shaderSource.size(); i++)
+    {
+        PC_CORE::LowLevelShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
+        // SOURCE TO MODULE and get spv reflection
+        m_ShaderCompiler.CreateModuleFromSource(_device, _shaderSource[i].spvCode.data(), _shaderSource[i].shaderSourceCodePath.c_str(),
+            shaderStage, &shaderStagesInfo.at(i).reflectShaderModule,
+            &shaderModules[i]);
+
+        shaderStagesCreateInfos.at(i).sType = vk::StructureType::ePipelineShaderStageCreateInfo;
+        shaderStagesCreateInfos.at(i).stage = ShaderBitFromType(shaderStage);
+        shaderStagesCreateInfos.at(i).module = shaderModules[i];
+        shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
+    }
+
+    CreatePipelineLayoutFromSpvReflectModule(_device, &shaderInternalBack);
+    CreatePipelineGraphicPointFromModule(_device, _tmprRenderPass, _programShaderCreatInfo.shaderInfo,
+        shaderStagesCreateInfos, shaderInternalBack.pipelineLayout,
+        &shaderInternalBack.pipeline);
+
+
+    // graphic and layout as been created no need module modules then
+    for (auto& module : shaderModules)
+    {
+        _device.destroyShaderModule(module);
+    }
+
+    m_InternalShadersMap.insert({ _programShaderCreatInfo.prograShaderName, shaderInternalBack });
+
+    return true;
+}
+
 bool VulkanShaderManager::DestroyShader(vk::Device _device, const std::string& _shaderName)
 {
     const bool success = m_InternalShadersMap.contains(_shaderName);
@@ -359,12 +358,12 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
     std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
 
-
+    // PUSH CONSTANT
     uint32_t pushConstantSize = 0;
     for (size_t i = 0; i < shaderStageInfos.size(); i++)
     {
-        const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
-        pushConstantSize += spvReflectShaderModule.push_constant_block_count;
+       const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+       pushConstantSize += spvReflectShaderModule.push_constant_block_count;
     }
     reflectBlockVariables.resize(pushConstantSize);
 
@@ -372,8 +371,9 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     // for each shader
     for (size_t i = 0; i < shaderStageInfos.size(); i++)
     {
-        const SpvReflectShaderModule& spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+       const SpvReflectShaderModule& spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
         // for each Block
+        
         for (size_t j = 0; j < spvReflectShaderModule.push_constant_block_count; j++)
         {
             SpvReflectBlockVariable* spvReflectBlockVariable = &spvReflectShaderModule.push_constant_blocks[j];

@@ -14,22 +14,21 @@ namespace VK_NP
     class VulkanShaderManager
     {
     public:
-        bool CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass ,const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
-                                    const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
+        VULKAN_API bool CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass ,const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo,
+                                    const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource);
 
-        bool DestroyShader(vk::Device _device, const std::string& _shaderName);
+        VULKAN_API bool DestroyShader(vk::Device _device, const std::string& _shaderName);
 
-        void BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName);
+        VULKAN_API void BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName);
 
-        void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
+        VULKAN_API void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
             size_t _size, vk::CommandBuffer _commandBuffer);
 
 
-        void Init(VulkanContext* _vulkanContext);
+        VULKAN_API void Init(VulkanContext* _vulkanContext);
 
-        void Destroy(VulkanContext* _vulkanContext);
+        VULKAN_API void Destroy(VulkanContext* _vulkanContext);
     
-
     private:
         struct ShaderStageInfo
         {
@@ -66,7 +65,7 @@ namespace VK_NP
         void DestroyInternalShaders(vk::Device _device, ShaderInternal* _shaderInternalBack);
 
         static void FillShaderInfo(ShaderInternal* _shaderInternalBack,
-                             const std::vector<PC_CORE::ShaderSourceAndPath>& _shaderSource);
+                             const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource);
 
         void CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& ShaderInfo,
             const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);

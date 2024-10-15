@@ -13,6 +13,8 @@ BEGIN_PCCORE
     class RHI
     {
     public:
+        static RHI* const GetInstance();
+        
         PC_CORE_API static void MakeInstance(RHI* _rhi);
 
         PC_CORE_API static void DestroyInstance();
@@ -34,10 +36,9 @@ BEGIN_PCCORE
         {
         }
 
-        static RHI* const GetInstance();
 
         virtual PC_CORE_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo,
-                                              const std::vector<ShaderSourceAndPath>& _shaderSource)
+                                              const std::vector<ShaderSourcePath>& _shaderSource)
         {
         }
 
@@ -45,6 +46,7 @@ BEGIN_PCCORE
         {
             return false;
         }
+        
 
         virtual PC_CORE_API void BindShaderProgram(CommandBufferHandle _commandBuffer,
                                                    const std::string& _shaderProgramName)

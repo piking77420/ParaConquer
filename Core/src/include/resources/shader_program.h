@@ -29,6 +29,7 @@ private:
     void DestroyShader();
     
     ShaderInfo m_ShaderInfo;
+    
 
     std::vector<ShaderSource*> m_ShaderSources;
 };

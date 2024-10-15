@@ -1,6 +1,8 @@
 ﻿#include "back_end/vulkan_shader_compiler.hpp"
 
-
+#include <fstream>
+#include <regex>
+#include <vector>
 #include <glslang/Include/glslang_c_shader_types.h>
 
 #include "back_end/vulkan_harware_wrapper.hpp"
@@ -50,22 +52,26 @@ VK_NP::VulkanShaderCompiler::~VulkanShaderCompiler()
     glslang_finalize_process();
 }
 
-void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, const char* _source,
+void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, const char* _source, const char* _path,
                                                          PC_CORE::LowLevelShaderStageType _lowLevelShaderStage,SpvReflectShaderModule* _ReflectedModule,
                                                          vk::ShaderModule* _shaderModule)
 {
-
-
+    // TODO HANDLE INCLUDE 
+    std::filesystem::path path = _path;
+    std::string source = IncludePath(_source, path);
+    std::string sourceWithVersion = "#version 450 \n";
+    sourceWithVersion.append(source);
+    
     auto resource = glslang_default_resource();
     const glslang_input_t input =
     {
         .language = GLSLANG_SOURCE_GLSL,
         .stage = GetShaderStageToGlslangStage(_lowLevelShaderStage),
         .client = GLSLANG_CLIENT_VULKAN,
-        .client_version = GLSLANG_TARGET_VULKAN_1_1,
+        .client_version = GLSLANG_TARGET_VULKAN_1_3,
         .target_language = GLSLANG_TARGET_SPV,
         .target_language_version = GLSLANG_TARGET_SPV_1_3,
-        .code = _source,
+        .code = sourceWithVersion.c_str(),
         .default_version = 100,
         .default_profile = GLSLANG_NO_PROFILE,
         .force_default_version_and_profile = false,
@@ -75,8 +81,6 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, con
     };
     
     glslang_shader_t* shader = glslang_shader_create(&input);
-    
-    
     
     if (!glslang_shader_preprocess(shader, &input))
     {
@@ -131,4 +135,104 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, con
 
     glslang_shader_delete(shader);
     glslang_program_delete(program);
+}
+
+std::string VK_NP::VulkanShaderCompiler::IncludePath(const std::string& source, const std::filesystem::path& path)
+{
+    std::regex regex("#include");
+
+    if (!std::regex_search(source, regex))
+    {
+        return source;
+    }
+    // TODO NEED TO REMOVE THE #INCLUDE
+    std::string outInclude;
+    // GetInclude Path
+
+    auto words_begin =
+        std::sregex_iterator(source.begin(), source.end(), regex);
+    auto words_end = std::sregex_iterator();
+    
+    size_t nbr = std::distance(words_begin, words_end);
+
+    std::vector<std::string> includesPaths(nbr);
+
+    int index = 0;
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i)
+    {
+        std::smatch match = *i;
+        std::string matchedWord = match.str();
+        std::size_t position = match.position();
+        std::size_t endPosition = match.position() + matchedWord.size();
+
+        char c = 0;
+        std::size_t startIndex = 0;
+
+        while (c != '"' && (endPosition + startIndex) < source.size())
+        {
+            c = source.at(endPosition + startIndex);
+            startIndex++;
+        }
+
+        std::size_t includeStart = endPosition + startIndex;
+        startIndex++;
+
+        std::size_t endIndex = 0;
+        c = 0;
+
+        while (c != '"' && (includeStart + endIndex) < source.size()) 
+        {
+            c = source.at(includeStart + endIndex);
+            endIndex++;
+        }
+
+        std::string includePaths = source.substr(includeStart, endIndex - 1);
+        std::string parentPathAsString = path.parent_path().generic_string();
+        parentPathAsString.push_back('/');
+        
+        std::filesystem::path includePathPath = std::filesystem::path(parentPathAsString + includePaths);
+        std::string source = GetFileAsString(includePathPath);
+
+        includesPaths[index] = IncludePath(source, includePathPath);
+        index++;
+    }
+
+    for(auto& s : includesPaths)
+    {
+        outInclude.append(s.c_str());
+    }
+
+    outInclude.append(source.data());
+    return outInclude;
+}
+
+std::string VK_NP::VulkanShaderCompiler::GetFileAsString(const std::filesystem::path& path)
+{
+    std::string fileName = path.generic_string();
+
+    std::ifstream file(fileName, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) 
+    {
+        throw std::runtime_error("Failed to open file: " + fileName);
+    }
+
+    size_t fileSize = static_cast<size_t>(file.tellg());
+
+    std::string buffer;
+    buffer.resize(fileSize);
+
+    file.seekg(0);
+
+    if (!file.read(&buffer[0], fileSize))
+    {
+        throw std::runtime_error("Failed to read file: " + fileName);
+    }
+
+    file.close();
+
+    buffer.push_back('\0');
+
+    file.close();
+    return buffer;
 }

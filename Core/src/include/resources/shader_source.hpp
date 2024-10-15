@@ -16,11 +16,11 @@ public:
 
     void WriteFile(const fs::path& path) override;
 
-    PC_CORE_API ~ShaderSource() override;
+    PC_CORE_API ~ShaderSource() override = default;
 
 private:
     static std::vector<char> ReadFileAsChar(const std::string& _filename);
-
+    
 };
 
 END_PCCORE

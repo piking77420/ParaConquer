@@ -42,13 +42,13 @@ void ShaderProgram::PushVector3(CommandBufferHandle _commandBuffer, const char* 
 
 void ShaderProgram::CreateShader()
 {
-    std::vector<ShaderSourceAndPath> sourceAndPaths;
+    std::vector<ShaderSourcePath> sourceAndPaths;
     sourceAndPaths.resize(m_ShaderSources.size());
 
     for (size_t i = 0; i < m_ShaderSources.size(); i++)
     {
         sourceAndPaths[i].shaderSourceCodePath = m_ShaderSources[i]->path.generic_string();
-        sourceAndPaths[i].shaderSourceCode = m_ShaderSources[i]->GetShaderSourceFile();
+        sourceAndPaths[i].spvCode = m_ShaderSources[i]->GetShaderSourceFile();
     }
 
     const ProgramShaderCreateInfo programShaderCreateInfo =

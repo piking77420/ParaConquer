@@ -50,10 +50,10 @@ BEGIN_PCCORE
     };
 
 
-    struct ShaderSourceAndPath
+    struct ShaderSourcePath
     {
-        std::vector<char> shaderSourceCode;
         std::string shaderSourceCodePath;
+        std::vector<char> spvCode;
     };
 
     enum class ShaderProgramPipelineType
