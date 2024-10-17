@@ -56,7 +56,6 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, con
                                                          PC_CORE::LowLevelShaderStageType _lowLevelShaderStage,SpvReflectShaderModule* _ReflectedModule,
                                                          vk::ShaderModule* _shaderModule)
 {
-    // TODO HANDLE INCLUDE 
     std::filesystem::path path = _path;
     std::string source = IncludePath(_source, path);
     

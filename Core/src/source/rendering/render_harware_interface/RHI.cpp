@@ -19,6 +19,7 @@ void RHI::MakeInstance(RHI* _rhi)
 void RHI::DestroyInstance()
 {
 	delete m_Instance;
+	m_Instance = nullptr;
 }
 
 RHI* const RHI::GetInstance()

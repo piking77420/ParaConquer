@@ -165,7 +165,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;shaderc_util.lib;shaderc.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -190,7 +190,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;shaderc_util.lib;spirv-reflect-static.lib;SPIRV-Tools-opt.lib;;shaderc.lib;glslang.lib;shaderc_util.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;spirv-reflect-static.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;;shaderc.lib;glslang.lib;shaderc_util.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;spirv-reflect-static.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -212,7 +212,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;shaderc_util.lib;shaderc.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -238,7 +238,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;shaderc_util.lib;spirv-reflect-static.lib;;spirv-reflect-static.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;;spirv-reflect-static.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>

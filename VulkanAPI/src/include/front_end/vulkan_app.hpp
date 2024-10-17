@@ -46,6 +46,12 @@ namespace VK_NP
 		
 		VULKAN_API PC_CORE::GPUBufferHandle BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
 
+		VULKAN_API PC_CORE::GPUBufferHandle BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage) override;
+
+		VULKAN_API void MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void** _data) override;
+
+		VULKAN_API void UnMapData(PC_CORE::GPUBufferHandle _gpuBufferHandle) override;
+
 		VULKAN_API bool DestroyBuffer(PC_CORE::GPUBufferHandle _handle) override;
 
 		VULKAN_API void BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer,uint32_t _firstBinding, uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle) override;

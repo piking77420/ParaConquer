@@ -2,6 +2,7 @@
 #include "core_header.hpp"
 #include "buffer/index_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
+#include "buffer/uniform_buffer.hpp"
 
 #include "front_end/vulkan_app.hpp"
 #include "render_harware_interface/command_pool.hpp"
@@ -60,6 +61,10 @@ private:
     PC_CORE::VertexBuffer vertexBuffer;
 
     IndexBuffer indexBuffer;
+
+    UniformBuffer sceneBufferUniform;
+
+    SceneBufferGPU sceneBufferGPU;
 
     void InitCommandPools();
 };

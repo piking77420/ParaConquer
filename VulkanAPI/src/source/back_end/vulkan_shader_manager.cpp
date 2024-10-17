@@ -358,12 +358,29 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
     std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
 
+    std::vector<vk::PushConstantRange> pushConstantRange;
+    ReflectPushConstantBlock(_device, _shaderInternal, &pushConstantRange);
+
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
+    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
+    pipelineLayoutInfo.setLayoutCount = 0; // Optional
+    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
+    pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
+    _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+}
+
+void VK_NP::VulkanShaderManager::ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange)
+{
+    const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
+    std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
+
     // PUSH CONSTANT
     uint32_t pushConstantSize = 0;
     for (size_t i = 0; i < shaderStageInfos.size(); i++)
     {
-       const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
-       pushConstantSize += spvReflectShaderModule.push_constant_block_count;
+        const SpvReflectShaderModule spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+        pushConstantSize += spvReflectShaderModule.push_constant_block_count;
     }
     reflectBlockVariables.resize(pushConstantSize);
 
@@ -371,9 +388,9 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     // for each shader
     for (size_t i = 0; i < shaderStageInfos.size(); i++)
     {
-       const SpvReflectShaderModule& spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
+        const SpvReflectShaderModule& spvReflectShaderModule = shaderStageInfos[i].reflectShaderModule;
         // for each Block
-        
+
         for (size_t j = 0; j < spvReflectShaderModule.push_constant_block_count; j++)
         {
             SpvReflectBlockVariable* spvReflectBlockVariable = &spvReflectShaderModule.push_constant_blocks[j];
@@ -393,22 +410,34 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     }
 
 
-    std::vector<vk::PushConstantRange> pushConstantRanges;
-    pushConstantRanges.reserve(reflectBlockVariables.size());
+    _pushConstantRange->reserve(reflectBlockVariables.size());
 
     for (size_t i = 0; i < reflectBlockVariables.size(); i++)
     {
-        pushConstantRanges.emplace_back(reflectBlockVariables[i].stageFlags, reflectBlockVariables[i].absoluteOffSet,
-                                        reflectBlockVariables[i].size);
+        _pushConstantRange->emplace_back(reflectBlockVariables[i].stageFlags, reflectBlockVariables[i].absoluteOffSet,
+            reflectBlockVariables[i].size);
+    }
+}
+
+void VK_NP::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal)
+{
+    // TO DO
+    const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
+
+    for (size_t i = 0; i < shaderStageInfos.size(); i++)
+    {
+        const ShaderStageInfo& shaderStageInfo = shaderStageInfos[i];
+        const SpvReflectShaderModule* spvReflectBlockVariable = &shaderStageInfo.reflectShaderModule;
+
+        for (size_t j = 0; j < spvReflectBlockVariable->descriptor_binding_count; j++)
+        {
+            const SpvReflectDescriptorBinding* descriptorBindingReflected = &spvReflectBlockVariable->descriptor_bindings[i];
+
+            //descriptorBindingReflected->descriptor_type 
+        }
+
     }
 
-    vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
-    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()); // Optional
-    pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data(); // Optional
-    _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
 }
 
 void VulkanShaderManager::ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,

@@ -65,6 +65,11 @@ void Renderer::Render()
     Tbx::Vector3f color = {1,1,1};
     m_MainShader->PushVector3(m_CommandBuffer->handle,"PushConstants", &color);
 
+
+
+
+
+
     m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0 ,1);
     m_CommandBuffer->BindIndexBuffer(indexBuffer);
     m_RhiRef->DrawIndexed(m_CommandBuffer->handle, indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
@@ -181,6 +186,8 @@ void Renderer::InitBuffer()
         0, 1, 2, 2, 3, 0
     };
     indexBuffer = IndexBuffer(&m_TransfertPool, indices);
+
+    sceneBufferUniform = UniformBuffer(&m_TransfertPool, sizeof(sceneBufferGPU));
 }
 
 void Renderer::InitCommandPools()

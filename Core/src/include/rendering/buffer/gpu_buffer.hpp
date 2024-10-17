@@ -9,7 +9,6 @@ struct GPUBuffer
 {
     size_t size = 0;
     PC_CORE::GPUBufferHandle handleId = nullptr;
-    PC_CORE::GPU_BUFFER_USAGE usage = BUFFER_USAGE_NONE;
 
     GPUBuffer() = default;
 

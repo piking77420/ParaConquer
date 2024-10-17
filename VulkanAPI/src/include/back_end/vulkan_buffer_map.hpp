@@ -27,7 +27,11 @@ namespace VK_NP
         void Init(VulkanContext* _vulkanContext);
 
         void Destroy(VulkanContext* _vulkanContext);
+
+        void MapData(VulkanContext* _vulkanContext, BufferKeyHandle bufferKeyHandle, void** _data);
         
+        void UnMapData(VulkanContext* _vulkanContext, BufferKeyHandle bufferKeyHandle);
+
     private:
 
         std::unordered_map<BufferKeyHandle, BufferInternal> m_BuffersMap;

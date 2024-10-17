@@ -16,8 +16,24 @@ VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(Vul
     }
     else if (usage & PC_CORE::BUFFER_USAGE_UNIFORM)
     {
-         
-    }else if (usage & PC_CORE::BUFFER_USAGE_SHADER_STORAGE)
+        vk::Buffer buffer = VK_NULL_HANDLE;
+        BufferInternal bufferInternal;
+        VmaAllocation vmaAllocation;
+        VmaAllocationInfo vmaAllocationInfo;
+        CreateBufferAndAlloc(_context, _size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO,
+            VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT, &buffer, &vmaAllocation, &vmaAllocationInfo);
+
+        bufferInternal.allocation = vmaAllocation;
+        bufferInternal.allocationInfo = vmaAllocationInfo;
+        bufferInternal.size = _size;
+        bufferInternal.usage = usage;
+
+        BufferKeyHandle BufferKeyHandle = *reinterpret_cast<VK_NP::VulkanBufferMap::BufferKeyHandle*>(&buffer);
+        m_BuffersMap.insert({ BufferKeyHandle,bufferInternal });
+        return BufferKeyHandle;
+
+    }
+    else if (usage & PC_CORE::BUFFER_USAGE_SHADER_STORAGE)
     {
         
     }
@@ -48,7 +64,7 @@ bool VK_NP::VulkanBufferMap::DestroyBuffer(VulkanContext* _context, BufferKeyHan
     VmaAllocator allocator = _context->allocator;
 
     auto& buffer = m_BuffersMap.at(bufferKeyHandle);
-    vmaDestroyBuffer(allocator, CastObjectToVkObject<vk::Buffer>(bufferKeyHandle), nullptr);
+    vmaDestroyBuffer(allocator, CastObjectToVkObject<vk::Buffer>(bufferKeyHandle), buffer.allocation);
 
     m_BuffersMap.erase(bufferKeyHandle);
 
@@ -68,8 +84,32 @@ void VK_NP::VulkanBufferMap::Destroy(VulkanContext* _vulkanContext)
     for (auto& pair : m_BuffersMap)
     {
         VmaAllocator allocator = _vulkanContext->allocator;
-        vmaDestroyBuffer(allocator, CastObjectToVkObject<vk::Buffer>(pair.first), nullptr);
+        vmaDestroyBuffer(allocator, CastObjectToVkObject<vk::Buffer>(pair.first), pair.second.allocation);
     }
+}
+
+void VK_NP::VulkanBufferMap::MapData(VulkanContext* _vulkanContext, BufferKeyHandle bufferKeyHandle, void** _data)
+{
+    if (!m_BuffersMap.contains(bufferKeyHandle))
+    {
+        throw std::runtime_error("Buffer does not exist in vulkan Buffer Map");
+    }
+
+    VmaAllocator allocator = _vulkanContext->allocator;
+    auto& buffer = m_BuffersMap.at(bufferKeyHandle);
+    vmaMapMemory(allocator, buffer.allocation, _data);
+}
+
+void VK_NP::VulkanBufferMap::UnMapData(VulkanContext* _vulkanContext, BufferKeyHandle bufferKeyHandle)
+{
+    if (!m_BuffersMap.contains(bufferKeyHandle))
+    {
+        throw std::runtime_error("Buffer does not exist in vulkan Buffer Map");
+    }
+
+    VmaAllocator allocator = _vulkanContext->allocator;
+    auto& buffer = m_BuffersMap.at(bufferKeyHandle);
+    vmaUnmapMemory(allocator, buffer.allocation);
 }
 
 

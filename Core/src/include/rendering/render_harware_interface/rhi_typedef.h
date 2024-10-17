@@ -6,9 +6,26 @@
 
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+#define ALIGNAS_16 alignas(16)
+
 
 
 BEGIN_PCCORE
+
+
+struct ALIGNAS_16 SceneBufferGPU
+{
+    Tbx::Matrix4x4f view;
+    Tbx::Matrix4x4f proj;
+    float time;
+    float deltatime;
+};
+
+struct ALIGNAS_16 DrawObjectBufferGPU
+{
+    Tbx::Matrix4x4f model;
+};
+
 
 enum class QueuType
 {

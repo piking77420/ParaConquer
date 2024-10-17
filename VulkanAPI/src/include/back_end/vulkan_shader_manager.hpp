@@ -72,8 +72,13 @@ namespace VK_NP
 
         void CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
 
+        void ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange);
+
+        void RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal);
+
         static void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,
         ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags);
+
         
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
             _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);

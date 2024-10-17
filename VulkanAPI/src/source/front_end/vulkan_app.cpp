@@ -130,6 +130,23 @@ PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(PC_CORE::CommandPool* _com
    return bufferMap.CreateBuffer(&m_VulkanContext, commandPool,static_cast<uint32_t>(_size), _data, _usage);
 }
 
+PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage)
+{
+    vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPool->GetHandle());
+
+    return bufferMap.CreateBuffer(&m_VulkanContext, commandPool, static_cast<uint32_t>(_size), nullptr, _usage);
+}
+
+void VK_NP::VulkanApp::MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void** _data)
+{
+    bufferMap.MapData(&m_VulkanContext, _gpuBufferHandle, _data);
+}
+
+void VK_NP::VulkanApp::UnMapData(PC_CORE::GPUBufferHandle _gpuBufferHandle)
+{
+    bufferMap.UnMapData(&m_VulkanContext, _gpuBufferHandle);
+}
+
 bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
 {
     return bufferMap.DestroyBuffer(&m_VulkanContext, _handle);

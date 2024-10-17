@@ -107,6 +107,23 @@ BEGIN_PCCORE
             return nullptr;
         }
 
+        virtual PC_CORE_API GPUBufferHandle BufferData(CommandPool* _commandPool, size_t _size,
+            PC_CORE::GPU_BUFFER_USAGE _usage)
+        {
+            return nullptr;
+        }
+
+        virtual PC_CORE_API void MapData(GPUBufferHandle _gpuBufferHandle, void** _data)
+        {
+            
+        }
+
+        virtual PC_CORE_API void UnMapData(GPUBufferHandle _gpuBufferHandle)
+        {
+
+        }
+
+
         virtual PC_CORE_API bool DestroyBuffer(GPUBufferHandle _handle)
         {
             return false;
