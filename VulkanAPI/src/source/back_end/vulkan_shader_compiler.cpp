@@ -59,8 +59,6 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, con
     // TODO HANDLE INCLUDE 
     std::filesystem::path path = _path;
     std::string source = IncludePath(_source, path);
-    std::string sourceWithVersion = "#version 450 \n";
-    sourceWithVersion.append(source);
     
     auto resource = glslang_default_resource();
     const glslang_input_t input =
@@ -71,7 +69,7 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, con
         .client_version = GLSLANG_TARGET_VULKAN_1_3,
         .target_language = GLSLANG_TARGET_SPV,
         .target_language_version = GLSLANG_TARGET_SPV_1_3,
-        .code = sourceWithVersion.c_str(),
+        .code = source.c_str(),
         .default_version = 100,
         .default_profile = GLSLANG_NO_PROFILE,
         .force_default_version_and_profile = false,
@@ -145,65 +143,77 @@ std::string VK_NP::VulkanShaderCompiler::IncludePath(const std::string& source, 
     {
         return source;
     }
-    // TODO NEED TO REMOVE THE #INCLUDE
-    std::string outInclude;
-    // GetInclude Path
 
+    // TO DO make include just replace at their inplacement
     auto words_begin =
         std::sregex_iterator(source.begin(), source.end(), regex);
     auto words_end = std::sregex_iterator();
     
     size_t nbr = std::distance(words_begin, words_end);
 
-    std::vector<std::string> includesPaths(nbr);
+    std::string sourceWithoutInclude;
+    
+    size_t globalIndexInSourceShader = 0;
 
-    int index = 0;
     for (std::sregex_iterator i = words_begin; i != words_end; ++i)
     {
+
         std::smatch match = *i;
         std::string matchedWord = match.str();
         std::size_t position = match.position();
         std::size_t endPosition = match.position() + matchedWord.size();
 
-        char c = 0;
-        std::size_t startIndex = 0;
+        // Append all the file from the start to the include start
+        sourceWithoutInclude.append(source.substr(globalIndexInSourceShader, position - globalIndexInSourceShader));
 
-        while (c != '"' && (endPosition + startIndex) < source.size())
+
+        // Get the #include "..."
+        char c = 0;
+        std::size_t startIndexLocalInclude = 0;
+
+        while (c != '"' && (endPosition + startIndexLocalInclude) < source.size())
         {
-            c = source.at(endPosition + startIndex);
-            startIndex++;
+            c = source.at(endPosition + startIndexLocalInclude);
+            startIndexLocalInclude++;
         }
 
-        std::size_t includeStart = endPosition + startIndex;
-        startIndex++;
+        std::size_t includeStart = endPosition + startIndexLocalInclude;
+        startIndexLocalInclude++;
 
-        std::size_t endIndex = 0;
+        std::size_t endIndexLocalInclude = 0;
         c = 0;
 
-        while (c != '"' && (includeStart + endIndex) < source.size()) 
+        while (c != '"' && (includeStart + endIndexLocalInclude) < source.size())
         {
-            c = source.at(includeStart + endIndex);
-            endIndex++;
+            c = source.at(includeStart + endIndexLocalInclude);
+            endIndexLocalInclude++;
         }
 
-        std::string includePaths = source.substr(includeStart, endIndex - 1);
-        std::string parentPathAsString = path.parent_path().generic_string();
-        parentPathAsString.push_back('/');
-        
+        // Get the Include Path
+        const std::string includePaths = source.substr(includeStart, endIndexLocalInclude - 1);
+        const std::string parentPathAsString = path.parent_path().generic_string() + '/';
         std::filesystem::path includePathPath = std::filesystem::path(parentPathAsString + includePaths);
-        std::string source = GetFileAsString(includePathPath);
 
-        includesPaths[index] = IncludePath(source, includePathPath);
-        index++;
+        // Get the include file as string
+        std::string sourceFromIncludeMacro = GetFileAsString(includePathPath);
+        sourceFromIncludeMacro = IncludePath(sourceFromIncludeMacro, includePathPath);
+
+        // REMOVE THE \0 character DONT'TOUCH very important
+        sourceFromIncludeMacro.pop_back();
+
+
+        sourceWithoutInclude.append(sourceFromIncludeMacro);
+
+        
+        globalIndexInSourceShader = includeStart + endIndexLocalInclude;
     }
 
-    for(auto& s : includesPaths)
-    {
-        outInclude.append(s.c_str());
-    }
+    // GOBING ALL THE ENTIRE REST
+    const size_t count = source.size() - globalIndexInSourceShader;
+    const std::string remining = source.substr(globalIndexInSourceShader, count);
+    sourceWithoutInclude += remining;
 
-    outInclude.append(source.data());
-    return outInclude;
+    return sourceWithoutInclude;
 }
 
 std::string VK_NP::VulkanShaderCompiler::GetFileAsString(const std::filesystem::path& path)

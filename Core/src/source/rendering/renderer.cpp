@@ -62,7 +62,7 @@ void Renderer::Render()
     m_RhiRef->SetViewPort(m_CommandBuffer->handle, viewport);
     
     m_MainShader->Bind(m_CommandBuffer->handle);
-    Tbx::Vector3f color = {0,0,1};
+    Tbx::Vector3f color = {1,1,1};
     m_MainShader->PushVector3(m_CommandBuffer->handle,"PushConstants", &color);
 
     m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0 ,1);
