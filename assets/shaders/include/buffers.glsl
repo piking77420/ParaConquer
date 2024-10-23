@@ -1,7 +1,4 @@
 
-
-
-
 #define GLOBAL_DESCRIPTOR 0
 #define INSTANCE_DESCRIPTOR 1
 
@@ -13,7 +10,7 @@ layout(set = GLOBAL_DESCRIPTOR, binding = 0) uniform SceneBufferGPU
     float deltatime;
 } sceneBuffer;
 
-layout(set = GLOBAL_DESCRIPTOR, binding = 1) uniform DrawObjectBufferGPU 
+layout(push_constant) uniform ModelMatrix
 {
     mat4 model;
-} drawObject;
+} modelMatrix;

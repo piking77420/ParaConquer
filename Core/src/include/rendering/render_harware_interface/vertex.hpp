@@ -3,7 +3,7 @@
 #include "math/toolbox_typedef.hpp"
 
 #include "core_header.hpp"
-#include "shader_typedef.h"
+#include "rhi_typedef.h"
 
 BEGIN_PCCORE
     struct Vertex

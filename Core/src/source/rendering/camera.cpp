@@ -57,15 +57,15 @@ float Camera::GetFar() const
 Tbx::Matrix4x4f Camera::GetViewMatrix() const
 {
     Tbx::Matrix4x4f viewMatrix;
-    Tbx::LookAtRH(position, position + m_Front, m_Up, &viewMatrix);
-    return viewMatrix;
+    return Tbx::LookAtRH(position, position + m_Front, m_Up);
 }
 
 Tbx::Matrix4x4f Camera::GetProjectionMatrix() const
 {
     Tbx::Matrix4x4f projectionMatrix;
-    m_ProjectionType == ProjectionType::PERSPECTIVE ? Tbx::PerspectiveMatrix(m_Fov, m_Aspect ,m_Near, m_Far, &projectionMatrix) : Tbx::OrthoGraphicMatrix(m_LeftRightScreen.x,m_LeftRightScreen.y , m_BottomTopScreen.x,  m_BottomTopScreen.y, m_Near, m_Far, &projectionMatrix);
-    return projectionMatrix;
+    
+    return m_ProjectionType == ProjectionType::PERSPECTIVE ? Tbx::PerspectiveMatrix(m_Fov, m_Aspect ,m_Near, m_Far) :
+    Tbx::OrthoGraphicMatrix(m_LeftRightScreen.x,m_LeftRightScreen.y , m_BottomTopScreen.x,  m_BottomTopScreen.y, m_Near, m_Far);
 }
 
 Tbx::Matrix4x4f Camera::GetVPMatrix() const

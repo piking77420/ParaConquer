@@ -3,11 +3,11 @@
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "rendering/camera.hpp"
+#include "rendering/rendering_typedef.h"
 
 
 BEGIN_EDITOR_PCCORE
-
-class WorldViewWindow : public EditorWindow
+    class WorldViewWindow : public EditorWindow
 {
 public:
     PC_CORE::Camera camera;

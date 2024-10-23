@@ -45,7 +45,7 @@ public:
     PC_CORE_API Tbx::Vector3f GetFront() const;
 
     PC_CORE_API Tbx::Vector3f GetUp() const;
-
+    
     PC_CORE_API void LookAt(Tbx::Vector3f _point, Tbx::Vector3f _up);
 
     PC_CORE_API void LookAt(Tbx::Vector3f _point);

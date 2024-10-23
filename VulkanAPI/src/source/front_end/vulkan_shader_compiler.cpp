@@ -1,11 +1,11 @@
-﻿#include "back_end/vulkan_shader_compiler.hpp"
+﻿#include "front_end/vulkan_shader_compiler.hpp"
 
 #include <fstream>
 #include <regex>
 #include <vector>
 #include <glslang/Include/glslang_c_shader_types.h>
 
-#include "back_end/vulkan_harware_wrapper.hpp"
+#include "front_end/vulkan_harware_wrapper.hpp"
 
 #include <glslang/Include/glslang_c_interface.h>
 #include <glslang/Public/resource_limits_c.h>
@@ -13,23 +13,23 @@
 #pragma region LowLevelShaderStageToShaderrcKind
 
 
-glslang_stage_t GetShaderStageToGlslangStage(PC_CORE::LowLevelShaderStageType _lowLevelShaderStage)
+glslang_stage_t GetShaderStageToGlslangStage(PC_CORE::ShaderStageType _lowLevelShaderStage)
 {
     switch (_lowLevelShaderStage)
     {
-    case PC_CORE::LowLevelShaderStageType::VERTEX:
+    case PC_CORE::ShaderStageType::VERTEX:
         return GLSLANG_STAGE_VERTEX;
         break;
-    case PC_CORE::LowLevelShaderStageType::FRAGMENT:
+    case PC_CORE::ShaderStageType::FRAGMENT:
         return GLSLANG_STAGE_FRAGMENT;
         break;
-    case PC_CORE::LowLevelShaderStageType::GEOMETRY:
+    case PC_CORE::ShaderStageType::GEOMETRY:
         return GLSLANG_STAGE_GEOMETRY;
         break;
-    case PC_CORE::LowLevelShaderStageType::TESSELATION:
+    case PC_CORE::ShaderStageType::TESSELATION:
         return GLSLANG_STAGE_TESSCONTROL;
         break;
-    case PC_CORE::LowLevelShaderStageType::COMPUTE:
+    case PC_CORE::ShaderStageType::COMPUTE:
         return GLSLANG_STAGE_COMPUTE;
         break;
     default: ;
@@ -53,7 +53,7 @@ VK_NP::VulkanShaderCompiler::~VulkanShaderCompiler()
 }
 
 void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, const char* _source, const char* _path,
-                                                         PC_CORE::LowLevelShaderStageType _lowLevelShaderStage,SpvReflectShaderModule* _ReflectedModule,
+                                                         PC_CORE::ShaderStageType _lowLevelShaderStage,SpvReflectShaderModule* _ReflectedModule,
                                                          vk::ShaderModule* _shaderModule)
 {
     std::filesystem::path path = _path;

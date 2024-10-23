@@ -1,14 +1,14 @@
 ﻿#pragma once
-#include "resource.hpp"
+#include "Resource.hpp"
 #include "rendering/render_harware_interface/rhi_typedef.h"
 
 BEGIN_PCCORE
 
-class ShaderSource : public IResource
+class ShaderSource : public Resource
 {
 public:
     
-    LowLevelShaderStageType shaderType;
+    ShaderStageType shaderType;
 
     PC_CORE_API void SetPath(const fs::path& _path) override;
 

@@ -14,14 +14,14 @@ void ShaderSource::SetPath(const fs::path& _path)
     uint32_t formatIndex = -1;
     const std::string currentFormat = path.filename().extension().generic_string();
     
-    if (!IResource::IsFormatValid(ShaderSourceFormat, currentFormat, &formatIndex))
+    if (!Resource::IsFormatValid(ShaderSourceFormat, currentFormat, &formatIndex))
     {
         PC_LOGERROR("Shader invalid format")
     }
 
     name = path.filename().generic_string();
     format = ShaderSourceFormat[formatIndex];
-    shaderType = static_cast<LowLevelShaderStageType>(formatIndex);
+    shaderType = static_cast<ShaderStageType>(formatIndex);
 }
 
 std::vector<char> ShaderSource::GetShaderSourceFile()
@@ -37,7 +37,7 @@ std::vector<char> ShaderSource::GetShaderSourceFile()
 
 void ShaderSource::WriteFile(const fs::path& path)
 {
-    IResource::WriteFile(path);
+    Resource::WriteFile(path);
 }
 
 

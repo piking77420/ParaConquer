@@ -1,12 +1,12 @@
-﻿#include "back_end/vulkan_shader_manager.hpp"
+﻿#include "front_end/vulkan_shader_manager.hpp"
 
 #include <filesystem>
 #include <stack>
 
-#include "back_end/vulkan_harware_wrapper.hpp"
+#include "front_end/vulkan_harware_wrapper.hpp"
 #include <shaderc/shaderc.hpp>
 
-#include "back_end/vulkan_present_chain.hpp"
+#include "front_end/vulkan_present_chain.hpp"
 #include "render_harware_interface/vertex.hpp"
 
 
@@ -88,7 +88,7 @@ void VulkanShaderManager::FillShaderInfo(ShaderInternal* _shaderInternalBack,
         // Get TypeFromFormat
         std::string format = path.extension().generic_string();
 
-        const PC_CORE::LowLevelShaderStageType lowLevelShader = PC_CORE::ShaderFormatToShaderType(format.c_str());
+        const PC_CORE::ShaderStageType lowLevelShader = PC_CORE::ShaderFormatToShaderType(format.c_str());
         _shaderInternalBack->shaderStages[i].shaderStage = lowLevelShader;
         // Get shader Name with format
         _shaderInternalBack->shaderStages[i].name = path.filename().stem().generic_string() + format;
@@ -281,7 +281,7 @@ bool VK_NP::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::
 
     for (uint32_t i = 0; i < _shaderSource.size(); i++)
     {
-        PC_CORE::LowLevelShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
+        PC_CORE::ShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
         // SOURCE TO MODULE and get spv reflection
         m_ShaderCompiler.CreateModuleFromSource(_device, _shaderSource[i].spvCode.data(), _shaderSource[i].shaderSourceCodePath.c_str(),
             shaderStage, &shaderStagesInfo.at(i).reflectShaderModule,
@@ -325,27 +325,27 @@ bool VulkanShaderManager::DestroyShader(vk::Device _device, const std::string& _
 
 #pragma region PARSING
 
-vk::ShaderStageFlagBits VulkanShaderManager::ShaderBitFromType(const PC_CORE::LowLevelShaderStageType _shaderType)
+vk::ShaderStageFlagBits VulkanShaderManager::ShaderBitFromType(const PC_CORE::ShaderStageType _shaderType)
 {
     switch (_shaderType)
     {
-    case PC_CORE::LowLevelShaderStageType::VERTEX:
+    case PC_CORE::ShaderStageType::VERTEX:
         return vk::ShaderStageFlagBits::eVertex;
         break;
-    case PC_CORE::LowLevelShaderStageType::FRAGMENT:
+    case PC_CORE::ShaderStageType::FRAGMENT:
         return vk::ShaderStageFlagBits::eFragment;
         break;
-    case PC_CORE::LowLevelShaderStageType::GEOMETRY:
+    case PC_CORE::ShaderStageType::GEOMETRY:
         return vk::ShaderStageFlagBits::eGeometry;
         break;
-    case PC_CORE::LowLevelShaderStageType::TESSELATION:
+    case PC_CORE::ShaderStageType::TESSELATION:
         assert(false, "NOTSUPPORTED SHADER TESSELATION");
         return vk::ShaderStageFlagBits::eTessellationControl;
         break;
-    case PC_CORE::LowLevelShaderStageType::COMPUTE:
+    case PC_CORE::ShaderStageType::COMPUTE:
         return vk::ShaderStageFlagBits::eCompute;
         break;
-    case PC_CORE::LowLevelShaderStageType::COUNT:
+    case PC_CORE::ShaderStageType::COUNT:
         break;
     }
 }

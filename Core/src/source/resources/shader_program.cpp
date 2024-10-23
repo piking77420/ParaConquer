@@ -6,7 +6,7 @@
 using namespace PC_CORE;
 
 ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _createInfo, const std::vector<ShaderSource*>& _shaderSources) :
-    IResource()
+    Resource()
     , m_ShaderInfo(_createInfo.shaderInfo), m_ShaderSources(_shaderSources)
 {
     name = _createInfo.prograShaderName;

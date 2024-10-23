@@ -5,7 +5,7 @@
 #include "core_header.hpp"
 #include "guid.hpp"
 #include "log.hpp"
-#include "resource.hpp"
+#include "Resource.hpp"
 
 BEGIN_PCCORE
 class ResourceManager
@@ -41,13 +41,13 @@ private:
         std::string name = {};
     };
     
-    PC_CORE_API static inline std::map<fs::path, IResource*> m_ResourcesMap;
+    PC_CORE_API static inline std::map<fs::path, Resource*> m_ResourcesMap;
 };
 
 template <class T>
 T* ResourceManager::Create(const fs::path& path)
 {
-    static_assert(std::is_base_of_v<IResource,T>,"T is not a resource");
+    static_assert(std::is_base_of_v<Resource,T>,"T is not a resource");
     
     T* newR = new T;
     newR->SetPath(path);

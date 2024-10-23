@@ -4,7 +4,7 @@
 #include "texture.hpp"
 
 BEGIN_PCCORE
-class Material : public IResource
+class Material : public Resource
 {
 public:
     Texture* albedo = nullptr;

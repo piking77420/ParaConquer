@@ -11,7 +11,7 @@ namespace fs = std::filesystem;
 
 BEGIN_PCCORE
 
-class IResource
+class Resource
 {
 public:
     std::string name;
@@ -22,11 +22,11 @@ public:
 
     Guid guid;
     
-    PC_CORE_API IResource();
+    PC_CORE_API Resource();
 
-    PC_CORE_API IResource(std::string _name, std::string _format, fs::path _path, Guid _guid);
+    PC_CORE_API Resource(std::string _name, std::string _format, fs::path _path, Guid _guid);
     
-    PC_CORE_API virtual ~IResource() = default;
+    PC_CORE_API virtual ~Resource() = default;
 
     PC_CORE_API virtual void SetPath(const fs::path& path) {};
 
@@ -40,7 +40,7 @@ public:
 };
 
 template <size_t _Size>
-bool IResource::IsFormatValid(const std::array<std::string, _Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
+bool Resource::IsFormatValid(const std::array<std::string, _Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
     for (size_t i = 0; i < _format.size(); i++)
     {

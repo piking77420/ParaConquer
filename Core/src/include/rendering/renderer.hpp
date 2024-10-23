@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include "rendering_typedef.h"
 #include "buffer/index_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
 #include "buffer/uniform_buffer.hpp"
@@ -29,7 +30,7 @@ public:
 
     PC_CORE_API void Destroy();
 
-    PC_CORE_API void Render();
+    PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext);
 
     PC_CORE_API void BeginFrame();
     
@@ -43,7 +44,7 @@ private:
     PC_CORE_API void InitShader();
 
     PC_CORE_API void InitBuffer();
-
+    
     CommandPool m_SwapChainCommandPool;
 
     CommandPool m_TransfertPool;

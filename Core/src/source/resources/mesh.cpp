@@ -28,7 +28,7 @@ void Mesh::SetPath(const fs::path& _path)
     std::vector<Vertex> verticies;
     std::vector<uint32_t> indicies;
     
-    if (!IResource::IsFormatValid(MeshSourceFormat, format, &formatIndex))
+    if (!Resource::IsFormatValid(MeshSourceFormat, format, &formatIndex))
     {
         return;
     }

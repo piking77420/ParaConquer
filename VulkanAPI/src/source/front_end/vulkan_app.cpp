@@ -11,7 +11,6 @@ void VK_NP::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
     m_BindCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
     
     m_BindCommandBuffer.reset();
-
     
     vk::CommandBufferBeginInfo beginInfo{};
     beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
@@ -102,6 +101,7 @@ void VK_NP::VulkanApp::PushConstants(PC_CORE::CommandBufferHandle _commandBuffer
 void VK_NP::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
 {
     WaitDevice();
+    m_VulkanContext.swapChainSupportDetails = VulkanPhysicalDevices::QuerySwapChainSupport(m_VulkanContext.physicalDevice, m_VulkanContext.surface);
     m_vulkanPresentChain.RecreateSwapChain(&m_VulkanContext, _glfwWindowptr, _newWidht, _newHeight);
 }
 

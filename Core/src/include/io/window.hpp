@@ -23,7 +23,7 @@ BEGIN_PCCORE
 
         PC_CORE_API float GetAspect() const;
 
-        Tbx::Vector2ui GetWindowSize() const;
+        PC_CORE_API Tbx::Vector2ui GetWindowSize() const;
     
         PC_CORE_API GLFWwindow* GetHandle();
 

@@ -4,10 +4,10 @@
 
 #include "rendering/render_harware_interface/RHI.hpp"
 #include "vulkan_header.h"
-#include "back_end/vulkan_buffer_map.hpp"
-#include "back_end/vulkan_harware_wrapper.hpp"
-#include "back_end/vulkan_present_chain.hpp"
-#include "back_end/vulkan_shader_manager.hpp"
+#include "front_end/vulkan_buffer_map.hpp"
+#include "front_end/vulkan_harware_wrapper.hpp"
+#include "front_end/vulkan_present_chain.hpp"
+#include "front_end/vulkan_shader_manager.hpp"
 
 namespace VK_NP
 {

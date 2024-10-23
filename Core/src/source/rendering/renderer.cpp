@@ -7,6 +7,8 @@
 #include "resources/shader_source.hpp"
 
 #undef ERROR
+#undef near;
+#undef far;
 
 
 using namespace PC_CORE;
@@ -34,18 +36,30 @@ void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
     m_TransfertPool.~CommandPool();
+    sceneBufferUniform.~UniformBuffer();
 
     RHI::DestroyInstance();
 }
 
-void Renderer::Render()
+void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
 {
-    Tbx::Vector2ui windowSize = Windowtpr->GetWindowSize();
+    sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
+        _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
+        _renderingContext.lowLevelCamera.up);
+    sceneBufferGPU.proj = Tbx::PerspectiveMatrix(_renderingContext.lowLevelCamera.fov, _renderingContext.lowLevelCamera.aspect ,
+        _renderingContext.lowLevelCamera.near,
+        _renderingContext.lowLevelCamera.far);
+    
+    sceneBufferGPU.deltatime =  _renderingContext.deltaTime;
+    sceneBufferGPU.time =  _renderingContext.time;
+    sceneBufferUniform.Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
+    
+    
     ViewPort viewport =
         {
         .position = {},
-        .width = static_cast<float>(windowSize.x),
-        .height = static_cast<float>(windowSize.y),
+        .width = static_cast<float>(_renderingContext.renderingContextSize.x),
+        .height = static_cast<float>(_renderingContext.renderingContextSize.y),
         .minDepth = 0.0f,
         .maxDepth = 1.0f
         };
@@ -53,13 +67,15 @@ void Renderer::Render()
     ScissorRect ScissorRect;
     ScissorRect.offset = {},
     ScissorRect.extend = {
-       windowSize.x,
-       windowSize.y
+       static_cast<uint32_t>(_renderingContext.renderingContextSize.x),
+        static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
     };
+
     
     m_RhiRef->SetScissor(m_CommandBuffer->handle, ScissorRect);
-    
     m_RhiRef->SetViewPort(m_CommandBuffer->handle, viewport);
+
+    
     
     m_MainShader->Bind(m_CommandBuffer->handle);
     Tbx::Vector3f color = {1,1,1};
@@ -92,7 +108,6 @@ void Renderer::BeginFrame()
 
     m_RhiRef->WaitForAquireImage();
     m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(m_RhiRef->GetCurrentImage()));
-
     
     m_RhiRef->BeginRender(m_CommandBuffer->handle);
 }

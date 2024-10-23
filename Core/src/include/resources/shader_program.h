@@ -1,11 +1,11 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "resource.hpp"
+#include "Resource.hpp"
 #include "shader_source.hpp"
 
 BEGIN_PCCORE
-    class ShaderProgram : public IResource
+    class ShaderProgram : public Resource
 {
 public:
 

@@ -1,8 +1,10 @@
-﻿#include "back_end/vulkan_buffer_map.hpp"
+﻿#include "front_end/vulkan_buffer_map.hpp"
+
+#include "back_end/vulkan_command_pool_function.hpp"
 
 
 VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateBuffer(VulkanContext* _context, vk::CommandPool _commandPool,
-    uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage)
+                                                                             uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage)
 {
     vk::Device device = _context->device;
 
@@ -190,27 +192,14 @@ VK_NP::VulkanBufferMap::BufferKeyHandle VK_NP::VulkanBufferMap::CreateGPUBufferF
         &VertexBufferNuffer, &vmaAllocationVertex, &VertexBufferAllocationInfo);
 
     // Allocate and begin the command buffer
-    vk::CommandBuffer commandBuffer = VK_NULL_HANDLE;
-    vk::CommandBufferAllocateInfo allocInfo = {};
-    allocInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
-    allocInfo.commandPool = _commandPool;
-    allocInfo.level = vk::CommandBufferLevel::ePrimary;
-    allocInfo.commandBufferCount = 1;
-
-    VK_CALL(_context->device.allocateCommandBuffers(&allocInfo, &commandBuffer));
-
-    vk::CommandBufferBeginInfo beginInfo = {};
-    beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
-    beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-
-    commandBuffer.begin(beginInfo);
-
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(_context->device, _commandPool);
+    
     // Copy from staging to vertex buffer
     vk::BufferCopy copyRegion = {};
     copyRegion.size = _size;
     commandBuffer.copyBuffer(stagingNuffer, VertexBufferNuffer, 1, &copyRegion);
 
-    commandBuffer.end();
+    EndSingleTimeCommands(commandBuffer);
 
     // Submit the command buffer and wait with a fence
     vk::SubmitInfo submitInfo = {};

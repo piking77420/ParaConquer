@@ -33,7 +33,7 @@ namespace VK_NP
         struct ShaderStageInfo
         {
             std::string name;
-            PC_CORE::LowLevelShaderStageType shaderStage;
+            PC_CORE::ShaderStageType shaderStage;
             SpvReflectShaderModule reflectShaderModule;
         };
       
@@ -83,7 +83,7 @@ namespace VK_NP
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
             _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);
         
-        static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::LowLevelShaderStageType _shaderType);
+        static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::ShaderStageType _shaderType);
         
     };
 }

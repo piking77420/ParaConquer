@@ -5,7 +5,7 @@
 
 #include "GLFW/glfw3native.h"
 #include "RapidXML/RapidXMLSTD.hpp"
-#include "resources/resource.hpp"
+#include "resources/Resource.hpp"
 
 using namespace PC_CORE;
 

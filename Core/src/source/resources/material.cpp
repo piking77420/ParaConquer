@@ -5,7 +5,7 @@ using namespace PC_CORE;
 
 void Material::WriteFile(const fs::path& path)
 {
-    IResource::WriteFile(path);
+    Resource::WriteFile(path);
 }
 
 Material::~Material()

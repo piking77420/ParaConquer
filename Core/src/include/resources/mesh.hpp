@@ -1,11 +1,11 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "resource.hpp"
+#include "Resource.hpp"
 #include "rendering/render_harware_interface/vertex.hpp"
 
 BEGIN_PCCORE
-class Mesh : public IResource
+class Mesh : public Resource
 {
 public:
 

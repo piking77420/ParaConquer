@@ -1,6 +1,8 @@
 ﻿#pragma once
 
-#include "shader_typedef.h"
+#include <variant>
+#include <vector>
+
 #include "math/toolbox_typedef.hpp"
 #include "rendering/render_harware_interface/buffer_typedef.h"
 
@@ -90,6 +92,30 @@ enum class CommandBufferlevel
     COUT
 };
 
+enum class DESCRIPTOR_TYPE
+{
+    SAMPLER = 0,
+    COMBINED_IMAGE_SAMPLER = 1,
+    SAMPLED_IMAGE = 2,
+    STORAGE_IMAGE = 3,
+    UNIFORM_TEXEL_BUFFER = 4,
+    STORAGE_TEXEL_BUFFER = 5,
+    UNIFORM_BUFFER = 6,
+    STORAGE_BUFFER = 7,
+    UNIFORM_BUFFER_DYNAMIC = 8,
+    STORAGE_BUFFER_DYNAMIC = 9,
+    INPUT_ATTACHMENT = 10,
+    INLINE_UNIFORM_BLOCK = 1000138000,
+    ACCELERATION_STRUCTURE_KHR = 1000150000,
+    ACCELERATION_STRUCTURE_NV = 1000165000,
+    SAMPLE_WEIGHT_IMAGE_QCOM = 1000440000,
+    BLOCK_MATCH_IMAGE_QCOM = 1000440001,
+    MUTABLE_EXT = 1000351000,
+    INLINE_UNIFORM_BLOCK_EXT = INLINE_UNIFORM_BLOCK,
+    MUTABLE_VALVE = MUTABLE_EXT,
+    COUNT
+};
+
 #pragma region LOG_TYPE
 
     enum class LogType
@@ -103,6 +129,129 @@ enum class CommandBufferlevel
 
 #pragma endregion
 
+#pragma region RHIFORMAT
+enum class RHIFormat
+{
+    UNDIFINED,
+    R8_UNORM,
+    R8_SNORM,
+    R8_USCALED,
+
+    R32G32_SFLOAT,
+    R32G32B32_SFLOAT,
+
+    COUNT
+};
+
+#pragma endregion
+
+#pragma region Shader
+
+    enum class ShaderStageType
+    {
+        VERTEX,
+        FRAGMENT,
+        GEOMETRY,
+        TESSELATION,
+        COMPUTE,
+
+        COUNT
+    };
+
+    const std::array<std::string, 5> ShaderSourceFormat
+    {
+        ".vert",
+        ".frag",
+        ".geom",
+        ".tess",
+        ".comp"
+    };
+
+
+    struct ShaderSourcePath
+    {
+        std::string shaderSourceCodePath;
+        std::vector<char> spvCode;
+    };
+
+    enum class ShaderProgramPipelineType
+    {
+        POINT_GRAPHICS,
+        COMPUTE,
+        RAYTRACING,
+
+        COUT
+    };
+
+    enum class VertexInputRate
+    {
+        VERTEX = 0,
+        INSTANCE = 1,
+
+        COUNT
+    };
+
+    struct VertexInputBindingDescrition
+    {
+        uint32_t binding = 0;
+        uint32_t stride = 0;
+        VertexInputRate vertexInputRate = VertexInputRate::VERTEX;
+    };
+
+    struct VertexAttributeDescription
+    {
+        uint32_t binding = 0;
+        uint32_t location = 0;
+        RHIFormat format = RHIFormat::UNDIFINED;
+        uint32_t offset = 0;
+    };
+
+
+    struct ShaderGraphicPointInfo
+    {
+        std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
+        std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
+    };
+
+    struct ShaderRayTracingInfo
+    {
+    };
+
+    struct ShaderComputeInfo
+    {
+    };
+
+    using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderRayTracingInfo, ShaderComputeInfo>;
+
+    struct ShaderInfo
+    {
+        ShaderProgramPipelineType shaderProgramPipelineType;
+        ShaderInfoData shaderInfoData;
+    };
+
+    struct ProgramShaderCreateInfo
+    {
+        std::string prograShaderName;
+        ShaderInfo shaderInfo;
+        // there shoulbe a renderpass handle
+    };
+
+
+    static inline ShaderStageType ShaderFormatToShaderType(const char* _formatWithPoint)
+    {
+        for (int i = 0; i < static_cast<int>(ShaderStageType::COUNT); i++)
+        {
+            if (_stricmp(_formatWithPoint, ShaderSourceFormat[i].c_str()) == 0)
+            {
+                return static_cast<ShaderStageType>(i);
+            }
+        }
+
+        // Return a default value or handle the error when no match is found
+        return ShaderStageType::COUNT;
+    }
+
+#pragma endregion Shader
 
 
 END_PCCORE

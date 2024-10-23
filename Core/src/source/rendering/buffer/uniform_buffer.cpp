@@ -30,7 +30,7 @@ PC_CORE::UniformBuffer& PC_CORE::UniformBuffer::operator=(UniformBuffer&& _other
 
 void UniformBuffer::Update(size_t _size, size_t _offset, const void* _data)
 {
-
+    memcpy(static_cast<uint8_t*>(m_MapData) + _offset, _data, _size);
 }
 
 UniformBuffer::UniformBuffer(CommandPool* _commandPool, size_t _size)
@@ -55,8 +55,8 @@ UniformBuffer::~UniformBuffer()
     RHI* instance = RHI::GetInstance();
     if (instance != nullptr)
     {
-        instance->DestroyBuffer(handleId);
         instance->UnMapData(handleId);
+        instance->DestroyBuffer(handleId);
     }
 
     handleId = nullptr;

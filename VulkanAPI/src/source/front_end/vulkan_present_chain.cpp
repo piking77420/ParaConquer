@@ -1,5 +1,5 @@
-﻿#include "back_end/vulkan_present_chain.hpp"
-#include "back_end/vulkan_harware_wrapper.hpp"
+﻿#include "front_end/vulkan_present_chain.hpp"
+#include "front_end/vulkan_harware_wrapper.hpp"
 #include "GLFW/glfw3.h"
 
 
@@ -38,7 +38,6 @@ void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCont
     vk::PhysicalDevice phyDevice = _vulkanContext->physicalDevice;
     vk::Device device = _vulkanContext->device;
     // need to do this
-    _vulkanContext->swapChainSupportDetails = VulkanPhysicalDevices::QuerySwapChainSupport(phyDevice, _vulkanContext->surface);
     
     vk::SurfaceKHR surface = _vulkanContext->surface;
     const SwapChainSupportDetails& swapChainSupportDetails = _vulkanContext->swapChainSupportDetails;

@@ -10,15 +10,20 @@ BEGIN_PCCORE
         Tbx::Vector3f position;
         Tbx::Vector3f front;
         Tbx::Vector3f up;
-    
+
+        float aspect; 
+        float fov;
+        float near;
+        float far;
         bool isOrthographic;
     };
 
     struct RenderingContext
     {
-        Tbx::Vector2f screenSize;
+        Tbx::Vector2f renderingContextSize;
         LowLevelCamera lowLevelCamera;
-        
+        float deltaTime;
+        float time;
     };
 
 
