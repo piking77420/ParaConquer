@@ -10,57 +10,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Core/src/include/rendering/descriptor_layout_binding.hpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptor_layout.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/projectSettingsUpdater.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/projectSettingsUpdater.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/io/window.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/io/window.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/camera.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/camera.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/buffer/vertex_buffer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/buffer/vertex_buffer.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/command_buffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/command_buffer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/shader_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/shader_typedef.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/rendering_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/rendering_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/material.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/material.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/mesh.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/mesh.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/resource.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/Resource.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/resource_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/resource_manager.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/resources/shader_program.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/shader_program.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/shader_source.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/shader_source.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/texture.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/texture.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/buffer/index_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/buffer/index_buffer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/buffer/uniform_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/buffer/uniform_buffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/camera.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/descriptor_layout_binding.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/descriptor_layout_binding.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/buffer/vertex_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/buffer/vertex_buffer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/RHI.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/RHI.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_buffer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_pool.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_pool.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/mesh.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/mesh.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/resource.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/Resource.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/shader_source.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/shader_source.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/serialize/serializer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/serialize/serializer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/include/asset_browser.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/asset_browser.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/editor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/editor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" beforeDir="false" afterPath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_buffer_map.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_harware_wrapper.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_physical_devices.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_present_chain.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_shader_compiler.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_shader_manager.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptor_layout.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptor_layout.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_buffer_map.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_harware_wrapper.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_physical_devices.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_present_chain.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_shader_compiler.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_shader_manager.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_shader_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_shader_manager.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptor_layout.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptor_layout.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/include/buffers.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/include/buffers.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.frag" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.frag" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.vert" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.vert" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,11 +65,11 @@
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="cidr-memory-view://10" root0="FORCE_HIGHLIGHTING" />
-    <setting file="cidr-memory-view://9" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/externals/include/OBJ_Loader.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/buffer/vertex_buffer.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/descriptor_layout_binding.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/buffer/vertex_buffer.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/descriptor_layout_binding.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_pool.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared/minwindef.h" root0="SKIP_HIGHLIGHTING" />
@@ -418,7 +390,8 @@
       <workItem from="1728915325325" duration="1026000" />
       <workItem from="1728916370180" duration="6976000" />
       <workItem from="1729237003591" duration="2932000" />
-      <workItem from="1729693005011" duration="4288000" />
+      <workItem from="1729693005011" duration="5612000" />
+      <workItem from="1729763393650" duration="6127000" />
     </task>
     <servers />
   </component>

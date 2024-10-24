@@ -6,32 +6,33 @@
 
 BEGIN_PCCORE
     class ShaderProgram : public Resource
-{
-public:
+    {
+    public:
+        ShaderProgram(const ProgramShaderCreateInfo& _createInfo,
+                      const std::vector<ShaderSource*>& _shaderSources);
 
-    ShaderProgram(const ProgramShaderCreateInfo& _createInfo,
-        const std::vector<ShaderSource*>& _shaderSources);
+        ShaderProgram() = default;
 
-    ShaderProgram() = default;
+        ~ShaderProgram();
 
-    ~ShaderProgram();
+        void Reload();
 
-    void Reload();
-
-    void Bind(CommandBufferHandle _commandBuffer);
-
-    void PushVector3(CommandBufferHandle _commandBuffer, const char* _name, void* _data);
-
-private:
-
-    void CreateShader();
-
-    void DestroyShader();
+        void Bind(CommandBufferHandle _commandBuffer);
     
-    ShaderInfo m_ShaderInfo;
-    
+        void PushConstantMat4(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Matrix4x4f& m4);
 
-    std::vector<ShaderSource*> m_ShaderSources;
-};
+        void PushConstantVec3(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Vector3f& vec3);
+
+    private:
+        ShaderInfo m_ShaderInfo;
+
+        std::vector<ShaderSource*> m_ShaderSources;
+
+        void CreateShader();
+
+        void DestroyShader();
+
+        void PushConstant(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const  void* _data, size_t _dataSize);
+    };
 
 END_PCCORE

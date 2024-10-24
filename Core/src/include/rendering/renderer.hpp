@@ -44,6 +44,8 @@ private:
     PC_CORE_API void InitShader();
 
     PC_CORE_API void InitBuffer();
+
+    PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
     
     CommandPool m_SwapChainCommandPool;
 
@@ -54,16 +56,14 @@ private:
     ShaderProgram* m_MainShader = nullptr;
 
     Window* Windowtpr = nullptr;
-
-    RHI* m_RhiRef = nullptr;
-
+    
     CommandBuffer* m_CommandBuffer = nullptr;
 
     PC_CORE::VertexBuffer vertexBuffer;
 
     IndexBuffer indexBuffer;
 
-    UniformBuffer sceneBufferUniform;
+    std::vector<UniformBuffer> m_SceneBufferUniforms;
 
     SceneBufferGPU sceneBufferGPU;
 

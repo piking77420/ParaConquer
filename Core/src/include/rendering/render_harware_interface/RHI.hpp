@@ -5,6 +5,7 @@
 
 #include "command_buffer.h"
 #include "rhi_typedef.h"
+#include "resources/descriptor_set_layout.h"
 
 
 BEGIN_PCCORE
@@ -13,7 +14,7 @@ BEGIN_PCCORE
     class RHI
     {
     public:
-        static RHI* const GetInstance();
+        static RHI& GetInstance();
         
         PC_CORE_API static void MakeInstance(RHI* _rhi);
 
@@ -167,6 +168,29 @@ BEGIN_PCCORE
 
 #pragma endregion DrawFunction
 
+#pragma region Descriptor
+        virtual PC_CORE_API DescriptorSetLayoutHandle CreateDescriptorSetLayout(const std::vector<DescriptorLayoutBinding>& _descriptorSetLayouts)
+        {
+            return nullptr;
+        }
+
+        virtual PC_CORE_API void DestroyDescriptorSetLayout(const DescriptorSetLayoutHandle& _descriptorSetLayoutHandle)
+        {
+            
+        }
+
+        virtual PC_CORE_API DescriptorPoolHandle CreateDescriptorPoolHandle(DesciptorPoolSize* desciptorPoolSize, uint32_t descriptorCount, uint32_t maxSets)
+        {
+            return nullptr;
+        }
+
+        virtual PC_CORE_API void DestroyDescriptorPool(DescriptorPoolHandle _descriptorPoolHandle)
+        {
+            
+        }
+        
+#pragma endregion Descriptor
+
         static PC_CORE_API void RHILog(LogType _logType, const char* _message)
         {
             if (!m_Instance)
@@ -177,6 +201,7 @@ BEGIN_PCCORE
 
             m_Instance->m_LogCallback(_logType, _message);
         }
+    
 
     protected:
         static RHI* m_Instance;

@@ -14,7 +14,6 @@ namespace VK_NP
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
-
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -89,6 +88,19 @@ namespace VK_NP
 			uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffSet, uint32_t firstInstance) override;
 		
 #pragma endregion DrawFunction
+
+#pragma region DescriptorSetLayout
+
+		PC_CORE::DescriptorSetLayoutHandle CreateDescriptorSetLayout(const std::vector<PC_CORE::DescriptorLayoutBinding>& _descriptorSetLayouts) override;
+		
+		void DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLayoutHandle& _descriptorSetLayoutHandle) override;
+
+		PC_CORE::DescriptorPoolHandle CreateDescriptorPoolHandle(PC_CORE::DesciptorPoolSize* desciptorPoolSize,
+			uint32_t descriptorCount, uint32_t maxSets) override;
+		
+		void DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle) override;
+		
+#pragma endregion DescriptorSetLayout
 	private:
 		VulkanContext m_VulkanContext;
 		

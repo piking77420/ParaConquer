@@ -30,7 +30,7 @@ PC_CORE::IndexBuffer::IndexBuffer(CommandPool* _transfertPool, const std::vector
 {
     m_IndiciesCount = _indicies.size();
     size = m_IndiciesCount * sizeof(uint32_t);
-    handleId = RHI::GetInstance()->BufferData(_transfertPool, size, _indicies.data(), BUFFER_USAGE_INDEX);
+    handleId = RHI::GetInstance().BufferData(_transfertPool, size, _indicies.data(), BUFFER_USAGE_INDEX);
 }
 
 PC_CORE::IndexBuffer::IndexBuffer()
@@ -44,10 +44,6 @@ PC_CORE::IndexBuffer::~IndexBuffer()
 
     size = 0;
     m_IndiciesCount = 0;
-
-    RHI* instance = RHI::GetInstance();
-    if (instance != nullptr)
-        instance->DestroyBuffer(handleId);
-
+    RHI::GetInstance().DestroyBuffer(handleId);
     handleId = nullptr;
 }

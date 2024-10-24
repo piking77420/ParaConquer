@@ -33,7 +33,7 @@ PC_CORE::VertexBuffer::VertexBuffer(CommandPool* _transfertPool, const std::vect
 {
     m_VertexCount = _vertices.size();
     size = m_VertexCount * sizeof(Vertex);
-    handleId = RHI::GetInstance()->BufferData(_transfertPool, size, _vertices.data(), BUFFER_USAGE_VERTEX);
+    handleId = RHI::GetInstance().BufferData(_transfertPool, size, _vertices.data(), BUFFER_USAGE_VERTEX);
 }
 
 
@@ -49,10 +49,6 @@ PC_CORE::VertexBuffer::~VertexBuffer()
 
     size = 0;
     m_VertexCount = 0;
-    RHI* instance = RHI::GetInstance();
-
-    if (instance != nullptr)
-        instance->DestroyBuffer(handleId);
-
+    RHI::GetInstance().DestroyBuffer(handleId);
     handleId = nullptr;
 }

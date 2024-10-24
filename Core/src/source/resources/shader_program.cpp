@@ -15,7 +15,6 @@ ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _createInfo, const s
 }
 
 
-
 ShaderProgram::~ShaderProgram()
 {
     DestroyShader();
@@ -30,15 +29,18 @@ void ShaderProgram::Reload()
 void ShaderProgram::Bind(CommandBufferHandle _commandBuffer)
 {
     if (!name.empty())
-        RHI::GetInstance()->BindShaderProgram(_commandBuffer, name);
+        RHI::GetInstance().BindShaderProgram(_commandBuffer, name);
 }
 
-void ShaderProgram::PushVector3(CommandBufferHandle _commandBuffer, const char* _name, void* _data)
+void ShaderProgram::PushConstantMat4(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Matrix4x4f& m4)
 {
-    if (!name.empty())
-    {
-        RHI::GetInstance()->PushConstants(_commandBuffer, name, _name, _data, 3 * sizeof(float));
-    }}
+    PushConstant(_commandBuffer, _pushConstantName, m4.GetPtr() , sizeof(Tbx::Matrix4x4f));
+}
+
+void ShaderProgram::PushConstantVec3(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Vector3f& vec3)
+{
+    PushConstant(_commandBuffer, _pushConstantName, vec3.GetPtr() , sizeof(Tbx::Vector3f));
+}
 
 void ShaderProgram::CreateShader()
 {
@@ -57,11 +59,19 @@ void ShaderProgram::CreateShader()
         m_ShaderInfo
         };
     
-    RHI::GetInstance()->CreateShader(programShaderCreateInfo, sourceAndPaths);
+    RHI::GetInstance().CreateShader(programShaderCreateInfo, sourceAndPaths);
 }
 
 void ShaderProgram::DestroyShader()
 {
     if (!name.empty())
-        RHI::GetInstance()->DestroyShader(name);
+        RHI::GetInstance().DestroyShader(name);
+}
+
+void ShaderProgram::PushConstant(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const void* _data, size_t _dataSize)
+{
+    if (!name.empty())
+    {
+        RHI::GetInstance().PushConstants(_commandBuffer, name, _pushConstantName, _data, _dataSize);
+    }
 }

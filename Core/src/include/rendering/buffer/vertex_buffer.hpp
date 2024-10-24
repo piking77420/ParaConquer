@@ -20,7 +20,7 @@ public:
     ~VertexBuffer();
 
 
-    inline uint32_t GetNbrOfVerticies()
+    inline uint32_t GetNbrOfVerticies() const 
     {
         return m_VertexCount;
     }

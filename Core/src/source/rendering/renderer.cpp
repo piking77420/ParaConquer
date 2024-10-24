@@ -17,18 +17,17 @@ using namespace PC_CORE;
 void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
 {
     InitRhi(_graphicAPI, _window);
-    m_RhiRef = RHI::GetInstance();
     InitCommandPools();
     InitShader();
     InitBuffer();
 
 
     const CommandBufferCreateInfo commandBufferCreateInfo =
-        {
+    {
         .commandBufferPtr = m_SwapChainCommandBuffers.data(),
         .commandBufferCount = static_cast<uint32_t>(m_SwapChainCommandBuffers.size()),
         .commandBufferlevel = CommandBufferlevel::PRIMARY
-        };
+    };
     m_SwapChainCommandPool.AllocCommandBuffer(commandBufferCreateInfo);
 }
 
@@ -36,59 +35,47 @@ void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
     m_TransfertPool.~CommandPool();
-    sceneBufferUniform.~UniformBuffer();
+
+    for (auto&& uniform : m_SceneBufferUniforms)
+        uniform.~UniformBuffer();
 
     RHI::DestroyInstance();
 }
 
 void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
 {
-    sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
-        _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
-        _renderingContext.lowLevelCamera.up);
-    sceneBufferGPU.proj = Tbx::PerspectiveMatrix(_renderingContext.lowLevelCamera.fov, _renderingContext.lowLevelCamera.aspect ,
-        _renderingContext.lowLevelCamera.near,
-        _renderingContext.lowLevelCamera.far);
-    
-    sceneBufferGPU.deltatime =  _renderingContext.deltaTime;
-    sceneBufferGPU.time =  _renderingContext.time;
-    sceneBufferUniform.Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
-    
+    UpdateUniforms(_renderingContext);
     
     ViewPort viewport =
-        {
+    {
         .position = {},
         .width = static_cast<float>(_renderingContext.renderingContextSize.x),
         .height = static_cast<float>(_renderingContext.renderingContextSize.y),
         .minDepth = 0.0f,
         .maxDepth = 1.0f
-        };
+    };
 
     ScissorRect ScissorRect;
     ScissorRect.offset = {},
-    ScissorRect.extend = {
-       static_cast<uint32_t>(_renderingContext.renderingContextSize.x),
-        static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
-    };
+        ScissorRect.extend = {
+            static_cast<uint32_t>(_renderingContext.renderingContextSize.x),
+            static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
+        };
 
-    
-    m_RhiRef->SetScissor(m_CommandBuffer->handle, ScissorRect);
-    m_RhiRef->SetViewPort(m_CommandBuffer->handle, viewport);
 
-    
-    
+    RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
+    RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
+
+
     m_MainShader->Bind(m_CommandBuffer->handle);
-    Tbx::Vector3f color = {1,1,1};
-    m_MainShader->PushVector3(m_CommandBuffer->handle,"PushConstants", &color);
+
+    Tbx::Matrix4x4f modelMatrix = Tbx::Matrix4x4f::Identity();
+    m_MainShader->PushVector3(m_CommandBuffer->handle, "PushConstants", &modelMatrix);
 
 
-
-
-
-
-    m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0 ,1);
+    m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0, 1);
     m_CommandBuffer->BindIndexBuffer(indexBuffer);
-    m_RhiRef->DrawIndexed(m_CommandBuffer->handle, indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+    RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
 }
 
 void Renderer::BeginFrame()
@@ -96,7 +83,7 @@ void Renderer::BeginFrame()
     static bool firstTime = false;
     if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_SPACE) == GLFW_PRESS && !firstTime)
     {
-        m_RhiRef->WaitDevice();
+        RHI::GetInstance().WaitDevice();
         m_MainShader->Reload();
         firstTime = true;
     }
@@ -106,23 +93,22 @@ void Renderer::BeginFrame()
         firstTime = false;
     }
 
-    m_RhiRef->WaitForAquireImage();
-    m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(m_RhiRef->GetCurrentImage()));
-    
-    m_RhiRef->BeginRender(m_CommandBuffer->handle);
-}
+    RHI::GetInstance().WaitForAquireImage();
+    m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
 
+    RHI::GetInstance().BeginRender(m_CommandBuffer->handle);
+}
 
 
 void Renderer::SwapBuffers()
 {
-    m_RhiRef->EndRender();
-    m_RhiRef->SwapBuffers(&m_CommandBuffer->handle, 1);
+    RHI::GetInstance().EndRender();
+    RHI::GetInstance().SwapBuffers(&m_CommandBuffer->handle, 1);
 }
 
 void Renderer::WaitDevice()
 {
-    m_RhiRef->WaitDevice();
+    RHI::GetInstance().WaitDevice();
 }
 
 void Renderer::RenderLog(LogType _logType, const char* _message)
@@ -179,8 +165,9 @@ void Renderer::InitShader()
     createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
     std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexInputBindingDescritions.push_back(
         Vertex::GetBindingDescrition(0));
-    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0);
-     
+    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexAttributeDescriptions =
+        Vertex::GetAttributeDescriptions(0);
+
 
     m_MainShader = new ShaderProgram(createInfo, {mainShaderVertex, mainShaderFrag});
     ResourceManager::Add<ShaderProgram>(m_MainShader);
@@ -189,20 +176,38 @@ void Renderer::InitShader()
 void Renderer::InitBuffer()
 {
     const std::vector<Vertex> vertices = {
-        {{-0.5f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1,0}},
-        {{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0,1}},
-        {{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1,1}},
-            {{-0.5f, 0.5f,0.f}, {1.0f, 1.0f, 1.0f},{1,1}}
+        {{-0.5f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1, 0}},
+        {{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0, 1}},
+        {{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1, 1}},
+        {{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1, 1}}
     };
 
-    vertexBuffer = VertexBuffer(&m_TransfertPool ,vertices);
+    vertexBuffer = VertexBuffer(&m_TransfertPool, vertices);
 
     const std::vector<uint32_t> indices = {
         0, 1, 2, 2, 3, 0
     };
     indexBuffer = IndexBuffer(&m_TransfertPool, indices);
 
-    sceneBufferUniform = UniformBuffer(&m_TransfertPool, sizeof(sceneBufferGPU));
+    for (auto&& uniform : m_SceneBufferUniforms)
+        uniform = UniformBuffer(&m_TransfertPool, sizeof(sceneBufferGPU));
+}
+
+void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
+{
+    const size_t currentFrame = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
+
+    sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
+                                   _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
+                                   _renderingContext.lowLevelCamera.up);
+    sceneBufferGPU.proj = Tbx::PerspectiveMatrix(_renderingContext.lowLevelCamera.fov,
+                                                 _renderingContext.lowLevelCamera.aspect,
+                                                 _renderingContext.lowLevelCamera.near,
+                                                 _renderingContext.lowLevelCamera.far);
+
+    sceneBufferGPU.deltatime = _renderingContext.deltaTime;
+    sceneBufferGPU.time = _renderingContext.time;
+    m_SceneBufferUniforms[currentFrame].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
 }
 
 void Renderer::InitCommandPools()

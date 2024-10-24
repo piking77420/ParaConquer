@@ -4,12 +4,12 @@
 
 void PC_CORE::CommandBuffer::BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount)
 {
-    RHI::GetInstance()->BindVertexBuffer(handle, _firstBinding, _bindingCount ,_vertexBuffer.handleId);
+    RHI::GetInstance().BindVertexBuffer(handle, _firstBinding, _bindingCount ,_vertexBuffer.handleId);
 }
 
 
 
 void PC_CORE::CommandBuffer::BindIndexBuffer(const IndexBuffer& _indexBuffer)
 {
-    RHI::GetInstance()->BindIndexBuffer(handle, _indexBuffer.handleId);
+    RHI::GetInstance().BindIndexBuffer(handle, _indexBuffer.handleId);
 }

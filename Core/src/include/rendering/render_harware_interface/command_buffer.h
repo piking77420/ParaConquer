@@ -26,7 +26,7 @@ public:
 
     void BindIndexBuffer(const IndexBuffer& _indexBuffer);
     
-    ObjectHandle handle = nullptr;
+    GPUObjectHandle handle = nullptr;
 };
 static_assert(sizeof(CommandBuffer) == 8, "CommandBuffer should be 8 bytes long");
 

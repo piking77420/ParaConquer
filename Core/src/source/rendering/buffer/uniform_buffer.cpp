@@ -36,8 +36,8 @@ void UniformBuffer::Update(size_t _size, size_t _offset, const void* _data)
 UniformBuffer::UniformBuffer(CommandPool* _commandPool, size_t _size)
 {
     size = _size;
-    handleId = RHI::GetInstance()->BufferData(_commandPool, _size, BUFFER_USAGE_UNIFORM);
-    RHI::GetInstance()->MapData(handleId, &m_MapData);
+    handleId = RHI::GetInstance().BufferData(_commandPool, _size, BUFFER_USAGE_UNIFORM);
+    RHI::GetInstance().MapData(handleId, &m_MapData);
 }
 
 UniformBuffer::UniformBuffer()
@@ -52,12 +52,10 @@ UniformBuffer::~UniformBuffer()
 
     size = 0;
 
-    RHI* instance = RHI::GetInstance();
-    if (instance != nullptr)
-    {
-        instance->UnMapData(handleId);
-        instance->DestroyBuffer(handleId);
-    }
+    RHI& instance = RHI::GetInstance();
+    instance.UnMapData(handleId);
+    instance.DestroyBuffer(handleId);
+    
 
     handleId = nullptr;
 }

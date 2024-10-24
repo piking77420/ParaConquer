@@ -45,10 +45,14 @@ enum class QueuType
 ENUM_FLAGS(QueuType)
 
    
-using ObjectHandle = void*;
-using CommandBufferHandle = ObjectHandle;
-using CommandPoolHandle = ObjectHandle;
-using GPUBufferHandle = ObjectHandle;
+using GPUObjectHandle = void*;
+using CommandBufferHandle = GPUObjectHandle;
+using CommandPoolHandle = GPUObjectHandle;
+using GPUBufferHandle = GPUObjectHandle;
+using DescriptorSetLayoutHandle = GPUObjectHandle;
+using DescriptorPoolHandle = GPUObjectHandle;
+constexpr GPUBufferHandle NULL_HANDLE = nullptr;
+
 constexpr void* INVALID_HANDLE = nullptr;
 
 enum CommandPoolBufferFlag
@@ -115,6 +119,13 @@ enum class DESCRIPTOR_TYPE
     MUTABLE_VALVE = MUTABLE_EXT,
     COUNT
 };
+
+struct DesciptorPoolSize
+{
+    DESCRIPTOR_TYPE type;
+    uint32_t count;
+};
+
 
 #pragma region LOG_TYPE
 

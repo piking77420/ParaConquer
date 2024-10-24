@@ -24,7 +24,6 @@ namespace VK_NP
         VULKAN_API void PushConstant(const std::string& _shaderName, const char* pushConstantName, const void* _value,
             size_t _size, vk::CommandBuffer _commandBuffer);
 
-
         VULKAN_API void Init(VulkanContext* _vulkanContext);
 
         VULKAN_API void Destroy(VulkanContext* _vulkanContext);

@@ -1,5 +1,8 @@
 #include "front_end/vulkan_app.hpp"
 
+#include "back_end/rhi_vulkan_descriptor_layout.hpp"
+#include "back_end/rhi_vulkan_descriptor_pool.hpp"
+
 
 uint32_t VK_NP::VulkanApp::GetCurrentImage() const
 {
@@ -272,6 +275,35 @@ void VK_NP::VulkanApp::DrawIndexed(PC_CORE::CommandBufferHandle _commandBufferHa
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
     commandBuffer.drawIndexed(_indiciesCount, instanceCount, firstIndex, vertexOffSet, firstInstance);
 }
+
+
+#pragma region DescriptorSetLayout
+PC_CORE::DescriptorSetLayoutHandle VK_NP::VulkanApp::CreateDescriptorSetLayout(
+    const std::vector<PC_CORE::DescriptorLayoutBinding>& _descriptorSetLayouts)
+{
+    vk::DescriptorSetLayout descriptorSetLayout = VK_NP::Backend::CreateDescriptorSetLayout(m_VulkanContext.device, _descriptorSetLayouts);
+
+    return *reinterpret_cast<PC_CORE::DescriptorSetLayoutHandle*>(&descriptorSetLayout);
+}
+
+void VK_NP::VulkanApp::DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLayoutHandle& _descriptorSetLayoutHandle)
+{
+    Backend::DestroyDescriptorSetLayout(m_VulkanContext.device, CastObjectToVkObject<vk::DescriptorSetLayout>(_descriptorSetLayoutHandle));
+}
+
+PC_CORE::DescriptorPoolHandle VK_NP::VulkanApp::CreateDescriptorPoolHandle(PC_CORE::DesciptorPoolSize* desciptorPoolSize, uint32_t descriptorCount,
+    uint32_t maxSets)
+{
+    vk::DescriptorPool descriptorPool = Backend::RhiToVkDescriptorPool(m_VulkanContext.device, desciptorPoolSize, descriptorCount, maxSets);
+    return *reinterpret_cast<PC_CORE::DescriptorPoolHandle*>(&descriptorPool);
+}
+
+void VK_NP::VulkanApp::DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle)
+{
+    vk::DescriptorPool descriptorPool = CastObjectToVkObject<vk::DescriptorPool>(_descriptorPoolHandle);
+    Backend::DestroyDescriptorPool(m_VulkanContext.device, descriptorPool);
+}
+#pragma endregion DescriptorSetLayout
 
 
 #pragma endregion CommandBuffer Functions
