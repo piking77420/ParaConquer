@@ -9,32 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/descriptor_pool.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/descriptor_pool.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/descriptor_set_layout.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/descriptor_set_layout.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/io/window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/io/window.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_pool.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_pool.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/descriptor_set_layout.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/descriptor_set_layout.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer.sln" beforeDir="false" afterPath="$PROJECT_DIR$/ParaConquer.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj.filters" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/main.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ParaConquer/x64/Debug/ParaConquer.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptor_pool.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptor_pool.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptor_pool.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptor_pool.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.vert" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.vert" afterDir="false" />
-    </list>
+    <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -390,7 +365,7 @@
       <workItem from="1729237003591" duration="2932000" />
       <workItem from="1729693005011" duration="5612000" />
       <workItem from="1729763393650" duration="6127000" />
-      <workItem from="1729774821853" duration="5507000" />
+      <workItem from="1729774821853" duration="5736000" />
     </task>
     <servers />
   </component>
