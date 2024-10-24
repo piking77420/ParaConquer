@@ -4,6 +4,21 @@
 
 using namespace PC_CORE;
 
+DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& _other) noexcept
+{
+    m_Handle = _other.m_Handle;
+    _other.m_Handle = nullptr;
+
+}
+
+DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& _other) noexcept
+{
+    m_Handle = _other.m_Handle;
+    _other.m_Handle = nullptr;
+
+    return *this;
+}
+
 DescriptorSetLayout::~DescriptorSetLayout()
 {
     if (m_Handle != NULL_HANDLE)

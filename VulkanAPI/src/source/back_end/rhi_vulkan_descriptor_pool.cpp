@@ -1,7 +1,7 @@
 ﻿#include "back_end/rhi_vulkan_descriptor_pool.hpp"
 #include "rhi_vulkan_parser.hpp"
 
-vk::DescriptorPoolSize VK_NP::Backend::RhiToVkDescriptorPoolSize(const PC_CORE::DesciptorPoolSize& _descriptorPoolSize)
+vk::DescriptorPoolSize VK_NP::Backend::RhiToVkDescriptorPoolSize(const PC_CORE::DescriptorPoolSize& _descriptorPoolSize)
 {
     vk::DescriptorPoolSize descriptorPoolSize = {};
     descriptorPoolSize.type = RHIDescriptorTypeToVulkan(_descriptorPoolSize.type);
@@ -10,7 +10,7 @@ vk::DescriptorPoolSize VK_NP::Backend::RhiToVkDescriptorPoolSize(const PC_CORE::
     return descriptorPoolSize;
 }
 
-vk::DescriptorPool VK_NP::Backend::RhiToVkDescriptorPool(vk::Device _device, PC_CORE::DesciptorPoolSize* desciptorPoolSize,
+vk::DescriptorPool VK_NP::Backend::RhiToVkDescriptorPool(vk::Device _device, const PC_CORE::DescriptorPoolSize* desciptorPoolSize,
     uint32_t descriptorCount, uint32_t maxSets)
 {
     std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(static_cast<size_t>(descriptorCount));

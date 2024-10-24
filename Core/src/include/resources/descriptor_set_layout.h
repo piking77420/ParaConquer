@@ -9,11 +9,21 @@ BEGIN_PCCORE
 class DescriptorSetLayout : public PC_CORE::Resource
 {
 public:
+
+    DescriptorSetLayout(DescriptorSetLayout&& _other) noexcept;
+
+    DescriptorSetLayout& operator=(DescriptorSetLayout&& _other) noexcept;
+    
     ~DescriptorSetLayout() override;
 
     DescriptorSetLayout() = default;
 
     DescriptorSetLayout(const std::vector<PC_CORE::DescriptorLayoutBinding>& _descriptorSetLayout);
+
+    inline DescriptorSetLayoutHandle GetHandle() const noexcept
+    {
+        return m_Handle;
+    }
 private:
     PC_CORE::DescriptorSetLayoutHandle m_Handle = nullptr;
 };

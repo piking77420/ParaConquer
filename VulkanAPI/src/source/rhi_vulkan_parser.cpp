@@ -66,24 +66,31 @@ vk::DescriptorType VK_NP::RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _de
 
 vk::ShaderStageFlagBits VK_NP::RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages)
 {
-    // TODO HANDLE ALL SHADER STAGE
+    int result = {};
     for (auto shaderStage : _shaderStages)
     {
         switch (shaderStage)
         {
         case PC_CORE::ShaderStageType::VERTEX:
+            result |= static_cast<int>(vk::ShaderStageFlagBits::eVertex);
             break;
         case PC_CORE::ShaderStageType::FRAGMENT:
+            result |= static_cast<int>(vk::ShaderStageFlagBits::eFragment);
             break;
         case PC_CORE::ShaderStageType::GEOMETRY:
+            result |= static_cast<int>(vk::ShaderStageFlagBits::eGeometry);
             break;
         case PC_CORE::ShaderStageType::TESSELATION:
+            result |= static_cast<int>(vk::ShaderStageFlagBits::eTessellationControl);
             break;
         case PC_CORE::ShaderStageType::COMPUTE:
+            result |= static_cast<int>(vk::ShaderStageFlagBits::eCompute);
             break;
         case PC_CORE::ShaderStageType::COUNT:
             break;
         default: ;
         }
     }
+
+    return static_cast<vk::ShaderStageFlagBits>(result);
 }

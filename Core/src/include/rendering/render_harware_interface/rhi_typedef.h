@@ -8,9 +8,8 @@
 
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 #define ALIGNAS_16 alignas(16)
-
-
 
 BEGIN_PCCORE
 
@@ -51,6 +50,8 @@ using CommandPoolHandle = GPUObjectHandle;
 using GPUBufferHandle = GPUObjectHandle;
 using DescriptorSetLayoutHandle = GPUObjectHandle;
 using DescriptorPoolHandle = GPUObjectHandle;
+using DescriptorSetHandle = GPUObjectHandle;
+
 constexpr GPUBufferHandle NULL_HANDLE = nullptr;
 
 constexpr void* INVALID_HANDLE = nullptr;
@@ -120,7 +121,7 @@ enum class DESCRIPTOR_TYPE
     COUNT
 };
 
-struct DesciptorPoolSize
+struct DescriptorPoolSize
 {
     DESCRIPTOR_TYPE type;
     uint32_t count;
@@ -265,9 +266,42 @@ enum class RHIFormat
 #pragma endregion Shader
 
 
+#pragma region DescriptorInfo
+
+struct DescriptorBufferInfo
+    {
+        GPUBufferHandle buffer;
+        uint32_t offset;
+        uint32_t range;
+    };
+
+struct DescriptorImageInfo
+{
+    
+};
+
+struct DescriptorTexelBufferViewInfo
+{
+    
+};
+
+#pragma endregion DescriptorInfo
+
+    struct DescriptorWrite
+    {
+        DescriptorSetHandle dstDescriptorSetHandle = nullptr;
+        uint32_t dstBinding = 0;
+        uint32_t dstArrayIndex = 0;
+        DESCRIPTOR_TYPE descriptorType;
+        uint32_t descriptorCount = 1;
+        
+        DescriptorBufferInfo* descriptorBufferInfo = nullptr;
+        DescriptorImageInfo* descriptorImageInfo = nullptr; 
+        DescriptorTexelBufferViewInfo* descriptorTexelBufferViewInfo = nullptr;
+    };
+
 END_PCCORE
 
-#define CastToObject(type, handle) type(reinterpret_cast<typename type::CType>(handle))
 
 #define GLOBAL_DESCRIPTOR 0
 #define INSTANCE_DESCRIPTOR 1

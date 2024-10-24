@@ -291,7 +291,7 @@ void VK_NP::VulkanApp::DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLa
     Backend::DestroyDescriptorSetLayout(m_VulkanContext.device, CastObjectToVkObject<vk::DescriptorSetLayout>(_descriptorSetLayoutHandle));
 }
 
-PC_CORE::DescriptorPoolHandle VK_NP::VulkanApp::CreateDescriptorPoolHandle(PC_CORE::DesciptorPoolSize* desciptorPoolSize, uint32_t descriptorCount,
+PC_CORE::DescriptorPoolHandle VK_NP::VulkanApp::CreateDescriptorPool(const PC_CORE::DescriptorPoolSize* desciptorPoolSize, uint32_t descriptorCount,
     uint32_t maxSets)
 {
     vk::DescriptorPool descriptorPool = Backend::RhiToVkDescriptorPool(m_VulkanContext.device, desciptorPoolSize, descriptorCount, maxSets);
@@ -303,6 +303,23 @@ void VK_NP::VulkanApp::DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _desc
     vk::DescriptorPool descriptorPool = CastObjectToVkObject<vk::DescriptorPool>(_descriptorPoolHandle);
     Backend::DestroyDescriptorPool(m_VulkanContext.device, descriptorPool);
 }
+
+void VK_NP::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+    PC_CORE::DescriptorPoolHandle _descriptorPoolHandle, PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
+{
+    std::vector<vk::DescriptorSetLayout> layouts(_descriptorSetCount, CastObjectToVkObject<vk::DescriptorSetLayout>(_descriptorSetLayoutHandle));
+    
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo{};
+    descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
+    descriptorSetAllocateInfo.pNext = nullptr;
+    descriptorSetAllocateInfo.descriptorPool = CastObjectToVkObject<vk::DescriptorPool>(_descriptorPoolHandle);
+    descriptorSetAllocateInfo.pSetLayouts = layouts.data();
+
+    // DescriptorSet shouldbe 8 byte long
+    
+    VK_CALL(m_VulkanContext.device.allocateDescriptorSets(&descriptorSetAllocateInfo, CastObjectToVkObject<vk::DescriptorSet*>(descriptorSets)));
+}
+
 #pragma endregion DescriptorSetLayout
 
 

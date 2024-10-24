@@ -18,12 +18,15 @@ using namespace PC_CORE;
 void App::Init()
 {
     PC_LOG("App Init")
+    // Can init without any depedancies
     instance = this;
     CoreIo::Init();
     window = new Window("Para Conquer Editor");
+    renderer.InitRHiAndObject(GraphicAPI::VULKAN, window);
+
+    // Need other init in order to init
     ResourceManager::InitPath();
-    
-    renderer.Init(GraphicAPI::VULKAN, window);
+    renderer.InitRenderResources();
     World::world = &world;
     Time::Init();
     

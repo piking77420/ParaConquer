@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "command_buffer.h"
+#include "descriptor_set.hpp"
 #include "rhi_typedef.h"
 #include "resources/descriptor_set_layout.h"
 
@@ -179,12 +180,18 @@ BEGIN_PCCORE
             
         }
 
-        virtual PC_CORE_API DescriptorPoolHandle CreateDescriptorPoolHandle(DesciptorPoolSize* desciptorPoolSize, uint32_t descriptorCount, uint32_t maxSets)
+        virtual PC_CORE_API DescriptorPoolHandle CreateDescriptorPool(const DescriptorPoolSize* desciptorPoolSize, uint32_t descriptorCount, uint32_t maxSets)
         {
             return nullptr;
         }
 
         virtual PC_CORE_API void DestroyDescriptorPool(DescriptorPoolHandle _descriptorPoolHandle)
+        {
+            
+        }
+
+        virtual PC_CORE_API void AllocDescriptorSet(DescriptorSet* descriptorSets ,uint32_t _descriptorSetCount,
+            DescriptorPoolHandle _descriptorPoolHandle, DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
         {
             
         }

@@ -91,15 +91,19 @@ namespace VK_NP
 
 #pragma region DescriptorSetLayout
 
-		PC_CORE::DescriptorSetLayoutHandle CreateDescriptorSetLayout(const std::vector<PC_CORE::DescriptorLayoutBinding>& _descriptorSetLayouts) override;
+		VULKAN_API PC_CORE::DescriptorSetLayoutHandle CreateDescriptorSetLayout(const std::vector<PC_CORE::DescriptorLayoutBinding>& _descriptorSetLayouts) override;
 		
-		void DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLayoutHandle& _descriptorSetLayoutHandle) override;
+		VULKAN_API void DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLayoutHandle& _descriptorSetLayoutHandle) override;
 
-		PC_CORE::DescriptorPoolHandle CreateDescriptorPoolHandle(PC_CORE::DesciptorPoolSize* desciptorPoolSize,
+		VULKAN_API PC_CORE::DescriptorPoolHandle CreateDescriptorPool(const PC_CORE::DescriptorPoolSize* desciptorPoolSize,
 			uint32_t descriptorCount, uint32_t maxSets) override;
 		
-		void DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle) override;
-		
+		VULKAN_API void DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle) override;
+
+		VULKAN_API void AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+			PC_CORE::DescriptorPoolHandle _descriptorPoolHandle,
+			PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle) override;
+
 #pragma endregion DescriptorSetLayout
 	private:
 		VulkanContext m_VulkanContext;

@@ -57,9 +57,9 @@ void Window::HandleResize()
             glfwGetFramebufferSize(m_Window, &width, &height);
             glfwWaitEvents();
         }
-        RHI::GetInstance()->WaitDevice();
+        RHI::GetInstance().WaitDevice();
         m_WindowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-        RHI::GetInstance()->RecreateSwapChain(m_Window, m_WindowSize.x, m_WindowSize.y);
+        RHI::GetInstance().RecreateSwapChain(m_Window, m_WindowSize.x, m_WindowSize.y);
         onResize = false;
     }
 }

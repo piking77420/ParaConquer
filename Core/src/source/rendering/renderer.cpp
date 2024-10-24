@@ -1,6 +1,7 @@
 ﻿#include "rendering/renderer.hpp"
 
 #include "io/window.hpp"
+#include "rendering/render_harware_interface/descriptor_set.hpp"
 #include "world/transform.hpp"
 #include "rendering/render_harware_interface/vertex.hpp"
 #include "resources/resource_manager.hpp"
@@ -14,22 +15,7 @@
 using namespace PC_CORE;
 
 
-void Renderer::Init(GraphicAPI _graphicAPI, Window* _window)
-{
-    InitRhi(_graphicAPI, _window);
-    InitCommandPools();
-    InitShader();
-    InitBuffer();
 
-
-    const CommandBufferCreateInfo commandBufferCreateInfo =
-    {
-        .commandBufferPtr = m_SwapChainCommandBuffers.data(),
-        .commandBufferCount = static_cast<uint32_t>(m_SwapChainCommandBuffers.size()),
-        .commandBufferlevel = CommandBufferlevel::PRIMARY
-    };
-    m_SwapChainCommandPool.AllocCommandBuffer(commandBufferCreateInfo);
-}
 
 void Renderer::Destroy()
 {
@@ -69,8 +55,14 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
 
     m_MainShader->Bind(m_CommandBuffer->handle);
 
-    Tbx::Matrix4x4f modelMatrix = Tbx::Matrix4x4f::Identity();
-    m_MainShader->PushVector3(m_CommandBuffer->handle, "PushConstants", &modelMatrix);
+    float time = glfwGetTime();
+    float x = std::cos(time);
+    float y = std::sin(time);
+    float z = std::cos(time);
+    
+    Tbx::Matrix4x4f modelMatrix;
+    Tbx::Trs3D({}, {x,y,z}, {1,1,1}, &modelMatrix);
+    m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelData", modelMatrix);
 
 
     m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0, 1);
@@ -125,7 +117,7 @@ void Renderer::RenderLog(LogType _logType, const char* _message)
     }
 }
 
-void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
+void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
 {
     Windowtpr = _window;
 
@@ -152,6 +144,8 @@ void Renderer::InitRhi(GraphicAPI _graphicAPI, Window* _window)
     default:
         break;
     }
+
+    InitCommandPools();
 }
 
 void Renderer::InitShader()
@@ -189,6 +183,8 @@ void Renderer::InitBuffer()
     };
     indexBuffer = IndexBuffer(&m_TransfertPool, indices);
 
+    m_SceneBufferUniforms.resize(MAX_FRAMES_IN_FLIGHT);
+    
     for (auto&& uniform : m_SceneBufferUniforms)
         uniform = UniformBuffer(&m_TransfertPool, sizeof(sceneBufferGPU));
 }
@@ -210,6 +206,13 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
     m_SceneBufferUniforms[currentFrame].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
 }
 
+void Renderer::InitRenderResources()
+{
+    InitShader();
+    InitBuffer();
+    InitDescriptors();
+}
+
 void Renderer::InitCommandPools()
 {
     CommandPoolCreateInfo commandPoolCreateInfo =
@@ -221,4 +224,38 @@ void Renderer::InitCommandPools()
 
     commandPoolCreateInfo.queueType = QueuType::TRANSFERT;
     m_TransfertPool = CommandPool(commandPoolCreateInfo);
+
+    const CommandBufferCreateInfo commandBufferCreateInfo =
+    {
+        .commandBufferPtr = m_SwapChainCommandBuffers.data(),
+        .commandBufferCount = static_cast<uint32_t>(m_SwapChainCommandBuffers.size()),
+        .commandBufferlevel = CommandBufferlevel::PRIMARY
+    };
+    m_SwapChainCommandPool.AllocCommandBuffer(commandBufferCreateInfo);
+}
+
+void Renderer::InitDescriptors()
+{
+   
+    const std::vector<PC_CORE::DescriptorLayoutBinding> descriptor_layout_bindings =
+        {
+            {
+                .binding = 0,
+                .descriptorCount = 1,
+                .descriptorType = PC_CORE::DESCRIPTOR_TYPE::UNIFORM_BUFFER,
+                .shaderStages = {PC_CORE::ShaderStageType::VERTEX},
+                .pImmutableSanpler = nullptr,
+            }
+        };
+    descriptorSetLayout = DescriptorSetLayout(descriptor_layout_bindings);
+
+
+    const DescriptorPoolSize descriptorPoolSize =
+        {
+        .type = PC_CORE::DESCRIPTOR_TYPE::UNIFORM_BUFFER,
+        .count = 1,
+        };
+    descriptorPool = DescriptorPool(&descriptorPoolSize, 1, MAX_FRAMES_IN_FLIGHT);
+
+  
 }
