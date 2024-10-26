@@ -4,7 +4,7 @@
 
 BEGIN_PCCORE
 
-class UniformBuffer : private GPUBuffer
+class UniformBuffer : GPUBuffer
 {
 public:
 
@@ -12,7 +12,14 @@ public:
 
     UniformBuffer& operator=(UniformBuffer&& _other) noexcept;
 
+    inline size_t GetSize() const noexcept
+    {
+        return size;
+    }
+
     void Update(size_t _size, size_t _offset, const void* _data);
+
+    DescriptorBufferInfo AsDescriptorBufferInfo(uint32_t _offset) const;
    
     UniformBuffer(CommandPool* _commandPool, size_t _size);
 

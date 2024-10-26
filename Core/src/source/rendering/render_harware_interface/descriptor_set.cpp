@@ -12,7 +12,3 @@ PC_CORE::DescriptorSet& PC_CORE::DescriptorSet::operator=(DescriptorSet&& _other
     _other.m_Handle = nullptr;
 }
 
-void PC_CORE::DescriptorSet::Free()
-{
-    
-}

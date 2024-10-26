@@ -287,11 +287,11 @@ struct DescriptorTexelBufferViewInfo
 
 #pragma endregion DescriptorInfo
 
-    struct DescriptorWrite
+    struct DescriptorWriteSet
     {
         DescriptorSetHandle dstDescriptorSetHandle = nullptr;
         uint32_t dstBinding = 0;
-        uint32_t dstArrayIndex = 0;
+        uint32_t dstArrayElement = 0;
         DESCRIPTOR_TYPE descriptorType;
         uint32_t descriptorCount = 1;
         

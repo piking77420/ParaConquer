@@ -33,6 +33,11 @@ void UniformBuffer::Update(size_t _size, size_t _offset, const void* _data)
     memcpy(static_cast<uint8_t*>(m_MapData) + _offset, _data, _size);
 }
 
+DescriptorBufferInfo UniformBuffer::AsDescriptorBufferInfo(uint32_t _offset) const
+{
+    return {.buffer = handleId, .offset = _offset, .range = static_cast<uint32_t>(size)};
+}
+
 UniformBuffer::UniformBuffer(CommandPool* _commandPool, size_t _size)
 {
     size = _size;

@@ -320,6 +320,13 @@ void VK_NP::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets
     VK_CALL(m_VulkanContext.device.allocateDescriptorSets(&descriptorSetAllocateInfo, CastObjectToVkObject<vk::DescriptorSet*>(descriptorSets)));
 }
 
+void VK_NP::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount, PC_CORE::DescriptorWriteSet* _descriptorWrite)
+{
+
+    
+    m_VulkanContext.device.updateDescriptorSets()
+}
+
 #pragma endregion DescriptorSetLayout
 
 

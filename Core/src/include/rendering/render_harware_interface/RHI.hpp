@@ -195,6 +195,11 @@ BEGIN_PCCORE
         {
             
         }
+
+        virtual PC_CORE_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount ,DescriptorWriteSet* _descriptorWrite)
+        {
+            
+        }
         
 #pragma endregion Descriptor
 

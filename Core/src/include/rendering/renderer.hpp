@@ -67,6 +67,8 @@ private:
 
     DescriptorPool descriptorPool;
 
+    std::vector<DescriptorSet> m_DescriptorSets;
+
 
     PC_CORE_API void InitCommandPools();
 

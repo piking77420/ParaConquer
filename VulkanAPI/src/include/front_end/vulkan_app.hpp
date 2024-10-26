@@ -104,6 +104,8 @@ namespace VK_NP
 			PC_CORE::DescriptorPoolHandle _descriptorPoolHandle,
 			PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle) override;
 
+		VULKAN_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount, PC_CORE::DescriptorWriteSet* _descriptorWrite) override;
+
 #pragma endregion DescriptorSetLayout
 	private:
 		VulkanContext m_VulkanContext;

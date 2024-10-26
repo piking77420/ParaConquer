@@ -19,7 +19,7 @@ PC_CORE::DescriptorPool& PC_CORE::DescriptorPool::operator=(DescriptorPool&& _ot
 void PC_CORE::DescriptorPool::AllocDescriptorSet(DescriptorSet* descriptorSet, uint32_t descriptorSetCount,
     const DescriptorSetLayout& descriptorSetLayoutayout)
 {
-    
+    RHI::GetInstance().AllocDescriptorSet(descriptorSet,descriptorSetCount, m_Handle, descriptorSetLayoutayout.GetHandle());
 }
 
 PC_CORE::DescriptorPool::DescriptorPool(const DescriptorPoolSize* desciptorPoolSize, uint32_t descriptorCount,

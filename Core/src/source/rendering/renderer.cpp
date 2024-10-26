@@ -55,7 +55,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
 
     m_MainShader->Bind(m_CommandBuffer->handle);
 
-    float time = glfwGetTime();
+    float time = static_cast<float>(glfwGetTime());
     float x = std::cos(time);
     float y = std::sin(time);
     float z = std::cos(time);
@@ -236,8 +236,7 @@ void Renderer::InitCommandPools()
 
 void Renderer::InitDescriptors()
 {
-   
-    const std::vector<PC_CORE::DescriptorLayoutBinding> descriptor_layout_bindings =
+    const std::vector<PC_CORE::DescriptorLayoutBinding> descriptorLayoutBindings =
         {
             {
                 .binding = 0,
@@ -247,7 +246,7 @@ void Renderer::InitDescriptors()
                 .pImmutableSanpler = nullptr,
             }
         };
-    descriptorSetLayout = DescriptorSetLayout(descriptor_layout_bindings);
+    descriptorSetLayout = DescriptorSetLayout(descriptorLayoutBindings);
 
 
     const DescriptorPoolSize descriptorPoolSize =
@@ -257,5 +256,27 @@ void Renderer::InitDescriptors()
         };
     descriptorPool = DescriptorPool(&descriptorPoolSize, 1, MAX_FRAMES_IN_FLIGHT);
 
-  
+    m_DescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    descriptorPool.AllocDescriptorSet(m_DescriptorSets.data(), m_DescriptorSets.size(), descriptorSetLayout);
+
+    // TODO Write Descriptors
+    for (size_t i = 0 ; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        constexpr size_t offset = 0;
+        DescriptorBufferInfo descriptorBufferInfo = m_SceneBufferUniforms[i].AsDescriptorBufferInfo(offset);
+
+        DescriptorWriteSet descriptorWrite =
+            {
+            .dstDescriptorSetHandle = m_DescriptorSets[i].handle,
+            .dstBinding = 0,
+            .dstArrayElement = 0,
+            .descriptorType = DESCRIPTOR_TYPE::UNIFORM_BUFFER,
+            .descriptorCount = 1,
+            
+            .descriptorBufferInfo = &descriptorBufferInfo,
+            .descriptorImageInfo = nullptr,
+            .descriptorTexelBufferViewInfo = nullptr
+            };
+        
+    }
 }

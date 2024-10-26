@@ -15,11 +15,7 @@ public:
     
     ~DescriptorSet() = default;
 
-
-    void Free();
-    
-private:
-    DescriptorSetHandle m_Handle = nullptr;
+    DescriptorSetHandle handle = nullptr;
 };
 
 static_assert(sizeof(DescriptorSet) == 8, "Size of DescriptorSet is not 8 bytes");
