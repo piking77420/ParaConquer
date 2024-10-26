@@ -6,8 +6,10 @@
 #include "front_end/vulkan_harware_wrapper.hpp"
 #include <shaderc/shaderc.hpp>
 
+#include "back_end/rhi_vulkan_descriptorWrite.hpp"
 #include "front_end/vulkan_present_chain.hpp"
 #include "render_harware_interface/vertex.hpp"
+#include "rhi_vulkan_parser.hpp"
 
 
 using namespace VK_NP;
@@ -25,6 +27,11 @@ void VulkanShaderManager::Destroy(VulkanContext* _vulkanContext)
     }
 }
 
+const ShaderInternal& VulkanShaderManager::GetShader(const std::string& _shaderName)
+{
+    return m_InternalShadersMap.at(_shaderName);
+}
+
 
 void VulkanShaderManager::BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName)
 {
@@ -34,7 +41,7 @@ void VulkanShaderManager::BindProgram(vk::CommandBuffer _commandBuffer, const st
         _commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, shaderInternal->pipeline);
 }
 
-VulkanShaderManager::ShaderInternal* VulkanShaderManager::GetShaderInternal(const std::string& _shaderName)
+ShaderInternal* VulkanShaderManager::GetShaderInternal(const std::string& _shaderName)
 {
     if (!m_InternalShadersMap.contains(_shaderName))
     {
@@ -249,7 +256,7 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
 
 
 void VulkanShaderManager::DestroyInternalShaders(vk::Device _device,
-                                                 VulkanShaderManager::ShaderInternal* _shaderInternalBack)
+                                                 ShaderInternal* _shaderInternalBack)
 {
     // destroy each reflected spv module
     for (auto& s : _shaderInternalBack->shaderStages)
@@ -298,6 +305,7 @@ bool VK_NP::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::
         shaderStagesCreateInfos, shaderInternalBack.pipelineLayout,
         &shaderInternalBack.pipeline);
 
+    shaderInternalBack.pipelineBindPoint = RhiPipelineBindPointToVulkan(_programShaderCreatInfo.shaderInfo.shaderProgramPipelineType);
 
     // graphic and layout as been created no need module modules then
     for (auto& module : shaderModules)
@@ -361,10 +369,22 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     std::vector<vk::PushConstantRange> pushConstantRange;
     ReflectPushConstantBlock(_device, _shaderInternal, &pushConstantRange);
 
+    std::vector<vk::DescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
+    RelflectDescriptorLayout(_device, _shaderInternal, &DescriptorSetLayoutBindings);
+
+    vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
+    layoutInfo.bindingCount = static_cast<uint32_t>(DescriptorSetLayoutBindings.size());
+    layoutInfo.pBindings = DescriptorSetLayoutBindings.data();
+
+
+    vk::DescriptorSetLayout descriptorSetLayout;
+    VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, &descriptorSetLayout));
+
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 1; // Optional
+    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // Optional
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
@@ -419,21 +439,28 @@ void VK_NP::VulkanShaderManager::ReflectPushConstantBlock(vk::Device _device, Sh
     }
 }
 
-void VK_NP::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal)
+void VK_NP::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::DescriptorSetLayoutBinding>* _DescriptorSetLayoutBindings)
 {
     // TO DO
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
 
+    size_t currentDescriptorLayout = 0;
     for (size_t i = 0; i < shaderStageInfos.size(); i++)
     {
         const ShaderStageInfo& shaderStageInfo = shaderStageInfos[i];
         const SpvReflectShaderModule* spvReflectBlockVariable = &shaderStageInfo.reflectShaderModule;
 
-        for (size_t j = 0; j < spvReflectBlockVariable->descriptor_binding_count; j++)
+        size_t descriptorBindingCount = static_cast<size_t>(spvReflectBlockVariable->descriptor_binding_count);
+        _DescriptorSetLayoutBindings->resize(_DescriptorSetLayoutBindings->size() + descriptorBindingCount);
+        for (size_t j = 0; j < descriptorBindingCount; j++)
         {
             const SpvReflectDescriptorBinding* descriptorBindingReflected = &spvReflectBlockVariable->descriptor_bindings[i];
+            _DescriptorSetLayoutBindings->at(currentDescriptorLayout).binding = descriptorBindingReflected->binding;
+            _DescriptorSetLayoutBindings->at(currentDescriptorLayout).descriptorType = static_cast<vk::DescriptorType>(descriptorBindingReflected->descriptor_type);
+            _DescriptorSetLayoutBindings->at(currentDescriptorLayout).descriptorCount = 1;
+            _DescriptorSetLayoutBindings->at(currentDescriptorLayout).stageFlags = static_cast<vk::ShaderStageFlags>(spvReflectBlockVariable->shader_stage);
 
-            //descriptorBindingReflected->descriptor_type 
+            currentDescriptorLayout++;
         }
 
     }

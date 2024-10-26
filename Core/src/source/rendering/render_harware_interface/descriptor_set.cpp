@@ -2,13 +2,15 @@
 
 PC_CORE::DescriptorSet::DescriptorSet(DescriptorSet&& _other) noexcept
 {
-    m_Handle = _other.m_Handle;
-    _other.m_Handle = nullptr;
+    handle = _other.handle;
+    _other.handle = nullptr;
 }
 
 PC_CORE::DescriptorSet& PC_CORE::DescriptorSet::operator=(DescriptorSet&& _other) noexcept
 {
-    m_Handle = _other.m_Handle;
-    _other.m_Handle = nullptr;
+    handle = _other.handle;
+    _other.handle = nullptr;
+    
+    return *this;
 }
 

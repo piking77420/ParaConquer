@@ -1,5 +1,6 @@
 #include "front_end/vulkan_app.hpp"
 
+#include "back_end/rhi_vulkan_descriptorWrite.hpp"
 #include "back_end/rhi_vulkan_descriptor_layout.hpp"
 #include "back_end/rhi_vulkan_descriptor_pool.hpp"
 
@@ -219,7 +220,7 @@ void VK_NP::VulkanApp::FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPool
     PC_CORE::CommandBuffer* _commandBuffer, uint32_t _commandBufferCount)
 {
     vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
-    const vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObjectConst<const vk::CommandBuffer*>(_commandBuffer);
+    const vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObject<const vk::CommandBuffer*>(_commandBuffer);
 
     m_VulkanContext.device.freeCommandBuffers(commandPool, _commandBufferCount,
         vkCommandBuffer);
@@ -314,6 +315,8 @@ void VK_NP::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets
     descriptorSetAllocateInfo.pNext = nullptr;
     descriptorSetAllocateInfo.descriptorPool = CastObjectToVkObject<vk::DescriptorPool>(_descriptorPoolHandle);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
+    descriptorSetAllocateInfo.descriptorSetCount = _descriptorSetCount;
+    
 
     // DescriptorSet shouldbe 8 byte long
     
@@ -322,9 +325,23 @@ void VK_NP::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets
 
 void VK_NP::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount, PC_CORE::DescriptorWriteSet* _descriptorWrite)
 {
-
+    vk::DescriptorBufferInfo descriptorBufferInfo {};
+    vk::DescriptorImageInfo descriptorImageInfo {};
+    vk::BufferView bufferView {};
     
-    m_VulkanContext.device.updateDescriptorSets()
+    const vk::WriteDescriptorSet vkDescriptorWrite = Backend::RhiToVulkanWriteDescriptorSet(*_descriptorWrite, &descriptorBufferInfo, &descriptorImageInfo, &bufferView);
+    m_VulkanContext.device.updateDescriptorSets(_descriptorWriteCount, &vkDescriptorWrite, 0, nullptr);
+}
+
+void VK_NP::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer,
+    const std::string& _shaderProgramName, uint32_t _firstSet, uint32_t _descriptorSetCount,
+    const PC_CORE::DescriptorSet* _pDescriptorSets, uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets)
+{
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
+    const vk::DescriptorSet* vkDescriptorSet = CastObjectToVkObject<const vk::DescriptorSet*>(_pDescriptorSets);
+
+    auto shaderInternal = m_vulkanShaderManager.GetShader(_shaderProgramName);
+    commandBuffer.bindDescriptorSets(shaderInternal.pipelineBindPoint, shaderInternal.pipelineLayout, _firstSet, _descriptorSetCount, vkDescriptorSet, _dynamicOffsetCount, _pDynamicOffsets );
 }
 
 #pragma endregion DescriptorSetLayout

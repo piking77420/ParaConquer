@@ -94,3 +94,16 @@ vk::ShaderStageFlagBits VK_NP::RHIShaderStageToVulkan(const std::vector<PC_CORE:
 
     return static_cast<vk::ShaderStageFlagBits>(result);
 }
+
+vk::PipelineBindPoint VK_NP::RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
+{
+    switch (_shaderProgramPipelineType)
+    {
+    case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
+        return vk::PipelineBindPoint::eGraphics;
+    case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+        return vk::PipelineBindPoint::eCompute;
+    case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
+        return vk::PipelineBindPoint::eRayTracingKHR;
+    }
+}

@@ -11,19 +11,20 @@
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/buffer/uniform_buffer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/buffer/uniform_buffer.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/descriptor_set.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/descriptor_set.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/buffer/uniform_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/buffer/uniform_buffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_pool.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_pool.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_set.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_set.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptorWrite.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptorWrite.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_shader_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_shader_manager.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/rhi_vulkan_parser.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/rhi_vulkan_parser.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptorWrite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptorWrite.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,42 +35,25 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="cidr-memory-view://8" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_core.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_enums.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_structs.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/externals/include/OBJ_Loader.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/buffer/vertex_buffer.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/descriptor_layout_binding.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/buffer/vertex_buffer.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/descriptor_layout_binding.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/command_pool.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Core/src/source/rendering/render_harware_interface/descriptor_set.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Core/src/source/resources/descriptor_set_layout.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared/minwindef.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/array" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/functional" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/regex" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/type_traits" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/vector" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/xmemory" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/xstring" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../VulkanSDK/1.3.290.0/Include/vulkan/vulkan_core.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../VulkanSDK/1.3.290.0/Include/vulkan/vulkan_funcs.hpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../VulkanSDK/1.3.290.0/Include/vulkan/vulkan_structs.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/VulkanAPI/src/include/back_end/rhi_vulkan_descriptorWrite.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_shader_manager.hpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/VulkanAPI/src/source/back_end/rhi_vulkan_descriptorWrite.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -381,8 +365,8 @@
       <workItem from="1729693005011" duration="5612000" />
       <workItem from="1729763393650" duration="6127000" />
       <workItem from="1729774821853" duration="5736000" />
-      <workItem from="1729844299616" duration="1839000" />
-      <workItem from="1729848335455" duration="2482000" />
+      <workItem from="1729957979081" duration="187000" />
+      <workItem from="1729962332369" duration="1249000" />
     </task>
     <servers />
   </component>

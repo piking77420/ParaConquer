@@ -42,7 +42,8 @@ public:
     PC_CORE_API void WaitDevice();
 
 private:
-    
+    size_t m_CurrentImage;
+
     CommandPool m_SwapChainCommandPool;
 
     CommandPool m_TransfertPool;
@@ -59,7 +60,7 @@ private:
 
     IndexBuffer indexBuffer;
 
-    std::vector<UniformBuffer> m_SceneBufferUniforms;
+    std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> m_SceneBufferUniforms;
 
     SceneBufferGPU sceneBufferGPU;
 
@@ -67,9 +68,8 @@ private:
 
     DescriptorPool descriptorPool;
 
-    std::vector<DescriptorSet> m_DescriptorSets;
-
-
+    std::array<DescriptorSet, MAX_FRAMES_IN_FLIGHT> m_DescriptorSets;
+    
     PC_CORE_API void InitCommandPools();
 
     PC_CORE_API void InitDescriptors();

@@ -106,6 +106,10 @@ namespace VK_NP
 
 		VULKAN_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount, PC_CORE::DescriptorWriteSet* _descriptorWrite) override;
 
+		VULKAN_API void BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName,
+			uint32_t _firstSet, uint32_t _descriptorSetCount, const PC_CORE::DescriptorSet* _pDescriptorSets,
+			uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets) override;
+
 #pragma endregion DescriptorSetLayout
 	private:
 		VulkanContext m_VulkanContext;

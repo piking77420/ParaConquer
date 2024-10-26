@@ -30,6 +30,7 @@ void Renderer::Destroy()
 
 void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
 {
+    m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
     UpdateUniforms(_renderingContext);
     
     ViewPort viewport =
@@ -62,11 +63,12 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
     
     Tbx::Matrix4x4f modelMatrix;
     Tbx::Trs3D({}, {x,y,z}, {1,1,1}, &modelMatrix);
-    m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelData", modelMatrix);
+    m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", modelMatrix);
 
-
+    RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1, &m_DescriptorSets[m_CurrentImage], 0, nullptr);
     m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0, 1);
     m_CommandBuffer->BindIndexBuffer(indexBuffer);
+
     RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
 }
 
@@ -182,8 +184,6 @@ void Renderer::InitBuffer()
         0, 1, 2, 2, 3, 0
     };
     indexBuffer = IndexBuffer(&m_TransfertPool, indices);
-
-    m_SceneBufferUniforms.resize(MAX_FRAMES_IN_FLIGHT);
     
     for (auto&& uniform : m_SceneBufferUniforms)
         uniform = UniformBuffer(&m_TransfertPool, sizeof(sceneBufferGPU));
@@ -191,8 +191,7 @@ void Renderer::InitBuffer()
 
 void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 {
-    const size_t currentFrame = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
-
+    /*
     sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
                                    _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
                                    _renderingContext.lowLevelCamera.up);
@@ -200,10 +199,19 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
                                                  _renderingContext.lowLevelCamera.aspect,
                                                  _renderingContext.lowLevelCamera.near,
                                                  _renderingContext.lowLevelCamera.far);
+                                                 */
+
+    sceneBufferGPU.view = LookAtRH({ 2,2,2 },
+        {},
+        Tbx::Vector3f::UnitY());
+    sceneBufferGPU.proj = Tbx::PerspectiveMatrix(_renderingContext.lowLevelCamera.fov,
+        _renderingContext.lowLevelCamera.aspect,
+        _renderingContext.lowLevelCamera.near,
+        _renderingContext.lowLevelCamera.far);
 
     sceneBufferGPU.deltatime = _renderingContext.deltaTime;
     sceneBufferGPU.time = _renderingContext.time;
-    m_SceneBufferUniforms[currentFrame].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
+    m_SceneBufferUniforms[m_CurrentImage].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
 }
 
 void Renderer::InitRenderResources()
@@ -256,8 +264,7 @@ void Renderer::InitDescriptors()
         };
     descriptorPool = DescriptorPool(&descriptorPoolSize, 1, MAX_FRAMES_IN_FLIGHT);
 
-    m_DescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    descriptorPool.AllocDescriptorSet(m_DescriptorSets.data(), m_DescriptorSets.size(), descriptorSetLayout);
+    descriptorPool.AllocDescriptorSet(m_DescriptorSets.data(), static_cast<uint32_t>(m_DescriptorSets.size()), descriptorSetLayout);
 
     // TODO Write Descriptors
     for (size_t i = 0 ; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -277,6 +284,7 @@ void Renderer::InitDescriptors()
             .descriptorImageInfo = nullptr,
             .descriptorTexelBufferViewInfo = nullptr
             };
-        
+
+        RHI::GetInstance().UpdateDescriptorSet(1, &descriptorWrite);
     }
 }

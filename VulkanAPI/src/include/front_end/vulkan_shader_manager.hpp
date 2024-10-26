@@ -11,6 +11,34 @@
 
 namespace VK_NP
 {
+    struct ShaderStageInfo
+    {
+        std::string name;
+        PC_CORE::ShaderStageType shaderStage;
+        SpvReflectShaderModule reflectShaderModule;
+    };
+      
+    struct ReflectBlockVariable
+    {
+        vk::ShaderStageFlags stageFlags;
+        std::string name;
+        size_t size;
+        size_t absoluteOffSet;
+            
+        std::vector<ReflectBlockVariable> members;
+    };
+        
+    struct ShaderInternal
+    {
+        std::vector<ShaderStageInfo> shaderStages;
+        std::vector<ReflectBlockVariable> reflectBlockVariables;
+
+        vk::Pipeline pipeline = VK_NULL_HANDLE;
+        vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
+        vk::PipelineBindPoint pipelineBindPoint;  
+    };
+
+    
     class VulkanShaderManager
     {
     public:
@@ -27,34 +55,10 @@ namespace VK_NP
         VULKAN_API void Init(VulkanContext* _vulkanContext);
 
         VULKAN_API void Destroy(VulkanContext* _vulkanContext);
+
+        VULKAN_API const ShaderInternal& GetShader(const std::string& _shaderName);
     
     private:
-        struct ShaderStageInfo
-        {
-            std::string name;
-            PC_CORE::ShaderStageType shaderStage;
-            SpvReflectShaderModule reflectShaderModule;
-        };
-      
-        struct ReflectBlockVariable
-        {
-            vk::ShaderStageFlags stageFlags;
-            std::string name;
-            size_t size;
-            size_t absoluteOffSet;
-            
-            std::vector<ReflectBlockVariable> members;
-        };
-        
-        struct ShaderInternal
-        {
-            std::vector<ShaderStageInfo> shaderStages;
-            std::vector<ReflectBlockVariable> reflectBlockVariables;
-
-            vk::Pipeline pipeline = VK_NULL_HANDLE;
-            vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
-        };
-
         VulkanShaderCompiler m_ShaderCompiler;
         
         std::unordered_map<std::string, ShaderInternal> m_InternalShadersMap;
@@ -73,7 +77,7 @@ namespace VK_NP
 
         void ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange);
 
-        void RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal);
+        void RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::DescriptorSetLayoutBinding>* _DescriptorSetLayoutBindings);
 
         static void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,
         ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags);

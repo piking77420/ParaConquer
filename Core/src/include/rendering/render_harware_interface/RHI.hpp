@@ -16,7 +16,7 @@ BEGIN_PCCORE
     {
     public:
         static RHI& GetInstance();
-        
+
         PC_CORE_API static void MakeInstance(RHI* _rhi);
 
         PC_CORE_API static void DestroyInstance();
@@ -48,7 +48,7 @@ BEGIN_PCCORE
         {
             return false;
         }
-        
+
 
         virtual PC_CORE_API void BindShaderProgram(CommandBufferHandle _commandBuffer,
                                                    const std::string& _shaderProgramName)
@@ -110,19 +110,17 @@ BEGIN_PCCORE
         }
 
         virtual PC_CORE_API GPUBufferHandle BufferData(CommandPool* _commandPool, size_t _size,
-            PC_CORE::GPU_BUFFER_USAGE _usage)
+                                                       PC_CORE::GPU_BUFFER_USAGE _usage)
         {
             return nullptr;
         }
 
         virtual PC_CORE_API void MapData(GPUBufferHandle _gpuBufferHandle, void** _data)
         {
-            
         }
 
         virtual PC_CORE_API void UnMapData(GPUBufferHandle _gpuBufferHandle)
         {
-
         }
 
 
@@ -131,7 +129,8 @@ BEGIN_PCCORE
             return false;
         }
 
-        virtual PC_CORE_API void BindVertexBuffer(CommandBufferHandle _commandBuffer,uint32_t _firstBinding, uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle)
+        virtual PC_CORE_API void BindVertexBuffer(CommandBufferHandle _commandBuffer, uint32_t _firstBinding,
+                                                  uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle)
         {
             return;
         }
@@ -170,37 +169,43 @@ BEGIN_PCCORE
 #pragma endregion DrawFunction
 
 #pragma region Descriptor
-        virtual PC_CORE_API DescriptorSetLayoutHandle CreateDescriptorSetLayout(const std::vector<DescriptorLayoutBinding>& _descriptorSetLayouts)
+        virtual PC_CORE_API DescriptorSetLayoutHandle CreateDescriptorSetLayout(
+            const std::vector<DescriptorLayoutBinding>& _descriptorSetLayouts)
         {
             return nullptr;
         }
 
         virtual PC_CORE_API void DestroyDescriptorSetLayout(const DescriptorSetLayoutHandle& _descriptorSetLayoutHandle)
         {
-            
         }
 
-        virtual PC_CORE_API DescriptorPoolHandle CreateDescriptorPool(const DescriptorPoolSize* desciptorPoolSize, uint32_t descriptorCount, uint32_t maxSets)
+        virtual PC_CORE_API DescriptorPoolHandle CreateDescriptorPool(const DescriptorPoolSize* desciptorPoolSize,
+                                                                      uint32_t descriptorCount, uint32_t maxSets)
         {
             return nullptr;
         }
 
         virtual PC_CORE_API void DestroyDescriptorPool(DescriptorPoolHandle _descriptorPoolHandle)
         {
-            
         }
 
-        virtual PC_CORE_API void AllocDescriptorSet(DescriptorSet* descriptorSets ,uint32_t _descriptorSetCount,
-            DescriptorPoolHandle _descriptorPoolHandle, DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
+        virtual PC_CORE_API void AllocDescriptorSet(DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+                                                    DescriptorPoolHandle _descriptorPoolHandle,
+                                                    DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
+        {
+        }
+
+        virtual PC_CORE_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount,
+                                                     DescriptorWriteSet* _descriptorWrite)
+        {
+        }
+
+        virtual PC_CORE_API void BindDescriptorSet(CommandBufferHandle _commandBuffer,const std::string& _shaderProgramName, uint32_t _firstSet,
+            uint32_t _descriptorSetCount, const DescriptorSet* _pDescriptorSets, uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets)
         {
             
         }
 
-        virtual PC_CORE_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount ,DescriptorWriteSet* _descriptorWrite)
-        {
-            
-        }
-        
 #pragma endregion Descriptor
 
         static PC_CORE_API void RHILog(LogType _logType, const char* _message)
@@ -213,7 +218,6 @@ BEGIN_PCCORE
 
             m_Instance->m_LogCallback(_logType, _message);
         }
-    
 
     protected:
         static RHI* m_Instance;

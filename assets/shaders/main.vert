@@ -9,15 +9,9 @@ layout(location = 2) in vec2 inTextCoords;
 
 layout(location = 0) out vec3 fragColor;
 
-layout(push_constant) uniform ModelData
-{
-    mat4 modelMatrix;
-} modelData;
-
-
 void main()
 {
-    vec4 position = sceneBuffer.proj * sceneBuffer.view * modelData.modelMatrix * vec4(inPosition, 1.0); 
+    vec4 position = sceneBuffer.proj * sceneBuffer.view * modelMatrix.model * vec4(inPosition, 1.0); 
     gl_Position = position;
     fragColor = inNormal;
     

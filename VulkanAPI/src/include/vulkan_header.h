@@ -35,36 +35,38 @@ constexpr bool ENABLE_VALIDATION_LAYERS = false;
 template <typename T, typename OBJ>
 T CastObjectToVkObject(OBJ _handle)
 {
-    
+
+
     if constexpr (std::is_pointer_v<T>)
     {
         using TValue = typename std::remove_pointer<T>::type;
-        return reinterpret_cast<T>(reinterpret_cast<typename TValue::CType*>(_handle));
+        constexpr bool IsConst = std::is_const_v<TValue>;
+
+        if constexpr (IsConst)
+        {
+            return reinterpret_cast<const T>(reinterpret_cast<const typename TValue::CType*>(_handle));
+        }
+        else
+        {
+            return reinterpret_cast<T>(reinterpret_cast<typename TValue::CType*>(_handle));
+        }
     }
     else
     {
-        return reinterpret_cast<typename T::CType>(_handle);
+        constexpr bool IsConst = std::is_const_v<T>;
+
+        if constexpr (IsConst)
+        {
+            return reinterpret_cast<const typename T::CType>(_handle);
+        }
+        else
+        {
+            return reinterpret_cast<typename T::CType>(_handle);
+        }
+
     }
     
 }
-
-template <typename T, typename OBJ>
-const T CastObjectToVkObjectConst(const OBJ _handle)
-{
-    
-    if constexpr (std::is_pointer_v<T>)
-    {
-        using TValue = typename std::remove_pointer<T>::type;
-        return reinterpret_cast<const T>(reinterpret_cast<const typename TValue::CType*>(_handle));
-    }
-    else
-    {
-        return reinterpret_cast<const typename T::CType>(_handle);
-    }
-    
-}
-
-
 
 
 namespace VK_NP

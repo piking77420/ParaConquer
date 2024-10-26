@@ -11,11 +11,11 @@ vk::DescriptorPoolSize VK_NP::Backend::RhiToVkDescriptorPoolSize(const PC_CORE::
 }
 
 vk::DescriptorPool VK_NP::Backend::RhiToVkDescriptorPool(vk::Device _device, const PC_CORE::DescriptorPoolSize* desciptorPoolSize,
-    uint32_t descriptorCount, uint32_t maxSets)
+    uint32_t _descriptorCount, uint32_t _maxSets)
 {
-    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(static_cast<size_t>(descriptorCount));
+    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(static_cast<size_t>(_descriptorCount));
 
-    for (uint32_t i = 0; i < descriptorCount; i++)
+    for (uint32_t i = 0; i < _descriptorCount; i++)
     {
         descriptorPoolSizes[i] = RhiToVkDescriptorPoolSize(desciptorPoolSize[i]);
     }
@@ -25,6 +25,7 @@ vk::DescriptorPool VK_NP::Backend::RhiToVkDescriptorPool(vk::Device _device, con
     descriptorPoolInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo;
     descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
     descriptorPoolInfo.pPoolSizes = descriptorPoolSizes.data();
+    descriptorPoolInfo.maxSets = _maxSets;
     
     VK_CALL(_device.createDescriptorPool(&descriptorPoolInfo, nullptr, &descriptorPool));
 

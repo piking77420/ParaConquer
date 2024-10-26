@@ -65,7 +65,7 @@ void WorldViewWindow::Render()
         .aspect = m_Editor->window->GetAspect(),
         .fov = camera.GetFOV(),
         .near = camera.GetNear(),
-        .far = camera.GetNear(),
+        .far = camera.GetFar(),
         .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
     };
 
