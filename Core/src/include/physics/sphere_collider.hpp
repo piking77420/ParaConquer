@@ -6,7 +6,8 @@
 
 BEGIN_PCCORE
 
-MAKE_ECS_COMPONENT(SphereCollider)
+struct SphereCollider : public Component
+{
 
     uint32_t body_Id = -1;
 

@@ -44,27 +44,27 @@ namespace objl
 			Y = Y_;
 		}
 		// Bool Equals Operator Overload
-		bool operator==(const Vector2& other) const
+		inline bool operator==(const Vector2& other) const
 		{
 			return (this->X == other.X && this->Y == other.Y);
 		}
 		// Bool Not Equals Operator Overload
-		bool operator!=(const Vector2& other) const
+		inline  bool operator!=(const Vector2& other) const
 		{
 			return !(this->X == other.X && this->Y == other.Y);
 		}
 		// Addition Operator Overload
-		Vector2 operator+(const Vector2& right) const
+		inline  Vector2 operator+(const Vector2& right) const
 		{
 			return Vector2(this->X + right.X, this->Y + right.Y);
 		}
 		// Subtraction Operator Overload
-		Vector2 operator-(const Vector2& right) const
+		inline  Vector2 operator-(const Vector2& right) const
 		{
 			return Vector2(this->X - right.X, this->Y - right.Y);
 		}
 		// Float Multiplication Operator Overload
-		Vector2 operator*(const float& other) const
+		inline  Vector2 operator*(const float& other) const
 		{
 			return Vector2(this->X * other, this->Y * other);
 		}
@@ -80,46 +80,46 @@ namespace objl
 	struct Vector3
 	{
 		// Default Constructor
-		Vector3()
+		inline  Vector3()
 		{
 			X = 0.0f;
 			Y = 0.0f;
 			Z = 0.0f;
 		}
 		// Variable Set Constructor
-		Vector3(float X_, float Y_, float Z_)
+		inline  Vector3(float X_, float Y_, float Z_)
 		{
 			X = X_;
 			Y = Y_;
 			Z = Z_;
 		}
 		// Bool Equals Operator Overload
-		bool operator==(const Vector3& other) const
+		inline bool operator==(const Vector3& other) const
 		{
 			return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
 		}
 		// Bool Not Equals Operator Overload
-		bool operator!=(const Vector3& other) const
+		inline bool operator!=(const Vector3& other) const
 		{
 			return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
 		}
 		// Addition Operator Overload
-		Vector3 operator+(const Vector3& right) const
+		inline Vector3 operator+(const Vector3& right) const
 		{
 			return Vector3(this->X + right.X, this->Y + right.Y, this->Z + right.Z);
 		}
 		// Subtraction Operator Overload
-		Vector3 operator-(const Vector3& right) const
+		inline Vector3 operator-(const Vector3& right) const
 		{
 			return Vector3(this->X - right.X, this->Y - right.Y, this->Z - right.Z);
 		}
 		// Float Multiplication Operator Overload
-		Vector3 operator*(const float& other) const
+		inline Vector3 operator*(const float& other) const
 		{
 			return Vector3(this->X * other, this->Y * other, this->Z * other);
 		}
 		// Float Division Operator Overload
-		Vector3 operator/(const float& other) const
+		inline Vector3 operator/(const float& other) const
 		{
 			return Vector3(this->X / other, this->Y / other, this->Z / other);
 		}
@@ -148,7 +148,7 @@ namespace objl
 
 	struct Material
 	{
-		Material()
+		inline Material()
 		{
 			name;
 			Ns = 0.0f;
@@ -194,12 +194,12 @@ namespace objl
 	struct Mesh
 	{
 		// Default Constructor
-		Mesh()
+		inline Mesh()
 		{
 
 		}
 		// Variable Set Constructor
-		Mesh(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices)
+		inline Mesh(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices)
 		{
 			Vertices = _Vertices;
 			Indices = _Indices;
@@ -222,7 +222,7 @@ namespace objl
 	namespace math
 	{
 		// Vector3 Cross Product
-		Vector3 CrossV3(const Vector3 a, const Vector3 b)
+		inline Vector3 CrossV3(const Vector3 a, const Vector3 b)
 		{
 			return Vector3(a.Y * b.Z - a.Z * b.Y,
 				a.Z * b.X - a.X * b.Z,
@@ -230,19 +230,19 @@ namespace objl
 		}
 
 		// Vector3 Magnitude Calculation
-		float MagnitudeV3(const Vector3 in)
+		inline float MagnitudeV3(const Vector3 in)
 		{
 			return (sqrtf(powf(in.X, 2) + powf(in.Y, 2) + powf(in.Z, 2)));
 		}
 
 		// Vector3 DotProduct
-		float DotV3(const Vector3 a, const Vector3 b)
+		inline float DotV3(const Vector3 a, const Vector3 b)
 		{
 			return (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z);
 		}
 
 		// Angle between 2 Vector3 Objects
-		float AngleBetweenV3(const Vector3 a, const Vector3 b)
+		inline float AngleBetweenV3(const Vector3 a, const Vector3 b)
 		{
 			float angle = DotV3(a, b);
 			angle /= (MagnitudeV3(a) * MagnitudeV3(b));
@@ -250,7 +250,7 @@ namespace objl
 		}
 
 		// Projection Calculation of a onto b
-		Vector3 ProjV3(const Vector3 a, const Vector3 b)
+		inline Vector3 ProjV3(const Vector3 a, const Vector3 b)
 		{
 			Vector3 bn = b / MagnitudeV3(b);
 			return bn * DotV3(a, bn);
@@ -264,13 +264,13 @@ namespace objl
 	namespace algorithm
 	{
 		// Vector3 Multiplication Opertor Overload
-		Vector3 operator*(const float& left, const Vector3& right)
+		inline Vector3 operator*(const float& left, const Vector3& right)
 		{
 			return Vector3(right.X * left, right.Y * left, right.Z * left);
 		}
 
 		// A test to see if P1 is on the same side as P2 of a line segment ab
-		bool SameSide(Vector3 p1, Vector3 p2, Vector3 a, Vector3 b)
+		inline bool SameSide(Vector3 p1, Vector3 p2, Vector3 a, Vector3 b)
 		{
 			Vector3 cp1 = math::CrossV3(b - a, p1 - a);
 			Vector3 cp2 = math::CrossV3(b - a, p2 - a);
@@ -282,7 +282,7 @@ namespace objl
 		}
 
 		// Generate a cross produect normal for a triangle
-		Vector3 GenTriNormal(Vector3 t1, Vector3 t2, Vector3 t3)
+		inline Vector3 GenTriNormal(Vector3 t1, Vector3 t2, Vector3 t3)
 		{
 			Vector3 u = t2 - t1;
 			Vector3 v = t3 - t1;
@@ -293,7 +293,7 @@ namespace objl
 		}
 
 		// Check to see if a Vector3 Point is within a 3 Vector3 Triangle
-		bool inTriangle(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3)
+		inline bool inTriangle(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3)
 		{
 			// Test to see if it is within an infinite prism that the triangle outlines.
 			bool within_tri_prisim = SameSide(point, tri1, tri2, tri3) && SameSide(point, tri2, tri1, tri3)
@@ -413,11 +413,11 @@ namespace objl
 	{
 	public:
 		// Default Constructor
-		Loader()
+		inline Loader()
 		{
 
 		}
-		~Loader()
+		inline ~Loader()
 		{
 			LoadedMeshes.clear();
 		}
@@ -428,7 +428,7 @@ namespace objl
 		//
 		// If the file is unable to be found
 		// or unable to be loaded return false
-		bool LoadFile(std::string Path)
+		inline bool LoadFile(std::string Path)
 		{
 			// If the file is not an .obj file return false
 			if (Path.substr(Path.size() - 4, 4) != ".obj")
@@ -724,7 +724,7 @@ namespace objl
 	private:
 		// Generate vertices from a list of positions, 
 		//	tcoords, normals and a face line
-		void GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
+		inline void GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
 			const std::vector<Vector3>& iPositions,
 			const std::vector<Vector2>& iTCoords,
 			const std::vector<Vector3>& iNormals,

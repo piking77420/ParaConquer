@@ -30,6 +30,8 @@ public:
 
     void InitMaterial();
 
+    void RotateCube();
+
     std::vector<EditorWindow*> m_EditorWindows;
     
     PC_CORE::Entity* m_Selected = nullptr;

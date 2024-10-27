@@ -7,7 +7,8 @@
 
 BEGIN_PCCORE
 
-MAKE_ECS_COMPONENT(BoxCollider)
+struct BoxCollider : public Component
+{
     uint32_t body_Id = -1;
 
     bool draw = false;

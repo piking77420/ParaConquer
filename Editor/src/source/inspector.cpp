@@ -25,48 +25,49 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 void Inspector::Show()
 {
     PC_CORE::Scene* scene = &m_Editor->world.scene;
-
     PC_CORE::Entity* selected = m_Editor->m_Selected;
-
-    /*
+    
+    
     std::string* string = &selected->name;
-    ImGui::InputText(" ", string->data(), string->size());
-    ImGui::PushID(string->c_str()); 
+    ImGui::PushID("EntityNameInput");
+    ImGui::InputText("##EntityName", string->data(), string->size());
+    ImGui::PopID();
 
     for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
     {
         const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;
 
         if (!scene->HasComponent(selected->ecsId, currentKeyComponent))
-            continue; 
+            continue;
 
-        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->Get(selected->ecsId, currentKeyComponent));
-        auto relfectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
+        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->GetComponent(selected->ecsId, currentKeyComponent));
+        auto reflectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
 
         const char* componentName = m_ReflectedTypes[i]->name.c_str();
-        // Component
         ImGui::Text(componentName);
         ImGui::Spacing();
-    
-        ImGui::PushID(i); 
-        for (PC_CORE::Members& m : relfectedMember.members)
+
+        ImGui::PushID(static_cast<int>(currentKeyComponent));
+
+        for (size_t j = 0; j < reflectedMember.members.size(); j++)
         {
-            ImGui::PushID((relfectedMember.name).c_str()); 
-            ShowReflectedType(component, m); 
-            ImGui::PopID(); 
+            PC_CORE::Members& m = reflectedMember.members[j];
+            ImGui::PushID(static_cast<int>(currentKeyComponent + j));
+            ShowReflectedType(component, m);
+            ImGui::PopID();
             ImGui::Spacing();
         }
-        DeleteButton(m_Editor->m_Selected, m_ReflectedTypes[i]->HashKey);
-        ImGui::PopID(); // Pop the ID for the loop index
-    }
 
-    ImGui::PopID(); 
- */
+        DeleteButton(m_Editor->m_Selected, m_ReflectedTypes[i]->HashKey);
+
+        ImGui::PopID(); 
+    }
+    
 }
 
 void Inspector::OnInput()
 {
-    /*
+    
     if (ButtonCenteredOnLine("Add Component"))
     {
         ImGui::OpenPopup("Components");
@@ -82,20 +83,20 @@ void Inspector::OnInput()
         {
             if (ImGui::Selectable(m_ReflectedType->name.c_str()))
             {
-                if (PC_CORE::World::world != nullptr)
+                if (PC_CORE::World::currentWorld != nullptr)
                 {
-                    PC_CORE::World::world->scene.AddComponent(m_Editor->m_Selected->ecsId, m_ReflectedType->HashKey);
+                    PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected->ecsId, m_ReflectedType->HashKey);
                 }
             } 
         }
             
         ImGui::EndPopup();
     }
-    */
+    
 }
 void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 {
-    /*
+    
     void* dataPosition = static_cast<char*>(begin) + _members.offset;
     const char* membersName = _members.membersName.c_str();
     const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_members.typeKey);
@@ -176,17 +177,17 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
         }
         
     }
-    */
+    
 }
 
     
 void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
 {
-    /*
+    
     if (ImGui::SmallButton("Delete Component"))
     {
         m_Editor->world.scene.RemoveComponent(_entity->ecsId, _componentId);
-    }*/
+    }
 }
 
 void Inspector::PrintArray(void* begin, const PC_CORE::Members& _members)

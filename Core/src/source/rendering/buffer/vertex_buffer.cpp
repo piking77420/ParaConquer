@@ -29,11 +29,11 @@ PC_CORE::VertexBuffer& PC_CORE::VertexBuffer::operator=(VertexBuffer&& _other) n
     return *this;
 }
 
-PC_CORE::VertexBuffer::VertexBuffer(CommandPool* _transfertPool, const std::vector<Vertex>& _vertices)
+PC_CORE::VertexBuffer::VertexBuffer( const std::vector<Vertex>& _vertices)
 {
-    m_VertexCount = _vertices.size();
+    m_VertexCount = static_cast<uint32_t>(_vertices.size());
     size = m_VertexCount * sizeof(Vertex);
-    handleId = RHI::GetInstance().BufferData(_transfertPool, size, _vertices.data(), BUFFER_USAGE_VERTEX);
+    handleId = RHI::GetInstance().BufferData(size, _vertices.data(), BUFFER_USAGE_VERTEX);
 }
 
 

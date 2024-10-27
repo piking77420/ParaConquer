@@ -26,11 +26,11 @@ PC_CORE::IndexBuffer& PC_CORE::IndexBuffer::operator=(IndexBuffer&& _other) noex
     return *this;
 }
 
-PC_CORE::IndexBuffer::IndexBuffer(CommandPool* _transfertPool, const std::vector<uint32_t>& _indicies)
+PC_CORE::IndexBuffer::IndexBuffer(const std::vector<uint32_t>& _indicies)
 {
-    m_IndiciesCount = _indicies.size();
+    m_IndiciesCount = static_cast<uint32_t>(_indicies.size());
     size = m_IndiciesCount * sizeof(uint32_t);
-    handleId = RHI::GetInstance().BufferData(_transfertPool, size, _indicies.data(), BUFFER_USAGE_INDEX);
+    handleId = RHI::GetInstance().BufferData(size, _indicies.data(), BUFFER_USAGE_INDEX);
 }
 
 PC_CORE::IndexBuffer::IndexBuffer()

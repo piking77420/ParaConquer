@@ -69,5 +69,5 @@ void WorldViewWindow::Render()
         .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
     };
 
-    m_Editor->renderer.Render(renderingContext);
+    m_Editor->renderer.Render(renderingContext, m_Editor->world);
 }

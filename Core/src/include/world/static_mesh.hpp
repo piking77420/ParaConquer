@@ -6,7 +6,8 @@
 #include "ecs/ecs_front.h"
 
 BEGIN_PCCORE
-MAKE_ECS_COMPONENT(StaticMesh)
+struct StaticMesh : public Component
+{
 
     Mesh* mesh = nullptr;
 

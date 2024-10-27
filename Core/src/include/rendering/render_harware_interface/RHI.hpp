@@ -103,13 +103,13 @@ BEGIN_PCCORE
 
 #pragma region Buffer
 
-        virtual PC_CORE_API GPUBufferHandle BufferData(CommandPool* _commandPool, size_t _size, const void* _data,
+        virtual PC_CORE_API GPUBufferHandle BufferData(size_t _size, const void* _data,
                                                        PC_CORE::GPU_BUFFER_USAGE _usage)
         {
             return nullptr;
         }
 
-        virtual PC_CORE_API GPUBufferHandle BufferData(CommandPool* _commandPool, size_t _size,
+        virtual PC_CORE_API GPUBufferHandle BufferData(size_t _size,
                                                        PC_CORE::GPU_BUFFER_USAGE _usage)
         {
             return nullptr;

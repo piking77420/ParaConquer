@@ -46,9 +46,9 @@ namespace VK_NP
 
 #pragma endregion Shader
 		
-		VULKAN_API PC_CORE::GPUBufferHandle BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
+		VULKAN_API PC_CORE::GPUBufferHandle BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
 
-		VULKAN_API PC_CORE::GPUBufferHandle BufferData(PC_CORE::CommandPool* _commandPool, size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage) override;
+		VULKAN_API PC_CORE::GPUBufferHandle BufferData(size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage) override;
 
 		VULKAN_API void MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void** _data) override;
 
@@ -130,6 +130,8 @@ namespace VK_NP
 		std::stack<std::function<void(VulkanContext*)>> m_DeleteFunction;
 
 		void InitBaseObject();
+
+		void DestroyBaseObject();
 	};
 
 

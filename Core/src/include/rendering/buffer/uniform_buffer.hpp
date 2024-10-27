@@ -21,7 +21,7 @@ public:
 
     DescriptorBufferInfo AsDescriptorBufferInfo(uint32_t _offset) const;
    
-    UniformBuffer(CommandPool* _commandPool, size_t _size);
+    UniformBuffer(size_t _size);
 
     UniformBuffer();
 

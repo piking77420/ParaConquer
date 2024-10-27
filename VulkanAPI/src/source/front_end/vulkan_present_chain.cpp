@@ -164,7 +164,8 @@ vk::SurfaceFormatKHR VK_NP::VulkanPresentChain::ChooseSwapSurfaceFormat(
 {
     for (const auto& availableFormat : _availableFormats)
     {
-        if (availableFormat.format == vk::Format::eR8G8B8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eVkColorspaceSrgbNonlinear)
+        // eR8G8B8Unorm for imgui
+        if (availableFormat.format == vk::Format::eR8G8B8Unorm && availableFormat.colorSpace == vk::ColorSpaceKHR::eVkColorspaceSrgbNonlinear)
         {
             return availableFormat;
         }

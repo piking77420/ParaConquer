@@ -44,7 +44,7 @@ Entity* Scene::GetEntity(EntityId _id)
     return &*std::ranges::find_if(m_Entities, [_id](const Entity& e){return e.ecsId == _id;});
 }
 
-void* Scene::Get(EntityId _entityId, uint32_t _componentKey)
+void* Scene::GetComponent(EntityId _entityId, uint32_t _componentKey)
 {
     return reinterpret_cast<void*>(m_EntityRegister.GetComponent(_entityId, _componentKey));
 }

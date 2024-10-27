@@ -1,5 +1,4 @@
 ﻿#include "resources/mesh.hpp"
-//#include <OBJ_Loader.h>
 
 
 #include <unordered_map>
@@ -7,24 +6,24 @@
 #include "log.hpp"
 #include "physics/physics_wrapper.hpp"
 
+
+#include <OBJ_Loader.h>
+
 using namespace PC_CORE;
 
 Mesh::~Mesh()
 {
-    //vulkanVertexBuffer.Destroy();
-    //vulkanIndexBuffer.Destroy();
+
 }
 
 void Mesh::SetPath(const fs::path& _path)
 {
     path = _path;
-
     
     std::string format = std::filesystem::path(path).extension().generic_string();
     uint32_t formatIndex = -1;
     std::string formatToString = path.generic_string();
 
-    return;
     std::vector<Vertex> verticies;
     std::vector<uint32_t> indicies;
     
@@ -48,8 +47,8 @@ void Mesh::SetPath(const fs::path& _path)
     nbrOfVertices = static_cast<uint32_t>(verticies.size());
     nbrOfIndices = static_cast<uint32_t>(indicies.size());
     
-    //vulkanVertexBuffer.Init(verticies);
-    //vulkanIndexBuffer.Init(indicies);
+    vertexBuffer = VertexBuffer(verticies);
+    indexBuffer = IndexBuffer(indicies);
 }
 
 uint32_t Mesh::GetNbrOfVerticies() const
@@ -64,7 +63,7 @@ uint32_t Mesh::GetNbrOfIndicies() const
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
 {
-    /*
+    
     objl::Loader Loader;
 
     bool loadout = Loader.LoadFile(path.c_str());
@@ -91,5 +90,5 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
     } 
 
 
-        */
+        
 }

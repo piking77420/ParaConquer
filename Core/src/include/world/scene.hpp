@@ -42,12 +42,12 @@ BEGIN_PCCORE
         PC_CORE_API Entity* GetEntity(EntityId _id);
     
         template <class T>
-        T* Get(EntityId _entityId);
+        T* GetComponent(EntityId _entityId);
     
         template<typename T>
-        const T* Get(EntityId _entityId) const;
+        const T* GetComponent(EntityId _entityId) const;
 
-        PC_CORE_API void* Get(EntityId _entityId, uint32_t _componentKey);
+        PC_CORE_API void* GetComponent(EntityId _entityId, uint32_t _componentKey);
         
         template<typename T>
         T* AddComponent(EntityId _entityId);
@@ -78,14 +78,14 @@ BEGIN_PCCORE
     };
 
     template <typename T>
-    T* Scene::Get(EntityId _entityId)
+    T* Scene::GetComponent(EntityId _entityId)
     {
         const uint32_t key = Reflector::GetKey<T>();
         return reinterpret_cast<T*>(m_EntityRegister.GetComponent(_entityId, key));
     }
 
     template <typename T>
-    const T* Scene::Get(EntityId _entityId) const
+    const T* Scene::GetComponent(EntityId _entityId) const
     {
         const uint32_t key = Reflector::GetKey<T>();
         return reinterpret_cast<const T*>(m_EntityRegister.GetComponent(_entityId, key));

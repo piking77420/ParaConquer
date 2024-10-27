@@ -163,6 +163,8 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 template <typename Holder, typename BaseClass>
 ReflectedType* Reflector::ReflectType()
 {
+    std::unordered_map<uint32_t, ReflectedType>& map = m_RelfectionMap;
+
     AddType<Holder>();
 
     // Add base class to current class and all hieritance
@@ -202,6 +204,7 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 {
     const uint32_t hashCode = GetHash<T>();
     std::vector<const ReflectedType*> types;
+    std::unordered_map<uint32_t, ReflectedType>& map = m_RelfectionMap;
 
     for (auto it = m_RelfectionMap.begin(); it != m_RelfectionMap.end(); it++)
     {
@@ -269,7 +272,9 @@ uint32_t Reflector::GetHash(std::string* _name)
 template <typename T>
 bool Reflector::ContaintType()
 {
-    return m_RelfectionMap.contains(GetHash<T>());
+    const uint32_t key = GetHash<T>();
+
+    return m_RelfectionMap.contains(key);
 }
 
 

@@ -10,7 +10,7 @@ BEGIN_PCCORE
     class World
 {
 public:
-    static inline World* world = nullptr;
+    static inline World* currentWorld = nullptr;
 
 	EcsContext ecsContext;
 

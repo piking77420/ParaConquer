@@ -13,6 +13,7 @@
 #include "rendering/light.hpp"
 #include "io/core_io.hpp"
 #include "io/imgui_context.h"
+#include "world/static_mesh.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -21,6 +22,7 @@ using namespace PC_CORE;
 void Editor::Init()
 {
     App::Init();
+    World::currentWorld = &world;
     InitEditorWindows();
     InitMaterial();
     InitTestScene();
@@ -52,6 +54,16 @@ void Editor::InitMaterial()
     
 }
 
+void Editor::RotateCube()
+{
+   Transform* transform = world.scene.GetComponent<Transform>(0);
+    float time = static_cast<float>(Time::GetTime());
+    float x = std::cos(time);
+    float y = std::sin(time);
+    float z = std::cos(time);
+    transform->rotation = Tbx::Quaternionf::FromEuleur({x,y,z});
+}
+
 void Editor::InitTestScene()
 {
     /*
@@ -71,6 +83,12 @@ void Editor::InitTestScene()
     }
     
     */
+
+    Scene& scene = world.scene;
+    EntityId cube = scene.CreateEntity("cube");
+    scene.AddComponent<Transform>(cube);
+    StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
+    mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
 }
 
 void Editor::DestroyTestScene()
@@ -86,7 +104,6 @@ void Editor::Run()
 {
     while (!window->ShouldClose())
     {
-        const World* currentWorld = World::world;
         PC_CORE::CoreIo::PoolEvent();
         window->PoolEvents();
         PC_CORE::IMGUIContext::NewFrame();
@@ -101,7 +118,8 @@ void Editor::Run()
             editorWindow->End();
         }
 
-        if (World::world != nullptr)
+        RotateCube();
+        if (World::currentWorld != nullptr)
         {
             WorldLoop();
         }
@@ -110,7 +128,7 @@ void Editor::Run()
         {
             editorWindow->Render();
         }
-        PC_CORE::IMGUIContext::Render();
+        PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
         renderer.SwapBuffers();
     }
 

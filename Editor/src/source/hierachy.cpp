@@ -14,18 +14,12 @@ Hierachy::Hierachy(Editor& _editor, const std::string& _name) : EditorWindow(_ed
 void Hierachy::Update()
 {
     EditorWindow::Update();
-    return;
     ShowGraph();
 }
 
 void Hierachy::ShowGraph()
 {
-    // TODO Update ECS
-    
-    if (PC_CORE::World::world == nullptr)
-        return;
-    
-    PC_CORE::World& world = *PC_CORE::World::world;
+    PC_CORE::World& world = m_Editor->world;
     PC_CORE::Scene& scene = world.scene;
 
    
@@ -36,21 +30,21 @@ void Hierachy::ShowGraph()
     for (PC_CORE::Transform& transform : transforms)
     {
         PC_CORE::Entity* entity = scene.GetEntity(transform.entityId);
-        /*
+        
         if (ImGui::Button(entity->name.c_str()))
         {
             m_Editor->m_Selected = entity;
             hasSelected = true;
-        }*/
+        }
     }
 
     if (!hasSelected)
     {
-        /*
+        
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowFocused())
         {
             m_Editor->m_Selected = nullptr;
-        }*/
+        }
     }
     
 }

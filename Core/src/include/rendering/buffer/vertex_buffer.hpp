@@ -13,7 +13,7 @@ public:
    
     VertexBuffer& operator=(VertexBuffer&& _other) noexcept;
     
-    VertexBuffer(CommandPool* _transfertPool, const std::vector<Vertex>& _vertices);
+    VertexBuffer(const std::vector<Vertex>& _vertices);
     
     VertexBuffer();
     

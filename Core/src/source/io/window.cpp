@@ -20,7 +20,6 @@ bool Window::ShouldClose()
 
 void Window::PoolEvents()
 {
-    HandleResize();
 
     if (glfwGetKey(m_Window, GLFW_KEY_F11) == GLFW_PRESS)
     {
@@ -43,7 +42,10 @@ void Window::PoolEvents()
             glfwSetWindowMonitor(m_Window, NULL, static_cast<int32_t>(oldPos.x), static_cast<int32_t>(oldPos.y),
             static_cast<int32_t>(m_WindowSize.y),static_cast<int32_t>(m_WindowSize.y), Mode->refreshRate);
         }
+        onResize = true;
     }
+
+    HandleResize();
 }
 
 void Window::HandleResize()

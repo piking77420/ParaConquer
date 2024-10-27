@@ -10,6 +10,7 @@
 #include "render_harware_interface/descriptor_pool.hpp"
 
 #include "resources/shader_program.h"
+#include "world/world.hpp"
 
 BEGIN_PCCORE
     class Window;
@@ -33,7 +34,7 @@ public:
     
     PC_CORE_API void Destroy();
 
-    PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext);
+    PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
     PC_CORE_API void BeginFrame();
     
@@ -41,12 +42,12 @@ public:
 
     PC_CORE_API void WaitDevice();
 
+    PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
+
 private:
     size_t m_CurrentImage;
 
     CommandPool m_SwapChainCommandPool;
-
-    CommandPool m_TransfertPool;
     
     std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
 
@@ -55,11 +56,7 @@ private:
     Window* Windowtpr = nullptr;
     
     CommandBuffer* m_CommandBuffer = nullptr;
-
-    PC_CORE::VertexBuffer vertexBuffer;
-
-    IndexBuffer indexBuffer;
-
+    
     std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> m_SceneBufferUniforms;
 
     SceneBufferGPU sceneBufferGPU;
@@ -79,6 +76,8 @@ private:
     PC_CORE_API void InitBuffer();
 
     PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
+
+    PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
 };
 
 END_PCCORE

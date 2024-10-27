@@ -53,8 +53,11 @@ void IMGUIContext::NewFrame()
     ImGui::NewFrame();
 }
 
-void IMGUIContext::Render()
+void IMGUIContext::Render(PC_CORE::CommandBuffer _commandBuffer)
 {
     ImGui::Render();
+    ImDrawData* draw_data = ImGui::GetDrawData();
+    ImGui_ImplVulkan_RenderDrawData(draw_data, *reinterpret_cast<vk::CommandBuffer*>(&_commandBuffer.handle));
 }
+
 

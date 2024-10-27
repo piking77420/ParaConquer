@@ -11,18 +11,18 @@ EditorWindow::EditorWindow(Editor& _editor, const std::string& _name) : m_Editor
 
 void EditorWindow::Begin()
 {
-    //ImGui::Begin(name.c_str(), &isOpen, windowFlags);
-    //GetInfo();
+    ImGui::Begin(name.c_str(), &isOpen, windowFlags);
+    GetInfo();
 }
 
 void EditorWindow::End()
 {
-    //ImGui::End();
+    ImGui::End();
 }
 
 void EditorWindow::GetInfo()
 {
-    /*
+    
     resize = false;
     ImVec2 imPos = ImGui::GetWindowPos();
     ImVec2 imSize = ImGui::GetWindowSize();
@@ -33,6 +33,6 @@ void EditorWindow::GetInfo()
         resize = true;
     
     position = { imPos.x , imPos.y};
-    size = { imSize.x , imSize.y};*/
+    size = { imSize.x , imSize.y};
 
 }

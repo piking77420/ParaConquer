@@ -90,7 +90,9 @@ namespace VK_NP
         QueuFamiliesIndicies queuFamiliesIndicies;
         VkQueues vkQueues;
 #pragma endregion Queues
-        
+
+
+        vk::CommandPool m_resourceCommandPool;
         
         vk::RenderPass swapChainRenderPass;
     };

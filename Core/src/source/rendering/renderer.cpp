@@ -6,6 +6,7 @@
 #include "rendering/render_harware_interface/vertex.hpp"
 #include "resources/resource_manager.hpp"
 #include "resources/shader_source.hpp"
+#include "world/static_mesh.hpp"
 
 #undef ERROR
 #undef near;
@@ -20,7 +21,6 @@ using namespace PC_CORE;
 void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
-    m_TransfertPool.~CommandPool();
 
     for (auto&& uniform : m_SceneBufferUniforms)
         uniform.~UniformBuffer();
@@ -28,7 +28,7 @@ void Renderer::Destroy()
     RHI::DestroyInstance();
 }
 
-void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
+void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const World& _world)
 {
     m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
     UpdateUniforms(_renderingContext);
@@ -52,24 +52,11 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext)
 
     RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
     RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
-
-
-    m_MainShader->Bind(m_CommandBuffer->handle);
-
-    float time = static_cast<float>(glfwGetTime());
-    float x = std::cos(time);
-    float y = std::sin(time);
-    float z = std::cos(time);
     
-    Tbx::Matrix4x4f modelMatrix;
-    Tbx::Trs3D({}, {x,y,z}, {1,1,1}, &modelMatrix);
-    m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", modelMatrix);
-
+    m_MainShader->Bind(m_CommandBuffer->handle);
+    
     RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1, &m_DescriptorSets[m_CurrentImage], 0, nullptr);
-    m_CommandBuffer->BindVertexBuffer(vertexBuffer, 0, 1);
-    m_CommandBuffer->BindIndexBuffer(indexBuffer);
-
-    RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+    DrawStaticMesh(_renderingContext, _world);
 }
 
 void Renderer::BeginFrame()
@@ -103,6 +90,11 @@ void Renderer::SwapBuffers()
 void Renderer::WaitDevice()
 {
     RHI::GetInstance().WaitDevice();
+}
+
+CommandBuffer& Renderer::GetCommandSwapChainBuffer()
+{
+    return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
 }
 
 void Renderer::RenderLog(LogType _logType, const char* _message)
@@ -171,22 +163,8 @@ void Renderer::InitShader()
 
 void Renderer::InitBuffer()
 {
-    const std::vector<Vertex> vertices = {
-        {{-0.5f, -0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1, 0}},
-        {{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0, 1}},
-        {{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {1, 1}},
-        {{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1, 1}}
-    };
-
-    vertexBuffer = VertexBuffer(&m_TransfertPool, vertices);
-
-    const std::vector<uint32_t> indices = {
-        0, 1, 2, 2, 3, 0
-    };
-    indexBuffer = IndexBuffer(&m_TransfertPool, indices);
-    
     for (auto&& uniform : m_SceneBufferUniforms)
-        uniform = UniformBuffer(&m_TransfertPool, sizeof(sceneBufferGPU));
+        uniform = UniformBuffer(sizeof(sceneBufferGPU));
 }
 
 void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
@@ -205,6 +183,28 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
     m_SceneBufferUniforms[m_CurrentImage].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
 }
 
+void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
+{
+   const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
+
+    for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
+    {
+        if (it->mesh == nullptr)
+            continue;
+
+        const Transform* transform = _world.scene.GetComponent<Transform>(it->entityId);
+
+        Tbx::Matrix4x4f transformMatrix;
+        Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);
+        m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
+
+        m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
+        m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
+        RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+    }
+    
+}
+
 void Renderer::InitRenderResources()
 {
     InitShader();
@@ -214,16 +214,13 @@ void Renderer::InitRenderResources()
 
 void Renderer::InitCommandPools()
 {
-    CommandPoolCreateInfo commandPoolCreateInfo =
+    const CommandPoolCreateInfo commandPoolCreateInfo =
     {
         .queueType = QueuType::GRAPHICS,
         .commandPoolBufferFlag = COMMAND_POOL_BUFFER_RESET,
     };
     m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
-
-    commandPoolCreateInfo.queueType = QueuType::TRANSFERT;
-    m_TransfertPool = CommandPool(commandPoolCreateInfo);
-
+    
     const CommandBufferCreateInfo commandBufferCreateInfo =
     {
         .commandBufferPtr = m_SwapChainCommandBuffers.data(),

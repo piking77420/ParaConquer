@@ -16,18 +16,18 @@ void PC_EDITOR_CORE::Profiler::Update()
 
     const std::vector<PC_CORE::Timer::TimePass>& timers = PC_CORE::Timer::timePasses;
     
-    //ImGui::Begin("Profiler");
+    ImGui::Begin("Profiler");
 
-    //ImGui::Text("Fps : %.2f", m_Editor->io->Framerate);
+    ImGui::Text("Fps : %.2f", ImGui::GetIO().Framerate);
 
     for (size_t i = 0; i < timers.size(); ++i)
     {
         std::string name = timers.at(i).timePassname;
-       // ImGui::Text("Pass %s = %.2lf ms", name.c_str(), static_cast<double>(timers.at(i).elapsed_ms));
+        ImGui::Text("Pass %s = %.2lf ms", name.c_str(), static_cast<double>(timers.at(i).elapsed_ms));
         
     }
     
 
-    //ImGui::End();
+    ImGui::End();
     PC_CORE::Timer::Clear();
 }

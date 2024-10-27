@@ -16,7 +16,7 @@ class EditorWindow
 {
 public:
 
-    //ImGuiWindowFlags windowFlags;
+    ImGuiWindowFlags windowFlags;
     
     std::string name = "EditorWindow";
 

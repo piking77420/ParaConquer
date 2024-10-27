@@ -2,6 +2,8 @@
 
 #include "core_header.hpp"
 #include "Resource.hpp"
+#include "rendering/buffer/index_buffer.hpp"
+#include "rendering/buffer/vertex_buffer.hpp"
 #include "rendering/render_harware_interface/vertex.hpp"
 
 BEGIN_PCCORE
@@ -24,9 +26,9 @@ public:
       };
 
 
-    //VulkanVertexBuffer vulkanVertexBuffer;
+    VertexBuffer vertexBuffer;
 
-    //VulkanIndexBuffer vulkanIndexBuffer;
+    IndexBuffer indexBuffer;
 
     MeshFormat meshFormat;
     
@@ -45,9 +47,6 @@ private:
     uint32_t nbrOfVertices = 0;
 
     uint32_t nbrOfIndices = 0;
-
-
-
 };
 
 END_PCCORE

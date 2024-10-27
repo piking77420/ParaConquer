@@ -27,7 +27,6 @@ void App::Init()
     // Need other init in order to init
     ResourceManager::InitPath();
     renderer.InitRenderResources();
-    World::world = &world;
     Time::Init();
     
     world.LoadSkyBox();

@@ -13,7 +13,7 @@ public:
    
     IndexBuffer& operator=(IndexBuffer&& _other) noexcept;
     
-    IndexBuffer(CommandPool* _transfertPool, const std::vector<uint32_t>& _indicies);
+    IndexBuffer(const std::vector<uint32_t>& _indicies);
     
     IndexBuffer();
     

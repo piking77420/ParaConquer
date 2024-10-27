@@ -6,7 +6,8 @@
 
 BEGIN_PCCORE
 
-MAKE_ECS_COMPONENT(RigidBody)
+struct RigidBody : public Component
+{
 
     bool useGravity = true;
 

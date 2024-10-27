@@ -38,10 +38,10 @@ DescriptorBufferInfo UniformBuffer::AsDescriptorBufferInfo(uint32_t _offset) con
     return {.buffer = handleId, .offset = _offset, .range = static_cast<uint32_t>(size)};
 }
 
-UniformBuffer::UniformBuffer(CommandPool* _commandPool, size_t _size)
+UniformBuffer::UniformBuffer(size_t _size)
 {
     size = _size;
-    handleId = RHI::GetInstance().BufferData(_commandPool, _size, BUFFER_USAGE_UNIFORM);
+    handleId = RHI::GetInstance().BufferData(_size, BUFFER_USAGE_UNIFORM);
     RHI::GetInstance().MapData(handleId, &m_MapData);
 }
 
