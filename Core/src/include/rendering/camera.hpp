@@ -14,7 +14,7 @@ class Camera
 {
 public:
 
-    Tbx::Vector3f position;
+    Tbx::Vector3f position = { 2,2,2 };
     
     PC_CORE_API void SetProjectionType(ProjectionType projectionType);
 

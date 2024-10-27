@@ -191,7 +191,7 @@ void Renderer::InitBuffer()
 
 void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 {
-    /*
+    
     sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
                                    _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
                                    _renderingContext.lowLevelCamera.up);
@@ -199,8 +199,8 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
                                                  _renderingContext.lowLevelCamera.aspect,
                                                  _renderingContext.lowLevelCamera.near,
                                                  _renderingContext.lowLevelCamera.far);
-                                                 */
-
+                                                 
+    
     sceneBufferGPU.view = LookAtRH({ 2,2,2 },
         {},
         Tbx::Vector3f::UnitY());
@@ -208,7 +208,7 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
         _renderingContext.lowLevelCamera.aspect,
         _renderingContext.lowLevelCamera.near,
         _renderingContext.lowLevelCamera.far);
-
+        
     sceneBufferGPU.deltatime = _renderingContext.deltaTime;
     sceneBufferGPU.time = _renderingContext.time;
     m_SceneBufferUniforms[m_CurrentImage].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
