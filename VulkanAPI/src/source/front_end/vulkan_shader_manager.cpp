@@ -369,6 +369,7 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     std::vector<vk::PushConstantRange> pushConstantRange;
     ReflectPushConstantBlock(_device, _shaderInternal, &pushConstantRange);
 
+    
     std::vector<vk::DescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
     RelflectDescriptorLayout(_device, _shaderInternal, &DescriptorSetLayoutBindings);
 
@@ -454,7 +455,7 @@ void VK_NP::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, Sh
         _DescriptorSetLayoutBindings->resize(_DescriptorSetLayoutBindings->size() + descriptorBindingCount);
         for (size_t j = 0; j < descriptorBindingCount; j++)
         {
-            const SpvReflectDescriptorBinding* descriptorBindingReflected = &spvReflectBlockVariable->descriptor_bindings[i];
+            const SpvReflectDescriptorBinding* descriptorBindingReflected = &spvReflectBlockVariable->descriptor_bindings[j];
             _DescriptorSetLayoutBindings->at(currentDescriptorLayout).binding = descriptorBindingReflected->binding;
             _DescriptorSetLayoutBindings->at(currentDescriptorLayout).descriptorType = static_cast<vk::DescriptorType>(descriptorBindingReflected->descriptor_type);
             _DescriptorSetLayoutBindings->at(currentDescriptorLayout).descriptorCount = 1;

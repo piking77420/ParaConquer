@@ -1,6 +1,7 @@
 ﻿#include "world_view_window.hpp"
 
 #include "editor.hpp"
+#include "time/core_time.hpp"
 
 #undef near
 #undef far
@@ -68,6 +69,8 @@ void WorldViewWindow::Render()
         .far = camera.GetFar(),
         .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
     };
+    renderingContext.time = PC_CORE::Time::GetTime(); 
+    renderingContext.deltaTime = PC_CORE::Time::DeltaTime(); 
 
     m_Editor->renderer.Render(renderingContext, m_Editor->world);
 }

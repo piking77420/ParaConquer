@@ -163,7 +163,11 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 template <typename Holder, typename BaseClass>
 ReflectedType* Reflector::ReflectType()
 {
-    std::unordered_map<uint32_t, ReflectedType>& map = m_RelfectionMap;
+    if (ContaintType<Holder>())
+    {
+        return &m_RelfectionMap.at(GetKey<Holder>());
+    }
+
 
     AddType<Holder>();
 

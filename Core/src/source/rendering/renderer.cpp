@@ -62,14 +62,14 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 void Renderer::BeginFrame()
 {
     static bool firstTime = false;
-    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_SPACE) == GLFW_PRESS && !firstTime)
+    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_PRESS && !firstTime)
     {
         RHI::GetInstance().WaitDevice();
         m_MainShader->Reload();
         firstTime = true;
     }
 
-    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_SPACE) == GLFW_RELEASE && firstTime)
+    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_RELEASE && firstTime)
     {
         firstTime = false;
     }

@@ -12,7 +12,11 @@ layout(location = 0) out vec3 fragColor;
 void main()
 {
     vec4 position = sceneBuffer.proj * sceneBuffer.view * modelMatrix.model * vec4(inPosition, 1.0); 
+    vec3 normal = inNormal;
+
     gl_Position = position;
-    fragColor = inNormal;
-    
+    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix.model)));
+    fragColor = normalMatrix * inNormal;
+    //fragColor = vec3(cos(sceneBuffer.time), sin(sceneBuffer.time - 0.5f), sin(sceneBuffer.time- 0.2f));
+
 }
