@@ -11,10 +11,10 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 #define PC_LOG(message) \
-    Log::Debug(message,__FILE__,std::to_string(__LINE__).c_str());\
+    PC_CORE::Log::Debug(message,__FILE__,std::to_string(__LINE__).c_str());\
 
 #define PC_LOGERROR(message) \
- Log::Error(message,__FILE__,std::to_string(__LINE__).c_str());\
+ PC_CORE::Log::Error(message,__FILE__,std::to_string(__LINE__).c_str());\
 
 
 BEGIN_PCCORE

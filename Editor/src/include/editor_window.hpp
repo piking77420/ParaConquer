@@ -4,6 +4,7 @@
 
 #include "editor_header.hpp"
 #include <math/toolbox_typedef.hpp>
+#include <Imgui/imgui.h>
 
 namespace PC_EDITOR_CORE
 {

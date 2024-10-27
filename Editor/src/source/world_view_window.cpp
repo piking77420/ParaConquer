@@ -60,8 +60,8 @@ void WorldViewWindow::Render()
     renderingContext.lowLevelCamera =
     {
         .position = camera.position,
-        .front = camera.GetFront(),
-        .up = camera.GetUp(),
+        .front = camera.front,
+        .up = camera.up,
         .aspect = m_Editor->window->GetAspect(),
         .fov = camera.GetFOV(),
         .near = camera.GetNear(),

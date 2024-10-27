@@ -17,8 +17,7 @@ BEGIN_PCCORE
 
         PC_CORE_API static void PoolEvent();
 
-        
-        
+       
     private:
         
     };

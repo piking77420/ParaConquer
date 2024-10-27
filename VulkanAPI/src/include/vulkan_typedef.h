@@ -1,5 +1,7 @@
 ﻿#pragma once
-#include "render_harware_interface/rhi_typedef.h"
+
+
+#include "rendering/render_harware_interface/rhi_typedef.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR 
 #define NOMINMAX
@@ -9,7 +11,7 @@
 
 #include <vma/vk_mem_alloc.h>
 
-#include "render_harware_interface/RHI.hpp"
+#include "rendering/render_harware_interface/RHI.hpp"
 
 
 namespace VK_NP

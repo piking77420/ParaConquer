@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "vulkan_header.h"
-#include "render_harware_interface/rhi_typedef.h"
+#include "rendering/render_harware_interface/rhi_typedef.h"
 #include <spirv_reflect.h>
 #include <filesystem>
 

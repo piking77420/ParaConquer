@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include "vulkan_typedef.h"
-#include "render_harware_interface/rhi_typedef.h"
+#include "rendering/render_harware_interface/rhi_typedef.h"
 
 #ifdef VULKAN_DLL
 

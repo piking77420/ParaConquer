@@ -46,6 +46,8 @@ void VK_NP::VulkanApp::EndRender()
     m_BindCommandBuffer.end();
 }
 
+
+
 VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
 {
     
@@ -69,6 +71,54 @@ VK_NP::VulkanApp::~VulkanApp()
         m_DeleteFunction.pop();
     }
 }
+
+ImGui_ImplVulkan_InitInfo VK_NP::VulkanApp::GetImGuiInitInfo()
+{
+    VulkanApp& singleton = dynamic_cast<VulkanApp&>(RHI::GetInstance());
+
+    // https://github.com/ocornut/imgui/issues/5085
+    VkDescriptorPoolSize pool_sizes[] =
+      {
+        {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
+
+    vk::DescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
+    pool_info.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+    pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
+    pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+    pool_info.pPoolSizes = reinterpret_cast<vk::DescriptorPoolSize*>(&pool_sizes);
+    
+    vk::DescriptorPool descriptorPool = VK_NULL_HANDLE;
+    descriptorPool = singleton.m_VulkanContext.device.createDescriptorPool(pool_info);
+
+    ImGui_ImplVulkan_InitInfo initInfo = {};
+    initInfo.Instance = singleton.m_VulkanContext.instance;
+    initInfo.PhysicalDevice = singleton.m_VulkanContext.physicalDevice;
+    initInfo.Device = singleton.m_VulkanContext.device;
+    initInfo.QueueFamily = singleton.m_VulkanContext.queuFamiliesIndicies.graphicsFamily;
+    initInfo.Queue = singleton.m_VulkanContext.vkQueues.graphicQueue;
+    initInfo.PipelineCache = nullptr;
+    initInfo.DescriptorPool = descriptorPool;
+    initInfo.RenderPass = singleton.m_VulkanContext.swapChainRenderPass;
+    initInfo.Subpass = 0;
+    initInfo.MinImageCount = singleton.m_VulkanContext.swapChainImageCount - 1;
+    initInfo.ImageCount = singleton.m_VulkanContext.swapChainImageCount;
+    initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    initInfo.Allocator = nullptr;
+
+    return initInfo;
+}
+
 
 void VK_NP::VulkanApp::WaitForAquireImage()
 {

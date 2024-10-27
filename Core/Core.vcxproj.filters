@@ -69,10 +69,10 @@
     <ClInclude Include="src\include\ecs\sparse_sets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\input\in_out.h">
+    <ClInclude Include="src\include\io\in_out.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\input\low_pass_filter.hpp">
+    <ClInclude Include="src\include\io\low_pass_filter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\io\core_io.hpp">
@@ -130,9 +130,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\render_harware_interface\rhi_typedef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\include\rendering\render_harware_interface\shader_typedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\render_harware_interface\vertex.hpp">
@@ -225,6 +222,48 @@
     <ClInclude Include="src\include\log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\externals\include\OBJ_Loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\descriptor_layout_binding.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\render_harware_interface\descriptor_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\render_harware_interface\descriptor_set.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\resources\descriptor_set_layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imgui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imgui_impl_glfw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imgui_impl_vulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imgui_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imstb_rectpack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imstb_textedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\io\imgui_context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\ecs\component.cpp">
@@ -239,10 +278,10 @@
     <ClCompile Include="src\source\ecs\sparse_sets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\input\in_out.cpp">
+    <ClCompile Include="src\source\io\in_out.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\input\low_pass_filter.cpp">
+    <ClCompile Include="src\source\io\low_pass_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\io\core_io.cpp">
@@ -369,6 +408,39 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\pc_assert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\descriptor_layout_binding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\render_harware_interface\descriptor_pool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\render_harware_interface\descriptor_set.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\resources\descriptor_set_layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\Imgui\imgui_widgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\Imgui\imgui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\Imgui\imgui_impl_glfw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\Imgui\imgui_impl_vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\Imgui\imgui_tables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\io\imgui_context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

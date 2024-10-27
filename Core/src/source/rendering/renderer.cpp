@@ -199,16 +199,7 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
                                                  _renderingContext.lowLevelCamera.aspect,
                                                  _renderingContext.lowLevelCamera.near,
                                                  _renderingContext.lowLevelCamera.far);
-                                                 
     
-    sceneBufferGPU.view = LookAtRH({ 2,2,2 },
-        {},
-        Tbx::Vector3f::UnitY());
-    sceneBufferGPU.proj = Tbx::PerspectiveMatrix(_renderingContext.lowLevelCamera.fov,
-        _renderingContext.lowLevelCamera.aspect,
-        _renderingContext.lowLevelCamera.near,
-        _renderingContext.lowLevelCamera.far);
-        
     sceneBufferGPU.deltatime = _renderingContext.deltaTime;
     sceneBufferGPU.time = _renderingContext.time;
     m_SceneBufferUniforms[m_CurrentImage].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);

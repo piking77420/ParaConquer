@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "vulkan_header.h"
-#include "render_harware_interface/command_pool.hpp"
+#include "rendering/render_harware_interface/command_pool.hpp"
 
 namespace VK_NP
 {

@@ -30,8 +30,6 @@ BEGIN_PCCORE
         PC_CORE_API Window(const char* _windowName);
 
         PC_CORE_API ~Window();
-
-    
     private:
         Tbx::Vector2ui m_WindowSize = {1680, 1050};
 

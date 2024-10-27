@@ -1,0 +1,60 @@
+
+#include "io/imgui_context.h"
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "front_end/vulkan_app.hpp"
+#include "Imgui/imgui_impl_vulkan.h"
+
+/*
+#include "imgui_impl_vulkan.h"
+#include "front_end/vulkan_app.hpp"
+*/
+using namespace PC_CORE;
+
+static void CheckError(VkResult err)
+{
+    if (err == 0)
+        return;
+    std::cout << "[vulkan] Error: VkResult = " << err << "\n";
+    if (err < 0)
+        abort();
+}
+
+void IMGUIContext::Init(void* _glfwWindowPtr)
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui::StyleColorsDark();
+
+    GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
+    constexpr bool installCallBack = true;
+    ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
+   
+    ImGui_ImplVulkan_InitInfo init_info = VK_NP::VulkanApp::GetImGuiInitInfo();
+    init_info.CheckVkResultFn = CheckError;
+    ImGui_ImplVulkan_Init(&init_info);
+}
+
+void IMGUIContext::Destroy()
+{
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+}
+
+void IMGUIContext::NewFrame()
+{
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+
+void IMGUIContext::Render()
+{
+    ImGui::Render();
+}
+

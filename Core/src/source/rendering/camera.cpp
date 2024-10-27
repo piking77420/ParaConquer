@@ -57,7 +57,7 @@ float Camera::GetFar() const
 Tbx::Matrix4x4f Camera::GetViewMatrix() const
 {
     Tbx::Matrix4x4f viewMatrix;
-    return Tbx::LookAtRH(position, position + m_Front, m_Up);
+    return Tbx::LookAtRH(position, position + front, up);
 }
 
 Tbx::Matrix4x4f Camera::GetProjectionMatrix() const
@@ -73,38 +73,30 @@ Tbx::Matrix4x4f Camera::GetVPMatrix() const
     return GetViewMatrix() * GetProjectionMatrix();
 }
 
-Tbx::Vector3f Camera::GetFront() const
-{
-    return m_Front;
-}
 
-Tbx::Vector3f Camera::GetUp() const
-{
-    return m_Up;
-}
 
 void Camera::LookAt(Tbx::Vector3f _point, Tbx::Vector3f _up)
 {
-    m_Front = (_point - position).Normalize();
-    m_Up = _up; 
+    front = (_point - position).Normalize();
+    up = _up; 
 }
 
 void Camera::LookAt(Tbx::Vector3f _point)
 {
-    m_Front = (_point - position).Normalize();
-    const Tbx::Vector3f right = Tbx::Vector3f::Cross(m_Front, Tbx::Vector3f::UnitY()).Normalize();
-    m_Up = Tbx::Vector3f::Cross(right, m_Front).Normalize();
+    front = (_point - position).Normalize();
+    const Tbx::Vector3f right = Tbx::Vector3f::Cross(front, Tbx::Vector3f::UnitY()).Normalize();
+    up = Tbx::Vector3f::Cross(right, front).Normalize();
 }
 
 Camera::Camera(float _fov, float _aspect, float _near, float _far, Tbx::Vector3f _pos, Tbx::Vector3f _forward,
-               Tbx::Vector3f _up) : m_Fov(_fov), m_Aspect(_aspect),  position(_pos), m_Front(_forward), m_Up(_up) 
+               Tbx::Vector3f _up) : m_Fov(_fov), m_Aspect(_aspect),  position(_pos), front(_forward), up(_up) 
 {
     
 }
 
 Camera::Camera(Tbx::Vector2f screenSize, float _near, float _far, Tbx::Vector3f _pos, Tbx::Vector3f _forward,
     Tbx::Vector3f _up) : m_LeftRightScreen(Tbx::Vector2f(0.f - screenSize.x, screenSize.x)) ,m_BottomTopScreen(
-        Tbx::Vector2f(0.f - screenSize.y, screenSize.y)), position(_pos), m_Front(_forward), m_Up(_up)
+        Tbx::Vector2f(0.f - screenSize.y, screenSize.y)), position(_pos), front(_forward), up(_up)
 {
     
 }

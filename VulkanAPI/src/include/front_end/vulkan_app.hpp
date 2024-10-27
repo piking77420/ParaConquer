@@ -8,6 +8,7 @@
 #include "front_end/vulkan_harware_wrapper.hpp"
 #include "front_end/vulkan_present_chain.hpp"
 #include "front_end/vulkan_shader_manager.hpp"
+#include "Imgui/imgui_impl_vulkan.h"
 
 namespace VK_NP
 {
@@ -23,7 +24,9 @@ namespace VK_NP
 		VULKAN_API VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo);
 
 		VULKAN_API ~VulkanApp() override;
-		
+
+		static VULKAN_API ImGui_ImplVulkan_InitInfo GetImGuiInitInfo();
+
 		VULKAN_API void WaitForAquireImage() override;
 		
 		VULKAN_API void SwapBuffers(PC_CORE::CommandBufferHandle* _commandBuffers, uint32_t _commandBufferCount) override;

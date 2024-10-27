@@ -12,6 +12,7 @@
 #include <resources/resource_manager.hpp>
 #include "rendering/light.hpp"
 #include "io/core_io.hpp"
+#include "io/imgui_context.h"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -23,6 +24,7 @@ void Editor::Init()
     InitEditorWindows();
     InitMaterial();
     InitTestScene();
+    PC_CORE::IMGUIContext::Init(window->GetHandle());
 }
 
 void Editor::Destroy()
@@ -30,6 +32,7 @@ void Editor::Destroy()
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
+    PC_CORE::IMGUIContext::Destroy();
     App::Destroy();
 }
 
@@ -86,6 +89,7 @@ void Editor::Run()
         const World* currentWorld = World::world;
         PC_CORE::CoreIo::PoolEvent();
         window->PoolEvents();
+        PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
         
         renderer.BeginFrame();
@@ -106,6 +110,7 @@ void Editor::Run()
         {
             editorWindow->Render();
         }
+        PC_CORE::IMGUIContext::Render();
         renderer.SwapBuffers();
     }
 
