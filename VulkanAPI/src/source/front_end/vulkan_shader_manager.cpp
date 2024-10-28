@@ -6,13 +6,13 @@
 #include "front_end/vulkan_harware_wrapper.hpp"
 #include <shaderc/shaderc.hpp>
 
-#include "back_end/rhi_vulkan_descriptorWrite.hpp"
+#include "back_end/rhi_vulkan_descriptor_write.hpp"
 #include "front_end/vulkan_present_chain.hpp"
 #include "render_harware_interface/vertex.hpp"
 #include "rhi_vulkan_parser.hpp"
 
 
-using namespace VK_NP;
+using namespace Vulkan;
 
 void VulkanShaderManager::Init(VulkanContext* _vulkanContext)
 {
@@ -235,7 +235,7 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
 
         _attributeDescriptions->at(i).binding = attributeDesription.binding;
         _attributeDescriptions->at(i).location = attributeDesription.location;
-        _attributeDescriptions->at(i).format = VK_NP::RhiFomatToVkFormat(attributeDesription.format);
+        _attributeDescriptions->at(i).format = Vulkan::RhiFomatToVkFormat(attributeDesription.format);
         _attributeDescriptions->at(i).offset = attributeDesription.offset;
     }
 
@@ -276,7 +276,7 @@ void VulkanShaderManager::DestroyInternalShaders(vk::Device _device,
 }
 
 
-bool VK_NP::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass, const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
+bool Vulkan::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk::RenderPass _tmprRenderPass, const PC_CORE::ProgramShaderCreateInfo& _programShaderCreatInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
 {
     ShaderInternal shaderInternalBack = {};
 
@@ -391,7 +391,7 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
 }
 
-void VK_NP::VulkanShaderManager::ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange)
+void Vulkan::VulkanShaderManager::ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange)
 {
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
     std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
@@ -440,7 +440,7 @@ void VK_NP::VulkanShaderManager::ReflectPushConstantBlock(vk::Device _device, Sh
     }
 }
 
-void VK_NP::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::DescriptorSetLayoutBinding>* _DescriptorSetLayoutBindings)
+void Vulkan::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::DescriptorSetLayoutBinding>* _DescriptorSetLayoutBindings)
 {
     // TO DO
     const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;

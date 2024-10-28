@@ -1,8 +1,8 @@
-﻿#include "back_end/rhi_vulkan_descriptorWrite.hpp"
+﻿#include "back_end/rhi_vulkan_descriptor_write.hpp"
 
 #include "rhi_vulkan_parser.hpp"
 
-vk::WriteDescriptorSet VK_NP::Backend::RhiToVulkanWriteDescriptorSet(
+vk::WriteDescriptorSet Vulkan::Backend::RhiToVulkanWriteDescriptorSet(
     const PC_CORE::DescriptorWriteSet& _writeDescriptorSet,
     vk::DescriptorBufferInfo* _bufferInfo, vk::DescriptorImageInfo* _imageInfo, vk::BufferView* _pTexelBufferView)
 {
@@ -34,7 +34,7 @@ vk::WriteDescriptorSet VK_NP::Backend::RhiToVulkanWriteDescriptorSet(
     return descriptorWrite;
 }
 
-vk::DescriptorBufferInfo VK_NP::Backend::RhiToVulkanDescriptorBufferInfo(
+vk::DescriptorBufferInfo Vulkan::Backend::RhiToVulkanDescriptorBufferInfo(
     const PC_CORE::DescriptorBufferInfo& _descriptorBufferInfo)
 {
     vk::DescriptorBufferInfo descriptorBuffer;

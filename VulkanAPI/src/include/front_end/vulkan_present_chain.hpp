@@ -4,7 +4,7 @@
 
 struct GLFWwindow;
 
-namespace VK_NP
+namespace Vulkan
 {
     class VulkanPresentChain
     {

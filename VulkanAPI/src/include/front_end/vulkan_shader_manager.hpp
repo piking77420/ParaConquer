@@ -9,7 +9,7 @@
 #include "vulkan_shader_compiler.hpp"
 
 
-namespace VK_NP
+namespace Vulkan
 {
     struct ShaderStageInfo
     {

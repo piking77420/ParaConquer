@@ -121,14 +121,14 @@ void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
         break;
     case PC_CORE::GraphicAPI::VULKAN:
         {
-            VK_NP::VulkanAppCreateInfo createInfo =
+            Vulkan::VulkanAppCreateInfo createInfo =
             {
                 .appName = "Editor",
                 .engineName = "ParaConquer Engine",
                 .windowPtr = _window->GetHandle(),
                 .logCallback = &Renderer::RenderLog,
             };
-            RHI::MakeInstance(new VK_NP::VulkanApp(createInfo));
+            RHI::MakeInstance(new Vulkan::VulkanApp(createInfo));
         }
         break;
     case PC_CORE::GraphicAPI::COUNT:

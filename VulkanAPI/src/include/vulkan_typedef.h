@@ -15,7 +15,7 @@
 
 #include "rendering/render_harware_interface/RHI.hpp"
 
-namespace VK_NP
+namespace Vulkan
 {
     constexpr uint32_t INVALID_QUEU = std::numeric_limits<uint32_t>::max();
 
@@ -56,6 +56,8 @@ namespace VK_NP
         vk::Queue presentQueue;
         vk::Queue transferQueu;
     };
+
+    
 
     struct VulkanContext
     {

@@ -1,17 +1,17 @@
 #include "front_end/vulkan_app.hpp"
 
-#include "back_end/rhi_vulkan_descriptorWrite.hpp"
+#include "back_end/rhi_vulkan_descriptor_write.hpp"
 #include "back_end/rhi_vulkan_descriptor_layout.hpp"
 #include "back_end/rhi_vulkan_descriptor_pool.hpp"
 #include "back_end/vulkan_buffer.hpp"
 
 
-uint32_t VK_NP::VulkanApp::GetCurrentImage() const
+uint32_t Vulkan::VulkanApp::GetCurrentImage() const
 {
     return m_VulkanContext.currentFrame;
 }
 
-void VK_NP::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
+void Vulkan::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
 {
     m_BindCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
 
@@ -41,14 +41,14 @@ void VK_NP::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
     m_BindCommandBuffer.beginRenderPass(&renderPassInfo, subpassContents);
 }
 
-void VK_NP::VulkanApp::EndRender()
+void Vulkan::VulkanApp::EndRender()
 {
     m_BindCommandBuffer.endRenderPass();
     m_BindCommandBuffer.end();
 }
 
 
-VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
+Vulkan::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
 {
     m_LogCallback = vulkanMainCreateInfo.logCallback;
     m_vulkanHardwareWrapper.Init(vulkanMainCreateInfo, &m_VulkanContext);
@@ -60,10 +60,10 @@ VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
     InitBaseObject();
 
     
-    m_DeleteFunction.push(std::bind(&VK_NP::VulkanApp::DestroyBuffersAllocations,this ,std::placeholders::_1));
+    m_DeleteFunction.push(std::bind(&Vulkan::VulkanApp::DestroyBuffersAllocations,this ,std::placeholders::_1));
 }
 
-VK_NP::VulkanApp::~VulkanApp()
+Vulkan::VulkanApp::~VulkanApp()
 {
     DestroyBaseObject();
     while (!m_DeleteFunction.empty())
@@ -73,7 +73,7 @@ VK_NP::VulkanApp::~VulkanApp()
     }
 }
 
-ImGui_ImplVulkan_InitInfo VK_NP::VulkanApp::GetImGuiInitInfo()
+ImGui_ImplVulkan_InitInfo Vulkan::VulkanApp::GetImGuiInitInfo()
 {
     VulkanApp& singleton = dynamic_cast<VulkanApp&>(RHI::GetInstance());
 
@@ -122,13 +122,13 @@ ImGui_ImplVulkan_InitInfo VK_NP::VulkanApp::GetImGuiInitInfo()
 }
 
 
-void VK_NP::VulkanApp::WaitForAquireImage()
+void Vulkan::VulkanApp::WaitForAquireImage()
 {
     m_vulkanPresentChain.WaitForAvailableImage(&m_VulkanContext);
     m_vulkanPresentChain.AquireNetImageKHR(&m_VulkanContext);
 }
 
-void VK_NP::VulkanApp::SwapBuffers(PC_CORE::CommandBufferHandle* _commandBuffers, uint32_t _commandBufferCount)
+void Vulkan::VulkanApp::SwapBuffers(PC_CORE::CommandBufferHandle* _commandBuffers, uint32_t _commandBufferCount)
 {
     vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer*>(_commandBuffers);
 
@@ -137,7 +137,7 @@ void VK_NP::VulkanApp::SwapBuffers(PC_CORE::CommandBufferHandle* _commandBuffers
 }
 
 
-void VK_NP::VulkanApp::BindShaderProgram(PC_CORE::CommandBufferHandle _commandBuffer,
+void Vulkan::VulkanApp::BindShaderProgram(PC_CORE::CommandBufferHandle _commandBuffer,
                                          const std::string& _shaderProgramName)
 {
     vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
@@ -145,7 +145,7 @@ void VK_NP::VulkanApp::BindShaderProgram(PC_CORE::CommandBufferHandle _commandBu
     m_vulkanShaderManager.BindProgram(vkCommandBuffer, _shaderProgramName);
 }
 
-void VK_NP::VulkanApp::PushConstants(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName,
+void Vulkan::VulkanApp::PushConstants(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName,
                                      const std::string& _pushConstantName, const void* _data, uint32_t _size)
 {
     vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
@@ -154,7 +154,7 @@ void VK_NP::VulkanApp::PushConstants(PC_CORE::CommandBufferHandle _commandBuffer
 }
 
 
-void VK_NP::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
+void Vulkan::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidht, uint32_t _newHeight)
 {
     WaitDevice();
     m_VulkanContext.swapChainSupportDetails = VulkanPhysicalDevices::QuerySwapChainSupport(
@@ -163,25 +163,25 @@ void VK_NP::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWidh
 }
 
 
-void VK_NP::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo,
+void Vulkan::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo,
                                     const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
 {
     m_vulkanShaderManager.CreateShaderFromSource(m_VulkanContext.device, m_VulkanContext.swapChainRenderPass,
                                                  programShaderCreateInfo, _shaderSource);
 }
 
-bool VK_NP::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
+bool Vulkan::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
 {
     return m_vulkanShaderManager.DestroyShader(m_VulkanContext.device, _shaderProgramName);
 }
 
 
-VULKAN_API void VK_NP::VulkanApp::WaitDevice()
+VULKAN_API void Vulkan::VulkanApp::WaitDevice()
 {
     m_VulkanContext.device.waitIdle();
 }
 
-PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
+PC_CORE::GPUBufferHandle Vulkan::VulkanApp::BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
 {
     vk::Buffer buffer = VK_NULL_HANDLE;
     VmaAllocation allocation = VK_NULL_HANDLE;
@@ -208,12 +208,12 @@ PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, const void* 
     return *reinterpret_cast<PC_CORE::GPUBufferHandle*>(&buffer);
 }
 
-PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage)
+PC_CORE::GPUBufferHandle Vulkan::VulkanApp::BufferData(size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage)
 {
     return BufferData(_size, nullptr, _usage);
 }
 
-void VK_NP::VulkanApp::MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void** _data)
+void Vulkan::VulkanApp::MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void** _data)
 {
     vk::Buffer vulkanBuffer = CastObjectToVkObject<vk::Buffer>(_gpuBufferHandle);
     if (!m_VulkanContext.m_BuffersAllocationMap.contains(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer)))
@@ -224,7 +224,7 @@ void VK_NP::VulkanApp::MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void**
     vmaMapMemory(m_VulkanContext.allocator, it, _data);
 }
 
-void VK_NP::VulkanApp::UnMapData(PC_CORE::GPUBufferHandle _gpuBufferHandle)
+void Vulkan::VulkanApp::UnMapData(PC_CORE::GPUBufferHandle _gpuBufferHandle)
 {
     vk::Buffer vulkanBuffer = CastObjectToVkObject<vk::Buffer>(_gpuBufferHandle);
     if (!m_VulkanContext.m_BuffersAllocationMap.contains(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer)))
@@ -235,7 +235,7 @@ void VK_NP::VulkanApp::UnMapData(PC_CORE::GPUBufferHandle _gpuBufferHandle)
     vmaUnmapMemory(m_VulkanContext.allocator, it);
 }
 
-bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
+bool Vulkan::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
 {
     vk::Buffer vulkanBuffer = CastObjectToVkObject<vk::Buffer>(_handle);
     const VulkanObjectWrapper<vk::Buffer> bkBufferAsObject = VulkanObjectWrapper<vk::Buffer>(vulkanBuffer);
@@ -251,7 +251,7 @@ bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
     return true;
 }
 
-void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, uint32_t _firstBinding,
+void Vulkan::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, uint32_t _firstBinding,
                                         uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle)
 {
     vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
@@ -265,7 +265,7 @@ void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuf
     vkCommandBuffer.bindVertexBuffers(0, 1, vkBuffer, deviceOffSet);
 }
 
-void VK_NP::VulkanApp::BindIndexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
+void Vulkan::VulkanApp::BindIndexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle)
 {
     vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
 
@@ -275,7 +275,7 @@ void VK_NP::VulkanApp::BindIndexBuffer(PC_CORE::CommandBufferHandle _commandBuff
 }
 
 
-void VK_NP::VulkanApp::CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
+void Vulkan::VulkanApp::CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _commandPoolCreateInfo,
                                          PC_CORE::CommandPoolHandle* _commandPoolHandle)
 {
     vk::CommandPoolCreateInfo createInfo{};
@@ -287,13 +287,13 @@ void VK_NP::VulkanApp::CreateCommandPool(const PC_CORE::CommandPoolCreateInfo& _
     *vkCommandPool = m_VulkanContext.device.createCommandPool(createInfo, nullptr);
 }
 
-void VK_NP::VulkanApp::DestroyCommandPool(PC_CORE::CommandPoolHandle _commandPoolHandle)
+void Vulkan::VulkanApp::DestroyCommandPool(PC_CORE::CommandPoolHandle _commandPoolHandle)
 {
     vk::CommandPool vkCommandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
     m_VulkanContext.device.destroyCommandPool(vkCommandPool);
 }
 
-void VK_NP::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle,
+void Vulkan::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPoolHandle,
                                            PC_CORE::CommandBufferCreateInfo _commandBufferCreateInfo)
 {
     vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
@@ -312,7 +312,7 @@ void VK_NP::VulkanApp::AllocCommandBuffers(PC_CORE::CommandPoolHandle _commandPo
         vkCommandBuffer));
 }
 
-void VK_NP::VulkanApp::FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoolHandle,
+void Vulkan::VulkanApp::FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoolHandle,
                                          PC_CORE::CommandBuffer* _commandBuffer, uint32_t _commandBufferCount)
 {
     vk::CommandPool commandPool = CastObjectToVkObject<vk::CommandPool>(_commandPoolHandle);
@@ -325,7 +325,7 @@ void VK_NP::VulkanApp::FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPool
 
 #pragma region CommandBuffer Functions
 
-void VK_NP::VulkanApp::SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHandle,
+void Vulkan::VulkanApp::SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHandle,
                                    const PC_CORE::ViewPort& _viewPort)
 {
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
@@ -340,7 +340,7 @@ void VK_NP::VulkanApp::SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHa
     commandBuffer.setViewport(0, 1, &viewport);
 }
 
-void VK_NP::VulkanApp::SetScissor(PC_CORE::CommandBufferHandle _commandBufferHandle,
+void Vulkan::VulkanApp::SetScissor(PC_CORE::CommandBufferHandle _commandBufferHandle,
                                   const PC_CORE::ScissorRect& _scissorRect)
 {
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
@@ -355,14 +355,14 @@ void VK_NP::VulkanApp::SetScissor(PC_CORE::CommandBufferHandle _commandBufferHan
     commandBuffer.setScissor(0, 1, &scissor);
 }
 
-void VK_NP::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _vertexCount,
+void Vulkan::VulkanApp::Draw(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _vertexCount,
                             uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
     commandBuffer.draw(_vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
-void VK_NP::VulkanApp::DrawIndexed(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _indiciesCount,
+void Vulkan::VulkanApp::DrawIndexed(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _indiciesCount,
                                    uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffSet,
                                    uint32_t firstInstance)
 {
@@ -372,22 +372,22 @@ void VK_NP::VulkanApp::DrawIndexed(PC_CORE::CommandBufferHandle _commandBufferHa
 
 
 #pragma region DescriptorSetLayout
-PC_CORE::DescriptorSetLayoutHandle VK_NP::VulkanApp::CreateDescriptorSetLayout(
+PC_CORE::DescriptorSetLayoutHandle Vulkan::VulkanApp::CreateDescriptorSetLayout(
     const std::vector<PC_CORE::DescriptorLayoutBinding>& _descriptorSetLayouts)
 {
-    vk::DescriptorSetLayout descriptorSetLayout = VK_NP::Backend::CreateDescriptorSetLayout(
+    vk::DescriptorSetLayout descriptorSetLayout = Vulkan::Backend::CreateDescriptorSetLayout(
         m_VulkanContext.device, _descriptorSetLayouts);
 
     return *reinterpret_cast<PC_CORE::DescriptorSetLayoutHandle*>(&descriptorSetLayout);
 }
 
-void VK_NP::VulkanApp::DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLayoutHandle& _descriptorSetLayoutHandle)
+void Vulkan::VulkanApp::DestroyDescriptorSetLayout(const PC_CORE::DescriptorSetLayoutHandle& _descriptorSetLayoutHandle)
 {
     Backend::DestroyDescriptorSetLayout(m_VulkanContext.device,
                                         CastObjectToVkObject<vk::DescriptorSetLayout>(_descriptorSetLayoutHandle));
 }
 
-PC_CORE::DescriptorPoolHandle VK_NP::VulkanApp::CreateDescriptorPool(
+PC_CORE::DescriptorPoolHandle Vulkan::VulkanApp::CreateDescriptorPool(
     const PC_CORE::DescriptorPoolSize* desciptorPoolSize, uint32_t descriptorCount,
     uint32_t maxSets)
 {
@@ -396,13 +396,13 @@ PC_CORE::DescriptorPoolHandle VK_NP::VulkanApp::CreateDescriptorPool(
     return *reinterpret_cast<PC_CORE::DescriptorPoolHandle*>(&descriptorPool);
 }
 
-void VK_NP::VulkanApp::DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle)
+void Vulkan::VulkanApp::DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle)
 {
     vk::DescriptorPool descriptorPool = CastObjectToVkObject<vk::DescriptorPool>(_descriptorPoolHandle);
     Backend::DestroyDescriptorPool(m_VulkanContext.device, descriptorPool);
 }
 
-void VK_NP::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
                                           PC_CORE::DescriptorPoolHandle _descriptorPoolHandle,
                                           PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
 {
@@ -425,7 +425,7 @@ void VK_NP::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets
             *>(descriptorSets)));
 }
 
-void VK_NP::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount,
+void Vulkan::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount,
                                            PC_CORE::DescriptorWriteSet* _descriptorWrite)
 {
     vk::DescriptorBufferInfo descriptorBufferInfo{};
@@ -437,7 +437,7 @@ void VK_NP::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount,
     m_VulkanContext.device.updateDescriptorSets(_descriptorWriteCount, &vkDescriptorWrite, 0, nullptr);
 }
 
-void VK_NP::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer,
+void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer,
                                          const std::string& _shaderProgramName, uint32_t _firstSet,
                                          uint32_t _descriptorSetCount,
                                          const PC_CORE::DescriptorSet* _pDescriptorSets, uint32_t _dynamicOffsetCount,
@@ -463,7 +463,7 @@ void VK_NP::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBu
 
 #pragma region InitBaseObject
 
-void VK_NP::VulkanApp::InitBaseObject()
+void Vulkan::VulkanApp::InitBaseObject()
 {
     vk::CommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
@@ -473,12 +473,12 @@ void VK_NP::VulkanApp::InitBaseObject()
     m_VulkanContext.m_resourceCommandPool = m_VulkanContext.device.createCommandPool(commandPoolCreateInfo, nullptr);
 }
 
-void VK_NP::VulkanApp::DestroyBaseObject()
+void Vulkan::VulkanApp::DestroyBaseObject()
 {
     m_VulkanContext.device.destroyCommandPool(m_VulkanContext.m_resourceCommandPool);
 }
 
-void VK_NP::VulkanApp::DestroyBuffersAllocations(VulkanContext* _vulkanContext)
+void Vulkan::VulkanApp::DestroyBuffersAllocations(VulkanContext* _vulkanContext)
 {
     for(auto&& buffer : m_VulkanContext.m_BuffersAllocationMap)
     {

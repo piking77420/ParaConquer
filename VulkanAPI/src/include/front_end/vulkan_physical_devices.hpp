@@ -2,7 +2,7 @@
 
 #include "vulkan_header.h"
 
-namespace VK_NP
+namespace Vulkan
 {
    
     class VulkanPhysicalDevices

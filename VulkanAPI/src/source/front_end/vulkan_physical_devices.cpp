@@ -6,7 +6,7 @@
 #include <utility>
 
 
-bool VK_NP::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface,
+bool Vulkan::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface,
                                                     std::vector<const char*> _deviceExtensions,  QueuFamiliesIndicies* _outQueuFamiliesIndicies,
                                                     SwapChainSupportDetails* _swapChainSupportDetails)
 {
@@ -31,7 +31,7 @@ bool VK_NP::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physical
     return true;
 }
 
-bool VK_NP::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
+bool Vulkan::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
                                                                std::vector<const char*> _deviceExtensions)
 {
     std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
@@ -46,14 +46,14 @@ bool VK_NP::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::Physica
     return requiredExtensions.empty();
 }
 
-bool VK_NP::VulkanPhysicalDevices::HasAllNeededFeatures(const vk::PhysicalDeviceFeatures& physicalDeviceFeatures)
+bool Vulkan::VulkanPhysicalDevices::HasAllNeededFeatures(const vk::PhysicalDeviceFeatures& physicalDeviceFeatures)
 {
     return !physicalDeviceFeatures.geometryShader || !physicalDeviceFeatures.samplerAnisotropy
     || !physicalDeviceFeatures.imageCubeArray;
 }
 
 
-VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
+Vulkan::QueuFamiliesIndicies Vulkan::VulkanPhysicalDevices::FindQueuFamillies(
     const vk::PhysicalDevice _physicalDevice, const vk::SurfaceKHR _surface)
 {
     QueuFamiliesIndicies indices;
@@ -86,7 +86,7 @@ VK_NP::QueuFamiliesIndicies VK_NP::VulkanPhysicalDevices::FindQueuFamillies(
     return indices;
 }
 
-VK_NP::SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::QuerySwapChainSupport(
+Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::QuerySwapChainSupport(
     const vk::PhysicalDevice _physicalDevice, const vk::SurfaceKHR _surface)
 {
     SwapChainSupportDetails swapChainSupportDetails;
@@ -108,7 +108,7 @@ VK_NP::SwapChainSupportDetails VK_NP::VulkanPhysicalDevices::QuerySwapChainSuppo
     return swapChainSupportDetails;
 }
 #ifdef _DEBUG
-void VK_NP::VulkanPhysicalDevices::PrintPhysicalDeviceProperties(vk::PhysicalDevice _physicalDevice)
+void Vulkan::VulkanPhysicalDevices::PrintPhysicalDeviceProperties(vk::PhysicalDevice _physicalDevice)
 {
     vk::PhysicalDeviceProperties properties = _physicalDevice.getProperties();
 
@@ -119,7 +119,7 @@ void VK_NP::VulkanPhysicalDevices::PrintPhysicalDeviceProperties(vk::PhysicalDev
         '\n';
 }
 #endif
-vk::PhysicalDevice VK_NP::VulkanPhysicalDevices::ChoosePhysicalDevice(VulkanContext* _vulkanContext,
+vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::ChoosePhysicalDevice(VulkanContext* _vulkanContext,
                                                         std::vector<const char*> _deviceExtensions)
 {
     std::vector<vk::PhysicalDevice> devices = _vulkanContext->instance.enumeratePhysicalDevices();

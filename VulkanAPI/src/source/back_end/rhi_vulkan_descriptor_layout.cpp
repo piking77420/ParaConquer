@@ -4,7 +4,7 @@
 
 
 
-vk::DescriptorSetLayoutBinding VK_NP::Backend::RHiDescriptorLayoutBindingToVulkan(const PC_CORE::DescriptorLayoutBinding& _descriptorLayoutBinding)
+vk::DescriptorSetLayoutBinding Vulkan::Backend::RHiDescriptorLayoutBindingToVulkan(const PC_CORE::DescriptorLayoutBinding& _descriptorLayoutBinding)
 {
     vk::DescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
     descriptorSetLayoutBinding.binding = _descriptorLayoutBinding.binding;
@@ -16,12 +16,12 @@ vk::DescriptorSetLayoutBinding VK_NP::Backend::RHiDescriptorLayoutBindingToVulka
     return descriptorSetLayoutBinding;
 }
 
-vk::DescriptorSetLayout VK_NP::Backend::CreateDescriptorSetLayout(vk::Device _device, const std::vector<PC_CORE::DescriptorLayoutBinding>& _bindings)
+vk::DescriptorSetLayout Vulkan::Backend::CreateDescriptorSetLayout(vk::Device _device, const std::vector<PC_CORE::DescriptorLayoutBinding>& _bindings)
 {
     std::vector<vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings(_bindings.size());
     for (size_t i = 0; i < _bindings.size(); i++)
     {
-        descriptorSetLayoutBindings[i] = VK_NP::Backend::RHiDescriptorLayoutBindingToVulkan(_bindings[i]);
+        descriptorSetLayoutBindings[i] = Vulkan::Backend::RHiDescriptorLayoutBindingToVulkan(_bindings[i]);
     }
 
     vk::DescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
@@ -35,7 +35,7 @@ vk::DescriptorSetLayout VK_NP::Backend::CreateDescriptorSetLayout(vk::Device _de
     return descriptorSetLayout;
 }
 
-void VK_NP::Backend::DestroyDescriptorSetLayout(vk::Device _device, vk::DescriptorSetLayout _descriptorSetLayout)
+void Vulkan::Backend::DestroyDescriptorSetLayout(vk::Device _device, vk::DescriptorSetLayout _descriptorSetLayout)
 {
     _device.destroyDescriptorSetLayout(_descriptorSetLayout);
 }

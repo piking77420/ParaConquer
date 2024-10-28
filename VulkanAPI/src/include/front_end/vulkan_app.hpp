@@ -9,7 +9,7 @@
 #include "front_end/vulkan_shader_manager.hpp"
 #include "Imgui/imgui_impl_vulkan.h"
 
-namespace VK_NP
+namespace Vulkan
 {
 	class VulkanApp : public PC_CORE::RHI
 	{

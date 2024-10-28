@@ -64,7 +64,7 @@ T CastObjectToVkObject(OBJ _handle)
 }
 
 
-namespace VK_NP
+namespace Vulkan
 {
 static std::unordered_map<VkResult, std::string> ErrorDescriptions = {
     {VK_SUCCESS, "Command successfully completed"},

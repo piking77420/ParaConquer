@@ -1,6 +1,8 @@
 ﻿#include "resources/texture.hpp"
 
 #include "log.hpp"
+#include "rendering/render_harware_interface/RHI.hpp"
+#include "rendering/render_harware_interface/rhi_typedef.h"
 #include "resources/file_loader.hpp"
 
 
@@ -15,7 +17,11 @@ void Texture::SetPath(const fs::path& path)
     uint8_t* pixels = FileLoader::LoadFile(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, Channel::RGBA);
     //VkDeviceSize dataImageSize=  {};
    // dataImageSize = textureSize.x * textureSize.y * 4;
+    const size_t size = textureSize.x * textureSize.y * 4;
 
+    GPUBufferHandle buffer;
+    RHI::BufferData(size, pixels);
+    
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");

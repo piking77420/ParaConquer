@@ -42,17 +42,17 @@ glslang_stage_t GetShaderStageToGlslangStage(PC_CORE::ShaderStageType _lowLevelS
 #pragma endregion LowLevelShaderStageToShaderrcKind
 
 
-VK_NP::VulkanShaderCompiler::VulkanShaderCompiler()
+Vulkan::VulkanShaderCompiler::VulkanShaderCompiler()
 {
     glslang_initialize_process();
 }
 
-VK_NP::VulkanShaderCompiler::~VulkanShaderCompiler()
+Vulkan::VulkanShaderCompiler::~VulkanShaderCompiler()
 {
     glslang_finalize_process();
 }
 
-void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, const char* _source, const char* _path,
+void Vulkan::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, const char* _source, const char* _path,
                                                          PC_CORE::ShaderStageType _lowLevelShaderStage,SpvReflectShaderModule* _ReflectedModule,
                                                          vk::ShaderModule* _shaderModule)
 {
@@ -134,7 +134,7 @@ void VK_NP::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, con
     glslang_program_delete(program);
 }
 
-std::string VK_NP::VulkanShaderCompiler::IncludePath(const std::string& source, const std::filesystem::path& path)
+std::string Vulkan::VulkanShaderCompiler::IncludePath(const std::string& source, const std::filesystem::path& path)
 {
     std::regex regex("#include");
 
@@ -215,7 +215,7 @@ std::string VK_NP::VulkanShaderCompiler::IncludePath(const std::string& source, 
     return sourceWithoutInclude;
 }
 
-std::string VK_NP::VulkanShaderCompiler::GetFileAsString(const std::filesystem::path& path)
+std::string Vulkan::VulkanShaderCompiler::GetFileAsString(const std::filesystem::path& path)
 {
     std::string fileName = path.generic_string();
 

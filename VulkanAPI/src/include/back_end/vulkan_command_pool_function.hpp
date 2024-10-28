@@ -3,7 +3,7 @@
 #include "vulkan_header.h"
 
 
-namespace VK_NP
+namespace Vulkan
 {
     vk::CommandBuffer BeginSingleTimeCommands(vk::Device _device, vk::CommandPool _commandPool);
 

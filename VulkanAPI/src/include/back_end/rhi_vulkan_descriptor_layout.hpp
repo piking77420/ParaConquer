@@ -5,7 +5,7 @@
 
 
 
-namespace VK_NP
+namespace Vulkan
 {
     namespace Backend
     {

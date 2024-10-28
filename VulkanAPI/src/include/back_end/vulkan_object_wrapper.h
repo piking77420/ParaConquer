@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <type_traits>
 
-namespace VK_NP
+namespace Vulkan
 {
     
     template <typename T>
@@ -42,8 +42,8 @@ namespace VK_NP
 
 namespace std {
     template <typename T>
-    struct hash<VK_NP::VulkanObjectWrapper<T>> {
-        size_t operator()(const VK_NP::VulkanObjectWrapper<T>& _object) const {
+    struct hash<Vulkan::VulkanObjectWrapper<T>> {
+        size_t operator()(const Vulkan::VulkanObjectWrapper<T>& _object) const {
             size_t hashValue = 0;
             hash_combine(hashValue, *reinterpret_cast<const uint64_t*>(&_object.object));     
             return hashValue;

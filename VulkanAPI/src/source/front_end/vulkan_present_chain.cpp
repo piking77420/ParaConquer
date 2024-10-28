@@ -3,7 +3,7 @@
 #include "GLFW/glfw3.h"
 
 
-void VK_NP::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext)
 {
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -14,26 +14,26 @@ void VK_NP::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext)
 }
 
 
-void VK_NP::VulkanPresentChain::Init(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::Init(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
 {
     CreateSwapchain(_vulkanMainCreateInfo.windowPtr, _vulkanContext);
     CreateSyncObject(_vulkanContext);
 }
 
-void VK_NP::VulkanPresentChain::Destroy(VulkanContext* _context)
+void Vulkan::VulkanPresentChain::Destroy(VulkanContext* _context)
 {
     DestroySyncObject(_context);
     DestroySwapchain(_context);
     _context->device.destroyRenderPass(_context->swapChainRenderPass);
 }
 
-void VK_NP::VulkanPresentChain::RecreateSwapChain(VulkanContext* _context, void* _glfwWindowPtr ,uint32_t _newWidht, uint32_t _newHeight)
+void Vulkan::VulkanPresentChain::RecreateSwapChain(VulkanContext* _context, void* _glfwWindowPtr ,uint32_t _newWidht, uint32_t _newHeight)
 {
     DestroySwapchain(_context);
     CreateSwapchain(_glfwWindowPtr, _context);
 }
 
-void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanContext* _vulkanContext)
 {
     vk::PhysicalDevice phyDevice = _vulkanContext->physicalDevice;
     vk::Device device = _vulkanContext->device;
@@ -96,7 +96,7 @@ void VK_NP::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCont
     
 }
 
-void VK_NP::VulkanPresentChain::DestroySwapchain(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::DestroySwapchain(VulkanContext* _vulkanContext)
 {
 
     for (auto& framebuffer : _vulkanContext->m_SwapChainFramebuffers)
@@ -114,7 +114,7 @@ void VK_NP::VulkanPresentChain::DestroySwapchain(VulkanContext* _vulkanContext)
 }
 
 
-void VK_NP::VulkanPresentChain::WaitForAvailableImage(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::WaitForAvailableImage(VulkanContext* _vulkanContext)
 {
     const uint32_t currentFrame = _vulkanContext->currentFrame;
     VK_CALL(_vulkanContext->device.waitForFences(1, &_vulkanContext->m_syncObject[currentFrame].inFlightFence, VK_TRUE, UINT64_MAX));
@@ -122,7 +122,7 @@ void VK_NP::VulkanPresentChain::WaitForAvailableImage(VulkanContext* _vulkanCont
     VK_CALL(_vulkanContext->device.resetFences(1, &_vulkanContext->m_syncObject[currentFrame].inFlightFence));
 }
 
-void VK_NP::VulkanPresentChain::AquireNetImageKHR(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::AquireNetImageKHR(VulkanContext* _vulkanContext)
 {
     const uint32_t currentFrame = _vulkanContext->currentFrame;
     uint32_t index = -1;
@@ -131,7 +131,7 @@ void VK_NP::VulkanPresentChain::AquireNetImageKHR(VulkanContext* _vulkanContext)
 }
 
 
-void VK_NP::VulkanPresentChain::SwapBuffer(vk::CommandBuffer* _commandBuffers, uint32_t _bufferCount,
+void Vulkan::VulkanPresentChain::SwapBuffer(vk::CommandBuffer* _commandBuffers, uint32_t _bufferCount,
     VulkanContext* _vulkanContext)
 {
     vk::SubmitInfo submitInfo{};
@@ -159,7 +159,7 @@ void VK_NP::VulkanPresentChain::SwapBuffer(vk::CommandBuffer* _commandBuffers, u
     PresentNewImage(_vulkanContext);
 }
 
-vk::SurfaceFormatKHR VK_NP::VulkanPresentChain::ChooseSwapSurfaceFormat(
+vk::SurfaceFormatKHR Vulkan::VulkanPresentChain::ChooseSwapSurfaceFormat(
     const std::vector<vk::SurfaceFormatKHR>& _availableFormats)
 {
     for (const auto& availableFormat : _availableFormats)
@@ -174,7 +174,7 @@ vk::SurfaceFormatKHR VK_NP::VulkanPresentChain::ChooseSwapSurfaceFormat(
     return _availableFormats[0];
 }
 
-vk::PresentModeKHR VK_NP::VulkanPresentChain::ChoosePresentMode(
+vk::PresentModeKHR Vulkan::VulkanPresentChain::ChoosePresentMode(
     const std::vector<vk::PresentModeKHR>& _availablePresentModes)
 {
     // TODO may change in future
@@ -189,7 +189,7 @@ vk::PresentModeKHR VK_NP::VulkanPresentChain::ChoosePresentMode(
     return vk::PresentModeKHR::eFifo;
 }
 
-vk::Extent2D VK_NP::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities)
+vk::Extent2D Vulkan::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities)
 {
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
@@ -207,7 +207,7 @@ vk::Extent2D VK_NP::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, co
     
 }
 
-void VK_NP::VulkanPresentChain::CreateSwapchainImages(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::CreateSwapchainImages(VulkanContext* _vulkanContext)
 {
     _vulkanContext->m_SwapChainImageViews.resize(_vulkanContext->swapChainImageCount);
 
@@ -236,7 +236,7 @@ void VK_NP::VulkanPresentChain::CreateSwapchainImages(VulkanContext* _vulkanCont
 
 
 
-void VK_NP::VulkanPresentChain::CreateFramebuffers(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::CreateFramebuffers(VulkanContext* _vulkanContext)
 {
     _vulkanContext->m_SwapChainFramebuffers.resize(_vulkanContext->m_SwapchainImages.size());
     
@@ -260,7 +260,7 @@ void VK_NP::VulkanPresentChain::CreateFramebuffers(VulkanContext* _vulkanContext
     }
 }
 
-void VK_NP::VulkanPresentChain::CreateRenderPass(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::CreateRenderPass(VulkanContext* _vulkanContext)
 {
     vk::AttachmentDescription colorAttachment{};
     colorAttachment.format = _vulkanContext->m_SurfaceFormat.format;  
@@ -301,7 +301,7 @@ void VK_NP::VulkanPresentChain::CreateRenderPass(VulkanContext* _vulkanContext)
     _vulkanContext->swapChainRenderPass = _vulkanContext->device.createRenderPass(renderPassInfo);
 }
 
-void VK_NP::VulkanPresentChain::CreateSyncObject(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::CreateSyncObject(VulkanContext* _vulkanContext)
 {
 
     vk::SemaphoreCreateInfo semaphoreCreateInfo;
@@ -321,7 +321,7 @@ void VK_NP::VulkanPresentChain::CreateSyncObject(VulkanContext* _vulkanContext)
 
 
 
-void VK_NP::VulkanPresentChain::PresentNewImage(VulkanContext* _vulkanContext)
+void Vulkan::VulkanPresentChain::PresentNewImage(VulkanContext* _vulkanContext)
 {
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;

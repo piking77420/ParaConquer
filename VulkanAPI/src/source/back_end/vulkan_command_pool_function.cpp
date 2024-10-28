@@ -1,6 +1,6 @@
 ﻿#include "back_end/vulkan_command_pool_function.hpp"
 
-vk::CommandBuffer VK_NP::BeginSingleTimeCommands(vk::Device _device, vk::CommandPool _commandPool)
+vk::CommandBuffer Vulkan::BeginSingleTimeCommands(vk::Device _device, vk::CommandPool _commandPool)
 {
     vk::CommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
@@ -20,7 +20,7 @@ vk::CommandBuffer VK_NP::BeginSingleTimeCommands(vk::Device _device, vk::Command
     return outBuffer;
 }
 
-void VK_NP::EndSingleTimeCommands(vk::CommandBuffer _commandBuffer)
+void Vulkan::EndSingleTimeCommands(vk::CommandBuffer _commandBuffer)
 {
     _commandBuffer.end();
 }

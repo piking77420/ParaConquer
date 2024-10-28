@@ -1,6 +1,6 @@
 ﻿#include "rhi_vulkan_parser.hpp"
 
-vk::DescriptorType VK_NP::RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _descriptorType)
+vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _descriptorType)
 {
       vk::DescriptorType result = {};
     switch (_descriptorType)
@@ -64,7 +64,7 @@ vk::DescriptorType VK_NP::RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _de
     return result;
 }
 
-vk::ShaderStageFlagBits VK_NP::RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages)
+vk::ShaderStageFlagBits Vulkan::RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages)
 {
     int result = {};
     for (auto shaderStage : _shaderStages)
@@ -95,7 +95,7 @@ vk::ShaderStageFlagBits VK_NP::RHIShaderStageToVulkan(const std::vector<PC_CORE:
     return static_cast<vk::ShaderStageFlagBits>(result);
 }
 
-vk::PipelineBindPoint VK_NP::RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
+vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
 {
     switch (_shaderProgramPipelineType)
     {
@@ -108,7 +108,7 @@ vk::PipelineBindPoint VK_NP::RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgram
     }
 }
 
-vk::BufferUsageFlags VK_NP::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
+vk::BufferUsageFlags Vulkan::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
 {
     using namespace PC_CORE;
     vk::BufferUsageFlags vkBufferUsageFlags = {};

@@ -34,7 +34,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr)
     constexpr bool installCallBack = true;
     ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
    
-    ImGui_ImplVulkan_InitInfo init_info = VK_NP::VulkanApp::GetImGuiInitInfo();
+    ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo();
     init_info.CheckVkResultFn = CheckError;
     ImGui_ImplVulkan_Init(&init_info);
 }

@@ -5,7 +5,7 @@
 #include "vulkan_physical_devices.hpp"
 
 
-namespace VK_NP
+namespace Vulkan
 {
     // VulkanHarwareWrapper
     class VulkanHarwareWrapper;

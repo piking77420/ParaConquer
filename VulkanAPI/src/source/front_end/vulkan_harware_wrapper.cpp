@@ -19,7 +19,7 @@ const std::vector<const char*> deviceExtensions = {
 
 
 
-void VK_NP::VulkanHarwareWrapper::Init(const VulkanAppCreateInfo& vulkanMainCreateInfo, VulkanContext* _vulkanContext)
+void Vulkan::VulkanHarwareWrapper::Init(const VulkanAppCreateInfo& vulkanMainCreateInfo, VulkanContext* _vulkanContext)
 {
     CreateInstance(&_vulkanContext->instance, vulkanMainCreateInfo.appName, vulkanMainCreateInfo.engineName);
     _vulkanContext->surface = CreateSurface(_vulkanContext->instance, vulkanMainCreateInfo.windowPtr);
@@ -33,7 +33,7 @@ void VK_NP::VulkanHarwareWrapper::Init(const VulkanAppCreateInfo& vulkanMainCrea
     InitVulkanAllocator(_vulkanContext);
 }
 
-void VK_NP::VulkanHarwareWrapper::Destroy(VulkanContext* _context)
+void Vulkan::VulkanHarwareWrapper::Destroy(VulkanContext* _context)
 {
     vmaDestroyAllocator(_context->allocator);
     _context->device.destroy();
@@ -44,7 +44,7 @@ void VK_NP::VulkanHarwareWrapper::Destroy(VulkanContext* _context)
     _context->instance.destroy(nullptr);
 }
 
-std::vector<vk::DynamicState> VK_NP::VulkanHarwareWrapper::GetDynamicState()
+std::vector<vk::DynamicState> Vulkan::VulkanHarwareWrapper::GetDynamicState()
 {
     return
     {
@@ -54,7 +54,7 @@ std::vector<vk::DynamicState> VK_NP::VulkanHarwareWrapper::GetDynamicState()
 }
 
 
-void VK_NP::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, const char* _AppName,
+void Vulkan::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, const char* _AppName,
                                                  const char* _EngineName)
 {
     vk::ApplicationInfo appInfo = {};
@@ -99,7 +99,7 @@ void VK_NP::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, con
     VK_CALL(vk::createInstance(&createInfo, nullptr, _outInstance));
 }
 
-void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
+void Vulkan::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 {
     vk::PhysicalDevice physicalDevice = _vulkanContext->physicalDevice;
     vk::PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.getFeatures();
@@ -160,7 +160,7 @@ void VK_NP::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 }
 
 
-void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanContext)
+void Vulkan::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanContext)
 {
     VmaVulkanFunctions vulkanFunctions = {};
     vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
@@ -180,7 +180,7 @@ void VK_NP::VulkanHarwareWrapper::InitVulkanAllocator(VulkanContext* _vulkanCont
     _vulkanContext->allocator = allocator;
 }
 
-vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentInstance, void* _windowPtr)
+vk::SurfaceKHR Vulkan::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentInstance, void* _windowPtr)
 {
     VkWin32SurfaceCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -190,7 +190,7 @@ vk::SurfaceKHR VK_NP::VulkanHarwareWrapper::CreateSurface(vk::Instance _currentI
     return _currentInstance.createWin32SurfaceKHR(createInfo, nullptr);
 }
 
-std::vector<const char*> VK_NP::VulkanHarwareWrapper::GetRequiredExtensions() const
+std::vector<const char*> Vulkan::VulkanHarwareWrapper::GetRequiredExtensions() const
 {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -209,7 +209,7 @@ std::vector<const char*> VK_NP::VulkanHarwareWrapper::GetRequiredExtensions() co
 
 #ifdef _DEBUG
 
-bool VK_NP::VulkanHarwareWrapper::CheckValidationLayer()
+bool Vulkan::VulkanHarwareWrapper::CheckValidationLayer()
 {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -239,7 +239,7 @@ bool VK_NP::VulkanHarwareWrapper::CheckValidationLayer()
     return true;
 }
 
-vk::Result VK_NP::VulkanHarwareWrapper::CreateDebugUtilsMessengerEXT(const vk::Instance _instance,
+vk::Result Vulkan::VulkanHarwareWrapper::CreateDebugUtilsMessengerEXT(const vk::Instance _instance,
                                                                      const vk::DebugUtilsMessengerCreateInfoEXT*
                                                                      pCreateInfo,
                                                                      const vk::AllocationCallbacks* pAllocator,
@@ -256,7 +256,7 @@ vk::Result VK_NP::VulkanHarwareWrapper::CreateDebugUtilsMessengerEXT(const vk::I
     return _instance.createDebugUtilsMessengerEXT(pCreateInfo, pAllocator, pDebugMessenger, dldi);
 }
 
-void VK_NP::VulkanHarwareWrapper::DestroyDebugUtilsMessengerEXT(const vk::Instance _instance,
+void Vulkan::VulkanHarwareWrapper::DestroyDebugUtilsMessengerEXT(const vk::Instance _instance,
                                                                 vk::DebugUtilsMessengerEXT* pDebugMessenger,
                                                                 const vk::AllocationCallbacks* pAllocator)
 {
@@ -270,7 +270,7 @@ void VK_NP::VulkanHarwareWrapper::DestroyDebugUtilsMessengerEXT(const vk::Instan
     }
 }
 
-VkBool32 VK_NP::VulkanHarwareWrapper::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+VkBool32 Vulkan::VulkanHarwareWrapper::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                     VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                     void* pUserData)
@@ -280,7 +280,7 @@ VkBool32 VK_NP::VulkanHarwareWrapper::DebugCallback(VkDebugUtilsMessageSeverityF
     return VK_FALSE;
 }
 
-void VK_NP::VulkanHarwareWrapper::SetUpDebugMessenger(vk::Instance _instance,
+void Vulkan::VulkanHarwareWrapper::SetUpDebugMessenger(vk::Instance _instance,
                                                       vk::DebugUtilsMessengerEXT* _debugUtilsMessengerEXT)
 {
     if constexpr (!ENABLE_VALIDATION_LAYERS)

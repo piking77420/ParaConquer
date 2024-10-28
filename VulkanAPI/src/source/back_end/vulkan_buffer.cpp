@@ -5,7 +5,7 @@
 
 #include "back_end/vulkan_command_pool_function.hpp"
 
-void VK_NP::Backend::CreateBufferAndAlloc(VulkanContext* _context, uint32_t _size,
+void Vulkan::Backend::CreateBufferAndAlloc(VulkanContext* _context, uint32_t _size,
                                           VkBufferUsageFlags _vkBufferUsageFlags, VmaMemoryUsage vmaMemoryUsage,
                                           VmaAllocationCreateFlags vmaAllocationCreateFlagBits, vk::Buffer* _buffer, VmaAllocation* _allocation,
                                           VmaAllocationInfo* _allocationInfo)
@@ -30,7 +30,7 @@ void VK_NP::Backend::CreateBufferAndAlloc(VulkanContext* _context, uint32_t _siz
     *_buffer = vkBuffer;
 }
 
-void  VK_NP::Backend::CreateGPUBufferFromCPU(VulkanContext* _context, vk::CommandPool _commandPool, uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage,
+void  Vulkan::Backend::CreateGPUBufferFromCPU(VulkanContext* _context, vk::CommandPool _commandPool, uint32_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE usage,
         vk::Buffer* _vkBuffer, VmaAllocation* _vmaAllocation)
 {
      vk::Buffer stagingNuffer = VK_NULL_HANDLE;

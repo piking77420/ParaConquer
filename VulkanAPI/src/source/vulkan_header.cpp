@@ -1,7 +1,7 @@
 ﻿#include "vulkan_header.h"
 
 
-vk::Format VK_NP::RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat)
+vk::Format Vulkan::RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 {
     // TODO
     vk::Format format = {};
@@ -36,7 +36,7 @@ vk::Format VK_NP::RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat)
     return format;
 }
 
-vk::VertexInputRate VK_NP::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
+vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
 {
     switch (_vertexInputRate)
     {
@@ -51,7 +51,7 @@ vk::VertexInputRate VK_NP::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _v
       }
 }
 
-vk::CommandPoolCreateFlagBits VK_NP::CommandPoolCreateFlagBitsToVulkan(
+vk::CommandPoolCreateFlagBits Vulkan::CommandPoolCreateFlagBitsToVulkan(
     PC_CORE::CommandPoolBufferFlag _flag)
 {
     vk::CommandPoolCreateFlagBits commandPoolCreateFlagBits {};
@@ -68,7 +68,7 @@ vk::CommandPoolCreateFlagBits VK_NP::CommandPoolCreateFlagBitsToVulkan(
     return commandPoolCreateFlagBits;
 }
 
-uint32_t VK_NP::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType)
+uint32_t Vulkan::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType)
 {
     uint32_t queueFamiliesIndex = 0;
     

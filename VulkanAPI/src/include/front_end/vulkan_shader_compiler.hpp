@@ -5,7 +5,7 @@
 #include <spirv_reflect.h>
 #include <filesystem>
 
-namespace VK_NP
+namespace Vulkan
 {
     class VulkanShaderCompiler
     {
