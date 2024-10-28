@@ -1,8 +1,7 @@
 ﻿#include "resources/texture.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #include "log.hpp"
+#include "resources/file_loader.hpp"
 
 
 using namespace PC_CORE;
@@ -13,7 +12,7 @@ Texture::~Texture()
 }
 void Texture::SetPath(const fs::path& path)
 {
-    stbi_uc* pixels = stbi_load(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
+    uint8_t* pixels = FileLoader::LoadFile(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, Channel::RGBA);
     //VkDeviceSize dataImageSize=  {};
    // dataImageSize = textureSize.x * textureSize.y * 4;
 
@@ -24,7 +23,7 @@ void Texture::SetPath(const fs::path& path)
     }
     
     //vulkanTexture.Init(pixels, dataImageSize, textureSize);
-    stbi_image_free(pixels);
+    FileLoader::FreeData(pixels);
 
 
     name = path.filename().generic_string();
@@ -36,13 +35,12 @@ void Texture::Load(std::array<std::string, 6>& _maps)
     std::array<void*, 6> datas = {};
     for (size_t i = 0; i < datas.size(); i++)
     {
-        datas[i] = stbi_load(_maps[i].c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
+        datas[i] =  FileLoader::LoadFile(_maps[i].c_str(), &textureSize.x, &textureSize.y, &textureChannel, Channel::RGBA);
     }
     //vulkanTexture.Init(datas, textureSize.x , textureSize.y);
     for (size_t i = 0; i < datas.size(); i++)
     {
-        stbi_image_free(datas[i]);
-
+        FileLoader::FreeData(static_cast<uint8_t*>(datas[i]));
     }
 
     const fs::path path(_maps[0]);

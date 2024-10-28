@@ -21,7 +21,7 @@ void App::Init()
     // Can init without any depedancies
     instance = this;
     CoreIo::Init();
-    window = new Window("Para Conquer Editor");
+    window = new Window("Para Conquer Editor", "ParaConquerLogo.png");
     renderer.InitRHiAndObject(GraphicAPI::VULKAN, window);
 
     // Need other init in order to init

@@ -3,6 +3,7 @@
 #include "back_end/rhi_vulkan_descriptorWrite.hpp"
 #include "back_end/rhi_vulkan_descriptor_layout.hpp"
 #include "back_end/rhi_vulkan_descriptor_pool.hpp"
+#include "back_end/vulkan_buffer.hpp"
 
 
 uint32_t VK_NP::VulkanApp::GetCurrentImage() const
@@ -56,9 +57,10 @@ VK_NP::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
     m_DeleteFunction.push(std::bind(&VulkanPresentChain::Destroy, &m_vulkanPresentChain, std::placeholders::_1));
     m_vulkanShaderManager.Init(&m_VulkanContext);
     m_DeleteFunction.push(std::bind(&VulkanShaderManager::Destroy, &m_vulkanShaderManager, std::placeholders::_1));
-    m_DeleteFunction.push(std::bind(&VulkanBufferMap::Destroy, &bufferMap, std::placeholders::_1));
-
     InitBaseObject();
+
+    
+    m_DeleteFunction.push(std::bind(&VK_NP::VulkanApp::DestroyBuffersAllocations,this ,std::placeholders::_1));
 }
 
 VK_NP::VulkanApp::~VulkanApp()
@@ -181,29 +183,72 @@ VULKAN_API void VK_NP::VulkanApp::WaitDevice()
 
 PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage)
 {
-    return bufferMap.CreateBuffer(&m_VulkanContext, m_VulkanContext.m_resourceCommandPool, static_cast<uint32_t>(_size),
-                                  _data, _usage);
+    vk::Buffer buffer = VK_NULL_HANDLE;
+    VmaAllocation allocation = VK_NULL_HANDLE;
+    VmaAllocationInfo allocationInfo = {};
+    const uint32_t size = static_cast<uint32_t>(_size);
+    
+    if (_usage & PC_CORE::BUFFER_USAGE_VERTEX || _usage & PC_CORE::BUFFER_USAGE_INDEX)
+    {
+        Backend::CreateGPUBufferFromCPU(&m_VulkanContext, m_VulkanContext.m_resourceCommandPool, size, _data, _usage,
+            &buffer, &allocation);
+    }
+    else if (_usage & PC_CORE::BUFFER_USAGE_UNIFORM)
+    {
+        Backend::CreateBufferAndAlloc(&m_VulkanContext, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO,
+                                      VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT, &buffer, &allocation, &allocationInfo);
+    }
+    else if (_usage & PC_CORE::BUFFER_USAGE_SHADER_STORAGE)
+    {
+        
+    }
+    
+    m_VulkanContext.m_BuffersAllocationMap.insert({ VulkanObjectWrapper<vk::Buffer>(buffer), allocation});
+
+    return *reinterpret_cast<PC_CORE::GPUBufferHandle*>(&buffer);
 }
 
 PC_CORE::GPUBufferHandle VK_NP::VulkanApp::BufferData(size_t _size, PC_CORE::GPU_BUFFER_USAGE _usage)
 {
-    return bufferMap.CreateBuffer(&m_VulkanContext, m_VulkanContext.m_resourceCommandPool, static_cast<uint32_t>(_size),
-                                  nullptr, _usage);
+    return BufferData(_size, nullptr, _usage);
 }
 
 void VK_NP::VulkanApp::MapData(PC_CORE::GPUBufferHandle _gpuBufferHandle, void** _data)
 {
-    bufferMap.MapData(&m_VulkanContext, _gpuBufferHandle, _data);
+    vk::Buffer vulkanBuffer = CastObjectToVkObject<vk::Buffer>(_gpuBufferHandle);
+    if (!m_VulkanContext.m_BuffersAllocationMap.contains(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer)))
+    {
+        return;
+    }
+    auto& it = m_VulkanContext.m_BuffersAllocationMap.at(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer));
+    vmaMapMemory(m_VulkanContext.allocator, it, _data);
 }
 
 void VK_NP::VulkanApp::UnMapData(PC_CORE::GPUBufferHandle _gpuBufferHandle)
 {
-    bufferMap.UnMapData(&m_VulkanContext, _gpuBufferHandle);
+    vk::Buffer vulkanBuffer = CastObjectToVkObject<vk::Buffer>(_gpuBufferHandle);
+    if (!m_VulkanContext.m_BuffersAllocationMap.contains(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer)))
+    {
+        return;
+    }
+    auto& it = m_VulkanContext.m_BuffersAllocationMap.at(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer));
+    vmaUnmapMemory(m_VulkanContext.allocator, it);
 }
 
 bool VK_NP::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
 {
-    return bufferMap.DestroyBuffer(&m_VulkanContext, _handle);
+    vk::Buffer vulkanBuffer = CastObjectToVkObject<vk::Buffer>(_handle);
+    const VulkanObjectWrapper<vk::Buffer> bkBufferAsObject = VulkanObjectWrapper<vk::Buffer>(vulkanBuffer);
+    
+    if (!m_VulkanContext.m_BuffersAllocationMap.contains(VulkanObjectWrapper<vk::Buffer>(vulkanBuffer)))
+    {
+        return false;
+    }
+    auto& it = m_VulkanContext.m_BuffersAllocationMap.at(bkBufferAsObject);
+
+    vmaFreeMemory(m_VulkanContext.allocator, it);
+    m_VulkanContext.m_BuffersAllocationMap.erase(bkBufferAsObject);
+    return true;
 }
 
 void VK_NP::VulkanApp::BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, uint32_t _firstBinding,
@@ -431,5 +476,13 @@ void VK_NP::VulkanApp::InitBaseObject()
 void VK_NP::VulkanApp::DestroyBaseObject()
 {
     m_VulkanContext.device.destroyCommandPool(m_VulkanContext.m_resourceCommandPool);
+}
+
+void VK_NP::VulkanApp::DestroyBuffersAllocations(VulkanContext* _vulkanContext)
+{
+    for(auto&& buffer : m_VulkanContext.m_BuffersAllocationMap)
+    {
+        vmaDestroyBuffer(m_VulkanContext.allocator, buffer.first.object, buffer.second);
+    }
 }
 #pragma endregion InitBaseObject

@@ -135,6 +135,8 @@ const ReflectedType& Reflector::GetType()
 template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag>
 Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
+    std::unordered_map<uint32_t, ReflectedType>& memberMap = m_RelfectionMap;
+    
     if (!ContaintType<Holder>())
     {
         PC_LOGERROR("ReflectMember Holder member not found")
@@ -145,6 +147,14 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     {
         AddType<MemberType>();
     }
+    const uint32_t holderKey = GetHash<Holder>();
+    for(auto&& member :  memberMap.at(holderKey).members)
+    {
+        // is there aldready a member name as
+        if (member.membersName == _memberName)
+            return member;
+    }
+    
     // Add to sub member
     const Members members =
         {
@@ -155,7 +165,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
         };
 
     
-    m_RelfectionMap.at(GetHash<Holder>()).members.push_back(members);
+    memberMap.at(holderKey).members.push_back(members);
     return members;
 }
 

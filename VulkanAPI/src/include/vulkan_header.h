@@ -1,15 +1,10 @@
 ﻿#pragma once
 
-#include <array>
-#include <vector>
 #include <string>
 #include <iostream>
-#include <stdexcept>
-#include <cassert>
+
 
 #include <unordered_map>
-#include <vector>
-#include <iostream>
 
 #include "vulkan_typedef.h"
 #include "rendering/render_harware_interface/rhi_typedef.h"
@@ -150,7 +145,7 @@ static std::ostream& operator,(std::ostream& out, std::ostream&(*f)(std::ostream
     vk::CommandPoolCreateFlagBits CommandPoolCreateFlagBitsToVulkan(PC_CORE::CommandPoolBufferFlag _flag);
     
     uint32_t GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType);
-
+    
 }
 
 

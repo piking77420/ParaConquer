@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "rendering/render_harware_interface/RHI.hpp"
+#include "resources/file_loader.hpp"
 
 
 using namespace PC_CORE;
@@ -81,7 +82,7 @@ GLFWwindow* Window::GetHandle()
     return m_Window;
 }
 
-Window::Window(const char* _windowName) : m_WindowName(_windowName)
+Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_windowName)
 {
     m_Monitor = glfwGetPrimaryMonitor();
     Mode = glfwGetVideoMode(m_Monitor);
@@ -103,6 +104,21 @@ Window::Window(const char* _windowName) : m_WindowName(_windowName)
 
     glfwSetFramebufferSizeCallback(m_Window, FramebufferResizeCallback);
     glfwSetWindowUserPointer(m_Window, this);
+
+    int x,y, channel;
+    uint8_t* icongLogo = FileLoader::LoadFile(_logoPath, &x, &y, &channel, Channel::RGBA);
+
+    if (_logoPath == nullptr || icongLogo[0] == ' ')
+    {
+        PC_LOGERROR("Failed to load icongLogo file");
+    }
+
+    GLFWimage images[1];
+    images[0].pixels = icongLogo;
+    images[0].width = static_cast<uint32_t>(x);
+    images[0].height = static_cast<uint32_t>(y);
+
+    glfwSetWindowIcon(m_Window, 1, images);
 }
 
 Window::~Window()

@@ -105,6 +105,7 @@
     <ClInclude Include="src\include\rendering\skydom.hpp" />
     <ClInclude Include="src\include\rendering\viewport.hpp" />
     <ClInclude Include="src\include\resources\descriptor_set_layout.h" />
+    <ClInclude Include="src\include\resources\file_loader.hpp" />
     <ClInclude Include="src\include\resources\material.hpp" />
     <ClInclude Include="src\include\resources\mesh.hpp" />
     <ClInclude Include="src\include\resources\Resource.hpp" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\source\rendering\skydom.cpp" />
     <ClCompile Include="src\source\rendering\viewport.cpp" />
     <ClCompile Include="src\source\resources\descriptor_set_layout.cpp" />
+    <ClCompile Include="src\source\resources\file_loader.cpp" />
     <ClCompile Include="src\source\resources\material.cpp" />
     <ClCompile Include="src\source\resources\mesh.cpp" />
     <ClCompile Include="src\source\resources\Resource.cpp" />

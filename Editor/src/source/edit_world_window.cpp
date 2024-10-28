@@ -45,7 +45,7 @@ void EditWorldWindow::RotateCamera(float _deltatime)
     const auto io = ImGui::GetIO();
 
 
-    const Tbx::Vector2f vec = { io.MouseDelta.x , io.MouseDelta.y };
+    const Tbx::Vector2f vec = { io.MouseDelta.x , -io.MouseDelta.y };
     deltass.AddSample(vec);
     const Tbx::Vector2f average = deltass.GetAvarage<Tbx::Vector2f>();
     yaw += average.x;

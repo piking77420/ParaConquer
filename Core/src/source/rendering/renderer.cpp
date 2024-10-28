@@ -173,7 +173,7 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
     sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
                                    _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
                                    _renderingContext.lowLevelCamera.up);
-    sceneBufferGPU.proj = Tbx::PerspectiveMatrix(_renderingContext.lowLevelCamera.fov,
+    sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis(_renderingContext.lowLevelCamera.fov,
                                                  _renderingContext.lowLevelCamera.aspect,
                                                  _renderingContext.lowLevelCamera.near,
                                                  _renderingContext.lowLevelCamera.far);

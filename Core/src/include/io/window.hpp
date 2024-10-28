@@ -27,7 +27,7 @@ BEGIN_PCCORE
     
         PC_CORE_API GLFWwindow* GetHandle();
 
-        PC_CORE_API Window(const char* _windowName);
+        PC_CORE_API Window(const char* _windowName, const char* _logoPath);
 
         PC_CORE_API ~Window();
     private:

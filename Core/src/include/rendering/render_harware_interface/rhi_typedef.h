@@ -43,7 +43,7 @@ enum class QueuType
 };
 ENUM_FLAGS(QueuType)
 
-   
+
 using GPUObjectHandle = void*;
 using CommandBufferHandle = GPUObjectHandle;
 using CommandPoolHandle = GPUObjectHandle;

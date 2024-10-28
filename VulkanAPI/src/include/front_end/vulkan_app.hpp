@@ -4,7 +4,6 @@
 
 #include "rendering/render_harware_interface/RHI.hpp"
 #include "vulkan_header.h"
-#include "front_end/vulkan_buffer_map.hpp"
 #include "front_end/vulkan_harware_wrapper.hpp"
 #include "front_end/vulkan_present_chain.hpp"
 #include "front_end/vulkan_shader_manager.hpp"
@@ -117,8 +116,6 @@ namespace VK_NP
 	private:
 		VulkanContext m_VulkanContext;
 		
-		VulkanBufferMap bufferMap;
-		
 		VulkanHarwareWrapper m_vulkanHardwareWrapper;
 
 		VulkanPresentChain m_vulkanPresentChain;
@@ -132,6 +129,8 @@ namespace VK_NP
 		void InitBaseObject();
 
 		void DestroyBaseObject();
+
+		void DestroyBuffersAllocations(VulkanContext* _vulkanContext);
 	};
 
 

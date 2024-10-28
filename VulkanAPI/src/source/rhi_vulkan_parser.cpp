@@ -107,3 +107,30 @@ vk::PipelineBindPoint VK_NP::RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgram
         return vk::PipelineBindPoint::eRayTracingKHR;
     }
 }
+
+vk::BufferUsageFlags VK_NP::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
+{
+    using namespace PC_CORE;
+    vk::BufferUsageFlags vkBufferUsageFlags = {};
+
+    if (usage & BUFFER_USAGE_INDEX)
+    {
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer; 
+    }
+    if (usage & BUFFER_USAGE_VERTEX)
+    {
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer; 
+    }
+
+    if (usage & BUFFER_USAGE_UNIFORM)
+    {
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
+    }
+
+    if (usage & BUFFER_USAGE_SHADER_STORAGE)
+    {
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
+    }
+
+    return vkBufferUsageFlags;
+}

@@ -13,6 +13,7 @@
 #include "rendering/light.hpp"
 #include "io/core_io.hpp"
 #include "io/imgui_context.h"
+#include "physics/rigid_body.hpp"
 #include "world/static_mesh.hpp"
 
 using namespace PC_EDITOR_CORE;
@@ -87,6 +88,7 @@ void Editor::InitTestScene()
     Scene& scene = world.scene;
     EntityId cube = scene.CreateEntity("cube");
     scene.AddComponent<Transform>(cube);
+    scene.AddComponent<RigidBody>(cube);
     StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
     mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
 }

@@ -3,16 +3,17 @@
 
 #include "rendering/render_harware_interface/rhi_typedef.h"
 
+
 #define VK_USE_PLATFORM_WIN32_KHR 
 #define NOMINMAX
 #include <map>
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
+#include "back_end/vulkan_object_wrapper.h"
 
 #include <vma/vk_mem_alloc.h>
 
 #include "rendering/render_harware_interface/RHI.hpp"
-
 
 namespace VK_NP
 {
@@ -55,7 +56,6 @@ namespace VK_NP
         vk::Queue presentQueue;
         vk::Queue transferQueu;
     };
-    
 
     struct VulkanContext
     {
@@ -91,7 +91,7 @@ namespace VK_NP
         VkQueues vkQueues;
 #pragma endregion Queues
 
-
+        std::unordered_map<VulkanObjectWrapper<vk::Buffer>, VmaAllocation> m_BuffersAllocationMap;
         vk::CommandPool m_resourceCommandPool;
         
         vk::RenderPass swapChainRenderPass;
