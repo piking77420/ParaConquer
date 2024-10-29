@@ -17,6 +17,12 @@ BEGIN_PCCORE
     {
         std::string name;
         EntityId ecsId;
+
+        Entity() = default;
+
+        ~Entity() = default;
+
+        DEFAULT_COPY_MOVE_OPERATIONS(Entity)
     };
 /*
     REFLECT(Entity)
@@ -31,38 +37,40 @@ BEGIN_PCCORE
         
         PC_CORE_API void Update();
 
+        DEFAULT_COPY_MOVE_OPERATIONS(Scene)
+
         PC_CORE_API Scene() = default;
         
         PC_CORE_API ~Scene() = default;
 
-        PC_CORE_API EntityId CreateEntity(const std::string& name);
+        PC_CORE_API Entity* CreateEntity(const std::string& name);
 
-        PC_CORE_API const Entity* GetEntity(EntityId _id) const;
+        PC_CORE_API const Entity* GetEntityFromId(EntityId _entityId) const;
 
-        PC_CORE_API Entity* GetEntity(EntityId _id);
+        PC_CORE_API Entity* GetEntityFromId(EntityId _entityId);
     
         template <class T>
-        T* GetComponent(EntityId _entityId);
+        T* GetComponent(Entity* _entity);
     
         template<typename T>
-        const T* GetComponent(EntityId _entityId) const;
+        const T* GetComponent(const Entity* _entity) const;
 
-        PC_CORE_API void* GetComponent(EntityId _entityId, uint32_t _componentKey);
-        
-        template<typename T>
-        T* AddComponent(EntityId _entityId);
-
-        PC_CORE_API void AddComponent(EntityId _entityId, uint32_t _componentKey);
-    
-        template<typename T>
-        void RemoveComponent(EntityId _entityId);
-
-        PC_CORE_API void RemoveComponent(EntityId _entityId, uint32_t _componentKey);
+        PC_CORE_API void* GetComponent(Entity* _entity, uint32_t _componentKey);
 
         template<typename T>
-        bool HasComponent(EntityId _entityId) const;
+        T* AddComponent(Entity* _entity);
 
-        PC_CORE_API bool HasComponent(EntityId _entityId, uint32_t _componentKey) const;
+        PC_CORE_API void AddComponent(Entity* _entity, uint32_t _componentKey);
+
+        template<typename T>
+        void RemoveComponent(Entity* _entity);
+
+        PC_CORE_API void RemoveComponent(Entity* _entity, uint32_t _componentKey);
+
+        template<typename T>
+        bool HasComponent(Entity* _entity) const;
+
+        PC_CORE_API bool HasComponent(Entity* _entity, uint32_t _componentKey) const;
     
         template<typename T>
         std::vector<T>* GetData();
@@ -78,38 +86,38 @@ BEGIN_PCCORE
     };
 
     template <typename T>
-    T* Scene::GetComponent(EntityId _entityId)
+    T* Scene::GetComponent(Entity* _entity)
     {
         const uint32_t key = Reflector::GetKey<T>();
-        return reinterpret_cast<T*>(m_EntityRegister.GetComponent(_entityId, key));
+        return reinterpret_cast<T*>(m_EntityRegister.GetComponent(_entity->ecsId, key));
     }
 
     template <typename T>
-    const T* Scene::GetComponent(EntityId _entityId) const
+    const T* Scene::GetComponent(const Entity* _entity) const
     {
         const uint32_t key = Reflector::GetKey<T>();
-        return reinterpret_cast<const T*>(m_EntityRegister.GetComponent(_entityId, key));
+        return reinterpret_cast<const T*>(m_EntityRegister.GetComponent(_entity->ecsId, key));
     }
 
     template <typename T>
-    T* Scene::AddComponent(EntityId _entityId)
+    T* Scene::AddComponent(Entity* _entity)
     {
         const uint32_t key = Reflector::GetKey<T>();
-        return reinterpret_cast<T*>(m_EntityRegister.CreateComponent(_entityId, key));
+        return reinterpret_cast<T*>(m_EntityRegister.CreateComponent(_entity->ecsId, key));
     }
 
-   
+
 
     template <typename T>
-    void Scene::RemoveComponent(EntityId _entityId)
+    void Scene::RemoveComponent(Entity* _entity)
     {
-        RemoveComponent(_entityId, Reflector::GetKey<T>());
+        RemoveComponent(_entity, Reflector::GetKey<T>());
     }
 
     template <typename T>
-    bool Scene::HasComponent(EntityId _entityId) const
+    bool Scene::HasComponent(Entity* _entity) const
     {
-        return m_EntityRegister.IsEntityHasComponent(_entityId, Reflector::GetKey<T>());
+        return m_EntityRegister.IsEntityHasComponent(_entity->ecsId, Reflector::GetKey<T>());
     }
 
     template <typename T>

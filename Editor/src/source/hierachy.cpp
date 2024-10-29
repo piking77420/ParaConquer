@@ -29,7 +29,7 @@ void Hierachy::ShowGraph()
     
     for (PC_CORE::Transform& transform : transforms)
     {
-        PC_CORE::Entity* entity = scene.GetEntity(transform.entityId);
+        PC_CORE::Entity* entity = scene.GetEntityFromId(transform.entityId);
         
         if (ImGui::Button(entity->name.c_str()))
         {

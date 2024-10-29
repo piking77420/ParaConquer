@@ -13,6 +13,8 @@ class SparseSet
 {
 public:
 
+	DEFAULT_COPY_MOVE_OPERATIONS(SparseSet)
+
 	PC_CORE_API std::vector<uint8_t>* GetData();
 
 	PC_CORE_API const std::vector<uint8_t>* GetData() const;

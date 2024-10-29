@@ -22,6 +22,9 @@ BEGIN_PCCORE
     class EntityRegister
     {
     public:
+
+        DEFAULT_COPY_MOVE_OPERATIONS(EntityRegister)
+
         PC_CORE_API std::vector<uint8_t>* GetComponentData(uint32_t _componentKey);
 
         PC_CORE_API const std::vector<uint8_t>* GetComponentData(uint32_t _componentKey) const;

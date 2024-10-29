@@ -35,3 +35,16 @@ type& operator=(type&& other) noexcept = default;
     inline std::underlying_type_t<enumName>& operator&=(std::underlying_type_t<enumName>& left, const enumName right) { return left = left & right; }                                                                       \
     inline std::underlying_type_t<enumName>& operator|=(std::underlying_type_t<enumName>& left, const enumName right) { return left = left | right; }                                                                       \
                                                                                                                                                                                                                             
+
+
+#define DEFAULT_COPY_MOVE_OPERATIONS(type)         \
+    type(const type& other) noexcept = default;             \
+    type(type&& other) noexcept = default;                  \
+    type& operator=(const type& other) noexcept = default;  \
+    type& operator=(type&& other) noexcept = default; \
+
+#define DELETE_COPY_MOVE_OPERATIONS(type)          \
+    type(const type& other) = delete;              \
+    type(type&& other) = delete;                   \
+    type& operator=(const type& other) = delete;   \
+    type& operator=(type&& other) = delete; \

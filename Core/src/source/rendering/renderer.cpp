@@ -192,7 +192,8 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
         if (it->mesh == nullptr)
             continue;
 
-        const Transform* transform = _world.scene.GetComponent<Transform>(it->entityId);
+        const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+        const Transform* transform = _world.scene.GetComponent<Transform>(entity);
 
         Tbx::Matrix4x4f transformMatrix;
         Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);

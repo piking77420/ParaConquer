@@ -63,7 +63,7 @@ void Editor::RotateCube()
         if (entity.ecsId == INVALID_ENTITY_ID)
             continue;
 
-        Transform* transform = world.scene.GetComponent<Transform>(entity.ecsId);
+        Transform* transform = world.scene.GetComponent<Transform>(&entity);
         float time = static_cast<float>(Time::GetTime());
         float x = std::cos(time);
         float y = std::sin(time);
@@ -96,7 +96,7 @@ void Editor::InitTestScene()
     Scene& scene = world.scene;
     for (size_t i = 0; i < 2; i++)
     {
-        EntityId cube = scene.CreateEntity("cube " + std::to_string(i));
+        Entity* cube = scene.CreateEntity("cube " + std::to_string(i));
         scene.AddComponent<Transform>(cube);
         scene.AddComponent<RigidBody>(cube);
         StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
@@ -110,6 +110,9 @@ void Editor::DestroyTestScene()
     physicsWrapper.DestroyBodies(&world.scene);
     world.scene.~Scene();
     world.scene = Scene();
+    m_Selected = nullptr;
+
+    
     //ResourceManager::Delete<Material>("baseMaterial");
     //ResourceManager::Delete<Material>("baseMaterial2");
 }

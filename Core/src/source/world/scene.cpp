@@ -16,51 +16,50 @@ void Scene::Update()
 {
 }
 
-EntityId Scene::CreateEntity(const std::string& name)
+Entity* Scene::CreateEntity(const std::string& name)
 {
-    const Entity entity =
-        { 
-        .name = name,
-        .ecsId = m_EntityRegister.CreateEntity()
-        };
+    Entity entity;
+    entity.name = name,
+    entity.ecsId = m_EntityRegister.CreateEntity();
+
     m_Entities.push_back(entity);
 
-    return m_Entities.at(m_Entities.size() - 1).ecsId;
+    return &m_Entities.at(m_Entities.size() - 1);
 }
 
-const Entity* Scene::GetEntity(EntityId _id) const
+const Entity* Scene::GetEntityFromId(EntityId _entityId) const
 {
-    if (!m_EntityRegister.IsEntityIdValid(_id))
+    if (!m_EntityRegister.IsEntityIdValid(_entityId))
         return nullptr;
 
-    return &*std::ranges::find_if(m_Entities, [_id](const Entity& e){return e.ecsId == _id;});
+    return &*std::ranges::find_if(m_Entities, [&](const Entity& e) {return e.ecsId == _entityId; });
 }
 
-Entity* Scene::GetEntity(EntityId _id)
+Entity* Scene::GetEntityFromId(EntityId _entityId)
 {
-    if (!m_EntityRegister.IsEntityIdValid(_id))
+    if (!m_EntityRegister.IsEntityIdValid(_entityId))
         return nullptr;
 
-    return &*std::ranges::find_if(m_Entities, [_id](const Entity& e){return e.ecsId == _id;});
+    return &*std::ranges::find_if(m_Entities, [&](const Entity& e){return e.ecsId == _entityId;});
 }
 
-void* Scene::GetComponent(EntityId _entityId, uint32_t _componentKey)
+void* Scene::GetComponent(Entity* _entity, uint32_t _componentKey)
 {
-    return reinterpret_cast<void*>(m_EntityRegister.GetComponent(_entityId, _componentKey));
+    return reinterpret_cast<void*>(m_EntityRegister.GetComponent(_entity->ecsId, _componentKey));
 }
 
-void Scene::RemoveComponent(EntityId _entityId, uint32_t _componentKey)
+void Scene::RemoveComponent(Entity* _entity, uint32_t _componentKey)
 {
-    m_EntityRegister.DeleteComponent(_entityId, _componentKey);
+    m_EntityRegister.DeleteComponent(_entity->ecsId, _componentKey);
 }
 
-bool Scene::HasComponent(EntityId _entityId, uint32_t _componentKey) const
+bool Scene::HasComponent(Entity* _entity, uint32_t _componentKey) const
 {
-    return m_EntityRegister.IsEntityHasComponent(_entityId, _componentKey);
+    return m_EntityRegister.IsEntityHasComponent(_entity->ecsId, _componentKey);
 }
 
-void PC_CORE::Scene::AddComponent(EntityId _entityId, uint32_t _componentKey)
+void PC_CORE::Scene::AddComponent(Entity* _entity, uint32_t _componentKey)
 {
-    m_EntityRegister.CreateComponent(_entityId, _componentKey);
+    m_EntityRegister.CreateComponent(_entity->ecsId, _componentKey);
 }
 

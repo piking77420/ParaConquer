@@ -44,10 +44,10 @@ void Inspector::Show()
     {
         const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;
 
-        if (!scene->HasComponent(selected->ecsId, currentKeyComponent))
+        if (!scene->HasComponent(selected, currentKeyComponent))
             continue;
 
-        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->GetComponent(selected->ecsId, currentKeyComponent));
+        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->GetComponent(selected, currentKeyComponent));
         auto reflectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
 
         const char* componentName = m_ReflectedTypes[i]->name.c_str();
@@ -92,7 +92,7 @@ void Inspector::OnInput()
             {
                 if (PC_CORE::World::currentWorld != nullptr)
                 {
-                    PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected->ecsId, m_ReflectedType->HashKey);
+                    PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
                 }
             } 
         }
@@ -193,7 +193,7 @@ void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
     
     if (ImGui::SmallButton("Delete Component"))
     {
-        m_Editor->world.scene.RemoveComponent(_entity->ecsId, _componentId);
+        m_Editor->world.scene.RemoveComponent(_entity, _componentId);
     }
 }
 
