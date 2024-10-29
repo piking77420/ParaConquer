@@ -30,8 +30,6 @@ constexpr bool ENABLE_VALIDATION_LAYERS = false;
 template <typename T, typename OBJ>
 T CastObjectToVkObject(OBJ _handle)
 {
-
-
     if constexpr (std::is_pointer_v<T>)
     {
         using TValue = typename std::remove_pointer<T>::type;

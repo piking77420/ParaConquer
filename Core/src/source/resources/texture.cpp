@@ -10,7 +10,9 @@ using namespace PC_CORE;
 
 Texture::~Texture()
 {
-    //vulkanTexture.Destroy();
+    RHI& rhi = RHI::GetInstance();
+    rhi.DestroyImageView(m_ImageViewHandle);
+    rhi.DestroyImage(m_ImageHandle);
 }
 void Texture::SetPath(const fs::path& path)
 {
@@ -61,6 +63,25 @@ void Texture::SetPath(const fs::path& path)
     
     RHI::GetInstance().DestroyBuffer(stagingBuffer);
 
+    const ImageViewCreateInfo imageViewCreateInfo =
+        {
+        .flags = {},
+        .image = m_ImageHandle,
+        .viewType = ImageViewType::e2D,
+        .format = RHIFormat::R8G8B8A8_SRGB,
+        .components = {},
+        .subresourceRange =
+            {
+            .aspectMask = IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+            }
+        };
+
+    m_ImageViewHandle = RHI::GetInstance().CreateImageView(imageViewCreateInfo);
+    
     name = path.filename().generic_string();
     format = path.extension().generic_string();
     

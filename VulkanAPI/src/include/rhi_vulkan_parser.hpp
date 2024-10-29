@@ -27,5 +27,17 @@ namespace Vulkan
     vk::ImageAspectFlagBits RhiToVKImageAspectFlagBits(PC_CORE::ImageAspectFlagBits _imageAspectFlagBits);
 
     vk::ImageLayout RHIToVKImageLayout(PC_CORE::VkImageLayout _imageLayout);
+
+    vk::ImageViewType RHIImageViewTypeToVulkan(PC_CORE::ImageViewType _imageViewType);
+
+    inline vk::ImageViewCreateFlags RHIToVulkanImageViewCreateFlags(PC_CORE::ImageViewCreateInfoFlags _imageViewCreateInfoFlags)
+    {
+        return static_cast<vk::ImageViewCreateFlags>(_imageViewCreateInfoFlags);
+    }
+
+    inline vk::ComponentSwizzle RHIToVulkanComponentSwizzle(PC_CORE::ComponentSwizzle _componentSwizzle)
+    {
+        return static_cast<vk::ComponentSwizzle>(_componentSwizzle);
+    }
 }
 

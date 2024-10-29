@@ -14,7 +14,6 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
-		
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -119,6 +118,12 @@ namespace Vulkan
 
 		PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
 			PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
+
+		void DestroyImage(PC_CORE::ImageHandle _imageHandle) override;
+
+		void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) override;
+
+		PC_CORE::ImageViewHandle CreateImageView(const PC_CORE::ImageViewCreateInfo& _imageViewCreateInfo) override;
 		
 #pragma endregion Image
 
@@ -152,6 +157,8 @@ namespace Vulkan
 		void DestroyBaseObject();
 
 		void DestroyBuffersAllocations(VulkanContext* _vulkanContext);
+
+		void DestroyImagesAllocations(VulkanContext* _vulkanContext);
 	};
 
 

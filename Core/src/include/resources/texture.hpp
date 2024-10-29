@@ -20,8 +20,9 @@ public:
 
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
 private:
-
     PC_CORE::ImageHandle m_ImageHandle;
+
+    PC_CORE::ImageViewHandle m_ImageViewHandle;
 };
 
 

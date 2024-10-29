@@ -52,6 +52,7 @@ using DescriptorSetLayoutHandle = GPUObjectHandle;
 using DescriptorPoolHandle = GPUObjectHandle;
 using DescriptorSetHandle = GPUObjectHandle;
 using ImageHandle = GPUObjectHandle;
+using ImageViewHandle = GPUObjectHandle;
 
 constexpr GPUBufferHandle NULL_HANDLE = nullptr;
 
@@ -565,8 +566,68 @@ enum VkImageLayout
     LAYOUT_MAX_ENUM = 0x7FFFFFFF
 };
 
+enum class ImageViewType
+{
+   e1D,
+   e2D,
+   e3D,
+   eCUBE,
+   e1DARRAY,
+   e2DARRAY,
+   eCUBEARRAY
+};
+
+enum ImageViewCreateInfoFlags
+{
+    IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT = 0x00000001,
+    IMAGE_VIEW_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT = 0x00000004,
+    IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DEFERRED_BIT_EXT = 0x00000002,
+    IMAGE_VIEW_CREATE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class ComponentSwizzle
+{
+    COMPONENT_SWIZZLE_IDENTITY = 0,
+    COMPONENT_SWIZZLE_ZERO = 1,
+    COMPONENT_SWIZZLE_ONE = 2,
+    COMPONENT_SWIZZLE_R = 3,
+    COMPONENT_SWIZZLE_G = 4,
+    COMPONENT_SWIZZLE_B = 5,
+    COMPONENT_SWIZZLE_A = 6,
+    COMPONENT_SWIZZLE_MAX_ENUM = 0x7FFFFFFF
+};
+
+struct ComponentMapping
+{
+    ComponentSwizzle    r;
+    ComponentSwizzle    g;
+    ComponentSwizzle    b;
+    ComponentSwizzle    a;
+};
+
+struct ImageSubresourceRange
+{
+    ImageAspectFlagBits    aspectMask;
+    uint32_t              baseMipLevel;
+    uint32_t              levelCount;
+    uint32_t              baseArrayLayer;
+    uint32_t              layerCount;
+};
+
+struct ImageViewCreateInfo
+{
+    ImageViewCreateInfoFlags     flags;
+    ImageHandle                    image;
+    ImageViewType            viewType;
+    RHIFormat                   format;
+    ComponentMapping         components;
+    ImageSubresourceRange    subresourceRange;
+};
+
 
 #pragma endregion
+
+
 
 
 #pragma region Shader

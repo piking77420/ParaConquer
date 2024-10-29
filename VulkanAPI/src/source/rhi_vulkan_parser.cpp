@@ -1121,3 +1121,26 @@ vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::VkImageLayout _imageLayout)
     default: ;
     }
 }
+
+vk::ImageViewType Vulkan::RHIImageViewTypeToVulkan(PC_CORE::ImageViewType _imageViewType)
+{
+    switch (_imageViewType)
+    {
+    case PC_CORE::ImageViewType::e1D:
+        return vk::ImageViewType::e1D;
+    case PC_CORE::ImageViewType::e2D:
+        return vk::ImageViewType::e2D;
+    case PC_CORE::ImageViewType::e3D:
+        return vk::ImageViewType::e3D;
+    case PC_CORE::ImageViewType::eCUBE:
+        return vk::ImageViewType::eCube;
+    case PC_CORE::ImageViewType::e1DARRAY:
+        return vk::ImageViewType::e1DArray;
+    case PC_CORE::ImageViewType::e2DARRAY:
+        return vk::ImageViewType::e2DArray;
+    case PC_CORE::ImageViewType::eCUBEARRAY:
+        return vk::ImageViewType::eCubeArray;
+    }
+
+    throw std::runtime_error("Unknown ImageViewType");
+}
