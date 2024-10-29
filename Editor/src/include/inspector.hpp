@@ -8,7 +8,7 @@ BEGIN_EDITOR_PCCORE
     class Inspector : public EditorWindow
 {
 public:
-    ~Inspector() override = default;
+    ~Inspector() override ;
     
     void Update() override;
 

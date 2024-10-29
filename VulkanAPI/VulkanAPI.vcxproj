@@ -161,7 +161,6 @@
     <ClCompile Include="src\source\front_end\vulkan_shader_manager.cpp" />
     <ClCompile Include="src\source\pch.cpp" />
     <ClCompile Include="src\source\rhi_vulkan_parser.cpp" />
-    <ClCompile Include="src\source\vulkan_header.cpp" />
     <ClCompile Include="src\source\vulkan_typedef.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

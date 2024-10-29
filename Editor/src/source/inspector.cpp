@@ -2,8 +2,14 @@
 
 #include "editor.hpp"
 #include "imgui_helper.h"
+#include <ImguiNodeEditor/imgui_node_editor.h>
 
 using namespace PC_EDITOR_CORE;
+
+
+Inspector::~Inspector()
+{
+}
 
 void Inspector::Update()
 {
@@ -20,6 +26,7 @@ void Inspector::Update()
 
 Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
+
 }
 
 void Inspector::Show()
@@ -194,4 +201,5 @@ void Inspector::PrintArray(void* begin, const PC_CORE::Members& _members)
 {
     
 }
-    
+
+

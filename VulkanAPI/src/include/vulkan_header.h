@@ -137,14 +137,7 @@ static std::ostream& operator,(std::ostream& out, std::ostream&(*f)(std::ostream
   out << f;
   return out;
 }
-
-    vk::Format RhiFomatToVkFormat(PC_CORE::RHIFormat rhiFormat);
-
-    vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
-
-    vk::CommandPoolCreateFlagBits CommandPoolCreateFlagBitsToVulkan(PC_CORE::CommandPoolBufferFlag _flag);
-    
-    uint32_t GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType);
+ 
     
 }
 

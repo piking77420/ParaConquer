@@ -208,6 +208,16 @@ BEGIN_PCCORE
 
 #pragma endregion Descriptor
 
+#pragma region Images
+
+        virtual PC_CORE_API ImageHandle CreateImage(uint32_t width, uint32_t height, ImageType _imageType, RHIFormat _format , ImageTiling _tiling,
+            RHIImageUsage _usage)
+        {
+            return nullptr;
+        }
+        
+#pragma endregion Image
+
         static PC_CORE_API void RHILog(LogType _logType, const char* _message)
         {
             if (!m_Instance)
@@ -218,6 +228,14 @@ BEGIN_PCCORE
 
             m_Instance->m_LogCallback(_logType, _message);
         }
+
+#pragma region Command
+        virtual PC_CORE_API void CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image, const PC_CORE::CopyBufferImageInfo& _copyBufferImageInfo) {}
+
+        virtual PC_CORE_API void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) {};
+
+        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, PC_CORE::RHIFormat _format, PC_CORE::VkImageLayout _InitialLayout, PC_CORE::VkImageLayout _finalLayout) {};
+
 
     protected:
         static RHI* m_Instance;

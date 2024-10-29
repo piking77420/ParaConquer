@@ -18,6 +18,9 @@ public:
 	PC_CORE_API IMGUIContext() = delete;
 
 	PC_CORE_API ~IMGUIContext() = delete;
+
+private:
+	
 };
 
 END_PCCORE

@@ -1,8 +1,774 @@
 ﻿#include "rhi_vulkan_parser.hpp"
 
+#pragma region Format
+vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
+{
+    vk::Format format = {};
+    // TODO MAKE ALL FORMAT
+
+    switch (rhiFormat)
+    {
+    case PC_CORE::RHIFormat::UNDEFINED:
+        return vk::Format::eUndefined;
+        
+    case PC_CORE::RHIFormat::R4G4_UNORM_PACK8:
+        return vk::Format::eR4G4UnormPack8;
+        
+    case PC_CORE::RHIFormat::R4G4B4A4_UNORM_PACK16:
+        return vk::Format::eR4G4UnormPack8;
+        
+    case PC_CORE::RHIFormat::B4G4R4A4_UNORM_PACK16:
+        return vk::Format::eB4G4R4A4UnormPack16;
+
+    case PC_CORE::RHIFormat::R5G6B5_UNORM_PACK16:
+        return vk::Format::eR5G6B5UnormPack16;
+
+    case PC_CORE::RHIFormat::B5G6R5_UNORM_PACK16:
+        return vk::Format::eB5G6R5UnormPack16;
+
+    case PC_CORE::RHIFormat::R5G5B5A1_UNORM_PACK16:
+        return vk::Format::eR5G5B5A1UnormPack16;
+
+    case PC_CORE::RHIFormat::B5G5R5A1_UNORM_PACK16:
+        return vk::Format::eB5G5R5A1UnormPack16;
+
+    case PC_CORE::RHIFormat::A1R5G5B5_UNORM_PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8_SRGB:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8_SRGB:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8_SRGB:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8_SRGB:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R8G8B8A8_SRGB:
+        return vk::Format::eR8G8B8A8Srgb;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8A8_SRGB:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_UNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_SNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_USCALED_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_SSCALED_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_UINT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_SINT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8B8G8R8_SRGB_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2R10G10B10_UNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2R10G10B10_SNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2R10G10B10_USCALED_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2R10G10B10_SSCALED_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2R10G10B10_UINT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2R10G10B10_SINT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2B10G10R10_UNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2B10G10R10_SNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2B10G10R10_USCALED_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2B10G10R10_SSCALED_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2B10G10R10_UINT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A2B10G10R10_SINT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_SNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_USCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_SSCALED:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16B16A16_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32_SFLOAT:
+        return vk::Format::eR32G32Sfloat;
+
+    case PC_CORE::RHIFormat::R32G32B32_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32B32_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32B32_SFLOAT:
+        return vk::Format::eR32G32B32Sfloat;
+
+    case PC_CORE::RHIFormat::R32G32B32A32_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32B32A32_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R32G32B32A32_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64B64_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64B64_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64B64_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64B64A64_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64B64A64_SINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R64G64B64A64_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B10G11R11_UFLOAT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::E5B9G9R9_UFLOAT_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::D16_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::X8_D24_UNORM_PACK32:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::D32_SFLOAT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::S8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::D16_UNORM_S8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::D24_UNORM_S8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::D32_SFLOAT_S8_UINT:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC1_RGB_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC1_RGB_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC1_RGBA_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC1_RGBA_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC2_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC2_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC3_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC3_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC4_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC4_SNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC5_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC5_SNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC6H_UFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC6H_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC7_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::BC7_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ETC2_R8G8B8_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ETC2_R8G8B8_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ETC2_R8G8B8A1_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ETC2_R8G8B8A1_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ETC2_R8G8B8A8_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ETC2_R8G8B8A8_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::EAC_R11_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::EAC_R11_SNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::EAC_R11G11_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::EAC_R11G11_SNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_4x4_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_4x4_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_5x4_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_5x4_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_5x5_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_5x5_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_6x5_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_6x5_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_6x6_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_6x6_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x5_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x5_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x6_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x6_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x8_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x8_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x5_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x5_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x6_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x6_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x8_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x8_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x10_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x10_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_12x10_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_12x10_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_12x12_UNORM_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_12x12_SRGB_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8B8G8R8_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B8G8R8G8_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8_B8_R8_3PLANE_420_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8_B8R8_2PLANE_420_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8_B8_R8_3PLANE_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8_B8R8_2PLANE_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8_B8_R8_3PLANE_444_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R10X6_UNORM_PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R10X6G10X6_UNORM_2PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R10X6G10X6B10X6A10X6_UNORM_4PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R12X4_UNORM_PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R12X4G12X4_UNORM_2PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R12X4G12X4B12X4A12X4_UNORM_4PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16B16G16R16_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::B16G16R16G16_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16_B16_R16_3PLANE_420_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16_B16R16_2PLANE_420_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16_B16_R16_3PLANE_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16_B16R16_2PLANE_422_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16_B16_R16_3PLANE_444_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G8_B8R8_2PLANE_444_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::G16_B16R16_2PLANE_444_UNORM:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A4R4G4B4_UNORM_PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A4B4G4R4_UNORM_PACK16:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_4x4_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_5x4_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_5x5_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_6x5_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_6x6_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x5_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x6_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_8x8_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x5_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x6_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x8_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_10x10_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_12x10_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::ASTC_12x12_SFLOAT_BLOCK:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC1_2BPP_UNORM_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC1_4BPP_UNORM_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC2_2BPP_UNORM_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC2_4BPP_UNORM_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC1_2BPP_SRGB_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC1_4BPP_SRGB_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC2_2BPP_SRGB_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::PVRTC2_4BPP_SRGB_BLOCK_IMG:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::R16G16_S10_5_NV:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A1B5G5R5_UNORM_PACK16_KHR:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::A8_UNORM_KHR:
+        return vk::Format::eUndefined;
+
+    case PC_CORE::RHIFormat::COUNT:
+        break;
+    }
+
+    return format;
+}
+#pragma endregion Format
+
 vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _descriptorType)
 {
-      vk::DescriptorType result = {};
+    vk::DescriptorType result = {};
     switch (_descriptorType)
     {
     case PC_CORE::DESCRIPTOR_TYPE::SAMPLER:
@@ -95,7 +861,8 @@ vk::ShaderStageFlagBits Vulkan::RHIShaderStageToVulkan(const std::vector<PC_CORE
     return static_cast<vk::ShaderStageFlagBits>(result);
 }
 
-vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
+vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
+    PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
 {
     switch (_shaderProgramPipelineType)
     {
@@ -115,11 +882,11 @@ vk::BufferUsageFlags Vulkan::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
 
     if (usage & BUFFER_USAGE_INDEX)
     {
-        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer; 
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
     }
     if (usage & BUFFER_USAGE_VERTEX)
     {
-        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer; 
+        vkBufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;
     }
 
     if (usage & BUFFER_USAGE_UNIFORM)
@@ -133,4 +900,160 @@ vk::BufferUsageFlags Vulkan::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
     }
 
     return vkBufferUsageFlags;
+}
+
+
+vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
+{
+    switch (_vertexInputRate)
+    {
+    case PC_CORE::VertexInputRate::VERTEX:
+        return vk::VertexInputRate::eVertex;
+    case PC_CORE::VertexInputRate::INSTANCE:
+        return vk::VertexInputRate::eInstance;
+    case PC_CORE::VertexInputRate::COUNT:
+        throw std::invalid_argument("VertexInputRate::COUNT VertexInputRate");
+    default: ;
+        throw std::invalid_argument("Invalid VertexInputRate");
+    }
+}
+
+vk::CommandPoolCreateFlagBits Vulkan::CommandPoolCreateFlagBitsToVulkan(
+    PC_CORE::CommandPoolBufferFlag _flag)
+{
+    vk::CommandPoolCreateFlagBits commandPoolCreateFlagBits{};
+
+    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_RESET)
+        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+
+    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_TRANSIENT)
+        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eTransient;
+
+    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_PROTECTED)
+        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eProtected;
+
+    return commandPoolCreateFlagBits;
+}
+
+uint32_t Vulkan::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType)
+{
+    uint32_t queueFamiliesIndex = 0;
+
+    if (queueType & PC_CORE::QueuType::GRAPHICS && queueType & PC_CORE::QueuType::TRANSFERT)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
+    }
+    else if (queueType & PC_CORE::QueuType::TRANSFERT)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.transferFamily;
+    }
+    else if (queueType & PC_CORE::QueuType::GRAPHICS)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
+    }
+    else if (queueType & PC_CORE::QueuType::COMPUTE)
+    {
+        queueFamiliesIndex = _context->queuFamiliesIndicies.computeFamily;
+    }
+
+    return queueFamiliesIndex;
+}
+
+vk::ImageTiling Vulkan::RHiImageToVkImageTiling(PC_CORE::ImageTiling _imageTiling)
+{
+    switch (_imageTiling)
+    {
+    case PC_CORE::ImageTiling::IMAGE_TILING_OPTIMAL:
+        return vk::ImageTiling::eOptimal;
+    case PC_CORE::ImageTiling::IMAGE_TILING_LINEAR:
+        return vk::ImageTiling::eLinear;
+    case PC_CORE::ImageTiling::IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT:
+        return vk::ImageTiling::eDrmFormatModifierEXT;
+    default: ;
+    }
+}
+
+vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
+{
+    switch (_imageType)
+    {
+    case PC_CORE::ImageType::IMAGE_1D:
+        return vk::ImageType::e1D;
+    case PC_CORE::ImageType::IMAGE_2D:
+        return vk::ImageType::e2D;
+    case PC_CORE::ImageType::IMAGE_3D:
+        return vk::ImageType::e3D;
+    }
+    return vk::ImageType::e1D;
+}
+
+vk::ImageAspectFlagBits Vulkan::RhiToVKImageAspectFlagBits(PC_CORE::ImageAspectFlagBits _imageAspectFlagBits)
+{
+    return static_cast<vk::ImageAspectFlagBits>(_imageAspectFlagBits);
+}
+
+vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::VkImageLayout _imageLayout)
+{
+    switch (_imageLayout)
+    {
+    case PC_CORE::LAYOUT_UNDEFINED:
+        return vk::ImageLayout::eUndefined;
+    case PC_CORE::LAYOUT_GENERAL:
+        return vk::ImageLayout::eGeneral;
+    case PC_CORE::LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return vk::ImageLayout::eColorAttachmentOptimal;
+    case PC_CORE::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case PC_CORE::LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+        return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
+    case PC_CORE::LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+    case PC_CORE::LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return vk::ImageLayout::eTransferSrcOptimal;
+    case PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL:
+        return vk::ImageLayout::eTransferDstOptimal;
+    case PC_CORE::LAYOUT_PREINITIALIZED:
+        return vk::ImageLayout::ePreinitialized;
+    case PC_CORE::LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+        return vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal;
+    case PC_CORE::LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+        return vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal;
+    case PC_CORE::LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+        return vk::ImageLayout::eDepthAttachmentOptimal;
+    case PC_CORE::LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+        return vk::ImageLayout::eDepthReadOnlyOptimal;
+    case PC_CORE::LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+        return vk::ImageLayout::eStencilAttachmentOptimal;
+    case PC_CORE::LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+        return vk::ImageLayout::eStencilAttachmentOptimal;
+    case PC_CORE::LAYOUT_READ_ONLY_OPTIMAL:
+        return vk::ImageLayout::eReadOnlyOptimal;
+    case PC_CORE::LAYOUT_ATTACHMENT_OPTIMAL:
+        return vk::ImageLayout::eAttachmentOptimal;
+    case PC_CORE::LAYOUT_PRESENT_SRC_KHR:
+        return vk::ImageLayout::eSharedPresentKHR;
+    case PC_CORE::LAYOUT_VIDEO_DECODE_DST_KHR:
+        return vk::ImageLayout::eVideoDecodeDstKHR;
+    case PC_CORE::LAYOUT_VIDEO_DECODE_SRC_KHR:
+        return vk::ImageLayout::eVideoDecodeSrcKHR;
+    case PC_CORE::LAYOUT_VIDEO_DECODE_DPB_KHR:
+        return vk::ImageLayout::eVideoDecodeDpbKHR;
+    case PC_CORE::LAYOUT_SHARED_PRESENT_KHR:
+        return vk::ImageLayout::eSharedPresentKHR;
+    case PC_CORE::LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+        return vk::ImageLayout::eFragmentDensityMapOptimalEXT;
+    case PC_CORE::LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+        return vk::ImageLayout::eFragmentShadingRateAttachmentOptimalKHR;
+    case PC_CORE::LAYOUT_RENDERING_LOCAL_READ_KHR:
+        return vk::ImageLayout::eRenderingLocalReadKHR;
+    case PC_CORE::LAYOUT_VIDEO_ENCODE_DST_KHR:
+        return vk::ImageLayout::eVideoEncodeDstKHR;
+    case PC_CORE::LAYOUT_VIDEO_ENCODE_SRC_KHR:
+        return vk::ImageLayout::eVideoEncodeSrcKHR;
+    case PC_CORE::LAYOUT_VIDEO_ENCODE_DPB_KHR:
+        return vk::ImageLayout::eVideoEncodeDpbKHR;
+    case PC_CORE::LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+        return vk::ImageLayout::eAttachmentFeedbackLoopOptimalEXT;
+    default: ;
+    }
 }

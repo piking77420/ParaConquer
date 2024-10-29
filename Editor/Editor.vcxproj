@@ -99,7 +99,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)PC_CORE_IMPORT;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;CORE_IO_IMPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)PC_CORE_IMPORT;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;CORE_IO_IMPORT;;CORE_IO_EXPORT;;_CRT_SECURE_NO_WARNINGS;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include</AdditionalIncludeDirectories>
@@ -120,10 +120,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;;_CRT_SECURE_NO_WARNINGS;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\externals\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -144,7 +144,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORTPC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;CORE_IO_IMPORT;;CORE_IO_EXPORT;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORTPC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_DLL;PC_CORE_IMPORT;;PC_CORE_IMPORT;;CORE_IO_IMPORT;;CORE_IO_EXPORT;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include</AdditionalIncludeDirectories>
@@ -166,10 +166,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;CORE_IO_IMPORT;;CORE_IO_EXPORT;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;CORE_IO_IMPORT;;CORE_IO_EXPORT;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include;$(ProjectDir)src\externals\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -183,6 +183,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\crude_json.cpp" />
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_canvas.cpp" />
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_node_editor.cpp" />
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_node_editor_api.cpp" />
     <ClCompile Include="src\source\asset_browser.cpp" />
     <ClCompile Include="src\source\editor.cpp" />
     <ClCompile Include="src\source\editor_window.cpp" />
@@ -207,6 +211,15 @@
     <Content Include="src\include\editor_header.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\crude_json.h" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.h" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.inl" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_canvas.h" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.h" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.inl" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor.h" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.h" />
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.inl" />
     <ClInclude Include="src\include\asset_browser.hpp" />
     <ClInclude Include="src\include\editor.hpp" />
     <ClInclude Include="src\include\editor_header.hpp" />

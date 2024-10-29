@@ -235,7 +235,7 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
 
         _attributeDescriptions->at(i).binding = attributeDesription.binding;
         _attributeDescriptions->at(i).location = attributeDesription.location;
-        _attributeDescriptions->at(i).format = Vulkan::RhiFomatToVkFormat(attributeDesription.format);
+        _attributeDescriptions->at(i).format = Vulkan::RHIFormatToVkFormat(attributeDesription.format);
         _attributeDescriptions->at(i).offset = attributeDesription.offset;
     }
 

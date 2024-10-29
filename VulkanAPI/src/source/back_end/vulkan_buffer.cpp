@@ -63,20 +63,7 @@ void  Vulkan::Backend::CreateGPUBufferFromCPU(VulkanContext* _context, vk::Comma
     copyRegion.size = _size;
     commandBuffer.copyBuffer(stagingNuffer, VertexBufferNuffer, 1, &copyRegion);
 
-    EndSingleTimeCommands(commandBuffer);
-
-    // Submit the command buffer and wait with a fence
-    vk::SubmitInfo submitInfo = {};
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    vk::FenceCreateInfo fenceCreateInfo = {};
-    vk::Fence fence = _context->device.createFence(fenceCreateInfo);
-
-    VK_CALL(_context->vkQueues.graphicQueue.submit(1, &submitInfo, fence));
-    VK_CALL(_context->device.waitForFences(1, &fence, VK_TRUE, UINT64_MAX));
-
-    _context->device.destroyFence(fence);
+    EndSingleTimeCommands(commandBuffer, _context->device, _context->resourceFence, _context->vkQueues.graphicQueue);
     
     // Cleanup staging buffer and unmap
     vmaUnmapMemory(_context->allocator, vmaAllocationStaging);

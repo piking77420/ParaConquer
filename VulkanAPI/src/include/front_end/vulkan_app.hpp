@@ -14,6 +14,7 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
+		
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -113,6 +114,26 @@ namespace Vulkan
 			uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets) override;
 
 #pragma endregion DescriptorSetLayout
+
+#pragma region Image
+
+		PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
+			PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
+		
+#pragma endregion Image
+
+#pragma region Command
+
+		void CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image, const PC_CORE::CopyBufferImageInfo& _copyBufferImageInfo) override;
+
+		void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) override;
+
+		void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
+			PC_CORE::RHIFormat _format, PC_CORE::VkImageLayout _InitialLayout, PC_CORE::VkImageLayout _finalLayout) override;
+		
+#pragma endregion Command
+
+		
 	private:
 		VulkanContext m_VulkanContext;
 		

@@ -92,9 +92,11 @@ namespace Vulkan
         QueuFamiliesIndicies queuFamiliesIndicies;
         VkQueues vkQueues;
 #pragma endregion Queues
-
         std::unordered_map<VulkanObjectWrapper<vk::Buffer>, VmaAllocation> m_BuffersAllocationMap;
-        vk::CommandPool m_resourceCommandPool;
+        std::unordered_map<VulkanObjectWrapper<vk::Image>, VmaAllocation> m_ImagesAllocationMap;
+
+        vk::CommandPool resourceCommandPool;
+        vk::Fence resourceFence;
         
         vk::RenderPass swapChainRenderPass;
     };

@@ -12,7 +12,8 @@ enum GPU_BUFFER_USAGE : int
     BUFFER_USAGE_UNIFORM        = 1 << 2,  // 4
     BUFFER_USAGE_SHADER_STORAGE = 1 << 3,  // 8
     BUFFER_USAGE_TRANSFERT_SRC      = 1 << 4,  // 16
-    BUFFER_USAGE_TRANSFERT_DST      = 1 << 5,  // 16
+    BUFFER_USAGE_TRANSFERT_DST      = 1 << 5,  // 32
+    BUFFER_USAGE_TEXTURE = 1 << 6,
 
     COUNT
 };

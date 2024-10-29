@@ -57,12 +57,20 @@ void Editor::InitMaterial()
 
 void Editor::RotateCube()
 {
-   Transform* transform = world.scene.GetComponent<Transform>(0);
-    float time = static_cast<float>(Time::GetTime());
-    float x = std::cos(time);
-    float y = std::sin(time);
-    float z = std::cos(time);
-    transform->rotation = Tbx::Quaternionf::FromEuleur({x,y,z});
+    
+    for (auto& entity : world.scene.m_Entities)
+    {
+        if (entity.ecsId == INVALID_ENTITY_ID)
+            continue;
+
+        Transform* transform = world.scene.GetComponent<Transform>(entity.ecsId);
+        float time = static_cast<float>(Time::GetTime());
+        float x = std::cos(time);
+        float y = std::sin(time);
+        float z = std::cos(time);
+        transform->rotation = Tbx::Quaternionf::FromEuleur({x,y,z});
+    }
+   
 }
 
 void Editor::InitTestScene()
@@ -86,11 +94,15 @@ void Editor::InitTestScene()
     */
 
     Scene& scene = world.scene;
-    EntityId cube = scene.CreateEntity("cube");
-    scene.AddComponent<Transform>(cube);
-    scene.AddComponent<RigidBody>(cube);
-    StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
-    mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    for (size_t i = 0; i < 2; i++)
+    {
+        EntityId cube = scene.CreateEntity("cube " + std::to_string(i));
+        scene.AddComponent<Transform>(cube);
+        scene.AddComponent<RigidBody>(cube);
+        StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
+        mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    }
+    
 }
 
 void Editor::DestroyTestScene()

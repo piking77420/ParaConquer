@@ -19,21 +19,51 @@ void Texture::SetPath(const fs::path& path)
    // dataImageSize = textureSize.x * textureSize.y * 4;
     const size_t size = textureSize.x * textureSize.y * 4;
 
-    GPUBufferHandle buffer;
-    RHI::BufferData(size, pixels);
+        PC_CORE::GPUBufferHandle stagingBuffer = RHI::GetInstance().BufferData(size, pixels, GPU_BUFFER_USAGE::BUFFER_USAGE_TEXTURE);
     
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");
         throw std::runtime_error("failed to load texture image!");
     }
-    
-    //vulkanTexture.Init(pixels, dataImageSize, textureSize);
+
+    void* gpuData;
+    RHI::GetInstance().MapData(stagingBuffer, &gpuData);
+    memcpy(gpuData, pixels, size);
+    RHI::GetInstance().UnMapData(stagingBuffer);
     FileLoader::FreeData(pixels);
 
+    
+    m_ImageHandle = RHI::GetInstance().CreateImage(textureSize.x, textureSize.y, ImageType::IMAGE_2D, RHIFormat::R8G8B8A8_SRGB, ImageTiling::IMAGE_TILING_OPTIMAL,
+        static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_SAMPLED_BIT));
+
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, RHIFormat::R8G8B8A8_SRGB, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
+    const CopyBufferImageInfo copyBufferImageInfo =
+     {
+        .bufferOffset = 0,
+        .bufferRowLength = 0,
+        .bufferImageHeight = 0,
+        .imageSubresource =
+        {
+            .aspectMask = IMAGE_ASPECT_COLOR_BIT,
+            .mipLevel = 0,
+            .baseArrayLayer = 0,
+            .layerCount = 1 
+        },
+        .imageOffset3D = {0, 0, 0 },
+        .imageExtent3D = { static_cast<uint32_t>(textureSize.x), static_cast<uint32_t>(textureSize.x), 1}
+     };
+    
+ 
+    RHI::GetInstance().CopyBufferToImage(stagingBuffer, m_ImageHandle, copyBufferImageInfo);
+    
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, RHIFormat::R8G8B8A8_SRGB, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL, PC_CORE::LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    
+    RHI::GetInstance().DestroyBuffer(stagingBuffer);
 
     name = path.filename().generic_string();
     format = path.extension().generic_string();
+    
 }
 
 void Texture::Load(std::array<std::string, 6>& _maps)

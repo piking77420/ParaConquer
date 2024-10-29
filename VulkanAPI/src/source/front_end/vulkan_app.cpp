@@ -1,9 +1,12 @@
 #include "front_end/vulkan_app.hpp"
 
+#include "rhi_vulkan_parser.hpp"
 #include "back_end/rhi_vulkan_descriptor_write.hpp"
 #include "back_end/rhi_vulkan_descriptor_layout.hpp"
 #include "back_end/rhi_vulkan_descriptor_pool.hpp"
 #include "back_end/vulkan_buffer.hpp"
+#include "back_end/vulkan_command_pool_function.hpp"
+#include "back_end/vulkan_image.hpp"
 
 
 uint32_t Vulkan::VulkanApp::GetCurrentImage() const
@@ -190,10 +193,10 @@ PC_CORE::GPUBufferHandle Vulkan::VulkanApp::BufferData(size_t _size, const void*
     
     if (_usage & PC_CORE::BUFFER_USAGE_VERTEX || _usage & PC_CORE::BUFFER_USAGE_INDEX)
     {
-        Backend::CreateGPUBufferFromCPU(&m_VulkanContext, m_VulkanContext.m_resourceCommandPool, size, _data, _usage,
+        Backend::CreateGPUBufferFromCPU(&m_VulkanContext, m_VulkanContext.resourceCommandPool, size, _data, _usage,
             &buffer, &allocation);
     }
-    else if (_usage & PC_CORE::BUFFER_USAGE_UNIFORM)
+    else if (_usage & PC_CORE::BUFFER_USAGE_UNIFORM || _usage & PC_CORE::BUFFER_USAGE_TEXTURE)
     {
         Backend::CreateBufferAndAlloc(&m_VulkanContext, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO,
                                       VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT, &buffer, &allocation, &allocationInfo);
@@ -451,6 +454,126 @@ void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandB
                                      _descriptorSetCount, vkDescriptorSet, _dynamicOffsetCount, _pDynamicOffsets);
 }
 
+PC_CORE::ImageHandle Vulkan::VulkanApp::CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
+    PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage)
+{
+    const vk::ImageType imageType = RHIImageToVkImageType(_imageType);
+    const vk::Format imageFormat = RHIFormatToVkFormat(_format);
+    const vk::ImageTiling tiling = RHiImageToVkImageTiling(_tiling);
+    const vk::ImageUsageFlags usageFlags = static_cast<vk::ImageUsageFlags>(_usage);
+
+    vk::Image image = VK_NULL_HANDLE;
+    VmaAllocation allocation = VK_NULL_HANDLE;
+    
+    Vulkan::Backend::CreateImage(&m_VulkanContext, _width, _height,  imageType, imageFormat, tiling, usageFlags, VMA_MEMORY_USAGE_AUTO,
+        &image, &allocation);
+    
+    m_VulkanContext.m_ImagesAllocationMap.insert({VulkanObjectWrapper<vk::Image>(image), allocation});
+    
+    return *reinterpret_cast<PC_CORE::ImageHandle*>(&image);
+}
+
+void Vulkan::VulkanApp::CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image, const PC_CORE::CopyBufferImageInfo&
+    _copyBufferImageInfo)
+{
+    vk::Buffer buffer = CastObjectToVkObject<vk::Buffer>(_buffer);
+    vk::Image image = CastObjectToVkObject<vk::Image>(_image);
+    vk::BufferImageCopy copyRegion = {};
+    copyRegion.bufferOffset = _copyBufferImageInfo.bufferOffset;
+    copyRegion.bufferRowLength = _copyBufferImageInfo.bufferRowLength;
+    copyRegion.bufferImageHeight = _copyBufferImageInfo.bufferImageHeight;
+
+    copyRegion.imageSubresource.aspectMask = RhiToVKImageAspectFlagBits(
+            _copyBufferImageInfo.imageSubresource.aspectMask),
+        copyRegion.imageSubresource.mipLevel = _copyBufferImageInfo.imageSubresource.mipLevel,
+        copyRegion.imageSubresource.baseArrayLayer = _copyBufferImageInfo.imageSubresource.baseArrayLayer,
+        copyRegion.imageSubresource.layerCount = _copyBufferImageInfo.imageSubresource.layerCount,
+
+        copyRegion.imageOffset = vk::Offset3D(_copyBufferImageInfo.imageOffset3D[0],
+                                              _copyBufferImageInfo.imageOffset3D[1],
+                                              _copyBufferImageInfo.imageOffset3D[2]);
+    copyRegion.imageExtent = vk::Extent3D(_copyBufferImageInfo.imageExtent3D[0], _copyBufferImageInfo.imageExtent3D[1],
+                                          _copyBufferImageInfo.imageExtent3D[2]);
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device,
+                                                              m_VulkanContext.resourceCommandPool);
+
+    commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &copyRegion);
+
+    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,
+                          m_VulkanContext.vkQueues.graphicQueue);
+    
+}
+
+void Vulkan::VulkanApp::CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst,
+    size_t _srcOffset, size_t _dstOffset, size_t _size)
+{
+    vk::Buffer bufferSrc = CastObjectToVkObject<vk::Buffer>(_bufferSrc);
+    vk::Buffer bufferDST = CastObjectToVkObject<vk::Buffer>(_bufferSrc);
+    
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device, m_VulkanContext.resourceCommandPool);
+
+    vk::BufferCopy copyRegion{};
+    copyRegion.srcOffset = _srcOffset;
+    copyRegion.dstOffset = _dstOffset;
+    copyRegion.size = _size;
+
+    commandBuffer.copyBuffer(bufferSrc, bufferDST, copyRegion);
+
+    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence, m_VulkanContext.vkQueues.graphicQueue);
+}
+
+void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
+                                              PC_CORE::RHIFormat _format, PC_CORE::VkImageLayout _initialLayout, PC_CORE::VkImageLayout _finalLayout)
+{
+    const vk::ImageLayout initialLayout = RHIToVKImageLayout(_initialLayout);
+    const vk::ImageLayout finalLayout = RHIToVKImageLayout(_finalLayout);
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device, m_VulkanContext.resourceCommandPool);
+    
+    vk::ImageMemoryBarrier barrier {};
+    barrier.sType = vk::StructureType::eImageMemoryBarrier;
+    barrier.oldLayout = initialLayout;
+    barrier.newLayout = finalLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = CastObjectToVkObject<vk::Image>(_imageHandle);
+    barrier.subresourceRange.aspectMask = RhiToVKImageAspectFlagBits(_imageAspectFlagBits);
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    
+    vk::PipelineStageFlags sourceStage;
+    vk::PipelineStageFlags destinationStage;
+
+    // TO DO MAKE IT CLEANER
+    if (initialLayout == vk::ImageLayout::eUndefined && finalLayout == vk::ImageLayout::eTransferDstOptimal)
+    {
+        barrier.srcAccessMask = vk::AccessFlagBits::eNone;
+        barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+        sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+        destinationStage = vk::PipelineStageFlagBits::eTransfer;
+    } else if (initialLayout == vk::ImageLayout::eTransferDstOptimal && finalLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+    {
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        sourceStage = vk::PipelineStageFlagBits::eTransfer;
+        destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+    }
+    else
+    {
+        throw std::invalid_argument("unsupported layout transition!");
+    }
+
+    // vk::DependencyFlagBits() ???
+    commandBuffer.pipelineBarrier(sourceStage, destinationStage, vk::DependencyFlagBits() , 0, nullptr, 0, nullptr, 1, &barrier);
+
+    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence, m_VulkanContext.vkQueues.graphicQueue);
+}
+
 #pragma endregion DescriptorSetLayout
 
 
@@ -465,17 +588,24 @@ void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandB
 
 void Vulkan::VulkanApp::InitBaseObject()
 {
+    // resource Command Pool
     vk::CommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
     commandPoolCreateInfo.queueFamilyIndex = m_VulkanContext.queuFamiliesIndicies.graphicsFamily;
     commandPoolCreateInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
+    m_VulkanContext.resourceCommandPool = m_VulkanContext.device.createCommandPool(commandPoolCreateInfo, nullptr);
 
-    m_VulkanContext.m_resourceCommandPool = m_VulkanContext.device.createCommandPool(commandPoolCreateInfo, nullptr);
+    // resource resource fence
+    vk::FenceCreateInfo fenceCreateInfo = {};
+    fenceCreateInfo.sType = vk::StructureType::eFenceCreateInfo;
+    m_VulkanContext.resourceFence = m_VulkanContext.device.createFence(fenceCreateInfo);
+    
 }
 
 void Vulkan::VulkanApp::DestroyBaseObject()
 {
-    m_VulkanContext.device.destroyCommandPool(m_VulkanContext.m_resourceCommandPool);
+    m_VulkanContext.device.destroyCommandPool(m_VulkanContext.resourceCommandPool);
+    m_VulkanContext.device.destroyFence(m_VulkanContext.resourceFence);
 }
 
 void Vulkan::VulkanApp::DestroyBuffersAllocations(VulkanContext* _vulkanContext)

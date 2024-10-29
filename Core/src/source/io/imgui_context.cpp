@@ -12,6 +12,8 @@
 */
 using namespace PC_CORE;
 
+ImGuiIO* io = nullptr;
+
 static void CheckError(VkResult err)
 {
     if (err == 0)
@@ -25,9 +27,11 @@ void IMGUIContext::Init(void* _glfwWindowPtr)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io = &ImGui::GetIO(); (void)io;
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
     ImGui::StyleColorsDark();
 
     GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
@@ -58,6 +62,12 @@ void IMGUIContext::Render(PC_CORE::CommandBuffer _commandBuffer)
     ImGui::Render();
     ImDrawData* draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(draw_data, *reinterpret_cast<vk::CommandBuffer*>(&_commandBuffer.handle));
+
+    if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
 }
 
 
