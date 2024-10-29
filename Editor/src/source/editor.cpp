@@ -58,6 +58,9 @@ void Editor::InitMaterial()
 void Editor::RotateCube()
 {
     
+    if (!world.run)
+        return;
+
     for (auto& entity : world.scene.m_Entities)
     {
         if (entity.ecsId == INVALID_ENTITY_ID)
@@ -75,23 +78,6 @@ void Editor::RotateCube()
 
 void Editor::InitTestScene()
 {
-    /*
-    Scene& scene = world.scene;
-
-    EntityId dirLigthId = scene.CreateEntity("dirLigth");
-    scene.AddComponent<DirLight>(dirLigthId);
-    scene.AddComponent<Transform>(dirLigthId);
-
-    for (size_t i = 0; i < 20; ++i)
-    {
-        EntityId id = scene.CreateEntity("test " + std::to_string(i));
-        scene.AddComponent<Transform>(id);
-        //StaticMesh* static_mesh = scene.AddComponent<StaticMesh>(id);
-        //static_mesh->material = ResourceManager::Get<Material>("baseMaterial");
-        //static_mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
-    }
-    
-    */
 
     Scene& scene = world.scene;
     for (size_t i = 0; i < 2; i++)

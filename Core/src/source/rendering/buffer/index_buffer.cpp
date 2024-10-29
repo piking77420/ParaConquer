@@ -30,7 +30,7 @@ PC_CORE::IndexBuffer::IndexBuffer(const std::vector<uint32_t>& _indicies)
 {
     m_IndiciesCount = static_cast<uint32_t>(_indicies.size());
     size = m_IndiciesCount * sizeof(uint32_t);
-    handleId = RHI::GetInstance().BufferData(size, _indicies.data(), BUFFER_USAGE_INDEX);
+    handleId = RHI::GetInstance().BufferData(size, _indicies.data(), GPU_BUFFER_USAGE::BUFFER_USAGE_INDEX_BUFFER_BIT);
 }
 
 PC_CORE::IndexBuffer::IndexBuffer()

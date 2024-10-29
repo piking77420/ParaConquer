@@ -19,7 +19,7 @@ void Texture::SetPath(const fs::path& path)
    // dataImageSize = textureSize.x * textureSize.y * 4;
     const size_t size = textureSize.x * textureSize.y * 4;
 
-        PC_CORE::GPUBufferHandle stagingBuffer = RHI::GetInstance().BufferData(size, pixels, GPU_BUFFER_USAGE::BUFFER_USAGE_TEXTURE);
+        PC_CORE::GPUBufferHandle stagingBuffer = RHI::GetInstance().BufferData(size, pixels, GPU_BUFFER_USAGE::BUFFER_USAGE_TRANSFER_SRC_BIT);
     
     if (!pixels)
     {

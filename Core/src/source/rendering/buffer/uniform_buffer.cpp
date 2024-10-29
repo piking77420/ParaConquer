@@ -41,7 +41,7 @@ DescriptorBufferInfo UniformBuffer::AsDescriptorBufferInfo(uint32_t _offset) con
 UniformBuffer::UniformBuffer(size_t _size)
 {
     size = _size;
-    handleId = RHI::GetInstance().BufferData(_size, BUFFER_USAGE_UNIFORM);
+    handleId = RHI::GetInstance().BufferData(_size, GPU_BUFFER_USAGE::BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     RHI::GetInstance().MapData(handleId, &m_MapData);
 }
 
