@@ -9,6 +9,8 @@ layout(location = 2) in vec2 inTextCoords;
 
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
+layout(location = 2) out float time;
+
 
 void main()
 {
@@ -19,6 +21,7 @@ void main()
     mat3 normalMatrix = transpose(inverse(mat3(modelMatrix.model)));
     fragColor = normalMatrix * inNormal;
     fragTexCoord = inTextCoords;
+    time = sceneBuffer.time;
     //fragColor = vec3(cos(sceneBuffer.time), sin(sceneBuffer.time - 0.5f), sin(sceneBuffer.time- 0.2f));
 
 }
