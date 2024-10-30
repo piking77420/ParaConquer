@@ -59,6 +59,8 @@ private:
     
     std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> m_SceneBufferUniforms;
 
+    Texture* texture = nullptr;
+
     SceneBufferGPU sceneBufferGPU;
 
     DescriptorSetLayout descriptorSetLayout;

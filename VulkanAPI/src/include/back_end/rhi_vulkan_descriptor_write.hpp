@@ -7,12 +7,12 @@ namespace Vulkan
     namespace Backend
     {
         vk::WriteDescriptorSet RhiToVulkanWriteDescriptorSet(const PC_CORE::DescriptorWriteSet& _writeDescriptorSet,
-            vk::DescriptorBufferInfo* _bufferInfo, vk::DescriptorImageInfo* _imageInfo, vk::BufferView* _pTexelBufferView);
+            std::vector<vk::DescriptorBufferInfo>* _descriptorBufferInfo, std::vector<vk::DescriptorImageInfo>* _imageInfo, std::vector<vk::BufferView>* _pTexelBufferView);
 
 
         vk::DescriptorBufferInfo RhiToVulkanDescriptorBufferInfo(const PC_CORE::DescriptorBufferInfo& _descriptorBufferInfo);
 
-        vk::DescriptorImageInfo rhiToVulkanDescriptorImageInfo(const PC_CORE::DescriptorImageInfo _descriptorImageInfo);
+        vk::DescriptorImageInfo rhiToVulkanDescriptorImageInfo(const PC_CORE::DescriptorImageInfo& _descriptorImageInfo);
         
         
     }

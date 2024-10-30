@@ -220,7 +220,17 @@ BEGIN_PCCORE
 
         virtual PC_CORE_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) {} 
 
-        virtual PC_CORE_API void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) {} 
+        virtual PC_CORE_API void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) {}
+
+        virtual PC_CORE_API PC_CORE::SamplerHandle CreateSampler(const PC_CORE::SamplerCreateInfo&  _samplerCreateInfo)
+        {
+            return nullptr;
+        }
+
+        virtual PC_CORE_API void DestroySampler(PC_CORE::SamplerHandle _samplerHandle)
+        {
+            
+        }
 
 #pragma endregion Image
 
@@ -240,7 +250,7 @@ BEGIN_PCCORE
 
         virtual PC_CORE_API void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) {};
 
-        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, PC_CORE::RHIFormat _format, PC_CORE::VkImageLayout _InitialLayout, PC_CORE::VkImageLayout _finalLayout) {};
+        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, PC_CORE::RHIFormat _format, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) {};
 #pragma endregion Command
 
     protected:

@@ -8,7 +8,7 @@ struct DescriptorLayoutBinding
 {
     uint32_t binding;
     uint32_t descriptorCount;
-    DESCRIPTOR_TYPE descriptorType;
+    DescriptorType descriptorType;
     std::vector<ShaderStageType> shaderStages;
     GPUBufferHandle pImmutableSanpler = nullptr;
 };

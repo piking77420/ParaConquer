@@ -19,10 +19,20 @@ public:
     PC_CORE_API void SetPath(const fs::path& path) override;
 
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
+
+    PC_CORE::ImageHandle GetImageHandle();
+
+    PC_CORE::ImageHandle GetImageViewHandle();
+
+    PC_CORE::ImageHandle GetSamplerHandle();
+
+
 private:
     PC_CORE::ImageHandle m_ImageHandle;
 
     PC_CORE::ImageViewHandle m_ImageViewHandle;
+
+    PC_CORE::SamplerHandle m_SamplerHandle;
 };
 
 

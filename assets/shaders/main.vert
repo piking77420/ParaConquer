@@ -8,6 +8,7 @@ layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec2 inTextCoords;
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out vec2 fragTexCoord;
 
 void main()
 {
@@ -17,6 +18,7 @@ void main()
     gl_Position = position;
     mat3 normalMatrix = transpose(inverse(mat3(modelMatrix.model)));
     fragColor = normalMatrix * inNormal;
+    fragTexCoord = inTextCoords;
     //fragColor = vec3(cos(sceneBuffer.time), sin(sceneBuffer.time - 0.5f), sin(sceneBuffer.time- 0.2f));
 
 }

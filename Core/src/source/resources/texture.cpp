@@ -11,8 +11,14 @@ using namespace PC_CORE;
 Texture::~Texture()
 {
     RHI& rhi = RHI::GetInstance();
-    rhi.DestroyImageView(m_ImageViewHandle);
-    rhi.DestroyImage(m_ImageHandle);
+    if (m_ImageViewHandle != NULL_HANDLE)
+        rhi.DestroyImageView(m_ImageViewHandle);
+    
+    if (m_ImageHandle != NULL_HANDLE)
+        rhi.DestroyImage(m_ImageHandle);
+    
+    if (m_SamplerHandle != NULL_HANDLE)
+        rhi.DestroySampler(m_SamplerHandle);
 }
 void Texture::SetPath(const fs::path& path)
 {
@@ -81,6 +87,27 @@ void Texture::SetPath(const fs::path& path)
         };
 
     m_ImageViewHandle = RHI::GetInstance().CreateImageView(imageViewCreateInfo);
+
+    const SamplerCreateInfo samplerCreateInfo =
+        {
+        .flags = {},
+        .magFilter = Filter::LINEAR,
+        .minFilter = Filter::LINEAR,
+        .mipmapMode = {},
+        .addressModeU = SamplerAddressMode::REPEAT,
+        .addressModeV = SamplerAddressMode::REPEAT,
+        .addressModeW = SamplerAddressMode::REPEAT,
+        .mipLodBias = 1,
+        .anisotropyEnable = true,
+        .compareEnable = false,
+        .compareOp = CompareOp::ALWAYS,
+        .minLod = 0.f,
+        .maxLod = 0.f,
+        .borderColor = BorderColor::INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = false
+        };
+    
+   m_SamplerHandle = RHI::GetInstance().CreateSampler(samplerCreateInfo);
     
     name = path.filename().generic_string();
     format = path.extension().generic_string();
@@ -105,3 +132,19 @@ void Texture::Load(std::array<std::string, 6>& _maps)
     name = path.filename().generic_string();
     format = path.extension().generic_string();
 }
+
+PC_CORE::ImageHandle Texture::GetImageHandle()
+{
+    return m_ImageHandle;
+}
+
+PC_CORE::ImageHandle Texture::GetImageViewHandle()
+{
+    return m_ImageViewHandle;
+}
+
+PC_CORE::ImageHandle Texture::GetSamplerHandle()
+{
+    return m_SamplerHandle;
+}
+    

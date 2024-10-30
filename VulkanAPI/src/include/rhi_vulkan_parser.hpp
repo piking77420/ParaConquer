@@ -6,7 +6,7 @@ namespace Vulkan
 {
     vk::Format RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat);
     
-    vk::DescriptorType RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _descriptorType);
+    vk::DescriptorType RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType);
 
     vk::ShaderStageFlagBits RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages);
 
@@ -26,7 +26,7 @@ namespace Vulkan
 
     vk::ImageAspectFlagBits RhiToVKImageAspectFlagBits(PC_CORE::ImageAspectFlagBits _imageAspectFlagBits);
 
-    vk::ImageLayout RHIToVKImageLayout(PC_CORE::VkImageLayout _imageLayout);
+    vk::ImageLayout RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout);
 
     vk::ImageViewType RHIImageViewTypeToVulkan(PC_CORE::ImageViewType _imageViewType);
 
@@ -39,5 +39,17 @@ namespace Vulkan
     {
         return static_cast<vk::ComponentSwizzle>(_componentSwizzle);
     }
+
+    vk::SamplerCreateFlags RHIToVulkanSamplerCreateInfoFlags(PC_CORE::SamplerCreateInfoFlags _createInfoFlags);
+
+    vk::Filter RHIToVulkanFilter(PC_CORE::Filter _filter);
+
+    vk::SamplerMipmapMode RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode _mipmapMode);
+
+    vk::SamplerAddressMode RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAddressMode _samplerAddressMode);
+
+    vk::CompareOp RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp);
+
+    vk::BorderColor RHIToBorderColor(PC_CORE::BorderColor _borderColor);
 }
 

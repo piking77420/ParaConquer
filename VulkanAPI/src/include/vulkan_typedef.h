@@ -64,6 +64,7 @@ namespace Vulkan
         vk::Instance instance;
         vk::Device device;
         vk::PhysicalDevice physicalDevice;
+        vk::PhysicalDeviceProperties physicalDeviceProperties;
         VmaAllocator allocator;
 #pragma region DebugCallBack
 #ifdef _DEBUG

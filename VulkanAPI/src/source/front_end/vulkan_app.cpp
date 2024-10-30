@@ -435,13 +435,22 @@ void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSet
 void Vulkan::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount,
                                             PC_CORE::DescriptorWriteSet* _descriptorWrite)
 {
-    vk::DescriptorBufferInfo descriptorBufferInfo{};
-    vk::DescriptorImageInfo descriptorImageInfo{};
-    vk::BufferView bufferView{};
+    std::vector<vk::WriteDescriptorSet> vkWriteDescriptorSet(_descriptorWriteCount);
+    std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos;
+    std::vector<vk::DescriptorImageInfo> descriptorImageInfos;
+    std::vector<vk::BufferView> bufferViewTexelBuffer;
 
-    const vk::WriteDescriptorSet vkDescriptorWrite = Backend::RhiToVulkanWriteDescriptorSet(
-        *_descriptorWrite, &descriptorBufferInfo, &descriptorImageInfo, &bufferView);
-    m_VulkanContext.device.updateDescriptorSets(_descriptorWriteCount, &vkDescriptorWrite, 0, nullptr);
+
+    for (uint32_t i = 0; i < _descriptorWriteCount; i++)
+    {
+        const vk::WriteDescriptorSet vkDescriptorWrite = Backend::RhiToVulkanWriteDescriptorSet(
+            _descriptorWrite[i], &descriptorBufferInfos, &descriptorImageInfos, &bufferViewTexelBuffer);
+
+        vkWriteDescriptorSet[i] = vkDescriptorWrite;
+    }
+    
+    
+    m_VulkanContext.device.updateDescriptorSets(static_cast<uint32_t>(vkWriteDescriptorSet.size()), vkWriteDescriptorSet.data(), 0, nullptr);
 }
 
 void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer,
@@ -531,6 +540,40 @@ PC_CORE::ImageViewHandle Vulkan::VulkanApp::CreateImageView(const PC_CORE::Image
     return imageView;
 }
 
+PC_CORE::SamplerHandle Vulkan::VulkanApp::CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo)
+{
+    vk::SamplerCreateInfo createInfo = {};
+    createInfo.sType = vk::StructureType::eSamplerCreateInfo;
+    createInfo.pNext = nullptr;
+    createInfo.flags = RHIToVulkanSamplerCreateInfoFlags(_samplerCreateInfo.flags);
+    createInfo.magFilter = RHIToVulkanFilter(_samplerCreateInfo.magFilter);
+    createInfo.minFilter = RHIToVulkanFilter(_samplerCreateInfo.minFilter);
+    createInfo.mipmapMode = RHIToSamplerMipmapMode(_samplerCreateInfo.mipmapMode);
+    createInfo.addressModeU = RHIToVulkanSamplerAddressMode(_samplerCreateInfo.addressModeU);
+    createInfo.addressModeV = RHIToVulkanSamplerAddressMode(_samplerCreateInfo.addressModeV);
+    createInfo.addressModeW = RHIToVulkanSamplerAddressMode(_samplerCreateInfo.addressModeW);
+    createInfo.mipLodBias = _samplerCreateInfo.mipLodBias;
+    createInfo.anisotropyEnable = _samplerCreateInfo.anisotropyEnable ? vk::True : vk::False;
+    createInfo.maxAnisotropy = m_VulkanContext.physicalDeviceProperties.limits.maxSamplerAnisotropy;
+    createInfo.compareEnable = _samplerCreateInfo.compareEnable ? vk::True : vk::False;
+    createInfo.compareOp = RHIToVulkanCompareOp(_samplerCreateInfo.compareOp);
+    createInfo.minLod = _samplerCreateInfo.minLod;
+    createInfo.maxLod = _samplerCreateInfo.maxLod;
+    createInfo.borderColor = RHIToBorderColor(_samplerCreateInfo.borderColor);
+    createInfo.unnormalizedCoordinates = _samplerCreateInfo.unnormalizedCoordinates ? vk::True : vk::False;
+    
+    
+    PC_CORE::SamplerHandle samplerHandle;
+    VK_CALL(m_VulkanContext.device.createSampler(&createInfo, nullptr,CastObjectToVkObject<vk::Sampler*>(&samplerHandle)));
+
+    return samplerHandle;
+}
+
+void Vulkan::VulkanApp::DestroySampler(PC_CORE::SamplerHandle _samplerHandle)
+{
+    m_VulkanContext.device.destroySampler(CastObjectToVkObject<vk::Sampler>(_samplerHandle));
+}
+
 void Vulkan::VulkanApp::CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image,
                                           const PC_CORE::CopyBufferImageInfo&
                                           _copyBufferImageInfo)
@@ -585,8 +628,8 @@ void Vulkan::VulkanApp::CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE:
 
 void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
                                               PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
-                                              PC_CORE::RHIFormat _format, PC_CORE::VkImageLayout _initialLayout,
-                                              PC_CORE::VkImageLayout _finalLayout)
+                                              PC_CORE::RHIFormat _format, PC_CORE::ImageLayout _initialLayout,
+                                              PC_CORE::ImageLayout _finalLayout)
 {
     const vk::ImageLayout initialLayout = RHIToVKImageLayout(_initialLayout);
     const vk::ImageLayout finalLayout = RHIToVKImageLayout(_finalLayout);

@@ -27,6 +27,8 @@ void Vulkan::VulkanHarwareWrapper::Init(const VulkanAppCreateInfo& vulkanMainCre
     SetUpDebugMessenger(_vulkanContext->instance, &_vulkanContext->m_DebugMessenger);
 #endif
     _vulkanContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(_vulkanContext,  deviceExtensions);
+    _vulkanContext->physicalDevice.getProperties(&_vulkanContext->physicalDeviceProperties);
+    
     _vulkanContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(
         _vulkanContext->physicalDevice, _vulkanContext->surface);
     CreateDevice(_vulkanContext);
@@ -126,6 +128,7 @@ void Vulkan::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
     }
 
     vk::PhysicalDeviceFeatures deviceFeatures = {};
+    deviceFeatures.samplerAnisotropy = vk::True;
 
     vk::DeviceCreateInfo vkDevicecreateInfo = {};
     vkDevicecreateInfo.pQueueCreateInfos = queueCreateInfos.data();

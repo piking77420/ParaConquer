@@ -766,64 +766,64 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 }
 #pragma endregion Format
 
-vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DESCRIPTOR_TYPE _descriptorType)
+vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType)
 {
     vk::DescriptorType result = {};
     switch (_descriptorType)
     {
-    case PC_CORE::DESCRIPTOR_TYPE::SAMPLER:
+    case PC_CORE::DescriptorType::SAMPLER:
         result = vk::DescriptorType::eSampler;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::COMBINED_IMAGE_SAMPLER:
+    case PC_CORE::DescriptorType::COMBINED_IMAGE_SAMPLER:
         result = vk::DescriptorType::eCombinedImageSampler;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::SAMPLED_IMAGE:
+    case PC_CORE::DescriptorType::SAMPLED_IMAGE:
         result = vk::DescriptorType::eSampledImage;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::STORAGE_IMAGE:
+    case PC_CORE::DescriptorType::STORAGE_IMAGE:
         result = vk::DescriptorType::eStorageImage;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::UNIFORM_TEXEL_BUFFER:
+    case PC_CORE::DescriptorType::UNIFORM_TEXEL_BUFFER:
         result = vk::DescriptorType::eUniformTexelBuffer;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::STORAGE_TEXEL_BUFFER:
+    case PC_CORE::DescriptorType::STORAGE_TEXEL_BUFFER:
         result = vk::DescriptorType::eStorageTexelBuffer;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::UNIFORM_BUFFER:
+    case PC_CORE::DescriptorType::UNIFORM_BUFFER:
         result = vk::DescriptorType::eUniformBuffer;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::STORAGE_BUFFER:
+    case PC_CORE::DescriptorType::STORAGE_BUFFER:
         result = vk::DescriptorType::eStorageBuffer;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::UNIFORM_BUFFER_DYNAMIC:
+    case PC_CORE::DescriptorType::UNIFORM_BUFFER_DYNAMIC:
         result = vk::DescriptorType::eUniformBufferDynamic;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::STORAGE_BUFFER_DYNAMIC:
+    case PC_CORE::DescriptorType::STORAGE_BUFFER_DYNAMIC:
         result = vk::DescriptorType::eStorageBufferDynamic;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::INPUT_ATTACHMENT:
+    case PC_CORE::DescriptorType::INPUT_ATTACHMENT:
         result = vk::DescriptorType::eInputAttachment;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::INLINE_UNIFORM_BLOCK:
+    case PC_CORE::DescriptorType::INLINE_UNIFORM_BLOCK:
         result = vk::DescriptorType::eInlineUniformBlock;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::ACCELERATION_STRUCTURE_KHR:
+    case PC_CORE::DescriptorType::ACCELERATION_STRUCTURE_KHR:
         result = vk::DescriptorType::eAccelerationStructureKHR;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::ACCELERATION_STRUCTURE_NV:
+    case PC_CORE::DescriptorType::ACCELERATION_STRUCTURE_NV:
         result = vk::DescriptorType::eAccelerationStructureNV;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::SAMPLE_WEIGHT_IMAGE_QCOM:
+    case PC_CORE::DescriptorType::SAMPLE_WEIGHT_IMAGE_QCOM:
         result = vk::DescriptorType::eSampleWeightImageQCOM;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::BLOCK_MATCH_IMAGE_QCOM:
+    case PC_CORE::DescriptorType::BLOCK_MATCH_IMAGE_QCOM:
         result = vk::DescriptorType::eBlockMatchImageQCOM;
 
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::MUTABLE_EXT:
+    case PC_CORE::DescriptorType::MUTABLE_EXT:
         result = vk::DescriptorType::eMutableEXT;
         break;
-    case PC_CORE::DESCRIPTOR_TYPE::COUNT:
+    case PC_CORE::DescriptorType::COUNT:
         break;
     }
 
@@ -1056,7 +1056,7 @@ vk::ImageAspectFlagBits Vulkan::RhiToVKImageAspectFlagBits(PC_CORE::ImageAspectF
     return static_cast<vk::ImageAspectFlagBits>(_imageAspectFlagBits);
 }
 
-vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::VkImageLayout _imageLayout)
+vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout)
 {
     switch (_imageLayout)
     {
@@ -1143,4 +1143,131 @@ vk::ImageViewType Vulkan::RHIImageViewTypeToVulkan(PC_CORE::ImageViewType _image
     }
 
     throw std::runtime_error("Unknown ImageViewType");
+}
+
+vk::SamplerCreateFlags Vulkan::RHIToVulkanSamplerCreateInfoFlags(PC_CORE::SamplerCreateInfoFlags _createInfoFlags)
+{
+    vk::SamplerCreateFlags samplerCreateInfo = {};
+    if (_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::SUBSAMPLED_BIT_EXT)
+    {
+        samplerCreateInfo |= vk::SamplerCreateFlagBits::eSubsampledEXT;
+    }
+    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT)
+    {
+        samplerCreateInfo |= vk::SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT;
+    }
+    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT)
+    {
+        samplerCreateInfo |= vk::SamplerCreateFlagBits::eDescriptorBufferCaptureReplayEXT;
+    }
+    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::NON_SEAMLESS_CUBE_MAP_BIT_EXT)
+    {
+        samplerCreateInfo |= vk::SamplerCreateFlagBits::eNonSeamlessCubeMapEXT;
+    }
+    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::IMAGE_PROCESSING_BIT_QCOM)
+    {
+        samplerCreateInfo |= vk::SamplerCreateFlagBits::eImageProcessingQCOM;
+    }
+    
+    return samplerCreateInfo;
+}
+
+vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
+{
+    switch (_filter)
+    {
+    case PC_CORE::Filter::NEAREST:
+        return vk::Filter::eNearest;
+    case PC_CORE::Filter::LINEAR:
+        return vk::Filter::eLinear;
+    case PC_CORE::Filter::CUBIC_IMG:
+        return vk::Filter::eLinear;
+    case PC_CORE::Filter::CUBIC_EXT:
+        return vk::Filter::eLinear;
+    }
+    
+    throw std::runtime_error("Unknown Filter");
+}
+
+vk::SamplerMipmapMode Vulkan::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode _mipmapMode)
+{
+    switch (_mipmapMode)
+    {
+    case PC_CORE::SamplerMipmapMode::NEAREST:
+        return vk::SamplerMipmapMode::eNearest;
+    case PC_CORE::SamplerMipmapMode::LINEAR:
+        return vk::SamplerMipmapMode::eLinear;
+    }
+    
+    
+    throw std::runtime_error("Unknown SamplerMipmapMode");
+}
+
+vk::SamplerAddressMode Vulkan::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAddressMode _samplerAddressMode)
+{
+    switch (_samplerAddressMode)
+    {
+    case PC_CORE::SamplerAddressMode::REPEAT:
+        return vk::SamplerAddressMode::eRepeat;
+    case PC_CORE::SamplerAddressMode::MIRRORED_REPEAT:
+        return vk::SamplerAddressMode::eMirroredRepeat;
+    case PC_CORE::SamplerAddressMode::CLAMP_TO_EDGE:
+        return vk::SamplerAddressMode::eClampToEdge;
+    case PC_CORE::SamplerAddressMode::CLAMP_TO_BORDER:
+        return vk::SamplerAddressMode::eClampToBorder;
+    case PC_CORE::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE:
+        return vk::SamplerAddressMode::eMirrorClampToEdge;
+    }
+    
+    throw std::runtime_error("Unknown SamplerAddressMode");
+}
+
+vk::CompareOp Vulkan::RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
+{
+    switch (_compareOp)
+    {
+    case PC_CORE::CompareOp::NEVER:
+        return vk::CompareOp::eNever;
+    case PC_CORE::CompareOp::LESS:
+        return vk::CompareOp::eLess;
+    case PC_CORE::CompareOp::EQUAL:
+        return vk::CompareOp::eEqual;
+    case PC_CORE::CompareOp::LESS_OR_EQUAL:
+        return vk::CompareOp::eLessOrEqual;
+    case PC_CORE::CompareOp::GREATER:
+        return vk::CompareOp::eGreater;
+    case PC_CORE::CompareOp::NOT_EQUAL:
+        return vk::CompareOp::eNotEqual;
+    case PC_CORE::CompareOp::GREATER_OR_EQUAL:
+        return vk::CompareOp::eGreaterOrEqual;
+    case PC_CORE::CompareOp::ALWAYS:
+        return vk::CompareOp::eAlways;
+    }
+
+    throw std::runtime_error("Unknown CompareOp");
+}
+
+vk::BorderColor Vulkan::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
+{
+    switch (_borderColor)
+    {
+    case PC_CORE::BorderColor::FLOAT_TRANSPARENT_BLACK:
+        return vk::BorderColor::eFloatTransparentBlack;
+    case PC_CORE::BorderColor::INT_TRANSPARENT_BLACK:
+        return vk::BorderColor::eIntTransparentBlack;
+    case PC_CORE::BorderColor::FLOAT_OPAQUE_BLACK:
+        return vk::BorderColor::eFloatOpaqueBlack;
+    case PC_CORE::BorderColor::INT_OPAQUE_BLACK:
+        return vk::BorderColor::eIntOpaqueBlack;
+    case PC_CORE::BorderColor::FLOAT_OPAQUE_WHITE:
+        return vk::BorderColor::eFloatOpaqueWhite;
+    case PC_CORE::BorderColor::INT_OPAQUE_WHITE:
+        return vk::BorderColor::eIntOpaqueWhite;
+    case PC_CORE::BorderColor::FLOAT_CUSTOM_EXT:
+        return vk::BorderColor::eFloatCustomEXT;
+    case PC_CORE::BorderColor::INT_CUSTOM_EXT:
+        return vk::BorderColor::eIntCustomEXT;
+    }
+
+    throw std::runtime_error("Unknown BorderColor");
 }

@@ -116,15 +116,19 @@ namespace Vulkan
 
 #pragma region Image
 
-		PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
+		VULKAN_API PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
 			PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
 
-		void DestroyImage(PC_CORE::ImageHandle _imageHandle) override;
+		VULKAN_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) override;
 
-		void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) override;
+		VULKAN_API void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) override;
 
-		PC_CORE::ImageViewHandle CreateImageView(const PC_CORE::ImageViewCreateInfo& _imageViewCreateInfo) override;
-		
+		VULKAN_API PC_CORE::ImageViewHandle CreateImageView(const PC_CORE::ImageViewCreateInfo& _imageViewCreateInfo) override;
+
+		VULKAN_API PC_CORE::SamplerHandle CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) override;
+
+		VULKAN_API void DestroySampler(PC_CORE::SamplerHandle _samplerHandle) override;
+
 #pragma endregion Image
 
 #pragma region Command
@@ -134,7 +138,7 @@ namespace Vulkan
 		void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) override;
 
 		void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
-			PC_CORE::RHIFormat _format, PC_CORE::VkImageLayout _InitialLayout, PC_CORE::VkImageLayout _finalLayout) override;
+			PC_CORE::RHIFormat _format, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) override;
 		
 #pragma endregion Command
 

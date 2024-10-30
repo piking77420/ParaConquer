@@ -16,8 +16,6 @@
 using namespace PC_CORE;
 
 
-
-
 void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
@@ -32,7 +30,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 {
     m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
     UpdateUniforms(_renderingContext);
-    
+
     ViewPort viewport =
     {
         .position = {},
@@ -52,10 +50,11 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 
     RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
     RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
-    
+
     m_MainShader->Bind(m_CommandBuffer->handle);
-    
-    RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1, &m_DescriptorSets[m_CurrentImage], 0, nullptr);
+
+    RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1,
+                                         &m_DescriptorSets[m_CurrentImage], 0, nullptr);
     DrawStaticMesh(_renderingContext, _world);
 }
 
@@ -169,15 +168,14 @@ void Renderer::InitBuffer()
 
 void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 {
-    
     sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
                                    _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
                                    _renderingContext.lowLevelCamera.up);
     sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis(_renderingContext.lowLevelCamera.fov,
-                                                 _renderingContext.lowLevelCamera.aspect,
-                                                 _renderingContext.lowLevelCamera.near,
-                                                 _renderingContext.lowLevelCamera.far);
-    
+                                                          _renderingContext.lowLevelCamera.aspect,
+                                                          _renderingContext.lowLevelCamera.near,
+                                                          _renderingContext.lowLevelCamera.far);
+
     sceneBufferGPU.deltatime = _renderingContext.deltaTime;
     sceneBufferGPU.time = _renderingContext.time;
     m_SceneBufferUniforms[m_CurrentImage].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
@@ -185,7 +183,7 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-   const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
+    const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
 
     for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
     {
@@ -203,11 +201,11 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
         m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
         RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
     }
-    
 }
 
 void Renderer::InitRenderResources()
 {
+    texture = ResourceManager::Get<Texture>("diamond_block.jpg");
     InitShader();
     InitBuffer();
     InitDescriptors();
@@ -221,7 +219,7 @@ void Renderer::InitCommandPools()
         .commandPoolBufferFlag = COMMAND_POOL_BUFFER_RESET,
     };
     m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
-    
+
     const CommandBufferCreateInfo commandBufferCreateInfo =
     {
         .commandBufferPtr = m_SwapChainCommandBuffers.data(),
@@ -234,46 +232,78 @@ void Renderer::InitCommandPools()
 void Renderer::InitDescriptors()
 {
     const std::vector<PC_CORE::DescriptorLayoutBinding> descriptorLayoutBindings =
+    {
         {
-            {
-                .binding = 0,
-                .descriptorCount = 1,
-                .descriptorType = PC_CORE::DESCRIPTOR_TYPE::UNIFORM_BUFFER,
-                .shaderStages = {PC_CORE::ShaderStageType::VERTEX},
-                .pImmutableSanpler = nullptr,
-            }
-        };
+            .binding = 0,
+            .descriptorCount = 1,
+            .descriptorType = PC_CORE::DescriptorType::UNIFORM_BUFFER,
+            .shaderStages = {PC_CORE::ShaderStageType::VERTEX},
+            .pImmutableSanpler = nullptr,
+        },
+
+        {
+            .binding = 1,
+            .descriptorCount = 1,
+            .descriptorType = PC_CORE::DescriptorType::COMBINED_IMAGE_SAMPLER,
+            .shaderStages = {PC_CORE::ShaderStageType::FRAGMENT},
+            .pImmutableSanpler = nullptr,
+        }
+    };
     descriptorSetLayout = DescriptorSetLayout(descriptorLayoutBindings);
 
 
-    const DescriptorPoolSize descriptorPoolSize =
-        {
-        .type = PC_CORE::DESCRIPTOR_TYPE::UNIFORM_BUFFER,
-        .count = 1,
-        };
-    descriptorPool = DescriptorPool(&descriptorPoolSize, 1, MAX_FRAMES_IN_FLIGHT);
+    std::array<DescriptorPoolSize, 2> descriptorPoolSize;
+    descriptorPoolSize[0].type = PC_CORE::DescriptorType::UNIFORM_BUFFER;
+    descriptorPoolSize[0].count = 1;
+    descriptorPoolSize[1].type = PC_CORE::DescriptorType::COMBINED_IMAGE_SAMPLER;
+    descriptorPoolSize[1].count = 1;
 
-    descriptorPool.AllocDescriptorSet(m_DescriptorSets.data(), static_cast<uint32_t>(m_DescriptorSets.size()), descriptorSetLayout);
+
+    descriptorPool = DescriptorPool(descriptorPoolSize.data(), descriptorPoolSize.size(), MAX_FRAMES_IN_FLIGHT);
+
+    descriptorPool.AllocDescriptorSet(m_DescriptorSets.data(), static_cast<uint32_t>(m_DescriptorSets.size()),
+                                      descriptorSetLayout);
 
     // TODO Write Descriptors
-    for (size_t i = 0 ; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         constexpr size_t offset = 0;
         DescriptorBufferInfo descriptorBufferInfo = m_SceneBufferUniforms[i].AsDescriptorBufferInfo(offset);
 
-        DescriptorWriteSet descriptorWrite =
-            {
-            .dstDescriptorSetHandle = m_DescriptorSets[i].handle,
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorType = DESCRIPTOR_TYPE::UNIFORM_BUFFER,
-            .descriptorCount = 1,
-            
-            .descriptorBufferInfo = &descriptorBufferInfo,
-            .descriptorImageInfo = nullptr,
-            .descriptorTexelBufferViewInfo = nullptr
-            };
+        DescriptorImageInfo imageInfo =
+        {
+            .sampler = texture->GetSamplerHandle(),
+            .imageView = texture->GetImageViewHandle(),
+            .imageLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        };
 
-        RHI::GetInstance().UpdateDescriptorSet(1, &descriptorWrite);
+        DescriptorWriteSet descriptorWrite[2] =
+        {
+
+            {
+                .dstDescriptorSetHandle = m_DescriptorSets[i].handle,
+                .dstBinding = 0,
+                .dstArrayElement = 0,
+                .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                .descriptorCount = 1,
+
+                .descriptorBufferInfo = &descriptorBufferInfo,
+                .descriptorImageInfo = nullptr,
+                .descriptorTexelBufferViewInfo = nullptr
+            },
+            {
+                .dstDescriptorSetHandle = m_DescriptorSets[i].handle,
+                .dstBinding = 1,
+                .dstArrayElement = 0,
+                .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+                .descriptorCount = 1,
+                .descriptorBufferInfo = nullptr,
+                .descriptorImageInfo = &imageInfo,
+                .descriptorTexelBufferViewInfo = nullptr
+            }
+        };
+
+
+        RHI::GetInstance().UpdateDescriptorSet(2, &descriptorWrite[0]);
     }
 }

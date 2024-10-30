@@ -22,7 +22,7 @@ bool Vulkan::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physica
     
     if (physicalDeviceProperties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu ||
         indices.graphicsFamily == INVALID_QUEU || indices.presentFamily == INVALID_QUEU || !extensionsSupported || !
-        swapChainAdequate || featuresCheck)
+        swapChainAdequate || featuresCheck || !physicalDeviceFeatures.samplerAnisotropy)
         return false;
 
     *_outQueuFamiliesIndicies = indices;

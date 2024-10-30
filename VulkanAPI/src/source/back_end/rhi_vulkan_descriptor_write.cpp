@@ -4,7 +4,7 @@
 
 vk::WriteDescriptorSet Vulkan::Backend::RhiToVulkanWriteDescriptorSet(
     const PC_CORE::DescriptorWriteSet& _writeDescriptorSet,
-    vk::DescriptorBufferInfo* _bufferInfo, vk::DescriptorImageInfo* _imageInfo, vk::BufferView* _pTexelBufferView)
+    std::vector<vk::DescriptorBufferInfo>* _descriptorBufferInfo, std::vector<vk::DescriptorImageInfo>* _imageInfo, std::vector<vk::BufferView>* _pTexelBufferView)
 {
     vk::WriteDescriptorSet descriptorWrite = {};
     descriptorWrite.sType = vk::StructureType::eWriteDescriptorSet;
@@ -16,13 +16,14 @@ vk::WriteDescriptorSet Vulkan::Backend::RhiToVulkanWriteDescriptorSet(
 
     if (_writeDescriptorSet.descriptorBufferInfo != nullptr)
     {
-        *_bufferInfo = RhiToVulkanDescriptorBufferInfo(*_writeDescriptorSet.descriptorBufferInfo);
-        descriptorWrite.pBufferInfo = _bufferInfo;
+        _descriptorBufferInfo->push_back(RhiToVulkanDescriptorBufferInfo(*_writeDescriptorSet.descriptorBufferInfo));
+        descriptorWrite.pBufferInfo = &_descriptorBufferInfo->at(_descriptorBufferInfo->size() - 1);
     }
 
     if (_writeDescriptorSet.descriptorImageInfo != nullptr)
     {
-        // TODO DO IMAGE 
+       _imageInfo->push_back(rhiToVulkanDescriptorImageInfo(*_writeDescriptorSet.descriptorImageInfo));
+        descriptorWrite.pImageInfo = &_imageInfo->at(_imageInfo->size() - 1);
     }
 
     if (_writeDescriptorSet.descriptorTexelBufferViewInfo != nullptr)
@@ -43,4 +44,16 @@ vk::DescriptorBufferInfo Vulkan::Backend::RhiToVulkanDescriptorBufferInfo(
     descriptorBuffer.range = _descriptorBufferInfo.range;
 
     return descriptorBuffer;
+}
+
+vk::DescriptorImageInfo Vulkan::Backend::rhiToVulkanDescriptorImageInfo(
+    const PC_CORE::DescriptorImageInfo& _descriptorImageInfo)
+{
+    vk::DescriptorImageInfo descriptorImage = {};
+
+    descriptorImage.sampler = CastObjectToVkObject<vk::Sampler>(_descriptorImageInfo.sampler),
+        descriptorImage.imageView = CastObjectToVkObject<vk::ImageView>(_descriptorImageInfo.imageView),
+        descriptorImage.imageLayout = RHIToVKImageLayout(_descriptorImageInfo.imageLayout);
+
+    return descriptorImage;
 }

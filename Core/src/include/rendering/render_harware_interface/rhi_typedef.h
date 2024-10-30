@@ -53,6 +53,7 @@ using DescriptorPoolHandle = GPUObjectHandle;
 using DescriptorSetHandle = GPUObjectHandle;
 using ImageHandle = GPUObjectHandle;
 using ImageViewHandle = GPUObjectHandle;
+using SamplerHandle = GPUObjectHandle;
 
 constexpr GPUBufferHandle NULL_HANDLE = nullptr;
 
@@ -99,7 +100,7 @@ enum class CommandBufferlevel
     COUT
 };
 
-enum class DESCRIPTOR_TYPE
+enum class DescriptorType
 {
     SAMPLER = 0,
     COMBINED_IMAGE_SAMPLER = 1,
@@ -125,7 +126,7 @@ enum class DESCRIPTOR_TYPE
 
 struct DescriptorPoolSize
 {
-    DESCRIPTOR_TYPE type;
+    DescriptorType type;
     uint32_t count;
 };
 
@@ -523,7 +524,7 @@ enum ImageAspectFlagBits
     IMAGE_ASPECT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-enum VkImageLayout
+enum ImageLayout
 {
     LAYOUT_UNDEFINED = 0,
     LAYOUT_GENERAL = 1,
@@ -750,7 +751,9 @@ struct DescriptorBufferInfo
 
 struct DescriptorImageInfo
 {
-    
+    SamplerHandle        sampler;
+    ImageViewHandle     imageView;
+    ImageLayout    imageLayout;
 };
 
 struct DescriptorTexelBufferViewInfo
@@ -765,7 +768,7 @@ struct DescriptorTexelBufferViewInfo
         DescriptorSetHandle dstDescriptorSetHandle = nullptr;
         uint32_t dstBinding = 0;
         uint32_t dstArrayElement = 0;
-        DESCRIPTOR_TYPE descriptorType;
+        DescriptorType descriptorType;
         uint32_t descriptorCount = 1;
         
         DescriptorBufferInfo* descriptorBufferInfo = nullptr;
@@ -792,6 +795,87 @@ struct CopyBufferImageInfo
     int32_t                  imageOffset3D[3] {};
     uint32_t                  imageExtent3D[3]  {};
 };
+ 
+#pragma region Samplers
+
+enum class SamplerCreateInfoFlags
+{
+    SUBSAMPLED_BIT_EXT = 1 << 0,
+   SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT = 1 << 1,
+   DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT = 1 << 2,
+   NON_SEAMLESS_CUBE_MAP_BIT_EXT = 1 << 3,
+    IMAGE_PROCESSING_BIT_QCOM               = 1 << 4
+};
+
+ENUM_FLAGS(SamplerCreateInfoFlags)
+
+enum class Filter
+{
+     NEAREST,
+     LINEAR,
+      CUBIC_IMG,
+       CUBIC_EXT
+};
+
+enum class SamplerMipmapMode
+{
+    NEAREST = 0,
+    LINEAR = 1,
+};
+
+enum class SamplerAddressMode
+{
+    REPEAT = 0,
+    MIRRORED_REPEAT = 1,
+    CLAMP_TO_EDGE = 2,
+    CLAMP_TO_BORDER = 3,
+    MIRROR_CLAMP_TO_EDGE = 4,
+};
+
+enum class CompareOp
+{
+    NEVER = 0,
+    LESS = 1,
+    EQUAL = 2,
+    LESS_OR_EQUAL = 3,
+    GREATER = 4,
+    NOT_EQUAL = 5,
+    GREATER_OR_EQUAL = 6,
+    ALWAYS = 7,
+};
+
+enum class BorderColor
+{
+    FLOAT_TRANSPARENT_BLACK = 0,
+    INT_TRANSPARENT_BLACK = 1,
+    FLOAT_OPAQUE_BLACK = 2,
+    INT_OPAQUE_BLACK = 3,
+    FLOAT_OPAQUE_WHITE = 4,
+    INT_OPAQUE_WHITE = 5,
+    FLOAT_CUSTOM_EXT = 1000287003,
+    INT_CUSTOM_EXT
+};
+
+struct SamplerCreateInfo
+{
+    SamplerCreateInfoFlags    flags;
+    Filter                magFilter;
+    Filter                minFilter;
+    SamplerMipmapMode     mipmapMode;
+    SamplerAddressMode    addressModeU;
+    SamplerAddressMode    addressModeV;
+    SamplerAddressMode    addressModeW;
+    float                   mipLodBias;
+    bool                anisotropyEnable;
+    bool                compareEnable;
+    CompareOp             compareOp;
+    float                   minLod;
+    float                   maxLod;
+    BorderColor           borderColor;
+    bool                unnormalizedCoordinates;
+};
+
+#pragma endregion 
 
 
 
