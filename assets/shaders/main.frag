@@ -12,5 +12,5 @@ layout(binding = 1) uniform sampler2D texSampler;
 
 void main() 
 {
-    outColor = texture(texSampler, mix(fragTexCoord * tan(time),fragTexCoord * tan(time) + sin(time),time )); 
+    outColor = texture(texSampler, fragTexCoord); 
 }

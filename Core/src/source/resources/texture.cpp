@@ -42,8 +42,9 @@ void Texture::SetPath(const fs::path& path)
     FileLoader::FreeData(pixels);
 
     
-    m_ImageHandle = RHI::GetInstance().CreateImage(textureSize.x, textureSize.y, ImageType::IMAGE_2D, RHIFormat::R8G8B8A8_SRGB, ImageTiling::IMAGE_TILING_OPTIMAL,
-        static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_SAMPLED_BIT));
+    const uint32_t mipLevel = std::floor(std::log2(std::max(textureSize.x, textureSize.y))); 
+    m_ImageHandle = RHI::GetInstance().CreateImage(textureSize.x, textureSize.y, mipLevel, ImageType::IMAGE_2D, RHIFormat::R8G8B8A8_SRGB,
+                                                   ImageTiling::IMAGE_TILING_OPTIMAL, static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_SAMPLED_BIT));
 
     RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, RHIFormat::R8G8B8A8_SRGB, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     const CopyBufferImageInfo copyBufferImageInfo =

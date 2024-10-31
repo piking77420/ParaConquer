@@ -467,9 +467,9 @@ void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandB
                                      _descriptorSetCount, vkDescriptorSet, _dynamicOffsetCount, _pDynamicOffsets);
 }
 
-PC_CORE::ImageHandle Vulkan::VulkanApp::CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
-                                                    PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling,
-                                                    PC_CORE::RHIImageUsage _usage)
+PC_CORE::ImageHandle Vulkan::VulkanApp::CreateImage(uint32_t _width, uint32_t _height, uint32_t mipLevels,
+                                                    PC_CORE::ImageType _imageType, PC_CORE::RHIFormat _format,
+                                                    PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage)
 {
     const vk::ImageType imageType = RHIImageToVkImageType(_imageType);
     const vk::Format imageFormat = RHIFormatToVkFormat(_format);

@@ -116,8 +116,8 @@ namespace Vulkan
 
 #pragma region Image
 
-		VULKAN_API PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, PC_CORE::ImageType _imageType,
-			PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
+		VULKAN_API PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, uint32_t mipLevels,
+		                                            PC_CORE::ImageType _imageType, PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
 
 		VULKAN_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) override;
 

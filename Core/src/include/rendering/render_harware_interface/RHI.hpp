@@ -210,8 +210,8 @@ BEGIN_PCCORE
 
 #pragma region Images
 
-        virtual PC_CORE_API ImageHandle CreateImage(uint32_t width, uint32_t height, ImageType _imageType, RHIFormat _format , ImageTiling _tiling,
-            RHIImageUsage _usage)
+        virtual PC_CORE_API ImageHandle CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, ImageType _imageType, RHIFormat _format,
+                                                    ImageTiling _tiling, RHIImageUsage _usage)
         {
             return nullptr;
         }
