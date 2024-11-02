@@ -2,6 +2,7 @@
 
 #include "editor.hpp"
 #include "time/core_time.hpp"
+#include "Imgui/imgui_impl_vulkan.h"
 
 #undef near
 #undef far
@@ -11,17 +12,7 @@ using namespace PC_EDITOR_CORE;
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
-    //viewportId = _editor.renderer.vulkanViewport.CreateViewPort(true);
-    //m_ImaguiDescriptorSet.resize(PC_CORE::VulkanInterface::GetNbrOfImage());
-
-    //viewPort = &_editor.renderer.vulkanViewport.GetViewPort(viewportId);
-
-    /*
-    for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
-    {
-        m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
-            ,viewPort->forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    }*/
+    m_ImaguiDescriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
 }
 
 WorldViewWindow::~WorldViewWindow()
@@ -32,23 +23,29 @@ WorldViewWindow::~WorldViewWindow()
 void WorldViewWindow::Update()
 {
     EditorWindow::Update();
-    /*
+    
     if (resize)
     {
-        m_Editor->renderer.WaitGPU();
-        m_Editor->renderer.vulkanViewport.OnResize(viewportId, {static_cast<int>(size.x),static_cast<int>(size.y) } );
+        m_Editor->renderer.WaitDevice();
+
+        const int32_t widht = static_cast<int32_t>(size.x);
+        const int32_t height = static_cast<int32_t>(size.y);
+        const Tbx::Vector2i textureSize = m_Texture.GetTextureSize();
         
-        for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
+        if (textureSize.x != widht || textureSize.y != height)
         {
-            ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
-            m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
-                ,viewPort->forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            ResizeViewport();        
         }
+
+        
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(m_ImaguiDescriptorSet.at(PC_CORE::VulkanInterface::GetCurrentFrame()), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
-            ImVec2(1, 0));*/
+    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
+    VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
+    
+    ImGui::Image(descriptorSet, ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
+            ImVec2(1, 0));
 }
 
 void WorldViewWindow::Render()
@@ -73,4 +70,27 @@ void WorldViewWindow::Render()
     renderingContext.deltaTime = PC_CORE::Time::DeltaTime(); 
 
     m_Editor->renderer.Render(renderingContext, m_Editor->world);
+}
+
+void WorldViewWindow::ResizeViewport()
+{
+    // Wait the gpu before resizing a resource
+    m_Editor->renderer.WaitDevice();
+    
+    const PC_CORE::CreateTextureInfo createTextureInfo =
+        {
+        .width = m_Editor->window->GetWindowSize().x,
+        .height =  m_Editor->window->GetWindowSize().y,
+        .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
+        .imageAspectFlagBits = PC_CORE::IMAGE_ASPECT_COLOR_BIT
+        };
+
+    m_Texture = PC_CORE::Texture(createTextureInfo);
+
+    for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
+    {
+        ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
+        m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(CastObjectToVkObject<vk::Sampler>(m_Texture.GetSamplerHandle())
+            , CastObjectToVkObject<vk::ImageView>(m_Texture.GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
 }
