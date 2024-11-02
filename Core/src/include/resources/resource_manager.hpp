@@ -49,8 +49,7 @@ T* ResourceManager::Create(const fs::path& path)
 {
     static_assert(std::is_base_of_v<Resource,T>,"T is not a resource");
     
-    T* newR = new T;
-    newR->SetPath(path);
+    T* newR = new T(path);
    
     m_ResourcesMap.emplace(path,newR);
 

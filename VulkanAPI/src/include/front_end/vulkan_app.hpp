@@ -14,6 +14,7 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
+		
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -119,6 +120,9 @@ namespace Vulkan
 		VULKAN_API PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, uint32_t mipLevels,
 		                                            PC_CORE::ImageType _imageType, PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
 
+		VULKAN_API void GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RHIFormat _imageFormat, int32_t _texWidth,
+			int32_t _texHeight, uint32_t _mipLevels) override;
+
 		VULKAN_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) override;
 
 		VULKAN_API void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) override;
@@ -138,7 +142,7 @@ namespace Vulkan
 		void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) override;
 
 		void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
-			PC_CORE::RHIFormat _format, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) override;
+			PC_CORE::RHIFormat _format,uint32_t _mipLevel , PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) override;
 		
 #pragma endregion Command
 

@@ -7,7 +7,18 @@ Resource::Resource() : guid(Guid::New())
     
 }
 
-Resource::Resource(std::string _name, std::string _format, fs::path _path, Guid _guid) : name(std::move(_name)),
-format(std::move(_format)), path(std::move(_path)), guid(_guid)
+Resource::Resource(const fs::path& _path)
 {
+    SetPath(_path);
+    const fs::path& fileName = _path.filename();
+    name = fileName.generic_string();
+    format = fileName.extension().generic_string();
+    guid = Guid::New();
+    
 }
+
+void Resource::SetPath(const fs::path& _path)
+{
+    path = _path;
+}
+

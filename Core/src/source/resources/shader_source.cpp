@@ -7,19 +7,14 @@
 
 using namespace PC_CORE;
 
-void ShaderSource::SetPath(const fs::path& _path)
+ShaderSource::ShaderSource(const fs::path& _path) : Resource(_path)
 {
-    path = _path;
-    
     uint32_t formatIndex = -1;
-    const std::string currentFormat = path.filename().extension().generic_string();
-    
-    if (!Resource::IsFormatValid(ShaderSourceFormat, currentFormat, &formatIndex))
+
+    if (!Resource::IsFormatValid(ShaderSourceFormat, format, &formatIndex))
     {
         PC_LOGERROR("Shader invalid format")
     }
-
-    name = path.filename().generic_string();
     format = ShaderSourceFormat[formatIndex];
     shaderType = static_cast<ShaderStageType>(formatIndex);
 }

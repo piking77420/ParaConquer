@@ -479,13 +479,23 @@ PC_CORE::ImageHandle Vulkan::VulkanApp::CreateImage(uint32_t _width, uint32_t _h
     vk::Image image = VK_NULL_HANDLE;
     VmaAllocation allocation = VK_NULL_HANDLE;
 
-    Vulkan::Backend::CreateImage(&m_VulkanContext, _width, _height, imageType, imageFormat, tiling, usageFlags,
+    Vulkan::Backend::CreateImage(&m_VulkanContext, _width, _height, mipLevels, imageType, imageFormat, tiling, usageFlags,
                                  VMA_MEMORY_USAGE_AUTO,
                                  &image, &allocation);
 
     m_VulkanContext.m_ImagesAllocationMap.insert({VulkanObjectWrapper<vk::Image>(image), allocation});
 
     return *reinterpret_cast<PC_CORE::ImageHandle*>(&image);
+}
+
+void Vulkan::VulkanApp::GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RHIFormat _imageFormat, int32_t _texWidth,
+    int32_t _texHeight, uint32_t _mipLevels)
+{
+    vk::Image image = CastObjectToVkObject<vk::Image>(_image);
+    const vk::Format format = RHIFormatToVkFormat(_imageFormat);
+    
+    Backend::GenerateMipmaps(image, format, _texWidth, _texHeight, _mipLevels,
+        m_VulkanContext.physicalDevice, m_VulkanContext.device, m_VulkanContext.resourceCommandPool, m_VulkanContext.resourceFence, m_VulkanContext.vkQueues.graphicQueue);
 }
 
 void Vulkan::VulkanApp::DestroyImage(PC_CORE::ImageHandle _imageHandle)
@@ -628,7 +638,7 @@ void Vulkan::VulkanApp::CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE:
 
 void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
                                               PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
-                                              PC_CORE::RHIFormat _format, PC_CORE::ImageLayout _initialLayout,
+                                              PC_CORE::RHIFormat _format, uint32_t _mipLevel, PC_CORE::ImageLayout _initialLayout,
                                               PC_CORE::ImageLayout _finalLayout)
 {
     const vk::ImageLayout initialLayout = RHIToVKImageLayout(_initialLayout);
@@ -646,7 +656,7 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
     barrier.image = CastObjectToVkObject<vk::Image>(_imageHandle);
     barrier.subresourceRange.aspectMask = RhiToVKImageAspectFlagBits(_imageAspectFlagBits);
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = _mipLevel;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
@@ -677,7 +687,7 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
     }
 
     // vk::DependencyFlagBits() ???
-    commandBuffer.pipelineBarrier(sourceStage, destinationStage, vk::DependencyFlagBits(), 0, nullptr, 0, nullptr, 1,
+    commandBuffer.pipelineBarrier(sourceStage, destinationStage, {}, 0, nullptr, 0, nullptr, 1,
                                   &barrier);
 
     EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,

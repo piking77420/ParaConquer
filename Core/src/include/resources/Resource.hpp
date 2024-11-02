@@ -24,11 +24,13 @@ public:
     
     PC_CORE_API Resource();
 
-    PC_CORE_API Resource(std::string _name, std::string _format, fs::path _path, Guid _guid);
-    
+    PC_CORE_API Resource(const fs::path& _path, const Guid& _guid) {}
+
+    PC_CORE_API Resource(const fs::path& _path);
+
     PC_CORE_API virtual ~Resource() = default;
 
-    PC_CORE_API virtual void SetPath(const fs::path& path) {};
+    PC_CORE_API void SetPath(const fs::path& _path);
 
     PC_CORE_API virtual std::vector<char> GetData() { return {}; };
     

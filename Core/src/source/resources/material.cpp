@@ -8,15 +8,16 @@ void Material::WriteFile(const fs::path& path)
     Resource::WriteFile(path);
 }
 
+Material::Material(const fs::path& _path) : Resource(_path)
+{
+}
+
 Material::~Material()
 {
    
 }
 
-void Material::SetPath(const fs::path& path)
-{
-    throw std::runtime_error("error");
-}
+
 
 void Material::Load(std::vector<Texture*> textures)
 {

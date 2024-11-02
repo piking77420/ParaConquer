@@ -11,7 +11,7 @@
 BEGIN_PCCORE
 
 class Guid
-{
+{ 
     static constexpr size_t Data4Size = 8;
     
 public:

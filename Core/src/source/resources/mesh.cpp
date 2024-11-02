@@ -11,22 +11,13 @@
 
 using namespace PC_CORE;
 
-Mesh::~Mesh()
+Mesh::Mesh(const fs::path& _path) : Resource(_path)
 {
-
-}
-
-void Mesh::SetPath(const fs::path& _path)
-{
-    path = _path;
-    
-    std::string format = std::filesystem::path(path).extension().generic_string();
     uint32_t formatIndex = -1;
-    std::string formatToString = path.generic_string();
 
     std::vector<Vertex> verticies;
     std::vector<uint32_t> indicies;
-    
+
     if (!Resource::IsFormatValid(MeshSourceFormat, format, &formatIndex))
     {
         return;
@@ -36,19 +27,23 @@ void Mesh::SetPath(const fs::path& _path)
     switch (meshFormat)
     {
     case MeshFormat::OBJ:
-        LoadObj(formatToString,verticies, indicies);
+        LoadObj(_path.generic_string(), verticies, indicies);
         break;
-    default: ;
+    default:;
     }
 
-    name = path.filename().generic_string();
     format = MeshSourceFormat.at(formatIndex);
 
     nbrOfVertices = static_cast<uint32_t>(verticies.size());
     nbrOfIndices = static_cast<uint32_t>(indicies.size());
-    
+
     vertexBuffer = VertexBuffer(verticies);
     indexBuffer = IndexBuffer(indicies);
+}
+
+Mesh::~Mesh()
+{
+
 }
 
 uint32_t Mesh::GetNbrOfVerticies() const

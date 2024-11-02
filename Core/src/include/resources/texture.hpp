@@ -13,11 +13,13 @@ public:
     Tbx::Vector2i textureSize;
     
     int textureChannel = -1;
+
+    Texture();
     
+    Texture(const fs::path& _path);
+
     ~Texture() override;
     
-    PC_CORE_API void SetPath(const fs::path& path) override;
-
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
 
     PC_CORE::ImageHandle GetImageHandle();
@@ -33,6 +35,10 @@ private:
     PC_CORE::ImageViewHandle m_ImageViewHandle;
 
     PC_CORE::SamplerHandle m_SamplerHandle;
+
+    uint32_t m_MipLevel = 0;
+
+    void CreateTextureFromFile(const fs::path& _path);
 };
 
 

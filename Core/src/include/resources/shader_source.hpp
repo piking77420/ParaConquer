@@ -10,7 +10,7 @@ public:
     
     ShaderStageType shaderType;
 
-    PC_CORE_API void SetPath(const fs::path& _path) override;
+    PC_CORE_API ShaderSource(const fs::path& _path);
 
     std::vector<char> GetShaderSourceFile();
 

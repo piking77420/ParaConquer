@@ -86,7 +86,7 @@ void Editor::InitTestScene()
         scene.AddComponent<Transform>(cube);
         scene.AddComponent<RigidBody>(cube);
         StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
-        mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+        mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
     }
     
 }

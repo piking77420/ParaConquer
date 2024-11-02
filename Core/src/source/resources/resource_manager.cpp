@@ -30,7 +30,7 @@ void ResourceManager::InitPath()
     ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
     ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
-    //ResourceManager::Create<Mesh>("assets/meshs/obj/rounded_cube.obj");
+    ResourceManager::Create<Mesh>("assets/meshs/obj/rounded_cube.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/quad.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/sphere.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/viking_room.obj");

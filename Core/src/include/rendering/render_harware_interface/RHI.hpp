@@ -216,6 +216,11 @@ BEGIN_PCCORE
             return nullptr;
         }
 
+        virtual PC_CORE_API void GenerateMimpMap(ImageHandle _image, RHIFormat _imageFormat, int32_t _texWidth, int32_t _texHeight, uint32_t _mipLevels)
+        {
+            
+        }
+
         virtual PC_CORE_API ImageViewHandle CreateImageView(const ImageViewCreateInfo& _imageViewCreateInfo)  { return nullptr; }
 
         virtual PC_CORE_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) {} 
@@ -250,7 +255,7 @@ BEGIN_PCCORE
 
         virtual PC_CORE_API void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) {};
 
-        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, PC_CORE::RHIFormat _format, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) {};
+        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, PC_CORE::RHIFormat _format, uint32_t _mipLevel, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) {};
 #pragma endregion Command
 
     protected:
