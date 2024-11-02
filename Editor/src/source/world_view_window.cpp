@@ -89,10 +89,10 @@ void WorldViewWindow::ResizeViewport()
 
     m_Texture = PC_CORE::Texture(createTextureInfo);
 
-    for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
+    for (auto& i : m_ImaguiDescriptorSet)
     {
-        ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
-        m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(CastObjectToVkObject<vk::Sampler>(m_Texture.GetSamplerHandle())
-            , CastObjectToVkObject<vk::ImageView>(m_Texture.GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        ImGui_ImplVulkan_RemoveTexture(i);
+        i = ImGui_ImplVulkan_AddTexture(CastObjectToVkObject<vk::Sampler>(m_Texture.GetSamplerHandle())
+                                        , CastObjectToVkObject<vk::ImageView>(m_Texture.GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 }

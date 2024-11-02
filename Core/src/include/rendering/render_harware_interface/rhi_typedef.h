@@ -54,6 +54,9 @@ using DescriptorSetHandle = GPUObjectHandle;
 using ImageHandle = GPUObjectHandle;
 using ImageViewHandle = GPUObjectHandle;
 using SamplerHandle = GPUObjectHandle;
+using FrameBufferHandle = GPUObjectHandle;
+using RenderPassHandle = GPUObjectHandle;
+
 
 constexpr GPUBufferHandle NULL_HANDLE = nullptr;
 

@@ -1,8 +1,7 @@
 ﻿#pragma once
 
-#include "core_header.hpp"
+#include "render_harware_interface/rhi_typedef.h"
 #include "math/matrix_transformation.hpp"
-
 
 BEGIN_PCCORE
     struct LowLevelCamera
