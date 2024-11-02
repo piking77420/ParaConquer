@@ -15,7 +15,7 @@ BEGIN_PCCORE
     class RHI
     {
     public:
-        static RHI& GetInstance();
+        PC_CORE_API static RHI& GetInstance();
 
         PC_CORE_API static void MakeInstance(RHI* _rhi);
 

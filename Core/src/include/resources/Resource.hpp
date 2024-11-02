@@ -21,6 +21,8 @@ public:
     fs::path path;
 
     Guid guid;
+
+    PC_CORE_API Resource& operator=(Resource&& _other) = default;
     
     PC_CORE_API Resource();
 

@@ -6,10 +6,8 @@
 #include "reflection/reflector.hpp"
 #include "rendering/render_harware_interface/rhi_typedef.h"
 
+
 BEGIN_PCCORE
-
-
-
     struct CreateTextureInfo
     {
         int32_t width;
@@ -24,6 +22,8 @@ public:
     
     int textureChannel = -1;
 
+    PC_CORE_API Texture& operator=(Texture&& _other);
+    
     PC_CORE_API Texture() = default;
 
     PC_CORE_API Texture(const CreateTextureInfo& createTextureInfo);
@@ -36,13 +36,13 @@ public:
 
     PC_CORE_API void CreateTexture();
 
-    PC_CORE::ImageHandle GetImageHandle();
+    PC_CORE_API PC_CORE::ImageHandle GetImageHandle();
 
-    PC_CORE::ImageHandle GetImageViewHandle();
+    PC_CORE_API PC_CORE::ImageHandle GetImageViewHandle();
 
-    PC_CORE::ImageHandle GetSamplerHandle();
+    PC_CORE_API PC_CORE::ImageHandle GetSamplerHandle();
 
-    Tbx::Vector2i GetTextureSize() const;
+    PC_CORE_API Tbx::Vector2i GetTextureSize() const;
 
 private:
     PC_CORE::ImageHandle m_ImageHandle = nullptr;

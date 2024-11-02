@@ -1,8 +1,10 @@
 ﻿#include "world_view_window.hpp"
 
 #include "editor.hpp"
+#include "vulkan_header.h"
 #include "time/core_time.hpp"
 #include "Imgui/imgui_impl_vulkan.h"
+#include "rendering/render_harware_interface/RHI.hpp"
 
 #undef near
 #undef far
@@ -44,7 +46,7 @@ void WorldViewWindow::Update()
     uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
     VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
     
-    ImGui::Image(descriptorSet, ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
+    ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
             ImVec2(1, 0));
 }
 
@@ -79,8 +81,8 @@ void WorldViewWindow::ResizeViewport()
     
     const PC_CORE::CreateTextureInfo createTextureInfo =
         {
-        .width = m_Editor->window->GetWindowSize().x,
-        .height =  m_Editor->window->GetWindowSize().y,
+        .width = static_cast<int32_t>(m_Editor->window->GetWindowSize().x),
+        .height =  static_cast<int32_t>(m_Editor->window->GetWindowSize().y),
         .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
         .imageAspectFlagBits = PC_CORE::IMAGE_ASPECT_COLOR_BIT
         };

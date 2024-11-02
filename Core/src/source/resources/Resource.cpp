@@ -14,7 +14,6 @@ Resource::Resource(const fs::path& _path)
     name = fileName.generic_string();
     format = fileName.extension().generic_string();
     guid = Guid::New();
-    
 }
 
 void Resource::SetPath(const fs::path& _path)

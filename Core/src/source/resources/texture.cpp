@@ -8,9 +8,24 @@
 
 using namespace PC_CORE;
 
+
+Texture& Texture::operator=(Texture&& _other)
+{
+    m_ImageHandle = _other.m_ImageHandle;
+    _other.m_ImageHandle = nullptr;
+
+    m_ImageViewHandle = _other.m_ImageViewHandle;
+    _other.m_ImageViewHandle = nullptr;
+
+    m_SamplerHandle = _other.m_SamplerHandle;
+    _other.m_SamplerHandle = nullptr;
+
+    return *this;
+}
+
 Texture::Texture(const CreateTextureInfo& createTextureInfo)
 {
-    m_TextureSize.x = .width;
+    m_TextureSize.x = createTextureInfo.width;
     m_TextureSize.y = createTextureInfo.height;
 
     const uint32_t widht = static_cast<uint32_t>(m_TextureSize.x);
@@ -20,6 +35,7 @@ Texture::Texture(const CreateTextureInfo& createTextureInfo)
 
     m_ImageHandle = RHI::GetInstance().CreateImage(widht, height, m_MipLevel, ImageType::IMAGE_2D, RHIFormat::R8G8B8A8_SRGB,
         ImageTiling::IMAGE_TILING_OPTIMAL, static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_TRANSFER_SRC_BIT | IMAGE_USAGE_SAMPLED_BIT));
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, RHIFormat::R8G8B8A8_SRGB, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, RHIFormat::R8G8B8A8_SRGB, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
     
     const ImageViewCreateInfo imageViewCreateInfo =
