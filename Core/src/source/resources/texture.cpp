@@ -36,7 +36,7 @@ Texture::Texture(const CreateTextureInfo& createTextureInfo)
 
     m_ImageHandle = RHI::GetInstance().CreateImage(widht, height, m_MipLevel, ImageType::IMAGE_2D, m_Format,
         ImageTiling::IMAGE_TILING_OPTIMAL, static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_TRANSFER_SRC_BIT | IMAGE_USAGE_SAMPLED_BIT));
-    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_Format, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
 
     const ImageViewCreateInfo imageViewCreateInfo =
@@ -170,7 +170,7 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
     m_ImageHandle = RHI::GetInstance().CreateImage(widht, height, m_MipLevel, ImageType::IMAGE_2D, m_Format,
         ImageTiling::IMAGE_TILING_OPTIMAL, static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_TRANSFER_SRC_BIT | IMAGE_USAGE_SAMPLED_BIT));
 
-    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_Format, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     const CopyBufferImageInfo copyBufferImageInfo =
     {
        .bufferOffset = 0,

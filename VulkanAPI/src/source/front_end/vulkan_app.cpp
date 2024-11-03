@@ -7,6 +7,7 @@
 #include "back_end/vulkan_buffer.hpp"
 #include "back_end/vulkan_command_pool_function.hpp"
 #include "back_end/vulkan_image.hpp"
+#include "back_end/vulkan_transition_image_layout.hpp"
 
 
 uint32_t Vulkan::VulkanApp::GetCurrentImage() const
@@ -32,12 +33,14 @@ void Vulkan::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
     renderPassInfo.framebuffer = m_VulkanContext.m_SwapChainFramebuffers[m_VulkanContext.imageIndex];
 
     renderPassInfo.renderArea.offset = vk::Offset2D(0);
-    renderPassInfo.renderArea.extent = m_VulkanContext.m_Extent2D;
+    renderPassInfo.renderArea.extent = m_VulkanContext.extent2D;
 
-    vk::ClearValue clearColor = vk::ClearColorValue({0.0f, 0.0f, 0.0f, 1.0f});
+    std::array<vk::ClearValue, 2> clearColor;
+    clearColor[0] = vk::ClearColorValue({0.0f, 0.0f, 0.0f, 1.0f});
+    clearColor[1].depthStencil = vk::ClearDepthStencilValue({1.0f, 0});
 
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearColor.size());
+    renderPassInfo.pClearValues = clearColor.data();
 
     vk::SubpassContents subpassContents = vk::SubpassContents::eInline;
 
@@ -55,12 +58,13 @@ Vulkan::VulkanApp::VulkanApp(const VulkanAppCreateInfo& vulkanMainCreateInfo)
 {
     m_LogCallback = vulkanMainCreateInfo.logCallback;
     m_vulkanHardwareWrapper.Init(vulkanMainCreateInfo, &m_VulkanContext);
+    InitBaseObject();
+    
     m_DeleteFunction.push(std::bind(&VulkanHarwareWrapper::Destroy, &m_vulkanHardwareWrapper, std::placeholders::_1));
     m_vulkanPresentChain.Init(vulkanMainCreateInfo, &m_VulkanContext);
     m_DeleteFunction.push(std::bind(&VulkanPresentChain::Destroy, &m_vulkanPresentChain, std::placeholders::_1));
     m_vulkanShaderManager.Init(&m_VulkanContext);
     m_DeleteFunction.push(std::bind(&VulkanShaderManager::Destroy, &m_vulkanShaderManager, std::placeholders::_1));
-    InitBaseObject();
 
 
     m_DeleteFunction.push(std::bind(&Vulkan::VulkanApp::DestroyBuffersAllocations, this, std::placeholders::_1));
@@ -644,61 +648,15 @@ void Vulkan::VulkanApp::CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE:
 }
 
 void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
-                                              PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
-                                              PC_CORE::RHIFormat _format, uint32_t _mipLevel, PC_CORE::ImageLayout _initialLayout,
+                                              PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, uint32_t _mipLevel, PC_CORE::ImageLayout _initialLayout,
                                               PC_CORE::ImageLayout _finalLayout)
 {
+    vk::Image image = CastObjectToVkObject<vk::Image>(_imageHandle);
+    
     const vk::ImageLayout initialLayout = RHIToVKImageLayout(_initialLayout);
     const vk::ImageLayout finalLayout = RHIToVKImageLayout(_finalLayout);
-
-    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device,
-                                                              m_VulkanContext.resourceCommandPool);
-
-    vk::ImageMemoryBarrier barrier{};
-    barrier.sType = vk::StructureType::eImageMemoryBarrier;
-    barrier.oldLayout = initialLayout;
-    barrier.newLayout = finalLayout;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = CastObjectToVkObject<vk::Image>(_imageHandle);
-    barrier.subresourceRange.aspectMask = RhiToVKImageAspectFlagBits(_imageAspectFlagBits);
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = _mipLevel;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
-
-    vk::PipelineStageFlags sourceStage;
-    vk::PipelineStageFlags destinationStage;
-
-    // TO DO MAKE IT CLEANER
-    if (initialLayout == vk::ImageLayout::eUndefined && finalLayout == vk::ImageLayout::eTransferDstOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits::eNone;
-        barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-
-        sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-        destinationStage = vk::PipelineStageFlagBits::eTransfer;
-    }
-    else if (initialLayout == vk::ImageLayout::eTransferDstOptimal && finalLayout ==
-        vk::ImageLayout::eShaderReadOnlyOptimal)
-    {
-        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-
-        sourceStage = vk::PipelineStageFlagBits::eTransfer;
-        destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
-    }
-    else
-    {
-        throw std::invalid_argument("unsupported layout transition!");
-    }
-
-    // vk::DependencyFlagBits() ???
-    commandBuffer.pipelineBarrier(sourceStage, destinationStage, {}, 0, nullptr, 0, nullptr, 1,
-                                  &barrier);
-
-    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,
-                          m_VulkanContext.vkQueues.graphicQueue);
+    
+    Backend::TransitionImageLayout(&m_VulkanContext, image,RhiToVKImageAspectFlagBits(_imageAspectFlagBits), _mipLevel, initialLayout, finalLayout);
 }
 
 PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)

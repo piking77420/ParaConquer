@@ -77,7 +77,7 @@ namespace Vulkan
         vk::SurfaceKHR surface;
         vk::SurfaceFormatKHR m_SurfaceFormat;
         vk::PresentModeKHR m_PresentMode;
-        vk::Extent2D m_Extent2D;
+        vk::Extent2D extent2D;
 
         uint32_t swapChainImageCount = 0;
         std::vector<vk::Image> m_SwapchainImages;
@@ -100,6 +100,10 @@ namespace Vulkan
         vk::Fence resourceFence;
         
         vk::RenderPass swapChainRenderPass;
+
+        vk::Image depthImage;
+        vk::ImageView depthImageView;
+        VmaAllocation depthImageAllocation;
     };
 
 

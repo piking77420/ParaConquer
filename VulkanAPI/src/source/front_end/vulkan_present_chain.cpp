@@ -1,4 +1,7 @@
 ﻿#include "front_end/vulkan_present_chain.hpp"
+
+#include "back_end/vulkan_image.hpp"
+#include "back_end/vulkan_transition_image_layout.hpp"
 #include "front_end/vulkan_harware_wrapper.hpp"
 #include "GLFW/glfw3.h"
 
@@ -47,7 +50,7 @@ void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCon
     uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
     _vulkanContext->m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
     _vulkanContext->m_PresentMode = ChoosePresentMode(swapChainSupportDetails.presentModes);
-    _vulkanContext->m_Extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr), swapChainSupportDetails.capabilities);
+    _vulkanContext->extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr), swapChainSupportDetails.capabilities);
 
     _vulkanContext->swapChainImageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
     
@@ -63,7 +66,7 @@ void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCon
     swapChainCreateInfo.minImageCount = _vulkanContext->swapChainImageCount;
     swapChainCreateInfo.imageFormat = _vulkanContext->m_SurfaceFormat.format;
     swapChainCreateInfo.imageColorSpace = _vulkanContext->m_SurfaceFormat.colorSpace;
-    swapChainCreateInfo.imageExtent = _vulkanContext->m_Extent2D;
+    swapChainCreateInfo.imageExtent = _vulkanContext->extent2D;
     swapChainCreateInfo.imageArrayLayers = 1;
     // MAY CHANGE IN FUTURE
     swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
@@ -92,6 +95,7 @@ void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCon
     // Create SwapChain Image
     _vulkanContext->m_SwapchainImages = device.getSwapchainImagesKHR(_vulkanContext->swapChain);
     CreateSwapchainImages(_vulkanContext);
+    CreateDepthResources(_vulkanContext);
     CreateFramebuffers(_vulkanContext);
     
 }
@@ -109,6 +113,7 @@ void Vulkan::VulkanPresentChain::DestroySwapchain(VulkanContext* _vulkanContext)
         _vulkanContext->device.destroyImageView(imageView, nullptr);
     }
 
+    DestroyDepthResources(_vulkanContext);
     
     _vulkanContext->device.destroySwapchainKHR(_vulkanContext->swapChain);
 }
@@ -243,17 +248,18 @@ void Vulkan::VulkanPresentChain::CreateFramebuffers(VulkanContext* _vulkanContex
     
     for (size_t i = 0; i < _vulkanContext->m_SwapChainFramebuffers.size(); i++)
     {
-        vk::ImageView attachments[] = {
+        std::array<vk::ImageView, 2> attachments[] = {
             _vulkanContext->m_SwapChainImageViews[i]
+            , _vulkanContext->depthImageView
         };
 
         vk::FramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
         framebufferInfo.renderPass = _vulkanContext->swapChainRenderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = _vulkanContext->m_Extent2D.width;
-        framebufferInfo.height = _vulkanContext->m_Extent2D.height;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments->size());
+        framebufferInfo.pAttachments = attachments->data();
+        framebufferInfo.width = _vulkanContext->extent2D.width;
+        framebufferInfo.height = _vulkanContext->extent2D.height;
         framebufferInfo.layers = 1;
         
         VK_CALL(_vulkanContext->device.createFramebuffer(&framebufferInfo, nullptr, &_vulkanContext->m_SwapChainFramebuffers[i]));
@@ -272,14 +278,31 @@ void Vulkan::VulkanPresentChain::CreateRenderPass(VulkanContext* _vulkanContext)
     colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
     colorAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
+    const vk::Format detphFormat = VulkanPhysicalDevices::FindDepthFormat(_vulkanContext->physicalDevice);
+
+    vk::AttachmentDescription depthAttachment{};
+    depthAttachment.format = detphFormat;
+    depthAttachment.samples = vk::SampleCountFlagBits::e1;
+    depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+    depthAttachment.storeOp =  vk::AttachmentStoreOp::eDontCare;
+    depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+    depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+    depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
+    depthAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
     vk::AttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+    vk::AttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
     vk::SubpassDescription subpass{};
     subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
     vk::SubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;  
@@ -289,10 +312,12 @@ void Vulkan::VulkanPresentChain::CreateRenderPass(VulkanContext* _vulkanContext)
     dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
     dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
+    std::array<vk::AttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+
     vk::RenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.attachmentCount = attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;
@@ -336,6 +361,36 @@ void Vulkan::VulkanPresentChain::PresentNewImage(VulkanContext* _vulkanContext)
     presentInfo.pImageIndices = &_vulkanContext->imageIndex;
     
     VK_CALL(_vulkanContext->vkQueues.presentQueue.presentKHR(&presentInfo));
+}
+
+void Vulkan::VulkanPresentChain::CreateDepthResources(VulkanContext* _vulkanContext)
+{
+    const vk::Format detphFormat = VulkanPhysicalDevices::FindDepthFormat(_vulkanContext->physicalDevice);
+    
+    Backend::CreateImage(_vulkanContext, _vulkanContext->extent2D.width, _vulkanContext->extent2D.height, 1,
+        vk::ImageType::e2D, detphFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
+        VMA_MEMORY_USAGE_AUTO, &_vulkanContext->depthImage, &_vulkanContext->depthImageAllocation);
+
+    Backend::TransitionImageLayout(_vulkanContext, _vulkanContext->depthImage, vk::ImageAspectFlagBits::eDepth, 1, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+    
+    vk::ImageViewCreateInfo viewCreateInfo{};
+    viewCreateInfo.sType = vk::StructureType::eImageViewCreateInfo;
+    viewCreateInfo.image = _vulkanContext->depthImage;
+    viewCreateInfo.viewType = vk::ImageViewType::e2D;
+    viewCreateInfo.format = detphFormat;
+    viewCreateInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+    viewCreateInfo.subresourceRange.baseMipLevel = 0;
+    viewCreateInfo.subresourceRange.levelCount = 1;
+    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    viewCreateInfo.subresourceRange.layerCount = 1;
+    
+    VK_CALL(_vulkanContext->device.createImageView(&viewCreateInfo, nullptr, &_vulkanContext->depthImageView));
+}
+
+void Vulkan::VulkanPresentChain::DestroyDepthResources(VulkanContext* _vulkanContext)
+{
+    vmaDestroyImage(_vulkanContext->allocator, _vulkanContext->depthImage, _vulkanContext->depthImageAllocation);
+    _vulkanContext->device.destroyImageView(_vulkanContext->depthImageView);
 }
 
 

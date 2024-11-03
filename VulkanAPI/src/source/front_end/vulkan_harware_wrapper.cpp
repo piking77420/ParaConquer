@@ -28,7 +28,10 @@ void Vulkan::VulkanHarwareWrapper::Init(const VulkanAppCreateInfo& vulkanMainCre
 #endif
     _vulkanContext->physicalDevice = m_VulkanPhysicalDevices.ChoosePhysicalDevice(_vulkanContext,  deviceExtensions);
     _vulkanContext->physicalDevice.getProperties(&_vulkanContext->physicalDeviceProperties);
-    
+#ifdef _DEBUG
+    PrintPhyDeviceLimits(_vulkanContext);
+#endif
+
     _vulkanContext->queuFamiliesIndicies = m_VulkanPhysicalDevices.FindQueuFamillies(
         _vulkanContext->physicalDevice, _vulkanContext->surface);
     CreateDevice(_vulkanContext);
@@ -55,9 +58,21 @@ std::vector<vk::DynamicState> Vulkan::VulkanHarwareWrapper::GetDynamicState()
     };
 }
 
+void Vulkan::VulkanHarwareWrapper::PrintPhyDeviceLimits(VulkanContext* _context)
+{
+    vk::PhysicalDeviceProperties2 physicalDeviceProperties2 = _context->physicalDevice.getProperties2();
+    const vk::PhysicalDeviceLimits limits = physicalDeviceProperties2.properties.limits;
+
+    std::cout << "MAX UNIFORM BUFFER : " << limits.maxDescriptorSetUniformBuffers << std::endl;
+    std::cout << "MAX DYNAMIC UNIFORM BUFFER : " << limits.maxDescriptorSetStorageBuffersDynamic << std::endl;
+
+    std::cout << "MAX STORAGE BUFFER : " << limits.maxDescriptorSetStorageBuffers << std::endl;
+    std::cout << "MAX DYNAMIC STORAGE BUFFER : " << limits.maxDescriptorSetStorageBuffersDynamic << std::endl;
+}
+
 
 void Vulkan::VulkanHarwareWrapper::CreateInstance(vk::Instance* _outInstance, const char* _AppName,
-                                                 const char* _EngineName)
+                                                  const char* _EngineName)
 {
     vk::ApplicationInfo appInfo = {};
 

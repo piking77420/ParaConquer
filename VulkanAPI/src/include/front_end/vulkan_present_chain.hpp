@@ -45,5 +45,9 @@ namespace Vulkan
         void DestroySyncObject(VulkanContext* _vulkanContext);
 
         void PresentNewImage(VulkanContext* _vulkanContext);
+
+        void CreateDepthResources(VulkanContext* _vulkanContext);
+
+        void DestroyDepthResources(VulkanContext* _vulkanContext);
     };
 }

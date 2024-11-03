@@ -31,7 +31,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
     m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
     UpdateUniforms(_renderingContext);
 
-    ViewPort viewport =
+    const ViewPort viewport =
     {
         .position = {},
         .width = static_cast<float>(_renderingContext.renderingContextSize.x),
@@ -81,7 +81,6 @@ void Renderer::BeginFrame()
 
     RHI::GetInstance().WaitForAquireImage();
     m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
-
     RHI::GetInstance().BeginRender(m_CommandBuffer->handle);
 }
 
@@ -102,19 +101,7 @@ CommandBuffer& Renderer::GetCommandSwapChainBuffer()
     return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
 }
 
-void Renderer::RenderLog(LogType _logType, const char* _message)
-{
-    switch (_logType)
-    {
-    case LogType::INFO:
-        PC_LOG(_message)
-        break;
-    case LogType::ERROR:
-        PC_LOGERROR(_message)
-        break;
-    default: ;
-    }
-}
+
 
 void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
 {
@@ -275,5 +262,20 @@ void Renderer::InitDescriptors()
 
 
         RHI::GetInstance().UpdateDescriptorSet(2, &descriptorWrite[0]);
+    }
+}
+
+
+void Renderer::RenderLog(LogType _logType, const char* _message)
+{
+    switch (_logType)
+    {
+    case LogType::INFO:
+        PC_LOG(_message)
+        break;
+    case LogType::ERROR:
+        PC_LOGERROR(_message)
+        break;
+    default: ;
     }
 }

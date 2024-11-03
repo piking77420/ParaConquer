@@ -21,6 +21,8 @@ namespace Vulkan
         void Destroy(VulkanContext* _context);
         
         static std::vector<vk::DynamicState> GetDynamicState();
+
+        void PrintPhyDeviceLimits(VulkanContext* _context);
     private:
 
         void CreateInstance(vk::Instance* _outInstance, const char* _AppName, const char* _EngineNamee);

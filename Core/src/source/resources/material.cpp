@@ -3,6 +3,8 @@
 
 using namespace PC_CORE;
 
+
+
 void Material::WriteFile(const fs::path& path)
 {
     Resource::WriteFile(path);

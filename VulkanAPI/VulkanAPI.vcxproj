@@ -58,6 +58,7 @@
     <ClInclude Include="src\include\back_end\vulkan_command_pool_function.hpp" />
     <ClInclude Include="src\include\back_end\vulkan_image.hpp" />
     <ClInclude Include="src\include\back_end\vulkan_object_wrapper.h" />
+    <ClInclude Include="src\include\back_end\vulkan_transition_image_layout.hpp" />
     <ClInclude Include="src\include\framework.h" />
     <ClInclude Include="src\include\front_end\vulkan_app.hpp" />
     <ClInclude Include="src\include\front_end\vulkan_harware_wrapper.hpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="src\source\back_end\vulkan_command_pool_function.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_image.cpp" />
     <ClCompile Include="src\source\back_end\vulkan_object_wrapper.cpp" />
+    <ClCompile Include="src\source\back_end\vulkan_transition_image_layout.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_app.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_harware_wrapper.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_physical_devices.cpp" />
