@@ -44,6 +44,7 @@ PC_CORE_API Window& Window::operator=(Window&& _other) noexcept
     _other.FullScreen = false;
 
     m_WindowName = std::move(_other.m_WindowName);
+    glfwSetWindowUserPointer(m_Window, this);
 
     return *this;
 }
@@ -55,6 +56,7 @@ bool Window::ShouldClose()
 
 void Window::PoolEvents()
 {
+    
 
     if (glfwGetKey(m_Window, GLFW_KEY_F11) == GLFW_PRESS)
     {
@@ -139,9 +141,7 @@ Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_w
     glfwSetFramebufferSizeCallback(m_Window, FramebufferResizeCallback);
     glfwSetWindowUserPointer(m_Window, this);
 
-
-    return;
-
+    
     int x,y, channel;
     uint8_t* icongLogo = FileLoader::LoadFile(_logoPath, &x, &y, &channel, Channel::RGBA);
 

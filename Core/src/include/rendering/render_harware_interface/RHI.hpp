@@ -215,23 +215,28 @@ BEGIN_PCCORE
 
 #pragma region Images
 
-        virtual PC_CORE_API ImageHandle CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, ImageType _imageType, RHIFormat _format,
-                                                    ImageTiling _tiling, RHIImageUsage _usage)
+
+        virtual PC_CORE_API void CreateTexture(const PC_CORE::CreateTextureInfo& _createTextureInfo,
+            PC_CORE::ImageHandle* _outImageHandle,  PC_CORE::ImageViewHandle* _outImageView)
         {
-            return nullptr;
+            return ;
+        }
+
+        virtual PC_CORE_API void DestroyImageView(PC_CORE::ImageViewHandle _imageView)
+        {
+            return ;
+        }
+
+        virtual PC_CORE_API bool DestroyTexture(PC_CORE::ImageHandle _imageHandle)
+        {
+            return false; 
         }
 
         virtual PC_CORE_API void GenerateMimpMap(ImageHandle _image, RHIFormat _imageFormat, int32_t _texWidth, int32_t _texHeight, uint32_t _mipLevels)
         {
             
         }
-
-        virtual PC_CORE_API ImageViewHandle CreateImageView(const ImageViewCreateInfo& _imageViewCreateInfo)  { return nullptr; }
-
-        virtual PC_CORE_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) {} 
-
-        virtual PC_CORE_API void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) {}
-
+        
         virtual PC_CORE_API PC_CORE::SamplerHandle CreateSampler(const PC_CORE::SamplerCreateInfo&  _samplerCreateInfo)
         {
             return nullptr;

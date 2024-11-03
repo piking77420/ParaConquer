@@ -1041,11 +1041,19 @@ vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 {
     switch (_imageType)
     {
-    case PC_CORE::ImageType::IMAGE_1D:
+    case PC_CORE::ImageType::TYPE_1D:
         return vk::ImageType::e1D;
-    case PC_CORE::ImageType::IMAGE_2D:
+    case PC_CORE::ImageType::TYPE_2D:
         return vk::ImageType::e2D;
-    case PC_CORE::ImageType::IMAGE_3D:
+    case PC_CORE::ImageType::TYPE_e3D:
+        return vk::ImageType::e3D;
+    case PC_CORE::ImageType::TYPE_CUBE:
+        return vk::ImageType::e2D;
+    case PC_CORE::ImageType::TYPE_1DARRAY:
+        return vk::ImageType::e2D;
+    case PC_CORE::ImageType::TYPE_2DARRAY:
+        return vk::ImageType::e3D;
+    case PC_CORE::ImageType::TYPE_CUBEARRAY:
         return vk::ImageType::e3D;
     }
     return vk::ImageType::e1D;
@@ -1122,23 +1130,23 @@ vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout)
     }
 }
 
-vk::ImageViewType Vulkan::RHIImageViewTypeToVulkan(PC_CORE::ImageViewType _imageViewType)
+vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
 {
     switch (_imageViewType)
     {
-    case PC_CORE::ImageViewType::e1D:
+    case PC_CORE::ImageType::TYPE_1D:
         return vk::ImageViewType::e1D;
-    case PC_CORE::ImageViewType::e2D:
+    case PC_CORE::ImageType::TYPE_2D:
         return vk::ImageViewType::e2D;
-    case PC_CORE::ImageViewType::e3D:
+    case PC_CORE::ImageType::TYPE_e3D:
         return vk::ImageViewType::e3D;
-    case PC_CORE::ImageViewType::eCUBE:
+    case PC_CORE::ImageType::TYPE_CUBE:
         return vk::ImageViewType::eCube;
-    case PC_CORE::ImageViewType::e1DARRAY:
+    case PC_CORE::ImageType::TYPE_1DARRAY:
         return vk::ImageViewType::e1DArray;
-    case PC_CORE::ImageViewType::e2DARRAY:
+    case PC_CORE::ImageType::TYPE_2DARRAY:
         return vk::ImageViewType::e2DArray;
-    case PC_CORE::ImageViewType::eCUBEARRAY:
+    case PC_CORE::ImageType::TYPE_CUBEARRAY:
         return vk::ImageViewType::eCubeArray;
     }
 
@@ -1271,3 +1279,4 @@ vk::BorderColor Vulkan::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
 
     throw std::runtime_error("Unknown BorderColor");
 }
+

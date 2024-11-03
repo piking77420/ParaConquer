@@ -19,6 +19,11 @@ void Vulkan::VulkanPresentChain::DestroySyncObject(VulkanContext* _vulkanContext
 
 void Vulkan::VulkanPresentChain::Init(const VulkanAppCreateInfo& _vulkanMainCreateInfo, VulkanContext* _vulkanContext)
 {
+    const SwapChainSupportDetails& swapChainSupportDetails = _vulkanContext->swapChainSupportDetails;
+    _vulkanContext->m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
+    _vulkanContext->m_PresentMode = ChoosePresentMode(swapChainSupportDetails.presentModes);
+
+    CreateRenderPass(_vulkanContext);
     CreateSwapchain(_vulkanMainCreateInfo.windowPtr, _vulkanContext);
     CreateSyncObject(_vulkanContext);
 }
@@ -40,18 +45,10 @@ void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCon
 {
     vk::PhysicalDevice phyDevice = _vulkanContext->physicalDevice;
     vk::Device device = _vulkanContext->device;
-    // need to do this
-    
     vk::SurfaceKHR surface = _vulkanContext->surface;
-    const SwapChainSupportDetails& swapChainSupportDetails = _vulkanContext->swapChainSupportDetails;
-    const QueuFamiliesIndicies& queuFamiliesIndicies = _vulkanContext->queuFamiliesIndicies;
-
     
-    uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
-    _vulkanContext->m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
-    _vulkanContext->m_PresentMode = ChoosePresentMode(swapChainSupportDetails.presentModes);
-    _vulkanContext->extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr), swapChainSupportDetails.capabilities);
-
+    const SwapChainSupportDetails& swapChainSupportDetails = _vulkanContext->swapChainSupportDetails;
+    _vulkanContext->extent2D = ChooseSwapExtent(static_cast<GLFWwindow*>(_glfwWindowPtr));
     _vulkanContext->swapChainImageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
     
      if (swapChainSupportDetails.capabilities.maxImageCount > 0 && _vulkanContext->swapChainImageCount > swapChainSupportDetails.capabilities.maxImageCount)
@@ -71,6 +68,9 @@ void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCon
     // MAY CHANGE IN FUTURE
     swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
 
+    const QueuFamiliesIndicies& queuFamiliesIndicies = _vulkanContext->queuFamiliesIndicies;
+    uint32_t queueFamilyIndices[] = {queuFamiliesIndicies.graphicsFamily, queuFamiliesIndicies.presentFamily};
+    
     if (queuFamiliesIndicies.graphicsFamily != queuFamiliesIndicies.presentFamily)
     {
         swapChainCreateInfo.imageSharingMode = vk::SharingMode::eConcurrent;
@@ -90,8 +90,6 @@ void Vulkan::VulkanPresentChain::CreateSwapchain(void* _glfwWindowPtr, VulkanCon
     VK_CALL(device.createSwapchainKHR(&swapChainCreateInfo, nullptr, &_vulkanContext->swapChain));
 
    
-    // Important to be here tmpr
-    CreateRenderPass(_vulkanContext);
     // Create SwapChain Image
     _vulkanContext->m_SwapchainImages = device.getSwapchainImagesKHR(_vulkanContext->swapChain);
     CreateSwapchainImages(_vulkanContext);
@@ -194,7 +192,7 @@ vk::PresentModeKHR Vulkan::VulkanPresentChain::ChoosePresentMode(
     return vk::PresentModeKHR::eFifo;
 }
 
-vk::Extent2D Vulkan::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities)
+vk::Extent2D Vulkan::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window)
 {
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
@@ -204,10 +202,7 @@ vk::Extent2D Vulkan::VulkanPresentChain::ChooseSwapExtent(GLFWwindow* _window, c
             static_cast<uint32_t>(width),
             static_cast<uint32_t>(height)
         };
-
-        actualExtent.width = std::clamp(actualExtent.width, _capabilities.minImageExtent.width, _capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, _capabilities.minImageExtent.height, _capabilities.maxImageExtent.height);
-
+    
         return actualExtent;
     
 }
@@ -371,7 +366,7 @@ void Vulkan::VulkanPresentChain::CreateDepthResources(VulkanContext* _vulkanCont
         vk::ImageType::e2D, detphFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment,
         VMA_MEMORY_USAGE_AUTO, &_vulkanContext->depthImage, &_vulkanContext->depthImageAllocation);
 
-    Backend::TransitionImageLayout(_vulkanContext, _vulkanContext->depthImage, vk::ImageAspectFlagBits::eDepth, 1, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+    Backend::TransitionImageLayout(_vulkanContext, _vulkanContext->depthImage, vk::ImageAspectFlagBits::eDepth |  vk::ImageAspectFlagBits::eStencil , 1, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
     
     vk::ImageViewCreateInfo viewCreateInfo{};
     viewCreateInfo.sType = vk::StructureType::eImageViewCreateInfo;

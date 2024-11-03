@@ -10,7 +10,7 @@ namespace Vulkan
             vk::ImageUsageFlags usage, VmaMemoryUsage vmaMemoryUsage, vk::Image* _image, VmaAllocation* _vmaAllocation);
 
         void GenerateMipmaps(vk::Image _image, vk::Format _imageFormat, int32_t _texWidth, int32_t _texHeight, uint32_t mipLevels,
-   vk::PhysicalDevice _physicalDevice, vk::Device _device ,vk::CommandPool _commandPool, vk::Fence _fence, vk::Queue _queue);
+            vk::PhysicalDevice _physicalDevice, vk::Device _device ,vk::CommandPool _commandPool, vk::Fence _fence, vk::Queue _queue);
 
     }
     

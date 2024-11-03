@@ -8,14 +8,7 @@
 
 
 BEGIN_PCCORE
-    struct CreateTextureInfo
-    {
-        int32_t width;
-        int32_t height;
-        int32_t depth;
-        RHIFormat format;
-        ImageAspectFlagBits imageAspectFlagBits;
-    };
+
 
 class Texture : public Resource
 {

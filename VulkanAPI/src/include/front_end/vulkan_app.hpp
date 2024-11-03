@@ -14,6 +14,7 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
+
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -40,6 +41,8 @@ namespace Vulkan
 		VULKAN_API void BindShaderProgram(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName) override;
 		
 		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource) override;
+
+		VULKAN_API void DestroyImageView(PC_CORE::ImageViewHandle _imageView) override;
 		
 		VULKAN_API bool DestroyShader(const std::string& _shaderProgramName) override;
 
@@ -117,22 +120,18 @@ namespace Vulkan
 #pragma endregion DescriptorSetLayout
 
 #pragma region Image
-
-		VULKAN_API PC_CORE::ImageHandle CreateImage(uint32_t _width, uint32_t _height, uint32_t mipLevels,
-		                                            PC_CORE::ImageType _imageType, PC_CORE::RHIFormat _format, PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage) override;
-
+		
 		VULKAN_API void GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RHIFormat _imageFormat, int32_t _texWidth,
 			int32_t _texHeight, uint32_t _mipLevels) override;
-
-		VULKAN_API void DestroyImage(PC_CORE::ImageHandle _imageHandle) override;
-
-		VULKAN_API void DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle) override;
-
-		VULKAN_API PC_CORE::ImageViewHandle CreateImageView(const PC_CORE::ImageViewCreateInfo& _imageViewCreateInfo) override;
-
+		
 		VULKAN_API PC_CORE::SamplerHandle CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) override;
 
 		VULKAN_API void DestroySampler(PC_CORE::SamplerHandle _samplerHandle) override;
+
+		VULKAN_API void CreateTexture(const PC_CORE::CreateTextureInfo& _createTextureInfo,
+			PC_CORE::ImageHandle* _outImageHandle,  PC_CORE::ImageViewHandle* _outImageView) override;
+
+		VULKAN_API bool DestroyTexture(PC_CORE::ImageHandle _imageHandle) override;
 
 #pragma endregion Image
 

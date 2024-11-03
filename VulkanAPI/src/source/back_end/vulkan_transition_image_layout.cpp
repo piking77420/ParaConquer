@@ -3,7 +3,7 @@
 #include "back_end/vulkan_command_pool_function.hpp"
 
 void Vulkan::Backend::TransitionImageLayout(VulkanContext* _context, vk::Image _imageHandle,
-                                            vk::ImageAspectFlagBits _imageAspectFlagBits, uint32_t _mipLevel,
+                                            vk::ImageAspectFlags _imageAspectFlagBits, uint32_t _mipLevel,
                                             vk::ImageLayout _initialLayout, vk::ImageLayout _finalLayout)
 {
     vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(_context->device,

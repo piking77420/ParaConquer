@@ -35,12 +35,13 @@ BEGIN_PCCORE
 
         PC_CORE_API ~Window();
     private:
+    
+        GLFWwindow* m_Window = nullptr;
+    
         Tbx::Vector2ui m_WindowSize = {1680, 1050};
 
         GLFWmonitor* m_Monitor = nullptr;
-
-        GLFWwindow* m_Window = nullptr;
-
+    
         const GLFWvidmode* Mode = nullptr;
 
         Tbx::Vector2ui oldPos;

@@ -498,13 +498,17 @@ enum RHIImageUsage : int
     IMAGE_USAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
-
 enum class ImageType
 {
-    IMAGE_1D,
-    IMAGE_2D,
-    IMAGE_3D
-};
+    TYPE_1D,
+    TYPE_2D,
+    TYPE_e3D,
+    TYPE_CUBE,
+    TYPE_1DARRAY,
+    TYPE_2DARRAY,
+    TYPE_CUBEARRAY
+ };
+
 
 enum ImageAspectFlagBits
 {
@@ -570,16 +574,6 @@ enum ImageLayout
     LAYOUT_MAX_ENUM = 0x7FFFFFFF
 };
 
-enum class ImageViewType
-{
-   e1D,
-   e2D,
-   e3D,
-   eCUBE,
-   e1DARRAY,
-   e2DARRAY,
-   eCUBEARRAY
-};
 
 enum ImageViewCreateInfoFlags
 {
@@ -620,12 +614,34 @@ struct ImageSubresourceRange
 
 struct ImageViewCreateInfo
 {
-    ImageViewCreateInfoFlags     flags;
-    ImageHandle                    image;
-    ImageViewType            viewType;
+    ImageViewCreateInfoFlags   flags;
+    ImageHandle                 image;
+    ImageType            viewType;
     RHIFormat                   format;
     ComponentMapping         components;
     ImageSubresourceRange    subresourceRange;
+};
+
+enum class TextureAspect
+{
+    NONE = 1 << 0,
+    COLOR = 1 << 1,
+    DEPTH_STENCIL = 1 << 2,
+    COUNT = 1 << 3
+};
+
+ENUM_FLAGS(TextureAspect)
+
+struct CreateTextureInfo
+{
+    int32_t width;
+    int32_t height;
+    int32_t depth;
+    uint32_t mipsLevels;
+    std::vector<void*> data;
+    ImageType imageType;
+    RHIFormat format;
+    TextureAspect textureAspect;
 };
 
 

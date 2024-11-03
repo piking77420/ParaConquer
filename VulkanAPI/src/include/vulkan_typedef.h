@@ -56,7 +56,6 @@ namespace Vulkan
         vk::Queue presentQueue;
         vk::Queue transferQueu;
     };
-
     
 
     struct VulkanContext

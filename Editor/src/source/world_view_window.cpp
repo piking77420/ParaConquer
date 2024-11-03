@@ -77,11 +77,15 @@ void WorldViewWindow::ResizeViewport()
     const PC_CORE::CreateTextureInfo createTextureInfo =
         {
         .width = static_cast<int32_t>(m_Editor->window.GetWindowSize().x),
-        .height =  static_cast<int32_t>(m_Editor->window.GetWindowSize().y),
-        .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
-        .imageAspectFlagBits = PC_CORE::IMAGE_ASPECT_COLOR_BIT
+       .height =  static_cast<int32_t>(m_Editor->window.GetWindowSize().y),
+       .depth = 1,
+       .mipsLevels = 1,
+       .data = {},
+       .imageType = PC_CORE::ImageType::TYPE_2D,
+       .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
+       .textureAspect = PC_CORE::TextureAspect::COLOR 
         };
-
+    
     m_Texture = PC_CORE::Texture(createTextureInfo);
 
     for (auto& i : m_ImaguiDescriptorSet)

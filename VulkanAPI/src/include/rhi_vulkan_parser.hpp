@@ -28,7 +28,8 @@ namespace Vulkan
 
     vk::ImageLayout RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout);
 
-    vk::ImageViewType RHIImageViewTypeToVulkan(PC_CORE::ImageViewType _imageViewType);
+    vk::ImageViewType RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageType);
+    
 
     inline vk::ImageViewCreateFlags RHIToVulkanImageViewCreateFlags(PC_CORE::ImageViewCreateInfoFlags _imageViewCreateInfoFlags)
     {
@@ -51,5 +52,10 @@ namespace Vulkan
     vk::CompareOp RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp);
 
     vk::BorderColor RHIToBorderColor(PC_CORE::BorderColor _borderColor);
+
+
+
+    vk::ImageViewType ImageTypeToImageViewType(vk::ImageType _imageType);
+
 }
 

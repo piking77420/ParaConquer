@@ -32,7 +32,7 @@ namespace Vulkan
 
         vk::PresentModeKHR ChoosePresentMode(const std::vector<vk::PresentModeKHR>& _availablePresentModes);
 
-        vk::Extent2D ChooseSwapExtent(GLFWwindow* _window, const vk::SurfaceCapabilitiesKHR& _capabilities);
+        vk::Extent2D ChooseSwapExtent(GLFWwindow* _window);
 
         void CreateSwapchainImages(VulkanContext* _vulkanContext);
         

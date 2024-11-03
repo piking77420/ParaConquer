@@ -181,6 +181,8 @@ void Vulkan::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& pro
                                                  programShaderCreateInfo, _shaderSource);
 }
 
+
+
 bool Vulkan::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
 {
     return m_vulkanShaderManager.DestroyShader(m_VulkanContext.device, _shaderProgramName);
@@ -478,29 +480,84 @@ void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandB
                                      _descriptorSetCount, vkDescriptorSet, _dynamicOffsetCount, _pDynamicOffsets);
 }
 
-PC_CORE::ImageHandle Vulkan::VulkanApp::CreateImage(uint32_t _width, uint32_t _height, uint32_t mipLevels,
-                                                    PC_CORE::ImageType _imageType, PC_CORE::RHIFormat _format,
-                                                    PC_CORE::ImageTiling _tiling, PC_CORE::RHIImageUsage _usage)
+void Vulkan::VulkanApp::CreateTexture(const PC_CORE::CreateTextureInfo& _createTextureInfo,
+            PC_CORE::ImageHandle* _outImageHandle,  PC_CORE::ImageViewHandle* _outImageView)
 {
-    const vk::ImageType imageType = RHIImageToVkImageType(_imageType);
-    const vk::Format imageFormat = RHIFormatToVkFormat(_format);
-    const vk::ImageTiling tiling = RHiImageToVkImageTiling(_tiling);
-    const vk::ImageUsageFlags usageFlags = static_cast<vk::ImageUsageFlags>(_usage);
-
     vk::Image image = VK_NULL_HANDLE;
     VmaAllocation allocation = VK_NULL_HANDLE;
 
-    Vulkan::Backend::CreateImage(&m_VulkanContext, _width, _height, mipLevels, imageType, imageFormat, tiling, usageFlags,
+    const vk::ImageType imageType = RHIImageToVkImageType(_createTextureInfo.imageType);
+    const vk::Format imageFormat = RHIFormatToVkFormat(_createTextureInfo.format);
+    const vk::ImageTiling tiling = vk::ImageTiling::eOptimal;
+    const vk::ImageUsageFlags usageFlags = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc |
+        vk::ImageUsageFlagBits::eSampled;
+
+    Vulkan::Backend::CreateImage(&m_VulkanContext, _createTextureInfo.width, _createTextureInfo.height,
+                                 _createTextureInfo.mipsLevels, imageType, imageFormat, tiling, usageFlags,
                                  VMA_MEMORY_USAGE_AUTO,
                                  &image, &allocation);
 
+
+    vk::ImageAspectFlags aspectFlag;
+
+    if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::COLOR)
+    {
+        aspectFlag |= vk::ImageAspectFlagBits::eColor;
+    }
+    else if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH_STENCIL)
+    {
+        aspectFlag |= vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+    }
+    
+    vk::ImageView imageView = VK_NULL_HANDLE;
+    vk::ImageViewType imageViewType = RHIImageTypeToVulkanImageViewType(_createTextureInfo.imageType);
+    
+    vk::ImageViewCreateInfo createImageViewInfo = {};
+    createImageViewInfo.sType = vk::StructureType::eImageViewCreateInfo;
+    createImageViewInfo.pNext = nullptr;
+    createImageViewInfo.flags = {};
+    createImageViewInfo.image = image;
+    createImageViewInfo.viewType = imageViewType;
+    createImageViewInfo.format = RHIFormatToVkFormat(_createTextureInfo.format);
+    createImageViewInfo.subresourceRange.aspectMask = aspectFlag;
+    createImageViewInfo.subresourceRange.baseMipLevel = 0;
+    createImageViewInfo.subresourceRange.levelCount = _createTextureInfo.mipsLevels;
+    createImageViewInfo.subresourceRange.baseArrayLayer = 0;
+    createImageViewInfo.subresourceRange.layerCount = 1;
+
+   imageView = m_VulkanContext.device.createImageView(createImageViewInfo, nullptr);
+    
+    
     m_VulkanContext.m_ImagesAllocationMap.insert({VulkanObjectWrapper<vk::Image>(image), allocation});
 
-    return *reinterpret_cast<PC_CORE::ImageHandle*>(&image);
+    *_outImageHandle = image;
+    *_outImageView = imageView;
+}
+
+void Vulkan::VulkanApp::DestroyImageView(PC_CORE::ImageViewHandle _imageView)
+{
+    m_VulkanContext.device.destroyImageView(CastObjectToVkObject<vk::ImageView>(_imageView));
+}
+
+bool Vulkan::VulkanApp::DestroyTexture(PC_CORE::ImageHandle _imageHandle)
+{
+    VulkanObjectWrapper<vk::Image> imageObject(CastObjectToVkObject<vk::Image>(_imageHandle));
+    
+    if (!m_VulkanContext.m_ImagesAllocationMap.contains(imageObject))
+    {
+        return false; 
+    }
+
+    auto& backend = m_VulkanContext.m_ImagesAllocationMap.at(imageObject);
+
+    vmaDestroyImage(m_VulkanContext.allocator, imageObject.object, backend);
+    m_VulkanContext.m_ImagesAllocationMap.erase(imageObject);
+
+    return true;
 }
 
 void Vulkan::VulkanApp::GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RHIFormat _imageFormat, int32_t _texWidth,
-    int32_t _texHeight, uint32_t _mipLevels)
+                                        int32_t _texHeight, uint32_t _mipLevels)
 {
     vk::Image image = CastObjectToVkObject<vk::Image>(_image);
     const vk::Format format = RHIFormatToVkFormat(_imageFormat);
@@ -509,57 +566,7 @@ void Vulkan::VulkanApp::GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RH
         m_VulkanContext.physicalDevice, m_VulkanContext.device, m_VulkanContext.resourceCommandPool, m_VulkanContext.resourceFence, m_VulkanContext.vkQueues.graphicQueue);
 }
 
-void Vulkan::VulkanApp::DestroyImage(PC_CORE::ImageHandle _imageHandle)
-{
-    vk::Image image = CastObjectToVkObject<vk::Image>(_imageHandle);
-    VulkanObjectWrapper obj =  VulkanObjectWrapper<vk::Image>(image);
-    if (!m_VulkanContext.m_ImagesAllocationMap.contains(obj))
-    {
-        return;
-    }
 
-    auto& ref = m_VulkanContext.m_ImagesAllocationMap.at(obj);
-    vmaDestroyImage(m_VulkanContext.allocator,image, ref);
-    m_VulkanContext.m_ImagesAllocationMap.erase(obj);
-}
-
-void Vulkan::VulkanApp::DestroyImageView(PC_CORE::ImageViewHandle _imageViewHandle)
-{
-    vk::ImageView imageView = CastObjectToVkObject<vk::ImageView>(_imageViewHandle);
-
-    m_VulkanContext.device.destroyImageView(imageView);
-}
-
-PC_CORE::ImageViewHandle Vulkan::VulkanApp::CreateImageView(const PC_CORE::ImageViewCreateInfo& _imageViewCreateInfo)
-{
-    vk::ImageViewCreateInfo createInfo = {};
-
-    createInfo.sType = vk::StructureType::eImageViewCreateInfo,
-        createInfo.pNext = nullptr,
-        createInfo.flags = RHIToVulkanImageViewCreateFlags(_imageViewCreateInfo.flags),
-        createInfo.image = CastObjectToVkObject<vk::Image>(_imageViewCreateInfo.image),
-        createInfo.viewType = RHIImageViewTypeToVulkan(_imageViewCreateInfo.viewType),
-        createInfo.format = RHIFormatToVkFormat(_imageViewCreateInfo.format),
-        createInfo.components = {
-            RHIToVulkanComponentSwizzle(_imageViewCreateInfo.components.r),
-            RHIToVulkanComponentSwizzle(_imageViewCreateInfo.components.g),
-            RHIToVulkanComponentSwizzle(_imageViewCreateInfo.components.g)
-        };
-
-    createInfo.subresourceRange.aspectMask = RhiToVKImageAspectFlagBits(
-        _imageViewCreateInfo.subresourceRange.aspectMask);
-    createInfo.subresourceRange.baseMipLevel = _imageViewCreateInfo.subresourceRange.baseMipLevel;
-    createInfo.subresourceRange.levelCount = _imageViewCreateInfo.subresourceRange.levelCount;
-    createInfo.subresourceRange.baseArrayLayer = _imageViewCreateInfo.subresourceRange.baseArrayLayer;
-    createInfo.subresourceRange.layerCount = _imageViewCreateInfo.subresourceRange.layerCount;
-
-
-    PC_CORE::ImageViewHandle imageView = VK_NULL_HANDLE;
-    VK_CALL(
-        m_VulkanContext.device.createImageView(&createInfo, nullptr, CastObjectToVkObject<vk::ImageView*>(&imageView)));
-
-    return imageView;
-}
 
 PC_CORE::SamplerHandle Vulkan::VulkanApp::CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo)
 {
@@ -594,6 +601,8 @@ void Vulkan::VulkanApp::DestroySampler(PC_CORE::SamplerHandle _samplerHandle)
 {
     m_VulkanContext.device.destroySampler(CastObjectToVkObject<vk::Sampler>(_samplerHandle));
 }
+
+
 
 void Vulkan::VulkanApp::CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image,
                                           const PC_CORE::CopyBufferImageInfo&

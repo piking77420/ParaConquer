@@ -20,6 +20,16 @@ Texture& Texture::operator=(Texture&& _other)
     m_SamplerHandle = _other.m_SamplerHandle;
     _other.m_SamplerHandle = nullptr;
 
+    textureChannel = _other.textureChannel;
+    _other.textureChannel = 0;
+
+    m_MipLevel = _other.m_MipLevel;
+    _other.m_MipLevel = 0;
+
+    m_TextureSize = _other.m_TextureSize;
+    _other.m_TextureSize = {};
+    
+    
     return *this;
 }
 
@@ -31,31 +41,14 @@ Texture::Texture(const CreateTextureInfo& createTextureInfo)
 
     const uint32_t widht = static_cast<uint32_t>(m_TextureSize.x);
     const uint32_t height = static_cast<uint32_t>(m_TextureSize.y);
+    //m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
+    m_MipLevel = createTextureInfo.mipsLevels;
 
-    m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
-
-    m_ImageHandle = RHI::GetInstance().CreateImage(widht, height, m_MipLevel, ImageType::IMAGE_2D, m_Format,
-        ImageTiling::IMAGE_TILING_OPTIMAL, static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_TRANSFER_SRC_BIT | IMAGE_USAGE_SAMPLED_BIT));
+   RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
+    
     RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
 
-    const ImageViewCreateInfo imageViewCreateInfo =
-    {
-    .flags = {},
-    .image = m_ImageHandle,
-    .viewType = ImageViewType::e2D,
-    .format = m_Format,
-    .components = {},
-    .subresourceRange =
-        {
-        .aspectMask = IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = m_MipLevel,
-        .baseArrayLayer = 0,
-        .layerCount = 1
-        }
-    };
-    m_ImageViewHandle = RHI::GetInstance().CreateImageView(imageViewCreateInfo);
     const SamplerCreateInfo samplerCreateInfo =
     {
       .flags = {},
@@ -90,7 +83,7 @@ Texture::~Texture()
         rhi.DestroyImageView(m_ImageViewHandle);
 
     if (m_ImageHandle != NULL_HANDLE)
-        rhi.DestroyImage(m_ImageHandle);
+        rhi.DestroyTexture(m_ImageHandle);
 
     if (m_SamplerHandle != NULL_HANDLE)
         rhi.DestroySampler(m_SamplerHandle);
@@ -161,15 +154,25 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
     memcpy(gpuData, pixels, size);
     RHI::GetInstance().UnMapData(stagingBuffer);
     FileLoader::FreeData(pixels);
+    
 
-    const uint32_t widht = static_cast<uint32_t>(m_TextureSize.x);
-    const uint32_t height = static_cast<uint32_t>(m_TextureSize.y);
+    m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(m_TextureSize.x, m_TextureSize.y))));
 
-    m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
+    PC_CORE::CreateTextureInfo createTextureInfo =
+    {
+        .width = m_TextureSize.x,
+        .height = m_TextureSize.y,
+        .depth = 1,
+        .mipsLevels = m_MipLevel,
+        .data = {gpuData},
+        .imageType = ImageType::TYPE_2D,
+        .format = m_Format,
+        .textureAspect = TextureAspect::COLOR,
+    };
 
-    m_ImageHandle = RHI::GetInstance().CreateImage(widht, height, m_MipLevel, ImageType::IMAGE_2D, m_Format,
-        ImageTiling::IMAGE_TILING_OPTIMAL, static_cast<RHIImageUsage>(IMAGE_USAGE_TRANSFER_DST_BIT | IMAGE_USAGE_TRANSFER_SRC_BIT | IMAGE_USAGE_SAMPLED_BIT));
+    RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
 
+    
     RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     const CopyBufferImageInfo copyBufferImageInfo =
     {
@@ -184,33 +187,13 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
            .layerCount = 1
        },
        .imageOffset3D = {0, 0, 0 },
-       .imageExtent3D = { widht, height, 1}
+       .imageExtent3D = { static_cast<uint32_t>(m_TextureSize.x), static_cast<uint32_t>(m_TextureSize.y), 1}
     };
 
 
     RHI::GetInstance().CopyBufferToImage(stagingBuffer, m_ImageHandle, copyBufferImageInfo);
     RHI::GetInstance().DestroyBuffer(stagingBuffer);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
-
-
-    const ImageViewCreateInfo imageViewCreateInfo =
-    {
-    .flags = {},
-    .image = m_ImageHandle,
-    .viewType = ImageViewType::e2D,
-    .format = m_Format,
-    .components = {},
-    .subresourceRange =
-        {
-        .aspectMask = IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = m_MipLevel,
-        .baseArrayLayer = 0,
-        .layerCount = 1
-        }
-    };
-
-    m_ImageViewHandle = RHI::GetInstance().CreateImageView(imageViewCreateInfo);
 
     const SamplerCreateInfo samplerCreateInfo =
     {

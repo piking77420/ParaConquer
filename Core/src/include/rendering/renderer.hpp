@@ -65,6 +65,7 @@ private:
     SceneBufferGPU sceneBufferGPU;
 
     PC_CORE::DescriptorSetHandle* descriptorSetHandle = nullptr;
+
     
     PC_CORE_API void InitCommandPools();
 
