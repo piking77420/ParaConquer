@@ -44,8 +44,8 @@ Texture::Texture(const CreateTextureInfo& createTextureInfo)
     //m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
     m_MipLevel = createTextureInfo.mipsLevels;
 
-   RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
-    
+    RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
+
     RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
 
@@ -80,13 +80,23 @@ Texture::~Texture()
 {
     RHI& rhi = RHI::GetInstance();
     if (m_ImageViewHandle != NULL_HANDLE)
+    {
         rhi.DestroyImageView(m_ImageViewHandle);
+        m_ImageViewHandle = NULL_HANDLE;
+    }
 
     if (m_ImageHandle != NULL_HANDLE)
+    {
         rhi.DestroyTexture(m_ImageHandle);
+        m_ImageHandle = NULL_HANDLE;
+
+    }
 
     if (m_SamplerHandle != NULL_HANDLE)
+    {
         rhi.DestroySampler(m_SamplerHandle);
+        m_SamplerHandle = NULL_HANDLE;
+    }
 }
 
 void Texture::Load(std::array<std::string, 6>& _maps)
@@ -171,9 +181,8 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
     };
 
     RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
-
-    
     RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
+    
     const CopyBufferImageInfo copyBufferImageInfo =
     {
        .bufferOffset = 0,
@@ -189,8 +198,6 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
        .imageOffset3D = {0, 0, 0 },
        .imageExtent3D = { static_cast<uint32_t>(m_TextureSize.x), static_cast<uint32_t>(m_TextureSize.y), 1}
     };
-
-
     RHI::GetInstance().CopyBufferToImage(stagingBuffer, m_ImageHandle, copyBufferImageInfo);
     RHI::GetInstance().DestroyBuffer(stagingBuffer);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);

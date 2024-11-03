@@ -76,6 +76,29 @@ void Editor::RotateCube()
    
 }
 
+void Editor::UpdateEditorWindows()
+{
+    dockSpace.BeginDockSpace();
+
+    for (EditorWindow* editorWindow : m_EditorWindows)
+    {
+        editorWindow->Begin();
+        editorWindow->Update();
+        editorWindow->End();
+    }
+    dockSpace.EndDockSpace();
+}
+
+void Editor::RenderEditorWindows()
+{
+    for (EditorWindow* editorWindow : m_EditorWindows)
+    {
+        editorWindow->Render();
+    }
+    PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
+}
+
+
 void Editor::InitTestScene()
 {
 
@@ -97,6 +120,7 @@ void Editor::DestroyTestScene()
     world.scene.~Scene();
     world.scene = Scene();
     m_Selected = nullptr;
+   
 
     
     //ResourceManager::Delete<Material>("baseMaterial");
@@ -114,24 +138,14 @@ void Editor::Run()
         
         renderer.BeginFrame();
        
-        for (EditorWindow* editorWindow : m_EditorWindows)
-        {
-            editorWindow->Begin();
-            editorWindow->Update();
-            editorWindow->End();
-        }
+        UpdateEditorWindows();
 
         RotateCube();
-        if (World::currentWorld != nullptr)
-        {
+        if (World::currentWorld)
             WorldLoop();
-        }
         
-        for (EditorWindow* editorWindow : m_EditorWindows)
-        {
-            editorWindow->Render();
-        }
-        PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
+        RenderEditorWindows();
+       
         renderer.SwapBuffers();
     }
 

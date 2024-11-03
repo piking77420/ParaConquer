@@ -293,7 +293,8 @@ VkBool32 Vulkan::VulkanHarwareWrapper::DebugCallback(VkDebugUtilsMessageSeverity
                                                     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                     void* pUserData)
 {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    std::cerr << "validation layer: " << pCallbackData->pMessage << '\n';
+    std::cout << '\n';
 
     return VK_FALSE;
 }

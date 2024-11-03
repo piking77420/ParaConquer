@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "app.hpp"
+#include "dock_space.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "world/transform.hpp"
@@ -32,7 +33,13 @@ public:
 
     void RotateCube();
 
+    void UpdateEditorWindows();
+
+    void RenderEditorWindows();
+
     std::vector<EditorWindow*> m_EditorWindows;
+
+    DockSpace dockSpace;
     
     PC_CORE::Entity* m_Selected = nullptr;
 };
