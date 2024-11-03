@@ -78,7 +78,7 @@ void Editor::RotateCube()
 
 void Editor::UpdateEditorWindows()
 {
-    //dockSpace.BeginDockSpace();
+    dockSpace.BeginDockSpace();
 
     for (EditorWindow* editorWindow : m_EditorWindows)
     {
@@ -86,7 +86,7 @@ void Editor::UpdateEditorWindows()
         editorWindow->Update();
         editorWindow->End();
     }
-    //dockSpace.EndDockSpace();
+    dockSpace.EndDockSpace();
 }
 
 void Editor::RenderEditorWindows()

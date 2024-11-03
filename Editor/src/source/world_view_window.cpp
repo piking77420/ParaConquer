@@ -86,6 +86,8 @@ void WorldViewWindow::ResizeViewport()
        .textureAspect = PC_CORE::TextureAspect::COLOR 
         };
     
+    // TO DO FIX THIS 
+    m_Texture.~Texture();
     m_Texture = PC_CORE::Texture(createTextureInfo);
 
     for (auto& i : m_ImaguiDescriptorSet)

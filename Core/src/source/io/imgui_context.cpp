@@ -31,7 +31,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr)
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
+    //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
     ImGui::StyleColorsDark();
 
     GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
