@@ -14,7 +14,6 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
-		
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -39,10 +38,12 @@ namespace Vulkan
 			const std::string& _pushConstantName, const void* _data, uint32_t _size) override;
 #pragma region Shader
 		VULKAN_API void BindShaderProgram(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName) override;
-
+		
 		VULKAN_API void CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource) override;
 		
 		VULKAN_API bool DestroyShader(const std::string& _shaderProgramName) override;
+
+		VULKAN_API PC_CORE::DescriptorSetHandle* GetDescriptorSet(const std::string& _shaderName) override;
 
 #pragma endregion Shader
 		

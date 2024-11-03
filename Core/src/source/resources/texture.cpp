@@ -117,17 +117,17 @@ void Texture::Load(std::array<std::string, 6>& _maps)
 
 
 
-PC_CORE::ImageHandle Texture::GetImageHandle()
+PC_CORE::ImageHandle Texture::GetImageHandle() const
 {
     return m_ImageHandle;
 }
 
-PC_CORE::ImageHandle Texture::GetImageViewHandle()
+PC_CORE::ImageHandle Texture::GetImageViewHandle() const
 {
     return m_ImageViewHandle;
 }
 
-PC_CORE::ImageHandle Texture::GetSamplerHandle()
+PC_CORE::ImageHandle Texture::GetSamplerHandle() const
 {
     return m_SamplerHandle;
 }
@@ -135,6 +135,11 @@ PC_CORE::ImageHandle Texture::GetSamplerHandle()
 Tbx::Vector2i Texture::GetTextureSize() const
 {
     return m_TextureSize;
+}
+
+DescriptorImageInfo Texture::GetDescriptorImageInfo() const
+{
+    return {.sampler = GetSamplerHandle(), .imageView = GetImageViewHandle(), .imageLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 }
 
 void Texture::CreateTextureFromFile(const fs::path& _path)

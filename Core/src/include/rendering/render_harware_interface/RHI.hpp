@@ -55,6 +55,11 @@ BEGIN_PCCORE
         {
         }
 
+        virtual DescriptorSetHandle* GetDescriptorSet(const std::string& _shaderName)
+        {
+            return nullptr;
+        }
+
         virtual PC_CORE_API void SwapBuffers(CommandBufferHandle* _commandBuffers, uint32_t _commandBufferCount)
         {
         }

@@ -35,13 +35,15 @@ public:
     
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
     
-    PC_CORE_API PC_CORE::ImageHandle GetImageHandle();
+    PC_CORE_API PC_CORE::ImageHandle GetImageHandle() const;
 
-    PC_CORE_API PC_CORE::ImageHandle GetImageViewHandle();
+    PC_CORE_API PC_CORE::ImageHandle GetImageViewHandle() const; 
 
-    PC_CORE_API PC_CORE::ImageHandle GetSamplerHandle();
+    PC_CORE_API PC_CORE::ImageHandle GetSamplerHandle() const;
 
     PC_CORE_API Tbx::Vector2i GetTextureSize() const;
+
+    PC_CORE_API DescriptorImageInfo GetDescriptorImageInfo() const;
 
 private:
     PC_CORE::ImageHandle m_ImageHandle = nullptr;

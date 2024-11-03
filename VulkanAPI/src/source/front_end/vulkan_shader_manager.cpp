@@ -102,6 +102,38 @@ void VulkanShaderManager::FillShaderInfo(ShaderInternal* _shaderInternalBack,
     }
 }
 
+void VulkanShaderManager::CreateShaderResourceFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal)
+{
+    const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
+    std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
+
+    std::vector<vk::PushConstantRange> pushConstantRange;
+    ReflectPushConstantBlock(_device, _shaderInternal, &pushConstantRange);
+
+    
+    std::vector<vk::DescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
+    RelflectDescriptorLayout(_device, _shaderInternal, &DescriptorSetLayoutBindings);
+
+    vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
+    layoutInfo.bindingCount = static_cast<uint32_t>(DescriptorSetLayoutBindings.size());
+    layoutInfo.pBindings = DescriptorSetLayoutBindings.data();
+
+    // TODO HANDLE MORE
+    _shaderInternal->descriptorSetLayouts.resize(1);
+    VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, _shaderInternal->descriptorSetLayouts.data()));
+    CreateDescriptorPool(_device, _shaderInternal);
+    AllocDescriptorSet(_device, _shaderInternal);
+    
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
+    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(_shaderInternal->descriptorSetLayouts.size()); // Optional
+    pipelineLayoutInfo.pSetLayouts = _shaderInternal->descriptorSetLayouts.data(); // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
+    pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
+    _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+}
+
 void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass,
                                                                const PC_CORE::ShaderInfo& ShaderInfo
                                                                , const std::vector<vk::PipelineShaderStageCreateInfo>&
@@ -255,6 +287,8 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderManager::GetVertexInputStateC
 }
 
 
+
+
 void VulkanShaderManager::DestroyInternalShaders(vk::Device _device,
                                                  ShaderInternal* _shaderInternalBack)
 {
@@ -274,8 +308,16 @@ void VulkanShaderManager::DestroyInternalShaders(vk::Device _device,
     if (_shaderInternalBack->pipelineLayout != VK_NULL_HANDLE)
         _device.destroyPipelineLayout(_shaderInternalBack->pipelineLayout);
 
-    if (_shaderInternalBack->descriptorSetLayout != VK_NULL_HANDLE)
-        _device.destroyDescriptorSetLayout(_shaderInternalBack->descriptorSetLayout);
+    // Destroy descriptorSetLayouts
+    for (auto& descriptorSetLayout : _shaderInternalBack->descriptorSetLayouts)
+    {
+        if (descriptorSetLayout != VK_NULL_HANDLE)
+            _device.destroyDescriptorSetLayout(descriptorSetLayout);
+    }
+
+
+    if (_shaderInternalBack->descriptorPool != VK_NULL_HANDLE)
+        _device.destroyDescriptorPool(_shaderInternalBack->descriptorPool);
 }
 
 
@@ -303,7 +345,7 @@ bool Vulkan::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk:
         shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
     }
 
-    CreatePipelineLayoutFromSpvReflectModule(_device, &shaderInternalBack);
+    CreateShaderResourceFromSpvReflectModule(_device, &shaderInternalBack);
     CreatePipelineGraphicPointFromModule(_device, _tmprRenderPass, _programShaderCreatInfo.shaderInfo,
         shaderStagesCreateInfos, shaderInternalBack.pipelineLayout,
         &shaderInternalBack.pipeline);
@@ -364,34 +406,7 @@ vk::ShaderStageFlagBits VulkanShaderManager::ShaderBitFromType(const PC_CORE::Sh
 #pragma endregion PARSING
 
 #pragma region SpvReflect
-void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal)
-{
-    const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
-    std::vector<ReflectBlockVariable>& reflectBlockVariables = _shaderInternal->reflectBlockVariables;
 
-    std::vector<vk::PushConstantRange> pushConstantRange;
-    ReflectPushConstantBlock(_device, _shaderInternal, &pushConstantRange);
-
-    
-    std::vector<vk::DescriptorSetLayoutBinding> DescriptorSetLayoutBindings;
-    RelflectDescriptorLayout(_device, _shaderInternal, &DescriptorSetLayoutBindings);
-
-    vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
-    layoutInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
-    layoutInfo.bindingCount = static_cast<uint32_t>(DescriptorSetLayoutBindings.size());
-    layoutInfo.pBindings = DescriptorSetLayoutBindings.data();
-
-
-    VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, &_shaderInternal->descriptorSetLayout));
-
-    vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
-    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = 1; // Optional
-    pipelineLayoutInfo.pSetLayouts = &_shaderInternal->descriptorSetLayout; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
-    pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
-    _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
-}
 
 void Vulkan::VulkanShaderManager::ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange)
 {
@@ -467,8 +482,61 @@ void Vulkan::VulkanShaderManager::RelflectDescriptorLayout(vk::Device _device, S
         }
 
     }
-
+    
 }
+
+
+void VulkanShaderManager::CreateDescriptorPool(vk::Device _device, ShaderInternal* _shaderInternal)
+{
+    std::vector<vk::DescriptorPoolSize> descriptorPoolSize;
+    
+    const std::vector<ShaderStageInfo>& shaderStageInfos = _shaderInternal->shaderStages;
+    size_t currentDescriptorPoolSize = 0;
+    for (size_t i = 0; i < shaderStageInfos.size(); i++)
+    {
+        const ShaderStageInfo& shaderStageInfo = shaderStageInfos[i];
+        const SpvReflectShaderModule* spvReflectBlockVariable = &shaderStageInfo.reflectShaderModule;
+
+        size_t descriptorBindingCount = static_cast<size_t>(spvReflectBlockVariable->descriptor_binding_count);
+        descriptorPoolSize.resize(descriptorPoolSize.size() + descriptorBindingCount);
+        
+        for (size_t j = 0; j < descriptorBindingCount; j++)
+        {
+            const SpvReflectDescriptorBinding* descriptorBindingReflected = &spvReflectBlockVariable->descriptor_bindings[j];
+            descriptorPoolSize.at(currentDescriptorPoolSize).type = static_cast<vk::DescriptorType>(descriptorBindingReflected->descriptor_type);
+            descriptorPoolSize.at(currentDescriptorPoolSize).descriptorCount = descriptorBindingReflected->count;
+
+            currentDescriptorPoolSize++;
+        }
+    }
+    
+    vk::DescriptorPoolCreateInfo descriptorPoolInfo = {};
+    descriptorPoolInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo;
+    descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSize.size());
+    descriptorPoolInfo.pPoolSizes = descriptorPoolSize.data();
+    // TODO MAY CHANGE
+    descriptorPoolInfo.maxSets = MAX_FRAMES_IN_FLIGHT;
+    _shaderInternal->descriptorPool = _device.createDescriptorPool(descriptorPoolInfo, nullptr);
+    
+}
+
+void VulkanShaderManager::AllocDescriptorSet(vk::Device _device, ShaderInternal* _shaderInternal)
+{
+    // TODO MAY CHANGE 
+    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, _shaderInternal->descriptorSetLayouts[0]);
+    
+    _shaderInternal->descriptorsets.resize(MAX_FRAMES_IN_FLIGHT);
+    
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo{};
+    descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
+    descriptorSetAllocateInfo.pNext = nullptr;
+    descriptorSetAllocateInfo.descriptorPool = _shaderInternal->descriptorPool;
+    descriptorSetAllocateInfo.pSetLayouts = layouts.data();
+    descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+
+   VK_CALL(_device.allocateDescriptorSets(&descriptorSetAllocateInfo, _shaderInternal->descriptorsets.data()));
+}
+
 
 void VulkanShaderManager::ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,
                                         ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags)

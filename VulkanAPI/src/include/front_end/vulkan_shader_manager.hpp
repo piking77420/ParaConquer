@@ -32,11 +32,13 @@ namespace Vulkan
     {
         std::vector<ShaderStageInfo> shaderStages;
         std::vector<ReflectBlockVariable> reflectBlockVariables;
+        std::vector<vk::DescriptorSet> descriptorsets;
+        vk::DescriptorPool descriptorPool;
 
         vk::PipelineBindPoint pipelineBindPoint;
         vk::Pipeline pipeline = VK_NULL_HANDLE;
         vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
-        vk::DescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+        std::vector<vk::DescriptorSetLayout> descriptorSetLayouts;
     };
 
     
@@ -47,6 +49,7 @@ namespace Vulkan
                                     const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource);
 
         VULKAN_API bool DestroyShader(vk::Device _device, const std::string& _shaderName);
+        
 
         VULKAN_API void BindProgram(vk::CommandBuffer _commandBuffer, const std::string& _shaderName);
 
@@ -58,36 +61,38 @@ namespace Vulkan
         VULKAN_API void Destroy(VulkanContext* _vulkanContext);
 
         VULKAN_API const ShaderInternal& GetShader(const std::string& _shaderName);
-    
+
+        ShaderInternal* GetShaderInternal(const std::string& _shaderName);
+
     private:
         VulkanShaderCompiler m_ShaderCompiler;
         
         std::unordered_map<std::string, ShaderInternal> m_InternalShadersMap;
+
+        static void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable, ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags);
         
-        ShaderInternal* GetShaderInternal(const std::string& _shaderName);
+        static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::ShaderStageType _shaderType);
+
+        static void FillShaderInfo(ShaderInternal* _shaderInternalBack, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource);
+        
         
         void DestroyInternalShaders(vk::Device _device, ShaderInternal* _shaderInternalBack);
-
-        static void FillShaderInfo(ShaderInternal* _shaderInternalBack,
-                             const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource);
-
+        
         void CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& ShaderInfo,
             const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);
 
-        void CreatePipelineLayoutFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
+        void CreateShaderResourceFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
 
         void ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange);
 
         void RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::DescriptorSetLayoutBinding>* _DescriptorSetLayoutBindings);
 
-        static void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable,
-        ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags);
-
-        
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
-            _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);
-        
-        static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::ShaderStageType _shaderType);
+        _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);
+
+        void CreateDescriptorPool(vk::Device _device, ShaderInternal* _shaderInternal);
+
+        void AllocDescriptorSet(vk::Device _device, ShaderInternal* _shaderInternal);
         
     };
 }

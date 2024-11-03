@@ -19,10 +19,7 @@ using namespace PC_CORE;
 void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
-
-    descriptorPool.~DescriptorPool();
-    descriptorSetLayout.~DescriptorSetLayout();
-
+    
     for (auto&& uniform : m_SceneBufferUniforms)
         uniform.~UniformBuffer();
 
@@ -56,8 +53,14 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 
     m_MainShader->Bind(m_CommandBuffer->handle);
 
-    RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1,
-                                         &m_DescriptorSets[m_CurrentImage], 0, nullptr);
+    if (descriptorSetHandle != nullptr)
+    {
+        DescriptorSet descriptorSet;
+        descriptorSet.handle = descriptorSetHandle[m_CurrentImage];
+        
+        RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1,
+        &descriptorSet, 0, nullptr);
+    }
     DrawStaticMesh(_renderingContext, _world);
 }
 
@@ -235,58 +238,20 @@ void Renderer::InitCommandPools()
 
 void Renderer::InitDescriptors()
 {
-
-    const std::vector<PC_CORE::DescriptorLayoutBinding> descriptorLayoutBindings =
-    {
-        {
-            .binding = 0,
-            .descriptorCount = 1,
-            .descriptorType = PC_CORE::DescriptorType::UNIFORM_BUFFER,
-            .shaderStages = {PC_CORE::ShaderStageType::VERTEX},
-            .pImmutableSanpler = nullptr,
-        },
-
-        {
-            .binding = 1,
-            .descriptorCount = 1,
-            .descriptorType = PC_CORE::DescriptorType::COMBINED_IMAGE_SAMPLER,
-            .shaderStages = {PC_CORE::ShaderStageType::FRAGMENT},
-            .pImmutableSanpler = nullptr,
-        }
-    };
-    descriptorSetLayout = DescriptorSetLayout(descriptorLayoutBindings);
-
-
-    std::array<DescriptorPoolSize, 2> descriptorPoolSize;
-    descriptorPoolSize[0].type = PC_CORE::DescriptorType::UNIFORM_BUFFER;
-    descriptorPoolSize[0].count = 1;
-    descriptorPoolSize[1].type = PC_CORE::DescriptorType::COMBINED_IMAGE_SAMPLER;
-    descriptorPoolSize[1].count = 1;
-
-
-    descriptorPool = DescriptorPool(descriptorPoolSize.data(), descriptorPoolSize.size(), MAX_FRAMES_IN_FLIGHT);
-
-    descriptorPool.AllocDescriptorSet(m_DescriptorSets.data(), static_cast<uint32_t>(m_DescriptorSets.size()),
-                                      descriptorSetLayout);
-
-    // TODO Write Descriptors
+    descriptorSetHandle = m_MainShader->GetDescriptorSets();
+    
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         constexpr size_t offset = 0;
+        
         DescriptorBufferInfo descriptorBufferInfo = m_SceneBufferUniforms[i].AsDescriptorBufferInfo(offset);
-
-        DescriptorImageInfo imageInfo =
-        {
-            .sampler = texture->GetSamplerHandle(),
-            .imageView = texture->GetImageViewHandle(),
-            .imageLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        };
+        DescriptorImageInfo imageInfo = texture->GetDescriptorImageInfo();
 
         DescriptorWriteSet descriptorWrite[2] =
         {
 
             {
-                .dstDescriptorSetHandle = m_DescriptorSets[i].handle,
+                .dstDescriptorSetHandle = descriptorSetHandle[i],
                 .dstBinding = 0,
                 .dstArrayElement = 0,
                 .descriptorType = DescriptorType::UNIFORM_BUFFER,
@@ -297,7 +262,7 @@ void Renderer::InitDescriptors()
                 .descriptorTexelBufferViewInfo = nullptr
             },
             {
-                .dstDescriptorSetHandle = m_DescriptorSets[i].handle,
+                .dstDescriptorSetHandle = descriptorSetHandle[i],
                 .dstBinding = 1,
                 .dstArrayElement = 0,
                 .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,

@@ -64,12 +64,7 @@ private:
 
     SceneBufferGPU sceneBufferGPU;
 
-
-    DescriptorSetLayout descriptorSetLayout;
-
-    DescriptorPool descriptorPool;
-
-    std::array<DescriptorSet, MAX_FRAMES_IN_FLIGHT> m_DescriptorSets;
+    PC_CORE::DescriptorSetHandle* descriptorSetHandle = nullptr;
     
     PC_CORE_API void InitCommandPools();
 

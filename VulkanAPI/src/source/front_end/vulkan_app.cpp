@@ -182,6 +182,11 @@ bool Vulkan::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
     return m_vulkanShaderManager.DestroyShader(m_VulkanContext.device, _shaderProgramName);
 }
 
+PC_CORE::DescriptorSetHandle* Vulkan::VulkanApp::GetDescriptorSet(const std::string& _shaderName)
+{
+    return reinterpret_cast<PC_CORE::DescriptorSetHandle*>(m_vulkanShaderManager.GetShaderInternal(_shaderName)->descriptorsets.data());
+}
+
 
 VULKAN_API void Vulkan::VulkanApp::WaitDevice()
 {
@@ -430,8 +435,7 @@ void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSet
 
     // DescriptorSet shouldbe 8 byte long
 
-    VK_CALL(
-        m_VulkanContext.device.allocateDescriptorSets(&descriptorSetAllocateInfo, CastObjectToVkObject<vk::DescriptorSet
+    VK_CALL(m_VulkanContext.device.allocateDescriptorSets(&descriptorSetAllocateInfo, CastObjectToVkObject<vk::DescriptorSet
             *>(descriptorSets)));
 }
 

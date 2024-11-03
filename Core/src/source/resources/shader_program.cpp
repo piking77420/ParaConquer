@@ -42,6 +42,11 @@ void ShaderProgram::PushConstantVec3(CommandBufferHandle _commandBuffer, const c
     PushConstant(_commandBuffer, _pushConstantName, vec3.GetPtr() , sizeof(Tbx::Vector3f));
 }
 
+PC_CORE::DescriptorSetHandle* ShaderProgram::GetDescriptorSets() const
+{
+    return RHI::GetInstance().GetDescriptorSet(name);
+}
+
 void ShaderProgram::CreateShader()
 {
     std::vector<ShaderSourcePath> sourceAndPaths;
