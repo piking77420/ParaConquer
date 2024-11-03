@@ -10,22 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/texture.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_image.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_image.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_harware_wrapper.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_harware_wrapper.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_present_chain.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_present_chain.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/vulkan_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/vulkan_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_harware_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_harware_wrapper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_present_chain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_present_chain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imgui.ini" beforeDir="false" afterPath="$PROJECT_DIR$/imgui.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ParaConquerLogo.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -373,12 +358,97 @@
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="cidr-memory-view://36" root0="FORCE_HIGHLIGHTING" />
-    <setting file="cidr-memory-view://37" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="cidr-memory-view://40" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um/d3d11.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/type_traits" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/xmemory" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include/xstring" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_core.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_enums.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_funcs.hpp" root0="SKIP_HIGHLIGHTING" />
@@ -724,7 +794,7 @@
       <workItem from="1730471032081" duration="6757000" />
       <workItem from="1730550354957" duration="565000" />
       <workItem from="1730566401108" duration="3906000" />
-      <workItem from="1730633867722" duration="10415000" />
+      <workItem from="1730633867722" duration="10757000" />
     </task>
     <servers />
   </component>
@@ -732,22 +802,6 @@
     <option name="version" value="3" />
   </component>
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_present_chain.cpp</url>
-          <line>324</line>
-          <option name="timeStamp" value="21" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp</url>
-          <line>59</line>
-          <option name="timeStamp" value="22" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-  </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />

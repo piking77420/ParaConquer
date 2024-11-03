@@ -18,7 +18,7 @@ void App::Init()
 {
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window("Para Conquer Editor", "ParaConquerLogo.png");
+    window = Window("Para Conquer Editor", "Icon/ParaConquerLogo.png");
     renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
 
     // Need other init in order to init
