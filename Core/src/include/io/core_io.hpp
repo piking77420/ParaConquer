@@ -7,18 +7,10 @@ BEGIN_PCCORE
     class CoreIo
     {
     public:
-        CoreIo() = delete;
+        PC_CORE_API CoreIo();
 
-        ~CoreIo() = delete;
+        PC_CORE_API ~CoreIo();
 
-        PC_CORE_API static void Init();
-
-        PC_CORE_API static void Destroy();
-
-        PC_CORE_API static void PoolEvent();
-
-       
-    private:
-        
+        PC_CORE_API void PoolEvent();
     };
 END_PCCORE

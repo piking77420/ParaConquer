@@ -38,7 +38,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr)
     constexpr bool installCallBack = true;
     ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
    
-    ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo();
+    ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo(&m_DescriptorPoolHandle);
     init_info.CheckVkResultFn = CheckError;
     ImGui_ImplVulkan_Init(&init_info);
 }
@@ -48,10 +48,13 @@ void IMGUIContext::Destroy()
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    RHI::GetInstance().DestroyDescriptorPool(m_DescriptorPoolHandle);
 }
 
 void IMGUIContext::NewFrame()
 {
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();

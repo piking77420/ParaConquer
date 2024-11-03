@@ -881,6 +881,42 @@ struct SamplerCreateInfo
 #pragma endregion 
 
 
+#pragma region RenderPass
+
+enum class AttachementUsage
+{
+    NONE,
+    COLOR,
+    DEPTH,
+    STENCIL,
+    COUNT,
+};
+
+
+struct AttachmentDescription
+{
+    AttachementUsage renderPassTargetType;
+    RHIFormat format;
+};
+
+struct SubPasse
+{
+    ShaderProgramPipelineType shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
+    AttachementUsage renderPassTargetType;
+    RHIFormat format;
+};
+
+
+struct RenderPassCreateInfo
+{
+    RenderPassCreateInfo* previous;
+    RenderPassCreateInfo* next;
+    
+    std::vector<AttachmentDescription> attachmentDescriptions;
+    std::vector<SubPasse> subPasses;
+};
+
+#pragma endregion RenderPass
 
 END_PCCORE
 

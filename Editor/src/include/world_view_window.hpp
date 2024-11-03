@@ -19,7 +19,7 @@ public:
     
     explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 
-    ~WorldViewWindow() override;
+    ~WorldViewWindow() override = default;
     
     void Update() override;
     

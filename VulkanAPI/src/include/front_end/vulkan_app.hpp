@@ -25,7 +25,7 @@ namespace Vulkan
 
 		VULKAN_API ~VulkanApp() override;
 
-		static VULKAN_API ImGui_ImplVulkan_InitInfo GetImGuiInitInfo();
+		static VULKAN_API ImGui_ImplVulkan_InitInfo GetImGuiInitInfo(PC_CORE::DescriptorPoolHandle* _descriptorPoolHandle);
 
 		VULKAN_API void WaitForAquireImage() override;
 		
@@ -137,15 +137,22 @@ namespace Vulkan
 
 #pragma region Command
 
-		void CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image, const PC_CORE::CopyBufferImageInfo& _copyBufferImageInfo) override;
+		VULKAN_API void CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_CORE::ImageHandle _image, const PC_CORE::CopyBufferImageInfo& _copyBufferImageInfo) override;
 
-		void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) override;
+		VULKAN_API void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) override;
 
-		void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
+		VULKAN_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits,
 			PC_CORE::RHIFormat _format,uint32_t _mipLevel , PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) override;
 		
 #pragma endregion Command
 
+#pragma region RenderPass
+
+		VULKAN_API PC_CORE::RenderPassHandle CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo) override;
+
+		VULKAN_API void DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassHandle) override;
+
+#pragma endregion RenderPass
 		
 	private:
 		VulkanContext m_VulkanContext;

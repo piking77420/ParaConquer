@@ -4,16 +4,17 @@
 
 using namespace PC_CORE;
 
-void CoreIo::Init()
+CoreIo::CoreIo()
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 }
 
-void CoreIo::Destroy()
+CoreIo::~CoreIo()
 {
     glfwTerminate();
 }
+
 
 void CoreIo::PoolEvent()
 {

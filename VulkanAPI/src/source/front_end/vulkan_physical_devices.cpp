@@ -107,6 +107,43 @@ Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::QuerySwapChainSup
 
     return swapChainSupportDetails;
 }
+vk::Format Vulkan::VulkanPhysicalDevices::FindSupportedFormat(vk::PhysicalDevice _physicalDevice, const std::vector<vk::Format>& _formats, vk::ImageTiling _tiling, vk::FormatFeatureFlags _features)
+{
+    for (const vk::Format& format : _formats)
+    {
+        vk::FormatProperties props;
+        _physicalDevice.getFormatProperties(format, &props);
+
+        if (_tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & _features) == _features)
+        {
+            return format;
+        }
+        else if (_tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & _features) == _features)
+        {
+             return format;
+        }
+
+    }
+
+    throw std::runtime_error("failed to find supported format!");
+}
+
+vk::Format Vulkan::VulkanPhysicalDevices::FindDepthFormat(vk::PhysicalDevice _device)
+{
+    const std::vector<vk::Format> depthFormats =
+    {
+        vk::Format::eD32Sfloat,vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint
+    };
+
+
+    return FindSupportedFormat(_device, depthFormats, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+}
+
+bool Vulkan::VulkanPhysicalDevices::HasStencilComponent(vk::Format format)
+{
+    return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint; 
+}
+
 #ifdef _DEBUG
 void Vulkan::VulkanPhysicalDevices::PrintPhysicalDeviceProperties(vk::PhysicalDevice _physicalDevice)
 {

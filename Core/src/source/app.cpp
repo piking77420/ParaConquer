@@ -9,7 +9,6 @@
 
 #include "lua/lua.hpp"
 #include "time/core_time.hpp"
-#include <io/core_io.hpp>
 
 
 using namespace PC_CORE;
@@ -19,10 +18,8 @@ void App::Init()
 {
     PC_LOG("App Init")
     // Can init without any depedancies
-    instance = this;
-    CoreIo::Init();
-    window = new Window("Para Conquer Editor", "ParaConquerLogo.png");
-    renderer.InitRHiAndObject(GraphicAPI::VULKAN, window);
+    window = Window("Para Conquer Editor", "ParaConquerLogo.png");
+    renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
 
     // Need other init in order to init
     ResourceManager::InitPath();
@@ -38,11 +35,12 @@ void App::Destroy()
 
     world.skybox.Destroy();
     ResourceManager::Destroy();
-
-
     renderer.Destroy();
-    delete window;
-    CoreIo::Destroy();
+}
+
+App::App()
+{
+    instance = this;
 }
 
 

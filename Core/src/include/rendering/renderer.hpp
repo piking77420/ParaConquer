@@ -32,8 +32,6 @@ public:
 
     PC_CORE_API void InitRenderResources();
     
-    PC_CORE_API void Destroy();
-
     PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
     PC_CORE_API void BeginFrame();
@@ -42,9 +40,12 @@ public:
 
     PC_CORE_API void WaitDevice();
 
+    PC_CORE_API void Destroy();
+
     PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
 
 private:
+
     size_t m_CurrentImage;
 
     CommandPool m_SwapChainCommandPool;
@@ -63,6 +64,7 @@ private:
 
     SceneBufferGPU sceneBufferGPU;
 
+
     DescriptorSetLayout descriptorSetLayout;
 
     DescriptorPool descriptorPool;
@@ -80,6 +82,7 @@ private:
     PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
 
     PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
+
 };
 
 END_PCCORE

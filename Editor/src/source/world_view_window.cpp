@@ -17,14 +17,11 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     m_ImaguiDescriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
 }
 
-WorldViewWindow::~WorldViewWindow()
-{
-    //m_Editor->renderer.vulkanViewport.DestroyViewPort(viewportId);
-}
 
 void WorldViewWindow::Update()
 {
     EditorWindow::Update();
+    
     
     if (resize)
     {
@@ -38,8 +35,6 @@ void WorldViewWindow::Update()
         {
             ResizeViewport();        
         }
-
-        
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -54,7 +49,7 @@ void WorldViewWindow::Render()
 {
     EditorWindow::Render();
 
-    const Tbx::Vector2ui windowSize = m_Editor->window->GetWindowSize();
+    const Tbx::Vector2ui windowSize = m_Editor->window.GetWindowSize();
     PC_CORE::RenderingContext renderingContext;
     renderingContext.renderingContextSize = {static_cast<float>(windowSize.x), static_cast<float>(windowSize.y)};
     renderingContext.lowLevelCamera =
@@ -62,7 +57,7 @@ void WorldViewWindow::Render()
         .position = camera.position,
         .front = camera.front,
         .up = camera.up,
-        .aspect = m_Editor->window->GetAspect(),
+        .aspect = m_Editor->window.GetAspect(),
         .fov = camera.GetFOV(),
         .near = camera.GetNear(),
         .far = camera.GetFar(),
@@ -81,8 +76,8 @@ void WorldViewWindow::ResizeViewport()
     
     const PC_CORE::CreateTextureInfo createTextureInfo =
         {
-        .width = static_cast<int32_t>(m_Editor->window->GetWindowSize().x),
-        .height =  static_cast<int32_t>(m_Editor->window->GetWindowSize().y),
+        .width = static_cast<int32_t>(m_Editor->window.GetWindowSize().x),
+        .height =  static_cast<int32_t>(m_Editor->window.GetWindowSize().y),
         .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
         .imageAspectFlagBits = PC_CORE::IMAGE_ASPECT_COLOR_BIT
         };

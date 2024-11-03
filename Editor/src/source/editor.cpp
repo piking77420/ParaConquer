@@ -27,7 +27,7 @@ void Editor::Init()
     InitEditorWindows();
     InitMaterial();
     InitTestScene();
-    PC_CORE::IMGUIContext::Init(window->GetHandle());
+    PC_CORE::IMGUIContext::Init(window.GetHandle());
 }
 
 void Editor::Destroy()
@@ -105,10 +105,10 @@ void Editor::DestroyTestScene()
 
 void Editor::Run()
 {
-    while (!window->ShouldClose())
+    while (!window.ShouldClose())
     {
-        PC_CORE::CoreIo::PoolEvent();
-        window->PoolEvents();
+        coreIo.PoolEvent();
+        window.PoolEvents();
         PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
         

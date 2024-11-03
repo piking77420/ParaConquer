@@ -258,6 +258,20 @@ BEGIN_PCCORE
         virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, PC_CORE::RHIFormat _format, uint32_t _mipLevel, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) {};
 #pragma endregion Command
 
+#pragma region RenderPass
+
+        virtual PC_CORE_API RenderPassHandle CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)
+        {
+            return nullptr;
+        }
+
+        virtual PC_CORE_API void DestroyRenderPass(RenderPassHandle _renderPassHandle)
+        {
+            
+        }
+
+#pragma endregion RenderPass
+
     protected:
         static RHI* m_Instance;
 

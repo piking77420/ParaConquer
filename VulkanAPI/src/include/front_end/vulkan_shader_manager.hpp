@@ -33,9 +33,10 @@ namespace Vulkan
         std::vector<ShaderStageInfo> shaderStages;
         std::vector<ReflectBlockVariable> reflectBlockVariables;
 
+        vk::PipelineBindPoint pipelineBindPoint;
         vk::Pipeline pipeline = VK_NULL_HANDLE;
         vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
-        vk::PipelineBindPoint pipelineBindPoint;  
+        vk::DescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     };
 
     

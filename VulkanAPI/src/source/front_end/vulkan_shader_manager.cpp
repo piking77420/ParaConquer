@@ -273,6 +273,9 @@ void VulkanShaderManager::DestroyInternalShaders(vk::Device _device,
     // Destroy pipelune layout
     if (_shaderInternalBack->pipelineLayout != VK_NULL_HANDLE)
         _device.destroyPipelineLayout(_shaderInternalBack->pipelineLayout);
+
+    if (_shaderInternalBack->descriptorSetLayout != VK_NULL_HANDLE)
+        _device.destroyDescriptorSetLayout(_shaderInternalBack->descriptorSetLayout);
 }
 
 
@@ -379,13 +382,12 @@ void VulkanShaderManager::CreatePipelineLayoutFromSpvReflectModule(vk::Device _d
     layoutInfo.pBindings = DescriptorSetLayoutBindings.data();
 
 
-    vk::DescriptorSetLayout descriptorSetLayout;
-    VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, &descriptorSetLayout));
+    VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, &_shaderInternal->descriptorSetLayout));
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
     pipelineLayoutInfo.setLayoutCount = 1; // Optional
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // Optional
+    pipelineLayoutInfo.pSetLayouts = &_shaderInternal->descriptorSetLayout; // Optional
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);

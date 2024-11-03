@@ -19,7 +19,7 @@ DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& _other
     return *this;
 }
 
-DescriptorSetLayout::~DescriptorSetLayout()
+DescriptorSetLayout::~DescriptorSetLayout() 
 {
     if (m_Handle != NULL_HANDLE)
     {

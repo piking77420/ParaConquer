@@ -3,21 +3,7 @@
 #include "rendering/rendering_typedef.h"
 
 BEGIN_PCCORE
-    enum class RenderPassTargetFlags
-    {
-        NONE,
-        COLOR,
-        DEPTH,
-        STENCIL,
-        COUNT,
-    };
-    ENUM_FLAGS(RenderPassTargetFlags)
-
-    struct RenderPassCreateInfo
-    {
-        ShaderProgramPipelineType shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
-        RenderPassTargetFlags renderPassTargetFlags = RenderPassTargetFlags::NONE;
-    };
+ 
 class RenderPass
 {
 public:

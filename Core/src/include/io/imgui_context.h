@@ -20,7 +20,7 @@ public:
 	PC_CORE_API ~IMGUIContext() = delete;
 
 private:
-	
+	static inline PC_CORE::DescriptorPoolHandle m_DescriptorPoolHandle = NULL_HANDLE;
 };
 
 END_PCCORE

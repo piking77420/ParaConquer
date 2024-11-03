@@ -9,6 +9,7 @@
 
 #include "io/window.hpp"
 #include "ecs/ecs_context.h"
+#include <io/core_io.hpp>
 
 
 BEGIN_PCCORE
@@ -17,7 +18,9 @@ BEGIN_PCCORE
 public:
 	static constexpr const char* appName = "ParaConquer";
 
-	Window* window = nullptr;
+	CoreIo coreIo;
+
+	Window window;
 	
 	Renderer renderer;
 
@@ -31,7 +34,7 @@ public:
 
 	PC_CORE_API virtual void Destroy();
 	
-	PC_CORE_API App() = default;
+	PC_CORE_API App();
 
 	PC_CORE_API ~App() = default;
 

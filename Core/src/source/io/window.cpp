@@ -14,6 +14,40 @@ void Window::FramebufferResizeCallback(GLFWwindow* _window, int width, int heigh
     window->onResize = true;
 }
 
+PC_CORE_API Window& Window::operator=(Window&& _other) noexcept
+{
+    m_WindowSize = _other.m_WindowSize;
+    _other.m_WindowSize = {};
+
+    m_Window = _other.m_Window;
+    _other.m_Window = nullptr;
+
+    Mode = _other.Mode;
+    _other.Mode = nullptr;
+
+    m_Monitor = _other.m_Monitor;
+    _other.m_Monitor = nullptr;
+
+    oldPos = _other.oldPos;
+    _other.oldPos = {};
+
+    oldSize = _other.oldSize;
+    _other.oldSize = {};
+
+    monitorSize = _other.monitorSize;
+    _other.monitorSize = {};
+
+    onResize = _other.onResize;
+    _other.onResize = false;
+
+    FullScreen = _other.FullScreen;
+    _other.FullScreen = false;
+
+    m_WindowName = std::move(_other.m_WindowName);
+
+    return *this;
+}
+
 bool Window::ShouldClose()
 {
     return glfwWindowShouldClose(m_Window);
@@ -107,6 +141,7 @@ Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_w
 
 
     return;
+
     int x,y, channel;
     uint8_t* icongLogo = FileLoader::LoadFile(_logoPath, &x, &y, &channel, Channel::RGBA);
 
@@ -125,5 +160,6 @@ Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_w
 
 Window::~Window()
 {
-    glfwDestroyWindow(m_Window);
+    if (m_Window != nullptr)
+        glfwDestroyWindow(m_Window);
 }

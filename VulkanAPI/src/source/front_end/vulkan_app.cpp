@@ -77,7 +77,7 @@ Vulkan::VulkanApp::~VulkanApp()
     }
 }
 
-ImGui_ImplVulkan_InitInfo Vulkan::VulkanApp::GetImGuiInitInfo()
+ImGui_ImplVulkan_InitInfo Vulkan::VulkanApp::GetImGuiInitInfo(PC_CORE::DescriptorPoolHandle* _descriptorPoolHandle)
 {
     VulkanApp& singleton = dynamic_cast<VulkanApp&>(RHI::GetInstance());
 
@@ -104,8 +104,10 @@ ImGui_ImplVulkan_InitInfo Vulkan::VulkanApp::GetImGuiInitInfo()
     pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
     pool_info.pPoolSizes = reinterpret_cast<vk::DescriptorPoolSize*>(&pool_sizes);
 
-    vk::DescriptorPool descriptorPool = VK_NULL_HANDLE;
-    descriptorPool = singleton.m_VulkanContext.device.createDescriptorPool(pool_info);
+    vk::DescriptorPool* vkDescriptorPool = CastObjectToVkObject<vk::DescriptorPool*>(_descriptorPoolHandle);
+
+    *vkDescriptorPool = singleton.m_VulkanContext.device.createDescriptorPool(pool_info);
+    
 
     ImGui_ImplVulkan_InitInfo initInfo = {};
     initInfo.Instance = singleton.m_VulkanContext.instance;
@@ -114,7 +116,7 @@ ImGui_ImplVulkan_InitInfo Vulkan::VulkanApp::GetImGuiInitInfo()
     initInfo.QueueFamily = singleton.m_VulkanContext.queuFamiliesIndicies.graphicsFamily;
     initInfo.Queue = singleton.m_VulkanContext.vkQueues.graphicQueue;
     initInfo.PipelineCache = nullptr;
-    initInfo.DescriptorPool = descriptorPool;
+    initInfo.DescriptorPool = *vkDescriptorPool;
     initInfo.RenderPass = singleton.m_VulkanContext.swapChainRenderPass;
     initInfo.Subpass = 0;
     initInfo.MinImageCount = singleton.m_VulkanContext.swapChainImageCount - 1;
@@ -254,6 +256,7 @@ bool Vulkan::VulkanApp::DestroyBuffer(PC_CORE::GPUBufferHandle _handle)
     auto& it = m_VulkanContext.m_BuffersAllocationMap.at(bkBufferAsObject);
 
     vmaFreeMemory(m_VulkanContext.allocator, it);
+    m_VulkanContext.device.destroyBuffer(bkBufferAsObject.object);
     m_VulkanContext.m_BuffersAllocationMap.erase(bkBufferAsObject);
     return true;
 }
@@ -692,6 +695,108 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
 
     EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,
                           m_VulkanContext.vkQueues.graphicQueue);
+}
+
+PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)
+{
+    std::vector<vk::AttachmentDescription> colorAttachmentsDescriptions{};
+    colorAttachmentsDescriptions.resize(_renderPassCreateInfo.attachmentDescriptions.size());
+    
+    for (size_t i = 0; i < _renderPassCreateInfo.attachmentDescriptions.size(); i++)
+    {
+        colorAttachmentsDescriptions[i].format = RHIFormatToVkFormat(_renderPassCreateInfo.attachmentDescriptions[i].format);  
+        colorAttachmentsDescriptions[i].samples = vk::SampleCountFlagBits::e1;
+            
+        switch (_renderPassCreateInfo.attachmentDescriptions[i].renderPassTargetType)
+        {
+        case PC_CORE::AttachementUsage::NONE:
+            break;
+
+        case  PC_CORE::AttachementUsage::DEPTH:
+        case PC_CORE::AttachementUsage::COLOR:
+            colorAttachmentsDescriptions[i].loadOp = vk::AttachmentLoadOp::eClear;
+            colorAttachmentsDescriptions[i].storeOp = vk::AttachmentStoreOp::eStore;
+                
+            colorAttachmentsDescriptions[i].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+            colorAttachmentsDescriptions[i].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+            break;
+        case PC_CORE::AttachementUsage::STENCIL:
+            colorAttachmentsDescriptions[i].loadOp = vk::AttachmentLoadOp::eDontCare;
+            colorAttachmentsDescriptions[i].storeOp = vk::AttachmentStoreOp::eDontCare;
+                
+            colorAttachmentsDescriptions[i].stencilLoadOp = vk::AttachmentLoadOp::eClear;
+            colorAttachmentsDescriptions[i].stencilStoreOp = vk::AttachmentStoreOp::eStore;
+            break;
+        case PC_CORE::AttachementUsage::COUNT:
+            break;
+        default: ;
+        }
+  
+        colorAttachmentsDescriptions[i].initialLayout = vk::ImageLayout::eUndefined;
+        colorAttachmentsDescriptions[i].finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    }
+
+    const uint32_t subPassesSize = static_cast<uint32_t>(_renderPassCreateInfo.subPasses.size());
+    
+    std::vector<vk::AttachmentReference> attachmentReferences{};
+    attachmentReferences.resize(subPassesSize);
+
+    std::vector<vk::SubpassDescription> subpasses{};
+    subpasses.resize(subPassesSize);
+
+    std::vector<vk::SubpassDependency> subpassDependencies{};
+    subpasses.resize(subPassesSize);
+
+    for (size_t i = 0; i < subPassesSize; i++)
+    {
+        attachmentReferences[i].attachment = static_cast<uint32_t>(i);
+        switch (_renderPassCreateInfo.subPasses[i].renderPassTargetType)
+        {
+        case PC_CORE::AttachementUsage::COLOR:
+            attachmentReferences[i].layout = vk::ImageLayout::eColorAttachmentOptimal;
+            break;
+        case PC_CORE::AttachementUsage::DEPTH:
+            attachmentReferences[i].layout = vk::ImageLayout::eDepthAttachmentOptimal;
+            break;
+        case PC_CORE::AttachementUsage::STENCIL:
+            attachmentReferences[i].layout = vk::ImageLayout::eStencilAttachmentOptimal;
+            break;
+        }
+
+        
+    }
+
+    /*
+    vk::SubpassDescription subpass{};
+    subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+
+    vk::SubpassDependency dependency{};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;  
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
+    dependency.srcAccessMask = {};
+    dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
+    dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+    vk::RenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = colorAttachmentsDescriptions.data();
+    renderPassInfo.subpassCount = static_cast<uint32_t>(colorAttachmentsDescriptions.size());
+    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;  
+
+   return m_VulkanContext.device.createRenderPass(renderPassInfo);*/
+    return nullptr;
+}
+
+
+void Vulkan::VulkanApp::DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassHandle)
+{
+    
 }
 
 #pragma endregion DescriptorSetLayout

@@ -20,6 +20,9 @@ void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
 
+    descriptorPool.~DescriptorPool();
+    descriptorSetLayout.~DescriptorSetLayout();
+
     for (auto&& uniform : m_SceneBufferUniforms)
         uniform.~UniformBuffer();
 
@@ -205,6 +208,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 
 void Renderer::InitRenderResources()
 {
+
     texture = ResourceManager::Get<Texture>("diamond_block.jpg");
     InitShader();
     InitBuffer();
@@ -231,6 +235,7 @@ void Renderer::InitCommandPools()
 
 void Renderer::InitDescriptors()
 {
+
     const std::vector<PC_CORE::DescriptorLayoutBinding> descriptorLayoutBindings =
     {
         {

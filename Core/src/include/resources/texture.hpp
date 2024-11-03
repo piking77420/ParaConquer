@@ -12,6 +12,7 @@ BEGIN_PCCORE
     {
         int32_t width;
         int32_t height;
+        int32_t depth;
         RHIFormat format;
         ImageAspectFlagBits imageAspectFlagBits;
     };
@@ -33,9 +34,7 @@ public:
     PC_CORE_API ~Texture() override;
     
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
-
-    PC_CORE_API void CreateTexture();
-
+    
     PC_CORE_API PC_CORE::ImageHandle GetImageHandle();
 
     PC_CORE_API PC_CORE::ImageHandle GetImageViewHandle();
@@ -54,6 +53,8 @@ private:
     uint32_t m_MipLevel = 0;
 
     Tbx::Vector2i m_TextureSize;
+
+    RHIFormat m_Format;
 
     void CreateTextureFromFile(const fs::path& _path);
 };
