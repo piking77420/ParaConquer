@@ -11,6 +11,8 @@ using namespace PC_CORE;
 
 Texture& Texture::operator=(Texture&& _other)
 {
+    Destroy();
+
     m_ImageHandle = _other.m_ImageHandle;
     _other.m_ImageHandle = nullptr;
 
@@ -33,42 +35,10 @@ Texture& Texture::operator=(Texture&& _other)
     return *this;
 }
 
+
 Texture::Texture(const CreateTextureInfo& createTextureInfo)
 {
-    m_TextureSize.x = createTextureInfo.width;
-    m_TextureSize.y = createTextureInfo.height;
-    m_Format = createTextureInfo.format;
-
-    const uint32_t widht = static_cast<uint32_t>(m_TextureSize.x);
-    const uint32_t height = static_cast<uint32_t>(m_TextureSize.y);
-    //m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
-    m_MipLevel = createTextureInfo.mipsLevels;
-
-    RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
-
-    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
-    RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
-
-    const SamplerCreateInfo samplerCreateInfo =
-    {
-      .flags = {},
-      .magFilter = Filter::LINEAR,
-      .minFilter = Filter::LINEAR,
-      .mipmapMode = {},
-      .addressModeU = SamplerAddressMode::REPEAT,
-      .addressModeV = SamplerAddressMode::REPEAT,
-      .addressModeW = SamplerAddressMode::REPEAT,
-      .mipLodBias = 1,
-      .anisotropyEnable = true,
-      .compareEnable = false,
-      .compareOp = CompareOp::ALWAYS,
-      .minLod = 0,
-      .maxLod = static_cast<float>(m_MipLevel),
-      .borderColor = BorderColor::INT_OPAQUE_BLACK,
-      .unnormalizedCoordinates = false
-    };
-
-    m_SamplerHandle = RHI::GetInstance().CreateSampler(samplerCreateInfo);
+    CreateFromCreateInfo(createTextureInfo);
 }
 
 Texture::Texture(const fs::path& _path) : Resource(_path)
@@ -78,25 +48,7 @@ Texture::Texture(const fs::path& _path) : Resource(_path)
 
 Texture::~Texture()
 {
-    RHI& rhi = RHI::GetInstance();
-    if (m_ImageViewHandle != NULL_HANDLE)
-    {
-        rhi.DestroyImageView(m_ImageViewHandle);
-        m_ImageViewHandle = NULL_HANDLE;
-    }
-
-    if (m_ImageHandle != NULL_HANDLE)
-    {
-        rhi.DestroyTexture(m_ImageHandle);
-        m_ImageHandle = NULL_HANDLE;
-
-    }
-
-    if (m_SamplerHandle != NULL_HANDLE)
-    {
-        rhi.DestroySampler(m_SamplerHandle);
-        m_SamplerHandle = NULL_HANDLE;
-    }
+    Destroy();
 }
 
 void Texture::Load(std::array<std::string, 6>& _maps)
@@ -116,6 +68,12 @@ void Texture::Load(std::array<std::string, 6>& _maps)
 
     name = path.filename().generic_string();
     format = path.extension().generic_string();
+}
+
+PC_CORE_API void Texture::Reset(const CreateTextureInfo& createTextureInfo)
+{
+    Destroy();
+    CreateFromCreateInfo(createTextureInfo);
 }
 
 
@@ -200,6 +158,67 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
     };
     RHI::GetInstance().CopyBufferToImage(stagingBuffer, m_ImageHandle, copyBufferImageInfo);
     RHI::GetInstance().DestroyBuffer(stagingBuffer);
+    RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
+
+    const SamplerCreateInfo samplerCreateInfo =
+    {
+      .flags = {},
+      .magFilter = Filter::LINEAR,
+      .minFilter = Filter::LINEAR,
+      .mipmapMode = {},
+      .addressModeU = SamplerAddressMode::REPEAT,
+      .addressModeV = SamplerAddressMode::REPEAT,
+      .addressModeW = SamplerAddressMode::REPEAT,
+      .mipLodBias = 1,
+      .anisotropyEnable = true,
+      .compareEnable = false,
+      .compareOp = CompareOp::ALWAYS,
+      .minLod = 0,
+      .maxLod = static_cast<float>(m_MipLevel),
+      .borderColor = BorderColor::INT_OPAQUE_BLACK,
+      .unnormalizedCoordinates = false
+    };
+
+    m_SamplerHandle = RHI::GetInstance().CreateSampler(samplerCreateInfo);
+}
+
+void Texture::Destroy()
+{
+    RHI& rhi = RHI::GetInstance();
+    if (m_ImageViewHandle != NULL_HANDLE)
+    {
+        rhi.DestroyImageView(m_ImageViewHandle);
+        m_ImageViewHandle = NULL_HANDLE;
+    }
+
+    if (m_ImageHandle != NULL_HANDLE)
+    {
+        rhi.DestroyTexture(m_ImageHandle);
+        m_ImageHandle = NULL_HANDLE;
+
+    }
+
+    if (m_SamplerHandle != NULL_HANDLE)
+    {
+        rhi.DestroySampler(m_SamplerHandle);
+        m_SamplerHandle = NULL_HANDLE;
+    }
+}
+
+void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
+{
+    m_TextureSize.x = createTextureInfo.width;
+    m_TextureSize.y = createTextureInfo.height;
+    m_Format = createTextureInfo.format;
+
+    const uint32_t widht = static_cast<uint32_t>(m_TextureSize.x);
+    const uint32_t height = static_cast<uint32_t>(m_TextureSize.y);
+    //m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
+    m_MipLevel = createTextureInfo.mipsLevels;
+
+    RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
+
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
 
     const SamplerCreateInfo samplerCreateInfo =

@@ -282,6 +282,19 @@ BEGIN_PCCORE
 
 #pragma endregion RenderPass
 
+#pragma region FrameBuffer
+
+        virtual PC_CORE_API FrameBufferHandle CreateFrameBuffer(const PC_CORE::RHIFrameBufferCreateInfo& _RHIFrameBufferCreateInfo)
+        {
+            return nullptr;
+        }
+
+        virtual PC_CORE_API void DestroyFrameBuffer(FrameBufferHandle _frameBufferHandle)
+        {
+            
+        }
+#pragma endregion FrameBuffer
+
     protected:
         static RHI* m_Instance;
 

@@ -62,7 +62,7 @@ namespace Vulkan
 
         VULKAN_API const ShaderInternal& GetShader(const std::string& _shaderName);
 
-        ShaderInternal* GetShaderInternal(const std::string& _shaderName);
+        VULKAN_API ShaderInternal* GetShaderInternal(const std::string& _shaderName);
 
     private:
         VulkanShaderCompiler m_ShaderCompiler;

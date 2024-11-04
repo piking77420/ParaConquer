@@ -20,7 +20,7 @@ void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
     
-    for (auto&& uniform : m_SceneBufferUniforms)
+    for (auto&& uniform : renderResources.sceneUniform)
         uniform.~UniformBuffer();
 
     RHI::DestroyInstance();
@@ -71,6 +71,7 @@ void Renderer::BeginFrame()
     {
         RHI::GetInstance().WaitDevice();
         m_MainShader->Reload();
+        InitDescriptors();
         firstTime = true;
     }
 
@@ -155,23 +156,23 @@ void Renderer::InitShader()
 
 void Renderer::InitBuffer()
 {
-    for (auto&& uniform : m_SceneBufferUniforms)
-        uniform = UniformBuffer(sizeof(sceneBufferGPU));
+    for (auto&& uniform : renderResources.sceneUniform)
+        uniform = UniformBuffer(sizeof(renderResources.sceneBufferGPU));
 }
 
 void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 {
-    sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
-                                   _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
-                                   _renderingContext.lowLevelCamera.up);
-    sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis(_renderingContext.lowLevelCamera.fov,
-                                                          _renderingContext.lowLevelCamera.aspect,
-                                                          _renderingContext.lowLevelCamera.near,
-                                                          _renderingContext.lowLevelCamera.far);
+    renderResources.sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
+        _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
+        _renderingContext.lowLevelCamera.up);
+    renderResources.sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis(_renderingContext.lowLevelCamera.fov,
+        _renderingContext.lowLevelCamera.aspect,
+        _renderingContext.lowLevelCamera.near,
+        _renderingContext.lowLevelCamera.far);
 
-    sceneBufferGPU.deltatime = _renderingContext.deltaTime;
-    sceneBufferGPU.time = _renderingContext.time;
-    m_SceneBufferUniforms[m_CurrentImage].Update(sizeof(sceneBufferGPU), 0, &sceneBufferGPU);
+    renderResources.sceneBufferGPU.deltatime = _renderingContext.deltaTime;
+    renderResources.sceneBufferGPU.time = _renderingContext.time;
+    renderResources.sceneUniform[m_CurrentImage].Update(sizeof(renderResources.sceneBufferGPU), 0, &renderResources.sceneBufferGPU);
 }
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
@@ -194,6 +195,11 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
         m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
         RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
     }
+}
+
+void Renderer::CreateColorPass()
+{
+    renderResources.colorPass = RenderPass()
 }
 
 void Renderer::InitRenderResources()
@@ -231,7 +237,7 @@ void Renderer::InitDescriptors()
     {
         constexpr size_t offset = 0;
         
-        DescriptorBufferInfo descriptorBufferInfo = m_SceneBufferUniforms[i].AsDescriptorBufferInfo(offset);
+        DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].AsDescriptorBufferInfo(offset);
         DescriptorImageInfo imageInfo = texture->GetDescriptorImageInfo();
 
         DescriptorWriteSet descriptorWrite[2] =

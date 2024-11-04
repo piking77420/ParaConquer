@@ -14,7 +14,6 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
-
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -152,6 +151,14 @@ namespace Vulkan
 		VULKAN_API void DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassHandle) override;
 
 #pragma endregion RenderPass
+
+#pragma region Framebuffer
+		
+		PC_CORE::FrameBufferHandle CreateFrameBuffer(const PC_CORE::RHIFrameBufferCreateInfo& _RHIFrameBufferCreateInfo) override;
+		
+		void DestroyFrameBuffer(PC_CORE::FrameBufferHandle _frameBufferHandle) override;
+		
+#pragma endregion Framebuffer
 		
 	private:
 		VulkanContext m_VulkanContext;

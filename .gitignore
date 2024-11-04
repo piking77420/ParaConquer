@@ -426,7 +426,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-!assets/**
+!assets/meshs/**
 !Icon/**
 
 ### VisualStudio Patch ###

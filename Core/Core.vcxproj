@@ -130,7 +130,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\include\data_structures\" />
+    <Folder Include="src\include\rendering\render_passes\" />
     <Folder Include="src\source\data_structures\" />
+    <Folder Include="src\source\rendering\render_passes\" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />

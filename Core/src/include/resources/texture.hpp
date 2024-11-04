@@ -27,6 +27,8 @@ public:
     PC_CORE_API ~Texture() override;
     
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
+
+    PC_CORE_API void Reset(const CreateTextureInfo& createTextureInfo);
     
     PC_CORE_API PC_CORE::ImageHandle GetImageHandle() const;
 
@@ -52,6 +54,10 @@ private:
     RHIFormat m_Format;
 
     void CreateTextureFromFile(const fs::path& _path);
+
+    void Destroy();
+
+    void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
 };
 
 

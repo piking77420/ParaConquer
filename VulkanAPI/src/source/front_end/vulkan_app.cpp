@@ -670,104 +670,33 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
 
 PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)
 {
-    std::vector<vk::AttachmentDescription> colorAttachmentsDescriptions{};
-    colorAttachmentsDescriptions.resize(_renderPassCreateInfo.attachmentDescriptions.size());
-    
-    for (size_t i = 0; i < _renderPassCreateInfo.attachmentDescriptions.size(); i++)
-    {
-        colorAttachmentsDescriptions[i].format = RHIFormatToVkFormat(_renderPassCreateInfo.attachmentDescriptions[i].format);  
-        colorAttachmentsDescriptions[i].samples = vk::SampleCountFlagBits::e1;
-            
-        switch (_renderPassCreateInfo.attachmentDescriptions[i].renderPassTargetType)
-        {
-        case PC_CORE::AttachementUsage::NONE:
-            break;
-
-        case  PC_CORE::AttachementUsage::DEPTH:
-        case PC_CORE::AttachementUsage::COLOR:
-            colorAttachmentsDescriptions[i].loadOp = vk::AttachmentLoadOp::eClear;
-            colorAttachmentsDescriptions[i].storeOp = vk::AttachmentStoreOp::eStore;
-                
-            colorAttachmentsDescriptions[i].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-            colorAttachmentsDescriptions[i].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-            break;
-        case PC_CORE::AttachementUsage::STENCIL:
-            colorAttachmentsDescriptions[i].loadOp = vk::AttachmentLoadOp::eDontCare;
-            colorAttachmentsDescriptions[i].storeOp = vk::AttachmentStoreOp::eDontCare;
-                
-            colorAttachmentsDescriptions[i].stencilLoadOp = vk::AttachmentLoadOp::eClear;
-            colorAttachmentsDescriptions[i].stencilStoreOp = vk::AttachmentStoreOp::eStore;
-            break;
-        case PC_CORE::AttachementUsage::COUNT:
-            break;
-        default: ;
-        }
-  
-        colorAttachmentsDescriptions[i].initialLayout = vk::ImageLayout::eUndefined;
-        colorAttachmentsDescriptions[i].finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
-    }
-
-    const uint32_t subPassesSize = static_cast<uint32_t>(_renderPassCreateInfo.subPasses.size());
-    
-    std::vector<vk::AttachmentReference> attachmentReferences{};
-    attachmentReferences.resize(subPassesSize);
-
-    std::vector<vk::SubpassDescription> subpasses{};
-    subpasses.resize(subPassesSize);
-
-    std::vector<vk::SubpassDependency> subpassDependencies{};
-    subpasses.resize(subPassesSize);
-
-    for (size_t i = 0; i < subPassesSize; i++)
-    {
-        attachmentReferences[i].attachment = static_cast<uint32_t>(i);
-        switch (_renderPassCreateInfo.subPasses[i].renderPassTargetType)
-        {
-        case PC_CORE::AttachementUsage::COLOR:
-            attachmentReferences[i].layout = vk::ImageLayout::eColorAttachmentOptimal;
-            break;
-        case PC_CORE::AttachementUsage::DEPTH:
-            attachmentReferences[i].layout = vk::ImageLayout::eDepthAttachmentOptimal;
-            break;
-        case PC_CORE::AttachementUsage::STENCIL:
-            attachmentReferences[i].layout = vk::ImageLayout::eStencilAttachmentOptimal;
-            break;
-        }
-
-        
-    }
-
-    /*
-    vk::SubpassDescription subpass{};
-    subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-
-    vk::SubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;  
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
-    dependency.srcAccessMask = {};
-    dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
-    dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-    vk::RenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = colorAttachmentsDescriptions.data();
-    renderPassInfo.subpassCount = static_cast<uint32_t>(colorAttachmentsDescriptions.size());
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;  
-
-   return m_VulkanContext.device.createRenderPass(renderPassInfo);*/
-    return nullptr;
+   
 }
 
 
 void Vulkan::VulkanApp::DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassHandle)
 {
     
+}
+
+PC_CORE::FrameBufferHandle Vulkan::VulkanApp::CreateFrameBuffer(const PC_CORE::RHIFrameBufferCreateInfo& _RHIFrameBufferCreateInfo)
+{
+    vk::FramebufferCreateInfo createInfo = {};
+    createInfo.sType = vk::StructureType::eFramebufferCreateInfo;
+    createInfo.flags = vk::FramebufferCreateFlags(0);
+    createInfo.pAttachments = CastObjectToVkObject<const vk::ImageView*>(_RHIFrameBufferCreateInfo.imageViewHandles.data());
+    createInfo.attachmentCount = static_cast<uint32_t>(_RHIFrameBufferCreateInfo.imageViewHandles.size());
+    createInfo.renderPass = CastObjectToVkObject<vk::RenderPass>(_RHIFrameBufferCreateInfo.renderPassHandle);
+    createInfo.width = _RHIFrameBufferCreateInfo.width;
+    createInfo.height = _RHIFrameBufferCreateInfo.height;
+    createInfo.layers = _RHIFrameBufferCreateInfo.layers;
+
+    return m_VulkanContext.device.createFramebuffer(createInfo);
+}
+
+void Vulkan::VulkanApp::DestroyFrameBuffer(PC_CORE::FrameBufferHandle _frameBufferHandle)
+{
+    m_VulkanContext.device.destroyFramebuffer(CastObjectToVkObject<vk::Framebuffer>(_frameBufferHandle));
 }
 
 #pragma endregion DescriptorSetLayout

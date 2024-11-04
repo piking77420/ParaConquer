@@ -918,18 +918,23 @@ struct AttachmentDescription
 struct SubPasse
 {
     ShaderProgramPipelineType shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
-    AttachementUsage renderPassTargetType;
-    RHIFormat format;
+    std::vector<AttachementUsage> attachementUsage;
 };
-
 
 struct RenderPassCreateInfo
 {
-    RenderPassCreateInfo* previous;
-    RenderPassCreateInfo* next;
-    
     std::vector<AttachmentDescription> attachmentDescriptions;
     std::vector<SubPasse> subPasses;
+};
+
+struct RHIFrameBufferCreateInfo
+{
+    std::vector<ImageViewHandle> imageViewHandles;
+    RenderPassHandle renderPassHandle;
+
+    uint32_t                    width;
+    uint32_t                    height;
+    uint32_t                    layers;
 };
 
 #pragma endregion RenderPass

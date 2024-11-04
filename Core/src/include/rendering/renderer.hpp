@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
 #include "rendering_typedef.h"
+#include "render_pass.hpp"
 #include "buffer/index_buffer.hpp"
 #include "buffer/vertex_buffer.hpp"
 #include "buffer/uniform_buffer.hpp"
@@ -21,6 +22,14 @@ enum class GraphicAPI
     VULKAN,
     DX3D12,
     COUNT
+};
+
+struct RenderResources
+{
+    std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> sceneUniform;
+    SceneBufferGPU sceneBufferGPU;
+
+    RenderPass colorPass;
 };
 
 class Renderer
@@ -45,12 +54,13 @@ public:
     PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
 
 private:
-
     size_t m_CurrentImage;
 
     CommandPool m_SwapChainCommandPool;
     
     std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
+
+    RenderResources renderResources;
 
     ShaderProgram* m_MainShader = nullptr;
 
@@ -58,15 +68,11 @@ private:
     
     CommandBuffer* m_CommandBuffer = nullptr;
     
-    std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> m_SceneBufferUniforms;
-
     Texture* texture = nullptr;
 
-    SceneBufferGPU sceneBufferGPU;
-
     PC_CORE::DescriptorSetHandle* descriptorSetHandle = nullptr;
-
     
+   
     PC_CORE_API void InitCommandPools();
 
     PC_CORE_API void InitDescriptors();
@@ -79,6 +85,7 @@ private:
 
     PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
+    PC_CORE_API void CreateColorPass();
 };
 
 END_PCCORE
