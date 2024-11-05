@@ -188,11 +188,6 @@ bool Vulkan::VulkanApp::DestroyShader(const std::string& _shaderProgramName)
     return m_vulkanShaderManager.DestroyShader(m_VulkanContext.device, _shaderProgramName);
 }
 
-PC_CORE::DescriptorSetHandle* Vulkan::VulkanApp::GetDescriptorSet(const std::string& _shaderName)
-{
-    return reinterpret_cast<PC_CORE::DescriptorSetHandle*>(m_vulkanShaderManager.GetShaderInternal(_shaderName)->descriptorsets.data());
-}
-
 
 VULKAN_API void Vulkan::VulkanApp::WaitDevice()
 {
@@ -423,7 +418,7 @@ void Vulkan::VulkanApp::DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _des
     Backend::DestroyDescriptorPool(m_VulkanContext.device, descriptorPool);
 }
 
-void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSetHandle* descriptorSets, uint32_t _descriptorSetCount,
                                            PC_CORE::DescriptorPoolHandle _descriptorPoolHandle,
                                            PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
 {
@@ -443,6 +438,18 @@ void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSet
 
     VK_CALL(m_VulkanContext.device.allocateDescriptorSets(&descriptorSetAllocateInfo, CastObjectToVkObject<vk::DescriptorSet
             *>(descriptorSets)));
+}
+
+void Vulkan::VulkanApp::AllocDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSet,
+    uint32_t _descriptorSetCount)
+{
+    m_vulkanShaderManager.AllocDescriptorSet(_shaderName,CastObjectToVkObject<vk::DescriptorSet*>(_descriptorSet), _descriptorSetCount, m_VulkanContext.device);
+}
+
+void Vulkan::VulkanApp::FreeDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSet,
+    uint32_t _descriptorSetCount)
+{
+    m_vulkanShaderManager.FreeDescriptorSet(_shaderName, reinterpret_cast<vk::DescriptorSet*>(_descriptorSet), _descriptorSetCount, m_VulkanContext.device);
 }
 
 void Vulkan::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount,
@@ -469,7 +476,7 @@ void Vulkan::VulkanApp::UpdateDescriptorSet(uint32_t _descriptorWriteCount,
 void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer,
                                           const std::string& _shaderProgramName, uint32_t _firstSet,
                                           uint32_t _descriptorSetCount,
-                                          const PC_CORE::DescriptorSet* _pDescriptorSets, uint32_t _dynamicOffsetCount,
+                                          const PC_CORE::DescriptorSetHandle* _pDescriptorSets, uint32_t _dynamicOffsetCount,
                                           const uint32_t* _pDynamicOffsets)
 {
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
@@ -670,7 +677,7 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
 
 PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)
 {
-   
+   return nullptr;
 }
 
 

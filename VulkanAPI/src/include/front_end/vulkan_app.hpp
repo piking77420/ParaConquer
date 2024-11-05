@@ -45,8 +45,6 @@ namespace Vulkan
 		
 		VULKAN_API bool DestroyShader(const std::string& _shaderProgramName) override;
 
-		VULKAN_API PC_CORE::DescriptorSetHandle* GetDescriptorSet(const std::string& _shaderName) override;
-
 #pragma endregion Shader
 		
 		VULKAN_API PC_CORE::GPUBufferHandle BufferData(size_t _size, const void* _data, PC_CORE::GPU_BUFFER_USAGE _usage) override;
@@ -106,14 +104,19 @@ namespace Vulkan
 		
 		VULKAN_API void DestroyDescriptorPool(PC_CORE::DescriptorPoolHandle _descriptorPoolHandle) override;
 
-		VULKAN_API void AllocDescriptorSet(PC_CORE::DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+		VULKAN_API void AllocDescriptorSet(PC_CORE::DescriptorSetHandle* descriptorSets, uint32_t _descriptorSetCount,
 			PC_CORE::DescriptorPoolHandle _descriptorPoolHandle,
 			PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle) override;
+
+		VULKAN_API void AllocDescriptorSet(const std::string& _shaderName,PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount) override;
+
+		VULKAN_API void FreeDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSet,
+			uint32_t _descriptorSetCount) override;
 
 		VULKAN_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount, PC_CORE::DescriptorWriteSet* _descriptorWrite) override;
 
 		VULKAN_API void BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName,
-			uint32_t _firstSet, uint32_t _descriptorSetCount, const PC_CORE::DescriptorSet* _pDescriptorSets,
+			uint32_t _firstSet, uint32_t _descriptorSetCount, const PC_CORE::DescriptorSetHandle* _pDescriptorSets,
 			uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets) override;
 
 #pragma endregion DescriptorSetLayout

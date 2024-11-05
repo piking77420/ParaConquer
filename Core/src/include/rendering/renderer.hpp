@@ -16,13 +16,6 @@
 BEGIN_PCCORE
     class Window;
 
-enum class GraphicAPI
-{
-    NONE,
-    VULKAN,
-    DX3D12,
-    COUNT
-};
 
 struct RenderResources
 {
@@ -53,7 +46,12 @@ public:
 
     PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
 
+    PC_CORE_API GraphicAPI GetGraphicsAPI();
+
 private:
+
+    GraphicAPI m_GraphicApi = GraphicAPI::VULKAN;
+    
     size_t m_CurrentImage;
 
     CommandPool m_SwapChainCommandPool;
@@ -69,10 +67,9 @@ private:
     CommandBuffer* m_CommandBuffer = nullptr;
     
     Texture* texture = nullptr;
-
-    PC_CORE::DescriptorSetHandle* descriptorSetHandle = nullptr;
     
-   
+    std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
+    
     PC_CORE_API void InitCommandPools();
 
     PC_CORE_API void InitDescriptors();

@@ -16,7 +16,7 @@ public:
     
     DescriptorPool() = default;
 
-    void AllocDescriptorSet(DescriptorSet* descriptorSet, uint32_t descriptorSetCount, const DescriptorSetLayout& descriptorSetLayoutayout);
+    void AllocDescriptorSet(DescriptorSetHandle* descriptorSet, uint32_t descriptorSetCount, const DescriptorSetLayout& descriptorSetLayoutayout);
     
     DescriptorPool(const DescriptorPoolSize* desciptorPoolSize, uint32_t descriptorCount, uint32_t maxSets);
 

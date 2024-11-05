@@ -32,7 +32,6 @@ namespace Vulkan
     {
         std::vector<ShaderStageInfo> shaderStages;
         std::vector<ReflectBlockVariable> reflectBlockVariables;
-        std::vector<vk::DescriptorSet> descriptorsets;
         vk::DescriptorPool descriptorPool;
 
         vk::PipelineBindPoint pipelineBindPoint;
@@ -61,20 +60,23 @@ namespace Vulkan
         VULKAN_API void Destroy(VulkanContext* _vulkanContext);
 
         VULKAN_API const ShaderInternal& GetShader(const std::string& _shaderName);
+        
+        VULKAN_API void AllocDescriptorSet(const std::string& _shaderName,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device);
 
-        VULKAN_API ShaderInternal* GetShaderInternal(const std::string& _shaderName);
+        VULKAN_API void FreeDescriptorSet(const std::string& _shaderName,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device);
 
     private:
         VulkanShaderCompiler m_ShaderCompiler;
         
         std::unordered_map<std::string, ShaderInternal> m_InternalShadersMap;
 
+        ShaderInternal* GetShaderInternal(const std::string& _shaderName);
+
         static void ReflectMember(SpvReflectBlockVariable* spvReflectBlockVariable, ReflectBlockVariable* reflectBlockVariable, vk::ShaderStageFlags _stageFlags);
         
         static vk::ShaderStageFlagBits ShaderBitFromType(PC_CORE::ShaderStageType _shaderType);
 
         static void FillShaderInfo(ShaderInternal* _shaderInternalBack, const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource);
-        
         
         void DestroyInternalShaders(vk::Device _device, ShaderInternal* _shaderInternalBack);
         
@@ -92,7 +94,5 @@ namespace Vulkan
 
         void CreateDescriptorPool(vk::Device _device, ShaderInternal* _shaderInternal);
 
-        void AllocDescriptorSet(vk::Device _device, ShaderInternal* _shaderInternal);
-        
     };
 }

@@ -23,7 +23,7 @@ static void CheckError(VkResult err)
         abort();
 }
 
-void IMGUIContext::Init(void* _glfwWindowPtr)
+void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -31,16 +31,29 @@ void IMGUIContext::Init(void* _glfwWindowPtr)
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
+    io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
     ImGui::StyleColorsDark();
 
-    GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
-    constexpr bool installCallBack = true;
-    ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
+    switch (_graphicApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
+        constexpr bool installCallBack = true;
+        ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
    
-    ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo(&m_DescriptorPoolHandle);
-    init_info.CheckVkResultFn = CheckError;
-    ImGui_ImplVulkan_Init(&init_info);
+        ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo(&m_DescriptorPoolHandle);
+        init_info.CheckVkResultFn = CheckError;
+        ImGui_ImplVulkan_Init(&init_info);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+
 }
 
 void IMGUIContext::Destroy()

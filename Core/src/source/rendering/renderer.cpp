@@ -52,15 +52,9 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
     RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
 
     m_MainShader->Bind(m_CommandBuffer->handle);
-
-    if (descriptorSetHandle != nullptr)
-    {
-        DescriptorSet descriptorSet;
-        descriptorSet.handle = descriptorSetHandle[m_CurrentImage];
-        
-        RHI::GetInstance().BindDescriptorSet(m_CommandBuffer->handle, m_MainShader->name, 0, 1,
-        &descriptorSet, 0, nullptr);
-    }
+    m_MainShader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
+        &descriptorSets[m_CurrentImage], 0, nullptr);
+    
     DrawStaticMesh(_renderingContext, _world);
 }
 
@@ -102,6 +96,10 @@ CommandBuffer& Renderer::GetCommandSwapChainBuffer()
     return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
 }
 
+GraphicAPI Renderer::GetGraphicsAPI()
+{
+    return m_GraphicApi;
+}
 
 
 void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
@@ -199,7 +197,6 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 
 void Renderer::CreateColorPass()
 {
-    renderResources.colorPass = RenderPass()
 }
 
 void Renderer::InitRenderResources()
@@ -231,7 +228,8 @@ void Renderer::InitCommandPools()
 
 void Renderer::InitDescriptors()
 {
-    descriptorSetHandle = m_MainShader->GetDescriptorSets();
+    descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    m_MainShader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
     
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -244,7 +242,7 @@ void Renderer::InitDescriptors()
         {
 
             {
-                .dstDescriptorSetHandle = descriptorSetHandle[i],
+                .dstDescriptorSetHandle = descriptorSets[i],
                 .dstBinding = 0,
                 .dstArrayElement = 0,
                 .descriptorType = DescriptorType::UNIFORM_BUFFER,
@@ -255,8 +253,8 @@ void Renderer::InitDescriptors()
                 .descriptorTexelBufferViewInfo = nullptr
             },
             {
-                .dstDescriptorSetHandle = descriptorSetHandle[i],
-                .dstBinding = 1,
+                .dstDescriptorSetHandle = descriptorSets[i],
+                .dstBinding = 2,
                 .dstArrayElement = 0,
                 .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
                 .descriptorCount = 1,
@@ -266,8 +264,7 @@ void Renderer::InitDescriptors()
             }
         };
 
-
-        RHI::GetInstance().UpdateDescriptorSet(2, &descriptorWrite[0]);
+        PC_CORE::UpdateDescriptorSet(&descriptorWrite[0], 2);
     }
 }
 

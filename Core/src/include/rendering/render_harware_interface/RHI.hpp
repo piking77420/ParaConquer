@@ -54,12 +54,7 @@ BEGIN_PCCORE
                                                    const std::string& _shaderProgramName)
         {
         }
-
-        virtual DescriptorSetHandle* GetDescriptorSet(const std::string& _shaderName)
-        {
-            return nullptr;
-        }
-
+        
         virtual PC_CORE_API void SwapBuffers(CommandBufferHandle* _commandBuffers, uint32_t _commandBufferCount)
         {
         }
@@ -194,11 +189,22 @@ BEGIN_PCCORE
         {
         }
 
-        virtual PC_CORE_API void AllocDescriptorSet(DescriptorSet* descriptorSets, uint32_t _descriptorSetCount,
+        virtual PC_CORE_API void AllocDescriptorSet(DescriptorSetHandle* descriptorSets, uint32_t _descriptorSetCount,
                                                     DescriptorPoolHandle _descriptorPoolHandle,
                                                     DescriptorSetLayoutHandle _descriptorSetLayoutHandle)
         {
         }
+
+        virtual PC_CORE_API void AllocDescriptorSet(const std::string& _shaderName,PC_CORE::DescriptorSetHandle* _descriptorSetHandle, uint32_t _descriptorSetCount)
+        {
+            
+        };
+
+        virtual PC_CORE_API void FreeDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSetHandle, uint32_t _descriptorSetCount)
+        {
+            
+        };
+
 
         virtual PC_CORE_API void UpdateDescriptorSet(uint32_t _descriptorWriteCount,
                                                      DescriptorWriteSet* _descriptorWrite)
@@ -206,7 +212,7 @@ BEGIN_PCCORE
         }
 
         virtual PC_CORE_API void BindDescriptorSet(CommandBufferHandle _commandBuffer,const std::string& _shaderProgramName, uint32_t _firstSet,
-            uint32_t _descriptorSetCount, const DescriptorSet* _pDescriptorSets, uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets)
+            uint32_t _descriptorSetCount, const DescriptorSetHandle* _pDescriptorSets, uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets)
         {
             
         }

@@ -42,9 +42,21 @@ void ShaderProgram::PushConstantVec3(CommandBufferHandle _commandBuffer, const c
     PushConstant(_commandBuffer, _pushConstantName, vec3.GetPtr() , sizeof(Tbx::Vector3f));
 }
 
-PC_CORE::DescriptorSetHandle* ShaderProgram::GetDescriptorSets() const
+void ShaderProgram::CreateDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
 {
-    return RHI::GetInstance().GetDescriptorSet(name);
+    RHI::GetInstance().AllocDescriptorSet(name, _descriptorSet, _descriptorSetCount);
+}
+
+void ShaderProgram::FreeDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
+{
+    RHI::GetInstance().FreeDescriptorSet(name , _descriptorSet, _descriptorSetCount);
+}
+
+void ShaderProgram::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _firstSet,
+    uint32_t _descriptorSetCount, const DescriptorSetHandle* _pDescriptorSets, uint32_t _dynamicOffsetCount,
+    const uint32_t* _pDynamicOffsets)
+{
+    RHI::GetInstance().BindDescriptorSet(_commandBufferHandle, name, _firstSet, _descriptorSetCount, _pDescriptorSets, _dynamicOffsetCount, _pDynamicOffsets);
 }
 
 void ShaderProgram::CreateShader()

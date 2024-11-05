@@ -44,6 +44,7 @@
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui.h" />
+    <ClInclude Include="src\externals\include\Imgui\imgui_impl_dx12.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_impl_glfw.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_internal.h" />
@@ -104,6 +105,7 @@
     <ClInclude Include="src\include\rendering\render_harware_interface\rhi_typedef.h" />
     <ClInclude Include="src\include\rendering\render_harware_interface\vertex.hpp" />
     <ClInclude Include="src\include\rendering\render_pass.hpp" />
+    <ClInclude Include="src\include\rendering\render_passes\forward_pass.hpp" />
     <ClInclude Include="src\include\rendering\skydom.hpp" />
     <ClInclude Include="src\include\rendering\viewport.hpp" />
     <ClInclude Include="src\include\resources\descriptor_set_layout.h" />
@@ -130,13 +132,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\include\data_structures\" />
-    <Folder Include="src\include\rendering\render_passes\" />
     <Folder Include="src\source\data_structures\" />
-    <Folder Include="src\source\rendering\render_passes\" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\externals\source\Imgui\imgui_impl_dx12.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_impl_glfw.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_tables.cpp" />
@@ -251,6 +252,7 @@
       <AdditionalOptions>/FS </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="src\source\rendering\render_passes\forward_pass.cpp" />
     <ClCompile Include="src\source\rendering\skydom.cpp" />
     <ClCompile Include="src\source\rendering\viewport.cpp" />
     <ClCompile Include="src\source\resources\descriptor_set_layout.cpp" />

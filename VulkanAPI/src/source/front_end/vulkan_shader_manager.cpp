@@ -122,7 +122,6 @@ void VulkanShaderManager::CreateShaderResourceFromSpvReflectModule(vk::Device _d
     _shaderInternal->descriptorSetLayouts.resize(1);
     VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, _shaderInternal->descriptorSetLayouts.data()));
     CreateDescriptorPool(_device, _shaderInternal);
-    AllocDescriptorSet(_device, _shaderInternal);
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
@@ -420,26 +419,35 @@ void VulkanShaderManager::CreateDescriptorPool(vk::Device _device, ShaderInterna
     descriptorPoolInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo;
     descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSize.size());
     descriptorPoolInfo.pPoolSizes = descriptorPoolSize.data();
+    // TO DO MAKE IT PARAMETERABLE
+    descriptorPoolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet; 
     // TODO MAY CHANGE
     descriptorPoolInfo.maxSets = MAX_FRAMES_IN_FLIGHT;
     _shaderInternal->descriptorPool = _device.createDescriptorPool(descriptorPoolInfo, nullptr);
 }
 
-void VulkanShaderManager::AllocDescriptorSet(vk::Device _device, ShaderInternal* _shaderInternal)
+void VulkanShaderManager::AllocDescriptorSet(const std::string& _shaderName,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device)
 {
-    // TODO MAY CHANGE 
-    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, _shaderInternal->descriptorSetLayouts[0]);
-
-    _shaderInternal->descriptorsets.resize(MAX_FRAMES_IN_FLIGHT);
-
+    const ShaderInternal& shaderInternal = GetShader(_shaderName);
+    
+    std::vector<vk::DescriptorSetLayout> layouts(_descriptorSetCount, shaderInternal.descriptorSetLayouts[0]);
+    
     vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo{};
     descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
     descriptorSetAllocateInfo.pNext = nullptr;
-    descriptorSetAllocateInfo.descriptorPool = _shaderInternal->descriptorPool;
+    descriptorSetAllocateInfo.descriptorPool = shaderInternal.descriptorPool;
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
-    descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+    descriptorSetAllocateInfo.descriptorSetCount = _descriptorSetCount;
 
-    VK_CALL(_device.allocateDescriptorSets(&descriptorSetAllocateInfo, _shaderInternal->descriptorsets.data()));
+    VK_CALL(_device.allocateDescriptorSets(&descriptorSetAllocateInfo, _descriptorSet));
+}
+
+void VulkanShaderManager::FreeDescriptorSet(const std::string& _shaderName, vk::DescriptorSet* _descriptorSet,
+    uint32_t _descriptorSetCount, vk::Device _device)
+{
+    const ShaderInternal& shaderInternal = GetShader(_shaderName);
+    
+    VK_CALL(_device.freeDescriptorSets(shaderInternal.descriptorPool, _descriptorSetCount, _descriptorSet));
 }
 
 

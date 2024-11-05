@@ -1,13 +1,14 @@
 #pragma once
 
 #include "core_header.hpp"
+#include "rendering/rendering_typedef.h"
 #include "rendering/render_harware_interface/command_buffer.h"
 
 BEGIN_PCCORE
 	class  IMGUIContext
 {
 public:
-	PC_CORE_API static void Init(void* _glfwWindowPtr);
+	PC_CORE_API static void Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi);
 
 	PC_CORE_API static void Destroy();
 

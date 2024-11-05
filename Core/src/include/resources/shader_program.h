@@ -3,6 +3,7 @@
 #include "core_header.hpp"
 #include "Resource.hpp"
 #include "shader_source.hpp"
+#include "rendering/render_harware_interface/descriptor_set.hpp"
 
 BEGIN_PCCORE
     class ShaderProgram : public Resource
@@ -23,10 +24,14 @@ BEGIN_PCCORE
 
         void PushConstantVec3(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Vector3f& vec3);
 
-        
-       
-        PC_CORE::DescriptorSetHandle* GetDescriptorSets() const;
+        void CreateDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount);
 
+        void FreeDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount);
+
+        void BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _firstSet,
+                               uint32_t _descriptorSetCount, const DescriptorSetHandle* _pDescriptorSets,
+                               uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets);
+    
     private:
         ShaderInfo m_ShaderInfo;
 

@@ -944,5 +944,7 @@ END_PCCORE
 
 
 
-#define GLOBAL_DESCRIPTOR 0
+// This descriptor must Containt Unifrom Camera at Binding 1 and final texture to viewPort
+#define VIEWPORT_DESCRIPTOR 0
 #define INSTANCE_DESCRIPTOR 1
+

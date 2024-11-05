@@ -4,6 +4,16 @@
 #include "math/matrix_transformation.hpp"
 
 BEGIN_PCCORE
+
+enum class GraphicAPI
+{
+    NONE,
+    VULKAN,
+    DX3D12,
+    COUNT
+};
+
+
     struct LowLevelCamera
     {
         Tbx::Vector3f position;
@@ -23,7 +33,10 @@ BEGIN_PCCORE
         LowLevelCamera lowLevelCamera;
         float deltaTime;
         float time;
+        DescriptorSetHandle descriptorSet;
     };
+
+
 
 
 END_PCCORE

@@ -95,3 +95,8 @@ void WorldViewWindow::ResizeViewport()
                                         , CastObjectToVkObject<vk::ImageView>(m_Texture.GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 }
+
+void WorldViewWindow::UpdateRenderingDescritptorSet()
+{
+
+}

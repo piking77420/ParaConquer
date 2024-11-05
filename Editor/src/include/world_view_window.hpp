@@ -6,6 +6,7 @@
 #include "editor_window.hpp"
 #include "rendering/camera.hpp"
 #include "rendering/rendering_typedef.h"
+#include "rendering/render_harware_interface/descriptor_set.hpp"
 #include "resources/texture.hpp"
 
 
@@ -29,9 +30,13 @@ public:
 private:
     std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
 
+    std::vector<PC_CORE::DescriptorSet> descritptorSet;
+
     PC_CORE::Texture m_Texture;
 
     void ResizeViewport();
+
+    void UpdateRenderingDescritptorSet();
 };
 
 END_EDITOR_PCCORE

@@ -24,9 +24,9 @@ PC_CORE::RenderPassHandle Vulkan::Backend::CreateRenderPass(const PC_CORE::Rende
 	renderPassCreateInfo.pDependencies = renderPassDescription.dependencies.data();
 
 
-	PC_CORE::RenderPassHandle renderPassHandle = CastObjectToVkObject<vk::RenderPass>(_device.createRenderPass(renderPassCreateInfo, nullptr));
+	//PC_CORE::RenderPassHandle renderPassHandle = CastObjectToVkObject<vk::RenderPass>(_device.createRenderPass(renderPassCreateInfo, nullptr));
 
-	return renderPassHandle;
+	return nullptr;
 }
 
 void Vulkan::Backend::ResolveAttachementDescriptrion(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo, std::vector<vk::AttachmentDescription>& _vkAttachmentDescriptions)
