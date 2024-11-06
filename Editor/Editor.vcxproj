@@ -188,83 +188,7 @@
     <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_node_editor.cpp" />
     <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_node_editor_api.cpp" />
     <ClCompile Include="src\source\asset_browser.cpp" />
-    <ClCompile Include="src\source\dock_space.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>x64\Debug\vc143.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>x64\Debug\Editor.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>x64\Debug\Editor.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;;PC_CORE_IMPORT;;_CRT_SECURE_NO_WARNINGS;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\Core\src\include;D:\Data\Project\ParaConquer\Core\src\externals\include;D:\Data\Project\ParaConquer\Editor\src\externals\include;;D:\Data\Project\ParaConquer\Editor\src\include;D:\Data\Project\ParaConquer\Editor\src\include\;;D:\Data\Project\ParaConquer\Editor\src\include</AdditionalIncludeDirectories>
-      <AdditionalOptions>/FS </AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LinkCompiled>true</LinkCompiled>
-    </ClCompile>
+    <ClCompile Include="src\source\dock_space.cpp" />
     <ClCompile Include="src\source\editor.cpp" />
     <ClCompile Include="src\source\editor_window.cpp" />
     <ClCompile Include="src\source\edit_world_window.cpp" />
@@ -290,13 +214,10 @@
   <ItemGroup>
     <ClInclude Include="src\externals\include\ImguiNodeEditor\crude_json.h" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.h" />
-    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.inl" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_canvas.h" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.h" />
-    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.inl" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor.h" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.h" />
-    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.inl" />
     <ClInclude Include="src\include\asset_browser.hpp" />
     <ClInclude Include="src\include\dock_space.hpp" />
     <ClInclude Include="src\include\editor.hpp" />
@@ -310,6 +231,11 @@
     <ClInclude Include="src\include\scene_button.hpp" />
     <ClInclude Include="src\include\transform_gizmo.hpp" />
     <ClInclude Include="src\include\world_view_window.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.inl" />
+    <None Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.inl" />
+    <None Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -109,7 +109,7 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
     const size_t size = m_TextureSize.x * m_TextureSize.y * 4;
     m_Format = RHIFormat::R8G8B8A8_SRGB;
 
-    PC_CORE::GPUBufferHandle stagingBuffer = RHI::GetInstance().BufferData(size, pixels, GPU_BUFFER_USAGE::BUFFER_USAGE_TRANSFER_SRC_BIT);
+    PC_CORE::GPUBufferHandle stagingBuffer = RHI::GetInstance().BufferData(size, pixels, GPU_BUFFER_USAGE::TRANSFERT_SRC);
 
     if (!pixels)
     {

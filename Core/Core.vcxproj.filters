@@ -279,7 +279,7 @@
     <ClInclude Include="src\include\rendering\render_passes\forward_pass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\externals\include\Imgui\imgui_impl_dx12.h">
+    <ClInclude Include="src\include\rendering\buffer\dynamic_uniform_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -476,7 +476,7 @@
     <ClCompile Include="src\source\rendering\render_passes\forward_pass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\externals\source\Imgui\imgui_impl_dx12.cpp">
+    <ClCompile Include="src\source\rendering\buffer\dynamic_uniform_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

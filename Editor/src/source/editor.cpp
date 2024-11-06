@@ -27,7 +27,7 @@ void Editor::Init()
     InitEditorWindows();
     InitMaterial();
     InitTestScene();
-    PC_CORE::IMGUIContext::Init(window.GetHandle());
+    PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 }
 
 void Editor::Destroy()

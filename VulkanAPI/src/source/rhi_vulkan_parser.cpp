@@ -881,87 +881,31 @@ vk::BufferUsageFlags Vulkan::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
 
     switch (usage)
     {
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_NONE:
-        throw std::exception("Invalid GPU_BUFFER_USAGE usage");
+   
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_TRANSFER_SRC_BIT:
-        result |= vk::BufferUsageFlagBits::eTransferSrc;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_TRANSFER_DST_BIT:
-        result |= vk::BufferUsageFlagBits::eTransferDst;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT:
-        result |= vk::BufferUsageFlagBits::eUniformTexelBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT:
-        result |= vk::BufferUsageFlagBits::eStorageTexelBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_UNIFORM_BUFFER_BIT:
-        result |= vk::BufferUsageFlagBits::eUniformBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_STORAGE_BUFFER_BIT:
-        result |= vk::BufferUsageFlagBits::eStorageBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_INDEX_BUFFER_BIT:
-        result |= vk::BufferUsageFlagBits::eIndexBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_VERTEX_BUFFER_BIT:
+    case PC_CORE::GPU_BUFFER_USAGE::VERTEX:
         result |= vk::BufferUsageFlagBits::eVertexBuffer;
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_INDIRECT_BUFFER_BIT:
-        result |= vk::BufferUsageFlagBits::eIndirectBuffer;
+    case PC_CORE::GPU_BUFFER_USAGE::INDEX:
+        result |= vk::BufferUsageFlagBits::eIndexBuffer;
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT:
-        result |= vk::BufferUsageFlagBits::eShaderDeviceAddress;
+    case PC_CORE::GPU_BUFFER_USAGE::UNIFORM:
+        result |= vk::BufferUsageFlagBits::eUniformBuffer;
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eVideoDecodeSrcKHR;
+    case PC_CORE::GPU_BUFFER_USAGE::DYNAMIC_UNIFORM:
+        result |= vk::BufferUsageFlagBits::eUniformBuffer;
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_VIDEO_DECODE_DST_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eVideoDecodeDstKHR;
+    case PC_CORE::GPU_BUFFER_USAGE::SHADER_STORAGE:
+        result |= vk::BufferUsageFlagBits::eStorageBuffer;
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eTransformFeedbackBufferEXT;
+    case PC_CORE::GPU_BUFFER_USAGE::TRANSFERT_SRC:
+        result |= vk::BufferUsageFlagBits::eTransferSrc;
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eTransformFeedbackCounterBufferEXT;
+    case PC_CORE::GPU_BUFFER_USAGE::NONE:
+    case PC_CORE::GPU_BUFFER_USAGE::COUNT:
+        throw std::invalid_argument("Invalid GPU buffer usage");
         break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eConditionalRenderingEXT;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eAccelerationStructureStorageKHR;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eShaderBindingTableKHR;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eVideoEncodeDstKHR;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_VIDEO_ENCODE_SRC_BIT_KHR:
-        result |= vk::BufferUsageFlagBits::eVideoEncodeSrcKHR;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::ePushDescriptorsDescriptorBufferEXT;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_MICROMAP_BUILD_INPUT_READ_ONLY_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eMicromapBuildInputReadOnlyEXT;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_MICROMAP_STORAGE_BIT_EXT:
-        result |= vk::BufferUsageFlagBits::eMicromapStorageEXT;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::BUFFER_USAGE_FLAG_BITS_MAX_ENUM:
-        throw std::exception("Invalid buffer usage BUFFER_USAGE_FLAG_BITS_MAX_ENUM");
-        break;
+    default: ;
     }
     return result;
 }

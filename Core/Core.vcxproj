@@ -44,7 +44,6 @@
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui.h" />
-    <ClInclude Include="src\externals\include\Imgui\imgui_impl_dx12.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_impl_glfw.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_internal.h" />
@@ -85,6 +84,7 @@
     <ClInclude Include="src\include\physics\sphere_collider.hpp" />
     <ClInclude Include="src\include\reflection\reflection_typedef.hpp" />
     <ClInclude Include="src\include\reflection\reflector.hpp" />
+    <ClInclude Include="src\include\rendering\buffer\dynamic_uniform_buffer.h" />
     <ClInclude Include="src\include\rendering\buffer\gpu_buffer.hpp" />
     <ClInclude Include="src\include\rendering\buffer\index_buffer.hpp" />
     <ClInclude Include="src\include\rendering\buffer\shader_storage.hpp" />
@@ -137,7 +137,6 @@
   <ItemGroup>
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp" />
-    <ClCompile Include="src\externals\source\Imgui\imgui_impl_dx12.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_impl_glfw.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_tables.cpp" />
@@ -160,22 +159,7 @@
     <ClCompile Include="src\source\physics\rigid_body.cpp" />
     <ClCompile Include="src\source\physics\sphere_collider.cpp" />
     <ClCompile Include="src\source\reflection\reflector.cpp" />
-    <ClCompile Include="src\source\rendering\buffer\index_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\buffer\shader_storage.cpp" />
-    <ClCompile Include="src\source\rendering\buffer\uniform_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\buffer\vertex_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\camera.cpp" />
-    <ClCompile Include="src\source\rendering\descriptor_layout_binding.cpp" />
-    <ClCompile Include="src\source\rendering\frame_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\light.cpp" />
-    <ClCompile Include="src\source\rendering\renderer.cpp" />
-    <ClCompile Include="src\source\rendering\render_harware_interface\command_buffer.cpp" />
-    <ClCompile Include="src\source\rendering\render_harware_interface\command_pool.cpp" />
-    <ClCompile Include="src\source\rendering\render_harware_interface\descriptor_pool.cpp" />
-    <ClCompile Include="src\source\rendering\render_harware_interface\descriptor_set.cpp" />
-    <ClCompile Include="src\source\rendering\render_harware_interface\RHI.cpp" />
-    <ClCompile Include="src\source\rendering\render_harware_interface\vertex.cpp" />
-    <ClCompile Include="src\source\rendering\render_pass.cpp">
+    <ClCompile Include="src\source\rendering\buffer\dynamic_uniform_buffer.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -247,11 +231,27 @@
       <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDLL;_UNICODE;UNICODE;;LUA_BUILD_AS_DLL;PC_CORE_EXPORT;PC_CORE_EXPORT;CORE_IO_EXPORT;CORE_IO_EXPORT;_CRT_SECURE_NO_DEPRECATE;;IMGUI_API;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\Core\src\externals\include;D:\Data\Project\ParaConquer\Core\src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Data\Isart\Projet\C++\ParaConquer\Core\src\externals\include;C:\Data\Isart\Projet\C++\ParaConquer\Core\src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/FS </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="src\source\rendering\buffer\index_buffer.cpp" />
+    <ClCompile Include="src\source\rendering\buffer\shader_storage.cpp" />
+    <ClCompile Include="src\source\rendering\buffer\uniform_buffer.cpp" />
+    <ClCompile Include="src\source\rendering\buffer\vertex_buffer.cpp" />
+    <ClCompile Include="src\source\rendering\camera.cpp" />
+    <ClCompile Include="src\source\rendering\descriptor_layout_binding.cpp" />
+    <ClCompile Include="src\source\rendering\frame_buffer.cpp" />
+    <ClCompile Include="src\source\rendering\light.cpp" />
+    <ClCompile Include="src\source\rendering\renderer.cpp" />
+    <ClCompile Include="src\source\rendering\render_harware_interface\command_buffer.cpp" />
+    <ClCompile Include="src\source\rendering\render_harware_interface\command_pool.cpp" />
+    <ClCompile Include="src\source\rendering\render_harware_interface\descriptor_pool.cpp" />
+    <ClCompile Include="src\source\rendering\render_harware_interface\descriptor_set.cpp" />
+    <ClCompile Include="src\source\rendering\render_harware_interface\RHI.cpp" />
+    <ClCompile Include="src\source\rendering\render_harware_interface\vertex.cpp" />
+    <ClCompile Include="src\source\rendering\render_pass.cpp" />
     <ClCompile Include="src\source\rendering\render_passes\forward_pass.cpp" />
     <ClCompile Include="src\source\rendering\skydom.cpp" />
     <ClCompile Include="src\source\rendering\viewport.cpp" />

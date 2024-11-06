@@ -34,18 +34,21 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
     io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
     ImGui::StyleColorsDark();
 
+    GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
+    constexpr bool installCallBack = true;
+    ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
+   
+    ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo(&m_DescriptorPoolHandle);
+    init_info.CheckVkResultFn = CheckError;
+    ImGui_ImplVulkan_Init(&init_info);
+
+    /*
     switch (_graphicApi)
     {
     case GraphicAPI::NONE:
         break;
     case GraphicAPI::VULKAN:
-        GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
-        constexpr bool installCallBack = true;
-        ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
-   
-        ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo(&m_DescriptorPoolHandle);
-        init_info.CheckVkResultFn = CheckError;
-        ImGui_ImplVulkan_Init(&init_info);
+       
         break;
     case GraphicAPI::DX3D12:
         break;
@@ -53,7 +56,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
         break;
     default: ;
     }
-
+*/
 }
 
 void IMGUIContext::Destroy()

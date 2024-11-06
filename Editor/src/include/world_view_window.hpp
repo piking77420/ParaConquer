@@ -30,7 +30,7 @@ public:
 private:
     std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
 
-    std::vector<PC_CORE::DescriptorSet> descritptorSet;
+    std::vector<PC_CORE::DescriptorPoolHandle> descritptorSet;
 
     PC_CORE::Texture m_Texture;
 

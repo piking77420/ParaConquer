@@ -30,6 +30,17 @@ PC_CORE::UniformBuffer& PC_CORE::UniformBuffer::operator=(UniformBuffer&& _other
 
 void UniformBuffer::Update(size_t _size, size_t _offset, const void* _data)
 {
+    if (m_MapData == nullptr)
+    {
+        PC_LOGERROR("Trying to update uniform buffer without map data");
+    }
+
+    if (handleId == NULL_HANDLE)
+    {
+        PC_LOGERROR("Try to update a uniform buffer with a invalid handle")
+    }
+
+    
     memcpy(static_cast<uint8_t*>(m_MapData) + _offset, _data, _size);
 }
 
@@ -41,14 +52,10 @@ DescriptorBufferInfo UniformBuffer::AsDescriptorBufferInfo(uint32_t _offset) con
 UniformBuffer::UniformBuffer(size_t _size)
 {
     size = _size;
-    handleId = RHI::GetInstance().BufferData(_size, GPU_BUFFER_USAGE::BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    handleId = RHI::GetInstance().BufferData(_size, GPU_BUFFER_USAGE::UNIFORM);
     RHI::GetInstance().MapData(handleId, &m_MapData);
 }
 
-UniformBuffer::UniformBuffer()
-{
-
-}
 
 UniformBuffer::~UniformBuffer()
 {

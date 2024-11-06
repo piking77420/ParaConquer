@@ -33,7 +33,7 @@ PC_CORE::VertexBuffer::VertexBuffer( const std::vector<Vertex>& _vertices)
 {
     m_VertexCount = static_cast<uint32_t>(_vertices.size());
     size = m_VertexCount * sizeof(Vertex);
-    handleId = RHI::GetInstance().BufferData(size, _vertices.data(), GPU_BUFFER_USAGE::BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    handleId = RHI::GetInstance().BufferData(size, _vertices.data(), GPU_BUFFER_USAGE::VERTEX);
 }
 
 

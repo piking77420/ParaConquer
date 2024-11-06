@@ -19,7 +19,7 @@ using namespace PC_CORE;
 void Renderer::Destroy()
 {
     m_SwapChainCommandPool.~CommandPool();
-    
+
     for (auto&& uniform : renderResources.sceneUniform)
         uniform.~UniformBuffer();
 
@@ -45,7 +45,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
         ScissorRect.extend = {
             static_cast<uint32_t>(_renderingContext.renderingContextSize.x),
             static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
-        };
+    };
 
 
     RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
@@ -54,7 +54,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
     m_MainShader->Bind(m_CommandBuffer->handle);
     m_MainShader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
         &descriptorSets[m_CurrentImage], 0, nullptr);
-    
+
     DrawStaticMesh(_renderingContext, _world);
 }
 
@@ -111,17 +111,17 @@ void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
     case PC_CORE::GraphicAPI::NONE:
         break;
     case PC_CORE::GraphicAPI::VULKAN:
+    {
+        Vulkan::VulkanAppCreateInfo createInfo =
         {
-            Vulkan::VulkanAppCreateInfo createInfo =
-            {
-                .appName = "Editor",
-                .engineName = "ParaConquer Engine",
-                .windowPtr = _window->GetHandle(),
-                .logCallback = &Renderer::RenderLog,
-            };
-            RHI::MakeInstance(new Vulkan::VulkanApp(createInfo));
-        }
-        break;
+            .appName = "Editor",
+            .engineName = "ParaConquer Engine",
+            .windowPtr = _window->GetHandle(),
+            .logCallback = &Renderer::RenderLog,
+        };
+        RHI::MakeInstance(new Vulkan::VulkanApp(createInfo));
+    }
+    break;
     case PC_CORE::GraphicAPI::COUNT:
         break;
     case GraphicAPI::DX3D12:
@@ -148,7 +148,7 @@ void Renderer::InitShader()
         Vertex::GetAttributeDescriptions(0);
 
 
-    m_MainShader = new ShaderProgram(createInfo, {mainShaderVertex, mainShaderFrag});
+    m_MainShader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
     ResourceManager::Add<ShaderProgram>(m_MainShader);
 }
 
@@ -230,11 +230,11 @@ void Renderer::InitDescriptors()
 {
     descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
     m_MainShader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
-    
+
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         constexpr size_t offset = 0;
-        
+
         DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].AsDescriptorBufferInfo(offset);
         DescriptorImageInfo imageInfo = texture->GetDescriptorImageInfo();
 
@@ -275,10 +275,10 @@ void Renderer::RenderLog(LogType _logType, const char* _message)
     {
     case LogType::INFO:
         PC_LOG(_message)
-        break;
+            break;
     case LogType::ERROR:
         PC_LOGERROR(_message)
-        break;
-    default: ;
+            break;
+    default:;
     }
 }

@@ -199,25 +199,9 @@ PC_CORE::GPUBufferHandle Vulkan::VulkanApp::BufferData(size_t _size, const void*
 {
     vk::Buffer buffer = VK_NULL_HANDLE;
     VmaAllocation allocation = VK_NULL_HANDLE;
-    VmaAllocationInfo allocationInfo = {};
-    const uint32_t size = static_cast<uint32_t>(_size);
-    vk::BufferUsageFlags bufferUsageFlags = GetVulkanUsage(_usage);
 
-
-    if (bufferUsageFlags & vk::BufferUsageFlagBits::eVertexBuffer || bufferUsageFlags &
-        vk::BufferUsageFlagBits::eIndexBuffer)
-    {
-        Backend::CreateGPUBufferFromCPU(&m_VulkanContext, m_VulkanContext.resourceCommandPool, size, _data, _usage,
-                                        &buffer, &allocation);
-    }
-    else if (bufferUsageFlags & vk::BufferUsageFlagBits::eUniformBuffer || bufferUsageFlags &
-        vk::BufferUsageFlagBits::eTransferSrc)
-    {
-        Backend::CreateBufferAndAlloc(&m_VulkanContext, size, static_cast<VkBufferUsageFlags>(bufferUsageFlags),
-                                      VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO,
-                                      VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
-                                      &buffer, &allocation, &allocationInfo);
-    }
+    Backend::CreateBuffer(&m_VulkanContext, _size, _data, _usage, &buffer, &allocation);
+    
     m_VulkanContext.m_BuffersAllocationMap.insert({VulkanObjectWrapper<vk::Buffer>(buffer), allocation});
 
     return *reinterpret_cast<PC_CORE::GPUBufferHandle*>(&buffer);

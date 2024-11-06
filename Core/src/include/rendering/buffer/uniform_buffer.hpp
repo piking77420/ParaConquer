@@ -23,7 +23,7 @@ public:
    
     UniformBuffer(size_t _size);
 
-    UniformBuffer();
+    UniformBuffer() = default;
 
     ~UniformBuffer();
 
