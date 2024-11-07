@@ -282,6 +282,9 @@
     <ClInclude Include="src\include\rendering\buffer\dynamic_uniform_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\externals\include\Imgui\imgui_impl_dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\ecs\component.cpp">

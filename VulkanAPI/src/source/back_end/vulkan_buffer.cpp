@@ -20,10 +20,12 @@ void Vulkan::Backend::CreateBuffer(VulkanContext* _vulkanContext, size_t _size, 
     case PC_CORE::GPU_BUFFER_USAGE::VERTEX:
         Backend::CreateGPUBufferFromCPU(_vulkanContext, _vulkanContext->resourceCommandPool, size, _data, bufferUsageFlags,
                                         &buffer, &allocation);
+        break;
 
     case PC_CORE::GPU_BUFFER_USAGE::INDEX:
         Backend::CreateGPUBufferFromCPU(_vulkanContext, _vulkanContext->resourceCommandPool, size, _data, bufferUsageFlags,
                                         &buffer, &allocation);
+        break;
 
     case PC_CORE::GPU_BUFFER_USAGE::DYNAMIC_UNIFORM:
     case PC_CORE::GPU_BUFFER_USAGE::UNIFORM:
