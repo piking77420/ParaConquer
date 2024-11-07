@@ -59,6 +59,8 @@ BEGIN_PCCORE
         {
         }
 
+        virtual PC_CORE_API ImageViewHandle GetSwapChainImage(uint32_t imageIndex) = 0;
+
         virtual PC_CORE_API void WaitForAquireImage()
         {
         }
@@ -286,6 +288,11 @@ BEGIN_PCCORE
             
         }
 
+        virtual PC_CORE_API void BeginRenderPass(CommandBuffer _commandBuffer, RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo) = 0;
+
+        virtual PC_CORE_API void EndRenderPass(CommandBuffer _commandBuffer) = 0;
+
+        
 #pragma endregion RenderPass
 
 #pragma region FrameBuffer

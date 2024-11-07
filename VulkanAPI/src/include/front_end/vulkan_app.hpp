@@ -14,6 +14,7 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
+
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -34,6 +35,8 @@ namespace Vulkan
 
 		VULKAN_API void RecreateSwapChain(void* _glfwWindowptr , uint32_t _newWidht, uint32_t _newHeight) override;
 
+		VULKAN_API PC_CORE::ImageViewHandle GetSwapChainImage(uint32_t imageIndex) override;
+		
 		VULKAN_API void PushConstants(PC_CORE::CommandBufferHandle _commandBuffer, const std::string& _shaderProgramName,
 			const std::string& _pushConstantName, const void* _data, uint32_t _size) override;
 #pragma region Shader
@@ -60,6 +63,7 @@ namespace Vulkan
 		VULKAN_API void BindVertexBuffer(PC_CORE::CommandBufferHandle _commandBuffer,uint32_t _firstBinding, uint32_t _bindingCount, PC_CORE::GPUBufferHandle _handle) override;
 
 		VULKAN_API void BindIndexBuffer(PC_CORE::CommandBufferHandle _commandBuffer, PC_CORE::GPUBufferHandle _handle) override;
+
 
 #pragma region CommandPool Functions
 		VULKAN_API void FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoolHandle, PC_CORE::CommandBuffer* _commandBuffer, uint32_t _commandBufferCount) override;
@@ -152,6 +156,11 @@ namespace Vulkan
 		VULKAN_API PC_CORE::RenderPassHandle CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo) override;
 
 		VULKAN_API void DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassHandle) override;
+
+		VULKAN_API void BeginRenderPass(PC_CORE::CommandBuffer _commandBuffer, PC_CORE::RenderPassHandle _renderPassHandle,
+		const PC_CORE::BeginRenderPassInfo& _renderPassInfo) override;
+		
+		VULKAN_API void EndRenderPass(PC_CORE::CommandBuffer _commandBuffer) override;
 
 #pragma endregion RenderPass
 

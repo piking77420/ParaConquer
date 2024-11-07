@@ -711,9 +711,18 @@ struct CreateTextureInfo
         uint32_t offset = 0;
     };
 
+    enum class PolygonMode
+    {
+        Fill,
+        Line,
+        Point,
+        FillRectangleNV
+    };
+
 
     struct ShaderGraphicPointInfo
     {
+        PolygonMode polygonMode = PolygonMode::Fill;
         std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
         std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
     };
@@ -911,20 +920,32 @@ enum class AttachementUsage
 
 struct AttachmentDescription
 {
-    AttachementUsage renderPassTargetType;
+    AttachementUsage attachementUsage;
     RHIFormat format;
+
+    DEFAULT_COPY_MOVE_OPERATIONS(AttachmentDescription)
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(AttachmentDescription)
 };
 
 struct SubPasse
 {
     ShaderProgramPipelineType shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
     std::vector<AttachementUsage> attachementUsage;
+
+    
+    DEFAULT_COPY_MOVE_OPERATIONS(SubPasse)
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(SubPasse)
 };
 
 struct RenderPassCreateInfo
 {
     std::vector<AttachmentDescription> attachmentDescriptions;
     std::vector<SubPasse> subPasses;
+
+   
+
+    DEFAULT_COPY_MOVE_OPERATIONS(RenderPassCreateInfo)
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderPassCreateInfo)
 };
 
 struct RHIFrameBufferCreateInfo
@@ -935,6 +956,54 @@ struct RHIFrameBufferCreateInfo
     uint32_t                    width;
     uint32_t                    height;
     uint32_t                    layers;
+
+    DEFAULT_COPY_MOVE_OPERATIONS(RHIFrameBufferCreateInfo)
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(RHIFrameBufferCreateInfo)
+};
+
+struct RenderArea
+{
+    int32_t offset[2];
+    int32_t extend[2];
+    DEFAULT_COPY_MOVE_OPERATIONS(RenderArea)
+DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderArea)
+};
+
+union ClearValueColor
+{
+    std::array<float,4>       float32;
+    std::array<int32_t,4>     int32;
+    std::array<uint32_t,4>    uint32;
+};
+
+//using ClearValueColor = std::variant<std::array<float,4>, std::array<int32_t,4>, std::array<uint32_t,4>>;
+
+struct ClearDepthStencilValue
+{
+    float       depth;
+    uint32_t    stencil;
+    DEFAULT_COPY_MOVE_OPERATIONS(ClearDepthStencilValue)
+DEFAULT_CONSTRUCTOR_DESTRUCTOR(ClearDepthStencilValue)
+};
+
+struct ClearValue
+{
+    ClearValueColor clearValueColor;
+    ClearDepthStencilValue clearDepthStencilValue;
+    DEFAULT_COPY_MOVE_OPERATIONS(ClearValue)
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(ClearValue)
+};
+
+struct BeginRenderPassInfo
+{
+    FrameBufferHandle          framebuffer;
+    RenderArea               renderArea;
+    uint32_t               clearValueCount;
+    const ClearValue*    pClearValues;
+
+    DEFAULT_COPY_MOVE_OPERATIONS(BeginRenderPassInfo)
+    
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(BeginRenderPassInfo)
 };
 
 #pragma endregion RenderPass

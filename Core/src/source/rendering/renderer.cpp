@@ -18,267 +18,300 @@ using namespace PC_CORE;
 
 void Renderer::Destroy()
 {
-    m_SwapChainCommandPool.~CommandPool();
+	m_SwapChainCommandPool.~CommandPool();
+	m_ForwardRenderPass.~RenderPass();
 
-    for (auto&& uniform : renderResources.sceneUniform)
-        uniform.~UniformBuffer();
+	for (auto&& uniform : renderResources.sceneUniform)
+		uniform.~UniformBuffer();
 
-    RHI::DestroyInstance();
+	RHI::DestroyInstance();
 }
 
 void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const World& _world)
 {
-    m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
-    UpdateUniforms(_renderingContext);
+	m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
+	UpdateUniforms(_renderingContext);
 
-    const ViewPort viewport =
-    {
-        .position = {},
-        .width = static_cast<float>(_renderingContext.renderingContextSize.x),
-        .height = static_cast<float>(_renderingContext.renderingContextSize.y),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f
-    };
+	const ViewPort viewport =
+	{
+		.position = {},
+		.width = static_cast<float>(_renderingContext.renderingContextSize.x),
+		.height = static_cast<float>(_renderingContext.renderingContextSize.y),
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f
+	};
 
-    ScissorRect ScissorRect;
-    ScissorRect.offset = {},
-        ScissorRect.extend = {
-            static_cast<uint32_t>(_renderingContext.renderingContextSize.x),
-            static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
-    };
+	ScissorRect ScissorRect;
+	ScissorRect.offset = {},
+		ScissorRect.extend = {
+			static_cast<uint32_t>(_renderingContext.renderingContextSize.x),
+			static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
+	};
 
 
-    RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
-    RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
+	RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
+	RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
 
-    m_MainShader->Bind(m_CommandBuffer->handle);
-    m_MainShader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
-        &descriptorSets[m_CurrentImage], 0, nullptr);
+	m_MainShader->Bind(m_CommandBuffer->handle);
+	m_MainShader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
+		&descriptorSets[m_CurrentImage], 0, nullptr);
 
-    DrawStaticMesh(_renderingContext, _world);
+	DrawStaticMesh(_renderingContext, _world);
 }
 
 void Renderer::BeginFrame()
 {
-    static bool firstTime = false;
-    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_PRESS && !firstTime)
-    {
-        RHI::GetInstance().WaitDevice();
-        m_MainShader->Reload();
-        InitDescriptors();
-        firstTime = true;
-    }
+	static bool firstTime = false;
+	if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_PRESS && !firstTime)
+	{
+		RHI::GetInstance().WaitDevice();
+		m_MainShader->Reload();
+		InitDescriptors();
+		firstTime = true;
+	}
 
-    if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_RELEASE && firstTime)
-    {
-        firstTime = false;
-    }
+	if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_RELEASE && firstTime)
+	{
+		firstTime = false;
+	}
 
-    RHI::GetInstance().WaitForAquireImage();
-    m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
-    RHI::GetInstance().BeginRender(m_CommandBuffer->handle);
+	RHI::GetInstance().WaitForAquireImage();
+	m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
+	RHI::GetInstance().BeginRender(m_CommandBuffer->handle);
 }
 
 
 void Renderer::SwapBuffers()
 {
-    RHI::GetInstance().EndRender();
-    RHI::GetInstance().SwapBuffers(&m_CommandBuffer->handle, 1);
+	RHI::GetInstance().EndRender();
+	RHI::GetInstance().SwapBuffers(&m_CommandBuffer->handle, 1);
 }
 
 void Renderer::WaitDevice()
 {
-    RHI::GetInstance().WaitDevice();
+	RHI::GetInstance().WaitDevice();
 }
 
 CommandBuffer& Renderer::GetCommandSwapChainBuffer()
 {
-    return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
+	return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
 }
 
 GraphicAPI Renderer::GetGraphicsAPI()
 {
-    return m_GraphicApi;
+	return m_GraphicApi;
 }
 
 
 void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
 {
-    Windowtpr = _window;
+	Windowtpr = _window;
 
-    switch (_graphicAPI)
-    {
-    case PC_CORE::GraphicAPI::NONE:
-        break;
-    case PC_CORE::GraphicAPI::VULKAN:
-    {
-        Vulkan::VulkanAppCreateInfo createInfo =
-        {
-            .appName = "Editor",
-            .engineName = "ParaConquer Engine",
-            .windowPtr = _window->GetHandle(),
-            .logCallback = &Renderer::RenderLog,
-        };
-        RHI::MakeInstance(new Vulkan::VulkanApp(createInfo));
-    }
-    break;
-    case PC_CORE::GraphicAPI::COUNT:
-        break;
-    case GraphicAPI::DX3D12:
-        break;
-    default:
-        break;
-    }
+	switch (_graphicAPI)
+	{
+	case PC_CORE::GraphicAPI::NONE:
+		break;
+	case PC_CORE::GraphicAPI::VULKAN:
+	{
+		Vulkan::VulkanAppCreateInfo createInfo =
+		{
+			.appName = "Editor",
+			.engineName = "ParaConquer Engine",
+			.windowPtr = _window->GetHandle(),
+			.logCallback = &Renderer::RenderLog,
+		};
+		RHI::MakeInstance(new Vulkan::VulkanApp(createInfo));
+	}
+	break;
+	case PC_CORE::GraphicAPI::COUNT:
+		break;
+	case GraphicAPI::DX3D12:
+		break;
+	default:
+		break;
+	}
 
-    InitCommandPools();
+	InitCommandPools();
 }
 
 void Renderer::InitShader()
 {
-    ShaderSource* mainShaderVertex = ResourceManager::Get<ShaderSource>("main.vert");
-    ShaderSource* mainShaderFrag = ResourceManager::Get<ShaderSource>("main.frag");
+	ShaderSource* mainShaderVertex = ResourceManager::Get<ShaderSource>("main.vert");
+	ShaderSource* mainShaderFrag = ResourceManager::Get<ShaderSource>("main.frag");
 
-    PC_CORE::ProgramShaderCreateInfo createInfo{};
-    createInfo.prograShaderName = "mainShader";
+	PC_CORE::ProgramShaderCreateInfo createInfo{};
+	createInfo.prograShaderName = "mainShader";
 
-    createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
-    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexInputBindingDescritions.push_back(
-        Vertex::GetBindingDescrition(0));
-    std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData).vertexAttributeDescriptions =
-        Vertex::GetAttributeDescriptions(0);
+	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
+	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
+	shaderGraphicPointInfo->polygonMode = PolygonMode::Line;
+	
+	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
+		Vertex::GetBindingDescrition(0));
+	shaderGraphicPointInfo->vertexAttributeDescriptions =
+		Vertex::GetAttributeDescriptions(0);
 
 
-    m_MainShader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
-    ResourceManager::Add<ShaderProgram>(m_MainShader);
+	m_MainShader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
+	ResourceManager::Add<ShaderProgram>(m_MainShader);
 }
 
 void Renderer::InitBuffer()
 {
-    for (auto&& uniform : renderResources.sceneUniform)
-        uniform = UniformBuffer(sizeof(renderResources.sceneBufferGPU));
+	for (auto&& uniform : renderResources.sceneUniform)
+		uniform = UniformBuffer(sizeof(renderResources.sceneBufferGPU));
 }
 
 void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 {
-    renderResources.sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
-        _renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
-        _renderingContext.lowLevelCamera.up);
-    renderResources.sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis(_renderingContext.lowLevelCamera.fov,
-        _renderingContext.lowLevelCamera.aspect,
-        _renderingContext.lowLevelCamera.near,
-        _renderingContext.lowLevelCamera.far);
+	renderResources.sceneBufferGPU.view = LookAtRH(_renderingContext.lowLevelCamera.position,
+		_renderingContext.lowLevelCamera.position + _renderingContext.lowLevelCamera.front,
+		_renderingContext.lowLevelCamera.up);
+	renderResources.sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis(_renderingContext.lowLevelCamera.fov,
+		_renderingContext.lowLevelCamera.aspect,
+		_renderingContext.lowLevelCamera.near,
+		_renderingContext.lowLevelCamera.far);
 
-    renderResources.sceneBufferGPU.deltatime = _renderingContext.deltaTime;
-    renderResources.sceneBufferGPU.time = _renderingContext.time;
-    renderResources.sceneUniform[m_CurrentImage].Update(sizeof(renderResources.sceneBufferGPU), 0, &renderResources.sceneBufferGPU);
+	renderResources.sceneBufferGPU.deltatime = _renderingContext.deltaTime;
+	renderResources.sceneBufferGPU.time = _renderingContext.time;
+	renderResources.sceneUniform[m_CurrentImage].Update(sizeof(renderResources.sceneBufferGPU), 0, &renderResources.sceneBufferGPU);
 }
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-    const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
+	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
 
-    for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
-    {
-        if (it->mesh == nullptr)
-            continue;
+	for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
+	{
+		if (it->mesh == nullptr)
+			continue;
 
-        const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
-        const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
 
-        Tbx::Matrix4x4f transformMatrix;
-        Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);
-        m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
+		Tbx::Matrix4x4f transformMatrix;
+		Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);
+		m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
 
-        m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
-        m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
-        RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
-    }
+		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
+		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+	}
 }
 
-void Renderer::CreateColorPass()
+void Renderer::CreateForwardPass()
 {
+	RenderPassCreateInfo createInfo;
+	// Color and depth
+	createInfo.attachmentDescriptions.resize(3);
+
+	// SWAP
+	createInfo.attachmentDescriptions[0].attachementUsage = AttachementUsage::COLOR;
+	createInfo.attachmentDescriptions[0].format = RHIFormat::R8G8B8_SRGB;
+	
+	createInfo.attachmentDescriptions[1].attachementUsage = AttachementUsage::COLOR;
+	createInfo.attachmentDescriptions[1].format = RHIFormat::R8G8B8_SRGB;
+
+	createInfo.attachmentDescriptions[2].attachementUsage = AttachementUsage::COLOR;
+	createInfo.attachmentDescriptions[2].format = RHIFormat::D32_SFLOAT_S8_UINT;
+	
+	// FORWARD PASS
+	// COLOR PASS TO VIEWPORT
+	createInfo.subPasses.resize(2);
+	// FORWARD PASS
+	createInfo.subPasses[0].shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
+	createInfo.subPasses[0].attachementUsage.resize(2);
+	createInfo.subPasses[0].attachementUsage.at(0) = AttachementUsage::COLOR;
+	createInfo.subPasses[0].attachementUsage.at(1) = AttachementUsage::DEPTH;
+	
+	// COLOR PASS TO VIEWPORT
+	createInfo.subPasses[1].shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
+	createInfo.subPasses[1].attachementUsage.resize(1);
+	createInfo.subPasses[1].attachementUsage.at(0) = AttachementUsage::COLOR;
+
+	m_ForwardRenderPass = RenderPass(createInfo);
 }
 
 void Renderer::InitRenderResources()
 {
 
-    texture = ResourceManager::Get<Texture>("diamond_block.jpg");
-    InitShader();
-    InitBuffer();
-    InitDescriptors();
+	texture = ResourceManager::Get<Texture>("diamond_block.jpg");
+	InitShader();
+	InitBuffer();
+	InitDescriptors();
 }
 
 void Renderer::InitCommandPools()
 {
-    const CommandPoolCreateInfo commandPoolCreateInfo =
-    {
-        .queueType = QueuType::GRAPHICS,
-        .commandPoolBufferFlag = COMMAND_POOL_BUFFER_RESET,
-    };
-    m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
+	const CommandPoolCreateInfo commandPoolCreateInfo =
+	{
+		.queueType = QueuType::GRAPHICS,
+		.commandPoolBufferFlag = COMMAND_POOL_BUFFER_RESET,
+	};
+	m_SwapChainCommandPool = CommandPool(commandPoolCreateInfo);
 
-    const CommandBufferCreateInfo commandBufferCreateInfo =
-    {
-        .commandBufferPtr = m_SwapChainCommandBuffers.data(),
-        .commandBufferCount = static_cast<uint32_t>(m_SwapChainCommandBuffers.size()),
-        .commandBufferlevel = CommandBufferlevel::PRIMARY
-    };
-    m_SwapChainCommandPool.AllocCommandBuffer(commandBufferCreateInfo);
+	const CommandBufferCreateInfo commandBufferCreateInfo =
+	{
+		.commandBufferPtr = m_SwapChainCommandBuffers.data(),
+		.commandBufferCount = static_cast<uint32_t>(m_SwapChainCommandBuffers.size()),
+		.commandBufferlevel = CommandBufferlevel::PRIMARY
+	};
+	m_SwapChainCommandPool.AllocCommandBuffer(commandBufferCreateInfo);
 }
 
 void Renderer::InitDescriptors()
 {
-    descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    m_MainShader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
+	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+	m_MainShader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        constexpr size_t offset = 0;
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		constexpr size_t offset = 0;
 
-        DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].AsDescriptorBufferInfo(offset);
-        DescriptorImageInfo imageInfo = texture->GetDescriptorImageInfo();
+		DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].AsDescriptorBufferInfo(offset);
+		DescriptorImageInfo imageInfo = texture->GetDescriptorImageInfo();
 
-        DescriptorWriteSet descriptorWrite[2] =
-        {
+		DescriptorWriteSet descriptorWrite[2] =
+		{
 
-            {
-                .dstDescriptorSetHandle = descriptorSets[i],
-                .dstBinding = 0,
-                .dstArrayElement = 0,
-                .descriptorType = DescriptorType::UNIFORM_BUFFER,
-                .descriptorCount = 1,
+			{
+				.dstDescriptorSetHandle = descriptorSets[i],
+				.dstBinding = 0,
+				.dstArrayElement = 0,
+				.descriptorType = DescriptorType::UNIFORM_BUFFER,
+				.descriptorCount = 1,
 
-                .descriptorBufferInfo = &descriptorBufferInfo,
-                .descriptorImageInfo = nullptr,
-                .descriptorTexelBufferViewInfo = nullptr
-            },
-            {
-                .dstDescriptorSetHandle = descriptorSets[i],
-                .dstBinding = 2,
-                .dstArrayElement = 0,
-                .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
-                .descriptorCount = 1,
-                .descriptorBufferInfo = nullptr,
-                .descriptorImageInfo = &imageInfo,
-                .descriptorTexelBufferViewInfo = nullptr
-            }
-        };
+				.descriptorBufferInfo = &descriptorBufferInfo,
+				.descriptorImageInfo = nullptr,
+				.descriptorTexelBufferViewInfo = nullptr
+			},
+			{
+				.dstDescriptorSetHandle = descriptorSets[i],
+				.dstBinding = 2,
+				.dstArrayElement = 0,
+				.descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+				.descriptorCount = 1,
+				.descriptorBufferInfo = nullptr,
+				.descriptorImageInfo = &imageInfo,
+				.descriptorTexelBufferViewInfo = nullptr
+			}
+		};
 
-        PC_CORE::UpdateDescriptorSet(&descriptorWrite[0], 2);
-    }
+		PC_CORE::UpdateDescriptorSet(&descriptorWrite[0], 2);
+	}
 }
 
 
 void Renderer::RenderLog(LogType _logType, const char* _message)
 {
-    switch (_logType)
-    {
-    case LogType::INFO:
-        PC_LOG(_message)
-            break;
-    case LogType::ERROR:
-        PC_LOGERROR(_message)
-            break;
-    default:;
-    }
+	switch (_logType)
+	{
+	case LogType::INFO:
+		PC_LOG(_message)
+			break;
+	case LogType::ERROR:
+		PC_LOGERROR(_message)
+			break;
+	default:;
+	}
 }

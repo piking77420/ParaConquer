@@ -12,8 +12,7 @@ PC_CORE::RenderPassHandle Vulkan::Backend::CreateRenderPass(const PC_CORE::Rende
 
 	CountSubPasses(_renderPassCreateInfo, &renderPassDescription);
 	ResolveSubPasses(_renderPassCreateInfo, &renderPassDescription);
-
-
+	
 	vk::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.sType = vk::StructureType::eRenderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
@@ -24,9 +23,9 @@ PC_CORE::RenderPassHandle Vulkan::Backend::CreateRenderPass(const PC_CORE::Rende
 	renderPassCreateInfo.pDependencies = renderPassDescription.dependencies.data();
 
 
-	//PC_CORE::RenderPassHandle renderPassHandle = CastObjectToVkObject<vk::RenderPass>(_device.createRenderPass(renderPassCreateInfo, nullptr));
+	vk::RenderPass renderpass = _device.createRenderPass(renderPassCreateInfo, nullptr);
 
-	return nullptr;
+	return *reinterpret_cast<PC_CORE::RenderPassHandle*>(&renderpass);
 }
 
 void Vulkan::Backend::ResolveAttachementDescriptrion(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo, std::vector<vk::AttachmentDescription>& _vkAttachmentDescriptions)
@@ -38,7 +37,7 @@ void Vulkan::Backend::ResolveAttachementDescriptrion(const PC_CORE::RenderPassCr
 		_vkAttachmentDescriptions[i].format = RHIFormatToVkFormat(_renderPassCreateInfo.attachmentDescriptions[i].format);
 		_vkAttachmentDescriptions[i].samples = vk::SampleCountFlagBits::e1;
 
-		switch (_renderPassCreateInfo.attachmentDescriptions[i].renderPassTargetType)
+		switch (_renderPassCreateInfo.attachmentDescriptions[i].attachementUsage)
 		{
 		case PC_CORE::AttachementUsage::COLOR:
 			_vkAttachmentDescriptions[i].loadOp = vk::AttachmentLoadOp::eClear;
@@ -189,5 +188,26 @@ void Vulkan::Backend::ResolveSubPassDependencies(vk::SubpassDependency* _vkSubpa
 	{
 		dependency.dstAccessMask |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 	}
+
+}
+
+void Vulkan::Backend::ResolveBeginRenderPass(PC_CORE::RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo,
+	vk::RenderPassBeginInfo* _vkRenderPassBeginInfo, vk::ClearValue* _vkClearValue)
+{
+	vk::RenderPassBeginInfo& vkRenderPassBeginInfo = *_vkRenderPassBeginInfo;
+
+	vkRenderPassBeginInfo.sType = vk::StructureType::eRenderPassBeginInfo;
+	vkRenderPassBeginInfo.renderPass = CastObjectToVkObject<vk::RenderPass>(_renderPassHandle);
+	vkRenderPassBeginInfo.framebuffer = CastObjectToVkObject<vk::Framebuffer>(_renderPassInfo.framebuffer);
+	vkRenderPassBeginInfo.renderArea.offset = vk::Offset2D(_renderPassInfo.renderArea.offset[0], _renderPassInfo.renderArea.offset[1]);
+	vkRenderPassBeginInfo.renderArea.extent = vk::Extent2D(_renderPassInfo.renderArea.extend[0], _renderPassInfo.renderArea.extend[1]);
+	vkRenderPassBeginInfo.clearValueCount = _renderPassInfo.clearValueCount;
+	vkRenderPassBeginInfo.pClearValues = _vkClearValue;
+
+	_vkClearValue->color.float32 = _renderPassInfo.pClearValues->clearValueColor.float32;
+	_vkClearValue->color.int32 = _renderPassInfo.pClearValues->clearValueColor.int32;
+	_vkClearValue->color.uint32 = _renderPassInfo.pClearValues->clearValueColor.uint32;
+	_vkClearValue->depthStencil.depth = _renderPassInfo.pClearValues->clearDepthStencilValue.depth;
+	_vkClearValue->depthStencil.stencil = _renderPassInfo.pClearValues->clearDepthStencilValue.stencil;
 
 }

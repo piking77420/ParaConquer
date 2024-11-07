@@ -69,6 +69,10 @@ private:
     Texture* texture = nullptr;
     
     std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
+
+    RenderPass m_ForwardRenderPass;
+
+    RenderPass m_ColorPass;
     
     PC_CORE_API void InitCommandPools();
 
@@ -82,7 +86,7 @@ private:
 
     PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
-    PC_CORE_API void CreateColorPass();
+    PC_CORE_API void CreateForwardPass();
 };
 
 END_PCCORE

@@ -80,7 +80,7 @@ namespace Vulkan
         
         void DestroyInternalShaders(vk::Device _device, ShaderInternal* _shaderInternalBack);
         
-        void CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& ShaderInfo,
+        void CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& _shaderInfo,
             const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);
 
         void CreateShaderResourceFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);

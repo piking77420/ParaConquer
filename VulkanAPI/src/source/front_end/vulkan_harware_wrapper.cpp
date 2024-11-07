@@ -55,6 +55,13 @@ std::vector<vk::DynamicState> Vulkan::VulkanHarwareWrapper::GetDynamicState()
     {
         vk::DynamicState::eViewport,
         vk::DynamicState::eScissor,
+        vk::DynamicState::eLineWidth,
+        vk::DynamicState::eDepthBias,
+        vk::DynamicState::eBlendConstants,
+        vk::DynamicState::eDepthBounds,
+        vk::DynamicState::eStencilCompareMask,
+        vk::DynamicState::eStencilWriteMask,
+        vk::DynamicState::eStencilReference
     };
 }
 
@@ -144,6 +151,7 @@ void Vulkan::VulkanHarwareWrapper::CreateDevice(VulkanContext* _vulkanContext)
 
     vk::PhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = vk::True;
+    deviceFeatures.fillModeNonSolid = vk::True;
 
     vk::DeviceCreateInfo vkDevicecreateInfo = {};
     vkDevicecreateInfo.pQueueCreateInfos = queueCreateInfos.data();

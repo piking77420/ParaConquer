@@ -22,6 +22,8 @@ void RHI::DestroyInstance()
 	m_Instance = nullptr;
 }
 
+
+
 RHI& RHI::GetInstance()
 {
 	return *m_Instance;

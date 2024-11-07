@@ -1224,3 +1224,20 @@ vk::BorderColor Vulkan::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
     throw std::runtime_error("Unknown BorderColor");
 }
 
+vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode)
+{
+    switch (_polygonMode)
+    {
+    case PC_CORE::PolygonMode::Fill:
+        return vk::PolygonMode::eFill;
+    case PC_CORE::PolygonMode::Line:
+        return vk::PolygonMode::eLine;
+    case PC_CORE::PolygonMode::Point:
+        return vk::PolygonMode::ePoint;
+    case PC_CORE::PolygonMode::FillRectangleNV:
+        return vk::PolygonMode::eFillRectangleNV;
+    }
+
+    throw std::runtime_error("Unknown PolygonMode");
+}
+

@@ -4,6 +4,7 @@
 #include "back_end/rhi_vulkan_descriptor_write.hpp"
 #include "back_end/rhi_vulkan_descriptor_layout.hpp"
 #include "back_end/rhi_vulkan_descriptor_pool.hpp"
+#include "back_end/rhi_vulkan_render_pass.hpp"
 #include "back_end/vulkan_buffer.hpp"
 #include "back_end/vulkan_command_pool_function.hpp"
 #include "back_end/vulkan_image.hpp"
@@ -26,12 +27,12 @@ void Vulkan::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
     beginInfo.pInheritanceInfo = nullptr; // Optional
 
     VK_CALL(m_BindCommandBuffer.begin(&beginInfo));
-
     vk::RenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
     renderPassInfo.renderPass = m_VulkanContext.swapChainRenderPass;
     renderPassInfo.framebuffer = m_VulkanContext.m_SwapChainFramebuffers[m_VulkanContext.imageIndex];
 
+    
     renderPassInfo.renderArea.offset = vk::Offset2D(0);
     renderPassInfo.renderArea.extent = m_VulkanContext.extent2D;
 
@@ -41,10 +42,8 @@ void Vulkan::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearColor.size());
     renderPassInfo.pClearValues = clearColor.data();
-
-    vk::SubpassContents subpassContents = vk::SubpassContents::eInline;
-
-    m_BindCommandBuffer.beginRenderPass(&renderPassInfo, subpassContents);
+    
+    m_BindCommandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanApp::EndRender()
@@ -172,6 +171,12 @@ void Vulkan::VulkanApp::RecreateSwapChain(void* _glfwWindowptr, uint32_t _newWid
         m_VulkanContext.physicalDevice, m_VulkanContext.surface);
     m_vulkanPresentChain.RecreateSwapChain(&m_VulkanContext, _glfwWindowptr, _newWidht, _newHeight);
 }
+
+PC_CORE::ImageViewHandle Vulkan::VulkanApp::GetSwapChainImage(uint32_t imageIndex)
+{
+    return m_VulkanContext.m_SwapChainImageViews[imageIndex];
+}
+
 
 
 void Vulkan::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo,
@@ -661,13 +666,30 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
 
 PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)
 {
-   return nullptr;
+    return Backend::CreateRenderPass(_renderPassCreateInfo,m_VulkanContext.device);
 }
 
 
 void Vulkan::VulkanApp::DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassHandle)
 {
+    m_VulkanContext.device.destroyRenderPass(CastObjectToVkObject<vk::RenderPass>(_renderPassHandle));
+}
+
+void Vulkan::VulkanApp::BeginRenderPass(PC_CORE::CommandBuffer _commandBuffer,
+    PC_CORE::RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo)
+{
+    //vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
     
+    vk::ClearValue clearValue = {};
+    vk::RenderPassBeginInfo renderPassBeginInfo{};
+    Backend::ResolveBeginRenderPass(_renderPassHandle, _renderPassInfo,&renderPassBeginInfo, &clearValue);
+    
+    //commandBuffer.beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+}
+
+void Vulkan::VulkanApp::EndRenderPass(PC_CORE::CommandBuffer _commandBuffer)
+{
+    //CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer).endRenderPass();
 }
 
 PC_CORE::FrameBufferHandle Vulkan::VulkanApp::CreateFrameBuffer(const PC_CORE::RHIFrameBufferCreateInfo& _RHIFrameBufferCreateInfo)

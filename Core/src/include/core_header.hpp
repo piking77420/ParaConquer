@@ -36,6 +36,9 @@ type& operator=(type&& other) noexcept = default;
     inline std::underlying_type_t<enumName>& operator|=(std::underlying_type_t<enumName>& left, const enumName right) { return left = left | right; }                                                                       \
                                                                                                                                                                                                                             
 
+#define DEFAULT_CONSTRUCTOR_DESTRUCTOR(type) \
+type() = default; \
+~type() = default; \
 
 #define DEFAULT_COPY_MOVE_OPERATIONS(type)         \
     type(const type& other) noexcept = default;             \

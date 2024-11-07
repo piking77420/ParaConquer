@@ -130,10 +130,11 @@ void VulkanShaderManager::CreateShaderResourceFromSpvReflectModule(vk::Device _d
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+    
 }
 
 void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass,
-                                                               const PC_CORE::ShaderInfo& ShaderInfo
+                                                               const PC_CORE::ShaderInfo& _shaderInfo
                                                                , const std::vector<vk::PipelineShaderStageCreateInfo>&
                                                                _shaderStageCreateInfos,
                                                                vk::PipelineLayout _pipelineLayout,
@@ -157,11 +158,12 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _devic
     viewportState.viewportCount = 1;
     viewportState.scissorCount = 1;
 
+
     vk::PipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = vk::PolygonMode::eFill;
+    rasterizer.polygonMode = RhiPolygonModeToVulkan(std::get<PC_CORE::ShaderGraphicPointInfo>(_shaderInfo.shaderInfoData).polygonMode);
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = vk::CullModeFlagBits::eBack;
     rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
@@ -170,6 +172,7 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _devic
     rasterizer.depthBiasClamp = 0.0f; // Optional
     rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
 
+    
     vk::PipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
     multisampling.sampleShadingEnable = VK_FALSE;
@@ -222,7 +225,7 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _devic
     std::vector<vk::VertexInputBindingDescription> vertexInputBindingDescription{};
     std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions{};
     vk::PipelineVertexInputStateCreateInfo vertexInputInfo = GetVertexInputStateCreateInfoFromShaderStruct(
-        std::get<PC_CORE::ShaderGraphicPointInfo>(ShaderInfo.shaderInfoData),
+        std::get<PC_CORE::ShaderGraphicPointInfo>(_shaderInfo.shaderInfoData),
         &vertexInputBindingDescription, &vertexInputAttributeDescriptions);
 
 

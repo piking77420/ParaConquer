@@ -7,7 +7,7 @@
 
 
 bool Vulkan::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface,
-                                                    std::vector<const char*> _deviceExtensions,  QueuFamiliesIndicies* _outQueuFamiliesIndicies,
+                                                    const std::vector<const char*>& _deviceExtensions,  QueuFamiliesIndicies* _outQueuFamiliesIndicies,
                                                     SwapChainSupportDetails* _swapChainSupportDetails)
 {
     vk::PhysicalDeviceProperties physicalDeviceProperties = _physicalDevice.getProperties();
@@ -16,13 +16,13 @@ bool Vulkan::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physica
     const QueuFamiliesIndicies indices = FindQueuFamillies(_physicalDevice, _surface);
     const SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(_physicalDevice, _surface);
 
-    bool extensionsSupported = CheckDeviceExtensionSupport(_physicalDevice, std::move(_deviceExtensions));
+    bool extensionsSupported = CheckDeviceExtensionSupport(_physicalDevice, _deviceExtensions);
     bool swapChainAdequate = !swapChainSupportDetails.formats.empty() && !swapChainSupportDetails.presentModes.empty();
     bool featuresCheck = HasAllNeededFeatures(physicalDeviceFeatures);
     
     if (physicalDeviceProperties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu ||
         indices.graphicsFamily == INVALID_QUEU || indices.presentFamily == INVALID_QUEU || !extensionsSupported || !
-        swapChainAdequate || featuresCheck || !physicalDeviceFeatures.samplerAnisotropy)
+        swapChainAdequate || featuresCheck || !physicalDeviceFeatures.samplerAnisotropy || !physicalDeviceFeatures.fillModeNonSolid)
         return false;
 
     *_outQueuFamiliesIndicies = indices;
@@ -32,7 +32,7 @@ bool Vulkan::VulkanPhysicalDevices::IsSuitableDevice(vk::PhysicalDevice _physica
 }
 
 bool Vulkan::VulkanPhysicalDevices::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
-                                                               std::vector<const char*> _deviceExtensions)
+                                                               const std::vector<const char*>& _deviceExtensions)
 {
     std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
     

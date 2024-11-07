@@ -24,9 +24,9 @@ namespace Vulkan
 
     private:
         bool IsSuitableDevice(vk::PhysicalDevice _physicalDevice, vk::SurfaceKHR _surface,
-            std::vector<const char*> _deviceExtensions, QueuFamiliesIndicies* _outQueuFamiliesIndicies, SwapChainSupportDetails* _swapChainSupportDetails);
+           const  std::vector<const char*>& _deviceExtensions, QueuFamiliesIndicies* _outQueuFamiliesIndicies, SwapChainSupportDetails* _swapChainSupportDetails);
 
-        bool CheckDeviceExtensionSupport(vk::PhysicalDevice device, std::vector<const char*> _deviceExtensions);
+        bool CheckDeviceExtensionSupport(vk::PhysicalDevice device, const std::vector<const char*>& _deviceExtensions);
 
         bool HasAllNeededFeatures(const vk::PhysicalDeviceFeatures& physicalDeviceFeatures);
 
