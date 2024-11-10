@@ -39,6 +39,8 @@ void ResourceManager::InitPath()
 
 
     ResourceManager::Create<Texture>("assets/textures/diamond_block.jpg");
+    ResourceManager::Create<Texture>("assets/textures/ebony_shield_d.png");
+
     /*
     ResourceManager::Create<Texture>("assets/textures/viking_room.png");
     ResourceManager::Create<Texture>("assets/textures/skydom.png");*/

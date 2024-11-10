@@ -253,7 +253,7 @@ void Renderer::CreateForwardPass()
 void Renderer::InitRenderResources()
 {
 
-	texture = ResourceManager::Get<Texture>("diamond_block.jpg");
+	texture = ResourceManager::Get<Texture>("ebony_shield_d.png");
 	CreateForwardPass();
 	InitShader();
 	InitBuffer();
