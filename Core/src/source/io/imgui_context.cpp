@@ -78,10 +78,14 @@ void IMGUIContext::NewFrame()
 
 void IMGUIContext::Render(PC_CORE::CommandBuffer _commandBuffer)
 {
+    Vulkan::VulkanApp& vulkanApp = dynamic_cast<Vulkan::VulkanApp&>(RHI::GetInstance());
     ImGui::Render();
+    
+    vulkanApp.BeginSwapChainRenderPass(_commandBuffer);
     ImDrawData* draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(draw_data, *reinterpret_cast<vk::CommandBuffer*>(&_commandBuffer.handle));
-
+    vulkanApp.EndRenderPass(_commandBuffer);
+    
     if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();

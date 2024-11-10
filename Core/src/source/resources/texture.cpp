@@ -9,32 +9,6 @@
 using namespace PC_CORE;
 
 
-Texture& Texture::operator=(Texture&& _other)
-{
-    Destroy();
-
-    m_ImageHandle = _other.m_ImageHandle;
-    _other.m_ImageHandle = nullptr;
-
-    m_ImageViewHandle = _other.m_ImageViewHandle;
-    _other.m_ImageViewHandle = nullptr;
-
-    m_SamplerHandle = _other.m_SamplerHandle;
-    _other.m_SamplerHandle = nullptr;
-
-    textureChannel = _other.textureChannel;
-    _other.textureChannel = 0;
-
-    m_MipLevel = _other.m_MipLevel;
-    _other.m_MipLevel = 0;
-
-    m_TextureSize = _other.m_TextureSize;
-    _other.m_TextureSize = {};
-    
-    
-    return *this;
-}
-
 
 Texture::Texture(const CreateTextureInfo& createTextureInfo)
 {
@@ -139,7 +113,7 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
     };
 
     RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
-    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
+    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, PC_CORE::TextureAspect::COLOR, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
     
     const CopyBufferImageInfo copyBufferImageInfo =
     {
@@ -148,7 +122,7 @@ void Texture::CreateTextureFromFile(const fs::path& _path)
        .bufferImageHeight = 0,
        .imageSubresource =
        {
-           .aspectMask = IMAGE_ASPECT_COLOR_BIT,
+           .aspectMask = PC_CORE::TextureAspect::COLOR,
            .mipLevel = 0,
            .baseArrayLayer = 0,
            .layerCount = 1
@@ -214,12 +188,28 @@ void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
     const uint32_t widht = static_cast<uint32_t>(m_TextureSize.x);
     const uint32_t height = static_cast<uint32_t>(m_TextureSize.y);
     //m_MipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(widht, height))));
-    m_MipLevel = createTextureInfo.mipsLevels;
+    m_MipLevel = createTextureInfo.GenerateMipMap ? createTextureInfo.mipsLevels : 1;
 
     RHI::GetInstance().CreateTexture(createTextureInfo, &m_ImageHandle, &m_ImageViewHandle);
-
-    RHI::GetInstance().TransitionImageLayout(m_ImageHandle, IMAGE_ASPECT_COLOR_BIT, m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
-    RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
+    
+    if (createTextureInfo.GenerateMipMap)
+    {
+        RHI::GetInstance().TransitionImageLayout(m_ImageHandle, createTextureInfo.textureAspect , m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL);
+        RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
+    }
+    else
+    {
+        if (createTextureInfo.textureAspect & PC_CORE::TextureAspect::COLOR)
+        {
+            RHI::GetInstance().TransitionImageLayout(m_ImageHandle, createTextureInfo.textureAspect , m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        }
+        
+        if (createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH && createTextureInfo.textureAspect & PC_CORE::TextureAspect::STENCIL)
+        {
+            RHI::GetInstance().TransitionImageLayout(m_ImageHandle, createTextureInfo.textureAspect , m_MipLevel, PC_CORE::LAYOUT_UNDEFINED, PC_CORE::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        }
+        
+    }
 
     const SamplerCreateInfo samplerCreateInfo =
     {

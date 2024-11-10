@@ -89,16 +89,6 @@ void Editor::UpdateEditorWindows()
     dockSpace.EndDockSpace();
 }
 
-void Editor::RenderEditorWindows()
-{
-    for (EditorWindow* editorWindow : m_EditorWindows)
-    {
-        editorWindow->Render();
-    }
-    PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
-}
-
-
 void Editor::InitTestScene()
 {
 
@@ -109,7 +99,7 @@ void Editor::InitTestScene()
         scene.AddComponent<Transform>(cube);
         scene.AddComponent<RigidBody>(cube);
         StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
-        mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
+        mesh->mesh = ResourceManager::Get<Mesh>("untitled.obj");
     }
     
 }
@@ -143,9 +133,14 @@ void Editor::Run()
         RotateCube();
         if (World::currentWorld)
             WorldLoop();
+
+        for (EditorWindow* editorWindow : m_EditorWindows)
+            editorWindow->Render();
         
-        RenderEditorWindows();
-       
+        
+        
+        PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
+        renderer.EndRender();
         renderer.SwapBuffers();
     }
 

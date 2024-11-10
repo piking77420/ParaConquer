@@ -19,7 +19,7 @@ using namespace PC_CORE;
 void Renderer::Destroy()
 {
 	m_SwapChainCommandPool.~CommandPool();
-	m_ForwardRenderPass.~RenderPass();
+	forwardRenderPass.~RenderPass();
 
 	for (auto&& uniform : renderResources.sceneUniform)
 		uniform.~UniformBuffer();
@@ -31,6 +31,23 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 {
 	m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
 	UpdateUniforms(_renderingContext);
+
+
+	BeginRenderPassInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.framebuffer = _renderingContext.frameBufferHandle;
+	renderPassBeginInfo.renderArea.offset[0] = 0;
+	renderPassBeginInfo.renderArea.offset[1] = 0;
+
+	renderPassBeginInfo.renderArea.extend[0] = static_cast<int32_t>( _renderingContext.renderingContextSize.x);
+	renderPassBeginInfo.renderArea.extend[1] = static_cast<int32_t>( _renderingContext.renderingContextSize.y);
+
+	std::array<ClearValue, 2> clearColor;
+	clearColor[0] = {0.0f, 0.0f, 0.0f, 1.0f};
+	clearColor[1].clearDepthStencilValue = {1.0f, 0};
+	renderPassBeginInfo.pClearValues = clearColor.data();
+	renderPassBeginInfo.clearValueCount = clearColor.size();
+	
+	forwardRenderPass.Begin(*m_CommandBuffer, renderPassBeginInfo);
 
 	const ViewPort viewport =
 	{
@@ -57,6 +74,9 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 		&descriptorSets[m_CurrentImage], 0, nullptr);
 
 	DrawStaticMesh(_renderingContext, _world);
+
+
+	forwardRenderPass.End(*m_CommandBuffer);
 }
 
 void Renderer::BeginFrame()
@@ -65,7 +85,7 @@ void Renderer::BeginFrame()
 	if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_PRESS && !firstTime)
 	{
 		RHI::GetInstance().WaitDevice();
-		m_MainShader->Reload();
+		m_MainShader->Reload(forwardRenderPass.GetHandle());
 		InitDescriptors();
 		firstTime = true;
 	}
@@ -80,10 +100,14 @@ void Renderer::BeginFrame()
 	RHI::GetInstance().BeginRender(m_CommandBuffer->handle);
 }
 
+void Renderer::EndRender()
+{
+	RHI::GetInstance().EndRender();
+}
+
 
 void Renderer::SwapBuffers()
 {
-	RHI::GetInstance().EndRender();
 	RHI::GetInstance().SwapBuffers(&m_CommandBuffer->handle, 1);
 }
 
@@ -144,13 +168,14 @@ void Renderer::InitShader()
 
 	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
-	shaderGraphicPointInfo->polygonMode = PolygonMode::Line;
+	shaderGraphicPointInfo->polygonMode = PolygonMode::Fill;
 	
 	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
 		Vertex::GetBindingDescrition(0));
 	shaderGraphicPointInfo->vertexAttributeDescriptions =
 		Vertex::GetAttributeDescriptions(0);
 
+	createInfo.renderPass = forwardRenderPass.GetHandle();
 
 	m_MainShader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
 	ResourceManager::Add<ShaderProgram>(m_MainShader);
@@ -203,39 +228,33 @@ void Renderer::CreateForwardPass()
 {
 	RenderPassCreateInfo createInfo;
 	// Color and depth
-	createInfo.attachmentDescriptions.resize(3);
+	createInfo.attachmentDescriptions.resize(2);
 
 	// SWAP
 	createInfo.attachmentDescriptions[0].attachementUsage = AttachementUsage::COLOR;
-	createInfo.attachmentDescriptions[0].format = RHIFormat::R8G8B8_SRGB;
+	createInfo.attachmentDescriptions[0].format = RHIFormat::R8G8B8A8_SRGB;
 	
-	createInfo.attachmentDescriptions[1].attachementUsage = AttachementUsage::COLOR;
-	createInfo.attachmentDescriptions[1].format = RHIFormat::R8G8B8_SRGB;
-
-	createInfo.attachmentDescriptions[2].attachementUsage = AttachementUsage::COLOR;
-	createInfo.attachmentDescriptions[2].format = RHIFormat::D32_SFLOAT_S8_UINT;
+	createInfo.attachmentDescriptions[1].attachementUsage = AttachementUsage::DEPTH;
+	createInfo.attachmentDescriptions[1].format = RHIFormat::D32_SFLOAT_S8_UINT;
 	
 	// FORWARD PASS
 	// COLOR PASS TO VIEWPORT
-	createInfo.subPasses.resize(2);
+	createInfo.subPasses.resize(1);
 	// FORWARD PASS
 	createInfo.subPasses[0].shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	createInfo.subPasses[0].attachementUsage.resize(2);
 	createInfo.subPasses[0].attachementUsage.at(0) = AttachementUsage::COLOR;
 	createInfo.subPasses[0].attachementUsage.at(1) = AttachementUsage::DEPTH;
 	
-	// COLOR PASS TO VIEWPORT
-	createInfo.subPasses[1].shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
-	createInfo.subPasses[1].attachementUsage.resize(1);
-	createInfo.subPasses[1].attachementUsage.at(0) = AttachementUsage::COLOR;
 
-	m_ForwardRenderPass = RenderPass(createInfo);
+	forwardRenderPass = RenderPass(createInfo);
 }
 
 void Renderer::InitRenderResources()
 {
 
 	texture = ResourceManager::Get<Texture>("diamond_block.jpg");
+	CreateForwardPass();
 	InitShader();
 	InitBuffer();
 	InitDescriptors();

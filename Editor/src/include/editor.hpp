@@ -34,9 +34,7 @@ public:
     void RotateCube();
 
     void UpdateEditorWindows();
-
-    void RenderEditorWindows();
-
+    
     std::vector<EditorWindow*> m_EditorWindows;
 
     DockSpace dockSpace;

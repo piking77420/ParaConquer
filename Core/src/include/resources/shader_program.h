@@ -16,7 +16,7 @@ BEGIN_PCCORE
 
         ~ShaderProgram();
 
-        void Reload();
+        void Reload(RenderPassHandle _renderPassHandle);
 
         void Bind(CommandBufferHandle _commandBuffer);
     
@@ -37,7 +37,7 @@ BEGIN_PCCORE
 
         std::vector<ShaderSource*> m_ShaderSources;
     
-        void CreateShader();
+        void CreateShader(RenderPassHandle _renderPassHandle);
 
         void DestroyShader();
 

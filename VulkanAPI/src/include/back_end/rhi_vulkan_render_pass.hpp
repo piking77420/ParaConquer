@@ -29,6 +29,6 @@ namespace Vulkan
        void ResolveSubPassDependencies(vk::SubpassDependency* _vkSubpassDependency, uint32_t _colorCount, uint32_t _depthCout);
 
         void ResolveBeginRenderPass(PC_CORE::RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo,
-            vk::RenderPassBeginInfo* _vkRenderPassBeginInfo, vk::ClearValue* _vkClearValue);
+            vk::RenderPassBeginInfo* _vkRenderPassBeginInfo, std::vector<vk::ClearValue>* _vkClearValue);
     }
 }

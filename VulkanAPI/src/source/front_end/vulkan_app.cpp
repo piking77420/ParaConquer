@@ -19,36 +19,16 @@ uint32_t Vulkan::VulkanApp::GetCurrentImage() const
 void Vulkan::VulkanApp::BeginRender(PC_CORE::CommandPoolHandle _commandBuffer)
 {
     m_BindCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
-
     m_BindCommandBuffer.reset();
 
     vk::CommandBufferBeginInfo beginInfo{};
     beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
     beginInfo.pInheritanceInfo = nullptr; // Optional
-
     VK_CALL(m_BindCommandBuffer.begin(&beginInfo));
-    vk::RenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
-    renderPassInfo.renderPass = m_VulkanContext.swapChainRenderPass;
-    renderPassInfo.framebuffer = m_VulkanContext.m_SwapChainFramebuffers[m_VulkanContext.imageIndex];
-
-    
-    renderPassInfo.renderArea.offset = vk::Offset2D(0);
-    renderPassInfo.renderArea.extent = m_VulkanContext.extent2D;
-
-    std::array<vk::ClearValue, 2> clearColor;
-    clearColor[0] = vk::ClearColorValue({0.0f, 0.0f, 0.0f, 1.0f});
-    clearColor[1].depthStencil = vk::ClearDepthStencilValue({1.0f, 0});
-
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearColor.size());
-    renderPassInfo.pClearValues = clearColor.data();
-    
-    m_BindCommandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanApp::EndRender()
 {
-    m_BindCommandBuffer.endRenderPass();
     m_BindCommandBuffer.end();
 }
 
@@ -140,9 +120,8 @@ void Vulkan::VulkanApp::WaitForAquireImage()
 void Vulkan::VulkanApp::SwapBuffers(PC_CORE::CommandBufferHandle* _commandBuffers, uint32_t _commandBufferCount)
 {
     vk::CommandBuffer* vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer*>(_commandBuffers);
-
+    
     m_vulkanPresentChain.SwapBuffer(vkCommandBuffer, _commandBufferCount, &m_VulkanContext);
-    m_VulkanContext.currentFrame = (m_VulkanContext.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 
@@ -182,7 +161,10 @@ PC_CORE::ImageViewHandle Vulkan::VulkanApp::GetSwapChainImage(uint32_t imageInde
 void Vulkan::VulkanApp::CreateShader(const PC_CORE::ProgramShaderCreateInfo& programShaderCreateInfo,
                                      const std::vector<PC_CORE::ShaderSourcePath>& _shaderSource)
 {
-    m_vulkanShaderManager.CreateShaderFromSource(m_VulkanContext.device, m_VulkanContext.swapChainRenderPass,
+    vk::RenderPass renderPass = CastObjectToVkObject<vk::RenderPass>(programShaderCreateInfo.renderPass);
+
+    
+    m_vulkanShaderManager.CreateShaderFromSource(m_VulkanContext.device, renderPass,
                                                  programShaderCreateInfo, _shaderSource);
 }
 
@@ -485,8 +467,40 @@ void Vulkan::VulkanApp::CreateTexture(const PC_CORE::CreateTextureInfo& _createT
     const vk::ImageType imageType = RHIImageToVkImageType(_createTextureInfo.imageType);
     const vk::Format imageFormat = RHIFormatToVkFormat(_createTextureInfo.format);
     const vk::ImageTiling tiling = vk::ImageTiling::eOptimal;
-    const vk::ImageUsageFlags usageFlags = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc |
-        vk::ImageUsageFlagBits::eSampled;
+    vk::ImageUsageFlags usageFlags;
+
+
+    if (_createTextureInfo.useAsAttachement)
+    {
+        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::COLOR)
+        {
+            usageFlags |= vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc |
+           vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+
+        }
+        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::DEPTH)
+        {
+            usageFlags |= vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled;
+        }
+    }
+    else
+    {
+        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::COLOR)
+        {
+            usageFlags |= vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc |
+           vk::ImageUsageFlagBits::eSampled;
+
+        }
+        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::DEPTH)
+        {
+            usageFlags |= vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled;
+        }
+    }
+
+    
+    // Resolve usage
+   
+    
 
     Vulkan::Backend::CreateImage(&m_VulkanContext, _createTextureInfo.width, _createTextureInfo.height,
                                  _createTextureInfo.mipsLevels, imageType, imageFormat, tiling, usageFlags,
@@ -494,16 +508,7 @@ void Vulkan::VulkanApp::CreateTexture(const PC_CORE::CreateTextureInfo& _createT
                                  &image, &allocation);
 
 
-    vk::ImageAspectFlags aspectFlag;
-
-    if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::COLOR)
-    {
-        aspectFlag |= vk::ImageAspectFlagBits::eColor;
-    }
-    else if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH_STENCIL)
-    {
-        aspectFlag |= vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
-    }
+    vk::ImageAspectFlags aspectFlag = RhiTextureAspectMaskToVulkan(_createTextureInfo.textureAspect);
     
     vk::ImageView imageView = VK_NULL_HANDLE;
     vk::ImageViewType imageViewType = RHIImageTypeToVulkanImageViewType(_createTextureInfo.imageType);
@@ -611,8 +616,7 @@ void Vulkan::VulkanApp::CopyBufferToImage(PC_CORE::GPUBufferHandle _buffer, PC_C
     copyRegion.bufferRowLength = _copyBufferImageInfo.bufferRowLength;
     copyRegion.bufferImageHeight = _copyBufferImageInfo.bufferImageHeight;
 
-    copyRegion.imageSubresource.aspectMask = RhiToVKImageAspectFlagBits(
-            _copyBufferImageInfo.imageSubresource.aspectMask),
+    copyRegion.imageSubresource.aspectMask = RhiTextureAspectMaskToVulkan(_copyBufferImageInfo.imageSubresource.aspectMask),
         copyRegion.imageSubresource.mipLevel = _copyBufferImageInfo.imageSubresource.mipLevel,
         copyRegion.imageSubresource.baseArrayLayer = _copyBufferImageInfo.imageSubresource.baseArrayLayer,
         copyRegion.imageSubresource.layerCount = _copyBufferImageInfo.imageSubresource.layerCount,
@@ -653,7 +657,7 @@ void Vulkan::VulkanApp::CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE:
 }
 
 void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
-                                              PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, uint32_t _mipLevel, PC_CORE::ImageLayout _initialLayout,
+                                              PC_CORE::TextureAspect _imageAspectFlagBits, uint32_t _mipLevel, PC_CORE::ImageLayout _initialLayout,
                                               PC_CORE::ImageLayout _finalLayout)
 {
     vk::Image image = CastObjectToVkObject<vk::Image>(_imageHandle);
@@ -661,7 +665,7 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
     const vk::ImageLayout initialLayout = RHIToVKImageLayout(_initialLayout);
     const vk::ImageLayout finalLayout = RHIToVKImageLayout(_finalLayout);
     
-    Backend::TransitionImageLayout(&m_VulkanContext, image,RhiToVKImageAspectFlagBits(_imageAspectFlagBits), _mipLevel, initialLayout, finalLayout);
+    Backend::TransitionImageLayout(&m_VulkanContext, image,RhiTextureAspectMaskToVulkan(_imageAspectFlagBits), _mipLevel, initialLayout, finalLayout);
 }
 
 PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)
@@ -678,18 +682,18 @@ void Vulkan::VulkanApp::DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassH
 void Vulkan::VulkanApp::BeginRenderPass(PC_CORE::CommandBuffer _commandBuffer,
     PC_CORE::RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo)
 {
-    //vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer);
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle);
     
-    vk::ClearValue clearValue = {};
+    std::vector<vk::ClearValue> clearValue = {};
     vk::RenderPassBeginInfo renderPassBeginInfo{};
     Backend::ResolveBeginRenderPass(_renderPassHandle, _renderPassInfo,&renderPassBeginInfo, &clearValue);
     
-    //commandBuffer.beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+    commandBuffer.beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanApp::EndRenderPass(PC_CORE::CommandBuffer _commandBuffer)
 {
-    //CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer).endRenderPass();
+    CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle).endRenderPass();
 }
 
 PC_CORE::FrameBufferHandle Vulkan::VulkanApp::CreateFrameBuffer(const PC_CORE::RHIFrameBufferCreateInfo& _RHIFrameBufferCreateInfo)
@@ -711,6 +715,36 @@ void Vulkan::VulkanApp::DestroyFrameBuffer(PC_CORE::FrameBufferHandle _frameBuff
 {
     m_VulkanContext.device.destroyFramebuffer(CastObjectToVkObject<vk::Framebuffer>(_frameBufferHandle));
 }
+
+void Vulkan::VulkanApp::BeginSwapChainRenderPass(PC_CORE::CommandBuffer _commandBuffer)
+{
+    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle);
+    
+    vk::RenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
+    renderPassInfo.renderPass = m_VulkanContext.swapChainRenderPass;
+    renderPassInfo.framebuffer = m_VulkanContext.m_SwapChainFramebuffers[m_VulkanContext.imageIndex];
+
+    
+    renderPassInfo.renderArea.offset = vk::Offset2D(0);
+    renderPassInfo.renderArea.extent = m_VulkanContext.extent2D;
+
+    std::array<vk::ClearValue, 2> clearColor;
+    clearColor[0] = vk::ClearColorValue({0.0f, 0.0f, 0.0f, 1.0f});
+    clearColor[1].depthStencil = vk::ClearDepthStencilValue({1.0f, 0});
+
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearColor.size());
+    renderPassInfo.pClearValues = clearColor.data();
+    
+    vkCommandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
+}
+
+void Vulkan::VulkanApp::EndSwapChainRenderPass(PC_CORE::CommandBuffer _commandBuffer)
+{
+    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle);
+    vkCommandBuffer.endRenderPass();
+}
+
 
 #pragma endregion DescriptorSetLayout
 

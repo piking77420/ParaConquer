@@ -7,8 +7,8 @@
 BEGIN_PCCORE
 struct FrameBufferCreateInfo
 {
-    std::vector<Texture> imageViewHandles;
-    RenderPass renderPass;
+    std::vector<Texture*> renderTargets;
+    const RenderPass* renderPass;
 
     uint32_t                    width;
     uint32_t                    height;
@@ -18,15 +18,36 @@ struct FrameBufferCreateInfo
 class FrameBuffer
 {
 public:
+    PC_CORE_API FrameBuffer(FrameBuffer&& _other) noexcept
+    {
+        Destroy();
 
-    FrameBuffer(const FrameBufferCreateInfo& _frameBufferCreateInfo);
+        m_FrameBufferHandle = _other.m_FrameBufferHandle;
+        _other.m_FrameBufferHandle = NULL_HANDLE;
+    }
     
-    FrameBuffer() = default;
+    PC_CORE_API FrameBuffer& operator=(FrameBuffer&& _other) noexcept
+    {
+        Destroy();
+
+        m_FrameBufferHandle = _other.m_FrameBufferHandle;
+        _other.m_FrameBufferHandle = NULL_HANDLE;
+
+        return *this;
+    }
+
+    PC_CORE_API FrameBuffer(const FrameBufferCreateInfo& _frameBufferCreateInfo);
     
-    ~FrameBuffer();
+    PC_CORE_API FrameBuffer() = default;
+    
+    PC_CORE_API ~FrameBuffer();
+
+    PC_CORE_API FrameBufferHandle GetHandle() const;
 
 private:
     FrameBufferHandle m_FrameBufferHandle;
+
+    void Destroy();
 };
 
 END_PCCORE

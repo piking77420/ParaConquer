@@ -30,6 +30,15 @@ PC_CORE::RenderPass:: RenderPass(const RenderPassCreateInfo& _renderPassCreateIn
     m_RenderPassHandle = RHI::GetInstance().CreateRenderPass(_renderPassCreateInfo);
 }
 
+PC_CORE::RenderPass::~RenderPass()
+{
+    if (m_RenderPassHandle != nullptr)
+    {
+        RHI::GetInstance().DestroyRenderPass(m_RenderPassHandle);
+        m_RenderPassHandle = nullptr;
+    }
+}
+
 void PC_CORE::RenderPass::Begin(CommandBuffer _commandBuffer, const BeginRenderPassInfo& _renderPassBeginInfo)
 {
     RHI::GetInstance().BeginRenderPass(_commandBuffer, m_RenderPassHandle, _renderPassBeginInfo);

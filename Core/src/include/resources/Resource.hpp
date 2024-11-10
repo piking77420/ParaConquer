@@ -22,7 +22,7 @@ public:
 
     Guid guid;
 
-    PC_CORE_API Resource& operator=(Resource&& _other) = default;
+    PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
     
     PC_CORE_API Resource();
 

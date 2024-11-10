@@ -10,7 +10,7 @@ ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _createInfo, const s
     , m_ShaderInfo(_createInfo.shaderInfo), m_ShaderSources(_shaderSources)
 {
     name = _createInfo.prograShaderName;
-    CreateShader();
+    CreateShader(_createInfo.renderPass);
 
 }
 
@@ -20,10 +20,10 @@ ShaderProgram::~ShaderProgram()
     DestroyShader();
 }
 
-void ShaderProgram::Reload()
+void ShaderProgram::Reload(RenderPassHandle _renderPassHandle)
 {
     DestroyShader();
-    CreateShader();
+    CreateShader(_renderPassHandle);
 }
 
 void ShaderProgram::Bind(CommandBufferHandle _commandBuffer)
@@ -59,7 +59,7 @@ void ShaderProgram::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBuffe
     RHI::GetInstance().BindDescriptorSet(_commandBufferHandle, name, _firstSet, _descriptorSetCount, _pDescriptorSets, _dynamicOffsetCount, _pDynamicOffsets);
 }
 
-void ShaderProgram::CreateShader()
+void ShaderProgram::CreateShader(RenderPassHandle _renderPassHandle)
 {
     std::vector<ShaderSourcePath> sourceAndPaths;
     sourceAndPaths.resize(m_ShaderSources.size());
@@ -73,7 +73,8 @@ void ShaderProgram::CreateShader()
     const ProgramShaderCreateInfo programShaderCreateInfo =
         {
         name,
-        m_ShaderInfo
+        m_ShaderInfo,
+        _renderPassHandle
         };
     
     RHI::GetInstance().CreateShader(programShaderCreateInfo, sourceAndPaths);

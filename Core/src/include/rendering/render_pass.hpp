@@ -17,6 +17,8 @@ public:
 
     PC_CORE_API RenderPass() = default;
 
+    PC_CORE_API ~RenderPass();
+
     PC_CORE_API void Begin(PC_CORE::CommandBuffer _commandBuffer, const BeginRenderPassInfo& _renderPassBeginInfo);
 
     PC_CORE_API void End(PC_CORE::CommandBuffer _commandBuffer);

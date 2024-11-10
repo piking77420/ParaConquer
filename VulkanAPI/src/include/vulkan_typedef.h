@@ -99,10 +99,6 @@ namespace Vulkan
         vk::Fence resourceFence;
         
         vk::RenderPass swapChainRenderPass;
-
-        vk::Image depthImage;
-        vk::ImageView depthImageView;
-        VmaAllocation depthImageAllocation;
     };
 
 

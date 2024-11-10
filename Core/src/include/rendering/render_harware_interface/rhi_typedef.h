@@ -510,26 +510,27 @@ enum class ImageType
  };
 
 
-enum ImageAspectFlagBits
+enum class TextureAspect
 {
-    IMAGE_ASPECT_COLOR_BIT = 0x00000001,
-    IMAGE_ASPECT_DEPTH_BIT = 0x00000002,
-    IMAGE_ASPECT_STENCIL_BIT = 0x00000004,
-    IMAGE_ASPECT_METADATA_BIT = 0x00000008,
-    IMAGE_ASPECT_PLANE_0_BIT = 0x00000010,
-    IMAGE_ASPECT_PLANE_1_BIT = 0x00000020,
-    IMAGE_ASPECT_PLANE_2_BIT = 0x00000040,
-    IMAGE_ASPECT_NONE = 0,
-    IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT = 0x00000080,
-    IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT = 0x00000100,
-    IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT = 0x00000200,
-    IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT = 0x00000400,
-    IMAGE_ASPECT_PLANE_0_BIT_KHR = IMAGE_ASPECT_PLANE_0_BIT,
-    IMAGE_ASPECT_PLANE_1_BIT_KHR = IMAGE_ASPECT_PLANE_1_BIT,
-    IMAGE_ASPECT_PLANE_2_BIT_KHR = IMAGE_ASPECT_PLANE_2_BIT,
-    IMAGE_ASPECT_NONE_KHR = IMAGE_ASPECT_NONE,
-    IMAGE_ASPECT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    NONE = 1 << 0,
+    COLOR = 1 << 1,
+    DEPTH = 1 << 2,
+    STENCIL = 1 << 3,
+    METADATA_BIT = 1 << 4,
+    PLANE_0_BIT = 1 << 5,
+    PLANE_1_BIT = 1 << 6,
+    PLANE_2_BIT = 1 << 7,
+    MEMORY_PLANE_0_BIT_EXT = 1 << 8,
+    MEMORY_PLANE_1_BIT_EXT = 1 << 9,
+    MEMORY_PLANE_2_BIT_EXT = 1 << 10,
+    MEMORY_PLANE_3_BIT_EXT = 1 << 11,
+    PLANE_0_BIT_KHR = PLANE_0_BIT,
+    PLANE_1_BIT_KHR = PLANE_1_BIT,
+    PLANE_2_BIT_KHR = PLANE_2_BIT,
+    COUNT = 1 << 12
 };
+
+ENUM_FLAGS(TextureAspect)
 
 enum ImageLayout
 {
@@ -605,7 +606,7 @@ struct ComponentMapping
 
 struct ImageSubresourceRange
 {
-    ImageAspectFlagBits    aspectMask;
+    TextureAspect    aspectMask;
     uint32_t              baseMipLevel;
     uint32_t              levelCount;
     uint32_t              baseArrayLayer;
@@ -622,15 +623,8 @@ struct ImageViewCreateInfo
     ImageSubresourceRange    subresourceRange;
 };
 
-enum class TextureAspect
-{
-    NONE = 1 << 0,
-    COLOR = 1 << 1,
-    DEPTH_STENCIL = 1 << 2,
-    COUNT = 1 << 3
-};
 
-ENUM_FLAGS(TextureAspect)
+
 
 struct CreateTextureInfo
 {
@@ -642,6 +636,8 @@ struct CreateTextureInfo
     ImageType imageType;
     RHIFormat format;
     TextureAspect textureAspect;
+    bool GenerateMipMap = false;
+    bool useAsAttachement = false;
 };
 
 
@@ -747,6 +743,7 @@ struct CreateTextureInfo
     {
         std::string prograShaderName;
         ShaderInfo shaderInfo;
+        RenderPassHandle renderPass;
         // there shoulbe a renderpass handle
     };
 
@@ -807,7 +804,7 @@ struct DescriptorTexelBufferViewInfo
 
 struct ImageSubresourceLayers
 {
-    ImageAspectFlagBits    aspectMask = ImageAspectFlagBits::IMAGE_ASPECT_NONE;
+    TextureAspect    aspectMask = TextureAspect::NONE;
     uint32_t              mipLevel = 0;
     uint32_t              baseArrayLayer = 0;
     uint32_t              layerCount = 0;
@@ -982,16 +979,14 @@ struct ClearDepthStencilValue
 {
     float       depth;
     uint32_t    stencil;
-    DEFAULT_COPY_MOVE_OPERATIONS(ClearDepthStencilValue)
-DEFAULT_CONSTRUCTOR_DESTRUCTOR(ClearDepthStencilValue)
+
 };
 
 struct ClearValue
 {
     ClearValueColor clearValueColor;
     ClearDepthStencilValue clearDepthStencilValue;
-    DEFAULT_COPY_MOVE_OPERATIONS(ClearValue)
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(ClearValue)
+
 };
 
 struct BeginRenderPassInfo
@@ -1000,10 +995,6 @@ struct BeginRenderPassInfo
     RenderArea               renderArea;
     uint32_t               clearValueCount;
     const ClearValue*    pClearValues;
-
-    DEFAULT_COPY_MOVE_OPERATIONS(BeginRenderPassInfo)
-    
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(BeginRenderPassInfo)
 };
 
 #pragma endregion RenderPass

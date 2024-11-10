@@ -23,9 +23,7 @@ namespace Vulkan
     vk::ImageTiling RHiImageToVkImageTiling(PC_CORE::ImageTiling _imageTiling);
 
     vk::ImageType RHIImageToVkImageType(PC_CORE::ImageType _imageType);
-
-    vk::ImageAspectFlagBits RhiToVKImageAspectFlagBits(PC_CORE::ImageAspectFlagBits _imageAspectFlagBits);
-
+    
     vk::ImageLayout RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout);
 
     vk::ImageViewType RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageType);
@@ -54,8 +52,9 @@ namespace Vulkan
     vk::BorderColor RHIToBorderColor(PC_CORE::BorderColor _borderColor);
     
     vk::ImageViewType ImageTypeToImageViewType(vk::ImageType _imageType);
-
-
+    
     vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode);
+
+    vk::ImageAspectFlags RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect);
 }
 

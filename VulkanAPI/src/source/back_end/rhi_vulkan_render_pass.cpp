@@ -4,6 +4,7 @@
 
 PC_CORE::RenderPassHandle Vulkan::Backend::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo, vk::Device _device)
 {
+	
 	RenderPassDescription renderPassDescription = {};
 
 	std::vector<vk::AttachmentDescription> attachmentDescriptions{};
@@ -12,7 +13,7 @@ PC_CORE::RenderPassHandle Vulkan::Backend::CreateRenderPass(const PC_CORE::Rende
 
 	CountSubPasses(_renderPassCreateInfo, &renderPassDescription);
 	ResolveSubPasses(_renderPassCreateInfo, &renderPassDescription);
-	
+
 	vk::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.sType = vk::StructureType::eRenderPassCreateInfo;
 	renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
@@ -47,7 +48,8 @@ void Vulkan::Backend::ResolveAttachementDescriptrion(const PC_CORE::RenderPassCr
 			_vkAttachmentDescriptions[i].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 
 			_vkAttachmentDescriptions[i].initialLayout = vk::ImageLayout::eUndefined;
-			_vkAttachmentDescriptions[i].finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+			// TMPR
+			_vkAttachmentDescriptions[i].finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 			break;
 		case PC_CORE::AttachementUsage::DEPTH:
 		case PC_CORE::AttachementUsage::STENCIL:
@@ -77,25 +79,24 @@ void Vulkan::Backend::CountSubPasses(const PC_CORE::RenderPassCreateInfo& _rende
 		const PC_CORE::SubPasse& subPasse = _renderPassCreateInfo.subPasses[i];
 		for (size_t j = 0; j < subPasse.attachementUsage.size(); j++)
 		{
-			for (size_t j = 0; j < subPasse.attachementUsage.size(); j++)
+
+			switch (subPasse.attachementUsage[j])
 			{
-				switch (subPasse.attachementUsage[j])
-				{
-				case PC_CORE::AttachementUsage::COLOR:
-					colorAttachementCount++;
-					break;
-				case PC_CORE::AttachementUsage::DEPTH:
-				case PC_CORE::AttachementUsage::STENCIL:
-					depthAttachmentCount++;
-				case PC_CORE::AttachementUsage::NONE:
-				case PC_CORE::AttachementUsage::COUNT:
-					break;
-				}
+			case PC_CORE::AttachementUsage::COLOR:
+				colorAttachementCount++;
+				break;
+			case PC_CORE::AttachementUsage::DEPTH:
+			case PC_CORE::AttachementUsage::STENCIL:
+				depthAttachmentCount++;
+			case PC_CORE::AttachementUsage::NONE:
+			case PC_CORE::AttachementUsage::COUNT:
+				break;
 			}
+
 		}
 	}
-	_renderPassDescription->colorAttachmentRef.resize(static_cast<size_t>(colorAttachementCount));
-	_renderPassDescription->depthAttachmentRef.resize(static_cast<size_t>(depthAttachmentCount));
+	_renderPassDescription->colorAttachmentRef.resize(colorAttachementCount);
+	_renderPassDescription->depthAttachmentRef.resize(depthAttachmentCount);
 }
 
 void Vulkan::Backend::ResolveSubPasses(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo, RenderPassDescription* _renderPassDescription)
@@ -126,41 +127,49 @@ void Vulkan::Backend::ResolveSubPasses(const PC_CORE::RenderPassCreateInfo& _ren
 		{
 			const PC_CORE::AttachementUsage& attachmentDescription = subPasse.attachementUsage[j];
 			vk::AttachmentReference* attachmentReference = nullptr;
+			subpassDescription.pipelineBindPoint = RhiPipelineBindPointToVulkan(_renderPassCreateInfo.subPasses.at(i).shaderProgramPipelineType);
+			uint32_t attachmentIndex = static_cast<uint32_t>(j);
+			
 			switch (attachmentDescription)
 			{
 			case PC_CORE::AttachementUsage::COLOR:
-				attachmentReference = &vkColorAttachementsRef[colorAttachementCount + j];
-				surpassLocalColorAttachmentCount++;
-
+				attachmentReference = &vkColorAttachementsRef[colorAttachementCount];
+				attachmentReference->attachment = attachmentIndex;
 				attachmentReference->layout = vk::ImageLayout::eColorAttachmentOptimal;
+				subpassDescription.pColorAttachments = vkColorAttachementsRef.data() + colorAttachementCount + surpassLocalColorAttachmentCount;
+
+
+				surpassLocalColorAttachmentCount++;
+				colorAttachementCount += surpassLocalColorAttachmentCount;
+				subpassDescription.colorAttachmentCount = surpassLocalColorAttachmentCount;
 				break;
 			case PC_CORE::AttachementUsage::DEPTH:
 			case PC_CORE::AttachementUsage::STENCIL:
-				attachmentReference = &vkDepthAttachementsRef[depthAttachmentCount + j];
-				surpassLocalDepthAttachmentCount++;
+				attachmentReference = &vkDepthAttachementsRef[depthAttachmentCount];
+				attachmentReference->attachment = attachmentIndex;
+				attachmentReference->layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-				attachmentReference->layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-				attachmentReference->layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+				if (surpassLocalDepthAttachmentCount > 1)
+				{
+					throw std::runtime_error("depth attachment count greater than 1 is not supported");
+				}
+				subpassDescription.pDepthStencilAttachment = vkDepthAttachementsRef.data() + depthAttachmentCount + surpassLocalDepthAttachmentCount;
+
+				surpassLocalDepthAttachmentCount++;
+				depthAttachmentCount += surpassLocalDepthAttachmentCount;
 				break;
 			case PC_CORE::AttachementUsage::NONE:
 			case PC_CORE::AttachementUsage::COUNT:
 				break;
 			}
-			attachmentReference->attachment = surpassLocalColorAttachmentCount;
-			surpassLocalColorAttachmentCount++;
-		}
 
-		subpassDescription.pipelineBindPoint = RhiPipelineBindPointToVulkan(_renderPassCreateInfo.subPasses.at(i).shaderProgramPipelineType);
-		subpassDescription.colorAttachmentCount = surpassLocalColorAttachmentCount;
-		subpassDescription.pColorAttachments = vkColorAttachementsRef.data() + colorAttachementCount - 1;
-		if (surpassLocalDepthAttachmentCount > 1)
-		{
-			throw std::runtime_error("depth attachment count greater than 1 is not supported");
+
+
 		}
-		subpassDescription.pDepthStencilAttachment = vkDepthAttachementsRef.data() + depthAttachmentCount - 1;
 
 		ResolveSubPassDependencies(&_renderPassDescription->dependencies[i], surpassLocalColorAttachmentCount, surpassLocalDepthAttachmentCount);
 	}
+
 }
 
 void Vulkan::Backend::ResolveSubPassDependencies(vk::SubpassDependency* _vkSubpassDependency, uint32_t _colorCount, uint32_t _depthCout)
@@ -180,34 +189,38 @@ void Vulkan::Backend::ResolveSubPassDependencies(vk::SubpassDependency* _vkSubpa
 		dependency.srcStageMask = {};
 	}
 
-	dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
-
 	dependency.srcAccessMask = {};
+
+	dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
 	dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 	if (_depthCout > 0)
 	{
 		dependency.dstAccessMask |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 	}
-
+	
 }
 
 void Vulkan::Backend::ResolveBeginRenderPass(PC_CORE::RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo,
-	vk::RenderPassBeginInfo* _vkRenderPassBeginInfo, vk::ClearValue* _vkClearValue)
+	vk::RenderPassBeginInfo* _vkRenderPassBeginInfo, std::vector<vk::ClearValue>* _vkClearValue)
 {
 	vk::RenderPassBeginInfo& vkRenderPassBeginInfo = *_vkRenderPassBeginInfo;
 
+	_vkClearValue->resize(_renderPassInfo.clearValueCount);
+	for (size_t i = 0; i < _vkClearValue->size(); i++)
+	{
+		_vkClearValue->at(i).color.float32 = _renderPassInfo.pClearValues[i].clearValueColor.float32;
+		_vkClearValue->at(i).color.int32 = _renderPassInfo.pClearValues[i].clearValueColor.int32;
+		_vkClearValue->at(i).color.uint32 = _renderPassInfo.pClearValues[i].clearValueColor.uint32;
+		_vkClearValue->at(i).depthStencil.depth = _renderPassInfo.pClearValues[i].clearDepthStencilValue.depth;
+		_vkClearValue->at(i).depthStencil.stencil = _renderPassInfo.pClearValues[i].clearDepthStencilValue.stencil;
+	}
+
+	
 	vkRenderPassBeginInfo.sType = vk::StructureType::eRenderPassBeginInfo;
 	vkRenderPassBeginInfo.renderPass = CastObjectToVkObject<vk::RenderPass>(_renderPassHandle);
 	vkRenderPassBeginInfo.framebuffer = CastObjectToVkObject<vk::Framebuffer>(_renderPassInfo.framebuffer);
 	vkRenderPassBeginInfo.renderArea.offset = vk::Offset2D(_renderPassInfo.renderArea.offset[0], _renderPassInfo.renderArea.offset[1]);
 	vkRenderPassBeginInfo.renderArea.extent = vk::Extent2D(_renderPassInfo.renderArea.extend[0], _renderPassInfo.renderArea.extend[1]);
-	vkRenderPassBeginInfo.clearValueCount = _renderPassInfo.clearValueCount;
-	vkRenderPassBeginInfo.pClearValues = _vkClearValue;
-
-	_vkClearValue->color.float32 = _renderPassInfo.pClearValues->clearValueColor.float32;
-	_vkClearValue->color.int32 = _renderPassInfo.pClearValues->clearValueColor.int32;
-	_vkClearValue->color.uint32 = _renderPassInfo.pClearValues->clearValueColor.uint32;
-	_vkClearValue->depthStencil.depth = _renderPassInfo.pClearValues->clearDepthStencilValue.depth;
-	_vkClearValue->depthStencil.stencil = _renderPassInfo.pClearValues->clearDepthStencilValue.stencil;
-
+	vkRenderPassBeginInfo.clearValueCount = static_cast<uint32_t>(_vkClearValue->size());
+	vkRenderPassBeginInfo.pClearValues = _vkClearValue->data();
 }

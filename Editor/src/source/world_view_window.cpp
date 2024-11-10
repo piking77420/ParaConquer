@@ -15,6 +15,8 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
     m_ImaguiDescriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
+    viewPortImage.resize(MAX_FRAMES_IN_FLIGHT);
+    m_FrameBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 }
 
 
@@ -26,32 +28,25 @@ void WorldViewWindow::Update()
     if (resize)
     {
         m_Editor->renderer.WaitDevice();
-
-        const int32_t widht = static_cast<int32_t>(size.x);
-        const int32_t height = static_cast<int32_t>(size.y);
-        const Tbx::Vector2i textureSize = m_Texture.GetTextureSize();
-        
-        if (textureSize.x != widht || textureSize.y != height)
-        {
-            ResizeViewport();        
-        }
+        ResizeViewports();        
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
     VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
     
-    ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
-            ImVec2(1, 0));
+    ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
+            ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()
 {
     EditorWindow::Render();
 
+    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
+
     const Tbx::Vector2ui windowSize = m_Editor->window.GetWindowSize();
     PC_CORE::RenderingContext renderingContext;
-    renderingContext.renderingContextSize = {static_cast<float>(windowSize.x), static_cast<float>(windowSize.y)};
     renderingContext.lowLevelCamera =
     {
         .position = camera.position,
@@ -62,41 +57,76 @@ void WorldViewWindow::Render()
         .near = camera.GetNear(),
         .far = camera.GetFar(),
         .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
+        
     };
     renderingContext.time = PC_CORE::Time::GetTime(); 
-    renderingContext.deltaTime = PC_CORE::Time::DeltaTime(); 
+    renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
+    renderingContext.frameBufferHandle = m_FrameBuffers.at(static_cast<size_t>(currentImage)).GetHandle();
+    renderingContext.renderingContextSize = size;
 
     m_Editor->renderer.Render(renderingContext, m_Editor->world);
 }
 
-void WorldViewWindow::ResizeViewport()
+void WorldViewWindow::ResizeViewports()
 {
-    // Wait the gpu before resizing a resource
-    m_Editor->renderer.WaitDevice();
-    
-    const PC_CORE::CreateTextureInfo createTextureInfo =
-        {
-        .width = static_cast<int32_t>(m_Editor->window.GetWindowSize().x),
-       .height =  static_cast<int32_t>(m_Editor->window.GetWindowSize().y),
+
+    const PC_CORE::CreateTextureInfo depthCreateInfo =
+         {
+        .width = static_cast<int32_t>(size.x),
+       .height =  static_cast<int32_t>(size.y),
        .depth = 1,
        .mipsLevels = 1,
        .data = {},
        .imageType = PC_CORE::ImageType::TYPE_2D,
-       .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
-       .textureAspect = PC_CORE::TextureAspect::COLOR 
+       .format = PC_CORE::RHIFormat::D32_SFLOAT_S8_UINT,
+       .textureAspect = static_cast<PC_CORE::TextureAspect>(PC_CORE::TextureAspect::DEPTH | PC_CORE::TextureAspect::STENCIL),
+        .GenerateMipMap = false,
+        .useAsAttachement = true,
         };
+  
+
+    m_DepthTexture = PC_CORE::Texture(depthCreateInfo);
     
-    m_Texture = PC_CORE::Texture(createTextureInfo);
-
-    for (auto& i : m_ImaguiDescriptorSet)
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        ImGui_ImplVulkan_RemoveTexture(i);
-        i = ImGui_ImplVulkan_AddTexture(CastObjectToVkObject<vk::Sampler>(m_Texture.GetSamplerHandle())
-                                        , CastObjectToVkObject<vk::ImageView>(m_Texture.GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        PC_CORE::CreateTextureInfo createTextureInfo =
+       {
+            .width = static_cast<int32_t>(size.x),
+           .height =  static_cast<int32_t>(size.y),
+           .depth = 1,
+           .mipsLevels = 1,
+           .data = {},
+           .imageType = PC_CORE::ImageType::TYPE_2D,
+           .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
+           .textureAspect = PC_CORE::TextureAspect::COLOR,
+            .GenerateMipMap = false,
+            .useAsAttachement = true,
+            };
+    
+        viewPortImage[i] = PC_CORE::Texture(createTextureInfo);
+
+        
+       
+            ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
+            m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(CastObjectToVkObject<vk::Sampler>(viewPortImage[i].GetSamplerHandle())
+                                            , CastObjectToVkObject<vk::ImageView>(viewPortImage[i].GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        
+
+        const PC_CORE::FrameBufferCreateInfo frameBufferCreateInfo =
+            {
+            .renderTargets = {&viewPortImage[i], &m_DepthTexture},
+            .renderPass = &m_Editor->renderer.forwardRenderPass,
+            .width = static_cast<uint32_t>(size.x),
+            .height = static_cast<uint32_t>(size.y),
+            .layers = 1
+            };
+
+    
+        m_FrameBuffers[i] = PC_CORE::FrameBuffer(frameBufferCreateInfo);
     }
+
+    
+ 
+   
 }
 
-void WorldViewWindow::UpdateRenderingDescritptorSet()
-{
-
-}

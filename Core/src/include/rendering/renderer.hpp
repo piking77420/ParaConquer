@@ -21,8 +21,6 @@ struct RenderResources
 {
     std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> sceneUniform;
     SceneBufferGPU sceneBufferGPU;
-
-    RenderPass colorPass;
 };
 
 class Renderer
@@ -30,6 +28,11 @@ class Renderer
 public:
     static PC_CORE_API void RenderLog(LogType _logType, const char* _message);
 public:
+
+    RenderPass forwardRenderPass;
+
+    RenderPass colorPass;
+    
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 
     PC_CORE_API void InitRenderResources();
@@ -37,8 +40,11 @@ public:
     PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
     PC_CORE_API void BeginFrame();
+
+    PC_CORE_API void EndRender();
     
     PC_CORE_API void SwapBuffers();
+    
 
     PC_CORE_API void WaitDevice();
 
@@ -69,10 +75,6 @@ private:
     Texture* texture = nullptr;
     
     std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
-
-    RenderPass m_ForwardRenderPass;
-
-    RenderPass m_ColorPass;
     
     PC_CORE_API void InitCommandPools();
 

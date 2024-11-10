@@ -399,7 +399,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::D32_SFLOAT_S8_UINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eD32SfloatS8Uint;
 
     case PC_CORE::RHIFormat::BC1_RGB_UNORM_BLOCK:
         return vk::Format::eUndefined;
@@ -1003,10 +1003,6 @@ vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
     return vk::ImageType::e1D;
 }
 
-vk::ImageAspectFlagBits Vulkan::RhiToVKImageAspectFlagBits(PC_CORE::ImageAspectFlagBits _imageAspectFlagBits)
-{
-    return static_cast<vk::ImageAspectFlagBits>(_imageAspectFlagBits);
-}
 
 vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout)
 {
@@ -1239,5 +1235,62 @@ vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode
     }
 
     throw std::runtime_error("Unknown PolygonMode");
+}
+
+vk::ImageAspectFlags Vulkan::RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect)
+{
+    vk::ImageAspectFlags flags = {};
+    
+    if (_textureAspect & PC_CORE::TextureAspect::COLOR)
+    {
+        flags |= vk::ImageAspectFlagBits::eColor;
+    }
+    if (_textureAspect & PC_CORE::TextureAspect::DEPTH)
+    {
+        flags |= vk::ImageAspectFlagBits::eDepth;
+    }
+    if (_textureAspect & PC_CORE::TextureAspect::STENCIL)
+    {
+        flags |= vk::ImageAspectFlagBits::eStencil;
+    }
+    if (_textureAspect & PC_CORE::TextureAspect::METADATA_BIT)
+    {
+        flags |= vk::ImageAspectFlagBits::eMetadata;
+    }
+    if (_textureAspect & PC_CORE::TextureAspect::PLANE_0_BIT)
+    {
+        flags |= vk::ImageAspectFlagBits::ePlane0;
+    }
+    if (_textureAspect & PC_CORE::TextureAspect::PLANE_1_BIT)
+    {
+        flags |= vk::ImageAspectFlagBits::ePlane1;
+    }
+    if (_textureAspect & PC_CORE::TextureAspect::PLANE_2_BIT)
+    {
+        flags |= vk::ImageAspectFlagBits::ePlane2;
+    }
+
+    
+    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_0_BIT_EXT)
+    {
+        flags |= vk::ImageAspectFlagBits::eMemoryPlane0EXT;
+    }
+
+    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_1_BIT_EXT)
+    {
+        flags |= vk::ImageAspectFlagBits::eMemoryPlane1EXT;
+    }
+
+    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_2_BIT_EXT)
+    {
+        flags |= vk::ImageAspectFlagBits::eMemoryPlane2EXT;
+    }
+
+    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_3_BIT_EXT)
+    {
+        flags |= vk::ImageAspectFlagBits::eMemoryPlane3EXT;
+    }
+
+    return flags;
 }
 

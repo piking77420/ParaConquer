@@ -16,7 +16,54 @@ public:
     
     int textureChannel = -1;
 
-    PC_CORE_API Texture& operator=(Texture&& _other);
+    PC_CORE_API Texture(Texture&& _other) noexcept 
+    {
+        Destroy();
+
+        m_ImageHandle = _other.m_ImageHandle;
+        _other.m_ImageHandle = nullptr;
+
+        m_ImageViewHandle = _other.m_ImageViewHandle;
+        _other.m_ImageViewHandle = nullptr;
+
+        m_SamplerHandle = _other.m_SamplerHandle;
+        _other.m_SamplerHandle = nullptr;
+
+        textureChannel = _other.textureChannel;
+        _other.textureChannel = 0;
+
+        m_MipLevel = _other.m_MipLevel;
+        _other.m_MipLevel = 0;
+
+        m_TextureSize = _other.m_TextureSize;
+        _other.m_TextureSize = {};
+    }
+
+    PC_CORE_API Texture& operator=(Texture&& _other) noexcept
+    {
+        Destroy();
+
+        m_ImageHandle = _other.m_ImageHandle;
+        _other.m_ImageHandle = nullptr;
+
+        m_ImageViewHandle = _other.m_ImageViewHandle;
+        _other.m_ImageViewHandle = nullptr;
+
+        m_SamplerHandle = _other.m_SamplerHandle;
+        _other.m_SamplerHandle = nullptr;
+
+        textureChannel = _other.textureChannel;
+        _other.textureChannel = 0;
+
+        m_MipLevel = _other.m_MipLevel;
+        _other.m_MipLevel = 0;
+
+        m_TextureSize = _other.m_TextureSize;
+        _other.m_TextureSize = {};
+    
+    
+        return *this;
+    }
     
     PC_CORE_API Texture() = default;
 

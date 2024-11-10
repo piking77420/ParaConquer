@@ -273,7 +273,10 @@ BEGIN_PCCORE
 
         virtual PC_CORE_API void CopyBuffer(PC_CORE::GPUBufferHandle _bufferSrc, PC_CORE::GPUBufferHandle _bufferDst, size_t _srcOffset, size_t _dstOffset, size_t _size) {};
 
-        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::ImageAspectFlagBits _imageAspectFlagBits, uint32_t _mipLevel, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout) {};
+        virtual PC_CORE_API void TransitionImageLayout(PC_CORE::ImageHandle _imageHandle, PC_CORE::TextureAspect _textureAspectFlagBits, uint32_t _mipLevel, PC_CORE::ImageLayout _InitialLayout, PC_CORE::ImageLayout _finalLayout)
+        {
+            
+        }
 #pragma endregion Command
 
 #pragma region RenderPass

@@ -29,11 +29,12 @@ enum class GraphicAPI
 
     struct RenderingContext
     {
-        Tbx::Vector2f renderingContextSize;
         LowLevelCamera lowLevelCamera;
         float deltaTime;
         float time;
-        DescriptorSetHandle descriptorSet;
+        
+        FrameBufferHandle frameBufferHandle;
+        Tbx::Vector2f renderingContextSize;
     };
 
 
