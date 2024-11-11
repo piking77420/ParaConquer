@@ -463,6 +463,16 @@ enum class RHIFormat
 
 #pragma region Image
 
+enum class Channel
+{
+    DEFAULT = 0, // only used for desired_channels
+
+    GREY = 1,
+    ALPHA = 2,
+    RGB = 3,
+    RGBA = 4
+};
+
 enum class ImageTiling
 {
     IMAGE_TILING_OPTIMAL = 0,
@@ -632,7 +642,6 @@ struct CreateTextureInfo
     int32_t height;
     int32_t depth;
     uint32_t mipsLevels;
-    std::vector<void*> data;
     ImageType imageType;
     RHIFormat format;
     TextureAspect textureAspect;

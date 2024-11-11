@@ -472,47 +472,39 @@ void Vulkan::VulkanApp::CreateTexture(const PC_CORE::CreateTextureInfo& _createT
 
     if (_createTextureInfo.useAsAttachement)
     {
-        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::COLOR)
+        if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::COLOR)
         {
             usageFlags |= vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc |
-           vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-
+                vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
         }
-        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::DEPTH)
+        if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH)
         {
             usageFlags |= vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled;
         }
     }
     else
     {
-        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::COLOR)
+        if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::COLOR)
         {
             usageFlags |= vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc |
-           vk::ImageUsageFlagBits::eSampled;
-
+                vk::ImageUsageFlagBits::eSampled;
         }
-        if (_createTextureInfo.textureAspect  & PC_CORE::TextureAspect::DEPTH)
+        if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH)
         {
             usageFlags |= vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled;
         }
     }
-
-    
-    // Resolve usage
-   
-    
 
     Vulkan::Backend::CreateImage(&m_VulkanContext, _createTextureInfo.width, _createTextureInfo.height,
                                  _createTextureInfo.mipsLevels, imageType, imageFormat, tiling, usageFlags,
                                  VMA_MEMORY_USAGE_AUTO,
                                  &image, &allocation);
 
-
     vk::ImageAspectFlags aspectFlag = RhiTextureAspectMaskToVulkan(_createTextureInfo.textureAspect);
-    
+
     vk::ImageView imageView = VK_NULL_HANDLE;
     vk::ImageViewType imageViewType = RHIImageTypeToVulkanImageViewType(_createTextureInfo.imageType);
-    
+
     vk::ImageViewCreateInfo createImageViewInfo = {};
     createImageViewInfo.sType = vk::StructureType::eImageViewCreateInfo;
     createImageViewInfo.pNext = nullptr;
@@ -526,13 +518,44 @@ void Vulkan::VulkanApp::CreateTexture(const PC_CORE::CreateTextureInfo& _createT
     createImageViewInfo.subresourceRange.baseArrayLayer = 0;
     createImageViewInfo.subresourceRange.layerCount = 1;
 
-   imageView = m_VulkanContext.device.createImageView(createImageViewInfo, nullptr);
-    
-    
+    imageView = m_VulkanContext.device.createImageView(createImageViewInfo, nullptr);
+
+
     m_VulkanContext.m_ImagesAllocationMap.insert({VulkanObjectWrapper<vk::Image>(image), allocation});
 
     *_outImageHandle = image;
     *_outImageView = imageView;
+
+    vk::ImageLayout finalLayout = {};
+
+
+    if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::COLOR)
+    {
+        finalLayout = _createTextureInfo.useAsAttachement
+                          ? vk::ImageLayout::eColorAttachmentOptimal
+                          : vk::ImageLayout::eShaderReadOnlyOptimal;
+    }
+    else if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH && _createTextureInfo.textureAspect &
+        PC_CORE::TextureAspect::STENCIL)
+    {
+        finalLayout = _createTextureInfo.useAsAttachement
+                          ? vk::ImageLayout::eDepthStencilAttachmentOptimal
+                          : vk::ImageLayout::eShaderReadOnlyOptimal;
+    }
+    else if (_createTextureInfo.textureAspect & PC_CORE::TextureAspect::DEPTH)
+    {
+        finalLayout = _createTextureInfo.useAsAttachement
+                          ? vk::ImageLayout::eDepthAttachmentOptimal
+                          : vk::ImageLayout::eShaderReadOnlyOptimal;
+    }
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device,
+                                                              m_VulkanContext.resourceCommandPool);
+    Backend::TransitionImageLayout(commandBuffer, image, aspectFlag, _createTextureInfo.mipsLevels,
+                                   vk::ImageLayout::eUndefined, finalLayout);
+
+    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,
+                          m_VulkanContext.vkQueues.graphicQueue);
 }
 
 void Vulkan::VulkanApp::DestroyImageView(PC_CORE::ImageViewHandle _imageView)
@@ -567,6 +590,65 @@ void Vulkan::VulkanApp::GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RH
         m_VulkanContext.physicalDevice, m_VulkanContext.device, m_VulkanContext.resourceCommandPool, m_VulkanContext.resourceFence, m_VulkanContext.vkQueues.graphicQueue);
 }
 
+void Vulkan::VulkanApp::UploadData2D(PC_CORE::ImageHandle _imageHandle, uint32_t _mipLevel,
+    PC_CORE::TextureAspect _textureAspect, const void* _data, uint32_t _width, uint32_t _height, PC_CORE::Channel _channel)
+{
+    vk::Image image = CastObjectToVkObject<vk::Image>(_imageHandle);
+    const vk::ImageAspectFlags aspectFlags = RhiTextureAspectMaskToVulkan(_textureAspect);
+    size_t size = 0;
+    switch (_channel)
+    {
+    case PC_CORE::Channel::GREY:
+    case PC_CORE::Channel::ALPHA:
+        size = _width * _height;
+        break;
+    case PC_CORE::Channel::RGB:
+        size = _width * _height * 3;
+        break;
+    case PC_CORE::Channel::RGBA:
+        size = _width * _height * 4;
+        break;
+    }
+
+    VmaAllocation allocation = VK_NULL_HANDLE;
+    vk::Buffer buffer = VK_NULL_HANDLE;
+    VmaAllocationInfo allocationInfo;
+
+    Backend::CreateBufferAndAlloc(&m_VulkanContext, static_cast<uint32_t>(size), vk::BufferUsageFlagBits::eTransferSrc,
+                                  VmaMemoryUsage::VMA_MEMORY_USAGE_AUTO,
+                                  VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
+                                  &buffer, &allocation, &allocationInfo);
+
+    void* gpuData;
+    vmaMapMemory(m_VulkanContext.allocator, allocation, &gpuData);
+    memcpy(gpuData, _data, size);
+    
+    vk::BufferImageCopy copyRegion = {};
+
+    copyRegion.bufferOffset = 0;
+    copyRegion.bufferRowLength = 0;
+    copyRegion.bufferImageHeight = 0;
+    copyRegion.imageSubresource.aspectMask = aspectFlags;
+    copyRegion.imageSubresource.mipLevel = 0;
+    copyRegion.imageSubresource.baseArrayLayer = 0;
+    copyRegion.imageSubresource.layerCount = 1;
+    copyRegion.imageOffset = vk::Offset3D({0, 0, 0});
+    copyRegion.imageExtent = vk::Extent3D{_width, _height, 1};
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device,
+                                                              m_VulkanContext.resourceCommandPool);
+
+    Backend::TransitionImageLayout(commandBuffer, image, aspectFlags, _mipLevel, vk::ImageLayout::eUndefined,
+                                   vk::ImageLayout::eTransferDstOptimal);
+    commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &copyRegion);
+
+    
+    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,
+                          m_VulkanContext.vkQueues.graphicQueue);
+    
+    vmaUnmapMemory(m_VulkanContext.allocator, allocation);
+    vmaDestroyBuffer(m_VulkanContext.allocator, buffer, allocation);
+}
 
 
 PC_CORE::SamplerHandle Vulkan::VulkanApp::CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo)
@@ -664,8 +746,14 @@ void Vulkan::VulkanApp::TransitionImageLayout(PC_CORE::ImageHandle _imageHandle,
     
     const vk::ImageLayout initialLayout = RHIToVKImageLayout(_initialLayout);
     const vk::ImageLayout finalLayout = RHIToVKImageLayout(_finalLayout);
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device,
+                                                          m_VulkanContext.resourceCommandPool);
+      Backend::TransitionImageLayout(commandBuffer, image,RhiTextureAspectMaskToVulkan(_imageAspectFlagBits), _mipLevel, initialLayout, finalLayout);
+
+    EndSingleTimeCommands(commandBuffer, m_VulkanContext.device, m_VulkanContext.resourceFence,
+                          m_VulkanContext.vkQueues.graphicQueue);
     
-    Backend::TransitionImageLayout(&m_VulkanContext, image,RhiTextureAspectMaskToVulkan(_imageAspectFlagBits), _mipLevel, initialLayout, finalLayout);
 }
 
 PC_CORE::RenderPassHandle Vulkan::VulkanApp::CreateRenderPass(const PC_CORE::RenderPassCreateInfo& _renderPassCreateInfo)

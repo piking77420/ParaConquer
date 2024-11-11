@@ -3,17 +3,10 @@
 #include <string>
 
 #include "core_header.hpp"
+#include "rendering/render_harware_interface/rhi_typedef.h"
 
 BEGIN_PCCORE
-    enum class Channel
-    {
-        DEFAULT = 0, // only used for desired_channels
-
-        GREY = 1,
-        ALPHA = 2,
-        RGB = 3,
-        RGBA = 4
-    };
+   
 
     class FileLoader
     {

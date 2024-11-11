@@ -2,13 +2,10 @@
 
 #include "back_end/vulkan_command_pool_function.hpp"
 
-void Vulkan::Backend::TransitionImageLayout(VulkanContext* _context, vk::Image _imageHandle,
+void Vulkan::Backend::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image _imageHandle,
                                             vk::ImageAspectFlags _imageAspectFlagBits, uint32_t _mipLevel,
                                             vk::ImageLayout _initialLayout, vk::ImageLayout _finalLayout)
 {
-    vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(_context->device,
-                                                              _context->resourceCommandPool);
-
     vk::ImageMemoryBarrier barrier{};
     barrier.sType = vk::StructureType::eImageMemoryBarrier;
     barrier.oldLayout = _initialLayout;
@@ -72,9 +69,7 @@ void Vulkan::Backend::TransitionImageLayout(VulkanContext* _context, vk::Image _
         throw std::invalid_argument("unsupported layout transition!");
     }
 
-    commandBuffer.pipelineBarrier(sourceStage, destinationStage, {}, 0, nullptr, 0, nullptr, 1,
+    _commandBuffer.pipelineBarrier(sourceStage, destinationStage, {}, 0, nullptr, 0, nullptr, 1,
                                   &barrier);
-
-    EndSingleTimeCommands(commandBuffer, _context->device, _context->resourceFence,
-                          _context->vkQueues.graphicQueue);
+    
 }

@@ -73,9 +73,7 @@ public:
 
     PC_CORE_API ~Texture() override;
     
-    PC_CORE_API void Load(std::array<std::string,6>& _maps);
-
-    PC_CORE_API void Reset(const CreateTextureInfo& createTextureInfo);
+    PC_CORE_API void Load(const std::array<std::string,6>& _maps);
     
     PC_CORE_API PC_CORE::ImageHandle GetImageHandle() const;
 
@@ -98,13 +96,20 @@ private:
 
     Tbx::Vector2i m_TextureSize;
 
+    uint32_t m_Depth = 0;
+
     RHIFormat m_Format;
-
-    void CreateTextureFromFile(const fs::path& _path);
-
+    
     void Destroy();
 
     void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
+    
+    void LoadCubeMap(const std::array<std::string,6>& _maps);
+
+
+    void CreateMimmap();
+    
+    void CreateSampler();
 };
 
 

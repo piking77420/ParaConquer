@@ -230,6 +230,12 @@ BEGIN_PCCORE
             return ;
         }
 
+        virtual PC_CORE_API void UploadData2D(PC_CORE::ImageHandle _imageHandle, uint32_t _mipLevel,
+    PC_CORE::TextureAspect _textureAspect, const void* _data, uint32_t _width, uint32_t _height, PC_CORE::Channel _channel)
+        {
+            return ;
+        }
+
         virtual PC_CORE_API void DestroyImageView(PC_CORE::ImageViewHandle _imageView)
         {
             return ;

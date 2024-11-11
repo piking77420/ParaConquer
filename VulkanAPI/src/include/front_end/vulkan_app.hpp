@@ -14,7 +14,6 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
-
 		uint32_t GetCurrentImage() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
@@ -129,6 +128,9 @@ namespace Vulkan
 		
 		VULKAN_API void GenerateMimpMap(PC_CORE::ImageHandle _image, PC_CORE::RHIFormat _imageFormat, int32_t _texWidth,
 			int32_t _texHeight, uint32_t _mipLevels) override;
+
+		VULKAN_API void UploadData2D(PC_CORE::ImageHandle _imageHandle, uint32_t _mipLevel,
+	PC_CORE::TextureAspect _textureAspect, const void* _data, uint32_t _width, uint32_t _height, PC_CORE::Channel _channel) override;
 		
 		VULKAN_API PC_CORE::SamplerHandle CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) override;
 
