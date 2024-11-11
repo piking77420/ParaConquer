@@ -69,8 +69,8 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 	RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
 	RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
 
-	m_MainShader->Bind(m_CommandBuffer->handle);
-	m_MainShader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
+	shader->Bind(m_CommandBuffer->handle);
+	shader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
 		&descriptorSets[m_CurrentImage], 0, nullptr);
 
 	DrawStaticMesh(_renderingContext, _world);
@@ -85,7 +85,7 @@ void Renderer::BeginFrame()
 	if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_PRESS && !firstTime)
 	{
 		RHI::GetInstance().WaitDevice();
-		m_MainShader->Reload(forwardRenderPass.GetHandle());
+		shader->Reload(forwardRenderPass.GetHandle());
 		InitDescriptors();
 		firstTime = true;
 	}
@@ -177,8 +177,8 @@ void Renderer::InitShader()
 
 	createInfo.renderPass = forwardRenderPass.GetHandle();
 
-	m_MainShader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
-	ResourceManager::Add<ShaderProgram>(m_MainShader);
+	shader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
+	ResourceManager::Add<ShaderProgram>(shader);
 }
 
 void Renderer::InitBuffer()
@@ -214,9 +214,13 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
 		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
 
+		
+		shader->BindDescriptorSet(m_CommandBuffer->handle, 1, 1,
+			&it->material->descriptorSetHandle, 0, nullptr);
+		
 		Tbx::Matrix4x4f transformMatrix;
 		Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);
-		m_MainShader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
+		shader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
 
 		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
 		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
@@ -253,7 +257,6 @@ void Renderer::CreateForwardPass()
 void Renderer::InitRenderResources()
 {
 
-	texture = ResourceManager::Get<Texture>("ebony_shield_d.png");
 	CreateForwardPass();
 	InitShader();
 	InitBuffer();
@@ -281,16 +284,14 @@ void Renderer::InitCommandPools()
 void Renderer::InitDescriptors()
 {
 	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	m_MainShader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
+	shader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		constexpr size_t offset = 0;
 
 		DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].AsDescriptorBufferInfo(offset);
-		DescriptorImageInfo imageInfo = texture->GetDescriptorImageInfo();
-
-		DescriptorWriteSet descriptorWrite[2] =
+		DescriptorWriteSet descriptorWrite[1] =
 		{
 
 			{
@@ -304,19 +305,10 @@ void Renderer::InitDescriptors()
 				.descriptorImageInfo = nullptr,
 				.descriptorTexelBufferViewInfo = nullptr
 			},
-			{
-				.dstDescriptorSetHandle = descriptorSets[i],
-				.dstBinding = 2,
-				.dstArrayElement = 0,
-				.descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
-				.descriptorCount = 1,
-				.descriptorBufferInfo = nullptr,
-				.descriptorImageInfo = &imageInfo,
-				.descriptorTexelBufferViewInfo = nullptr
-			}
+		
 		};
 
-		PC_CORE::UpdateDescriptorSet(&descriptorWrite[0], 2);
+		PC_CORE::UpdateDescriptorSet(&descriptorWrite[0], 1);
 	}
 }
 

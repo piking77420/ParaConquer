@@ -129,6 +129,7 @@ void VulkanShaderManager::CreateShaderResourceFromSpvReflectModule(vk::Device _d
     pipelineLayoutInfo.pSetLayouts = _shaderInternal->descriptorSetLayouts.data(); // Optional
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRange.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = pushConstantRange.data(); // Optional
+    
     _shaderInternal->pipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo, nullptr);
     
 }

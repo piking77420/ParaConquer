@@ -92,6 +92,19 @@ void Editor::UpdateEditorWindows()
 void Editor::InitTestScene()
 {
 
+    Material* material1 = new Material();
+    material1->name = "material1";
+        ResourceManager::Add<Material>(material1);
+    material1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
+    
+    Material* material2 = new Material();
+    material2->name = "material2";
+    ResourceManager::Add<Material>(material2);
+    material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
+
+    material1->BuildDescriptor();
+    material2->BuildDescriptor();
+    
     Scene& scene = world.scene;
     for (size_t i = 0; i < 2; i++)
     {
@@ -99,6 +112,15 @@ void Editor::InitTestScene()
         scene.AddComponent<Transform>(cube);
         scene.AddComponent<RigidBody>(cube);
         StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
+        if (i == 0)
+        {
+            mesh->material = material1;
+        }
+        else
+        {
+            mesh->material = material2;
+        }
+        
         mesh->mesh = ResourceManager::Get<Mesh>("untitled.obj");
     }
     
@@ -110,7 +132,9 @@ void Editor::DestroyTestScene()
     world.scene.~Scene();
     world.scene = Scene();
     m_Selected = nullptr;
-   
+
+    ResourceManager::Delete<Material>("material1");
+    ResourceManager::Delete<Material>("material2");
 
     
     //ResourceManager::Delete<Material>("baseMaterial");

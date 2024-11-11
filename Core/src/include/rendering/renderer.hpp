@@ -32,6 +32,9 @@ public:
     RenderPass forwardRenderPass;
 
     RenderPass colorPass;
+
+    ShaderProgram* shader = nullptr;
+
     
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 
@@ -66,13 +69,10 @@ private:
 
     RenderResources renderResources;
 
-    ShaderProgram* m_MainShader = nullptr;
 
     Window* Windowtpr = nullptr;
     
     CommandBuffer* m_CommandBuffer = nullptr;
-    
-    Texture* texture = nullptr;
     
     std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
     
