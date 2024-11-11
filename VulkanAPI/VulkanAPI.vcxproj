@@ -42,15 +42,6 @@
     <Content Include="src\externals\release\vulkan-1.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\externals\include\spirv-tools\instrument.hpp" />
-    <ClInclude Include="src\externals\include\spirv-tools\libspirv.h" />
-    <ClInclude Include="src\externals\include\spirv-tools\libspirv.hpp" />
-    <ClInclude Include="src\externals\include\spirv-tools\linker.hpp" />
-    <ClInclude Include="src\externals\include\spirv-tools\linter.hpp" />
-    <ClInclude Include="src\externals\include\spirv-tools\optimizer.hpp" />
-    <ClInclude Include="src\externals\include\spirv\spirv.h" />
-    <ClInclude Include="src\externals\include\spirv\spirv_reflect.h" />
-    <ClInclude Include="src\externals\include\spirv_reflect.h" />
     <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_layout.hpp" />
     <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_pool.hpp" />
     <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_write.hpp" />
@@ -152,7 +143,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
@@ -161,7 +152,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -178,11 +169,16 @@
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SPVRemapperd.lib;gmockd.lib;vulkan-1.lib;SPIRV-Tools-opt.lib;SPIRV-Tools.lib;spirv-reflect-static.lib;glslang-default-resource-limitsd.lib;glslangd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -210,9 +206,11 @@
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;MachineIndependent.lib;GenericCodeGen.lib;gmock.lib;SPVRemapper.lib;SPIRV-Tools-opt.lib;;shaderc.lib;glslang.lib;shaderc_util.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;spirv-reflect-static.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:libcmt</IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -231,11 +229,16 @@
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SPVRemapperd.lib;gmockd.lib;vulkan-1.lib;SPIRV-Tools-opt.lib;SPIRV-Tools.lib;spirv-reflect-static.lib;glslang-default-resource-limitsd.lib;glslangd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -264,9 +267,11 @@
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;MachineIndependent.lib;GenericCodeGen.lib;gmock.lib;SPVRemapper.lib;;spirv-reflect-static.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:libcmt</IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
