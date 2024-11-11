@@ -59,9 +59,9 @@ namespace Vulkan
 
         VULKAN_API void Destroy(VulkanContext* _vulkanContext);
 
-        VULKAN_API const ShaderInternal& GetShader(const std::string& _shaderName);
+        VULKAN_API const ShaderInternal* GetShader(const std::string& _shaderName);
         
-        VULKAN_API void AllocDescriptorSet(const std::string& _shaderName,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device);
+        VULKAN_API void AllocDescriptorSet(const std::string& _shaderName, uint32_t _descriptorSetLayout,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device);
 
         VULKAN_API void FreeDescriptorSet(const std::string& _shaderName,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device);
 
@@ -87,7 +87,7 @@ namespace Vulkan
 
         void ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange);
 
-        void RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::DescriptorSetLayoutBinding>* _DescriptorSetLayoutBindings);
+        void RelflectDescriptorLayout(vk::Device _device, ShaderInternal* _shaderInternal, std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>>* _DescriptorSetLayoutBindings);
 
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
         _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);

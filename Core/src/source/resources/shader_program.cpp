@@ -42,9 +42,9 @@ void ShaderProgram::PushConstantVec3(CommandBufferHandle _commandBuffer, const c
     PushConstant(_commandBuffer, _pushConstantName, vec3.GetPtr() , sizeof(Tbx::Vector3f));
 }
 
-void ShaderProgram::CreateDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
+void ShaderProgram::CreateDescriptorSet(uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
 {
-    RHI::GetInstance().AllocDescriptorSet(name, _descriptorSet, _descriptorSetCount);
+    RHI::GetInstance().AllocDescriptorSet(name,_descriptorSetLayout,  _descriptorSet, _descriptorSetCount);
 }
 
 void ShaderProgram::FreeDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)

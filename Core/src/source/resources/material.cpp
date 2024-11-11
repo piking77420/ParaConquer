@@ -15,12 +15,17 @@ void Material::WriteFile(const fs::path& path)
 
 Material::Material(const fs::path& _path) : Resource(_path)
 {
-    RHI::GetInstance().AllocDescriptorSet(App::instance->renderer.shader->name, &descriptorSetHandle, 1);
+    RHI::GetInstance().AllocDescriptorSet(App::instance->renderer.shader->name,1 , descriptorSetHandle.data(), static_cast<uint32_t>(descriptorSetHandle.size()));
+}
+
+Material::Material()
+{
+    RHI::GetInstance().AllocDescriptorSet(App::instance->renderer.shader->name,1 , descriptorSetHandle.data(), static_cast<uint32_t>(descriptorSetHandle.size()));
 }
 
 Material::~Material()
 {
-    RHI::GetInstance().FreeDescriptorSet(App::instance->renderer.shader->name, &descriptorSetHandle, 1);
+    RHI::GetInstance().FreeDescriptorSet(App::instance->renderer.shader->name, descriptorSetHandle.data(), static_cast<uint32_t>(descriptorSetHandle.size()));
 }
 
 
@@ -33,10 +38,13 @@ void Material::Load(std::vector<Texture*> textures)
 void Material::BuildDescriptor()
 {
     DescriptorImageInfo descriptorImageInfo = albedo->GetDescriptorImageInfo();
-    DescriptorWriteSet descriptorWrite =
+
+    for (size_t i = 0; i < descriptorSetHandle.size(); i++)
+    {
+        DescriptorWriteSet descriptorWrite =
         {
-        .dstDescriptorSetHandle = descriptorSetHandle,
-        .dstBinding = 3,
+        .dstDescriptorSetHandle = descriptorSetHandle[i],
+        .dstBinding = 0,
         .dstArrayElement = 0,
         .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
         .descriptorCount = 1,
@@ -45,5 +53,8 @@ void Material::BuildDescriptor()
         .descriptorTexelBufferViewInfo = nullptr,
         };
 
-    RHI::GetInstance().UpdateDescriptorSet(1, &descriptorWrite);
+        RHI::GetInstance().UpdateDescriptorSet(1, &descriptorWrite);
+    }
+   
+
 }

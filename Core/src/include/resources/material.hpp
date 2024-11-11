@@ -31,7 +31,7 @@ public:
 
     PC_CORE_API Material(const fs::path& _path);
 
-    PC_CORE_API Material() = default;
+    PC_CORE_API Material();
 
     PC_CORE_API ~Material() override;
     
@@ -40,7 +40,7 @@ public:
     PC_CORE_API void BuildDescriptor();
     
 
-    DescriptorSetHandle descriptorSetHandle = nullptr;
+    std::array<DescriptorSetHandle, MAX_FRAMES_IN_FLIGHT> descriptorSetHandle;
 
 };
 

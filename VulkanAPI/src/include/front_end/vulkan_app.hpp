@@ -111,7 +111,7 @@ namespace Vulkan
 			PC_CORE::DescriptorPoolHandle _descriptorPoolHandle,
 			PC_CORE::DescriptorSetLayoutHandle _descriptorSetLayoutHandle) override;
 
-		VULKAN_API void AllocDescriptorSet(const std::string& _shaderName,PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount) override;
+		VULKAN_API void AllocDescriptorSet(const std::string& _shaderName, uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount) override;
 
 		VULKAN_API void FreeDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSet,
 			uint32_t _descriptorSetCount) override;

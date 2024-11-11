@@ -197,7 +197,7 @@ BEGIN_PCCORE
         {
         }
 
-        virtual PC_CORE_API void AllocDescriptorSet(const std::string& _shaderName,PC_CORE::DescriptorSetHandle* _descriptorSetHandle, uint32_t _descriptorSetCount)
+        virtual PC_CORE_API void AllocDescriptorSet(const std::string& _shaderName, uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCoun)
         {
             
         };

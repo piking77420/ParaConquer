@@ -411,10 +411,9 @@ void Vulkan::VulkanApp::AllocDescriptorSet(PC_CORE::DescriptorSetHandle* descrip
             *>(descriptorSets)));
 }
 
-void Vulkan::VulkanApp::AllocDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSet,
-    uint32_t _descriptorSetCount)
+void Vulkan::VulkanApp::AllocDescriptorSet(const std::string& _shaderName, uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
 {
-    m_vulkanShaderManager.AllocDescriptorSet(_shaderName,CastObjectToVkObject<vk::DescriptorSet*>(_descriptorSet), _descriptorSetCount, m_VulkanContext.device);
+    m_vulkanShaderManager.AllocDescriptorSet(_shaderName,_descriptorSetLayout ,CastObjectToVkObject<vk::DescriptorSet*>(_descriptorSet), _descriptorSetCount, m_VulkanContext.device);
 }
 
 void Vulkan::VulkanApp::FreeDescriptorSet(const std::string& _shaderName, PC_CORE::DescriptorSetHandle* _descriptorSet,
@@ -454,7 +453,7 @@ void Vulkan::VulkanApp::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandB
     const vk::DescriptorSet* vkDescriptorSet = CastObjectToVkObject<const vk::DescriptorSet*>(_pDescriptorSets);
 
     auto shaderInternal = m_vulkanShaderManager.GetShader(_shaderProgramName);
-    commandBuffer.bindDescriptorSets(shaderInternal.pipelineBindPoint, shaderInternal.pipelineLayout, _firstSet,
+    commandBuffer.bindDescriptorSets(shaderInternal->pipelineBindPoint, shaderInternal->pipelineLayout, _firstSet,
                                      _descriptorSetCount, vkDescriptorSet, _dynamicOffsetCount, _pDynamicOffsets);
 }
 

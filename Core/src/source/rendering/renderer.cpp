@@ -216,7 +216,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 
 		
 		shader->BindDescriptorSet(m_CommandBuffer->handle, 1, 1,
-			&it->material->descriptorSetHandle, 0, nullptr);
+			&it->material->descriptorSetHandle[m_CurrentImage], 0, nullptr);
 		
 		Tbx::Matrix4x4f transformMatrix;
 		Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);
@@ -284,7 +284,7 @@ void Renderer::InitCommandPools()
 void Renderer::InitDescriptors()
 {
 	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	shader->CreateDescriptorSet(descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
+	shader->CreateDescriptorSet(0, descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
