@@ -1,6 +1,5 @@
 ﻿#include "rendering/buffer/vertex_buffer.hpp"
 
-#include "OBJ_Loader.h"
 #include "rendering/render_harware_interface/RHI.hpp"
 
 PC_CORE::VertexBuffer::VertexBuffer(VertexBuffer&& _other) noexcept

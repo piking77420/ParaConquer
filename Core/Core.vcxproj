@@ -318,7 +318,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);lua54.lib;RapidXML.lib;glfw3.lib;VulkanAPI.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories);$(ExecutablePath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories);$(ExecutablePath);$(OutDir)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalDependencies>RapidXML.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
@@ -327,6 +327,9 @@
     <PreBuildEvent>
       <Command>copy $(ProjectDir)src\externals\dll\lua54.dll $(OutDir)</Command>
     </PreBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -375,7 +378,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);lua54.lib;RapidXML.lib;glfw3.lib;VulkanAPI.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories);$(ExecutablePath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories);$(ExecutablePath);$(OutDir)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalDependencies>RapidXML.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>
@@ -385,6 +388,9 @@
       <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
 </Command>
     </PreBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

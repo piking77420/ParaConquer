@@ -152,6 +152,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
@@ -160,6 +161,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -201,11 +203,17 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;vulkan-1.lib;SPIRV-Tools-opt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;;shaderc.lib;glslang.lib;shaderc_util.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;spirv-reflect-static.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;MachineIndependent.lib;GenericCodeGen.lib;gmock.lib;SPVRemapper.lib;SPIRV-Tools-opt.lib;;shaderc.lib;glslang.lib;shaderc_util.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;SPIRV-Tools-opt.lib;spirv-reflect-static.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -235,7 +243,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions);SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;;SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -249,11 +257,17 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;vulkan-1.lib;SPIRV-Tools-opt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;;spirv-reflect-static.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;MachineIndependent.lib;GenericCodeGen.lib;gmock.lib;SPVRemapper.lib;;spirv-reflect-static.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

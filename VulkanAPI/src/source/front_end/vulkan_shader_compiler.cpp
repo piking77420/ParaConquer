@@ -132,6 +132,7 @@ void Vulkan::VulkanShaderCompiler::CreateModuleFromSource(vk::Device _device, co
 
     glslang_shader_delete(shader);
     glslang_program_delete(program);
+
 }
 
 std::string Vulkan::VulkanShaderCompiler::IncludePath(const std::string& source, const std::filesystem::path& path)

@@ -10,11 +10,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.frag" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.frag" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.vert" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.vert" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/externals/lib/Release/RapidXML.lib" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/externals/lib/Release/RapidXML.lib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/buffer/vertex_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/buffer/vertex_buffer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/externals/release/SPIRV-Tools.lib" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/externals/release/SPIRV-Tools.lib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/externals/release/glslang.lib" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/externals/release/glslang.lib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/externals/release/spirv-reflect-static.lib" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/externals/release/spirv-reflect-static.lib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_compiler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_compiler.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imgui.ini" beforeDir="false" afterPath="$PROJECT_DIR$/imgui.ini" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -2329,6 +2332,7 @@
       <workItem from="1731001454759" duration="424000" />
       <workItem from="1731001916265" duration="10299000" />
       <workItem from="1731240743427" duration="23917000" />
+      <workItem from="1731310197203" duration="1241000" />
     </task>
     <servers />
   </component>
