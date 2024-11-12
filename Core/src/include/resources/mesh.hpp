@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "resource.hpp"
-#include "rendering/vertex.hpp"
-#include "rendering/vulkan/vulkan_index_buffer.hpp"
-#include "rendering/vulkan/vulkan_vertex_buffer.hpp"
+#include "Resource.hpp"
+#include "rendering/buffer/index_buffer.hpp"
+#include "rendering/buffer/vertex_buffer.hpp"
+#include "rendering/render_harware_interface/vertex.hpp"
 
 BEGIN_PCCORE
-class Mesh : public IResource
+class Mesh : public Resource
 {
 public:
 
@@ -26,19 +26,19 @@ public:
       };
 
 
-    VulkanVertexBuffer vulkanVertexBuffer;
+    VertexBuffer vertexBuffer;
 
-    VulkanIndexBuffer vulkanIndexBuffer;
+    IndexBuffer indexBuffer;
 
     MeshFormat meshFormat;
     
-    ~Mesh() override;
+    PC_CORE_API Mesh(const fs::path& _path);
+
+    PC_CORE_API ~Mesh() override;
     
-    void Load(const fs::path& path) override;
+    PC_CORE_API uint32_t GetNbrOfVerticies() const;
 
-    uint32_t GetNbrOfVerticies() const;
-
-    uint32_t GetNbrOfIndicies() const;
+    PC_CORE_API uint32_t GetNbrOfIndicies() const;
 
 
 private:
@@ -47,9 +47,6 @@ private:
     uint32_t nbrOfVertices = 0;
 
     uint32_t nbrOfIndices = 0;
-
-
-
 };
 
 END_PCCORE

@@ -100,7 +100,7 @@ void Skydom::Generate(int32_t _nbrOfRows, int32_t _nbrOfCols, float radius)
 
 void Skydom::Destroy()
 {
-    m_VulkanVertexBuffer.Destroy();
+    //m_VulkanVertexBuffer.Destroy();
 }
 
 // Spherical Mapping with Normals

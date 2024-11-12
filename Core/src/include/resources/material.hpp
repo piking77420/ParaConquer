@@ -2,9 +2,15 @@
 
 #include "core_header.hpp"
 #include "texture.hpp"
+#include "rendering/render_harware_interface/descriptor_set.hpp"
+
+#define MATERIAL_SET 1
 
 BEGIN_PCCORE
-class Material : public IResource
+
+// TO DO HANDLE DYNAMIC UNIFORM BUFFER
+
+class Material : public Resource
 {
 public:
     Texture* albedo = nullptr;
@@ -20,14 +26,18 @@ public:
     Tbx::Vector3f emmisive = {};
     
     float ambiantOcculusion = 0.f;
-    
-    void WriteFile(const fs::path& path) override;
 
-    ~Material() override;
+    PC_CORE_API void Build();
     
-    void Load(const fs::path& path) override;
+    PC_CORE_API void WriteFile(const fs::path& _path) override;
 
-    void Load(std::vector<Texture*> textures);
+    PC_CORE_API Material(const fs::path& _path);
+
+    PC_CORE_API ~Material() override;
+    
+    PC_CORE_API void Load(std::vector<Texture*> textures);
+    
+    DescriptorSetHandle descriptorSetHandle = nullptr;
 
 };
 

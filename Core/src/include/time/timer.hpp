@@ -31,13 +31,13 @@ public:
         long long elapsed_ms = 0;
     };
     
-    static inline std::vector<TimePass> timePasses;
+    PC_CORE_API static inline std::vector<TimePass> timePasses;
 
-    static void StartTimer(const char* name);
+    PC_CORE_API static void StartTimer(const char* name);
 
-    static void EndTimer();
+    PC_CORE_API static void EndTimer();
 
-    static void Clear();
+    PC_CORE_API static void Clear();
 
     
 private:

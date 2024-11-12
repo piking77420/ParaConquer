@@ -1,21 +1,19 @@
 ﻿#pragma once
 
-#include "component.hpp"
 #include "core_header.hpp"
 #include "resources/material.hpp"
 #include "resources/mesh.hpp"
+#include "ecs/ecs_front.h"
 
 BEGIN_PCCORE
-class StaticMesh
+struct StaticMesh : public Component
 {
-public:
-
-    MAKE_COMPONENT(StaticMesh)
 
     Mesh* mesh = nullptr;
 
-    const Material* material = nullptr ;
+    Material* material  = nullptr ;
     
 };
+REFLECT(StaticMesh, Component)
 
 END_PCCORE

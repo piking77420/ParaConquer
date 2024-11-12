@@ -21,7 +21,7 @@ void SceneButton::OnEdit()
     PC_CORE::World& world = m_Editor->world;
 
     const std::string buttonName = world.run ? "Reset" : "Play";
-
+    
     ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f);
     if (ImGui::Button(buttonName.c_str()))
     {

@@ -1,27 +1,32 @@
 ﻿#pragma once
 
-#include "component.hpp"
 #include "core_header.hpp"
-#include "reflection/reflector.hpp"
+#include "ecs/ecs_front.h"
 #include "math/quaternion.hpp"
 #include "math/toolbox_typedef.hpp"
 
 BEGIN_PCCORE
-class Transform
-{
-public:
-    MAKE_COMPONENT(Transform)
 
-    Entity parentId = NULL_ENTITY;
-    
+
+struct Transform : Component
+{
+    EntityId parentId = INVALID_ENTITY_ID;
+
     Tbx::Vector3f position;
 
     Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
 
     Tbx::Vector3f scale = 1.f;
-}; 
-REFLECT(Transform, position)
-REFLECT(Transform, rotation)
-REFLECT(Transform, scale)
+
+    // tmpr
+    Tbx::Vector3f localPosition;
+
+    Tbx::Vector3f localRotation;
+};
+
+REFLECT(Transform, Component)
+REFLECT_MEMBER(Transform, position)
+REFLECT_MEMBER(Transform, rotation)
+REFLECT_MEMBER(Transform, scale)
 
 END_PCCORE

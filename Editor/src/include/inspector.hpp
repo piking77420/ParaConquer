@@ -2,13 +2,13 @@
 
 #include "edit_world_window.hpp"
 #include "reflection/reflection_typedef.hpp"
-#include "world/world_header_typedef.hpp"
+#include "world/scene.hpp"
 
 BEGIN_EDITOR_PCCORE
     class Inspector : public EditorWindow
 {
 public:
-    ~Inspector() override = default;
+    ~Inspector() override ;
     
     void Update() override;
 
@@ -19,9 +19,13 @@ private:
 
     void OnInput();
 
-    void ShowReflectedType(void* begin,const PC_CORE::ReflectionType& reflection);
+    void ShowReflectedType(void* begin, const PC_CORE::Members& _members);
 
-    void DeleteButton(Entity _entity, uint32_t _componentId);
+    void DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId);
+
+    void PrintArray(void* begin, const PC_CORE::Members& _members);
+
+    std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
 };
 
 END_EDITOR_PCCORE

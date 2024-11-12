@@ -1,33 +1,46 @@
 ﻿#pragma once
 
+#include <vulkan/vulkan_core.h>
+
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "rendering/camera.hpp"
-#include "rendering/vulkan/vulkan_viewport.hpp"
+#include "rendering/frame_buffer.hpp"
+#include "rendering/rendering_typedef.h"
+#include "rendering/render_harware_interface/descriptor_set.hpp"
+#include "resources/texture.hpp"
+
 
 BEGIN_EDITOR_PCCORE
-
-class WorldViewWindow : public EditorWindow
+    class WorldViewWindow : public EditorWindow
 {
 public:
     PC_CORE::Camera camera;
 
     uint32_t viewportId = -1;
-
-    std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
-    
-    const PC_CORE::ViewPort* viewPort = nullptr;
     
     explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 
-    ~WorldViewWindow() override;
+    ~WorldViewWindow() override = default;
     
     void Update() override;
     
     void Render() override;
 
 
-public:
+private:
+
+    std::vector<PC_CORE::Texture> viewPortImage;
+
+    std::vector<PC_CORE::FrameBuffer> m_FrameBuffers;
+    
+    std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
+
+    std::vector<PC_CORE::DescriptorPoolHandle> descritptorSet;
+    
+    PC_CORE::Texture m_DepthTexture;
+    
+    void ResizeViewports();
 };
 
 END_EDITOR_PCCORE

@@ -4,7 +4,8 @@
 
 #include "core_header.hpp"
 #include "guid.hpp"
-#include "resource.hpp"
+#include "log.hpp"
+#include "Resource.hpp"
 
 BEGIN_PCCORE
 class ResourceManager
@@ -14,15 +15,18 @@ public:
 
     ~ResourceManager() = delete;
 
-    static void Init();
+    PC_CORE_API static void InitPath();
 
-    static void Destroy();
+    PC_CORE_API static void Destroy();
 
     template<class T>
-    static T* CreateAndLoad(const fs::path& path);
+    static T* Create(const fs::path& path);
 
     template<class T>
     static void Add(const std::string& _name,T* _resource);
+
+    template<class T>
+    static void Add(T* _resource);
     
     template<class T>
     static T* Get(const std::string& _name);
@@ -37,28 +41,32 @@ private:
         std::string name = {};
     };
     
-    static inline std::map<fs::path, IResource*> m_ResourcesMap;
+    PC_CORE_API static inline std::map<fs::path, Resource*> m_ResourcesMap;
 };
 
 template <class T>
-T* ResourceManager::CreateAndLoad(const fs::path& path)
+T* ResourceManager::Create(const fs::path& path)
 {
-    static_assert(std::is_base_of_v<IResource,T>,"T is not a resource");
+    static_assert(std::is_base_of_v<Resource,T>,"T is not a resource");
     
-    T* newR = new T;
-    newR->Load(path);
-    
-    
+    T* newR = new T(path);
+   
     m_ResourcesMap.emplace(path,newR);
 
     return newR;
 }
 
 template <class T>
-void ResourceManager::Add(const std::string& _name,T* _resource)
+void ResourceManager::Add(const std::string& _name, T* _resource)
 {
     _resource->name = _name;
     m_ResourcesMap.emplace(_name,_resource);
+}
+
+template <class T>
+void ResourceManager::Add(T* _resource)
+{
+    m_ResourcesMap.emplace(_resource->name, _resource);
 }
 
 template <class T>
@@ -69,6 +77,8 @@ T* ResourceManager::Get(const std::string& _name)
         if (it->second->name == _name)
             return reinterpret_cast<T*>(it->second);
     }
+    PC_LOGERROR("There is no resource with this name " + _name);
+    
    return nullptr;
 }
 

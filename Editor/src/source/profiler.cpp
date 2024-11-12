@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "editor.hpp"
-#include "Imgui/imgui.h"
 #include "time/timer.hpp"
 
 PC_EDITOR_CORE::Profiler::Profiler(Editor& _editor, const std::string& _name) : EditorWindow(_editor,_name)
@@ -19,7 +18,7 @@ void PC_EDITOR_CORE::Profiler::Update()
     
     ImGui::Begin("Profiler");
 
-    ImGui::Text("Fps : %.2f", m_Editor->io->Framerate);
+    ImGui::Text("Fps : %.2f", ImGui::GetIO().Framerate);
 
     for (size_t i = 0; i < timers.size(); ++i)
     {

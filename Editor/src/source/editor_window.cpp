@@ -1,6 +1,5 @@
 ﻿#include "editor_window.hpp"	
 
-#include "Imgui/imgui.h"
 
 using namespace PC_EDITOR_CORE;
 
@@ -23,6 +22,7 @@ void EditorWindow::End()
 
 void EditorWindow::GetInfo()
 {
+    
     resize = false;
     ImVec2 imPos = ImGui::GetWindowPos();
     ImVec2 imSize = ImGui::GetWindowSize();

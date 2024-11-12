@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include "core_header.hpp"
 #include "app.hpp"
 #include "editor.hpp"
 #include "math/utils.hpp"
@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
     editor.Init();
     editor.Run();
     editor.Destroy();
+    
     
     return 0;
 }

@@ -1,10 +1,7 @@
 
-
 #define MAX_POINTLIGHT_COUNT  10
 #define MAX_SPOTLIGHT_COUNT   10
 #define MAX_DIRLIGHT_COUNT    1
-
-
 
 struct GpuDirLight
 {

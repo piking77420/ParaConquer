@@ -2,7 +2,7 @@
 
 #include "editor_header.hpp"
 #include "world_view_window.hpp"
-#include "input/low_pass_filter.hpp"
+#include "io/low_pass_filter.hpp"
 
 BEGIN_EDITOR_PCCORE
 class EditWorldWindow : public WorldViewWindow

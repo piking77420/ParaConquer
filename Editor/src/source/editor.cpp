@@ -7,14 +7,14 @@
 #include "profiler.hpp"
 #include "scene_button.hpp"
 #include "world_view_window.hpp"
-#include "Imgui/imgui.h"
-#include "Imgui/imgui_impl_vulkan.h"
-#include "physics/rigid_body.hpp"
-#include "physics/sphere_collider.hpp"
-#include "resources/resource_manager.hpp"
-#include "rendering/light.hpp"
+#include "resources/material.hpp"
 #include "time/core_time.hpp"
-
+#include <resources/resource_manager.hpp>
+#include "rendering/light.hpp"
+#include "io/core_io.hpp"
+#include "io/imgui_context.h"
+#include "physics/rigid_body.hpp"
+#include "world/static_mesh.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -23,12 +23,11 @@ using namespace PC_CORE;
 void Editor::Init()
 {
     App::Init();
-    io = &ImGui::GetIO();
+    World::currentWorld = &world;
     InitEditorWindows();
-
-
     InitMaterial();
     InitTestScene();
+    PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 }
 
 void Editor::Destroy()
@@ -36,60 +35,73 @@ void Editor::Destroy()
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
+    PC_CORE::IMGUIContext::Destroy();
     App::Destroy();
 }
 
 
 void Editor::InitMaterial()
 {
-    
+    /*
     Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
     Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
     Material* material = new Material;
     material->Load({emerauldBlock});
     ResourceManager::Add<Material>("baseMaterial", material);
+
     Material* material2 = new Material;
     material2->Load({diamondtexture});
-    ResourceManager::Add<Material>("baseMaterial2", material2);
+    ResourceManager::Add<Material>("baseMaterial2", material2);*/
+    
 }
 
+void Editor::RotateCube()
+{
+    
+    if (!world.run)
+        return;
+
+    for (auto& entity : world.scene.m_Entities)
+    {
+        if (entity.ecsId == INVALID_ENTITY_ID)
+            continue;
+
+        Transform* transform = world.scene.GetComponent<Transform>(&entity);
+        float time = static_cast<float>(Time::GetTime());
+        float x = std::cos(time);
+        float y = std::sin(time);
+        float z = std::cos(time);
+        transform->rotation = Tbx::Quaternionf::FromEuleur({x,y,z});
+    }
+   
+}
+
+void Editor::UpdateEditorWindows()
+{
+    dockSpace.BeginDockSpace();
+
+    for (EditorWindow* editorWindow : m_EditorWindows)
+    {
+        editorWindow->Begin();
+        editorWindow->Update();
+        editorWindow->End();
+    }
+    dockSpace.EndDockSpace();
+}
 
 void Editor::InitTestScene()
 {
-    
-    const Material* material = ResourceManager::Get<Material>("baseMaterial");
-    const Material* material2 = ResourceManager::Get<Material>("baseMaterial2");
 
-    for (size_t i = 0; i < 1; i++)
+    Scene& scene = world.scene;
+    for (size_t i = 0; i < 2; i++)
     {
-        // Ball
-        const Entity entity = world.scene.CreateEntity();
-        world.scene.GetEntityInternal(entity)->name = "cubeOid" + std::to_string(i);
-        Transform* trans = world.scene.AddComponent<Transform>(entity);
-        trans->position = {-5 + 4.f * i, 4.f, 0.f};
-    
-        StaticMesh* staticMesh = world.scene.AddComponent<StaticMesh>(entity);
-        staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
-        staticMesh->material = material;
-        world.scene.AddComponent<BoxCollider>(entity);
-        world.scene.AddComponent<RigidBody>(entity);
-        //
+        Entity* cube = scene.CreateEntity("cube " + std::to_string(i));
+        scene.AddComponent<Transform>(cube);
+        scene.AddComponent<RigidBody>(cube);
+        StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
+        mesh->mesh = ResourceManager::Get<Mesh>("untitled.obj");
     }
-    /*
     
-    
-    const Entity entity3 = world.scene.CreateEntity();
-    world.scene.AddComponent<Transform>(entity3);
-    auto dir = world.scene.AddComponent<DirLight>(entity3);
-    world.scene.GetEntityInternal(entity3)->name = "DirectionalLight";
-    dir->intensity = 4.f;
-
-    const Entity plane = world.scene.CreateEntity();
-    Transform* ptr = world.scene.AddComponent<Transform>(plane);
-    StaticMesh* staticMesh = world.scene.AddComponent<StaticMesh>(plane);
-    staticMesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
-    staticMesh->material = material2;
-    ptr->scale = {20, 1, 20};*/
 }
 
 void Editor::DestroyTestScene()
@@ -97,44 +109,42 @@ void Editor::DestroyTestScene()
     physicsWrapper.DestroyBodies(&world.scene);
     world.scene.~Scene();
     world.scene = Scene();
+    m_Selected = nullptr;
+   
+
+    
+    //ResourceManager::Delete<Material>("baseMaterial");
+    //ResourceManager::Delete<Material>("baseMaterial2");
 }
 
 void Editor::Run()
 {
-    while (!windowHandle.ShouldClose())
+    while (!window.ShouldClose())
     {
-        const World* currentWorld = World::world;
-        windowHandle.PoolEvents();
+        coreIo.PoolEvent();
+        window.PoolEvents();
+        PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
-        HandleResize();
         
-        vulkanImgui.NewFrame();
+        renderer.BeginFrame();
+       
+        UpdateEditorWindows();
 
-        if (currentWorld != nullptr)
-            renderer.BeginFrame(*currentWorld);
-
-        for (EditorWindow* editorWindow : m_EditorWindows)
-        {
-            editorWindow->Begin();
-            editorWindow->Update();
-            editorWindow->End();
-        }
-
-        if (World::world != nullptr)
-        {
+        RotateCube();
+        if (World::currentWorld)
             WorldLoop();
-            renderer.UpdateWorldBuffers();
-        }
-            
 
         for (EditorWindow* editorWindow : m_EditorWindows)
-        {
             editorWindow->Render();
-        }
-        vulkanImgui.EndFrame();
+        
+        
+        
+        PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
+        renderer.EndRender();
         renderer.SwapBuffers();
     }
-   renderer.WaitGPU();
+
+    renderer.WaitDevice();
 }
 
 void Editor::InitEditorWindows()
@@ -146,4 +156,3 @@ void Editor::InitEditorWindows()
     m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
     m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
 }
-

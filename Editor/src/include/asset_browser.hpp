@@ -2,10 +2,10 @@
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "core_header.hpp"
-#include "resources/resource.hpp"
+#include "resources/Resource.hpp"
 
 BEGIN_EDITOR_PCCORE
-    class AssetBrowser : public EditorWindow
+class AssetBrowser : public EditorWindow
 {
 public:
     AssetBrowser(Editor& _editor, const std::string& _name);

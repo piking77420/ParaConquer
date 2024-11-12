@@ -1,13 +1,23 @@
 ﻿#pragma once
 #include "core_header.hpp"
+#include <vector>
 
 BEGIN_PCCORE
 
-enum class DataType
+
+using CreateFunc = void (*)(void*);
+using DeleteFunc = void (*)(void*);
+using SerializeFunc = std::string (*)(const void*);
+using DerializeFunc = void (*)(void*, const std::string&);
+
+enum class DataNature
 {
-    UNKNOW,
+    UNKNOWN,
+    CHAR,
     BOOL,
     INT,
+    VEC2I,
+    VEC3I,
     UINT,
     FLOAT,
     DOUBLE,
@@ -15,30 +25,68 @@ enum class DataType
     VEC3,
     VEC4,
     QUAT,
+    RESOURCE,
+    STRING,
     
-    COUT
+    COUNT
 };
 
-enum class ReflectionFlag
+enum TypeFlag
 {
+    NONEFlAG,
+    COMPOSITE,  // Composite of trivial type
+    ARRAY,      // An array
+    VECTOR, // An vector
+    POINTER     // A pointer to an object
+};
+
+struct ArrayInfo
+{
+    uint32_t typeKeyOfTheArray;
+    size_t sizeOfTheArray;
+};
+
+struct TypeInfo
+{
+    DataNature dataNature;
+    uint32_t typeInfoFlags;  // Flags that represent different type properties
+    ArrayInfo arrayInfo;
+};
+
+enum MemberEnumFlag
+{
+    NONE,
+    NOTSERIALIZE,
     COLOR,
-    SLIDERANGLES
 };
 
-struct MemberDescriptor
+struct Members
 {
-    size_t nbr;
-    DataType type;
+    uint32_t typeKey = 0;
+    std::string membersName;
+    size_t offset = 0;
+    uintmax_t enumFlag = 0;
 };
-
-
-
-struct ReflectionType
+    
+struct ReflectedType
 {
-    const char* name = {};
-    size_t size = {};
-    size_t offset = {};
-    DataType datatype = DataType::UNKNOW;
+    uint32_t HashKey;
+    TypeInfo typeInfo;
+    
+    std::string name;
+    size_t typeSize;
+    
+    std::vector<Members> members;
+    // Dont Support MultiHirietence
+    std::vector<uint32_t> inheritenceKey;
+    
+    CreateFunc createFunc = nullptr;
+    DeleteFunc deleteFunc = nullptr;
+    
+    SerializeFunc serializeFunc = nullptr;
+    
 };
+
+
 
 END_PCCORE

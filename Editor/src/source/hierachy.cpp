@@ -1,7 +1,6 @@
 ﻿#include "hierachy.hpp"
 
 #include "editor.hpp"
-#include "Imgui/imgui.h"
 #include "world/transform.hpp"
 #include "world/world.hpp"
 
@@ -20,38 +19,31 @@ void Hierachy::Update()
 
 void Hierachy::ShowGraph()
 {
-    
-    if (PC_CORE::World::world == nullptr)
-        return;
-    
-    PC_CORE::World& world = *PC_CORE::World::world;
-    const PC_CORE::Scene& scene = world.scene;
+    PC_CORE::World& world = m_Editor->world;
+    PC_CORE::Scene& scene = world.scene;
 
-    const std::vector<PC_CORE::Transform>* transforms = nullptr;
-    scene.GetComponentData<PC_CORE::Transform>(&transforms);
+   
+    std::vector<PC_CORE::Transform>& transforms = *scene.GetData<PC_CORE::Transform>();
 
     bool hasSelected = false;
     
-    for (size_t i = 0 ; i < transforms->size(); i++)
+    for (PC_CORE::Transform& transform : transforms)
     {
-        if (!PC_CORE::IsValid(transforms->at(i).componentHolder))
-            continue;
-
-        auto entityInternal = world.scene.GetEntityInternal(transforms->at(i).componentHolder.entityID);
-            
-        if (ImGui::Button(entityInternal->name.c_str()))
+        PC_CORE::Entity* entity = scene.GetEntityFromId(transform.entityId);
+        
+        if (ImGui::Button(entity->name.c_str()))
         {
-            m_Editor->selected = static_cast<uint32_t>(i);
+            m_Editor->m_Selected = entity;
             hasSelected = true;
         }
-        
     }
 
     if (!hasSelected)
     {
+        
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowFocused())
         {
-            m_Editor->selected = NULL_ENTITY;
+            m_Editor->m_Selected = nullptr;
         }
     }
     

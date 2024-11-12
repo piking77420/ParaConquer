@@ -7,13 +7,13 @@ BEGIN_PCCORE
 class Time
 {
 public:
-    static float GetTime();
+    PC_CORE_API static float GetTime();
 
-    static float DeltaTime();
+    PC_CORE_API static float DeltaTime();
 
-    static void UpdateTime();
+    PC_CORE_API static void UpdateTime();
 
-    static void Init();
+    PC_CORE_API static void Init();
 
 private:
     static inline double currentTime = 0.f;

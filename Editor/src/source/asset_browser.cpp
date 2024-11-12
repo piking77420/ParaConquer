@@ -3,7 +3,6 @@
 using namespace PC_EDITOR_CORE;
 
 
-
 AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
     m_BasePath = std::filesystem::path("assets");
@@ -18,6 +17,7 @@ void PC_EDITOR_CORE::AssetBrowser::Update()
 
 void AssetBrowser::RenderBrowser()
 {
+    
     float columnSpacing = 100;
     float padding = 16.f;
     float thumbailSize = 64;
@@ -27,8 +27,7 @@ void AssetBrowser::RenderBrowser()
     int colomnCount = (int)(panelwidht / cellsize);
     if (colomnCount < 1)
         colomnCount = 1;
-
-
+    
     if (m_CurrenPath == m_BasePath)
     {
 
@@ -38,8 +37,6 @@ void AssetBrowser::RenderBrowser()
         m_CurrenPath = m_CurrenPath.parent_path();
     }
 
-
-
     ImGui::Columns(colomnCount, 0, false);
 
     for (auto& entry : fs::directory_iterator(m_CurrenPath))
@@ -47,10 +44,7 @@ void AssetBrowser::RenderBrowser()
         const auto& path = entry.path();
         auto relative = path.relative_path();
         std::string name = relative.filename().string();
-
-        //if (IsThisFormat(entry, ".metaData"))
-          //  continue;
-
+        
         if (entry.is_directory())
         {
 
@@ -67,7 +61,7 @@ void AssetBrowser::RenderBrowser()
             if (ImGui::Button(name.c_str(), { thumbailSize,thumbailSize }))
             {
                 std::string ressourcename = path.filename().generic_string();
-                //app.InspectorCurrentindow = app.m_Ressources->GetElement<InspectorSelectable>(ressourcename);
+              
             }
             ImGui::Text(name.c_str());
         }
@@ -76,5 +70,5 @@ void AssetBrowser::RenderBrowser()
     }
 
     ImGui::Columns(1);
-
+    
 }

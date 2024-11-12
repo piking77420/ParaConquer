@@ -12,13 +12,15 @@ using namespace PC_CORE;
 
 void PhysicsWrapper::InitBodies(Scene* _scene)
 {
+    //TODO MAKE PHYSCIS WORK AGAIN
+    /*
     InitSphereCollider(_scene);
     InitBoxCollider(_scene);
     std::vector<BoxCollider>* sphereColliders = nullptr;
     _scene->GetComponentData<BoxCollider>(&sphereColliders);
     const Tbx::Vector3f force = {-1000,1000,1000};
     AddForce(sphereColliders->at(0).body_Id, {1000,1,1000});
-    AddTorque(sphereColliders->at(0).body_Id, force);
+    AddTorque(sphereColliders->at(0).body_Id, force);*/
 }
 
 void PhysicsWrapper::UpdatePhysics(float _deltatime, Scene* _scene)
@@ -77,8 +79,9 @@ PhysicsWrapper::~PhysicsWrapper()
 
 void PhysicsWrapper::InitSphereCollider(Scene* scene)
 {
-    std::vector<SphereCollider>* sphereColliders = nullptr;
-    scene->GetComponentData<SphereCollider>(&sphereColliders);
+    /*
+    //std::vector<SphereCollider>* sphereColliders = nullptr;
+    //scene->GetComponentData<SphereCollider>(&sphereColliders);
 
     for (SphereCollider& s : *sphereColliders)
     {
@@ -115,11 +118,12 @@ void PhysicsWrapper::InitSphereCollider(Scene* scene)
         
         s.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
     }
-
+*/
 }
 
 void PhysicsWrapper::InitBoxCollider(Scene* _scene)
 {
+    /*
     std::vector<BoxCollider>* boxCollider = nullptr;
     _scene->GetComponentData<BoxCollider>(&boxCollider);
 
@@ -160,10 +164,12 @@ void PhysicsWrapper::InitBoxCollider(Scene* _scene)
         
         box.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
     }
+    */
 }
 
 void PhysicsWrapper::DestroyBodies(Scene* _scene)
 {
+    /*
     std::vector<SphereCollider>* sphereColliders = nullptr;
     _scene->GetComponentData<SphereCollider>(&sphereColliders);
     std::vector<BoxCollider>* boxCollider = nullptr;
@@ -184,11 +190,12 @@ void PhysicsWrapper::DestroyBodies(Scene* _scene)
         
         physicsEngine.DestroyBody(box.body_Id);
     }
-    
+    */
 }
 
 void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
 {
+    /*
     std::vector<SphereCollider>* sphereColliders = nullptr;
     _scene->GetComponentData<SphereCollider>(&sphereColliders);
     for (const SphereCollider& s : *sphereColliders)
@@ -228,7 +235,7 @@ void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
         transform->position = newPos;
         transform->rotation = newRot;
 
-    }
+    }*/
 
 }
 

@@ -1,16 +1,16 @@
 ﻿#pragma once
 
 #include "app.hpp"
+#include "dock_space.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
-#include "Imgui/imgui.h"
 #include "world/transform.hpp"
+#include "reflection/reflector.hpp"
 
 BEGIN_EDITOR_PCCORE
 
 
-
-class Editor : public PC_CORE::App
+class Editor :  public PC_CORE::App
 {
 public:
     void Init() override;
@@ -31,11 +31,15 @@ public:
 
     void InitMaterial();
 
-    std::vector<EditorWindow*> m_EditorWindows;
-    
-    ImGuiIO* io = nullptr;
+    void RotateCube();
 
-    Entity selected = NULL_ENTITY;
+    void UpdateEditorWindows();
+    
+    std::vector<EditorWindow*> m_EditorWindows;
+
+    DockSpace dockSpace;
+    
+    PC_CORE::Entity* m_Selected = nullptr;
 };
 
 END_PCCORE

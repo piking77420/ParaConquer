@@ -1,0 +1,16 @@
+﻿#pragma once
+
+#include "vulkan_header.h"
+
+namespace Vulkan
+{
+    namespace Backend
+    {
+        vk::DescriptorPoolSize RhiToVkDescriptorPoolSize(const PC_CORE::DescriptorPoolSize& _descriptorPoolSize);
+
+        vk::DescriptorPool RhiToVkDescriptorPool(vk::Device _device, const PC_CORE::DescriptorPoolSize* desciptorPoolSize, uint32_t _descriptorCount, uint32_t _maxSets);
+
+        void DestroyDescriptorPool(vk::Device _device, vk::DescriptorPool _descriptorPool);
+
+    }
+}

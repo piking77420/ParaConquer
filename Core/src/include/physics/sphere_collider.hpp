@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "ecs/component.h"
 #include "reflection/reflector.hpp"
-#include "world/component.hpp"
 
 BEGIN_PCCORE
-struct SphereCollider
+
+struct SphereCollider : public Component
 {
-    MAKE_COMPONENT(SphereCollider)
 
     uint32_t body_Id = -1;
 
@@ -22,9 +22,10 @@ struct SphereCollider
     Tbx::Vector3f center;
 };
 
-REFLECT(SphereCollider, center)
-REFLECT(SphereCollider, drawAABB)
-REFLECT(SphereCollider, draw)
-REFLECT(SphereCollider, radius)
+REFLECT(SphereCollider,Component)
+REFLECT_MEMBER(SphereCollider, center)
+REFLECT_MEMBER(SphereCollider, drawAABB)
+REFLECT_MEMBER(SphereCollider, draw)
+REFLECT_MEMBER(SphereCollider, radius)
 
 END_PCCORE

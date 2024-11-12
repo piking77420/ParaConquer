@@ -1,57 +1,130 @@
 ﻿#include "world_view_window.hpp"
 
 #include "editor.hpp"
-#include "Imgui/imgui.h"
+#include "vulkan_header.h"
+#include "time/core_time.hpp"
 #include "Imgui/imgui_impl_vulkan.h"
-#include "rendering/vulkan/vulkan_interface.hpp"
+#include "rendering/render_harware_interface/RHI.hpp"
 
-using namespace PC_EDITOR_CORE; 
+#undef near
+#undef far
+
+using namespace PC_EDITOR_CORE;
 
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
-: EditorWindow(_editor,_name)
+    : EditorWindow(_editor, _name)
 {
-    viewportId = _editor.renderer.vulkanViewport.CreateViewPort(true);
-    m_ImaguiDescriptorSet.resize(PC_CORE::VulkanInterface::GetNbrOfImage());
-    
-    viewPort = &_editor.renderer.vulkanViewport.GetViewPort(viewportId);
-    
-    for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
-    {
-        m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
-            ,viewPort->forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    }
-    
+    m_ImaguiDescriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
+    viewPortImage.resize(MAX_FRAMES_IN_FLIGHT);
+    m_FrameBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 }
 
-WorldViewWindow::~WorldViewWindow()
-{
-    m_Editor->renderer.vulkanViewport.DestroyViewPort(viewportId);
-}
 
 void WorldViewWindow::Update()
 {
     EditorWindow::Update();
+    
+    
     if (resize)
     {
-        m_Editor->renderer.WaitGPU();
-        m_Editor->renderer.vulkanViewport.OnResize(viewportId, {static_cast<int>(size.x),static_cast<int>(size.y) } );
-        
-        for (size_t i = 0; i < m_ImaguiDescriptorSet.size(); i++)
-        {
-            ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
-            m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(PC_CORE::VulkanInterface::vulkanTextureSampler.defaultSampler.textureSampler
-                ,viewPort->forwardAttachments[i].colorImage.textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        }
+        m_Editor->renderer.WaitDevice();
+        ResizeViewports();        
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(m_ImaguiDescriptorSet.at(PC_CORE::VulkanInterface::GetCurrentFrame()), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 1), 
-            ImVec2(1, 0));
-
+    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
+    VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
+    
+    ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
+            ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()
 {
     EditorWindow::Render();
-    m_Editor->renderer.RenderViewPort(camera, viewportId, *PC_CORE::World::world);
+
+    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
+
+    const Tbx::Vector2ui windowSize = m_Editor->window.GetWindowSize();
+    PC_CORE::RenderingContext renderingContext;
+    renderingContext.lowLevelCamera =
+    {
+        .position = camera.position,
+        .front = camera.front,
+        .up = camera.up,
+        .aspect = m_Editor->window.GetAspect(),
+        .fov = camera.GetFOV(),
+        .near = camera.GetNear(),
+        .far = camera.GetFar(),
+        .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
+        
+    };
+    renderingContext.time = PC_CORE::Time::GetTime(); 
+    renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
+    renderingContext.frameBufferHandle = m_FrameBuffers.at(static_cast<size_t>(currentImage)).GetHandle();
+    renderingContext.renderingContextSize = size;
+
+    m_Editor->renderer.Render(renderingContext, m_Editor->world);
 }
+
+void WorldViewWindow::ResizeViewports()
+{
+
+    const PC_CORE::CreateTextureInfo depthCreateInfo =
+         {
+        .width = static_cast<int32_t>(size.x),
+       .height =  static_cast<int32_t>(size.y),
+       .depth = 1,
+       .mipsLevels = 1,
+       .imageType = PC_CORE::ImageType::TYPE_2D,
+       .format = PC_CORE::RHIFormat::D32_SFLOAT_S8_UINT,
+       .textureAspect = static_cast<PC_CORE::TextureAspect>(PC_CORE::TextureAspect::DEPTH | PC_CORE::TextureAspect::STENCIL),
+        .GenerateMipMap = false,
+        .useAsAttachement = true,
+        };
+  
+
+    m_DepthTexture = PC_CORE::Texture(depthCreateInfo);
+    
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        PC_CORE::CreateTextureInfo createTextureInfo =
+       {
+            .width = static_cast<int32_t>(size.x),
+           .height =  static_cast<int32_t>(size.y),
+           .depth = 1,
+           .mipsLevels = 1,
+           .imageType = PC_CORE::ImageType::TYPE_2D,
+           .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
+           .textureAspect = PC_CORE::TextureAspect::COLOR,
+            .GenerateMipMap = false,
+            .useAsAttachement = true,
+            };
+    
+        viewPortImage[i] = PC_CORE::Texture(createTextureInfo);
+
+        
+       
+            ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
+            m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(CastObjectToVkObject<vk::Sampler>(viewPortImage[i].GetSamplerHandle())
+                                            , CastObjectToVkObject<vk::ImageView>(viewPortImage[i].GetImageViewHandle()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        
+
+        const PC_CORE::FrameBufferCreateInfo frameBufferCreateInfo =
+            {
+            .renderTargets = {&viewPortImage[i], &m_DepthTexture},
+            .renderPass = &m_Editor->renderer.forwardRenderPass,
+            .width = static_cast<uint32_t>(size.x),
+            .height = static_cast<uint32_t>(size.y),
+            .layers = 1
+            };
+
+    
+        m_FrameBuffers[i] = PC_CORE::FrameBuffer(frameBufferCreateInfo);
+    }
+
+    
+ 
+   
+}
+

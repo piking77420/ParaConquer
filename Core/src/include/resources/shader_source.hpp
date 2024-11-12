@@ -1,38 +1,26 @@
 ﻿#pragma once
-#include "resource.hpp"
-
+#include "Resource.hpp"
+#include "rendering/render_harware_interface/rhi_typedef.h"
 
 BEGIN_PCCORE
-    class ShaderSource : public IResource
+
+class ShaderSource : public Resource
 {
 public:
-    enum class ShaderType 
-    {
-        VERTEX,
-        FRAGMENT,
-        GEOMETRY,
-        TESSELATION,
-        COMPUTE,
+    
+    ShaderStageType shaderType;
 
-        SHADERTYPEMAX
-    };
+    PC_CORE_API ShaderSource(const fs::path& _path);
 
-    static inline  std::array<std::string, 5> ShaderSourceFormat
-    {
-      ".vert",
-      ".frag",
-      ".geom",
-      ".tess",
-      ".comp"
-    };
-    
-    ShaderType shaderType;
-    
-    std::vector<char> data;
-    
-    void Load(const fs::path& _path) override;
+    std::vector<char> GetShaderSourceFile();
+
+    void WriteFile(const fs::path& path) override;
+
+    PC_CORE_API ~ShaderSource() override = default;
+
 private:
-
+    static std::vector<char> ReadFileAsChar(const std::string& _filename);
+    
 };
 
 END_PCCORE

@@ -1,147 +1,94 @@
 ﻿#pragma once
-#include "vulkan/vulkan_interface.hpp"
-#include <GLFW/glfw3.h>
+#include "core_header.hpp"
+#include "rendering_typedef.h"
+#include "render_pass.hpp"
+#include "buffer/index_buffer.hpp"
+#include "buffer/vertex_buffer.hpp"
+#include "buffer/uniform_buffer.hpp"
 
-#include "camera.hpp"
-#include "draw_gizmos.hpp"
-#include "draw_quad.hpp"
-#include "gpu_typedef.hpp"
-#include "../../source/rendering/skybox_render.h"
-#include "resources/mesh.hpp"
-#include "resources/texture.hpp"
-#include "vulkan/vulkan_descriptor_pool.hpp"
-#include "vulkan\vulkan_vertex_buffer.hpp"
-#include "vulkan/vulkan_descriptor_set_layout.hpp"
-#include "vulkan/vulkan_fence.hpp"
-#include "vulkan/vulkan_index_buffer.hpp"
-#include "vulkan/vulkan_pipeline.hpp"
-#include "vulkan/vulkan_pipeline_layout.hpp"
-#include "vulkan/vulkan_render_pass.hpp"
-#include "vulkan/vulkan_semaphore.h"
-#include "vulkan/vulkan_shader_stage.hpp"
-#include "vulkan/vulkan_shader_storage_buffer.hpp"
-#include "vulkan/vulkan_uniform_buffer.h"
-#include "vulkan/vulkan_viewport.hpp"
-#include "world/static_mesh.hpp"
-#include "world/transform.hpp"
+#include "front_end/vulkan_app.hpp"
+#include "render_harware_interface/command_pool.hpp"
+#include "render_harware_interface/descriptor_pool.hpp"
+
+#include "resources/shader_program.h"
 #include "world/world.hpp"
 
 BEGIN_PCCORE
+    class Window;
+
+
+struct RenderResources
+{
+    std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> sceneUniform;
+    SceneBufferGPU sceneBufferGPU;
+};
 
 class Renderer
 {
 public:
-    DrawQuad drawQuad;
+    static PC_CORE_API void RenderLog(LogType _logType, const char* _message);
+public:
 
-    SkyboxRender skyboxRender;
+    RenderPass forwardRenderPass;
 
-    VulkanViewport vulkanViewport;
+    RenderPass colorPass;
     
-    std::array<VulkanRenderPass,RenderPass::COUNT> renderPasses;
+    PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
+
+    PC_CORE_API void InitRenderResources();
     
-    std::vector<VulkanUniformBuffer> m_CameraBuffers;
+    PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::World& _world);
+
+    PC_CORE_API void BeginFrame();
+
+    PC_CORE_API void EndRender();
     
-    void Init(Window* _window);
-
-    void RecreateSwapChain(Window* _window);
-
-    void Destroy();
-
-    void BeginFrame(const World& world);
-
-    void RenderViewPort(const Camera& _camera,
-        const uint32_t viewPortId,const World& _world);
-        
-    void SwapBuffers();
-
-    void WaitGPU() const
-    {
-        vkDeviceWaitIdle(VulkanInterface::GetDevice().device);
-    }
+    PC_CORE_API void SwapBuffers();
     
-    VkCommandBuffer* GetCurrentCommandBuffer()
-    {
-        return &m_CommandBuffers[VulkanInterface::GetCurrentFrame()];
-    }
-    
-    void UpdateWorldBuffers();
+
+    PC_CORE_API void WaitDevice();
+
+    PC_CORE_API void Destroy();
+
+    PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
+
+    PC_CORE_API GraphicAPI GetGraphicsAPI();
 
 private:
-    struct AsyncObjet
-    {
-        std::vector<VulkanSemaphore> m_ImageAvailableSemaphore;
-        std::vector<VulkanSemaphore> m_RenderFinishedSemaphore;
-        std::vector<VulkanFence> m_InFlightFence;
-    };
-    uint32_t m_ImageIndex = 0;
 
-    AsyncObjet asyncObjet;
+    GraphicAPI m_GraphicApi = GraphicAPI::VULKAN;
     
-    std::vector<VkCommandBuffer> m_CommandBuffers;
+    size_t m_CurrentImage;
 
-    std::vector<VkCommandBuffer> m_ForwardCommandBuffers;
-
-    VulkanCommandPool fwdCommandPool;
+    CommandPool m_SwapChainCommandPool;
     
-    VulkanPipeline m_BasePipeline;
+    std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
+
+    RenderResources renderResources;
+
+    ShaderProgram* m_MainShader = nullptr;
+
+    Window* Windowtpr = nullptr;
     
-    VulkankPipelineLayout m_VkPipelineLayout;
-
-    VulkanDescriptorSetLayout m_DescriptorSetLayout;
-
-    VulkanDescriptorPool m_DescriptorPool;
-
-    VulkanShaderStage m_VulkanShaderStage;
-
-    CameraBuffer cameraBuffer;
+    CommandBuffer* m_CommandBuffer = nullptr;
     
-    std::vector<VulkanShaderStorageBuffer> m_ModelMatriciesShaderStorages;
+    Texture* texture = nullptr;
     
-    std::vector<VulkanShaderStorageBuffer> m_ShaderStoragesLight;
+    std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
     
-    std::vector<VkDescriptorSet> descriptorSets;
-    
-    GpuLight* m_GpuLights;
-    
-    const Camera* m_CurrentCamera = nullptr;
-    
-    const World* m_CurrentWorld = nullptr;
+    PC_CORE_API void InitCommandPools();
 
-    const ViewPort* m_CurrentViewport = nullptr;
-    
-    DrawGizmos drawGizmos;
+    PC_CORE_API void InitDescriptors();
 
-    void RenderSwapChain();
-    
-    void InitRenderPasses();
+    PC_CORE_API void InitShader();
 
-    void BeginCommandBuffer(VkCommandBuffer _commandBuffer, VkCommandBufferUsageFlags _usageFlags);
-    
-    void ForwardPass(VkCommandBuffer commandBuffer);
-    
-    void CreateBasicGraphiPipeline();
+    PC_CORE_API void InitBuffer();
 
-    void CreateAsyncObject();
+    PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
 
-    void DestroyAsyncObject();
+    PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
-    void CreateDescriptorSetLayout();
-
-    void UpdateCameraBuffer(uint32_t _currentFrame);
-
-    void UpdateLightBuffer(uint32_t _currentFrame);
-    
-    void CreateDescriptorSets();
-
-    void ComputeModelAndNormalInvertMatrix(uint32_t _currentFrame);
-
-    void DrawStatisMesh(VkCommandBuffer commandBuffer, uint32_t imageIndex, const StaticMesh& staticMesh,
-    const Transform& transform, const Entity& entity);
-
-
-    void InitBuffers();
-    
-    friend DrawGizmos;
+    PC_CORE_API void CreateForwardPass();
 };
 
 END_PCCORE

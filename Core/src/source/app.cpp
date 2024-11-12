@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "imgui.h"
 #include "log.hpp"
 #include "physics/sphere_collider.hpp"
 #include "rendering/light.hpp"
@@ -18,30 +17,30 @@ using namespace PC_CORE;
 void App::Init()
 {
     PC_LOG("App Init")
-    instance = this;
-    Time::Init();
-    World::world = &world;
-   
-    windowHandle.Init();
-    VulkanInterface::Init(&windowHandle);
-    ResourceManager::Init();
-    renderer.Init(&windowHandle);
-    vulkanImgui.Init(windowHandle);
+    // Can init without any depedancies
+    window = Window("Para Conquer Editor", "Icon/ParaConquerLogo.png");
+    renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
 
+    // Need other init in order to init
+    ResourceManager::InitPath();
+    renderer.InitRenderResources();
+    Time::Init();
+    
     world.LoadSkyBox();
 }
 
 void App::Destroy()
 {
     PC_LOG("App Destroy")
-    // TODO only use Destructor
+
     world.skybox.Destroy();
-    renderer.Destroy();
-    // Wait the device has been stop by the destroy render func
-    vulkanImgui.Destroy();
     ResourceManager::Destroy();
-    VulkanInterface::Destroy();
-    windowHandle.Destroy();
+    renderer.Destroy();
+}
+
+App::App()
+{
+    instance = this;
 }
 
 
@@ -80,18 +79,6 @@ void App::WorldLoop()
         physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
         world.Update();
     }
-    
     world.sceneGraph.UpdateMatrix(&world.scene);
 }
-
-void App::HandleResize()
-{
-    if (windowHandle.onResize)
-    {
-        windowHandle.OnResize();
-        renderer.RecreateSwapChain(&windowHandle);
-        windowHandle.onResize = false;
-    }
-}
-
 

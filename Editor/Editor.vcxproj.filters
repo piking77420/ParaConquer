@@ -18,7 +18,22 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\world_view_window.cpp">
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\crude_json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_canvas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_node_editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_node_editor_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\asset_browser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\dock_space.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\edit_world_window.cpp">
@@ -48,12 +63,33 @@
     <ClCompile Include="src\source\transform_gizmo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\asset_browser.cpp">
+    <ClCompile Include="src\source\world_view_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\include\world_view_window.hpp">
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\crude_json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_canvas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\asset_browser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\dock_space.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\edit_world_window.hpp">
@@ -86,8 +122,19 @@
     <ClInclude Include="src\include\transform_gizmo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\asset_browser.hpp">
+    <ClInclude Include="src\include\world_view_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="src\externals\include\ImguiNodeEditor\imgui_extra_math.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="src\externals\include\ImguiNodeEditor\imgui_node_editor_internal.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

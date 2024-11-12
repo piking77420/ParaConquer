@@ -2,7 +2,6 @@
 
 #include "editor_header.hpp"
 #include "editor_window.hpp"
-#include "Imgui/imgui.h"
 
 BEGIN_EDITOR_PCCORE
     class Profiler : public EditorWindow
