@@ -42,7 +42,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 	renderPassBeginInfo.renderArea.extend[1] = static_cast<int32_t>( _renderingContext.renderingContextSize.y);
 
 	std::array<ClearValue, 2> clearColor;
-	clearColor[0] = {0.0f, 0.0f, 0.0f, 1.0f};
+	clearColor[0] = {0.5f, 0.5f, 0.5f, 1.0f};
 	clearColor[1].clearDepthStencilValue = {1.0f, 0};
 	renderPassBeginInfo.pClearValues = clearColor.data();
 	renderPassBeginInfo.clearValueCount = clearColor.size();

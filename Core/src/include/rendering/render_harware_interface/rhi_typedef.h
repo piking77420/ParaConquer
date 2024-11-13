@@ -991,11 +991,10 @@ struct ClearDepthStencilValue
 
 };
 
-struct ClearValue
+union ClearValue
 {
     ClearValueColor clearValueColor;
     ClearDepthStencilValue clearDepthStencilValue;
-
 };
 
 struct BeginRenderPassInfo
