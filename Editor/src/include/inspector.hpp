@@ -3,6 +3,7 @@
 #include "edit_world_window.hpp"
 #include "reflection/reflection_typedef.hpp"
 #include "world/scene.hpp"
+#include "world/transform.hpp"
 
 BEGIN_EDITOR_PCCORE
     class Inspector : public EditorWindow
@@ -25,7 +26,11 @@ private:
 
     void PrintArray(void* begin, const PC_CORE::Members& _members);
 
+    void PrintTransform(PC_CORE::Transform* _transform);
+
     std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
+
+    const PC_CORE::ReflectedType* transfromTypeRef;
 };
 
 END_EDITOR_PCCORE

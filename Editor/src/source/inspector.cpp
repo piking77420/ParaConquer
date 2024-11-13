@@ -26,7 +26,7 @@ void Inspector::Update()
 
 Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-
+    transfromTypeRef = &PC_CORE::Reflector::GetType<PC_CORE::Transform>();
 }
 
 void Inspector::Show()
@@ -103,11 +103,12 @@ void Inspector::OnInput()
 }
 void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 {
-    
+     
     void* dataPosition = static_cast<char*>(begin) + _members.offset;
     const char* membersName = _members.membersName.c_str();
     const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_members.typeKey);
 
+    
     if (type.typeInfo.typeInfoFlags & PC_CORE::TypeFlag::COMPOSITE)
     {
         for (const PC_CORE::Members& m : type.members)
@@ -158,7 +159,7 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
             }
             break;
         case PC_CORE::DataNature::VEC4:
-        case PC_CORE::DataNature::QUAT:
+        
             if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
             {
                 ImGui::ColorPicker4(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
@@ -166,6 +167,26 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
             else
             {
                 ImGui::DragFloat4(membersName, static_cast<float*>(dataPosition),0.1, 0);
+            }
+            break;
+
+        case PC_CORE::DataNature::QUAT:
+
+            // TO DO NEED TO SEE THIS 
+            // https://stackoverflow.com/questions/77224400/converting-quaternions-to-angles-for-a-3d-editor
+            if (_members.enumFlag & PC_CORE::MemberEnumFlag::EULER_ANGLES)
+            {
+                ImGui::DragFloat4(membersName, static_cast<float*>(dataPosition), 0.1, 0);
+            }
+            else
+            {
+                Tbx::Quaternionf& q = *reinterpret_cast<Tbx::Quaternionf*>(dataPosition);
+                Tbx::Vector3f vecEuler = q.ToEulerAngles() ;
+                ImGui::DragFloat3(membersName, vecEuler.GetPtr(), 0.1, 0);
+                if (ImGui::IsItemEdited())
+                {
+                    q = Tbx::Quaternionf::FromEuleur(vecEuler).Normalize();
+                }
             }
             break;
         case PC_CORE::DataNature::STRING :
@@ -201,5 +222,6 @@ void Inspector::PrintArray(void* begin, const PC_CORE::Members& _members)
 {
     
 }
+
 
 
