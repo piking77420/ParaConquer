@@ -9,6 +9,12 @@ ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _createInfo, const s
     Resource()
     , m_ShaderInfo(_createInfo.shaderInfo), m_ShaderSources(_shaderSources)
 {
+    if (_createInfo.shaderInfo.descriptorInfo.descriptorAllocCount == 0)
+    {
+        PC_LOGERROR("ProgramShaderCreateInfo Descriptor descriptorAllocCount is 0")
+        throw std::invalid_argument("ProgramShaderCreateInfo Descriptor descriptorAllocCount is 0");
+    }
+
     name = _createInfo.prograShaderName;
     CreateShader(_createInfo.renderPass);
 

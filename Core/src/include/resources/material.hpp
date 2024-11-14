@@ -3,6 +3,7 @@
 #include "core_header.hpp"
 #include "texture.hpp"
 #include "rendering/render_harware_interface/descriptor_set.hpp"
+#include "resources/shader_program.h"
 
 #define MATERIAL_SET 1
 

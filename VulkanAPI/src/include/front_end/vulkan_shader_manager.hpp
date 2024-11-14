@@ -83,7 +83,8 @@ namespace Vulkan
         void CreatePipelineGraphicPointFromModule(vk::Device _device, vk::RenderPass _renderPass, const PC_CORE::ShaderInfo& _shaderInfo,
             const std::vector<vk::PipelineShaderStageCreateInfo>& _shaderStageCreateInfos, vk::PipelineLayout _pipelineLayout, vk::Pipeline* _outPipeline);
 
-        void CreateShaderResourceFromSpvReflectModule(vk::Device _device, ShaderInternal* _shaderInternal);
+        void CreateShaderResourceFromSpvReflectModule(const PC_CORE::ProgramShaderCreateInfo&
+    _programShaderCreatInfo,vk::Device _device, ShaderInternal* _shaderInternal);
 
         void ReflectPushConstantBlock(vk::Device _device, ShaderInternal* _shaderInternal, std::vector<vk::PushConstantRange>* _pushConstantRange);
 
@@ -92,7 +93,8 @@ namespace Vulkan
         vk::PipelineVertexInputStateCreateInfo GetVertexInputStateCreateInfoFromShaderStruct(const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo, std::vector<vk::VertexInputBindingDescription>*
         _bindingDescriptions, std::vector<vk::VertexInputAttributeDescription>* _attributeDescriptions);
 
-        void CreateDescriptorPool(vk::Device _device, ShaderInternal* _shaderInternal);
+        void CreateDescriptorPool(const PC_CORE::ProgramShaderCreateInfo&
+    _programShaderCreatInfo,vk::Device _device, ShaderInternal* _shaderInternal);
 
     };
 }

@@ -18,6 +18,7 @@ Material::Material(const fs::path& _path) : Resource(_path)
     RHI::GetInstance().AllocDescriptorSet(App::instance->renderer.shader->name,1 , descriptorSetHandle.data(), static_cast<uint32_t>(descriptorSetHandle.size()));
 }
 
+
 Material::Material()
 {
     RHI::GetInstance().AllocDescriptorSet(App::instance->renderer.shader->name,1 , descriptorSetHandle.data(), static_cast<uint32_t>(descriptorSetHandle.size()));

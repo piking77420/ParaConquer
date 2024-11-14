@@ -5,6 +5,10 @@
 #include "shader_source.hpp"
 #include "rendering/render_harware_interface/descriptor_set.hpp"
 
+constexpr uint32_t DESCRIPTOR_ALLOC_HIGH = 100;
+constexpr uint32_t DESCRIPTOR_ALLOC_MEDIUM = 10;
+
+
 BEGIN_PCCORE
     class ShaderProgram : public Resource
     {

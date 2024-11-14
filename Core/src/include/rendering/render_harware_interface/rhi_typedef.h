@@ -742,10 +742,17 @@ struct CreateTextureInfo
 
     using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderRayTracingInfo, ShaderComputeInfo>;
 
+    struct DescriptorInfo 
+    {
+        bool freeDescriptorSet = false;
+        uint32_t descriptorAllocCount;
+    };
+
     struct ShaderInfo
     {
         ShaderProgramPipelineType shaderProgramPipelineType;
         ShaderInfoData shaderInfoData;
+        DescriptorInfo descriptorInfo;
     };
 
     struct ProgramShaderCreateInfo

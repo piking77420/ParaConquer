@@ -7,7 +7,6 @@
 #include "physics/physics_wrapper.hpp"
 
 
-//#include <OBJ_Loader.h>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
@@ -104,37 +103,5 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
 
           
         }
-    }
-
-
-
-    /*
-    
-    objl::Loader Loader;
-
-    bool loadout = Loader.LoadFile(path.c_str());
-
-    if (!loadout)
-    {
-        return;
-    }
-    // to do make it for mutilpel mesh
-    for (int i = 0; i < 1; i++)
-    {
-        _vertices.resize(Loader.LoadedMeshes[i].Vertices.size());
-
-        // Copy one of the loaded meshes to be our current mesh
-        const objl::Mesh& curMesh = Loader.LoadedMeshes[i];
-        for (size_t i = 0; i < curMesh.Vertices.size(); i++)
-        {
-            
-            _vertices[i].position = Tbx::Vector3f(curMesh.Vertices[i].Position.X, curMesh.Vertices[i].Position.Y, curMesh.Vertices[i].Position.Z);
-            _vertices[i].normal = Tbx::Vector3f(curMesh.Vertices[i].Normal.X, curMesh.Vertices[i].Normal.Y, curMesh.Vertices[i].Normal.Z);
-            _vertices[i].textureCoord = Tbx::Vector2f(curMesh.Vertices[i].TextureCoordinate.X, curMesh.Vertices[i].TextureCoordinate.Y);
-        }
-        _indices = Loader.LoadedIndices;
-    } 
-    */
-
-        
+    }        
 }

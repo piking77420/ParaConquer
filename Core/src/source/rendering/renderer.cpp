@@ -176,6 +176,12 @@ void Renderer::InitShader()
 		Vertex::GetAttributeDescriptions(0);
 
 	createInfo.renderPass = forwardRenderPass.GetHandle();
+	createInfo.shaderInfo.descriptorInfo =
+		{
+		.freeDescriptorSet = true,
+		.descriptorAllocCount = DESCRIPTOR_ALLOC_HIGH
+		};
+	
 
 	shader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
 	ResourceManager::Add<ShaderProgram>(shader);
@@ -219,7 +225,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 			&it->material->descriptorSetHandle[m_CurrentImage], 0, nullptr);
 		
 		Tbx::Matrix4x4f transformMatrix;
-		Tbx::Trs3D(transform->position, transform->rotation, transform->scale, &transformMatrix);
+		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &transformMatrix);
 		shader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
 
 		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
