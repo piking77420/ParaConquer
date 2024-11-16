@@ -7,6 +7,8 @@
 #include "resources/resource_manager.hpp"
 #include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
+#include "physics/box_collider.hpp"
+#include "physics/sphere_collider.hpp"
 
 #undef ERROR
 #undef near;
@@ -69,13 +71,10 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 	RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
 	RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
 
-	shader->Bind(m_CommandBuffer->handle);
-	shader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
-		&descriptorSets[m_CurrentImage], 0, nullptr);
 
 	DrawStaticMesh(_renderingContext, _world);
-
-
+	//DrawWireFrame(_renderingContext, _world);
+	
 	forwardRenderPass.End(*m_CommandBuffer);
 }
 
@@ -160,6 +159,12 @@ void Renderer::InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window)
 
 void Renderer::InitShader()
 {
+	InitBasicShader();
+	InitWireFrameShader();
+}
+
+void Renderer::InitBasicShader()
+{
 	ShaderSource* mainShaderVertex = ResourceManager::Get<ShaderSource>("main.vert");
 	ShaderSource* mainShaderFrag = ResourceManager::Get<ShaderSource>("main.frag");
 
@@ -187,6 +192,29 @@ void Renderer::InitShader()
 	ResourceManager::Add<ShaderProgram>(shader);
 }
 
+void Renderer::InitWireFrameShader()
+{
+	ShaderSource* wireframeShaderVertex = ResourceManager::Get<ShaderSource>("wireframe.vert");
+	ShaderSource* wireframeShaderFrag = ResourceManager::Get<ShaderSource>("wireframe.frag");
+
+	PC_CORE::ProgramShaderCreateInfo createInfo{};
+	createInfo.prograShaderName = "wireframe";
+
+	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
+	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
+	shaderGraphicPointInfo->polygonMode = PolygonMode::Fill;
+	
+	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
+		Vertex::GetBindingDescrition(0));
+	shaderGraphicPointInfo->vertexAttributeDescriptions =
+		Vertex::GetAttributeDescriptions(0);
+
+	createInfo.renderPass = forwardRenderPass.GetHandle();
+
+	wireframeShader = new ShaderProgram(createInfo, { wireframeShaderVertex, wireframeShaderFrag });
+	ResourceManager::Add<ShaderProgram>(wireframeShader);
+}
+
 void Renderer::InitBuffer()
 {
 	for (auto&& uniform : renderResources.sceneUniform)
@@ -210,6 +238,10 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
+	shader->Bind(m_CommandBuffer->handle);
+	shader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
+		&descriptorSets[m_CurrentImage], 0, nullptr);
+
 	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
 
 	for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
@@ -232,6 +264,50 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
 		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
 	}
+}
+
+void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
+{
+	/*
+	static Mesh* meshCube = ResourceManager::Get<Mesh>("cube.obj");
+	static Mesh* meshSphere = ResourceManager::Get<Mesh>("sphere.obj");
+
+
+	const std::vector<SphereCollider>* spheresColliders = _world.scene.GetData<SphereCollider>(); 
+	const std::vector<BoxCollider>* boxsColliders = _world.scene.GetData<BoxCollider>();
+
+	wireframeShader->Bind(m_CommandBuffer->handle);
+	
+	m_CommandBuffer->BindVertexBuffer(meshSphere->vertexBuffer, 0, 1);
+	m_CommandBuffer->BindIndexBuffer(meshSphere->indexBuffer);
+	uint32_t nbrofIndices = meshSphere->GetNbrOfIndicies();
+	
+
+	wireFrameModelColor.color = {0,1,0,1};
+	for (auto&& sphereCollider : spheresColliders)
+	{
+		const Entity* entity = _world.scene.GetEntityFromId(sphereCollider.entityId);
+		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &wireFrameModelColor.model);
+		wireframeShader->PushConstant(m_CommandBuffer, "push_constant", wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, nbrofIndices, 1, 0, 0, 0);
+	}
+
+	m_CommandBuffer->BindVertexBuffer(meshCube->vertexBuffer, 0, 1);
+	m_CommandBuffer->BindIndexBuffer(meshCube->indexBuffer);
+	nbrofIndices = meshCube->GetNbrOfIndicies();
+	
+	for (auto&& boxCollider : boxsColliders)
+	{
+		const Entity* entity = _world.scene.GetEntityFromId(boxCollider.entityId);
+		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &wireFrameModelColor.model);
+		wireframeShader->PushConstant(m_CommandBuffer, "push_constant", wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, nbrofIndices, 1, 0, 0, 0);
+	}
+	*/
 }
 
 void Renderer::CreateForwardPass()

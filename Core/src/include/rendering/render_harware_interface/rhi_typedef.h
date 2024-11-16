@@ -745,7 +745,7 @@ struct CreateTextureInfo
     struct DescriptorInfo 
     {
         bool freeDescriptorSet = false;
-        uint32_t descriptorAllocCount;
+        uint32_t descriptorAllocCount = 0;
     };
 
     struct ShaderInfo

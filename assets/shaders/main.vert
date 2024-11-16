@@ -11,6 +11,11 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
 
+layout(push_constant) uniform ModelMatrix
+{
+    mat4 model;
+} modelMatrix;
+
 void main()
 {
     vec4 position = sceneBuffer.proj * sceneBuffer.view * modelMatrix.model * vec4(inPosition, 1.0); 

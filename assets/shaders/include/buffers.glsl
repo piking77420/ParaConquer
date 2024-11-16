@@ -14,7 +14,3 @@ layout(set = VIEWPORT_DESCRIPTOR, binding = 0) uniform SceneBufferGPU
 //layout(set = VIEWPORT_DESCRIPTOR, binding = 1) uniform sampler2D finalImageSampler;
 
 
-layout(push_constant) uniform ModelMatrix
-{
-    mat4 model;
-} modelMatrix;

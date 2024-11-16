@@ -35,6 +35,8 @@ public:
 
     ShaderProgram* shader = nullptr;
 
+    ShaderProgram* wireframeShader = nullptr;
+
     
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 
@@ -59,6 +61,14 @@ public:
 
 private:
 
+    struct WireFrameModelColor
+    {
+        Tbx::Vector4f color;
+        Tbx::Matrix4x4f model;
+    };
+
+    WireFrameModelColor wireFrameModelColor;
+
     GraphicAPI m_GraphicApi = GraphicAPI::VULKAN;
     
     size_t m_CurrentImage;
@@ -68,8 +78,7 @@ private:
     std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
 
     RenderResources renderResources;
-
-
+    
     Window* Windowtpr = nullptr;
     
     CommandBuffer* m_CommandBuffer = nullptr;
@@ -82,11 +91,17 @@ private:
 
     PC_CORE_API void InitShader();
 
+    PC_CORE_API void InitBasicShader();
+
+    PC_CORE_API void InitWireFrameShader();
+
     PC_CORE_API void InitBuffer();
 
     PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
 
     PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
+
+    PC_CORE_API void DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
     PC_CORE_API void CreateForwardPass();
 };

@@ -29,7 +29,7 @@ void VulkanShaderManager::Destroy(VulkanContext* _vulkanContext)
 
 const ShaderInternal* VulkanShaderManager::GetShader(const std::string& _shaderName)
 {
-	if (m_InternalShadersMap.empty())
+	if (m_InternalShadersMap.empty())	
 		return nullptr;
 
 	auto it = m_InternalShadersMap.find(_shaderName);
@@ -135,12 +135,10 @@ void VulkanShaderManager::CreateShaderResourceFromSpvReflectModule(const PC_CORE
 		VK_CALL(_device.createDescriptorSetLayout(&layoutInfo, nullptr, &_shaderInternal->descriptorSetLayouts[i]));
 		++i;
 	}
+
+	if (_programShaderCreatInfo.shaderInfo.descriptorInfo.descriptorAllocCount != 0)
+		CreateDescriptorPool(_programShaderCreatInfo, _device, _shaderInternal);
 	
-
-	// TODO HANDLE MORE
-
-
-	CreateDescriptorPool(_programShaderCreatInfo, _device, _shaderInternal);
 	vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
 	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(_shaderInternal->descriptorSetLayouts.size()); // Optional

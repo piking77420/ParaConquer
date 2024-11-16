@@ -28,6 +28,10 @@ BEGIN_PCCORE
 
         void PushConstantVec3(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Vector3f& vec3);
 
+        void PushConstantVec4(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Vector4f& vec4);
+
+        void PushConstant(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const  void* _data, size_t _dataSize);
+
         void CreateDescriptorSet(uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount);
 
         void FreeDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount);
@@ -45,7 +49,6 @@ BEGIN_PCCORE
 
         void DestroyShader();
 
-        void PushConstant(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const  void* _data, size_t _dataSize);
     };
 
 END_PCCORE
