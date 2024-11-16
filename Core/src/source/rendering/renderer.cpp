@@ -268,7 +268,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 
 void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-	/*
+	
 	static Mesh* meshCube = ResourceManager::Get<Mesh>("cube.obj");
 	static Mesh* meshSphere = ResourceManager::Get<Mesh>("sphere.obj");
 
@@ -307,7 +307,7 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 
 		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, nbrofIndices, 1, 0, 0, 0);
 	}
-	*/
+	
 }
 
 void Renderer::CreateForwardPass()

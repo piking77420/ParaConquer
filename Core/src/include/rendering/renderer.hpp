@@ -35,8 +35,7 @@ public:
 
     ShaderProgram* shader = nullptr;
 
-    ShaderProgram* wireframeShader = nullptr;
-
+    ShaderProgram* wireframeShader;
     
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 
