@@ -33,9 +33,9 @@ public:
 
     RenderPass colorPass;
 
-    ShaderProgram* shader = nullptr;
+    ShaderProgram* forwardShader = nullptr;
 
-    ShaderProgram* wireframeShader;
+    ShaderProgram* wireframeShader = nullptr;
     
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 

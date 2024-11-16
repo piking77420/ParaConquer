@@ -22,6 +22,9 @@ public:
     template<class T>
     static T* Create(const fs::path& path);
 
+    template<class T, typename... Arg>
+    static T* Create(Arg... args);
+
     template<class T>
     static void Add(const std::string& _name,T* _resource);
 
@@ -52,6 +55,18 @@ T* ResourceManager::Create(const fs::path& path)
     T* newR = new T(path);
    
     m_ResourcesMap.emplace(path,newR);
+
+    return newR;
+}
+
+template<class T, typename... Arg>
+T* ResourceManager::Create(Arg... args)
+{
+    static_assert(std::is_base_of_v<Resource, T>, "T is not a resource");
+
+    T* newR = new T(std::forward<Arg>(args)...);
+
+    m_ResourcesMap.emplace(newR->path, newR);
 
     return newR;
 }

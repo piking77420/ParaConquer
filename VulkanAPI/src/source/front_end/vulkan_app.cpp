@@ -769,7 +769,7 @@ void Vulkan::VulkanApp::DestroyRenderPass(PC_CORE::RenderPassHandle _renderPassH
 void Vulkan::VulkanApp::BeginRenderPass(PC_CORE::CommandBuffer _commandBuffer,
     PC_CORE::RenderPassHandle _renderPassHandle, const PC_CORE::BeginRenderPassInfo& _renderPassInfo)
 {
-    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle);
+    vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.GetHandle());
     
     std::vector<vk::ClearValue> clearValue = {};
     vk::RenderPassBeginInfo renderPassBeginInfo{};
@@ -780,7 +780,7 @@ void Vulkan::VulkanApp::BeginRenderPass(PC_CORE::CommandBuffer _commandBuffer,
 
 void Vulkan::VulkanApp::EndRenderPass(PC_CORE::CommandBuffer _commandBuffer)
 {
-    CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle).endRenderPass();
+    CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.GetHandle()).endRenderPass();
 }
 
 PC_CORE::FrameBufferHandle Vulkan::VulkanApp::CreateFrameBuffer(const PC_CORE::RHIFrameBufferCreateInfo& _RHIFrameBufferCreateInfo)
@@ -805,7 +805,7 @@ void Vulkan::VulkanApp::DestroyFrameBuffer(PC_CORE::FrameBufferHandle _frameBuff
 
 void Vulkan::VulkanApp::BeginSwapChainRenderPass(PC_CORE::CommandBuffer _commandBuffer)
 {
-    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle);
+    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.GetHandle());
     
     vk::RenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
@@ -828,7 +828,7 @@ void Vulkan::VulkanApp::BeginSwapChainRenderPass(PC_CORE::CommandBuffer _command
 
 void Vulkan::VulkanApp::EndSwapChainRenderPass(PC_CORE::CommandBuffer _commandBuffer)
 {
-    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.handle);
+    vk::CommandBuffer vkCommandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBuffer.GetHandle());
     vkCommandBuffer.endRenderPass();
 }
 

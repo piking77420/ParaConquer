@@ -25,8 +25,14 @@ public:
     void BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount);
 
     void BindIndexBuffer(const IndexBuffer& _indexBuffer);
-    
-    GPUObjectHandle handle = nullptr;
+
+    inline GPUObjectHandle GetHandle() const
+    {
+        return m_Handle;
+    }
+
+private:
+    GPUObjectHandle m_Handle = nullptr;
 };
 static_assert(sizeof(CommandBuffer) == 8, "CommandBuffer should be 8 bytes long");
 

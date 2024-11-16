@@ -13,6 +13,7 @@ BEGIN_PCCORE
     class ShaderProgram : public Resource
     {
     public:
+
         ShaderProgram(const ProgramShaderCreateInfo& _createInfo,
                       const std::vector<ShaderSource*>& _shaderSources);
 

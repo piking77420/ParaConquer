@@ -27,22 +27,30 @@ public:
     Tbx::Vector3f emmisive = {};
     
     float ambiantOcculusion = 0.f;
+
+    std::array<DescriptorSetHandle, MAX_FRAMES_IN_FLIGHT> descriptorSetHandle;
     
-    PC_CORE_API void WriteFile(const fs::path& _path) override;
+
+    PC_CORE_API Material(Material&& _other);
+
+    PC_CORE_API Material() = default;
 
     PC_CORE_API Material(const fs::path& _path);
 
-    PC_CORE_API Material();
+    PC_CORE_API Material(const std::string _materialName, const PC_CORE::ShaderProgram& _shader);
 
-    PC_CORE_API ~Material() override;
-    
+    PC_CORE_API ~Material() noexcept override;
+
     PC_CORE_API void Load(std::vector<Texture*> textures);
 
-    PC_CORE_API void BuildDescriptor();
+    PC_CORE_API void Build();
+
+    PC_CORE_API void WriteFile(const fs::path& _path) override;
+
     
 
-    std::array<DescriptorSetHandle, MAX_FRAMES_IN_FLIGHT> descriptorSetHandle;
-
+private:
+    const PC_CORE::ShaderProgram* m_Shader = nullptr;
 };
 
 END_PCCORE

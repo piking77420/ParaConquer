@@ -68,12 +68,12 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 	};
 
 
-	RHI::GetInstance().SetScissor(m_CommandBuffer->handle, ScissorRect);
-	RHI::GetInstance().SetViewPort(m_CommandBuffer->handle, viewport);
+	RHI::GetInstance().SetScissor(m_CommandBuffer->GetHandle(), ScissorRect);
+	RHI::GetInstance().SetViewPort(m_CommandBuffer->GetHandle(), viewport);
 
 
 	DrawStaticMesh(_renderingContext, _world);
-	//DrawWireFrame(_renderingContext, _world);
+	DrawWireFrame(_renderingContext, _world);
 	
 	forwardRenderPass.End(*m_CommandBuffer);
 }
@@ -84,7 +84,7 @@ void Renderer::BeginFrame()
 	if (glfwGetKey(Windowtpr->GetHandle(), GLFW_KEY_F5) == GLFW_PRESS && !firstTime)
 	{
 		RHI::GetInstance().WaitDevice();
-		shader->Reload(forwardRenderPass.GetHandle());
+		forwardShader->Reload(forwardRenderPass.GetHandle());
 		InitDescriptors();
 		firstTime = true;
 	}
@@ -96,7 +96,7 @@ void Renderer::BeginFrame()
 
 	RHI::GetInstance().WaitForAquireImage();
 	m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
-	RHI::GetInstance().BeginRender(m_CommandBuffer->handle);
+	RHI::GetInstance().BeginRender(m_CommandBuffer->GetHandle());
 }
 
 void Renderer::EndRender()
@@ -107,7 +107,10 @@ void Renderer::EndRender()
 
 void Renderer::SwapBuffers()
 {
-	RHI::GetInstance().SwapBuffers(&m_CommandBuffer->handle, 1);
+	std::vector<GPUBufferHandle> commandToWait;
+	commandToWait.push_back(m_CommandBuffer->GetHandle());
+
+	RHI::GetInstance().SwapBuffers(commandToWait.data(), static_cast<uint32_t>(commandToWait.size()));
 }
 
 void Renderer::WaitDevice()
@@ -188,8 +191,8 @@ void Renderer::InitBasicShader()
 		};
 	
 
-	shader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
-	ResourceManager::Add<ShaderProgram>(shader);
+	forwardShader = new ShaderProgram(createInfo, { mainShaderVertex, mainShaderFrag });
+	ResourceManager::Add<ShaderProgram>(forwardShader);
 }
 
 void Renderer::InitWireFrameShader()
@@ -202,7 +205,7 @@ void Renderer::InitWireFrameShader()
 
 	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
-	shaderGraphicPointInfo->polygonMode = PolygonMode::Fill;
+	shaderGraphicPointInfo->polygonMode = PolygonMode::Line;
 	
 	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
 		Vertex::GetBindingDescrition(0));
@@ -238,8 +241,8 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-	shader->Bind(m_CommandBuffer->handle);
-	shader->BindDescriptorSet(m_CommandBuffer->handle, 0, 1,
+	forwardShader->Bind(m_CommandBuffer->GetHandle());
+	forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
 		&descriptorSets[m_CurrentImage], 0, nullptr);
 
 	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
@@ -253,16 +256,16 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
 
 		
-		shader->BindDescriptorSet(m_CommandBuffer->handle, 1, 1,
+		forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 1, 1,
 			&it->material->descriptorSetHandle[m_CurrentImage], 0, nullptr);
 		
 		Tbx::Matrix4x4f transformMatrix;
 		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &transformMatrix);
-		shader->PushConstantMat4(m_CommandBuffer->handle, "modelMatrix", transformMatrix);
+		forwardShader->PushConstantMat4(m_CommandBuffer->GetHandle(), "modelMatrix", transformMatrix);
 
 		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
 		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
 	}
 }
 
@@ -272,40 +275,40 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 	static Mesh* meshCube = ResourceManager::Get<Mesh>("cube.obj");
 	static Mesh* meshSphere = ResourceManager::Get<Mesh>("sphere.obj");
 
-
 	const std::vector<SphereCollider>* spheresColliders = _world.scene.GetData<SphereCollider>(); 
 	const std::vector<BoxCollider>* boxsColliders = _world.scene.GetData<BoxCollider>();
 
-	wireframeShader->Bind(m_CommandBuffer->handle);
-	
+	constexpr const char* wireframeDataPushConstant = "wireframeData";
+
+	wireframeShader->Bind(m_CommandBuffer->GetHandle());
 	m_CommandBuffer->BindVertexBuffer(meshSphere->vertexBuffer, 0, 1);
 	m_CommandBuffer->BindIndexBuffer(meshSphere->indexBuffer);
 	uint32_t nbrofIndices = meshSphere->GetNbrOfIndicies();
 	
 
 	wireFrameModelColor.color = {0,1,0,1};
-	for (auto&& sphereCollider : spheresColliders)
-	{
-		const Entity* entity = _world.scene.GetEntityFromId(sphereCollider.entityId);
+	for (auto it = spheresColliders->begin(); it != spheresColliders->end(); it++)
+	{ 
+		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
 		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &wireFrameModelColor.model);
-		wireframeShader->PushConstant(m_CommandBuffer, "push_constant", wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale * it->radius, &wireFrameModelColor.model);
+		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
 
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, nbrofIndices, 1, 0, 0, 0);
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
 	}
 
 	m_CommandBuffer->BindVertexBuffer(meshCube->vertexBuffer, 0, 1);
 	m_CommandBuffer->BindIndexBuffer(meshCube->indexBuffer);
 	nbrofIndices = meshCube->GetNbrOfIndicies();
-	
-	for (auto&& boxCollider : boxsColliders)
-	{
-		const Entity* entity = _world.scene.GetEntityFromId(boxCollider.entityId);
-		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &wireFrameModelColor.model);
-		wireframeShader->PushConstant(m_CommandBuffer, "push_constant", wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
 
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->handle, nbrofIndices, 1, 0, 0, 0);
+	for (auto it = boxsColliders->begin(); it != boxsColliders->end(); it++)
+	{
+		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+		Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->size * 0.5f, &wireFrameModelColor.model);
+		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
 	}
 	
 }
@@ -366,7 +369,7 @@ void Renderer::InitCommandPools()
 void Renderer::InitDescriptors()
 {
 	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	shader->CreateDescriptorSet(0, descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
+	forwardShader->CreateDescriptorSet(0, descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{

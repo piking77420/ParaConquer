@@ -91,19 +91,26 @@ void Editor::UpdateEditorWindows()
 
 void Editor::InitTestScene()
 {
+    // TO DO MAKE IT WORK
+   /* const ShaderProgram& program = *renderer.forwardShader;
+    Material* material1 = ResourceManager::Create<Material>("material1", program);
+    material1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
 
-    Material* material1 = new Material();
+    Material* material2 = ResourceManager::Create<Material>("material2", program);
+    material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
+
+
+    Material* material1 = new Material("material1", *renderer.forwardShader);
     material1->name = "material1";
         ResourceManager::Add<Material>(material1);
     material1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
     
-    Material* material2 = new Material();
-    material2->name = "material2";
+    Material* material2 = new Material("material2", *renderer.forwardShader);;
     ResourceManager::Add<Material>(material2);
     material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
 
-    material1->BuildDescriptor();
-    material2->BuildDescriptor();
+    material1->Build();
+    material2->Build();
     
     Scene& scene = world.scene;
     for (size_t i = 0; i < 2; i++)
