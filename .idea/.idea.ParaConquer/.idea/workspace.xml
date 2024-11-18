@@ -12,17 +12,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/file_loader.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/file_loader.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/texture.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/texture.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/texture.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/texture.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_transition_image_layout.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/back_end/vulkan_transition_image_layout.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_transition_image_layout.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/back_end/vulkan_transition_image_layout.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imgui.ini" beforeDir="false" afterPath="$PROJECT_DIR$/imgui.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -314,19 +304,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;C++ Project.Editor.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;rework__vulkan&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "C++ Project.Editor.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "ecs/static__reflection",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="C++ Project.Editor">
     <configuration name="Core" type="CppProject" factoryName="C++ Project">
       <configuration_1>
@@ -701,6 +691,7 @@
       <workItem from="1731001916265" duration="10299000" />
       <workItem from="1731240743427" duration="23917000" />
       <workItem from="1731310197203" duration="6705000" />
+      <workItem from="1731944862677" duration="684000" />
     </task>
     <servers />
   </component>
