@@ -1,6 +1,5 @@
 ﻿#include "rendering/skydom.hpp"
 
-#include <algorithm>
 #include <assert.h>
 
 using namespace PC_CORE;

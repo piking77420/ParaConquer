@@ -5,13 +5,13 @@
 
 using namespace PC_CORE;
 
+
 ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _createInfo, const std::vector<ShaderSource*>& _shaderSources) :
     Resource()
     , m_ShaderInfo(_createInfo.shaderInfo), m_ShaderSources(_shaderSources)
 {
     name = _createInfo.prograShaderName;
     CreateShader(_createInfo.renderPass);
-
 }
 
 
@@ -42,9 +42,15 @@ void ShaderProgram::PushConstantVec3(CommandBufferHandle _commandBuffer, const c
     PushConstant(_commandBuffer, _pushConstantName, vec3.GetPtr() , sizeof(Tbx::Vector3f));
 }
 
-void ShaderProgram::CreateDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
+void ShaderProgram::PushConstantVec4(CommandBufferHandle _commandBuffer, const char* _pushConstantName,
+    const Tbx::Vector4f& vec4)
 {
-    RHI::GetInstance().AllocDescriptorSet(name, _descriptorSet, _descriptorSetCount);
+    PushConstant(_commandBuffer, _pushConstantName, vec4.GetPtr() , sizeof(decltype(vec4)));
+}
+
+void ShaderProgram::CreateDescriptorSet(uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
+{
+    RHI::GetInstance().AllocDescriptorSet(name,_descriptorSetLayout,  _descriptorSet, _descriptorSetCount);
 }
 
 void ShaderProgram::FreeDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
@@ -90,6 +96,6 @@ void ShaderProgram::PushConstant(CommandBufferHandle _commandBuffer, const char*
 {
     if (!name.empty())
     {
-        RHI::GetInstance().PushConstants(_commandBuffer, name, _pushConstantName, _data, _dataSize);
+        RHI::GetInstance().PushConstants(_commandBuffer, name, _pushConstantName, _data, static_cast<uint32_t>(_dataSize));
     }
 }

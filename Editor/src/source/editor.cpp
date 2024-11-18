@@ -25,7 +25,6 @@ void Editor::Init()
     App::Init();
     World::currentWorld = &world;
     InitEditorWindows();
-    InitMaterial();
     InitTestScene();
     PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 }
@@ -39,42 +38,6 @@ void Editor::Destroy()
     App::Destroy();
 }
 
-
-void Editor::InitMaterial()
-{
-    /*
-    Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
-    Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
-    Material* material = new Material;
-    material->Load({emerauldBlock});
-    ResourceManager::Add<Material>("baseMaterial", material);
-
-    Material* material2 = new Material;
-    material2->Load({diamondtexture});
-    ResourceManager::Add<Material>("baseMaterial2", material2);*/
-    
-}
-
-void Editor::RotateCube()
-{
-    
-    if (!world.run)
-        return;
-
-    for (auto& entity : world.scene.m_Entities)
-    {
-        if (entity.ecsId == INVALID_ENTITY_ID)
-            continue;
-
-        Transform* transform = world.scene.GetComponent<Transform>(&entity);
-        float time = static_cast<float>(Time::GetTime());
-        float x = std::cos(time);
-        float y = std::sin(time);
-        float z = std::cos(time);
-        transform->rotation = Tbx::Quaternionf::FromEuleur({x,y,z});
-    }
-   
-}
 
 void Editor::UpdateEditorWindows()
 {
@@ -91,7 +54,27 @@ void Editor::UpdateEditorWindows()
 
 void Editor::InitTestScene()
 {
+    // TO DO MAKE IT WORK
+   /* const ShaderProgram& program = *renderer.forwardShader;
+    Material* material1 = ResourceManager::Create<Material>("material1", program);
+    material1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
 
+    Material* material2 = ResourceManager::Create<Material>("material2", program);
+    material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
+
+
+    Material* material1 = new Material("material1", *renderer.forwardShader);
+    material1->name = "material1";
+        ResourceManager::Add<Material>(material1);
+    material1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
+    
+    Material* material2 = new Material("material2", *renderer.forwardShader);;
+    ResourceManager::Add<Material>(material2);
+    material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
+
+    material1->Build();
+    material2->Build();
+    
     Scene& scene = world.scene;
     for (size_t i = 0; i < 2; i++)
     {
@@ -99,6 +82,15 @@ void Editor::InitTestScene()
         scene.AddComponent<Transform>(cube);
         scene.AddComponent<RigidBody>(cube);
         StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
+        if (i == 0)
+        {
+            mesh->material = material1;
+        }
+        else
+        {
+            mesh->material = material2;
+        }
+        
         mesh->mesh = ResourceManager::Get<Mesh>("untitled.obj");
     }
     
@@ -110,11 +102,9 @@ void Editor::DestroyTestScene()
     world.scene.~Scene();
     world.scene = Scene();
     m_Selected = nullptr;
-   
 
-    
-    //ResourceManager::Delete<Material>("baseMaterial");
-    //ResourceManager::Delete<Material>("baseMaterial2");
+    ResourceManager::Delete<Material>("material1");
+    ResourceManager::Delete<Material>("material2");
 }
 
 void Editor::Run()
@@ -130,7 +120,6 @@ void Editor::Run()
        
         UpdateEditorWindows();
 
-        RotateCube();
         if (World::currentWorld)
             WorldLoop();
 

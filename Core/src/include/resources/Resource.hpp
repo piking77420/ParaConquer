@@ -23,6 +23,8 @@ public:
     Guid guid;
 
     PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
+
+    PC_CORE_API Resource(Resource&& _other) noexcept;
     
     PC_CORE_API Resource();
 
@@ -33,6 +35,8 @@ public:
     PC_CORE_API virtual ~Resource() = default;
 
     PC_CORE_API void SetPath(const fs::path& _path);
+
+    PC_CORE_API const std::string& GetName() const;
 
     PC_CORE_API virtual std::vector<char> GetData() { return {}; };
     

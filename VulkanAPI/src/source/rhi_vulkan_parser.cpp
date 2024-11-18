@@ -36,34 +36,34 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Unorm;
 
     case PC_CORE::RHIFormat::R8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Snorm;
 
     case PC_CORE::RHIFormat::R8_USCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Uscaled;
 
     case PC_CORE::RHIFormat::R8_SSCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Sscaled;
 
     case PC_CORE::RHIFormat::R8_UINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Uint;
 
     case PC_CORE::RHIFormat::R8_SINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Sint;
 
     case PC_CORE::RHIFormat::R8_SRGB:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Srgb;
 
     case PC_CORE::RHIFormat::R8G8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Unorm;
 
     case PC_CORE::RHIFormat::R8G8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Snorm;
 
     case PC_CORE::RHIFormat::R8G8_USCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Uscaled;
 
     case PC_CORE::RHIFormat::R8G8_SSCALED:
         return vk::Format::eUndefined;
@@ -75,7 +75,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8_SRGB:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Srgb;
 
     case PC_CORE::RHIFormat::R8G8B8_UNORM:
         return vk::Format::eUndefined;
@@ -96,7 +96,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8B8_SRGB:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Srgb;
 
     case PC_CORE::RHIFormat::B8G8R8_UNORM:
         return vk::Format::eUndefined;
