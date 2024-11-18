@@ -25,7 +25,6 @@ void Editor::Init()
     App::Init();
     World::currentWorld = &world;
     InitEditorWindows();
-    InitMaterial();
     InitTestScene();
     PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 }
@@ -39,42 +38,6 @@ void Editor::Destroy()
     App::Destroy();
 }
 
-
-void Editor::InitMaterial()
-{
-    /*
-    Texture* diamondtexture = ResourceManager::Get<Texture>("diamond_block.jpg");
-    Texture* emerauldBlock = ResourceManager::Get<Texture>("viking_room.png");
-    Material* material = new Material;
-    material->Load({emerauldBlock});
-    ResourceManager::Add<Material>("baseMaterial", material);
-
-    Material* material2 = new Material;
-    material2->Load({diamondtexture});
-    ResourceManager::Add<Material>("baseMaterial2", material2);*/
-    
-}
-
-void Editor::RotateCube()
-{
-    
-    if (!world.run)
-        return;
-
-    for (auto& entity : world.scene.m_Entities)
-    {
-        if (entity.ecsId == INVALID_ENTITY_ID)
-            continue;
-
-        Transform* transform = world.scene.GetComponent<Transform>(&entity);
-        float time = static_cast<float>(Time::GetTime());
-        float x = std::cos(time);
-        float y = std::sin(time);
-        float z = std::cos(time);
-        transform->rotation = Tbx::Quaternionf::FromEuleur({x,y,z});
-    }
-   
-}
 
 void Editor::UpdateEditorWindows()
 {
@@ -142,10 +105,6 @@ void Editor::DestroyTestScene()
 
     ResourceManager::Delete<Material>("material1");
     ResourceManager::Delete<Material>("material2");
-
-    
-    //ResourceManager::Delete<Material>("baseMaterial");
-    //ResourceManager::Delete<Material>("baseMaterial2");
 }
 
 void Editor::Run()
@@ -161,7 +120,6 @@ void Editor::Run()
        
         UpdateEditorWindows();
 
-        RotateCube();
         if (World::currentWorld)
             WorldLoop();
 

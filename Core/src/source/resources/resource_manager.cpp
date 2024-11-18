@@ -9,24 +9,6 @@ using namespace PC_CORE;
 
 void ResourceManager::InitPath()
 {
-    //VulkanShaderCompiler::GetEnvironementVariable();
-
-    /*
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.frag");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/shader_base.vert");
-
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/gizmo.frag");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/gizmo.vert");
-
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox.frag");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox.vert");
-
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/draw_texture.frag");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/draw_texture.vert");
-
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.frag");
-    ResourceManager::CreateAndLoad<ShaderSource>("assets/shaders/skybox_procedural.vert");*/
-    
     ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
     ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 

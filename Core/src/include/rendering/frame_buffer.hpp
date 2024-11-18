@@ -7,7 +7,8 @@
 BEGIN_PCCORE
 struct FrameBufferCreateInfo
 {
-    std::vector<Texture*> renderTargets;
+    Texture* renderTargets;
+    uint32_t renderTargetCount;
     const RenderPass* renderPass;
 
     uint32_t                    width;

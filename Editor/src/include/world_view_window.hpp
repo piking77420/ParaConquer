@@ -29,16 +29,20 @@ public:
 
 
 private:
+    enum class TMPRBuffer
+    {
+        COLOR,
+        DEPTH,
+        COUNT
+    };
 
-    std::vector<PC_CORE::Texture> viewPortImage;
+    std::vector<std::array<PC_CORE::Texture, static_cast<size_t>(TMPRBuffer::COUNT)>> m_ViewPortImage;
 
     std::vector<PC_CORE::FrameBuffer> m_FrameBuffers;
     
     std::vector<VkDescriptorSet> m_ImaguiDescriptorSet;
 
     std::vector<PC_CORE::DescriptorPoolHandle> descritptorSet;
-    
-    PC_CORE::Texture m_DepthTexture;
     
     void ResizeViewports();
 };

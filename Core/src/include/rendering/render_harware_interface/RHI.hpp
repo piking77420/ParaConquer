@@ -145,7 +145,7 @@ BEGIN_PCCORE
 #pragma endregion Buffer
 
         virtual PC_CORE_API void SetViewPort(CommandBufferHandle _commandBufferHandle,
-                                             const PC_CORE::ViewPort& _viewPort)
+                                             const PC_CORE::ViewPortExtend& _viewPort)
         {
         }
 

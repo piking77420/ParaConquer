@@ -80,7 +80,7 @@ namespace Vulkan
 
 #pragma region DynamicState
 		void SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHandle,
-					const PC_CORE::ViewPort& _viewPort) override;
+					const PC_CORE::ViewPortExtend& _viewPort) override;
 		
 		void SetScissor(PC_CORE::CommandBufferHandle _commandBufferHandle,
 			const PC_CORE::ScissorRect& _scissorRect) override;

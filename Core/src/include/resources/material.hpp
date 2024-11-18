@@ -30,8 +30,7 @@ public:
 
     std::array<DescriptorSetHandle, MAX_FRAMES_IN_FLIGHT> descriptorSetHandle;
     
-
-    PC_CORE_API Material(Material&& _other);
+    PC_CORE_API Material(Material&& _other) noexcept;
 
     PC_CORE_API Material() = default;
 

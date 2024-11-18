@@ -73,7 +73,7 @@ enum CommandPoolBufferFlag
 };
 
 
-struct ViewPort
+struct ViewPortExtend
 {
     Tbx::Vector2f position;
     float width;

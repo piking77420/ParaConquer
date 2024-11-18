@@ -51,7 +51,7 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 	
 	forwardRenderPass.Begin(*m_CommandBuffer, renderPassBeginInfo);
 
-	const ViewPort viewport =
+	const ViewPortExtend viewPortExtend =
 	{
 		.position = {},
 		.width = static_cast<float>(_renderingContext.renderingContextSize.x),
@@ -67,9 +67,9 @@ void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const 
 			static_cast<uint32_t>(_renderingContext.renderingContextSize.y)
 	};
 
-
+	 
 	RHI::GetInstance().SetScissor(m_CommandBuffer->GetHandle(), ScissorRect);
-	RHI::GetInstance().SetViewPort(m_CommandBuffer->GetHandle(), viewport);
+	RHI::GetInstance().SetViewPort(m_CommandBuffer->GetHandle(), viewPortExtend);
 
 
 	DrawStaticMesh(_renderingContext, _world);
@@ -85,7 +85,6 @@ void Renderer::BeginFrame()
 	{
 		RHI::GetInstance().WaitDevice();
 		forwardShader->Reload(forwardRenderPass.GetHandle());
-		InitDescriptors();
 		firstTime = true;
 	}
 
@@ -305,7 +304,7 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 	{
 		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
 		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->size * 0.5f, &wireFrameModelColor.model);
+		Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->extend, &wireFrameModelColor.model);
 		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
 
 		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);

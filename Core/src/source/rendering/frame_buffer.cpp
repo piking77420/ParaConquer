@@ -6,10 +6,10 @@
 PC_CORE::FrameBuffer::FrameBuffer(const FrameBufferCreateInfo& _frameBufferCreateInfo)
 {
     RHIFrameBufferCreateInfo frameBufferCreateInfo;
-    frameBufferCreateInfo.imageViewHandles.resize(_frameBufferCreateInfo.renderTargets.size());
-    for (size_t i = 0; i < _frameBufferCreateInfo.renderTargets.size(); i++)
+    frameBufferCreateInfo.imageViewHandles.resize(_frameBufferCreateInfo.renderTargetCount);
+    for (size_t i = 0; i < _frameBufferCreateInfo.renderTargetCount; i++)
     {
-        frameBufferCreateInfo.imageViewHandles[i] = _frameBufferCreateInfo.renderTargets[i]->GetImageViewHandle();
+        frameBufferCreateInfo.imageViewHandles[i] = _frameBufferCreateInfo.renderTargets[i].GetImageViewHandle();
     }
     frameBufferCreateInfo.renderPassHandle = _frameBufferCreateInfo.renderPass->GetHandle();
 

@@ -12,15 +12,13 @@ using namespace PC_CORE;
 
 void PhysicsWrapper::InitBodies(Scene* _scene)
 {
-    //TODO MAKE PHYSCIS WORK AGAIN
-    /*
+    
     InitSphereCollider(_scene);
     InitBoxCollider(_scene);
-    std::vector<BoxCollider>* sphereColliders = nullptr;
-    _scene->GetComponentData<BoxCollider>(&sphereColliders);
+    std::vector<BoxCollider>* sphereColliders = _scene->GetData<BoxCollider>();
     const Tbx::Vector3f force = {-1000,1000,1000};
     AddForce(sphereColliders->at(0).body_Id, {1000,1,1000});
-    AddTorque(sphereColliders->at(0).body_Id, force);*/
+    AddTorque(sphereColliders->at(0).body_Id, force);
 }
 
 void PhysicsWrapper::UpdatePhysics(float _deltatime, Scene* _scene)
@@ -77,28 +75,24 @@ PhysicsWrapper::~PhysicsWrapper()
     physicsEngine.Destroy();
 }
 
-void PhysicsWrapper::InitSphereCollider(Scene* scene)
+void PhysicsWrapper::InitSphereCollider(Scene* _scene)
 {
-    /*
-    //std::vector<SphereCollider>* sphereColliders = nullptr;
-    //scene->GetComponentData<SphereCollider>(&sphereColliders);
+
+    std::vector<SphereCollider>* sphereColliders = _scene->GetData<SphereCollider>();
 
     for (SphereCollider& s : *sphereColliders)
     {
-        if (s.componentHolder.entityID == NULL_ENTITY)
-            continue;
-        
-        Transform* transform = scene->GetComponent<Transform>(s.componentHolder.entityID);
-        if (transform == nullptr)
-        {
-            transform = scene->AddComponent<Transform>(s.componentHolder.entityID);
-        }
 
-        RigidBody* rigidBody = scene->GetComponent<RigidBody>(s.componentHolder.entityID);
+        if (s.entityId == INVALID_ENTITY_ID)
+            continue;
+
+        Transform* transform = _scene->GetComponent<Transform>(_scene->GetEntityFromId(s.entityId));
+        if (transform == nullptr)
+            return;
+
+        RigidBody* rigidBody = _scene->GetComponent<RigidBody>(_scene->GetEntityFromId(s.entityId));
         if (rigidBody == nullptr)
-        {
-            rigidBody = scene->AddComponent<RigidBody>(s.componentHolder.entityID);
-        }
+            return;
         
         MotionCore::BodyCreateInfo _bodyCreateInfo =
             {
@@ -118,66 +112,56 @@ void PhysicsWrapper::InitSphereCollider(Scene* scene)
         
         s.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
     }
-*/
+
 }
 
 void PhysicsWrapper::InitBoxCollider(Scene* _scene)
 {
-    /*
-    std::vector<BoxCollider>* boxCollider = nullptr;
-    _scene->GetComponentData<BoxCollider>(&boxCollider);
+    std::vector<BoxCollider>* boxCollider = _scene->GetData<BoxCollider>();
 
-    for (BoxCollider& box : *boxCollider)
+    for (BoxCollider& b : *boxCollider)
     {
-        if (box.componentHolder.entityID == NULL_ENTITY)
-            continue;
-        
-        Transform* transform = _scene->GetComponent<Transform>(box.componentHolder.entityID);
-        if (transform == nullptr)
-        {
-            transform = _scene->AddComponent<Transform>(box.componentHolder.entityID);
-        }
 
-        RigidBody* rigidBody = _scene->GetComponent<RigidBody>(box.componentHolder.entityID);
+        if (b.entityId == INVALID_ENTITY_ID)
+            continue;
+
+        Transform* transform = _scene->GetComponent<Transform>(_scene->GetEntityFromId(b.entityId));
+        if (transform == nullptr)
+            return;
+
+        RigidBody* rigidBody = _scene->GetComponent<RigidBody>(_scene->GetEntityFromId(b.entityId));
         if (rigidBody == nullptr)
-        {
-            rigidBody = _scene->AddComponent<RigidBody>(box.componentHolder.entityID);
-        }
-        
+            return;
+
         MotionCore::BodyCreateInfo _bodyCreateInfo =
+        {
+        .position = transform->position,
+        .mass = rigidBody->mass,
+        .rotation = transform->rotation,
+        .physcicalMaterial =
             {
-            .position = transform->position + box.center,
-            .mass = rigidBody->mass,
-            .rotation = transform->rotation
-            ,
-            .physcicalMaterial =
-                {
-                .damping = rigidBody->damping,
-                .angularDamping = rigidBody->angularDamping,
-                .restitutionCoeff = rigidBody->restitutionCoef
-                }
-            };
-        
-        _bodyCreateInfo.bodyTypeInfo.data.obb.extend = box.size * 0.5f;
-        Tbx::RotationMatrix3D(static_cast<Tbx::Quaternion<MotionCore::numeric>>(transform->rotation), &_bodyCreateInfo.bodyTypeInfo.data.obb.orientationMatrix);
+            .damping = rigidBody->damping,
+            .angularDamping = rigidBody->angularDamping,
+            .restitutionCoeff = rigidBody->restitutionCoef
+            }
+        };
+
+        _bodyCreateInfo.bodyTypeInfo.data.aabb.extend = b.extend;
         _bodyCreateInfo.bodyTypeInfo.bodyType = MotionCore::BOX;
-        
-        box.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
+
+        b.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
     }
-    */
 }
 
 void PhysicsWrapper::DestroyBodies(Scene* _scene)
 {
-    /*
-    std::vector<SphereCollider>* sphereColliders = nullptr;
-    _scene->GetComponentData<SphereCollider>(&sphereColliders);
-    std::vector<BoxCollider>* boxCollider = nullptr;
-    _scene->GetComponentData<BoxCollider>(&boxCollider);
+    
+    std::vector<SphereCollider>* sphereColliders = _scene->GetData<SphereCollider>();
+    std::vector<BoxCollider>* boxCollider = _scene->GetData<BoxCollider>();
 
     for (const SphereCollider& s : *sphereColliders)
     {
-        if (s.componentHolder.entityID == NULL_ENTITY)
+        if (s.entityId == INVALID_ENTITY_ID)
             continue;
         
         physicsEngine.DestroyBody(s.body_Id);
@@ -185,28 +169,29 @@ void PhysicsWrapper::DestroyBodies(Scene* _scene)
 
     for (const BoxCollider& box : *boxCollider)
     {
-        if (box.componentHolder.entityID == NULL_ENTITY)
+        if (box.entityId == INVALID_ENTITY_ID)
             continue;
         
         physicsEngine.DestroyBody(box.body_Id);
     }
-    */
+    
 }
 
 void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
 {
-    /*
-    std::vector<SphereCollider>* sphereColliders = nullptr;
-    _scene->GetComponentData<SphereCollider>(&sphereColliders);
+
+    std::vector<SphereCollider>* sphereColliders = _scene->GetData<SphereCollider>();
+    std::vector<BoxCollider>* boxCollider = _scene->GetData<BoxCollider>();
+
     for (const SphereCollider& s : *sphereColliders)
     {
-        if (s.componentHolder.entityID == NULL_ENTITY)
+        if (s.entityId == INVALID_ENTITY_ID)
             continue;
 
         if (s.body_Id == MotionCore::NULLBODY)
             continue;
         
-        Transform* transform = _scene->GetComponent<Transform>(s.componentHolder.entityID);
+        Transform* transform = _scene->GetComponent<Transform>(_scene->GetEntityFromId(s.entityId));
 
         const Tbx::Vector3f newPos = GetPosition(s.body_Id);
         const Tbx::Quaternionf newRot = GetRotation(s.body_Id);
@@ -216,18 +201,15 @@ void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
 
     }
 
-    std::vector<BoxCollider>* boxCollider = nullptr;
-    _scene->GetComponentData<BoxCollider>(&boxCollider);
-
     for (const BoxCollider& box : *boxCollider)
     {
-        if (box.componentHolder.entityID == NULL_ENTITY)
+        if (box.entityId == INVALID_ENTITY_ID)
             continue;
 
         if (box.body_Id == MotionCore::NULLBODY)
             continue;
         
-        Transform* transform = _scene->GetComponent<Transform>(box.componentHolder.entityID);
+        Transform* transform = _scene->GetComponent<Transform>(_scene->GetEntityFromId(box.entityId));
 
         const Tbx::Vector3f newPos = GetPosition(box.body_Id);
         const Tbx::Quaternionf newRot = GetRotation(box.body_Id);
@@ -235,7 +217,6 @@ void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
         transform->position = newPos;
         transform->rotation = newRot;
 
-    }*/
-
+    }
 }
 

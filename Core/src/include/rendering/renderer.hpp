@@ -49,7 +49,6 @@ public:
     
     PC_CORE_API void SwapBuffers();
     
-
     PC_CORE_API void WaitDevice();
 
     PC_CORE_API void Destroy();
@@ -83,6 +82,7 @@ private:
     CommandBuffer* m_CommandBuffer = nullptr;
     
     std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
+
     
     PC_CORE_API void InitCommandPools();
 

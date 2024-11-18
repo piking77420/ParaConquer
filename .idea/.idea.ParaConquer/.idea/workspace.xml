@@ -13,20 +13,17 @@
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/rhi_typedef.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/frame_buffer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/frame_buffer.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/shader_program.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/shader_program.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/world/transform.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/world/transform.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/skydom.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/skydom.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/rendering_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/rendering_typedef.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/frame_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/frame_buffer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/pch.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_shader_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/pch.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/include/buffers.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/include/buffers.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/main.vert" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/main.vert" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/src/source/edit_world_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/edit_world_window.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imgui.ini" beforeDir="false" afterPath="$PROJECT_DIR$/imgui.ini" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -41,55 +38,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="cidr-memory-view://12" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/io/imgui_context.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/buffer/vertex_buffer.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/descriptor_layout_binding.hpp" root0="FORCE_HIGHLIGHTING" />
@@ -108,9 +56,6 @@
     <setting file="file://$PROJECT_DIR$/Core/src/source/resources/descriptor_set_layout.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/resources/shader_program.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/source/resources/texture.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/include/type_traits" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/include/xstring" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../../../../VulkanSDK/1.3.290.0/Include/vulkan/vulkan_handles.hpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -124,32 +69,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;C++ Project.Editor.executor&quot;: &quot;Debug&quot;,
-    &quot;C/C++ Project.Core.executor&quot;: &quot;Debug&quot;,
-    &quot;C/C++ Project.Editor.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;rework__vulkan&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "C++ Project.Core.executor": "Debug",
+    "C++ Project.Editor.executor": "Debug",
+    "C/C++ Project.Core.executor": "Debug",
+    "C/C++ Project.Editor.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "rework__vulkan",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunAnythingCache">
     <option name="myCommands">
       <command value="_Max_vectorized" />
     </option>
   </component>
-  <component name="RunManager" selected="C/C++ Project.Editor">
+  <component name="RunManager" selected="C++ Project.Core">
     <configuration name="Core" type="CppProject" factoryName="C++ Project">
-      <configuration_1 setup="1">
+      <configuration_1>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -157,11 +104,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
       </configuration_1>
-      <configuration_2 setup="1">
+      <configuration_2>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -169,11 +116,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
       </configuration_2>
-      <configuration_3 setup="1">
+      <configuration_3>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -181,11 +128,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
       </configuration_3>
-      <configuration_4 setup="1">
+      <configuration_4>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -193,19 +140,18 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
       </configuration_4>
       <option name="DEFAULT_PROJECT_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
-      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Core/Core.vcxproj" />
       <option name="AUTO_SELECT_PRIORITY" value="0" />
       <method v="2">
         <option name="Build" />
       </method>
     </configuration>
     <configuration name="Editor" type="CppProject" factoryName="C++ Project">
-      <configuration_1 setup="1">
+      <configuration_1>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -213,11 +159,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="1" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
       </configuration_1>
-      <configuration_2 setup="1">
+      <configuration_2>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -225,11 +171,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
       </configuration_2>
-      <configuration_3 setup="1">
+      <configuration_3>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -237,11 +183,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
       </configuration_3>
-      <configuration_4 setup="1">
+      <configuration_4>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -249,19 +195,18 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
       </configuration_4>
       <option name="DEFAULT_PROJECT_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
-      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Editor/Editor.vcxproj" />
       <option name="AUTO_SELECT_PRIORITY" value="0" />
       <method v="2">
         <option name="Build" />
       </method>
     </configuration>
     <configuration name="ParaConquer" type="CppProject" factoryName="C++ Project">
-      <configuration_1 setup="1">
+      <configuration_1>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -269,11 +214,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
       </configuration_1>
-      <configuration_2 setup="1">
+      <configuration_2>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -281,11 +226,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
       </configuration_2>
-      <configuration_3 setup="1">
+      <configuration_3>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -293,11 +238,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
       </configuration_3>
-      <configuration_4 setup="1">
+      <configuration_4>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -305,19 +250,18 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
       </configuration_4>
       <option name="DEFAULT_PROJECT_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
-      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ParaConquer/ParaConquer.vcxproj" />
       <option name="AUTO_SELECT_PRIORITY" value="0" />
       <method v="2">
         <option name="Build" />
       </method>
     </configuration>
     <configuration name="VulkanAPI" type="CppProject" factoryName="C++ Project">
-      <configuration_1 setup="1">
+      <configuration_1>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -325,11 +269,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
       </configuration_1>
-      <configuration_2 setup="1">
+      <configuration_2>
         <option name="CONFIGURATION" value="Debug" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -337,11 +281,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
       </configuration_2>
-      <configuration_3 setup="1">
+      <configuration_3>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x64" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -349,11 +293,11 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
       </configuration_3>
-      <configuration_4 setup="1">
+      <configuration_4>
         <option name="CONFIGURATION" value="Release" />
         <option name="PLATFORM" value="x86" />
+        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
         <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
         <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
@@ -361,20 +305,18 @@
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
         <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
-        <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
       </configuration_4>
       <option name="DEFAULT_PROJECT_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
-      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/VulkanAPI/VulkanAPI.vcxproj" />
       <option name="AUTO_SELECT_PRIORITY" value="0" />
       <method v="2">
         <option name="Build" />
       </method>
     </configuration>
     <list>
-      <item itemvalue="C/C++ Project.Core" />
-      <item itemvalue="C/C++ Project.Editor" />
-      <item itemvalue="C/C++ Project.ParaConquer" />
-      <item itemvalue="C/C++ Project.VulkanAPI" />
+      <item itemvalue="C++ Project.Core" />
+      <item itemvalue="C++ Project.Editor" />
+      <item itemvalue="C++ Project.ParaConquer" />
+      <item itemvalue="C++ Project.VulkanAPI" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -529,6 +471,7 @@
       <workItem from="1731587279318" duration="2106000" />
       <workItem from="1731657760389" duration="169000" />
       <workItem from="1731658720033" duration="611000" />
+      <workItem from="1731867979096" duration="4314000" />
     </task>
     <servers />
   </component>

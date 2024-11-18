@@ -313,7 +313,7 @@ void Vulkan::VulkanApp::FreeCommandBuffer(PC_CORE::CommandPoolHandle _commandPoo
 #pragma region CommandBuffer Functions
 
 void Vulkan::VulkanApp::SetViewPort(PC_CORE::CommandBufferHandle _commandBufferHandle,
-                                    const PC_CORE::ViewPort& _viewPort)
+                                    const PC_CORE::ViewPortExtend& _viewPort)
 {
     vk::CommandBuffer commandBuffer = CastObjectToVkObject<vk::CommandBuffer>(_commandBufferHandle);
 
@@ -547,6 +547,7 @@ void Vulkan::VulkanApp::CreateTexture(const PC_CORE::CreateTextureInfo& _createT
                           ? vk::ImageLayout::eDepthAttachmentOptimal
                           : vk::ImageLayout::eShaderReadOnlyOptimal;
     }
+
 
     vk::CommandBuffer commandBuffer = BeginSingleTimeCommands(m_VulkanContext.device,
                                                               m_VulkanContext.resourceCommandPool);

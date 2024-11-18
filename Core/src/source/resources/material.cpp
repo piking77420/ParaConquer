@@ -14,7 +14,8 @@ void Material::WriteFile(const fs::path& path)
     Resource::WriteFile(path);
 }
 
-Material::Material(Material&& _other) : Resource(std::move(_other)) 
+
+Material::Material(Material&& _other) noexcept : Resource(std::move(_other))
 , albedo(std::exchange(_other.albedo, nullptr)) 
 , color(std::move(_other.color))
 , roughness(_other.roughness)
