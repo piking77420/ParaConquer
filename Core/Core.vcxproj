@@ -40,6 +40,7 @@
     <Content Include="src\externals\lib\Release\RapidXML.pdb" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\resources\material_instance.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
@@ -134,6 +135,7 @@
     <ClInclude Include="src\include\world\world.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\source\resources\material_instance.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_impl_glfw.cpp" />

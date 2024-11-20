@@ -288,6 +288,12 @@
     <ClInclude Include="src\externals\include\tiny_obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\rendering\gbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\resources\material_instance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\source\ecs\component.cpp">
@@ -486,6 +492,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\render_resource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\gbuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\resources\material_instance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
