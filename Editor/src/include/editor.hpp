@@ -29,10 +29,6 @@ public:
 
     void InitEditorWindows();
 
-    void InitMaterial();
-
-    void RotateCube();
-
     void UpdateEditorWindows();
     
     std::vector<EditorWindow*> m_EditorWindows;

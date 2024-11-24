@@ -145,7 +145,7 @@ BEGIN_PCCORE
 #pragma endregion Buffer
 
         virtual PC_CORE_API void SetViewPort(CommandBufferHandle _commandBufferHandle,
-                                             const PC_CORE::ViewPort& _viewPort)
+                                             const PC_CORE::ViewPortExtend& _viewPort)
         {
         }
 
@@ -197,7 +197,7 @@ BEGIN_PCCORE
         {
         }
 
-        virtual PC_CORE_API void AllocDescriptorSet(const std::string& _shaderName,PC_CORE::DescriptorSetHandle* _descriptorSetHandle, uint32_t _descriptorSetCount)
+        virtual PC_CORE_API void AllocDescriptorSet(const std::string& _shaderName, uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCoun)
         {
             
         };

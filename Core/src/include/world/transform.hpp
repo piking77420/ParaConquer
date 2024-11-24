@@ -22,6 +22,8 @@ struct Transform : Component
     Tbx::Vector3f localPosition;
 
     Tbx::Vector3f localRotation;
+
+    // TO HANDLE MATRIX TO AVOID RECALCULATION
 };
 
 REFLECT(Transform, Component)

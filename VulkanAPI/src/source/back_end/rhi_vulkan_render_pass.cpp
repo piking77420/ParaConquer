@@ -208,9 +208,7 @@ void Vulkan::Backend::ResolveBeginRenderPass(PC_CORE::RenderPassHandle _renderPa
 	_vkClearValue->resize(_renderPassInfo.clearValueCount);
 	for (size_t i = 0; i < _vkClearValue->size(); i++)
 	{
-		_vkClearValue->at(i).color.float32 = _renderPassInfo.pClearValues[i].clearValueColor.float32;
-		_vkClearValue->at(i).color.int32 = _renderPassInfo.pClearValues[i].clearValueColor.int32;
-		_vkClearValue->at(i).color.uint32 = _renderPassInfo.pClearValues[i].clearValueColor.uint32;
+		_vkClearValue->at(i).color = _renderPassInfo.pClearValues[i].clearValueColor.float32;
 		_vkClearValue->at(i).depthStencil.depth = _renderPassInfo.pClearValues[i].clearDepthStencilValue.depth;
 		_vkClearValue->at(i).depthStencil.stencil = _renderPassInfo.pClearValues[i].clearDepthStencilValue.stencil;
 	}

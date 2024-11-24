@@ -166,7 +166,8 @@ void Texture::LoadCubeMap(const std::array<std::string, 6>& _maps)
 
 void Texture::CreateMimmap()
 {
-    RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
+    if (m_MipLevel != 1)
+        RHI::GetInstance().GenerateMimpMap(m_ImageHandle, m_Format, m_TextureSize.x, m_TextureSize.y, m_MipLevel);
 }
 
 void Texture::CreateSampler()

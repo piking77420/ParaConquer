@@ -58,7 +58,6 @@
     <ClInclude Include="src\include\front_end\vulkan_present_chain.hpp" />
     <ClInclude Include="src\include\front_end\vulkan_shader_compiler.hpp" />
     <ClInclude Include="src\include\front_end\vulkan_shader_manager.hpp" />
-    <ClInclude Include="src\include\pch.h" />
     <ClInclude Include="src\include\rhi_vulkan_parser.hpp" />
     <ClInclude Include="src\include\vulkan_header.h" />
     <ClInclude Include="src\include\vulkan_typedef.h" />
@@ -79,7 +78,6 @@
     <ClCompile Include="src\source\front_end\vulkan_present_chain.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_shader_compiler.cpp" />
     <ClCompile Include="src\source\front_end\vulkan_shader_manager.cpp" />
-    <ClCompile Include="src\source\pch.cpp" />
     <ClCompile Include="src\source\rhi_vulkan_parser.cpp" />
     <ClCompile Include="src\source\vulkan_typedef.cpp" />
   </ItemGroup>

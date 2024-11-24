@@ -13,6 +13,18 @@ enum class GraphicAPI
     COUNT
 };
 
+enum class GBufferType
+{
+    COLOR,
+    POSITION,
+    NORMAL,
+    TEXTCOORD,
+    DEPTH,
+    
+    COUT,
+};
+
+
 
     struct LowLevelCamera
     {

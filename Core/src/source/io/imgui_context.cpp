@@ -83,7 +83,8 @@ void IMGUIContext::Render(PC_CORE::CommandBuffer _commandBuffer)
     
     vulkanApp.BeginSwapChainRenderPass(_commandBuffer);
     ImDrawData* draw_data = ImGui::GetDrawData();
-    ImGui_ImplVulkan_RenderDrawData(draw_data, *reinterpret_cast<vk::CommandBuffer*>(&_commandBuffer.handle));
+    GPUBufferHandle handle = _commandBuffer.GetHandle();
+    ImGui_ImplVulkan_RenderDrawData(draw_data, *reinterpret_cast<vk::CommandBuffer*>(&handle));
     vulkanApp.EndRenderPass(_commandBuffer);
     
     if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

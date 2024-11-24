@@ -32,6 +32,10 @@ public:
     RenderPass forwardRenderPass;
 
     RenderPass colorPass;
+
+    ShaderProgram* forwardShader = nullptr;
+
+    ShaderProgram* wireframeShader = nullptr;
     
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 
@@ -45,7 +49,6 @@ public:
     
     PC_CORE_API void SwapBuffers();
     
-
     PC_CORE_API void WaitDevice();
 
     PC_CORE_API void Destroy();
@@ -56,6 +59,14 @@ public:
 
 private:
 
+    struct WireFrameModelColor
+    {
+        Tbx::Vector4f color;
+        Tbx::Matrix4x4f model;
+    };
+
+    WireFrameModelColor wireFrameModelColor;
+
     GraphicAPI m_GraphicApi = GraphicAPI::VULKAN;
     
     size_t m_CurrentImage;
@@ -65,16 +76,13 @@ private:
     std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
 
     RenderResources renderResources;
-
-    ShaderProgram* m_MainShader = nullptr;
-
+    
     Window* Windowtpr = nullptr;
     
     CommandBuffer* m_CommandBuffer = nullptr;
     
-    Texture* texture = nullptr;
-    
     std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
+
     
     PC_CORE_API void InitCommandPools();
 
@@ -82,11 +90,17 @@ private:
 
     PC_CORE_API void InitShader();
 
+    PC_CORE_API void InitBasicShader();
+
+    PC_CORE_API void InitWireFrameShader();
+
     PC_CORE_API void InitBuffer();
 
     PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
 
     PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
+
+    PC_CORE_API void DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
 
     PC_CORE_API void CreateForwardPass();
 };

@@ -73,7 +73,7 @@ enum CommandPoolBufferFlag
 };
 
 
-struct ViewPort
+struct ViewPortExtend
 {
     Tbx::Vector2f position;
     float width;
@@ -742,10 +742,17 @@ struct CreateTextureInfo
 
     using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderRayTracingInfo, ShaderComputeInfo>;
 
+    struct DescriptorInfo 
+    {
+        bool freeDescriptorSet = false;
+        uint32_t descriptorAllocCount = 0;
+    };
+
     struct ShaderInfo
     {
         ShaderProgramPipelineType shaderProgramPipelineType;
         ShaderInfoData shaderInfoData;
+        DescriptorInfo descriptorInfo;
     };
 
     struct ProgramShaderCreateInfo
@@ -991,11 +998,10 @@ struct ClearDepthStencilValue
 
 };
 
-struct ClearValue
+union ClearValue
 {
     ClearValueColor clearValueColor;
     ClearDepthStencilValue clearDepthStencilValue;
-
 };
 
 struct BeginRenderPassInfo
