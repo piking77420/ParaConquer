@@ -22,6 +22,7 @@ void ResourceManager::InitPath()
     ResourceManager::Create<Mesh>("assets/meshs/obj/viking_room.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/cube.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/untitled.obj");
+    ResourceManager::Create<Mesh>("assets/meshs/obj/suzanne.obj");
 
 
     ResourceManager::Create<Texture>("assets/textures/diamond_block.jpg");

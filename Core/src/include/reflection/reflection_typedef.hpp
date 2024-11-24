@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "core_header.hpp"
 #include <vector>
+#include <string>
 
 BEGIN_PCCORE
 
@@ -58,7 +59,10 @@ enum MemberEnumFlag
     NONE,
     NOTSERIALIZE,
     COLOR,
+    EULER_ANGLES
 };
+
+
 
 struct Members
 {

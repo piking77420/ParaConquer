@@ -14,7 +14,7 @@ namespace Vulkan
 	class VulkanApp : public PC_CORE::RHI
 	{
 	public:
-		uint32_t GetCurrentImageIndex() const override;
+		VULKAN_API uint32_t GetCurrentImageIndex() const override;
 
 		VULKAN_API void BeginRender(PC_CORE::CommandPoolHandle _commandBuffer) override;
 		
