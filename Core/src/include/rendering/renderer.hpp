@@ -36,6 +36,9 @@ public:
     ShaderProgram* forwardShader = nullptr;
 
     ShaderProgram* wireframeShader = nullptr;
+
+    RenderResources renderResources;
+
     
     PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
 
@@ -75,13 +78,12 @@ private:
     
     std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
 
-    RenderResources renderResources;
     
     Window* Windowtpr = nullptr;
     
     CommandBuffer* m_CommandBuffer = nullptr;
     
-    std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
+    std::vector<PC_CORE::DescriptorSetHandle> sceneDescriptorSet;
 
     
     PC_CORE_API void InitCommandPools();

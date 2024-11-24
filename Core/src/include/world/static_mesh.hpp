@@ -11,7 +11,7 @@ struct StaticMesh : public Component
 
     Mesh* mesh = nullptr;
 
-    Material* material  = nullptr ;
+    MaterialInstance* materialInstance  = nullptr ;
     
 };
 REFLECT(StaticMesh, Component)

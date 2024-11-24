@@ -32,7 +32,7 @@ void WorldViewWindow::Update()
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
+    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImageIndex();
     VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
     
     ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
@@ -43,7 +43,7 @@ void WorldViewWindow::Render()
 {
     EditorWindow::Render();
 
-    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImage();
+    uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImageIndex();
 
     const Tbx::Vector2ui windowSize = m_Editor->window.GetWindowSize();
     PC_CORE::RenderingContext renderingContext;

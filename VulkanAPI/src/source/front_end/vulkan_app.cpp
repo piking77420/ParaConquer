@@ -11,7 +11,7 @@
 #include "back_end/vulkan_transition_image_layout.hpp"
 
 
-uint32_t Vulkan::VulkanApp::GetCurrentImage() const
+uint32_t Vulkan::VulkanApp::GetCurrentImageIndex() const
 {
     return m_VulkanContext.currentFrame;
 }

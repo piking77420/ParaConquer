@@ -20,9 +20,9 @@ BEGIN_PCCORE
         return position == other.position && normal == other.normal && textureCoord == other.textureCoord;
     }
     
-    static VertexInputBindingDescrition GetBindingDescrition(uint32_t _binding);
+    PC_CORE_API static VertexInputBindingDescrition GetBindingDescrition(uint32_t _binding);
 
-    static std::vector<VertexAttributeDescription> GetAttributeDescriptions(uint32_t _binding);
+    PC_CORE_API static std::vector<VertexAttributeDescription> GetAttributeDescriptions(uint32_t _binding);
     
 };
 

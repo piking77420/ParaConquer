@@ -31,7 +31,7 @@ void Renderer::Destroy()
 
 void Renderer::Render(const PC_CORE::RenderingContext& _renderingContext, const World& _world)
 {
-	m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImage());
+	m_CurrentImage = static_cast<size_t>(RHI::GetInstance().GetCurrentImageIndex());
 	UpdateUniforms(_renderingContext);
 
 
@@ -94,7 +94,7 @@ void Renderer::BeginFrame()
 	}
 
 	RHI::GetInstance().WaitForAquireImage();
-	m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
+	m_CommandBuffer = &m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImageIndex()));
 	RHI::GetInstance().BeginRender(m_CommandBuffer->GetHandle());
 }
 
@@ -119,7 +119,7 @@ void Renderer::WaitDevice()
 
 CommandBuffer& Renderer::GetCommandSwapChainBuffer()
 {
-	return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImage()));
+	return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImageIndex()));
 }
 
 GraphicAPI Renderer::GetGraphicsAPI()
@@ -242,7 +242,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 {
 	forwardShader->Bind(m_CommandBuffer->GetHandle());
 	forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
-		&descriptorSets[m_CurrentImage], 0, nullptr);
+		&sceneDescriptorSet[m_CurrentImage], 0, nullptr);
 
 	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
 
@@ -254,9 +254,10 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
 		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
 
+		DescriptorSetHandle materialDescritproSetHandle = it->materialInstance->GetDescriptorSetHandle();
 		
 		forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 1, 1,
-			&it->material->descriptorSetHandle[m_CurrentImage], 0, nullptr);
+			&materialDescritproSetHandle, 0, nullptr);
 		
 		Tbx::Matrix4x4f transformMatrix;
 		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &transformMatrix);
@@ -367,19 +368,19 @@ void Renderer::InitCommandPools()
 
 void Renderer::InitDescriptors()
 {
-	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	forwardShader->CreateDescriptorSet(0, descriptorSets.data(), static_cast<uint32_t>(descriptorSets.size()));
+	sceneDescriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
+	forwardShader->CreateDescriptorSet(0, sceneDescriptorSet.data(), static_cast<uint32_t>(sceneDescriptorSet.size()));
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		constexpr size_t offset = 0;
 
-		DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].AsDescriptorBufferInfo(offset);
+		DescriptorBufferInfo descriptorBufferInfo = renderResources.sceneUniform[i].GetBufferInfo(offset);
 		DescriptorWriteSet descriptorWrite[1] =
 		{
 
 			{
-				.dstDescriptorSetHandle = descriptorSets[i],
+				.dstDescriptorSetHandle = sceneDescriptorSet[i],
 				.dstBinding = 0,
 				.dstArrayElement = 0,
 				.descriptorType = DescriptorType::UNIFORM_BUFFER,

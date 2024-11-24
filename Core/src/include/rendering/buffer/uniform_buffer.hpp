@@ -19,7 +19,7 @@ public:
 
     void Update(size_t _size, size_t _offset, const void* _data);
 
-    DescriptorBufferInfo AsDescriptorBufferInfo(uint32_t _offset) const;
+    DescriptorBufferInfo GetBufferInfo(uint32_t _offset) const;
    
     UniformBuffer(size_t _size);
 

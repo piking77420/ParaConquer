@@ -7,6 +7,8 @@
 #include "resources/material_instance.hpp"
 #include <unordered_map>
 
+#include "rendering/render_harware_interface/command_buffer.h"
+
 #define MATERIAL_SET 1
 
 BEGIN_PCCORE
@@ -29,17 +31,19 @@ public:
 
     PC_CORE_API ~Material() noexcept override = default;
 
-    PC_CORE_API void CreateMaterialInstance(const std::string& _materialIntance);
+    PC_CORE_API void CreateMaterialInstance(MaterialInstance* _materialInstance);
 
-    PC_CORE_API void DestroyMaterialInstace(const std::string& _materialIntance);
+    PC_CORE_API void DestroyMaterialInstace(MaterialInstance* _materialInstance);
 
-    PC_CORE_API void BuildMaterialInstance(const std::string& _materialIntance, std::array<DescriptorWriteSet, MAX_FRAMES_IN_FLIGHT>& _descritproWrite);
-  
+    PC_CORE_API void UpdateMaterialInstance(const MaterialInstance& _materialInstance, DescriptorWriteSet* _descriptorWriteSets, uint32_t descriptorCount, uint32_t imageIndex) const;
+
+    PC_CORE_API DescriptorSetHandle GetDesciptorSet(const MaterialInstance& _materialInstance) const;
+
+
 private:
-    std::vector<std::array<DescriptorSetHandle, MAX_FRAMES_IN_FLIGHT>> m_MaterialInstanceDescriptor;
+    mutable std::vector<std::array<DescriptorSetHandle, MAX_FRAMES_IN_FLIGHT>> m_MaterialInstanceDescriptor;
+    
     std::unordered_map<std::string, uint32_t> m_MaterialInstanceMapToIndex;
-
-    const PC_CORE::ShaderProgram* m_Shader = nullptr;
 };
 
 END_PCCORE

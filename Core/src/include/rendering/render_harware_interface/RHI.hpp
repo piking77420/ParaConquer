@@ -25,7 +25,7 @@ BEGIN_PCCORE
         {
         }
 
-        PC_CORE_API virtual uint32_t GetCurrentImage() const
+        PC_CORE_API virtual uint32_t GetCurrentImageIndex() const
         {
             return 0;
         }

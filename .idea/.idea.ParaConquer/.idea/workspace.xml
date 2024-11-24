@@ -12,19 +12,21 @@
   <component name="ChangeListManager">
     <list default="true" id="c3377665-7297-46c1-9f49-1d703820389b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ParaConquer/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/Core.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/Core/Core.vcxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/frame_buffer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/frame_buffer.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/buffer/uniform_buffer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/buffer/uniform_buffer.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/render_harware_interface/RHI.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/renderer.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/include/rendering/rendering_typedef.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/rendering/rendering_typedef.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/frame_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/frame_buffer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/resource_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/include/world_view_window.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Editor/src/source/edit_world_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/edit_world_window.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/material.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/material.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/resources/material_instance.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/resources/material_instance.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/include/world/static_mesh.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/include/world/static_mesh.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/buffer/uniform_buffer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/buffer/uniform_buffer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/rendering/renderer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/material.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Core/src/source/resources/material_instance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Core/src/source/resources/material_instance.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Editor/src/source/editor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/editor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Editor/src/source/world_view_window.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MotionCore" beforeDir="false" afterPath="$PROJECT_DIR$/MotionCore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/include/front_end/vulkan_app.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/front_end/vulkan_app.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/VulkanAPI/src/source/rhi_vulkan_parser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imgui.ini" beforeDir="false" afterPath="$PROJECT_DIR$/imgui.ini" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +40,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt/corecrt_math_defines.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/include/xstring" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/include/xutility" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/io/imgui_context.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/buffer/vertex_buffer.hpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Core/src/include/rendering/descriptor_layout_binding.hpp" root0="FORCE_HIGHLIGHTING" />
@@ -472,6 +477,7 @@
       <workItem from="1731657760389" duration="169000" />
       <workItem from="1731658720033" duration="611000" />
       <workItem from="1731867979096" duration="4314000" />
+      <workItem from="1732445687498" duration="4631000" />
     </task>
     <servers />
   </component>
