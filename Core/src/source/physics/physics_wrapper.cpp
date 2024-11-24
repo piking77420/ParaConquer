@@ -16,9 +16,6 @@ void PhysicsWrapper::InitBodies(Scene* _scene)
     InitSphereCollider(_scene);
     InitBoxCollider(_scene);
     std::vector<BoxCollider>* sphereColliders = _scene->GetData<BoxCollider>();
-    const Tbx::Vector3f force = {-1000,1000,1000};
-    AddForce(sphereColliders->at(0).body_Id, {1000,1,1000});
-    AddTorque(sphereColliders->at(0).body_Id, force);
 }
 
 void PhysicsWrapper::UpdatePhysics(float _deltatime, Scene* _scene)

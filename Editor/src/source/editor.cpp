@@ -91,7 +91,7 @@ void Editor::InitTestScene()
             mesh->material = material2;
         }
         
-        mesh->mesh = ResourceManager::Get<Mesh>("untitled.obj");
+        mesh->mesh = ResourceManager::Get<Mesh>("suzanne.obj");
     }
     
 }

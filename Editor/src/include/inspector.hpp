@@ -25,12 +25,12 @@ private:
     void DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId);
 
     void PrintArray(void* begin, const PC_CORE::Members& _members);
-
-    void PrintTransform(PC_CORE::Transform* _transform);
-
+    
     std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
 
     const PC_CORE::ReflectedType* transfromTypeRef;
+    
+    std::string m_Euler[3];
 };
 
 END_EDITOR_PCCORE
