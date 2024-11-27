@@ -102,7 +102,7 @@ void EditWorldWindow::CameratMovment(float _deltatime)
     addVector = addVector.Normalize();  
     cameraSpeed += addVector * _deltatime * cameraSpeedValue;
     camera.position += addVector * 0.5f * _deltatime * _deltatime + cameraSpeed * _deltatime;
-    cameraSpeed *= drag;
+    cameraSpeed *= pow(drag,_deltatime);
 }
 
 void EditWorldWindow::CameraChangeSpeed()

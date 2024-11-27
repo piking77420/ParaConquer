@@ -35,7 +35,7 @@ void WorldViewWindow::Update()
     uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImageIndex();
     VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
     
-    ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
+    ImGui::Image(reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
             ImVec2(1, 1));
 }
 
@@ -71,7 +71,7 @@ void WorldViewWindow::ResizeViewports()
 {
     for (size_t i = 0; i < m_ViewPortImage.size(); i++)
     {
-        for (size_t j = 0; j < m_ViewPortImage.size(); j++)
+        for (size_t j = 0; j < m_ViewPortImage.at(i).size(); j++)
         {
             TMPRBuffer tMPRBuffer = static_cast<TMPRBuffer>(j);
 

@@ -187,9 +187,10 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 				Tbx::Vector3f euler = q.ToEulerAngles() * Rad2Deg;
 
 				ImGui::DragFloat3("Rotation", euler.GetPtr(), 0.1f);
-				if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
+				if (ImGui::IsItemEdited())
 				{
-					q = Tbx::Quaternionf::FromEuleur(euler * Deg2Rad).Normalize();
+					Tbx::Vector4f euler4 = Tbx::Vector4f(euler.x, euler.y, euler.z, 0.f);
+					q = Tbx::Quaternionf::FromEuler(euler4 * Deg2Rad).Normalize();
 				}
 			}
 			break;
