@@ -189,7 +189,7 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 				ImGui::DragFloat3("Rotation", euler.GetPtr(), 0.1f);
 				if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
 				{
-					q = Tbx::Quaternionf::FromEuler(euler * Deg2Rad).Normalize();
+					q = Tbx::Quaternionf::FromEuleur(euler * Deg2Rad).Normalize();
 				}
 			}
 			break;
