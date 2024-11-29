@@ -278,39 +278,49 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 	const std::vector<SphereCollider>* spheresColliders = _world.scene.GetData<SphereCollider>(); 
 	const std::vector<BoxCollider>* boxsColliders = _world.scene.GetData<BoxCollider>();
 
+	if (spheresColliders->empty() && boxsColliders->empty())
+		return;
+
 	constexpr const char* wireframeDataPushConstant = "wireframeData";
 
 	wireframeShader->Bind(m_CommandBuffer->GetHandle());
+	wireframeShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
+	&sceneDescriptorSet[m_CurrentImage], 0, nullptr);
+	wireFrameModelColor.color = {0,1,0,1};
+
 	m_CommandBuffer->BindVertexBuffer(meshSphere->vertexBuffer, 0, 1);
 	m_CommandBuffer->BindIndexBuffer(meshSphere->indexBuffer);
 	uint32_t nbrofIndices = meshSphere->GetNbrOfIndicies();
 	
-
-	wireFrameModelColor.color = {0,1,0,1};
-	for (auto it = spheresColliders->begin(); it != spheresColliders->end(); it++)
-	{ 
-		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
-		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale * it->radius, &wireFrameModelColor.model);
-		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
-
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
-	}
-
-	m_CommandBuffer->BindVertexBuffer(meshCube->vertexBuffer, 0, 1);
-	m_CommandBuffer->BindIndexBuffer(meshCube->indexBuffer);
-	nbrofIndices = meshCube->GetNbrOfIndicies();
-
-	for (auto it = boxsColliders->begin(); it != boxsColliders->end(); it++)
+	if (!spheresColliders->empty())
 	{
-		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
-		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->extend, &wireFrameModelColor.model);
-		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+		for (auto it = spheresColliders->begin(); it != spheresColliders->end(); it++)
+		{ 
+			const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+			const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+			Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale * it->radius, &wireFrameModelColor.model);
+			wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
 
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
+			RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
+		}
 	}
-	
+
+	if (!boxsColliders->empty())
+	{
+		m_CommandBuffer->BindVertexBuffer(meshCube->vertexBuffer, 0, 1);
+		m_CommandBuffer->BindIndexBuffer(meshCube->indexBuffer);
+		nbrofIndices = meshCube->GetNbrOfIndicies();
+
+		for (auto it = boxsColliders->begin(); it != boxsColliders->end(); it++)
+		{
+			const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+			const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+			Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->extend, &wireFrameModelColor.model);
+			wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+
+			RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
+		}
+	}
 }
 
 void Renderer::CreateForwardPass()
