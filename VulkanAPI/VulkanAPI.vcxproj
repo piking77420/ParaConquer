@@ -231,7 +231,7 @@
       <AdditionalLibraryDirectories>$(ProjectDir)src\externals\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Toolsd.lib;SPIRV-Tools-optd.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
