@@ -2,7 +2,7 @@
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "core_header.hpp"
-#include "resources/Resource.hpp"
+#include "resources/resource.hpp"
 
 BEGIN_EDITOR_PCCORE
 class AssetBrowser : public EditorWindow

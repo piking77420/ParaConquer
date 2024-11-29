@@ -5,7 +5,7 @@
 #include "core_header.hpp"
 #include "guid.hpp"
 #include "log.hpp"
-#include "Resource.hpp"
+#include "resource.hpp"
 
 BEGIN_PCCORE
 class ResourceManager

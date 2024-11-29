@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Resource.hpp"
+#include "resource.hpp"
 
 
 class Sampler : public PC_CORE::Resource

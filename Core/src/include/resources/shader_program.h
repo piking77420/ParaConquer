@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "Resource.hpp"
+#include "resource.hpp"
 #include "shader_source.hpp"
 #include "rendering/render_harware_interface/descriptor_set.hpp"
 
