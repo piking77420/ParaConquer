@@ -375,11 +375,13 @@ bool Vulkan::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk:
 	std::vector<vk::ShaderModule> shaderModules(shaderInternalBack.shaderStages.size());
 	std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesCreateInfos(shaderInternalBack.shaderStages.size());
 
+	Vulkan::InitCompilerProcess();
+
 	for (uint32_t i = 0; i < _shaderSource.size(); i++)
 	{
 		PC_CORE::ShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
 		// SOURCE TO MODULE and get spv reflection
-		m_ShaderCompiler.CreateModuleFromSource(_device, _shaderSource[i].spvCode.data(),
+		Vulkan::CreateModuleFromSource(_device, _shaderSource[i].spvCode.data(),
 			_shaderSource[i].shaderSourceCodePath.c_str(),
 			shaderStage, &shaderStagesInfo.at(i).reflectShaderModule,
 			&shaderModules[i]);
@@ -389,6 +391,8 @@ bool Vulkan::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk:
 		shaderStagesCreateInfos.at(i).module = shaderModules[i];
 		shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
 	}
+
+	Vulkan::DestroyCompilerProcess();
 
 	CreateShaderResourceFromSpvReflectModule(_programShaderCreatInfo, _device, &shaderInternalBack);
 	CreatePipelineGraphicPointFromModule(_device, _tmprRenderPass, _programShaderCreatInfo.shaderInfo,

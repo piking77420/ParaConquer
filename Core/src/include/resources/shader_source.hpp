@@ -12,14 +12,18 @@ public:
 
     PC_CORE_API ShaderSource(const fs::path& _path);
 
-    std::vector<char> GetShaderSourceFile();
+    PC_CORE_API std::string GetShaderSourceFile();
 
-    void WriteFile(const fs::path& path) override;
+    PC_CORE_API void WriteFile(const fs::path& path) override;
 
     PC_CORE_API ~ShaderSource() override = default;
 
 private:
     static std::vector<char> ReadFileAsChar(const std::string& _filename);
+
+    PC_CORE_API std::string IncludePath(const std::string& source, const std::filesystem::path& path);
+
+    PC_CORE_API std::string GetFileAsString(const std::filesystem::path& path);
     
 };
 

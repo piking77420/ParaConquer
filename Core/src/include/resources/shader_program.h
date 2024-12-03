@@ -40,8 +40,6 @@ BEGIN_PCCORE
         PC_CORE_API void BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _firstSet,
                                uint32_t _descriptorSetCount, const DescriptorSetHandle* _pDescriptorSets,
                                uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets);
-
-        
     
     private:
         ShaderInfo m_ShaderInfo;

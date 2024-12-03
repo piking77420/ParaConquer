@@ -681,7 +681,7 @@ struct CreateTextureInfo
     struct ShaderSourcePath
     {
         std::string shaderSourceCodePath;
-        std::vector<char> spvCode;
+        std::string spvCode;
     };
 
     enum class ShaderProgramPipelineType
