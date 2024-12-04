@@ -47,6 +47,7 @@ void Vulkan::CreateModuleFromSource(vk::Device _device, const char* _source, con
 	vk::ShaderModule* _shaderModule)
 {
 
+	// TO DO GLANG SHOULD BE IN EDITOR ONLY
 
 	auto resource = glslang_default_resource();
 	const glslang_input_t input =

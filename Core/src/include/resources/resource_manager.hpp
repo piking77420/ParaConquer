@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <functional>
 #include <map>
 
 #include "core_header.hpp"
@@ -36,6 +37,9 @@ public:
 
     template<class T>
     static bool Delete(const std::string& _name);
+
+    template <class T, typename ...Arg>
+    static void ForEach(std::function<void(T*, Arg...)> _lamba, Arg... _arg);
 
 private:
     struct PathName
@@ -111,6 +115,18 @@ bool ResourceManager::Delete(const std::string& _name)
         }
     }
     return false;
+}
+
+template <class T, typename ... Arg>
+void ResourceManager::ForEach(std::function<void(T*, Arg...)> _lamba, Arg... _arg)
+{
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        if (dynamic_cast<T*>(it->second) != nullptr)
+        {
+            _lamba(it->second, _arg...);
+        }
+    }
 }
 
 END_PCCORE

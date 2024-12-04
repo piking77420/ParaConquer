@@ -42,7 +42,7 @@ void Editor::Destroy()
 void Editor::UpdateEditorWindows()
 {
     dockSpace.BeginDockSpace();
-
+    ShaderRecompileList();
     for (EditorWindow* editorWindow : m_EditorWindows)
     {
         editorWindow->Begin();
@@ -50,6 +50,28 @@ void Editor::UpdateEditorWindows()
         editorWindow->End();
     }
     dockSpace.EndDockSpace();
+}
+
+void Editor::ShaderRecompileList()
+{
+    static bool open = true;
+    ImGui::Begin("Shader Recompile List");
+
+    int vd = 1;
+    auto lamba = [&](ShaderProgram* shaderProgram, int v) -> void
+    {
+      if (ImGui::Button(shaderProgram->name.c_str()))
+      {
+          PC_LOG("Recompile Shader Program");
+          //shaderProgram->Reload();
+      }
+        
+    };
+    
+    ResourceManager::ForEach<ShaderProgram>(lamba);
+    
+    ImGui::End();
+    
 }
 
 void Editor::InitTestScene()
