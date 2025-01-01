@@ -61,7 +61,7 @@ public:
 
     PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
 
-    template<typename Holder, typename MemberType, MemberEnumFlag enumFlag = NONE>
+    template<typename Holder, typename MemberType, MemberEnumFlag enumFlag = NONE_MEMBER_ENUM_FLAG>
     static Members ReflectMember(size_t _offset, const char* _memberName);
 
     template<typename Holder, typename BaseClass = void>

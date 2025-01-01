@@ -36,10 +36,13 @@ public:
     static T* Get(const std::string& _name);
 
     template<class T>
+    static T* Get();
+
+    template<class T>
     static bool Delete(const std::string& _name);
 
-    template <class T, typename ...Arg>
-    static void ForEach(std::function<void(T*, Arg...)> _lamba, Arg... _arg);
+    template <class T>
+    static void ForEach(const std::function<void(T*)>& _lamba);
 
 private:
     struct PathName
@@ -102,6 +105,19 @@ T* ResourceManager::Get(const std::string& _name)
 }
 
 template <class T>
+T* ResourceManager::Get()
+{
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        if (dynamic_cast<T*>(it->second))
+            return reinterpret_cast<T*>(it->second);
+    }
+    PC_LOGERROR("There is no resource as this type");
+
+    return nullptr;
+}
+
+template <class T>
 bool ResourceManager::Delete(const std::string& _name)
 {
 
@@ -117,14 +133,15 @@ bool ResourceManager::Delete(const std::string& _name)
     return false;
 }
 
-template <class T, typename ... Arg>
-void ResourceManager::ForEach(std::function<void(T*, Arg...)> _lamba, Arg... _arg)
+template <class T>
+void ResourceManager::ForEach(const std::function<void(T*)>& _lamba)
 {
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        if (dynamic_cast<T*>(it->second) != nullptr)
+        T* ptr = dynamic_cast<T*>(it->second);
+        if (ptr != nullptr)
         {
-            _lamba(it->second, _arg...);
+            _lamba(ptr);
         }
     }
 }

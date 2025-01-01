@@ -9,6 +9,7 @@
 #include "world/static_mesh.hpp"
 #include "physics/box_collider.hpp"
 #include "physics/sphere_collider.hpp"
+#include "resources/scene_lights_manager.h"
 
 #undef ERROR
 #undef near;
@@ -122,7 +123,7 @@ CommandBuffer& Renderer::GetCommandSwapChainBuffer()
 	return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImageIndex()));
 }
 
-GraphicAPI Renderer::GetGraphicsAPI()
+GraphicAPI Renderer::GetGraphicsAPI() const
 {
 	return m_GraphicApi;
 }
@@ -175,7 +176,13 @@ void Renderer::InitBasicShader()
 
 	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
-	shaderGraphicPointInfo->polygonMode = PolygonMode::Fill;
+	shaderGraphicPointInfo->rasterizerInfo =
+	{
+		.polygonMode = PolygonMode::Fill,
+		.cullModeFlag = CullModeFlagBit::Back,
+		.frontFace = FrontFace::CounterClockwise
+	};
+	
 	
 	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
 		Vertex::GetBindingDescrition(0));
@@ -201,10 +208,17 @@ void Renderer::InitWireFrameShader()
 
 	PC_CORE::ProgramShaderCreateInfo createInfo{};
 	createInfo.prograShaderName = "wireframe";
+	
 
 	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
-	shaderGraphicPointInfo->polygonMode = PolygonMode::Line;
+	shaderGraphicPointInfo->rasterizerInfo =
+		{
+			.polygonMode = PolygonMode::Line,
+			.cullModeFlag = CullModeFlagBit::None,
+			.frontFace = FrontFace::CounterClockwise
+		};
+	
 	
 	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
 		Vertex::GetBindingDescrition(0));
@@ -351,7 +365,7 @@ void Renderer::CreateForwardPass()
 
 void Renderer::InitRenderResources()
 {
-
+	SceneLightsBuffer* lightsManager = ResourceManager::Create<SceneLightsBuffer>();
 	CreateForwardPass();
 	InitShader();
 	InitBuffer();

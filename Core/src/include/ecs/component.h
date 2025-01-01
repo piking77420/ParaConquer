@@ -6,7 +6,7 @@
 BEGIN_PCCORE
 struct Component
 {
-    EntityId entityId;
+    EntityId entityId = INVALID_ENTITY_ID;
 };
 
 REFLECT(Component)

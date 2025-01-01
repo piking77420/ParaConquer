@@ -58,7 +58,7 @@ public:
 
     PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
 
-    PC_CORE_API GraphicAPI GetGraphicsAPI();
+    PC_CORE_API GraphicAPI GetGraphicsAPI() const;
 
 private:
 

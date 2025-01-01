@@ -130,6 +130,9 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 	}
 	else
 	{
+		if (_members.enumFlag & PC_CORE::MemberEnumFlag::HIDE_INSPECTOR)
+			return;
+		
 		switch (type.typeInfo.dataNature)
 		{
 		case PC_CORE::DataNature::UNKNOWN:

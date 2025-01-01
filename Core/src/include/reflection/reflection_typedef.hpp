@@ -56,11 +56,13 @@ struct TypeInfo
 
 enum MemberEnumFlag
 {
-    NONE,
+    NONE_MEMBER_ENUM_FLAG,
     NOTSERIALIZE,
     COLOR,
-    EULER_ANGLES
+    EULER_ANGLES,
+    HIDE_INSPECTOR,
 };
+
 
 
 

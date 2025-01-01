@@ -145,7 +145,7 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
                      const Members& _members
                      , std::string& _err)
 {
-    if (_members.enumFlag & NOTSERIALIZE)
+    if (_members.enumFlag & MemberEnumFlag::NOTSERIALIZE)
         return;
     
     const uint8_t* memberPtr = _objetPtr + _members.offset;
@@ -213,7 +213,7 @@ void DeserializeMember(uint8_t* _objetPtr, XMLElement* _currentElement,
                      const Members& _members
                      , std::string& _err)
 {
-    if (_members.enumFlag & NOTSERIALIZE)
+    if (_members.enumFlag & MemberEnumFlag::NOTSERIALIZE)
        return;
     
     uint8_t* memberPtr = _objetPtr + _members.offset;

@@ -175,15 +175,16 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _devic
 	viewportState.viewportCount = 1;
 	viewportState.scissorCount = 1;
 
+	const PC_CORE::ShaderGraphicPointInfo* ShaderGraphicPointInfo = &std::get<PC_CORE::ShaderGraphicPointInfo>(_shaderInfo.shaderInfoData);
 
 	vk::PipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = RhiPolygonModeToVulkan(std::get<PC_CORE::ShaderGraphicPointInfo>(_shaderInfo.shaderInfoData).polygonMode);
+	rasterizer.polygonMode = RhiPolygonModeToVulkan(ShaderGraphicPointInfo->rasterizerInfo.polygonMode);
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
-	rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
+	rasterizer.cullMode = static_cast<vk::CullModeFlagBits>(ShaderGraphicPointInfo->rasterizerInfo.cullModeFlag);
+	rasterizer.frontFace = static_cast<vk::FrontFace>(ShaderGraphicPointInfo->rasterizerInfo.frontFace);
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 	rasterizer.depthBiasClamp = 0.0f; // Optional

@@ -57,8 +57,8 @@ void Editor::ShaderRecompileList()
     static bool open = true;
     ImGui::Begin("Shader Recompile List");
 
-    int vd = 1;
-    auto lamba = [&](ShaderProgram* shaderProgram, int v) -> void
+    
+    auto lamba = [&](const ShaderProgram* shaderProgram) -> void
     {
       if (ImGui::Button(shaderProgram->name.c_str()))
       {
@@ -84,12 +84,17 @@ void Editor::InitTestScene()
     Material* material2 = ResourceManager::Create<Material>("material2", program);
     material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
 
-    ShaderGraphicPointInfo shaderGraphicPointInfo =
+    const ShaderGraphicPointInfo shaderGraphicPointInfo =
+    {
+        .rasterizerInfo =
         {
-        .polygonMode = PolygonMode::Fill,
+            .polygonMode = PolygonMode::Fill,
+            .cullModeFlag = CullModeFlagBit::Back,
+            .frontFace = FrontFace::CounterClockwise
+        },
         .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
         .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)}
-        };
+    };
     
     ShaderInfo shaderInfo =
         {
