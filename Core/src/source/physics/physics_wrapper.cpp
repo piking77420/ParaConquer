@@ -72,7 +72,7 @@ PhysicsWrapper::~PhysicsWrapper()
 
 void PhysicsWrapper::InitSphereCollider(Scene* _scene)
 {
-
+/*
     std::vector<SphereCollider>* sphereColliders = _scene->GetData<SphereCollider>();
 
     for (SphereCollider& s : *sphereColliders)
@@ -107,11 +107,12 @@ void PhysicsWrapper::InitSphereCollider(Scene* _scene)
         
         s.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
     }
-
+*/
 }
 
 void PhysicsWrapper::InitBoxCollider(Scene* _scene)
 {
+    /*
     std::vector<BoxCollider>* boxCollider = _scene->GetData<BoxCollider>();
 
     for (BoxCollider& b : *boxCollider)
@@ -145,12 +146,12 @@ void PhysicsWrapper::InitBoxCollider(Scene* _scene)
         _bodyCreateInfo.bodyTypeInfo.bodyType = MotionCore::BOX;
 
         b.body_Id = physicsEngine.CreateBody(_bodyCreateInfo);
-    }
+    }*/
 }
 
 void PhysicsWrapper::DestroyBodies(Scene* _scene)
 {
-    
+    /*
     std::vector<SphereCollider>* sphereColliders = _scene->GetData<SphereCollider>();
     std::vector<BoxCollider>* boxCollider = _scene->GetData<BoxCollider>();
 
@@ -168,13 +169,13 @@ void PhysicsWrapper::DestroyBodies(Scene* _scene)
             continue;
         
         physicsEngine.DestroyBody(box.body_Id);
-    }
+    }*/
     
 }
 
 void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
 {
-
+/*
     std::vector<SphereCollider>* sphereColliders = _scene->GetData<SphereCollider>();
     std::vector<BoxCollider>* boxCollider = _scene->GetData<BoxCollider>();
 
@@ -212,6 +213,6 @@ void PhysicsWrapper::AppliePhyscisToTransform(Scene* _scene)
         transform->position = newPos;
         transform->rotation = newRot;
 
-    }
+    }*/
 }
 

@@ -22,7 +22,8 @@ void Hierachy::ShowGraph()
     PC_CORE::World& world = m_Editor->world;
     PC_CORE::Scene& scene = world.scene;
 
-   
+
+    /*
     std::vector<PC_CORE::Transform>& transforms = *scene.GetData<PC_CORE::Transform>();
 
     bool hasSelected = false;
@@ -46,5 +47,5 @@ void Hierachy::ShowGraph()
             m_Editor->m_Selected = nullptr;
         }
     }
-    
+    */
 }

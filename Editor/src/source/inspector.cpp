@@ -44,6 +44,7 @@ void Inspector::Show()
 	ImGui::InputText("##EntityName", string->data(), string->size());
 	ImGui::PopID();
 
+	/*
 	for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
 	{
 		const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;
@@ -73,7 +74,7 @@ void Inspector::Show()
 
 		ImGui::PopID();
 	}
-
+*/
 }
 
 void Inspector::OnInput()
@@ -96,7 +97,7 @@ void Inspector::OnInput()
 			{
 				if (PC_CORE::World::currentWorld != nullptr)
 				{
-					PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
+					//PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
 				}
 			}
 		}
@@ -219,7 +220,7 @@ void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
 
 	if (ImGui::SmallButton("Delete Component"))
 	{
-		m_Editor->world.scene.RemoveComponent(_entity, _componentId);
+		//m_Editor->world.scene.RemoveComponent(_entity, _componentId);
 	}
 }
 

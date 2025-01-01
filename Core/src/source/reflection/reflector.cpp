@@ -8,40 +8,4 @@ const ReflectedType& Reflector::GetType(uint32_t _hash)
 }
 
 
-uint32_t Reflector::KR_v2_hash(const char* s)
-{
-    // Source: https://stackoverflow.com/a/45641002/5407270
-    // a.k.a. Java String hashCode()
-    uint32_t hashval = 0;
-    for (hashval = 0; *s != '\0'; s++)
-        hashval = *s + 31*hashval;
-    return hashval;
-}
 
-std::string Reflector::GetCorrectNameFromTypeId(const std::string& _name)
-{
-    // Remove the nameSpace
-    const size_t firstIndex = _name.find_first_of("::",0);
-    std::string out;
-
-    if (firstIndex != std::numeric_limits<size_t>::max())
-    {
-        for (size_t i = firstIndex + 2; i < _name.size(); i++)
-            out.push_back(_name[i]); 
-    }
-    else
-    {
-        const size_t secondIndex = _name.find_first_of(" ",0);
-        if (firstIndex != std::numeric_limits<size_t>::max())
-        {
-            for (size_t i = secondIndex; i < _name.size(); i++)
-                out.push_back(_name[i]); 
-        }
-        else
-        {
-            return _name;
-        }
-    }
-    
-    return out; 
-}

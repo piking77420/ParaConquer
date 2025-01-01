@@ -240,21 +240,31 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
+	
 	forwardShader->Bind(m_CommandBuffer->GetHandle());
 	forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
 		&sceneDescriptorSet[m_CurrentImage], 0, nullptr);
 
-	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
-
-	for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
+	
+	for (const Entity& entity : _world.scene.entityRegister.entities)
 	{
-		if (it->mesh == nullptr)
+		if (entity.id == INVALID_ENTITY_ID)
 			continue;
 
-		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
-		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+		
+		const StaticMesh* staticMesh = _world.scene.entityRegister.GetComponent<StaticMesh>(entity);
+		const Transform* transform = _world.scene.entityRegister.GetComponent<Transform>(entity);
 
-		DescriptorSetHandle materialDescritproSetHandle = it->materialInstance->GetDescriptorSetHandle();
+		if (staticMesh == nullptr || transform == nullptr)
+			continue;
+	
+		
+		DescriptorSetHandle materialDescritproSetHandle = staticMesh->materialInstance->GetDescriptorSetHandle();
+
+		if (staticMesh->mesh == nullptr)
+			return;
+			
+		const Mesh& mesh = *staticMesh->mesh;
 		
 		forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 1, 1,
 			&materialDescritproSetHandle, 0, nullptr);
@@ -262,16 +272,20 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		Tbx::Matrix4x4f transformMatrix;
 		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &transformMatrix);
 		forwardShader->PushConstantMat4(m_CommandBuffer->GetHandle(), "modelMatrix", transformMatrix);
-
-		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
-		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+ 
+		m_CommandBuffer->BindVertexBuffer(mesh.vertexBuffer, 0, 1);
+		m_CommandBuffer->BindIndexBuffer(mesh.indexBuffer);
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), mesh.indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
+		
 	}
+	
+	
 }
 
 void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-	
+
+	/*
 	static Mesh* meshCube = ResourceManager::Get<Mesh>("cube.obj");
 	static Mesh* meshSphere = ResourceManager::Get<Mesh>("sphere.obj");
 
@@ -310,7 +324,7 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 
 		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
 	}
-	
+	*/
 }
 
 void Renderer::CreateForwardPass()

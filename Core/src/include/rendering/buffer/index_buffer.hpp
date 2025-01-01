@@ -19,7 +19,7 @@ public:
     
     ~IndexBuffer();
 
-    inline uint32_t GetNbrOfIndicies()
+    inline uint32_t GetNbrOfIndicies() const
     {
         return m_IndiciesCount;
     }

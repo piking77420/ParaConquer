@@ -11,9 +11,7 @@ BEGIN_PCCORE
 {
 public:
     static inline World* currentWorld = nullptr;
-
-	EcsContext ecsContext;
-
+    
     Scene scene;
 
     SceneGraph sceneGraph;

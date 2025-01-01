@@ -37,7 +37,7 @@ void SceneGraph::UpdateMatrix(Scene* _scene)
 {
      Scene& scene = *_scene;
     
-    std::vector<Transform>& transforms = *scene.GetData<Transform>();
+    //std::vector<Transform>& transforms = *scene.GetData<Transform>();
 
     /*
     for (Transform& transform : transforms)

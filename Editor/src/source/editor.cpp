@@ -108,10 +108,11 @@ void Editor::InitTestScene()
 
      
     
-    Scene& scene = world.scene;
+    EntityRegister& scene = world.scene.entityRegister;
     for (size_t i = 0; i < 2; i++)
     {
-        Entity* cube = scene.CreateEntity("cube " + std::to_string(i));
+        Entity& cube = scene.CreateEntity();
+        cube.name = std::string("Cube") + std::to_string(i);
         scene.AddComponent<Transform>(cube);
         scene.AddComponent<RigidBody>(cube);
         StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
@@ -131,9 +132,10 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
-    physicsWrapper.DestroyBodies(&world.scene);
-    world.scene.~Scene();
-    world.scene = Scene();
+   // physicsWrapper.DestroyBodies(&world.entityRegister);
+    //world.scene.~Scene();
+    //world.scene = Scene();
+    world.scene.entityRegister.~EntityRegister();
     m_Selected = nullptr;
 
     ResourceManager::Delete<Material>("material1");

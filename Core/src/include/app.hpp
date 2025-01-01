@@ -8,7 +8,6 @@
 #include <core/physics_engine.h>
 
 #include "io/window.hpp"
-#include "ecs/ecs_context.h"
 #include <io/core_io.hpp>
 
 

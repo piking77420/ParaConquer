@@ -40,6 +40,8 @@ template<typename T>
 inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
 
 
+
+
 #define IsTypeOfOrSubType(x)\
 std::is_same_v<T, x> || std::is_same_v<std::remove_all_extents_t<T>, x>\
 
@@ -68,7 +70,7 @@ public:
     static ReflectedType* ReflectType();
 
     template <typename T>
-    static uint32_t GetHash();
+     static uint32_t GetHash();
     
     template <typename T>
     static std::vector<const ReflectedType*> GetAllTypesFrom();
@@ -78,9 +80,43 @@ public:
 
 private:
     
-    PC_CORE_API static uint32_t KR_v2_hash(const char *s);
+    constexpr PC_CORE_API static uint32_t KR_v2_hash(const char *s)
+    {
+        // Source: https://stackoverflow.com/a/45641002/5407270
+        // a.k.a. Java String hashCode()
+        uint32_t hashval = 0;
+        for (hashval = 0; *s != '\0'; s++)
+            hashval = *s + 31*hashval;
+        return hashval;
+    }
     
-    PC_CORE_API static std::string GetCorrectNameFromTypeId(const std::string& _name);
+    constexpr PC_CORE_API  static std::string GetCorrectNameFromTypeId(const std::string& _name)
+    {
+        // Remove the nameSpace
+        const size_t firstIndex = _name.find_first_of("::",0);
+        std::string out;
+
+        if (firstIndex != std::numeric_limits<size_t>::max())
+        {
+            for (size_t i = firstIndex + 2; i < _name.size(); i++)
+                out.push_back(_name[i]); 
+        }
+        else
+        {
+            const size_t secondIndex = _name.find_first_of(" ",0);
+            if (firstIndex != std::numeric_limits<size_t>::max())
+            {
+                for (size_t i = secondIndex; i < _name.size(); i++)
+                    out.push_back(_name[i]); 
+            }
+            else
+            {
+                return _name;
+            }
+        }
+    
+        return out; 
+    }
    
     PC_CORE_API static inline std::unordered_map<uint32_t, ReflectedType> m_RelfectionMap;
 

@@ -2,117 +2,67 @@
 
 #include "log.hpp"
 #include "ecs/component.h"
-#include "ecs/ecs_context.h"
 
-std::vector<uint8_t>* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey)
-{
-    SparseSet* sparseSet = GetSparsetFromKey(_componentKey);
-    return sparseSet->GetData();
-}
 
-const std::vector<uint8_t>* PC_CORE::EntityRegister::GetComponentData(uint32_t _componentKey) const
+const PC_CORE::Entity& PC_CORE::EntityRegister::CreateEntity() const
 {
-    const SparseSet* sparseSet = GetSparsetFromKey(_componentKey);
-    return sparseSet->GetData();
-}
-
-uint8_t* PC_CORE::EntityRegister::GetComponent(EntityId _entityID, uint32_t _componentKey)
-{
-    return GetSparsetFromKey(_componentKey)->GetEntityData(_entityID);   
-}
-
-const uint8_t* PC_CORE::EntityRegister::GetComponent(EntityId _entityID, uint32_t _componentKey) const
-{
-    return GetSparsetFromKey(_componentKey)->GetEntityData(_entityID);   
-}
-
-uint8_t* PC_CORE::EntityRegister::CreateComponent(EntityId _entityID, uint32_t _componentKey)
-{
-    Component* newComponent = reinterpret_cast<Component*>(GetSparsetFromKey(_componentKey)->Alloc(_entityID));
-    newComponent->entityId = _entityID;
-    return reinterpret_cast<uint8_t*>(newComponent);
-}
-
-void PC_CORE::EntityRegister::DeleteComponent(EntityId _entityID, uint32_t _componentKey)
-{
-    return GetSparsetFromKey(_componentKey)->Free(_entityID);
-}
-
-EntityId PC_CORE::EntityRegister::CreateEntity()
-{
-    for (size_t i = 0; i < m_Entities.size(); ++i)
+    const Entity* entity = nullptr;
+    
+    for (size_t i = 0; i < entities.size(); ++i)
     {
-        if (m_Entities.at(i) == INVALID_ENTITY_ID)
+        if (entities.at(i).id == INVALID_ENTITY_ID)
         {
-            m_Entities.at(i) = static_cast<uint32_t>(i);
-            return static_cast<uint32_t>(i);
+            entities.at(i).id = static_cast<uint32_t>(i);
+            entity = &entities.at(i);
+        }
+    }
+
+    if (entity == nullptr)
+    {
+        PC_LOGERROR("Failed to create entity , Max has been reach");
+    }
+    return *entity;
+}
+
+PC_CORE::Entity& PC_CORE::EntityRegister::CreateEntity()
+{
+    Entity* entity = nullptr;
+    
+    for (size_t i = 0; i < entities.size(); ++i)
+    {
+        if (entities.at(i).id == INVALID_ENTITY_ID)
+        {
+            entities.at(i).id = static_cast<uint32_t>(i);
+            entity = &entities.at(i);
+            return *entity;
         }
     }
 
     PC_LOGERROR("Failed to create entity , Max has been reach");
-    return INVALID_ENTITY_ID;
+    
+    return *entity;
 }
 
-void PC_CORE::EntityRegister::DestroyEntity(EntityId entityId)
+void PC_CORE::EntityRegister::DestroyEntity(const Entity& _entity)
 {
-    for (auto& sparseSet : sparseSets)
+    
+    for (auto& set : m_SparseSetsMap)
     {
-        sparseSet.sparse.Free(entityId);
+        if (set.second.IsValid(_entity.id))
+            set.second.Free(_entity.id);
     }
-
-    m_Entities.at(entityId) = INVALID_ENTITY_ID;
-}
-
-bool PC_CORE::EntityRegister::IsEntityIdValid(EntityId entityId) const
-{
-    return m_Entities.at(entityId) != INVALID_ENTITY_ID;
-}
-
-bool PC_CORE::EntityRegister::IsEntityHasComponent(EntityId entityId, uint32_t _componentKey) const
-{
-    return GetSparsetFromKey(_componentKey)->GetEntityData(entityId) != nullptr;
 }
 
 PC_CORE::EntityRegister::EntityRegister() 
 {
-    const std::vector<EcsComponent>& components = EcsContext::GetComponentsDataInfo();
-    for (const EcsComponent& ecsComponent : components)
-    {
-        sparseSets.push_back({ecsComponent.key, SparseSet(ecsComponent.size, MAX_ENTITIES, ecsComponent.Createfunc, ecsComponent.Deletefunc )});
-    }
+    std::vector<const ReflectedType*> m_ComponentsType = Reflector::GetAllTypesFrom<Component>();
+
+    m_SparseSetsMap.reserve(m_ComponentsType.size());
     
-    for (size_t i = 0; i < m_Entities.size(); ++i)
+    for (const ReflectedType* ecsComponent : m_ComponentsType)
     {
-        m_Entities.at(i) = INVALID_ENTITY_ID;
+        m_SparseSetsMap.emplace(ecsComponent->HashKey, *ecsComponent);
     }
 }
 
-PC_CORE::SparseSet* PC_CORE::EntityRegister::GetSparsetFromKey(uint32_t _key)
-{
-    auto it = std::ranges::find_if(sparseSets, [_key](const SparsetKey& sparsetKey)
-   {
-       return sparsetKey.key == _key;
-   });
 
-    if (it != sparseSets.end()) // Check if the iterator is valid
-    {
-        return &it->sparse;
-    }
-
-    return nullptr; 
-}
-
-const PC_CORE::SparseSet* PC_CORE::EntityRegister::GetSparsetFromKey(uint32_t _key) const
-{
-    auto it = std::ranges::find_if(sparseSets, [_key](const SparsetKey& sparsetKey)
-   {
-       return sparsetKey.key == _key;
-   });
-
-    if (it != sparseSets.end()) // Check if the iterator is valid
-    {
-        return &it->sparse;
-    }
-
-    return nullptr; 
-}
