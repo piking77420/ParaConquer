@@ -190,7 +190,7 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 				ImGui::DragFloat3("Rotation", euler.GetPtr(), 0.1f);
 				if (ImGui::IsItemEdited())
 				{
-					Tbx::Vector4f euler4 = Tbx::Vector4f(euler.x, euler.y, euler.z, 0.f);
+					Tbx::Vector4f euler4 = {euler.x, euler.y, euler.z, 0.f};
 					q = Tbx::Quaternionf::FromEuler(euler4 * Deg2Rad).Normalize();
 				}
 			}

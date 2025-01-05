@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "Resource.hpp"
+#include "resource.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "reflection/reflector.hpp"
 #include "rendering/render_harware_interface/rhi_typedef.h"

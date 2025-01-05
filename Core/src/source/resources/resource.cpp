@@ -1,4 +1,4 @@
-﻿#include "resources/Resource.hpp"
+﻿#include "resources/resource.hpp"
 
 #include <utility>
 

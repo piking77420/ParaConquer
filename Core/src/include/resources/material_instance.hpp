@@ -2,7 +2,7 @@
 
 #include "texture.hpp"
 #include "rendering/render_harware_interface/rhi_typedef.h"
-#include "resources/Resource.hpp"
+#include "resources/resource.hpp"
 
 
 BEGIN_PCCORE

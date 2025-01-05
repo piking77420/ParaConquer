@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "Resource.hpp"
+#include "resource.hpp"
 #include "rendering/buffer/index_buffer.hpp"
 #include "rendering/buffer/vertex_buffer.hpp"
 #include "rendering/render_harware_interface/vertex.hpp"

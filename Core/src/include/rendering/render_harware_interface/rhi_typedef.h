@@ -681,7 +681,7 @@ struct CreateTextureInfo
     struct ShaderSourcePath
     {
         std::string shaderSourceCodePath;
-        std::vector<char> spvCode;
+        std::string spvCode;
     };
 
     enum class ShaderProgramPipelineType
@@ -724,10 +724,34 @@ struct CreateTextureInfo
         FillRectangleNV
     };
 
+    enum class CullModeFlagBit
+    {
+        None,
+        Front,
+        Back,
+        FrontAndBack,
+    };
+
+    ENUM_FLAGS(CullModeFlagBit)
+
+    enum class FrontFace
+    {
+        CounterClockwise,
+        Clockwise
+    };
+
+    struct RasterizerInfo
+    {
+        PolygonMode polygonMode = PolygonMode::Fill;
+        CullModeFlagBit cullModeFlag = CullModeFlagBit::Back;
+        FrontFace frontFace = FrontFace::CounterClockwise;
+    };
+
+
 
     struct ShaderGraphicPointInfo
     {
-        PolygonMode polygonMode = PolygonMode::Fill;
+        RasterizerInfo rasterizerInfo;
         std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
         std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
     };

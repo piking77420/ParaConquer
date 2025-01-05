@@ -65,9 +65,7 @@ namespace Vulkan
 
         VULKAN_API void FreeDescriptorSet(const std::string& _shaderName,vk::DescriptorSet* _descriptorSet, uint32_t _descriptorSetCount, vk::Device _device);
 
-    private:
-        VulkanShaderCompiler m_ShaderCompiler;
-        
+    private:        
         std::unordered_map<std::string, ShaderInternal> m_InternalShadersMap;
 
         ShaderInternal* GetShaderInternal(const std::string& _shaderName);

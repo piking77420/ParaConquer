@@ -42,13 +42,12 @@ public:
     
     PC_CORE_API virtual void WriteFile(const fs::path& path) {};
 
-    template <size_t _Size>
-    static bool IsFormatValid(const std::array<std::string,_Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
-
+    template <size_t Size>
+    static bool IsFormatValid(const std::array<std::string,Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
 };
 
-template <size_t _Size>
-bool Resource::IsFormatValid(const std::array<std::string, _Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
+template <size_t Size>
+bool Resource::IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
     for (size_t i = 0; i < _format.size(); i++)
     {

@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include <functional>
 #include <map>
 
 #include "core_header.hpp"
 #include "guid.hpp"
 #include "log.hpp"
-#include "Resource.hpp"
+#include "resource.hpp"
 
 BEGIN_PCCORE
 class ResourceManager
@@ -35,7 +36,13 @@ public:
     static T* Get(const std::string& _name);
 
     template<class T>
+    static T* Get();
+
+    template<class T>
     static bool Delete(const std::string& _name);
+
+    template <class T>
+    static void ForEach(const std::function<void(T*)>& _lamba);
 
 private:
     struct PathName
@@ -98,6 +105,19 @@ T* ResourceManager::Get(const std::string& _name)
 }
 
 template <class T>
+T* ResourceManager::Get()
+{
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        if (dynamic_cast<T*>(it->second))
+            return reinterpret_cast<T*>(it->second);
+    }
+    PC_LOGERROR("There is no resource as this type");
+
+    return nullptr;
+}
+
+template <class T>
 bool ResourceManager::Delete(const std::string& _name)
 {
 
@@ -111,6 +131,19 @@ bool ResourceManager::Delete(const std::string& _name)
         }
     }
     return false;
+}
+
+template <class T>
+void ResourceManager::ForEach(const std::function<void(T*)>& _lamba)
+{
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        T* ptr = dynamic_cast<T*>(it->second);
+        if (ptr != nullptr)
+        {
+            _lamba(ptr);
+        }
+    }
 }
 
 END_PCCORE

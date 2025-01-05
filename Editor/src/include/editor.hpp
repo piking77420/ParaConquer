@@ -30,6 +30,8 @@ public:
     void InitEditorWindows();
 
     void UpdateEditorWindows();
+
+    void ShaderRecompileList();
     
     std::vector<EditorWindow*> m_EditorWindows;
 

@@ -515,7 +515,7 @@ fabric.properties
 
 
 !assets/meshs/**
-!Icon/**
+!Logo/**
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio

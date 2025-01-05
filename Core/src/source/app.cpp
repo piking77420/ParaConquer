@@ -13,12 +13,15 @@
 
 using namespace PC_CORE;
 
+#define LOGO_PATH_WHITE "Logo/paraconquer_logo_white.png"
+#define LOGO_PATH_BLACK "Logo/paraconquer_logo_black.png"
+
 
 void App::Init()
 {
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window("Para Conquer Editor", "Icon/ParaConquerLogo.png");
+    window = Window("Para Conquer Editor", LOGO_PATH_BLACK);
     renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
 
     // Need other init in order to init

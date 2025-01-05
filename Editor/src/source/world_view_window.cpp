@@ -24,11 +24,10 @@ void WorldViewWindow::Update()
 {
     EditorWindow::Update();
     
-    
     if (resize)
     {
         m_Editor->renderer.WaitDevice();
-        ResizeViewports();        
+        ResizeViewports();
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -58,7 +57,7 @@ void WorldViewWindow::Render()
         .far = camera.GetFar(),
         .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
         
-    };
+    };  
     renderingContext.time = PC_CORE::Time::GetTime(); 
     renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
     renderingContext.frameBufferHandle = m_FrameBuffers.at(static_cast<size_t>(currentImage)).GetHandle();

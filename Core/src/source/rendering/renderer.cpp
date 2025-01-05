@@ -9,6 +9,7 @@
 #include "world/static_mesh.hpp"
 #include "physics/box_collider.hpp"
 #include "physics/sphere_collider.hpp"
+#include "resources/scene_lights_manager.h"
 
 #undef ERROR
 #undef near;
@@ -122,7 +123,7 @@ CommandBuffer& Renderer::GetCommandSwapChainBuffer()
 	return m_SwapChainCommandBuffers.at(static_cast<size_t>(RHI::GetInstance().GetCurrentImageIndex()));
 }
 
-GraphicAPI Renderer::GetGraphicsAPI()
+GraphicAPI Renderer::GetGraphicsAPI() const
 {
 	return m_GraphicApi;
 }
@@ -175,7 +176,13 @@ void Renderer::InitBasicShader()
 
 	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
-	shaderGraphicPointInfo->polygonMode = PolygonMode::Fill;
+	shaderGraphicPointInfo->rasterizerInfo =
+	{
+		.polygonMode = PolygonMode::Fill,
+		.cullModeFlag = CullModeFlagBit::Back,
+		.frontFace = FrontFace::CounterClockwise
+	};
+	
 	
 	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
 		Vertex::GetBindingDescrition(0));
@@ -201,10 +208,17 @@ void Renderer::InitWireFrameShader()
 
 	PC_CORE::ProgramShaderCreateInfo createInfo{};
 	createInfo.prograShaderName = "wireframe";
+	
 
 	createInfo.shaderInfo.shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
 	ShaderGraphicPointInfo* shaderGraphicPointInfo = &std::get<ShaderGraphicPointInfo>(createInfo.shaderInfo.shaderInfoData);
-	shaderGraphicPointInfo->polygonMode = PolygonMode::Line;
+	shaderGraphicPointInfo->rasterizerInfo =
+		{
+			.polygonMode = PolygonMode::Line,
+			.cullModeFlag = CullModeFlagBit::None,
+			.frontFace = FrontFace::CounterClockwise
+		};
+	
 	
 	shaderGraphicPointInfo->vertexInputBindingDescritions.push_back(
 		Vertex::GetBindingDescrition(0));
@@ -240,31 +254,21 @@ void Renderer::UpdateUniforms(const RenderingContext& _renderingContext)
 
 void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-	
 	forwardShader->Bind(m_CommandBuffer->GetHandle());
 	forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
 		&sceneDescriptorSet[m_CurrentImage], 0, nullptr);
 
-	
-	for (const Entity& entity : _world.scene.entityRegister.entities)
+	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
+
+	for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
 	{
-		if (entity.id == INVALID_ENTITY_ID)
+		if (it->mesh == nullptr)
 			continue;
 
-		
-		const StaticMesh* staticMesh = _world.scene.entityRegister.GetComponent<StaticMesh>(entity);
-		const Transform* transform = _world.scene.entityRegister.GetComponent<Transform>(entity);
+		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
 
-		if (staticMesh == nullptr || transform == nullptr)
-			continue;
-	
-		
-		DescriptorSetHandle materialDescritproSetHandle = staticMesh->materialInstance->GetDescriptorSetHandle();
-
-		if (staticMesh->mesh == nullptr)
-			return;
-			
-		const Mesh& mesh = *staticMesh->mesh;
+		DescriptorSetHandle materialDescritproSetHandle = it->materialInstance->GetDescriptorSetHandle();
 		
 		forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 1, 1,
 			&materialDescritproSetHandle, 0, nullptr);
@@ -272,59 +276,65 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		Tbx::Matrix4x4f transformMatrix;
 		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale, &transformMatrix);
 		forwardShader->PushConstantMat4(m_CommandBuffer->GetHandle(), "modelMatrix", transformMatrix);
- 
-		m_CommandBuffer->BindVertexBuffer(mesh.vertexBuffer, 0, 1);
-		m_CommandBuffer->BindIndexBuffer(mesh.indexBuffer);
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), mesh.indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
-		
+
+		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
+		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
+		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
 	}
-	
-	
 }
 
 void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
 {
-
-	/*
+	
 	static Mesh* meshCube = ResourceManager::Get<Mesh>("cube.obj");
 	static Mesh* meshSphere = ResourceManager::Get<Mesh>("sphere.obj");
 
 	const std::vector<SphereCollider>* spheresColliders = _world.scene.GetData<SphereCollider>(); 
 	const std::vector<BoxCollider>* boxsColliders = _world.scene.GetData<BoxCollider>();
 
+	if (spheresColliders->empty() && boxsColliders->empty())
+		return;
+
 	constexpr const char* wireframeDataPushConstant = "wireframeData";
 
 	wireframeShader->Bind(m_CommandBuffer->GetHandle());
+	wireframeShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
+	&sceneDescriptorSet[m_CurrentImage], 0, nullptr);
+	wireFrameModelColor.color = {0,1,0,1};
+
 	m_CommandBuffer->BindVertexBuffer(meshSphere->vertexBuffer, 0, 1);
 	m_CommandBuffer->BindIndexBuffer(meshSphere->indexBuffer);
 	uint32_t nbrofIndices = meshSphere->GetNbrOfIndicies();
 	
-
-	wireFrameModelColor.color = {0,1,0,1};
-	for (auto it = spheresColliders->begin(); it != spheresColliders->end(); it++)
-	{ 
-		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
-		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale * it->radius, &wireFrameModelColor.model);
-		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
-
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
-	}
-
-	m_CommandBuffer->BindVertexBuffer(meshCube->vertexBuffer, 0, 1);
-	m_CommandBuffer->BindIndexBuffer(meshCube->indexBuffer);
-	nbrofIndices = meshCube->GetNbrOfIndicies();
-
-	for (auto it = boxsColliders->begin(); it != boxsColliders->end(); it++)
+	if (!spheresColliders->empty())
 	{
-		const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
-		const Transform* transform = _world.scene.GetComponent<Transform>(entity);
-		Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->extend, &wireFrameModelColor.model);
-		wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+		for (auto it = spheresColliders->begin(); it != spheresColliders->end(); it++)
+		{ 
+			const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+			const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+			Tbx::Trs3D(transform->position, transform->rotation.Normalize(), transform->scale * it->radius, &wireFrameModelColor.model);
+			wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
 
-		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
+			RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
+		}
 	}
-	*/
+
+	if (!boxsColliders->empty())
+	{
+		m_CommandBuffer->BindVertexBuffer(meshCube->vertexBuffer, 0, 1);
+		m_CommandBuffer->BindIndexBuffer(meshCube->indexBuffer);
+		nbrofIndices = meshCube->GetNbrOfIndicies();
+
+		for (auto it = boxsColliders->begin(); it != boxsColliders->end(); it++)
+		{
+			const Entity* entity = _world.scene.GetEntityFromId(it->entityId);
+			const Transform* transform = _world.scene.GetComponent<Transform>(entity);
+			Tbx::Trs3D(transform->position + it->center, transform->rotation.Normalize(), transform->scale * it->extend, &wireFrameModelColor.model);
+			wireframeShader->PushConstant(m_CommandBuffer->GetHandle(), wireframeDataPushConstant, wireFrameModelColor.color.GetPtr(), sizeof(decltype(wireFrameModelColor)));
+
+			RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
+		}
+	}
 }
 
 void Renderer::CreateForwardPass()
@@ -355,7 +365,7 @@ void Renderer::CreateForwardPass()
 
 void Renderer::InitRenderResources()
 {
-
+	SceneLightsBuffer* lightsManager = ResourceManager::Create<SceneLightsBuffer>();
 	CreateForwardPass();
 	InitShader();
 	InitBuffer();

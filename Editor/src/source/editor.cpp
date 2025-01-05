@@ -42,7 +42,7 @@ void Editor::Destroy()
 void Editor::UpdateEditorWindows()
 {
     dockSpace.BeginDockSpace();
-
+    ShaderRecompileList();
     for (EditorWindow* editorWindow : m_EditorWindows)
     {
         editorWindow->Begin();
@@ -50,6 +50,28 @@ void Editor::UpdateEditorWindows()
         editorWindow->End();
     }
     dockSpace.EndDockSpace();
+}
+
+void Editor::ShaderRecompileList()
+{
+    static bool open = true;
+    ImGui::Begin("Shader Recompile List");
+
+    
+    auto lamba = [&](const ShaderProgram* shaderProgram) -> void
+    {
+      if (ImGui::Button(shaderProgram->name.c_str()))
+      {
+          PC_LOG("Recompile Shader Program");
+          //shaderProgram->Reload();
+      }
+        
+    };
+    
+    ResourceManager::ForEach<ShaderProgram>(lamba);
+    
+    ImGui::End();
+    
 }
 
 void Editor::InitTestScene()
@@ -62,12 +84,17 @@ void Editor::InitTestScene()
     Material* material2 = ResourceManager::Create<Material>("material2", program);
     material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
 
-    ShaderGraphicPointInfo shaderGraphicPointInfo =
+    const ShaderGraphicPointInfo shaderGraphicPointInfo =
+    {
+        .rasterizerInfo =
         {
-        .polygonMode = PolygonMode::Fill,
+            .polygonMode = PolygonMode::Fill,
+            .cullModeFlag = CullModeFlagBit::Back,
+            .frontFace = FrontFace::CounterClockwise
+        },
         .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
         .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)}
-        };
+    };
     
     ShaderInfo shaderInfo =
         {

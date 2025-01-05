@@ -175,15 +175,16 @@ void VulkanShaderManager::CreatePipelineGraphicPointFromModule(vk::Device _devic
 	viewportState.viewportCount = 1;
 	viewportState.scissorCount = 1;
 
+	const PC_CORE::ShaderGraphicPointInfo* ShaderGraphicPointInfo = &std::get<PC_CORE::ShaderGraphicPointInfo>(_shaderInfo.shaderInfoData);
 
 	vk::PipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = RhiPolygonModeToVulkan(std::get<PC_CORE::ShaderGraphicPointInfo>(_shaderInfo.shaderInfoData).polygonMode);
+	rasterizer.polygonMode = RhiPolygonModeToVulkan(ShaderGraphicPointInfo->rasterizerInfo.polygonMode);
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
-	rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
+	rasterizer.cullMode = static_cast<vk::CullModeFlagBits>(ShaderGraphicPointInfo->rasterizerInfo.cullModeFlag);
+	rasterizer.frontFace = static_cast<vk::FrontFace>(ShaderGraphicPointInfo->rasterizerInfo.frontFace);
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 	rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -375,11 +376,13 @@ bool Vulkan::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk:
 	std::vector<vk::ShaderModule> shaderModules(shaderInternalBack.shaderStages.size());
 	std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesCreateInfos(shaderInternalBack.shaderStages.size());
 
+	Vulkan::InitCompilerProcess();
+
 	for (uint32_t i = 0; i < _shaderSource.size(); i++)
 	{
 		PC_CORE::ShaderStageType shaderStage = shaderStagesInfo.at(i).shaderStage;
 		// SOURCE TO MODULE and get spv reflection
-		m_ShaderCompiler.CreateModuleFromSource(_device, _shaderSource[i].spvCode.data(),
+		Vulkan::CreateModuleFromSource(_device, _shaderSource[i].spvCode.data(),
 			_shaderSource[i].shaderSourceCodePath.c_str(),
 			shaderStage, &shaderStagesInfo.at(i).reflectShaderModule,
 			&shaderModules[i]);
@@ -389,6 +392,8 @@ bool Vulkan::VulkanShaderManager::CreateShaderFromSource(vk::Device _device, vk:
 		shaderStagesCreateInfos.at(i).module = shaderModules[i];
 		shaderStagesCreateInfos.at(i).pName = shaderStagesInfo.at(i).reflectShaderModule.entry_point_name;
 	}
+
+	Vulkan::DestroyCompilerProcess();
 
 	CreateShaderResourceFromSpvReflectModule(_programShaderCreatInfo, _device, &shaderInternalBack);
 	CreatePipelineGraphicPointFromModule(_device, _tmprRenderPass, _programShaderCreatInfo.shaderInfo,
