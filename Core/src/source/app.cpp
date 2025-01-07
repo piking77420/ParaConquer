@@ -67,11 +67,11 @@ void App::Run()
 
 void App::WorldLoop()
 {
-    world.sceneGraph.UpdateTransforms(&world.scene);
+    //world.sceneGraph.UpdateTransforms(&world.scene);
     
     if (world.begin)
     {
-        physicsWrapper.InitBodies(&world.scene);
+        //physicsWrapper.InitBodies(&world.scene);
         world.Begin();
         world.begin = false;
         world.run = true;
@@ -79,9 +79,9 @@ void App::WorldLoop()
     
     if (world.run)
     {
-        physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
+        //physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
         world.Update();
     }
-    world.sceneGraph.UpdateMatrix(&world.scene);
+    //world.sceneGraph.UpdateMatrix(&world.scene);
 }
 

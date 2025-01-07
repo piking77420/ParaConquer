@@ -258,6 +258,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 	forwardShader->BindDescriptorSet(m_CommandBuffer->GetHandle(), 0, 1,
 		&sceneDescriptorSet[m_CurrentImage], 0, nullptr);
 
+/*
 	const std::vector<StaticMesh>* staticMeshes = _world.scene.GetData<StaticMesh>();
 
 	for (auto it = staticMeshes->begin(); it != staticMeshes->end(); it++)
@@ -280,7 +281,7 @@ void Renderer::DrawStaticMesh(const RenderingContext& _renderingContext, const P
 		m_CommandBuffer->BindVertexBuffer(it->mesh->vertexBuffer, 0, 1);
 		m_CommandBuffer->BindIndexBuffer(it->mesh->indexBuffer);
 		RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), it->mesh->indexBuffer.GetNbrOfIndicies(), 1, 0, 0, 0);
-	}
+	}*/
 }
 
 void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC_CORE::World& _world)
@@ -289,6 +290,7 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 	static Mesh* meshCube = ResourceManager::Get<Mesh>("cube.obj");
 	static Mesh* meshSphere = ResourceManager::Get<Mesh>("sphere.obj");
 
+	/*
 	const std::vector<SphereCollider>* spheresColliders = _world.scene.GetData<SphereCollider>(); 
 	const std::vector<BoxCollider>* boxsColliders = _world.scene.GetData<BoxCollider>();
 
@@ -334,7 +336,7 @@ void Renderer::DrawWireFrame(const RenderingContext& _renderingContext, const PC
 
 			RHI::GetInstance().DrawIndexed(m_CommandBuffer->GetHandle(), nbrofIndices, 1, 0, 0, 0);
 		}
-	}
+	}*/
 }
 
 void Renderer::CreateForwardPass()

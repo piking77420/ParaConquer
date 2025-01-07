@@ -1,20 +1,14 @@
 ﻿#pragma once
 
 
-#include "scene.hpp"
-#include "scene_graph.hpp"
 #include "skybox.hpp"
 #include "physics/physics_wrapper.hpp"
 
 BEGIN_PCCORE
-    class World
+class World
 {
 public:
-    static inline World* currentWorld = nullptr;
-    
-    Scene scene;
-
-    SceneGraph sceneGraph;
+    EntityManager entityManager;
 
     Skybox skybox;
     
@@ -22,7 +16,7 @@ public:
 
     bool run = false;
 
-    PC_CORE_API World() = default;
+    PC_CORE_API World();
     
     PC_CORE_API ~World() = default;
 
@@ -32,7 +26,10 @@ public:
 
     PC_CORE_API void LoadSkyBox();
 
+    PC_CORE_API static World* GetWorld();
+    
 private:
+    static inline World* m_World = nullptr;
 };
 
 END_PCCORE

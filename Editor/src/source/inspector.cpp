@@ -15,7 +15,7 @@ void Inspector::Update()
 {
 	EditorWindow::Update();
 
-	if (m_Editor->m_Selected == nullptr)
+	if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
 		return;
 
 	m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
@@ -35,11 +35,11 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-	PC_CORE::Scene* scene = &m_Editor->world.scene;
-	PC_CORE::Entity* selected = m_Editor->m_Selected;
+	PC_CORE::EntityManager& entityManager = PC_CORE::World::GetWorld()->entityManager;
+	PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
 
 
-	std::string* string = &selected->name;
+	std::string* string = &entityManager.GetEntityName(selectedId);
 	ImGui::PushID("EntityNameInput");
 	ImGui::InputText("##EntityName", string->data(), string->size());
 	ImGui::PopID();
@@ -95,7 +95,7 @@ void Inspector::OnInput()
 		{
 			if (ImGui::Selectable(m_ReflectedType->name.c_str()))
 			{
-				if (PC_CORE::World::currentWorld != nullptr)
+				if (PC_CORE::World::GetWorld() != nullptr)
 				{
 					//PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
 				}

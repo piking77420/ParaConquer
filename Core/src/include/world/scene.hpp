@@ -8,7 +8,7 @@
 #include "core_header.hpp"
 #include "log.hpp"
 #include "system.hpp"
-#include "ecs/entity_register.h"
+#include "ecs/entity_manager.h"
 #include "reflection/reflector.hpp"
 
 
@@ -29,7 +29,7 @@ BEGIN_PCCORE
         
         PC_CORE_API ~Scene() = default;
     
-        EntityRegister entityRegister;
+        
     private:
         
 

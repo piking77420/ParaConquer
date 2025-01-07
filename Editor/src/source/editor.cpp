@@ -23,10 +23,12 @@ using namespace PC_CORE;
 void Editor::Init()
 {
     App::Init();
-    World::currentWorld = &world;
     InitEditorWindows();
     InitTestScene();
     PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
+
+
+    RotateCube();
 }
 
 void Editor::Destroy()
@@ -132,17 +134,15 @@ void Editor::InitTestScene()
     m2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
     m2->BuildDescriptorSet();
 
-
-     
     
-    EntityRegister& scene = world.scene.entityRegister;
-    for (size_t i = 0; i < 2; i++)
+    EntityManager& scene = world.entityManager;
+    for (size_t i = 0; i < 10; i++)
     {
-        Entity& cube = scene.CreateEntity();
-        cube.name = std::string("Cube") + std::to_string(i);
-        scene.AddComponent<Transform>(cube);
-        scene.AddComponent<RigidBody>(cube);
-        StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
+        EntityId cubeId = scene.CreateEntity(std::string("Cube") + std::to_string(i));
+        
+        scene.AddComponent<Transform>(cubeId);
+        scene.AddComponent<RigidBody>(cubeId);
+        StaticMesh* mesh = scene.AddComponent<StaticMesh>(cubeId);
         if (i == 0)
         {
             mesh->materialInstance = m1;
@@ -154,16 +154,57 @@ void Editor::InitTestScene()
         
         mesh->mesh = ResourceManager::Get<Mesh>("suzanne.obj");
     }
+
+    
     
 }
+
+#define CONST const
+
+void FuncParam(CONST Transform& t, CONST RigidBody& c , int value, float k)
+{
+    std::cout << World::GetWorld()->entityManager.GetEntityName(t.entityId) << " " << value << " " <<  k << '\n';
+}
+void Func(CONST Transform& t, CONST RigidBody& c)
+{
+    std::cout << World::GetWorld()->entityManager.GetEntityName(t.entityId)  << '\n';
+}
+
+void Editor::FuncMember(CONST Transform& t, CONST RigidBody& c)
+{
+    std::cout << World::GetWorld()->entityManager.GetEntityName(t.entityId)  << "Member " << window.GetWindowSize().x << " " <<
+        window.GetWindowSize().y <<'\n';
+
+    Editor& r = *this;
+}
+
+
+void Editor::RotateCube()
+{
+    
+    /*
+    std::function<void(Transform&, RigidBody& , int , float)> d = FuncParam;
+    World::GetWorld()->entityManager.ForEach<Transform, RigidBody>(d, 20, 26.f);
+    
+    std::function<void(Transform&, RigidBody&)> c = Func;
+    World::GetWorld()->entityManager.ForEach<Transform, RigidBody>(c);
+
+    // MEMEBER
+
+    c = std::bind(&Editor::FuncMember, this, std::placeholders::_1, std::placeholders::_2);
+    World::GetWorld()->entityManager.ForEach<Transform, RigidBody>(c);
+    */
+    
+}
+
 
 void Editor::DestroyTestScene()
 {
    // physicsWrapper.DestroyBodies(&world.entityRegister);
     //world.scene.~Scene();
     //world.scene = Scene();
-    world.scene.entityRegister.~EntityRegister();
-    m_Selected = nullptr;
+    world.entityManager.~EntityManager();
+    m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
     ResourceManager::Delete<Material>("material1");
     ResourceManager::Delete<Material>("material2");
@@ -182,7 +223,7 @@ void Editor::Run()
        
         UpdateEditorWindows();
 
-        if (World::currentWorld)
+        if (World::GetWorld())
             WorldLoop();
 
         for (EditorWindow* editorWindow : m_EditorWindows)

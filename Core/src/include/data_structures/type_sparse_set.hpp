@@ -35,7 +35,6 @@ public:
         return m_SparseSet.end<T>();
     }
 
-    template<typename T>
     uint8_t& operator[](size_t _index)
     {
         return m_SparseSet[_index];
@@ -54,8 +53,6 @@ public:
 
 private:
     PC_CORE::SparseSet m_SparseSet;
-
-    const PC_CORE::ReflectedType* m_Type = nullptr;
 };
 
 END_PCCORE

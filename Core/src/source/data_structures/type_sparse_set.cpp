@@ -2,7 +2,7 @@
 
 using namespace PC_CORE;
 
-TypeSparseSet::TypeSparseSet(const PC_CORE::ReflectedType& _type) : m_SparseSet(_type.typeSize), m_Type(&_type)
+TypeSparseSet::TypeSparseSet(const PC_CORE::ReflectedType& _type) : m_SparseSet(_type.typeSize)
 {
 }
 
@@ -17,9 +17,6 @@ uint8_t* TypeSparseSet::Create(size_t _index)
 
     if (element == nullptr)
         return nullptr;
-
-    if (m_Type->createFunc)
-        m_Type->createFunc(element);
     
     return element;
 }
@@ -27,10 +24,7 @@ uint8_t* TypeSparseSet::Create(size_t _index)
 void TypeSparseSet::Free(size_t _index)
 {
     uint8_t* element = &m_SparseSet[_index];
-
-    if (m_Type->deleteFunc)
-        m_Type->deleteFunc(element);
-
+    
     m_SparseSet.Free(_index);
 }
 

@@ -44,6 +44,7 @@
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui.h" />
+    <ClInclude Include="src\externals\include\Imgui\imgui_impl_dx12.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_impl_glfw.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="src\externals\include\Imgui\imgui_internal.h" />
@@ -67,9 +68,11 @@
     <ClInclude Include="src\include\data_structures\sparse_sets.hpp" />
     <ClInclude Include="src\include\data_structures\type_sparse_set.hpp" />
     <ClInclude Include="src\include\ecs\component.h" />
+    <ClInclude Include="src\include\ecs\ecs_archetype.h" />
     <ClInclude Include="src\include\ecs\ecs_front.h" />
     <ClInclude Include="src\include\ecs\ecs_header.h" />
-    <ClInclude Include="src\include\ecs\entity_register.h" />
+    <ClInclude Include="src\include\ecs\ecs_system.h" />
+    <ClInclude Include="src\include\ecs\entity_manager.h" />
     <ClInclude Include="src\include\guid.hpp" />
     <ClInclude Include="src\include\io\core_io.hpp" />
     <ClInclude Include="src\include\io\imgui_context.h" />
@@ -128,7 +131,6 @@
     <ClInclude Include="src\include\time\core_time.hpp" />
     <ClInclude Include="src\include\time\timer.hpp" />
     <ClInclude Include="src\include\world\scene.hpp" />
-    <ClInclude Include="src\include\world\scene_graph.hpp" />
     <ClInclude Include="src\include\world\skybox.hpp" />
     <ClInclude Include="src\include\world\static_mesh.hpp" />
     <ClInclude Include="src\include\world\system.hpp" />
@@ -142,166 +144,13 @@
     <ClCompile Include="src\externals\source\Imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_tables.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\source\data_structures\sparse_sets.cpp" />
+    <ClCompile Include="src\source\data_structures\type_sparse_set.cpp" />
+    <ClCompile Include="src\source\ecs\ecs_archetype.cpp" />
     <ClCompile Include="src\source\app.cpp" />
-<<<<<<< HEAD
-    <ClCompile Include="src\source\data_structures\sparse_sets.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>x64\Debug\vc143.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>x64\Debug\Core.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDLL;_UNICODE;UNICODE;;LUA_BUILD_AS_DLL;PC_CORE_EXPORT;PC_CORE_EXPORT;CORE_IO_EXPORT;CORE_IO_EXPORT;_CRT_SECURE_NO_DEPRECATE;;IMGUI_API;</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\Core\src\externals\include;D:\Data\Project\ParaConquer\Core\src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/FS </AdditionalOptions>
-      <LinkCompiled>true</LinkCompiled>
-    </ClCompile>
-    <ClCompile Include="src\source\data_structures\type_sparse_set.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>x64\Debug\vc143.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>x64\Debug\Core.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>x64\Debug\Core.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDLL;_UNICODE;UNICODE;;LUA_BUILD_AS_DLL;PC_CORE_EXPORT;PC_CORE_EXPORT;CORE_IO_EXPORT;CORE_IO_EXPORT;_CRT_SECURE_NO_DEPRECATE;;IMGUI_API;</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\Core\src\externals\include;D:\Data\Project\ParaConquer\Core\src\include;;src\externals\include\Imgui;</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/FS </AdditionalOptions>
-      <LinkCompiled>true</LinkCompiled>
-    </ClCompile>
-=======
->>>>>>> dev
     <ClCompile Include="src\source\ecs\component.cpp" />
-    <ClCompile Include="src\source\ecs\entity_register.cpp" />
+    <ClCompile Include="src\source\ecs\ecs_system.cpp" />
+    <ClCompile Include="src\source\ecs\entity_manager.cpp" />
     <ClCompile Include="src\source\guid.cpp" />
     <ClCompile Include="src\source\io\core_io.cpp" />
     <ClCompile Include="src\source\io\imgui_context.cpp" />
@@ -343,11 +192,6 @@
     <ClCompile Include="src\source\resources\material.cpp" />
     <ClCompile Include="src\source\resources\material_instance.cpp" />
     <ClCompile Include="src\source\resources\mesh.cpp" />
-<<<<<<< HEAD
-    <ClCompile Include="src\source\resources\Resource.cpp" />
-    <ClCompile Include="src\source\resources\resource_manager.cpp" />
-    <ClCompile Include="src\source\resources\sampler.cpp" />
-=======
     <ClCompile Include="src\source\resources\resource.cpp" />
     <ClCompile Include="src\source\resources\resource_manager.cpp" />
     <ClCompile Include="src\source\resources\sampler.cpp" />
@@ -428,7 +272,6 @@
       <AdditionalOptions>/FS </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
->>>>>>> dev
     <ClCompile Include="src\source\resources\shader_program.cpp" />
     <ClCompile Include="src\source\resources\shader_source.cpp" />
     <ClCompile Include="src\source\resources\texture.cpp" />
@@ -437,17 +280,15 @@
     <ClCompile Include="src\source\time\core_time.cpp" />
     <ClCompile Include="src\source\time\timer.cpp" />
     <ClCompile Include="src\source\world\scene.cpp" />
-    <ClCompile Include="src\source\world\scene_graph.cpp" />
     <ClCompile Include="src\source\world\skybox.cpp" />
     <ClCompile Include="src\source\world\static_mesh.cpp" />
     <ClCompile Include="src\source\world\system.cpp" />
     <ClCompile Include="src\source\world\transform.cpp" />
     <ClCompile Include="src\source\world\world.cpp" />
-    <ClInclude Include="src\include\data_structures\sparse_sets.hpp" />
-    <ClInclude Include="src\include\data_structures\type_sparse_set.hpp" />
-    <ClInclude Include="src\include\rendering\renderer_resource.hpp" />
-    <ClInclude Include="src\include\resources\material_instance.hpp" />
-    <ClInclude Include="src\include\resources\scene_lights_manager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\include\data_structures\" />
+    <Folder Include="src\source\data_structures\" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -600,8 +441,9 @@
       <AdditionalLibraryDirectories>src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
-      <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
-</Command>
+      <Command>
+				copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
+			</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -632,8 +474,9 @@
       <AdditionalLibraryDirectories>src\externals\lib\Debug;src\externals\lib\Dynamic;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PreBuildEvent>
-      <Command>copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
-</Command>
+      <Command>
+				copy "$(ProjectDir)src\externals\dll\lua54.dll" "$(OutDir)"
+			</Command>
     </PreBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
