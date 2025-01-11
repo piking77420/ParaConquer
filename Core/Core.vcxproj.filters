@@ -213,9 +213,6 @@
     <ClInclude Include="src\include\log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\resources\scene_lights_manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\low_renderer\rhi_typedef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -293,9 +290,6 @@
     <ClCompile Include="src\source\reflection\reflector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\resources\descriptor_set_layout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\resources\file_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -363,9 +357,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\pc_assert.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\resources\scene_lights_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\camera.cpp">

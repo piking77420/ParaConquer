@@ -10,7 +10,7 @@ ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _createInfo, const s
     , m_ShaderInfo(_createInfo.shaderInfo), m_ShaderSources(_shaderSources)
 {
     name = _createInfo.prograShaderName;
-    CreateShader(_createInfo.renderPass);
+    //CreateShader(_createInfo.renderPass);
 }
 
 
@@ -19,6 +19,7 @@ ShaderProgram::~ShaderProgram()
     DestroyShader();
 }
 
+/*
 void ShaderProgram::Reload(RenderPassHandle _renderPassHandle)
 {
     DestroyShader();
@@ -85,11 +86,6 @@ void ShaderProgram::CreateShader(RenderPassHandle _renderPassHandle)
     //RHI::GetInstance().CreateShader(programShaderCreateInfo, sourceAndPaths);
 }
 
-void ShaderProgram::DestroyShader()
-{
-    //if (!name.empty())
-      //  RHI::GetInstance().DestroyShader(name);
-}
 
 void ShaderProgram::PushConstant(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const void* _data, size_t _dataSize)
 {
@@ -97,4 +93,11 @@ void ShaderProgram::PushConstant(CommandBufferHandle _commandBuffer, const char*
     {
         //RHI::GetInstance().PushConstants(_commandBuffer, name, _pushConstantName, _data, static_cast<uint32_t>(_dataSize));
     }
+}
+*/
+
+void ShaderProgram::DestroyShader()
+{
+    //if (!name.empty())
+      //  RHI::GetInstance().DestroyShader(name);
 }

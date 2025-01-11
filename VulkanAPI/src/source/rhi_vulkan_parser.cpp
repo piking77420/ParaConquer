@@ -934,20 +934,6 @@ uint32_t Vulkan::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE:
     return queueFamiliesIndex;
 }
 
-vk::ImageTiling Vulkan::RHiImageToVkImageTiling(PC_CORE::ImageTiling _imageTiling)
-{
-    switch (_imageTiling)
-    {
-    case PC_CORE::ImageTiling::IMAGE_TILING_OPTIMAL:
-        return vk::ImageTiling::eOptimal;
-    case PC_CORE::ImageTiling::IMAGE_TILING_LINEAR:
-        return vk::ImageTiling::eLinear;
-    case PC_CORE::ImageTiling::IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT:
-        return vk::ImageTiling::eDrmFormatModifierEXT;
-    default: ;
-    }
-}
-
 vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 {
     switch (_imageType)
@@ -971,71 +957,6 @@ vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 }
 
 
-vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout)
-{
-    switch (_imageLayout)
-    {
-    case PC_CORE::LAYOUT_UNDEFINED:
-        return vk::ImageLayout::eUndefined;
-    case PC_CORE::LAYOUT_GENERAL:
-        return vk::ImageLayout::eGeneral;
-    case PC_CORE::LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eColorAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
-    case PC_CORE::LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eShaderReadOnlyOptimal;
-    case PC_CORE::LAYOUT_TRANSFER_SRC_OPTIMAL:
-        return vk::ImageLayout::eTransferSrcOptimal;
-    case PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL:
-        return vk::ImageLayout::eTransferDstOptimal;
-    case PC_CORE::LAYOUT_PREINITIALIZED:
-        return vk::ImageLayout::ePreinitialized;
-    case PC_CORE::LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal;
-    case PC_CORE::LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eDepthAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eDepthReadOnlyOptimal;
-    case PC_CORE::LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eReadOnlyOptimal;
-    case PC_CORE::LAYOUT_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eAttachmentOptimal;
-    case PC_CORE::LAYOUT_PRESENT_SRC_KHR:
-        return vk::ImageLayout::eSharedPresentKHR;
-    case PC_CORE::LAYOUT_VIDEO_DECODE_DST_KHR:
-        return vk::ImageLayout::eVideoDecodeDstKHR;
-    case PC_CORE::LAYOUT_VIDEO_DECODE_SRC_KHR:
-        return vk::ImageLayout::eVideoDecodeSrcKHR;
-    case PC_CORE::LAYOUT_VIDEO_DECODE_DPB_KHR:
-        return vk::ImageLayout::eVideoDecodeDpbKHR;
-    case PC_CORE::LAYOUT_SHARED_PRESENT_KHR:
-        return vk::ImageLayout::eSharedPresentKHR;
-    case PC_CORE::LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
-        return vk::ImageLayout::eFragmentDensityMapOptimalEXT;
-    case PC_CORE::LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-        return vk::ImageLayout::eFragmentShadingRateAttachmentOptimalKHR;
-    case PC_CORE::LAYOUT_RENDERING_LOCAL_READ_KHR:
-        return vk::ImageLayout::eRenderingLocalReadKHR;
-    case PC_CORE::LAYOUT_VIDEO_ENCODE_DST_KHR:
-        return vk::ImageLayout::eVideoEncodeDstKHR;
-    case PC_CORE::LAYOUT_VIDEO_ENCODE_SRC_KHR:
-        return vk::ImageLayout::eVideoEncodeSrcKHR;
-    case PC_CORE::LAYOUT_VIDEO_ENCODE_DPB_KHR:
-        return vk::ImageLayout::eVideoEncodeDpbKHR;
-    case PC_CORE::LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
-        return vk::ImageLayout::eAttachmentFeedbackLoopOptimalEXT;
-    default: ;
-    }
-}
 
 vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
 {
@@ -1060,32 +981,6 @@ vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _
     throw std::runtime_error("Unknown ImageViewType");
 }
 
-vk::SamplerCreateFlags Vulkan::RHIToVulkanSamplerCreateInfoFlags(PC_CORE::SamplerCreateInfoFlags _createInfoFlags)
-{
-    vk::SamplerCreateFlags samplerCreateInfo = {};
-    if (_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::SUBSAMPLED_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eSubsampledEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eDescriptorBufferCaptureReplayEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::NON_SEAMLESS_CUBE_MAP_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eNonSeamlessCubeMapEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::IMAGE_PROCESSING_BIT_QCOM)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eImageProcessingQCOM;
-    }
-    
-    return samplerCreateInfo;
-}
 
 vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
 {

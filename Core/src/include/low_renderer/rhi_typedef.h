@@ -43,22 +43,6 @@ enum class QueuType
 ENUM_FLAGS(QueuType)
 
 
-using GPUObjectHandle = void*;
-using CommandBufferHandle = GPUObjectHandle;
-using CommandPoolHandle = GPUObjectHandle;
-using GPUBufferHandle = GPUObjectHandle;
-using DescriptorSetLayoutHandle = GPUObjectHandle;
-using DescriptorPoolHandle = GPUObjectHandle;
-using DescriptorSetHandle = GPUObjectHandle;
-using ImageHandle = GPUObjectHandle;
-using ImageViewHandle = GPUObjectHandle;
-using SamplerHandle = GPUObjectHandle;
-using FrameBufferHandle = GPUObjectHandle;
-using RenderPassHandle = GPUObjectHandle;
-
-
-constexpr GPUBufferHandle NULL_HANDLE = nullptr;
-
 constexpr void* INVALID_HANDLE = nullptr;
 
 enum CommandPoolBufferFlag
@@ -472,40 +456,6 @@ enum class Channel
     RGBA = 4
 };
 
-enum class ImageTiling
-{
-    IMAGE_TILING_OPTIMAL = 0,
-    IMAGE_TILING_LINEAR = 1,
-    IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT = 1000158000,
-    IMAGE_TILING_MAX_ENUM = 0x7FFFFFFF
-};
-
-enum RHIImageUsage : int
-{
-    IMAGE_USAGE_TRANSFER_SRC_BIT = 0x00000001,
-    IMAGE_USAGE_TRANSFER_DST_BIT = 0x00000002,
-    IMAGE_USAGE_SAMPLED_BIT = 0x00000004,
-    IMAGE_USAGE_STORAGE_BIT = 0x00000008,
-    IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,
-    IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
-    IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT = 0x00000040,
-    IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,
-    IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR = 0x00000400,
-    IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR = 0x00000800,
-    IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR = 0x00001000,
-    IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT = 0x00000200,
-    IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR = 0x00000100,
-    IMAGE_USAGE_HOST_TRANSFER_BIT_EXT = 0x00400000,
-    IMAGE_USAGE_VIDEO_ENCODE_DST_BIT_KHR = 0x00002000,
-    IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR = 0x00004000,
-    IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR = 0x00008000,
-    IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT = 0x00080000,
-    IMAGE_USAGE_INVOCATION_MASK_BIT_HUAWEI = 0x00040000,
-    IMAGE_USAGE_SAMPLE_WEIGHT_BIT_QCOM = 0x00100000,
-    IMAGE_USAGE_SAMPLE_BLOCK_MATCH_BIT_QCOM = 0x00200000,
-    IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV = IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR,
-    IMAGE_USAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
-};
 
 enum class ImageType
 {
@@ -541,57 +491,7 @@ enum class TextureAspect
 
 ENUM_FLAGS(TextureAspect)
 
-enum ImageLayout
-{
-    LAYOUT_UNDEFINED = 0,
-    LAYOUT_GENERAL = 1,
-    LAYOUT_COLOR_ATTACHMENT_OPTIMAL = 2,
-    LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL = 3,
-    LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL = 4,
-    LAYOUT_SHADER_READ_ONLY_OPTIMAL = 5,
-    LAYOUT_TRANSFER_SRC_OPTIMAL = 6,
-    LAYOUT_TRANSFER_DST_OPTIMAL = 7,
-    LAYOUT_PREINITIALIZED = 8,
-    LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL = 1000117000,
-    LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL = 1000117001,
-    LAYOUT_DEPTH_ATTACHMENT_OPTIMAL = 1000241000,
-    LAYOUT_DEPTH_READ_ONLY_OPTIMAL = 1000241001,
-    LAYOUT_STENCIL_ATTACHMENT_OPTIMAL = 1000241002,
-    LAYOUT_STENCIL_READ_ONLY_OPTIMAL = 1000241003,
-    LAYOUT_READ_ONLY_OPTIMAL = 1000314000,
-    LAYOUT_ATTACHMENT_OPTIMAL = 1000314001,
-    LAYOUT_PRESENT_SRC_KHR = 1000001002,
-    LAYOUT_VIDEO_DECODE_DST_KHR = 1000024000,
-    LAYOUT_VIDEO_DECODE_SRC_KHR = 1000024001,
-    LAYOUT_VIDEO_DECODE_DPB_KHR = 1000024002,
-    LAYOUT_SHARED_PRESENT_KHR = 1000111000,
-    LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT = 1000218000,
-    LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR = 1000164003,
-    LAYOUT_RENDERING_LOCAL_READ_KHR = 1000232000,
-    LAYOUT_VIDEO_ENCODE_DST_KHR = 1000299000,
-    LAYOUT_VIDEO_ENCODE_SRC_KHR = 1000299001,
-    LAYOUT_VIDEO_ENCODE_DPB_KHR = 1000299002,
-    LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT = 1000339000,
-    LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR = LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
-    LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR = LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
-    LAYOUT_SHADING_RATE_OPTIMAL_NV = LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR,
-    LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR = LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-    LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR = LAYOUT_DEPTH_READ_ONLY_OPTIMAL,
-    LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR = LAYOUT_STENCIL_ATTACHMENT_OPTIMAL,
-    LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR = LAYOUT_STENCIL_READ_ONLY_OPTIMAL,
-    LAYOUT_READ_ONLY_OPTIMAL_KHR = LAYOUT_READ_ONLY_OPTIMAL,
-    LAYOUT_ATTACHMENT_OPTIMAL_KHR = LAYOUT_ATTACHMENT_OPTIMAL,
-    LAYOUT_MAX_ENUM = 0x7FFFFFFF
-};
 
-
-enum ImageViewCreateInfoFlags
-{
-    IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT = 0x00000001,
-    IMAGE_VIEW_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT = 0x00000004,
-    IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DEFERRED_BIT_EXT = 0x00000002,
-    IMAGE_VIEW_CREATE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
-};
 
 enum class ComponentSwizzle
 {
@@ -624,8 +524,6 @@ struct ImageSubresourceRange
 
 struct ImageViewCreateInfo
 {
-    ImageViewCreateInfoFlags   flags;
-    ImageHandle                 image;
     ImageType            viewType;
     RHIFormat                   format;
     ComponentMapping         components;
@@ -782,7 +680,7 @@ struct CreateTextureInfo
     {
         std::string prograShaderName;
         ShaderInfo shaderInfo;
-        RenderPassHandle renderPass;
+        //RenderPassHandle renderPass;
         // there shoulbe a renderpass handle
     };
 
@@ -804,74 +702,6 @@ struct CreateTextureInfo
 #pragma endregion Shader
 
 
-#pragma region DescriptorInfo
-
-struct DescriptorBufferInfo
-    {
-        GPUBufferHandle buffer;
-        uint32_t offset;
-        uint32_t range;
-    };
-
-struct DescriptorImageInfo
-{
-    SamplerHandle        sampler;
-    ImageViewHandle     imageView;
-    ImageLayout    imageLayout;
-};
-
-struct DescriptorTexelBufferViewInfo
-{
-    
-};
-
-#pragma endregion DescriptorInfo
-
-    struct DescriptorWriteSet
-    {
-        DescriptorSetHandle dstDescriptorSetHandle = nullptr;
-        uint32_t dstBinding = 0;
-        uint32_t dstArrayElement = 0;
-        DescriptorType descriptorType;
-        uint32_t descriptorCount = 1;
-        
-        DescriptorBufferInfo* descriptorBufferInfo = nullptr;
-        DescriptorImageInfo* descriptorImageInfo = nullptr; 
-        DescriptorTexelBufferViewInfo* descriptorTexelBufferViewInfo = nullptr;
-    };
-
-
-struct ImageSubresourceLayers
-{
-    TextureAspect    aspectMask = TextureAspect::NONE;
-    uint32_t              mipLevel = 0;
-    uint32_t              baseArrayLayer = 0;
-    uint32_t              layerCount = 0;
-} ;
-
-
-struct CopyBufferImageInfo
-{
-    uint64_t                bufferOffset = 0;
-    uint32_t                    bufferRowLength = 0;
-    uint32_t                    bufferImageHeight = 0;
-    ImageSubresourceLayers    imageSubresource {};
-    int32_t                  imageOffset3D[3] {};
-    uint32_t                  imageExtent3D[3]  {};
-};
- 
-#pragma region Samplers
-
-enum class SamplerCreateInfoFlags
-{
-    SUBSAMPLED_BIT_EXT = 1 << 0,
-   SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT = 1 << 1,
-   DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT = 1 << 2,
-   NON_SEAMLESS_CUBE_MAP_BIT_EXT = 1 << 3,
-    IMAGE_PROCESSING_BIT_QCOM               = 1 << 4
-};
-
-ENUM_FLAGS(SamplerCreateInfoFlags)
 
 enum class Filter
 {
@@ -920,24 +750,7 @@ enum class BorderColor
     INT_CUSTOM_EXT
 };
 
-struct SamplerCreateInfo
-{
-    SamplerCreateInfoFlags    flags;
-    Filter                magFilter;
-    Filter                minFilter;
-    SamplerMipmapMode     mipmapMode;
-    SamplerAddressMode    addressModeU;
-    SamplerAddressMode    addressModeV;
-    SamplerAddressMode    addressModeW;
-    float                   mipLodBias;
-    bool                anisotropyEnable;
-    bool                compareEnable;
-    CompareOp             compareOp;
-    float                   minLod;
-    float                   maxLod;
-    BorderColor           borderColor;
-    bool                unnormalizedCoordinates;
-};
+
 
 #pragma endregion 
 
@@ -984,18 +797,6 @@ struct RenderPassCreateInfo
     DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderPassCreateInfo)
 };
 
-struct RHIFrameBufferCreateInfo
-{
-    std::vector<ImageViewHandle> imageViewHandles;
-    RenderPassHandle renderPassHandle;
-
-    uint32_t                    width;
-    uint32_t                    height;
-    uint32_t                    layers;
-
-    DEFAULT_COPY_MOVE_OPERATIONS(RHIFrameBufferCreateInfo)
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(RHIFrameBufferCreateInfo)
-};
 
 struct RenderArea
 {
@@ -1005,6 +806,7 @@ struct RenderArea
 DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderArea)
 };
 
+/*
 union ClearValueColor
 {
     std::array<float,4>       float32;
@@ -1025,16 +827,16 @@ union ClearValue
 {
     ClearValueColor clearValueColor;
     ClearDepthStencilValue clearDepthStencilValue;
-};
+};*/
+/*
 
 struct BeginRenderPassInfo
 {
-    FrameBufferHandle          framebuffer;
     RenderArea               renderArea;
     uint32_t               clearValueCount;
     const ClearValue*    pClearValues;
 };
-
+*/
 #pragma endregion RenderPass
 
 END_PCCORE

@@ -61,9 +61,9 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
 
 void IMGUIContext::Destroy()
 {
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    //ImGui_ImplVulkan_Shutdown();
+    //ImGui_ImplGlfw_Shutdown();
+    //ImGui::DestroyContext();
 
     //RHI::GetInstance().DestroyDescriptorPool(m_DescriptorPoolHandle);
 }

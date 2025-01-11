@@ -9,6 +9,8 @@
 #include "vulkan_typedef.h"
 #include "low_renderer/rhi_typedef.h"
 
+
+
 #ifdef VULKAN_DLL
 
 #ifdef VULKA_API_EXPORT 
@@ -27,39 +29,6 @@ constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
 
-template <typename T, typename OBJ>
-T CastObjectToVkObject(OBJ _handle)
-{
-    if constexpr (std::is_pointer_v<T>)
-    {
-        using TValue = typename std::remove_pointer<T>::type;
-        constexpr bool IsConst = std::is_const_v<TValue>;
-
-        if constexpr (IsConst)
-        {
-            return reinterpret_cast<const T>(reinterpret_cast<const typename TValue::CType*>(_handle));
-        }
-        else
-        {
-            return reinterpret_cast<T>(reinterpret_cast<typename TValue::CType*>(_handle));
-        }
-    }
-    else
-    {
-        constexpr bool IsConst = std::is_const_v<T>;
-
-        if constexpr (IsConst)
-        {
-            return reinterpret_cast<const typename T::CType>(_handle);
-        }
-        else
-        {
-            return reinterpret_cast<typename T::CType>(_handle);
-        }
-
-    }
-    
-}
 
 
 namespace Vulkan

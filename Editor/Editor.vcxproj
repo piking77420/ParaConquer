@@ -132,8 +132,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Toolsd.lib;SPIRV-Tools-optd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\src\externals\libs\Debug;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,7 +166,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;CORE_IO_IMPORT;;CORE_IO_EXPORT;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;CORE_IO_IMPORT;CORE_IO_EXPORT;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include;$(ProjectDir)src\externals\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
@@ -178,7 +178,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies);</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -206,6 +206,7 @@
     </ProjectReference>
     <ProjectReference Include="..\MotionCore\MotionCore\MotionCore.vcxproj">
       <Project>{72ef56bb-45d6-4cfb-8f3e-fbe16b9b1889}</Project>
+      <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

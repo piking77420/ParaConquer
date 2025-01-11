@@ -4,10 +4,6 @@
 #include "resource.hpp"
 #include "shader_source.hpp"
 
-constexpr uint32_t DESCRIPTOR_ALLOC_HIGH = 100;
-constexpr uint32_t DESCRIPTOR_ALLOC_MEDIUM = 10;
-
-
 BEGIN_PCCORE
     class ShaderProgram : public Resource
     {
@@ -20,6 +16,7 @@ BEGIN_PCCORE
 
         PC_CORE_API ~ShaderProgram();
 
+        /*
         PC_CORE_API void Reload(RenderPassHandle _renderPassHandle);
 
         PC_CORE_API void Bind(CommandBufferHandle _commandBuffer);
@@ -38,14 +35,14 @@ BEGIN_PCCORE
 
         PC_CORE_API void BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _firstSet,
                                uint32_t _descriptorSetCount, const DescriptorSetHandle* _pDescriptorSets,
-                               uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets);
+                               uint32_t _dynamicOffsetCount, const uint32_t* _pDynamicOffsets);*/
     
     private:
         ShaderInfo m_ShaderInfo;
 
         std::vector<ShaderSource*> m_ShaderSources;
     
-        PC_CORE_API void CreateShader(RenderPassHandle _renderPassHandle);
+        //PC_CORE_API void CreateShader(RenderPassHandle _renderPassHandle);
 
         PC_CORE_API void DestroyShader();
 
