@@ -42,42 +42,11 @@
     <Content Include="src\externals\release\vulkan-1.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_layout.hpp" />
-    <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_pool.hpp" />
-    <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_write.hpp" />
-    <ClInclude Include="src\include\back_end\rhi_vulkan_render_pass.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_buffer.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_command_pool_function.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_image.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_object_wrapper.h" />
-    <ClInclude Include="src\include\back_end\vulkan_transition_image_layout.hpp" />
-    <ClInclude Include="src\include\framework.h" />
-    <ClInclude Include="src\include\front_end\vulkan_app.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_harware_wrapper.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_physical_devices.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_present_chain.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_shader_compiler.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_shader_manager.hpp" />
     <ClInclude Include="src\include\rhi_vulkan_parser.hpp" />
     <ClInclude Include="src\include\vulkan_header.h" />
     <ClInclude Include="src\include\vulkan_typedef.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\source\back_end\rhi_vulkan_descriptor_layout.cpp" />
-    <ClCompile Include="src\source\back_end\rhi_vulkan_descriptor_pool.cpp" />
-    <ClCompile Include="src\source\back_end\rhi_vulkan_descriptor_write.cpp" />
-    <ClCompile Include="src\source\back_end\rhi_vulkan_render_pass.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_buffer.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_command_pool_function.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_image.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_object_wrapper.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_transition_image_layout.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_app.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_harware_wrapper.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_physical_devices.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_present_chain.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_shader_compiler.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_shader_manager.cpp" />
     <ClCompile Include="src\source\rhi_vulkan_parser.cpp" />
     <ClCompile Include="src\source\vulkan_typedef.cpp" />
   </ItemGroup>

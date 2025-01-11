@@ -4,7 +4,6 @@
 
 #include "log.hpp"
 #include "physics/sphere_collider.hpp"
-#include "rendering/light.hpp"
 #include "resources/resource_manager.hpp"
 
 #include "lua/lua.hpp"
@@ -22,11 +21,11 @@ void App::Init()
     PC_LOG("App Init")
     // Can init without any depedancies
     window = Window("Para Conquer Editor", LOGO_PATH_BLACK);
-    renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
+    //renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
 
     // Need other init in order to init
     ResourceManager::InitPath();
-    renderer.InitRenderResources();
+    //renderer.InitRenderResources();
     Time::Init();
     
     world.LoadSkyBox();
@@ -38,7 +37,7 @@ void App::Destroy()
 
     world.skybox.Destroy();
     ResourceManager::Destroy();
-    renderer.Destroy();
+    //renderer.Destroy();
 }
 
 App::App()

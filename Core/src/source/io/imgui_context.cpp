@@ -3,7 +3,6 @@
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
-#include "front_end/vulkan_app.hpp"
 #include "Imgui/imgui_impl_vulkan.h"
 
 /*
@@ -18,13 +17,14 @@ static void CheckError(VkResult err)
 {
     if (err == 0)
         return;
-    std::cout << "[vulkan] Error: VkResult = " << err << "\n";
+    //std::cout << "[vulkan] Error: VkResult = " << err << "\n";
     if (err < 0)
         abort();
 }
 
 void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
 {
+    /*
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = &ImGui::GetIO(); (void)io;
@@ -40,7 +40,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
    
     ImGui_ImplVulkan_InitInfo init_info = Vulkan::VulkanApp::GetImGuiInitInfo(&m_DescriptorPoolHandle);
     init_info.CheckVkResultFn = CheckError;
-    ImGui_ImplVulkan_Init(&init_info);
+    ImGui_ImplVulkan_Init(&init_info);*/
 
     /*
     switch (_graphicApi)
@@ -65,17 +65,18 @@ void IMGUIContext::Destroy()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    RHI::GetInstance().DestroyDescriptorPool(m_DescriptorPoolHandle);
+    //RHI::GetInstance().DestroyDescriptorPool(m_DescriptorPoolHandle);
 }
 
 void IMGUIContext::NewFrame()
 {
 
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    //ImGui_ImplVulkan_NewFrame();
+    //ImGui_ImplGlfw_NewFrame();
+   // ImGui::NewFrame();
 }
 
+/*
 void IMGUIContext::Render(PC_CORE::CommandBuffer _commandBuffer)
 {
     Vulkan::VulkanApp& vulkanApp = dynamic_cast<Vulkan::VulkanApp&>(RHI::GetInstance());
@@ -95,3 +96,4 @@ void IMGUIContext::Render(PC_CORE::CommandBuffer _commandBuffer)
 }
 
 
+*/

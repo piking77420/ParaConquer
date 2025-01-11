@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include "vulkan_typedef.h"
-#include "rendering/render_harware_interface/rhi_typedef.h"
+#include "low_renderer/rhi_typedef.h"
 
 #ifdef VULKAN_DLL
 

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "render_harware_interface/rhi_typedef.h"
 #include "math/matrix_transformation.hpp"
 
 BEGIN_PCCORE
@@ -47,7 +46,7 @@ enum class GBufferType
         // Need this to change the final aspect Image either shader read optimal for viewPort or swaipchain image present optimal
         bool isSwapChainImage;
         
-        FrameBufferHandle frameBufferHandle;
+        //FrameBufferHandle frameBufferHandle;
         Tbx::Vector2f renderingContextSize;
     };
 

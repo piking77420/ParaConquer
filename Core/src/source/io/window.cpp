@@ -2,8 +2,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include "rendering/render_harware_interface/RHI.hpp"
 #include "resources/file_loader.hpp"
+#include <log.hpp>
 
 
 using namespace PC_CORE;
@@ -96,9 +96,9 @@ void Window::HandleResize()
             glfwGetFramebufferSize(m_Window, &width, &height);
             glfwWaitEvents();
         }
-        RHI::GetInstance().WaitDevice();
+        //RHI::GetInstance().WaitDevice();
         m_WindowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-        RHI::GetInstance().RecreateSwapChain(m_Window, m_WindowSize.x, m_WindowSize.y);
+        //RHI::GetInstance().RecreateSwapChain(m_Window, m_WindowSize.x, m_WindowSize.y);
         onResize = false;
     }
 }

@@ -3,7 +3,7 @@
 #include "resource.hpp"
 #include "math/matrix2x2.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "rendering/buffer/uniform_buffer.hpp"
+//#include "rendering/buffer/uniform_buffer.hpp"
 
 BEGIN_PCCORE
 class SceneLightsBuffer : public Resource
@@ -49,8 +49,6 @@ private:
         std::vector<SpothLightData> spothLightDatas;
     };
     
-    UniformBuffer m_Buffer;
-
     SceneLightData m_SceneLightData;
 };
 

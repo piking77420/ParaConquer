@@ -1,7 +1,6 @@
 ﻿#include "resources/shader_program.h"
 
 #include "math/matrix2x2.hpp"
-#include "rendering/render_harware_interface/RHI.hpp"
 
 using namespace PC_CORE;
 
@@ -28,8 +27,8 @@ void ShaderProgram::Reload(RenderPassHandle _renderPassHandle)
 
 void ShaderProgram::Bind(CommandBufferHandle _commandBuffer)
 {
-    if (!name.empty())
-        RHI::GetInstance().BindShaderProgram(_commandBuffer, name);
+    //if (!name.empty())
+      //  RHI::GetInstance().BindShaderProgram(_commandBuffer, name);
 }
 
 void ShaderProgram::PushConstantMat4(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const Tbx::Matrix4x4f& m4)
@@ -50,19 +49,19 @@ void ShaderProgram::PushConstantVec4(CommandBufferHandle _commandBuffer, const c
 
 void ShaderProgram::CreateDescriptorSet(uint32_t _descriptorSetLayout, PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
 {
-    RHI::GetInstance().AllocDescriptorSet(name,_descriptorSetLayout,  _descriptorSet, _descriptorSetCount);
+   // RHI::GetInstance().AllocDescriptorSet(name,_descriptorSetLayout,  _descriptorSet, _descriptorSetCount);
 }
 
 void ShaderProgram::FreeDescriptorSet(PC_CORE::DescriptorSetHandle* _descriptorSet, uint32_t _descriptorSetCount)
 {
-    RHI::GetInstance().FreeDescriptorSet(name , _descriptorSet, _descriptorSetCount);
+    //RHI::GetInstance().FreeDescriptorSet(name , _descriptorSet, _descriptorSetCount);
 }
 
 void ShaderProgram::BindDescriptorSet(PC_CORE::CommandBufferHandle _commandBufferHandle, uint32_t _firstSet,
     uint32_t _descriptorSetCount, const DescriptorSetHandle* _pDescriptorSets, uint32_t _dynamicOffsetCount,
     const uint32_t* _pDynamicOffsets)
 {
-    RHI::GetInstance().BindDescriptorSet(_commandBufferHandle, name, _firstSet, _descriptorSetCount, _pDescriptorSets, _dynamicOffsetCount, _pDynamicOffsets);
+    //RHI::GetInstance().BindDescriptorSet(_commandBufferHandle, name, _firstSet, _descriptorSetCount, _pDescriptorSets, _dynamicOffsetCount, _pDynamicOffsets);
 }
 
 void ShaderProgram::CreateShader(RenderPassHandle _renderPassHandle)
@@ -83,19 +82,19 @@ void ShaderProgram::CreateShader(RenderPassHandle _renderPassHandle)
         _renderPassHandle
         };
     
-    RHI::GetInstance().CreateShader(programShaderCreateInfo, sourceAndPaths);
+    //RHI::GetInstance().CreateShader(programShaderCreateInfo, sourceAndPaths);
 }
 
 void ShaderProgram::DestroyShader()
 {
-    if (!name.empty())
-        RHI::GetInstance().DestroyShader(name);
+    //if (!name.empty())
+      //  RHI::GetInstance().DestroyShader(name);
 }
 
 void ShaderProgram::PushConstant(CommandBufferHandle _commandBuffer, const char* _pushConstantName, const void* _data, size_t _dataSize)
 {
     if (!name.empty())
     {
-        RHI::GetInstance().PushConstants(_commandBuffer, name, _pushConstantName, _data, static_cast<uint32_t>(_dataSize));
+        //RHI::GetInstance().PushConstants(_commandBuffer, name, _pushConstantName, _data, static_cast<uint32_t>(_dataSize));
     }
 }

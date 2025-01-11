@@ -875,40 +875,7 @@ vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
     }
 }
 
-vk::BufferUsageFlags Vulkan::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
-{
-    vk::BufferUsageFlags result = {};
 
-    switch (usage)
-    {
-   
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::VERTEX:
-        result |= vk::BufferUsageFlagBits::eVertexBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::INDEX:
-        result |= vk::BufferUsageFlagBits::eIndexBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::UNIFORM:
-        result |= vk::BufferUsageFlagBits::eUniformBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::DYNAMIC_UNIFORM:
-        result |= vk::BufferUsageFlagBits::eUniformBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::SHADER_STORAGE:
-        result |= vk::BufferUsageFlagBits::eStorageBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::TRANSFERT_SRC:
-        result |= vk::BufferUsageFlagBits::eTransferSrc;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::NONE:
-    case PC_CORE::GPU_BUFFER_USAGE::COUNT:
-        throw std::invalid_argument("Invalid GPU buffer usage");
-        break;
-    default: ;
-    }
-    return result;
-}
 
 
 vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)

@@ -38,8 +38,8 @@ Mesh::Mesh(const fs::path& _path) : Resource(_path)
     nbrOfVertices = static_cast<uint32_t>(verticies.size());
     nbrOfIndices = static_cast<uint32_t>(indicies.size());
 
-    vertexBuffer = VertexBuffer(verticies);
-    indexBuffer = IndexBuffer(indicies);
+    //vertexBuffer = VertexBuffer(verticies);
+    //indexBuffer = IndexBuffer(indicies);
 }
 
 Mesh::~Mesh()

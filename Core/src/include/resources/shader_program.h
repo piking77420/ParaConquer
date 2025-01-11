@@ -3,7 +3,6 @@
 #include "core_header.hpp"
 #include "resource.hpp"
 #include "shader_source.hpp"
-#include "rendering/render_harware_interface/descriptor_set.hpp"
 
 constexpr uint32_t DESCRIPTOR_ALLOC_HIGH = 100;
 constexpr uint32_t DESCRIPTOR_ALLOC_MEDIUM = 10;

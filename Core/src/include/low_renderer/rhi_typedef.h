@@ -3,11 +3,10 @@
 #include <variant>
 #include <vector>
 
+#include "core_header.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "rendering/render_harware_interface/buffer_typedef.h"
 
 
-constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 #define ALIGNAS_16 alignas(16)
 
@@ -139,9 +138,9 @@ struct DescriptorPoolSize
 
     enum class LogType
     {
-        INFO,
-        WARNING,
-        ERROR
+        Info,
+        Warning,
+        Error
     };
 
 

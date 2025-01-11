@@ -7,7 +7,6 @@
 #include "profiler.hpp"
 #include "scene_button.hpp"
 #include "world_view_window.hpp"
-#include "resources/material.hpp"
 #include "time/core_time.hpp"
 #include <resources/resource_manager.hpp>
 #include "rendering/light.hpp"
@@ -26,7 +25,7 @@ void Editor::Init()
     World::currentWorld = &world;
     InitEditorWindows();
     InitTestScene();
-    PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
+    //PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 }
 
 void Editor::Destroy()
@@ -41,6 +40,7 @@ void Editor::Destroy()
 
 void Editor::UpdateEditorWindows()
 {
+    /*
     dockSpace.BeginDockSpace();
     ShaderRecompileList();
     for (EditorWindow* editorWindow : m_EditorWindows)
@@ -49,11 +49,12 @@ void Editor::UpdateEditorWindows()
         editorWindow->Update();
         editorWindow->End();
     }
-    dockSpace.EndDockSpace();
+    dockSpace.EndDockSpace();*/
 }
 
 void Editor::ShaderRecompileList()
 {
+    /*
     static bool open = true;
     ImGui::Begin("Shader Recompile List");
 
@@ -71,7 +72,7 @@ void Editor::ShaderRecompileList()
     ResourceManager::ForEach<ShaderProgram>(lamba);
     
     ImGui::End();
-    
+    */
 }
 
 void Editor::InitTestScene()
@@ -84,6 +85,7 @@ void Editor::InitTestScene()
     Material* material2 = ResourceManager::Create<Material>("material2", program);
     material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
 
+    /*
     const ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo =
@@ -153,7 +155,7 @@ void Editor::InitTestScene()
         
         mesh->mesh = ResourceManager::Get<Mesh>("suzanne.obj");
     }
-    
+    */
 }
 
 void Editor::DestroyTestScene()
@@ -163,8 +165,8 @@ void Editor::DestroyTestScene()
     world.scene = Scene();
     m_Selected = nullptr;
 
-    ResourceManager::Delete<Material>("material1");
-    ResourceManager::Delete<Material>("material2");
+    //ResourceManager::Delete<Material>("material1");
+    //ResourceManager::Delete<Material>("material2");
 }
 
 void Editor::Run()
@@ -176,7 +178,7 @@ void Editor::Run()
         PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
         
-        renderer.BeginFrame();
+        //renderer.BeginFrame();
        
         UpdateEditorWindows();
 
@@ -188,12 +190,12 @@ void Editor::Run()
         
         
         
-        PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
-        renderer.EndRender();
-        renderer.SwapBuffers();
+        //PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
+        //renderer.EndRender();
+        //renderer.SwapBuffers();
     }
 
-    renderer.WaitDevice();
+    //renderer.WaitDevice();
 }
 
 void Editor::InitEditorWindows()

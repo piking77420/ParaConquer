@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "resource.hpp"
-#include "rendering/render_harware_interface/rhi_typedef.h"
+#include "low_renderer/rhi_typedef.h"
 
 BEGIN_PCCORE
 

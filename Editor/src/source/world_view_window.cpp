@@ -4,7 +4,6 @@
 #include "vulkan_header.h"
 #include "time/core_time.hpp"
 #include "Imgui/imgui_impl_vulkan.h"
-#include "rendering/render_harware_interface/RHI.hpp"
 
 #undef near
 #undef far
@@ -14,9 +13,7 @@ using namespace PC_EDITOR_CORE;
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
-    m_ImaguiDescriptorSet.resize(MAX_FRAMES_IN_FLIGHT);
-    m_ViewPortImage.resize(MAX_FRAMES_IN_FLIGHT);
-    m_FrameBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+   
 }
 
 
@@ -26,21 +23,23 @@ void WorldViewWindow::Update()
     
     if (resize)
     {
-        m_Editor->renderer.WaitDevice();
+        //m_Editor->renderer.WaitDevice();
         ResizeViewports();
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    /*
     uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImageIndex();
     VkDescriptorSet& descriptorSet = m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage));
     
     ImGui::Image( reinterpret_cast<ImTextureID>(m_ImaguiDescriptorSet.at(static_cast<size_t>(currentImage))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
-            ImVec2(1, 1));
+            ImVec2(1, 1));*/
 }
 
 void WorldViewWindow::Render()
 {
     EditorWindow::Render();
+    /*
 
     uint32_t currentImage = PC_CORE::RHI::GetInstance().GetCurrentImageIndex();
 
@@ -63,75 +62,11 @@ void WorldViewWindow::Render()
     renderingContext.frameBufferHandle = m_FrameBuffers.at(static_cast<size_t>(currentImage)).GetHandle();
     renderingContext.renderingContextSize = size;
 
-    m_Editor->renderer.Render(renderingContext, m_Editor->world);
+    m_Editor->renderer.Render(renderingContext, m_Editor->world);*/
 }
 
 void WorldViewWindow::ResizeViewports()
 {
-    for (size_t i = 0; i < m_ViewPortImage.size(); i++)
-    {
-        for (size_t j = 0; j < m_ViewPortImage.at(i).size(); j++)
-        {
-            TMPRBuffer tMPRBuffer = static_cast<TMPRBuffer>(j);
-
-            switch (tMPRBuffer)
-            {
-            case TMPRBuffer::COLOR:
-                {
-                    PC_CORE::CreateTextureInfo createTextureInfo =
-                {
-                        .width = static_cast<int32_t>(size.x),
-                        .height = static_cast<int32_t>(size.y),
-                        .depth = 1,
-                        .mipsLevels = 1,
-                        .imageType = PC_CORE::ImageType::TYPE_2D,
-                        .format = PC_CORE::RHIFormat::R8G8B8A8_SRGB,
-                        .textureAspect = PC_CORE::TextureAspect::COLOR,
-                        .GenerateMipMap = false,
-                        .useAsAttachement = true,
-                    };
-                    m_ViewPortImage[i][j] = PC_CORE::Texture(createTextureInfo);
-                    ImGui_ImplVulkan_RemoveTexture(m_ImaguiDescriptorSet[i]);
-                    m_ImaguiDescriptorSet[i] = ImGui_ImplVulkan_AddTexture(
-                        CastObjectToVkObject<vk::Sampler>(m_ViewPortImage[i][j].GetSamplerHandle())
-                        , CastObjectToVkObject<vk::ImageView>(m_ViewPortImage[i][j].GetImageViewHandle()),
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-                }
-                break;
-            case TMPRBuffer::DEPTH:
-                {
-                    const PC_CORE::CreateTextureInfo depthCreateInfo =
-                    {
-                        .width = static_cast<int32_t>(size.x),
-                        .height = static_cast<int32_t>(size.y),
-                        .depth = 1,
-                        .mipsLevels = 1,
-                        .imageType = PC_CORE::ImageType::TYPE_2D,
-                        .format = PC_CORE::RHIFormat::D32_SFLOAT_S8_UINT,
-                        .textureAspect = static_cast<PC_CORE::TextureAspect>(PC_CORE::TextureAspect::DEPTH |
-                            PC_CORE::TextureAspect::STENCIL),
-                        .GenerateMipMap = false,
-                        .useAsAttachement = true,
-                    };
-                    m_ViewPortImage[i][j] = PC_CORE::Texture(depthCreateInfo);
-                }
-                break;
-            }
-     
-        }
-        const PC_CORE::FrameBufferCreateInfo frameBufferCreateInfo =
-        {
-            .renderTargets = m_ViewPortImage[i].data(),
-            .renderTargetCount = static_cast<uint32_t>(m_ViewPortImage[i].size()),
-            .renderPass = &m_Editor->renderer.forwardRenderPass,
-            .width = static_cast<uint32_t>(size.x),
-            .height = static_cast<uint32_t>(size.y),
-            .layers = 1
-        };
-
-
-        m_FrameBuffers[i] = PC_CORE::FrameBuffer(frameBufferCreateInfo);
-    }
+    
 }
 

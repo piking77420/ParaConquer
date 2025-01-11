@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "vulkan_header.h"
+#include "low_renderer/rhi_typedef.h"
 
 namespace Vulkan
 {
@@ -11,8 +12,6 @@ namespace Vulkan
     vk::ShaderStageFlagBits RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages);
 
     vk::PipelineBindPoint RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType);
-
-    vk::BufferUsageFlags GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage);
     
     vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
 

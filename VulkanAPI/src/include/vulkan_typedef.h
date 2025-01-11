@@ -1,19 +1,17 @@
 ﻿#pragma once
 
 
-#include "rendering/render_harware_interface/rhi_typedef.h"
-
 
 #define VK_USE_PLATFORM_WIN32_KHR 
 #define NOMINMAX
 #include <map>
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
-#include "back_end/vulkan_object_wrapper.h"
 
 #include <vma/vk_mem_alloc.h>
 
-#include "rendering/render_harware_interface/RHI.hpp"
+constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 
 namespace Vulkan
 {
@@ -24,7 +22,7 @@ namespace Vulkan
         const char* appName;
         const char* engineName;
         void* windowPtr;
-        PC_CORE::RHI_LOG_CALLBACK* logCallback;
+        //PC_CORE::RHI_LOG_CALLBACK* logCallback;
     };
 
     struct SwapChainSupportDetails
@@ -92,8 +90,6 @@ namespace Vulkan
         QueuFamiliesIndicies queuFamiliesIndicies;
         VkQueues vkQueues;
 #pragma endregion Queues
-        std::unordered_map<VulkanObjectWrapper<vk::Buffer>, VmaAllocation> m_BuffersAllocationMap;
-        std::unordered_map<VulkanObjectWrapper<vk::Image>, VmaAllocation> m_ImagesAllocationMap;
 
         vk::CommandPool resourceCommandPool;
         vk::Fence resourceFence;

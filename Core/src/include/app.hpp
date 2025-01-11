@@ -1,8 +1,6 @@
 #pragma once
 
 #include "core_header.hpp"
-#include "rendering/renderer.hpp"
-#include "rendering/camera.hpp"
 #include "world/world.hpp"
 #include "scripting/scripting_lua.hpp"
 #include <core/physics_engine.h>
@@ -22,8 +20,6 @@ public:
 
 	Window window;
 	
-	Renderer renderer;
-
 	ScriptingLua scriptingLua;
 
 	PhysicsWrapper physicsWrapper;
