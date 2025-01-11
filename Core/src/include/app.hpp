@@ -9,6 +9,8 @@
 #include "ecs/ecs_context.h"
 #include <io/core_io.hpp>
 
+#include "low_renderer/rhi.hpp"
+
 
 BEGIN_PCCORE
 	class App
@@ -19,6 +21,8 @@ public:
 	CoreIo coreIo;
 
 	Window window;
+
+	Rhi rhi;
 	
 	ScriptingLua scriptingLua;
 

@@ -21,6 +21,15 @@ void App::Init()
     PC_LOG("App Init")
     // Can init without any depedancies
     window = Window("Para Conquer Editor", LOGO_PATH_BLACK);
+
+    const RenderHardwareInterfaceCreateInfo createInfo =
+        {
+        .GraphicsAPI = GraphicAPI::VULKAN,
+        .window = &window,
+        .appName = "Para Conquer Editor",
+        };
+    
+    rhi = Rhi(createInfo);
     //renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
 
     // Need other init in order to init

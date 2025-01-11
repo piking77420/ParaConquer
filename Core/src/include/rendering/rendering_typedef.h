@@ -4,13 +4,6 @@
 
 BEGIN_PCCORE
 
-enum class GraphicAPI
-{
-    NONE,
-    VULKAN,
-    DX3D12,
-    COUNT
-};
 
 enum class GBufferType
 {

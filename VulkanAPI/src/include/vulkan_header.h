@@ -75,8 +75,13 @@ static std::unordered_map<VkResult, std::string> ErrorDescriptions = {
 
 #define VK_CALL(x)  VK_CHECK_CALL(x)
 
+#ifdef NDEBUG
+#define VK_CHECK_CALL(x) VulkanCheckErrorStatus(x, __FILE__, __LINE__)
+#else
 #define VK_CHECK_CALL(x) if constexpr (ENABLE_VALIDATION_LAYERS) VulkanCheckErrorStatus(x, __FILE__, __LINE__)
-
+#endif
+    
+    
 static bool VulkanCheckErrorStatus(vk::Result x, const char* file, int line)
 {
     if (x != vk::Result::eSuccess)

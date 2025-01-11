@@ -1,8 +1,7 @@
 #pragma once
 
 #include "core_header.hpp"
-#include "rendering/rendering_typedef.h"
-//#include "rendering/render_harware_interface/command_buffer.h"
+#include "low_renderer/rhi.hpp"
 
 BEGIN_PCCORE
 	class  IMGUIContext
