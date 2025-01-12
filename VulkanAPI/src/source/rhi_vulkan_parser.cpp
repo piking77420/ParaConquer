@@ -910,29 +910,6 @@ vk::CommandPoolCreateFlagBits Vulkan::CommandPoolCreateFlagBitsToVulkan(
     return commandPoolCreateFlagBits;
 }
 
-uint32_t Vulkan::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType)
-{
-    uint32_t queueFamiliesIndex = 0;
-
-    if (queueType & PC_CORE::QueuType::GRAPHICS && queueType & PC_CORE::QueuType::TRANSFERT)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
-    }
-    else if (queueType & PC_CORE::QueuType::TRANSFERT)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.transferFamily;
-    }
-    else if (queueType & PC_CORE::QueuType::GRAPHICS)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
-    }
-    else if (queueType & PC_CORE::QueuType::COMPUTE)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.computeFamily;
-    }
-
-    return queueFamiliesIndex;
-}
 
 vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 {

@@ -27,6 +27,8 @@ BEGIN_PCCORE
 
         PC_CORE_API Tbx::Vector2ui GetWindowSize() const;
     
+        PC_CORE_API const GLFWwindow* GetHandle() const;
+
         PC_CORE_API GLFWwindow* GetHandle();
 
         PC_CORE_API Window(const char* _windowName, const char* _logoPath);
@@ -34,6 +36,7 @@ BEGIN_PCCORE
         PC_CORE_API Window() = default;
 
         PC_CORE_API ~Window();
+
     private:
     
         GLFWwindow* m_Window = nullptr;

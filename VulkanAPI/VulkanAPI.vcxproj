@@ -19,11 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CoreIO\CoreIO.vcxproj">
-      <Project>{be47c81a-abd1-470d-9cd8-67173be47b41}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="src\externals\debug\glslang-default-resource-limitsd.lib" />
     <Content Include="src\externals\debug\glslang-default-resource-limitsd.pdb" />
     <Content Include="src\externals\debug\glslangd.lib" />
@@ -42,9 +37,21 @@
     <Content Include="src\externals\release\vulkan-1.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\rhi_vulkan_parser.hpp" />
+    <ClInclude Include="src\include\vulkan_context.hpp" />
+    <ClInclude Include="src\include\vulkan_device.hpp" />
+    <ClInclude Include="src\include\vulkan_header.h" />
+    <ClInclude Include="src\include\vulkan_instance.hpp" />
+    <ClInclude Include="src\include\vulkan_physical_devices.hpp" />
+    <ClInclude Include="src\include\vulkan_swap_chain.hpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="src\source\rhi_vulkan_parser.cpp" />
+    <ClCompile Include="src\source\vulkan_context.cpp" />
+    <ClCompile Include="src\source\vulkan_device.cpp" />
     <ClCompile Include="src\source\vulkan_instance.cpp" />
-    <ClCompile Include="src\source\vulkan_physical_devices.cpp">
+    <ClCompile Include="src\source\vulkan_physical_devices.cpp" />
+    <ClCompile Include="src\source\vulkan_swap_chain.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -120,14 +127,6 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LibCompiled>true</LibCompiled>
     </ClCompile>
-    <ClCompile Include="src\source\vulkan_typedef.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\include\rhi_vulkan_parser.hpp" />
-    <ClInclude Include="src\include\vulkan_header.h" />
-    <ClInclude Include="src\include\vulkan_instance.hpp" />
-    <ClInclude Include="src\include\vulkan_physical_devices.hpp" />
-    <ClInclude Include="src\include\vulkan_typedef.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

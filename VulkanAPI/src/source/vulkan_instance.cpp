@@ -1,13 +1,8 @@
 ﻿#include "vulkan_instance.hpp"
 
 #include "GLFW/glfw3.h"
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
 #include <windows.h>
 
-constexpr std::array<const char*, 1> validationLayers = {
-    "VK_LAYER_KHRONOS_validation",
-};
 
 #ifdef _DEBUG
 

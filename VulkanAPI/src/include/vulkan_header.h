@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 
-#include "vulkan_typedef.h"
+#include "vulkan/vulkan.hpp"
 #include "low_renderer/rhi_typedef.h"
 
 
@@ -29,6 +29,9 @@ constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
 
+constexpr std::array<const char*, 1> validationLayers = {
+    "VK_LAYER_KHRONOS_validation",
+};
 
 
 namespace Vulkan

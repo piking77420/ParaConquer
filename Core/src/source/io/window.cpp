@@ -113,6 +113,11 @@ Tbx::Vector2ui Window::GetWindowSize() const
     return m_WindowSize;
 }
 
+PC_CORE_API const GLFWwindow* Window::GetHandle() const
+{
+    return m_Window;
+}
+
 GLFWwindow* Window::GetHandle()
 {
     return m_Window;

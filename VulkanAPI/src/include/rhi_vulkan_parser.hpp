@@ -17,9 +17,6 @@ namespace Vulkan
 
     vk::CommandPoolCreateFlagBits CommandPoolCreateFlagBitsToVulkan(PC_CORE::CommandPoolBufferFlag _flag);
     
-    uint32_t GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType);
-
-
     vk::ImageType RHIImageToVkImageType(PC_CORE::ImageType _imageType);
     
 

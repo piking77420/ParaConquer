@@ -3,8 +3,7 @@
 #include <memory>
 
 #include "core_header.hpp"
-#include "physical_devices.hpp"
-#include "render_instance.hpp"
+#include "rhi_context.hpp"
 #include "rhi_typedef.h"
 #include "io/window.hpp"
 
@@ -19,10 +18,6 @@ BEGIN_PCCORE
 class Rhi
 {
 public:
-    std::shared_ptr<PC_CORE::RenderInstance> renderInstance;
-
-    std::shared_ptr<PC_CORE::PhysicalDevices> physicalDevices;
-
     DEFAULT_COPY_MOVE_OPERATIONS(Rhi)
 
     Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo);
@@ -36,15 +31,18 @@ public:
     static Rhi& GetInstance();
 
 private:
+    
     static inline Rhi* m_Instance = nullptr;
     
     PC_CORE::GraphicAPI m_GraphicsApi;
 
+    std::shared_ptr<RhiContext> m_RhiContext;
+
     void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
-    void VulkanInitialize(const RenderHardwareInterfaceCreateInfo& _createInfo);
+    void VulkanInitialize(const RhiContextCreateInfo& _createInfo);
 
-    void DX12Initialize();
+    void DX12Initialize(const RhiContextCreateInfo& _createInfo);
 
 };
 END_PCCORE

@@ -60,7 +60,7 @@ enum CommandPoolBufferFlag
     COMMAND_POOL_BUFFER_TRANSIENT = 1 << 1,
     COMMAND_POOL_BUFFER_PROTECTED = 1 << 2,
 
-    COMMAND_POOL_BUFFER_COUNT = std::numeric_limits<int>::max()
+    COMMAND_POOL_BUFFER_COUNT = 1 << 3,
 };
 
 

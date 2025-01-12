@@ -21,9 +21,11 @@
   <ItemGroup>
     <ProjectReference Include="..\MotionCore\MotionCore\MotionCore.vcxproj">
       <Project>{72ef56bb-45d6-4cfb-8f3e-fbe16b9b1889}</Project>
+      <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VulkanCore\VulkanCore.vcxproj">
+    <ProjectReference Include="..\VulkanAPI\VulkanAPI.vcxproj">
       <Project>{476d325f-61ab-44de-9eef-557e49552f88}</Project>
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -78,7 +80,10 @@
     <ClInclude Include="src\include\low_renderer\physical_devices.hpp" />
     <ClInclude Include="src\include\low_renderer\render_instance.hpp" />
     <ClInclude Include="src\include\low_renderer\rhi.hpp" />
+    <ClInclude Include="src\include\low_renderer\rhi_context.hpp" />
+    <ClInclude Include="src\include\low_renderer\rhi_device.hpp" />
     <ClInclude Include="src\include\low_renderer\rhi_typedef.h" />
+    <ClInclude Include="src\include\low_renderer\swap_chain.hpp" />
     <ClInclude Include="src\include\low_renderer\vertex.hpp" />
     <ClInclude Include="src\include\physics\box_collider.hpp" />
     <ClInclude Include="src\include\physics\physics.h" />
@@ -130,7 +135,12 @@
     <ClCompile Include="src\source\io\low_pass_filter.cpp" />
     <ClCompile Include="src\source\io\window.cpp" />
     <ClCompile Include="src\source\log.cpp" />
-    <ClCompile Include="src\source\low_renderer\physical_devices.cpp">
+    <ClCompile Include="src\source\low_renderer\physical_devices.cpp" />
+    <ClCompile Include="src\source\low_renderer\render_instance.cpp" />
+    <ClCompile Include="src\source\low_renderer\rhi.cpp" />
+    <ClCompile Include="src\source\low_renderer\rhi_context.cpp" />
+    <ClCompile Include="src\source\low_renderer\rhi_device.cpp" />
+    <ClCompile Include="src\source\low_renderer\swap_chain.cpp">
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -207,8 +217,6 @@
       <AdditionalOptions>/FS </AdditionalOptions>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="src\source\low_renderer\render_instance.cpp" />
-    <ClCompile Include="src\source\low_renderer\rhi.cpp" />
     <ClCompile Include="src\source\pc_assert.cpp" />
     <ClCompile Include="src\source\physics\box_collider.cpp" />
     <ClCompile Include="src\source\physics\physics_wrapper.cpp" />
