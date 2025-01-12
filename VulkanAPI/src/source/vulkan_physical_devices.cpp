@@ -25,16 +25,17 @@ Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
     vkPhysicalDevices.resize(physicalDeviceCount);
     VK_CALL(vulkanInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
     
+    std::vector<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(_physicalDevicesCreateInfo.requestExtensions);
+    
     m_PhysicalDevices.resize(vkPhysicalDevices.size());
-    LookForSuitableDevices(vkPhysicalDevices);
+    LookForSuitableDevices(vkPhysicalDevices, requestVulkanExtensions);
 
     std::string message = "Successfully created physical devices : " + GetPhysicalDevice().name;
     PC_LOG(message)
 }
 
-void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices)
+void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices, std::vector<std::string> _requestExtensions)
 {
-    
     std::vector<int32_t> devicesScore;
     devicesScore.resize(_physicalDevices.size());
     
@@ -79,6 +80,26 @@ void Vulkan::VulkanPhysicalDevices::GetDeviceFeatures(PC_CORE::PhysicalDevice* _
     
 }
 
+std::vector<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(const std::vector<std::string>& _requestExtensions)
+{
+    std::vector<std::string> out;
+    out.resize(_requestExtensions.size());
+
+    for (size_t i = 0; i < _requestExtensions.size(); i++)
+    {
+        if (_requestExtensions[i] == SWAPCHAIN_EXT)
+            out[i] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+        
+        if (_requestExtensions[i] == MESH_SHADER_EXT)
+            out[i] = VK_EXT_mesh_shader;
+        
+        if (_requestExtensions[i] == RAY_TRACING_EXT)
+            out[i] = VK_KHR_ray_tracing_pipeline;
+    }
+
+    return out;
+}
+
 
 int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& _physicalDevice, size_t _deviceIndex)
 {
@@ -87,9 +108,13 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     vk::PhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingFeatures = {};
     rayTracingFeatures.sType = vk::StructureType::ePhysicalDeviceRayTracingPipelineFeaturesKHR;
 
+    vk::PhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures = {};
+    meshShaderFeatures.sType = vk::StructureType::ePhysicalDeviceMeshShaderFeaturesEXT;
+    meshShaderFeatures.pNext = &rayTracingFeatures;
+    
     vk::PhysicalDeviceFeatures2 deviceFeatures2 = {};
     deviceFeatures2.sType = vk::StructureType::ePhysicalDeviceFeatures2;
-    deviceFeatures2.pNext = &rayTracingFeatures;
+    deviceFeatures2.pNext = &meshShaderFeatures;
 
     vk::PhysicalDevice physicalDevice = _physicalDevice;
     physicalDevice.getFeatures2(&deviceFeatures2);
@@ -113,9 +138,20 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
             score++;
     }
 
+    
+
     // Evaluate score based on vk::PhysicalDeviceRayTracingPipelineFeaturesKHR
     nbrOfBool = sizeof(vk::PhysicalDeviceRayTracingPipelineFeaturesKHR) / sizeof(vk::PhysicalDeviceRayTracingPipelineFeaturesKHR::rayTracingPipeline);
     ptr = &rayTracingFeatures.rayTracingPipeline;
+    for (size_t i = 0; i < nbrOfBool; i++) {
+        if (ptr[i] == vk::True)
+            score++;
+    }
+
+
+    // Evaluate score based on vk::PhysicalDeviceMeshShaderFeaturesEXT
+    nbrOfBool = sizeof(vk::PhysicalDeviceMeshShaderFeaturesEXT) / sizeof(vk::PhysicalDeviceMeshShaderFeaturesEXT::taskShader);
+    ptr = &meshShaderFeatures.taskShader;
     for (size_t i = 0; i < nbrOfBool; i++) {
         if (ptr[i] == vk::True)
             score++;

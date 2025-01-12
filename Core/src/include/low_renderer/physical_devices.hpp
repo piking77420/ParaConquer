@@ -15,7 +15,7 @@ BEGIN_PCCORE
 
     struct PhysicalDevicesCreateInfo
     {
-        std::vector<std::string> devicesExtensionExt;
+        std::vector<std::string> requestExtensions;
     };
 
     struct PhysicalDevice
