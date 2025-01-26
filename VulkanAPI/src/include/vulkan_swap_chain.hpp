@@ -18,17 +18,24 @@ namespace Vulkan
         VULKAN_API vk::SurfaceFormatKHR GetSurfaceFormat();
 
     private:
+         struct SyncObject
+         {
+             vk::Semaphore imageAvailableSemaphore;
+             vk::Semaphore renderFinishedSemaphore;
+             vk::Fence inFlightFence;
+         };
+        
         vk::SwapchainKHR m_SwapChain = VK_NULL_HANDLE;
 
         std::vector<vk::Image> m_SwapChainImage;
 
         std::vector<vk::ImageView> m_SwapChainImageViews;
-
-        std::vector<vk::Framebuffer> m_SwapChainFramebuffers;
-
+        
         vk::Extent2D m_Extent2D;
         
         vk::SurfaceFormatKHR m_SurfaceFormat;
+
+        SyncObject m_SyncObject;
         
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 
@@ -39,6 +46,8 @@ namespace Vulkan
         void CreateImageViews();
         
         void CreateFrameBuffers();
+
+        void CreateSyncObjects();
         
     };
 

@@ -46,7 +46,7 @@ Vulkan::VulkanRenderPass::~VulkanRenderPass()
     m_RenderPass = VK_NULL_HANDLE;
 }
 
-vk::RenderPass Vulkan::VulkanRenderPass::GetVulkanRenderPass()
+vk::RenderPass Vulkan::VulkanRenderPass::GetVulkanRenderPass() const
 {
     return m_RenderPass;
 }

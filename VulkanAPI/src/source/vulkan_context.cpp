@@ -37,8 +37,22 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
 
 VulkanContext::~VulkanContext()
 {
+    auto device = GetDevice();
+    device->GetDevice().destroyCommandPool(commandPool);    
+    commandPool = nullptr;
+    
     std::shared_ptr<VulkanInstance> vulkanInstance = std::reinterpret_pointer_cast<VulkanInstance>(renderInstance);
     vulkanInstance->Get().destroySurfaceKHR(m_Surface, nullptr);
+}
+
+std::shared_ptr<VulkanDevice> VulkanContext::GetDevice()
+{
+    return std::reinterpret_pointer_cast<VulkanDevice>(GetContext().rhiDevice);
+}
+
+std::shared_ptr<VulkanPhysicalDevices> VulkanContext::GetPhysicalDevices()
+{
+    return std::reinterpret_pointer_cast<VulkanPhysicalDevices>(GetContext().physicalDevices);
 }
 
 void VulkanContext::InitSurface(const void* _windowHandle)
@@ -63,4 +77,17 @@ void VulkanContext::InitSurface(const void* _windowHandle)
     // Create the surface
     vk::Result r = vulkanInstance->Get().createWin32SurfaceKHR(&win32SurfaceCreate, nullptr, &m_Surface);
     VK_CHECK_CALL(r);
+}
+
+void VulkanContext::CreateCommandPool()
+{
+    const std::vector<QueueFamilyIndices>& queueFamilyIndices = GetPhysicalDevices()->GetQueuesFamilies();
+    auto device = GetDevice();
+    
+    vk::CommandPoolCreateInfo commandPoolCreateInfo {};
+    commandPoolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+    commandPoolCreateInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+    commandPoolCreateInfo.queueFamilyIndex = 0;
+    
+    commandPool = device->GetDevice().createCommandPool(commandPoolCreateInfo);
 }

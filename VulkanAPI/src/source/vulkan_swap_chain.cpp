@@ -1,6 +1,7 @@
 ﻿#include "vulkan_swap_chain.hpp"
 
 #include "vulkan_context.hpp"
+#include "vulkan_frame_buffer.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "GLFW/glfw3.h"
 
@@ -174,15 +175,20 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 
 		vk::FramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
-		framebufferInfo.renderPass = std::reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass).get()->GetVulkanRenderPass();
+		framebufferInfo.renderPass = std::reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass)->GetVulkanRenderPass();
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = m_Extent2D.width;
 		framebufferInfo.height = m_Extent2D.height;
 		framebufferInfo.layers = 1;
-		
-		m_SwapChainFramebuffers[i] = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
-		
+
+		vk::Framebuffer framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
+		std::shared_ptr<VulkanFrameBuffer> vulkanFrameBuffer = std::make_shared<VulkanFrameBuffer>(framebuffer, true);
 	}
+}
+
+void Vulkan::VulkanSwapChain::CreateSyncObjects()
+{
+	
 }
 

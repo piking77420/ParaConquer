@@ -12,9 +12,9 @@ namespace Vulkan
 
         VULKAN_API VulkanRenderPass() = default;
 
-        VULKAN_API ~VulkanRenderPass();
+        VULKAN_API ~VulkanRenderPass() override;
 
-        VULKAN_API vk::RenderPass GetVulkanRenderPass();
+        VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
         
         
     protected:

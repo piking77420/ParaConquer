@@ -12,6 +12,9 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
+        
+        vk::CommandPool commandPool = VK_NULL_HANDLE;
+        
         VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 
         VULKAN_API ~VulkanContext() override;
@@ -23,6 +26,10 @@ namespace Vulkan
 
         const vk::SurfaceKHR& GetSurface() const { return m_Surface; }
 
+        static std::shared_ptr<VulkanDevice> GetDevice();
+
+        static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
+
     private:
         vk::Queue m_GraphicsQueue;
 
@@ -31,6 +38,8 @@ namespace Vulkan
         vk::SurfaceKHR m_Surface;
         
         VULKAN_API void InitSurface(const void* _windowHandle);
+
+        VULKAN_API void CreateCommandPool();
     };
 
 }
