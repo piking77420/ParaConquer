@@ -38,6 +38,13 @@ public:
     DockSpace dockSpace;
     
     PC_CORE::Entity* m_Selected = nullptr;
+
+private:
+    void InitThridPartLib();
+
+    void UnInitThridPartLib();
+
+    void CompileShader();
 };
 
 END_PCCORE

@@ -7,22 +7,14 @@ namespace Vulkan
 {
     vk::Format RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat);
     
-    vk::DescriptorType RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType);
-
-    vk::ShaderStageFlagBits RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages);
-
     vk::PipelineBindPoint RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType);
     
     vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
-
-    vk::CommandPoolCreateFlagBits CommandPoolCreateFlagBitsToVulkan(PC_CORE::CommandPoolBufferFlag _flag);
     
     vk::ImageType RHIImageToVkImageType(PC_CORE::ImageType _imageType);
     
-
     vk::ImageViewType RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageType);
     
-
     inline vk::ComponentSwizzle RHIToVulkanComponentSwizzle(PC_CORE::ComponentSwizzle _componentSwizzle)
     {
         return static_cast<vk::ComponentSwizzle>(_componentSwizzle);
@@ -41,5 +33,7 @@ namespace Vulkan
     vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode);
 
     vk::ImageAspectFlags RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect);
+
+    vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage);
 }
 

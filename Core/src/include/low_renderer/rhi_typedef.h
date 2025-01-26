@@ -6,6 +6,7 @@
 #include "core_header.hpp"
 #include "math/toolbox_typedef.hpp"
 
+constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
 
 
 #define ALIGNAS_16 alignas(16)
@@ -53,76 +54,6 @@ ENUM_FLAGS(QueuType)
 
 constexpr void* INVALID_HANDLE = nullptr;
 
-enum CommandPoolBufferFlag
-{
-    COMMAND_POOL_BUFFER_NONE = 0,
-    COMMAND_POOL_BUFFER_RESET = 1 << 0,
-    COMMAND_POOL_BUFFER_TRANSIENT = 1 << 1,
-    COMMAND_POOL_BUFFER_PROTECTED = 1 << 2,
-
-    COMMAND_POOL_BUFFER_COUNT = 1 << 3,
-};
-
-
-struct ViewPortExtend
-{
-    Tbx::Vector2f position;
-    float width;
-    float height;
-    float minDepth;
-    float maxDepth;
-};
-
-struct ScissorRect
-{
-    Tbx::Vector2f offset;
-    Tbx::Vector2ui extend;
-};
-
-
-struct CommandPoolCreateInfo
-{
-    QueuType queueType = QueuType::NONE;
-    CommandPoolBufferFlag commandPoolBufferFlag;
-};
-
-enum class CommandBufferlevel
-{
-    PRIMARY,
-    SECONDARY,
-
-    COUT
-};
-
-enum class DescriptorType
-{
-    SAMPLER = 0,
-    COMBINED_IMAGE_SAMPLER = 1,
-    SAMPLED_IMAGE = 2,
-    STORAGE_IMAGE = 3,
-    UNIFORM_TEXEL_BUFFER = 4,
-    STORAGE_TEXEL_BUFFER = 5,
-    UNIFORM_BUFFER = 6,
-    STORAGE_BUFFER = 7,
-    UNIFORM_BUFFER_DYNAMIC = 8,
-    STORAGE_BUFFER_DYNAMIC = 9,
-    INPUT_ATTACHMENT = 10,
-    INLINE_UNIFORM_BLOCK = 1000138000,
-    ACCELERATION_STRUCTURE_KHR = 1000150000,
-    ACCELERATION_STRUCTURE_NV = 1000165000,
-    SAMPLE_WEIGHT_IMAGE_QCOM = 1000440000,
-    BLOCK_MATCH_IMAGE_QCOM = 1000440001,
-    MUTABLE_EXT = 1000351000,
-    INLINE_UNIFORM_BLOCK_EXT = INLINE_UNIFORM_BLOCK,
-    MUTABLE_VALVE = MUTABLE_EXT,
-    COUNT
-};
-
-struct DescriptorPoolSize
-{
-    DescriptorType type;
-    uint32_t count;
-};
 
 
 
@@ -558,28 +489,44 @@ struct CreateTextureInfo
 #pragma endregion
 
 
-
-
 #pragma region Shader
 
-    enum class ShaderStageType
+    enum class ShaderStageType : size_t
     {
-        VERTEX,
-        FRAGMENT,
-        GEOMETRY,
-        TESSELATION,
-        COMPUTE,
+       VERTEX,
+       TESSCONTROL,
+       TESSEVALUATION,
+       GEOMETRY,
+       FRAGMENT,
+       COMPUTE,
+       RAYGEN,
+       INTERSECT,
+       ANYHIT,
+       CLOSESTHIT,
+       MISS,
+       CALLABLE,
+       TASK,
+       MESH,
 
-        COUNT
+       COUNT
     };
 
-    const std::array<std::string, 5> ShaderSourceFormat
+    const std::array<std::string,14> ShaderSourceFormat = 
     {
         ".vert",
-        ".frag",
+        ".tessc",
+        ".tessv",
         ".geom",
-        ".tess",
-        ".comp"
+        ".frag",
+        ".comp",
+        ".raygen",
+        ".intersect",
+        ".anyhit",
+        ".closesthit",
+        ".miss",
+        ".callable",
+        ".task"
+        ".mesh",
     };
 
 
@@ -652,8 +599,6 @@ struct CreateTextureInfo
         FrontFace frontFace = FrontFace::CounterClockwise;
     };
 
-
-
     struct ShaderGraphicPointInfo
     {
         RasterizerInfo rasterizerInfo;
@@ -670,26 +615,19 @@ struct CreateTextureInfo
     };
 
     using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderRayTracingInfo, ShaderComputeInfo>;
-
-    struct DescriptorInfo 
-    {
-        bool freeDescriptorSet = false;
-        uint32_t descriptorAllocCount = 0;
-    };
-
+    
+ 
     struct ShaderInfo
     {
         ShaderProgramPipelineType shaderProgramPipelineType;
         ShaderInfoData shaderInfoData;
-        DescriptorInfo descriptorInfo;
+        std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
     };
 
     struct ProgramShaderCreateInfo
     {
         std::string prograShaderName;
         ShaderInfo shaderInfo;
-        //RenderPassHandle renderPass;
-        // there shoulbe a renderpass handle
     };
 
 
@@ -710,13 +648,12 @@ struct CreateTextureInfo
 #pragma endregion Shader
 
 
-
 enum class Filter
 {
      NEAREST,
      LINEAR,
       CUBIC_IMG,
-       CUBIC_EXT
+        CUBIC_EXT
 };
 
 enum class SamplerMipmapMode
@@ -774,77 +711,6 @@ enum class AttachementUsage
     COUNT,
 };
 
-
-struct AttachmentDescription
-{
-    AttachementUsage attachementUsage;
-    RHIFormat format;
-
-    DEFAULT_COPY_MOVE_OPERATIONS(AttachmentDescription)
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(AttachmentDescription)
-};
-
-struct SubPasse
-{
-    ShaderProgramPipelineType shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS;
-    std::vector<AttachementUsage> attachementUsage;
-
-    
-    DEFAULT_COPY_MOVE_OPERATIONS(SubPasse)
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(SubPasse)
-};
-
-struct RenderPassCreateInfo
-{
-    std::vector<AttachmentDescription> attachmentDescriptions;
-    std::vector<SubPasse> subPasses;
-
-   
-
-    DEFAULT_COPY_MOVE_OPERATIONS(RenderPassCreateInfo)
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderPassCreateInfo)
-};
-
-
-struct RenderArea
-{
-    int32_t offset[2];
-    int32_t extend[2];
-    DEFAULT_COPY_MOVE_OPERATIONS(RenderArea)
-DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderArea)
-};
-
-/*
-union ClearValueColor
-{
-    std::array<float,4>       float32;
-    std::array<int32_t,4>     int32;
-    std::array<uint32_t,4>    uint32;
-};
-
-//using ClearValueColor = std::variant<std::array<float,4>, std::array<int32_t,4>, std::array<uint32_t,4>>;
-
-struct ClearDepthStencilValue
-{
-    float       depth;
-    uint32_t    stencil;
-
-};
-
-union ClearValue
-{
-    ClearValueColor clearValueColor;
-    ClearDepthStencilValue clearDepthStencilValue;
-};*/
-/*
-
-struct BeginRenderPassInfo
-{
-    RenderArea               renderArea;
-    uint32_t               clearValueCount;
-    const ClearValue*    pClearValues;
-};
-*/
 #pragma endregion RenderPass
 
 END_PCCORE

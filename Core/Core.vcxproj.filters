@@ -183,9 +183,6 @@
     <ClInclude Include="src\include\resources\shader_program.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\resources\shader_source.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\resources\texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -235,6 +232,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\log.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\low_renderer\swap_chain.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -341,9 +344,6 @@
     <ClCompile Include="src\source\resources\shader_program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\resources\shader_source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\resources\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -390,6 +390,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\pc_assert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\swap_chain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

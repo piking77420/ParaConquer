@@ -37,6 +37,7 @@
     <Content Include="src\externals\release\vulkan-1.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\resources\vulkan_shader_program.hpp" />
     <ClInclude Include="src\include\rhi_vulkan_parser.hpp" />
     <ClInclude Include="src\include\vulkan_context.hpp" />
     <ClInclude Include="src\include\vulkan_device.hpp" />
@@ -46,87 +47,13 @@
     <ClInclude Include="src\include\vulkan_swap_chain.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\source\resources\vulkan_shader_program.cpp" />
     <ClCompile Include="src\source\rhi_vulkan_parser.cpp" />
     <ClCompile Include="src\source\vulkan_context.cpp" />
     <ClCompile Include="src\source\vulkan_device.cpp" />
     <ClCompile Include="src\source\vulkan_instance.cpp" />
     <ClCompile Include="src\source\vulkan_physical_devices.cpp" />
-    <ClCompile Include="src\source\vulkan_swap_chain.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>D:\Data\Project\ParaConquer\x64\Debug\VulkanAPI.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>x64\Debug\VulkanAPI.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>x64\Debug\VulkanAPI.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;_UNICODE;UNICODE;</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\Data\Project\ParaConquer\VulkanAPI\src\include;D:\Data\Project\ParaConquer\Core\src\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include;D:\Data\Project\ParaConquer\VulkanAPI\src\include;D:\Data\Project\ParaConquer\MotionCore\MotionCore\include</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LibCompiled>true</LibCompiled>
-    </ClCompile>
+    <ClCompile Include="src\source\vulkan_swap_chain.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -191,11 +118,11 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)Include;$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)Include;$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -288,7 +215,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -298,7 +224,6 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(SolutionDir)MotionCore\MotionCore\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -314,7 +239,8 @@
       <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\libs</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:libcmt</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>

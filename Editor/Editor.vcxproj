@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\include</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(IncludePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanCore\src\include\;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\include;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include;$(VK_SDK_PATH)\Include</IncludePath>
     <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(ExecutablePath);$(SolutionDir)CoreIO/src/externals/include</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,7 +90,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)MotionCore\MotionCore\include\;$(SolutionDir)CoreIO/src/externals/include;$(IncludePath);$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\include</IncludePath>
+    <IncludePath>$(SolutionDir)MotionCore\MotionCore\include\;$(SolutionDir)CoreIO/src/externals/include;$(IncludePath);$(SolutionDir)CoreIO/src/include;$(SolutionDir)VulkanAPI\src\externals\include;$(SolutionDir)VulkanAPI\src\include;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include;$(VK_SDK_PATH)\Include</IncludePath>
     <ExecutablePath>$(SolutionDir)Core\src\externals\lib\Dynamic;$(SolutionDir)CoreIO;$(ExecutablePath);$(SolutionDir)CoreIO/src/externals/include;$(SolutionDir)VulkanCore\src\include\</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -120,7 +120,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;;_CRT_SECURE_NO_WARNINGS;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;;_CRT_SECURE_NO_WARNINGS;;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS;EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\externals\include;%(AdditionalIncludeDirectories);$(SolutionDir)Editor\src\include;$(ProjectDir)src\include\;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
@@ -132,8 +132,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glslangd.lib;glslang-default-resource-limitsd.lib;spirv-cross-reflectd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\src\externals\libs\Debug;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glslangd.lib;SPIRV-Toolsd.lib;SPIRV-Tools-optd.lib;glslang-default-resource-limitsd.lib;MachineIndependentd.lib;GenericCodeGend.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\src\externals\libs\Release;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,7 +166,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;CORE_IO_IMPORT;CORE_IO_EXPORT;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PC_CORE_IMPORT;CORE_IO_IMPORT;CORE_IO_EXPORT;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;EDITOR</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\src\include;$(SolutionDir)Core\src\externals\include;$(ProjectDir)src\include;$(ProjectDir)src\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include;src\include;$(SolutionDir)Editor\src\include;$(ProjectDir)src\externals\include;%(AdditionalIncludeDirectories);$(ProjectDir)src\include</AdditionalIncludeDirectories>
@@ -178,7 +178,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glslang.lib;glslang-default-resource-limits.lib;spirv-cross-reflect.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glslang.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;glslang-default-resource-limits.lib;spirv-cross-reflect.lib;MachineIndependent.lib;GenericCodeGen.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -197,6 +197,7 @@
     <ClCompile Include="src\source\imgui_helper.cpp" />
     <ClCompile Include="src\source\inspector.cpp" />
     <ClCompile Include="src\source\profiler.cpp" />
+    <ClCompile Include="src\source\resources\shader_source.cpp" />
     <ClCompile Include="src\source\scene_button.cpp" />
     <ClCompile Include="src\source\transform_gizmo.cpp" />
     <ClCompile Include="src\source\world_view_window.cpp" />
@@ -227,6 +228,7 @@
     <ClInclude Include="src\include\imgui_helper.h" />
     <ClInclude Include="src\include\inspector.hpp" />
     <ClInclude Include="src\include\profiler.hpp" />
+    <ClInclude Include="src\include\resources\shader_source.hpp" />
     <ClInclude Include="src\include\scene_button.hpp" />
     <ClInclude Include="src\include\transform_gizmo.hpp" />
     <ClInclude Include="src\include\world_view_window.hpp" />

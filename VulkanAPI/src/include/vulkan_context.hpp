@@ -16,6 +16,11 @@ namespace Vulkan
 
         VULKAN_API ~VulkanContext() override;
 
+        static inline VulkanContext& GetContext()
+        {
+            return *reinterpret_cast<VulkanContext*>(m_CurrentContext);
+        }
+
         const vk::SurfaceKHR& GetSurface() const { return m_Surface; }
 
     private:

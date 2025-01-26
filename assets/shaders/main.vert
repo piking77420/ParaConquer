@@ -1,28 +1,20 @@
 #version 450
 
-
-#include "include/buffers.glsl"
-
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec2 inTextCoords;
-
 layout(location = 0) out vec3 fragColor;
-layout(location = 1) out vec2 fragTexCoord;
 
+vec2 positions[3] = vec2[](
+    vec2(0.0, -0.5),
+    vec2(0.5, 0.5),
+    vec2(-0.5, 0.5)
+);
 
-layout(push_constant) uniform ModelMatrix
-{
-    mat4 model;
-} modelMatrix;
+vec3 colors[3] = vec3[](
+    vec3(1.0, 0.0, 0.0),
+    vec3(0.0, 1.0, 0.0),
+    vec3(0.0, 0.0, 1.0)
+);
 
-void main()
-{
-    vec4 position = sceneBuffer.proj * sceneBuffer.view * modelMatrix.model * vec4(inPosition, 1.0); 
-    vec3 normal = inNormal;
-
-    gl_Position = position;
-    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix.model)));
-    fragColor = normalMatrix * inNormal;
-    fragTexCoord = inTextCoords;
+void main() {
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    fragColor = colors[gl_VertexIndex];
 }

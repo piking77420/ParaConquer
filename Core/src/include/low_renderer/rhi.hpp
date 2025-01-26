@@ -6,6 +6,7 @@
 #include "rhi_context.hpp"
 #include "rhi_typedef.h"
 #include "io/window.hpp"
+#include "resources/shader_program.h"
 
 BEGIN_PCCORE
     struct RenderHardwareInterfaceCreateInfo
@@ -29,6 +30,8 @@ public:
     inline PC_CORE::GraphicAPI GetGraphicsAPI() const { return m_GraphicsApi; }
 
     static Rhi& GetInstance();
+
+    static ShaderProgram* CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 
 private:
     

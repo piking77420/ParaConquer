@@ -10,6 +10,7 @@
 #include <io/core_io.hpp>
 
 #include "low_renderer/rhi.hpp"
+#include "rendering/renderer.hpp"
 
 
 BEGIN_PCCORE
@@ -23,6 +24,8 @@ public:
 	Window window;
 
 	Rhi rhi;
+
+	Renderer renderer;
 	
 	ScriptingLua scriptingLua;
 

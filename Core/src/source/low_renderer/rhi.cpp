@@ -2,6 +2,8 @@
 
 #include "log.hpp"
 #include "vulkan_context.hpp"
+#include "resources/resource_manager.hpp"
+#include "resources/vulkan_shader_program.hpp"
 
 using namespace PC_CORE;
 
@@ -31,6 +33,25 @@ Rhi::~Rhi()
 Rhi& Rhi::GetInstance()
 {
     return *m_Instance;
+}
+
+ShaderProgram* Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo)
+{
+    Rhi& rhi = GetInstance();
+    
+    switch (rhi.m_GraphicsApi)
+    {
+        break;
+    case GraphicAPI::VULKAN:
+        return ResourceManager::Create<Vulkan::VulkanShaderProgram>(_programShaderCreateInfo);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::NONE:
+    case GraphicAPI::COUNT:
+        break;
+    }
+    
 }
 
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)

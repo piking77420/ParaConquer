@@ -63,7 +63,7 @@ Vulkan::VulkanSwapChain::VulkanSwapChain(size_t _width, size_t _height)
 
 Vulkan::VulkanSwapChain::~VulkanSwapChain()
 {
-	VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
+	VulkanContext& vulkanContext = VulkanContext::GetContext();
 	std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice);
 
 	device->GetDevice().destroySwapchainKHR(m_SwapChain);

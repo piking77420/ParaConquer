@@ -1,4 +1,6 @@
-﻿#include "editor.hpp"
+﻿#include <glslang/Include/glslang_c_interface.h>
+
+#include "editor.hpp"
 
 #include "asset_browser.hpp"
 #include "edit_world_window.hpp"
@@ -13,14 +15,38 @@
 #include "io/core_io.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
+#include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
 
+void Editor::InitThridPartLib()
+{
+    glslang_initialize_process();
+
+}
+
+void Editor::UnInitThridPartLib()
+{
+    glslang_finalize_process();
+}
+
+void Editor::CompileShader()
+{
+    ShaderSource* mainVertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+    ShaderSource* mainFrag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+
+    mainFrag->CompileToSpriv();
+    mainVertex->CompileToSpriv();
+}
+
 void Editor::Init()
 {
+    InitThridPartLib();
+    CompileShader();
+
     App::Init();
     World::currentWorld = &world;
     InitEditorWindows();
@@ -35,6 +61,8 @@ void Editor::Destroy()
 
     PC_CORE::IMGUIContext::Destroy();
     App::Destroy();
+
+    UnInitThridPartLib();
 }
 
 
@@ -74,6 +102,8 @@ void Editor::ShaderRecompileList()
     ImGui::End();
     */
 }
+
+
 
 void Editor::InitTestScene()
 {

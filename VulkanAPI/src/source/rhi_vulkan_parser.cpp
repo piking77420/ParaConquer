@@ -766,6 +766,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 }
 #pragma endregion Format
 
+/*
 vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType)
 {
     vk::DescriptorType result = {};
@@ -828,38 +829,8 @@ vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _de
     }
 
     return result;
-}
+}*/
 
-vk::ShaderStageFlagBits Vulkan::RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages)
-{
-    int result = {};
-    for (auto shaderStage : _shaderStages)
-    {
-        switch (shaderStage)
-        {
-        case PC_CORE::ShaderStageType::VERTEX:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eVertex);
-            break;
-        case PC_CORE::ShaderStageType::FRAGMENT:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eFragment);
-            break;
-        case PC_CORE::ShaderStageType::GEOMETRY:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eGeometry);
-            break;
-        case PC_CORE::ShaderStageType::TESSELATION:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eTessellationControl);
-            break;
-        case PC_CORE::ShaderStageType::COMPUTE:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eCompute);
-            break;
-        case PC_CORE::ShaderStageType::COUNT:
-            break;
-        default: ;
-        }
-    }
-
-    return static_cast<vk::ShaderStageFlagBits>(result);
-}
 
 vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
     PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
@@ -893,22 +864,6 @@ vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _
     }
 }
 
-vk::CommandPoolCreateFlagBits Vulkan::CommandPoolCreateFlagBitsToVulkan(
-    PC_CORE::CommandPoolBufferFlag _flag)
-{
-    vk::CommandPoolCreateFlagBits commandPoolCreateFlagBits{};
-
-    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_RESET)
-        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-
-    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_TRANSIENT)
-        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eTransient;
-
-    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_PROTECTED)
-        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eProtected;
-
-    return commandPoolCreateFlagBits;
-}
 
 
 vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
@@ -1131,5 +1086,43 @@ vk::ImageAspectFlags Vulkan::RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect
     }
 
     return flags;
+}
+
+vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage)
+{
+    switch (_shaderStage)
+    {
+    case PC_CORE::ShaderStageType::VERTEX:
+        return vk::ShaderStageFlagBits::eVertex;
+    case PC_CORE::ShaderStageType::TESSCONTROL:
+        return vk::ShaderStageFlagBits::eTessellationControl;
+    case PC_CORE::ShaderStageType::TESSEVALUATION:
+        return vk::ShaderStageFlagBits::eTessellationEvaluation;
+    case PC_CORE::ShaderStageType::GEOMETRY:
+        return vk::ShaderStageFlagBits::eGeometry;
+    case PC_CORE::ShaderStageType::FRAGMENT:
+        return vk::ShaderStageFlagBits::eFragment;
+    case PC_CORE::ShaderStageType::COMPUTE:
+        return vk::ShaderStageFlagBits::eCompute;
+    case PC_CORE::ShaderStageType::RAYGEN:
+        return vk::ShaderStageFlagBits::eRaygenNV;
+    case PC_CORE::ShaderStageType::INTERSECT:
+        return vk::ShaderStageFlagBits::eIntersectionNV;
+    case PC_CORE::ShaderStageType::ANYHIT:
+        return vk::ShaderStageFlagBits::eAnyHitNV;
+    case PC_CORE::ShaderStageType::CLOSESTHIT:
+        return vk::ShaderStageFlagBits::eClosestHitNV;
+    case PC_CORE::ShaderStageType::MISS:
+        return vk::ShaderStageFlagBits::eMissNV;
+    case PC_CORE::ShaderStageType::CALLABLE:
+        return vk::ShaderStageFlagBits::eCallableNV;
+    case PC_CORE::ShaderStageType::TASK:
+        return vk::ShaderStageFlagBits::eTaskNV;
+    case PC_CORE::ShaderStageType::MESH:
+        return vk::ShaderStageFlagBits::eMeshNV;
+    case PC_CORE::ShaderStageType::COUNT:
+        default:
+        throw std::runtime_error("Unknown ShaderStageType");
+    }
 }
 

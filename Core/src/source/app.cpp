@@ -30,7 +30,7 @@ void App::Init()
         };
     
     rhi = Rhi(createInfo);
-    //renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
+    renderer.Init();
 
     // Need other init in order to init
     ResourceManager::InitPath();
