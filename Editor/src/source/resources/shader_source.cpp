@@ -91,7 +91,7 @@ bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
         .language = GLSLANG_SOURCE_GLSL,
         .stage = GetGlangShaderStage(m_ShaderType),
         .client = GLSLANG_CLIENT_VULKAN,
-        .client_version = GLSLANG_TARGET_VULKAN_1_3,
+        .client_version = GLSLANG_TARGET_VULKAN_1_4,
         .target_language = GLSLANG_TARGET_SPV,
         .target_language_version = GLSLANG_TARGET_SPV_1_6,
         .code = sourceCode.data(),
@@ -169,7 +169,7 @@ void ShaderSource::WriteFile(const fs::path& folder)
 void ShaderSource::CompileToSpriv()
 {
     std::string filePath = SHADER_CACHE_PATH + name + "_spv" + format;
-    std::fstream f(filePath, std::ios::binary | std::ios::out);
+    std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
     std::vector<char> sourceSpriv;
 
     if (!GetAsSpriv(&sourceSpriv))
@@ -177,15 +177,17 @@ void ShaderSource::CompileToSpriv()
         PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
         return;
     }
-    
+
     if (!f.is_open())
     {
         std::cerr << "Failed to open file " << filePath << std::endl;
-        PC_LOGERROR("File is not open")
+        PC_LOGERROR("File is not open");
         return;
     }
-    
-    f << sourceSpriv.data();
+
+    // Write the contents of the vector to the file
+    f.write(sourceSpriv.data(), sourceSpriv.size());
+
     f.close();
 }
 

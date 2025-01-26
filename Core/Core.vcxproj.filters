@@ -240,6 +240,9 @@
     <ClInclude Include="src\include\rendering\renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\low_renderer\rhi_render_pass.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp">
@@ -396,6 +399,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\rhi_render_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\include\low_renderer\vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

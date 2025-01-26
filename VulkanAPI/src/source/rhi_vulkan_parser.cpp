@@ -1126,3 +1126,17 @@ vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shade
     }
 }
 
+vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
+{
+    vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
+    
+    if (_cullModeFlagBit & PC_CORE::CullModeFlagBit::Back)
+        cullModeFlags |= vk::CullModeFlagBits::eBack;
+    if (_cullModeFlagBit & PC_CORE::CullModeFlagBit::Front)
+        cullModeFlags |= vk::CullModeFlagBits::eFront;
+    if (_cullModeFlagBit & PC_CORE::CullModeFlagBit::FrontAndBack)
+        cullModeFlags |= vk::CullModeFlagBits::eFrontAndBack;
+    
+    return cullModeFlags;
+}
+

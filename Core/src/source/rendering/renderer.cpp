@@ -1,6 +1,7 @@
 #include "rendering/renderer.hpp"
 
 #include "low_renderer/rhi.hpp"
+#include "low_renderer/vertex.hpp"
 #include "resources/resource_manager.hpp"
 
 using namespace PC_CORE;
@@ -14,21 +15,22 @@ void Renderer::Init()
    .frontFace = FrontFace::CounterClockwise
    };
    
-   ShaderGraphicPointInfo shaderGraphicPointInfo =
+
+   const ShaderGraphicPointInfo shaderGraphicPointInfo =
       {
       .rasterizerInfo = rasterizerInfo,
-      .vertexInputBindingDescritions = {},
-      .vertexAttributeDescriptions = {}
+      .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
+      .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0)
       };
 
-   std::vector<std::pair<ShaderStageType, std::string>> source =
+   const std::vector<std::pair<ShaderStageType, std::string>> source =
    {
       {
          ShaderStageType::VERTEX,
          "main_spv.vert"
       },
       {
-         ShaderStageType::VERTEX,
+         ShaderStageType::FRAGMENT,
          "main_spv.frag"
       }
    };
@@ -40,10 +42,11 @@ void Renderer::Init()
       .shaderSources = source
       };
    
-   PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
+   const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
       {
       .prograShaderName = "Main",
-      .shaderInfo = shaderInfo
+      .shaderInfo = shaderInfo,
+      .renderPass = RhiContext::GetContext().swapChain->GetSwapChainRenderPass(),
       };
 
    
