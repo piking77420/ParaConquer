@@ -12,6 +12,10 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
+
+        vk::Queue graphicsQueue;
+
+        vk::Queue presentQueue;
         
         vk::CommandPool commandPool = VK_NULL_HANDLE;
         
@@ -31,10 +35,7 @@ namespace Vulkan
         static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
 
     private:
-        vk::Queue m_GraphicsQueue;
-
-        vk::Queue m_PresentQueue;
-
+  
         vk::SurfaceKHR m_Surface;
         
         VULKAN_API void InitSurface(const void* _windowHandle);

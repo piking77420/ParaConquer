@@ -29,6 +29,10 @@ namespace Vulkan
     
         ~VulkanShaderProgram() override;
 
+        vk::PipelineBindPoint GetPipelineBindPoint() const;
+
+        vk::Pipeline GetPipeline() const;
+
     protected:
 
         vk::PipelineLayout m_PipelineLayout = VK_NULL_HANDLE;

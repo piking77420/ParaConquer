@@ -25,6 +25,28 @@ VulkanShaderProgram::~VulkanShaderProgram()
     }
 }
 
+vk::PipelineBindPoint VulkanShaderProgram::GetPipelineBindPoint() const
+{
+    switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
+    {
+    case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
+        return vk::PipelineBindPoint::eGraphics;
+    case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+        return vk::PipelineBindPoint::eCompute;
+    case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
+        return vk::PipelineBindPoint::eRayTracingKHR;
+    case PC_CORE::ShaderProgramPipelineType::COUT:
+        default:
+        throw std::runtime_error("Unsupported shader program pipeline!");
+    }
+    return {};
+}
+
+vk::Pipeline VulkanShaderProgram::GetPipeline() const
+{
+    return m_Pipeline;
+}
+
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : ShaderProgram(_programShaderCreateInfo)
 {
     std::vector<std::vector<char>> spvModuleSourceCode = std::vector<std::vector<char>>(m_ProgramShaderCreateInfo.shaderInfo.shaderSources.size());
@@ -41,7 +63,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 
         spvModuleSourceCode[i] = ReadFile(spvFile);
     }
-
+    
     const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(_programShaderCreateInfo.shaderInfo.shaderInfoData);
 
 
@@ -164,6 +186,9 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
     {
         device->GetDevice().destroyShaderModule(vkShaderModules[i]);
     }
+        
+    
+
 }
 
 

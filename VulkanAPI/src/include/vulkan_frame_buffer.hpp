@@ -1,22 +1,24 @@
 ﻿#pragma once
 
 #include <vulkan_header.h>
-
+#include "low_renderer/frame_buffer.hpp"
 
 namespace Vulkan
 {
     
-    class VulkanFrameBuffer
+    class VulkanFrameBuffer : public PC_CORE::FrameBuffer
     {
     public:
 
-        explicit VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer,  bool _ownBySwapChain = false);
+        DEFAULT_COPY_MOVE_OPERATIONS(VulkanFrameBuffer)
+
+        VULKAN_API explicit VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer,  bool _ownBySwapChain = false);
         
-        VulkanFrameBuffer() = default;
+        VULKAN_API VulkanFrameBuffer() = default;
 
-        ~VulkanFrameBuffer();
+        VULKAN_API ~VulkanFrameBuffer();
 
-        vk::Framebuffer GetFramebuffer() const;
+        VULKAN_API vk::Framebuffer GetFramebuffer() const;
         
     private:
         vk::Framebuffer m_FrameBuffer;

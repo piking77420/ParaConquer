@@ -40,7 +40,7 @@ BEGIN_PCCORE
 
         PC_CORE_API RhiContext() = delete;
 
-        PC_CORE_API virtual ~RhiContext() = default;
+        PC_CORE_API virtual ~RhiContext();
 
     protected:
         static inline RhiContext* m_CurrentContext = nullptr;

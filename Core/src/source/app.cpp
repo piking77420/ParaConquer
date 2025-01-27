@@ -57,20 +57,17 @@ App::App()
 
 void App::Run()
 {
-    /*
-    VulkanViewport vulkanViewport;
-
-    while (!windowHandle.ShouldClose())
+    while (!window.ShouldClose())
     {
-        windowHandle.PoolEvents();
+        window.PoolEvents();
         PC_CORE::Time::UpdateTime();
-        HandleResize();
-        vulkanImgui.NewFrame();
-        MoveObject();
-        renderer.BeginFrame();
-        renderer.RenderViewPort(camera, vulkanViewport, world);
+        //HandleResize();
+        //vulkanImgui.NewFrame();
+        //MoveObject();
+        renderer.BeginDraw();
+        renderer.Render();
         renderer.SwapBuffers();
-    } */  
+    } 
 }
 
 void App::WorldLoop()

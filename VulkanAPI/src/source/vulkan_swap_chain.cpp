@@ -1,15 +1,16 @@
 ﻿#include "vulkan_swap_chain.hpp"
 
+#include "vulkan_command_list.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "GLFW/glfw3.h"
 
 
-Vulkan::VulkanSwapChain::VulkanSwapChain(size_t _width, size_t _height)
+
+Vulkan::VulkanSwapChain::VulkanSwapChain(size_t _width, size_t _height) : SwapChain(_width, _height)
 {
 	VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
-
 
 	const Vulkan::SwapChainSupportDetails swapChainSupportDetails = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)->GetSwapChainSupportDetails();
 	const auto& queueFamilyIndices = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)->GetQueuesFamilies();
@@ -68,18 +69,23 @@ Vulkan::VulkanSwapChain::VulkanSwapChain(size_t _width, size_t _height)
 
 	CreateImageViews();
 	CreateFrameBuffers();
+	CreateSyncObjects();
 }
 
 Vulkan::VulkanSwapChain::~VulkanSwapChain()
 {
 	VulkanContext& vulkanContext = VulkanContext::GetContext();
 	std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice);
-	
+
+	DestroySyncObjects();
 	m_SwapChainRenderPass.reset();
 	m_SwapChainRenderPass = nullptr;
 	
 	for (const auto& frameBuffer : m_SwapChainFramebuffers)
-		device->GetDevice().destroyFramebuffer(frameBuffer);
+	{
+		std::shared_ptr<VulkanFrameBuffer> vframeBuffer = std::reinterpret_pointer_cast<VulkanFrameBuffer>(frameBuffer);
+		device->GetDevice().destroyFramebuffer(vframeBuffer->GetFramebuffer());
+	}
 	
 	for (const auto& swapChainImageView : m_SwapChainImageViews)
 		device->GetDevice().destroyImageView(swapChainImageView);
@@ -90,6 +96,23 @@ Vulkan::VulkanSwapChain::~VulkanSwapChain()
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 {
 	return m_SurfaceFormat;
+}
+
+void Vulkan::VulkanSwapChain::WaitForFrame() const
+{
+	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+		VulkanContext::GetContext().rhiDevice);
+	VK_CALL(vulkanDevice->GetDevice().waitForFences(1, &m_SyncObject.inFlightFence, VK_TRUE, UINT64_MAX));
+
+	VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject.inFlightFence));
+}
+
+void Vulkan::VulkanSwapChain::GetSwapChainImageIndex()
+{
+	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+		VulkanContext::GetContext().rhiDevice);
+	
+	m_SwapChainImageIndex = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX, m_SyncObject.imageAvailableSemaphore, VK_NULL_HANDLE).value;
 }
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
@@ -183,12 +206,74 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 		framebufferInfo.layers = 1;
 
 		vk::Framebuffer framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
-		std::shared_ptr<VulkanFrameBuffer> vulkanFrameBuffer = std::make_shared<VulkanFrameBuffer>(framebuffer, true);
+		m_SwapChainFramebuffers[i] = std::make_shared<VulkanFrameBuffer>(framebuffer, true);
 	}
 }
 
 void Vulkan::VulkanSwapChain::CreateSyncObjects()
 {
+	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
+	
+	vk::SemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+	vk::FenceCreateInfo fenceInfo{};
+	fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
+	fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+	m_SyncObject.imageAvailableSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+	m_SyncObject.renderFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+
+	m_SyncObject.inFlightFence = vulkanDevice->GetDevice().createFence(fenceInfo);
 	
 }
 
+void Vulkan::VulkanSwapChain::DestroySyncObjects()
+{
+	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
+	vulkanDevice->GetDevice().destroySemaphore(m_SyncObject.renderFinishedSemaphore);
+	vulkanDevice->GetDevice().destroySemaphore(m_SyncObject.imageAvailableSemaphore);
+	vulkanDevice->GetDevice().destroyFence(m_SyncObject.inFlightFence);
+
+}
+
+void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList)
+{
+	const Vulkan::VulkanCommandList* vcommandList = reinterpret_cast<const Vulkan::VulkanCommandList*>(_commandList);
+     
+	vk::CommandBuffer commandBuffer = vcommandList->GetHandle(); 
+	const vk::Queue* queu = vcommandList->GetQueue(); 
+
+	vk::SubmitInfo submitInfo{};
+	submitInfo.sType = vk::StructureType::eSubmitInfo;
+
+	vk::Semaphore waitSemaphores[] = {m_SyncObject.imageAvailableSemaphore};
+	vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vk::Semaphore signalSemaphores[] = {m_SyncObject.renderFinishedSemaphore};
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	VK_CALL(queu->submit(1, &submitInfo, m_SyncObject.inFlightFence));
+
+
+	vk::PresentInfoKHR presentInfo{};
+	presentInfo.sType = vk::StructureType::ePresentInfoKHR;
+
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+
+	vk::SwapchainKHR swapChains[] = {m_SwapChain};
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+
+	
+	presentInfo.pImageIndices = &m_SwapChainImageIndex;
+
+	VK_CALL(VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo));
+}

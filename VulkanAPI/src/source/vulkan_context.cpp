@@ -21,7 +21,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     InitSurface(rhiContextCreateInfo.WindowHandle);
     
     physicalDevices = std::make_shared<VulkanPhysicalDevices>(*rhiContextCreateInfo.physicalDevicesCreateInfo, &extensionToEnable);
-    rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &m_GraphicsQueue, &m_PresentQueue);
+    rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &graphicsQueue, &presentQueue);
 
     GLFWwindow* window = const_cast<GLFWwindow*>(static_cast<const GLFWwindow*>(rhiContextCreateInfo.WindowHandle));
 
@@ -33,11 +33,14 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     const uint32_t uheight = static_cast<uint32_t>(height);
     swapChain = std::make_shared<Vulkan::VulkanSwapChain>(uwidht, uheight);
     
+    CreateCommandPool();
 }
 
 VulkanContext::~VulkanContext()
 {
     auto device = GetDevice();
+    device->GetDevice().waitIdle();
+
     device->GetDevice().destroyCommandPool(commandPool);    
     commandPool = nullptr;
     

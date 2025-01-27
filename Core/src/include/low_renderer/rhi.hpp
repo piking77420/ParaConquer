@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "command_list.hpp"
 #include "core_header.hpp"
 #include "rhi_context.hpp"
 #include "rhi_typedef.h"
@@ -19,27 +20,36 @@ BEGIN_PCCORE
 class Rhi
 {
 public:
-    DEFAULT_COPY_MOVE_OPERATIONS(Rhi)
 
-    Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo);
+    PC_CORE_API Rhi(Rhi&& other) noexcept;
 
-    Rhi() = default;
+    PC_CORE_API Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
-    ~Rhi();
+    PC_CORE_API Rhi() = default;
+
+    PC_CORE_API ~Rhi();
 
     inline PC_CORE::GraphicAPI GetGraphicsAPI() const { return m_GraphicsApi; }
 
-    static Rhi& GetInstance();
+    PC_CORE_API Rhi& operator=(Rhi&& other) noexcept;
 
-    static ShaderProgram* CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
+    PC_CORE_API static Rhi& GetInstance();
 
+    PC_CORE_API static ShaderProgram* CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
+
+    PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(CommandPoolFamily _commandPoolFamily);
+
+    PC_CORE_API static RhiContext* GetRhiContext();
+
+    PC_CORE_API static void SendCommandList(const CommandList* _commandList);
+    
 private:
     
-    static inline Rhi* m_Instance = nullptr;
+    PC_CORE_API static inline Rhi* m_Instance = nullptr;
     
     PC_CORE::GraphicAPI m_GraphicsApi;
 
-    std::shared_ptr<RhiContext> m_RhiContext;
+    RhiContext* m_RhiContext = nullptr;
 
     void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 

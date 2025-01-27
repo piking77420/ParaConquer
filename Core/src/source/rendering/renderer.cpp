@@ -8,6 +8,8 @@ using namespace PC_CORE;
 
 void Renderer::Init()
 {
+    m_RhiContext = Rhi::GetRhiContext();
+   
    constexpr RasterizerInfo rasterizerInfo =
    {
    .polygonMode = PolygonMode::Fill,
@@ -51,4 +53,53 @@ void Renderer::Init()
 
    
    m_Main = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+
+   m_CommandList = PC_CORE::Rhi::CreateCommandList(CommandPoolFamily::Graphics);   
 }
+
+void Renderer::BeginDraw()
+{
+   m_RhiContext->swapChain->WaitForFrame();
+   m_RhiContext->swapChain->GetSwapChainImageIndex();
+
+   m_CommandList->BeginRecordCommands();
+}
+
+void Renderer::Render()
+{
+   uint32_t swapChainWidht = m_RhiContext->swapChain->GetWidth();
+   uint32_t swapChainHeight = m_RhiContext->swapChain->GetHeight();
+
+   const BeginRenderPassInfo BeginRenderPassInfo =
+      {
+      .renderPass = RhiContext::GetContext().swapChain->GetSwapChainRenderPass(),
+      .frameBuffer =  RhiContext::GetContext().swapChain->GetFrameBuffer(),
+      .renderOffSet = {0,0},
+      .extent = {swapChainWidht,swapChainHeight},
+      .clearColor = {0,0,0,1.f}
+      };
+   m_CommandList->BeginRenderPass(BeginRenderPassInfo);
+   m_CommandList->BindProgram(m_Main);
+
+   const ViewportInfo viewportInfo =
+      {
+      .transform = {0,0},
+      .size = {static_cast<float>(swapChainWidht),static_cast<float>(swapChainHeight)},
+      .minDepth = 0.0f,
+      .maxDepth = 1.0f,
+      .scissorsOff = {0,0},
+      .scissorsextent = {swapChainWidht, swapChainHeight} 
+      };
+   m_CommandList->SetViewPort(viewportInfo);
+
+   m_CommandList->Draw(3, 1, 0, 0);
+   m_CommandList->EndRenderPass();
+   m_CommandList->EndRecordCommands();
+   
+}
+
+void Renderer::SwapBuffers()
+{
+    m_RhiContext->swapChain->Present(m_CommandList.get());
+}
+

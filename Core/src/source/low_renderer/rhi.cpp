@@ -1,12 +1,26 @@
 ﻿#include "low_renderer/rhi.hpp"
 
 #include "log.hpp"
+#include "vulkan_command_list.hpp"
 #include "vulkan_context.hpp"
 #include "resources/resource_manager.hpp"
 #include "resources/vulkan_shader_program.hpp"
 
 using namespace PC_CORE;
 
+
+Rhi::Rhi(Rhi&& other) noexcept
+{
+
+    m_RhiContext = other.m_RhiContext;
+    other.m_RhiContext = nullptr;
+
+    m_GraphicsApi = other.m_GraphicsApi;
+    other.m_GraphicsApi = GraphicAPI::NONE;
+
+    m_Instance = this;
+
+}
 
 Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_createInfo.GraphicsAPI)
 {
@@ -23,11 +37,31 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_
 
 Rhi::~Rhi()
 {
+    
     if (m_Instance != nullptr && m_RhiContext != nullptr)
     {
+      
         PC_LOG("Rhi Deinitialized");
+
+        delete m_RhiContext;
+        m_RhiContext = nullptr;
+
         m_Instance = nullptr;
     }
+}
+
+PC_CORE_API Rhi& Rhi::operator=(Rhi&& other) noexcept
+{
+    m_RhiContext = other.m_RhiContext;
+    other.m_RhiContext = nullptr;
+
+    m_GraphicsApi = other.m_GraphicsApi;
+    other.m_GraphicsApi = GraphicAPI::NONE;
+
+    m_Instance = this;
+
+
+    return *this;
 }
 
 Rhi& Rhi::GetInstance()
@@ -54,6 +88,34 @@ ShaderProgram* Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCr
     
 }
 
+std::shared_ptr<CommandList> Rhi::CreateCommandList(CommandPoolFamily _commandPoolFamily)
+{
+    Rhi& rhi = GetInstance();
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanCommandList>(_commandPoolFamily);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::NONE:
+    case GraphicAPI::COUNT:
+        throw std::runtime_error("Invalid GraphicAPI");
+    }
+
+}
+
+RhiContext* Rhi::GetRhiContext()
+{
+    return m_Instance->m_RhiContext;
+}
+
+void Rhi::SendCommandList(const CommandList* _commandList)
+{
+    
+}
+
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {
     RenderInstanceCreateInfo renderInstanceCreateInfo =
@@ -64,7 +126,7 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
     PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
         {
         {
-            SWAPCHAIN_EXT,MESH_SHADER_EXT, ACCELERATION_EXT ,RAY_TRACING_EXT , DEFFERED_HOST_OP
+            SWAPCHAIN_EXT, //MESH_SHADER_EXT, ACCELERATION_EXT ,RAY_TRACING_EXT , DEFFERED_HOST_OP
         }
         };
 
@@ -92,8 +154,8 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 
 void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)
 {
-   m_RhiContext = std::make_shared<Vulkan::VulkanContext>(_createInfo);
-
+  // m_RhiContext = std::make_shared<Vulkan::VulkanContext>(_createInfo);
+    m_RhiContext = new Vulkan::VulkanContext(_createInfo);
 }
 
 void Rhi::DX12Initialize(const RhiContextCreateInfo& _createInfo)

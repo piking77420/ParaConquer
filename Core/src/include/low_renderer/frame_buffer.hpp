@@ -8,6 +8,10 @@ class FrameBuffer
 {
 public:
 
+	PC_CORE_API FrameBuffer() = default;
+
+	PC_CORE_API virtual ~FrameBuffer() = default;
+
 private:
 };
 

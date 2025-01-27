@@ -9,13 +9,21 @@ namespace Vulkan
     class VulkanSwapChain : public PC_CORE::SwapChain
     {
     public:
-         VULKAN_API explicit VulkanSwapChain(size_t _width, size_t _height);
+
+        VULKAN_API explicit VulkanSwapChain(size_t _width, size_t _height);
         
         VULKAN_API explicit VulkanSwapChain() = default;
 
         VULKAN_API ~VulkanSwapChain() override;
 
         VULKAN_API vk::SurfaceFormatKHR GetSurfaceFormat();
+
+        VULKAN_API void WaitForFrame() const override;
+
+        VULKAN_API void GetSwapChainImageIndex() override;
+
+        VULKAN_API void Present(const PC_CORE::CommandList* _commandList) override;
+
 
     private:
          struct SyncObject
@@ -36,6 +44,8 @@ namespace Vulkan
         vk::SurfaceFormatKHR m_SurfaceFormat;
 
         SyncObject m_SyncObject;
+
+        const vk::Queue* m_PresentQueue;
         
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 
@@ -48,8 +58,11 @@ namespace Vulkan
         void CreateFrameBuffers();
 
         void CreateSyncObjects();
+
+        void DestroySyncObjects();
         
     };
 
+   
 }
 

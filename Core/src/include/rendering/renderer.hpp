@@ -1,4 +1,6 @@
 #pragma once
+#include "low_renderer/command_list.hpp"
+#include "low_renderer/rhi_context.hpp"
 #include "resources/shader_program.h"
 
 BEGIN_PCCORE
@@ -6,15 +8,24 @@ BEGIN_PCCORE
 class Renderer
 {
 public:
-    void Init();
     
     Renderer() = default;
 
     ~Renderer() = default;
 
-private:
+    PC_CORE_API void Init();
 
+    PC_CORE_API void BeginDraw();
+
+    PC_CORE_API void Render();
+
+    PC_CORE_API void SwapBuffers();
+private:
+    RhiContext* m_RhiContext;
+    
     PC_CORE::ShaderProgram* m_Main = nullptr;
+
+    std::shared_ptr<PC_CORE::CommandList> m_CommandList;
 };
 
 END_PCCORE

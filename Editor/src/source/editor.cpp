@@ -208,7 +208,6 @@ void Editor::Run()
         PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
         
-        //renderer.BeginFrame();
        
         UpdateEditorWindows();
 
@@ -218,11 +217,12 @@ void Editor::Run()
         for (EditorWindow* editorWindow : m_EditorWindows)
             editorWindow->Render();
         
-        
+        renderer.BeginDraw();
+        renderer.Render();
         
         //PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
         //renderer.EndRender();
-        //renderer.SwapBuffers();
+        renderer.SwapBuffers();
     }
 
     //renderer.WaitDevice();
