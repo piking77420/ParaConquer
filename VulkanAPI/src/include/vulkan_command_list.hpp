@@ -9,7 +9,7 @@ namespace Vulkan
 class VulkanCommandList : public PC_CORE::CommandList
 {
 public:
-    VULKAN_API VulkanCommandList(PC_CORE::CommandPoolFamily _commandPoolFamily);
+    VULKAN_API VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
 
     VULKAN_API VulkanCommandList() = default;
 
@@ -36,7 +36,7 @@ public:
     VULKAN_API const vk::Queue* GetQueue() const;
 
 private:
-    vk::CommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
+    std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer = {VK_NULL_HANDLE , VK_NULL_HANDLE};
 
     const vk::Queue* m_Queue = VK_NULL_HANDLE;
 };

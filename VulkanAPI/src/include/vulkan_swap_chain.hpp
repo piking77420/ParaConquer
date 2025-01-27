@@ -23,8 +23,8 @@ namespace Vulkan
         VULKAN_API void GetSwapChainImageIndex() override;
 
         VULKAN_API void Present(const PC_CORE::CommandList* _commandList) override;
-
-
+        
+        VULKAN_API void RecreateSwapChain();
     private:
          struct SyncObject
          {
@@ -43,7 +43,7 @@ namespace Vulkan
         
         vk::SurfaceFormatKHR m_SurfaceFormat;
 
-        SyncObject m_SyncObject;
+        std::array<SyncObject, MAX_FRAMES_IN_FLIGHT> m_SyncObject;
 
         const vk::Queue* m_PresentQueue;
         
@@ -60,9 +60,11 @@ namespace Vulkan
         void CreateSyncObjects();
 
         void DestroySyncObjects();
-        
+
+        void CleanUpSwapChain();
+
+        void CreateSwapChainObjects();
     };
 
-   
 }
 

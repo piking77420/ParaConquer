@@ -11,6 +11,7 @@ constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
 
 
 #define ALIGNAS_16 alignas(16)
+constexpr  int MAX_FRAMES_IN_FLIGHT = 2;
 
 BEGIN_PCCORE
     enum class GraphicAPI

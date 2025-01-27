@@ -39,10 +39,12 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
 VulkanContext::~VulkanContext()
 {
     auto device = GetDevice();
-    device->GetDevice().waitIdle();
 
     device->GetDevice().destroyCommandPool(commandPool);    
     commandPool = nullptr;
+
+    std::shared_ptr<VulkanSwapChain> vSwapChain = std::reinterpret_pointer_cast<VulkanSwapChain>(m_CurrentContext->swapChain);
+
     
     std::shared_ptr<VulkanInstance> vulkanInstance = std::reinterpret_pointer_cast<VulkanInstance>(renderInstance);
     vulkanInstance->Get().destroySurfaceKHR(m_Surface, nullptr);
@@ -56,6 +58,11 @@ std::shared_ptr<VulkanDevice> VulkanContext::GetDevice()
 std::shared_ptr<VulkanPhysicalDevices> VulkanContext::GetPhysicalDevices()
 {
     return std::reinterpret_pointer_cast<VulkanPhysicalDevices>(GetContext().physicalDevices);
+}
+
+void VulkanContext::WaitIdleInstance()
+{
+    GetDevice()->GetDevice().waitIdle();
 }
 
 void VulkanContext::InitSurface(const void* _windowHandle)

@@ -38,7 +38,10 @@ struct ViewportInfo
     Tbx::Vector2ui scissorsextent;
 };
 
-
+struct CommandListCreateInfo
+{
+    CommandPoolFamily _commandPoolFamily;
+};
 
 class CommandList
 {
@@ -46,7 +49,7 @@ public:
 
     DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 
-    PC_CORE_API CommandList(CommandPoolFamily _commandPoolFamily);
+    PC_CORE_API CommandList(const CommandListCreateInfo& _commandListCreateInfo);
     
     PC_CORE_API CommandList() = default;
 

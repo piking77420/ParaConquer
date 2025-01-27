@@ -37,19 +37,31 @@ public:
 
     PC_CORE_API static ShaderProgram* CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 
-    PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(CommandPoolFamily _commandPoolFamily);
+    PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
 
     PC_CORE_API static RhiContext* GetRhiContext();
 
     PC_CORE_API static void SendCommandList(const CommandList* _commandList);
+
+    PC_CORE_API inline static void NextFrame()
+    {
+        m_Instance->m_CurrentFrame = (m_Instance->m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    }
+
+    PC_CORE_API static inline uint32_t GetFrameIndex()
+    {
+           return m_Instance->m_CurrentFrame;
+    }
+
     
 private:
-    
     PC_CORE_API static inline Rhi* m_Instance = nullptr;
     
     PC_CORE::GraphicAPI m_GraphicsApi;
 
     RhiContext* m_RhiContext = nullptr;
+
+    uint32_t  m_CurrentFrame = 0;
 
     void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
@@ -58,4 +70,6 @@ private:
     void DX12Initialize(const RhiContextCreateInfo& _createInfo);
 
 };
+
+
 END_PCCORE

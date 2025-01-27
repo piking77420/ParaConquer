@@ -42,8 +42,13 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual ~RhiContext();
 
+        PC_CORE_API static void WaitIdle();
+    
     protected:
         static inline RhiContext* m_CurrentContext = nullptr;
+
+        PC_CORE_API virtual void WaitIdleInstance() = 0;
+
     };
 
 END_PCCORE

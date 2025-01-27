@@ -207,8 +207,7 @@ void Editor::Run()
         window.PoolEvents();
         PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
-        
-       
+
         UpdateEditorWindows();
 
         if (World::currentWorld)
@@ -225,6 +224,7 @@ void Editor::Run()
         renderer.SwapBuffers();
     }
 
+    Rhi::GetRhiContext()->WaitIdle();
     //renderer.WaitDevice();
 }
 

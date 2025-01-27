@@ -37,7 +37,6 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_
 
 Rhi::~Rhi()
 {
-    
     if (m_Instance != nullptr && m_RhiContext != nullptr)
     {
       
@@ -50,7 +49,7 @@ Rhi::~Rhi()
     }
 }
 
-PC_CORE_API Rhi& Rhi::operator=(Rhi&& other) noexcept
+Rhi& Rhi::operator=(Rhi&& other) noexcept
 {
     m_RhiContext = other.m_RhiContext;
     other.m_RhiContext = nullptr;
@@ -88,14 +87,14 @@ ShaderProgram* Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCr
     
 }
 
-std::shared_ptr<CommandList> Rhi::CreateCommandList(CommandPoolFamily _commandPoolFamily)
+std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
 {
     Rhi& rhi = GetInstance();
 
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::VULKAN:
-        return std::make_shared<Vulkan::VulkanCommandList>(_commandPoolFamily);
+        return std::make_shared<Vulkan::VulkanCommandList>(_commandListCreateInfo);
         break;
     case GraphicAPI::DX3D12:
         break;
@@ -160,5 +159,4 @@ void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)
 
 void Rhi::DX12Initialize(const RhiContextCreateInfo& _createInfo)
 {
-    
 }

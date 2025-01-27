@@ -6,3 +6,9 @@ PC_CORE::RhiContext::~RhiContext()
 {
 
 }
+
+void PC_CORE::RhiContext::WaitIdle()
+{
+	m_CurrentContext->WaitIdleInstance();
+}
+

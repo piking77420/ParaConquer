@@ -56,8 +56,6 @@ bool Window::ShouldClose()
 
 void Window::PoolEvents()
 {
-    
-
     if (glfwGetKey(m_Window, GLFW_KEY_F11) == GLFW_PRESS)
     {
         FullScreen = !FullScreen;

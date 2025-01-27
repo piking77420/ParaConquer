@@ -54,7 +54,12 @@ void Renderer::Init()
    
    m_Main = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
 
-   m_CommandList = PC_CORE::Rhi::CreateCommandList(CommandPoolFamily::Graphics);   
+   constexpr  CommandListCreateInfo commandListCreateInfo =
+      {
+      ._commandPoolFamily = CommandPoolFamily::Graphics
+      };
+   
+   m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);   
 }
 
 void Renderer::BeginDraw()
@@ -97,9 +102,11 @@ void Renderer::Render()
    m_CommandList->EndRecordCommands();
    
 }
-
+
+
 void Renderer::SwapBuffers()
 {
     m_RhiContext->swapChain->Present(m_CommandList.get());
+    Rhi::NextFrame();
 }
 
