@@ -13,7 +13,7 @@ BEGIN_PCCORE
     struct RenderHardwareInterfaceCreateInfo
 {
     PC_CORE::GraphicAPI GraphicsAPI;
-    const Window* window;
+    Window* window;
     const char* appName;
 };
 

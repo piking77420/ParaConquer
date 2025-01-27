@@ -38,6 +38,8 @@ namespace Vulkan
         VULKAN_API VulkanPhysicalDevices() = default;
 
         VULKAN_API virtual ~VulkanPhysicalDevices() = default;
+
+        VULKAN_API SwapChainSupportDetails UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr);
     
     private:
         vk::PhysicalDevice m_CurrentVulkanDevices = VK_NULL_HANDLE;

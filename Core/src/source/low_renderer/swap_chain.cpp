@@ -3,7 +3,8 @@
 
 using namespace PC_CORE;
 
-SwapChain::SwapChain(uint32_t _widht, uint32_t _height) : m_SwapChainWidth(_widht), m_SwapChainHeight(_height)
+SwapChain::SwapChain(uint32_t _widht, uint32_t _height) :
+    m_SwapChainWidth(_widht), m_SwapChainHeight(_height)
 {
     
 }
@@ -12,6 +13,7 @@ SwapChain::SwapChain(uint32_t _widht, uint32_t _height) : m_SwapChainWidth(_widh
 {
     return m_SwapChainRenderPass;
 }
+
 
 std::shared_ptr<FrameBuffer> SwapChain::GetFrameBuffer()
 {

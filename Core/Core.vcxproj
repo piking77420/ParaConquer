@@ -120,7 +120,6 @@
     <ClInclude Include="src\include\world\world.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\include\low_renderer\vertex.cpp" />
     <ClCompile Include="src\source\low_renderer\command_list.cpp" />
     <ClCompile Include="src\source\low_renderer\frame_buffer.cpp" />
     <ClCompile Include="src\source\low_renderer\physical_devices.cpp" />
@@ -130,6 +129,7 @@
     <ClCompile Include="src\source\low_renderer\rhi_device.cpp" />
     <ClCompile Include="src\source\low_renderer\rhi_render_pass.cpp" />
     <ClCompile Include="src\source\low_renderer\swap_chain.cpp" />
+    <ClCompile Include="src\source\low_renderer\vertex.cpp" />
     <ClCompile Include="src\source\rendering\renderer.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp" />

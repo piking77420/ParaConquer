@@ -31,6 +31,14 @@ Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
     QueryQueueFamilies();
 }
 
+Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr)
+{
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_CurrentVulkanDevices, _surfaceKhr, reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&m_SwapChainSupportDetails.capabilities));
+    m_SwapChainSupportDetails.formats = m_CurrentVulkanDevices.getSurfaceFormatsKHR(_surfaceKhr);
+    m_SwapChainSupportDetails.presentModes = m_CurrentVulkanDevices.getSurfacePresentModesKHR(_surfaceKhr);
+    return m_SwapChainSupportDetails;
+}
+
 void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices,
                                                            const std::vector<std::string>& _requestExtensions)
 {

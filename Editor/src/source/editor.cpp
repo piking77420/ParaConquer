@@ -216,12 +216,14 @@ void Editor::Run()
         for (EditorWindow* editorWindow : m_EditorWindows)
             editorWindow->Render();
         
-        renderer.BeginDraw();
+        if (!renderer.BeginDraw(&window))
+            continue;
+        
         renderer.Render();
         
         //PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
         //renderer.EndRender();
-        renderer.SwapBuffers();
+        renderer.SwapBuffers(&window);
     }
 
     Rhi::GetRhiContext()->WaitIdle();

@@ -64,9 +64,9 @@ void App::Run()
         //HandleResize();
         //vulkanImgui.NewFrame();
         //MoveObject();
-        renderer.BeginDraw();
+        renderer.BeginDraw(&window);
         renderer.Render();
-        renderer.SwapBuffers();
+        renderer.SwapBuffers(&window);
     } 
 }
 

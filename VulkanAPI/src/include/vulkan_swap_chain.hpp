@@ -2,6 +2,7 @@
 
 #include "vulkan_header.h"
 #include "vulkan_render_pass.hpp"
+#include "io/window.hpp"
 #include "low_renderer/swap_chain.hpp"
 
 namespace Vulkan
@@ -9,8 +10,7 @@ namespace Vulkan
     class VulkanSwapChain : public PC_CORE::SwapChain
     {
     public:
-
-        VULKAN_API explicit VulkanSwapChain(size_t _width, size_t _height);
+        VULKAN_API explicit VulkanSwapChain(uint32_t _widht, uint32_t _height);
         
         VULKAN_API explicit VulkanSwapChain() = default;
 
@@ -20,11 +20,12 @@ namespace Vulkan
 
         VULKAN_API void WaitForFrame() const override;
 
-        VULKAN_API void GetSwapChainImageIndex() override;
+        VULKAN_API bool GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
 
-        VULKAN_API void Present(const PC_CORE::CommandList* _commandList) override;
+        VULKAN_API void Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window) override;
         
-        VULKAN_API void RecreateSwapChain();
+        VULKAN_API void HandleRecreateSwapChain(PC_CORE::Window* windowHandle) override;
+        
     private:
          struct SyncObject
          {
@@ -32,7 +33,6 @@ namespace Vulkan
              vk::Semaphore renderFinishedSemaphore;
              vk::Fence inFlightFence;
          };
-        
         vk::SwapchainKHR m_SwapChain = VK_NULL_HANDLE;
 
         std::vector<vk::Image> m_SwapChainImage;
@@ -63,7 +63,7 @@ namespace Vulkan
 
         void CleanUpSwapChain();
 
-        void CreateSwapChainObjects();
+        void CreateSwapChain(uint32_t _width, uint32_t _height);
     };
 
 }

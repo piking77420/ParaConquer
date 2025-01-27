@@ -8,305 +8,341 @@
 #include "low_renderer/rhi.hpp"
 
 
-Vulkan::VulkanSwapChain::VulkanSwapChain(size_t _width, size_t _height) : SwapChain(_width, _height)
+Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height): SwapChain(_widht, _height)
 {
-	VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
-
-	const Vulkan::SwapChainSupportDetails swapChainSupportDetails = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)->GetSwapChainSupportDetails();
-	const auto& queueFamilyIndices = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)->GetQueuesFamilies();
-
-	const vk::SurfaceFormatKHR surfaceFormatKHR = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
-	const vk::PresentModeKHR presentModeKHR = ChooseSwapPresentMode(swapChainSupportDetails.presentModes);
-	m_Extent2D  = ChooseSwapExtent(swapChainSupportDetails.capabilities, _width, _height);
-	m_SurfaceFormat = surfaceFormatKHR;
-
-	
-	uint32_t imageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
-
-	if (swapChainSupportDetails.capabilities.maxImageCount > 0 && imageCount > swapChainSupportDetails.capabilities.maxImageCount)
-	{
-		imageCount = swapChainSupportDetails.capabilities.maxImageCount;
-	}
-
-	vk::SwapchainCreateInfoKHR swapChainCreateInfo{};
-	swapChainCreateInfo.sType = vk::StructureType::eSwapchainCreateInfoKHR;
-	swapChainCreateInfo.surface = vulkanContext.GetSurface();
-	swapChainCreateInfo.minImageCount = imageCount;
-	swapChainCreateInfo.imageFormat = surfaceFormatKHR.format;
-	swapChainCreateInfo.imageColorSpace = surfaceFormatKHR.colorSpace;
-	swapChainCreateInfo.imageExtent = m_Extent2D;
-	swapChainCreateInfo.imageArrayLayers = 1;
-	swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
-
-	uint32_t presentIndex = 0;
-	for (int i = static_cast<int>(queueFamilyIndices.size()) - 1; i >= 0; i--)
-	{
-		if (queueFamilyIndices[static_cast<size_t>(i)].supportPresent)
-		{
-			presentIndex = static_cast<uint32_t>(i);
-			break;
-		}
-	}
-
-	swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
-	swapChainCreateInfo.queueFamilyIndexCount = 2;
-	swapChainCreateInfo.pQueueFamilyIndices = &presentIndex;
-	swapChainCreateInfo.preTransform = swapChainSupportDetails.capabilities.currentTransform;
-	swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-	swapChainCreateInfo.presentMode = presentModeKHR;
-	swapChainCreateInfo.clipped = vk::True;
-	swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
-
-
-	vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice)->GetDevice();
-	m_SwapChain = device.createSwapchainKHR(swapChainCreateInfo, nullptr);
-
-	VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
-	m_SwapChainImage.resize(imageCount);
-	VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, m_SwapChainImage.data()));
-
-	m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_SurfaceFormat);
-
-	CreateSwapChainObjects();
-	CreateSyncObjects();
+    CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
+    CreateImageViews();
+    CreateFrameBuffers();
+    CreateSyncObjects();
 }
 
 Vulkan::VulkanSwapChain::~VulkanSwapChain()
 {
-	VulkanContext& vulkanContext = VulkanContext::GetContext();
-	std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice);
-	
-	m_SwapChainRenderPass.reset();
-	m_SwapChainRenderPass = nullptr;
-	
-	DestroySyncObjects();
-	CleanUpSwapChain();
-	
-	device->GetDevice().destroySwapchainKHR(m_SwapChain);
+    DestroySyncObjects();
+    CleanUpSwapChain();
 }
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 {
-	return m_SurfaceFormat;
+    return m_SurfaceFormat;
 }
 
 void Vulkan::VulkanSwapChain::WaitForFrame() const
 {
-	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-		VulkanContext::GetContext().rhiDevice);
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        VulkanContext::GetContext().rhiDevice);
 
-	const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
-	
-	VK_CALL(vulkanDevice->GetDevice().waitForFences(1, &m_SyncObject[frameIndex].inFlightFence, VK_TRUE, UINT64_MAX));
+    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
-	VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject[frameIndex].inFlightFence));
+    VK_CALL(vulkanDevice->GetDevice().waitForFences(1, &m_SyncObject[frameIndex].inFlightFence, VK_TRUE, UINT64_MAX));
 }
 
-void Vulkan::VulkanSwapChain::GetSwapChainImageIndex()
+bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
-	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-		VulkanContext::GetContext().rhiDevice);
-	
-	const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        VulkanContext::GetContext().rhiDevice);
 
-	m_SwapChainImageIndex = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX, m_SyncObject[frameIndex].imageAvailableSemaphore, VK_NULL_HANDLE).value;
+    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+
+    vk::Result result = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX,
+                                                                      m_SyncObject[frameIndex].imageAvailableSemaphore,
+                                                                      VK_NULL_HANDLE, &m_SwapChainImageIndex);
+
+    if (result == vk::Result::eErrorOutOfDateKHR)
+    {
+        HandleRecreateSwapChain(windowHandle);
+        return false;
+    }
+    else if (vk::Result::eSuccess != result)
+    {
+        VK_CALL(result);
+        return false;
+    }
+
+    VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject[frameIndex].inFlightFence));
+    return true;
 }
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
-	const std::vector<vk::SurfaceFormatKHR>& availableFormats)
+    const std::vector<vk::SurfaceFormatKHR>& availableFormats)
 {
-	for (const auto& availableFormat : availableFormats)
-	{
-		if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
-		{
-			return availableFormat;
-		}
-	}
-	return availableFormats[0];
+    for (const auto& availableFormat : availableFormats)
+    {
+        if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace ==
+            vk::ColorSpaceKHR::eSrgbNonlinear)
+        {
+            return availableFormat;
+        }
+    }
+    return availableFormats[0];
 }
 
-vk::PresentModeKHR Vulkan::VulkanSwapChain::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes)
+vk::PresentModeKHR Vulkan::VulkanSwapChain::ChooseSwapPresentMode(
+    const std::vector<vk::PresentModeKHR>& availablePresentModes)
 {
-	for (const auto& availablePresentMode : availablePresentModes)
-	{
-		if (availablePresentMode == vk::PresentModeKHR::eMailbox)
-		{
-			return availablePresentMode;
-		}
-	}
+    for (const auto& availablePresentMode : availablePresentModes)
+    {
+        if (availablePresentMode == vk::PresentModeKHR::eMailbox)
+        {
+            return availablePresentMode;
+        }
+    }
 
-	return vk::PresentModeKHR::eFifo;
+    return vk::PresentModeKHR::eFifo;
 }
 
-vk::Extent2D Vulkan::VulkanSwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t _width, uint32_t _height)
+vk::Extent2D Vulkan::VulkanSwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t _width,
+                                                       uint32_t _height)
 {
+    vk::Extent2D actualExtent =
+    {
+        _width,
+        _height
+    };
 
-	vk::Extent2D actualExtent =
-	{
-		_width,
-		_height
-	};
+    actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width,
+                                    capabilities.maxImageExtent.width);
+    actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height,
+                                     capabilities.maxImageExtent.height);
 
-	actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-	actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-	return actualExtent;
-
+    return actualExtent;
 }
 
 void Vulkan::VulkanSwapChain::CreateImageViews()
 {
-	m_SwapChainImageViews.resize(m_SwapChainImage.size());
+    m_SwapChainImageViews.resize(m_SwapChainImage.size());
 
-	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice); 
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        VulkanContext::GetContext().rhiDevice);
 
-	for (size_t i = 0; i < m_SwapChainImageViews.size(); i++)
-	{
-		vk::ImageViewCreateInfo createInfo{};
-		createInfo.sType = vk::StructureType::eImageViewCreateInfo;
-		createInfo.image = m_SwapChainImage[i];
-		createInfo.viewType = vk::ImageViewType::e2D;
-		createInfo.format = m_SurfaceFormat.format;
-		createInfo.components.r = vk::ComponentSwizzle::eIdentity;
-		createInfo.components.g = vk::ComponentSwizzle::eIdentity;
-		createInfo.components.b = vk::ComponentSwizzle::eIdentity;
-		createInfo.components.a = vk::ComponentSwizzle::eIdentity;
-		createInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
+    for (size_t i = 0; i < m_SwapChainImageViews.size(); i++)
+    {
+        vk::ImageViewCreateInfo createInfo{};
+        createInfo.sType = vk::StructureType::eImageViewCreateInfo;
+        createInfo.image = m_SwapChainImage[i];
+        createInfo.viewType = vk::ImageViewType::e2D;
+        createInfo.format = m_SurfaceFormat.format;
+        createInfo.components.r = vk::ComponentSwizzle::eIdentity;
+        createInfo.components.g = vk::ComponentSwizzle::eIdentity;
+        createInfo.components.b = vk::ComponentSwizzle::eIdentity;
+        createInfo.components.a = vk::ComponentSwizzle::eIdentity;
+        createInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
 
-		m_SwapChainImageViews[i] = vulkanDevice->GetDevice().createImageView(createInfo);
-
-	}
+        m_SwapChainImageViews[i] = vulkanDevice->GetDevice().createImageView(createInfo);
+    }
 }
 
 void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 {
-	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice); 
-	m_SwapChainFramebuffers.resize(m_SwapChainImage.size());
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        VulkanContext::GetContext().rhiDevice);
+    m_SwapChainFramebuffers.resize(m_SwapChainImage.size());
 
-	for (size_t i = 0; i < m_SwapChainImage.size(); i++)
-	{
-		std::array<vk::ImageView, 1> attachments = {
-			m_SwapChainImageViews[i]
-		};
+    for (size_t i = 0; i < m_SwapChainImage.size(); i++)
+    {
+        std::array<vk::ImageView, 1> attachments = {
+            m_SwapChainImageViews[i]
+        };
 
-		vk::FramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
-		framebufferInfo.renderPass = std::reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass)->GetVulkanRenderPass();
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = attachments.data();
-		framebufferInfo.width = m_Extent2D.width;
-		framebufferInfo.height = m_Extent2D.height;
-		framebufferInfo.layers = 1;
+        vk::FramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
+        framebufferInfo.renderPass = std::reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass)->
+            GetVulkanRenderPass();
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = m_Extent2D.width;
+        framebufferInfo.height = m_Extent2D.height;
+        framebufferInfo.layers = 1;
 
-		vk::Framebuffer framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
-		m_SwapChainFramebuffers[i] = std::make_shared<VulkanFrameBuffer>(framebuffer, true);
-	}
+        vk::Framebuffer framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
+        m_SwapChainFramebuffers[i] = std::make_shared<VulkanFrameBuffer>(framebuffer, true);
+    }
 }
 
 void Vulkan::VulkanSwapChain::CreateSyncObjects()
 {
-	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
-	
-	vk::SemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
-	vk::FenceCreateInfo fenceInfo{};
-	fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
-	fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        VulkanContext::GetContext().rhiDevice);
 
-	for (size_t i = 0; i < m_SyncObject.size(); i++)
-	{
-		m_SyncObject[i].imageAvailableSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
-		m_SyncObject[i].renderFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
-		m_SyncObject[i].inFlightFence = vulkanDevice->GetDevice().createFence(fenceInfo);
-	}
+    vk::SemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+    vk::FenceCreateInfo fenceInfo{};
+    fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
+    fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+    for (size_t i = 0; i < m_SyncObject.size(); i++)
+    {
+        m_SyncObject[i].imageAvailableSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+        m_SyncObject[i].renderFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+        m_SyncObject[i].inFlightFence = vulkanDevice->GetDevice().createFence(fenceInfo);
+    }
 }
 
 void Vulkan::VulkanSwapChain::DestroySyncObjects()
 {
-	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
-	for (size_t i = 0; i < m_SyncObject.size(); i++)
-	{
-		vulkanDevice->GetDevice().destroySemaphore(m_SyncObject[i].renderFinishedSemaphore);
-		vulkanDevice->GetDevice().destroySemaphore(m_SyncObject[i].imageAvailableSemaphore);
-		vulkanDevice->GetDevice().destroyFence(m_SyncObject[i].inFlightFence);
-	}
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        VulkanContext::GetContext().rhiDevice);
+    for (size_t i = 0; i < m_SyncObject.size(); i++)
+    {
+        vulkanDevice->GetDevice().destroySemaphore(m_SyncObject[i].renderFinishedSemaphore);
+        vulkanDevice->GetDevice().destroySemaphore(m_SyncObject[i].imageAvailableSemaphore);
+        vulkanDevice->GetDevice().destroyFence(m_SyncObject[i].inFlightFence);
+    }
 }
 
 void Vulkan::VulkanSwapChain::CleanUpSwapChain()
 {
-	VulkanContext& vulkanContext = VulkanContext::GetContext();
-	std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice);
+    VulkanContext& vulkanContext = VulkanContext::GetContext();
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice);
 
+    m_SwapChainRenderPass.reset();
+    m_SwapChainRenderPass = nullptr;
 
-	for (const auto& frameBuffer : m_SwapChainFramebuffers)
-	{
-		std::shared_ptr<VulkanFrameBuffer> vframeBuffer = std::reinterpret_pointer_cast<VulkanFrameBuffer>(frameBuffer);
-		device->GetDevice().destroyFramebuffer(vframeBuffer->GetFramebuffer());
-	}
-	
-	for (const auto& swapChainImageView : m_SwapChainImageViews)
-		device->GetDevice().destroyImageView(swapChainImageView);
+    for (const auto& frameBuffer : m_SwapChainFramebuffers)
+    {
+        std::shared_ptr<VulkanFrameBuffer> vframeBuffer = std::reinterpret_pointer_cast<VulkanFrameBuffer>(frameBuffer);
+        device->GetDevice().destroyFramebuffer(vframeBuffer->GetFramebuffer());
+    }
+
+    for (const auto& swapChainImageView : m_SwapChainImageViews)
+        device->GetDevice().destroyImageView(swapChainImageView);
+
+    device->GetDevice().destroySwapchainKHR(m_SwapChain);
 }
 
-void Vulkan::VulkanSwapChain::CreateSwapChainObjects()
+void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
 {
-	CreateImageViews();
-	CreateFrameBuffers();
+    m_SwapChainWidth = _width;
+    m_SwapChainHeight = _height;
+
+    VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
+
+    const Vulkan::SwapChainSupportDetails swapChainSupportDetails = std::reinterpret_pointer_cast<
+        VulkanPhysicalDevices>(vulkanContext.physicalDevices)->UpdateSwapChainSupport(vulkanContext.GetSurface());
+    
+    const auto& queueFamilyIndices = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)
+        ->GetQueuesFamilies();
+
+    const vk::SurfaceFormatKHR surfaceFormatKHR = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
+    const vk::PresentModeKHR presentModeKHR = ChooseSwapPresentMode(swapChainSupportDetails.presentModes);
+    
+    m_Extent2D = swapChainSupportDetails.capabilities.currentExtent;
+    m_SurfaceFormat = surfaceFormatKHR;
+    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_SurfaceFormat);
+
+
+    uint32_t imageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
+
+    if (swapChainSupportDetails.capabilities.maxImageCount > 0 && imageCount > swapChainSupportDetails.capabilities.
+        maxImageCount)
+    {
+        imageCount = swapChainSupportDetails.capabilities.maxImageCount;
+    }
+
+    vk::SwapchainCreateInfoKHR swapChainCreateInfo{};
+    swapChainCreateInfo.sType = vk::StructureType::eSwapchainCreateInfoKHR;
+    swapChainCreateInfo.surface = vulkanContext.GetSurface();
+    swapChainCreateInfo.minImageCount = imageCount;
+    swapChainCreateInfo.imageFormat = surfaceFormatKHR.format;
+    swapChainCreateInfo.imageColorSpace = surfaceFormatKHR.colorSpace;
+    swapChainCreateInfo.imageExtent = m_Extent2D;
+    swapChainCreateInfo.imageArrayLayers = 1;
+    swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
+
+    uint32_t presentIndex = 0;
+    for (int i = static_cast<int>(queueFamilyIndices.size()) - 1; i >= 0; i--)
+    {
+        if (queueFamilyIndices[static_cast<size_t>(i)].supportPresent)
+        {
+            presentIndex = static_cast<uint32_t>(i);
+            break;
+        }
+    }
+    swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
+    swapChainCreateInfo.queueFamilyIndexCount = 2;
+    swapChainCreateInfo.pQueueFamilyIndices = &presentIndex;
+    swapChainCreateInfo.preTransform = swapChainSupportDetails.capabilities.currentTransform;
+    swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+    swapChainCreateInfo.presentMode = presentModeKHR;
+    swapChainCreateInfo.clipped = vk::True;
+    swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+
+
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice)->GetDevice();
+    m_SwapChain = device.createSwapchainKHR(swapChainCreateInfo, nullptr);
+
+    VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
+    m_SwapChainImage.resize(imageCount);
+    VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, m_SwapChainImage.data()));
 }
 
-void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList)
+void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window)
 {
-	const Vulkan::VulkanCommandList* vcommandList = reinterpret_cast<const Vulkan::VulkanCommandList*>(_commandList);
-	const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+    const Vulkan::VulkanCommandList* vcommandList = reinterpret_cast<const Vulkan::VulkanCommandList*>(_commandList);
+    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
-	vk::CommandBuffer commandBuffer = vcommandList->GetHandle(); 
-	const vk::Queue* queu = vcommandList->GetQueue(); 
+    vk::CommandBuffer commandBuffer = vcommandList->GetHandle();
+    const vk::Queue* queu = vcommandList->GetQueue();
 
-	vk::SubmitInfo submitInfo{};
-	submitInfo.sType = vk::StructureType::eSubmitInfo;
+    vk::SubmitInfo submitInfo{};
+    submitInfo.sType = vk::StructureType::eSubmitInfo;
 
-	vk::Semaphore waitSemaphores[] = {m_SyncObject[frameIndex].imageAvailableSemaphore};
-	vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
+    vk::Semaphore waitSemaphores[] = {m_SyncObject[frameIndex].imageAvailableSemaphore};
+    vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
 
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
 
-	vk::Semaphore signalSemaphores[] = {m_SyncObject[frameIndex].renderFinishedSemaphore};
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
+    vk::Semaphore signalSemaphores[] = {m_SyncObject[frameIndex].renderFinishedSemaphore};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
 
-	VK_CALL(queu->submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence));
+    VK_CALL(queu->submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence));
 
 
-	vk::PresentInfoKHR presentInfo{};
-	presentInfo.sType = vk::StructureType::ePresentInfoKHR;
+    vk::PresentInfoKHR presentInfo{};
+    presentInfo.sType = vk::StructureType::ePresentInfoKHR;
 
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
 
-	vk::SwapchainKHR swapChains[] = {m_SwapChain};
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = swapChains;
+    vk::SwapchainKHR swapChains[] = {m_SwapChain};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &m_SwapChainImageIndex;
 
-	
-	presentInfo.pImageIndices = &m_SwapChainImageIndex;
+    vk::Result r = VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo);
 
-	VK_CALL(VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo));
+    if (r == vk::Result::eErrorOutOfDateKHR || r == vk::Result::eSuboptimalKHR)
+    {
+        HandleRecreateSwapChain(_window);
+    }
+    else if (vk::Result::eSuccess != r)
+    {
+        VK_CALL(r);
+    }
 }
 
-void Vulkan::VulkanSwapChain::RecreateSwapChain()
+void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHandle)
 {
-	std::shared_ptr<VulkanDevice> vPtrDevice = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice);
-	vPtrDevice->GetDevice().waitIdle();
+    if (!windowHandle->resizeDirty)
+        return;
 
-	CleanUpSwapChain();
-	CreateSwapChainObjects();
-	
+    std::shared_ptr<VulkanDevice> vPtrDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        PC_CORE::Rhi::GetRhiContext()->rhiDevice);
+    vPtrDevice->GetDevice().waitIdle();
+
+    Tbx::Vector2ui size = windowHandle->GetWindowSize();
+    CleanUpSwapChain();
+    CreateSwapChain(size.x, size.y);
+    CreateImageViews();
+    CreateFrameBuffers();
+    windowHandle->resizeDirty = false;
 }

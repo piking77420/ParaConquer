@@ -15,11 +15,11 @@ public:
 
     PC_CORE_API void Init();
 
-    PC_CORE_API void BeginDraw();
+    PC_CORE_API bool BeginDraw(Window* _window);
 
     PC_CORE_API void Render();
 
-    PC_CORE_API void SwapBuffers();
+    PC_CORE_API void SwapBuffers(Window* _window    );
 private:
     RhiContext* m_RhiContext;
     

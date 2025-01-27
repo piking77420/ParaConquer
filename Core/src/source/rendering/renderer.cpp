@@ -62,11 +62,16 @@ void Renderer::Init()
    m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);   
 }
 
-void Renderer::BeginDraw()
+bool Renderer::BeginDraw(Window* _window)
 {
    m_RhiContext->swapChain->WaitForFrame();
-   m_RhiContext->swapChain->GetSwapChainImageIndex();
+   bool hasGetImage = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+   if (!hasGetImage)
+   {
+      return hasGetImage;
+   }
 
+   m_CommandList->Reset();
    m_CommandList->BeginRecordCommands();
 }
 
@@ -104,9 +109,9 @@ void Renderer::Render()
 }
 
 
-void Renderer::SwapBuffers()
+void Renderer::SwapBuffers(Window* _window)
 {
-    m_RhiContext->swapChain->Present(m_CommandList.get());
+    m_RhiContext->swapChain->Present(m_CommandList.get(), _window);
     Rhi::NextFrame();
 }
 
