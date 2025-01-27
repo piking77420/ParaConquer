@@ -36,7 +36,7 @@ public:
     VULKAN_API const vk::Queue* GetQueue() const;
 
 private:
-    std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer = {VK_NULL_HANDLE , VK_NULL_HANDLE};
+    std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
 
     const vk::Queue* m_Queue = VK_NULL_HANDLE;
 };

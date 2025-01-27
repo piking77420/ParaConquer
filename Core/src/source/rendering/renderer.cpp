@@ -3,6 +3,7 @@
 #include "low_renderer/rhi.hpp"
 #include "low_renderer/vertex.hpp"
 #include "resources/resource_manager.hpp"
+#include <thread>
 
 using namespace PC_CORE;
 
@@ -66,13 +67,20 @@ bool Renderer::BeginDraw(Window* _window)
 {
    m_RhiContext->swapChain->WaitForFrame();
    bool hasGetImage = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+  
    if (!hasGetImage)
    {
+       
       return hasGetImage;
    }
-
+   
    m_CommandList->Reset();
+   
    m_CommandList->BeginRecordCommands();
+
+   // SYNC ISSUE IN REALESE MODE
+   //std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 }
 
 void Renderer::Render()

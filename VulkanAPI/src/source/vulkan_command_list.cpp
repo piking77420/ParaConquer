@@ -61,7 +61,10 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
     
     if (m_CommandBuffer[frameIndex] == VK_NULL_HANDLE)
+    {
+      
         return;
+    }
     
     vk::CommandBufferBeginInfo commandBufferBeginInfo;
     commandBufferBeginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
@@ -90,7 +93,8 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     renderPassInfo.renderArea.extent = vk::Extent2D{_BeginRenderPassInfo.extent.x, _BeginRenderPassInfo.extent.y};
 
     vk::ClearValue clearColor  = {};
-    clearColor.color.setFloat32({ 0.0f, 0.0f, 0.0f, 1.0f });
+    clearColor.color.setFloat32({ 
+        _BeginRenderPassInfo.clearColor.x, _BeginRenderPassInfo.clearColor.y, _BeginRenderPassInfo.clearColor.z, _BeginRenderPassInfo.clearColor.w});
     
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;

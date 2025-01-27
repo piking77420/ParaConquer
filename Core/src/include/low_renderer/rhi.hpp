@@ -43,11 +43,8 @@ public:
 
     PC_CORE_API static void SendCommandList(const CommandList* _commandList);
 
-    PC_CORE_API inline static void NextFrame()
-    {
-        m_Instance->m_CurrentFrame = (m_Instance->m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-    }
-
+    PC_CORE_API static void NextFrame();
+ 
     PC_CORE_API static inline uint32_t GetFrameIndex()
     {
            return m_Instance->m_CurrentFrame;
