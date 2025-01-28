@@ -1,7 +1,15 @@
-﻿#include "vulkan_instance.hpp"
+﻿#define NOMINMAX
+#define VK_USE_PLATFORM_WIN32_KHR
+#include <vulkan/vulkan.hpp>
+#include <GLFW/glfw3.h>
 
-#include "GLFW/glfw3.h"
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
+#include "vulkan_instance.hpp"
+
 #include <windows.h>
+#include <memory>
 
 
 #ifdef _DEBUG
@@ -59,6 +67,7 @@ void Vulkan::VulkanInstance::PopulateDebugMessengerCreateInfo(
     createInfo.pfnUserCallback = DebugCallBack;
 }
 
+
 bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 {
     uint32_t layerCount;
@@ -93,7 +102,7 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 
 
 
-Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo) : RenderInstance(_renderInstanceCreateInfo)
+Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window) : RenderInstance(_renderInstanceCreateInfo)
 {
     vk::ApplicationInfo appInfo = {};
     appInfo.sType = vk::StructureType::eApplicationInfo;
@@ -141,11 +150,35 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 #ifdef _DEBUG
     SetupDebugMessenger();
 #endif
+
+    InitSurface(_window);
+}
+
+
+
+void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
+{
+    if (_window == nullptr) {
+        throw std::invalid_argument("Window handle is null");
+    }
+
+    vk::Win32SurfaceCreateInfoKHR win32SurfaceCreate{};
+    win32SurfaceCreate.sType = vk::StructureType::eWin32SurfaceCreateInfoKHR;
+
+    const GLFWwindow* window = static_cast<const GLFWwindow*>(_window);
+    win32SurfaceCreate.hwnd = glfwGetWin32Window(const_cast<GLFWwindow*>(window));
+    win32SurfaceCreate.hinstance = GetModuleHandle(nullptr);
+
+    // Create the surface
+    vk::Result r = m_Instance.createWin32SurfaceKHR(&win32SurfaceCreate, nullptr, &surface);
+
+    VK_CHECK_CALL(r);
 }
 
 Vulkan::VulkanInstance::~VulkanInstance()
 {
 
+    m_Instance.destroySurfaceKHR(surface);
 #ifdef _DEBUG
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {

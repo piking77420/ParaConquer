@@ -40,7 +40,7 @@ BEGIN_PCCORE
 
         PC_CORE_API RhiContext() = delete;
 
-        PC_CORE_API virtual ~RhiContext();
+        PC_CORE_API virtual ~RhiContext() = default;
 
         PC_CORE_API static void WaitIdle();
     

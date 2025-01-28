@@ -17,8 +17,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
 {
     std::vector<std::string> extensionToEnable;
     
-    renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate);
-    InitSurface(rhiContextCreateInfo.WindowHandle);
+    renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate, rhiContextCreateInfo.WindowHandle);
     
     physicalDevices = std::make_shared<VulkanPhysicalDevices>(*rhiContextCreateInfo.physicalDevicesCreateInfo, &extensionToEnable);
     rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &graphicsQueue, &presentQueue);
@@ -42,12 +41,6 @@ VulkanContext::~VulkanContext()
 
     device->GetDevice().destroyCommandPool(commandPool);    
     commandPool = nullptr;
-
-    std::shared_ptr<VulkanSwapChain> vSwapChain = std::reinterpret_pointer_cast<VulkanSwapChain>(m_CurrentContext->swapChain);
-
-    
-    std::shared_ptr<VulkanInstance> vulkanInstance = std::reinterpret_pointer_cast<VulkanInstance>(renderInstance);
-    vulkanInstance->Get().destroySurfaceKHR(m_Surface, nullptr);
 }
 
 std::shared_ptr<VulkanDevice> VulkanContext::GetDevice()
@@ -65,29 +58,7 @@ void VulkanContext::WaitIdleInstance()
     GetDevice()->GetDevice().waitIdle();
 }
 
-void VulkanContext::InitSurface(const void* _windowHandle)
-{
-    if (_windowHandle == nullptr) {
-        throw std::invalid_argument("Window handle is null");
-    }
 
-    vk::Win32SurfaceCreateInfoKHR win32SurfaceCreate {};
-    win32SurfaceCreate.sType = vk::StructureType::eWin32SurfaceCreateInfoKHR;
-
-    const GLFWwindow* window = static_cast<const GLFWwindow*>(_windowHandle);
-    win32SurfaceCreate.hwnd = glfwGetWin32Window(const_cast<GLFWwindow*>(window));
-    win32SurfaceCreate.hinstance = GetModuleHandle(nullptr);
-
-    auto vulkanInstance = std::static_pointer_cast<VulkanInstance>(renderInstance); 
-
-    if (!vulkanInstance) {
-        throw std::runtime_error("Failed to cast renderInstance to VulkanInstance.");
-    }
-
-    // Create the surface
-    vk::Result r = vulkanInstance->Get().createWin32SurfaceKHR(&win32SurfaceCreate, nullptr, &m_Surface);
-    VK_CHECK_CALL(r);
-}
 
 void VulkanContext::CreateCommandPool()
 {

@@ -28,17 +28,14 @@ namespace Vulkan
             return *reinterpret_cast<VulkanContext*>(m_CurrentContext);
         }
 
-        VULKAN_API const vk::SurfaceKHR& GetSurface() const { return m_Surface; }
+        VULKAN_API const vk::SurfaceKHR& GetSurface() const { return std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->surface; }
 
         VULKAN_API static std::shared_ptr<VulkanDevice> GetDevice();
 
         VULKAN_API static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
     
     private:
-        vk::SurfaceKHR m_Surface;
         
-        VULKAN_API void InitSurface(const void* _windowHandle);
-
         VULKAN_API void CreateCommandPool();
 
         VULKAN_API void WaitIdleInstance() override;

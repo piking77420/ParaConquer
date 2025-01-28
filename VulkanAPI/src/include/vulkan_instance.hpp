@@ -8,7 +8,10 @@ namespace Vulkan
     class VulkanInstance : public PC_CORE::RenderInstance
     {
     public:
-        VULKAN_API explicit VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo);
+
+        vk::SurfaceKHR surface;
+
+        VULKAN_API explicit VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window);
         
         VULKAN_API explicit VulkanInstance() = default;
 
@@ -24,13 +27,15 @@ namespace Vulkan
 
         vk::DebugUtilsMessengerEXT m_DebugMessenger;
         
-//#ifdef _DEBUG
+        void InitSurface(GLFWwindow* _window);
+
+#ifdef _DEBUG
 
         bool CheckValidationLayerSupport();
 
         void SetupDebugMessenger();
 
         void PopulateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& _debugMessengerCreateInfo);
-  //      #endif
+        #endif
     };
 }
