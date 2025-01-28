@@ -44,6 +44,15 @@ namespace Vulkan
         void ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState/*, const PC_CORE::*/);
 
         void ParseParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo, const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState );
+        
+        vk::VertexInputBindingDescription ParseVertexInputBindingDescription(const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition);
+
+        vk::VertexInputAttributeDescription ParseVertexInputAttributeDescription(const PC_CORE::VertexAttributeDescription& _vertexAttributeDescription);
+
+        vk::PipelineVertexInputStateCreateInfo ParseVertexInputState(
+            const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo,
+            std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
+            , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions);
 
     }; 
 }

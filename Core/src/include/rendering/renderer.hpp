@@ -1,4 +1,5 @@
 #pragma once
+#include "vulkan_vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/rhi_context.hpp"
 #include "resources/shader_program.h"
@@ -26,6 +27,8 @@ private:
     PC_CORE::ShaderProgram* m_Main = nullptr;
 
     std::shared_ptr<PC_CORE::CommandList> m_CommandList;
+
+    std::shared_ptr<PC_CORE::VertexBuffer> m_VertexBuffer;
 };
 
 END_PCCORE

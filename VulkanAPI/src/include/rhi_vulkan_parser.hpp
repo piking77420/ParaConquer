@@ -37,5 +37,7 @@ namespace Vulkan
     vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage);
 
     vk::CullModeFlags RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit);
+
+    vk::BufferUsageFlags RhiToBufferUsage(PC_CORE::BufferUsage _usage);
 }
 

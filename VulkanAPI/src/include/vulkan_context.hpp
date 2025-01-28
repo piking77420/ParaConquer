@@ -13,7 +13,8 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-        VulkanMemoryAllocator memoryAllocator;
+
+        VmaAllocator allocator;
 
         vk::Queue graphicsQueue;
 

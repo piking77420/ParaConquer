@@ -1140,3 +1140,18 @@ vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBi
     return cullModeFlags;
 }
 
+vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
+{
+    vk::BufferUsageFlags bufferUsageFlags = {};
+    
+    switch (_usage)
+    {
+    case PC_CORE::BufferUsage::VertexBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;
+    case PC_CORE::BufferUsage::IndexBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
+    case PC_CORE::BufferUsage::Count:
+        break;
+    }
+}
+

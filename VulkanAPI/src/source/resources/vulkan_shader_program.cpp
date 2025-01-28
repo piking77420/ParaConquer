@@ -101,13 +101,10 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
     dynamicState.pDynamicStates = dynamicStateArray.data();
 
     // VertexInput
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
-    vertexInputInfo.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
-
+    std::vector<vk::VertexInputBindingDescription> vertexInputBindingDescriptions;
+    std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions;
+    vk::PipelineVertexInputStateCreateInfo vertexInputInfo = ParseVertexInputState(shaderGraphicPointInfo, &vertexInputBindingDescriptions, &vertexInputAttributeDescriptions);
+    
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo;
     inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
@@ -234,4 +231,62 @@ void VulkanShaderProgram::ParseParsePipelineColorBlendAttachmentState(
     _PipelineColorBlendStateCreateInfo->blendConstants[1] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[2] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[3] = 0.0f; // Optional
+}
+
+vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDescription(
+    const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition)
+{
+    vk::VertexInputBindingDescription vkvertexInputBindingDescription{};
+    vkvertexInputBindingDescription.binding = _vertexInputBindingDescrition.binding;
+    vkvertexInputBindingDescription.stride = _vertexInputBindingDescrition.stride;
+    vkvertexInputBindingDescription.inputRate = RhiInputRateToVkInputRate(_vertexInputBindingDescrition.vertexInputRate);
+
+    return vkvertexInputBindingDescription;
+}
+
+vk::VertexInputAttributeDescription VulkanShaderProgram::ParseVertexInputAttributeDescription(
+    const PC_CORE::VertexAttributeDescription& _vertexAttributeDescription)
+{
+    vk::VertexInputAttributeDescription vkvertexInputAttributeDescription;
+    vkvertexInputAttributeDescription.location = _vertexAttributeDescription.location;
+    vkvertexInputAttributeDescription.binding = _vertexAttributeDescription.binding;
+    vkvertexInputAttributeDescription.offset = _vertexAttributeDescription.offset;
+    vkvertexInputAttributeDescription.format = RHIFormatToVkFormat(_vertexAttributeDescription.format);
+
+    return vkvertexInputAttributeDescription;
+}
+
+vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputState(
+    const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo,
+    std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
+    ,std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions)
+{
+    if (_vertexInputBindingDescriptions == nullptr || _vertexInputAttributeDescriptions == nullptr)
+    {
+        PC_LOGERROR("_vertexInputBindingDescriptions is null or _vertexInputAttributeDescriptions is null");
+        return {};
+    }
+
+    // Parse vertexInputBindingDescriptions
+    _vertexInputBindingDescriptions->reserve(_shaderGraphicPointInfo.vertexInputBindingDescritions.size());
+    for (size_t i = 0; i < _shaderGraphicPointInfo.vertexInputBindingDescritions.size(); i++)
+    {
+        _vertexInputBindingDescriptions->emplace_back(ParseVertexInputBindingDescription(_shaderGraphicPointInfo.vertexInputBindingDescritions[i]));
+    }
+
+    // Parse verteixAttributes
+    _vertexInputAttributeDescriptions->reserve(_shaderGraphicPointInfo.vertexAttributeDescriptions.size());
+    for (size_t i = 0; i < _shaderGraphicPointInfo.vertexInputBindingDescritions.size(); i++)
+    {
+        _vertexInputAttributeDescriptions->emplace_back(ParseVertexInputAttributeDescription(_shaderGraphicPointInfo.vertexAttributeDescriptions[i]));
+    }
+    
+    vk::PipelineVertexInputStateCreateInfo returnVertexInputStateCreateInfo{};
+    returnVertexInputStateCreateInfo.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo;
+    returnVertexInputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(_vertexInputBindingDescriptions->size());
+    returnVertexInputStateCreateInfo.pVertexBindingDescriptions = _vertexInputBindingDescriptions->data();
+    
+    returnVertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(_vertexInputAttributeDescriptions->size());
+    returnVertexInputStateCreateInfo.pVertexAttributeDescriptions = _vertexInputAttributeDescriptions->data();
+
 }

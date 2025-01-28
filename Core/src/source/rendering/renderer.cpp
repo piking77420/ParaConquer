@@ -60,7 +60,10 @@ void Renderer::Init()
       ._commandPoolFamily = CommandPoolFamily::Graphics
       };
    
-   m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);   
+   m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
+
+   
+   
 }
 
 bool Renderer::BeginDraw(Window* _window)

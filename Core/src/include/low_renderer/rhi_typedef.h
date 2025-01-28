@@ -709,6 +709,28 @@ BEGIN_PCCORE
 
 #pragma endregion RenderPass
 
+
+enum MemoryUsage
+{
+    CpuOnly,
+    GpuOnly,
+    CpuToGpu
+};
+
+enum class BufferUsage
+{
+    VertexBuffer,
+    IndexBuffer,
+    Count
+};
+
+struct GPUBufferCreateInfo
+{
+    void* data;
+    size_t dataSize;
+    BufferUsage usage;
+};
+
 END_PCCORE
 
 

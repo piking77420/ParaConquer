@@ -9,6 +9,9 @@
 
 #include "vulkan_context.hpp"
 
+#include <vma/vk_mem_alloc.h>
+
+#include "vulkan_gpu_allocator.hpp"
 #include "vulkan_swap_chain.hpp"
 
 using namespace Vulkan;
@@ -67,23 +70,23 @@ void VulkanContext::CreateMemoryAllocator()
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice)->GetDevice();
     vk::PhysicalDevice phydevice = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices)->GetVulkanDevice();
 
-    /*
+    
     const VmaAllocatorCreateInfo createInfo =
         {
-        .flags = ,
+        .flags = {},
         .physicalDevice = phydevice,
         .device = device,
-        .preferredLargeHeapBlockSize = ,
-        .pAllocationCallbacks = ,
-        .pDeviceMemoryCallbacks = ,
-        .pHeapSizeLimit = ,
-        .pVulkanFunctions = ,
+        .preferredLargeHeapBlockSize = 0,
+        .pAllocationCallbacks = nullptr,
+        .pDeviceMemoryCallbacks = nullptr,
+        .pHeapSizeLimit = nullptr,
+        .pVulkanFunctions = nullptr,
         .instance = instance,
         .vulkanApiVersion = VK_API_VERSION_1_4,
-        .pTypeExternalMemoryHandleTypes = 
-        }
+        .pTypeExternalMemoryHandleTypes = nullptr
+        };
   
-    */
+    gpuAllocator = std::make_shared<Vulkan::VulkanGpuAllocator>(createInfo);
 }
 
 void VulkanContext::CreateCommandPool()
