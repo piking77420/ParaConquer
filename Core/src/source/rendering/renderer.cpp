@@ -65,26 +65,14 @@ void Renderer::Init()
 
 bool Renderer::BeginDraw(Window* _window)
 {
-   m_RhiContext->swapChain->WaitForFrame();
-   bool hasGetImage = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
-  
-   if (!hasGetImage)
-   {
-       
-      return hasGetImage;
-   }
-   
-   m_CommandList->Reset();
-   
-   m_CommandList->BeginRecordCommands();
-
-   // SYNC ISSUE IN REALESE MODE
-   //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
+    return m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
 }
 
 void Renderer::Render()
 {
+    m_CommandList->Reset();
+    m_CommandList->BeginRecordCommands();
+
    uint32_t swapChainWidht = m_RhiContext->swapChain->GetWidth();
    uint32_t swapChainHeight = m_RhiContext->swapChain->GetHeight();
 

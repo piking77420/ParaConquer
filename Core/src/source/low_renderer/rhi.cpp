@@ -118,6 +118,7 @@ void Rhi::SendCommandList(const CommandList* _commandList)
 void Rhi::NextFrame()
 {
     m_Instance->m_CurrentFrame = (m_Instance->m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+   
 }
 
 

@@ -27,38 +27,34 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
     return m_SurfaceFormat;
 }
 
-void Vulkan::VulkanSwapChain::WaitForFrame() const
-{
-    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-        VulkanContext::GetContext().rhiDevice);
 
-    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
-
-    VK_CALL(vulkanDevice->GetDevice().waitForFences(1, &m_SyncObject[frameIndex].inFlightFence, VK_TRUE, UINT64_MAX));
-}
 
 bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
-    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-        VulkanContext::GetContext().rhiDevice);
-
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
+    // Wait for the fence to signal, ensuring the operation completes
+    VK_CALL(vulkanDevice->GetDevice().waitForFences(1, &m_SyncObject[frameIndex].inFlightFence, VK_TRUE, UINT64_MAX));
+  
+    uint32_t nextImageIndex = 0;
     vk::Result result = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX,
                                                                       m_SyncObject[frameIndex].imageAvailableSemaphore,
-                                                                      VK_NULL_HANDLE, &m_SwapChainImageIndex);
-
+                                                                      VK_NULL_HANDLE, &nextImageIndex);
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
         HandleRecreateSwapChain(windowHandle);
+
         return false;
     }
     else if (vk::Result::eSuccess != result)
     {
         VK_CALL(result);
+
         return false;
     }
 
+    m_SwapChainImageIndex = nextImageIndex;
     VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject[frameIndex].inFlightFence));
     return true;
 }
@@ -286,13 +282,13 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
     vk::CommandBuffer commandBuffer = vcommandList->GetHandle();
-    const vk::Queue* queu = vcommandList->GetQueue();
+    const vk::Queue& queue = *vcommandList->GetQueue();
 
     vk::SubmitInfo submitInfo{};
     submitInfo.sType = vk::StructureType::eSubmitInfo;
 
-    vk::Semaphore waitSemaphores[] = {m_SyncObject[frameIndex].imageAvailableSemaphore};
-    vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+    vk::Semaphore waitSemaphores[] = { m_SyncObject[frameIndex].imageAvailableSemaphore };
+    vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -300,12 +296,12 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vk::Semaphore signalSemaphores[] = {m_SyncObject[frameIndex].renderFinishedSemaphore};
+    vk::Semaphore signalSemaphores[] = { m_SyncObject[frameIndex].renderFinishedSemaphore };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    VK_CALL(queu->submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence));
-
+    // Ensure proper error handling for queue submission
+    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence)); // Changed `queu` to `queue`
 
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
@@ -313,20 +309,21 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    vk::SwapchainKHR swapChains[] = {m_SwapChain};
+    vk::SwapchainKHR swapChains[] = { m_SwapChain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &m_SwapChainImageIndex;
 
-    vk::Result r = VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo);
+    // Check if the presentation queue supports presentation and handle errors
+    vk::Result result = VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo);
 
-    if (r == vk::Result::eErrorOutOfDateKHR || r == vk::Result::eSuboptimalKHR)
+    if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
     {
         HandleRecreateSwapChain(_window);
     }
-    else if (vk::Result::eSuccess != r)
+    else if (result != vk::Result::eSuccess)
     {
-        VK_CALL(r);
+        VK_CALL(result);
     }
 }
 

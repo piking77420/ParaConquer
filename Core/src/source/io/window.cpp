@@ -93,6 +93,7 @@ void Window::HandleResize()
         {
             glfwGetFramebufferSize(m_Window, &width, &height);
             glfwWaitEvents();
+
         }
         m_WindowSize = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
     }

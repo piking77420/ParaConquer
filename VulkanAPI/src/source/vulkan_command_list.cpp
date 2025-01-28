@@ -32,7 +32,7 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
         return;
     }
     
-    vk::CommandBufferAllocateInfo commandBufferAllocateInfo;
+    vk::CommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     commandBufferAllocateInfo.commandPool = commandPool;
     commandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
@@ -60,13 +60,7 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
 {
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
     
-    if (m_CommandBuffer[frameIndex] == VK_NULL_HANDLE)
-    {
-      
-        return;
-    }
-    
-    vk::CommandBufferBeginInfo commandBufferBeginInfo;
+    vk::CommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
     commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits(); // Optional
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
@@ -76,7 +70,7 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
 
 void Vulkan::VulkanCommandList::EndRecordCommands()
 {
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].end();
+     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].end();
 }
 
 void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo)
@@ -115,7 +109,7 @@ void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::ShaderProgram* _shade
 
 void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPort)
 {
-    vk::Viewport viewport;
+    vk::Viewport viewport{};
     viewport.x = _viewPort.transform.x;
     viewport.y = _viewPort.transform.y;
     viewport.width = static_cast<float>(_viewPort.size.x);
@@ -124,7 +118,7 @@ void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPo
     viewport.maxDepth = _viewPort.maxDepth;
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setViewport(0, 1, &viewport);
 
-    vk::Rect2D scissor;
+    vk::Rect2D scissor{};
     scissor.offset = vk::Offset2D{_viewPort.scissorsOff.x, _viewPort.scissorsOff.y};
     scissor.extent = vk::Extent2D{_viewPort.scissorsextent.x, _viewPort.scissorsextent.y};
     

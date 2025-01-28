@@ -24,13 +24,13 @@ namespace Vulkan
 
         vk::DebugUtilsMessengerEXT m_DebugMessenger;
         
-#ifdef _DEBUG
+//#ifdef _DEBUG
 
         bool CheckValidationLayerSupport();
 
         void SetupDebugMessenger();
 
         void PopulateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& _debugMessengerCreateInfo);
-        #endif
+  //      #endif
     };
 }

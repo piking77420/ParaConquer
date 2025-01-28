@@ -18,8 +18,6 @@ namespace Vulkan
 
         VULKAN_API vk::SurfaceFormatKHR GetSurfaceFormat();
 
-        VULKAN_API void WaitForFrame() const override;
-
         VULKAN_API bool GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
 
         VULKAN_API void Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window) override;

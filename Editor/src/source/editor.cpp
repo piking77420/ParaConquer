@@ -203,7 +203,7 @@ void Editor::Run()
 {
     while (!window.ShouldClose())
     {
-       
+
         coreIo.PoolEvent();
         window.PoolEvents();
         PC_CORE::IMGUIContext::NewFrame();
@@ -223,13 +223,10 @@ void Editor::Run()
         }
         
         renderer.Render();
-        //PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
-        //renderer.EndRender();
         renderer.SwapBuffers(&window);
     }
 
     Rhi::GetRhiContext()->WaitIdle();
-    //renderer.WaitDevice();
 }
 
 void Editor::InitEditorWindows()
