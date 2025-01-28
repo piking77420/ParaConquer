@@ -3,15 +3,39 @@
 
 #include "vulkan_gpu_allocator.hpp"
 
+#include "rhi_vulkan_parser.hpp"
 
-bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _vulkanBufferPtr)
+
+bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
 {
-    return false;
+    
+    vk::BufferCreateInfo vbufferCreateInfo{};
+    vbufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
+    vbufferCreateInfo.size = _createInfo.dataSize;
+    vbufferCreateInfo.usage = RhiToBufferUsage(_createInfo.usage);
+
+    VmaAllocationCreateInfo vmaallocInfo = {};
+    vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    
+    std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::make_shared<VulkanBufferHandle>();
+
+    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&vbufferCreateInfo), &vmaallocInfo,
+    &vulkanBufferPtr->buffer,
+    &vulkanBufferPtr->allocation,
+    nullptr)));
+    
+    return true;
 }
 
-bool Vulkan::VulkanGpuAllocator::DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _vulkanBufferPtr)
+bool Vulkan::VulkanGpuAllocator::DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
 {
-    return false;
+
+    std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(*_bufferptr);
+
+    vmaDestroyBuffer(m_allocator, vulkanBufferPtr->buffer, vulkanBufferPtr->allocation);
+    *_bufferptr = nullptr;
+    
+    return true;
 }
 
 Vulkan::VulkanGpuAllocator::VulkanGpuAllocator(const VmaAllocatorCreateInfo& _createInfo)

@@ -6,12 +6,12 @@
 
 BEGIN_PCCORE
 // Make 
-class VertexBuffer
+class VertexBuffer : public GpuBuffer
 {
 public:
     DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
 
-    VertexBuffer(Vertex* vertices, uint32_t size);
+    VertexBuffer(const Vertex* vertices, uint32_t size);
     
     VertexBuffer() = default;
     
@@ -24,6 +24,8 @@ public:
 
 private:
     size_t m_NbrOfVerticies = 0;
+
+    
 };
 
 END_PCCORE

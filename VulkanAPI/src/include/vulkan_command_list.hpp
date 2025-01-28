@@ -30,6 +30,8 @@ public:
     VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;
 
     VULKAN_API void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) override;
+
+    VULKAN_API void BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount);
     
     VULKAN_API vk::CommandBuffer GetHandle() const;
 

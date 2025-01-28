@@ -7,6 +7,11 @@
 
 using namespace PC_CORE;
 
+const std::vector<Vertex> vertices = {
+   {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.5f, 0.0f}}, 
+   {{0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, 
+   {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}} 
+};
 void Renderer::Init()
 {
     m_RhiContext = Rhi::GetRhiContext();
@@ -62,7 +67,7 @@ void Renderer::Init()
    
    m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
 
-   
+   m_VertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), vertices.size());
    
 }
 

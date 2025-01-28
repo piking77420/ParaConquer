@@ -13,6 +13,12 @@ public:
     GpuBuffer() = default;
 
     virtual ~GpuBuffer() = default;
+
+    inline std::shared_ptr<GpuBufferHandle> GetHandle() const
+    {
+        return m_GpuHandle;
+    }
+    
 protected:
     std::shared_ptr<GpuBufferHandle> m_GpuHandle;
 };

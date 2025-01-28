@@ -6,9 +6,12 @@
 #include "frame_buffer.hpp"
 #include "rhi_render_pass.hpp"
 #include "math/toolbox_typedef.hpp"
+#include "rendering/vulkan_vertex_buffer.hpp"
 #include "resources/shader_program.h"
 
 BEGIN_PCCORE
+    class FrameBuffer;
+
     enum class CommandPoolFamily
 {
     Graphics,
@@ -70,6 +73,8 @@ public:
     PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
     PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) = 0;
+
+    PC_CORE_API virtual void BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
 
 protected:
     CommandPoolFamily m_CommandPoolFamily;

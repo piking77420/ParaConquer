@@ -12,6 +12,9 @@ BEGIN_PCCORE
     Tbx::Vector3f normal;
     Tbx::Vector2f textureCoord;
 
+    Vertex(Tbx::Vector3f _position, Tbx::Vector3f _normal, Tbx::Vector2f _textureCoord);
+    
+
     Vertex() = default;
 
     ~Vertex() = default;

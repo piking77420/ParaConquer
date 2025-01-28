@@ -726,7 +726,7 @@ enum class BufferUsage
 
 struct GPUBufferCreateInfo
 {
-    void* data;
+    const void* data;
     size_t dataSize;
     BufferUsage usage;
 };

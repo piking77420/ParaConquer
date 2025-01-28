@@ -1,5 +1,8 @@
 ﻿#pragma once
-#include "vulkan_memory_allocator.hpp"
+
+#include <vma/vk_mem_alloc.h>
+
+#include "vulkan_header.h"
 #include "low_renderer/gpu_buffer_handle.hpp"
 
 namespace Vulkan
@@ -27,6 +30,8 @@ namespace Vulkan
 
             return *this;
         }
+
+        VulkanBufferHandle() = default;
 
         ~VulkanBufferHandle() override;
         

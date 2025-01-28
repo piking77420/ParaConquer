@@ -3,6 +3,7 @@
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
+#include "buffer/vulkan_buffer_handle.hpp"
 #include "low_renderer/rhi.hpp"
 #include "resources/vulkan_shader_program.hpp"
 
@@ -129,6 +130,18 @@ void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCo
     uint32_t _firstInstance)
 {
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].draw(_vertexCount, _instanceCount, _firstVertex, _firstInstance);
+}
+
+void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding,
+    uint32_t _bindingCount)
+{
+
+    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_vertexBuffer.GetHandle()); 
+    vk::Buffer buffer = vulkanBufferHandle->buffer;
+    vk::DeviceSize offsets[] = {0};
+    
+    
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindVertexBuffers(_firstBinding, _bindingCount, &buffer, offsets);
 }
 
 
