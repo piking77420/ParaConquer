@@ -31,6 +31,8 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     const uint32_t uwidht = static_cast<uint32_t>(widht);
     const uint32_t uheight = static_cast<uint32_t>(height);
     swapChain = std::make_shared<Vulkan::VulkanSwapChain>(uwidht, uheight);
+
+    CreateMemoryAllocator();
     
     CreateCommandPool();
 }
@@ -59,6 +61,30 @@ void VulkanContext::WaitIdleInstance()
 }
 
 
+void VulkanContext::CreateMemoryAllocator()
+{
+    vk::Instance instance = std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->GetVulkanInstance();
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice)->GetDevice();
+    vk::PhysicalDevice phydevice = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices)->GetVulkanDevice();
+
+    /*
+    const VmaAllocatorCreateInfo createInfo =
+        {
+        .flags = ,
+        .physicalDevice = phydevice,
+        .device = device,
+        .preferredLargeHeapBlockSize = ,
+        .pAllocationCallbacks = ,
+        .pDeviceMemoryCallbacks = ,
+        .pHeapSizeLimit = ,
+        .pVulkanFunctions = ,
+        .instance = instance,
+        .vulkanApiVersion = VK_API_VERSION_1_4,
+        .pTypeExternalMemoryHandleTypes = 
+        }
+  
+    */
+}
 
 void VulkanContext::CreateCommandPool()
 {

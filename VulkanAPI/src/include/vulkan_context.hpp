@@ -3,6 +3,7 @@
 #include "low_renderer/rhi_context.hpp"
 #include "vulkan_instance.hpp"
 #include "vulkan_device.hpp"
+#include "vulkan_memory_allocator.hpp"
 
 namespace Vulkan
 {
@@ -12,6 +13,7 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
+        VulkanMemoryAllocator memoryAllocator;
 
         vk::Queue graphicsQueue;
 
@@ -35,6 +37,8 @@ namespace Vulkan
         VULKAN_API static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
     
     private:
+
+        VULKAN_API void CreateMemoryAllocator();
         
         VULKAN_API void CreateCommandPool();
 

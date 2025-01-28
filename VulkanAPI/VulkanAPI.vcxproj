@@ -45,6 +45,7 @@
     <ClInclude Include="src\include\vulkan_frame_buffer.hpp" />
     <ClInclude Include="src\include\vulkan_header.h" />
     <ClInclude Include="src\include\vulkan_instance.hpp" />
+    <ClInclude Include="src\include\vulkan_memory_allocator.hpp" />
     <ClInclude Include="src\include\vulkan_physical_devices.hpp" />
     <ClInclude Include="src\include\vulkan_render_pass.hpp" />
     <ClInclude Include="src\include\vulkan_swap_chain.hpp" />
@@ -57,6 +58,7 @@
     <ClCompile Include="src\source\vulkan_device.cpp" />
     <ClCompile Include="src\source\vulkan_frame_buffer.cpp" />
     <ClCompile Include="src\source\vulkan_instance.cpp" />
+    <ClCompile Include="src\source\vulkan_memory_allocator.cpp" />
     <ClCompile Include="src\source\vulkan_physical_devices.cpp" />
     <ClCompile Include="src\source\vulkan_render_pass.cpp" />
     <ClCompile Include="src\source\vulkan_swap_chain.cpp" />

@@ -22,6 +22,11 @@ namespace Vulkan
             return m_Instance;
         }
 
+        inline vk::Instance GetVulkanInstance() const
+        {
+            return m_Instance;
+        }
+        
     private:
         vk::Instance m_Instance;
 

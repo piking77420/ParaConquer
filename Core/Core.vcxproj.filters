@@ -243,10 +243,10 @@
     <ClInclude Include="src\include\low_renderer\rhi_render_pass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\low_renderer\command_list.hpp">
+    <ClInclude Include="src\include\low_renderer\frame_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\low_renderer\frame_buffer.hpp">
+    <ClInclude Include="src\include\low_renderer\command_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -389,12 +389,6 @@
     <ClCompile Include="src\source\rendering\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\include\low_renderer\vertex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\low_renderer\command_list.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\low_renderer\frame_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -417,6 +411,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\low_renderer\swap_chain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\vertex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\command_list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
