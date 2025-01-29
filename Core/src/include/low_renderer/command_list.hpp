@@ -6,8 +6,8 @@
 #include "frame_buffer.hpp"
 #include "rhi_render_pass.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "rendering/vulkan_vertex_buffer.hpp"
 #include "resources/shader_program.h"
+#include "vertex_buffer.hpp"
 
 BEGIN_PCCORE
     class FrameBuffer;

@@ -1,5 +1,4 @@
 ﻿#include "buffer/vulkan_buffer_handle.hpp"
 
-Vulkan::VulkanBufferHandle::~VulkanBufferHandle()
-{
-}
+#include "low_renderer/rhi.hpp"
+

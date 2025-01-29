@@ -11,6 +11,10 @@ namespace Vulkan
         bool CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) override;
         
         bool DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) override;
+
+        bool MapBuffer(const std::shared_ptr<PC_CORE::GpuBufferHandle>& _bufferptr, void** _mapPtr) override;
+
+        bool UnMapBuffer(const std::shared_ptr<PC_CORE::GpuBufferHandle>& _bufferptr) override;
         
         VulkanGpuAllocator(const VmaAllocatorCreateInfo& _createInfo);
         

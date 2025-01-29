@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan_vertex_buffer.hpp"
+#include "low_renderer/vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/rhi_context.hpp"
 #include "resources/shader_program.h"

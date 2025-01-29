@@ -3,7 +3,7 @@
 #include "low_renderer/rhi_context.hpp"
 #include "vulkan_instance.hpp"
 #include "vulkan_device.hpp"
-#include "vulkan_memory_allocator.hpp"
+#include "vulkan_gpu_allocator.hpp"
 
 namespace Vulkan
 {
@@ -13,9 +13,7 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-
-        VmaAllocator allocator;
-
+        
         vk::Queue graphicsQueue;
 
         vk::Queue presentQueue;

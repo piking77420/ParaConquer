@@ -10,9 +10,23 @@ BEGIN_PCCORE
 class GpuBuffer
 {
 public:
+
+    GpuBuffer(GpuBuffer&& _other) noexcept
+    {
+        m_GpuHandle = _other.m_GpuHandle;
+        _other.m_GpuHandle = nullptr;
+    }
+
+    GpuBuffer& operator=(GpuBuffer&& _other) noexcept
+    {
+        m_GpuHandle = _other.m_GpuHandle;
+        _other.m_GpuHandle = nullptr;
+        return *this;
+    }
+    
     GpuBuffer() = default;
 
-    virtual ~GpuBuffer() = default;
+    virtual ~GpuBuffer();
 
     inline std::shared_ptr<GpuBufferHandle> GetHandle() const
     {

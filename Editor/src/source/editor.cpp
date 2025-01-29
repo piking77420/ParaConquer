@@ -38,8 +38,8 @@ void Editor::CompileShader()
     ShaderSource* mainVertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
     ShaderSource* mainFrag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
-    mainFrag->CompileToSpriv();
     mainVertex->CompileToSpriv();
+    mainFrag->CompileToSpriv();
 }
 
 void Editor::Init()

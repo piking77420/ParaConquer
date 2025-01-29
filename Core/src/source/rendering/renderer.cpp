@@ -8,9 +8,9 @@
 using namespace PC_CORE;
 
 const std::vector<Vertex> vertices = {
-   {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.5f, 0.0f}}, 
+   {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {0.5f, 0.0f}}, 
    {{0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, 
-   {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}} 
+   {{-0.5f,  0.5f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}} 
 };
 void Renderer::Init()
 {
@@ -106,7 +106,8 @@ void Renderer::Render()
       };
    m_CommandList->SetViewPort(viewportInfo);
 
-   m_CommandList->Draw(3, 1, 0, 0);
+   m_CommandList->BindVertexBuffer(*m_VertexBuffer,0,1);
+   m_CommandList->Draw(static_cast<uint32_t>(m_VertexBuffer->GetNbrOfVerticies()), 1, 0, 0);
    m_CommandList->EndRenderPass();
    m_CommandList->EndRecordCommands();
    

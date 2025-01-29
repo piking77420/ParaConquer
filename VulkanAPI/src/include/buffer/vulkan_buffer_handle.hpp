@@ -33,7 +33,7 @@ namespace Vulkan
 
         VulkanBufferHandle() = default;
 
-        ~VulkanBufferHandle() override;
+        ~VulkanBufferHandle() override = default;
         
         VkBuffer buffer;
         VmaAllocation allocation;

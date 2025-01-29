@@ -82,7 +82,7 @@ void VulkanContext::CreateMemoryAllocator()
         .pHeapSizeLimit = nullptr,
         .pVulkanFunctions = nullptr,
         .instance = instance,
-        .vulkanApiVersion = VK_API_VERSION_1_4,
+        .vulkanApiVersion = VK_API_VERSION_1_3,
         .pTypeExternalMemoryHandleTypes = nullptr
         };
   

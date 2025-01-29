@@ -12,6 +12,12 @@ public:
     virtual bool CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<GpuBufferHandle>* _bufferptr) = 0;
         
     virtual bool DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) = 0;
+    
+    virtual bool MapBuffer(const std::shared_ptr<PC_CORE::GpuBufferHandle>& _bufferptr, void** _mapPtr) = 0;
+    
+    virtual bool UnMapBuffer(const std::shared_ptr<PC_CORE::GpuBufferHandle>& _bufferptr) = 0;
+
+    
 private:
     
 };

@@ -13,6 +13,7 @@ bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCrea
     vbufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
     vbufferCreateInfo.size = _createInfo.dataSize;
     vbufferCreateInfo.usage = RhiToBufferUsage(_createInfo.usage);
+    vbufferCreateInfo.sharingMode = vk::SharingMode::eExclusive;
 
     VmaAllocationCreateInfo vmaallocInfo = {};
     vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
@@ -23,18 +24,44 @@ bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCrea
     &vulkanBufferPtr->buffer,
     &vulkanBufferPtr->allocation,
     nullptr)));
+
+    *_bufferptr = vulkanBufferPtr;
     
     return true;
 }
 
 bool Vulkan::VulkanGpuAllocator::DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
 {
-
     std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(*_bufferptr);
-
-    vmaDestroyBuffer(m_allocator, vulkanBufferPtr->buffer, vulkanBufferPtr->allocation);
-    *_bufferptr = nullptr;
     
+    if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->buffer == VK_NULL_HANDLE)
+        return false;
+    
+    vmaDestroyBuffer(m_allocator, vulkanBufferPtr->buffer, vulkanBufferPtr->allocation);
+    
+    return true;
+}
+
+bool Vulkan::VulkanGpuAllocator::MapBuffer(const std::shared_ptr<PC_CORE::GpuBufferHandle>& _bufferptr, void** _mapPtr)
+{
+    std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(_bufferptr);
+
+    if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->buffer == VK_NULL_HANDLE)
+        return false;
+
+    vmaMapMemory(m_allocator, vulkanBufferPtr->allocation, _mapPtr);
+
+    return true;
+}
+
+bool Vulkan::VulkanGpuAllocator::UnMapBuffer(const std::shared_ptr<PC_CORE::GpuBufferHandle>& _bufferptr)
+{
+    std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(_bufferptr);
+
+    if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->buffer == VK_NULL_HANDLE)
+        return false;
+
+    vmaUnmapMemory(m_allocator,vulkanBufferPtr->allocation);
     return true;
 }
 
