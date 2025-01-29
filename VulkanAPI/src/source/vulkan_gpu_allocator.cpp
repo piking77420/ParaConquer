@@ -77,3 +77,24 @@ Vulkan::VulkanGpuAllocator::~VulkanGpuAllocator()
 
     vmaDestroyAllocator(m_allocator);
 }
+
+bool Vulkan::VulkanGpuAllocator::CreateBufferInternal(vk::BufferCreateInfo& _createInfo,
+    std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
+{
+
+    VulkanBufferHandle vulkanBufferHandle{};
+
+    
+    switch (_createInfo.usage)
+    {
+    case PC_CORE::BufferUsage::VertexBuffer:
+    case PC_CORE::BufferUsage::IndexBuffer:
+        VmaAllocationCreateInfo staaginBufferAllcoationCreateInfo = {};
+        staaginBufferAllcoationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&_createInfo), &staaginBufferAllcoationCreateInfo, &vulkanBufferHandle.buffer, &vulkanBufferHandle.allocation, nullptr);
+
+        
+    case PC_CORE::BufferUsage::Count:
+        break;
+    }
+}

@@ -42,11 +42,11 @@ void App::Init()
 
 void App::Destroy()
 {
-    PC_LOG("App Destroy")
 
     world.skybox.Destroy();
     ResourceManager::Destroy();
     //renderer.Destroy();
+    PC_LOG("App Destroy")
 }
 
 App::App()
