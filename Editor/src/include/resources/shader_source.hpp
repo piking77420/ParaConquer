@@ -26,8 +26,6 @@ private:
     std::vector<char> IncludePath(const std::vector<char>& source, const std::filesystem::path& path);
 
     std::vector<char> GetShaderSourceFile();
-
-    void SerializeModule(std::vector<char>* _spvCode);
 };
 
 END_PCCORE

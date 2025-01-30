@@ -79,25 +79,6 @@ std::vector<char> ShaderSource::GetShaderSourceFile()
 }
 
 
-void ShaderSource::SerializeModule(std::vector<char>* _spvCode)
-{
-    std::string filePath = SHADER_CACHE_PATH + name + "_spv_reflect" + format;
-    std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
-
-    if (!f.is_open())
-    {
-        PC_LOGERROR("Failed to open file SerializeModule");
-        return;
-    }
-
-    auto reflectedModuke = GetReflectResult(_spvCode);
-
-    f << reflectedModuke;
-
-    f.close();
-    
-}
-
 
 bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
 {
