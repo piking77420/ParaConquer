@@ -1151,7 +1151,14 @@ vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
     case PC_CORE::BufferUsage::IndexBuffer:
         return bufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
     case PC_CORE::BufferUsage::Count:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
         break;
+    case PC_CORE::BufferUsage::UniformBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
+        break;
+    case PC_CORE::BufferUsage::ShaderStorageBuffer:
+        break;
+    default: ;
     }
 }
 

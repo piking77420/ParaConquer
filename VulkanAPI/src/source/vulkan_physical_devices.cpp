@@ -142,7 +142,7 @@ void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies()
     for (size_t i = 0; i < queueFamilyPropertieses.size(); i++)
     {
         m_QueuesFamiliesProperty[i].familyProperties = queueFamilyPropertieses[i];
-        m_QueuesFamiliesProperty[i].supportPresent = m_CurrentVulkanDevices.getSurfaceSupportKHR(i, surfaceKhr);
+        m_QueuesFamiliesProperty[i].supportPresent = m_CurrentVulkanDevices.getSurfaceSupportKHR(static_cast<uint32_t>(i), surfaceKhr);
     }
 }
 

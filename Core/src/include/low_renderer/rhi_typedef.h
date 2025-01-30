@@ -721,6 +721,8 @@ enum class BufferUsage
 {
     VertexBuffer,
     IndexBuffer,
+    UniformBuffer,
+    ShaderStorageBuffer,
     Count
 };
 

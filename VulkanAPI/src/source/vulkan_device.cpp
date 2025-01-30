@@ -6,12 +6,12 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
 }
 
 Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable,  vk::Queue* _graphicQueue ,
-                                   vk::Queue* _presentQueue)
+                                   vk::Queue* _presentQueue,  vk::Queue* _transferQueue)
 {
     vk::PhysicalDevice vkPhysicalDevice = _vulkanPhysicalDevices->GetVulkanDevice();
 
     constexpr uint32_t QueuIndex = 0;
-    constexpr uint32_t QueueCount= 2;
+    constexpr uint32_t QueueCount= 3;
 
     std::vector<Vulkan::QueueFamilyIndices> queueFamilies = _vulkanPhysicalDevices->GetQueuesFamilies();
     
@@ -23,7 +23,7 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     }
     
     std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo = {};
-    std::vector<float> queuePriority  = {1.f, 1.f};
+    std::array<float, QueueCount> queuePriority  = {1.f, 1.f, 1.f};
 
     queueCreateInfo.resize(1);
     for (uint32_t i = 0; i < 1; i++)
@@ -67,12 +67,15 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
 #endif
     m_Device = vkPhysicalDevice.createDevice(deviceCreateInfo, nullptr);
 
-
+    
     if (_graphicQueue != nullptr)
         *_graphicQueue = m_Device.getQueue(QueuIndex, 0);
 
-    if (_graphicQueue != nullptr)
+    if (_presentQueue != nullptr)
         *_presentQueue = m_Device.getQueue(QueuIndex, 1);
+
+    if (_transferQueue != nullptr)
+        *_transferQueue = m_Device.getQueue(QueuIndex, 2);
 }
 
 Vulkan::VulkanDevice::~VulkanDevice()

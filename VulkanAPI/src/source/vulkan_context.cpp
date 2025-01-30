@@ -23,7 +23,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate, rhiContextCreateInfo.WindowHandle);
     
     physicalDevices = std::make_shared<VulkanPhysicalDevices>(*rhiContextCreateInfo.physicalDevicesCreateInfo, &extensionToEnable);
-    rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &graphicsQueue, &presentQueue);
+    rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &graphicsQueue, &presentQueue, &transferQueu);
 
     GLFWwindow* window = const_cast<GLFWwindow*>(static_cast<const GLFWwindow*>(rhiContextCreateInfo.WindowHandle));
 
@@ -37,7 +37,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
 
     CreateMemoryAllocator();
     
-    CreateCommandPool();
+    CreateCommandPools();
 }
 
 VulkanContext::~VulkanContext()
@@ -46,6 +46,8 @@ VulkanContext::~VulkanContext()
 
     device->GetDevice().destroyCommandPool(commandPool);    
     commandPool = nullptr;
+    device->GetDevice().destroyCommandPool(transferCommandPool);    
+    transferCommandPool = nullptr;
 }
 
 std::shared_ptr<VulkanDevice> VulkanContext::GetDevice()
@@ -89,7 +91,7 @@ void VulkanContext::CreateMemoryAllocator()
     gpuAllocator = std::make_shared<Vulkan::VulkanGpuAllocator>(createInfo);
 }
 
-void VulkanContext::CreateCommandPool()
+void VulkanContext::CreateCommandPools()
 {
     const std::vector<QueueFamilyIndices>& queueFamilyIndices = GetPhysicalDevices()->GetQueuesFamilies();
     auto device = GetDevice();
@@ -100,4 +102,8 @@ void VulkanContext::CreateCommandPool()
     commandPoolCreateInfo.queueFamilyIndex = 0;
     
     commandPool = device->GetDevice().createCommandPool(commandPoolCreateInfo);
+    
+    commandPoolCreateInfo.flags = {};
+    transferCommandPool = device->GetDevice().createCommandPool(commandPoolCreateInfo);
+
 }

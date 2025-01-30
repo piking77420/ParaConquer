@@ -3,27 +3,84 @@
 
 #include "vulkan_gpu_allocator.hpp"
 
+#include "helper_functions.hpp"
 #include "rhi_vulkan_parser.hpp"
+#include "vulkan_context.hpp"
+#include "vulkan_device.hpp"
+#include "low_renderer/rhi.hpp"
 
 
 bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
 {
-    
+    // TO DO CLEAN UP 
     vk::BufferCreateInfo vbufferCreateInfo{};
-    vbufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
-    vbufferCreateInfo.size = _createInfo.dataSize;
-    vbufferCreateInfo.usage = RhiToBufferUsage(_createInfo.usage);
-    vbufferCreateInfo.sharingMode = vk::SharingMode::eExclusive;
+    try
+    {
+        vbufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
+        vbufferCreateInfo.size = _createInfo.dataSize;
+        // TO DO NOT BE HARDCODED
+        vbufferCreateInfo.usage = RhiToBufferUsage(_createInfo.usage) | vk::BufferUsageFlagBits::eTransferDst;
+        vbufferCreateInfo.sharingMode = vk::SharingMode::eExclusive;
+    }
+    catch (...)
+    {
+        return false;
+    }
+   
 
     VmaAllocationCreateInfo vmaallocInfo = {};
-    vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vmaallocInfo.usage = GetVmaMemoryUsage(_createInfo.usage);
     
     std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::make_shared<VulkanBufferHandle>();
-
+    // Create Client Buffer
     VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&vbufferCreateInfo), &vmaallocInfo,
     &vulkanBufferPtr->buffer,
     &vulkanBufferPtr->allocation,
     nullptr)));
+
+    
+    switch (_createInfo.usage)
+    {
+    case PC_CORE::BufferUsage::VertexBuffer:
+    case PC_CORE::BufferUsage::IndexBuffer:
+        {
+            
+            VulkanBufferHandle stagginBuffer;
+            VmaAllocationCreateInfo allocationInfo = {};
+            allocationInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+            
+            vk::BufferCreateInfo vkStaginBufferCreateInfo{};
+            vkStaginBufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
+            vkStaginBufferCreateInfo.size = _createInfo.dataSize;
+            vkStaginBufferCreateInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
+            vkStaginBufferCreateInfo.sharingMode = vk::SharingMode::eExclusive;
+
+            VK_CALL(
+                static_cast<vk::Result>(vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&
+                        vkStaginBufferCreateInfo), &allocationInfo,
+                    &stagginBuffer.buffer,
+                    &stagginBuffer.allocation,
+                    nullptr)));
+
+            void* data = nullptr;
+            vmaMapMemory(m_allocator, stagginBuffer.allocation, &data);
+            memcpy(data, _createInfo.data, _createInfo.dataSize);
+            CopyBuffer(stagginBuffer.buffer, vulkanBufferPtr->buffer, vkStaginBufferCreateInfo.size);
+            vmaUnmapMemory(m_allocator, stagginBuffer.allocation);
+
+            vmaDestroyBuffer(m_allocator,stagginBuffer.buffer, stagginBuffer.allocation);
+        }
+        break;
+    case PC_CORE::BufferUsage::UniformBuffer:
+        break;
+    case PC_CORE::BufferUsage::ShaderStorageBuffer:
+        break;
+    case PC_CORE::BufferUsage::Count:
+    default:
+        throw std::invalid_argument("Invalid buffer usage");
+    }
+
+
 
     *_bufferptr = vulkanBufferPtr;
     
@@ -78,23 +135,44 @@ Vulkan::VulkanGpuAllocator::~VulkanGpuAllocator()
     vmaDestroyAllocator(m_allocator);
 }
 
-bool Vulkan::VulkanGpuAllocator::CreateBufferInternal(vk::BufferCreateInfo& _createInfo,
-    std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
+VmaMemoryUsage Vulkan::VulkanGpuAllocator::GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage)
 {
-
-    VulkanBufferHandle vulkanBufferHandle{};
-
-    
-    switch (_createInfo.usage)
+    switch (bufferUsage)
     {
     case PC_CORE::BufferUsage::VertexBuffer:
     case PC_CORE::BufferUsage::IndexBuffer:
-        VmaAllocationCreateInfo staaginBufferAllcoationCreateInfo = {};
-        staaginBufferAllcoationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&_createInfo), &staaginBufferAllcoationCreateInfo, &vulkanBufferHandle.buffer, &vulkanBufferHandle.allocation, nullptr);
-
-        
+        return VMA_MEMORY_USAGE_GPU_ONLY;
+    case PC_CORE::BufferUsage::UniformBuffer:
+        return VMA_MEMORY_USAGE_CPU_TO_GPU;
+    case PC_CORE::BufferUsage::ShaderStorageBuffer:
+        return static_cast<VmaMemoryUsage>(VMA_MEMORY_USAGE_CPU_TO_GPU | VMA_MEMORY_USAGE_GPU_TO_CPU);
     case PC_CORE::BufferUsage::Count:
         break;
+    default: ;
     }
 }
+
+void Vulkan::VulkanGpuAllocator::CopyBuffer(vk::Buffer _src, vk::Buffer _dst, vk::DeviceSize _size)
+{
+    VulkanContext& context = *reinterpret_cast<VulkanContext*>(PC_CORE::Rhi::GetRhiContext());
+
+    SingleCommandBeginInfo singleCommandBeginInfo =
+        {
+        .device = context.GetDevice()->GetDevice(),
+        .commandPool = context.transferCommandPool,
+        .queue = context.transferQueu
+        };
+    
+    vk::CommandBuffer copyCommand = BeginSingleTimeCommand(singleCommandBeginInfo);
+
+    vk::BufferCopy copyRegion = {};
+    copyRegion.srcOffset = 0;
+    copyRegion.dstOffset = 0;
+    copyRegion.size = _size;
+    
+    copyCommand.copyBuffer(_src, _dst, copyRegion);
+
+    EndSingleTimeCommand(copyCommand, singleCommandBeginInfo);
+    
+}
+

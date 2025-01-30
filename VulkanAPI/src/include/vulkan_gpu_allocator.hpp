@@ -23,7 +23,9 @@ namespace Vulkan
         ~VulkanGpuAllocator();
 
     private:
-        bool CreateBufferInternal(vk::BufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr);
+        static VmaMemoryUsage GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage);
+
+        void CopyBuffer(vk::Buffer _src, vk::Buffer _dst, vk::DeviceSize _size);
         
         VmaAllocator m_allocator;
     };

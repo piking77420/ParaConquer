@@ -16,6 +16,7 @@ PC_CORE::VertexBuffer::VertexBuffer(const Vertex* _vertices, uint32_t _nbr) :  m
         PC_LOGERROR("Failed to create vertex buffer");
         return;
     }
+    /*
 
     if (!Rhi::GetRhiContext()->gpuAllocator->MapBuffer(m_GpuHandle, &m_data))
     {
@@ -29,5 +30,5 @@ PC_CORE::VertexBuffer::VertexBuffer(const Vertex* _vertices, uint32_t _nbr) :  m
     {
         PC_LOGERROR("Failed to map vertex buffer");
         return;
-    }
+    }*/
 }

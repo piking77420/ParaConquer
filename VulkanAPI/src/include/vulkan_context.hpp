@@ -13,12 +13,15 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-        
         vk::Queue graphicsQueue;
 
         vk::Queue presentQueue;
         
+        vk::Queue transferQueu;
+        
         vk::CommandPool commandPool = VK_NULL_HANDLE;
+
+        vk::CommandPool transferCommandPool = VK_NULL_HANDLE;
         
         VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 
@@ -36,10 +39,9 @@ namespace Vulkan
         VULKAN_API static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
     
     private:
-
         VULKAN_API void CreateMemoryAllocator();
         
-        VULKAN_API void CreateCommandPool();
+        VULKAN_API void CreateCommandPools();
 
         VULKAN_API void WaitIdleInstance() override;
     };
