@@ -4,6 +4,7 @@
 
 #include "core_header.hpp"
 #include "frame_buffer.hpp"
+#include "index_buffer.hpp"
 #include "rhi_render_pass.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "resources/shader_program.h"
@@ -74,7 +75,11 @@ public:
 
     PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) = 0;
 
+    PC_CORE_API virtual void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset, size_t _firstInstance) = 0;
+
     PC_CORE_API virtual void BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
+
+    PC_CORE_API virtual void BindIndexBuffer(const IndexBuffer& _indexBuffer, size_t _offset) = 0;
 
 protected:
     CommandPoolFamily m_CommandPoolFamily;

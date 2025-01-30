@@ -1162,3 +1162,17 @@ vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
     }
 }
 
+vk::IndexType Vulkan::RhiToIndexType(PC_CORE::IndexFormat _format)
+{
+    switch (_format)
+    {
+    case PC_CORE::IndexFormat::Uiunt8:
+        return vk::IndexType::eUint8;
+    case PC_CORE::IndexFormat::Uint16:
+        return vk::IndexType::eUint16;
+    case PC_CORE::IndexFormat::Uint32:
+        return vk::IndexType::eUint32;
+    default: throw std::runtime_error("Unknown IndexType");
+    }
+}
+

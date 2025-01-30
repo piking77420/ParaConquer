@@ -79,6 +79,26 @@ std::vector<char> ShaderSource::GetShaderSourceFile()
 }
 
 
+void ShaderSource::SerializeModule(std::vector<char>* _spvCode)
+{
+    std::string filePath = SHADER_CACHE_PATH + name + "_spv_reflect" + format;
+    std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
+
+    if (!f.is_open())
+    {
+        PC_LOGERROR("Failed to open file SerializeModule");
+        return;
+    }
+
+   // auto reflectedModuke = GetReflectResult(_spvCode);
+
+    //f << reflectedModuke;
+
+    f.close();
+    
+}
+
+
 bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
 {
     std::vector<char> sourceCode = GetShaderSourceFile();
@@ -157,9 +177,27 @@ bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
     return true;
 }
 
+/*
+SpvReflectShaderModule ShaderSource::GetReflectResult(std::vector<char>* _buffer)
+{
+    SpvReflectShaderModule module;
+    spvReflectCreateShaderModule(_buffer->size(), _buffer->data(),&module );
+    return  module;
+}
 
+SpvReflectShaderModule ShaderSource::GetReflectResult()
+{
+    std::vector<char> sourceSpriv;
 
-
+    if (!GetAsSpriv(&sourceSpriv))
+    {
+        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
+        return {};
+    }
+    
+    return GetReflectResult(&sourceSpriv);
+}
+*/
 
 void ShaderSource::WriteFile(const fs::path& folder)
 {
@@ -189,6 +227,8 @@ void ShaderSource::CompileToSpriv()
     f.write(sourceSpriv.data(), sourceSpriv.size());
 
     f.close();
+
+    SerializeModule(&sourceSpriv);
 }
 
 ShaderSource::~ShaderSource()
@@ -248,4 +288,7 @@ std::vector<char> ShaderSource::IncludePath(const std::vector<char>& source, con
     // Convert the result back to std::vector<char>
     return std::vector(sourceWithoutInclude.begin(), sourceWithoutInclude.end());
 }
+
+
+
 

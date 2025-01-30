@@ -4,8 +4,6 @@
 #include "resources/resource.hpp"
 #include "low_renderer/rhi_typedef.h"
 
-
-
 BEGIN_PCCORE
 
 
@@ -22,6 +20,10 @@ public:
 
     bool GetAsSpriv(std::vector<char>* _buffer);
 
+    //SpvReflectShaderModule GetReflectResult(std::vector<char>* _buffer);
+
+    //SpvReflectShaderModule GetReflectResult();
+
 private:
     ShaderStageType m_ShaderType;
     
@@ -29,6 +31,7 @@ private:
 
     std::vector<char> GetShaderSourceFile();
 
+    void SerializeModule(std::vector<char>* _spvCode);
 };
 
 END_PCCORE

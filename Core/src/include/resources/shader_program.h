@@ -16,7 +16,7 @@ BEGIN_PCCORE
     protected:
         ProgramShaderCreateInfo m_ProgramShaderCreateInfo;
 
-    
+        
     };
 
 END_PCCORE

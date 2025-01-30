@@ -8,7 +8,7 @@ namespace Vulkan
     class VulkanGpuAllocator : public PC_CORE::GpuAllocator
     {
     public:
-        bool CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) override;
+        bool CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) override;
         
         bool DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) override;
 
@@ -24,6 +24,8 @@ namespace Vulkan
 
     private:
         static VmaMemoryUsage GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage);
+
+        static vk::BufferUsageFlags GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsage bufferUsage);
 
         void CopyBuffer(vk::Buffer _src, vk::Buffer _dst, vk::DeviceSize _size);
         

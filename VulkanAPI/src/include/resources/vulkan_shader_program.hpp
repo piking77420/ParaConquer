@@ -54,6 +54,8 @@ namespace Vulkan
             std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
             , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions);
 
+
+       
     }; 
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "low_renderer/vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
+#include "low_renderer/index_buffer.hpp"
 #include "low_renderer/rhi_context.hpp"
 #include "resources/shader_program.h"
 
@@ -29,6 +30,10 @@ private:
     std::shared_ptr<PC_CORE::CommandList> m_CommandList;
 
     std::shared_ptr<PC_CORE::VertexBuffer> m_VertexBuffer;
+
+    std::shared_ptr<PC_CORE::IndexBuffer> m_IndexBuffer;
+
+    SceneBufferGPU sceneBufferGPU;
 };
 
 END_PCCORE

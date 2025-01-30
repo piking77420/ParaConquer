@@ -25,6 +25,7 @@ BEGIN_PCCORE
 
     struct ALIGNAS_16 SceneBufferGPU
     {
+        Tbx::Matrix4x4f model;
         Tbx::Matrix4x4f view;
         Tbx::Matrix4x4f proj;
         float time;
@@ -381,6 +382,13 @@ BEGIN_PCCORE
     };
 
 #pragma endregion
+
+enum class IndexFormat
+{
+    Uiunt8,
+    Uint16,
+    Uint32
+};
 
 #pragma region Image
 

@@ -9,7 +9,7 @@ BEGIN_PCCORE
 class GpuAllocator
 {
 public:
-    virtual bool CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<GpuBufferHandle>* _bufferptr) = 0;
+    virtual bool CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<GpuBufferHandle>* _bufferptr) = 0;
         
     virtual bool DestroyBuffer(std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr) = 0;
     

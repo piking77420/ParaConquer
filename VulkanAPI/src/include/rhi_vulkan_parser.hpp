@@ -39,5 +39,7 @@ namespace Vulkan
     vk::CullModeFlags RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit);
 
     vk::BufferUsageFlags RhiToBufferUsage(PC_CORE::BufferUsage _usage);
+
+    vk::IndexType RhiToIndexType(PC_CORE::IndexFormat _format);
 }
 

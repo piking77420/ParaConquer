@@ -24,8 +24,6 @@ public:
 
 private:
     size_t m_NbrOfVerticies = 0;
-
-    void* m_data = nullptr;
 };
 
 END_PCCORE

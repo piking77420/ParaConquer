@@ -82,6 +82,7 @@
     <ClInclude Include="src\include\low_renderer\gpu_allocator.hpp" />
     <ClInclude Include="src\include\low_renderer\gpu_buffer.hpp" />
     <ClInclude Include="src\include\low_renderer\gpu_buffer_handle.hpp" />
+    <ClInclude Include="src\include\low_renderer\index_buffer.hpp" />
     <ClInclude Include="src\include\low_renderer\physical_devices.hpp" />
     <ClInclude Include="src\include\low_renderer\render_instance.hpp" />
     <ClInclude Include="src\include\low_renderer\rhi.hpp" />
@@ -129,6 +130,7 @@
     <ClCompile Include="src\source\low_renderer\gpu_allocator.cpp" />
     <ClCompile Include="src\source\low_renderer\gpu_buffer.cpp" />
     <ClCompile Include="src\source\low_renderer\gpu_buffer_handle.cpp" />
+    <ClCompile Include="src\source\low_renderer\index_buffer.cpp" />
     <ClCompile Include="src\source\low_renderer\physical_devices.cpp" />
     <ClCompile Include="src\source\low_renderer\render_instance.cpp" />
     <ClCompile Include="src\source\low_renderer\rhi.cpp" />

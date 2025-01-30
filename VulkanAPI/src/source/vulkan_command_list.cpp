@@ -1,5 +1,6 @@
 ﻿#include "vulkan_command_list.hpp"
 
+#include "rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
@@ -132,8 +133,14 @@ void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCo
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].draw(_vertexCount, _instanceCount, _firstVertex, _firstInstance);
 }
 
+void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex,
+    int32_t _vertexOffset, size_t _firstInstance)
+{
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount), static_cast<uint32_t>(_instanceCount), static_cast<uint32_t>(_firstIndex), _vertexOffset, static_cast<uint32_t>(_firstInstance));
+}
+
 void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding,
-    uint32_t _bindingCount)
+                                                 uint32_t _bindingCount)
 {
 
     std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_vertexBuffer.GetHandle()); 
@@ -142,6 +149,16 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _v
     
     
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindVertexBuffers(_firstBinding, _bindingCount, &buffer, offsets);
+}
+
+void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _indexBuffer, size_t _offset)
+
+{   std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_indexBuffer.GetHandle()); 
+    vk::Buffer buffer = vulkanBufferHandle->buffer;
+
+    const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());
+    
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindIndexBuffer(buffer, static_cast<uint32_t>(_offset) , indexType);
 }
 
 

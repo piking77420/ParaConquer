@@ -4,14 +4,22 @@
 #include "low_renderer/vertex.hpp"
 #include "resources/resource_manager.hpp"
 #include <thread>
+#include "time/core_time.hpp"
+#include "math/matrix_transformation.hpp"
 
 using namespace PC_CORE;
 
 const std::vector<Vertex> vertices = {
-   {{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {0.5f, 0.0f}}, 
-   {{0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, 
-   {{-0.5f,  0.5f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}} 
+   {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {0.5f, 0.0f}},
+   {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
+   {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+   {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
+
+const std::vector<uint32_t> indices = {
+   0, 1, 2, 2, 3, 0
+};
+
 void Renderer::Init()
 {
     m_RhiContext = Rhi::GetRhiContext();
@@ -68,7 +76,8 @@ void Renderer::Init()
    m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
 
    m_VertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), vertices.size());
-   
+   m_IndexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size());
+
 }
 
 bool Renderer::BeginDraw(Window* _window)
@@ -78,6 +87,11 @@ bool Renderer::BeginDraw(Window* _window)
 
 void Renderer::Render()
 {
+    sceneBufferGPU.time = PC_CORE::Time::GetTime();
+    sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
+
+    Tbx::Trs3D<float>(Tbx::Vector3f{}, Tbx::Vector3f{}, Tbx::Vector3f(1, 1, 1), &sceneBufferGPU.model);
+
     m_CommandList->Reset();
     m_CommandList->BeginRecordCommands();
 
@@ -106,11 +120,13 @@ void Renderer::Render()
       };
    m_CommandList->SetViewPort(viewportInfo);
 
-   m_CommandList->BindVertexBuffer(*m_VertexBuffer,0,1);
-   m_CommandList->Draw(static_cast<uint32_t>(m_VertexBuffer->GetNbrOfVerticies()), 1, 0, 0);
-   m_CommandList->EndRenderPass();
-   m_CommandList->EndRecordCommands();
+m_CommandList->BindVertexBuffer(*m_VertexBuffer,0,1);
+   m_CommandList->BindIndexBuffer(*m_IndexBuffer,0);
    
+   m_CommandList->DrawIndexed(m_IndexBuffer->GetIndexCount(), 1, 0, 0, 0);
+m_CommandList->EndRenderPass();
+m_CommandList->EndRecordCommands();
+
 }
 
 

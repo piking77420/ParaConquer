@@ -10,17 +10,15 @@
 #include "low_renderer/rhi.hpp"
 
 
-bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
+bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuBufferHandle>* _bufferptr)
 {
-    // TO DO CLEAN UP 
-    vk::BufferCreateInfo vbufferCreateInfo{};
+    vk::BufferCreateInfo vkClientBufferCreateInfo{};
     try
     {
-        vbufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
-        vbufferCreateInfo.size = _createInfo.dataSize;
-        // TO DO NOT BE HARDCODED
-        vbufferCreateInfo.usage = RhiToBufferUsage(_createInfo.usage) | vk::BufferUsageFlagBits::eTransferDst;
-        vbufferCreateInfo.sharingMode = vk::SharingMode::eExclusive;
+        vkClientBufferCreateInfo.sType = vk::StructureType::eBufferCreateInfo;
+        vkClientBufferCreateInfo.size = _createInfo.dataSize;
+        vkClientBufferCreateInfo.usage = GetVulkanBufferUsageFlagsClient(_createInfo.usage);
+        vkClientBufferCreateInfo.sharingMode = vk::SharingMode::eExclusive;
     }
     catch (...)
     {
@@ -33,7 +31,7 @@ bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCrea
     
     std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::make_shared<VulkanBufferHandle>();
     // Create Client Buffer
-    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&vbufferCreateInfo), &vmaallocInfo,
+    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(m_allocator, reinterpret_cast<VkBufferCreateInfo*>(&vkClientBufferCreateInfo), &vmaallocInfo,
     &vulkanBufferPtr->buffer,
     &vulkanBufferPtr->allocation,
     nullptr)));
@@ -72,7 +70,6 @@ bool Vulkan::VulkanGpuAllocator::CreateVulkanBuffer(const PC_CORE::GPUBufferCrea
         }
         break;
     case PC_CORE::BufferUsage::UniformBuffer:
-        break;
     case PC_CORE::BufferUsage::ShaderStorageBuffer:
         break;
     case PC_CORE::BufferUsage::Count:
@@ -150,6 +147,25 @@ VmaMemoryUsage Vulkan::VulkanGpuAllocator::GetVmaMemoryUsage(PC_CORE::BufferUsag
         break;
     default: ;
     }
+}
+
+vk::BufferUsageFlags Vulkan::VulkanGpuAllocator::GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsage bufferUsage)
+{
+    vk::BufferUsageFlags based = RhiToBufferUsage(bufferUsage);
+    
+    switch (bufferUsage)
+    {
+    case PC_CORE::BufferUsage::VertexBuffer:
+    case PC_CORE::BufferUsage::IndexBuffer:
+        return based | vk::BufferUsageFlagBits::eTransferDst;
+    case PC_CORE::BufferUsage::UniformBuffer:
+    case PC_CORE::BufferUsage::ShaderStorageBuffer:
+        return based;
+    case PC_CORE::BufferUsage::Count:
+        break;
+    default: ;
+    }
+
 }
 
 void Vulkan::VulkanGpuAllocator::CopyBuffer(vk::Buffer _src, vk::Buffer _dst, vk::DeviceSize _size)

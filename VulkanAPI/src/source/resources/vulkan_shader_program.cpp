@@ -4,6 +4,7 @@
 #include "vulkan_context.hpp"
 #include "vulkan_header.h"
 #include "vulkan_render_pass.hpp"
+#include <spriv_reflect/spirv_reflect.h>
 
 using namespace Vulkan;
 
@@ -51,6 +52,8 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 {
     std::vector<std::vector<char>> spvModuleSourceCode = std::vector<std::vector<char>>(m_ProgramShaderCreateInfo.shaderInfo.shaderSources.size());
 
+    std::vector<SpvReflectShaderModule> modulesReflected;
+
     for (size_t i = 0; i < spvModuleSourceCode.size(); i++)
     {
         const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo.shaderInfo.shaderSources[i];
@@ -62,6 +65,13 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
         std::string spvFile = SHADER_CACHE_PATH + shaderSource.second;
 
         spvModuleSourceCode[i] = ReadFile(spvFile);
+    }
+
+    for (size_t i = 0; i < spvModuleSourceCode.size(); i++)
+    {
+        SpvReflectShaderModule m;
+        spvReflectCreateShaderModule(spvModuleSourceCode[i].size(), spvModuleSourceCode[i].data(), &m);
+        modulesReflected.push_back(m);
     }
     
     const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(_programShaderCreateInfo.shaderInfo.shaderInfoData);
