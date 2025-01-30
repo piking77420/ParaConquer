@@ -187,15 +187,7 @@ void ShaderSource::CompileToSpriv()
     f.write(sourceSpriv.data(), sourceSpriv.size());
 
     f.close();
-
-    SerializeModule(&sourceSpriv);
 }
-
-ShaderSource::~ShaderSource()
-{
-    
-}
-
 
 std::vector<char> ShaderSource::IncludePath(const std::vector<char>& source, const std::filesystem::path& path)
 {

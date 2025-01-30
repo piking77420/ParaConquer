@@ -16,7 +16,7 @@ public:
 
     void CompileToSpriv();
     
-    ~ShaderSource() override;
+    ~ShaderSource() override = default;
 
     bool GetAsSpriv(std::vector<char>* _buffer);
 
