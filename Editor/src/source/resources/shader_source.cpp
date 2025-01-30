@@ -90,9 +90,9 @@ void ShaderSource::SerializeModule(std::vector<char>* _spvCode)
         return;
     }
 
-   // auto reflectedModuke = GetReflectResult(_spvCode);
+    auto reflectedModuke = GetReflectResult(_spvCode);
 
-    //f << reflectedModuke;
+    f << reflectedModuke;
 
     f.close();
     
@@ -177,27 +177,6 @@ bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
     return true;
 }
 
-/*
-SpvReflectShaderModule ShaderSource::GetReflectResult(std::vector<char>* _buffer)
-{
-    SpvReflectShaderModule module;
-    spvReflectCreateShaderModule(_buffer->size(), _buffer->data(),&module );
-    return  module;
-}
-
-SpvReflectShaderModule ShaderSource::GetReflectResult()
-{
-    std::vector<char> sourceSpriv;
-
-    if (!GetAsSpriv(&sourceSpriv))
-    {
-        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
-        return {};
-    }
-    
-    return GetReflectResult(&sourceSpriv);
-}
-*/
 
 void ShaderSource::WriteFile(const fs::path& folder)
 {

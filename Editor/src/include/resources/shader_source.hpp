@@ -20,10 +20,6 @@ public:
 
     bool GetAsSpriv(std::vector<char>* _buffer);
 
-    //SpvReflectShaderModule GetReflectResult(std::vector<char>* _buffer);
-
-    //SpvReflectShaderModule GetReflectResult();
-
 private:
     ShaderStageType m_ShaderType;
     
