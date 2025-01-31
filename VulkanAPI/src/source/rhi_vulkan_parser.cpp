@@ -10,13 +10,13 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
     {
     case PC_CORE::RHIFormat::UNDEFINED:
         return vk::Format::eUndefined;
-        
+
     case PC_CORE::RHIFormat::R4G4_UNORM_PACK8:
         return vk::Format::eR4G4UnormPack8;
-        
+
     case PC_CORE::RHIFormat::R4G4B4A4_UNORM_PACK16:
         return vk::Format::eR4G4UnormPack8;
-        
+
     case PC_CORE::RHIFormat::B4G4R4A4_UNORM_PACK16:
         return vk::Format::eB4G4R4A4UnormPack16;
 
@@ -847,8 +847,6 @@ vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
 }
 
 
-
-
 vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
 {
     switch (_vertexInputRate)
@@ -863,7 +861,6 @@ vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _
         throw std::invalid_argument("Invalid VertexInputRate");
     }
 }
-
 
 
 vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
@@ -887,7 +884,6 @@ vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
     }
     return vk::ImageType::e1D;
 }
-
 
 
 vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
@@ -927,7 +923,7 @@ vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
     case PC_CORE::Filter::CUBIC_EXT:
         return vk::Filter::eLinear;
     }
-    
+
     throw std::runtime_error("Unknown Filter");
 }
 
@@ -940,8 +936,8 @@ vk::SamplerMipmapMode Vulkan::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode 
     case PC_CORE::SamplerMipmapMode::LINEAR:
         return vk::SamplerMipmapMode::eLinear;
     }
-    
-    
+
+
     throw std::runtime_error("Unknown SamplerMipmapMode");
 }
 
@@ -960,7 +956,7 @@ vk::SamplerAddressMode Vulkan::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAdd
     case PC_CORE::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE:
         return vk::SamplerAddressMode::eMirrorClampToEdge;
     }
-    
+
     throw std::runtime_error("Unknown SamplerAddressMode");
 }
 
@@ -1034,7 +1030,7 @@ vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode
 vk::ImageAspectFlags Vulkan::RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect)
 {
     vk::ImageAspectFlags flags = {};
-    
+
     if (_textureAspect & PC_CORE::TextureAspect::COLOR)
     {
         flags |= vk::ImageAspectFlagBits::eColor;
@@ -1064,7 +1060,7 @@ vk::ImageAspectFlags Vulkan::RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect
         flags |= vk::ImageAspectFlagBits::ePlane2;
     }
 
-    
+
     if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_0_BIT_EXT)
     {
         flags |= vk::ImageAspectFlagBits::eMemoryPlane0EXT;
@@ -1121,7 +1117,7 @@ vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shade
     case PC_CORE::ShaderStageType::MESH:
         return vk::ShaderStageFlagBits::eMeshNV;
     case PC_CORE::ShaderStageType::COUNT:
-        default:
+    default:
         throw std::runtime_error("Unknown ShaderStageType");
     }
 }
@@ -1129,13 +1125,24 @@ vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shade
 vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
 {
     vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
-    
-    if (_cullModeFlagBit & PC_CORE::CullModeFlagBit::Back)
-        cullModeFlags |= vk::CullModeFlagBits::eBack;
-    if (_cullModeFlagBit & PC_CORE::CullModeFlagBit::Front)
+
+    switch (_cullModeFlagBit)
+    {
+    case PC_CORE::CullModeFlagBit::None:
+        break;
+    case PC_CORE::CullModeFlagBit::Front:
         cullModeFlags |= vk::CullModeFlagBits::eFront;
-    if (_cullModeFlagBit & PC_CORE::CullModeFlagBit::FrontAndBack)
+        break;
+    case PC_CORE::CullModeFlagBit::Back:
+        cullModeFlags |= vk::CullModeFlagBits::eBack;
+        break;
+    case PC_CORE::CullModeFlagBit::FrontAndBack:
         cullModeFlags |= vk::CullModeFlagBits::eFrontAndBack;
+        break;
+    case PC_CORE::CullModeFlagBit::Count:
+        break;
+    default: ;
+    }
     
     return cullModeFlags;
 }
@@ -1143,22 +1150,23 @@ vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBi
 vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
 {
     vk::BufferUsageFlags bufferUsageFlags = {};
-    
+
     switch (_usage)
     {
     case PC_CORE::BufferUsage::VertexBuffer:
         return bufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;
     case PC_CORE::BufferUsage::IndexBuffer:
         return bufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
-    case PC_CORE::BufferUsage::Count:
-        return bufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
-        break;
+
     case PC_CORE::BufferUsage::UniformBuffer:
-        return bufferUsageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
-        break;
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
+
     case PC_CORE::BufferUsage::ShaderStorageBuffer:
-        break;
-    default: ;
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
+
+    case PC_CORE::BufferUsage::Count:
+    default:
+        throw std::runtime_error("Unknown BufferUsage");
     }
 }
 
@@ -1175,4 +1183,3 @@ vk::IndexType Vulkan::RhiToIndexType(PC_CORE::IndexFormat _format)
     default: throw std::runtime_error("Unknown IndexType");
     }
 }
-

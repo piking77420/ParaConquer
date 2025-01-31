@@ -1,29 +1,47 @@
-﻿#include "resources/vulkan_shader_program.hpp"
+﻿#include <spriv_reflect/spirv_reflect.h>
+#include "resources/vulkan_shader_program.hpp"
 
+#include <map>
+
+#include "resources/vulkan_descriptor_sets.hpp"
 #include "rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
-#include "vulkan_header.h"
 #include "vulkan_render_pass.hpp"
-#include <spriv_reflect/spirv_reflect.h>
 
 using namespace Vulkan;
 
 
+
+
+
 VulkanShaderProgram::~VulkanShaderProgram()
 {
-    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice);
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
+
+    if (m_DescriptorSetLayout != VK_NULL_HANDLE)
+    {
+        device.destroyDescriptorSetLayout(m_DescriptorSetLayout);
+        m_DescriptorSetLayout = VK_NULL_HANDLE;
+    }
+
+    if (m_DescriptorPool != VK_NULL_HANDLE)
+    {
+        device.destroyDescriptorPool(m_DescriptorPool);
+        m_DescriptorPool = VK_NULL_HANDLE;
+    }
 
     if (m_PipelineLayout != VK_NULL_HANDLE)
     {
-        device->GetDevice().destroyPipelineLayout(m_PipelineLayout);
+        device.destroyPipelineLayout(m_PipelineLayout);
         m_PipelineLayout = VK_NULL_HANDLE;
     }
 
     if (m_Pipeline != VK_NULL_HANDLE)
     {
-        device->GetDevice().destroyPipeline(m_Pipeline);
+        device.destroyPipeline(m_Pipeline);
         m_Pipeline = VK_NULL_HANDLE;
     }
+    
 }
 
 vk::PipelineBindPoint VulkanShaderProgram::GetPipelineBindPoint() const
@@ -48,13 +66,83 @@ vk::Pipeline VulkanShaderProgram::GetPipeline() const
     return m_Pipeline;
 }
 
+vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
+{
+    return m_PipelineLayout;
+}
+
+void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets)
+{
+    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout);
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
+    VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets();
+    
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
+    descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
+    descriptorSetAllocateInfo.descriptorPool = m_DescriptorPool;
+    descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    descriptorSetAllocateInfo.pSetLayouts = layouts.data();
+    
+    VK_CALL(device.allocateDescriptorSets(&descriptorSetAllocateInfo, vulkanDescriptorSets->descriptorSets.data()));
+
+    *shaderProgramDescriptorSets = vulkanDescriptorSets;
+    m_DescriptorSetAllocCount++;
+}
+
+void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets)
+{
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
+    VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<VulkanDescriptorSets*>(*shaderProgramDescriptorSets);
+
+    device.freeDescriptorSets(m_DescriptorPool, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), vulkanDescriptorSets->descriptorSets.data());
+    
+    delete *shaderProgramDescriptorSets;
+    *shaderProgramDescriptorSets = nullptr;
+}
+
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : ShaderProgram(_programShaderCreateInfo)
 {
-    std::vector<std::vector<char>> spvModuleSourceCode = std::vector<std::vector<char>>(m_ProgramShaderCreateInfo.shaderInfo.shaderSources.size());
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo);
+    
+        
+    switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
+    {
+    case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
+        {
+            const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(_programShaderCreateInfo.shaderInfo.shaderInfoData);
+            CreatePipeLinePointGraphicsPipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
+        }
+        break;
+    case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+        break;
+    case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
+        break;
+    case PC_CORE::ShaderProgramPipelineType::COUT:
+        break;
+    default: ;
+    }
+    
+    for (auto& spvReflect : vulkanShaderProgramCreateContex.modulesReflected)
+        spvReflectDestroyShaderModule(&spvReflect);
+    
+    for (auto& vkShaderModule : vulkanShaderProgramCreateContex.vkShaderModules)
+        vulkanShaderProgramCreateContex.device.destroyShaderModule(vkShaderModule);
+}
 
-    std::vector<SpvReflectShaderModule> modulesReflected;
 
-    for (size_t i = 0; i < spvModuleSourceCode.size(); i++)
+VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(
+    const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo)
+{
+    const  size_t shaderStageCount = _programShaderCreateInfo.shaderInfo.shaderSources.size();
+
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex;
+    vulkanShaderProgramCreateContex.device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
+    vulkanShaderProgramCreateContex.spvModuleSourceCode = std::vector<std::vector<char>>(shaderStageCount);
+    vulkanShaderProgramCreateContex.modulesReflected = std::vector<SpvReflectShaderModule>(shaderStageCount);
+    vulkanShaderProgramCreateContex.vkShaderModules = std::vector<vk::ShaderModule>(shaderStageCount);
+    vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos = std::vector<vk::PipelineShaderStageCreateInfo>(shaderStageCount);
+
+    for (size_t i = 0; i < shaderStageCount; i++)
     {
         const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo.shaderInfo.shaderSources[i];
         const char* format = nullptr;
@@ -64,46 +152,46 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
          }
         std::string spvFile = SHADER_CACHE_PATH + shaderSource.second;
 
-        spvModuleSourceCode[i] = ReadFile(spvFile);
+        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = ReadFile(spvFile);
     }
 
-    for (size_t i = 0; i < spvModuleSourceCode.size(); i++)
+    for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)
     {
-        SpvReflectShaderModule m;
-        spvReflectCreateShaderModule(spvModuleSourceCode[i].size(), spvModuleSourceCode[i].data(), &m);
-        modulesReflected.push_back(m);
+        spvReflectCreateShaderModule(vulkanShaderProgramCreateContex.spvModuleSourceCode[i].size(), vulkanShaderProgramCreateContex.spvModuleSourceCode[i].data(), &vulkanShaderProgramCreateContex.modulesReflected[i]);
     }
     
-    const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(_programShaderCreateInfo.shaderInfo.shaderInfoData);
-
-
-    std::vector<vk::ShaderModule> vkShaderModules(spvModuleSourceCode.size());
-    std::vector<vk::PipelineShaderStageCreateInfo> PipelineShaderStageCreateInfos(vkShaderModules.size());
+    // Reflection Start
+    ParseSpvRelfection(vulkanShaderProgramCreateContex);
     
-    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice);
-
     // Create Modules
-    for (size_t i = 0; i < spvModuleSourceCode.size(); i++)
+    for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)
     {
         vk::ShaderModuleCreateInfo createInfo = {};
         createInfo.sType = vk::StructureType::eShaderModuleCreateInfo;
-        createInfo.codeSize = spvModuleSourceCode[i].size();
-        createInfo.pCode = reinterpret_cast<uint32_t*>(spvModuleSourceCode[i].data());
+        createInfo.codeSize = vulkanShaderProgramCreateContex.spvModuleSourceCode[i].size();
+        createInfo.pCode = reinterpret_cast<uint32_t*>(vulkanShaderProgramCreateContex.spvModuleSourceCode[i].data());
         
-        VK_CALL(device->GetDevice().createShaderModule(&createInfo, nullptr, &vkShaderModules[i]));
+        VK_CALL(vulkanShaderProgramCreateContex.device.createShaderModule(&createInfo, nullptr, &vulkanShaderProgramCreateContex.vkShaderModules[i]));
     }
 
     // CreatePipelineShaderStage 
-
-    for (size_t i = 0; i < PipelineShaderStageCreateInfos.size(); i++)
+    for (size_t i = 0; i < vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size(); i++)
     {
-        PipelineShaderStageCreateInfos[i].sType = vk::StructureType::ePipelineShaderStageCreateInfo;
-        PipelineShaderStageCreateInfos[i].stage = RhiToShaderStage(_programShaderCreateInfo.shaderInfo.shaderSources[i].first);
-        PipelineShaderStageCreateInfos[i].module = vkShaderModules[i];
-        PipelineShaderStageCreateInfos[i].pName = "main";
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType = vk::StructureType::ePipelineShaderStageCreateInfo;
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = RhiToShaderStage(_programShaderCreateInfo.shaderInfo.shaderSources[i].first);
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.vkShaderModules[i];
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.modulesReflected[i].entry_point_name;
     }
+
     
-    
+    return vulkanShaderProgramCreateContex;
+}
+
+
+
+void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo)
+{
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice);
 
     vk::PipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
@@ -113,7 +201,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
     // VertexInput
     std::vector<vk::VertexInputBindingDescription> vertexInputBindingDescriptions;
     std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions;
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo = ParseVertexInputState(shaderGraphicPointInfo, &vertexInputBindingDescriptions, &vertexInputAttributeDescriptions);
+    vk::PipelineVertexInputStateCreateInfo vertexInputInfo = ParseVertexInputState(_shaderGraphicPointInfo, &vertexInputBindingDescriptions, &vertexInputAttributeDescriptions);
     
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo;
@@ -142,7 +230,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 
     vk::PipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
-    ParseRasterizer(&rasterizer, shaderGraphicPointInfo.rasterizerInfo);
+    ParseRasterizer(&rasterizer, _shaderGraphicPointInfo.rasterizerInfo);
     
     vk::PipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
@@ -163,17 +251,17 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 
     vk::PipelineLayoutCreateInfo  pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 1; // Optional
+    pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout; // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pushConstantRanges.size()); // Optional
+    pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
-   m_PipelineLayout = device->GetDevice().createPipelineLayout(pipelineLayoutInfo);
+    m_PipelineLayout = device->GetDevice().createPipelineLayout(pipelineLayoutInfo);
     
     vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{};
     graphicsPipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
-    graphicsPipelineInfo.stageCount = static_cast<uint32_t>(spvModuleSourceCode.size());
-    graphicsPipelineInfo.pStages = PipelineShaderStageCreateInfos.data();
+    graphicsPipelineInfo.stageCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size());
+    graphicsPipelineInfo.pStages = _vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.data();
     graphicsPipelineInfo.pVertexInputState = &vertexInputInfo;
     graphicsPipelineInfo.pInputAssemblyState = &inputAssembly;
     graphicsPipelineInfo.pViewportState = &viewportState;
@@ -188,14 +276,82 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 
     auto result = device->GetDevice().createGraphicsPipeline(nullptr, graphicsPipelineInfo);
     m_Pipeline = result.value;
-    
-    for (size_t i = 0; i < spvModuleSourceCode.size(); i++)
-    {
-        device->GetDevice().destroyShaderModule(vkShaderModules[i]);
-    }
-        
-    
+}
+#pragma region ParseRegion
 
+void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
+{
+    std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
+    
+    std::vector<vk::DescriptorSetLayoutBinding>* descriptorSetLayouts = &_vulkanShaderProgramCreateContext.descriptorSetLayouts;
+    std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContext.pushConstantRanges;
+    
+    // Resize Vector
+    uint32_t descriptorSetLayoutBinding = 0;
+    uint32_t pushConstantRangeCount = 0;
+    for (auto& i : _vulkanShaderProgramCreateContext.modulesReflected)
+    {
+        descriptorSetLayoutBinding += i.descriptor_binding_count;
+        pushConstantRangeCount += i.push_constant_block_count;
+    }
+    descriptorSetLayouts->resize(descriptorSetLayoutBinding);
+    pushConstantRanges->resize(pushConstantRangeCount);
+
+    // DescriptorSetLayouts
+    for (size_t i = 0; i < descriptorSetLayouts->size(); i++)
+    {
+        vk::DescriptorSetLayoutBinding& descriptorSetLayout = descriptorSetLayouts->at(i);
+        SpvReflectDescriptorBinding& spvReflectDescriptorBinding = *_vulkanShaderProgramCreateContext.modulesReflected[i].descriptor_bindings;
+        
+        descriptorSetLayout.binding = spvReflectDescriptorBinding.binding;
+        descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvReflectDescriptorBinding.descriptor_type);
+        descriptorSetLayout.descriptorCount = spvReflectDescriptorBinding.count;
+        descriptorSetLayout.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
+        descriptorSetLayout.pImmutableSamplers = nullptr;// optional
+
+        descriptorTypeCount[descriptorSetLayout.descriptorType] += descriptorSetLayout.descriptorCount;
+    }
+
+    // PushRange
+    for (size_t i = 0; i < pushConstantRanges->size(); i++)
+    {
+        SpvReflectBlockVariable& spvReflectBlockVariablePushConstant = *_vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_blocks;
+        
+        vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(i);
+        pushConstantRange.offset = spvReflectBlockVariablePushConstant.offset;
+        pushConstantRange.size = spvReflectBlockVariablePushConstant.size;
+        pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
+    }
+
+    // DescriptoSet
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
+    descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayouts->size());
+    descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayouts->data();
+
+    m_DescriptorSetLayout = _vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+
+    // Descriptor Pool
+    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(descriptorTypeCount.size());
+
+    size_t i = 0;
+    for (auto it = descriptorTypeCount.begin(); it != descriptorTypeCount.end();)
+    {
+        vk::DescriptorPoolSize& descriptorPoolSize = descriptorPoolSizes[i];
+        descriptorPoolSize.type = it->first;
+        descriptorPoolSize.descriptorCount = it->second * static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        i++;
+        it++;
+    }
+    
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
+    descriptorPoolCreateInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo;
+    descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
+    descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+    descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
+    descriptorPoolCreateInfo.maxSets = MAX_ALLOC_DESCRIPTOR_SET;
+
+    m_DescriptorPool = _vulkanShaderProgramCreateContext.device.createDescriptorPool(descriptorPoolCreateInfo);
 }
 
 
@@ -301,3 +457,4 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputStat
 
     return returnVertexInputStateCreateInfo;
 }
+#pragma endregion ParseRegion 

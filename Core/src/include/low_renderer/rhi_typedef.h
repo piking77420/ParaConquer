@@ -586,9 +586,8 @@ enum class IndexFormat
         Front,
         Back,
         FrontAndBack,
+        Count
     };
-
-    ENUM_FLAGS(CullModeFlagBit)
 
     enum class FrontFace
     {

@@ -11,7 +11,7 @@ class VertexBuffer : public GpuBuffer
 public:
     DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
 
-    VertexBuffer(const Vertex* _vertices, uint32_t _nbr);
+    VertexBuffer(const Vertex* _vertices, uint32_t _size);
     
     VertexBuffer() = default;
     

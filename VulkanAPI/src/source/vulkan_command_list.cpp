@@ -6,6 +6,7 @@
 #include "vulkan_render_pass.hpp"
 #include "buffer/vulkan_buffer_handle.hpp"
 #include "low_renderer/rhi.hpp"
+#include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_shader_program.hpp"
 
 
@@ -101,6 +102,21 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 void Vulkan::VulkanCommandList::EndRenderPass()
 {
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].endRenderPass();
+}
+
+void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::ShaderProgram* _shaderProgram,
+    const PC_CORE::ShaderProgramDescriptorSets* _shaderProgramDescriptorSets, size_t _firstSet,
+    size_t _descriptorSetCount)
+{
+    const size_t currentFrame = PC_CORE::Rhi::GetFrameIndex();
+    
+    const VulkanShaderProgram* shaderProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram);
+    const VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSets*>(_shaderProgramDescriptorSets);
+    
+    m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram->GetPipelineBindPoint(),
+        shaderProgram->GetPipelineLayout(), static_cast<uint32_t>(_firstSet), _descriptorSetCount,
+        vulkanDescriptorSets->descriptorSets.data() + currentFrame,
+        0, nullptr);
 }
 
 void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::ShaderProgram* _shaderProgramm)

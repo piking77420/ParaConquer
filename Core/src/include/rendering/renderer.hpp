@@ -3,6 +3,7 @@
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/index_buffer.hpp"
 #include "low_renderer/rhi_context.hpp"
+#include "low_renderer/uniform_buffer.hpp"
 #include "resources/shader_program.h"
 
 BEGIN_PCCORE
@@ -32,6 +33,10 @@ private:
     std::shared_ptr<PC_CORE::VertexBuffer> m_VertexBuffer;
 
     std::shared_ptr<PC_CORE::IndexBuffer> m_IndexBuffer;
+    
+    ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
+
+    std::array<UniformBuffer,MAX_FRAMES_IN_FLIGHT> m_UniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
 };

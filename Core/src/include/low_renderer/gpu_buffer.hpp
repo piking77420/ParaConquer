@@ -32,7 +32,7 @@ public:
     {
         return m_GpuHandle;
     }
-    
+
 protected:
     std::shared_ptr<GpuBufferHandle> m_GpuHandle;
 };

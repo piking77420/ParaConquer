@@ -7,19 +7,17 @@ BEGIN_PCCORE
 class IndexBuffer : public GpuBuffer
 {
 public:
-
-
     DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
 
     IndexFormat GetIndexFormat() const;
 
     uint32_t GetIndexCount() const;
 
-    IndexBuffer(const uint32_t* _indices, size_t _count);
+    IndexBuffer(const uint32_t* _indices, size_t _size);
 
-    IndexBuffer(const uint16_t* _indices, size_t _count);
+    IndexBuffer(const uint16_t* _indices, size_t _size);
 
-    IndexBuffer(const uint8_t* _indices, size_t _count);
+    IndexBuffer(const uint8_t* _indices, size_t _size);
     
     IndexBuffer() = default;
 

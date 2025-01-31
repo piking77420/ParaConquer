@@ -12,12 +12,12 @@ uint32_t PC_CORE::IndexBuffer::GetIndexCount() const
     return m_IndexCount;
 }
 
-PC_CORE::IndexBuffer::IndexBuffer(const uint32_t* _indices, size_t _count) : m_IndexFormat(IndexFormat::Uint32) , m_IndexCount(_count)
+PC_CORE::IndexBuffer::IndexBuffer(const uint32_t* _indices, size_t _size) : m_IndexFormat(IndexFormat::Uint32) , m_IndexCount(_size / sizeof(uint32_t))
 {
     const GPUBufferCreateInfo info =
             {
         .data = _indices,
-        .dataSize = sizeof(uint32_t) * _count,
+        .dataSize = _size,
         .usage = BufferUsage::IndexBuffer
         };
 
@@ -31,12 +31,12 @@ PC_CORE::IndexBuffer::IndexBuffer(const uint32_t* _indices, size_t _count) : m_I
     
 }
 
-PC_CORE::IndexBuffer::IndexBuffer(const uint16_t* _indices, size_t _count) : m_IndexFormat(IndexFormat::Uint16) , m_IndexCount(_count)
+PC_CORE::IndexBuffer::IndexBuffer(const uint16_t* _indices, size_t _size) : m_IndexFormat(IndexFormat::Uint16) , m_IndexCount(_size / sizeof(uint16_t))
 {
     const GPUBufferCreateInfo info =
           {
         .data = _indices,
-        .dataSize = sizeof(uint16_t) * _count,
+        .dataSize = _size,
         .usage = BufferUsage::IndexBuffer
         };
 
@@ -47,12 +47,12 @@ PC_CORE::IndexBuffer::IndexBuffer(const uint16_t* _indices, size_t _count) : m_I
     }
 }
 
-PC_CORE::IndexBuffer::IndexBuffer(const uint8_t* _indices, size_t _count) : m_IndexFormat(IndexFormat::Uiunt8) , m_IndexCount(_count)
+PC_CORE::IndexBuffer::IndexBuffer(const uint8_t* _indices, size_t _size) : m_IndexFormat(IndexFormat::Uiunt8) , m_IndexCount(_size / sizeof(uint8_t))
 {
     const GPUBufferCreateInfo info =
       {
         .data = _indices,
-        .dataSize = sizeof(uint8_t) * _count,
+        .dataSize = _size,
         .usage = BufferUsage::IndexBuffer
         };
 

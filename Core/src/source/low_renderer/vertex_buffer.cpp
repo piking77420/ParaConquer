@@ -2,12 +2,12 @@
 
 #include "low_renderer/rhi.hpp"
 
-PC_CORE::VertexBuffer::VertexBuffer(const Vertex* _vertices, uint32_t _nbr) :  m_NbrOfVerticies(_nbr)
+PC_CORE::VertexBuffer::VertexBuffer(const Vertex* _vertices, uint32_t _size) :  m_NbrOfVerticies(_size / sizeof(Vertex))
 {
     const GPUBufferCreateInfo info =
         {
         .data = _vertices,
-        .dataSize = sizeof(Vertex) * _nbr,
+        .dataSize = _size,
         .usage = BufferUsage::VertexBuffer
         };
 

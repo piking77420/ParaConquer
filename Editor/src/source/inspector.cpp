@@ -43,7 +43,7 @@ void Inspector::Show()
 	ImGui::PushID("EntityNameInput");
 	ImGui::InputText("##EntityName", string->data(), string->size());
 	ImGui::PopID();
-
+	
 	for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
 	{
 		const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;

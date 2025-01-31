@@ -9,7 +9,7 @@ namespace Vulkan
 class VulkanCommandList : public PC_CORE::CommandList
 {
 public:
-    
+
     VULKAN_API VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
 
     VULKAN_API VulkanCommandList() = default;
@@ -25,6 +25,11 @@ public:
     VULKAN_API void BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo) override;
 
     VULKAN_API void EndRenderPass() override;
+
+    VULKAN_API void BindDescriptorSet(const PC_CORE::ShaderProgram* _shaderProgram,
+                                      const PC_CORE::ShaderProgramDescriptorSets* _shaderProgramDescriptorSets,
+                                      size_t _firstSet,
+                                      size_t _descriptorSetCount) override;
 
     VULKAN_API void BindProgram(const PC_CORE::ShaderProgram* _shaderProgramm) override;
 
