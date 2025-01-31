@@ -1,4 +1,6 @@
-﻿#include "editor.hpp"
+﻿#include <glslang/Include/glslang_c_interface.h>
+
+#include "editor.hpp"
 
 #include "asset_browser.hpp"
 #include "edit_world_window.hpp"
@@ -7,28 +9,52 @@
 #include "profiler.hpp"
 #include "scene_button.hpp"
 #include "world_view_window.hpp"
-#include "resources/material.hpp"
 #include "time/core_time.hpp"
 #include <resources/resource_manager.hpp>
 #include "rendering/light.hpp"
 #include "io/core_io.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
+#include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
 
+void Editor::InitThridPartLib()
+{
+    glslang_initialize_process();
+
+}
+
+void Editor::UnInitThridPartLib()
+{
+    glslang_finalize_process();
+}
+
+void Editor::CompileShader()
+{
+    ShaderSource* mainVertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+    ShaderSource* mainFrag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+
+    mainVertex->CompileToSpriv();
+    mainFrag->CompileToSpriv();
+}
+
 void Editor::Init()
 {
+    InitThridPartLib();
+    CompileShader();
+
     App::Init();
     InitEditorWindows();
     InitTestScene();
-    PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
+    //PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 
 
     RotateCube();
+    //PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
 }
 
 void Editor::Destroy()
@@ -38,11 +64,14 @@ void Editor::Destroy()
 
     PC_CORE::IMGUIContext::Destroy();
     App::Destroy();
+
+    UnInitThridPartLib();
 }
 
 
 void Editor::UpdateEditorWindows()
 {
+    /*
     dockSpace.BeginDockSpace();
     ShaderRecompileList();
     for (EditorWindow* editorWindow : m_EditorWindows)
@@ -51,11 +80,12 @@ void Editor::UpdateEditorWindows()
         editorWindow->Update();
         editorWindow->End();
     }
-    dockSpace.EndDockSpace();
+    dockSpace.EndDockSpace();*/
 }
 
 void Editor::ShaderRecompileList()
 {
+    /*
     static bool open = true;
     ImGui::Begin("Shader Recompile List");
 
@@ -73,8 +103,10 @@ void Editor::ShaderRecompileList()
     ResourceManager::ForEach<ShaderProgram>(lamba);
     
     ImGui::End();
-    
+    */
 }
+
+
 
 void Editor::InitTestScene()
 {
@@ -86,6 +118,7 @@ void Editor::InitTestScene()
     Material* material2 = ResourceManager::Create<Material>("material2", program);
     material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
 
+    /*
     const ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo =
@@ -154,28 +187,7 @@ void Editor::InitTestScene()
         
         mesh->mesh = ResourceManager::Get<Mesh>("suzanne.obj");
     }
-
-    
-    
-}
-
-#define CONST const
-
-void FuncParam(CONST Transform& t, CONST RigidBody& c , int value, float k)
-{
-    std::cout << World::GetWorld()->entityManager.GetEntityName(t.entityId) << " " << value << " " <<  k << '\n';
-}
-void Func(CONST Transform& t, CONST RigidBody& c)
-{
-    std::cout << World::GetWorld()->entityManager.GetEntityName(t.entityId)  << '\n';
-}
-
-void Editor::FuncMember(CONST Transform& t, CONST RigidBody& c)
-{
-    std::cout << World::GetWorld()->entityManager.GetEntityName(t.entityId)  << "Member " << window.GetWindowSize().x << " " <<
-        window.GetWindowSize().y <<'\n';
-
-    Editor& r = *this;
+    */
 }
 
 
@@ -206,21 +218,20 @@ void Editor::DestroyTestScene()
     world.entityManager.~EntityManager();
     m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
-    ResourceManager::Delete<Material>("material1");
-    ResourceManager::Delete<Material>("material2");
+    //ResourceManager::Delete<Material>("material1");
+    //ResourceManager::Delete<Material>("material2");
 }
 
 void Editor::Run()
 {
     while (!window.ShouldClose())
     {
+
         coreIo.PoolEvent();
         window.PoolEvents();
         PC_CORE::IMGUIContext::NewFrame();
         PC_CORE::Time::UpdateTime();
-        
-        renderer.BeginFrame();
-       
+
         UpdateEditorWindows();
 
         if (World::GetWorld())
@@ -229,14 +240,16 @@ void Editor::Run()
         for (EditorWindow* editorWindow : m_EditorWindows)
             editorWindow->Render();
         
+        if (!renderer.BeginDraw(&window))
+        {
+            continue;
+        }
         
-        
-        PC_CORE::IMGUIContext::Render(renderer.GetCommandSwapChainBuffer());
-        renderer.EndRender();
-        renderer.SwapBuffers();
+        renderer.Render();
+        renderer.SwapBuffers(&window);
     }
 
-    renderer.WaitDevice();
+    Rhi::GetRhiContext()->WaitIdle();
 }
 
 void Editor::InitEditorWindows()

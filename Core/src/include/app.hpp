@@ -1,14 +1,15 @@
 #pragma once
 
 #include "core_header.hpp"
-#include "rendering/renderer.hpp"
-#include "rendering/camera.hpp"
 #include "world/world.hpp"
 #include "scripting/scripting_lua.hpp"
 #include <core/physics_engine.h>
 
 #include "io/window.hpp"
 #include <io/core_io.hpp>
+
+#include "low_renderer/rhi.hpp"
+#include "rendering/renderer.hpp"
 
 
 BEGIN_PCCORE
@@ -20,9 +21,11 @@ public:
 	CoreIo coreIo;
 
 	Window window;
-	
-	Renderer renderer;
 
+	Rhi rhi;
+
+	Renderer renderer;
+	
 	ScriptingLua scriptingLua;
 
 	PhysicsWrapper physicsWrapper;

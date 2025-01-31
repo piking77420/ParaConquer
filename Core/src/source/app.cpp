@@ -4,7 +4,6 @@
 
 #include "log.hpp"
 #include "physics/sphere_collider.hpp"
-#include "rendering/light.hpp"
 #include "resources/resource_manager.hpp"
 
 #include "lua/lua.hpp"
@@ -22,11 +21,20 @@ void App::Init()
     PC_LOG("App Init")
     // Can init without any depedancies
     window = Window("Para Conquer Editor", LOGO_PATH_BLACK);
-    renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
+
+    const RenderHardwareInterfaceCreateInfo createInfo =
+        {
+        .GraphicsAPI = GraphicAPI::VULKAN,
+        .window = &window,
+        .appName = "Para Conquer Editor",
+        };
+    
+    rhi = Rhi(createInfo);
+    renderer.Init();
 
     // Need other init in order to init
     ResourceManager::InitPath();
-    renderer.InitRenderResources();
+    //renderer.InitRenderResources();
     Time::Init();
     
     world.LoadSkyBox();
@@ -34,11 +42,11 @@ void App::Init()
 
 void App::Destroy()
 {
-    PC_LOG("App Destroy")
 
     world.skybox.Destroy();
     ResourceManager::Destroy();
-    renderer.Destroy();
+    //renderer.Destroy();
+    PC_LOG("App Destroy")
 }
 
 App::App()
@@ -49,20 +57,17 @@ App::App()
 
 void App::Run()
 {
-    /*
-    VulkanViewport vulkanViewport;
-
-    while (!windowHandle.ShouldClose())
+    while (!window.ShouldClose())
     {
-        windowHandle.PoolEvents();
+        window.PoolEvents();
         PC_CORE::Time::UpdateTime();
-        HandleResize();
-        vulkanImgui.NewFrame();
-        MoveObject();
-        renderer.BeginFrame();
-        renderer.RenderViewPort(camera, vulkanViewport, world);
-        renderer.SwapBuffers();
-    } */  
+        //HandleResize();
+        //vulkanImgui.NewFrame();
+        //MoveObject();
+        renderer.BeginDraw(&window);
+        renderer.Render();
+        renderer.SwapBuffers(&window);
+    } 
 }
 
 void App::WorldLoop()

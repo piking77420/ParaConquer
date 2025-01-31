@@ -1,20 +1,15 @@
 ﻿#include "resources/resource_manager.hpp"
 
 #include "stb_image.h"
-#include "..\..\include\resources\shader_source.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
+
+
 
 using namespace PC_CORE;
 
 void ResourceManager::InitPath()
 {
-    ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-    ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
-
-    ResourceManager::Create<ShaderSource>("assets/shaders/wireframe.vert");
-    ResourceManager::Create<ShaderSource>("assets/shaders/wireframe.frag");
-
 
     ResourceManager::Create<Mesh>("assets/meshs/obj/rounded_cube.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/quad.obj");

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "resources/material.hpp"
 #include "resources/mesh.hpp"
 #include "ecs/ecs_front.h"
 
@@ -11,7 +10,7 @@ struct StaticMesh : public Component
 
     Mesh* mesh = nullptr;
 
-    MaterialInstance* materialInstance  = nullptr ;
+    //MaterialInstance* materialInstance  = nullptr ;
     
 };
 REFLECT(StaticMesh, Component)

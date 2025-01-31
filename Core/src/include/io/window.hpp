@@ -15,6 +15,8 @@ BEGIN_PCCORE
     public:
         PC_CORE_API static void FramebufferResizeCallback(GLFWwindow* _window, int width, int height);
 
+        bool resizeDirty = false;
+    
         PC_CORE_API Window& operator=(Window&& _other) noexcept;
 
         PC_CORE_API void HandleResize();
@@ -28,14 +30,14 @@ BEGIN_PCCORE
         PC_CORE_API Tbx::Vector2ui GetWindowSize() const;
     
         PC_CORE_API GLFWwindow* GetHandle();
-
+    
         PC_CORE_API Window(const char* _windowName, const char* _logoPath);
 
         PC_CORE_API Window() = default;
 
         PC_CORE_API ~Window();
+
     private:
-    
         GLFWwindow* m_Window = nullptr;
     
         Tbx::Vector2ui m_WindowSize = {1680, 1050};
@@ -48,7 +50,6 @@ BEGIN_PCCORE
         Tbx::Vector2ui oldSize;
         Tbx::Vector2ui monitorSize;
 
-        bool onResize = false;
 
         bool FullScreen = false;
 

@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     editor.Init();
     editor.Run();
     editor.Destroy();
-    
-    
+
+
     return 0;
 }

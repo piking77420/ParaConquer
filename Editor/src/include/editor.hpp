@@ -43,6 +43,13 @@ public:
     DockSpace dockSpace;
     
     PC_CORE::EntityId m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+
+private:
+    void InitThridPartLib();
+
+    void UnInitThridPartLib();
+
+    void CompileShader();
 };
 
 END_PCCORE

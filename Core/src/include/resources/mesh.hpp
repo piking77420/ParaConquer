@@ -2,9 +2,7 @@
 
 #include "core_header.hpp"
 #include "resource.hpp"
-#include "rendering/buffer/index_buffer.hpp"
-#include "rendering/buffer/vertex_buffer.hpp"
-#include "rendering/render_harware_interface/vertex.hpp"
+#include "low_renderer/vertex.hpp"
 
 BEGIN_PCCORE
 class Mesh : public Resource
@@ -26,9 +24,9 @@ public:
       };
 
 
-    VertexBuffer vertexBuffer;
+    //VertexBuffer vertexBuffer;
 
-    IndexBuffer indexBuffer;
+    //IndexBuffer indexBuffer;
 
     MeshFormat meshFormat;
     

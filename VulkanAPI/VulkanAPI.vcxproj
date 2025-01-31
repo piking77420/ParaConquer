@@ -19,11 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CoreIO\CoreIO.vcxproj">
-      <Project>{be47c81a-abd1-470d-9cd8-67173be47b41}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="src\externals\debug\glslang-default-resource-limitsd.lib" />
     <Content Include="src\externals\debug\glslang-default-resource-limitsd.pdb" />
     <Content Include="src\externals\debug\glslangd.lib" />
@@ -42,44 +37,40 @@
     <Content Include="src\externals\release\vulkan-1.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_layout.hpp" />
-    <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_pool.hpp" />
-    <ClInclude Include="src\include\back_end\rhi_vulkan_descriptor_write.hpp" />
-    <ClInclude Include="src\include\back_end\rhi_vulkan_render_pass.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_buffer.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_command_pool_function.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_image.hpp" />
-    <ClInclude Include="src\include\back_end\vulkan_object_wrapper.h" />
-    <ClInclude Include="src\include\back_end\vulkan_transition_image_layout.hpp" />
-    <ClInclude Include="src\include\framework.h" />
-    <ClInclude Include="src\include\front_end\vulkan_app.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_harware_wrapper.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_physical_devices.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_present_chain.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_shader_compiler.hpp" />
-    <ClInclude Include="src\include\front_end\vulkan_shader_manager.hpp" />
+    <ClInclude Include="src\externals\include\spriv_reflect\include\spirv\unified1\spirv.h" />
+    <ClInclude Include="src\externals\include\spriv_reflect\spirv_reflect.h" />
+    <ClInclude Include="src\include\buffer\vulkan_buffer_handle.hpp" />
+    <ClInclude Include="src\include\helper_functions.hpp" />
+    <ClInclude Include="src\include\resources\vulkan_descriptor_sets.hpp" />
+    <ClInclude Include="src\include\resources\vulkan_shader_program.hpp" />
     <ClInclude Include="src\include\rhi_vulkan_parser.hpp" />
+    <ClInclude Include="src\include\vulkan_command_list.hpp" />
+    <ClInclude Include="src\include\vulkan_context.hpp" />
+    <ClInclude Include="src\include\vulkan_device.hpp" />
+    <ClInclude Include="src\include\vulkan_frame_buffer.hpp" />
+    <ClInclude Include="src\include\vulkan_gpu_allocator.hpp" />
     <ClInclude Include="src\include\vulkan_header.h" />
-    <ClInclude Include="src\include\vulkan_typedef.h" />
+    <ClInclude Include="src\include\vulkan_instance.hpp" />
+    <ClInclude Include="src\include\vulkan_physical_devices.hpp" />
+    <ClInclude Include="src\include\vulkan_render_pass.hpp" />
+    <ClInclude Include="src\include\vulkan_swap_chain.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\source\back_end\rhi_vulkan_descriptor_layout.cpp" />
-    <ClCompile Include="src\source\back_end\rhi_vulkan_descriptor_pool.cpp" />
-    <ClCompile Include="src\source\back_end\rhi_vulkan_descriptor_write.cpp" />
-    <ClCompile Include="src\source\back_end\rhi_vulkan_render_pass.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_buffer.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_command_pool_function.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_image.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_object_wrapper.cpp" />
-    <ClCompile Include="src\source\back_end\vulkan_transition_image_layout.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_app.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_harware_wrapper.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_physical_devices.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_present_chain.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_shader_compiler.cpp" />
-    <ClCompile Include="src\source\front_end\vulkan_shader_manager.cpp" />
+    <ClCompile Include="src\externals\source\spriv_reflect\spirv_reflect.c" />
+    <ClCompile Include="src\source\buffer\vulkan_buffer_handle.cpp" />
+    <ClCompile Include="src\source\helper_functions.cpp" />
+    <ClCompile Include="src\source\resources\vulkan_descriptor_sets.cpp" />
+    <ClCompile Include="src\source\resources\vulkan_shader_program.cpp" />
     <ClCompile Include="src\source\rhi_vulkan_parser.cpp" />
-    <ClCompile Include="src\source\vulkan_typedef.cpp" />
+    <ClCompile Include="src\source\vulkan_command_list.cpp" />
+    <ClCompile Include="src\source\vulkan_context.cpp" />
+    <ClCompile Include="src\source\vulkan_device.cpp" />
+    <ClCompile Include="src\source\vulkan_frame_buffer.cpp" />
+    <ClCompile Include="src\source\vulkan_gpu_allocator.cpp" />
+    <ClCompile Include="src\source\vulkan_instance.cpp" />
+    <ClCompile Include="src\source\vulkan_physical_devices.cpp" />
+    <ClCompile Include="src\source\vulkan_render_pass.cpp" />
+    <ClCompile Include="src\source\vulkan_swap_chain.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -144,11 +135,11 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(WindowsSDK_IncludePath);$(ProjectDir)/src/externals/include;$(SolutionDir)Core\src\externals\include;$(SolutionDir)Core/src/include/rendering;$(SolutionDir)Core\src\include\rendering;$(SolutionDir)Core\src\include\rendering;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Include</IncludePath>
     <OutDir>$(OutDir)</OutDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -231,8 +222,8 @@
       <AdditionalLibraryDirectories>$(ProjectDir)src\externals\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-reflect-static.lib;glslangd.lib;glslang-default-resource-limitsd.lib;SPIRV-Toolsd.lib;SPIRV-Tools-optd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-cross-reflectd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\libs;$(VULKAN_SDK)\Lib</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -241,10 +232,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -263,10 +253,11 @@
       <AdditionalLibraryDirectories>$(ProjectDir)src\externals\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;glslang.lib;glslang-default-resource-limits.lib;spirv-reflect-static.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;MachineIndependent.lib;GenericCodeGen.lib;gmock.lib;SPVRemapper.lib;;spirv-reflect-static.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);vulkan-1.lib;spirv-cross-reflect.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VULKAN_SDK)\Lib;$(ProjectDir)src\externals\libs</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:libcmt</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>

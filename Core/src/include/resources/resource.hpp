@@ -15,6 +15,8 @@ class Resource
 {
 public:
     std::string name;
+
+    std::string nameWithFormat;
     
     std::string format;
 
@@ -37,18 +39,23 @@ public:
     PC_CORE_API void SetPath(const fs::path& _path);
 
     PC_CORE_API const std::string& GetName() const;
-
-    PC_CORE_API virtual std::vector<char> GetData() { return {}; };
     
-    PC_CORE_API virtual void WriteFile(const fs::path& path) {};
-
+    PC_CORE_API virtual void WriteFile(const fs::path& folder);
+    
     template <size_t Size>
     static bool IsFormatValid(const std::array<std::string,Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
+
+    template <typename T,size_t Size>
+    static bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut);
+
+
+    PC_CORE_API  static std::vector<char> ReadFile(const std::string& _filename);
 };
 
 template <size_t Size>
 bool Resource::IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
+
     for (size_t i = 0; i < _format.size(); i++)
     {
         if (_format[i] == _fileFormat)
@@ -59,6 +66,24 @@ bool Resource::IsFormatValid(const std::array<std::string, Size>& _format, const
     }
 
     _formatIndex = nullptr;
+    return false;
+}
+
+
+template <typename T,size_t Size>
+bool Resource::GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut)
+{
+
+    for (size_t i = 0; i < _format.size(); i++)
+    {
+        T v = static_cast<T>(i);
+
+        if (value == v)
+        {
+            *_formatOut = _format[i].c_str();
+            return true;
+        }
+    }
     return false;
 }
 
