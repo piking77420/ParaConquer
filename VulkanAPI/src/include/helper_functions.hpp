@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "buffer/vulkan_buffer_handle.hpp"
+#include "vulkan_header.h"
 
 namespace Vulkan
 {

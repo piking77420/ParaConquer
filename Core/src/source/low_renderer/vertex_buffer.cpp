@@ -11,7 +11,7 @@ PC_CORE::VertexBuffer::VertexBuffer(const Vertex* _vertices, uint32_t _size) :  
         .usage = BufferUsage::VertexBuffer
         };
 
-    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &m_GpuHandle))
+    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &handle))
     {
         PC_LOGERROR("Failed to create vertex buffer");
         return;

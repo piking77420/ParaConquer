@@ -4,8 +4,6 @@
 
 uint8_t* PC_CORE::FileLoader::LoadFile(char const* _filename, int* _x, int* _y, int* _comp, Channel _req_comp)
 {
-    
-
     return stbi_load(_filename, _x, _y, _comp, static_cast<int>(_req_comp));
 }
 

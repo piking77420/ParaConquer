@@ -204,12 +204,6 @@
     <ClInclude Include="src\include\log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\low_renderer\gpu_allocator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\include\low_renderer\gpu_buffer_handle.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\low_renderer\command_list.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -262,6 +256,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\low_renderer\index_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\low_renderer\gpu_handle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\low_renderer\uniform_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\low_renderer\descriptor_set.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\low_renderer\gpu_allocator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -410,12 +416,6 @@
     <ClCompile Include="src\source\low_renderer\frame_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\low_renderer\gpu_allocator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\low_renderer\gpu_buffer_handle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\low_renderer\physical_devices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -447,6 +447,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\low_renderer\index_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\gpu_handle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\uniform_buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\descriptor_set.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\low_renderer\gpu_allocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

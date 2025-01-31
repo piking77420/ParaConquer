@@ -415,29 +415,6 @@ enum class IndexFormat
     };
 
 
-    enum class TextureAspect
-    {
-        NONE = 1 << 0,
-        COLOR = 1 << 1,
-        DEPTH = 1 << 2,
-        STENCIL = 1 << 3,
-        METADATA_BIT = 1 << 4,
-        PLANE_0_BIT = 1 << 5,
-        PLANE_1_BIT = 1 << 6,
-        PLANE_2_BIT = 1 << 7,
-        MEMORY_PLANE_0_BIT_EXT = 1 << 8,
-        MEMORY_PLANE_1_BIT_EXT = 1 << 9,
-        MEMORY_PLANE_2_BIT_EXT = 1 << 10,
-        MEMORY_PLANE_3_BIT_EXT = 1 << 11,
-        PLANE_0_BIT_KHR = PLANE_0_BIT,
-        PLANE_1_BIT_KHR = PLANE_1_BIT,
-        PLANE_2_BIT_KHR = PLANE_2_BIT,
-        COUNT = 1 << 12
-    };
-
-    ENUM_FLAGS(TextureAspect)
-
-
     enum class ComponentSwizzle
     {
         COMPONENT_SWIZZLE_IDENTITY = 0,
@@ -458,23 +435,6 @@ enum class IndexFormat
         ComponentSwizzle a;
     };
 
-    struct ImageSubresourceRange
-    {
-        TextureAspect aspectMask;
-        uint32_t baseMipLevel;
-        uint32_t levelCount;
-        uint32_t baseArrayLayer;
-        uint32_t layerCount;
-    };
-
-    struct ImageViewCreateInfo
-    {
-        ImageType viewType;
-        RHIFormat format;
-        ComponentMapping components;
-        ImageSubresourceRange subresourceRange;
-    };
-
 
     struct CreateTextureInfo
     {
@@ -484,9 +444,10 @@ enum class IndexFormat
         uint32_t mipsLevels;
         ImageType imageType;
         RHIFormat format;
-        TextureAspect textureAspect;
+        Channel channel;
         bool GenerateMipMap = false;
         bool useAsAttachement = false;
+        void* data;
     };
 
 

@@ -121,6 +121,11 @@ void Rhi::NextFrame()
    
 }
 
+uint32_t Rhi::GetFrameIndex() noexcept
+{
+    return (m_Instance) ? m_Instance->m_CurrentFrame : 0;
+}
+
 
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {

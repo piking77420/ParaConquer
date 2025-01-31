@@ -45,12 +45,8 @@ public:
 
     PC_CORE_API static void NextFrame();
  
-    PC_CORE_API static inline uint32_t GetFrameIndex()
-    {
-           return m_Instance->m_CurrentFrame;
-    }
+    PC_CORE_API static __forceinline  uint32_t GetFrameIndex() noexcept;
 
-    
 private:
     PC_CORE_API static inline Rhi* m_Instance = nullptr;
     

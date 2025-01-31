@@ -4,7 +4,7 @@
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
-#include "buffer/vulkan_buffer_handle.hpp"
+#include "handles/vulkan_buffer_handle.hpp"
 #include "low_renderer/rhi.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_shader_program.hpp"
@@ -159,7 +159,7 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _v
                                                  uint32_t _bindingCount)
 {
 
-    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_vertexBuffer.GetHandle()); 
+    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_vertexBuffer.handle); 
     vk::Buffer buffer = vulkanBufferHandle->buffer;
     vk::DeviceSize offsets[] = {0};
     
@@ -169,7 +169,7 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _v
 
 void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _indexBuffer, size_t _offset)
 
-{   std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_indexBuffer.GetHandle()); 
+{   std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_indexBuffer.handle); 
     vk::Buffer buffer = vulkanBufferHandle->buffer;
 
     const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());

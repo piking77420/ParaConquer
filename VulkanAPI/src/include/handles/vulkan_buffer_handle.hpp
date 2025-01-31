@@ -3,11 +3,12 @@
 #include <vma/vk_mem_alloc.h>
 
 #include "vulkan_header.h"
-#include "low_renderer/gpu_buffer_handle.hpp"
+#include "low_renderer/gpu_handle.hpp"
 
 namespace Vulkan
 {
-    class VulkanBufferHandle : public PC_CORE::GpuBufferHandle
+
+    class VulkanBufferHandle : public PC_CORE::GpuHandle
     {
     public:
 

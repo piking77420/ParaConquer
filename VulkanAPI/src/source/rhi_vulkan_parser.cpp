@@ -1027,62 +1027,6 @@ vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode
     throw std::runtime_error("Unknown PolygonMode");
 }
 
-vk::ImageAspectFlags Vulkan::RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect)
-{
-    vk::ImageAspectFlags flags = {};
-
-    if (_textureAspect & PC_CORE::TextureAspect::COLOR)
-    {
-        flags |= vk::ImageAspectFlagBits::eColor;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::DEPTH)
-    {
-        flags |= vk::ImageAspectFlagBits::eDepth;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::STENCIL)
-    {
-        flags |= vk::ImageAspectFlagBits::eStencil;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::METADATA_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMetadata;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::PLANE_0_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::ePlane0;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::PLANE_1_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::ePlane1;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::PLANE_2_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::ePlane2;
-    }
-
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_0_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane0EXT;
-    }
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_1_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane1EXT;
-    }
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_2_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane2EXT;
-    }
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_3_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane3EXT;
-    }
-
-    return flags;
-}
 
 vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage)
 {
@@ -1181,5 +1125,28 @@ vk::IndexType Vulkan::RhiToIndexType(PC_CORE::IndexFormat _format)
     case PC_CORE::IndexFormat::Uint32:
         return vk::IndexType::eUint32;
     default: throw std::runtime_error("Unknown IndexType");
+    }
+}
+
+vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
+{
+    switch (shaderProgramDescriptorType)
+    {
+    case PC_CORE::ShaderProgramDescriptorType::Image:
+        return vk::DescriptorType::eSampledImage;
+    case PC_CORE::ShaderProgramDescriptorType::Sampler:
+        return vk::DescriptorType::eSampler;
+    case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
+        return vk::DescriptorType::eUniformBuffer;
+    case PC_CORE::ShaderProgramDescriptorType::eStorageBuffer:
+        return vk::DescriptorType::eStorageBuffer;
+    case PC_CORE::ShaderProgramDescriptorType::InlineUniformBlock:
+        return vk::DescriptorType::eInlineUniformBlock;
+    case PC_CORE::ShaderProgramDescriptorType::AccelerationStructure:
+        return vk::DescriptorType::eAccelerationStructureKHR;
+    case PC_CORE::ShaderProgramDescriptorType::Count:
+    default:
+        throw std::runtime_error("Unknown ShaderProgramDescriptorType");
+        break;
     }
 }

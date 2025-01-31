@@ -5,7 +5,7 @@
 
 BEGIN_PCCORE
 
-class UniformBuffer : public PC_CORE::GpuBuffer
+class UniformBuffer
 {
 public:
 
@@ -17,9 +17,17 @@ public:
     
     PC_CORE_API UniformBuffer() = default;
     
-    PC_CORE_API~UniformBuffer() override;
+    PC_CORE_API ~UniformBuffer();
+
+    PC_CORE_API const std::shared_ptr<GpuHandle>* GetHandle() const;
+
+    PC_CORE_API std::shared_ptr<GpuHandle>* GetHandle();
+
 private:
-    void* m_MappedMemory = nullptr;
+
+    std::array<PC_CORE::GpuBuffer, MAX_FRAMES_IN_FLIGHT> m_UniformBuffers;
+    
+    std::array<void*, MAX_FRAMES_IN_FLIGHT> m_MappedMemory;
 };
 
 END_PCCORE

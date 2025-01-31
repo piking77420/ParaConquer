@@ -4,10 +4,10 @@
 
 PC_CORE::GpuBuffer::~GpuBuffer()
 {
-    if (m_GpuHandle == nullptr)
+    if (handle == nullptr)
         return;
     
-    if (!Rhi::GetRhiContext()->gpuAllocator->DestroyBuffer(&m_GpuHandle))
+    if (!Rhi::GetRhiContext()->gpuAllocator->DestroyBuffer(&handle))
     {
         PC_LOGERROR("Failed to destroy GPU buffer");
     }

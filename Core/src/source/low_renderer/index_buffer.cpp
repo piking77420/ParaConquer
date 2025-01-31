@@ -22,7 +22,7 @@ PC_CORE::IndexBuffer::IndexBuffer(const uint32_t* _indices, size_t _size) : m_In
         };
 
     
-    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &m_GpuHandle))
+    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &handle))
     {
         PC_LOGERROR("Failed to create vertex buffer");
         return;
@@ -40,7 +40,7 @@ PC_CORE::IndexBuffer::IndexBuffer(const uint16_t* _indices, size_t _size) : m_In
         .usage = BufferUsage::IndexBuffer
         };
 
-    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &m_GpuHandle))
+    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &handle))
     {
         PC_LOGERROR("Failed to create vertex buffer");
         return;
@@ -56,7 +56,7 @@ PC_CORE::IndexBuffer::IndexBuffer(const uint8_t* _indices, size_t _size) : m_Ind
         .usage = BufferUsage::IndexBuffer
         };
 
-    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &m_GpuHandle))
+    if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &handle))
     {
         PC_LOGERROR("Failed to create vertex buffer");
         return;

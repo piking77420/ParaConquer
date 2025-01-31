@@ -81,10 +81,8 @@ void Renderer::Init()
 
     m_Main->AllocDescriptorSet(&m_ShaderProgramDescriptorSet);
 
-    for (auto& i : m_UniformBuffer)
-        i = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
-
-
+    m_UniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
         {
             {
@@ -114,7 +112,7 @@ void Renderer::Render()
     sceneBufferGPU.view = Tbx::LookAtRH<float>(Tbx::Vector3f(2, 2, 2), Tbx::Vector3f(), Tbx::Vector3f::UnitZ());
     sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis<float>(45.f * Deg2Rad, 1920.f / 1080.f, 0.1, 1000.f);
 
-    m_UniformBuffer[currentFrame].Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    m_UniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 
     m_CommandList->Reset();
     m_CommandList->BeginRecordCommands();

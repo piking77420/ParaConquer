@@ -2,6 +2,7 @@
 
 #include "vulkan_header.h"
 #include "low_renderer/rhi_typedef.h"
+#include "low_renderer/descriptor_set.hpp"
 
 namespace Vulkan
 {
@@ -31,9 +32,7 @@ namespace Vulkan
     vk::BorderColor RHIToBorderColor(PC_CORE::BorderColor _borderColor);
         
     vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode);
-
-    vk::ImageAspectFlags RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect);
-
+    
     vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage);
 
     vk::CullModeFlags RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit);
@@ -41,5 +40,7 @@ namespace Vulkan
     vk::BufferUsageFlags RhiToBufferUsage(PC_CORE::BufferUsage _usage);
 
     vk::IndexType RhiToIndexType(PC_CORE::IndexFormat _format);
+
+    vk::DescriptorType RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType);
 }
 

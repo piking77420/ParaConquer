@@ -1,26 +1,25 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "low_renderer/gpu_buffer_handle.hpp"
+#include "low_renderer/gpu_handle.hpp"
 
 #include "low_renderer/rhi_typedef.h"
 
 BEGIN_PCCORE
 
-class GpuBuffer
+struct GpuBuffer
 {
-public:
 
     GpuBuffer(GpuBuffer&& _other) noexcept
     {
-        m_GpuHandle = _other.m_GpuHandle;
-        _other.m_GpuHandle = nullptr;
+        handle = _other.handle;
+        _other.handle = nullptr;
     }
 
     GpuBuffer& operator=(GpuBuffer&& _other) noexcept
     {
-        m_GpuHandle = _other.m_GpuHandle;
-        _other.m_GpuHandle = nullptr;
+        handle = _other.handle;
+        _other.handle = nullptr;
         return *this;
     }
     
@@ -28,13 +27,8 @@ public:
 
     virtual ~GpuBuffer();
 
-    inline std::shared_ptr<GpuBufferHandle> GetHandle() const
-    {
-        return m_GpuHandle;
-    }
-
-protected:
-    std::shared_ptr<GpuBufferHandle> m_GpuHandle;
+    // TO DO REPLACE BY UNIQUE PTR
+    std::shared_ptr<GpuHandle> handle;
 };
 
 END_PCCORE

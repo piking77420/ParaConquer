@@ -2,6 +2,7 @@
 
 #include "core_header.hpp"
 #include "resource.hpp"
+#include "low_renderer/gpu_handle.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "reflection/reflector.hpp"
 #include "low_renderer/rhi_typedef.h"
@@ -13,17 +14,8 @@ BEGIN_PCCORE
 class Texture : public Resource
 {
 public:
-    
-    PC_CORE_API Texture(Texture&& _other) noexcept 
-    {
-        
-    }
 
-    PC_CORE_API Texture& operator=(Texture&& _other) noexcept
-    {
-
-        return *this;
-    }
+    DEFAULT_COPY_MOVE_OPERATIONS(Texture)
     
     PC_CORE_API Texture() = default;
 
@@ -39,6 +31,8 @@ public:
 
 private:
     int m_TextureChannel = -1;
+
+    std::shared_ptr<GpuHandle> m_TextureHandle = nullptr;
 
     void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
 };
