@@ -23,19 +23,22 @@ BEGIN_PCCORE
     struct PhysicalDevice
     {
         std::string name;
+        
         uint32_t driverVersion;
 
         DEFAULT_COPY_MOVE_OPERATIONS(PhysicalDevice)
 
         PhysicalDevice() = default;
 
-        ~PhysicalDevice() = default;
+        virtual ~PhysicalDevice() = default;
+
+        virtual float GetMaxSamplerAnisotropy() const = 0;
      };
 
     class PhysicalDevices
     {
     public:
-        PC_CORE_API std::vector<PhysicalDevice> GetPhysicalDevices();
+        PC_CORE_API std::vector<PhysicalDevice*> GetPhysicalDevices();
 
         PC_CORE_API int32_t GetPhysicalDeviceIndex() const;
 
@@ -52,7 +55,7 @@ BEGIN_PCCORE
     protected:
         int32_t m_PhysicalDeviceIndex = NULL_PHYSICAL_DEVICE;
 
-        std::vector<PhysicalDevice> m_PhysicalDevices;
+        std::vector<PhysicalDevice*> m_PhysicalDevices;
     };
 
 END_PCCORE

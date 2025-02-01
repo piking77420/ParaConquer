@@ -3,12 +3,15 @@
 #include <vector>
 
 #include "core_header.hpp"
+#include "gpu_buffer.hpp"
+#include "gpu_handle.hpp"
+#include "sampler.hpp"
 
 BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
     {
         Image,
-        Sampler,
+        ImageSampler,
         UniformBuffer,
         eStorageBuffer,
         InlineUniformBlock,
@@ -16,11 +19,24 @@ BEGIN_PCCORE
         Count,
     };
 
+    struct ImageSamperDescriptor
+    {
+        Sampler* sampler;
+        GpuHandle* imageHandle;
+    };
+
+    struct UniformBufferDescriptor
+    {
+        GpuBuffer* buffer;
+    };
+
+
     struct ShaderProgramDescriptorWrite
     {
         ShaderProgramDescriptorType shaderProgramDescriptorType;
         uint32_t bindingIndex;
-        void* object;
+        UniformBufferDescriptor* uniformBufferDescriptor;
+        ImageSamperDescriptor* imageSamperDescriptor;
     };
 
     struct ShaderProgramDescriptorSets

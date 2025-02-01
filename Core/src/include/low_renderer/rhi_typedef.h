@@ -38,26 +38,6 @@ BEGIN_PCCORE
     };
 
 
-    enum class QueuType
-    {
-        NONE,
-        GRAPHICS,
-        COMPUTE,
-        TRANSFERT,
-        SPARSE_BINDING,
-        VIDEO_DECODE,
-        VIDEO_ENCODE,
-        OPTICAL_FLOW,
-
-        COUT
-    };
-
-    ENUM_FLAGS(QueuType)
-
-
-    constexpr void* INVALID_HANDLE = nullptr;
-
-
 #pragma region LOG_TYPE
 
     enum class LogType

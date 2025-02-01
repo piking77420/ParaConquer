@@ -8,9 +8,18 @@
 #include "low_renderer/rhi.hpp"
 
 
+float Vulkan::VulkanPhysicalDevice::GetMaxSamplerAnisotropy() const
+{
+    vk::PhysicalDeviceProperties properties;
+
+    physicalDevice.getProperties(&properties);
+
+    return properties.limits.maxSamplerAnisotropy;
+}
+
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
 {
-    return m_CurrentVulkanDevices;
+    return reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex])->physicalDevice;
 }
 
 const std::vector<Vulkan::QueueFamilyIndices>& Vulkan::VulkanPhysicalDevices::GetQueuesFamilies()
@@ -31,11 +40,19 @@ Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
     QueryQueueFamilies();
 }
 
+Vulkan::VulkanPhysicalDevices::~VulkanPhysicalDevices()
+{
+    for (auto& device : m_PhysicalDevices)
+        delete device;
+}
+
 Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr)
 {
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_CurrentVulkanDevices, _surfaceKhr, reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&m_SwapChainSupportDetails.capabilities));
-    m_SwapChainSupportDetails.formats = m_CurrentVulkanDevices.getSurfaceFormatsKHR(_surfaceKhr);
-    m_SwapChainSupportDetails.presentModes = m_CurrentVulkanDevices.getSurfacePresentModesKHR(_surfaceKhr);
+    vk::PhysicalDevice device = GetSelectedPhysicalDevice()->physicalDevice;
+    
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surfaceKhr, reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&m_SwapChainSupportDetails.capabilities));
+    m_SwapChainSupportDetails.formats = device.getSurfaceFormatsKHR(_surfaceKhr);
+    m_SwapChainSupportDetails.presentModes = device.getSurfacePresentModesKHR(_surfaceKhr);
     return m_SwapChainSupportDetails;
 }
 
@@ -68,10 +85,8 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
     }
     m_PhysicalDeviceIndex = deviceBestScoreIndex;
     
-    m_CurrentVulkanDevices = _physicalDevices[m_PhysicalDeviceIndex];
-    
     VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
-    const Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext.GetSurface(), m_CurrentVulkanDevices);
+    const Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext.GetSurface(), GetSelectedPhysicalDevice()->physicalDevice);
     m_SwapChainSupportDetails = swapChainSupportDetails;
 }
 
@@ -130,11 +145,14 @@ bool Vulkan::VulkanPhysicalDevices::CheckDeviceExtensionSupport(
 
 void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies()
 {
+    vk::PhysicalDevice currentDevice = GetSelectedPhysicalDevice()->physicalDevice;
+
+    
     uint32_t queueFamilyCount = 0;
-    m_CurrentVulkanDevices.getQueueFamilyProperties(&queueFamilyCount, nullptr);
+    currentDevice.getQueueFamilyProperties(&queueFamilyCount, nullptr);
 
     std::vector<vk::QueueFamilyProperties> queueFamilyPropertieses = std::vector<vk::QueueFamilyProperties>(queueFamilyCount);
-    m_CurrentVulkanDevices.getQueueFamilyProperties(&queueFamilyCount, queueFamilyPropertieses.data());
+    currentDevice.getQueueFamilyProperties(&queueFamilyCount, queueFamilyPropertieses.data());
     m_QueuesFamiliesProperty.resize(queueFamilyPropertieses.size());
 
     vk::SurfaceKHR surfaceKhr = reinterpret_cast<VulkanContext&>(Vulkan::VulkanContext::GetContext()).GetSurface();
@@ -142,7 +160,7 @@ void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies()
     for (size_t i = 0; i < queueFamilyPropertieses.size(); i++)
     {
         m_QueuesFamiliesProperty[i].familyProperties = queueFamilyPropertieses[i];
-        m_QueuesFamiliesProperty[i].supportPresent = m_CurrentVulkanDevices.getSurfaceSupportKHR(static_cast<uint32_t>(i), surfaceKhr);
+        m_QueuesFamiliesProperty[i].supportPresent = currentDevice.getSurfaceSupportKHR(static_cast<uint32_t>(i), surfaceKhr);
     }
 }
 
@@ -159,6 +177,10 @@ Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::QuerySwapChainSup
 }
 
 
+Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysicalDevice()
+{
+    return reinterpret_cast<Vulkan::VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
+}
 
 void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable)
 {
@@ -181,6 +203,12 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
 
     // Look for base device
     m_PhysicalDevices.resize(vkPhysicalDevices.size());
+    for (size_t i = 0; i < vkPhysicalDevices.size(); i++)
+    {
+        m_PhysicalDevices[i] = new VulkanPhysicalDevice();
+    }
+    
+    
     LookForSuitableDevices(vkPhysicalDevices, requestVulkanExtensions);
     *_extensionToEnable = requestVulkanExtensions;
 
@@ -192,13 +220,17 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
                                                       const std::vector<std::string>& _requestExtensions,
                                                       size_t _deviceIndex)
 {
+
+    VulkanPhysicalDevice* myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
+    myPhysicalDevice->physicalDevice = _physicalDevice;
+    
     int32_t score = 0;
 
     uint32_t extensionCount;
-    VK_CALL(_physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr));
+    VK_CALL(myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr));
 
     std::vector<vk::ExtensionProperties> availableExtensions(extensionCount);
-    VK_CALL(_physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()));
+    VK_CALL(myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()));
     std::set<std::string> requiredExtensions(_requestExtensions.begin(), _requestExtensions.end());
 
     if (!CheckDeviceExtensionSupport(availableExtensions, requiredExtensions))
@@ -208,7 +240,7 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     }
     
     VulkanContext* vulkanContext = reinterpret_cast<VulkanContext*>(&VulkanContext::GetContext());
-    Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext->GetSurface(), _physicalDevice);
+    Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext->GetSurface(), myPhysicalDevice->physicalDevice);
 
     if (swapChainSupportDetails.formats.empty() || swapChainSupportDetails.presentModes.empty())
     {
@@ -219,15 +251,14 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     vk::PhysicalDeviceFeatures2 deviceFeatures2 = {};
     deviceFeatures2.sType = vk::StructureType::ePhysicalDeviceFeatures2;
 
-    vk::PhysicalDevice physicalDevice = _physicalDevice;
-    physicalDevice.getFeatures2(&deviceFeatures2);
+    myPhysicalDevice->physicalDevice.getFeatures2(&deviceFeatures2);
 
     vk::PhysicalDeviceProperties2 deviceProperties = {};
     deviceProperties.sType = vk::StructureType::ePhysicalDeviceProperties2;
-    physicalDevice.getProperties2(&deviceProperties);
+    myPhysicalDevice->physicalDevice.getProperties2(&deviceProperties);
 
-    GetDeviceProperties(&m_PhysicalDevices[_deviceIndex], deviceProperties.properties);
-    GetDeviceFeatures(&m_PhysicalDevices[_deviceIndex], deviceFeatures2.features);
+    GetDeviceProperties(myPhysicalDevice, deviceProperties.properties);
+    GetDeviceFeatures(myPhysicalDevice, deviceFeatures2.features);
     // Evaluate score based on VkPhysicalDeviceFeatures
     size_t nbrOfBool = sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::PhysicalDeviceFeatures::samplerAnisotropy);
 

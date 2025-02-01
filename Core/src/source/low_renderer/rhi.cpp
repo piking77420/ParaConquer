@@ -4,6 +4,7 @@
 #include "vulkan_command_list.hpp"
 #include "vulkan_context.hpp"
 #include "resources/resource_manager.hpp"
+#include "resources/vulkan_sampler.hpp"
 #include "resources/vulkan_shader_program.hpp"
 
 using namespace PC_CORE;
@@ -33,6 +34,24 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_
     m_Instance = this;
    
     Init(_createInfo);
+    
+    const SamplerCreateInfo createInfo =
+          {
+        .magFilter = Filter::LINEAR,
+        .minFilter = Filter::LINEAR,
+        .u = SamplerAddressMode::REPEAT,
+        .v = SamplerAddressMode::REPEAT,
+        .w = SamplerAddressMode::REPEAT
+        };
+
+    if (m_GraphicsApi == GraphicAPI::VULKAN)
+    {
+        m_RhiContext->sampler = std::make_unique<Vulkan::VulkanSampler>(createInfo);
+    }
+    else
+    {
+        PC_LOGERROR("DX12 NOT SUPPORTED YET")
+    }
 }
 
 Rhi::~Rhi()
@@ -110,10 +129,6 @@ RhiContext* Rhi::GetRhiContext()
     return m_Instance->m_RhiContext;
 }
 
-void Rhi::SendCommandList(const CommandList* _commandList)
-{
-    
-}
 
 void Rhi::NextFrame()
 {

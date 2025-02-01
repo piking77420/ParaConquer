@@ -5,7 +5,7 @@
 
 BEGIN_PCCORE
 
-class UniformBuffer
+class UniformBuffer : public PC_CORE::GpuBuffer
 {
 public:
 
@@ -24,9 +24,6 @@ public:
     PC_CORE_API std::shared_ptr<GpuHandle>* GetHandle();
 
 private:
-
-    std::array<PC_CORE::GpuBuffer, MAX_FRAMES_IN_FLIGHT> m_UniformBuffers;
-    
     std::array<void*, MAX_FRAMES_IN_FLIGHT> m_MappedMemory;
 };
 

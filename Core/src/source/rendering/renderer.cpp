@@ -6,14 +6,15 @@
 #include <thread>
 #include "time/core_time.hpp"
 #include "math/matrix_transformation.hpp"
+#include "resources/texture.hpp"
 
 using namespace PC_CORE;
 
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {0.5f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
     {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 
 const std::vector<uint32_t> indices = {
@@ -82,14 +83,37 @@ void Renderer::Init()
     m_Main->AllocDescriptorSet(&m_ShaderProgramDescriptorSet);
 
     m_UniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
-    
+
+    UniformBufferDescriptor uniformBufferDescriptor
+    {
+        .buffer = &m_UniformBuffer,
+    };
+
+    Texture* diamondTexture = ResourceManager::Get<Texture>("diamond_block");
+
+    if (diamondTexture == nullptr)
+        return;
+
+    ImageSamperDescriptor imageSamperDescriptor =
+        {
+        .sampler = Rhi::GetRhiContext()->sampler.get(),
+        .imageHandle = diamondTexture->GetHandle().get()
+        };
+
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
         {
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 0,
-                &m_UniformBuffer
+                &uniformBufferDescriptor,
+                nullptr,
             },
+            {
+                ShaderProgramDescriptorType::ImageSampler,
+                1,
+                nullptr,
+                &imageSamperDescriptor
+            }
         };
 
     m_ShaderProgramDescriptorSet->WriteDescriptorSets(descriptorSets);
@@ -102,9 +126,6 @@ bool Renderer::BeginDraw(Window* _window)
 
 void Renderer::Render()
 {
-    const size_t currentFrame = Rhi::GetFrameIndex();
-
-
     sceneBufferGPU.time = PC_CORE::Time::GetTime();
     sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
     Tbx::Trs3D<float>(Tbx::Vector3f{}, Tbx::Vector3f(0, 0, 90.f * Deg2Rad * sceneBufferGPU.time),

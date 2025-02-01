@@ -7,9 +7,9 @@ BEGIN_PCCORE
 class GpuHandle
 {
 public:
-    GpuHandle() = default;
+    PC_CORE_API GpuHandle() = default;
 
-    virtual ~GpuHandle() = default;
+   PC_CORE_API  virtual ~GpuHandle() = default;
 };
 
 END_PCCORE

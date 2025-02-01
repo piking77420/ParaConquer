@@ -158,8 +158,9 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
 void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding,
                                                  uint32_t _bindingCount)
 {
-
-    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_vertexBuffer.handle); 
+    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
+    
+    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_vertexBuffer.bufferHandles[frameIndex]); 
     vk::Buffer buffer = vulkanBufferHandle->buffer;
     vk::DeviceSize offsets[] = {0};
     
@@ -168,8 +169,10 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _v
 }
 
 void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _indexBuffer, size_t _offset)
+{
+    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
 
-{   std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_indexBuffer.handle); 
+    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(_indexBuffer.bufferHandles[frameIndex]); 
     vk::Buffer buffer = vulkanBufferHandle->buffer;
 
     const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());

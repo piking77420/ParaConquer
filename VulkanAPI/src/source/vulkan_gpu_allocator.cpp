@@ -116,24 +116,10 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
     std::shared_ptr<PC_CORE::GpuHandle>* _texturePtr)
 {
     VulkanContext& context = *reinterpret_cast<VulkanContext*>(PC_CORE::Rhi::GetRhiContext());
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 
-    int multiplayer = 0;
-    switch (_createTextureInfo.channel)
-    {
-    case PC_CORE::Channel::GREY:
-    case PC_CORE::Channel::ALPHA:
-        multiplayer = 1;
-        break;
-    case PC_CORE::Channel::RGB:
-        multiplayer = 3; 
-        break;
-    case PC_CORE::Channel::RGBA:
-        multiplayer = 4;
-        break;
-    case PC_CORE::Channel::DEFAULT:
-    default: ;
-    }
-
+    int multiplayer = GetMultiplayer(_createTextureInfo.channel);
+    
     if (_createTextureInfo.depth < 1 )
     {
         PC_LOGERROR("Vulkan::VulkanGpuAllocator::CreateTexture: _createTextureInfo.depth < 1 )");
@@ -159,9 +145,12 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
                                                      format,
                                                      vk::ImageTiling::eOptimal, imageUsageFlags, memoryUsage);
 
+    vulkanImageHandle.view = CreateImageView(device, vulkanImageHandle.image, vk::ImageViewType::e2D,
+        format);
+
     const SingleCommandBeginInfo singleCommandBeginInfo =
        {
-        .device = context.GetDevice()->GetDevice(),
+        .device = device,
         .commandPool = context.transferCommandPool,
         .queue = context.transferQueu
         };
@@ -200,6 +189,7 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
     
     vkPtr->allocation = vulkanImageHandle.allocation;
     vkPtr->image = vulkanImageHandle.image;
+    vkPtr->view = vulkanImageHandle.view;
 
     *_texturePtr = vkPtr;
 }
@@ -207,13 +197,17 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
 bool Vulkan::VulkanGpuAllocator::DestroyTexture(std::shared_ptr<PC_CORE::GpuHandle>* _textureHandle)
 {
     std::shared_ptr<VulkanImageHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanImageHandle>(*_textureHandle);
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 
     
-    if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->image == VK_NULL_HANDLE)
+    if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->image == VK_NULL_HANDLE || vulkanBufferPtr->view == VK_NULL_HANDLE)
         return false;
     
     vmaDestroyImage(m_allocator, vulkanBufferPtr->image, vulkanBufferPtr->allocation);
+    device.destroyImageView(vulkanBufferPtr->view);
+    
     *_textureHandle = nullptr;
+    
     
     return true;
 }
@@ -267,18 +261,29 @@ vk::BufferUsageFlags Vulkan::VulkanGpuAllocator::GetVulkanBufferUsageFlagsClient
 
 }
 
-
-
-void Vulkan::VulkanGpuAllocator::CopyBuffer(vk::CommandBuffer* _commandBuffer, vk::Buffer _src, vk::Buffer _dst, vk::DeviceSize _size)
+int Vulkan::VulkanGpuAllocator::GetMultiplayer(PC_CORE::Channel _channel)
 {
-    
-    vk::BufferCopy copyRegion = {};
-    copyRegion.srcOffset = 0;
-    copyRegion.dstOffset = 0;
-    copyRegion.size = _size;
-    
-    
+    switch (_channel)
+    {
+    case PC_CORE::Channel::GREY:
+    case PC_CORE::Channel::ALPHA:
+        return 1;
+        break;
+    case PC_CORE::Channel::RGB:
+        return 3; 
+        break;
+    case PC_CORE::Channel::RGBA:
+        return  4;
+        break;
+    case PC_CORE::Channel::DEFAULT:
+    default: ;
+    }
+
+    throw std::runtime_error("Vulkan::VulkanGpuAllocator::GetMultiplayer: Invalid Channel");
 }
+
+
+
 
 Vulkan::VulkanBufferHandle Vulkan::VulkanGpuAllocator::CreateBuffer(size_t size,
     vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage)
@@ -329,5 +334,27 @@ Vulkan::VulkanImageHandle Vulkan::VulkanGpuAllocator::CreateImage(uint32_t width
     Vulkan::VulkanImageHandle vulkanImageHandle;
     vmaCreateImage(m_allocator, reinterpret_cast<VkImageCreateInfo*>(&imageInfo), &allocationInfo,&vulkanImageHandle.image, &vulkanImageHandle.allocation, nullptr);
     return vulkanImageHandle;
+}
+
+vk::ImageView Vulkan::VulkanGpuAllocator::CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
+    vk::Format _format)
+{
+
+    vk::ImageViewCreateInfo imageInfo{};
+    imageInfo.sType  = vk::StructureType::eImageViewCreateInfo;
+    imageInfo.image = _image;
+    imageInfo.viewType = vk::ImageViewType::e2D;
+    imageInfo.format = _format;
+    imageInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    imageInfo.subresourceRange.baseMipLevel = 0;
+    imageInfo.subresourceRange.levelCount = 1;
+    imageInfo.subresourceRange.baseArrayLayer = 0;
+    imageInfo.subresourceRange.layerCount = 1;
+
+    vk::ImageView imageView;
+
+    VK_CALL(_device.createImageView(&imageInfo, nullptr, &imageView));
+
+    return imageView;
 }
 

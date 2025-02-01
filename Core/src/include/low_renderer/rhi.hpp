@@ -40,9 +40,7 @@ public:
     PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
 
     PC_CORE_API static RhiContext* GetRhiContext();
-
-    PC_CORE_API static void SendCommandList(const CommandList* _commandList);
-
+    
     PC_CORE_API static void NextFrame();
  
     PC_CORE_API static __forceinline  uint32_t GetFrameIndex() noexcept;

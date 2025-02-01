@@ -25,10 +25,10 @@ public:
 
     PC_CORE_API ~Texture() override;
     
-
     PC_CORE_API void Load(const std::array<std::string,6>& _maps);
    
-
+    PC_CORE_API  std::shared_ptr<GpuHandle> GetHandle() const;
+    
 private:
     int m_TextureChannel = -1;
 

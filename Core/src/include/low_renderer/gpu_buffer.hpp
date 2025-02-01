@@ -10,25 +10,32 @@ BEGIN_PCCORE
 struct GpuBuffer
 {
 
-    GpuBuffer(GpuBuffer&& _other) noexcept
+    PC_CORE_API GpuBuffer(GpuBuffer&& _other) noexcept
     {
-        handle = _other.handle;
-        _other.handle = nullptr;
+        for (size_t i = 0; i < bufferHandles.size(); ++i)
+        {
+            bufferHandles[i] = _other.bufferHandles[i];
+            _other.bufferHandles[i] = nullptr;
+        }
+        
     }
 
-    GpuBuffer& operator=(GpuBuffer&& _other) noexcept
+    PC_CORE_API GpuBuffer& operator=(GpuBuffer&& _other) noexcept
     {
-        handle = _other.handle;
-        _other.handle = nullptr;
+        for (size_t i = 0; i < bufferHandles.size(); ++i)
+        {
+            bufferHandles[i] = _other.bufferHandles[i];
+            _other.bufferHandles[i] = nullptr;
+        }
+        
         return *this;
     }
     
-    GpuBuffer() = default;
+    PC_CORE_API GpuBuffer() = default;
 
-    virtual ~GpuBuffer();
+    PC_CORE_API virtual ~GpuBuffer();
 
-    // TO DO REPLACE BY UNIQUE PTR
-    std::shared_ptr<GpuHandle> handle;
+    std::array<std::shared_ptr<GpuHandle>, MAX_FRAMES_IN_FLIGHT> bufferHandles;
 };
 
 END_PCCORE

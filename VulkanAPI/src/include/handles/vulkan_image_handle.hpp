@@ -15,6 +15,10 @@ namespace Vulkan
             image = _other.image;
             _other.image = VK_NULL_HANDLE;
 
+            view = _other.view;
+            _other.view = VK_NULL_HANDLE;
+
+
             allocation = _other.allocation;
             _other.allocation = VK_NULL_HANDLE;
         }
@@ -23,6 +27,9 @@ namespace Vulkan
         {
             image = _other.image;
             _other.image = VK_NULL_HANDLE;
+
+            view = _other.view;
+            _other.view = VK_NULL_HANDLE;
 
             allocation = _other.allocation;
             _other.allocation = VK_NULL_HANDLE;
@@ -35,6 +42,7 @@ namespace Vulkan
         ~VulkanImageHandle() override = default;
         
         VkImage image;
+        VkImageView view;
         VmaAllocation allocation;
     };
 

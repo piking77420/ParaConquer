@@ -22,11 +22,17 @@ namespace Vulkan
         
     };
 
+    struct VulkanPhysicalDevice : public PC_CORE::PhysicalDevice
+    {
+        vk::PhysicalDevice physicalDevice;
+
+        float GetMaxSamplerAnisotropy() const override ;
+    };
+
     
     class VulkanPhysicalDevices : public PC_CORE::PhysicalDevices
     {
     public:
-        
         VULKAN_API vk::PhysicalDevice GetVulkanDevice() const;
 
         VULKAN_API const std::vector<QueueFamilyIndices>& GetQueuesFamilies();
@@ -37,16 +43,16 @@ namespace Vulkan
 
         VULKAN_API VulkanPhysicalDevices() = default;
 
-        VULKAN_API virtual ~VulkanPhysicalDevices() = default;
+        VULKAN_API ~VulkanPhysicalDevices() override;
 
         VULKAN_API SwapChainSupportDetails UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr);
     
     private:
-        vk::PhysicalDevice m_CurrentVulkanDevices = VK_NULL_HANDLE;
-
         SwapChainSupportDetails m_SwapChainSupportDetails;
         
         std::vector<QueueFamilyIndices> m_QueuesFamiliesProperty;
+
+        VulkanPhysicalDevice* GetSelectedPhysicalDevice();
 
         VULKAN_API void Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable);
 

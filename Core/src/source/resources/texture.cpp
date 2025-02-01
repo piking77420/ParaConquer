@@ -68,3 +68,8 @@ void Texture::Load(const std::array<std::string, 6>& _maps)
 {
   
 }
+
+std::shared_ptr<GpuHandle> Texture::GetHandle() const
+{
+    return m_TextureHandle;
+}

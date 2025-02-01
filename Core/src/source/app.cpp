@@ -30,10 +30,9 @@ void App::Init()
         };
     
     rhi = Rhi(createInfo);
-    renderer.Init();
-
-    // Need other init in order to init
     ResourceManager::InitPath();
+    renderer.Init();
+    
     //renderer.InitRenderResources();
     Time::Init();
     

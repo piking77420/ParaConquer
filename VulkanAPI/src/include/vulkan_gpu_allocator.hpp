@@ -32,9 +32,9 @@ namespace Vulkan
         static VmaMemoryUsage GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage);
 
         static vk::BufferUsageFlags GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsage bufferUsage);
-        
-        void CopyBuffer(vk::CommandBuffer* _commandBuffer, vk::Buffer _src, vk::Buffer _dst, vk::DeviceSize _size);
 
+        static __forceinline int GetMultiplayer(PC_CORE::Channel _channel);
+        
         VulkanBufferHandle CreateBuffer(size_t size, vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage);
 
         VulkanImageHandle CreateImage(uint32_t width, uint32_t height, uint32_t depth,
@@ -42,6 +42,9 @@ namespace Vulkan
                                       vk::ImageType _imageType,
                                       vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
                                       VmaMemoryUsage imageMemory);
+
+        vk::ImageView CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
+    vk::Format _format);
         
         VmaAllocator m_allocator;
     };
