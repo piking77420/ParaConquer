@@ -20,6 +20,8 @@ namespace Vulkan
 
         VULKAN_API bool GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
 
+        VULKAN_API size_t GetNbrOfImage() const;
+
         VULKAN_API void Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window) override;
         
         VULKAN_API void HandleRecreateSwapChain(PC_CORE::Window* windowHandle) override;

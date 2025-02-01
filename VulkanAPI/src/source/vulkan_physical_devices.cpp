@@ -22,6 +22,7 @@ vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
     return reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex])->physicalDevice;
 }
 
+
 const std::vector<Vulkan::QueueFamilyIndices>& Vulkan::VulkanPhysicalDevices::GetQueuesFamilies()
 {
     return m_QueuesFamiliesProperty;

@@ -19,54 +19,96 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(
         descriptorSets.size() == _shaderProgramDescriptorSet.at(0).uniformBufferDescriptor->buffer->bufferHandles.size(
         ));
 
+    size_t bufferDescriptorCount = 0;
+    size_t imageDescriptorCount = 0;
+
+    // Count descriptors
+    for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
+    {
+        if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
+            bufferDescriptorCount++;
+        if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)
+            imageDescriptorCount++;
+    }
+
+    std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos(bufferDescriptorCount);
+    std::vector<vk::DescriptorImageInfo> descriptorImageInfos(imageDescriptorCount);
+
+    // Reset counters
+    bufferDescriptorCount = 0;
+    imageDescriptorCount = 0;
+
+    for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
+    {
+        if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
+        {
+            PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).
+                uniformBufferDescriptor;
+            PC_CORE::GpuBuffer* bufferHandle = uniformBufferDescriptor->buffer;
+            VulkanBufferHandle* vulkanBufferHandle = reinterpret_cast<VulkanBufferHandle*>(bufferHandle->bufferHandles.
+                at(i).get());
+
+            descriptorBufferInfos[bufferDescriptorCount].buffer = vulkanBufferHandle->buffer;
+            descriptorBufferInfos[bufferDescriptorCount].offset = 0;
+            descriptorBufferInfos[bufferDescriptorCount].range = VK_WHOLE_SIZE;
+            bufferDescriptorCount++;
+        }
+
+        if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)
+        {
+            PC_CORE::ImageSamperDescriptor* imageSamplerDescriptor = _shaderProgramDescriptorSet.at(i).
+                imageSamperDescriptor;
+
+            PC_CORE::GpuHandle* imageHandle = imageSamplerDescriptor->imageHandle;
+            PC_CORE::Sampler* samplerHandle = imageSamplerDescriptor->sampler;
+
+            VulkanImageHandle* vulkanImageHandle = reinterpret_cast<VulkanImageHandle*>(imageHandle);
+            VulkanSampler* vulkanSampler = reinterpret_cast<VulkanSampler*>(samplerHandle);
+
+            descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            descriptorImageInfos[imageDescriptorCount].imageView = vulkanImageHandle->view;
+            descriptorImageInfos[imageDescriptorCount].sampler = vulkanSampler->GetSampler();
+            imageDescriptorCount++;
+        }
+    }
+
+    // Reset counters before descriptor writes
+    bufferDescriptorCount = 0;
+    imageDescriptorCount = 0;
+
+    std::vector<vk::WriteDescriptorSet> descriptorWrites(_shaderProgramDescriptorSet.size());
+        for (size_t i = 0; i < descriptorWrites.size(); i++)
+        {
+            descriptorWrites[i].sType = vk::StructureType::eWriteDescriptorSet;
+            descriptorWrites[i].dstBinding = _shaderProgramDescriptorSet.at(i).bindingIndex;
+            descriptorWrites[i].dstArrayElement = 0;
+            descriptorWrites[i].descriptorType = RhiToDescriptorType(
+                _shaderProgramDescriptorSet.at(i).shaderProgramDescriptorType);
+            descriptorWrites[i].descriptorCount = 1;
+
+            switch (_shaderProgramDescriptorSet.at(i).shaderProgramDescriptorType)
+            {
+            case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
+                descriptorWrites[i].pBufferInfo = &descriptorBufferInfos[bufferDescriptorCount];
+                bufferDescriptorCount++;
+                break;
+            case PC_CORE::ShaderProgramDescriptorType::CombineImageSampler:
+                descriptorWrites[i].pImageInfo = &descriptorImageInfos[imageDescriptorCount];
+                imageDescriptorCount++;
+                break;
+            }
+        }
+
     for (size_t i = 0; i < descriptorSets.size(); i++)
     {
-        vk::DescriptorBufferInfo bufferInfo{};
-
-        // Safe pointer retrieval
-        PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(0).uniformBufferDescriptor;
-        PC_CORE::ImageSamperDescriptor* imageSamplerDescriptor = _shaderProgramDescriptorSet.at(1).imageSamperDescriptor;
-        
-        PC_CORE::GpuBuffer* bufferHandle = uniformBufferDescriptor->buffer;
-        PC_CORE::GpuHandle* imageHandle = imageSamplerDescriptor->imageHandle;
-        PC_CORE::Sampler* samplerHandle = imageSamplerDescriptor->sampler;
-        
-        // Safe cast
-        VulkanBufferHandle* vulkanBufferHandle = reinterpret_cast<VulkanBufferHandle*>(bufferHandle->bufferHandles.at(i).
-            get());
-        VulkanImageHandle* vulkanImageHandle = reinterpret_cast<VulkanImageHandle*>(imageHandle);
-        VulkanSampler* vulkanSampler = reinterpret_cast<VulkanSampler*>(samplerHandle);
-
-        if (!vulkanBufferHandle || !vulkanImageHandle || !vulkanSampler) continue;
-
-        bufferInfo.buffer = vulkanBufferHandle->buffer;
-        bufferInfo.offset = 0;
-        bufferInfo.range = VK_WHOLE_SIZE;
-
-        vk::DescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        imageInfo.imageView = vulkanImageHandle->view;
-        imageInfo.sampler = vulkanSampler->GetSampler();
-
-        std::vector<vk::WriteDescriptorSet> descriptorWrites(2);
-
-        descriptorWrites[0].sType = vk::StructureType::eWriteDescriptorSet;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-        descriptorWrites[1].sType = vk::StructureType::eWriteDescriptorSet;
-        descriptorWrites[1].dstSet = descriptorSets[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = vk::DescriptorType::eCombinedImageSampler;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        device.updateDescriptorSets(static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0,
-                                    nullptr);
+        for (size_t j = 0; j < descriptorWrites.size(); j++)
+        {
+            descriptorWrites[j].dstSet = descriptorSets[i];
+        }
+        device.updateDescriptorSets(static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
+    
+     
+    
+    
 }

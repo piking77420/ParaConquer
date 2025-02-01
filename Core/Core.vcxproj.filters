@@ -144,9 +144,6 @@
     <ClInclude Include="src\include\resources\resource_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\resources\sampler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\resources\scene_lights_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -353,9 +350,6 @@
     <ClCompile Include="src\source\resources\resource_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\resources\sampler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\resources\scene_lights_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -464,7 +458,7 @@
     <ClCompile Include="src\source\low_renderer\gpu_allocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\include\low_renderer\sampler.cpp">
+    <ClCompile Include="src\source\low_renderer\sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

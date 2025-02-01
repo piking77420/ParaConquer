@@ -181,6 +181,7 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _ind
 }
 
 
+
 vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const
 {
     return m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()];

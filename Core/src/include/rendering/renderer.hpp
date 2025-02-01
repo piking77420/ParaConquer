@@ -11,6 +11,8 @@ BEGIN_PCCORE
 class Renderer
 {
 public:
+
+    std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
     
     Renderer() = default;
 
@@ -22,13 +24,11 @@ public:
 
     PC_CORE_API void Render();
 
-    PC_CORE_API void SwapBuffers(Window* _window    );
+    PC_CORE_API void SwapBuffers(Window* _window);
 private:
     RhiContext* m_RhiContext;
     
     PC_CORE::ShaderProgram* m_Main = nullptr;
-
-    std::shared_ptr<PC_CORE::CommandList> m_CommandList;
 
     std::shared_ptr<PC_CORE::VertexBuffer> m_VertexBuffer;
 

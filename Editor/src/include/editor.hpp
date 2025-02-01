@@ -4,6 +4,7 @@
 #include "dock_space.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
+#include "io/imgui_context.h"
 #include "world/transform.hpp"
 #include "reflection/reflector.hpp"
 
@@ -38,6 +39,8 @@ public:
     DockSpace dockSpace;
     
     PC_CORE::Entity* m_Selected = nullptr;
+
+    PC_CORE::IMGUIContext IMGUIContext;
 
 private:
     void InitThridPartLib();

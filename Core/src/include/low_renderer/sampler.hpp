@@ -33,9 +33,7 @@ protected:
     SamplerAddressMode m_U;
     SamplerAddressMode m_V;
     SamplerAddressMode m_W;
-
-    bool m_Anisotropy;
-    uint32_t m_MaxAnisotropy;
+    
 };
 
 END_PCCORE

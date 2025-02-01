@@ -10,10 +10,11 @@
 BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
     {
-        Image,
-        ImageSampler,
+        Sampler,
+        CombineImageSampler,
+        SampledImage,
         UniformBuffer,
-        eStorageBuffer,
+        StorageBuffer,
         InlineUniformBlock,
         AccelerationStructure,
         Count,

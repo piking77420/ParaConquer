@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <functional>
 
 #include "core_header.hpp"
 #include "frame_buffer.hpp"
@@ -84,8 +85,14 @@ public:
 
     PC_CORE_API virtual void BindIndexBuffer(const IndexBuffer& _indexBuffer, size_t _offset) = 0;
 
+    PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
+
+    PC_CORE_API void ExucuteFetchCommand();
+
 protected:
     CommandPoolFamily m_CommandPoolFamily;
+
+    std::vector<std::function<void(CommandList*)>> m_FecthCommands;
 };
 
 

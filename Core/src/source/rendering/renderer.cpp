@@ -75,7 +75,7 @@ void Renderer::Init()
         ._commandPoolFamily = CommandPoolFamily::Graphics
     };
 
-    m_CommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
+    primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
 
     m_VertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
     m_IndexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size() * sizeof(indices[0]));
@@ -109,7 +109,7 @@ void Renderer::Init()
                 nullptr,
             },
             {
-                ShaderProgramDescriptorType::ImageSampler,
+                ShaderProgramDescriptorType::CombineImageSampler,
                 1,
                 nullptr,
                 &imageSamperDescriptor
@@ -135,8 +135,8 @@ void Renderer::Render()
 
     m_UniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 
-    m_CommandList->Reset();
-    m_CommandList->BeginRecordCommands();
+    primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
 
     uint32_t swapChainWidht = m_RhiContext->swapChain->GetWidth();
     uint32_t swapChainHeight = m_RhiContext->swapChain->GetHeight();
@@ -149,8 +149,8 @@ void Renderer::Render()
         .extent = {swapChainWidht, swapChainHeight},
         .clearColor = {0, 0, 0, 1.f}
     };
-    m_CommandList->BeginRenderPass(BeginRenderPassInfo);
-    m_CommandList->BindProgram(m_Main);
+    primaryCommandList->BeginRenderPass(BeginRenderPassInfo);
+    primaryCommandList->BindProgram(m_Main);
 
     const ViewportInfo viewportInfo =
     {
@@ -161,19 +161,21 @@ void Renderer::Render()
         .scissorsOff = {0, 0},
         .scissorsextent = {swapChainWidht, swapChainHeight}
     };
-    m_CommandList->SetViewPort(viewportInfo);
-    m_CommandList->BindVertexBuffer(*m_VertexBuffer, 0, 1);
-    m_CommandList->BindIndexBuffer(*m_IndexBuffer, 0);
-    m_CommandList->BindDescriptorSet(m_Main, m_ShaderProgramDescriptorSet, 0, 1);
+    primaryCommandList->SetViewPort(viewportInfo);
+    primaryCommandList->BindVertexBuffer(*m_VertexBuffer, 0, 1);
+    primaryCommandList->BindIndexBuffer(*m_IndexBuffer, 0);
+    primaryCommandList->BindDescriptorSet(m_Main, m_ShaderProgramDescriptorSet, 0, 1);
 
-    m_CommandList->DrawIndexed(m_IndexBuffer->GetIndexCount(), 1, 0, 0, 0);
-    m_CommandList->EndRenderPass();
-    m_CommandList->EndRecordCommands();
+    primaryCommandList->DrawIndexed(m_IndexBuffer->GetIndexCount(), 1, 0, 0, 0);
+
+    primaryCommandList->ExucuteFetchCommand();
+    primaryCommandList->EndRenderPass();
+    primaryCommandList->EndRecordCommands();
 }
 
 
 void Renderer::SwapBuffers(Window* _window)
 {
-    m_RhiContext->swapChain->Present(m_CommandList.get(), _window);
+    m_RhiContext->swapChain->Present(primaryCommandList.get(), _window);
     Rhi::NextFrame();
 }

@@ -1132,13 +1132,15 @@ vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescr
 {
     switch (shaderProgramDescriptorType)
     {
-    case PC_CORE::ShaderProgramDescriptorType::Image:
-        return vk::DescriptorType::eStorageImage;
-    case PC_CORE::ShaderProgramDescriptorType::ImageSampler:
+    case PC_CORE::ShaderProgramDescriptorType::Sampler:
+        return vk::DescriptorType::eSampler;
+    case PC_CORE::ShaderProgramDescriptorType::CombineImageSampler:
         return vk::DescriptorType::eCombinedImageSampler;
+    case PC_CORE::ShaderProgramDescriptorType::SampledImage:
+        return vk::DescriptorType::eSampledImage;
     case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
         return vk::DescriptorType::eUniformBuffer;
-    case PC_CORE::ShaderProgramDescriptorType::eStorageBuffer:
+    case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:
         return vk::DescriptorType::eStorageBuffer;
     case PC_CORE::ShaderProgramDescriptorType::InlineUniformBlock:
         return vk::DescriptorType::eInlineUniformBlock;
@@ -1147,6 +1149,5 @@ vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescr
     case PC_CORE::ShaderProgramDescriptorType::Count:
     default:
         throw std::runtime_error("Unknown ShaderProgramDescriptorType");
-        break;
     }
 }

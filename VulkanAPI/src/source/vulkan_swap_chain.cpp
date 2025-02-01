@@ -59,6 +59,11 @@ bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
     return true;
 }
 
+size_t Vulkan::VulkanSwapChain::GetNbrOfImage() const
+{
+    return m_SwapChainImage.size();
+}
+
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
     const std::vector<vk::SurfaceFormatKHR>& availableFormats)
 {

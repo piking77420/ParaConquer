@@ -5,7 +5,7 @@
 #include "low_renderer/vertex.hpp"
 
 BEGIN_PCCORE
-// Make 
+
 class VertexBuffer : public GpuBuffer
 {
 public:

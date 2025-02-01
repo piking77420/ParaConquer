@@ -51,15 +51,17 @@ void Editor::Init()
     World::currentWorld = &world;
     InitEditorWindows();
     InitTestScene();
-    //PC_CORE::IMGUIContext::Init(window.GetHandle(), renderer.GetGraphicsAPI());
-}
+    IMGUIContext.Init(window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
+    
+    renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
+        IMGUIContext.Render(cmd);
+    });}
 
 void Editor::Destroy()
 {
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
-    PC_CORE::IMGUIContext::Destroy();
     App::Destroy();
 
     UnInitThridPartLib();
@@ -203,10 +205,9 @@ void Editor::Run()
 {
     while (!window.ShouldClose())
     {
-
         coreIo.PoolEvent();
         window.PoolEvents();
-        PC_CORE::IMGUIContext::NewFrame();
+        IMGUIContext.NewFrame();
         PC_CORE::Time::UpdateTime();
 
         UpdateEditorWindows();
@@ -214,6 +215,10 @@ void Editor::Run()
         if (World::currentWorld)
             WorldLoop();
 
+        ImGui::Begin("hello");
+        ImGui::Text("Hello, world!");
+        ImGui::End();
+        
         for (EditorWindow* editorWindow : m_EditorWindows)
             editorWindow->Render();
         
@@ -221,8 +226,9 @@ void Editor::Run()
         {
             continue;
         }
-        
+
         renderer.Render();
+        
         renderer.SwapBuffers(&window);
     }
 
