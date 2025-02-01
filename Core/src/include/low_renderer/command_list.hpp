@@ -75,6 +75,9 @@ public:
 
     PC_CORE_API virtual void BindProgram(const ShaderProgram* _shaderProgramm) = 0;
 
+    PC_CORE_API virtual void PushConstant(const std::string& _pushConstantKey, const PC_CORE::ShaderProgram* _shaderProgram,
+        void* _data, size_t _size) = 0;
+
     PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
     PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) = 0;

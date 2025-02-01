@@ -20,6 +20,13 @@ namespace Vulkan
 
         vk::Device device;
     };
+
+    struct PushConstantField
+    {
+        size_t pushConstantSize;
+        size_t pushConstantOffSet;
+        vk::ShaderStageFlags shaderStage;
+    };
     
 
     constexpr uint32_t MAX_ALLOC_DESCRIPTOR_SET = 100 * MAX_FRAMES_IN_FLIGHT;
@@ -44,6 +51,8 @@ namespace Vulkan
         void AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets) override;
         
         void FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets) override;
+
+        void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, void* data, size_t _size) const;
         
         VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo);
     
@@ -69,9 +78,13 @@ namespace Vulkan
 
         vk::DescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 
+        std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
+
         VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo);
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
+
+        void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion
         void ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);

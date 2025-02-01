@@ -28,6 +28,9 @@ constexpr bool ENABLE_VALIDATION_LAYERS = true;
 constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
+//https://community.khronos.org/t/questions-about-pushconstants/6923
+#define VULKAN_MAX_PUSH_CONSTANTS 128
+
 
 constexpr std::array<const char*, 1> validationLayers = {
     "VK_LAYER_KHRONOS_validation",

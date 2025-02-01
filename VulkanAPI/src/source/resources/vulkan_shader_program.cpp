@@ -100,6 +100,20 @@ void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets
     *shaderProgramDescriptorSets = nullptr;
 }
 
+void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, void* data, size_t _size) const
+{
+#ifdef _DEBUG
+    if (_size > VULKAN_MAX_PUSH_CONSTANTS)
+    {
+        throw std::runtime_error("VULKAN_MAX_PUSH_CONSTANTS have been exceeded");
+    }
+#endif
+    
+
+    //_commandBuffer.pushConstants()
+    
+}
+
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : ShaderProgram(_programShaderCreateInfo)
 {
     VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo);
@@ -162,6 +176,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     
     // Reflection Start
     ParseSpvRelfection(vulkanShaderProgramCreateContex);
+    CreatePushConstantMapFromReflection(vulkanShaderProgramCreateContex.modulesReflected);
     
     // Create Modules
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)
@@ -277,6 +292,19 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     auto result = device->GetDevice().createGraphicsPipeline(nullptr, graphicsPipelineInfo);
     m_Pipeline = result.value;
 }
+
+void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule)
+{
+    for (size_t module = 0; module < _spvReflectShaderModule.size(); module++)
+    {
+        for (size_t pushConstant = 0; pushConstant < _spvReflectShaderModule[module].push_constant_block_count; pushConstant++)
+        {
+            
+
+            
+        }
+    }
+}
 #pragma region ParseRegion
 
 void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
@@ -352,6 +380,7 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
     descriptorPoolCreateInfo.maxSets = MAX_ALLOC_DESCRIPTOR_SET;
 
     m_DescriptorPool = _vulkanShaderProgramCreateContext.device.createDescriptorPool(descriptorPoolCreateInfo);
+
 }
 
 
