@@ -40,7 +40,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
+   //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
     ImGui::StyleColorsDark();
 
 
@@ -71,19 +71,16 @@ void IMGUIContext::NewFrame()
     ImGui::NewFrame();
 }
 
-IMGUIContext::IMGUIContext()
+void IMGUIContext::Destroy()
 {
-    
-}
 
-IMGUIContext::~IMGUIContext()
-{
-    device.destroyDescriptorPool(descriptorPool);
-    
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    device.destroyDescriptorPool(descriptorPool);
 }
+
 
 void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
 {

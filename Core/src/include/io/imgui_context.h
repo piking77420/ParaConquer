@@ -14,11 +14,13 @@ public:
 	
 	PC_CORE_API void NewFrame();
 
+	PC_CORE_API void Destroy();
+
 	//PC_CORE_API static void Render(PC_CORE::CommandBuffer _commandBuffer);
 	
-	PC_CORE_API IMGUIContext();
+	PC_CORE_API IMGUIContext() = default;
 
-	PC_CORE_API ~IMGUIContext();
+	PC_CORE_API ~IMGUIContext() = default;
 
 	PC_CORE_API void Render(CommandList* _commandBuffer);
 

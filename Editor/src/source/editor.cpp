@@ -59,6 +59,8 @@ void Editor::Init()
 
 void Editor::Destroy()
 {
+    IMGUIContext.Destroy();
+
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
@@ -109,85 +111,7 @@ void Editor::ShaderRecompileList()
 
 void Editor::InitTestScene()
 {
-    // TO DO MAKE IT WORK
-   /* const ShaderProgram& program = *renderer.forwardShader;
-    Material* material1 = ResourceManager::Create<Material>("material1", program);
-    material1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
-
-    Material* material2 = ResourceManager::Create<Material>("material2", program);
-    material2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");*/
-
-    /*
-    const ShaderGraphicPointInfo shaderGraphicPointInfo =
-    {
-        .rasterizerInfo =
-        {
-            .polygonMode = PolygonMode::Fill,
-            .cullModeFlag = CullModeFlagBit::Back,
-            .frontFace = FrontFace::CounterClockwise
-        },
-        .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
-        .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)}
-    };
     
-    ShaderInfo shaderInfo =
-        {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .descriptorInfo =
-            {
-            .freeDescriptorSet = true,
-            .descriptorAllocCount = DESCRIPTOR_ALLOC_HIGH
-            }
-        };
-    
-    ProgramShaderCreateInfo createInfo =
-        {
-        .prograShaderName = "Forward Material Shader",
-        .shaderInfo = shaderInfo,
-        .renderPass = renderer.forwardRenderPass.GetHandle()
-        };
-    
-    std::vector<ShaderSource*> shaderSource =
-        {
-        ResourceManager::Get<ShaderSource>("main.vert"),
-        ResourceManager::Get<ShaderSource>("main.frag")
-        };
-    
-    Material* material1 = new Material(createInfo, shaderSource);
-    ResourceManager::Add<Material>(material1);
-
-    // TO DO CREATE MATERIAL INSTANCE
-    MaterialInstance* m1 = ResourceManager::Create<MaterialInstance>("EbonyShield ", material1);
-    m1->albedo = ResourceManager::Get<Texture>("ebony_shield_d.png");
-    m1->BuildDescriptorSet();
-
-    MaterialInstance* m2 = ResourceManager::Create<MaterialInstance>("Diamond", material1);
-    m2->albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
-    m2->BuildDescriptorSet();
-
-
-     
-    
-    Scene& scene = world.scene;
-    for (size_t i = 0; i < 2; i++)
-    {
-        Entity* cube = scene.CreateEntity("cube " + std::to_string(i));
-        scene.AddComponent<Transform>(cube);
-        scene.AddComponent<RigidBody>(cube);
-        StaticMesh* mesh = scene.AddComponent<StaticMesh>(cube);
-        if (i == 0)
-        {
-            mesh->materialInstance = m1;
-        }
-        else
-        {
-            mesh->materialInstance = m2;
-        }
-        
-        mesh->mesh = ResourceManager::Get<Mesh>("suzanne.obj");
-    }
-    */
 }
 
 void Editor::DestroyTestScene()
