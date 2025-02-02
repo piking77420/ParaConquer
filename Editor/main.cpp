@@ -2,7 +2,6 @@
 #include "core_header.hpp"
 #include "app.hpp"
 #include "editor.hpp"
-#include "math/utils.hpp"
 
 #include "world/transform.hpp"
 #include "scripting/scripting_lua.hpp"

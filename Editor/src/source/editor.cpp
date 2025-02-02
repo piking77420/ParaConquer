@@ -116,7 +116,6 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
-    physicsWrapper.DestroyBodies(&world.scene);
     world.scene.~Scene();
     world.scene = Scene();
     m_Selected = nullptr;

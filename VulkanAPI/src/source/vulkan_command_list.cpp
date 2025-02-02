@@ -130,7 +130,7 @@ void Vulkan::VulkanCommandList::PushConstant(const std::string& _pushConstantKey
 {
     const VulkanShaderProgram* vshadeProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram); 
 
-    vshadeProgram->PushConstant()
+    //vshadeProgram->PushConstant()
 
     
 }

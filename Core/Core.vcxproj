@@ -362,7 +362,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies);VulkanAPI.lib;RapidXML.lib;lua54.lib;glfw3.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories);$(ExecutablePath);$(OutDir)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir);$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
       <AdditionalDependencies>RapidXML.lib;lua54.lib;MotionCore.lib</AdditionalDependencies>

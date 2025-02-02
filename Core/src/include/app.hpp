@@ -3,7 +3,6 @@
 #include "core_header.hpp"
 #include "world/world.hpp"
 #include "scripting/scripting_lua.hpp"
-#include <core/physics_engine.h>
 
 #include "io/window.hpp"
 #include "ecs/ecs_context.h"
