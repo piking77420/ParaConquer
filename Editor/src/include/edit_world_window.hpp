@@ -22,9 +22,9 @@ protected:
 
     Tbx::Vector3f cameraSpeed;
 
-    float cameraSpeedValue = 150.f;
+    float cameraSpeedValue = 50.f;
 
-    float drag = 0.9f;
+    float drag = 0.01f;
     
     float pitch = 0.0f;
     

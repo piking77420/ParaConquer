@@ -48,7 +48,6 @@ void Editor::Init()
     CompileShader();
 
     App::Init();
-    World::currentWorld = &world;
     InitEditorWindows();
     InitTestScene();
     IMGUIContext.Init(window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
@@ -116,9 +115,9 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
-    world.scene.~Scene();
-    world.scene = Scene();
-    m_Selected = nullptr;
+    world.entityManager.~EntityManager();
+    m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+
 
     //ResourceManager::Delete<Material>("material1");
     //ResourceManager::Delete<Material>("material2");

@@ -5,7 +5,6 @@
 #include "scripting/scripting_lua.hpp"
 
 #include "io/window.hpp"
-#include "ecs/ecs_context.h"
 #include <io/core_io.hpp>
 
 #include "low_renderer/rhi.hpp"

@@ -15,7 +15,7 @@ void Inspector::Update()
 {
 	EditorWindow::Update();
 
-	if (m_Editor->m_Selected == nullptr)
+	if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
 		return;
 
 	m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
@@ -35,15 +35,16 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-	PC_CORE::Scene* scene = &m_Editor->world.scene;
-	PC_CORE::Entity* selected = m_Editor->m_Selected;
+	PC_CORE::EntityManager& entityManager = PC_CORE::World::GetWorld()->entityManager;
+	PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
 
 
-	std::string* string = &selected->name;
+	std::string* string = &entityManager.GetEntityName(selectedId);
 	ImGui::PushID("EntityNameInput");
 	ImGui::InputText("##EntityName", string->data(), string->size());
 	ImGui::PopID();
-	
+
+	/*
 	for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
 	{
 		const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;
@@ -73,7 +74,7 @@ void Inspector::Show()
 
 		ImGui::PopID();
 	}
-
+*/
 }
 
 void Inspector::OnInput()
@@ -94,9 +95,9 @@ void Inspector::OnInput()
 		{
 			if (ImGui::Selectable(m_ReflectedType->name.c_str()))
 			{
-				if (PC_CORE::World::currentWorld != nullptr)
+				if (PC_CORE::World::GetWorld() != nullptr)
 				{
-					PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
+					//PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
 				}
 			}
 		}
@@ -130,9 +131,6 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 	}
 	else
 	{
-		if (_members.enumFlag & PC_CORE::MemberEnumFlag::HIDE_INSPECTOR)
-			return;
-		
 		switch (type.typeInfo.dataNature)
 		{
 		case PC_CORE::DataNature::UNKNOWN:
@@ -222,7 +220,7 @@ void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
 
 	if (ImGui::SmallButton("Delete Component"))
 	{
-		m_Editor->world.scene.RemoveComponent(_entity, _componentId);
+		//m_Editor->world.scene.RemoveComponent(_entity, _componentId);
 	}
 }
 
