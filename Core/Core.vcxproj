@@ -64,12 +64,14 @@
     <ClInclude Include="src\include\app.hpp" />
     <ClInclude Include="src\include\assert.hpp" />
     <ClInclude Include="src\include\core_header.hpp" />
+    <ClInclude Include="src\include\data_structures\sparse_sets.hpp" />
+    <ClInclude Include="src\include\data_structures\type_sparse_set.hpp" />
     <ClInclude Include="src\include\ecs\component.h" />
-    <ClInclude Include="src\include\ecs\ecs_context.h" />
+    <ClInclude Include="src\include\ecs\ecs_archetype.h" />
     <ClInclude Include="src\include\ecs\ecs_front.h" />
     <ClInclude Include="src\include\ecs\ecs_header.h" />
-    <ClInclude Include="src\include\ecs\entity_register.h" />
-    <ClInclude Include="src\include\ecs\sparse_sets.hpp" />
+    <ClInclude Include="src\include\ecs\ecs_system.h" />
+    <ClInclude Include="src\include\ecs\entity_manager.h" />
     <ClInclude Include="src\include\guid.hpp" />
     <ClInclude Include="src\include\io\core_io.hpp" />
     <ClInclude Include="src\include\io\imgui_context.h" />
@@ -119,7 +121,6 @@
     <ClInclude Include="src\include\time\core_time.hpp" />
     <ClInclude Include="src\include\time\timer.hpp" />
     <ClInclude Include="src\include\world\scene.hpp" />
-    <ClInclude Include="src\include\world\scene_graph.hpp" />
     <ClInclude Include="src\include\world\skybox.hpp" />
     <ClInclude Include="src\include\world\static_mesh.hpp" />
     <ClInclude Include="src\include\world\system.hpp" />
@@ -127,6 +128,11 @@
     <ClInclude Include="src\include\world\world.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\source\data_structures\sparse_sets.cpp" />
+    <ClCompile Include="src\source\data_structures\type_sparse_set.cpp" />
+    <ClCompile Include="src\source\ecs\ecs_archetype.cpp" />
+    <ClCompile Include="src\source\ecs\ecs_system.cpp" />
+    <ClCompile Include="src\source\ecs\entity_manager.cpp" />
     <ClCompile Include="src\source\low_renderer\command_list.cpp" />
     <ClCompile Include="src\source\low_renderer\descriptor_set.cpp" />
     <ClCompile Include="src\source\low_renderer\frame_buffer.cpp" />
@@ -154,9 +160,6 @@
     <ClCompile Include="src\externals\source\Imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\source\app.cpp" />
     <ClCompile Include="src\source\ecs\component.cpp" />
-    <ClCompile Include="src\source\ecs\ecs_context.cpp" />
-    <ClCompile Include="src\source\ecs\entity_register.cpp" />
-    <ClCompile Include="src\source\ecs\sparse_sets.cpp" />
     <ClCompile Include="src\source\guid.cpp" />
     <ClCompile Include="src\source\io\core_io.cpp" />
     <ClCompile Include="src\source\io\imgui_context.cpp" />
@@ -184,7 +187,6 @@
     <ClCompile Include="src\source\time\core_time.cpp" />
     <ClCompile Include="src\source\time\timer.cpp" />
     <ClCompile Include="src\source\world\scene.cpp" />
-    <ClCompile Include="src\source\world\scene_graph.cpp" />
     <ClCompile Include="src\source\world\skybox.cpp" />
     <ClCompile Include="src\source\world\static_mesh.cpp" />
     <ClCompile Include="src\source\world\system.cpp" />

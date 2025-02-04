@@ -134,8 +134,7 @@ void Editor::Run()
 
         UpdateEditorWindows();
 
-        if (World::currentWorld)
-            WorldLoop();
+        WorldLoop();
 
         ImGui::Begin("hello");
         ImGui::Text("Hello, world!");
