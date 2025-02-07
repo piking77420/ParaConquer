@@ -43,6 +43,7 @@ void Inspector::Show()
 	ImGui::PushID("EntityNameInput");
 	ImGui::InputText("##EntityName", string->data(), string->size());
 	ImGui::PopID();
+	
 
 	/*
 	for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
@@ -148,6 +149,7 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 			ImGui::DragFloat(membersName, static_cast<float*>(dataPosition), 0.1, 0);
 			break;
 		case PC_CORE::DataNature::DOUBLE:
+			ImGui::InputDouble(membersName, static_cast<double*>(dataPosition), 0.0);
 			//ImGui::DragFloat(membersName, static_cast<double*>(dataPosition),1, 0);
 			break;
 		case PC_CORE::DataNature::VEC2:

@@ -110,7 +110,8 @@ void Editor::ShaderRecompileList()
 
 void Editor::InitTestScene()
 {
-    
+    EntityId entity_id = world.entityManager.CreateEntity();
+    world.entityManager.AddComponent<Transform>(entity_id);
 }
 
 void Editor::DestroyTestScene()
