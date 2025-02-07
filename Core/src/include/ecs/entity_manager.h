@@ -171,7 +171,8 @@ BEGIN_PCCORE
     {
         static_assert(std::is_base_of_v<Component, T>,"T is not a Component");
         
-        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetKey<T>());
+        uint32_t key = Reflector::GetTypeKey<T>();
+        TypeSparseSet& sparseSet = m_SparseSetsMap.at(key);
         T* ptr = reinterpret_cast<T*>(sparseSet.Create(_entity));
 
         if (ptr == nullptr)
@@ -187,7 +188,7 @@ BEGIN_PCCORE
     {
         static_assert(std::is_base_of_v<Component, T >,"T is not a Component");
 
-        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetKey<T>());
+        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
 
         T* component = GetComponent<T>();
         component->~T();
@@ -200,7 +201,7 @@ BEGIN_PCCORE
     {
         //static_assert(!std::is_base_of_v<T, Component> ,"T is not a Component");
 
-        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetKey<T>());
+        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
 
         try
         {
@@ -221,7 +222,7 @@ BEGIN_PCCORE
     template <class T>
     T* EntityManager::GetComponent(const EntityId& _entity)
     {
-        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetKey<T>());
+        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
 
         try
         {
@@ -252,7 +253,7 @@ BEGIN_PCCORE
     template <class T>
     bool EntityManager::HasComponent(const EntityId& _entity) const
     {
-        return m_SparseSetsMap.at(Reflector::GetKey<T>()).IsValid(_entity);
+        return  m_SparseSetsMap.at(Reflector::GetTypeKey<T>()).IsValid(_entity);
     }
 
     template <class ...T>

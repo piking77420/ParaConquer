@@ -26,13 +26,13 @@ private:
 template <typename T>
 void Serializer::Serialize(const T& _object, const fs::path& _fileToSerialize)
 {
-    Serializing(reinterpret_cast<const uint8_t*>(&_object), _fileToSerialize, Reflector::GetKey<T>());
+    Serializing(reinterpret_cast<const uint8_t*>(&_object), _fileToSerialize, COMPILE_TIME_TYPE_KEY(T));
 }
 
 template <typename T>
 void Serializer::DeSerialize(T* _object,const fs::path& _file)
 {
-    Derializing(reinterpret_cast<uint8_t*>(_object), _file, Reflector::GetKey<T>());
+    Derializing(reinterpret_cast<uint8_t*>(_object), _file, COMPILE_TIME_TYPE_KEY(T));
 }
 
 END_PCCORE

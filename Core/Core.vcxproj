@@ -38,6 +38,7 @@
     <Content Include="src\externals\lib\Release\glfw3.lib" />
     <Content Include="src\externals\lib\Release\lua54.lib" />
     <Content Include="src\externals\lib\Release\RapidXML.lib" />
+    <Content Include="src\include\reflection\compiletime_key.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
@@ -103,8 +104,10 @@
     <ClInclude Include="src\include\physics\physics_wrapper.hpp" />
     <ClInclude Include="src\include\physics\rigid_body.hpp" />
     <ClInclude Include="src\include\physics\sphere_collider.hpp" />
+    <ClInclude Include="src\include\reflection\compiletime_key.hpp" />
     <ClInclude Include="src\include\reflection\reflection_typedef.hpp" />
     <ClInclude Include="src\include\reflection\reflector.hpp" />
+    <ClInclude Include="src\include\reflection\simple_type_name.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
     <ClInclude Include="src\include\rendering\light.hpp" />
     <ClInclude Include="src\include\rendering\renderer.hpp" />

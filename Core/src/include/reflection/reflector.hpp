@@ -7,6 +7,7 @@
 #include <iostream>
 #include <optional>
 
+#include "compiletime_key.hpp"
 #include "log.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "reflection/reflection_typedef.hpp"
@@ -54,12 +55,15 @@ public:
 
     template<typename T>
     static const ReflectedType& GetType();
-
-    template<typename T>
-    static uint32_t GetKey();
-
+    
     template <typename T>
     static TypeInfo GetTypeInfo();
+
+    template <typename T>
+    constexpr static uint32_t GetTypeKey() 
+    {
+        return COMPILE_TIME_TYPE_KEY(T);
+    }
 
     PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
 
@@ -68,9 +72,6 @@ public:
 
     template<typename Holder, typename BaseClass = void>
     static ReflectedType* ReflectType();
-
-    template <typename T>
-     static uint32_t GetHash();
     
     template <typename T>
     static std::vector<const ReflectedType*> GetAllTypesFrom();
@@ -79,16 +80,6 @@ public:
     static bool isTrivialType();
 
 private:
-    
-    constexpr PC_CORE_API static uint32_t KR_v2_hash(const char *s)
-    {
-        // Source: https://stackoverflow.com/a/45641002/5407270
-        // a.k.a. Java String hashCode()
-        uint32_t hashval = 0;
-        for (hashval = 0; *s != '\0'; s++)
-            hashval = *s + 31*hashval;
-        return hashval;
-    }
     
     constexpr PC_CORE_API  static std::string GetCorrectNameFromTypeId(const std::string& _name)
     {
@@ -124,9 +115,6 @@ private:
     static void AddType();
     
     template <typename T>
-    static uint32_t GetHash(std::string* _name);
-
-    template <typename T>
     static bool ContaintType();
     
     template <class T>
@@ -152,19 +140,10 @@ private:
     
 };
 
-
-template <typename T>
-uint32_t Reflector::GetKey()
-{
-    return KR_v2_hash(GetCorrectNameFromTypeId(typeid(T).name()).c_str());
-}
-
 template <typename T>
 const ReflectedType& Reflector::GetType()
-{
-    const uint32_t key = GetKey<T>();
-    
-    return m_RelfectionMap.at(key);
+{    
+    return m_RelfectionMap.at(GetTypeKey<T>());
 }
 
 
@@ -183,7 +162,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     {
         AddType<MemberType>();
     }
-    const uint32_t holderKey = GetHash<Holder>();
+    const uint32_t holderKey = GetTypeKey<Holder>();
     for(auto&& member :  memberMap.at(holderKey).members)
     {
         // is there aldready a member name as
@@ -194,7 +173,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     // Add to sub member
     const Members members =
         {
-        .typeKey = GetHash<MemberType>(),
+        .typeKey = GetTypeKey<MemberType>(),
         .membersName = _memberName,
         .offset = _offset,
         .enumFlag = memberEnumFlag
@@ -205,13 +184,17 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
     return members;
 }
 
-// to do fix warning with void 
 template <typename Holder, typename BaseClass>
 ReflectedType* Reflector::ReflectType()
 {
+    static_assert(GetTypeKey<Holder>() != GetTypeKey<BaseClass>(), "What are you doing m8");
+
+
+    uint32_t KeyHolder = GetTypeKey<Holder>();
+
     if (ContaintType<Holder>())
     {
-        return &m_RelfectionMap.at(GetKey<Holder>());
+        return &m_RelfectionMap.at(KeyHolder);
     }
 
 
@@ -225,9 +208,8 @@ ReflectedType* Reflector::ReflectType()
             AddType<BaseClass>();
         }
 
-        const uint32_t TypeKey = GetKey<Holder>();
-        auto it = m_RelfectionMap.find(TypeKey);
-        const uint32_t baseKey = GetKey<BaseClass>();
+        auto it = m_RelfectionMap.find(KeyHolder);
+        constexpr uint32_t baseKey = GetTypeKey<BaseClass>();
 
         if (it != m_RelfectionMap.end())
         {
@@ -238,23 +220,15 @@ ReflectedType* Reflector::ReflectType()
         
     }
 
-    return &m_RelfectionMap.at(GetKey<Holder>());
+    return &m_RelfectionMap.at(KeyHolder);
 }
 
-template <typename T>
-uint32_t Reflector::GetHash()
-{
-    const std::string holderNameS = GetCorrectNameFromTypeId(typeid(T).name());
-    const uint32_t hashCodeHolder = KR_v2_hash(holderNameS.c_str());
-    return hashCodeHolder;
-}
 
 template <typename T>
 std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 {
-    const uint32_t hashCode = GetHash<T>();
+    constexpr uint32_t hashCode = GetTypeKey<T>();
     std::vector<const ReflectedType*> types;
-    std::unordered_map<uint32_t, ReflectedType>& map = m_RelfectionMap;
 
     for (auto it = m_RelfectionMap.begin(); it != m_RelfectionMap.end(); it++)
     {
@@ -289,8 +263,9 @@ void Reflector::AddType()
     if (!ContaintType<T>())
     {
         // Create New Node in map
-        std::string name;
-        const uint32_t hashCode = GetHash<T>(&name);
+        std::string name = GetCorrectNameFromTypeId(typeid(T).name());
+
+        const uint32_t hashCode = GetTypeKey<T>();
         ReflectedType mememberMetaData =
             {
             .HashKey = hashCode,
@@ -311,20 +286,14 @@ void Reflector::AddType()
     }
 }
 
-template <typename T>
-uint32_t Reflector::GetHash(std::string* _name)
-{
-    *_name = GetCorrectNameFromTypeId(typeid(T).name());
-    const uint32_t hashCodeHolder = KR_v2_hash(_name->c_str());
-    return hashCodeHolder;
-}
 
 template <typename T>
 bool Reflector::ContaintType()
 {
-    const uint32_t key = GetHash<T>();
+    constexpr uint32_t TypeKey = GetTypeKey<T>();
+    constexpr std::string_view name = skydown::long_type_name<T>.data();
 
-    return m_RelfectionMap.contains(key);
+    return m_RelfectionMap.contains(TypeKey);
 }
 
 
