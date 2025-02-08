@@ -72,6 +72,11 @@ BEGIN_PCCORE
 
         PC_CORE_API const Entity& GetEntity(EntityId _entityId) const;
 
+        PC_CORE_API inline uint32_t GetEntitiesCount() const
+        {
+            return m_EntityCount;
+        }
+
         template<class T>
         T* AddComponent(const EntityId& _entityId);
         
