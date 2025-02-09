@@ -7,25 +7,12 @@
 #include "time/core_time.hpp"
 #include "math/matrix_transformation.hpp"
 #include "resources/texture.hpp"
+#include "world/static_mesh.hpp"
+#include "world/transform.hpp"
 
 using namespace PC_CORE;
 
-const std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
 
-	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-};
-
-const std::vector<uint32_t> indices = {
-	 0, 1, 2, 2, 3, 0,
-	4, 5, 6, 6, 7, 4
-};
 
 
 void Renderer::Init()
@@ -44,10 +31,6 @@ void Renderer::Init()
 	};
 
 	primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
-
-	m_VertexBuffer = std::make_shared<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
-	m_IndexBuffer = std::make_shared<IndexBuffer>(indices.data(), indices.size() * sizeof(indices[0]));
-
 	m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet);
 
 	m_UniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
@@ -104,14 +87,13 @@ bool Renderer::BeginDraw(Window* _window)
 	return hasObtainSwapChian;
 }
 
-void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers)
+void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers, World* _world)
 {
 	sceneBufferGPU.time = PC_CORE::Time::GetTime();
 	sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
-	Tbx::Trs3D<float>(Tbx::Vector3f{}, Tbx::Vector3f(0, 0, 90.f * Deg2Rad * sceneBufferGPU.time),
-		Tbx::Vector3f(1, 1, 1), &sceneBufferGPU.model);
-	sceneBufferGPU.view = Tbx::LookAtRH<float>(Tbx::Vector3f(2, 2, 2), Tbx::Vector3f(), Tbx::Vector3f::UnitZ());
-	sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis<float>(45.f * Deg2Rad, 1920.f / 1080.f, 0.1, 1000.f);
+	sceneBufferGPU.view = Tbx::LookAtRH<float>(renderingContext.lowLevelCamera.position,
+		renderingContext.lowLevelCamera.position + renderingContext.lowLevelCamera.front, renderingContext.lowLevelCamera.up);
+	sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov, renderingContext.lowLevelCamera.aspect, renderingContext.lowLevelCamera.near, renderingContext.lowLevelCamera.far);
 
 	m_UniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 
@@ -141,10 +123,10 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 		.scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
 	};
 	primaryCommandList->SetViewPort(viewportInfo);
-	primaryCommandList->BindVertexBuffer(*m_VertexBuffer, 0, 1);
-	primaryCommandList->BindIndexBuffer(*m_IndexBuffer, 0);
-	primaryCommandList->BindDescriptorSet(m_ForwardShader, m_ShaderProgramDescriptorSet, 0, 1);
-	primaryCommandList->DrawIndexed(m_IndexBuffer->GetIndexCount(), 1, 0, 0, 0);
+
+
+	std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this, std::placeholders::_1, std::placeholders::_2);
+	_world->entityManager.ForEach<Transform, StaticMesh>(func);
 	primaryCommandList->EndRenderPass();
 
 	std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
@@ -280,5 +262,19 @@ void Renderer::CreateDrawQuadShader()
 
 
 	m_DrawTextureScreenQuadShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+}
+
+void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
+{
+	Tbx::Matrix4x4f modelMatrix;
+	Tbx::Trs3D<float>(_transform.position, _transform.rotation,
+		_transform.scale, &modelMatrix);
+	primaryCommandList->PushConstant(m_ForwardShader, "PushConstants", &modelMatrix, sizeof(modelMatrix));
+	
+	
+	primaryCommandList->BindVertexBuffer(_staticMesh.mesh->vertexBuffer, 0, 1);
+	primaryCommandList->BindIndexBuffer(_staticMesh.mesh->indexBuffer, 0);
+	primaryCommandList->BindDescriptorSet(m_ForwardShader, m_ShaderProgramDescriptorSet, 0, 1);
+	primaryCommandList->DrawIndexed(_staticMesh.mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
 }
 

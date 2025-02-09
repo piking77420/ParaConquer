@@ -53,7 +53,7 @@ void WorldViewWindow::Render()
     if (size == Tbx::Vector2f{0.f, 0.f})
         return;
     
-
+    
     PC_CORE::RenderingContext renderingContext;
     renderingContext.lowLevelCamera =
     {
@@ -73,8 +73,8 @@ void WorldViewWindow::Render()
     renderingContext.finalImageFrameBuffer = finalImageViewport;
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
-
-    m_Editor->renderer.DrawToRenderingContext(renderingContext, &gbuffers);
+    
+    m_Editor->renderer.DrawToRenderingContext(renderingContext, &gbuffers, &m_Editor->world);
 }
 
 void WorldViewWindow::ResizeViewports()

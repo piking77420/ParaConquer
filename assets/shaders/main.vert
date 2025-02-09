@@ -9,17 +9,21 @@ layout(location = 1) out vec2 fragTexCoord;
 
 
 layout(binding = 0) uniform UniformBufferObject {
-    mat4 model;
     mat4 view;
     mat4 proj;
     float time;
     float deltatime;
 } ubo;
 
+layout( push_constant ) uniform constants
+{
+	mat4 model;
+} PushConstants;
+
 
 void main() 
 {
- gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+ gl_Position = ubo.proj * ubo.view * PushConstants.model * vec4(inPosition, 1.0);
     fragColor = inNormal;
     fragTexCoord = inTexCoord;
 }

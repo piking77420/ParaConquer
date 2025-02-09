@@ -6,10 +6,12 @@
 #include "low_renderer/rhi_context.hpp"
 #include "low_renderer/uniform_buffer.hpp"
 #include "resources/shader_program.h"
+#include "world/static_mesh.hpp"
+#include "world/transform.hpp"
+#include "world/world.hpp"
 
 BEGIN_PCCORE
-
-class Renderer
+    class Renderer
 {
 public:
 
@@ -33,7 +35,7 @@ public:
 
     PC_CORE_API bool BeginDraw(Window* _window);
     
-    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers);
+    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers, World* _world);
 
     PC_CORE_API void SwapBuffers(Window* _window);
 
@@ -41,11 +43,6 @@ public:
 
 private:
     RhiContext* m_RhiContext;
-    
-
-    std::shared_ptr<PC_CORE::VertexBuffer> m_VertexBuffer;
-
-    std::shared_ptr<PC_CORE::IndexBuffer> m_IndexBuffer;
     
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
 
@@ -57,6 +54,7 @@ private:
 
     PC_CORE_API void CreateDrawQuadShader();
 
+    PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
 };
 
 END_PCCORE

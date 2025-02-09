@@ -34,12 +34,9 @@ Mesh::Mesh(const fs::path& _path) : Resource(_path)
     }
 
     format = MeshSourceFormat.at(formatIndex);
+    vertexBuffer = VertexBuffer(verticies.data(), verticies.size() * sizeof(Vertex));
+    indexBuffer = IndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
 
-    nbrOfVertices = static_cast<uint32_t>(verticies.size());
-    nbrOfIndices = static_cast<uint32_t>(indicies.size());
-
-    //vertexBuffer = VertexBuffer(verticies);
-    //indexBuffer = IndexBuffer(indicies);
 }
 
 Mesh::~Mesh()
@@ -47,15 +44,6 @@ Mesh::~Mesh()
 
 }
 
-uint32_t Mesh::GetNbrOfVerticies() const
-{
-    return nbrOfVertices;
-}
-
-uint32_t Mesh::GetNbrOfIndicies() const
-{
-    return nbrOfIndices;
-}
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
 {

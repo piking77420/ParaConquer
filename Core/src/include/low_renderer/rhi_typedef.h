@@ -24,7 +24,6 @@ BEGIN_PCCORE
 
     struct ALIGNAS_16 SceneBufferGPU
     {
-        Tbx::Matrix4x4f model;
         Tbx::Matrix4x4f view;
         Tbx::Matrix4x4f proj;
         float time;

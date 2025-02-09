@@ -119,6 +119,8 @@ void Editor::InitTestScene()
 {
     EntityId entity_id = world.entityManager.CreateEntity();
     world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
+    auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
+    s->mesh = ResourceManager::Get<Mesh>("cube");
 }
 
 void Editor::DestroyTestScene()

@@ -83,6 +83,7 @@ void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSet
     descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
     
+    
     VK_CALL(device.allocateDescriptorSets(&descriptorSetAllocateInfo, vulkanDescriptorSets->descriptorSets.data()));
 
     *shaderProgramDescriptorSets = vulkanDescriptorSets;
@@ -108,10 +109,18 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
         throw std::runtime_error("VULKAN_MAX_PUSH_CONSTANTS have been exceeded");
     }
 #endif
-    
 
-    //_commandBuffer.pushConstants()
+    if (!m_PushConstantMap.contains(_pushConstantKey))
+        return;
+
+    const PushConstantField& pushConstatnField = m_PushConstantMap.at(_pushConstantKey);
+
+    if (pushConstatnField.pushConstantSize != _size)
+    {
+        PC_LOGERROR("MissMatch size in pushconstant")
+    }
     
+    _commandBuffer.pushConstants(m_PipelineLayout,pushConstatnField.shaderStage, pushConstatnField.pushConstantOffSet, pushConstatnField.pushConstantSize, data);
 }
 
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : ShaderProgram(_programShaderCreateInfo)
@@ -284,6 +293,8 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
     m_PipelineLayout = device->GetDevice().createPipelineLayout(pipelineLayoutInfo);
+
+ 
     
     vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{};
     graphicsPipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
@@ -314,9 +325,19 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<
     {
         for (size_t pushConstant = 0; pushConstant < _spvReflectShaderModule[module].push_constant_block_count; pushConstant++)
         {
-            
+            SpvReflectBlockVariable* pushConstantBlock = _spvReflectShaderModule[module].push_constant_blocks;
+            if (pushConstantBlock == nullptr)
+                continue;
 
-            
+            const PushConstantField pushConstantField =
+                {
+                .pushConstantSize = pushConstantBlock->size,
+                .pushConstantOffSet = pushConstantBlock->absolute_offset,
+                .shaderStage = static_cast<vk::ShaderStageFlags>(_spvReflectShaderModule[module].shader_stage)
+                };
+
+
+            m_PushConstantMap.insert({pushConstantBlock[pushConstant].name, pushConstantField});
         }
     }
 }
