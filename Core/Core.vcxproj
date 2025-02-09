@@ -110,6 +110,7 @@
     <ClInclude Include="src\include\reflection\simple_type_name.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
     <ClInclude Include="src\include\rendering\light.hpp" />
+    <ClInclude Include="src\include\rendering\material.hpp" />
     <ClInclude Include="src\include\rendering\renderer.hpp" />
     <ClInclude Include="src\include\rendering\rendering_typedef.h" />
     <ClInclude Include="src\include\resources\file_loader.hpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="src\source\low_renderer\vertex.cpp" />
     <ClCompile Include="src\source\low_renderer\vertex_buffer.cpp" />
     <ClCompile Include="src\source\rendering\gbuffers.cpp" />
+    <ClCompile Include="src\source\rendering\material.cpp" />
     <ClCompile Include="src\source\rendering\renderer.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp" />

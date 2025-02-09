@@ -5,6 +5,7 @@
 #include "low_renderer/index_buffer.hpp"
 #include "low_renderer/rhi_context.hpp"
 #include "low_renderer/uniform_buffer.hpp"
+#include "resources/scene_lights_manager.h"
 #include "resources/shader_program.h"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
@@ -24,6 +25,8 @@ public:
     std::shared_ptr<RhiRenderPass> forwardPass;
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
+
+    SceneLightsBuffer* sceneLightsBuffer = nullptr;
 
     PC_CORE_API Renderer() = default;
 
@@ -49,6 +52,7 @@ private:
     UniformBuffer m_UniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
+    
 
     PC_CORE_API void CreateForwardShader();
 

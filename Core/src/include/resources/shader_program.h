@@ -155,7 +155,7 @@ static inline ShaderStageType ShaderFormatToShaderType(const char* _formatWithPo
     {
     public:
 
-        PC_CORE_API virtual void AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets) = 0;
+        PC_CORE_API virtual void AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets, size_t set) = 0;
         
         PC_CORE_API virtual void FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets) = 0;
         

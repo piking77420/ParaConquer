@@ -18,11 +18,15 @@ VulkanShaderProgram::~VulkanShaderProgram()
 {
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
 
-    if (m_DescriptorSetLayout != VK_NULL_HANDLE)
+    for (size_t i = 0; i < m_DescriptorSetLayout.size(); i++)
     {
-        device.destroyDescriptorSetLayout(m_DescriptorSetLayout);
-        m_DescriptorSetLayout = VK_NULL_HANDLE;
+        if (m_DescriptorSetLayout[i] != VK_NULL_HANDLE)
+        {
+            device.destroyDescriptorSetLayout(m_DescriptorSetLayout[i]);
+            m_DescriptorSetLayout[i] = VK_NULL_HANDLE;
+        }
     }
+   
 
     if (m_DescriptorPool != VK_NULL_HANDLE)
     {
@@ -71,9 +75,9 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
     return m_PipelineLayout;
 }
 
-void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets)
+void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set)
 {
-    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout);
+    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout[set]);
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
     VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets();
     
@@ -287,8 +291,8 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
 
     vk::PipelineLayoutCreateInfo  pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = 1; // Optional
-    pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout; // Optional
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(m_DescriptorSetLayout.size()); // Optional
+    pipelineLayoutInfo.pSetLayouts = m_DescriptorSetLayout.data(); // Optional
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pushConstantRanges.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
@@ -347,39 +351,62 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
 {
     std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
     
-    std::vector<vk::DescriptorSetLayoutBinding>* descriptorSetLayouts = &_vulkanShaderProgramCreateContext.descriptorSetLayouts;
+    std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
     std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContext.pushConstantRanges;
+
+    // Compute Unique Set
+    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
+        for (size_t i = 0; i < moduleIndex.descriptor_set_count; i++)
+        {
+            if (moduleIndex.descriptor_sets[i].set != std::numeric_limits<uint32_t>::max())
+            {
+                layoutsMap.insert({ moduleIndex.descriptor_bindings[i].set ,{} });
+            }
+        }
     
     // Resize Vector
-    uint32_t descriptorSetLayoutBinding = 0;
     uint32_t pushConstantRangeCount = 0;
-    for (auto& i : _vulkanShaderProgramCreateContext.modulesReflected)
+    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
     {
-        descriptorSetLayoutBinding += i.descriptor_binding_count;
-        pushConstantRangeCount += i.push_constant_block_count;
+        //for (auto& set : moduleIndex.descriptor_sets)
+        //{
+            //if (set.set == std::numeric_limits<uint32_t>::max())
+              //  continue;
+            //layoutsMap[set.set].resize(layoutsMap[set.set].size() + set.binding_count);
+        //}
+        pushConstantRangeCount += moduleIndex.push_constant_block_count;
     }
-    descriptorSetLayouts->resize(descriptorSetLayoutBinding);
     pushConstantRanges->resize(pushConstantRangeCount);
 
-    descriptorSetLayoutBinding = 0;
 
-    // DescriptorSetLayouts
-    for (size_t i = 0; i < _vulkanShaderProgramCreateContext.modulesReflected.size(); i++)
+    uint32_t descritptorCount = 0;
+    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
     {
-        SpvReflectDescriptorBinding* spvReflectDescriptorBinding = _vulkanShaderProgramCreateContext.modulesReflected[i].descriptor_bindings;
-        if (spvReflectDescriptorBinding == nullptr)
-            continue;
-        
-        vk::DescriptorSetLayoutBinding& descriptorSetLayout = descriptorSetLayouts->at(descriptorSetLayoutBinding);
+        for (size_t setIndex = 0 ; setIndex < moduleIndex.descriptor_set_count; setIndex++)
+        {
+            SpvReflectDescriptorSet& s = moduleIndex.descriptor_sets[setIndex];
 
-        descriptorSetLayout.binding = spvReflectDescriptorBinding->binding;
-        descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvReflectDescriptorBinding->descriptor_type);
-        descriptorSetLayout.descriptorCount = spvReflectDescriptorBinding->count;
-        descriptorSetLayout.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
-        descriptorSetLayout.pImmutableSamplers = nullptr;// optional
-        descriptorSetLayoutBinding++;
+            if (s.binding_count == 0)
+                continue;
 
-        descriptorTypeCount[descriptorSetLayout.descriptorType] += descriptorSetLayout.descriptorCount;
+
+            for (size_t descriptorIndex = 0; descriptorIndex < s.binding_count; descriptorIndex++)
+            {
+                 SpvReflectDescriptorBinding& spvBinding = *s.bindings[descriptorIndex];
+
+                 vk::DescriptorSetLayoutBinding descriptorSetLayout{};
+                descriptorSetLayout.binding =  spvBinding.binding;
+                descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvBinding.descriptor_type);
+                descriptorSetLayout.descriptorCount = spvBinding.count;
+                descriptorSetLayout.stageFlags = static_cast<vk::ShaderStageFlags>(moduleIndex.shader_stage);
+                descriptorSetLayout.pImmutableSamplers = nullptr;// optional
+
+                descriptorTypeCount[static_cast<vk::DescriptorType>(spvBinding.descriptor_type)] += spvBinding.count;
+                descritptorCount += spvBinding.count;
+
+                layoutsMap[s.set].push_back(descriptorSetLayout);
+            }
+        }
     }
 
     pushConstantRangeCount = 0;
@@ -387,24 +414,42 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
     // PushRange
     for (size_t i = 0; i < _vulkanShaderProgramCreateContext.modulesReflected.size(); i++)
     {
-        SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_blocks;
-        if (spvReflectBlockVariablePushConstant == nullptr)
+        const uint32_t pushConstantCount = _vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_block_count;
+        if (pushConstantCount == 0)
             continue;
-        
-        vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
-        pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
-        pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
-        pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
-        pushConstantRangeCount++;
+
+        for (size_t j = 0; j < pushConstantCount; j++)
+        {
+            SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContext.modulesReflected[j].push_constant_blocks;
+
+            vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
+            pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
+            pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
+            pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
+            pushConstantRangeCount++;
+        }
     }
 
-    // DescriptoSet
-    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
-    descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
-    descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(descriptorSetLayouts->size());
-    descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayouts->data();
+    std::vector<std::vector<vk::DescriptorSetLayoutBinding>> layouts;
+    layouts.reserve(layoutsMap.size());
 
-    m_DescriptorSetLayout = _vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+    for (auto& l : layoutsMap)
+    {
+        layouts.emplace_back(l.second);
+    }
+
+    // DescriptoSetLayout
+    m_DescriptorSetLayout.reserve(layouts.size());
+    for (size_t i = 0; i < layouts.size(); i++)
+    {
+        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+        descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
+        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layouts[i].size());
+        descriptorSetLayoutCreateInfo.pBindings = layouts[i].data();
+
+       m_DescriptorSetLayout.emplace_back(_vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo));
+    }
+
 
     // Descriptor Pool
     std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(descriptorTypeCount.size());

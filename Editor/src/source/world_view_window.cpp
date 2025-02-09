@@ -14,7 +14,7 @@ using namespace PC_EDITOR_CORE;
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
-    m_Editor->renderer.m_DrawTextureScreenQuadShader->AllocDescriptorSet(&m_ViewPortDescriptorSet);
+    m_Editor->renderer.m_DrawTextureScreenQuadShader->AllocDescriptorSet(&m_ViewPortDescriptorSet, 0);
 }
 
 WorldViewWindow::~WorldViewWindow()

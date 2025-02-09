@@ -15,6 +15,7 @@
 #include "io/core_io.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
+#include "rendering/material.hpp"
 #include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
 
@@ -117,10 +118,27 @@ void Editor::ShaderRecompileList()
 
 void Editor::InitTestScene()
 {
+    Material* m1 = ResourceManager::Create<Material>();
+    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
+    m1->Build();
+    
+    Material* m2 = ResourceManager::Create<Material>();
+    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
+    m2->Build();
+    
     EntityId entity_id = world.entityManager.CreateEntity();
     world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
     auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
     s->mesh = ResourceManager::Get<Mesh>("cube");
+    s->material = m1;
+
+    entity_id = world.entityManager.CreateEntity();
+    Transform* t =world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
+    s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
+    s->mesh = ResourceManager::Get<Mesh>("suzanne");
+    s->material = m2;
+
+    t->position = { 0.0f, 2.0f, 1.0f };
 }
 
 void Editor::DestroyTestScene()
