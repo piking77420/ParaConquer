@@ -3,5 +3,7 @@
 
 namespace Vulkan
 {
-    void TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+    void TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect);
+
+    bool HasStencilComponent(vk::Format _format);
 }

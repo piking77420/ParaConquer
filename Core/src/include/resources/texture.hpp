@@ -28,11 +28,13 @@ public:
     PC_CORE_API void Load(const std::array<std::string,6>& _maps);
    
     PC_CORE_API  std::shared_ptr<GpuHandle> GetHandle() const;
-    
+
+    PC_CORE_API  std::shared_ptr<GpuHandle> GetHandle(size_t _frameIndex) const;
+
 private:
     int m_TextureChannel = -1;
 
-    std::shared_ptr<GpuHandle> m_TextureHandle = nullptr;
+    std::array<std::shared_ptr<GpuHandle>, MAX_FRAMES_IN_FLIGHT> m_TextureHandles;
 
     void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
 };

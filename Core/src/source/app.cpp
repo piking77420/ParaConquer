@@ -44,7 +44,7 @@ void App::Destroy()
 
     world.skybox.Destroy();
     ResourceManager::Destroy();
-    //renderer.Destroy();
+    renderer.Destroy();
     PC_LOG("App Destroy")
 }
 
@@ -64,7 +64,6 @@ void App::Run()
         //vulkanImgui.NewFrame();
         //MoveObject();
         renderer.BeginDraw(&window);
-        renderer.Render();
         renderer.SwapBuffers(&window);
     } 
 }

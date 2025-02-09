@@ -12,27 +12,20 @@ namespace Vulkan
     
         VulkanImageHandle(VulkanImageHandle&& _other) noexcept
         {
-            image = _other.image;
-            _other.image = VK_NULL_HANDLE;
+            std::exchange(image, _other.image);
 
-            view = _other.view;
-            _other.view = VK_NULL_HANDLE;
-
-
-            allocation = _other.allocation;
-            _other.allocation = VK_NULL_HANDLE;
+            std::exchange(view, _other.view);
+            
+            std::exchange(allocation, _other.allocation);
         }
 
         VulkanImageHandle& operator=(VulkanImageHandle&& _other)
         {
-            image = _other.image;
-            _other.image = VK_NULL_HANDLE;
+            std::exchange(image, _other.image);
 
-            view = _other.view;
-            _other.view = VK_NULL_HANDLE;
-
-            allocation = _other.allocation;
-            _other.allocation = VK_NULL_HANDLE;
+            std::exchange(view, _other.view);
+            
+            std::exchange(allocation, _other.allocation);
 
             return *this;
         }

@@ -1,4 +1,5 @@
 #pragma once
+#include "rendering_typedef.h"
 #include "low_renderer/vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/index_buffer.hpp"
@@ -13,22 +14,34 @@ class Renderer
 public:
 
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
+
+    PC_CORE::ShaderProgram* m_ForwardShader = nullptr;
+
+    PC_CORE::ShaderProgram* m_DrawTextureScreenQuadShader = nullptr;
+
+    std::shared_ptr<RhiRenderPass> forwardPass;
+
+    std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
+
+    PC_CORE_API Renderer() = default;
+
+    PC_CORE_API ~Renderer() = default;
     
-    Renderer() = default;
-
-    ~Renderer() = default;
-
     PC_CORE_API void Init();
 
-    PC_CORE_API bool BeginDraw(Window* _window);
+    PC_CORE_API void Destroy();
 
-    PC_CORE_API void Render();
+    PC_CORE_API bool BeginDraw(Window* _window);
+    
+    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers);
 
     PC_CORE_API void SwapBuffers(Window* _window);
+
+    PC_CORE_API void DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets);
+
 private:
     RhiContext* m_RhiContext;
     
-    PC_CORE::ShaderProgram* m_Main = nullptr;
 
     std::shared_ptr<PC_CORE::VertexBuffer> m_VertexBuffer;
 
@@ -39,6 +52,11 @@ private:
     UniformBuffer m_UniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
+
+    PC_CORE_API void CreateForwardShader();
+
+    PC_CORE_API void CreateDrawQuadShader();
+
 };
 
 END_PCCORE

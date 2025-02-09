@@ -35,11 +35,18 @@ void Editor::UnInitThridPartLib()
 
 void Editor::CompileShader()
 {
-    ShaderSource* mainVertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-    ShaderSource* mainFrag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+    ShaderSource* vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+    ShaderSource* frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
-    mainVertex->CompileToSpriv();
-    mainFrag->CompileToSpriv();
+    vertex->CompileToSpriv();
+    frag->CompileToSpriv();
+
+    vertex = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.vert");
+    frag = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.frag");
+
+    
+    vertex->CompileToSpriv();
+    frag->CompileToSpriv();
 }
 
 void Editor::Init()
@@ -71,7 +78,7 @@ void Editor::Destroy()
 
 void Editor::UpdateEditorWindows()
 {
-    /*
+    
     dockSpace.BeginDockSpace();
     ShaderRecompileList();
     for (EditorWindow* editorWindow : m_EditorWindows)
@@ -80,7 +87,7 @@ void Editor::UpdateEditorWindows()
         editorWindow->Update();
         editorWindow->End();
     }
-    dockSpace.EndDockSpace();*/
+    dockSpace.EndDockSpace();
 }
 
 void Editor::ShaderRecompileList()
@@ -136,20 +143,14 @@ void Editor::Run()
         UpdateEditorWindows();
 
         WorldLoop();
-
-        ImGui::Begin("hello");
-        ImGui::Text("Hello, world!");
-        ImGui::End();
-        
-        for (EditorWindow* editorWindow : m_EditorWindows)
-            editorWindow->Render();
-        
+      
         if (!renderer.BeginDraw(&window))
         {
             continue;
         }
 
-        renderer.Render();
+        for (EditorWindow* editorWindow : m_EditorWindows)
+            editorWindow->Render();
         
         renderer.SwapBuffers(&window);
     }

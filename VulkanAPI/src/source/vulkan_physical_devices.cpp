@@ -17,6 +17,8 @@ float Vulkan::VulkanPhysicalDevice::GetMaxSamplerAnisotropy() const
     return properties.limits.maxSamplerAnisotropy;
 }
 
+
+
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
 {
     return reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex])->physicalDevice;

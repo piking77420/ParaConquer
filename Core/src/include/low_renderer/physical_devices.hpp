@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "core_header.hpp"
+#include "rhi_typedef.h"
 
 #define SWAPCHAIN_EXT "SWAPCHAIN_EXT"
 #define MESH_SHADER_EXT "MESH_SHADER"
@@ -33,7 +34,7 @@ BEGIN_PCCORE
         virtual ~PhysicalDevice() = default;
 
         virtual float GetMaxSamplerAnisotropy() const = 0;
-     };
+    };
 
     class PhysicalDevices
     {

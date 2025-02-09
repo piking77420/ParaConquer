@@ -8,7 +8,12 @@ namespace Vulkan
     class VulkanRenderPass : public PC_CORE::RhiRenderPass
     {
     public:
-        VULKAN_API VulkanRenderPass(vk::SurfaceFormatKHR surfaceFormat);
+      
+        VULKAN_API VulkanRenderPass(PC_CORE::RHIFormat colorFormat, PC_CORE::RHIFormat depthFormat);
+
+        VULKAN_API VulkanRenderPass(PC_CORE::RHIFormat colorFormat);
+
+        VULKAN_API VulkanRenderPass(vk::Format format);
 
         VULKAN_API VulkanRenderPass() = default;
 

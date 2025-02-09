@@ -198,7 +198,6 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.modulesReflected[i].entry_point_name;
     }
 
-    
     return vulkanShaderProgramCreateContex;
 }
 
@@ -259,6 +258,19 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
     ParsePipelineColorBlendAttachmentState(&colorBlendAttachment);
 
+
+    vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
+    depthStencilState.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
+    depthStencilState.depthTestEnable = VK_TRUE;
+    depthStencilState.depthWriteEnable = VK_TRUE;
+    depthStencilState.depthWriteEnable = VK_TRUE;
+    depthStencilState.depthCompareOp = vk::CompareOp::eLess;
+    depthStencilState.minDepthBounds = 0.0f;
+    depthStencilState.maxDepthBounds = 1.0f;
+    depthStencilState.stencilTestEnable = VK_FALSE;
+    depthStencilState.front = vk::StencilOpState(); // Optional
+    depthStencilState.back = vk::StencilOpState(); // Optional
+
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo;
     ParseParsePipelineColorBlendAttachmentState(&colorBlending, &colorBlendAttachment);
@@ -281,8 +293,11 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pInputAssemblyState = &inputAssembly;
     graphicsPipelineInfo.pViewportState = &viewportState;
     graphicsPipelineInfo.pRasterizationState = &rasterizer;
+    
+    if (_shaderGraphicPointInfo.enableDepthTest)
+        graphicsPipelineInfo.pDepthStencilState = &depthStencilState;
+    
     graphicsPipelineInfo.pMultisampleState = &multisampling;
-    graphicsPipelineInfo.pDepthStencilState = nullptr; // Optional
     graphicsPipelineInfo.pColorBlendState = &colorBlending;
     graphicsPipelineInfo.pDynamicState = &dynamicState;
     graphicsPipelineInfo.layout = m_PipelineLayout;
@@ -325,30 +340,41 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
     descriptorSetLayouts->resize(descriptorSetLayoutBinding);
     pushConstantRanges->resize(pushConstantRangeCount);
 
+    descriptorSetLayoutBinding = 0;
+
     // DescriptorSetLayouts
-    for (size_t i = 0; i < descriptorSetLayouts->size(); i++)
+    for (size_t i = 0; i < _vulkanShaderProgramCreateContext.modulesReflected.size(); i++)
     {
-        vk::DescriptorSetLayoutBinding& descriptorSetLayout = descriptorSetLayouts->at(i);
-        SpvReflectDescriptorBinding& spvReflectDescriptorBinding = *_vulkanShaderProgramCreateContext.modulesReflected[i].descriptor_bindings;
+        SpvReflectDescriptorBinding* spvReflectDescriptorBinding = _vulkanShaderProgramCreateContext.modulesReflected[i].descriptor_bindings;
+        if (spvReflectDescriptorBinding == nullptr)
+            continue;
         
-        descriptorSetLayout.binding = spvReflectDescriptorBinding.binding;
-        descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvReflectDescriptorBinding.descriptor_type);
-        descriptorSetLayout.descriptorCount = spvReflectDescriptorBinding.count;
+        vk::DescriptorSetLayoutBinding& descriptorSetLayout = descriptorSetLayouts->at(descriptorSetLayoutBinding);
+
+        descriptorSetLayout.binding = spvReflectDescriptorBinding->binding;
+        descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvReflectDescriptorBinding->descriptor_type);
+        descriptorSetLayout.descriptorCount = spvReflectDescriptorBinding->count;
         descriptorSetLayout.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
         descriptorSetLayout.pImmutableSamplers = nullptr;// optional
+        descriptorSetLayoutBinding++;
 
         descriptorTypeCount[descriptorSetLayout.descriptorType] += descriptorSetLayout.descriptorCount;
     }
 
+    pushConstantRangeCount = 0;
+
     // PushRange
-    for (size_t i = 0; i < pushConstantRanges->size(); i++)
+    for (size_t i = 0; i < _vulkanShaderProgramCreateContext.modulesReflected.size(); i++)
     {
-        SpvReflectBlockVariable& spvReflectBlockVariablePushConstant = *_vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_blocks;
+        SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_blocks;
+        if (spvReflectBlockVariablePushConstant == nullptr)
+            continue;
         
-        vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(i);
-        pushConstantRange.offset = spvReflectBlockVariablePushConstant.offset;
-        pushConstantRange.size = spvReflectBlockVariablePushConstant.size;
+        vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
+        pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
+        pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
         pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
+        pushConstantRangeCount++;
     }
 
     // DescriptoSet

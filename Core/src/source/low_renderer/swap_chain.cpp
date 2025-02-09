@@ -14,8 +14,3 @@ SwapChain::SwapChain(uint32_t _widht, uint32_t _height) :
     return m_SwapChainRenderPass;
 }
 
-
-std::shared_ptr<FrameBuffer> SwapChain::GetFrameBuffer()
-{
-     return m_SwapChainFramebuffers[m_SwapChainImageIndex];
-}

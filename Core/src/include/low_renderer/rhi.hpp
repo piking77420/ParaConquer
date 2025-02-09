@@ -37,7 +37,15 @@ public:
 
     PC_CORE_API static ShaderProgram* CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 
+    PC_CORE_API static void DestroyShader(ShaderProgram* _shaderprogram);
+
     PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
+
+    PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat, PC_CORE::RHIFormat _depthFormat);
+
+    PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat);
+
+    PC_CORE_API static std::shared_ptr<FrameBuffer> CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo);
 
     PC_CORE_API static RhiContext* GetRhiContext();
     

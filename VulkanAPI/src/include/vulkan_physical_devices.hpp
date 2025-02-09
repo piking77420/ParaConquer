@@ -27,6 +27,7 @@ namespace Vulkan
         vk::PhysicalDevice physicalDevice;
 
         float GetMaxSamplerAnisotropy() const override ;
+        
     };
 
     

@@ -1,4 +1,3 @@
-
 #include "io/imgui_context.h"
 
 #include "imgui.h"
@@ -33,18 +32,17 @@ static void CheckError(VkResult err)
 
 void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
 {
-    
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    io = &ImGui::GetIO(); (void)io;
+    io = &ImGui::GetIO();
+    (void)io;
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-    io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-   //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
+    io->ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
+    //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; 
     ImGui::StyleColorsDark();
 
 
-    
     switch (_graphicApi)
     {
     case GraphicAPI::NONE:
@@ -58,14 +56,11 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
         break;
     default: ;
     }
-
 }
-
 
 
 void IMGUIContext::NewFrame()
 {
-
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -73,7 +68,6 @@ void IMGUIContext::NewFrame()
 
 void IMGUIContext::Destroy()
 {
-
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -90,9 +84,9 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
 
     RhiContext* context = Rhi::GetRhiContext();
     Vulkan::VulkanContext* vkcontext = reinterpret_cast<Vulkan::VulkanContext*>(Rhi::GetRhiContext());
-    
+
     VkDescriptorPoolSize pool_sizes[] =
-                {
+    {
         {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
         {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
         {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
@@ -104,7 +98,7 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
         {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
-                };
+    };
     VkDescriptorPoolCreateInfo pool_info = {};
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -113,15 +107,19 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
     pool_info.pPoolSizes = pool_sizes;
 
     device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(vkcontext->rhiDevice)->GetDevice();
-    descriptorPool = device.createDescriptorPool(*reinterpret_cast<vk::DescriptorPoolCreateInfo*>(&pool_info),nullptr);
+    descriptorPool = device.createDescriptorPool(*reinterpret_cast<vk::DescriptorPoolCreateInfo*>(&pool_info), nullptr);
 
-    std::shared_ptr<Vulkan::VulkanSwapChain> swapChain = std::reinterpret_pointer_cast<Vulkan::VulkanSwapChain>(context->swapChain);
-    vk::RenderPass renderPass = std::reinterpret_pointer_cast<Vulkan::VulkanRenderPass>(swapChain->GetSwapChainRenderPass())->GetVulkanRenderPass();
+    std::shared_ptr<Vulkan::VulkanSwapChain> swapChain = std::reinterpret_pointer_cast<Vulkan::VulkanSwapChain>(
+        context->swapChain);
+    vk::RenderPass renderPass = std::reinterpret_pointer_cast<Vulkan::VulkanRenderPass>(
+        swapChain->GetSwapChainRenderPass())->GetVulkanRenderPass();
 
     ImGui_ImplVulkan_InitInfo init_info =
-        {
-        .Instance = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(vkcontext->renderInstance)->GetVulkanInstance(),
-        .PhysicalDevice = std::reinterpret_pointer_cast<Vulkan::VulkanPhysicalDevices>(vkcontext->physicalDevices)->GetVulkanDevice(),
+    {
+        .Instance = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(vkcontext->renderInstance)->
+        GetVulkanInstance(),
+        .PhysicalDevice = std::reinterpret_pointer_cast<Vulkan::VulkanPhysicalDevices>(vkcontext->physicalDevices)->
+        GetVulkanDevice(),
         .Device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(vkcontext->rhiDevice)->GetDevice(),
         .QueueFamily = 0,
         .Queue = vkcontext->graphicsQueue,
@@ -132,28 +130,43 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
         .MSAASamples = VK_SAMPLE_COUNT_1_BIT,
         .Subpass = 0,
         .CheckVkResultFn = CheckError,
-        };
+    };
     init_info.CheckVkResultFn = CheckError;
     ImGui_ImplVulkan_Init(&init_info);
 }
 
+void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
+{
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        std::shared_ptr<Vulkan::VulkanImageHandle> handle = std::reinterpret_pointer_cast<Vulkan::VulkanImageHandle>(
+            _texture->GetHandle(i));
+        VkSampler sampler = std::reinterpret_pointer_cast<Vulkan::VulkanSampler>(Rhi::GetRhiContext()->sampler)->
+            GetSampler();
+        ImGui_ImplVulkan_AddTexture(sampler, handle.get()->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+}
 
+void IMGUIContext::RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
+{
+    for (size_t i = 0; i < _viewPortId.size(); i++)
+    {
+        ImGui_ImplVulkan_RemoveTexture(_viewPortId[i]);
+    }
+}
 
 
 void IMGUIContext::Render(CommandList* _commandBuffer)
 {
     ImGui::Render();
-    
+
     ImDrawData* draw_data = ImGui::GetDrawData();
     vk::CommandBuffer commandBuffer = reinterpret_cast<Vulkan::VulkanCommandList*>(_commandBuffer)->GetHandle();
     ImGui_ImplVulkan_RenderDrawData(draw_data, commandBuffer);
-    
+
     if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }
 }
-
-
-

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "core_header.hpp"
-#include "rhi_render_pass.hpp"
 #include "math/toolbox_typedef.hpp"
 
 constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
@@ -50,7 +49,6 @@ BEGIN_PCCORE
 
 #pragma endregion
 
-#pragma region RHIFORMAT
     enum class RHIFormat
     {
         UNDEFINED = 0,
@@ -358,7 +356,7 @@ BEGIN_PCCORE
         A4R4G4B4_UNORM_PACK16_EXT = A4R4G4B4_UNORM_PACK16,
         A4B4G4R4_UNORM_PACK16_EXT = A4B4G4R4_UNORM_PACK16,
 
-        COUNT
+        COUNT = 1000340002
     };
 
 #pragma endregion
@@ -416,6 +414,20 @@ enum class IndexFormat
     };
 
 
+    enum class TextureAttachement
+    {
+        None = 0,
+        Color = 1,
+        DepthStencil = 2,
+    };
+
+    enum class TextureNature
+    {
+        Default = 0,
+        RenderTarget,
+    };
+
+
     struct CreateTextureInfo
     {
         int32_t width;
@@ -425,172 +437,12 @@ enum class IndexFormat
         ImageType imageType;
         RHIFormat format;
         Channel channel;
+        TextureAttachement textureAttachement;
+        TextureNature textureNature;
+        bool canbeSampled = false;
         bool GenerateMipMap = false;
-        bool useAsAttachement = false;
         void* data;
     };
-
-
-#pragma endregion
-
-
-#pragma region Shader
-
-    enum class ShaderStageType : size_t
-    {
-        VERTEX,
-        TESSCONTROL,
-        TESSEVALUATION,
-        GEOMETRY,
-        FRAGMENT,
-        COMPUTE,
-        RAYGEN,
-        INTERSECT,
-        ANYHIT,
-        CLOSESTHIT,
-        MISS,
-        CALLABLE,
-        TASK,
-        MESH,
-
-        COUNT
-    };
-
-    const std::array<std::string, 14> ShaderSourceFormat =
-    {
-        ".vert",
-        ".tessc",
-        ".tessv",
-        ".geom",
-        ".frag",
-        ".comp",
-        ".raygen",
-        ".intersect",
-        ".anyhit",
-        ".closesthit",
-        ".miss",
-        ".callable",
-        ".task"
-        ".mesh",
-    };
-
-
-    struct ShaderSourcePath
-    {
-        std::string shaderSourceCodePath;
-        std::string spvCode;
-    };
-
-    enum class ShaderProgramPipelineType
-    {
-        POINT_GRAPHICS,
-        COMPUTE,
-        RAYTRACING,
-
-        COUT
-    };
-
-    enum class VertexInputRate
-    {
-        VERTEX = 0,
-        INSTANCE = 1,
-
-        COUNT
-    };
-
-    struct VertexInputBindingDescrition
-    {
-        uint32_t binding = 0;
-        uint32_t stride = 0;
-        VertexInputRate vertexInputRate = VertexInputRate::VERTEX;
-    };
-
-    struct VertexAttributeDescription
-    {
-        uint32_t binding = 0;
-        uint32_t location = 0;
-        RHIFormat format = RHIFormat::UNDEFINED;
-        uint32_t offset = 0;
-    };
-
-    enum class PolygonMode
-    {
-        Fill,
-        Line,
-        Point,
-        FillRectangleNV
-    };
-
-    enum class CullModeFlagBit
-    {
-        None,
-        Front,
-        Back,
-        FrontAndBack,
-        Count
-    };
-
-    enum class FrontFace
-    {
-        CounterClockwise,
-        Clockwise
-    };
-
-    struct RasterizerInfo
-    {
-        PolygonMode polygonMode = PolygonMode::Fill;
-        CullModeFlagBit cullModeFlag = CullModeFlagBit::Back;
-        FrontFace frontFace = FrontFace::CounterClockwise;
-    };
-
-    struct ShaderGraphicPointInfo
-    {
-        RasterizerInfo rasterizerInfo;
-        std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
-        std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
-    };
-
-    struct ShaderRayTracingInfo
-    {
-    };
-
-    struct ShaderComputeInfo
-    {
-    };
-
-    using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderRayTracingInfo, ShaderComputeInfo>;
-
-
-    struct ShaderInfo
-    {
-        ShaderProgramPipelineType shaderProgramPipelineType;
-        ShaderInfoData shaderInfoData;
-        std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
-    };
-
-    struct ProgramShaderCreateInfo
-    {
-        std::string prograShaderName;
-        ShaderInfo shaderInfo;
-        std::shared_ptr<RhiRenderPass> renderPass;
-    };
-
-
-    static inline ShaderStageType ShaderFormatToShaderType(const char* _formatWithPoint)
-    {
-        for (int i = 0; i < static_cast<int>(ShaderStageType::COUNT); i++)
-        {
-            if (_stricmp(_formatWithPoint, ShaderSourceFormat[i].c_str()) == 0)
-            {
-                return static_cast<ShaderStageType>(i);
-            }
-        }
-
-        // Return a default value or handle the error when no match is found
-        return ShaderStageType::COUNT;
-    }
-
-#pragma endregion Shader
 
 
     enum class Filter
@@ -646,15 +498,7 @@ enum class IndexFormat
 
 #pragma region RenderPass
 
-    enum class AttachementUsage
-    {
-        NONE,
-        COLOR,
-        DEPTH,
-        STENCIL,
-        COUNT,
-    };
-
+  
 #pragma endregion RenderPass
 
 

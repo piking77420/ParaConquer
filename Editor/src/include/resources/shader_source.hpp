@@ -3,6 +3,7 @@
 
 #include "resources/resource.hpp"
 #include "low_renderer/rhi_typedef.h"
+#include "resources/shader_program.h"
 
 BEGIN_PCCORE
 

@@ -89,12 +89,40 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     renderPassInfo.renderArea.offset = vk::Offset2D{_BeginRenderPassInfo.renderOffSet.x, _BeginRenderPassInfo.renderOffSet.y};
     renderPassInfo.renderArea.extent = vk::Extent2D{_BeginRenderPassInfo.extent.x, _BeginRenderPassInfo.extent.y};
 
-    vk::ClearValue clearColor  = {};
-    clearColor.color.setFloat32({ 
-        _BeginRenderPassInfo.clearColor.x, _BeginRenderPassInfo.clearColor.y, _BeginRenderPassInfo.clearColor.z, _BeginRenderPassInfo.clearColor.w});
+    size_t clearCount = 0;
+    vk::ClearValue clearValues[3];
     
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    if ((_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueColor) &&
+    (_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueDepth))
+    {
+        clearValues[0].color.setFloat32({
+            _BeginRenderPassInfo.clearColor.x,
+            _BeginRenderPassInfo.clearColor.y,
+            _BeginRenderPassInfo.clearColor.z,
+            _BeginRenderPassInfo.clearColor.w
+        });
+
+        clearValues[1].depthStencil.setDepth(_BeginRenderPassInfo.clearDepth);
+        clearCount = 2;
+    }
+    else if (_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueDepth)
+    {
+        clearValues[0].depthStencil.setDepth(_BeginRenderPassInfo.clearDepth);
+        clearCount = 1;
+
+    }
+    else if (_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueColor)
+    {
+        clearValues[0].color.setFloat32({
+            _BeginRenderPassInfo.clearColor.x,
+            _BeginRenderPassInfo.clearColor.y,
+            _BeginRenderPassInfo.clearColor.z,
+            _BeginRenderPassInfo.clearColor.w
+        });
+        clearCount = 1;
+    }
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearCount);
+    renderPassInfo.pClearValues = clearValues;
 
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
@@ -201,4 +229,3 @@ const vk::Queue* Vulkan::VulkanCommandList::GetQueue() const
 {
     return m_Queue;
 }
-    

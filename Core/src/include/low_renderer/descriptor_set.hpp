@@ -6,6 +6,7 @@
 #include "gpu_buffer.hpp"
 #include "gpu_handle.hpp"
 #include "sampler.hpp"
+#include "resources/texture.hpp"
 
 BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
@@ -23,7 +24,7 @@ BEGIN_PCCORE
     struct ImageSamperDescriptor
     {
         Sampler* sampler;
-        GpuHandle* imageHandle;
+        Texture* texture;
     };
 
     struct UniformBufferDescriptor

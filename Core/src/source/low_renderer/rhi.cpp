@@ -3,7 +3,9 @@
 #include "log.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_context.hpp"
+#include "vulkan_render_pass.hpp"
 #include "resources/resource_manager.hpp"
+#include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_sampler.hpp"
 #include "resources/vulkan_shader_program.hpp"
 
@@ -106,6 +108,11 @@ ShaderProgram* Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCr
     
 }
 
+void Rhi::DestroyShader(ShaderProgram* _shaderprogram)
+{
+    delete _shaderprogram;
+}
+
 std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
 {
     Rhi& rhi = GetInstance();
@@ -123,6 +130,67 @@ std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCr
     }
 
 }
+
+std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat, PC_CORE::RHIFormat _depthFormat)
+{
+    Rhi& rhi = GetInstance();
+
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanRenderPass>(_colorFormat, _depthFormat);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+}
+
+std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat)
+{
+    Rhi& rhi = GetInstance();
+
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanRenderPass>(_colorFormat);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+}
+
+std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo)
+{
+    Rhi& rhi = GetInstance();
+
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanFrameBuffer>(_createFrameInfo);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+}
+
 
 RhiContext* Rhi::GetRhiContext()
 {

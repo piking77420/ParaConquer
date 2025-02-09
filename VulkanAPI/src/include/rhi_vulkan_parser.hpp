@@ -3,6 +3,7 @@
 #include "vulkan_header.h"
 #include "low_renderer/rhi_typedef.h"
 #include "low_renderer/descriptor_set.hpp"
+#include "resources/shader_program.h"
 
 namespace Vulkan
 {
