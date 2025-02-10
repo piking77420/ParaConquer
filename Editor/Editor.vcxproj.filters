@@ -69,6 +69,9 @@
     <ClCompile Include="src\source\resources\shader_source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\source\rendering\debug_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\externals\include\ImguiNodeEditor\crude_json.h">
@@ -129,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\resources\shader_source.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\debug_draw.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

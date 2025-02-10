@@ -183,6 +183,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\source\rendering\debug_draw.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\externals\source\ImguiNodeEditor\crude_json.cpp" />
     <ClCompile Include="src\externals\source\ImguiNodeEditor\imgui_canvas.cpp" />
@@ -212,6 +213,7 @@
     <Content Include="src\include\editor_header.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\rendering\debug_draw.hpp" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\crude_json.h" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_bezier_math.h" />
     <ClInclude Include="src\externals\include\ImguiNodeEditor\imgui_canvas.h" />

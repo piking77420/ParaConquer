@@ -109,6 +109,7 @@
     <ClInclude Include="src\include\reflection\reflector.hpp" />
     <ClInclude Include="src\include\reflection\simple_type_name.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
+    <ClInclude Include="src\include\rendering\gbuffers.hpp" />
     <ClInclude Include="src\include\rendering\light.hpp" />
     <ClInclude Include="src\include\rendering\material.hpp" />
     <ClInclude Include="src\include\rendering\renderer.hpp" />
