@@ -60,7 +60,7 @@ public:
     static TypeInfo GetTypeInfo();
 
     template <typename T>
-    constexpr static uint32_t GetTypeKey() 
+    constexpr static uint32_t   GetTypeKey() 
     {
         return COMPILE_TIME_TYPE_KEY(T);
     }

@@ -118,74 +118,89 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
     VulkanContext& context = *reinterpret_cast<VulkanContext*>(PC_CORE::Rhi::GetRhiContext());
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 
-    int multiplayer = GetMultiplayer(_createTextureInfo.channel);
+    vk::ImageUsageFlags textureUsage;
+    VmaMemoryUsage textureMemoryUsage;
+    vk::ImageLayout finalTextureLayout = vk::ImageLayout::eUndefined;
+    vk::ImageAspectFlags imageAspectFlag;
     
-    if (_createTextureInfo.depth < 1 )
-    {
-        PC_LOGERROR("Vulkan::VulkanGpuAllocator::CreateTexture: _createTextureInfo.depth < 1 )");
-        return false;
-    }
-    
-    size_t imageSize = static_cast<size_t>(_createTextureInfo.width * _createTextureInfo.height * _createTextureInfo.depth * multiplayer);
-    
-    VulkanBufferHandle stagginBuffer = CreateBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-    void* data = nullptr;
-    vmaMapMemory(m_allocator, stagginBuffer.allocation, &data);
-    memcpy(data, _createTextureInfo.data, imageSize);
-    vmaUnmapMemory(m_allocator, stagginBuffer.allocation);
-
-    const vk::ImageUsageFlags imageUsageFlags = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
-    const VmaMemoryUsage memoryUsage = VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY;
+    GetTextureUsage(_createTextureInfo,&textureMemoryUsage, &textureUsage, &finalTextureLayout, &imageAspectFlag);
     const vk::Format format = RHIFormatToVkFormat(_createTextureInfo.format);
     
     VulkanImageHandle vulkanImageHandle = CreateImage(_createTextureInfo.width, _createTextureInfo.height
                                                      ,_createTextureInfo.depth, _createTextureInfo.mipsLevels,
                                                      RHIImageToVkImageType(_createTextureInfo.imageType),
                                                      format,
-                                                     vk::ImageTiling::eOptimal, imageUsageFlags, memoryUsage);
-
-    vulkanImageHandle.view = CreateImageView(device, vulkanImageHandle.image, vk::ImageViewType::e2D,
-        format);
+                                                     vk::ImageTiling::eOptimal, textureUsage, textureMemoryUsage);
 
     const SingleCommandBeginInfo singleCommandBeginInfo =
-       {
+             {
         .device = device,
         .commandPool = context.transferCommandPool,
         .queue = context.transferQueu
         };
 
     vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
-
-    TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-
-    const uint32_t w =  _createTextureInfo.width;
-    const uint32_t h =  _createTextureInfo.height;
-    const uint32_t d =  _createTextureInfo.depth;
     
-    vk::BufferImageCopy region{};
-    region.bufferOffset = 0;
-    region.bufferRowLength = 0;
-    region.bufferImageHeight = 0;
-    region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-    region.imageSubresource.mipLevel = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
-    region.imageOffset = VkOffset3D{0, 0, 0};
-    region.imageExtent = vk::Extent3D{
-        w,
-        h,
-        d
-    };
+    if (_createTextureInfo.textureNature == PC_CORE::TextureNature::Default && _createTextureInfo.data != nullptr)
+    {
+        int multiplayer = GetMultiplayer(_createTextureInfo.channel);
     
-    commandBuffer.copyBufferToImage(stagginBuffer.buffer, vulkanImageHandle.image,vk::ImageLayout::eTransferDstOptimal,region );
-    TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+        if (_createTextureInfo.depth < 1 )
+        {
+            PC_LOGERROR("Vulkan::VulkanGpuAllocator::CreateTexture: _createTextureInfo.depth < 1 )");
+            return false;
+        }
+    
+        size_t imageSize = static_cast<size_t>(_createTextureInfo.width * _createTextureInfo.height * _createTextureInfo.depth * multiplayer);
+    
+        VulkanBufferHandle stagginBuffer = CreateBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+        void* data = nullptr;
+        vmaMapMemory(m_allocator, stagginBuffer.allocation, &data);
+        memcpy(data, _createTextureInfo.data, imageSize);
+        vmaUnmapMemory(m_allocator, stagginBuffer.allocation);
+        
+       
 
-    vmaDestroyBuffer(m_allocator, stagginBuffer.buffer, stagginBuffer.allocation);
+        TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, imageAspectFlag);
+
+        const uint32_t w =  _createTextureInfo.width;
+        const uint32_t h =  _createTextureInfo.height;
+        const uint32_t d =  _createTextureInfo.depth;
+    
+        vk::BufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = imageAspectFlag;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = VkOffset3D{0, 0, 0};
+        region.imageExtent = vk::Extent3D{
+            w,
+            h,
+            d
+        };
+    
+        commandBuffer.copyBufferToImage(stagginBuffer.buffer, vulkanImageHandle.image,vk::ImageLayout::eTransferDstOptimal,region );
+        TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, imageAspectFlag);
+
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+
+        vmaDestroyBuffer(m_allocator, stagginBuffer.buffer, stagginBuffer.allocation);
+    }
+    else
+    {
+        TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eUndefined, finalTextureLayout, imageAspectFlag);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+    }
+
 
     std::shared_ptr<VulkanImageHandle> vkPtr = std::make_shared<VulkanImageHandle>();
+
+    vulkanImageHandle.view = CreateImageView(device, vulkanImageHandle.image, vk::ImageViewType::e2D,
+    format, imageAspectFlag);
     
     vkPtr->allocation = vulkanImageHandle.allocation;
     vkPtr->image = vulkanImageHandle.image;
@@ -337,7 +352,7 @@ Vulkan::VulkanImageHandle Vulkan::VulkanGpuAllocator::CreateImage(uint32_t width
 }
 
 vk::ImageView Vulkan::VulkanGpuAllocator::CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
-    vk::Format _format)
+    vk::Format _format, vk::ImageAspectFlags imageAspect)
 {
 
     vk::ImageViewCreateInfo imageInfo{};
@@ -345,7 +360,7 @@ vk::ImageView Vulkan::VulkanGpuAllocator::CreateImageView(vk::Device _device, vk
     imageInfo.image = _image;
     imageInfo.viewType = vk::ImageViewType::e2D;
     imageInfo.format = _format;
-    imageInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    imageInfo.subresourceRange.aspectMask = imageAspect;
     imageInfo.subresourceRange.baseMipLevel = 0;
     imageInfo.subresourceRange.levelCount = 1;
     imageInfo.subresourceRange.baseArrayLayer = 0;
@@ -356,5 +371,43 @@ vk::ImageView Vulkan::VulkanGpuAllocator::CreateImageView(vk::Device _device, vk
     VK_CALL(_device.createImageView(&imageInfo, nullptr, &imageView));
 
     return imageView;
+}
+
+ void Vulkan::VulkanGpuAllocator::GetTextureUsage(const PC_CORE::CreateTextureInfo& _createTextureInfo, VmaMemoryUsage* _memoryUsage, vk::ImageUsageFlags* _usage , vk::ImageLayout* _finalLoayout, vk::ImageAspectFlags* _imageAspectFlag)
+{
+    *_memoryUsage = VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY;
+
+    switch (_createTextureInfo.textureNature)
+    {
+    case PC_CORE::TextureNature::Default:
+        *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
+        *_finalLoayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        *_imageAspectFlag = vk::ImageAspectFlagBits::eColor;
+        break;
+    case PC_CORE::TextureNature::RenderTarget:
+        switch (_createTextureInfo.textureAttachement)
+        {
+        case PC_CORE::TextureAttachement::None:
+            break;
+        case PC_CORE::TextureAttachement::Color:
+            *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
+            *_finalLoayout = vk::ImageLayout::eColorAttachmentOptimal;
+            *_imageAspectFlag = vk::ImageAspectFlagBits::eColor;
+
+            break;
+        case PC_CORE::TextureAttachement::DepthStencil:
+            *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment;
+            *_finalLoayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+            *_imageAspectFlag = vk::ImageAspectFlagBits::eDepth;
+            break;
+        }
+        
+        break;
+    }
+
+    if (_createTextureInfo.canbeSampled)
+        *_usage |= vk::ImageUsageFlagBits::eSampled;
+
+    
 }
 

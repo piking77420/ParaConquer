@@ -14,20 +14,16 @@ namespace Vulkan
 
         VulkanBufferHandle(VulkanBufferHandle&& _other) noexcept
         {
-            buffer = _other.buffer;
-            _other.buffer = VK_NULL_HANDLE;
-
-            allocation = _other.allocation;
-            _other.allocation = VK_NULL_HANDLE;
+            std::exchange(buffer,_other.buffer);
+            
+            std::exchange(allocation, _other.allocation);
         }
 
         VulkanBufferHandle& operator=(VulkanBufferHandle&& _other)
         {
-            buffer = _other.buffer;
-            _other.buffer = VK_NULL_HANDLE;
-
-            allocation = _other.allocation;
-            _other.allocation = VK_NULL_HANDLE;
+            std::exchange(buffer,_other.buffer);
+            
+            std::exchange(allocation, _other.allocation);
 
             return *this;
         }

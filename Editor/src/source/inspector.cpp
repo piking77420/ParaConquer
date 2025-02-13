@@ -15,10 +15,10 @@ void Inspector::Update()
 {
 	EditorWindow::Update();
 
+
 	if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
 		return;
 
-	m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
 	Show();
 	OnInput();
 
@@ -26,11 +26,7 @@ void Inspector::Update()
 
 Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-	transfromTypeRef = &PC_CORE::Reflector::GetType<PC_CORE::Transform>();
-	for (int i = 0; i < 3; i++)
-	{
-		m_Euler[i].reserve(100);
-	}
+	m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
 }
 
 void Inspector::Show()
@@ -45,15 +41,15 @@ void Inspector::Show()
 	ImGui::PopID();
 	
 
-	/*
+	
 	for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
 	{
 		const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;
 
-		if (!scene->HasComponent(selected, currentKeyComponent))
+		if (!entityManager.HasComponent(currentKeyComponent, selectedId))
 			continue;
 
-		PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->GetComponent(selected, currentKeyComponent));
+		PC_CORE::Component* component = static_cast<PC_CORE::Component*>(entityManager.GetComponent(currentKeyComponent, selectedId));
 		auto reflectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
 
 		const char* componentName = m_ReflectedTypes[i]->name.c_str();
@@ -62,6 +58,8 @@ void Inspector::Show()
 
 		ImGui::PushID(static_cast<int>(currentKeyComponent));
 
+		ImGui::Spacing();
+
 		for (size_t j = 0; j < reflectedMember.members.size(); j++)
 		{
 			PC_CORE::Members& m = reflectedMember.members[j];
@@ -69,13 +67,14 @@ void Inspector::Show()
 			ShowReflectedType(component, m);
 			ImGui::PopID();
 			ImGui::Spacing();
+			
 		}
 
-		DeleteButton(m_Editor->m_Selected, m_ReflectedTypes[i]->HashKey);
+		DeleteButton(m_Editor->m_SelectedEntityId, m_ReflectedTypes[i]->HashKey);
 
 		ImGui::PopID();
 	}
-*/
+
 }
 
 void Inspector::OnInput()
@@ -92,14 +91,15 @@ void Inspector::OnInput()
 	{
 
 		ImGui::SeparatorText("Component");
-		for (auto& m_ReflectedType : m_ReflectedTypes)
+		for (auto& type : m_ReflectedTypes)
 		{
-			if (ImGui::Selectable(m_ReflectedType->name.c_str()))
+			if (ImGui::Selectable(type->name.c_str()))
 			{
-				if (PC_CORE::World::GetWorld() != nullptr)
-				{
-					//PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
-				}
+				if (PC_CORE::World::GetWorld() == nullptr)
+					continue;
+
+				PC_CORE::World::GetWorld()->entityManager.AddComponent(type->HashKey, m_Editor->m_SelectedEntityId);
+				
 			}
 		}
 
@@ -217,11 +217,12 @@ void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
 }
 
 
-void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
+void Inspector::DeleteButton(PC_CORE::EntityId _entityId, uint32_t _componentId)
 {
 
 	if (ImGui::SmallButton("Delete Component"))
 	{
+		m_Editor->world.entityManager.RemoveComponent(_componentId, _entityId);
 		//m_Editor->world.scene.RemoveComponent(_entity, _componentId);
 	}
 }

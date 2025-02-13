@@ -40,6 +40,8 @@ public:
 
 	PC_CORE_API bool Empty() const;
 
+	PC_CORE_API bool Contains(size_t _index) const;
+
 	PC_CORE_API SparseSet() = default;
 
 	PC_CORE_API ~SparseSet() = default;

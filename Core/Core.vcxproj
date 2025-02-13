@@ -68,7 +68,7 @@
     <ClInclude Include="src\include\data_structures\sparse_sets.hpp" />
     <ClInclude Include="src\include\data_structures\type_sparse_set.hpp" />
     <ClInclude Include="src\include\ecs\component.h" />
-    <ClInclude Include="src\include\ecs\ecs_archetype.h" />
+    <ClInclude Include="src\include\ecs\archetype.h" />
     <ClInclude Include="src\include\ecs\ecs_front.h" />
     <ClInclude Include="src\include\ecs\ecs_header.h" />
     <ClInclude Include="src\include\ecs\ecs_system.h" />
@@ -109,7 +109,9 @@
     <ClInclude Include="src\include\reflection\reflector.hpp" />
     <ClInclude Include="src\include\reflection\simple_type_name.hpp" />
     <ClInclude Include="src\include\rendering\camera.hpp" />
+    <ClInclude Include="src\include\rendering\gbuffers.hpp" />
     <ClInclude Include="src\include\rendering\light.hpp" />
+    <ClInclude Include="src\include\rendering\material.hpp" />
     <ClInclude Include="src\include\rendering\renderer.hpp" />
     <ClInclude Include="src\include\rendering\rendering_typedef.h" />
     <ClInclude Include="src\include\resources\file_loader.hpp" />
@@ -133,7 +135,7 @@
   <ItemGroup>
     <ClCompile Include="src\source\data_structures\sparse_sets.cpp" />
     <ClCompile Include="src\source\data_structures\type_sparse_set.cpp" />
-    <ClCompile Include="src\source\ecs\ecs_archetype.cpp" />
+    <ClCompile Include="src\source\ecs\archetype.cpp" />
     <ClCompile Include="src\source\ecs\ecs_system.cpp" />
     <ClCompile Include="src\source\ecs\entity_manager.cpp" />
     <ClCompile Include="src\source\low_renderer\command_list.cpp" />
@@ -154,6 +156,8 @@
     <ClCompile Include="src\source\low_renderer\uniform_buffer.cpp" />
     <ClCompile Include="src\source\low_renderer\vertex.cpp" />
     <ClCompile Include="src\source\low_renderer\vertex_buffer.cpp" />
+    <ClCompile Include="src\source\rendering\gbuffers.cpp" />
+    <ClCompile Include="src\source\rendering\material.cpp" />
     <ClCompile Include="src\source\rendering\renderer.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui.cpp" />
     <ClCompile Include="src\externals\source\Imgui\imgui_draw.cpp" />

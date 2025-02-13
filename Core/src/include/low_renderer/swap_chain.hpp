@@ -27,7 +27,11 @@ public:
 
     PC_CORE_API virtual void HandleRecreateSwapChain(PC_CORE::Window* windowHandle) = 0;
 
-    PC_CORE_API std::shared_ptr<FrameBuffer> GetFrameBuffer();
+    PC_CORE_API virtual void BeginSwapChainRenderPass(CommandList* _commandList) = 0;
+
+    PC_CORE_API virtual void EndSwapChainRenderPass(CommandList* _commandList) = 0;
+    
+    PC_CORE_API virtual void* GetFrameBuffer() = 0;
 
     PC_CORE_API inline uint32_t GetWidth() const
     {
@@ -40,9 +44,7 @@ public:
     }
 protected:
     std::shared_ptr<RhiRenderPass> m_SwapChainRenderPass;
-
-    std::vector<std::shared_ptr<PC_CORE::FrameBuffer>> m_SwapChainFramebuffers;
-
+    
     uint32_t m_SwapChainImageIndex = 0;
 
     uint32_t m_SwapChainWidth = 0;

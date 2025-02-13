@@ -1,20 +1,13 @@
 ﻿#pragma once
 
+#include "core_header.hpp"
+#include "gbuffers.hpp"
+#include "low_renderer/frame_buffer.hpp"
 #include "math/matrix_transformation.hpp"
+#include "resources/texture.hpp"
+#include "low_renderer/descriptor_set.hpp"
 
 BEGIN_PCCORE
-
-
-enum class GBufferType
-{
-    COLOR,
-    POSITION,
-    NORMAL,
-    TEXTCOORD,
-    DEPTH,
-    
-    COUT,
-};
 
 
 
@@ -36,14 +29,14 @@ enum class GBufferType
         LowLevelCamera lowLevelCamera;
         float deltaTime;
         float time;
-        // Need this to change the final aspect Image either shader read optimal for viewPort or swaipchain image present optimal
-        bool isSwapChainImage;
         
-        //FrameBufferHandle frameBufferHandle;
-        Tbx::Vector2f renderingContextSize;
+        std::shared_ptr<FrameBuffer> gbufferFrameBuffer;
+        std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
+        
+        PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
+        
+        Tbx::Vector2ui renderingContextSize;
     };
-
-
 
 
 END_PCCORE

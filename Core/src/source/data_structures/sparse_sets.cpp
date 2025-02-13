@@ -131,6 +131,21 @@ bool PC_CORE::SparseSet::Empty() const
     return m_Dense.empty();
 }
 
+bool PC_CORE::SparseSet::Contains(size_t _index) const
+{
+    const size_t pageIndex = _index / PAGE_SIZE;
+
+    if (m_SparseList.size() <= pageIndex)
+        return false;
+
+    const size_t offset = _index % PAGE_SIZE;
+
+    if (m_SparseList[pageIndex].size() <= offset)
+        return false;
+    
+    return true;
+}
+
 PC_CORE::SparseSet::SparseSet(size_t _densitySize) : m_Density(_densitySize)
 {
 }

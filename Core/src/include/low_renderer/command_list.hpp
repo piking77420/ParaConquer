@@ -21,6 +21,16 @@ BEGIN_PCCORE
     Count
 };
 
+enum ClearValueFlags : uint32_t
+{
+    ClearValueNone    = 0,
+    ClearValueColor   = 1 << 0, 
+    ClearValueDepth   = 1 << 1, 
+    ClearValueStencil = 1 << 2, 
+    ClearValueCount   = 1 << 3  
+};
+
+
 struct BeginRenderPassInfo
 {
     std::shared_ptr<PC_CORE::RhiRenderPass> renderPass;
@@ -28,8 +38,11 @@ struct BeginRenderPassInfo
     Tbx::Vector2i renderOffSet;
     Tbx::Vector2ui extent;
 
+    ClearValueFlags clearValueFlags;
     Tbx::Vector4f clearColor;
-        
+    float clearDepth = 0.f;
+    float clearStencil = 0.f;
+    
 };
 
 struct ViewportInfo
@@ -75,7 +88,7 @@ public:
 
     PC_CORE_API virtual void BindProgram(const ShaderProgram* _shaderProgramm) = 0;
 
-    PC_CORE_API virtual void PushConstant(const std::string& _pushConstantKey, const PC_CORE::ShaderProgram* _shaderProgram,
+    PC_CORE_API virtual void PushConstant(const PC_CORE::ShaderProgram* _shaderProgram, const std::string& _pushConstantKey,
         void* _data, size_t _size) = 0;
 
     PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;

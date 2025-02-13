@@ -15,8 +15,8 @@ namespace Vulkan
         std::vector<vk::ShaderModule> vkShaderModules;
         std::vector<vk::PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos;
 
-        std::vector<vk::DescriptorSetLayoutBinding> descriptorSetLayouts;
         std::vector<vk::PushConstantRange> pushConstantRanges;
+
 
         vk::Device device;
     };
@@ -48,7 +48,7 @@ namespace Vulkan
         };
     
     public:
-        void AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets) override;
+        void AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set) override;
         
         void FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets) override;
 
@@ -74,7 +74,7 @@ namespace Vulkan
 
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
 
-        vk::DescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
+        std::vector<vk::DescriptorSetLayout> m_DescriptorSetLayout;
 
         vk::DescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 

@@ -12,16 +12,16 @@ struct Transform : Component
 {
     EntityId parentId = INVALID_ENTITY_ID;
 
-    Tbx::Vector3d position;
+    Tbx::Vector3f position;
 
     Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
 
-    Tbx::Vector3d scale = 1.f;
+    Tbx::Vector3f scale = 1.f;
 
     // tmpr
-    Tbx::Vector3d localPosition;
+    Tbx::Vector3f localPosition;
 
-    Tbx::Vector3d localRotation;
+    Tbx::Vector3f localRotation;
 
     // TO HANDLE MATRIX TO AVOID RECALCULATION
 };

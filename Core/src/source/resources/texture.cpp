@@ -11,7 +11,14 @@ using namespace PC_CORE;
 
 Texture::Texture(const CreateTextureInfo& createTextureInfo)
 {
-  
+    for (auto& texture : m_TextureHandles)
+    {
+        if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
+        {
+            PC_LOGERROR("failed to create texture!");
+        }    
+    }
+    
 }
 
 Texture::Texture(const fs::path& _path) : Resource(_path)
@@ -27,7 +34,7 @@ Texture::Texture(const fs::path& _path) : Resource(_path)
     }
     
     const CreateTextureInfo createTextureInfo =
-        {
+    {
         .width = width,
         .height = height,
         .depth = 1,
@@ -35,28 +42,38 @@ Texture::Texture(const fs::path& _path) : Resource(_path)
         .imageType = ImageType::TYPE_2D,
         .format = RHIFormat::R8G8B8A8_SRGB,
         .channel = Channel::RGBA,
+        .textureAttachement = TextureAttachement::None,
+        .textureNature = TextureNature::Default,
+        .canbeSampled = true,
         .GenerateMipMap = true,
-        .useAsAttachement = false,
         .data = pixels
-        };
+    };
 
-    if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &m_TextureHandle))
+    for (auto& texture : m_TextureHandles)
     {
-        PC_LOGERROR("failed to create texture!");
+        if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
+        {
+            PC_LOGERROR("failed to create texture!");
+        }    
     }
+    
 
     FileLoader::FreeData(pixels);
 }
 
 Texture::~Texture()
 {
-    if (m_TextureHandle == nullptr)
-        return;
-    
-    if (!Rhi::GetRhiContext()->gpuAllocator->DestroyTexture(&m_TextureHandle))
+    for (auto& texture : m_TextureHandles)
     {
-        PC_LOGERROR("failed to destroy texture!");
+        if (texture == nullptr)
+            return;
+    
+        if (!Rhi::GetRhiContext()->gpuAllocator->DestroyTexture(&texture))
+        {
+            PC_LOGERROR("failed to destroy texture!");
+        }
     }
+   
 }
 
 void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
@@ -71,5 +88,10 @@ void Texture::Load(const std::array<std::string, 6>& _maps)
 
 std::shared_ptr<GpuHandle> Texture::GetHandle() const
 {
-    return m_TextureHandle;
+    return m_TextureHandles[Rhi::GetFrameIndex()];
+}
+
+std::shared_ptr<GpuHandle> Texture::GetHandle(size_t _frameIndex) const
+{
+    return m_TextureHandles[_frameIndex];
 }

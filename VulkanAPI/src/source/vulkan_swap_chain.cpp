@@ -8,6 +8,11 @@
 #include "low_renderer/rhi.hpp"
 
 
+void* Vulkan::VulkanSwapChain::GetFrameBuffer()
+{
+    return m_Framebuffers.at(m_SwapChainImageIndex);
+}
+
 Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height): SwapChain(_widht, _height)
 {
     CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
@@ -69,7 +74,7 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
 {
     for (const auto& availableFormat : availableFormats)
     {
-        if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace ==
+        if (availableFormat.format == vk::Format::eR8G8B8A8Unorm && availableFormat.colorSpace ==
             vk::ColorSpaceKHR::eSrgbNonlinear)
         {
             return availableFormat;
@@ -141,7 +146,7 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 {
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);
-    m_SwapChainFramebuffers.resize(m_SwapChainImage.size());
+    m_Framebuffers.resize(m_SwapChainImage.size());
 
     for (size_t i = 0; i < m_SwapChainImage.size(); i++)
     {
@@ -160,7 +165,7 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
         framebufferInfo.layers = 1;
 
         vk::Framebuffer framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
-        m_SwapChainFramebuffers[i] = std::make_shared<VulkanFrameBuffer>(framebuffer, true);
+        m_Framebuffers[i] = framebuffer;
     }
 }
 
@@ -203,10 +208,9 @@ void Vulkan::VulkanSwapChain::CleanUpSwapChain()
     m_SwapChainRenderPass.reset();
     m_SwapChainRenderPass = nullptr;
 
-    for (const auto& frameBuffer : m_SwapChainFramebuffers)
+    for (const auto& frameBuffer : m_Framebuffers)
     {
-        std::shared_ptr<VulkanFrameBuffer> vframeBuffer = std::reinterpret_pointer_cast<VulkanFrameBuffer>(frameBuffer);
-        device->GetDevice().destroyFramebuffer(vframeBuffer->GetFramebuffer());
+        device->GetDevice().destroyFramebuffer(frameBuffer);
     }
 
     for (const auto& swapChainImageView : m_SwapChainImageViews)
@@ -233,7 +237,7 @@ void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
     
     m_Extent2D = swapChainSupportDetails.capabilities.currentExtent;
     m_SurfaceFormat = surfaceFormatKHR;
-    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_SurfaceFormat);
+    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_SurfaceFormat.format);
 
 
     uint32_t imageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
@@ -347,4 +351,34 @@ void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHan
     CreateImageViews();
     CreateFrameBuffers();
     windowHandle->resizeDirty = false;
+}
+
+void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _commandList)
+{
+    VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
+    
+    std::shared_ptr<VulkanRenderPass> renderPass = reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass);
+
+    vk::RenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
+    renderPassInfo.renderPass = renderPass->GetVulkanRenderPass();
+    renderPassInfo.framebuffer = m_Framebuffers.at(m_SwapChainImageIndex);
+    renderPassInfo.renderArea.offset = vk::Offset2D{0, 0};
+    renderPassInfo.renderArea.extent = vk::Extent2D{m_SwapChainWidth, m_SwapChainHeight};
+
+    vk::ClearValue clearColor  = {};
+    clearColor.color.setFloat32({ 
+        0, 0, 0, 0});
+    
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vcommandList->GetHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    
+}
+        
+void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _commandList)
+{
+    VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
+    vcommandList->GetHandle().endRenderPass();
 }

@@ -15,6 +15,7 @@
 #include "io/core_io.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
+#include "rendering/material.hpp"
 #include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
 
@@ -35,11 +36,18 @@ void Editor::UnInitThridPartLib()
 
 void Editor::CompileShader()
 {
-    ShaderSource* mainVertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-    ShaderSource* mainFrag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+    ShaderSource* vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+    ShaderSource* frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
-    mainVertex->CompileToSpriv();
-    mainFrag->CompileToSpriv();
+    vertex->CompileToSpriv();
+    frag->CompileToSpriv();
+
+    vertex = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.vert");
+    frag = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.frag");
+
+    
+    vertex->CompileToSpriv();
+    frag->CompileToSpriv();
 }
 
 void Editor::Init()
@@ -71,7 +79,7 @@ void Editor::Destroy()
 
 void Editor::UpdateEditorWindows()
 {
-    /*
+    
     dockSpace.BeginDockSpace();
     ShaderRecompileList();
     for (EditorWindow* editorWindow : m_EditorWindows)
@@ -80,7 +88,7 @@ void Editor::UpdateEditorWindows()
         editorWindow->Update();
         editorWindow->End();
     }
-    dockSpace.EndDockSpace();*/
+    dockSpace.EndDockSpace();
 }
 
 void Editor::ShaderRecompileList()
@@ -110,8 +118,31 @@ void Editor::ShaderRecompileList()
 
 void Editor::InitTestScene()
 {
+    Material* m1 = ResourceManager::Create<Material>();
+    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
+    m1->Build();
+    
+    Material* m2 = ResourceManager::Create<Material>();
+    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
+    m2->Build();
+    
     EntityId entity_id = world.entityManager.CreateEntity();
     world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
+    Transform& tt = *world.entityManager.GetComponent<Transform>(entity_id);
+    
+    auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
+    s->mesh = ResourceManager::Get<Mesh>("cube");
+    s->material = m1;
+
+    entity_id = world.entityManager.CreateEntity();
+    world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
+    Transform& t = *world.entityManager.GetComponent<Transform>(entity_id);
+
+    s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
+    s->mesh = ResourceManager::Get<Mesh>("suzanne");
+    s->material = m2;
+
+    t.position = { 0.0f, 2.0f, 1.0f };
 }
 
 void Editor::DestroyTestScene()
@@ -136,20 +167,14 @@ void Editor::Run()
         UpdateEditorWindows();
 
         WorldLoop();
-
-        ImGui::Begin("hello");
-        ImGui::Text("Hello, world!");
-        ImGui::End();
-        
-        for (EditorWindow* editorWindow : m_EditorWindows)
-            editorWindow->Render();
-        
+      
         if (!renderer.BeginDraw(&window))
         {
             continue;
         }
 
-        renderer.Render();
+        for (EditorWindow* editorWindow : m_EditorWindows)
+            editorWindow->Render();
         
         renderer.SwapBuffers(&window);
     }

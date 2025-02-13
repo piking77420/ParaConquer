@@ -30,7 +30,5 @@ void TypeSparseSet::Free(size_t _index)
 
 bool TypeSparseSet::IsValid(size_t _index) const
 {
-    const uint8_t* element = &m_SparseSet[_index];
-
-    return element != nullptr;
+   return m_SparseSet.Contains(_index);
 }

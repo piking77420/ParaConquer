@@ -44,7 +44,9 @@ namespace Vulkan
                                       VmaMemoryUsage imageMemory);
 
         vk::ImageView CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
-    vk::Format _format);
+    vk::Format _format, vk::ImageAspectFlags imageAspect);
+
+        void GetTextureUsage(const PC_CORE::CreateTextureInfo& _createTextureInfo, VmaMemoryUsage* _memoryUsage, vk::ImageUsageFlags* _usage, vk::ImageLayout* _finalLoayout, vk::ImageAspectFlags* _imageAspectFlag);
         
         VmaAllocator m_allocator;
     };

@@ -73,7 +73,7 @@ T* ResourceManager::Create(Arg... args)
 
     T* newR = new T(std::forward<Arg>(args)...);
 
-    m_ResourcesMap.emplace(newR->path, newR);
+    m_ResourcesMap.emplace(newR->name, newR);
 
     return newR;
 }

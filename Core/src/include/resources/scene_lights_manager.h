@@ -1,55 +1,38 @@
 ﻿#pragma once
 
 #include "resource.hpp"
+#include "low_renderer/uniform_buffer.hpp"
 #include "math/matrix2x2.hpp"
 #include "math/toolbox_typedef.hpp"
 //#include "rendering/buffer/uniform_buffer.hpp"
 
 BEGIN_PCCORE
+
+
+struct ALIGNAS_16 SceneLightData
+{
+    Tbx::Vector3f direction;
+    float padding;
+    Tbx::Vector3f color;
+    float padding2;
+    Tbx::Vector3f ambiant;
+    float padding3;
+};
+    
+
 class SceneLightsBuffer : public Resource
 {
 public:
-
-    bool CreateDirLightData(Tbx::Vector3f direction, Tbx::Vector3f color,
-        float intensity);
     
-
-    SceneLightsBuffer() = default;
+    SceneLightsBuffer();
 
     ~SceneLightsBuffer() = default;
 
+    void Fecth();
 
-private:
-    struct DirLightData
-    {
-        Tbx::Vector3f direction;
-        Tbx::Vector3f color;
-        float intensity = 0.f;
-    };
+    UniformBuffer uniformBuffer;
 
-    struct PointLightData
-    {
-        Tbx::Vector3f position;
-        Tbx::Vector3f color;
-        float intensity = 0.f;
-    };
-
-    struct SpothLightData
-    {
-        Tbx::Vector3f position;
-        Tbx::Vector3f direction;
-        Tbx::Vector3f color;
-        float intensity = 0.f;
-    };
-
-    struct SceneLightData
-    {
-        std::unique_ptr<DirLightData> dirLightData = nullptr;
-        std::vector<PointLightData> pointLights;
-        std::vector<SpothLightData> spothLightDatas;
-    };
-    
-    SceneLightData m_SceneLightData;
+    SceneLightData sceneLightData;
 };
 
 END_PCCORE

@@ -1,9 +1,13 @@
 ﻿#pragma once
 
 #include "edit_world_window.hpp"
+#include "ecs/archetype.h"
+#include "physics/sphere_collider.hpp"
 #include "reflection/reflection_typedef.hpp"
 #include "world/scene.hpp"
 #include "world/transform.hpp"
+
+
 
 BEGIN_EDITOR_PCCORE
     class Inspector : public EditorWindow
@@ -22,15 +26,12 @@ private:
 
     void ShowReflectedType(void* begin, const PC_CORE::Members& _members);
 
-    void DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId);
+    void DeleteButton(PC_CORE::EntityId _entityId, uint32_t _componentId);
 
     void PrintArray(void* begin, const PC_CORE::Members& _members);
     
     std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
-
-    const PC_CORE::ReflectedType* transfromTypeRef;
     
-    std::string m_Euler[3];
 };
 
 END_EDITOR_PCCORE

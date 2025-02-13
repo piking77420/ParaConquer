@@ -120,7 +120,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8B8A8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8A8Unorm;
 
     case PC_CORE::RHIFormat::R8G8B8A8_SNORM:
         return vk::Format::eUndefined;
@@ -387,10 +387,10 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::D32_SFLOAT:
-        return vk::Format::eUndefined;
+        return vk::Format::eD32Sfloat;
 
     case PC_CORE::RHIFormat::S8_UINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eS8Uint;
 
     case PC_CORE::RHIFormat::D16_UNORM_S8_UINT:
         return vk::Format::eUndefined;

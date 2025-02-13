@@ -96,6 +96,35 @@ const PC_CORE::Entity& PC_CORE::EntityManager::GetEntity(EntityId _entityId) con
     return *it;
 }
 
+Component* EntityManager::AddComponent(uint32_t typeKey, const EntityId& _entityId)
+{
+    TypeSparseSet& sparseSet = m_SparseSetsMap.at(typeKey);
+    Component* ptr = reinterpret_cast<Component*>(sparseSet.Create(_entityId));
+
+    if (ptr == nullptr)
+        return ptr;
+
+    const CreateFunc& createFunc = Reflector::GetType(typeKey).createFunc;
+
+    ptr->entityId = _entityId;
+
+    createFunc(ptr);
+    return ptr;
+    
+}
+
+void EntityManager::RemoveComponent(uint32_t typeKey, const EntityId& _entityId)
+{
+    TypeSparseSet& sparseSet = m_SparseSetsMap.at(typeKey);
+
+    Component* component = GetComponent(typeKey, _entityId);
+    DeleteFunc deleteFunc = Reflector::GetType(typeKey).deleteFunc;
+
+    deleteFunc(component);
+        
+    sparseSet.Free(_entityId);
+}
+
 std::string PC_CORE::EntityManager::GetEntityName(EntityId _entityId) const
 {
     const Entity& ent = GetEntity(_entityId);

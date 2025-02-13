@@ -13,19 +13,6 @@
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
-template <typename d , typename b>
-void Register()
-{
-    constexpr auto db = COMPILE_TIME_TYPE_KEY(b);
-    constexpr auto dKey = COMPILE_TIME_TYPE_KEY(d);
-
-    static_assert(db != dKey);
-}
-
-class A : public Component
-{
-    char     dsffdsfd;
-};
 
 int main(int argc, char* argv[])
 {

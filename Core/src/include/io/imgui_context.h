@@ -24,6 +24,10 @@ public:
 
 	PC_CORE_API void Render(CommandList* _commandBuffer);
 
+	PC_CORE_API void CreateImguiVulkanViewport(Texture* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId);
+
+	PC_CORE_API void RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId);
+
 private:
 	vk::DescriptorPool descriptorPool;
 

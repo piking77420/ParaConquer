@@ -9,6 +9,7 @@ BEGIN_PCCORE
 
 class EntityManager;
 
+
 struct Component
 {
     PC_FORCE_INLINE EntityId GetEntityId() const
@@ -22,6 +23,8 @@ private:
 
     friend EntityManager;
 };
+template<class T>
+   concept ComponentDerived = std::is_base_of_v<Component, T>;
 
 REFLECT(Component)
 
