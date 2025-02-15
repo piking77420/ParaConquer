@@ -1,6 +1,7 @@
 ﻿#include "resources/resource_manager.hpp"
 
 #include "stb_image.h"
+#include "rendering/material.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
 
@@ -37,6 +38,23 @@ void ResourceManager::Destroy()
         it->second = nullptr;
     }
     m_ResourcesMap.clear();
+}
+
+void ResourceManager::ForEach(TypeId typeID, const std::function<void(Resource*)>& _lamba)
+{
+    if (!Reflector::ContaintTypeFromTypeID(typeID))
+        return;
+        
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        const ResourceInterface<Material>* interface = reinterpret_cast<ResourceInterface<Material>*>(it->second);
+        
+        if (typeID != interface->GetType().typeId)
+            continue;
+        
+        _lamba(it->second);
+    }
+    
 }
 
 

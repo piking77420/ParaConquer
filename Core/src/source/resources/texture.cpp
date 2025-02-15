@@ -21,7 +21,7 @@ Texture::Texture(const CreateTextureInfo& createTextureInfo)
     
 }
 
-Texture::Texture(const fs::path& _path) : Resource(_path)
+Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_path)
 {
     int width;
     int height;

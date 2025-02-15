@@ -2,7 +2,7 @@
 
 using namespace PC_CORE;
 
-TypeSparseSet::TypeSparseSet(const PC_CORE::ReflectedType& _type) : m_SparseSet(_type.typeSize)
+TypeSparseSet::TypeSparseSet(const PC_CORE::ReflectedType& _type) : m_SparseSet(_type.size)
 {
 }
 

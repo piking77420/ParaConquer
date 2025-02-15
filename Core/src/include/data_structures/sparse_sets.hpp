@@ -60,14 +60,14 @@ public:
 		return GetData() + m_Dense.size();
 	}
 	
-	inline uint8_t& operator[](size_t _index)
+	PC_FORCE_INLINE uint8_t& operator[](size_t _index)
 	{
 		const size_t pageIndex = _index / PAGE_SIZE;
 		const size_t offset = _index % PAGE_SIZE;
 		
 		return m_Dense.at(m_SparseList[pageIndex][offset]);
 	}
-	inline const uint8_t& operator[](size_t _index) const
+	PC_FORCE_INLINE const uint8_t& operator[](size_t _index) const
 	{
 		const size_t pageIndex = _index / PAGE_SIZE;
 		const size_t offset = _index % PAGE_SIZE;

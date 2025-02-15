@@ -131,15 +131,16 @@ void Editor::InitTestScene()
     Transform& tt = *world.entityManager.GetComponent<Transform>(entity_id);
     
     auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
-    s->mesh = ResourceManager::Get<Mesh>("cube");
+    s->mesh = ResourceManager::Get<Mesh>("sphere");
     s->material = m1;
 
+    
     entity_id = world.entityManager.CreateEntity();
     world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
     Transform& t = *world.entityManager.GetComponent<Transform>(entity_id);
 
     s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
-    s->mesh = ResourceManager::Get<Mesh>("suzanne");
+    s->mesh = ResourceManager::Get<Mesh>("cube");
     s->material = m2;
 
     t.position = { 0.0f, 2.0f, 1.0f };

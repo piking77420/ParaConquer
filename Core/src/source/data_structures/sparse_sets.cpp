@@ -51,13 +51,13 @@ uint8_t* PC_CORE::SparseSet::Alloc(size_t _index)
 void PC_CORE::SparseSet::Free(size_t _index)
 {
     if (Empty())
-        return;
+        return; 
 
     // Index of item that we want to delete
     const size_t pageIndex = _index / PAGE_SIZE;
     const size_t offset = _index % PAGE_SIZE;
 
-    if (pageIndex <= m_SparseList.size())
+    if (pageIndex >= m_SparseList.size())
     {
         PC_LOGERROR("pageIndex outside of sparse list")
         return;
@@ -65,20 +65,22 @@ void PC_CORE::SparseSet::Free(size_t _index)
     
     std::vector<size_t>& page = m_SparseList[pageIndex];
 
-    if (page.size() >= offset)
+    if (offset >= page.size())
     {
         PC_LOGERROR("offset is grater than page size")
         return;
     }
 
     const size_t elementToDeleteIndexInDenseList = m_SparseList[pageIndex][offset];
+
     
     // Look for the last element page and offset
-    size_t lastIndexPage = NULL_INDEX;
-    size_t lastIndexOffset = NULL_INDEX;
-    
-    size_t lastIndexInDenseList = NULL_INDEX;
+    size_t lastIndexPage = 0;
+    size_t lastIndexOffset = 0;
+    size_t lastIndexInDenseList = 0;
 
+
+    
     for (size_t i = 0; i < m_SparseList.size(); i++)
     {
         for (size_t j = 0; j < m_SparseList[i].size(); j++)
@@ -96,7 +98,7 @@ void PC_CORE::SparseSet::Free(size_t _index)
     }
     
     std::swap(m_Dense[lastIndexInDenseList], m_Dense[elementToDeleteIndexInDenseList]);
-    m_Dense.pop_back();
+    m_Dense.resize( m_Dense.size() - m_Density);
     
     m_SparseList[pageIndex][offset] = m_SparseList[lastIndexPage][lastIndexOffset];
     m_SparseList[pageIndex][offset] = NULL_INDEX;
@@ -141,6 +143,9 @@ bool PC_CORE::SparseSet::Contains(size_t _index) const
     const size_t offset = _index % PAGE_SIZE;
 
     if (m_SparseList[pageIndex].size() <= offset)
+        return false;
+    
+    if (m_SparseList[pageIndex][offset] == NULL_INDEX)
         return false;
     
     return true;

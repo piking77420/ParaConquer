@@ -12,7 +12,7 @@
 
 using namespace PC_CORE;
 
-Mesh::Mesh(const fs::path& _path) : Resource(_path)
+Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
 {
     uint32_t formatIndex = -1;
 

@@ -43,6 +43,8 @@ public:
 
     template <class T>
     static void ForEach(const std::function<void(T*)>& _lamba);
+    
+    PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(Resource*)>& _lamba);
 
 private:
     struct PathName
@@ -136,13 +138,16 @@ bool ResourceManager::Delete(const std::string& _name)
 template <class T>
 void ResourceManager::ForEach(const std::function<void(T*)>& _lamba)
 {
+    const TypeId typeId = Reflector::GetTypeKey<T>();
+    
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        T* ptr = dynamic_cast<T*>(it->second);
-        if (ptr != nullptr)
-        {
-            _lamba(ptr);
-        }
+        const ResourceInterface<T>* interface = reinterpret_cast<T*>(it->second);
+        
+        if (typeId != interface->GetType().typeId)
+            continue;
+        
+        _lamba(reinterpret_cast<T*>(it->second));
     }
 }
 

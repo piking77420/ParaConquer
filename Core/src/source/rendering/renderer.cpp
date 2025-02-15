@@ -76,7 +76,7 @@ bool Renderer::BeginDraw(Window* _window)
         primaryCommandList->BeginRecordCommands();
     }
 
-    sceneLightsBuffer->sceneLightData.direction = Tbx::Vector3f(-0.5f, -1.0f, -0.5f).Normalize();
+    sceneLightsBuffer->sceneLightData.direction = Tbx::Vector3f(0, -1.0f, 0).Normalize();
     sceneLightsBuffer->sceneLightData.color = Tbx::Vector3f(1.0f, 1.0f, 0.9f);
     sceneLightsBuffer->sceneLightData.ambiant = Tbx::Vector3f(0.3, 0.3, 0.3);
 
@@ -278,15 +278,19 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
         return;
     
     // Compute Matrix
-    Tbx::Matrix4x4f modelMatrix[2];
-    Tbx::Trs3D<float>(_transform.position, _transform.rotation,
-                      _transform.scale, &modelMatrix[0]);
-    Tbx::Invert<float>(modelMatrix[0], &modelMatrix[1]);
-    modelMatrix[1] = modelMatrix[1].Transpose();
+    Tbx::Matrix4x4d modelMatrixd[2];
+    Tbx::Trs3D<double>(_transform.position, _transform.rotation.quaternion,
+                      _transform.scale, &modelMatrixd[0]);
+    Tbx::Invert<double>(modelMatrixd[0], &modelMatrixd[1]);
+        modelMatrixd[1] = modelMatrixd[1].Transpose();
 
+    Tbx::Matrix4x4f modelMatrixf[2];
+    modelMatrixf[0] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[0]);
+    modelMatrixf[1] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[1]);
+    
     // Send Data
     primaryCommandList->BindDescriptorSet(m_ForwardShader, _staticMesh.material->GetDescriptorSet(), 1, 1);
-    primaryCommandList->PushConstant(m_ForwardShader, "PushConstants", &modelMatrix, sizeof(Tbx::Matrix4x4f) * 2);
+    primaryCommandList->PushConstant(m_ForwardShader, "PushConstants", &modelMatrixf, sizeof(Tbx::Matrix4x4f) * 2);
     primaryCommandList->BindVertexBuffer(_staticMesh.mesh->vertexBuffer, 0, 1);
     primaryCommandList->BindIndexBuffer(_staticMesh.mesh->indexBuffer, 0);
     primaryCommandList->DrawIndexed(_staticMesh.mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);

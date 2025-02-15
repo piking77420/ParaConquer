@@ -20,7 +20,7 @@ struct ALIGNAS_16 SceneLightData
 };
     
 
-class SceneLightsBuffer : public Resource
+class SceneLightsBuffer : public ResourceInterface<SceneLightsBuffer>
 {
 public:
     

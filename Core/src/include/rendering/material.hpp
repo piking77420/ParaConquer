@@ -14,7 +14,7 @@ BEGIN_PCCORE
 };
 
 
-class Material : public Resource
+class Material : public ResourceInterface<Material>
 {
 public:
     MaterialType m_MaterialType = MaterialType::Opaque;
@@ -34,5 +34,7 @@ private:
 
     ShaderProgram* m_ShaderProgram = nullptr;
 };
+
+REFLECT(Material, Resource)
 
 END_PCCORE

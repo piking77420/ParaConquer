@@ -73,3 +73,4 @@ struct MM<size, size, dummy>
 
 
 #define COMPILE_TIME_TYPE_KEY(T) COMPILE_TIME_CRC32_STR(skydown::short_type_name<T>.data())
+

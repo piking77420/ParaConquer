@@ -6,6 +6,7 @@
 #include <functional> // For std::function
 #include <iostream>
 #include <optional>
+#include <type_traits>
 
 #include "compiletime_key.hpp"
 #include "log.hpp"
@@ -41,11 +42,6 @@ template<typename T>
 inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
 
 
-
-
-#define IsTypeOfOrSubType(x)\
-std::is_same_v<T, x> || std::is_same_v<std::remove_all_extents_t<T>, x>\
-
 class Reflector
 {
 public:
@@ -55,12 +51,12 @@ public:
 
     template<typename T>
     static const ReflectedType& GetType();
+
+    template<typename Base>
+    static bool IsBaseOf(const ReflectedType& type);
     
     template <typename T>
-    static TypeInfo GetTypeInfo();
-
-    template <typename T>
-    constexpr static uint32_t   GetTypeKey() 
+    consteval static TypeId GetTypeKey() 
     {
         return COMPILE_TIME_TYPE_KEY(T);
     }
@@ -78,6 +74,8 @@ public:
 
     template <typename T>
     static bool isTrivialType();
+
+    PC_CORE_API static bool ContaintTypeFromTypeID(TypeId typeId);
 
 private:
     
@@ -116,16 +114,8 @@ private:
     
     template <typename T>
     static bool ContaintType();
+
     
-    template <class T>
-    static DataNature TypeToDataNature();
-
-    template <class T>
-    static uint32_t GetTypeInfoFlags();
-
-    template <class T>
-    static void GetArrayInfoFromType(TypeInfo* _typeInfo);
-
     template <typename T>
     static void ReflectedCreateFunc(void* _class)
     {
@@ -137,13 +127,68 @@ private:
     {
         static_cast<T*>(_class)->~T();
     }
-    
+
+    template <typename T>
+    static uintmax_t ProcessMetaData(TypeMetaData* typeMetaData)
+    {
+        uintmax_t flags = TypeFlagBits::NONE; 
+        if constexpr (std::is_class_v<T>)
+        {
+            flags |= TypeFlagBits::COMPOSITE;
+        }
+        if constexpr (std::is_pointer_v<T>)
+        {
+            flags |= TypeFlagBits::PTR;
+            typeMetaData->metaDataType = GetType<std::remove_pointer_t<T>>().typeId;
+        }
+        if constexpr (std::is_array_v<T> || is_vector_v<T> || is_std_array_v<T>)
+        {
+            flags |=  TypeFlagBits::CONTINUOUS;
+        }
+
+        if constexpr (!std::is_abstract_v<T>)
+        {
+            typeMetaData->createFunc = &ReflectedCreateFunc<T>;
+            typeMetaData->deleteFunc = &ReflectedDeleteFunc<T>;
+        }
+
+        return flags;
+    }
 };
 
 template <typename T>
 const ReflectedType& Reflector::GetType()
-{    
-    return m_RelfectionMap.at(GetTypeKey<T>());
+{
+    constexpr TypeId tid = GetTypeKey<T>();
+    if (!m_RelfectionMap.contains(tid))
+        AddType<T>();
+    
+    return m_RelfectionMap.at(tid);
+}
+
+template <typename Base>
+bool Reflector::IsBaseOf(const ReflectedType& type)
+{
+    ReflectedType currentType = type;
+    ReflectedType baseType = GetType<Base>();
+
+    if (type == baseType)
+        return false;
+
+    while (true)
+    {
+        if (currentType.metaData.baseClass == NullTypeId)
+            return false;
+
+        baseType = GetType<Base>();
+        
+        if (currentType.metaData.baseClass == baseType.typeId)
+            return true;
+        
+        currentType = baseType;
+    }
+
+    return false;
 }
 
 
@@ -163,7 +208,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
         AddType<MemberType>();
     }
     const uint32_t holderKey = GetTypeKey<Holder>();
-    for(auto&& member :  memberMap.at(holderKey).members)
+    for(auto&& member :  memberMap.at(holderKey).metaData.members)
     {
         // is there aldready a member name as
         if (member.membersName == _memberName)
@@ -176,17 +221,19 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
         .typeKey = GetTypeKey<MemberType>(),
         .membersName = _memberName,
         .offset = _offset,
-        .enumFlag = memberEnumFlag
+        .memberFlag = memberEnumFlag
         };
 
     
-    memberMap.at(holderKey).members.push_back(members);
+    memberMap.at(holderKey).metaData.members.push_back(members);
     return members;
 }
 
 template <typename Holder, typename BaseClass>
 ReflectedType* Reflector::ReflectType()
 {
+
+    
     static_assert(GetTypeKey<Holder>() != GetTypeKey<BaseClass>(), "What are you doing m8");
 
 
@@ -201,7 +248,7 @@ ReflectedType* Reflector::ReflectType()
     AddType<Holder>();
 
     // Add base class to current class and all hieritance
-    if constexpr(!std::is_same_v<void,BaseClass> || std::is_base_of_v<BaseClass, Holder>)
+    if constexpr(!std::is_same_v<void, BaseClass> || std::is_base_of_v<BaseClass, Holder>)
     {
         if (!ContaintType<BaseClass>())
         {
@@ -213,9 +260,8 @@ ReflectedType* Reflector::ReflectType()
 
         if (it != m_RelfectionMap.end())
         {
-            it->second.inheritenceKey.push_back(baseKey);
             auto& baseClass = m_RelfectionMap.at(baseKey);
-            it->second.inheritenceKey.insert(it->second.inheritenceKey.end(), baseClass.inheritenceKey.begin(), baseClass.inheritenceKey.end());
+            it->second.metaData.baseClass = baseClass.typeId;
         }
         
     }
@@ -232,12 +278,9 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 
     for (auto it = m_RelfectionMap.begin(); it != m_RelfectionMap.end(); it++)
     {
-        for (size_t i = 0; i < it->second.inheritenceKey.size(); i++)
+        if (IsBaseOf<T>(it->second))
         {
-            if (it->second.inheritenceKey[i] == hashCode)
-            {
-                types.push_back(&it->second);
-            }
+            types.push_back(&it->second);
         }
     }
 
@@ -247,15 +290,9 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 template <typename T>
 bool Reflector::isTrivialType()
 {
-    DataNature dataNature = TypeToDataNature<T>();
-    return dataNature != DataNature::UNKNOWN && dataNature != DataNature::RESOURCE;
+    return !(GetType<T>().typeFlags & TypeFlagBits::COMPOSITE);
 }
 
-template <typename T>
-TypeInfo Reflector::GetTypeInfo()
-{
-    return {TypeToDataNature<T>(), GetTypeInfoFlags<T>()};
-}
 
 template <typename T>
 void Reflector::AddType()
@@ -265,24 +302,19 @@ void Reflector::AddType()
         // Create New Node in map
         std::string name = GetCorrectNameFromTypeId(typeid(T).name());
 
-        const uint32_t hashCode = GetTypeKey<T>();
-        ReflectedType mememberMetaData =
+        TypeId typeId = GetTypeKey<T>();
+        
+        ReflectedType type =
             {
-            .HashKey = hashCode,
-            .typeInfo = GetTypeInfo<T>(),
+            .typeId = typeId,
+            .typeFlags = {},
             .name = name,
-            .typeSize = sizeof(T),
-            .members = {},
+            .size = sizeof(T),
+            .metaData = {}
             };
 
-        if constexpr (!std::is_abstract_v<T>)
-        {
-            mememberMetaData.createFunc = &ReflectedCreateFunc<T>;
-            mememberMetaData.deleteFunc = &ReflectedDeleteFunc<T>;
-        }
-
-        
-        m_RelfectionMap.insert({hashCode,mememberMetaData});
+        type.typeFlags = ProcessMetaData<T>(&type.metaData);
+        m_RelfectionMap.insert({typeId,type});
     }
 }
 
@@ -290,128 +322,16 @@ void Reflector::AddType()
 template <typename T>
 bool Reflector::ContaintType()
 {
-    constexpr uint32_t TypeKey = GetTypeKey<T>();
-    constexpr std::string_view name = skydown::long_type_name<T>.data();
-
-    return m_RelfectionMap.contains(TypeKey);
+    return ContaintTypeFromTypeID(GetTypeKey<T>());
 }
 
 
 
-template <typename T>
-DataNature Reflector::TypeToDataNature()
-{
-    DataNature type = {};
 
-    if constexpr (IsTypeOfOrSubType(char))
-    {
-        type = DataNature::CHAR;
-    }
-    if constexpr (IsTypeOfOrSubType(bool))
-    {
-        type = DataNature::BOOL;
-    }
-    else if constexpr (IsTypeOfOrSubType(int))
-    {
-        type = DataNature::INT;
-    }
-    else if constexpr (IsTypeOfOrSubType(Tbx::Vector2i))
-    {
-        type = DataNature::VEC2I;
-    }
-    else if constexpr (IsTypeOfOrSubType(Tbx::Vector3i))
-    {
-        type = DataNature::VEC3I;
-    }
-    else if constexpr (IsTypeOfOrSubType(uint32_t))
-    {
-        type = DataNature::UINT;
-    }
-    else if constexpr (IsTypeOfOrSubType(float)) 
-    {
-        type = DataNature::FLOAT;
-    }
-    else if constexpr (IsTypeOfOrSubType(double))
-    {
-        type = DataNature::DOUBLE;
-    }
-    else if constexpr (IsTypeOfOrSubType(Tbx::Vector2f))
-    {
-        type = DataNature::VEC2;
-    }
-    else if constexpr (IsTypeOfOrSubType(Tbx::Vector3f))
-    {
-        type = DataNature::VEC3;
-    }
-    else if constexpr (IsTypeOfOrSubType(Tbx::Vector4f))
-    {
-        type = DataNature::VEC4;
-    }
-    else if constexpr (IsTypeOfOrSubType(Tbx::Quaternionf))
-    {
-        type = DataNature::QUAT;
-    }
-    else if constexpr (IsTypeOfOrSubType(std::string))
-    {
-        type = DataNature::STRING;
-    }
-    else
-    {
-        type = DataNature::UNKNOWN;
-    }
-
-    return type; 
-}
-
-template <class T>
-uint32_t Reflector::GetTypeInfoFlags()
-{
-    uint32_t type = 0;
-
-    if constexpr (is_vector_v<T>)
-    {
-        type = TypeFlag::VECTOR;
-    }
-    if constexpr (std::is_class_v<T>)
-    {
-        // Avoid String to be composite
-        if (!isTrivialType<T>())
-            type |= static_cast<uint32_t>(TypeFlag::COMPOSITE);
-    }
-    if constexpr (std::is_bounded_array_v<T>)
-    {
-        type |= static_cast<uint32_t>(TypeFlag::ARRAY);
-    }
-    if constexpr (std::is_pointer_v<T>)
-    {
-        type |= static_cast<uint32_t>(TypeFlag::POINTER);
-    }
-    
-
-    return type;
-}
-
-template <class T>
-void Reflector::GetArrayInfoFromType(TypeInfo* _typeInfo)
-{
-    if constexpr (is_vector_v<T>)
-    {
-        
-    }
-    else if constexpr (std::is_bounded_array_v<T>)
-    {
-        
-    }
-    else
-    {
-        
-    }
-    
-}
 
 
 #define REFLECT(CurrentType, ...) \
-inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
+static inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
 
 
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
@@ -432,6 +352,8 @@ template bool save_private_v<typename Widget_##memberName##_::type, &className::
 #define GetPrivateFunc(privateVarMember)\
 struct Widget_f_ { using type = int (Widget::*)() const; };\
 template bool save_private_v<Widget_f_, &Widget::f_>;\
+
+
 
 END_PCCORE
 

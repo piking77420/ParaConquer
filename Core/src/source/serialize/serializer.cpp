@@ -21,131 +21,134 @@ constexpr bool boolAlpha1b = true;
 #pragma region SerializationType
 
 
-std::string DataNatureToString(DataNature _dataNature, const void* _dataPtr)
+    /*
+std::string DataNatureToString(TrivialType _dataNature, const void* _dataPtr)
 {
     switch (_dataNature)
     {
-    case DataNature::UNKNOWN:
+    case TrivialType::UNKNOWN:
         break;
-    case DataNature::BOOL:
+    case TrivialType::BOOL:
         {
             const bool boolValue = *static_cast<const bool*>(_dataPtr);
             return boolValue ? boolAlpha1s : boolAlpha0s;
         }
-    case DataNature::INT:
+    case TrivialType::INT:
         {
             const int intValue = *static_cast<const int*>(_dataPtr);
             return std::to_string(intValue);
         }
-    case DataNature::VEC2I:
+    case TrivialType::VEC2I:
         {
             const Tbx::Vector2i vector2I = *static_cast<const Tbx::Vector2i*>(_dataPtr);
             return "x :" + std::to_string(vector2I.x) + ", y :" + std::to_string(vector2I.y);
         }
-    case DataNature::VEC3I:
+    case TrivialType::VEC3I:
         {
             const Tbx::Vector3i vector3I = *static_cast<const Tbx::Vector3i*>(_dataPtr);
             return "x :" + std::to_string(vector3I.x) + ", y :" + std::to_string(vector3I.y) + ", z :" +
                 std::to_string(vector3I.z);
         }
-    case DataNature::UINT:
+    case TrivialType::UINT:
         {
             const uint32_t uint32Value = *static_cast<const uint32_t*>(_dataPtr);
             return std::to_string(uint32Value);
         }
-    case DataNature::FLOAT:
+    case TrivialType::FLOAT:
         {
             const float floatValue = *static_cast<const float*>(_dataPtr);
             return std::to_string(floatValue);
         }
-    case DataNature::DOUBLE:
+    case TrivialType::DOUBLE:
         {
             const double doubleValue = *static_cast<const double*>(_dataPtr);
             return std::to_string(doubleValue);
         }
-    case DataNature::VEC2:
+    case TrivialType::VEC2:
         {
             const Tbx::Vector2f vector2fValue = *static_cast<const Tbx::Vector2f*>(_dataPtr);
             return "x :" + std::to_string(vector2fValue.x) + ", y :" + std::to_string(vector2fValue.y);
         }
-    case DataNature::VEC3:
+    case TrivialType::VEC3:
         {
             const Tbx::Vector3f vector3f = *static_cast<const Tbx::Vector3f*>(_dataPtr);
             return "x :" + std::to_string(vector3f.x) + ", y :" + std::to_string(vector3f.y) + ", z :" +
                 std::to_string(vector3f.z);
         }
-    case DataNature::VEC4:
+    case TrivialType::VEC4:
         {
             const Tbx::Vector4f vector4f = *static_cast<const Tbx::Vector4f*>(_dataPtr);
             return "x :" + std::to_string(vector4f.x) + ", y :" + std::to_string(vector4f.y) + ", z :" +
                 std::to_string(vector4f.z) + ", w :" + std::to_string(vector4f.w);
         }
-    case DataNature::QUAT:
+    case TrivialType::QUAT:
         {
             const Tbx::Quaternionf quatf = *static_cast<const Tbx::Quaternionf*>(_dataPtr);
             return "w :" + std::to_string(quatf.real) + ", i :" + std::to_string(quatf.imaginary.x) + ", j :" +
                 std::to_string(quatf.imaginary.y) + ", k :" + std::to_string(quatf.imaginary.z);
         }
-    case DataNature::STRING:
+    case TrivialType::STRING:
         return *static_cast<const std::string*>(_dataPtr);
         break;
-    }
     return "";
 }
+    }*/
 #pragma endregion
 
 #pragma region DeSerializationType
 
-void StringToValue(uint8_t* _dataPtr, DataNature _dataNature, const std::string& _dataString)
+/*
+void StringToValue(uint8_t* _dataPtr, TrivialType _dataNature, const std::string& _dataString)
 {
     // Container and compisite are not undle yet
 
     switch (_dataNature)
     {
-    case DataNature::UNKNOWN:
+    case TrivialType::UNKNOWN:
         break;
-    case DataNature::BOOL:
+    case TrivialType::BOOL:
         *reinterpret_cast<bool*>(_dataPtr) = _dataString == boolAlpha0s ? boolAlpha1b : boolAlpha0b;
         break;
-    case DataNature::INT:
+    case TrivialType::INT:
         *reinterpret_cast<int*>(_dataPtr) = std::stoi(_dataString);
         break;
-    case DataNature::VEC2I:
+    case TrivialType::VEC2I:
         break;
-    case DataNature::VEC3I:
+    case TrivialType::VEC3I:
         break;
-    case DataNature::UINT:
+    case TrivialType::UINT:
         *reinterpret_cast<uint32_t*>(_dataPtr) = std::stoi(_dataString);
         break;
-    case DataNature::FLOAT:
+    case TrivialType::FLOAT:
         *reinterpret_cast<float*>(_dataPtr) = std::stof(_dataString);
         break;
-    case DataNature::DOUBLE:
+    case TrivialType::DOUBLE:
         *reinterpret_cast<double*>(_dataPtr) = std::stod(_dataString);
         break;
-    case DataNature::VEC2:
+    case TrivialType::VEC2:
         break;
-    case DataNature::VEC3:
+    case TrivialType::VEC3:
         break;
-    case DataNature::VEC4:
+    case TrivialType::VEC4:
         break;
-    case DataNature::QUAT:
+    case TrivialType::QUAT:
         break;
-    case  DataNature::STRING :
+    case  TrivialType::STRING :
         *reinterpret_cast<std::string*>(_dataPtr) = _dataString;
         break;
-    case DataNature::COUNT:
+    case TrivialType::COUNT:
         break;
     }
 }
-
+*/
 #pragma endregion
 
 void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElement* _currentElement,
                      const Members& _members
                      , std::string& _err)
 {
-    if (_members.enumFlag & MemberEnumFlag::NOTSERIALIZE)
+    /*
+    if (_members.memberFlag & MemberEnumFlag::NOTSERIALIZE)
         return;
     
     const uint8_t* memberPtr = _objetPtr + _members.offset;
@@ -170,7 +173,7 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
         XMLAttributte* newAttribute = CreateAttribute(_document, _members.membersName,
            DataNatureToString(reflectionType.typeInfo.dataNature, memberPtr), _err);
         AddAttributeToElement(_currentElement, newAttribute, _err);
-    }
+    }*/
 }
 
 
@@ -193,7 +196,7 @@ void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _
         PC_LOGERROR(err);
     }
 
-    for (auto& t : reflectionType.members)
+    for (auto& t : reflectionType.metaData.members)
     {
         SerializeMember(xmlDoc, objetPtr, root, t, err);
     }
@@ -213,12 +216,13 @@ void DeserializeMember(uint8_t* _objetPtr, XMLElement* _currentElement,
                      const Members& _members
                      , std::string& _err)
 {
-    if (_members.enumFlag & MemberEnumFlag::NOTSERIALIZE)
+    if (_members.memberFlag & MemberEnumFlag::NOTSERIALIZE)
        return;
     
     uint8_t* memberPtr = _objetPtr + _members.offset;
     const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
 
+    /*
     // Is a trivial type
     if (!(reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
     {
@@ -234,7 +238,7 @@ void DeserializeMember(uint8_t* _objetPtr, XMLElement* _currentElement,
             DeserializeMember(memberPtr, newCurrentElement, member, _err);
         }
     }
-    
+    */
 }
 
 void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerialize, uint32_t _typeKey)
@@ -260,7 +264,7 @@ void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerializ
         PC_LOGERROR("the file is not a " + reflectionType.name + "object " + err);
     }
 
-    for (auto& t : reflectionType.members)
+    for (auto& t : reflectionType.metaData.members)
     {
         DeserializeMember(_objetPtr, root, t, err);
     }

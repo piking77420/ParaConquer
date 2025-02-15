@@ -25,10 +25,6 @@ public:
     
     void InitTestScene();
     
-    void FuncMember(const PC_CORE::Transform& t, const PC_CORE::RigidBody& c);
-    
-    void RotateCube();
-
     void DestroyTestScene();
     
     void Run() override;

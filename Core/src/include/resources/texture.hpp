@@ -11,7 +11,7 @@
 BEGIN_PCCORE
 
 
-class Texture : public Resource
+class Texture : public ResourceInterface<Texture>
 {
 public:
 

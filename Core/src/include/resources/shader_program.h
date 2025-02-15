@@ -151,7 +151,7 @@ static inline ShaderStageType ShaderFormatToShaderType(const char* _formatWithPo
 
 #pragma endregion Shader
 
-    class ShaderProgram : public Resource
+    class ShaderProgram : public ResourceInterface<ShaderProgram>
     {
     public:
 

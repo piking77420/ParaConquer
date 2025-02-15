@@ -104,7 +104,7 @@ Component* EntityManager::AddComponent(uint32_t typeKey, const EntityId& _entity
     if (ptr == nullptr)
         return ptr;
 
-    const CreateFunc& createFunc = Reflector::GetType(typeKey).createFunc;
+    const CreateFunc& createFunc = Reflector::GetType(typeKey).metaData.createFunc;
 
     ptr->entityId = _entityId;
 
@@ -118,7 +118,7 @@ void EntityManager::RemoveComponent(uint32_t typeKey, const EntityId& _entityId)
     TypeSparseSet& sparseSet = m_SparseSetsMap.at(typeKey);
 
     Component* component = GetComponent(typeKey, _entityId);
-    DeleteFunc deleteFunc = Reflector::GetType(typeKey).deleteFunc;
+    DeleteFunc deleteFunc = Reflector::GetType(typeKey).metaData.deleteFunc;
 
     deleteFunc(component);
         
@@ -154,7 +154,7 @@ PC_CORE::EntityManager::EntityManager()
     
     for (const ReflectedType* ecsComponent : m_ComponentsType)
     {
-        m_SparseSetsMap.emplace(ecsComponent->HashKey, *ecsComponent);
+        m_SparseSetsMap.emplace(ecsComponent->typeId, *ecsComponent);
     }
     
 }

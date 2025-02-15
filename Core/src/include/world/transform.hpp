@@ -8,23 +8,32 @@
 BEGIN_PCCORE
 
 
+struct Rotation
+{
+    Tbx::Vector3d eulerAngles;
+    Tbx::Quaterniond quaternion = Tbx::Quaterniond::Identity();
+};
+
+REFLECT(Rotation)
+
 struct Transform : Component
 {
     EntityId parentId = INVALID_ENTITY_ID;
 
-    Tbx::Vector3f position;
+    Tbx::Vector3d position;
 
-    Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
+    Rotation rotation;
+    
+    Tbx::Vector3d scale = Tbx::Vector3d::UnitOne();
 
-    Tbx::Vector3f scale = 1.f;
-
-    // tmpr
-    Tbx::Vector3f localPosition;
-
-    Tbx::Vector3f localRotation;
-
+    Tbx::Vector3d localPosition;
+    
+    
     // TO HANDLE MATRIX TO AVOID RECALCULATION
+    
 };
+// TODO PUT THE REFLECT IN THE CLASS 
+
 
 REFLECT(Transform, Component)
 REFLECT_MEMBER(Transform, position)

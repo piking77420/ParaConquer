@@ -6,10 +6,14 @@
 #include "log.hpp"
 
 #include "guid.hpp"
+#include "reflection/reflection_typedef.hpp"
+#include "reflection/reflector.hpp"
 
 namespace fs = std::filesystem;
 
 BEGIN_PCCORE
+
+class ResourceManager;
 
 class Resource
 {
@@ -86,5 +90,40 @@ bool Resource::GetFormatFromValue(const std::array<std::string, Size>& _format, 
     }
     return false;
 }
+
+
+template <class T>
+class ResourceInterface : public Resource
+{
+public:
+    ResourceInterface();
+
+    ResourceInterface(const fs::path& _path);
+    
+
+    virtual ~ResourceInterface() override = default;
+
+    const ReflectedType& GetType() const;
+private:
+    const ReflectedType* m_ReflectedType = nullptr;
+};
+
+template <class T>
+ResourceInterface<T>::ResourceInterface() : Resource()
+{
+    m_ReflectedType = &Reflector::GetType<T>();
+}
+
+template<class T>
+inline ResourceInterface<T>::ResourceInterface(const fs::path& _path) : Resource(_path)
+{ 
+    m_ReflectedType = &Reflector::GetType<T>();
+}
+template <class T>
+inline const ReflectedType& ResourceInterface<T>::GetType() const
+{
+    return *m_ReflectedType;
+}
+
 
 END_PCCORE

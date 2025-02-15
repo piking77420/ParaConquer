@@ -6,13 +6,14 @@
 #include "rendering/material.hpp"
 
 BEGIN_PCCORE
-    struct StaticMesh : public Component
+struct StaticMesh : public Component
 {
-
     Mesh* mesh = nullptr;
 
     Material* material = nullptr;    
 };
 REFLECT(StaticMesh, Component)
+REFLECT_MEMBER(StaticMesh, mesh)
+REFLECT_MEMBER(StaticMesh, material)
 
 END_PCCORE

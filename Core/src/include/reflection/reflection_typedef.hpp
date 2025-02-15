@@ -5,92 +5,70 @@
 
 BEGIN_PCCORE
 
+using TypeId = uint32_t; 
+static constexpr TypeId NullTypeId = 0;
+using TypeFlag = uintmax_t;
 
 using CreateFunc = void (*)(void*);
 using DeleteFunc = void (*)(void*);
 using SerializeFunc = std::string (*)(const void*);
 using DerializeFunc = void (*)(void*, const std::string&);
 
-enum class DataNature
+ 
+enum TypeFlagBits
 {
-    UNKNOWN,
-    CHAR,
-    BOOL,
-    INT,
-    VEC2I,
-    VEC3I,
-    UINT,
-    FLOAT,
-    DOUBLE,
-    VEC2,
-    VEC3,
-    VEC4,
-    QUAT,
-    RESOURCE,
-    STRING,
+    NONE       = 0,        // No flags set
+  COMPOSITE  = 1 << 0,  // Composite of trivial type
+  PTR        = 1 << 1,  // Pointer type
+  CONTINUOUS = 1 << 2   // Continuous memory layout
     
-    COUNT
 };
 
-enum TypeFlag
-{
-    NONEFlAG,
-    COMPOSITE,  // Composite of trivial type
-    ARRAY,      // An array
-    VECTOR, // An vector
-    POINTER     // A pointer to an object
-};
 
-struct ArrayInfo
-{
-    uint32_t typeKeyOfTheArray;
-    size_t sizeOfTheArray;
-};
 
-struct TypeInfo
-{
-    DataNature dataNature;
-    uint32_t typeInfoFlags;  // Flags that represent different type properties
-    ArrayInfo arrayInfo;
-};
 
 enum MemberEnumFlag
 {
     NONE_MEMBER_ENUM_FLAG,
     NOTSERIALIZE,
     COLOR,
-    EULER_ANGLES,
     HIDE_INSPECTOR,
 };
 
 
-
-
 struct Members
 {
-    uint32_t typeKey = 0;
+    TypeId typeKey = NullTypeId;
     std::string membersName;
     size_t offset = 0;
-    uintmax_t enumFlag = 0;
+    uintmax_t memberFlag = 0;
 };
-    
-struct ReflectedType
+struct TypeMetaData
 {
-    uint32_t HashKey;
-    TypeInfo typeInfo;
-    
-    std::string name;
-    size_t typeSize;
-    
+    TypeId metaDataType = NullTypeId;
     std::vector<Members> members;
+
     // Dont Support MultiHirietence
-    std::vector<uint32_t> inheritenceKey;
+    TypeId baseClass = NullTypeId;
     
     CreateFunc createFunc = nullptr;
     DeleteFunc deleteFunc = nullptr;
+};
+
+struct ReflectedType
+{
+    TypeId typeId;
+    uintmax_t typeFlags;
     
-    SerializeFunc serializeFunc = nullptr;
+    std::string name;
+    size_t size;
     
+    TypeMetaData metaData;
+
+    bool operator==(const ReflectedType& other) const
+    {
+        return typeId == other.typeId;
+    }
 };
 
 
