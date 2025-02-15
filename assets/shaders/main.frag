@@ -7,7 +7,7 @@ layout(set = 0, binding = 1) uniform LightData
     vec3 direction;
     float padding;
     vec3 color;
-    float padding2;
+    float intensity;
     vec3 ambiant;
     float padding3;
 } lightData;
@@ -25,7 +25,7 @@ void main()
     vec3 normal = normalize(fragNormal);
     vec3 lightDir = lightData.direction;  
     float diff = max(dot(normal, -lightDir), 0.0);
-    vec3 diffuse = diff * lightData.color;
+    vec3 diffuse = diff * lightData.color * lightData.intensity;
 
     vec3 outColorVec3 = (diffuse + lightData.ambiant) * texture(texSampler, fragTexCoord).xyz;
 

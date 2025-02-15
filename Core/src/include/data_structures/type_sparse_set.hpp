@@ -51,6 +51,8 @@ public:
 
     PC_CORE_API  bool IsValid(size_t _index) const;
 
+    PC_CORE_API void Clear();
+
 private:
     PC_CORE::SparseSet m_SparseSet;
 };

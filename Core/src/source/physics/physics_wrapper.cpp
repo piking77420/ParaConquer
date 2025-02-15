@@ -14,33 +14,33 @@ using namespace PC_CORE;
 using namespace Tbx;
 #pragma region ReflectMathType
 
-REFLECT(Vector2f);
 REFLECT(Vector2i);
 REFLECT(Vector2ui);
+REFLECT(Vector2f);
 REFLECT(Vector2d);
 
-REFLECT(Vector3f);
 REFLECT(Vector3i);
+REFLECT(Vector3f);
 REFLECT(Vector3d);
 
-REFLECT(Vector4f);
 REFLECT(Vector4i);
+REFLECT(Vector4f);
 REFLECT(Vector4d);
 
-REFLECT(Matrix2x2f);
 REFLECT(Matrix2x2i);
+REFLECT(Matrix2x2f);
 REFLECT(Matrix2x2d);
 
-REFLECT(Matrix3x3f);
 REFLECT(Matrix3x3i);
+REFLECT(Matrix3x3f);
 REFLECT(Matrix3x3d);
 
-REFLECT(Matrix4x4f);
 REFLECT(Matrix4x4i);
+REFLECT(Matrix4x4f);
 REFLECT(Matrix4x4d);
 
-REFLECT(Quaternionf);
 REFLECT(Quaternioni);
+REFLECT(Quaternionf);
 REFLECT(Quaterniond);
 
 #pragma endregion

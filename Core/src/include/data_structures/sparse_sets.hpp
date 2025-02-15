@@ -47,6 +47,8 @@ public:
 	PC_CORE_API ~SparseSet() = default;
 	
 	PC_CORE_API SparseSet(size_t _densitySize);
+
+	PC_CORE_API void Clear();
 	
 	template<typename T>
 	T* begin()

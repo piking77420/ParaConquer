@@ -8,6 +8,12 @@
 
 using namespace PC_EDITOR_CORE;
 
+static float maxf = std::numeric_limits<float>::max();
+static float minf = -maxf;
+static double maxd = std::numeric_limits<double>::max();
+static double mind = -maxd;
+
+
 
 Inspector::~Inspector()
 {
@@ -29,6 +35,7 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 {
     m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
 
+    
     m_SpecialType =
         {
         &PC_CORE::Reflector::GetType<bool>(),
@@ -50,13 +57,12 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
         &PC_CORE::Reflector::GetType<Tbx::Vector3f>(),
         &PC_CORE::Reflector::GetType<Tbx::Vector4f>(),
         
-        &PC_CORE::Reflector::GetType<Tbx::Vector2d>(),
-        &PC_CORE::Reflector::GetType<Tbx::Vector3d>(),
-        &PC_CORE::Reflector::GetType<Tbx::Vector4d>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector2<double>>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector3<double>>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector4<double>>(),
         
         &PC_CORE::Reflector::GetType<Tbx::Quaternionf>(),
         &PC_CORE::Reflector::GetType<Tbx::Quaterniond>(),
-        
         &PC_CORE::Reflector::GetType<PC_CORE::Rotation>(),
         };
     
@@ -132,58 +138,11 @@ void Inspector::OnInput()
     }
 }
 
-void Inspector::ShowReflectedType_Unused(void* begin, const PC_CORE::Members& _members)
-{
-    /*
-    void* dataPosition = static_cast<char*>(begin) + _members.offset;
-    const char* membersName = _members.membersName.c_str();
-    const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_members.typeKey);
-    const PC_CORE::TypeMetaData& typeMetaData = type.metaData;
-    
 
-    if (type.typeFlags & PC_CORE::TypeFlagBits::COMPOSITE)
-    {
-        if (HandleSpecialType(type, _members.memberFlag, membersName, dataPosition))
-            return;
-
-        for (const PC_CORE::Members& m : typeMetaData.members)
-        {
-            void* dataPosMember = static_cast<uint8_t*>(dataPosition) + m.offset;
-            ImGui::PushID((m.membersName).c_str());
-            ShowReflectedType(dataPosMember, m);
-            ImGui::PopID();
-            ImGui::Spacing();
-        }
-    }*/
-    
-}
-
-bool Inspector::HandleSpecialType(const PC_CORE::ReflectedType& type, uintmax_t memberFlag, const char* _memberName,
-                                  void* begin)
-{
-    
-
-    /*
-    // FIX PTR
-    else if (type.typeFlags & PC_CORE::TypeFlagBits::PTR & PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(type))
-    {
-        PC_CORE::Resource* resource = static_cast<PC_CORE::Resource*>(begin);
-        ImGui::Text("%s : %s", _memberName, resource->name.c_str());
-    }
-*/
-   
-    
-    return false;
-}
-
-
-void Inspector::PrintArray(uint8_t* begin, const PC_CORE::Members& _members)
-{
-}
 
 void Inspector::ShowReflectType(uint8_t* _typePtr ,const PC_CORE::ReflectedType& _reflectedType)
 {
-    
+    // TO DO ADD MEMEBER TO CHIELD FORM BASE
     for (size_t j = 0; j < _reflectedType.metaData.members.size(); j++)
     {
         const PC_CORE::Members& m = _reflectedType.metaData.members[j];
@@ -208,7 +167,8 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
     }
     if (typeFlag & PC_CORE::TypeFlagBits::PTR)
     {
-        uint64_t ptr = reinterpret_cast<uint64_t>(&*_memberPtr);
+        // only for little
+        uint64_t ptr = (uint64_t)(*reinterpret_cast<uint64_t*>(_memberPtr));
         ImGui::Text("Address %lld", ptr);
         HandlePtr(_memberPtr, type, _member);
     }
@@ -236,25 +196,119 @@ bool Inspector::IsShowable(PC_CORE::TypeId type_id)
 
 void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type, const PC_CORE::Members& _typeAsMember)
 {
-    static double max = std::numeric_limits<double>::max();
-    static double min = -max;
-    
-    // VECTOR2
-    if (type == PC_CORE::Reflector::GetType<Tbx::Vector3d>())
+    const PC_CORE::TypeId id = type.typeId;
+
+    if (PC_CORE::Reflector::IsTypeIdIs<bool>(id))
+    {
+        bool* value = reinterpret_cast<bool*>(ptr);
+        ImGui::Checkbox(_typeAsMember.membersName.c_str(), value);
+    }
+    if (PC_CORE::Reflector::IsTypeIdIs<wchar_t>(id))
+    {
+        
+    }
+    if (PC_CORE::Reflector::IsTypeIdIs<int>(id))
+    {
+        int* value = reinterpret_cast<int*>(ptr);
+        ImGui::DragInt(_typeAsMember.membersName.c_str(), value);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<float>(id))
+    {
+        float* value = reinterpret_cast<float*>(ptr);
+        ImGui::DragFloat(_typeAsMember.membersName.c_str(), value);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<double>(id))
+    {
+        double* value = reinterpret_cast<double*>(ptr);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, value, sizeof(float), 0.1, &mind, &maxf);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<uint16_t>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<uint32_t>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<uint64_t>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<std::string>(id))
+    {
+        std::string* value = reinterpret_cast<std::string*>(ptr);
+        ImGui::InputText("##EntityName", value->data(), value->size());
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<std::wstring>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2f>(id))
+    {
+        Tbx::Vector2f* vec = reinterpret_cast<Tbx::Vector2f*>(ptr);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector2d) / sizeof(float), 0.1, &minf, &maxf);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2d>(id))
+    {
+        Tbx::Vector2d* vec = reinterpret_cast<Tbx::Vector2d*>(ptr);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector2d) / sizeof(double), 0.1, &mind, &maxd);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3f>(id))
+    {
+        Tbx::Vector3f* vec = reinterpret_cast<Tbx::Vector3f*>(ptr);
+        if (_typeAsMember.memberFlag & PC_CORE::MemberEnumFlag::COLOR)
+        {
+            ImGui::ColorPicker3(_typeAsMember.membersName.c_str(), vec->GetPtr());
+        }
+        else
+        {
+            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector3f) / sizeof(float), 0.1, &minf, &maxf);
+        }
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3d>(id))
     {
         Tbx::Vector3d* vec = reinterpret_cast<Tbx::Vector3d*>(ptr);
         // https://github.com/ocornut/imgui/issues/643
-        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1, &min, &max);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1, &mind, &maxd);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4f>(id))
+    {
+        Tbx::Vector4f* vec = reinterpret_cast<Tbx::Vector4f*>(ptr);
+        if (_typeAsMember.memberFlag & PC_CORE::MemberEnumFlag::COLOR)
+        {
+            ImGui::ColorPicker4(_typeAsMember.membersName.c_str(), vec->GetPtr());
+        }
+        else
+        {
+            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector4f) / sizeof(float), 0.1, &minf, &maxf);
+        }
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4d>(id))
+    {
+        Tbx::Vector4d* vec = reinterpret_cast<Tbx::Vector4d*>(ptr);
+        // https://github.com/ocornut/imgui/issues/643
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector4d) / sizeof(double), 0.1, &mind, &maxd);
+    }
+    else if (type == PC_CORE::Reflector::GetType<Tbx::Quaternionf>())
+    {
+        
+    }else if (type == PC_CORE::Reflector::GetType<Tbx::Quaterniond>())
+    {
+        
     }
     else if (type == PC_CORE::Reflector::GetType<PC_CORE::Rotation>())
     {
         PC_CORE::Rotation& rotation = *reinterpret_cast<PC_CORE::Rotation*>(ptr);
 
-        ImGui::DragScalarN("Rotation", ImGuiDataType_::ImGuiDataType_Double, rotation.eulerAngles.GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1 * M_PI_4, &min, &max);
+        ImGui::DragScalarN("Rotation", ImGuiDataType_::ImGuiDataType_Double, rotation.eulerAngles.GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1 * M_PI_4, &mind, &maxd);
         if (ImGui::IsItemEdited())
         {
             rotation.quaternion =  Tbx::Quaterniond::FromEuler(rotation.eulerAngles).Normalize();
         }
+    }
+    else
+    {
+        
     }
 
     
@@ -262,29 +316,49 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
 
 void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, const PC_CORE::Members& _typeAsMember)
 {
-    PC_CORE::StaticMesh* static_mesh = reinterpret_cast<PC_CORE::StaticMesh*>(ptr - offsetof(PC_CORE::StaticMesh, mesh));
+    static bool showSelectResourceMenue = false;
+    static std::string currentSelectedMember;
 
+    if (showSelectResourceMenue == false)
+    {
+        currentSelectedMember.clear();
+    }
 
     if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.metaDataType)))
     {
         PC_CORE::Resource** doublePtr = reinterpret_cast<PC_CORE::Resource**>(ptr);
 
         PC_CORE::Resource* resource = *doublePtr;
-        ImGui::Text("Resource name %s", resource->name.c_str());
 
-        static bool showSelectResourceMenue = false;
+        ImGui::PushID(_typeAsMember.membersName.c_str());
+
+        if (resource == nullptr)
+        {
+            ImGui::Text("%s is null", _typeAsMember.membersName.c_str());
+        }
+        else
+        {
+            ImGui::Text("%s = %s", _typeAsMember.membersName.c_str(),  resource->name.c_str());
+        }
+
         if (ImGui::Button("Select"))
         {
             showSelectResourceMenue = true;
+            currentSelectedMember = _typeAsMember.membersName;
         }
+        ImGui::PopID();
 
-        if (showSelectResourceMenue)
+        if (showSelectResourceMenue && currentSelectedMember == _typeAsMember.membersName)
         {
+
             ImGui::Begin("Select",&showSelectResourceMenue);
 
             auto l = [&](PC_CORE::Resource* currentResource)
             {
-                ImGui::PushID(currentResource->name.c_str());
+                std::string guiidS = (std::string)currentResource->guid;
+
+                ImGui::PushID(guiidS.c_str());
+
                 if (ImGui::Button(currentResource->name.c_str()))
                 {
                     *doublePtr = currentResource;
@@ -292,10 +366,16 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
                 ImGui::PopID();
             };
 
-            PC_CORE::ResourceInterface<PC_CORE::Material>* resourceInterface = reinterpret_cast<PC_CORE::ResourceInterface<PC_CORE::Material>*>(resource);
-            PC_CORE::ResourceManager::ForEach( resourceInterface->GetType().typeId, l);
+            if (ImGui::Button("Set to Null"))
+            {
+                *doublePtr = nullptr;
+            }
+            
+            // remove the type of the pointer
+            PC_CORE::ResourceManager::ForEach( type.metaData.metaDataType, l);
             
             ImGui::End();
+
         }
 
     }

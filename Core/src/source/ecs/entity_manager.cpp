@@ -160,3 +160,16 @@ PC_CORE::EntityManager::EntityManager()
 }
 
 
+void PC_CORE::EntityManager::Clear()
+{
+    for (size_t i = 0; i < m_Entities.size(); i++)
+    {
+        m_Entities[i].id = NULL_INDEX;
+        m_Entities[i].name.clear();
+    }
+
+    for (auto& map : m_SparseSetsMap)
+    {
+        map.second.Clear();
+    }
+}

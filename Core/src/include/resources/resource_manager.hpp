@@ -46,6 +46,7 @@ public:
     
     PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(Resource*)>& _lamba);
 
+ 
 private:
     struct PathName
     {

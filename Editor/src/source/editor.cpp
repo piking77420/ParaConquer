@@ -56,13 +56,28 @@ void Editor::Init()
     CompileShader();
 
     App::Init();
+
+
+    Material* m1 = ResourceManager::Create<Material>("diamond_block_material");
+    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
+    m1->Build();
+
+    Material* m2 = ResourceManager::Create<Material>("emerauld_block_material");
+
+    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
+    m2->Build();
+
+
     InitEditorWindows();
     InitTestScene();
     IMGUIContext.Init(window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
     
     renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
         IMGUIContext.Render(cmd);
-    });}
+    });
+
+ 
+}
 
 void Editor::Destroy()
 {
@@ -118,21 +133,20 @@ void Editor::ShaderRecompileList()
 
 void Editor::InitTestScene()
 {
-    Material* m1 = ResourceManager::Create<Material>();
-    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
-    m1->Build();
     
-    Material* m2 = ResourceManager::Create<Material>();
-    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
-    m2->Build();
-    
+
     EntityId entity_id = world.entityManager.CreateEntity();
+    world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
+    world.entityManager.AddComponent<PC_CORE::DirLight>(entity_id);
+    world.entityManager.SetEntityName(entity_id, "Directional Light");
+
+    entity_id = world.entityManager.CreateEntity();
     world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
     Transform& tt = *world.entityManager.GetComponent<Transform>(entity_id);
     
     auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
     s->mesh = ResourceManager::Get<Mesh>("sphere");
-    s->material = m1;
+    s->material = ResourceManager::Get<Material>("diamond_block_material");
 
     
     entity_id = world.entityManager.CreateEntity();
@@ -141,14 +155,14 @@ void Editor::InitTestScene()
 
     s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
     s->mesh = ResourceManager::Get<Mesh>("cube");
-    s->material = m2;
+    s->material = ResourceManager::Get<Material>("emerauld_block_material");
 
     t.position = { 0.0f, 2.0f, 1.0f };
 }
 
 void Editor::DestroyTestScene()
 {
-    world.entityManager.~EntityManager();
+    world.entityManager.Clear();
     m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
 

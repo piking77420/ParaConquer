@@ -1,4 +1,5 @@
 #pragma once
+#include "light.hpp"
 #include "rendering_typedef.h"
 #include "low_renderer/vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
@@ -52,8 +53,11 @@ private:
     UniformBuffer m_UniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
-    
 
+    PC_CORE_API void QueryWorldData(World* world);
+
+    PC_CORE_API void QueryLightDirData(DirLight& dirLight, Transform& transform);
+    
     PC_CORE_API void CreateForwardShader();
 
     PC_CORE_API void CreateDrawQuadShader();

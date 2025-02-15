@@ -14,7 +14,7 @@ struct ALIGNAS_16 SceneLightData
     Tbx::Vector3f direction;
     float padding;
     Tbx::Vector3f color;
-    float padding2;
+    float intensity;
     Tbx::Vector3f ambiant;
     float padding3;
 };

@@ -158,6 +158,9 @@ BEGIN_PCCORE
             return true;
         }
 
+
+        PC_CORE_API void Clear();
+
     private:
 
         uint32_t m_EntityCount = 0;
@@ -220,7 +223,7 @@ BEGIN_PCCORE
     {
         //static_assert(!std::is_base_of_v<T, Component> ,"T is not a Component");
 
-        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
+        static TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
         return reinterpret_cast<const T*>(&sparseSet[_entity]);
 
         return nullptr;
@@ -229,7 +232,7 @@ BEGIN_PCCORE
     template <class T>
     T* EntityManager::GetComponent(const EntityId& _entity)
     {
-        TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
+        static TypeSparseSet& sparseSet = m_SparseSetsMap.at(Reflector::GetTypeKey<T>());
         return reinterpret_cast<T*>(&sparseSet[_entity]);
     }
 
@@ -248,7 +251,8 @@ BEGIN_PCCORE
     template <class T>
     bool EntityManager::HasComponent(const EntityId& _entity) const
     {
-        return  m_SparseSetsMap.at(Reflector::GetTypeKey<T>()).IsValid(_entity);
+        const auto d = Reflector::GetTypeKey<T>();
+        return  m_SparseSetsMap.at(d).IsValid(_entity);
     }
 
 
@@ -280,6 +284,7 @@ void EntityManager::ForEach(std::function<void(const C&..., Args...)> _func, Arg
 template <ComponentDerived ... C>
 void EntityManager::ForEach(std::function<void(C&...)> _func)
 {
+        // TO DO CAHNGE IT
         for (auto& entity : m_Entities)
         {
             if (entity.id == INVALID_ENTITY_ID)

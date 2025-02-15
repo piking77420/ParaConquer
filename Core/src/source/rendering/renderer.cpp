@@ -6,6 +6,7 @@
 #include <thread>
 #include "time/core_time.hpp"
 #include "math/matrix_transformation.hpp"
+#include "rendering/light.hpp"
 #include "resources/texture.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
@@ -76,10 +77,7 @@ bool Renderer::BeginDraw(Window* _window)
         primaryCommandList->BeginRecordCommands();
     }
 
-    sceneLightsBuffer->sceneLightData.direction = Tbx::Vector3f(0, -1.0f, 0).Normalize();
-    sceneLightsBuffer->sceneLightData.color = Tbx::Vector3f(1.0f, 1.0f, 0.9f);
-    sceneLightsBuffer->sceneLightData.ambiant = Tbx::Vector3f(0.3, 0.3, 0.3);
-
+    QueryWorldData(World::GetWorld());
     sceneLightsBuffer->Fecth();
 
     return hasObtainSwapChian;
@@ -174,6 +172,23 @@ void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderP
 {
     primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader, &_ShaderProgramDescriptorSets, 0, 1);
     primaryCommandList->Draw(4, 1, 0, 0);
+}
+
+void Renderer::QueryWorldData(World* world)
+{
+    std::function<void(DirLight&, Transform&)> l = std::bind(&Renderer::QueryLightDirData , this,  std::placeholders::_1, std::placeholders::_2);
+    world->entityManager.ForEach<DirLight , PC_CORE::Transform>(l);
+
+
+    
+}
+
+void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
+{
+    sceneLightsBuffer->sceneLightData.ambiant = dirLight.color;
+    sceneLightsBuffer->sceneLightData.color = dirLight.ambiant;
+    sceneLightsBuffer->sceneLightData.intensity = dirLight.intensity;
+    sceneLightsBuffer->sceneLightData.direction = transform.rotation.quaternion.ToEulerAngles().Normalize();
 }
 
 void Renderer::CreateForwardShader()

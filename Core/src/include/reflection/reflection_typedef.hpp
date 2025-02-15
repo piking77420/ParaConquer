@@ -13,7 +13,7 @@ using CreateFunc = void (*)(void*);
 using DeleteFunc = void (*)(void*);
 using SerializeFunc = std::string (*)(const void*);
 using DerializeFunc = void (*)(void*, const std::string&);
-
+using OnEditFunc = void (*)(void*);
  
 enum TypeFlagBits
 {

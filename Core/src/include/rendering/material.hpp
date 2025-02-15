@@ -23,6 +23,8 @@ public:
 
     PC_CORE_API Material();
 
+    PC_CORE_API Material(const std::string& _name);
+
     PC_CORE_API ~Material();
 
     PC_CORE_API void Build();

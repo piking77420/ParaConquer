@@ -5,6 +5,13 @@
 
 PC_CORE::Material::Material()
 {
+    assert(false, "you should not create a material without a name");
+}
+
+
+PC_CORE::Material::Material(const std::string& _name)
+{
+    name = _name;
     switch (m_MaterialType)
     {
     case MaterialType::Opaque:
@@ -21,6 +28,7 @@ PC_CORE::Material::Material()
 
 PC_CORE::Material::~Material()
 {
+    // TO DO HANDLE RESOURCES INTRA DEPENDANCIES
     m_ShaderProgram->FreeDescriptorSet(&m_pShaderProgramDescriptorSets);
 }
 

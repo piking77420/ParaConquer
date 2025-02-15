@@ -29,13 +29,7 @@ private:
     void Show();
 
     void OnInput();
-
-    void ShowReflectedType_Unused(void* begin, const PC_CORE::Members& _members);
-
-    bool HandleSpecialType(const PC_CORE::ReflectedType& type, uintmax_t memberFlag ,const char* _memberName,  void* begin);
     
-    void PrintArray(uint8_t* begin, const PC_CORE::Members& _members);
-
     void ShowReflectType(uint8_t* _typePtr, const PC_CORE::ReflectedType& _reflectedType);
 
     void ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _members);
@@ -50,6 +44,23 @@ private:
 
     void HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, const PC_CORE::Members& _typeAsMemberr);
 
+    template <typename T>
+    T* GetPtrToData(uint8_t* ptr);
 };
+
+    template <typename T>
+    T* Inspector::GetPtrToData(uint8_t* ptr)
+    {
+        if constexpr (std::is_pointer_v<T>)
+        {
+            return reinterpret_cast<T*>(ptr);
+        }
+        else
+        {
+            return *reinterpret_cast<T*>(ptr);
+        }
+        
+    }
+
 
 END_EDITOR_PCCORE

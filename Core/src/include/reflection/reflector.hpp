@@ -52,6 +52,9 @@ public:
     template<typename T>
     static const ReflectedType& GetType();
 
+    template<typename T>
+    static bool IsTypeIdIs(TypeId typeId);
+
     template<typename Base>
     static bool IsBaseOf(const ReflectedType& type);
     
@@ -166,6 +169,13 @@ const ReflectedType& Reflector::GetType()
     return m_RelfectionMap.at(tid);
 }
 
+template <typename T>
+bool Reflector::IsTypeIdIs(TypeId typeId)
+{
+    constexpr TypeId tid = GetTypeKey<T>();
+    return typeId == tid;
+}
+
 template <typename Base>
 bool Reflector::IsBaseOf(const ReflectedType& type)
 {
@@ -175,17 +185,12 @@ bool Reflector::IsBaseOf(const ReflectedType& type)
     if (type == baseType)
         return false;
 
-    while (true)
+    while (currentType.metaData.baseClass != NullTypeId)
     {
-        if (currentType.metaData.baseClass == NullTypeId)
-            return false;
-
-        baseType = GetType<Base>();
-        
         if (currentType.metaData.baseClass == baseType.typeId)
             return true;
-        
-        currentType = baseType;
+
+        currentType = GetType(currentType.metaData.baseClass);
     }
 
     return false;
@@ -213,6 +218,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
         // is there aldready a member name as
         if (member.membersName == _memberName)
             return member;
+        
     }
     
     // Add to sub member
@@ -234,7 +240,8 @@ ReflectedType* Reflector::ReflectType()
 {
 
     
-    static_assert(GetTypeKey<Holder>() != GetTypeKey<BaseClass>(), "What are you doing m8");
+    //static_assert(GetTypeKey<Holder>() != GetTypeKey<BaseClass>(), "What are you doing m8");
+    //static_assert(GetTypeKey<Tbx::Vector3f>() != GetTypeKey<Tbx::Vector3d>(), "What are you doing m8");
 
 
     uint32_t KeyHolder = GetTypeKey<Holder>();
@@ -256,13 +263,17 @@ ReflectedType* Reflector::ReflectType()
         }
 
         auto it = m_RelfectionMap.find(KeyHolder);
-        constexpr uint32_t baseKey = GetTypeKey<BaseClass>();
+        const ReflectedType& baseType = Reflector::GetType<BaseClass>();
 
         if (it != m_RelfectionMap.end())
         {
-            auto& baseClass = m_RelfectionMap.at(baseKey);
-            it->second.metaData.baseClass = baseClass.typeId;
-        }
+            it->second.metaData.baseClass = baseType.typeId;
+            
+            it->second.metaData.members.insert(
+                it->second.metaData.members.end(),
+                baseType.metaData.members.begin(),
+                baseType.metaData.members.end()
+            );        }
         
     }
 
@@ -276,11 +287,11 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
     constexpr uint32_t hashCode = GetTypeKey<T>();
     std::vector<const ReflectedType*> types;
 
-    for (auto it = m_RelfectionMap.begin(); it != m_RelfectionMap.end(); it++)
+    for (auto& type : m_RelfectionMap)
     {
-        if (IsBaseOf<T>(it->second))
+        if (IsBaseOf<T>(type.second))
         {
-            types.push_back(&it->second);
+            types.push_back(&type.second);
         }
     }
 

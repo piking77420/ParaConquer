@@ -32,3 +32,8 @@ bool TypeSparseSet::IsValid(size_t _index) const
 {
    return m_SparseSet.Contains(_index);
 }
+
+PC_CORE_API void TypeSparseSet::Clear()
+{
+    ;
+}

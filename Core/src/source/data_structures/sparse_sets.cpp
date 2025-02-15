@@ -155,4 +155,14 @@ PC_CORE::SparseSet::SparseSet(size_t _densitySize) : m_Density(_densitySize)
 {
 }
 
+void PC_CORE::SparseSet::Clear()
+{
+    m_Dense.clear();
+    for (size_t i = 0; i < m_SparseList.size(); i++)
+    {
+        m_SparseList[i].clear();
+    }
+    
+}
+
 

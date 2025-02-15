@@ -9,20 +9,23 @@ BEGIN_PCCORE
 
 struct Light : public Component
 {
-    Tbx::Vector3f color =  {1.f,1.f,1.f};
-    float intensity = 1.f;
-    bool isDirty = false;
+  
 };
 
 REFLECT(Light,Component)
-REFLECT_MEMBER(Light, color, MemberEnumFlag::COLOR)
-REFLECT_MEMBER(Light, intensity)
-REFLECT_MEMBER(Light, isDirty)
 
 struct DirLight : public Light
 {
+    Tbx::Vector3f color =  {1.f,1.f,1.f};
+    float intensity = 1.f;
+    Tbx::Vector3f ambiant = {0.1f,0.1f,0.1f} ;
+    bool isDirty = false;
 };
 REFLECT(DirLight,Light)
+REFLECT_MEMBER(DirLight, color, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, intensity)
+REFLECT_MEMBER(DirLight, ambiant, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, isDirty)
 
 
 struct PointLight : public Light
