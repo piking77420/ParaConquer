@@ -13,7 +13,17 @@
 #include "world/world.hpp"
 
 BEGIN_PCCORE
-    class Renderer
+
+
+struct ViewExtremum
+{
+    Tbx::Vector3f topLeft;
+    Tbx::Vector3f topRight;
+    Tbx::Vector3f bottomLeft;
+    Tbx::Vector3f bottomRight;
+};
+
+class Renderer
 {
 public:
 
@@ -50,9 +60,17 @@ private:
     
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
 
-    UniformBuffer m_UniformBuffer;
+    UniformBuffer cameraUniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
+
+    ViewExtremum m_ViewExtremum;
+
+    UniformBuffer m_ViewExtrmumUniformBuffer;
+
+    PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
+
+    PC_CORE_API void UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext);
 
     PC_CORE_API void QueryWorldData(World* world);
 

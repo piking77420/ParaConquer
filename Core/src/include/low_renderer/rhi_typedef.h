@@ -26,6 +26,10 @@ BEGIN_PCCORE
     {
         Tbx::Matrix4x4f view;
         Tbx::Matrix4x4f proj;
+        Tbx::Matrix4x4f vp;
+        Tbx::Matrix4x4f vpInv;
+        Tbx::Matrix4x4f viewInv;
+        Tbx::Matrix4x4f projInv;
         float time;
         float deltatime;
     };

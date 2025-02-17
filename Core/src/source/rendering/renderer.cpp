@@ -33,11 +33,12 @@ void Renderer::Init()
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
     m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet, 0);
 
-    m_UniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    
 
     UniformBufferDescriptor uniformBufferDescriptor
     {
-        .buffer = &m_UniformBuffer,
+        .buffer = &cameraUniformBuffer,
     };
 
     UniformBufferDescriptor lightData
@@ -62,6 +63,9 @@ void Renderer::Init()
     };
 
     m_ShaderProgramDescriptorSet->WriteDescriptorSets(descriptorSets);
+
+
+    m_ViewExtrmumUniformBuffer = UniformBuffer(&m_ViewExtremum, sizeof(m_ViewExtremum));
 }
 
 void Renderer::Destroy()
@@ -83,20 +87,65 @@ bool Renderer::BeginDraw(Window* _window)
     return hasObtainSwapChian;
 }
 
-void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers,
-                                      World* _world)
+void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
     sceneBufferGPU.time = PC_CORE::Time::GetTime();
     sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
-    sceneBufferGPU.view = Tbx::LookAtRH<float>(renderingContext.lowLevelCamera.position,
-                                               renderingContext.lowLevelCamera.position + renderingContext.
-                                               lowLevelCamera.front, renderingContext.lowLevelCamera.up);
-    sceneBufferGPU.proj = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov,
+    Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(renderingContext.lowLevelCamera.position,
+                                                   renderingContext.lowLevelCamera.position + renderingContext.
+                                                   lowLevelCamera.front, renderingContext.lowLevelCamera.up);
+    Tbx::Matrix4x4f projection = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov,
                                                                  renderingContext.lowLevelCamera.aspect,
                                                                  renderingContext.lowLevelCamera.near,
                                                                  renderingContext.lowLevelCamera.far);
+    sceneBufferGPU.vp = projection * view;
+    sceneBufferGPU.view = view;
+    sceneBufferGPU.proj = projection;
+    Tbx::Invert(sceneBufferGPU.vp, &sceneBufferGPU.vpInv);
+    Tbx::Invert(sceneBufferGPU.view, &sceneBufferGPU.viewInv);
+    Tbx::Invert(sceneBufferGPU.proj, &sceneBufferGPU.projInv);
 
-    m_UniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
+
+}
+
+void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
+{
+    Tbx::Vector4f topLeft = sceneBufferGPU.viewInv * sceneBufferGPU.projInv * Tbx::Vector4f{-1.f, -1.f, 0.f, 1.f};
+    Tbx::Vector4f topRight = sceneBufferGPU.viewInv * sceneBufferGPU.projInv * Tbx::Vector4f{1.f, -1.f, 0.f, 1.f};
+    Tbx::Vector4f bottomLeft = sceneBufferGPU.viewInv * sceneBufferGPU.projInv * Tbx::Vector4f{1.f, 1.f, 0.f, 1.f};
+    Tbx::Vector4f bottomRight = sceneBufferGPU.viewInv * sceneBufferGPU.projInv * Tbx::Vector4f{-1.f, 1.f, 0.f, 1.f};
+
+    topLeft /= topLeft.w;
+    topRight /= topRight.w;
+    bottomLeft /= bottomLeft.w;
+    bottomRight /= bottomRight.w;
+    
+    Tbx::Vector3f topLeft3 = {topLeft.x, topLeft.y, topLeft.z};
+    Tbx::Vector3f topRight3 = {topRight.x, topRight.y, topRight.z};
+    Tbx::Vector3f bottomLeft3 = {bottomLeft.x, bottomLeft.y, bottomLeft.z};
+    Tbx::Vector3f bottomRight3 = {bottomRight.x, bottomRight.y, bottomRight.z};
+
+    m_ViewExtremum =
+        {
+        .topLeft = topLeft3,
+        .topRight = topRight3,
+        .bottomLeft = bottomLeft3,
+        .bottomRight = bottomRight3
+        };
+    
+    std::cout << "View Extremum: " << m_ViewExtremum.bottomLeft.ToString() << std::endl;
+
+    m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));
+}
+
+
+void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers,
+                                      World* _world)
+{
+    
+    UpdateCameraUniformBuffer(renderingContext);
+    UpdateViewExtremumBuffer(renderingContext);
 
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
