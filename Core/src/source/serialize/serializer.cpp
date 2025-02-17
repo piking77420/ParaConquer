@@ -177,7 +177,7 @@ void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElemen
 }
 
 
-void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, uint32_t _typeKey)
+void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
 {
     std::string err;
 
@@ -241,7 +241,7 @@ void DeserializeMember(uint8_t* _objetPtr, XMLElement* _currentElement,
     */
 }
 
-void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerialize, uint32_t _typeKey)
+void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
 {
     std::string err;
     const ReflectedType& reflectionType = Reflector::GetType(_typeKey);

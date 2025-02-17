@@ -70,6 +70,7 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
+
     PC_CORE::EntityManager& entityManager = PC_CORE::World::GetWorld()->entityManager;
     PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
 

@@ -14,6 +14,8 @@ EntityId PC_CORE::EntityManager::CreateEntity()
         if (m_Entities.at(i).id == INVALID_ENTITY_ID)
         {
             m_Entities.at(i).id = static_cast<uint32_t>(i);
+            m_Entities.at(i).name = "Entity " + std::to_string(i);
+            
             return static_cast<EntityId>(i);
         }
     }

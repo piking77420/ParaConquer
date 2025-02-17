@@ -190,7 +190,8 @@ void Editor::Run()
 
         for (EditorWindow* editorWindow : m_EditorWindows)
             editorWindow->Render();
-        
+
+ 
         renderer.SwapBuffers(&window);
     }
 
