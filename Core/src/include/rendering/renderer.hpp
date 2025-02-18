@@ -23,21 +23,21 @@ struct ViewExtremum
     Tbx::Vector3f bottomRight;
 };
 
+
 class Renderer
 {
 public:
 
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
-    PC_CORE::ShaderProgram* m_ForwardShader = nullptr;
+    std::shared_ptr<PC_CORE::ShaderProgram> m_ForwardShader;
 
-    PC_CORE::ShaderProgram* m_DrawTextureScreenQuadShader = nullptr;
+    std::shared_ptr<PC_CORE::ShaderProgram> m_DrawTextureScreenQuadShader;
 
     std::shared_ptr<RhiRenderPass> forwardPass;
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
 
-    SceneLightsBuffer* sceneLightsBuffer = nullptr;
 
     PC_CORE_API Renderer() = default;
 
@@ -67,6 +67,9 @@ private:
     ViewExtremum m_ViewExtremum;
 
     UniformBuffer m_ViewExtrmumUniformBuffer;
+
+    std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
+
 
     PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
 

@@ -89,7 +89,7 @@ Rhi& Rhi::GetInstance()
     return *m_Instance;
 }
 
-ShaderProgram* Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo)
+std::shared_ptr<ShaderProgram> Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo)
 {
     Rhi& rhi = GetInstance();
     

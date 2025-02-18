@@ -35,7 +35,7 @@ public:
 
     PC_CORE_API static Rhi& GetInstance();
 
-    PC_CORE_API static ShaderProgram* CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
+    PC_CORE_API static std::shared_ptr<ShaderProgram> CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 
     PC_CORE_API static void DestroyShader(ShaderProgram* _shaderprogram);
 

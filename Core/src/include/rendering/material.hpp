@@ -2,10 +2,12 @@
 
 #include "core_header.hpp"
 #include "low_renderer/descriptor_set.hpp"
-#include "resources/shader_program.h"
 #include "resources/texture.hpp"
 
 BEGIN_PCCORE
+
+class ShaderProgram;
+
     enum class MaterialType
 {
     Opaque,
@@ -19,7 +21,7 @@ class Material : public ResourceInterface<Material>
 public:
     MaterialType m_MaterialType = MaterialType::Opaque;
 
-    Texture* m_albedo = nullptr;
+    Texture* m_albedo;
 
     PC_CORE_API Material();
 
@@ -34,7 +36,7 @@ public:
 private:
     ShaderProgramDescriptorSets* m_pShaderProgramDescriptorSets = nullptr;
 
-    ShaderProgram* m_ShaderProgram = nullptr;
+    ShaderProgram* m_ShaderProgram;
 };
 
 REFLECT(Material, Resource)

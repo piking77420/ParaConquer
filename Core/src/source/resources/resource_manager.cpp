@@ -34,20 +34,25 @@ void ResourceManager::Destroy()
 {
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        delete it->second;
+
+        if (it->second.use_count() > 1)
+        {
+            PC_LOGERROR("There is a remaining reference before destroyed by the resource manager " + it->second->name);
+        }
+        it->second.reset();
         it->second = nullptr;
     }
     m_ResourcesMap.clear();
 }
 
-void ResourceManager::ForEach(TypeId typeID, const std::function<void(Resource*)>& _lamba)
+void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
 {
     if (!Reflector::ContaintTypeFromTypeID(typeID))
         return;
         
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        const ResourceInterface<Material>* interface = reinterpret_cast<ResourceInterface<Material>*>(it->second);
+        const std::shared_ptr<const ResourceInterface<Material>> interface = std::reinterpret_pointer_cast<const ResourceInterface<Material>>(it->second);
         
         if (typeID != interface->GetType().typeId)
             continue;

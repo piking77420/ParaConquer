@@ -324,7 +324,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
     {
         currentSelectedMember.clear();
     }
-
+        // TO DO HANDLE SHARED PTR
     if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.metaDataType)))
     {
         PC_CORE::Resource** doublePtr = reinterpret_cast<PC_CORE::Resource**>(ptr);
@@ -354,7 +354,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
 
             ImGui::Begin("Select",&showSelectResourceMenue);
 
-            auto l = [&](PC_CORE::Resource* currentResource)
+            auto l = [&](std::shared_ptr<PC_CORE::Resource> currentResource)
             {
                 std::string guiidS = (std::string)currentResource->guid;
 
@@ -362,7 +362,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
 
                 if (ImGui::Button(currentResource->name.c_str()))
                 {
-                    *doublePtr = currentResource;
+                  //  *doublePtr = currentResource;
                 }
                 ImGui::PopID();
             };

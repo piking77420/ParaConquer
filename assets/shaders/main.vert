@@ -28,7 +28,7 @@ layout(push_constant) uniform constants {
 void main() 
 {
     vec4 worldPos = PushConstants.model * vec4(inPosition, 1.0);
-    gl_Position = ubo.vp * worldPos;
+    gl_Position = ubo.vp *ubo.vpIn* ubo.vp * worldPos;
     
     fragpos = worldPos.xyz;
     fragNormal = normalize(mat3(PushConstants.normalInvMatrix) * inNormal);

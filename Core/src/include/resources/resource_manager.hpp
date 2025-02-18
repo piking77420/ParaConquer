@@ -21,22 +21,22 @@ public:
     PC_CORE_API static void Destroy();
 
     template<class T>
-    static T* Create(const fs::path& path);
+    static std::shared_ptr<T>  Create(const fs::path& path);
 
     template<class T, typename... Arg>
-    static T* Create(Arg... args);
+    static std::shared_ptr<T>  Create(Arg... args);
 
     template<class T>
-    static void Add(const std::string& _name,T* _resource);
+    static void Add(const std::string& _name, std::shared_ptr<Resource> _resource);
 
     template<class T>
-    static void Add(T* _resource);
+    static void Add(std::shared_ptr<Resource> _resource);
     
     template<class T>
-    static T* Get(const std::string& _name);
+    static std::shared_ptr<T> Get(const std::string& _name);
 
     template<class T>
-    static T* Get();
+    static std::shared_ptr<T> Get();
 
     template<class T>
     static bool Delete(const std::string& _name);
@@ -44,7 +44,7 @@ public:
     template <class T>
     static void ForEach(const std::function<void(T*)>& _lamba);
     
-    PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(Resource*)>& _lamba);
+    PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
  
 private:
@@ -54,27 +54,27 @@ private:
         std::string name = {};
     };
     
-    PC_CORE_API static inline std::map<fs::path, Resource*> m_ResourcesMap;
+    PC_CORE_API static inline std::map<fs::path, std::shared_ptr<Resource>> m_ResourcesMap;
 };
 
 template <class T>
-T* ResourceManager::Create(const fs::path& path)
+std::shared_ptr<T> ResourceManager::Create(const fs::path& path)
 {
     static_assert(std::is_base_of_v<Resource,T>,"T is not a resource");
     
-    T* newR = new T(path);
+    std::shared_ptr<Resource> newR = std::make_shared<T>(path);
    
-    m_ResourcesMap.emplace(path,newR);
+    m_ResourcesMap.emplace(path, newR);
 
     return newR;
 }
 
 template<class T, typename... Arg>
-T* ResourceManager::Create(Arg... args)
+std::shared_ptr<T> ResourceManager::Create(Arg... args)
 {
     static_assert(std::is_base_of_v<Resource, T>, "T is not a resource");
 
-    T* newR = new T(std::forward<Arg>(args)...);
+    std::shared_ptr<T> newR = std::make_shared<T>(std::forward<Arg>(args)...);
 
     m_ResourcesMap.emplace(newR->name, newR);
 
@@ -82,25 +82,25 @@ T* ResourceManager::Create(Arg... args)
 }
 
 template <class T>
-void ResourceManager::Add(const std::string& _name, T* _resource)
+void ResourceManager::Add(const std::string& _name, std::shared_ptr<Resource> _resource)
 {
     _resource->name = _name;
     m_ResourcesMap.emplace(_name,_resource);
 }
 
 template <class T>
-void ResourceManager::Add(T* _resource)
+void ResourceManager::Add(std::shared_ptr<Resource> _resource)
 {
     m_ResourcesMap.emplace(_resource->name, _resource);
 }
 
 template <class T>
-T* ResourceManager::Get(const std::string& _name)
+std::shared_ptr<T> ResourceManager::Get(const std::string& _name)
 {
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
         if (it->second->name == _name)
-            return reinterpret_cast<T*>(it->second);
+            return std::reinterpret_pointer_cast<T>(it->second);
     }
     PC_LOGERROR("There is no resource with this name " + _name);
     
@@ -108,12 +108,12 @@ T* ResourceManager::Get(const std::string& _name)
 }
 
 template <class T>
-T* ResourceManager::Get()
+std::shared_ptr<T> ResourceManager::Get()
 {
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
         if (dynamic_cast<T*>(it->second))
-            return reinterpret_cast<T*>(it->second);
+            return it->second;
     }
     PC_LOGERROR("There is no resource as this type");
 

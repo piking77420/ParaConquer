@@ -27,7 +27,7 @@ public:
     fs::path path;
 
     Guid guid;
-
+    
     PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
 
     PC_CORE_API Resource(Resource&& _other) noexcept;
@@ -100,7 +100,6 @@ public:
 
     ResourceInterface(const fs::path& _path);
     
-
     virtual ~ResourceInterface() override = default;
 
     const ReflectedType& GetType() const;

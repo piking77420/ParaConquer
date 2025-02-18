@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "resource.hpp"
 #include "low_renderer/uniform_buffer.hpp"
 #include "math/matrix2x2.hpp"
 #include "math/toolbox_typedef.hpp"
@@ -20,7 +19,7 @@ struct ALIGNAS_16 SceneLightData
 };
     
 
-class SceneLightsBuffer : public ResourceInterface<SceneLightsBuffer>
+class SceneLightsBuffer
 {
 public:
     

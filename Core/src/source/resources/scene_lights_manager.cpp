@@ -3,7 +3,6 @@
 
 PC_CORE::SceneLightsBuffer::SceneLightsBuffer()
 {
-    name = "SceneLightsBuffer";
     uniformBuffer = UniformBuffer(&sceneLightData, sizeof(sceneLightData));
 }
 

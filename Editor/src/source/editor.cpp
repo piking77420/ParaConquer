@@ -36,8 +36,8 @@ void Editor::UnInitThridPartLib()
 
 void Editor::CompileShader()
 {
-    ShaderSource* vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-    ShaderSource* frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+    std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+    std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
     vertex->CompileToSpriv();
     frag->CompileToSpriv();
@@ -58,13 +58,13 @@ void Editor::Init()
     App::Init();
 
 
-    Material* m1 = ResourceManager::Create<Material>("diamond_block_material");
-    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
+    std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material");
+    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block").get();
     m1->Build();
 
-    Material* m2 = ResourceManager::Create<Material>("emerauld_block_material");
+    std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material");
 
-    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
+    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block").get();
     m2->Build();
 
 
@@ -145,8 +145,8 @@ void Editor::InitTestScene()
     Transform& tt = *world.entityManager.GetComponent<Transform>(entity_id);
     
     auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
-    s->mesh = ResourceManager::Get<Mesh>("sphere");
-    s->material = ResourceManager::Get<Material>("diamond_block_material");
+    s->mesh = ResourceManager::Get<Mesh>("sphere").get();
+    s->material = ResourceManager::Get<Material>("diamond_block_material").get();
 
     
     entity_id = world.entityManager.CreateEntity();
@@ -154,8 +154,8 @@ void Editor::InitTestScene()
     Transform& t = *world.entityManager.GetComponent<Transform>(entity_id);
 
     s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
-    s->mesh = ResourceManager::Get<Mesh>("cube");
-    s->material = ResourceManager::Get<Material>("emerauld_block_material");
+    s->mesh = ResourceManager::Get<Mesh>("cube").get();
+    s->material = ResourceManager::Get<Material>("emerauld_block_material").get();
 
     t.position = { 0.0f, 2.0f, 1.0f };
 }

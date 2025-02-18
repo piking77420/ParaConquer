@@ -15,7 +15,7 @@ PC_CORE::Material::Material(const std::string& _name)
     switch (m_MaterialType)
     {
     case MaterialType::Opaque:
-        m_ShaderProgram = App::instance->renderer.m_ForwardShader;
+        m_ShaderProgram = App::instance->renderer.m_ForwardShader.get();
         break;
     case MaterialType::Transparent:
         //m_ShaderProgram = App::instance->renderer.m_ForwardShader;

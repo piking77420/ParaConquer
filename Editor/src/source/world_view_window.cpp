@@ -60,7 +60,7 @@ void WorldViewWindow::Render()
         .position = camera.position,
         .front = camera.front,
         .up = camera.up,
-        .aspect = m_Editor->window.GetAspect(),
+        .aspect = size.x / size.y,
         .fov = camera.GetFOV(),
         .near = camera.GetNear(),
         .far = camera.GetFar(),

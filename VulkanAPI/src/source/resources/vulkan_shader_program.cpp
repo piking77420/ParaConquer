@@ -103,6 +103,7 @@ void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets
     
     delete *shaderProgramDescriptorSets;
     *shaderProgramDescriptorSets = nullptr;
+    m_DescriptorSetAllocCount = 0;
 }
 
 void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, void* data, size_t _size) const

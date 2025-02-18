@@ -32,8 +32,6 @@ void App::Init()
     rhi = Rhi(createInfo);
     ResourceManager::InitPath();
     renderer.Init();
-    
-    //renderer.InitRenderResources();
     Time::Init();
     
     world.LoadSkyBox();
@@ -43,8 +41,8 @@ void App::Destroy()
 {
 
     world.skybox.Destroy();
-    ResourceManager::Destroy();
     renderer.Destroy();
+    ResourceManager::Destroy();
     PC_LOG("App Destroy")
 }
 

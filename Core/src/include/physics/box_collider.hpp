@@ -15,7 +15,7 @@ struct BoxCollider : public Component
 
     bool drawAABB = false;
     
-    Tbx::Vector3f extend = Tbx::Vector3f(0.5f);
+    Tbx::Vector3f extend = Tbx::Vector3f(0.5f, 0.5f, 0.5f);
     Tbx::Vector3f center;
 };
 REFLECT(BoxCollider, Component)
