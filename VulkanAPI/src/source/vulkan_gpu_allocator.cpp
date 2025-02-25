@@ -408,6 +408,7 @@ vk::ImageView Vulkan::VulkanGpuAllocator::CreateImageView(vk::Device _device, vk
     if (_createTextureInfo.canbeSampled)
         *_usage |= vk::ImageUsageFlagBits::eSampled;
 
-    
+    if (_createTextureInfo.GenerateMipMap)
+        *_usage |= vk::ImageUsageFlagBits::eTransferSrc;
 }
 

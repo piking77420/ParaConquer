@@ -165,9 +165,6 @@
     <ClInclude Include="src\include\world\static_mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\world\system.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\world\transform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -261,9 +258,6 @@
     <ClInclude Include="src\include\data_structures\type_sparse_set.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\ecs\ecs_archetype.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\ecs\ecs_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -283,6 +277,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\gbuffers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ecs\archetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\render_passes\render_pass.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\rendering\render_passes\forward_pass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -386,9 +389,6 @@
     <ClCompile Include="src\source\world\static_mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\world\system.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\world\transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -470,9 +470,6 @@
     <ClCompile Include="src\source\data_structures\type_sparse_set.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\ecs\ecs_archetype.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\ecs\ecs_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -483,6 +480,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\ecs\archetype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\render_passes\render_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\rendering\render_passes\forward_pass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

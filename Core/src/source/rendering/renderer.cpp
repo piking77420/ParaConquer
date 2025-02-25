@@ -19,8 +19,13 @@ void Renderer::Init()
 {
     m_RhiContext = Rhi::GetRhiContext();
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
+
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
+
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM);
+
+    forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
+
     CreateForwardShader();
     CreateDrawQuadShader();
 
@@ -78,7 +83,6 @@ void Renderer::Destroy()
 }
 
 
-
 bool Renderer::BeginDraw(Window* _window)
 {
     bool hasObtainSwapChian = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
@@ -97,13 +101,13 @@ bool Renderer::BeginDraw(Window* _window)
 
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
+    currentRenderingContext = &renderingContext;
     SceneBufferGPU& sceneBufferGpu = sceneBufferGPU;
 
     sceneBufferGpu.time = PC_CORE::Time::GetTime();
     sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
-    Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(renderingContext.lowLevelCamera.position,
-                                                renderingContext.lowLevelCamera.position + renderingContext.
-                                                lowLevelCamera.front, renderingContext.lowLevelCamera.up);
+    Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(Tbx::Vector3f::Zero(),
+                                                renderingContext.lowLevelCamera.front, renderingContext.lowLevelCamera.up);
     Tbx::Matrix4x4f projection = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov,
                                                                         renderingContext.lowLevelCamera.aspect,
                                                                         renderingContext.lowLevelCamera.near,
@@ -116,45 +120,52 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
     Tbx::Invert(sceneBufferGPU.view, &sceneBufferGPU.viewInv);
     Tbx::Invert(sceneBufferGPU.proj, &sceneBufferGPU.projInv);
     Tbx::Invert(sceneBufferGPU.vp, &sceneBufferGPU.vpInv);
-    
+
     cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 }
 
 void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
-    float near = 1.f;
+    constexpr float far = 1.f;
+    constexpr float near = 0.2f;
 
-    Tbx::Matrix4x4f matrixInv = sceneBufferGPU.proj * sceneBufferGPU.viewInv;
-    Tbx::Matrix4x4f r = Tbx::Matrix4x4f::Identity();
-
-    Tbx::Invert(matrixInv, &r);
     // TO DO FIX INVET + ADD GIZOMO FOR DEBUG
-    Tbx::Vector4f topLeft = r * Tbx::Vector4f{-1.f, -1.f, near, 1.f};
-    Tbx::Vector4f topRight = r * Tbx::Vector4f{1.f, -1.f, near, 1.f};
-    Tbx::Vector4f bottomLeft = r * Tbx::Vector4f{-1.f, 1.f, near, 1.f};
-    Tbx::Vector4f bottomRight = r * Tbx::Vector4f{1.f, 1.f, near, 1.f};
+    Tbx::Vector4f topLeftB = sceneBufferGPU.vpInv * Tbx::Vector4f{-1.f, -1.f, far, 1.f};
+    Tbx::Vector4f topRightB = sceneBufferGPU.vpInv * Tbx::Vector4f{1.f, -1.f, far, 1.f};
+    Tbx::Vector4f bottomLeftB = sceneBufferGPU.vpInv * Tbx::Vector4f{-1.f, 1.f, far, 1.f};
+    Tbx::Vector4f bottomRightB = sceneBufferGPU.vpInv * Tbx::Vector4f{1.f, 1.f, far, 1.f};
 
-    topLeft /= topLeft.w;
-    topRight /= topRight.w;
-    bottomLeft /= bottomLeft.w;
-    bottomRight /= bottomRight.w;
+    topLeftB /= topLeftB.w;
+    topRightB /= topRightB.w;
+    bottomLeftB /= bottomLeftB.w;
+    bottomRightB /= bottomRightB.w;
 
-    Tbx::Vector3f topLeft3 = {topLeft.x, topLeft.y, topLeft.z};
-    Tbx::Vector3f topRight3 = {topRight.x, topRight.y, topRight.z};
-    Tbx::Vector3f bottomLeft3 = {bottomLeft.x, bottomLeft.y, bottomLeft.z};
-    Tbx::Vector3f bottomRight3 = {bottomRight.x, bottomRight.y, bottomRight.z};
+    Tbx::Vector4f topLeftA = sceneBufferGPU.vpInv * Tbx::Vector4f{-1.f, -1.f, near, 1.f};
+    Tbx::Vector4f topRightA = sceneBufferGPU.vpInv * Tbx::Vector4f{1.f, -1.f, near, 1.f};
+    Tbx::Vector4f bottomLeftA = sceneBufferGPU.vpInv * Tbx::Vector4f{-1.f, 1.f, near, 1.f};
+    Tbx::Vector4f bottomRightA = sceneBufferGPU.vpInv * Tbx::Vector4f{1.f, 1.f, near, 1.f};
+
+    topLeftA /= topLeftA.w;
+    topRightA /= topRightA.w;
+    bottomLeftA /= bottomLeftA.w;
+    bottomRightA /= bottomRightA.w;
+
+    const Tbx::Vector3f topLeft3 = {topLeftB.x - topLeftA.x, topLeftB.y - topLeftA.y, topLeftB.z - topLeftA.y};
+    const Tbx::Vector3f topRight3 = {topRightB.x - topRightA.x, topRightB.y - topRightA.y, topRightB.z - topRightA.z};
+    const Tbx::Vector3f bottomLeft3 = {
+        bottomLeftB.x - bottomLeftA.x, bottomLeftB.y - bottomLeftA.y, bottomLeftB.z - bottomLeftA.z
+    };
+    const Tbx::Vector3f bottomRight3 = {
+        bottomRightB.x - bottomRightA.x, bottomRightB.y - bottomRightA.y, bottomRightB.z - bottomRightA.z
+    };
 
     m_ViewExtremum =
     {
-        .topLeft = topLeft3,
+        .topLeft = topLeft3 ,
         .topRight = topRight3,
-        .bottomLeft = bottomLeft3,
-        .bottomRight = bottomRight3
+        .bottomLeft = bottomLeft3 + renderingContext.lowLevelCamera.position,
+        .bottomRight = bottomRight3 + renderingContext.lowLevelCamera.position
     };
-
-    std::cout << "[View]  \n" << sceneBufferGPU.view.ToString() << std::endl;
-    std::cout << "[proje] \n" << sceneBufferGPU.proj.ToString() << std::endl;
-    std::cout << "[vpInv] \n" << sceneBufferGPU.vpInv.ToString() << std::endl;
 
     m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));
 }
@@ -163,6 +174,8 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
 void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers,
                                       World* _world)
 {
+    m_CurrentWorld = _world;
+
     UpdateCameraUniformBuffer(renderingContext);
     UpdateViewExtremumBuffer(renderingContext);
 
@@ -364,7 +377,7 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
 
     // Compute Matrix
     Tbx::Matrix4x4d modelMatrixd[2];
-    Tbx::Trs3D<double>(_transform.position, _transform.rotation.quaternion,
+    Tbx::Trs3D<double>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
                        _transform.scale, &modelMatrixd[0]);
     Tbx::Invert<double>(modelMatrixd[0], &modelMatrixd[1]);
     modelMatrixd[1] = modelMatrixd[1].Transpose();
@@ -380,4 +393,8 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     primaryCommandList->BindVertexBuffer(_staticMesh.mesh->vertexBuffer, 0, 1);
     primaryCommandList->BindIndexBuffer(_staticMesh.mesh->indexBuffer, 0);
     primaryCommandList->DrawIndexed(_staticMesh.mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+}
+
+void Renderer::AtmoSpherePass()
+{
 }

@@ -7,7 +7,6 @@
 
 #include "core_header.hpp"
 #include "log.hpp"
-#include "system.hpp"
 #include "ecs/entity_manager.h"
 #include "reflection/reflector.hpp"
 

@@ -16,6 +16,7 @@ public:
 
     PC_CORE_API virtual void Tick(double deltaTime) = 0;
     
+    PC_CORE_API virtual void RenderingTick(double deltatime) = 0;
     
 private:
     

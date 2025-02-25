@@ -247,6 +247,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>;$(SolutionDir)Core\src\include;$(ProjectDir)src\include;$(ProjectDir)src\include;$(SolutionDir)MotionCore\MotionCore\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>

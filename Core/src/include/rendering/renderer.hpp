@@ -15,7 +15,7 @@
 BEGIN_PCCORE
 
 
-struct ViewExtremum
+struct ViewDirExtremum
 {
     Tbx::Vector3f topLeft;
     Tbx::Vector3f topRight;
@@ -37,8 +37,7 @@ public:
     std::shared_ptr<RhiRenderPass> forwardPass;
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
-
-
+    
     PC_CORE_API Renderer() = default;
 
     PC_CORE_API ~Renderer() = default;
@@ -56,6 +55,8 @@ public:
     PC_CORE_API void DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets);
 
 private:
+    World* m_CurrentWorld;
+    
     RhiContext* m_RhiContext;
     
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
@@ -64,13 +65,14 @@ private:
 
     SceneBufferGPU sceneBufferGPU;
 
-    ViewExtremum m_ViewExtremum;
+    ViewDirExtremum m_ViewExtremum;
 
     UniformBuffer m_ViewExtrmumUniformBuffer;
 
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 
-
+    const RenderingContext* currentRenderingContext = nullptr;
+    
     PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
 
     PC_CORE_API void UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext);
@@ -84,6 +86,8 @@ private:
     PC_CORE_API void CreateDrawQuadShader();
 
     PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
+
+    PC_CORE_API void AtmoSpherePass();
 };
 
 END_PCCORE

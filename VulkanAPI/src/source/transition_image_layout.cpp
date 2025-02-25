@@ -66,3 +66,14 @@ bool Vulkan::HasStencilComponent(vk::Format _format)
 {
     return _format == vk::Format::eD32Sfloat || _format == vk::Format::eD24UnormS8Uint;
 }
+
+/*
+void Vulkan::GenerateMipMaps(vk::CommandBuffer _commandBuffer, uint32_t _imageWidht, uint32_t _imageHeight,
+    uint32_t _mipLevels, vk::ImageAspectFlags aspectFlags)
+{
+    vk::ImageMemoryBarrier barrier{};
+    barrier.sType = vk::StructureType::eImageMemoryBarrier;
+    
+
+    
+}*/

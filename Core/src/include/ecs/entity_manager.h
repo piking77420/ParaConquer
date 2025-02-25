@@ -133,17 +133,30 @@ BEGIN_PCCORE
         void ForEach(std::function<void(const C&...)> _func) const;
 
         template <SystemDerived ...T>
-        void AddSystem()
+        PC_FORCE_INLINE void AddSystems()
         {
-            m_EcsSystems.reserve(sizeof...(T));
-
-            m_EcsSystems.emplace_back(new T()...);
+            m_EcsSystems.emplace_back(std::make_shared<T>()...);
+        }
+        template <SystemDerived T>
+        PC_FORCE_INLINE std::shared_ptr<T> AddSystem()
+        {
+            return m_EcsSystems.emplace_back(std::make_shared<T>());
         }
 
         template <SystemDerived ...T>
-        void RemoveSystem()
+        PC_FORCE_INLINE void RemoveSystems()
         {
-         
+            RemoveSystem<T...>();
+        }
+
+        template <SystemDerived T>
+        PC_FORCE_INLINE void RemoveSystem()
+        {
+            for (auto& it : m_EcsSystems)
+            {
+                if (typeid(*it) == typeid(T))
+                    m_EcsSystems.erase(it);
+            }
         }
 
         
@@ -169,7 +182,7 @@ BEGIN_PCCORE
         
         std::unordered_map<uint32_t, TypeSparseSet> m_SparseSetsMap;
 
-        std::vector<EcsSystem*> m_EcsSystems;
+        std::vector<std::shared_ptr<EcsSystem>> m_EcsSystems;
        
     };
 

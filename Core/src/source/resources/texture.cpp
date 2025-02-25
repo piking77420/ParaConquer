@@ -38,7 +38,7 @@ Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_p
         .width = width,
         .height = height,
         .depth = 1,
-        .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))),
+        .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
         .imageType = ImageType::TYPE_2D,
         .format = RHIFormat::R8G8B8A8_SRGB,
         .channel = Channel::RGBA,
