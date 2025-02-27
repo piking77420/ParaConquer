@@ -41,6 +41,8 @@
     <Content Include="src\include\reflection\compiletime_key.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\ecs\components_manager.hpp" />
+    <ClInclude Include="src\include\ecs\component_array.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
     <ClInclude Include="src\externals\include\GLFW\glfw3native.h" />
     <ClInclude Include="src\externals\include\Imgui\imconfig.h" />
@@ -65,8 +67,6 @@
     <ClInclude Include="src\include\app.hpp" />
     <ClInclude Include="src\include\assert.hpp" />
     <ClInclude Include="src\include\core_header.hpp" />
-    <ClInclude Include="src\include\data_structures\sparse_sets.hpp" />
-    <ClInclude Include="src\include\data_structures\type_sparse_set.hpp" />
     <ClInclude Include="src\include\ecs\component.h" />
     <ClInclude Include="src\include\ecs\archetype.h" />
     <ClInclude Include="src\include\ecs\ecs_front.h" />
@@ -132,10 +132,11 @@
     <ClInclude Include="src\include\world\static_mesh.hpp" />
     <ClInclude Include="src\include\world\transform.hpp" />
     <ClInclude Include="src\include\world\world.hpp" />
+    <ClInclude Include="src\include\ecs\system_manager.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\source\data_structures\sparse_sets.cpp" />
-    <ClCompile Include="src\source\data_structures\type_sparse_set.cpp" />
+    <ClCompile Include="src\source\ecs\components_manager.cpp" />
+    <ClCompile Include="src\source\ecs\component_array.cpp" />
     <ClCompile Include="src\source\ecs\archetype.cpp" />
     <ClCompile Include="src\source\ecs\ecs_system.cpp" />
     <ClCompile Include="src\source\ecs\entity_manager.cpp" />
@@ -201,6 +202,7 @@
     <ClCompile Include="src\source\world\static_mesh.cpp" />
     <ClCompile Include="src\source\world\transform.cpp" />
     <ClCompile Include="src\source\world\world.cpp" />
+    <ClCompile Include="src\source\ecs\system_manager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

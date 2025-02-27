@@ -39,8 +39,3 @@ void World::LoadSkyBox()
     skybox.Load(skyboxImage);
 }
 
-World* World::GetWorld()
-{
-    return m_World;
-}
-

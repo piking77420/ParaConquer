@@ -3,13 +3,17 @@
 #include "reflection/reflector.hpp"
 
 #include <cassert>
+#include <bitset>
 
 BEGIN_PCCORE
 
 using EntityId = uint32_t;
-constexpr EntityId INVALID_ENTITY_ID = -1;
-constexpr EntityId RESERVE_ENTITIES = 2000;
 
-constexpr EntityId MAX_ENTITY = RESERVE_ENTITIES * RESERVE_ENTITIES;
+constexpr EntityId INVALID_ENTITY_ID = -1;
+constexpr EntityId MAX_ENTITIES = 20000;
+
+constexpr uint32_t MAX_COMPONENT = 1000;
+using Signature = std::bitset<MAX_COMPONENT>;
+constexpr size_t s = sizeof(Signature);
 
 END_PCCORE

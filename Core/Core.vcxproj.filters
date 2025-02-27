@@ -252,12 +252,6 @@
     <ClInclude Include="src\include\low_renderer\sampler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\data_structures\sparse_sets.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\include\data_structures\type_sparse_set.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\ecs\ecs_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -286,6 +280,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\rendering\render_passes\forward_pass.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ecs\components_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ecs\component_array.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\ecs\system_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -464,12 +467,6 @@
     <ClCompile Include="src\source\low_renderer\sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\source\data_structures\sparse_sets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\source\data_structures\type_sparse_set.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\source\ecs\ecs_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -489,6 +486,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source\rendering\render_passes\forward_pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\ecs\components_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\ecs\component_array.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\source\ecs\system_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

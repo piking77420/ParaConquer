@@ -20,6 +20,7 @@ void Hierachy::Update()
 
 void Hierachy::ShowGraph()
 {
+    /*
     PC_CORE::EntityManager& ent = PC_CORE::World::GetWorld()->entityManager;
     
     bool hasSelected = false;
@@ -47,5 +48,5 @@ void Hierachy::ShowGraph()
             m_Editor->m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
         }
     }
-    
+    */
 }

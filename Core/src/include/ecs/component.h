@@ -9,6 +9,7 @@ BEGIN_PCCORE
 
 class EntityManager;
 
+using ComponentTypeBit = uint32_t;
 
 struct Component
 {

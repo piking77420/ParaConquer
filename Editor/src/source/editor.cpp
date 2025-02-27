@@ -130,10 +130,64 @@ void Editor::ShaderRecompileList()
 }
 
 
+class TestSystem: public EcsSystem
+{
+public:
+
+    Signature TransformSignature;
+
+    TestSystem()
+    {
+        TransformSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(), true);
+
+        m_SignatureEntitiesSet.insert({ TransformSignature ,{} });
+
+
+    }
+
+    virtual void Tick(double deltaTime) override
+    {
+        std::set<EntityId>& entitySet = m_SignatureEntitiesSet[TransformSignature];
+
+        for (auto& ent : entitySet)
+        {
+            World::GetWorld()->GetComponent<Transform>(ent);
+
+
+        }
+
+    }
+
+    // Hérité via EcsSystem
+    void Begin() override
+    {
+        return void();
+    }
+
+    void RenderingTick(double deltatime) override
+    {
+        return void();
+    }
+
+private:
+
+
+  
+};
+
 
 void Editor::InitTestScene()
 {
-    
+
+    auto testSytem = World::GetWorld()->RegisterSystem<TestSystem>();
+
+
+    EntityId ent0 = 0;
+    ent0 = World::GetWorld()->CreateEntity();
+    World::GetWorld()->AddComponent<Transform>(ent0);
+
+    testSytem->Tick(2);
+    /*
 
     EntityId entity_id = world.entityManager.CreateEntity();
     world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
@@ -157,12 +211,11 @@ void Editor::InitTestScene()
     s->mesh = ResourceManager::Get<Mesh>("cube").get();
     s->material = ResourceManager::Get<Material>("emerauld_block_material").get();
 
-    t.position = { 0.0f, 2.0f, 1.0f };
+    t.position = { 0.0f, 2.0f, 1.0f };*/
 }
 
 void Editor::DestroyTestScene()
 {
-    world.entityManager.Clear();
     m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
 

@@ -70,7 +70,7 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-
+    /*
     PC_CORE::EntityManager& entityManager = PC_CORE::World::GetWorld()->entityManager;
     PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
 
@@ -104,12 +104,12 @@ void Inspector::Show()
 
         if (ImGui::SmallButton("Delete Component"))
         {
-            entityManager.RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
+            //entityManager.RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
             //m_Editor->world.scene.RemoveComponent(_entity, _componentId);
         }
 
         ImGui::PopID();
-    }
+    }*/
 }
 
 void Inspector::OnInput()
@@ -131,7 +131,7 @@ void Inspector::OnInput()
                 if (PC_CORE::World::GetWorld() == nullptr)
                     continue;
 
-                PC_CORE::World::GetWorld()->entityManager.AddComponent(type->typeId, m_Editor->m_SelectedEntityId);
+                //PC_CORE::World::GetWorld()->entityManager.AddComponent(type->typeId, m_Editor->m_SelectedEntityId);
             }
         }
 

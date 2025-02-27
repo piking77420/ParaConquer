@@ -214,7 +214,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this,
                                                                   std::placeholders::_1, std::placeholders::_2);
-    _world->entityManager.ForEach<Transform, StaticMesh>(func);
+   // _world->entityManager.ForEach<Transform, StaticMesh>(func);
     primaryCommandList->EndRenderPass();
 
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
@@ -259,7 +259,7 @@ void Renderer::QueryWorldData(World* world)
 {
     std::function<void(DirLight&, Transform&)> l = std::bind(&Renderer::QueryLightDirData, this, std::placeholders::_1,
                                                              std::placeholders::_2);
-    world->entityManager.ForEach<DirLight, PC_CORE::Transform>(l);
+    //world->entityManager.ForEach<DirLight, PC_CORE::Transform>(l);
 }
 
 void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
