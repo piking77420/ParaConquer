@@ -1,0 +1,14 @@
+{
+    "StaticMesh": {
+        "Material * __ptr64": {
+            "material": {
+                "Guid": "C82C99E4-87FC-4D21-98-F-5A-68-3F-99-C4-3F"
+            }
+        },
+        "Mesh * __ptr64": {
+            "mesh": {
+                "Guid": "F67704B4-8313-48AE-87-EF-C7-45-FA-1F-FB-58"
+            }
+        }
+    }
+}

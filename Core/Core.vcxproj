@@ -41,6 +41,7 @@
     <Content Include="src\include\reflection\compiletime_key.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\externals\include\Json\json.hpp" />
     <ClInclude Include="src\include\ecs\components_manager.hpp" />
     <ClInclude Include="src\include\ecs\component_array.hpp" />
     <ClInclude Include="src\externals\include\GLFW\glfw3.h" />
@@ -204,6 +205,9 @@
     <ClCompile Include="src\source\world\world.cpp" />
     <ClCompile Include="src\source\ecs\system_manager.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -346,7 +350,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies);RapidXML.lib;lua54.lib;glfw3.lib;VulkanAPI.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);lua54.lib;glfw3.lib;VulkanAPI.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(ProjectDir)src\externals\lib\Debug;$(OutDir)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
@@ -375,7 +379,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies);VulkanAPI.lib;RapidXML.lib;lua54.lib;glfw3.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);VulkanAPI.lib;lua54.lib;glfw3.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(ProjectDir)src\externals\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>

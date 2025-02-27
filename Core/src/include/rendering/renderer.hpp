@@ -23,6 +23,21 @@ struct ViewDirExtremum
     Tbx::Vector3f bottomRight;
 };
 
+class RendererSystem : public EcsSystem
+{
+
+public:
+    Signature staticMeshSignature;
+
+    Signature dirLightSignature;
+
+    RendererSystem() = default;
+
+    PC_CORE_API void Begin() override {};
+    PC_CORE_API void Tick(double deltaTime) override {};
+    PC_CORE_API void RenderingTick(double deltatime) override {};
+};
+
 
 class Renderer
 {
@@ -71,6 +86,8 @@ private:
 
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 
+    std::shared_ptr<RendererSystem> rendererSystem;
+
     const RenderingContext* currentRenderingContext = nullptr;
     
     PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
@@ -88,6 +105,8 @@ private:
     PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
 
     PC_CORE_API void AtmoSpherePass();
+
+    PC_CORE_API void InitRenderSystem();
 };
 
 END_PCCORE

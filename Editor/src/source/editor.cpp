@@ -18,6 +18,8 @@
 #include "rendering/material.hpp"
 #include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
+#include "serialize/serializer.h"
+#include <thread>
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -76,7 +78,10 @@ void Editor::Init()
         IMGUIContext.Render(cmd);
     });
 
- 
+
+    //Tbx::Vector3f y;
+    //Serializer::DeSerialize(&y, "TestSerilize.ser");
+
 }
 
 void Editor::Destroy()
@@ -130,88 +135,41 @@ void Editor::ShaderRecompileList()
 }
 
 
-class TestSystem: public EcsSystem
-{
-public:
-
-    Signature TransformSignature;
-
-    TestSystem()
-    {
-        TransformSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(), true);
-
-        m_SignatureEntitiesSet.insert({ TransformSignature ,{} });
-
-
-    }
-
-    virtual void Tick(double deltaTime) override
-    {
-        std::set<EntityId>& entitySet = m_SignatureEntitiesSet[TransformSignature];
-
-        for (auto& ent : entitySet)
-        {
-            World::GetWorld()->GetComponent<Transform>(ent);
-
-
-        }
-
-    }
-
-    // Hérité via EcsSystem
-    void Begin() override
-    {
-        return void();
-    }
-
-    void RenderingTick(double deltatime) override
-    {
-        return void();
-    }
-
-private:
-
-
-  
-};
 
 
 void Editor::InitTestScene()
 {
+    EntityId dirLight = World::GetWorld()->CreateEntity();
+    World::GetWorld()->AddComponent<DirLight>(dirLight);
+    World::GetWorld()->AddComponent<Transform>(dirLight);
 
-    auto testSytem = World::GetWorld()->RegisterSystem<TestSystem>();
+    EntityId cube = World::GetWorld()->CreateEntity();
+    World::GetWorld()->AddComponent<Transform>(cube);
+    World::GetWorld()->AddComponent<StaticMesh>(cube);
 
 
-    EntityId ent0 = 0;
-    ent0 = World::GetWorld()->CreateEntity();
-    World::GetWorld()->AddComponent<Transform>(ent0);
+    EntityId sphere = World::GetWorld()->CreateEntity();
+    World::GetWorld()->AddComponent<Transform>(sphere);
+    World::GetWorld()->AddComponent<StaticMesh>(sphere);
+    Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
+    t->position = { 0.0f, 2.0f, 1.0f };
 
-    testSytem->Tick(2);
-    /*
+    StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
+    mesh->mesh = ResourceManager::Get<Mesh>("cube").get();
+    mesh->material = ResourceManager::Get<Material>("emerauld_block_material").get();
 
-    EntityId entity_id = world.entityManager.CreateEntity();
-    world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
-    world.entityManager.AddComponent<PC_CORE::DirLight>(entity_id);
-    world.entityManager.SetEntityName(entity_id, "Directional Light");
+    StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
+    mesh2->mesh = ResourceManager::Get<Mesh>("sphere").get();
+    mesh2->material = ResourceManager::Get<Material>("diamond_block_material").get();
 
-    entity_id = world.entityManager.CreateEntity();
-    world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
-    Transform& tt = *world.entityManager.GetComponent<Transform>(entity_id);
+ 
+
+
+
+    Serializer::Serialize(*mesh2, "TestSerilize.ser");
     
-    auto s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
-    s->mesh = ResourceManager::Get<Mesh>("sphere").get();
-    s->material = ResourceManager::Get<Material>("diamond_block_material").get();
-
-    
-    entity_id = world.entityManager.CreateEntity();
-    world.entityManager.AddComponent<PC_CORE::Transform>(entity_id);
-    Transform& t = *world.entityManager.GetComponent<Transform>(entity_id);
-
-    s = world.entityManager.AddComponent<PC_CORE::StaticMesh>(entity_id);
-    s->mesh = ResourceManager::Get<Mesh>("cube").get();
-    s->material = ResourceManager::Get<Material>("emerauld_block_material").get();
-
-    t.position = { 0.0f, 2.0f, 1.0f };*/
+    StaticMesh sermesh;
+    Serializer::DeSerialize(&sermesh, "TestSerilize.ser");
 }
 
 void Editor::DestroyTestScene()

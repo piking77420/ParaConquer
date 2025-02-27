@@ -38,6 +38,8 @@ public:
     template<class T>
     static std::shared_ptr<T> Get();
 
+    static std::shared_ptr<Resource> GetByGuid(const Guid& _guid);
+
     template<class T>
     static bool Delete(const std::string& _name);
 
@@ -119,6 +121,8 @@ std::shared_ptr<T> ResourceManager::Get()
 
     return nullptr;
 }
+
+
 
 template <class T>
 bool ResourceManager::Delete(const std::string& _name)

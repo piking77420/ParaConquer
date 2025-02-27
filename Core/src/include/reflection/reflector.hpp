@@ -337,9 +337,33 @@ bool Reflector::ContaintType()
 }
 
 
+/*
+template <class Tag>
+struct stowed
+{
+    static typename Tag::type value;
+};
+template <class Tag>
+typename Tag::type stowed<Tag>::value;
+
+// Generate a static data member whose constructor initializes
+// stowed<Tag>::value.  This type will only be named in an explicit
+// instantiation, where it is legal to pass the address of a private
+// member.
+template <class Tag, typename Tag::type privateField>
+struct stow_private
+{
+    stow_private() { stowed<Tag>::value = privateField; }
+    static stow_private instance;
+};
+template <class Tag, typename Tag::type privateField>
+stow_private<Tag, privateField> stow_private<Tag, privateField>::instance;
 
 
-
+#define GetPrivateField(CurrentType, memberName)
+struct A_x { typedef char const* (A::* type); };\
+template class stow_private<A_x, &A::x>;\
+*/
 
 #define REFLECT(CurrentType, ...) \
 static inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
@@ -348,21 +372,8 @@ static inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflec
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
 inline PC_CORE::Members CurrentType##_##memberName##_reflected = PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName),##__VA_ARGS__>(offsetof(CurrentType, memberName), #memberName);\
 
-template <typename Tag>
-typename Tag::type saved_private_v;
 
-template <typename Tag, typename Tag::type x>
-bool save_private_v = (saved_private_v<Tag> = x);
-
-#define GetPrivateVariable(className, memberName) \
-struct Widget_##memberName##_ { \
-using type = decltype(&className::memberName); \
-}; \
-template bool save_private_v<typename Widget_##memberName##_::type, &className::memberName>;\
-
-#define GetPrivateFunc(privateVarMember)\
-struct Widget_f_ { using type = int (Widget::*)() const; };\
-template bool save_private_v<Widget_f_, &Widget::f_>;\
+#define GetPrivateField
 
 
 

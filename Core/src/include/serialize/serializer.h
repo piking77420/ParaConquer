@@ -21,6 +21,7 @@ private:
     PC_CORE_API static void Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);
 
     PC_CORE_API static void Derializing(uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);
+
 };
 
 template <typename T>

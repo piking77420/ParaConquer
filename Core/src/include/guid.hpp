@@ -35,7 +35,6 @@ public:
     [[nodiscard]]
     PC_CORE_API const std::array<uint8_t, Data4Size>& GetData4() const;
 
-   
     [[nodiscard]]
     PC_CORE_API bool operator==(const Guid& other) const;
     

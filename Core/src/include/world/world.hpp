@@ -95,7 +95,7 @@ public:
 
     
 private:
-    static inline World* m_World = nullptr;
+    PC_CORE_API static inline World* m_World = nullptr;
 
     ComponentManager m_ComponentManager;
 

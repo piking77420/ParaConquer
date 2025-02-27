@@ -25,7 +25,7 @@ public:
     {
         auto it = m_SignatureEntitiesSet.find(_signature);
 
-        if (it == m_SignatureEntitiesSet.end());
+        if (it == m_SignatureEntitiesSet.end())
             return;
 
         it->second.erase(id)    ;
@@ -35,12 +35,18 @@ public:
     {
         auto it = m_SignatureEntitiesSet.find(_signature);
    
-        if (it == m_SignatureEntitiesSet.end());
+        if (it == m_SignatureEntitiesSet.end())
             return false;
         
         it->second.insert(id);
         return true;
     }
+
+    PC_CORE_API PC_FORCE_INLINE void AddSignature(Signature _signature)
+    {
+        m_SignatureEntitiesSet.insert({ _signature,{} });
+    }
+
     
 public:
     std::unordered_map<Signature, std::set<EntityId>> m_SignatureEntitiesSet;

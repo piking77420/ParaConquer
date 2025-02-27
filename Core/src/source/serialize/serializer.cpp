@@ -1,15 +1,17 @@
 ﻿#include "serialize/serializer.h"
 
-#include <RapidXML/rapidxml.hpp>
+#include <Json/json.hpp>
+#include <fstream>
+
+using json = nlohmann::json;
+
 #include <any>
 
 #include "GLFW/glfw3native.h"
-#include "RapidXML/RapidXMLSTD.hpp"
 #include "resources/resource.hpp"
+#include "resources/resource_manager.hpp"
 
 using namespace PC_CORE;
-
-constexpr uint32_t XmlVersion = 1;
 
 // bool //
 constexpr const char* boolAlpha0s = "false";
@@ -18,254 +20,261 @@ constexpr bool boolAlpha0b = false;
 constexpr bool boolAlpha1b = true;
 //
 
+
 #pragma region SerializationType
-
-
-    /*
-std::string DataNatureToString(TrivialType _dataNature, const void* _dataPtr)
+void TypeToString(json& outj,TypeId id, const uint8_t* objetPtr)
 {
-    switch (_dataNature)
+
+    if (Reflector::IsTypeIdIs<bool>(id))
     {
-    case TrivialType::UNKNOWN:
-        break;
-    case TrivialType::BOOL:
-        {
-            const bool boolValue = *static_cast<const bool*>(_dataPtr);
-            return boolValue ? boolAlpha1s : boolAlpha0s;
-        }
-    case TrivialType::INT:
-        {
-            const int intValue = *static_cast<const int*>(_dataPtr);
-            return std::to_string(intValue);
-        }
-    case TrivialType::VEC2I:
-        {
-            const Tbx::Vector2i vector2I = *static_cast<const Tbx::Vector2i*>(_dataPtr);
-            return "x :" + std::to_string(vector2I.x) + ", y :" + std::to_string(vector2I.y);
-        }
-    case TrivialType::VEC3I:
-        {
-            const Tbx::Vector3i vector3I = *static_cast<const Tbx::Vector3i*>(_dataPtr);
-            return "x :" + std::to_string(vector3I.x) + ", y :" + std::to_string(vector3I.y) + ", z :" +
-                std::to_string(vector3I.z);
-        }
-    case TrivialType::UINT:
-        {
-            const uint32_t uint32Value = *static_cast<const uint32_t*>(_dataPtr);
-            return std::to_string(uint32Value);
-        }
-    case TrivialType::FLOAT:
-        {
-            const float floatValue = *static_cast<const float*>(_dataPtr);
-            return std::to_string(floatValue);
-        }
-    case TrivialType::DOUBLE:
-        {
-            const double doubleValue = *static_cast<const double*>(_dataPtr);
-            return std::to_string(doubleValue);
-        }
-    case TrivialType::VEC2:
-        {
-            const Tbx::Vector2f vector2fValue = *static_cast<const Tbx::Vector2f*>(_dataPtr);
-            return "x :" + std::to_string(vector2fValue.x) + ", y :" + std::to_string(vector2fValue.y);
-        }
-    case TrivialType::VEC3:
-        {
-            const Tbx::Vector3f vector3f = *static_cast<const Tbx::Vector3f*>(_dataPtr);
-            return "x :" + std::to_string(vector3f.x) + ", y :" + std::to_string(vector3f.y) + ", z :" +
-                std::to_string(vector3f.z);
-        }
-    case TrivialType::VEC4:
-        {
-            const Tbx::Vector4f vector4f = *static_cast<const Tbx::Vector4f*>(_dataPtr);
-            return "x :" + std::to_string(vector4f.x) + ", y :" + std::to_string(vector4f.y) + ", z :" +
-                std::to_string(vector4f.z) + ", w :" + std::to_string(vector4f.w);
-        }
-    case TrivialType::QUAT:
-        {
-            const Tbx::Quaternionf quatf = *static_cast<const Tbx::Quaternionf*>(_dataPtr);
-            return "w :" + std::to_string(quatf.real) + ", i :" + std::to_string(quatf.imaginary.x) + ", j :" +
-                std::to_string(quatf.imaginary.y) + ", k :" + std::to_string(quatf.imaginary.z);
-        }
-    case TrivialType::STRING:
-        return *static_cast<const std::string*>(_dataPtr);
-        break;
-    return "";
+        const bool* b = reinterpret_cast<const bool*>(objetPtr);
+        outj = *b ? boolAlpha1s : boolAlpha0s;
+    }
+    else if (Reflector::IsTypeIdIs<char>(id))
+    {
+        const char* b = reinterpret_cast<const char*>(objetPtr);
+        outj = *b;
+
+    }
+    else if (Reflector::IsTypeIdIs<int>(id))
+    {
+        const int* b = reinterpret_cast<const int*>(objetPtr);
+        outj = *b;
+    }
+    else if (Reflector::IsTypeIdIs<uint32_t>(id))
+    {
+        const uint32_t* b = reinterpret_cast<const uint32_t*>(objetPtr);
+        outj = *b;
+    }
+    else if (Reflector::IsTypeIdIs<uint64_t>(id))
+    {
+        const uint64_t* b = reinterpret_cast<const uint64_t*>(objetPtr);
+        outj = *b;
+    }
+    else if (Reflector::IsTypeIdIs<float>(id))
+    {
+        const float* f = reinterpret_cast<const float*>(objetPtr);
+        outj = *f;
+    }
+    else if (Reflector::IsTypeIdIs<double>(id))
+    {
+        const double* f = reinterpret_cast<const double*>(objetPtr);
+        outj = *f;
+    }
+
+
+ 
 }
-    }*/
+
+ 
 #pragma endregion
 
 #pragma region DeSerializationType
 
-/*
-void StringToValue(uint8_t* _dataPtr, TrivialType _dataNature, const std::string& _dataString)
+void TypeFromString(const json& json, TypeId id, uint8_t* objetPtr)
 {
-    // Container and compisite are not undle yet
 
-    switch (_dataNature)
+    if (Reflector::IsTypeIdIs<bool>(id))
     {
-    case TrivialType::UNKNOWN:
-        break;
-    case TrivialType::BOOL:
-        *reinterpret_cast<bool*>(_dataPtr) = _dataString == boolAlpha0s ? boolAlpha1b : boolAlpha0b;
-        break;
-    case TrivialType::INT:
-        *reinterpret_cast<int*>(_dataPtr) = std::stoi(_dataString);
-        break;
-    case TrivialType::VEC2I:
-        break;
-    case TrivialType::VEC3I:
-        break;
-    case TrivialType::UINT:
-        *reinterpret_cast<uint32_t*>(_dataPtr) = std::stoi(_dataString);
-        break;
-    case TrivialType::FLOAT:
-        *reinterpret_cast<float*>(_dataPtr) = std::stof(_dataString);
-        break;
-    case TrivialType::DOUBLE:
-        *reinterpret_cast<double*>(_dataPtr) = std::stod(_dataString);
-        break;
-    case TrivialType::VEC2:
-        break;
-    case TrivialType::VEC3:
-        break;
-    case TrivialType::VEC4:
-        break;
-    case TrivialType::QUAT:
-        break;
-    case  TrivialType::STRING :
-        *reinterpret_cast<std::string*>(_dataPtr) = _dataString;
-        break;
-    case TrivialType::COUNT:
-        break;
+        bool* b = reinterpret_cast<bool*>(objetPtr);
+        std::string get = json.template get<std::string>();
+
+        if (strcmp("true", get.c_str()) == 0) *b = true;
+        else if (strcmp("false", get.c_str()) == 0) *b = false;
+        else assert(false);;
+       
+
+
+    }
+    else if (Reflector::IsTypeIdIs<char>(id))
+    {
+        char* b = reinterpret_cast<char*>(objetPtr);
+        char get = json.template get<char>();
+
+        *b = get;
+
+    }
+    else if (Reflector::IsTypeIdIs<int>(id))
+    {
+        int* b = reinterpret_cast<int*>(objetPtr);
+        int get = json.template get<int>();
+
+        *b = get;
+    }
+    else if (Reflector::IsTypeIdIs<uint32_t>(id))
+    {
+        assert(false);
+    }
+    else if (Reflector::IsTypeIdIs<uint64_t>(id))
+    {
+        assert(false);
+    }
+    else if (Reflector::IsTypeIdIs<float>(id))
+    {
+        float* f = reinterpret_cast<float*>(objetPtr);
+        float get = json.template get<float>();
+
+        *f = get;
+    }
+    else if (Reflector::IsTypeIdIs<double>(id))
+    {
+        double* f = reinterpret_cast<double*>(objetPtr);
+        double get = json.template get<double>();
+
+        *f = get;
     }
 }
-*/
+
 #pragma endregion
 
-void SerializeMember(XMLDocument* _document, const uint8_t* _objetPtr, XMLElement* _currentElement,
-                     const Members& _members
-                     , std::string& _err)
-{
-    /*
-    if (_members.memberFlag & MemberEnumFlag::NOTSERIALIZE)
-        return;
-    
-    const uint8_t* memberPtr = _objetPtr + _members.offset;
-    const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
 
-    if ((reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
+void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr);
+void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey);
+
+
+void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr)
+{
+    if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+        return;
+
+    auto& type = PC_CORE::Reflector::GetType(member.typeKey);
+    json& jmember = _jsonFile[type.name][member.membersName];
+
+    if (type.typeFlags & TypeFlagBits::COMPOSITE)
     {
-        XMLElement* newElement = CreateElement(_document, _members.membersName, "", _err);
-        AddElementToElement(_currentElement, newElement, _err);
-        
-        for (auto& memberMembers : reflectionType.members)
-        {
-            SerializeMember(_document, memberPtr, newElement, memberMembers, _err);
-        }
+        SerializeType(jmember, objetPtr, member.typeKey);
+
     }
-    else if ((reflectionType.typeInfo.typeInfoFlags & TypeFlag::VECTOR))
+    else if (type.typeFlags & PC_CORE::TypeFlagBits::PTR)
     {
-        // TODO MAKE VECTOR
+        uint64_t ptr = (uint64_t)objetPtr;
+        auto& typeRef = Reflector::GetType(type.metaData.metaDataType);
+
+        if (Reflector::IsBaseOf<Resource>(typeRef))
+        {
+            const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
+            const PC_CORE::Resource* resource = *doublePtr;
+
+
+            if (resource != nullptr)
+            {
+                jmember["Guid"] = std::string(resource->guid);
+            }
+            else
+            {
+                jmember["Guid"] = resource->guid.Empty();
+            }
+        }
     }
     else
     {
-        XMLAttributte* newAttribute = CreateAttribute(_document, _members.membersName,
-           DataNatureToString(reflectionType.typeInfo.dataNature, memberPtr), _err);
-        AddAttributeToElement(_currentElement, newAttribute, _err);
-    }*/
+        TypeToString(jmember, member.typeKey, objetPtr);
+    }
+}
+
+
+
+void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
+{
+    const ReflectedType& type = Reflector::GetType(_typeKey);
+
+    for (auto& member : type.metaData.members)
+    {
+        const uint8_t* ptr = objetPtr + member.offset;
+
+        SerializeMember(_jsonFile[type.name], member, ptr);
+    }
 }
 
 
 void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
 {
-    std::string err;
+    std::ofstream myfile(_fileToSerialize.generic_string());
 
-    XMLDocument* xmlDoc = CreateXML(XmlVersion, "utf-8", err);
-
-    if (xmlDoc == nullptr)
+    if (!myfile.is_open()) 
     {
-        throw std::runtime_error("Failed to create serialize context" + err);
+        return;
     }
+    json j;
+    SerializeType(j, objetPtr, _typeKey);
 
-    const ReflectedType& reflectionType = Reflector::GetType(_typeKey);
-    XMLElement* root = CreateElement(xmlDoc, reflectionType.name, "", err);
-
-    if (!AddElementToDocument(xmlDoc, root, err))
-    {
-        PC_LOGERROR(err);
-    }
-
-    for (auto& t : reflectionType.metaData.members)
-    {
-        SerializeMember(xmlDoc, objetPtr, root, t, err);
-    }
-
-    bool result = SaveXML(*xmlDoc, _fileToSerialize.generic_string());
-    if (!result)
-    {
-        PC_LOGERROR("Failed to serialize Object " + reflectionType.name + " in " + _fileToSerialize.generic_string());
-    }
-
-    ::DisposeXMLObject(xmlDoc);
+    myfile << j.dump(4);
+    myfile.close();
 }
 
+void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* objetPtr);
+void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey);
 
 
-void DeserializeMember(uint8_t* _objetPtr, XMLElement* _currentElement,
-                     const Members& _members
-                     , std::string& _err)
+void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* objetPtr)
 {
-    if (_members.memberFlag & MemberEnumFlag::NOTSERIALIZE)
-       return;
-    
-    uint8_t* memberPtr = _objetPtr + _members.offset;
-    const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
+    if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+        return;
+   
 
-    /*
-    // Is a trivial type
-    if (!(reflectionType.typeInfo.typeInfoFlags & TypeFlag::COMPOSITE))
+    auto& type = PC_CORE::Reflector::GetType(member.typeKey);
+    const json& jmember = _jsonFile[type.name][member.membersName];
+
+    if (type.typeFlags & TypeFlagBits::COMPOSITE)
     {
-        XMLAttributte* newAttribute = _currentElement->first_attribute(_members.membersName.c_str());
-        StringToValue(memberPtr, reflectionType.typeInfo.dataNature, newAttribute->value());
+        DeserializeType(jmember, objetPtr, member.typeKey);
+    }
+    else if (type.typeFlags & PC_CORE::TypeFlagBits::PTR)
+    {
+        uint64_t ptr = (uint64_t)objetPtr;
+
+        auto& typeRef = Reflector::GetType(type.metaData.metaDataType);
+        if (Reflector::IsBaseOf<Resource>(typeRef))
+        {
+            const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
+            const PC_CORE::Resource* resource = *doublePtr;
+
+            Guid g = Guid::FromString(jmember["Guid"].get < std::string >().c_str());
+
+            if (g == Guid::Empty())
+            {
+                *doublePtr = nullptr;
+            }
+            else
+            {
+                std::shared_ptr<Resource> r = PC_CORE::ResourceManager::GetByGuid(g);
+                if (r == nullptr)
+                {
+                    PC_LOGERROR("There is no matching guiid ");
+                }
+                *doublePtr = r.get();
+            }
+
+        }
     }
     else
     {
-        XMLElement* newCurrentElement = _currentElement->first_node(_members.membersName.c_str());
-        const ReflectedType& reflectionType = Reflector::GetType(_members.typeKey);
-        for (auto& member : reflectionType.members)
-        {
-            DeserializeMember(memberPtr, newCurrentElement, member, _err);
-        }
+        TypeFromString(jmember, member.typeKey, objetPtr);
     }
-    */
 }
+
+
+void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
+{
+    const ReflectedType& type = Reflector::GetType(_typeKey);
+
+    int i = 0;
+    for (auto& member : type.metaData.members)
+    {
+        uint8_t* ptr = objetPtr + type.metaData.members[i].offset;
+
+        DeSerializeMember(_jsonFile[type.name], type.metaData.members[i], ptr);
+        i++;
+    }
+}
+
 
 void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
 {
-    std::string err;
-    const ReflectedType& reflectionType = Reflector::GetType(_typeKey);
-    XMLFile* xmlFile = OpenXMLFile(_fileToSerialize.generic_string(), err);
-    if (xmlFile == nullptr)
-    {
-        PC_LOGERROR("Failed to create Xml file for desrialization " + _fileToSerialize.generic_string() + err);
-    }
-
-    XMLDocument* xmlDoc = CreateXMLFromFile(xmlFile, err);
-    if (xmlDoc == nullptr)
-    {
-        PC_LOGERROR("the file " + _fileToSerialize.generic_string() + " is not a xmlFile " + err);
-    }
-
-    XMLElement* root = FirstOrDefaultElement(xmlDoc, reflectionType.name, err);
-
-    if (root == nullptr)
-    {
-        PC_LOGERROR("the file is not a " + reflectionType.name + "object " + err);
-    }
-
-    for (auto& t : reflectionType.metaData.members)
-    {
-        DeserializeMember(_objetPtr, root, t, err);
-    }
+    std::ifstream f(_fileToSerialize.generic_string());
+    json j = json::parse(f);
+    f.close();
+    
+    DeserializeType(j, _objetPtr, _typeKey);
 }
+

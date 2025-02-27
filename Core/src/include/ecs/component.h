@@ -7,8 +7,6 @@
 
 BEGIN_PCCORE
 
-class EntityManager;
-
 using ComponentTypeBit = uint32_t;
 
 struct Component
@@ -19,10 +17,11 @@ struct Component
     }
     
 private:
-    // DO NOT INIT THIS VALUE 
+    // DO NOT INIT THIS VALUE OR I WILL KILL YOU
+    // THIS entityId IS SET BEFORE THE CONSTRUCTOR 
+    // IN ORDER TO HAVE THE ENTITY ID AT CONTRUCTOR
     EntityId entityId;
 
-    friend EntityManager;
 };
 template<class T>
    concept ComponentDerived = std::is_base_of_v<Component, T>;

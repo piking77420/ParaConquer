@@ -19,11 +19,8 @@ void Renderer::Init()
 {
     m_RhiContext = Rhi::GetRhiContext();
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
-
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
-
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM);
-
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
 
     CreateForwardShader();
@@ -71,6 +68,8 @@ void Renderer::Init()
 
 
     m_ViewExtrmumUniformBuffer = UniformBuffer(&m_ViewExtremum, sizeof(m_ViewExtremum));
+
+    InitRenderSystem();
 }
 
 void Renderer::Destroy()
@@ -212,9 +211,16 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, 0, 1);
 
 
-    std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this,
-                                                                  std::placeholders::_1, std::placeholders::_2);
+    //std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this,
+      //                                                            std::placeholders::_1, std::placeholders::_2);
    // _world->entityManager.ForEach<Transform, StaticMesh>(func);
+
+    for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
+    {
+        DrawStaticMesh(World::GetWorld()->GetComponent<Transform>(it),
+            World::GetWorld()->GetComponent<StaticMesh>(it));
+    }
+
     primaryCommandList->EndRenderPass();
 
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
@@ -257,9 +263,11 @@ void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderP
 
 void Renderer::QueryWorldData(World* world)
 {
-    std::function<void(DirLight&, Transform&)> l = std::bind(&Renderer::QueryLightDirData, this, std::placeholders::_1,
-                                                             std::placeholders::_2);
-    //world->entityManager.ForEach<DirLight, PC_CORE::Transform>(l);
+    for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->dirLightSignature])
+    {
+        QueryLightDirData(world->GetComponent<DirLight>(it), world->GetComponent<Transform>(it));
+    }
+
 }
 
 void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
@@ -397,4 +405,18 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
 
 void Renderer::AtmoSpherePass()
 {
+}
+
+void Renderer::InitRenderSystem()
+{
+    rendererSystem = World::GetWorld()->RegisterSystem<RendererSystem>();
+    
+    rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(),true);
+    rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<StaticMesh>(), true);
+    rendererSystem->AddSignature(rendererSystem->staticMeshSignature);
+
+    rendererSystem->dirLightSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(), true);
+    rendererSystem->dirLightSignature.set(World::GetWorld()->GetComponentTypeBit<DirLight>(), true);
+    rendererSystem->AddSignature(rendererSystem->dirLightSignature);
+
 }

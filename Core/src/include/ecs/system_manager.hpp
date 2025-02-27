@@ -53,7 +53,7 @@ public:
 
 			sys->OnEntitySignatureChange(entityId, entityIdSignature);
 		}
-	}
+	}		
 
 
 private:

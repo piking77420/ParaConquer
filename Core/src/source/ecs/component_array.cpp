@@ -1,5 +1,6 @@
 
 #include "ecs/component_array.hpp"
+#include "ecs/component.h"
 
 using namespace PC_CORE;
 
@@ -32,6 +33,12 @@ void ComponentArray::PushData(EntityId entityId)
 	const size_t newIndex = m_Volume * m_ComponentArrayInfo.componentSize;
 	m_EntityToIndex[entityId] = newIndex;
 	m_IndexToEntity[newIndex] = entityId;
+	
+	// Scary undefined behaviours 
+	Component* c = reinterpret_cast<Component*>(& m_ComponentData[newIndex]);
+	uint32_t& ComponentEntityId = *reinterpret_cast<uint32_t*>(c);
+	ComponentEntityId = entityId;
+
 	m_ComponentArrayInfo.constructor(&m_ComponentData[newIndex]);
 	m_Volume++;
 }

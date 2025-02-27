@@ -45,7 +45,7 @@ private:
 
 	std::unordered_map<EntityId, size_t> m_IndexToEntity;
 
-	size_t m_Volume;
+	size_t m_Volume = 0;
 };
 
 END_PCCORE

@@ -15,6 +15,8 @@ struct Rotation
 };
 
 REFLECT(Rotation)
+REFLECT_MEMBER(Rotation, eulerAngles)
+REFLECT_MEMBER(Rotation, quaternion)
 
 struct Transform : Component
 {

@@ -14,14 +14,16 @@ void ResourceManager::InitPath()
 
     ResourceManager::Create<Mesh>("assets/meshs/obj/rounded_cube.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/quad.obj");
-    ResourceManager::Create<Mesh>("assets/meshs/obj/sphere.obj");
+    auto it = ResourceManager::Create<Mesh>("assets/meshs/obj/sphere.obj");
+
     ResourceManager::Create<Mesh>("assets/meshs/obj/viking_room.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/cube.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/untitled.obj");
     ResourceManager::Create<Mesh>("assets/meshs/obj/suzanne.obj");
 
 
-    ResourceManager::Create<Texture>("assets/textures/diamond_block.jpg");
+    auto it2 = ResourceManager::Create<Texture>("assets/textures/diamond_block.jpg");
+
     ResourceManager::Create<Texture>("assets/textures/emerauld_block.png");
 
     /*
@@ -43,6 +45,17 @@ void ResourceManager::Destroy()
         it->second = nullptr;
     }
     m_ResourcesMap.clear();
+}
+
+std::shared_ptr<Resource> ResourceManager::GetByGuid(const Guid& _guid)
+{
+    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    {
+        if (it->second->guid == _guid)
+            return it->second;
+    }
+
+    return nullptr;
 }
 
 void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
