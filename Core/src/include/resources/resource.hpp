@@ -57,6 +57,8 @@ public:
 };
 
 REFLECT(Resource)
+REFLECT_MEMBER(Resource, name)
+REFLECT_MEMBER(Resource, guid)
 
 
 

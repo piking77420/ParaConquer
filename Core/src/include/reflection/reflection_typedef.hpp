@@ -46,14 +46,19 @@ struct Members
 enum struct TypeNatureMetaDataEnum
 {
     None,
-    Ptr,
+    ResourceRefType,
+    ResourceHandle,
     String,
     Array,
     Vector,
     Map,
 };
 
-struct Ptr
+struct ResourceRefType
+{
+    TypeId type;
+};
+struct ResourceHandleType
 {
     TypeId type;
 };
@@ -93,7 +98,8 @@ struct TypeNatureMetaData
     TypeNatureMetaDataEnum metaDataTypeEnum;
     union TypeNatureMetaUnion
     {
-        Ptr ptr;
+        ResourceRefType resourceRef;
+        ResourceHandleType resourceHandleType;
         RelfectedString relfectedString;
         Array array;
         Vector vector;

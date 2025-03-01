@@ -5,10 +5,7 @@
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
 
-#include <fstream>
-#include <Json/json.hpp>
-using json = nlohmann::json;
-
+#include "serialize/serializer.h"
 
 using namespace PC_CORE;
 
@@ -84,29 +81,8 @@ void ResourceManager::SerializeResource()
 {
     std::ofstream myfile(ResourceMapFile);
 
-    if (!myfile.is_open())
-    {
-        return;
-    }
-    json jsonContext;
-    const PC_CORE::ReflectedType& resourceType = Reflector::GetType<Resource>();
-
-    for (auto it : m_ResourcesMap)
-    {
-        if (it.second == nullptr)
-            continue;
-
-        // save resource data
-        
-        jsonContext[it.second->name];
-
-        //std::shared_ptr<ResourceInterface<Material>> resourInterface = std::reinterpret_pointer_cast<ResourceInterface<Material>>(it.second)
-
-        
-    }
-    myfile << std::setw(4) << jsonContext.dump(4);
-
-    myfile.close();
+    Mesh* v = Get<Mesh>("suzanne").get();
+    Serializer::Serialize(*v, ResourceMapFile);
 }
 
 

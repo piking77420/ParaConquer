@@ -325,7 +325,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
         currentSelectedMember.clear();
     }
         // TO DO HANDLE SHARED PTR
-    if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.ptr.type)))
+    if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type)))
     {
         PC_CORE::Resource** doublePtr = reinterpret_cast<PC_CORE::Resource**>(ptr);
 
@@ -373,7 +373,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
             }
             
             // remove the type of the pointer
-            PC_CORE::ResourceManager::ForEach( type.metaData.typeNatureMetaData.metaDataType.ptr.type, l);
+            PC_CORE::ResourceManager::ForEach( type.metaData.typeNatureMetaData.metaDataType.resourceRef.type, l);
             
             ImGui::End();
 

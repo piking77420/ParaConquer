@@ -19,6 +19,7 @@ REFLECT(wchar_t);
 REFLECT(int);
 REFLECT(float);
 REFLECT(double);
+REFLECT(uint8_t);
 REFLECT(uint16_t);
 REFLECT(uint32_t);
 REFLECT(uint64_t);

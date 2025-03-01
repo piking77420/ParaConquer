@@ -61,12 +61,12 @@ void Editor::Init()
 
 
     std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material");
-    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block").get();
+    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
     m1->Build();
 
     std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material");
 
-    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block").get();
+    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
     m2->Build();
 
 
@@ -162,17 +162,11 @@ void Editor::InitTestScene()
     mesh2->mesh = ResourceManager::Get<Mesh>("sphere");
     mesh2->material = ResourceManager::Get<Material>("diamond_block_material");
 
- 
-
     Serializer::Serialize(*mesh, "TestSerilize.ser");
     StaticMesh srMesj;
     Serializer::DeSerialize(&srMesj, "TestSerilize.ser");
     *mesh = srMesj;
          
-    std::shared_ptr<Resource> r;
-   
-    static_assert(std::is_same_v<std::shared_ptr<typename std::remove_extent<typename std::shared_ptr<Resource>::element_type>::type>, std::shared_ptr<Resource>>);
-
     //StaticMesh sermesh;
     //Serializer::DeSerialize(&sermesh, "TestSerilize.ser");
 }

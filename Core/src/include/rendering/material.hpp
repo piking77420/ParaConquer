@@ -21,7 +21,7 @@ class Material : public ResourceInterface<Material>
 public:
     MaterialType m_MaterialType = MaterialType::Opaque;
 
-    Texture* m_albedo;
+    ResourceRef<Texture> m_albedo;
 
     PC_CORE_API Material();
 

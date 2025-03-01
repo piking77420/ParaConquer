@@ -33,6 +33,16 @@ void TypeToString(json& outj, TypeId id, const uint8_t* objetPtr)
         outj = *b;
 
     }
+    else if (Reflector::IsTypeIdIs<uint8_t>(id))
+    {
+        const uint8_t* b = reinterpret_cast<const uint8_t*>(objetPtr);
+        outj = *b;
+    }
+    else if (Reflector::IsTypeIdIs<uint16_t>(id))
+    {
+        const uint16_t* b = reinterpret_cast<const uint16_t*>(objetPtr);
+        outj = *b;
+    }
     else if (Reflector::IsTypeIdIs<int>(id))
     {
         const int* b = reinterpret_cast<const int*>(objetPtr);
@@ -90,26 +100,45 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
     switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
-    case TypeNatureMetaDataEnum::Ptr:
+    case TypeNatureMetaDataEnum::ResourceRefType:
     {
         uint64_t ptr = (uint64_t)objetPtr;
-        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.ptr.type);
+        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type);
 
         if (Reflector::IsBaseOf<Resource>(typeRef))
         {
-            const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
-            const PC_CORE::Resource* resource = *doublePtr;
+            const std::weak_ptr<PC_CORE::Resource>* doublePtr = reinterpret_cast<const std::weak_ptr<PC_CORE::Resource>*>(ptr);
 
-
-            if (resource != nullptr)
+            if (doublePtr->expired())
             {
-                _jsonFile["Guid"] = std::string(resource->guid);
+                return;
+            }
+
+            std::shared_ptr<PC_CORE::Resource> resourceSPtr = doublePtr->lock();
+
+            if (resourceSPtr != nullptr)
+            {
+                _jsonFile["Guid"] = std::string(resourceSPtr->guid);
             }
             else
             {
-                _jsonFile["Guid"] = resource->guid.Empty();
+                _jsonFile["Guid"] = resourceSPtr->guid.Empty();
             }
         }
+        return;
+    }
+    case TypeNatureMetaDataEnum::ResourceHandle : 
+    {
+        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
+        if (Reflector::IsBaseOf<Resource>(pointedType))
+        {
+            const std::shared_ptr<Resource>* rsPtr = reinterpret_cast<const std::shared_ptr<Resource>*>(objetPtr);
+            
+            SerializeType(_jsonFile, reinterpret_cast<const uint8_t*>(rsPtr->get()), pointedType.typeId);
+
+        }
+
+
         return;
     }
     case TypeNatureMetaDataEnum::String:
@@ -239,6 +268,20 @@ void TypeFromString(const json& json, TypeId id, uint8_t* objetPtr)
         *b = get;
 
     }
+    else if (Reflector::IsTypeIdIs<uint8_t>(id))
+    {
+        uint8_t* b = reinterpret_cast<uint8_t*>(objetPtr);
+        uint8_t get = json.template get<uint8_t>();
+
+        *b = get;
+    }
+    else if (Reflector::IsTypeIdIs<uint16_t>(id))
+    {
+        uint16_t* b = reinterpret_cast<uint16_t*>(objetPtr);
+        uint16_t get = json.template get<uint16_t>();
+
+        *b = get;
+    }
     else if (Reflector::IsTypeIdIs<int>(id))
     {
         int* b = reinterpret_cast<int*>(objetPtr);
@@ -289,21 +332,21 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
     switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
-    case TypeNatureMetaDataEnum::Ptr:
+    case TypeNatureMetaDataEnum::ResourceRefType:
     {
         uint64_t ptr = (uint64_t)objetPtr;
 
-        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.ptr.type);
+        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type);
         if (Reflector::IsBaseOf<Resource>(typeRef))
         {
-            const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
-            const PC_CORE::Resource* resource = *doublePtr;
+            ResourceRef<PC_CORE::Resource>* doublePtr = reinterpret_cast<ResourceRef<PC_CORE::Resource>*>(ptr);
+           
 
             Guid g = Guid::FromString(_jsonFile["Guid"].get < std::string >().c_str());
 
             if (g == Guid::Empty())
             {
-                *doublePtr = nullptr;
+                doublePtr->reset();
             }
             else
             {
@@ -312,10 +355,28 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
                 {
                     PC_LOGERROR("There is no matching guiid ");
                 }
-                *doublePtr = r.get();
+                *doublePtr = r;
             }
 
         }
+        return;
+    }
+    case TypeNatureMetaDataEnum::ResourceHandle:
+    {
+        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
+        if (Reflector::IsBaseOf<Resource>(pointedType))
+        {
+            std::shared_ptr<Resource>* rsPtr = reinterpret_cast<std::shared_ptr<Resource>*>(objetPtr);
+            std::shared_ptr<uint8_t[]> ptr = std::make_shared<uint8_t[]>(pointedType.size);
+            
+            // use contructor to init value and vtable
+            pointedType.metaData.createFunc(ptr.get());
+
+            DeserializeType(_jsonFile, reinterpret_cast<uint8_t*>(rsPtr->get()), pointedType.typeId);
+
+        }
+
+
         return;
     }
     case TypeNatureMetaDataEnum::String:

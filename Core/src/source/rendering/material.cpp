@@ -34,10 +34,17 @@ PC_CORE::Material::~Material()
 
 void PC_CORE::Material::Build()
 {
+    if (m_albedo.expired())
+    {
+        PC_LOGERROR("albedo texture expired");
+        return;
+    }
+
+
     ImageSamperDescriptor imageSamperDescriptor =
        {
         .sampler = Rhi::GetRhiContext()->sampler.get(),
-        .texture = m_albedo
+        .texture = m_albedo.lock().get()
     };
 
     
