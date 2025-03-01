@@ -56,6 +56,11 @@ public:
     PC_CORE_API  static std::vector<char> ReadFile(const std::string& _filename);
 };
 
+REFLECT(Resource)
+
+
+
+
 template <size_t Size>
 bool Resource::IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
@@ -124,5 +129,11 @@ inline const ReflectedType& ResourceInterface<T>::GetType() const
     return *m_ReflectedType;
 }
 
+
+template<class T>
+concept ResourceDerived = std::is_base_of_v<Resource, T>;
+
+template <typename ResourceDerived>
+using ResourceRef = std::weak_ptr<ResourceDerived>;
 
 END_PCCORE

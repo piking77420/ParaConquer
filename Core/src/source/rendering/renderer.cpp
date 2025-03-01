@@ -380,7 +380,7 @@ void Renderer::CreateDrawQuadShader()
 
 void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
 {
-    if (_staticMesh.material == nullptr || _staticMesh.mesh == nullptr)
+    if (_staticMesh.material.expired() || _staticMesh.mesh.expired())
         return;
 
     // Compute Matrix
@@ -394,13 +394,16 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     modelMatrixf[0] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[0]);
     modelMatrixf[1] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[1]);
 
+    Material* material = _staticMesh.material.lock().get();
+    Mesh* mesh = _staticMesh.mesh.lock().get();
+
     // Send Data
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), _staticMesh.material->GetDescriptorSet(), 1, 1);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), material->GetDescriptorSet(), 1, 1);
     primaryCommandList->PushConstant(m_ForwardShader.get(), "PushConstants", &modelMatrixf,
                                      sizeof(Tbx::Matrix4x4f) * 2);
-    primaryCommandList->BindVertexBuffer(_staticMesh.mesh->vertexBuffer, 0, 1);
-    primaryCommandList->BindIndexBuffer(_staticMesh.mesh->indexBuffer, 0);
-    primaryCommandList->DrawIndexed(_staticMesh.mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+    primaryCommandList->BindVertexBuffer(mesh->vertexBuffer, 0, 1);
+    primaryCommandList->BindIndexBuffer(mesh->indexBuffer, 0);
+    primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
 }
 
 void Renderer::AtmoSpherePass()

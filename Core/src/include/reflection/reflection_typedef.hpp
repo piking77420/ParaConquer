@@ -17,11 +17,8 @@ using OnEditFunc = void (*)(void*);
  
 enum TypeFlagBits
 {
-    NONE       = 0,        // No flags set
+  NONE       = 0,        // No flags set
   COMPOSITE  = 1 << 0,  // Composite of trivial type
-  PTR        = 1 << 1,  // Pointer type
-  CONTINUOUS = 1 << 2   // Continuous memory layout
-    
 };
 
 
@@ -43,9 +40,71 @@ struct Members
     size_t offset = 0;
     uintmax_t memberFlag = 0;
 };
+
+
+
+enum struct TypeNatureMetaDataEnum
+{
+    None,
+    Ptr,
+    String,
+    Array,
+    Vector,
+    Map,
+};
+
+struct Ptr
+{
+    TypeId type;
+};
+
+struct Array
+{
+    TypeId type;
+    size_t size;
+};
+
+struct RelfectedString
+{
+    TypeId type;
+};
+
+
+struct Vector
+{
+    TypeId type;
+};
+
+struct Map
+{
+    TypeId key;
+    TypeId value;
+    size_t nbr;
+};
+
+struct Set
+{
+    TypeId type;
+    size_t nbr;
+};
+
+struct TypeNatureMetaData
+{
+    TypeNatureMetaDataEnum metaDataTypeEnum;
+    union TypeNatureMetaUnion
+    {
+        Ptr ptr;
+        RelfectedString relfectedString;
+        Array array;
+        Vector vector;
+        Map map;
+    }metaDataType;
+};
+
+
 struct TypeMetaData
 {
-    TypeId metaDataType = NullTypeId;
+    TypeNatureMetaData typeNatureMetaData;
     std::vector<Members> members;
 
     // Dont Support MultiHirietence

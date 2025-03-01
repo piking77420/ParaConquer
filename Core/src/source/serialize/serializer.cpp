@@ -1,9 +1,5 @@
 ﻿#include "serialize/serializer.h"
 
-#include <Json/json.hpp>
-#include <fstream>
-
-using json = nlohmann::json;
 
 #include <any>
 
@@ -20,9 +16,10 @@ constexpr bool boolAlpha0b = false;
 constexpr bool boolAlpha1b = true;
 //
 
+#define CONTAINER_SIZE "size"
 
-#pragma region SerializationType
-void TypeToString(json& outj,TypeId id, const uint8_t* objetPtr)
+#pragma region Serialization
+void TypeToString(json& outj, TypeId id, const uint8_t* objetPtr)
 {
 
     if (Reflector::IsTypeIdIs<bool>(id))
@@ -63,13 +60,161 @@ void TypeToString(json& outj,TypeId id, const uint8_t* objetPtr)
     }
 
 
- 
+
 }
 
- 
+
+
+
+void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr);
+void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey);
+
+
+void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr)
+{
+    if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+        return;
+
+    auto& type = PC_CORE::Reflector::GetType(member.typeKey);
+    json& memberJson = _jsonFile[type.name][member.membersName];
+
+    SerializeType(memberJson, objetPtr, member.typeKey);
+  
+}
+
+
+
+void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
+{
+    const ReflectedType& type = Reflector::GetType(_typeKey);
+
+    switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
+    {
+    case TypeNatureMetaDataEnum::Ptr:
+    {
+        uint64_t ptr = (uint64_t)objetPtr;
+        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.ptr.type);
+
+        if (Reflector::IsBaseOf<Resource>(typeRef))
+        {
+            const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
+            const PC_CORE::Resource* resource = *doublePtr;
+
+
+            if (resource != nullptr)
+            {
+                _jsonFile["Guid"] = std::string(resource->guid);
+            }
+            else
+            {
+                _jsonFile["Guid"] = resource->guid.Empty();
+            }
+        }
+        return;
+    }
+    case TypeNatureMetaDataEnum::String:
+    {
+        const RelfectedString& rs = type.metaData.typeNatureMetaData.metaDataType.relfectedString;
+        const TypeId& underLineType = rs.type;
+
+        if (rs.type == Reflector::GetTypeKey<char>())
+        {
+            const std::string* s = reinterpret_cast<const std::string*>(objetPtr);
+            _jsonFile[CONTAINER_SIZE] = s->size();
+            _jsonFile["string"] = s->c_str();
+        }
+        else if(rs.type == Reflector::GetTypeKey<wchar_t>())
+        {
+            const std::wstring* s = reinterpret_cast<const std::wstring*>(objetPtr);
+            _jsonFile[CONTAINER_SIZE] = s->size();
+            _jsonFile["string"] = s->c_str();
+        }
+        else
+        {
+            assert(false);
+        }
+        return;
+    }
+    case TypeNatureMetaDataEnum::Array:
+    {
+
+        const Array& arr = type.metaData.typeNatureMetaData.metaDataType.array;
+        const ReflectedType& underLineType = Reflector::GetType(arr.type);
+        const size_t typeCount = arr.size / underLineType.size;
+
+        _jsonFile[CONTAINER_SIZE] = typeCount;
+
+        for (size_t i = 0; i < typeCount; i++)
+        {
+            const size_t offSet = i * underLineType.size;
+            SerializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
+        }
+
+        return;
+    }
+    case TypeNatureMetaDataEnum::Vector:
+    {
+        const std::vector<uint8_t>* ver = reinterpret_cast<const std::vector<uint8_t>*>(objetPtr);
+        const ReflectedType& underLineType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.vector.type);
+        const size_t typeCount = ver->size() / underLineType.size;
+
+        _jsonFile[CONTAINER_SIZE] = typeCount;
+
+        for (size_t i = 0; i < typeCount; i++)
+        {
+            const size_t offSet = i * underLineType.size;
+            SerializeType(_jsonFile[std::to_string(i)], ver->data() + offSet, underLineType.typeId);
+        }
+
+        return;
+    }
+    return;
+    case TypeNatureMetaDataEnum::Map:
+        break;
+    case TypeNatureMetaDataEnum::None:
+    default:
+        break;
+    }
+
+
+    if (type.typeFlags & TypeFlagBits::COMPOSITE)
+    {
+        for (auto& member : type.metaData.members)
+        {
+            if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+                continue;
+
+            const uint8_t* ptr = objetPtr + member.offset;
+
+            SerializeMember(_jsonFile, member, ptr);
+        }
+    }
+    else
+    {
+        TypeToString(_jsonFile, _typeKey, objetPtr);
+    }
+}
+
+
+void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
+{
+    std::ofstream myfile(_fileToSerialize.generic_string());
+
+    if (!myfile.is_open()) 
+    {
+        return;
+    }
+    const ReflectedType& type = Reflector::GetType(_typeKey);
+    json j;
+    SerializeType(j[type.name], objetPtr, _typeKey);
+
+    myfile << std::setw(4) << j.dump(4);
+    myfile.close();
+}
 #pragma endregion
 
-#pragma region DeSerializationType
+
+#pragma region DeSerialization
 
 void TypeFromString(const json& json, TypeId id, uint8_t* objetPtr)
 {
@@ -82,7 +227,7 @@ void TypeFromString(const json& json, TypeId id, uint8_t* objetPtr)
         if (strcmp("true", get.c_str()) == 0) *b = true;
         else if (strcmp("false", get.c_str()) == 0) *b = false;
         else assert(false);;
-       
+
 
 
     }
@@ -125,111 +270,36 @@ void TypeFromString(const json& json, TypeId id, uint8_t* objetPtr)
     }
 }
 
-#pragma endregion
-
-
-void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr);
-void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey);
-
-
-void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr)
-{
-    if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
-        return;
-
-    auto& type = PC_CORE::Reflector::GetType(member.typeKey);
-    json& jmember = _jsonFile[type.name][member.membersName];
-
-    if (type.typeFlags & TypeFlagBits::COMPOSITE)
-    {
-        SerializeType(jmember, objetPtr, member.typeKey);
-
-    }
-    else if (type.typeFlags & PC_CORE::TypeFlagBits::PTR)
-    {
-        uint64_t ptr = (uint64_t)objetPtr;
-        auto& typeRef = Reflector::GetType(type.metaData.metaDataType);
-
-        if (Reflector::IsBaseOf<Resource>(typeRef))
-        {
-            const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
-            const PC_CORE::Resource* resource = *doublePtr;
-
-
-            if (resource != nullptr)
-            {
-                jmember["Guid"] = std::string(resource->guid);
-            }
-            else
-            {
-                jmember["Guid"] = resource->guid.Empty();
-            }
-        }
-    }
-    else
-    {
-        TypeToString(jmember, member.typeKey, objetPtr);
-    }
-}
-
-
-
-void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
-{
-    const ReflectedType& type = Reflector::GetType(_typeKey);
-
-    for (auto& member : type.metaData.members)
-    {
-        const uint8_t* ptr = objetPtr + member.offset;
-
-        SerializeMember(_jsonFile[type.name], member, ptr);
-    }
-}
-
-
-void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
-{
-    std::ofstream myfile(_fileToSerialize.generic_string());
-
-    if (!myfile.is_open()) 
-    {
-        return;
-    }
-    json j;
-    SerializeType(j, objetPtr, _typeKey);
-
-    myfile << j.dump(4);
-    myfile.close();
-}
-
 void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* objetPtr);
 void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey);
 
 
 void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* objetPtr)
 {
-    if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
-        return;
-   
-
     auto& type = PC_CORE::Reflector::GetType(member.typeKey);
-    const json& jmember = _jsonFile[type.name][member.membersName];
+    const json& memberJson = _jsonFile[type.name][member.membersName];
 
-    if (type.typeFlags & TypeFlagBits::COMPOSITE)
+    DeserializeType(memberJson, objetPtr, member.typeKey);
+}
+
+
+void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
+{
+    const ReflectedType& type = Reflector::GetType(_typeKey);
+
+    switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
-        DeserializeType(jmember, objetPtr, member.typeKey);
-    }
-    else if (type.typeFlags & PC_CORE::TypeFlagBits::PTR)
+    case TypeNatureMetaDataEnum::Ptr:
     {
         uint64_t ptr = (uint64_t)objetPtr;
 
-        auto& typeRef = Reflector::GetType(type.metaData.metaDataType);
+        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.ptr.type);
         if (Reflector::IsBaseOf<Resource>(typeRef))
         {
             const PC_CORE::Resource** doublePtr = reinterpret_cast<const PC_CORE::Resource**>(ptr);
             const PC_CORE::Resource* resource = *doublePtr;
 
-            Guid g = Guid::FromString(jmember["Guid"].get < std::string >().c_str());
+            Guid g = Guid::FromString(_jsonFile["Guid"].get < std::string >().c_str());
 
             if (g == Guid::Empty())
             {
@@ -246,26 +316,97 @@ void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* ob
             }
 
         }
+        return;
+    }
+    case TypeNatureMetaDataEnum::String:
+    {
+        const RelfectedString& rs = type.metaData.typeNatureMetaData.metaDataType.relfectedString;
+        const TypeId& underLineType = rs.type;
+
+        if (rs.type == Reflector::GetTypeKey<char>())
+        {
+            std::string* s = reinterpret_cast<std::string*>(objetPtr);
+            s->resize(_jsonFile[CONTAINER_SIZE]);
+            std::string_view v = _jsonFile["string"];
+       
+            memcpy(s->data(), v.data(), s->size());
+        }
+        else if (rs.type == Reflector::GetTypeKey<wchar_t>())
+        {
+            std::wstring* s = reinterpret_cast<std::wstring*>(objetPtr);
+            s->resize(_jsonFile[CONTAINER_SIZE]);
+            *s = _jsonFile["string"].template get<typename std::wstring>();
+        }
+        else
+        {
+            assert(false);
+        }
+        return;
+    }
+    case TypeNatureMetaDataEnum::Array:
+        {
+            const Array& arr = type.metaData.typeNatureMetaData.metaDataType.array;
+            const ReflectedType& underLineType = Reflector::GetType(arr.type);
+            const size_t typeCount = arr.size / underLineType.size;
+
+            if (_jsonFile[CONTAINER_SIZE] != typeCount)
+            {
+                PC_LOGERROR("array size missmacht")
+                return;
+            }
+
+            for (size_t i = 0; i < typeCount; i++)
+            {
+                const size_t offSet = i * underLineType.size;
+                DeserializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
+            }
+
+            return;
+        }
+        break;
+    case TypeNatureMetaDataEnum::Vector:
+    {
+        std::vector<uint8_t>* ver = reinterpret_cast<std::vector<uint8_t>*>(objetPtr);
+        const Vector& vector = type.metaData.typeNatureMetaData.metaDataType.vector;
+        const ReflectedType& underLineType = Reflector::GetType(vector.type);
+
+        const size_t size = _jsonFile[CONTAINER_SIZE];
+        ver->resize(size * underLineType.size);
+   
+        for (size_t i = 0; i < size; i++)
+        {
+            const size_t offSet = i * underLineType.size;
+            DeserializeType(_jsonFile[std::to_string(i)], ver->data() + offSet, underLineType.typeId);
+        }
+
+        return;
+    }
+        break;
+    case TypeNatureMetaDataEnum::Map:
+        break;
+    case TypeNatureMetaDataEnum::None:
+    default:
+        break;
+    }
+
+
+    if (type.typeFlags & TypeFlagBits::COMPOSITE)
+    {
+        for (auto& member : type.metaData.members)
+        {
+            if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+                continue;
+
+            uint8_t* ptr = objetPtr + member.offset;
+
+            DeSerializeMember(_jsonFile, member, ptr);
+        }
     }
     else
     {
-        TypeFromString(jmember, member.typeKey, objetPtr);
+        TypeFromString(_jsonFile, _typeKey, objetPtr);
     }
-}
-
-
-void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
-{
-    const ReflectedType& type = Reflector::GetType(_typeKey);
-
-    int i = 0;
-    for (auto& member : type.metaData.members)
-    {
-        uint8_t* ptr = objetPtr + type.metaData.members[i].offset;
-
-        DeSerializeMember(_jsonFile[type.name], type.metaData.members[i], ptr);
-        i++;
-    }
+   
 }
 
 
@@ -275,6 +416,8 @@ void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerializ
     json j = json::parse(f);
     f.close();
     
-    DeserializeType(j, _objetPtr, _typeKey);
+    const ReflectedType& type = Reflector::GetType(_typeKey);
+    DeserializeType(j[type.name], _objetPtr, _typeKey);
 }
 
+#pragma endregion

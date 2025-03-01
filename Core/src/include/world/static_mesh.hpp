@@ -8,9 +8,10 @@
 BEGIN_PCCORE
 struct StaticMesh : public Component
 {
-    Mesh* mesh = nullptr;
+    ResourceRef<Mesh> mesh;
 
-    Material* material = nullptr;    
+
+    ResourceRef<Material> material;
 };
 REFLECT(StaticMesh, Component)
 REFLECT_MEMBER(StaticMesh, mesh)

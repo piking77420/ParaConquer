@@ -135,7 +135,7 @@ void Editor::ShaderRecompileList()
 }
 
 
-
+REFLECT(std::vector<Transform>)
 
 void Editor::InitTestScene()
 {
@@ -155,21 +155,26 @@ void Editor::InitTestScene()
     t->position = { 0.0f, 2.0f, 1.0f };
 
     StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
-    mesh->mesh = ResourceManager::Get<Mesh>("cube").get();
-    mesh->material = ResourceManager::Get<Material>("emerauld_block_material").get();
+    mesh->mesh = ResourceManager::Get<Mesh>("cube");
+    mesh->material = ResourceManager::Get<Material>("emerauld_block_material");
 
     StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
-    mesh2->mesh = ResourceManager::Get<Mesh>("sphere").get();
-    mesh2->material = ResourceManager::Get<Material>("diamond_block_material").get();
+    mesh2->mesh = ResourceManager::Get<Mesh>("sphere");
+    mesh2->material = ResourceManager::Get<Material>("diamond_block_material");
 
  
 
+    Serializer::Serialize(*mesh, "TestSerilize.ser");
+    StaticMesh srMesj;
+    Serializer::DeSerialize(&srMesj, "TestSerilize.ser");
+    *mesh = srMesj;
+         
+    std::shared_ptr<Resource> r;
+   
+    static_assert(std::is_same_v<std::shared_ptr<typename std::remove_extent<typename std::shared_ptr<Resource>::element_type>::type>, std::shared_ptr<Resource>>);
 
-
-    Serializer::Serialize(*mesh2, "TestSerilize.ser");
-    
-    StaticMesh sermesh;
-    Serializer::DeSerialize(&sermesh, "TestSerilize.ser");
+    //StaticMesh sermesh;
+    //Serializer::DeSerialize(&sermesh, "TestSerilize.ser");
 }
 
 void Editor::DestroyTestScene()

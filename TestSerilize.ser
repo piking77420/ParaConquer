@@ -2,12 +2,12 @@
     "StaticMesh": {
         "Material * __ptr64": {
             "material": {
-                "Guid": "C82C99E4-87FC-4D21-98-F-5A-68-3F-99-C4-3F"
+                "Guid": "34E90B5A-269D-4CDD-8A-D7-BC-28-75-23-7F-B4"
             }
         },
         "Mesh * __ptr64": {
             "mesh": {
-                "Guid": "F67704B4-8313-48AE-87-EF-C7-45-FA-1F-FB-58"
+                "Guid": "F61A53B2-38D3-43A6-A6-88-C1-43-A-E6-AA-44"
             }
         }
     }

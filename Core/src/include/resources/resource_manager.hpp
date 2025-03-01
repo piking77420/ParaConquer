@@ -3,12 +3,17 @@
 #include <functional>
 #include <map>
 
+
 #include "core_header.hpp"
 #include "guid.hpp"
 #include "log.hpp"
 #include "resource.hpp"
 
 BEGIN_PCCORE
+
+#define ResourceMapFile "paraconquer_resource.res"
+
+
 class ResourceManager
 {
 public:
@@ -57,6 +62,8 @@ private:
     };
     
     PC_CORE_API static inline std::map<fs::path, std::shared_ptr<Resource>> m_ResourcesMap;
+
+    PC_CORE_API static void SerializeResource();
 };
 
 template <class T>
@@ -155,5 +162,8 @@ void ResourceManager::ForEach(const std::function<void(T*)>& _lamba)
         _lamba(reinterpret_cast<T*>(it->second));
     }
 }
+
+
+
 
 END_PCCORE

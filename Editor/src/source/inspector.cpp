@@ -160,7 +160,7 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
     const uintmax_t typeFlag = type.typeFlags;
     const uintmax_t& memberFlag = _member.memberFlag;
 
-
+    /*
     if (IsShowable(type.typeId))
     {
         HandleShowAble(_memberPtr, type, _member);
@@ -179,7 +179,7 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
         {
             ShowMember(_memberPtr + member.offset, member);
         }
-    }
+    }*/
     
 }
 
@@ -325,7 +325,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
         currentSelectedMember.clear();
     }
         // TO DO HANDLE SHARED PTR
-    if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.metaDataType)))
+    if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.ptr.type)))
     {
         PC_CORE::Resource** doublePtr = reinterpret_cast<PC_CORE::Resource**>(ptr);
 
@@ -373,7 +373,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
             }
             
             // remove the type of the pointer
-            PC_CORE::ResourceManager::ForEach( type.metaData.metaDataType, l);
+            PC_CORE::ResourceManager::ForEach( type.metaData.typeNatureMetaData.metaDataType.ptr.type, l);
             
             ImGui::End();
 

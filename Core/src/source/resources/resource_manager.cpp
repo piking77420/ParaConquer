@@ -5,6 +5,9 @@
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
 
+#include <fstream>
+#include <Json/json.hpp>
+using json = nlohmann::json;
 
 
 using namespace PC_CORE;
@@ -34,6 +37,8 @@ void ResourceManager::InitPath()
 
 void ResourceManager::Destroy()
 {
+    SerializeResource();
+
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
 
@@ -73,6 +78,35 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
         _lamba(it->second);
     }
     
+}
+
+void ResourceManager::SerializeResource()
+{
+    std::ofstream myfile(ResourceMapFile);
+
+    if (!myfile.is_open())
+    {
+        return;
+    }
+    json jsonContext;
+    const PC_CORE::ReflectedType& resourceType = Reflector::GetType<Resource>();
+
+    for (auto it : m_ResourcesMap)
+    {
+        if (it.second == nullptr)
+            continue;
+
+        // save resource data
+        
+        jsonContext[it.second->name];
+
+        //std::shared_ptr<ResourceInterface<Material>> resourInterface = std::reinterpret_pointer_cast<ResourceInterface<Material>>(it.second)
+
+        
+    }
+    myfile << std::setw(4) << jsonContext.dump(4);
+
+    myfile.close();
 }
 
 

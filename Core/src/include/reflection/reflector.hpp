@@ -136,18 +136,49 @@ private:
     {
         uintmax_t flags = TypeFlagBits::NONE; 
         if constexpr (std::is_class_v<T>)
-        {
+        {   
             flags |= TypeFlagBits::COMPOSITE;
         }
         if constexpr (std::is_pointer_v<T>)
         {
-            flags |= TypeFlagBits::PTR;
-            typeMetaData->metaDataType = GetType<std::remove_pointer_t<T>>().typeId;
+            typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Ptr;
+            Ptr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.ptr;
+
+            TypeId ptrType = GetTypeKey<std::remove_pointer_t<T>>();
+            if (!m_RelfectionMap.contains(ptrType))
+            {
+                PC_LOGERROR("Try to reflect ptr without reflect the type before");
+            }
+            ptrtype.type = ptrType;
+            
         }
-        if constexpr (std::is_array_v<T> || is_vector_v<T> || is_std_array_v<T>)
+
+        if constexpr (std::is_array_v<T> || is_std_array_v<T>)
         {
-            flags |=  TypeFlagBits::CONTINUOUS;
+            typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Array;
+            Array& arrayType = typeMetaData->typeNatureMetaData.metaDataType.array;
+            arrayType.size = std::extent_v<T>;
+            // Extract the type of the array
+            arrayType.type = GetTypeKey<typename std::remove_extent<T>::type>();
         }
+        if constexpr (is_vector_v<T>)
+        {
+            typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Vector;
+            Vector& vectorType = typeMetaData->typeNatureMetaData.metaDataType.vector;
+            vectorType.type = GetTypeKey<typename std::remove_extent<typename T::value_type>::type>();
+
+        }
+        if constexpr (std::is_same_v<std::string, T> || std::is_same_v<std::wstring, T>)
+        {
+            bool constexpr isw = std::is_same_v<std::wstring, T>;
+
+            typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::String;
+            RelfectedString& relfectedString = typeMetaData->typeNatureMetaData.metaDataType.relfectedString;
+            relfectedString.type = isw ? GetTypeKey<wchar_t>() : GetTypeKey<char>();
+        }
+
+
+
 
         if constexpr (!std::is_abstract_v<T>)
         {
@@ -238,10 +269,6 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 template <typename Holder, typename BaseClass>
 ReflectedType* Reflector::ReflectType()
 {
-
-    
-    //static_assert(GetTypeKey<Holder>() != GetTypeKey<BaseClass>(), "What are you doing m8");
-    //static_assert(GetTypeKey<Tbx::Vector3f>() != GetTypeKey<Tbx::Vector3d>(), "What are you doing m8");
 
 
     uint32_t KeyHolder = GetTypeKey<Holder>();
@@ -365,8 +392,15 @@ struct A_x { typedef char const* (A::* type); };\
 template class stow_private<A_x, &A::x>;\
 */
 
+//https://isocpp.org/files/papers/P3384R0.html
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
+#define NEW_VAR(name) CONCAT(name, __COUNTER__)
+
 #define REFLECT(CurrentType, ...) \
-static inline PC_CORE::ReflectedType* reflectInfo##CurrentType = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
+static inline PC_CORE::ReflectedType* CONCAT(reflectInfo,__COUNTER__) = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
+
+
 
 
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
