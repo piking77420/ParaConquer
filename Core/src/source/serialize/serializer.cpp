@@ -17,6 +17,7 @@ constexpr bool boolAlpha1b = true;
 //
 
 #define CONTAINER_SIZE "size"
+#define RESOURCE_PTR_TYPE "resourceType"
 
 #pragma region Serialization
 void TypeToString(json& outj, TypeId id, const uint8_t* objetPtr)
@@ -133,7 +134,9 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
         if (Reflector::IsBaseOf<Resource>(pointedType))
         {
             const std::shared_ptr<Resource>* rsPtr = reinterpret_cast<const std::shared_ptr<Resource>*>(objetPtr);
-            
+            const ResourceInterface<Resource>* rsInterfaceDummie = reinterpret_cast<const ResourceInterface<Resource>*>(rsPtr->get());
+
+            _jsonFile[RESOURCE_PTR_TYPE] = rsInterfaceDummie->GetType().typeId;
             SerializeType(_jsonFile, reinterpret_cast<const uint8_t*>(rsPtr->get()), pointedType.typeId);
 
         }
@@ -199,6 +202,25 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
     }
     return;
     case TypeNatureMetaDataEnum::Map:
+    {
+        /*
+        const ReflectedMap& rpMap = type.metaData.typeNatureMetaData.metaDataType.reflectedMap;
+        const auto& keyType = Reflector::GetType(rpMap.key);
+        const auto& valueType = Reflector::GetType(rpMap.value);
+
+        assert(keyType.metaData.hashFun != nullptr && valueType.metaData.hashFun != nullptr);
+        
+        if (!rpMap.isUnordered)
+        {
+            //const std::map<uint8_t, uint8_t> map = reinterpret_cast<const std::map<uint8_t, uint8_t>*> 
+        }
+        else
+        {
+
+        }
+        */
+
+    }
         break;
     case TypeNatureMetaDataEnum::None:
     default:
@@ -363,20 +385,23 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
     }
     case TypeNatureMetaDataEnum::ResourceHandle:
     {
-        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
-        if (Reflector::IsBaseOf<Resource>(pointedType))
+        auto& ptr = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
+        if (Reflector::IsBaseOf<Resource>(ptr))
         {
-            std::shared_ptr<Resource>* rsPtr = reinterpret_cast<std::shared_ptr<Resource>*>(objetPtr);
-            std::shared_ptr<uint8_t[]> ptr = std::make_shared<uint8_t[]>(pointedType.size);
-            
-            // use contructor to init value and vtable
-            pointedType.metaData.createFunc(ptr.get());
+            auto& pointedType = Reflector::GetType(_jsonFile[RESOURCE_PTR_TYPE]);
 
-            DeserializeType(_jsonFile, reinterpret_cast<uint8_t*>(rsPtr->get()), pointedType.typeId);
+            if (Reflector::IsBaseOf<Resource>(pointedType))
+            {
+                std::shared_ptr<Resource>* rsPtr = reinterpret_cast<std::shared_ptr<Resource>*>(objetPtr);
+                std::shared_ptr<uint8_t[]> ptr = std::make_shared<uint8_t[]>(pointedType.size);
 
+                // use contructor to init value and vtable
+                pointedType.metaData.createFunc(ptr.get());
+
+                DeserializeType(_jsonFile, reinterpret_cast<uint8_t*>(rsPtr->get()), pointedType.typeId);
+
+            }
         }
-
-
         return;
     }
     case TypeNatureMetaDataEnum::String:
@@ -444,6 +469,15 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
     }
         break;
     case TypeNatureMetaDataEnum::Map:
+    {
+        //const ReflectedMap& rpMap = type.metaData.typeNatureMetaData.metaDataType.reflectedMap;
+
+
+
+
+
+        return;
+    }
         break;
     case TypeNatureMetaDataEnum::None:
     default:

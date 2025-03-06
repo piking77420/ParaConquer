@@ -26,7 +26,7 @@ Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_p
     int width;
     int height;
     
-    uint8_t* pixels = FileLoader::LoadFile(path.generic_string().c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
+    uint8_t* pixels = FileLoader::LoadFile(_path.generic_string().c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");

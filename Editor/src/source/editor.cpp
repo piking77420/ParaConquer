@@ -57,24 +57,24 @@ void Editor::Init()
     InitThridPartLib();
     CompileShader();
 
-    App::Init();
+    gameApp.Init();
 
-
-    std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material");
-    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block");
+    
+    std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
+    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
     m1->Build();
 
-    std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material");
+    std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material.mat");
 
-    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block");
+    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block.png");
     m2->Build();
 
 
     InitEditorWindows();
     InitTestScene();
-    IMGUIContext.Init(window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
+    IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
     
-    renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
+    gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
         IMGUIContext.Render(cmd);
     });
 
@@ -91,7 +91,7 @@ void Editor::Destroy()
     for (const EditorWindow* editorWindow : m_EditorWindows)
         delete editorWindow;
 
-    App::Destroy();
+    gameApp.Destroy();
 
     UnInitThridPartLib();
 }
@@ -155,12 +155,12 @@ void Editor::InitTestScene()
     t->position = { 0.0f, 2.0f, 1.0f };
 
     StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
-    mesh->mesh = ResourceManager::Get<Mesh>("cube");
-    mesh->material = ResourceManager::Get<Material>("emerauld_block_material");
+    mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+    mesh->material = ResourceManager::Get<Material>("emerauld_block_material.mat");
 
     StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
-    mesh2->mesh = ResourceManager::Get<Mesh>("sphere");
-    mesh2->material = ResourceManager::Get<Material>("diamond_block_material");
+    mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
+    mesh2->material = ResourceManager::Get<Material>("diamond_block_material.mat");
 
     Serializer::Serialize(*mesh, "TestSerilize.ser");
     StaticMesh srMesj;
@@ -180,32 +180,32 @@ void Editor::DestroyTestScene()
     //ResourceManager::Delete<Material>("material2");
 }
 
-void Editor::Run()
+void Editor::Run(bool* _appShouldClose)
 {
-    while (!window.ShouldClose())
-    {
-        coreIo.PoolEvent();
-        window.PoolEvents();
-        IMGUIContext.NewFrame();
-        PC_CORE::Time::UpdateTime();
-
-        UpdateEditorWindows();
-
-        WorldLoop();
-      
-        if (!renderer.BeginDraw(&window))
+        while (!gameApp.window.ShouldClose())
         {
-            continue;
-        }
+            gameApp.coreIo.PoolEvent();
+            gameApp.window.PoolEvents();
+            IMGUIContext.NewFrame();
+            PC_CORE::Time::UpdateTime();
 
-        for (EditorWindow* editorWindow : m_EditorWindows)
-            editorWindow->Render();
+            UpdateEditorWindows();
+
+            gameApp.WorldTick();
+      
+            if (!gameApp.renderer.BeginDraw(&gameApp.window))
+            {
+                continue;
+            }
+
+            for (EditorWindow* editorWindow : m_EditorWindows)
+                editorWindow->Render();
 
  
-        renderer.SwapBuffers(&window);
-    }
+            gameApp.renderer.SwapBuffers(&gameApp.window);
+        }
 
-    Rhi::GetRhiContext()->WaitIdle();
+        Rhi::GetRhiContext()->WaitIdle();
 }
 
 void Editor::InitEditorWindows()

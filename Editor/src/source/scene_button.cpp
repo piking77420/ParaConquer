@@ -18,7 +18,7 @@ void SceneButton::Update()
 
 void SceneButton::OnEdit()
 {
-    PC_CORE::World& world = m_Editor->world;
+    PC_CORE::World& world = m_Editor->gameApp.world;
 
     const std::string buttonName = world.run ? "Reset" : "Play";
     

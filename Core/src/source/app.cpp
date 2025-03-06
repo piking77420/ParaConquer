@@ -41,6 +41,7 @@ void App::Destroy()
 {
 
     world.skybox.Destroy();
+    world.Destroy();
     renderer.Destroy();
     ResourceManager::Destroy();
     PC_LOG("App Destroy")
@@ -52,21 +53,7 @@ App::App()
 }
 
 
-void App::Run()
-{
-    while (!window.ShouldClose())
-    {
-        window.PoolEvents();
-        PC_CORE::Time::UpdateTime();
-        //HandleResize();
-        //vulkanImgui.NewFrame();
-        //MoveObject();
-        renderer.BeginDraw(&window);
-        renderer.SwapBuffers(&window);
-    } 
-}
-
-void App::WorldLoop()
+void App::WorldTick()
 {
     //world.sceneGraph.UpdateTransforms(&world.scene);
     

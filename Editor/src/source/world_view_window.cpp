@@ -14,7 +14,7 @@ using namespace PC_EDITOR_CORE;
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
-    m_Editor->renderer.m_DrawTextureScreenQuadShader->AllocDescriptorSet(&m_ViewPortDescriptorSet, 0);
+    m_Editor->gameApp.renderer.m_DrawTextureScreenQuadShader->AllocDescriptorSet(&m_ViewPortDescriptorSet, 0);
 }
 
 WorldViewWindow::~WorldViewWindow()
@@ -74,7 +74,7 @@ void WorldViewWindow::Render()
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
     
-    m_Editor->renderer.DrawToRenderingContext(renderingContext, &gbuffers, &m_Editor->world);
+    m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &gbuffers, &m_Editor->gameApp.world);
 }
 
 void WorldViewWindow::ResizeViewports()
@@ -105,11 +105,11 @@ void WorldViewWindow::ResizeViewports()
         .width = static_cast<uint32_t>(size.x),
         .height = static_cast<uint32_t>(size.y),
         .attachements = &attachments,
-        .renderPass = m_Editor->renderer.drawTextureScreenQuadPass.get()
+        .renderPass = m_Editor->gameApp.renderer.drawTextureScreenQuadPass.get()
         };
     finalImageViewport = PC_CORE::Rhi::CreateFrameBuffer(create_frame_info);
 
-    gbuffers.HandleResize({ static_cast<int32_t>(size.x), static_cast<int32_t>(size.y) }, m_Editor->renderer.forwardPass);
+    gbuffers.HandleResize({ static_cast<int32_t>(size.x), static_cast<int32_t>(size.y) }, m_Editor->gameApp.renderer.forwardPass);
 }
 
 void WorldViewWindow::UpdateViewPortDescriptorSet()

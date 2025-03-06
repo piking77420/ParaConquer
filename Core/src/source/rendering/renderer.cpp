@@ -74,9 +74,23 @@ void Renderer::Init()
 
 void Renderer::Destroy()
 {
+    if (m_ForwardShader.use_count() != 1)
+    {
+        PC_LOGERROR("There is still a reference to the shader");
+        m_ForwardShader.reset();
+    }
+
+    if (m_DrawTextureScreenQuadShader.use_count() != 1)
+    {
+        PC_LOGERROR("There is still a reference to the shader");
+        m_DrawTextureScreenQuadShader.reset();
+    }
+
+    m_ForwardShader.reset();
+    m_DrawTextureScreenQuadShader.reset();
+
     primaryCommandList = nullptr;
     m_ForwardShader = nullptr;
-    m_DrawTextureScreenQuadShader = nullptr;
     forwardPass = nullptr;
     drawTextureScreenQuadPass = nullptr;
 }
@@ -321,7 +335,6 @@ void Renderer::CreateForwardShader()
 
     const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
     {
-        .prograShaderName = "Main",
         .shaderInfo = shaderInfo,
         .renderPass = forwardPass,
     };
@@ -369,7 +382,6 @@ void Renderer::CreateDrawQuadShader()
 
     const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
     {
-        .prograShaderName = "DrawTextureScreenQuad",
         .shaderInfo = shaderInfo,
         .renderPass = drawTextureScreenQuadPass,
     };

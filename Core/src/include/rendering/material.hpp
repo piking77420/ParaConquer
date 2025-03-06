@@ -36,7 +36,7 @@ public:
 private:
     ShaderProgramDescriptorSets* m_pShaderProgramDescriptorSets = nullptr;
 
-    ShaderProgram* m_ShaderProgram;
+    ResourceRef<ShaderProgram> m_ShaderProgram;
 };
 
 REFLECT(Material, Resource)

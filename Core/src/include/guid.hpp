@@ -15,13 +15,13 @@ class Guid
 public:
     static constexpr size_t Data4Size = 8;
 
-    constexpr Guid() = default;
+    PC_CORE_API constexpr Guid() = default;
 
-    static constexpr Guid Empty() { return Guid(); }
+    PC_CORE_API static constexpr Guid Empty() { return Guid(); }
 
-    static Guid New();
+    PC_CORE_API static Guid New();
     
-    static Guid FromString(const char* str);
+    PC_CORE_API static Guid FromString(const char* str);
 
     [[nodiscard]]
     PC_CORE_API bool operator==(const Guid& other) const;

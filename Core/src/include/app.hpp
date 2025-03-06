@@ -31,17 +31,17 @@ public:
 	
 	World world;
 		
-	PC_CORE_API virtual void Init();
+	PC_CORE_API void Init();
 
-	PC_CORE_API virtual void Destroy();
+	PC_CORE_API void Destroy();
 	
 	PC_CORE_API App();
 
 	PC_CORE_API ~App() = default;
 
-	PC_CORE_API virtual void Run();
+	PC_CORE_API void Run();
 	
-	PC_CORE_API void WorldLoop();
+	PC_CORE_API void WorldTick();
 	
 	PC_CORE_API static inline App* instance = nullptr;
 

@@ -13,8 +13,6 @@ class ShaderSource : public PC_CORE::ResourceInterface<PC_CORE::Resource>
 public:
     ShaderSource(const fs::path& _path);
     
-    void WriteFile(const fs::path& folder) override;
-
     void CompileToSpriv();
     
     ~ShaderSource() override = default;
@@ -23,6 +21,8 @@ public:
 
 private:
     ShaderStageType m_ShaderType;
+
+    fs::path m_PathToSource;
     
     std::vector<char> IncludePath(const std::vector<char>& source, const std::filesystem::path& path);
 

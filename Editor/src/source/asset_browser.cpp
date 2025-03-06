@@ -5,8 +5,10 @@ using namespace PC_EDITOR_CORE;
 
 AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-    m_BasePath = std::filesystem::path("assets");
+    constexpr const char* projectBaseAssetPath = "assets";
+    m_BasePath = std::filesystem::path(projectBaseAssetPath);
     m_CurrenPath = m_BasePath;
+    m_fileWatcher.LauchWatcher(projectBaseAssetPath);
 }
 
 void PC_EDITOR_CORE::AssetBrowser::Update()

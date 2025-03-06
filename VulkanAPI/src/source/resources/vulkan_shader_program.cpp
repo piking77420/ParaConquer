@@ -7,6 +7,7 @@
 #include "rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_render_pass.hpp"
+#include "io/in_out.h"
 
 using namespace Vulkan;
 
@@ -174,13 +175,14 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     {
         const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo.shaderInfo.shaderSources[i];
         const char* format = nullptr;
-         if (!Resource::GetFormatFromValue(PC_CORE::ShaderSourceFormat, shaderSource.first, &format))
+         if (!GetFormatFromValue(PC_CORE::ShaderSourceFormat, shaderSource.first, &format))
          {
              PC_LOGERROR("Failed to parse shader source for shader ");
          }
         std::string spvFile = SHADER_CACHE_PATH + shaderSource.second;
 
-        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = ReadFile(spvFile);
+        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = PC_CORE::InOut::ReadFile(spvFile);
+
     }
 
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)

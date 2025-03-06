@@ -7,6 +7,7 @@
 #include <glslang/Include/glslang_c_interface.h>
 #include <glslang/Public/resource_limits_c.h>
 
+#include "io/in_out.h"
 
 using namespace PC_CORE;
 
@@ -54,25 +55,26 @@ ShaderSource::ShaderSource(const fs::path& _path) : ResourceInterface<PC_CORE::R
 {
     uint32_t formatIndex = -1;
 
-    if (!Resource::IsFormatValid(ShaderSourceFormat, format, &formatIndex))
+    if (!IsFormatValid(ShaderSourceFormat, extension, &formatIndex))
     {
         PC_LOGERROR("Shader invalid format")
     }
     
-    format = ShaderSourceFormat[formatIndex];
+    extension = ShaderSourceFormat[formatIndex];
     m_ShaderType = static_cast<ShaderStageType>(formatIndex);
+    m_PathToSource = _path;
 }
 
 std::vector<char> ShaderSource::GetShaderSourceFile()
 {
-    if (path.empty())
+    if (m_PathToSource.empty())
     {
         PC_LOGERROR("Resource path is empty while trying to get data from it")
         return {};
     }
 
-    std::vector<char> source = Resource::ReadFile(path.generic_string());
-    std::vector<char> sWithInclude = IncludePath(source, path);    
+    std::vector<char> source = PC_CORE::InOut::ReadFile(m_PathToSource.generic_string());
+    std::vector<char> sWithInclude = IncludePath(source, m_PathToSource);
     sWithInclude.push_back('\0');
 
 
@@ -159,15 +161,9 @@ bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
     return true;
 }
 
-
-void ShaderSource::WriteFile(const fs::path& folder)
-{
-    Resource::WriteFile(folder);
-}
-
 void ShaderSource::CompileToSpriv()
 {
-    std::string filePath = SHADER_CACHE_PATH + name + "_spv" + format;
+    std::string filePath = SHADER_CACHE_PATH + fs::path(name).filename().stem().generic_string() + "_spv" + extension;
     std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
     std::vector<char> sourceSpriv;
 
@@ -223,7 +219,7 @@ std::vector<char> ShaderSource::IncludePath(const std::vector<char>& source, con
         std::filesystem::path includeFilePath = path.parent_path() / includeFile;
 
         // Read the included file
-        std::vector<char> includedSource = Resource::ReadFile(includeFilePath.generic_string());
+        std::vector<char> includedSource = PC_CORE::InOut::ReadFile(includeFilePath.generic_string());
 
         // Recursively process the included file for nested includes
         includedSource = IncludePath(includedSource, includeFilePath);

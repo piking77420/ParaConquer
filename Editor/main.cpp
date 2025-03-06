@@ -93,11 +93,20 @@ int main(int argc, char* argv[])
 #ifdef _DEBUG
     RelfectionHashingTest();
 #endif
-    Editor editor;
 
-    editor.Init();
-    editor.Run();
-    editor.Destroy();
+    bool appShounldClose = false;
+
+
+    while (!appShounldClose)
+    {
+        Editor editor;
+
+        editor.Init();
+        editor.Run(&appShounldClose);
+        editor.Destroy();
+    }
+
+  
 
 
     return 0;

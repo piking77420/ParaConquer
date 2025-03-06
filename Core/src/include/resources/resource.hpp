@@ -3,6 +3,7 @@
 #include "core_header.hpp"
 #include <filesystem>
 #include <array>
+#include <set>
 #include "log.hpp"
 
 #include "guid.hpp"
@@ -11,50 +12,42 @@
 
 namespace fs = std::filesystem;
 
+
+
 BEGIN_PCCORE
 
 class ResourceManager;
+
 
 class Resource
 {
 public:
     std::string name;
-
-    std::string nameWithFormat;
     
-    std::string format;
-
-    fs::path path;
+    std::string extension;
 
     Guid guid;
-    
+
+    std::set<std::string> resourceDependecies;
+
+
     PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
 
     PC_CORE_API Resource(Resource&& _other) noexcept;
     
     PC_CORE_API Resource();
 
-    PC_CORE_API Resource(const fs::path& _path, const Guid& _guid) {}
+    PC_CORE_API Resource(const Guid& _guid) {}
 
-    PC_CORE_API Resource(const fs::path& _path);
+    PC_CORE_API Resource(const std::string& _name);
+
+    PC_CORE_API Resource(const fs::path& _file);
 
     PC_CORE_API virtual ~Resource() = default;
 
-    PC_CORE_API void SetPath(const fs::path& _path);
 
-    PC_CORE_API const std::string& GetName() const;
-    
-    PC_CORE_API virtual void WriteFile(const fs::path& folder);
-    
-    template <size_t Size>
-    static bool IsFormatValid(const std::array<std::string,Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
-
-    template <typename T,size_t Size>
-    static bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut);
-
-
-    PC_CORE_API  static std::vector<char> ReadFile(const std::string& _filename);
 };
+
 
 REFLECT(Resource)
 REFLECT_MEMBER(Resource, name)
@@ -62,9 +55,15 @@ REFLECT_MEMBER(Resource, guid)
 
 
 
+template <size_t Size>
+static bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
+
+template <typename T, size_t Size>
+static bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut);
+
 
 template <size_t Size>
-bool Resource::IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
+bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
 
     for (size_t i = 0; i < _format.size(); i++)
@@ -82,7 +81,7 @@ bool Resource::IsFormatValid(const std::array<std::string, Size>& _format, const
 
 
 template <typename T,size_t Size>
-bool Resource::GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut)
+bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut)
 {
 
     for (size_t i = 0; i < _format.size(); i++)
@@ -137,5 +136,6 @@ concept ResourceDerived = std::is_base_of_v<Resource, T>;
 
 template <typename ResourceDerived>
 using ResourceRef = std::weak_ptr<ResourceDerived>;
+
 
 END_PCCORE

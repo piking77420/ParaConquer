@@ -17,44 +17,7 @@
 
 BEGIN_PCCORE
 
-// Chat gpt
-template<typename T>
-struct is_vector : std::false_type {};
 
-// Specialization (for vectors)
-template<typename T>
-struct is_vector<std::vector<T>> : std::true_type {};
-
-// Convenience variable template
-template<typename T>
-inline constexpr bool is_vector_v = is_vector<std::decay_t<T>>::value;
-
-template<typename T>
-struct is_std_array : std::false_type {};
-
-template<typename T, std::size_t N>
-struct is_std_array<std::array<T, N>> : std::true_type {};
-
-template<typename T>
-inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
-
-template <typename>
-struct is_weak_ptr : std::false_type {};
-
-template <typename U>
-struct is_weak_ptr<std::weak_ptr<U>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_weak_ptr_v = is_weak_ptr<T>::value;
-
-template <typename>
-struct is_shared_ptr : std::false_type {};
-
-template <typename U>
-struct is_shared_ptr<std::shared_ptr<U>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_shared_ptr_v = is_shared_ptr<T>::value;
 
 class Reflector
 {
@@ -94,6 +57,10 @@ public:
 
 	PC_CORE_API static bool ContaintTypeFromTypeID(TypeId typeId);
 
+
+	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_MapReflectFunction;
+
+	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_UnordoredMapReflectFunction;
 private:
 
 	constexpr PC_CORE_API  static std::string GetCorrectNameFromTypeId(const std::string& _name)
@@ -125,6 +92,7 @@ private:
 	}
 
 	PC_CORE_API static inline std::unordered_map<uint32_t, ReflectedType> m_RelfectionMap;
+
 
 	template <typename  T>
 	static void AddType();
@@ -219,12 +187,81 @@ private:
 		}
 
 
+		if constexpr (is_map<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Map;
+			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.mapReflected;
+
+			using MapIterator = typename T::iterator;
+			using UnrefIteratorFuncType = std::pair<const typename T::key_type, typename T::mapped_type>* (MapIterator::*)() const;
+			using IncrementMapIterator = MapIterator & (MapIterator::*)();
+			using ReserverFunctionMap = void (T::*)(size_t);
+			using InsertFunctionMap = std::pair<typename T::iterator, bool>(T::*)(const typename T::value_type&);
+
+
+			IncrementMapIterator incrementIteratorFuncType = &MapIterator::operator++;
+			UnrefIteratorFuncType unrefIteratorFuncType = &MapIterator::operator->;
+
+			uint64_t incrementIteratorFunc = *reinterpret_cast<uint64_t*>(&incrementIteratorFuncType);
+			uint64_t unrefIteratorFunc = *reinterpret_cast<uint64_t*>(&unrefIteratorFuncType);
+
+			ReflectMapFunction reflectMapFunction =
+			{
+				.incrementIterator = incrementIteratorFunc,
+				.unrefIterator = unrefIteratorFunc,
+			};
+
+			m_MapReflectFunction.insert(GetTypeKey<T>(), reflectMapFunction);
+
+		}
+
+		if constexpr (is_unordered_map<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::UnordoredMap;
+			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.unordoredMapReflected;
+			rm.key = GetTypeKey<typename T::key_type>();
+			rm.value = GetTypeKey<typename T::mapped_type>();
+
+			using MapIterator = typename T::iterator;
+			using UnrefMapIteratorFuncType = std::pair<const typename T::key_type, typename T::mapped_type>* (MapIterator::*)() const;
+			using IncrementMapIterator = MapIterator & (MapIterator::*)();
+			using ReseverMapFunction = void (T::*)(size_t);
+			//using InsertMapFunction = std::pair<typename T::iterator, bool>(T::*)(const typename T::value_type&);
+			using InsertMapFunction = typename T::mapped_type& (T::*)(const typename T::key_type&);
+
+			IncrementMapIterator incrementIteratorFuncType = &MapIterator::operator++;
+			UnrefMapIteratorFuncType unrefIteratorFuncType = &MapIterator::operator->;
+			ReseverMapFunction reserverFunctionMapType = &T::reserve;
+			//InsertMapFunction insertFunctionMapType = static_cast<InsertMapFunction>(&T::insert);
+			InsertMapFunction insertFunctionMapType = static_cast<InsertMapFunction>(&T::operator[]);
+
+
+			ReflectMapFunction reflectMapFunction =
+			{
+				.incrementIterator = *reinterpret_cast<uint64_t*>(&incrementIteratorFuncType),
+				.unrefIterator = *reinterpret_cast<uint64_t*>(&unrefIteratorFuncType),
+				.reserveFunction = *reinterpret_cast<uint64_t*>(&reserverFunctionMapType),
+				.insertFunction = *reinterpret_cast<uint64_t*>(&insertFunctionMapType),
+			};
+
+			m_UnordoredMapReflectFunction.insert({ GetTypeKey<T>(), reflectMapFunction });
+		}
+
 
 
 		if constexpr (!std::is_abstract_v<T>)
 		{
 			typeMetaData->createFunc = &ReflectedCreateFunc<T>;
 			typeMetaData->deleteFunc = &ReflectedDeleteFunc<T>;
+		}
+		
+		if constexpr (std::is_invocable_v<std::hash<T>, const T&>)
+		{
+			typeMetaData->hashFun = (HashFunc)&HashFunction<T>;
+		}
+		else
+		{
+			typeMetaData->hashFun = nullptr;
 		}
 
 		return flags;

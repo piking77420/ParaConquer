@@ -57,17 +57,14 @@ public:
     PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
  
-private:
-    struct PathName
-    {
-        fs::path path = {};
-        std::string name = {};
-    };
-    
-    PC_CORE_API static inline std::map<fs::path, std::shared_ptr<Resource>> m_ResourcesMap;
+private:  
+    PC_CORE_API static inline std::unordered_map<std::string, std::shared_ptr<Resource>> m_ResourcesMap;
 
     PC_CORE_API static void SerializeResource();
 };
+
+REFLECT(std::shared_ptr<Resource>)
+REFLECT(std::unordered_map<std::string, std::shared_ptr<Resource>>)
 
 
 
@@ -77,9 +74,10 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(const fs::path& path)
     
     std::shared_ptr<Resource> newR = std::make_shared<ResourceDerived>(path);
    
-    m_ResourcesMap.emplace(path, newR);
+    m_ResourcesMap.insert({ newR->name, newR });
+    newR->guid = Guid::New();
 
-    return newR;
+    return std::reinterpret_pointer_cast<ResourceDerived>(newR);
 }
 
 template<class ResourceDerived, typename... Arg>
@@ -88,32 +86,29 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 
     std::shared_ptr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
 
-    m_ResourcesMap.emplace(newR->name, newR);
+    m_ResourcesMap.insert({ newR->name, newR });
+    newR->guid = Guid::New();
 
     return newR;
 }
 
 template <class ResourceDerived>
-void ResourceManager::Add(const std::string& _name, std::shared_ptr<Resource> _resource)
-{
-    _resource->name = _name;
-    m_ResourcesMap.emplace(_name,_resource);
-}
-
-template <class ResourceDerived>
 void ResourceManager::Add(std::shared_ptr<Resource> _resource)
 {
-    m_ResourcesMap.emplace(_resource->name, _resource);
+    m_ResourcesMap.emplace(_resource->name,_resource);
+    _resource->guid = Guid::New();
+
 }
 
 template <class ResourceDerived>
 std::shared_ptr<ResourceDerived> ResourceManager::Get(const std::string& _name)
 {
-    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    auto it = m_ResourcesMap.find(_name);
+    if (it != m_ResourcesMap.end())
     {
-        if (it->second->name == _name)
-            return std::reinterpret_pointer_cast<ResourceDerived>(it->second);
+        return std::reinterpret_pointer_cast<ResourceDerived>(it->second);
     }
+
     PC_LOGERROR("There is no resource with this name " + _name);
     
    return nullptr;

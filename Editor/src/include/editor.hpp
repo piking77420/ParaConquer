@@ -12,12 +12,12 @@
 BEGIN_EDITOR_PCCORE
 
 
-class Editor :  public PC_CORE::App
+class Editor
 {
 public:
-    void Init() override;
+    void Init();
     
-    void Destroy() override;
+    void Destroy();
 
     Editor() = default;
 
@@ -27,13 +27,15 @@ public:
     
     void DestroyTestScene();
     
-    void Run() override;
+    void Run(bool* _appShouldClose);
 
     void InitEditorWindows();
 
     void UpdateEditorWindows();
 
     void ShaderRecompileList();
+
+    PC_CORE::App gameApp;
     
     std::vector<EditorWindow*> m_EditorWindows;
 

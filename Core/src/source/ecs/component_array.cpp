@@ -6,7 +6,6 @@ using namespace PC_CORE;
 
 ComponentArray::ComponentArray()
 {
-
 }
 
 ComponentArray::ComponentArray(const ComponentArrayCreateInfo& componentArrayCreateInfo) : m_ComponentArrayInfo(componentArrayCreateInfo)

@@ -15,7 +15,7 @@ PC_CORE::Material::Material(const std::string& _name)
     switch (m_MaterialType)
     {
     case MaterialType::Opaque:
-        m_ShaderProgram = App::instance->renderer.m_ForwardShader.get();
+        m_ShaderProgram = App::instance->renderer.m_ForwardShader;
         break;
     case MaterialType::Transparent:
         //m_ShaderProgram = App::instance->renderer.m_ForwardShader;
@@ -23,13 +23,15 @@ PC_CORE::Material::Material(const std::string& _name)
     default: ;
     }
     
-    m_ShaderProgram->AllocDescriptorSet(&m_pShaderProgramDescriptorSets, 1);
+    if (!m_ShaderProgram.expired())
+        m_ShaderProgram.lock()->AllocDescriptorSet(&m_pShaderProgramDescriptorSets, 1);
 }
 
 PC_CORE::Material::~Material()
 {
     // TO DO HANDLE RESOURCES INTRA DEPENDANCIES
-    m_ShaderProgram->FreeDescriptorSet(&m_pShaderProgramDescriptorSets);
+    if (!m_ShaderProgram.expired())
+        m_ShaderProgram.lock()->FreeDescriptorSet(&m_pShaderProgramDescriptorSets);
 }
 
 void PC_CORE::Material::Build()

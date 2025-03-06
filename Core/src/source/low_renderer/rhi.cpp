@@ -4,7 +4,6 @@
 #include "vulkan_command_list.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_render_pass.hpp"
-#include "resources/resource_manager.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_sampler.hpp"
 #include "resources/vulkan_shader_program.hpp"
@@ -97,7 +96,7 @@ std::shared_ptr<ShaderProgram> Rhi::CreateShader(const ProgramShaderCreateInfo& 
     {
         break;
     case GraphicAPI::VULKAN:
-        return ResourceManager::Create<Vulkan::VulkanShaderProgram>(_programShaderCreateInfo);
+        return std::make_shared<Vulkan::VulkanShaderProgram>(_programShaderCreateInfo);
         break;
     case GraphicAPI::DX3D12:
         break;

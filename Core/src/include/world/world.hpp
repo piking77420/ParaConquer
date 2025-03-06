@@ -28,6 +28,8 @@ public:
 
     PC_CORE_API void LoadSkyBox();
 
+    PC_CORE_API void Destroy();
+
     PC_CORE_API FORCEINLINE static World* GetWorld()
     {
         return m_World;

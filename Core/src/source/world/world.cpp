@@ -39,3 +39,8 @@ void World::LoadSkyBox()
     skybox.Load(skyboxImage);
 }
 
+void World::Destroy()
+{
+    m_World = nullptr;
+}
+

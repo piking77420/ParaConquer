@@ -2,12 +2,12 @@
     "StaticMesh": {
         "weak_ptr<class PC_CORE::Material>": {
             "material": {
-                "Guid": "F91C32BB-6C8B-4B89-AD-4-D4-9A-F4-EE-3A-42"
+                "Guid": "4CADF9BD-D040-4F81-8B-3F-BC-29-89-5A-F3-C5"
             }
         },
         "weak_ptr<class PC_CORE::Mesh>": {
             "mesh": {
-                "Guid": "C25D6E56-B740-40C3-A4-65-B3-93-F1-60-F-A1"
+                "Guid": "63A0D4A-1C04-48EC-AD-25-66-69-F0-30-38-3C"
             }
         }
     }

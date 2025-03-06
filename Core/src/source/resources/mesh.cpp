@@ -19,7 +19,7 @@ Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
     std::vector<Vertex> verticies;
     std::vector<uint32_t> indicies;
 
-    if (!Resource::IsFormatValid(MeshSourceFormat, format, &formatIndex))
+    if (!IsFormatValid(MeshSourceFormat, extension, &formatIndex))
     {
         return;
     }
@@ -33,7 +33,7 @@ Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
     default:;
     }
 
-    format = MeshSourceFormat.at(formatIndex);
+    extension = MeshSourceFormat.at(formatIndex);
     vertexBuffer = VertexBuffer(verticies.data(), verticies.size() * sizeof(Vertex));
     indexBuffer = IndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
 
