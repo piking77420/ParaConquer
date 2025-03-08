@@ -11,7 +11,6 @@
 
 BEGIN_PCCORE
 
-#define ResourceMapFile "paraconquer_resource.res"
 
 
 template <typename ResourceDerived>
@@ -61,6 +60,9 @@ private:
     PC_CORE_API static inline std::unordered_map<std::string, std::shared_ptr<Resource>> m_ResourcesMap;
 
     PC_CORE_API static void SerializeResource();
+
+    PC_CORE_API static void DeserializeResource();
+
 };
 
 REFLECT(std::shared_ptr<Resource>)

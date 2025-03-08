@@ -9,27 +9,39 @@
 
 using namespace PC_CORE;
 
+static constexpr bool CreateBasicsResource = true;
+
+#define RESSOURCE_MAP_FILE "paraconquer_resource.res"
+
+
 void ResourceManager::InitPath()
 {
+    if constexpr (CreateBasicsResource)
+    {
+        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
+        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
+        auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
 
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
-    auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
-
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/viking_room.obj");
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/cube.obj");
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
+        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/viking_room.obj");
+        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/cube.obj");
+        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
+        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
 
 
-    auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
+        auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
 
-    ResourceManager::Create<Texture>((fs::path)"assets/textures/emerauld_block.png");
+        ResourceManager::Create<Texture>((fs::path)"assets/textures/emerauld_block.png");
 
-    /*
-    ResourceManager::Create<Texture>("assets/textures/viking_room.png");
-    ResourceManager::Create<Texture>("assets/textures/skydom.png");*/
-
+    }
+    else
+    {
+        Serializer::DeSerialize(&m_ResourcesMap, RESSOURCE_MAP_FILE);
+        for (auto& it : m_ResourcesMap)
+        {
+            it.second->Build();
+            assert(it.second.use_count() != 0);
+        }
+    }
 }
 
 void ResourceManager::Destroy()
@@ -79,34 +91,16 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
 
 void ResourceManager::SerializeResource()
 {
-    //std::ofstream myfile(ResourceMapFile);
-
+    //std::ofstream myfile(RESSOURCE_MAP_FILE);
+    /*
     using BaseMap = std::unordered_map<std::string, std::shared_ptr<Resource>>;
     
 
     auto funcPtr = Reflector::m_UnordoredMapReflectFunction.at(Reflector::GetTypeKey< BaseMap>());
+    std::unordered_map<uint8_t, uint8_t>& mapRef = *reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&m_ResourcesMap);
 
     using ByteMap = std::unordered_map<uint8_t, uint8_t>;
     using ByteIter = ByteMap::iterator;
-
-    using UnrefIterator = std::pair<const std::uint8_t, std::uint8_t>* (ByteIter::*)();
-    using IncrementIterator = ByteIter & (ByteIter::*)();
-
-    UnrefIterator unrefIterator = *reinterpret_cast<UnrefIterator*>(&funcPtr.unrefIterator);
-    IncrementIterator incrementFunc = *reinterpret_cast<IncrementIterator*>(&funcPtr.incrementIterator);
-    std::unordered_map<uint8_t, uint8_t>& mapRef = *reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&m_ResourcesMap);
-   assert(mapRef.size() == m_ResourcesMap.size());
-
-
-   using UnrefIteratorFuncTypeBase = std::pair<const std::string, std::shared_ptr<Resource>>* (BaseMap::iterator::*)() const;
-   UnrefIteratorFuncTypeBase baseFunUnfer = &BaseMap::iterator::operator->;
-   uint64_t baseFunUnferUnint = *((uint64_t*)(&baseFunUnfer));
-   assert(baseFunUnferUnint == funcPtr.unrefIterator);
-
-   using IncrementIteratorFuncTypeBase = BaseMap::iterator& (BaseMap::iterator::*)();
-   IncrementIteratorFuncTypeBase baseFunIncrement = &BaseMap::iterator::operator++;
-   uint64_t baseFunIncrementerUnint = *((uint64_t*)(&baseFunIncrement));
-   assert(baseFunIncrementerUnint == funcPtr.incrementIterator);
 
    using InsertFunction = ByteMap::mapped_type& (ByteMap::*)(const typename ByteMap::key_type&);
 
@@ -114,9 +108,6 @@ void ResourceManager::SerializeResource()
 
    std::string caca = "caca";
    std::shared_ptr<Resource> r = std::make_shared<Material>("qsdq");
-   std::pair<std::string, std::shared_ptr<Resource>> addedPair = std::make_pair(caca, r);
-
-   const std::pair<uint8_t, uint8_t>& pairPtr = reinterpret_cast<const std::pair<uint8_t, uint8_t>&>(addedPair);
 
    using InsertIteratorFuncTypeBase = BaseMap::mapped_type& (BaseMap::*)(const typename BaseMap::key_type&);
    InsertIteratorFuncTypeBase baseFunInsert = static_cast<BaseMap::mapped_type & (BaseMap::*)(const typename BaseMap::key_type&)>(&BaseMap::operator[]);
@@ -126,25 +117,16 @@ void ResourceManager::SerializeResource()
    //m_ResourcesMap[caca] = r;
    auto* ref = &(mapRef.*inser)(reinterpret_cast<uint8_t&>(caca));
 
-   std::shared_ptr<Resource>* rtmpr = reinterpret_cast<std::shared_ptr<Resource>*>(ref);
-   *rtmpr = r;
-
+   std::shared_ptr<uint8_t[]>* ptr = reinterpret_cast<std::shared_ptr<uint8_t[]>*>(ref);
+   // SOULD BE THE MEMBER CREATE FUNCTION
+   *ptr = std::reinterpret_pointer_cast<uint8_t[]>(r);
+   
    assert(m_ResourcesMap.contains("caca"));
+   assert(ptr->use_count() == 2);
 
-   auto r2 = m_ResourcesMap.at("caca");
+   auto r2 = m_ResourcesMap.at("caca");*/
 
-   auto it = mapRef.begin();
-    while (it != mapRef.end())
-    {
-        auto* bytePair = (it.*unrefIterator)();
-
-        std::pair<std::string, std::shared_ptr<Resource>>* pairWatchers = reinterpret_cast<std::pair<std::string, std::shared_ptr<Resource>>*>(bytePair);
-
-        std::cout << pairWatchers->first.c_str() << " -> " << std::string(pairWatchers->second->guid) << std::endl;
-
-        (it.*incrementFunc)();
-    }
-
+    Serializer::Serialize(m_ResourcesMap, RESSOURCE_MAP_FILE);
 }
 
 

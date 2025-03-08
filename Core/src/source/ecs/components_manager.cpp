@@ -10,14 +10,8 @@ ComponentManager::ComponentManager()
 
 	for (auto& it : types)
 	{
-		const ComponentArrayCreateInfo componentArrayInfo =
-		{
-			.componentSize = static_cast<uint32_t>(it->size),
-			.constructor = it->metaData.createFunc,
-			.destructor = it->metaData.deleteFunc,
-		};
 
-		m_ComponentMapArray.insert({ it->typeId, ComponentArray(ComponentArrayCreateInfo(componentArrayInfo)) });
+		m_ComponentMapArray.insert({ it->typeId, ComponentArray(it->typeId) });
 		m_ComponentTypeToComponentBitFlag.insert({ it->typeId, componentTypeToBitSet });
 		m_ComponentBitFlagToComponentType.insert({ componentTypeToBitSet,it->typeId });
 

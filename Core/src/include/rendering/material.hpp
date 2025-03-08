@@ -29,7 +29,7 @@ public:
 
     PC_CORE_API ~Material();
 
-    PC_CORE_API void Build();
+    PC_CORE_API void Build() override;
 
     const ShaderProgramDescriptorSets* GetDescriptorSet();
 

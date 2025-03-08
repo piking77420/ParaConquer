@@ -5,7 +5,6 @@
 
 PC_CORE::Material::Material()
 {
-    assert(false, "you should not create a material without a name");
 }
 
 

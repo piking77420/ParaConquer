@@ -16,6 +16,8 @@ class Texture : public ResourceInterface<Texture>
 public:
 
     DEFAULT_COPY_MOVE_OPERATIONS(Texture)
+
+    PC_CORE_API void Build() override;
     
     PC_CORE_API Texture() = default;
 
@@ -36,8 +38,12 @@ private:
 
     std::array<std::shared_ptr<GpuHandle>, MAX_FRAMES_IN_FLIGHT> m_TextureHandles;
 
-    void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
+    PC_CORE_API void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
+
+    PC_CORE_API void LoadFromFile(const fs::path& _path);
 };
+
+REFLECT(Texture, Resource)
 
 
 END_PCCORE

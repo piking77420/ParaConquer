@@ -197,11 +197,11 @@ std::size_t HashFunction(const void* obj) {
 
 struct ReflectMapFunction
 {
-    uint64_t incrementIterator;
-    uint64_t unrefIterator;
-
     uint64_t reserveFunction;
     uint64_t insertFunction;
+    uint64_t unrefFunc;
+    uint64_t incrementFunc;
+
 };
 
 END_PCCORE

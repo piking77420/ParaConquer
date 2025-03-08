@@ -12,7 +12,7 @@ BEGIN_PCCORE
 {
 public:
 
-    enum class MeshFormat 
+    enum class MeshFormat : uint8_t
     {
         OBJ,
         GLTF,
@@ -33,6 +33,8 @@ public:
 
     MeshFormat meshFormat;
 
+    PC_CORE_API void Build() override;
+
     PC_CORE_API Mesh() = default;
     
     PC_CORE_API Mesh(const fs::path& _path);
@@ -40,8 +42,9 @@ public:
     PC_CORE_API ~Mesh() override;
 
 private:
-    void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);
+    void LoadFromFile(const fs::path& _path);
     
+    void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);
 };
     REFLECT(Mesh, Resource)
 

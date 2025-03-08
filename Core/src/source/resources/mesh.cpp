@@ -12,8 +12,27 @@
 
 using namespace PC_CORE;
 
+void Mesh::Build()
+{
+    if (!pathToFile.empty())
+        LoadFromFile((fs::path)(pathToFile));
+}
+
 Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
 {
+    LoadFromFile(_path);
+}
+
+Mesh::~Mesh()
+{
+}
+
+
+void Mesh::LoadFromFile(const fs::path& _path)
+{
+    pathToFile = _path.generic_string();
+    extension = _path.extension().generic_string();
+
     uint32_t formatIndex = -1;
 
     std::vector<Vertex> verticies;
@@ -36,14 +55,7 @@ Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
     extension = MeshSourceFormat.at(formatIndex);
     vertexBuffer = VertexBuffer(verticies.data(), verticies.size() * sizeof(Vertex));
     indexBuffer = IndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
-
 }
-
-Mesh::~Mesh()
-{
-
-}
-
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
 {

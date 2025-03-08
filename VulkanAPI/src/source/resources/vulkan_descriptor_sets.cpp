@@ -59,7 +59,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 descriptorBufferInfos[bufferDescriptorCount].range = VK_WHOLE_SIZE;
                 bufferDescriptorCount++;
             }
-            if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)
+            if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)    
             {
                 PC_CORE::ImageSamperDescriptor* imageSamplerDescriptor = _shaderProgramDescriptorSet.at(i).
                     imageSamperDescriptor;

@@ -60,4 +60,6 @@ private:
 	std::unordered_map<TypeId, std::shared_ptr<EcsSystem>> m_Systems;
 };
 
+REFLECT(SystemManager)
+
 END_PCCORE

@@ -30,6 +30,10 @@ public:
 
     std::set<std::string> resourceDependecies;
 
+    std::string pathToFile;
+
+    // SOULD BE = 0
+    PC_CORE_API virtual void Build() {};
 
     PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
 
@@ -52,6 +56,7 @@ public:
 REFLECT(Resource)
 REFLECT_MEMBER(Resource, name)
 REFLECT_MEMBER(Resource, guid)
+REFLECT_MEMBER(Resource, pathToFile)
 
 
 
@@ -116,6 +121,8 @@ private:
 template <class T>
 ResourceInterface<T>::ResourceInterface() : Resource()
 {
+    static_assert(!std::is_same_v<T, Resource>, "you should not put resource in the template, place your class");
+
     m_ReflectedType = &Reflector::GetType<T>();
 }
 

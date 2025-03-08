@@ -8,9 +8,11 @@
 BEGIN_PCCORE
 
 
-class ShaderSource : public PC_CORE::ResourceInterface<PC_CORE::Resource>
+class ShaderSource : public PC_CORE::ResourceInterface<ShaderSource>
 {
 public:
+    ShaderSource();
+
     ShaderSource(const fs::path& _path);
     
     void CompileToSpriv();

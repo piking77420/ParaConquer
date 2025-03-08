@@ -33,8 +33,6 @@ public:
 
     void UpdateEditorWindows();
 
-    void ShaderRecompileList();
-
     PC_CORE::App gameApp;
     
     std::vector<EditorWindow*> m_EditorWindows;

@@ -1,5 +1,7 @@
 ﻿#include "reflection/reflector.hpp"
 
+#include <filesystem>
+
 using namespace PC_CORE;
 
 const ReflectedType& Reflector::GetType(uint32_t _hash)
@@ -28,6 +30,7 @@ REFLECT(uint64_t);
 using namespace std;
 REFLECT(string)
 REFLECT(wstring)
+
 
 
 

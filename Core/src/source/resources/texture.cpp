@@ -9,6 +9,13 @@ using namespace PC_CORE;
 
 
 
+void Texture::Build()
+{
+    if (!pathToFile.empty())
+        LoadFromFile((fs::path)pathToFile);
+
+}
+
 Texture::Texture(const CreateTextureInfo& createTextureInfo)
 {
     for (auto& texture : m_TextureHandles)
@@ -23,16 +30,43 @@ Texture::Texture(const CreateTextureInfo& createTextureInfo)
 
 Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_path)
 {
+    LoadFromFile(_path);
+}
+
+Texture::~Texture()
+{
+    for (auto& texture : m_TextureHandles)
+    {
+        if (texture == nullptr)
+            return;
+    
+        if (!Rhi::GetRhiContext()->gpuAllocator->DestroyTexture(&texture))
+        {
+            PC_LOGERROR("failed to destroy texture!");
+        }
+    }
+   
+}
+
+void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
+{
+    
+}
+
+void Texture::LoadFromFile(const fs::path& _path)
+{
+    pathToFile = _path.generic_string();
+
     int width;
     int height;
-    
+
     uint8_t* pixels = FileLoader::LoadFile(_path.generic_string().c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");
         throw std::runtime_error("failed to load texture image!");
     }
-    
+
     const CreateTextureInfo createTextureInfo =
     {
         .width = width,
@@ -54,31 +88,11 @@ Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_p
         if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
         {
             PC_LOGERROR("failed to create texture!");
-        }    
-    }
-    
-
-    FileLoader::FreeData(pixels);
-}
-
-Texture::~Texture()
-{
-    for (auto& texture : m_TextureHandles)
-    {
-        if (texture == nullptr)
-            return;
-    
-        if (!Rhi::GetRhiContext()->gpuAllocator->DestroyTexture(&texture))
-        {
-            PC_LOGERROR("failed to destroy texture!");
         }
     }
-   
-}
 
-void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
-{
-    
+
+    FileLoader::FreeData(pixels);
 }
 
 void Texture::Load(const std::array<std::string, 6>& _maps)

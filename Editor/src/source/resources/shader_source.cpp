@@ -51,7 +51,12 @@ glslang_stage_t GetGlangShaderStage(ShaderStageType _shaderType)
 }
 
 
-ShaderSource::ShaderSource(const fs::path& _path) : ResourceInterface<PC_CORE::Resource>(_path)
+ShaderSource::ShaderSource() : ResourceInterface<ShaderSource>()
+{
+
+}
+
+ShaderSource::ShaderSource(const fs::path& _path) : ResourceInterface<ShaderSource>(_path)
 {
     uint32_t formatIndex = -1;
 

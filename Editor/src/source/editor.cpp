@@ -27,193 +27,249 @@ using namespace PC_CORE;
 
 void Editor::InitThridPartLib()
 {
-    glslang_initialize_process();
+	glslang_initialize_process();
 
 }
 
 void Editor::UnInitThridPartLib()
 {
-    glslang_finalize_process();
+	glslang_finalize_process();
 }
 
 void Editor::CompileShader()
 {
-    std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-    std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
+	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
-    vertex->CompileToSpriv();
-    frag->CompileToSpriv();
+	vertex->CompileToSpriv();
+	frag->CompileToSpriv();
 
-    vertex = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.vert");
-    frag = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.frag");
+	vertex = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.vert");
+	frag = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.frag");
 
-    
-    vertex->CompileToSpriv();
-    frag->CompileToSpriv();
+
+	vertex->CompileToSpriv();
+	frag->CompileToSpriv();
 }
+
+
 
 void Editor::Init()
 {
-    InitThridPartLib();
-    CompileShader();
-
-    gameApp.Init();
-
-    
-    std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
-    m1->m_albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
-    m1->Build();
-
-    std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material.mat");
-
-    m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block.png");
-    m2->Build();
+	InitThridPartLib();
+	CompileShader();
+	gameApp.Init();
 
 
-    InitEditorWindows();
-    InitTestScene();
-    IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
-    
-    gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
-        IMGUIContext.Render(cmd);
-    });
 
+	InitEditorWindows();
+	InitTestScene();
+	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 
-    //Tbx::Vector3f y;
-    //Serializer::DeSerialize(&y, "TestSerilize.ser");
+	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
+		IMGUIContext.Render(cmd);
+		});
+
+	//Tbx::Vector3f y;
+	//Serializer::DeSerialize(&y, "TestSerilize.ser");
 
 }
 
 void Editor::Destroy()
 {
-    IMGUIContext.Destroy();
+	IMGUIContext.Destroy();
 
-    for (const EditorWindow* editorWindow : m_EditorWindows)
-        delete editorWindow;
+	for (const EditorWindow* editorWindow : m_EditorWindows)
+		delete editorWindow;
 
-    gameApp.Destroy();
+	gameApp.Destroy();
 
-    UnInitThridPartLib();
+	UnInitThridPartLib();
 }
 
 
 void Editor::UpdateEditorWindows()
 {
-    
-    dockSpace.BeginDockSpace();
-    ShaderRecompileList();
-    for (EditorWindow* editorWindow : m_EditorWindows)
-    {
-        editorWindow->Begin();
-        editorWindow->Update();
-        editorWindow->End();
-    }
-    dockSpace.EndDockSpace();
-}
+	//static bool open = true;
 
-void Editor::ShaderRecompileList()
-{
-    /*
-    static bool open = true;
-    ImGui::Begin("Shader Recompile List");
+	//ImGui::ShowDemoWindow(&open);
 
-    
-    auto lamba = [&](const ShaderProgram* shaderProgram) -> void
-    {
-      if (ImGui::Button(shaderProgram->name.c_str()))
-      {
-          PC_LOG("Recompile Shader Program");
-          //shaderProgram->Reload();
-      }
-        
-    };
-    
-    ResourceManager::ForEach<ShaderProgram>(lamba);
-    
-    ImGui::End();
-    */
+	dockSpace.BeginDockSpace();
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("SaveScene"))
+			{
+				auto world = World::GetWorld();
+				// unordoredMap Function
+				using UnordoredByteMap = std::unordered_map<uint8_t, uint8_t>;
+				using UnordoredMapIterator = typename UnordoredByteMap::iterator;
+				using ReseverMapFunction = void (UnordoredByteMap::*)(size_t);
+				using InsertMapFunction = typename UnordoredByteMap::mapped_type& (UnordoredByteMap::*)(const typename UnordoredByteMap::key_type&);
+
+				using UnordoredMapConstIterator = typename UnordoredByteMap::const_iterator;
+				using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename UnordoredByteMap::key_type, typename UnordoredByteMap::mapped_type>* (UnordoredMapConstIterator::*)() const;
+
+
+
+				void* ptr = &world->m_ComponentManager.m_ComponentMapArray[Reflector::GetTypeKey<RigidBody>()];
+				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&world->m_ComponentManager.m_ComponentMapArray);
+
+				const auto& typeMap = Reflector::GetType<std::unordered_map<TypeId, ComponentArray>>();
+
+				UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
+				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
+				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
+
+				auto rBegin = world->m_ComponentManager.m_ComponentMapArray.begin();
+				auto rEnd = world->m_ComponentManager.m_ComponentMapArray.end();
+
+				using IncrementMapIterator = UnordoredMapConstIterator & (UnordoredMapConstIterator::*)();
+				using IncrementMapIteratorByte = std::unordered_map<uint8_t, uint8_t>::const_iterator& (std::unordered_map<uint8_t, uint8_t>::const_iterator::*)();
+
+				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
+				IncrementMapIteratorByte iteratorFunByte;
+				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
+
+
+
+
+
+				for (UnordoredMapConstIterator it = *reinterpret_cast<UnordoredMapConstIterator*>(&rBegin);
+					it != *reinterpret_cast<UnordoredMapConstIterator*>(&rEnd);)
+				{
+					assert(sizeof(std::unordered_map<TypeId, ComponentArray>::const_iterator) == sizeof(std::unordered_map<uint8_t, uint8_t>::const_iterator));
+
+					std::unordered_map<TypeId, ComponentArray>::const_iterator itR = *reinterpret_cast<std::unordered_map<TypeId, ComponentArray>::const_iterator*>(&it);
+
+					using RealMapContIteratorUnref = std::pair<const TypeId, ComponentArray>* (std::unordered_map<TypeId, ComponentArray>::const_iterator::*)() const;
+					RealMapContIteratorUnref test = reinterpret_cast<RealMapContIteratorUnref>(unrefFunf);
+
+
+					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
+					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + sizeof(size_t));
+
+					const uint8_t* ptralias2 = reinterpret_cast<const uint8_t*>((&(itR.*test)()->second));
+
+					assert(ptr2 == ptralias2);
+				
+					const auto& type = Reflector::GetType(*reinterpret_cast<const uint32_t*>(ptr));
+
+
+					const ComponentArray* arry = reinterpret_cast<const ComponentArray*>(ptr2);
+					assert(type.typeId == arry->componentType);
+
+					printf("");
+					(it.*iteratorFunByte)();
+				}
+
+				Serializer::Serialize(world->m_ComponentManager.m_ComponentMapArray, "basic_level.level");
+
+			}
+			ImGui::EndMenu();
+
+		}
+		ImGui::EndMenuBar();
+
+	}
+
+	for (EditorWindow* editorWindow : m_EditorWindows)
+	{
+		editorWindow->Begin();
+		editorWindow->Update();
+		editorWindow->End();
+	}
+	dockSpace.EndDockSpace();
 }
 
 
 REFLECT(std::vector<Transform>)
 
+std::shared_ptr<Material> m1;
+std::shared_ptr<Material> m2;
+
 void Editor::InitTestScene()
 {
-    EntityId dirLight = World::GetWorld()->CreateEntity();
-    World::GetWorld()->AddComponent<DirLight>(dirLight);
-    World::GetWorld()->AddComponent<Transform>(dirLight);
+	m1 = std::make_shared<Material>("diamond_block_material.mat");
+	m2 = std::make_shared<Material>("emerauld_block_material.mat");
 
-    EntityId cube = World::GetWorld()->CreateEntity();
-    World::GetWorld()->AddComponent<Transform>(cube);
-    World::GetWorld()->AddComponent<StaticMesh>(cube);
+	m1->m_albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
+	m1->Build();
 
 
-    EntityId sphere = World::GetWorld()->CreateEntity();
-    World::GetWorld()->AddComponent<Transform>(sphere);
-    World::GetWorld()->AddComponent<StaticMesh>(sphere);
-    Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
-    t->position = { 0.0f, 2.0f, 1.0f };
+	m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block.png");
+	m2->Build();
 
-    StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
-    mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
-    mesh->material = ResourceManager::Get<Material>("emerauld_block_material.mat");
 
-    StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
-    mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
-    mesh2->material = ResourceManager::Get<Material>("diamond_block_material.mat");
+	EntityId dirLight = World::GetWorld()->CreateEntity();
+	World::GetWorld()->AddComponent<DirLight>(dirLight);
+	World::GetWorld()->AddComponent<Transform>(dirLight);
 
-    Serializer::Serialize(*mesh, "TestSerilize.ser");
-    StaticMesh srMesj;
-    Serializer::DeSerialize(&srMesj, "TestSerilize.ser");
-    *mesh = srMesj;
-         
-    //StaticMesh sermesh;
-    //Serializer::DeSerialize(&sermesh, "TestSerilize.ser");
+	EntityId cube = World::GetWorld()->CreateEntity();
+	World::GetWorld()->AddComponent<Transform>(cube);
+	World::GetWorld()->AddComponent<StaticMesh>(cube);
+
+
+	EntityId sphere = World::GetWorld()->CreateEntity();
+	World::GetWorld()->AddComponent<Transform>(sphere);
+	World::GetWorld()->AddComponent<StaticMesh>(sphere);
+	Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
+	t->position = { 0.0f, 2.0f, 1.0f };
+
+	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
+	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+	mesh->material = m1;
+
+	StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
+	mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
+	mesh2->material = m2;
+
 }
 
 void Editor::DestroyTestScene()
 {
-    m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+	m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
 
-    //ResourceManager::Delete<Material>("material1");
-    //ResourceManager::Delete<Material>("material2");
+	//ResourceManager::Delete<Material>("material1");
+	//ResourceManager::Delete<Material>("material2");
 }
 
 void Editor::Run(bool* _appShouldClose)
 {
-        while (!gameApp.window.ShouldClose())
-        {
-            gameApp.coreIo.PoolEvent();
-            gameApp.window.PoolEvents();
-            IMGUIContext.NewFrame();
-            PC_CORE::Time::UpdateTime();
+	while (!gameApp.window.ShouldClose())
+	{
+		gameApp.coreIo.PoolEvent();
+		gameApp.window.PoolEvents();
+		IMGUIContext.NewFrame();
+		PC_CORE::Time::UpdateTime();
 
-            UpdateEditorWindows();
+		UpdateEditorWindows();
 
-            gameApp.WorldTick();
-      
-            if (!gameApp.renderer.BeginDraw(&gameApp.window))
-            {
-                continue;
-            }
+		gameApp.WorldTick();
 
-            for (EditorWindow* editorWindow : m_EditorWindows)
-                editorWindow->Render();
+		if (!gameApp.renderer.BeginDraw(&gameApp.window))
+		{
+			continue;
+		}
 
- 
-            gameApp.renderer.SwapBuffers(&gameApp.window);
-        }
+		for (EditorWindow* editorWindow : m_EditorWindows)
+			editorWindow->Render();
 
-        Rhi::GetRhiContext()->WaitIdle();
+
+		gameApp.renderer.SwapBuffers(&gameApp.window);
+	}
+
+	Rhi::GetRhiContext()->WaitIdle();
 }
 
 void Editor::InitEditorWindows()
 {
-    m_EditorWindows.push_back(new EditWorldWindow(*this, "Scene"));
-    m_EditorWindows.push_back(new Profiler(*this, "Profiler"));
-    m_EditorWindows.push_back(new Inspector(*this, "Inspector"));
-    m_EditorWindows.push_back(new Hierachy(*this, "Hierachy"));
-    m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
-    m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
+	m_EditorWindows.push_back(new EditWorldWindow(*this, "Scene"));
+	m_EditorWindows.push_back(new Profiler(*this, "Profiler"));
+	m_EditorWindows.push_back(new Inspector(*this, "Inspector"));
+	m_EditorWindows.push_back(new Hierachy(*this, "Hierachy"));
+	m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
+	m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
 }

@@ -136,6 +136,7 @@
     <ClInclude Include="src\include\ecs\system_manager.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\externals\source\Imgui\imgui_demo.cpp" />
     <ClCompile Include="src\source\ecs\components_manager.cpp" />
     <ClCompile Include="src\source\ecs\component_array.cpp" />
     <ClCompile Include="src\source\ecs\archetype.cpp" />

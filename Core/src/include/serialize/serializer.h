@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+
 #include <filesystem>
 #include <Json/json.hpp>
 #include <fstream>
@@ -23,7 +24,7 @@ public:
     template<typename T>
     static void DeSerialize(T* _object, const fs::path& _file);
     
-private:
+private:    
     PC_CORE_API static void Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);
 
     PC_CORE_API static void Derializing(uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);

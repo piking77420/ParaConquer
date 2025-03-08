@@ -140,7 +140,7 @@ private:
 		}
 		if constexpr (is_shared_ptr_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::ResourceRefType;
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::ResourceHandle;
 			ResourceRefType& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.resourceRef;
 
 			TypeId ptrType = GetTypeKey<typename T::element_type>();
@@ -189,29 +189,7 @@ private:
 
 		if constexpr (is_map<T>::value)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Map;
-			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.mapReflected;
-
-			using MapIterator = typename T::iterator;
-			using UnrefIteratorFuncType = std::pair<const typename T::key_type, typename T::mapped_type>* (MapIterator::*)() const;
-			using IncrementMapIterator = MapIterator & (MapIterator::*)();
-			using ReserverFunctionMap = void (T::*)(size_t);
-			using InsertFunctionMap = std::pair<typename T::iterator, bool>(T::*)(const typename T::value_type&);
-
-
-			IncrementMapIterator incrementIteratorFuncType = &MapIterator::operator++;
-			UnrefIteratorFuncType unrefIteratorFuncType = &MapIterator::operator->;
-
-			uint64_t incrementIteratorFunc = *reinterpret_cast<uint64_t*>(&incrementIteratorFuncType);
-			uint64_t unrefIteratorFunc = *reinterpret_cast<uint64_t*>(&unrefIteratorFuncType);
-
-			ReflectMapFunction reflectMapFunction =
-			{
-				.incrementIterator = incrementIteratorFunc,
-				.unrefIterator = unrefIteratorFunc,
-			};
-
-			m_MapReflectFunction.insert(GetTypeKey<T>(), reflectMapFunction);
+		
 
 		}
 
@@ -223,25 +201,26 @@ private:
 			rm.value = GetTypeKey<typename T::mapped_type>();
 
 			using MapIterator = typename T::iterator;
-			using UnrefMapIteratorFuncType = std::pair<const typename T::key_type, typename T::mapped_type>* (MapIterator::*)() const;
-			using IncrementMapIterator = MapIterator & (MapIterator::*)();
-			using ReseverMapFunction = void (T::*)(size_t);
-			//using InsertMapFunction = std::pair<typename T::iterator, bool>(T::*)(const typename T::value_type&);
-			using InsertMapFunction = typename T::mapped_type& (T::*)(const typename T::key_type&);
+			using UnordoredMapConstIterator = typename T::const_iterator;
 
-			IncrementMapIterator incrementIteratorFuncType = &MapIterator::operator++;
-			UnrefMapIteratorFuncType unrefIteratorFuncType = &MapIterator::operator->;
+			using ReseverMapFunction = void (T::*)(size_t);
+			using InsertMapFunction = typename T::mapped_type& (T::*)(const typename T::key_type&);
+			using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename T::key_type, typename T::mapped_type>* (UnordoredMapConstIterator::*)() const;
+			using IncrementMapIterator = MapIterator & (MapIterator::*)();
+
+
 			ReseverMapFunction reserverFunctionMapType = &T::reserve;
-			//InsertMapFunction insertFunctionMapType = static_cast<InsertMapFunction>(&T::insert);
 			InsertMapFunction insertFunctionMapType = static_cast<InsertMapFunction>(&T::operator[]);
+			UnorderedMapUnrefConstIteratorFunc unref = &UnordoredMapConstIterator::operator->;
+			IncrementMapIterator increment = &MapIterator::operator++;
 
 
 			ReflectMapFunction reflectMapFunction =
 			{
-				.incrementIterator = *reinterpret_cast<uint64_t*>(&incrementIteratorFuncType),
-				.unrefIterator = *reinterpret_cast<uint64_t*>(&unrefIteratorFuncType),
 				.reserveFunction = *reinterpret_cast<uint64_t*>(&reserverFunctionMapType),
 				.insertFunction = *reinterpret_cast<uint64_t*>(&insertFunctionMapType),
+				.unrefFunc = *reinterpret_cast<uint64_t*>(&unref),
+				.incrementFunc = *reinterpret_cast<uint64_t*>(&insertFunctionMapType),
 			};
 
 			m_UnordoredMapReflectFunction.insert({ GetTypeKey<T>(), reflectMapFunction });
@@ -288,18 +267,18 @@ bool Reflector::IsTypeIdIs(TypeId typeId)
 template <typename Base>
 bool Reflector::IsBaseOf(const ReflectedType& type)
 {
-	ReflectedType currentType = type;
-	ReflectedType baseType = GetType<Base>();
+	const ReflectedType* currentType = &type;
+	const ReflectedType& baseType = GetType<Base>();
 
 	if (type == baseType)
 		return false;
 
-	while (currentType.metaData.baseClass != NullTypeId)
+	while (currentType->metaData.baseClass != NullTypeId)
 	{
-		if (currentType.metaData.baseClass == baseType.typeId)
+		if (currentType->metaData.baseClass == baseType.typeId)
 			return true;
 
-		currentType = GetType(currentType.metaData.baseClass);
+		currentType = &GetType(currentType->metaData.baseClass);
 	}
 
 	return false;
