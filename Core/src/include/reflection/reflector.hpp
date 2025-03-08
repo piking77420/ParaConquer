@@ -200,6 +200,8 @@ private:
 			rm.key = GetTypeKey<typename T::key_type>();
 			rm.value = GetTypeKey<typename T::mapped_type>();
 
+			using MapPair = std::pair<typename T::key_type, typename T::mapped_type>;
+			rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
 			using MapIterator = typename T::iterator;
 			using UnordoredMapConstIterator = typename T::const_iterator;
 
@@ -406,6 +408,7 @@ void Reflector::AddType()
 		.typeFlags = {},
 		.name = name,
 		.size = sizeof(T),
+		.alignment = alignof(T),
 		.metaData = {}
 		};
 

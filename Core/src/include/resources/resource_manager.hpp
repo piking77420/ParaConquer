@@ -55,9 +55,9 @@ public:
     
     PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
- 
-private:  
     PC_CORE_API static inline std::unordered_map<std::string, std::shared_ptr<Resource>> m_ResourcesMap;
+
+private:  
 
     PC_CORE_API static void SerializeResource();
 

@@ -20,11 +20,95 @@
 #include "world/static_mesh.hpp"
 #include "serialize/serializer.h"
 #include <thread>
+#include <Imgui/imgui_internal.h>
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
+namespace ImGui {
 
+	//https://github.com/ocornut/imgui/issues/1901
+	bool BufferingBar(const char* label, float value, const ImVec2& size_arg, const ImU32& bg_col, const ImU32& fg_col) {
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		const ImGuiID id = window->GetID(label);
+
+		ImVec2 pos = window->DC.CursorPos;
+		ImVec2 size = size_arg;
+		size.x -= style.FramePadding.x * 2;
+
+		const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+		ItemSize(bb, style.FramePadding.y);
+		if (!ItemAdd(bb, id))
+			return false;
+
+		// Render
+		const float circleStart = size.x * 0.7f;
+		const float circleEnd = size.x;
+		const float circleWidth = circleEnd - circleStart;
+
+		window->DrawList->AddRectFilled(bb.Min, ImVec2(pos.x + circleStart, bb.Max.y), bg_col);
+		window->DrawList->AddRectFilled(bb.Min, ImVec2(pos.x + circleStart * value, bb.Max.y), fg_col);
+
+		const float t = g.Time;
+		const float r = size.y / 2;
+		const float speed = 1.5f;
+
+		const float a = speed * 0;
+		const float b = speed * 0.333f;
+		const float c = speed * 0.666f;
+
+		const float o1 = (circleWidth + r) * (t + a - speed * (int)((t + a) / speed)) / speed;
+		const float o2 = (circleWidth + r) * (t + b - speed * (int)((t + b) / speed)) / speed;
+		const float o3 = (circleWidth + r) * (t + c - speed * (int)((t + c) / speed)) / speed;
+
+		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o1, bb.Min.y + r), r, bg_col);
+		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o2, bb.Min.y + r), r, bg_col);
+		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o3, bb.Min.y + r), r, bg_col);
+	}
+
+	bool Spinner(const char* label, float radius, int thickness, const ImU32& color) {
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		const ImGuiID id = window->GetID(label);
+
+		ImVec2 pos = window->DC.CursorPos;
+		ImVec2 size((radius) * 2, (radius + style.FramePadding.y) * 2);
+
+		const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+		ItemSize(bb, style.FramePadding.y);
+		if (!ItemAdd(bb, id))
+			return false;
+
+		// Render
+		window->DrawList->PathClear();
+
+		int num_segments = 30;
+		int start = abs(ImSin(g.Time * 1.8f) * (num_segments - 5));
+
+		const float a_min = IM_PI * 2.0f * ((float)start) / (float)num_segments;
+		const float a_max = IM_PI * 2.0f * ((float)num_segments - 3) / (float)num_segments;
+
+		const ImVec2 centre = ImVec2(pos.x + radius, pos.y + radius + style.FramePadding.y);
+
+		for (int i = 0; i < num_segments; i++) {
+			const float a = a_min + ((float)i / (float)num_segments) * (a_max - a_min);
+			window->DrawList->PathLineTo(ImVec2(centre.x + ImCos(a + g.Time * 8) * radius,
+				centre.y + ImSin(a + g.Time * 8) * radius));
+		}
+
+		window->DrawList->PathStroke(color, false, thickness);
+	}
+
+}
 void Editor::InitThridPartLib()
 {
 	glslang_initialize_process();
@@ -87,6 +171,12 @@ void Editor::Destroy()
 	UnInitThridPartLib();
 }
 
+struct dqdq
+{
+	TypeId ds;
+
+	ComponentArray componentArray;
+};
 
 void Editor::UpdateEditorWindows()
 {
@@ -97,6 +187,8 @@ void Editor::UpdateEditorWindows()
 	dockSpace.BeginDockSpace();
 	if (ImGui::BeginMenuBar())
 	{
+	;
+
 		if (ImGui::BeginMenu("File"))
 		{
 			if (ImGui::MenuItem("SaveScene"))
@@ -110,8 +202,10 @@ void Editor::UpdateEditorWindows()
 
 				using UnordoredMapConstIterator = typename UnordoredByteMap::const_iterator;
 				using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename UnordoredByteMap::key_type, typename UnordoredByteMap::mapped_type>* (UnordoredMapConstIterator::*)() const;
+				using IncrementMapIterator = UnordoredMapConstIterator & (UnordoredMapConstIterator::*)();
+				using IncrementMapIteratorByte = std::unordered_map<uint8_t, uint8_t>::const_iterator& (std::unordered_map<uint8_t, uint8_t>::const_iterator::*)();
 
-
+#if 0
 
 				void* ptr = &world->m_ComponentManager.m_ComponentMapArray[Reflector::GetTypeKey<RigidBody>()];
 				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&world->m_ComponentManager.m_ComponentMapArray);
@@ -122,37 +216,21 @@ void Editor::UpdateEditorWindows()
 				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
 				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
 
-				auto rBegin = world->m_ComponentManager.m_ComponentMapArray.begin();
-				auto rEnd = world->m_ComponentManager.m_ComponentMapArray.end();
+				//auto rBegin = world->m_ComponentManager.m_ComponentMapArray.begin();
+				//auto rEnd = world->m_ComponentManager.m_ComponentMapArray.end();
 
-				using IncrementMapIterator = UnordoredMapConstIterator & (UnordoredMapConstIterator::*)();
-				using IncrementMapIteratorByte = std::unordered_map<uint8_t, uint8_t>::const_iterator& (std::unordered_map<uint8_t, uint8_t>::const_iterator::*)();
+				
 
 				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
 				IncrementMapIteratorByte iteratorFunByte;
 				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
 
-
-
-
-
-				for (UnordoredMapConstIterator it = *reinterpret_cast<UnordoredMapConstIterator*>(&rBegin);
-					it != *reinterpret_cast<UnordoredMapConstIterator*>(&rEnd);)
+				// TO DO REFLECT THE STD PAIR OF MAP TO GET THE OFFET BETWEEN THOS TWOO VALUE
+				for (UnordoredMapConstIterator it = mapByte->begin();
+					it != mapByte->end();)
 				{
-					assert(sizeof(std::unordered_map<TypeId, ComponentArray>::const_iterator) == sizeof(std::unordered_map<uint8_t, uint8_t>::const_iterator));
-
-					std::unordered_map<TypeId, ComponentArray>::const_iterator itR = *reinterpret_cast<std::unordered_map<TypeId, ComponentArray>::const_iterator*>(&it);
-
-					using RealMapContIteratorUnref = std::pair<const TypeId, ComponentArray>* (std::unordered_map<TypeId, ComponentArray>::const_iterator::*)() const;
-					RealMapContIteratorUnref test = reinterpret_cast<RealMapContIteratorUnref>(unrefFunf);
-
-
 					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
-					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + sizeof(size_t));
-
-					const uint8_t* ptralias2 = reinterpret_cast<const uint8_t*>((&(itR.*test)()->second));
-
-					assert(ptr2 == ptralias2);
+					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + typeMap.metaData.typeNatureMetaData.metaDataType.unordoredMapReflected.offsetBetweenKeyAndValueInPair);
 				
 					const auto& type = Reflector::GetType(*reinterpret_cast<const uint32_t*>(ptr));
 
@@ -165,6 +243,37 @@ void Editor::UpdateEditorWindows()
 				}
 
 				Serializer::Serialize(world->m_ComponentManager.m_ComponentMapArray, "basic_level.level");
+#else
+
+				
+				auto& map = ResourceManager::m_ResourcesMap;
+				const auto& typeMap = Reflector::GetType<decltype(ResourceManager::m_ResourcesMap)>();
+				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&ResourceManager::m_ResourcesMap);
+
+				UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
+				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
+				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
+
+				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
+				IncrementMapIteratorByte iteratorFunByte;
+				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
+
+
+				for (auto it = mapByte->begin() ; it != mapByte->end(); )
+				{
+					void* ptrr = &ResourceManager::m_ResourcesMap.at("quad.obj");
+
+					constexpr size_t sizeOfS = sizeof(std::string);
+					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
+					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + typeMap.metaData.typeNatureMetaData.metaDataType.unordoredMapReflected.offsetBetweenKeyAndValueInPair);
+
+					const std::string* s = reinterpret_cast<const std::string*>(ptr);
+					const std::shared_ptr<Resource>* r = reinterpret_cast<const std::shared_ptr<Resource>*>(ptr2);
+
+
+					(it.*iteratorFunByte)();
+				}
+#endif
 
 			}
 			ImGui::EndMenu();
@@ -180,6 +289,8 @@ void Editor::UpdateEditorWindows()
 		editorWindow->Update();
 		editorWindow->End();
 	}
+
+
 	dockSpace.EndDockSpace();
 }
 

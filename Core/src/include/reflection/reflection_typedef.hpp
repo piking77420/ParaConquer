@@ -86,6 +86,7 @@ struct ReflectedMap
 {   
     TypeId key;
     TypeId value;
+    uint32_t offsetBetweenKeyAndValueInPair;
 };
 
 struct Set
@@ -130,6 +131,7 @@ struct ReflectedType
     
     std::string name;
     size_t size;
+    uint32_t alignment;
     
     TypeMetaData metaData;
 
@@ -203,5 +205,8 @@ struct ReflectMapFunction
     uint64_t incrementFunc;
 
 };
+
+
+
 
 END_PCCORE
