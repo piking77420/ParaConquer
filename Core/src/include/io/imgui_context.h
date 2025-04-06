@@ -2,8 +2,8 @@
 
 #include "core_header.hpp"
 #include "low_renderer/rhi.hpp"
-#include "vulkan_header.h"
 
+#include <vulkan/vulkan.hpp>
 
 
 BEGIN_PCCORE

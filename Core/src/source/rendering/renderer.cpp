@@ -119,6 +119,7 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 
     sceneBufferGpu.time = PC_CORE::Time::GetTime();
     sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
+    /*
     Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(Tbx::Vector3f::Zero(),
                                                 renderingContext.lowLevelCamera.front, renderingContext.lowLevelCamera.up);
     Tbx::Matrix4x4f projection = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov,
@@ -132,13 +133,14 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 
     Tbx::Invert(sceneBufferGPU.view, &sceneBufferGPU.viewInv);
     Tbx::Invert(sceneBufferGPU.proj, &sceneBufferGPU.projInv);
-    Tbx::Invert(sceneBufferGPU.vp, &sceneBufferGPU.vpInv);
+    Tbx::Invert(sceneBufferGPU.vp, &sceneBufferGPU.vpInv);*/
 
     cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 }
 
 void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
+    /*
     constexpr float far = 1.f;
     constexpr float near = 0.2f;
 
@@ -162,15 +164,15 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
     topRightA /= topRightA.w;
     bottomLeftA /= bottomLeftA.w;
     bottomRightA /= bottomRightA.w;
-
-    const Tbx::Vector3f topLeft3 = {topLeftB.x - topLeftA.x, topLeftB.y - topLeftA.y, topLeftB.z - topLeftA.y};
-    const Tbx::Vector3f topRight3 = {topRightB.x - topRightA.x, topRightB.y - topRightA.y, topRightB.z - topRightA.z};
-    const Tbx::Vector3f bottomLeft3 = {
+    
+    const Tbx::Vector3f topLeft3 = Tbx::Vector3f(topLeftB.x - topLeftA.x, topLeftB.y - topLeftA.y, topLeftB.z - topLeftA.y);
+    const Tbx::Vector3f topRight3 = Tbx::Vector3f(topRightB.x - topRightA.x, topRightB.y - topRightA.y, topRightB.z - topRightA.z);
+    const Tbx::Vector3f bottomLeft3 = Tbx::Vector3f(
         bottomLeftB.x - bottomLeftA.x, bottomLeftB.y - bottomLeftA.y, bottomLeftB.z - bottomLeftA.z
-    };
-    const Tbx::Vector3f bottomRight3 = {
+    );
+    const Tbx::Vector3f bottomRight3 = Tbx::Vector3f(
         bottomRightB.x - bottomRightA.x, bottomRightB.y - bottomRightA.y, bottomRightB.z - bottomRightA.z
-    };
+    );
 
     m_ViewExtremum =
     {
@@ -180,7 +182,7 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
         .bottomRight = bottomRight3 + renderingContext.lowLevelCamera.position
     };
 
-    m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));
+    m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));*/
 }
 
 
@@ -202,7 +204,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .renderOffSet = {0, 0},
         .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
         .clearValueFlags = clearValueFlags,
-        .clearColor = {0, 0, 0, 0.f},
+        .clearColor = Tbx::Vector4f(0, 0, 0, 0.f),
         .clearDepth = 1.f
     };
 
@@ -246,7 +248,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .renderOffSet = {0, 0},
         .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
         .clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor),
-        .clearColor = {0, 0, 0, 1.f},
+        .clearColor = Tbx::Vector4f(0, 0, 0, 1.f),
         .clearDepth = 0.f,
         .clearStencil = 0.f
     };
@@ -293,7 +295,7 @@ void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
     sceneLightsBuffer
         ->sceneLightData.intensity = dirLight.intensity;
     sceneLightsBuffer
-        ->sceneLightData.direction = transform.rotation.quaternion.ToEulerAngles().Normalize();
+        ->sceneLightData.direction = Tbx::Quaterniond::ToEulerAngles(transform.rotation.quaternion).Normalize();
 }
 
 void Renderer::CreateForwardShader()
@@ -395,6 +397,7 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     if (_staticMesh.material.expired() || _staticMesh.mesh.expired())
         return;
 
+    /*
     // Compute Matrix
     Tbx::Matrix4x4d modelMatrixd[2];
     Tbx::Trs3D<double>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
@@ -415,7 +418,7 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
                                      sizeof(Tbx::Matrix4x4f) * 2);
     primaryCommandList->BindVertexBuffer(mesh->vertexBuffer, 0, 1);
     primaryCommandList->BindIndexBuffer(mesh->indexBuffer, 0);
-    primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+    primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);*/
 }
 
 void Renderer::AtmoSpherePass()

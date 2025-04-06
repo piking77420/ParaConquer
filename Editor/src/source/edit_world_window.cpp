@@ -59,9 +59,9 @@ void EditWorldWindow::RotateCamera(float _deltatime)
 
     camera.front = camera.front.Normalize();
     Tbx::Vector3f forward;
-    forward.x = std::cos(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
-    forward.y = std::sin(pitch * Deg2Rad);
-    forward.z = std::sin(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
+    forward.x = std::cos(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
+    forward.y = std::sin(pitch * Tbx::fDeg2Rad);
+    forward.z = std::sin(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
     
     camera.LookAt(camera.position + forward);
 }

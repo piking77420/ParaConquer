@@ -25,7 +25,7 @@ public:
 
 	Renderer renderer;
 	
-	ScriptingLua scriptingLua;
+	//ScriptingLua scriptingLua;
 
 	PhysicsWrapper physicsWrapper;
 	

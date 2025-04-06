@@ -37,6 +37,7 @@ FileSystemWatcher::~FileSystemWatcher()
 
 void FileSystemWatcher::WorkerMainLoop()
 {
+	/*
 	HANDLE baseHandle = CreateFile(m_ProjectBaseAssetPath.c_str(), // pointer to the file name
 		FILE_LIST_DIRECTORY,                // access (read/write) mode
 		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,  // share mode
@@ -87,7 +88,7 @@ void FileSystemWatcher::WorkerMainLoop()
 			break;
 		}
 
-	}
+	}*/
 }
 
 

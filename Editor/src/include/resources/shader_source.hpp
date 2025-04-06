@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <glslang/Include/glslang_c_interface.h>
 
 #include "resources/resource.hpp"
 #include "low_renderer/rhi_typedef.h"

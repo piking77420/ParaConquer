@@ -326,7 +326,7 @@ void Editor::InitTestScene()
 	World::GetWorld()->AddComponent<Transform>(sphere);
 	World::GetWorld()->AddComponent<StaticMesh>(sphere);
 	Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
-	t->position = { 0.0f, 2.0f, 1.0f };
+	t->position = Tbx::Vector3d(0.0f, 2.0f, 1.0f );
 
 	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
 	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");

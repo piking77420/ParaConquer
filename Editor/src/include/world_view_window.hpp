@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <vulkan/vulkan_core.h>
 
 #include "editor_header.hpp"
 #include "editor_window.hpp"
@@ -9,6 +8,8 @@
 #include "rendering/rendering_typedef.h"
 #include "resources/texture.hpp"
 #include "rendering/rendering_typedef.h"
+
+#include <vulkan/vulkan.h>
 
 BEGIN_EDITOR_PCCORE
 

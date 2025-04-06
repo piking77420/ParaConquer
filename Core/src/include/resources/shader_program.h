@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <array>
+#include <vector>
+#include <string>
+
 #include "core_header.hpp"
 #include "resource.hpp"
 #include "low_renderer/descriptor_set.hpp"

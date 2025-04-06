@@ -16,9 +16,9 @@ REFLECT(Light,Component)
 
 struct DirLight : public Light
 {
-    Tbx::Vector3f color =  {1.f,1.f,1.f};
+    Tbx::Vector3f color = Tbx::Vector3f(1.f,1.f,1.f);
     float intensity = 1.f;
-    Tbx::Vector3f ambiant = {0.1f,0.1f,0.1f} ;
+    Tbx::Vector3f ambiant = Tbx::Vector3f(0.1f,0.1f,0.1f);
     bool isDirty = false;
 };
 REFLECT(DirLight,Light)

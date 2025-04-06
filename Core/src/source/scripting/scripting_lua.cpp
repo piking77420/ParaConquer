@@ -2,10 +2,9 @@
 #include "assert.hpp"
 #include "log.hpp"
 
-#include "lua/lua.hpp"
 
 using namespace PC_CORE;
-
+/*
 lua_State* luaState = nullptr;
 std::vector<std::string> ScriptingLua::m_Scripts;
 
@@ -59,4 +58,4 @@ void ScriptingLua::RunFunction(const std::string& _funcName)
 
 		returnvalue = lua_pcall(luaState, 0, 0, 0);
 	}
-}
+}*/

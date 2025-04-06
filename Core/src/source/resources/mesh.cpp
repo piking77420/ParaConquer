@@ -76,23 +76,23 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex{};
 
-            vertex.position = {
+            vertex.position = Tbx::Vector3f(
                 attrib.vertices[3 * index.vertex_index + 0],
                 attrib.vertices[3 * index.vertex_index + 1],
                 attrib.vertices[3 * index.vertex_index + 2]
-            };
+            );
 
-            vertex.normal = {
+            vertex.normal = Tbx::Vector3f(
                 attrib.vertices[3 * index.normal_index + 0],
                 attrib.vertices[3 * index.normal_index + 1],
                 attrib.vertices[3 * index.normal_index + 2]
-            };
+            );
 
 
-            vertex.textureCoord = {
+            vertex.textureCoord = Tbx::Vector2f(
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            };
+            );
 
             if (uniqueVertices.count(vertex) == 0) {
                 uniqueVertices[vertex] = static_cast<uint32_t>(_vertices.size());

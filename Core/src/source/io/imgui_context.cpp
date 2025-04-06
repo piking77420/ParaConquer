@@ -1,5 +1,6 @@
 #include "io/imgui_context.h"
 
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "vulkan_instance.hpp"
@@ -13,10 +14,7 @@
 #include "vulkan_swap_chain.hpp"
 #include "resources/vulkan_sampler.hpp"
 
-/*
-#include "imgui_impl_vulkan.h"
-#include "front_end/vulkan_app.hpp"
-*/
+
 using namespace PC_CORE;
 
 ImGuiIO* io = nullptr;

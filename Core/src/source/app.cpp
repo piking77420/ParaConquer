@@ -6,7 +6,6 @@
 #include "physics/sphere_collider.hpp"
 #include "resources/resource_manager.hpp"
 
-#include "lua/lua.hpp"
 #include "time/core_time.hpp"
 
 

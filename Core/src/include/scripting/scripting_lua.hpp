@@ -6,6 +6,7 @@
 
 BEGIN_PCCORE
 
+/*
 class ScriptingLua
 {
 public:
@@ -22,5 +23,5 @@ public:
 private:
 	PC_CORE_API static std::vector<std::string> m_Scripts;
 };
-
+*/
 END_PCCORE
