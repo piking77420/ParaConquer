@@ -405,7 +405,7 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     modelMatrixd[0] = Tbx::Trs4x4<double>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
         _transform.scale);
 
-    modelMatrixd[0] = modelMatrixd[0].Transpose();
+    modelMatrixd[1] = modelMatrixd[0].Transpose();
 
     Tbx::Matrix4x4f modelMatrixf[2];
     modelMatrixf[0] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[0]);
