@@ -15,6 +15,10 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
     m_Editor->gameApp.renderer.m_DrawTextureScreenQuadShader->AllocDescriptorSet(&m_ViewPortDescriptorSet, 0);
+
+    for (auto& it : imguiDescriptorSet)
+        it = VK_NULL_HANDLE;
+
 }
 
 WorldViewWindow::~WorldViewWindow()

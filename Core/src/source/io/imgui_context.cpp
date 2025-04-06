@@ -149,6 +149,9 @@ void IMGUIContext::RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRA
 {
     for (size_t i = 0; i < _viewPortId.size(); i++)
     {
+        if (_viewPortId[i] == VK_NULL_HANDLE)
+            continue;
+
         ImGui_ImplVulkan_RemoveTexture(_viewPortId[i]);
     }
 }
