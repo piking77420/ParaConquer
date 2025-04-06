@@ -10,6 +10,8 @@ using namespace Tbx;
 
 #ifdef _DEBUG
 
+
+
 constexpr TypeId NameSpaceS = COMPILE_TIME_TYPE_KEY(std::string);
 
 void RelfectionHashingTest()
