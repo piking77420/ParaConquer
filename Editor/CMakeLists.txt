@@ -19,17 +19,34 @@ include_directories(src/externals/include)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-find_package(Vulkan REQUIRED)
+find_package(Vulkan REQUIRED COMPONENTS glslang SPIRV-Tools)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 
 # to do find a betetr way
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslangd.lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Toolsd.lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Tools-optd.lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslang-default-resource-limitsd.lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/MachineIndependentd.lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/GenericCodeGend.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan Vulkan::glslang)
+target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan Vulkan::SPIRV-Tools)
+
+#target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslangd.lib)
+#target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Toolsd.lib)
+#target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Tools-optd.lib)
+#target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslang-default-resource-limitsd.lib)
+#target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/MachineIndependentd.lib)
+#target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/GenericCodeGend.lib)
+
+cmake_path(GET Vulkan_LIBRARY PARENT_PATH  VULKAN_LIBRARIES_PATH )
+
+set(SPRIV_TOOL_OPT debug ${VULKAN_LIBRARIES_PATH}/SPIRV-Tools-optd.lib optimized ${VULKAN_LIBRARIES_PATH}/SPIRV-Tools-opt.lib)
+set(glslang_DEFAULT_RESOURCE_LIMIT debug ${VULKAN_LIBRARIES_PATH}/glslang-default-resource-limitsd.lib optimized ${VULKAN_LIBRARIES_PATH}/glslang-default-resource-limits.lib)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${SPRIV_TOOL_OPT})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${glslang_DEFAULT_RESOURCE_LIMIT})
+
+#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/SPIRV-Tools-optd.lib )
+#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/glslang-default-resource-limitsd.lib )
+
+#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/SPIRV-Tools-opt.li )
+#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/glslang-default-resource-limits.lib )
 
 #Copy Core DLL
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
