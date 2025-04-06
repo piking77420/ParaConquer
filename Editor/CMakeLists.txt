@@ -24,10 +24,18 @@ find_package(Vulkan REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 
 # to do find a betetr way
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslang.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslangd.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Toolsd.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Tools-optd.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/glslang-default-resource-limitsd.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/MachineIndependentd.lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/GenericCodeGend.lib)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE C:/VulkanSDK/1.4.304.0/Lib/SPIRV-Tools.lib)
-
+#Copy Core DLL
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+    $<TARGET_FILE:Core> 
+    $<TARGET_FILE_DIR:Editor>)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Core)
 #target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)
