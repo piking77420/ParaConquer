@@ -549,6 +549,8 @@ FodyWeavers.xsd
 
 Build/
 build/
+out/
+Out/
 
 !assets/meshs/**
 !Logo/**
