@@ -69,37 +69,52 @@ void EditWorldWindow::RotateCamera(float _deltatime)
 void EditWorldWindow::CameratMovment(float _deltatime)
 {
     
-    Tbx::Vector3f addVector;
+    bool isPositionDirty = false;
+    Tbx::Vector3f addVector = Tbx::Vector3f::Zero();
     const Tbx::Vector3f right = Tbx::Vector3f::Cross(camera.front, camera.up);
     
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
         addVector += camera.front;
+        isPositionDirty = true;
     }
     if (ImGui::IsKeyDown(ImGuiKey_S))
     {
         addVector -= camera.front;
+        isPositionDirty = true;
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_A))
     {
         addVector -= right;
+        isPositionDirty = true;
+
     }
     if (ImGui::IsKeyDown(ImGuiKey_D))
     {
         addVector += right;
+        isPositionDirty = true;
+
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_Space))
     {
         addVector += camera.up;
+        isPositionDirty = true;
+
     }
     if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
     {
         addVector -= camera.up;
+        isPositionDirty = true;
+
     }
     
-    addVector = addVector.Normalize();  
+    addVector = addVector.Normalize();
+
+    if (!isPositionDirty)
+        return;
+
     cameraSpeed += addVector * _deltatime * cameraSpeedValue;
     camera.position += addVector * 0.5f * _deltatime * _deltatime + cameraSpeed * _deltatime;
     cameraSpeed *= pow(drag,_deltatime);
