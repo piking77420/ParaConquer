@@ -1,6 +1,8 @@
 ﻿#pragma once
 
-#include "core_header.hpp"
+#include <memory>
+
+#include "rhi_typedef.h"
 
 BEGIN_PCCORE
 

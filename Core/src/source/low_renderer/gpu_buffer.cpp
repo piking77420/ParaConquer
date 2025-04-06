@@ -2,6 +2,29 @@
 
 #include "low_renderer/rhi.hpp"
 
+PC_CORE_API PC_CORE::GpuBuffer::GpuBuffer(GpuBuffer&& _other) noexcept
+{
+    
+
+    for (size_t i = 0; i < bufferHandles.size(); ++i)
+    {
+        bufferHandles[i] = _other.bufferHandles[i];
+        _other.bufferHandles[i] = nullptr;
+    }
+
+}
+    
+PC_CORE_API PC_CORE::GpuBuffer& PC_CORE::GpuBuffer::operator=(GpuBuffer&& _other) noexcept
+{
+    for (size_t i = 0; i < bufferHandles.size(); ++i)
+    {
+        bufferHandles[i] = _other.bufferHandles[i];
+        _other.bufferHandles[i] = nullptr;
+    }
+
+    return *this;
+}
+
 PC_CORE::GpuBuffer::~GpuBuffer()
 {
 

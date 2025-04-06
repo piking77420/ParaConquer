@@ -1,35 +1,16 @@
 ﻿#pragma once
 
-#include "core_header.hpp"
-#include "low_renderer/gpu_handle.hpp"
 
-#include "low_renderer/rhi_typedef.h"
+#include "low_renderer/gpu_handle.hpp"
 
 BEGIN_PCCORE
 
 struct GpuBuffer
 {
+public:
+    PC_CORE_API GpuBuffer(GpuBuffer&& _other) noexcept;
 
-    PC_CORE_API GpuBuffer(GpuBuffer&& _other) noexcept
-    {
-        for (size_t i = 0; i < bufferHandles.size(); ++i)
-        {
-            bufferHandles[i] = _other.bufferHandles[i];
-            _other.bufferHandles[i] = nullptr;
-        }
-        
-    }
-
-    PC_CORE_API GpuBuffer& operator=(GpuBuffer&& _other) noexcept
-    {
-        for (size_t i = 0; i < bufferHandles.size(); ++i)
-        {
-            bufferHandles[i] = _other.bufferHandles[i];
-            _other.bufferHandles[i] = nullptr;
-        }
-        
-        return *this;
-    }
+    PC_CORE_API GpuBuffer& operator=(GpuBuffer&& _other) noexcept;
     
     PC_CORE_API GpuBuffer() = default;
 

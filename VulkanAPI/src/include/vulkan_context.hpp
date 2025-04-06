@@ -6,10 +6,7 @@
 #include "vulkan_gpu_allocator.hpp"
 
 namespace Vulkan
-{
-
-    constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-    
+{    
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
