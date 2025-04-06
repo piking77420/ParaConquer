@@ -23,6 +23,7 @@ include_directories(src/externals/include/Imgui)
 # Create the Core shared library
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_EXPORT)
+target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_API)
 
 
 # Include directories for Core
