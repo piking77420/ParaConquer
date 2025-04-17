@@ -12,6 +12,8 @@
 #include "world/transform.hpp"
 #include "rendering/render_passes/render_pass.hpp"
 
+#include <perf_region.hpp>
+
 #include "math/toolbox_typedef.hpp"
 
 using namespace PC_CORE;
@@ -19,6 +21,8 @@ using namespace PC_CORE;
 
 void Renderer::Init()
 {
+    PERF_REGION_SCOPED;
+
     m_RhiContext = Rhi::GetRhiContext();
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
@@ -100,6 +104,8 @@ void Renderer::Destroy()
 
 bool Renderer::BeginDraw(Window* _window)
 {
+    PERF_REGION_SCOPED;
+
     bool hasObtainSwapChian = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
     if (hasObtainSwapChian)
     {
@@ -116,6 +122,8 @@ bool Renderer::BeginDraw(Window* _window)
 
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
+    PERF_REGION_SCOPED;
+
     currentRenderingContext = &renderingContext;
     SceneBufferGPU& sceneBufferGpu = sceneBufferGPU;
 
@@ -141,7 +149,8 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 
 void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
-    
+    PERF_REGION_SCOPED;
+
     constexpr float far = 1.f;
     constexpr float near = 0.2f;
 
@@ -190,6 +199,8 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
 void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers,
                                       World* _world)
 {
+    PERF_REGION_SCOPED;
+
     m_CurrentWorld = _world;
 
     UpdateCameraUniformBuffer(renderingContext);
@@ -262,6 +273,8 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
 void Renderer::SwapBuffers(Window* _window)
 {
+    PERF_REGION_SCOPED;
+
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
     swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
     primaryCommandList->ExucuteFetchCommand();
@@ -280,6 +293,8 @@ void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderP
 
 void Renderer::QueryWorldData(World* world)
 {
+    PERF_REGION_SCOPED;
+
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->dirLightSignature])
     {
         QueryLightDirData(world->GetComponent<DirLight>(it), world->GetComponent<Transform>(it));
@@ -301,6 +316,8 @@ void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
 
 void Renderer::CreateForwardShader()
 {
+    PERF_REGION_SCOPED;
+
     constexpr RasterizerInfo rasterizerInfo =
     {
         .polygonMode = PolygonMode::Fill,
@@ -348,6 +365,8 @@ void Renderer::CreateForwardShader()
 
 void Renderer::CreateDrawQuadShader()
 {
+    PERF_REGION_SCOPED;
+
     constexpr RasterizerInfo rasterizerInfo =
     {
         .polygonMode = PolygonMode::Fill,
@@ -395,6 +414,8 @@ void Renderer::CreateDrawQuadShader()
 
 void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
 {
+    PERF_REGION_SCOPED;
+
     if (_staticMesh.material.expired() || _staticMesh.mesh.expired())
         return;
 
@@ -429,6 +450,8 @@ void Renderer::AtmoSpherePass()
 
 void Renderer::InitRenderSystem()
 {
+    PERF_REGION_SCOPED;
+
     rendererSystem = World::GetWorld()->RegisterSystem<RendererSystem>();
     
     rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(),true);

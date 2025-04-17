@@ -6,7 +6,6 @@
 #include "edit_world_window.hpp"
 #include "hierachy.hpp"
 #include "inspector.hpp"
-#include "profiler.hpp"
 #include "scene_button.hpp"
 #include "world_view_window.hpp"
 #include "time/core_time.hpp"
@@ -22,8 +21,22 @@
 #include <thread>
 #include <Imgui/imgui_internal.h>
 
+#include <perf_region.hpp>
+
+
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
+
+
+Editor::Editor()
+{
+	PROFILER_NOOP;
+}
+
+Editor::~Editor()
+{
+}
+
 
 namespace ImGui {
 
@@ -111,17 +124,20 @@ namespace ImGui {
 }
 void Editor::InitThridPartLib()
 {
+	PERF_REGION_SCOPED;
 	glslang_initialize_process();
 
 }
 
 void Editor::UnInitThridPartLib()
 {
+	PERF_REGION_SCOPED;
 	glslang_finalize_process();
 }
 
 void Editor::CompileShader()
 {
+	
 	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
 	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
@@ -140,6 +156,8 @@ void Editor::CompileShader()
 
 void Editor::Init()
 {
+	PERF_REGION_SCOPED;
+
 	InitThridPartLib();
 	CompileShader();
 	gameApp.Init();
@@ -161,6 +179,8 @@ void Editor::Init()
 
 void Editor::Destroy()
 {
+	PERF_REGION_SCOPED;
+
 	IMGUIContext.Destroy();
 
 	for (const EditorWindow* editorWindow : m_EditorWindows)
@@ -170,6 +190,8 @@ void Editor::Destroy()
 
 	UnInitThridPartLib();
 }
+
+
 
 struct dqdq
 {
@@ -302,6 +324,8 @@ std::shared_ptr<Material> m2;
 
 void Editor::InitTestScene()
 {
+	PERF_REGION_SCOPED;
+
 	m1 = std::make_shared<Material>("diamond_block_material.mat");
 	m2 = std::make_shared<Material>("emerauld_block_material.mat");
 
@@ -351,6 +375,8 @@ void Editor::Run(bool* _appShouldClose)
 {
 	while (!gameApp.window.ShouldClose())
 	{
+		PERF_REGION_SCOPED;
+
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
 		IMGUIContext.NewFrame();
@@ -370,6 +396,7 @@ void Editor::Run(bool* _appShouldClose)
 
 
 		gameApp.renderer.SwapBuffers(&gameApp.window);
+		PERF_FRAME_MARK;
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();
@@ -378,7 +405,6 @@ void Editor::Run(bool* _appShouldClose)
 void Editor::InitEditorWindows()
 {
 	m_EditorWindows.push_back(new EditWorldWindow(*this, "Scene"));
-	m_EditorWindows.push_back(new Profiler(*this, "Profiler"));
 	m_EditorWindows.push_back(new Inspector(*this, "Inspector"));
 	m_EditorWindows.push_back(new Hierachy(*this, "Hierachy"));
 	m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));

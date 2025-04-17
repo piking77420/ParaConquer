@@ -19,9 +19,9 @@ public:
     
     void Destroy();
 
-    Editor() = default;
+    Editor();
 
-    ~Editor() = default;
+    ~Editor();
     
     void InitTestScene();
     
