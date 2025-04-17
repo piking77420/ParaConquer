@@ -42,17 +42,23 @@ set(glslang_DEFAULT_RESOURCE_LIMIT debug ${VULKAN_LIBRARIES_PATH}/glslang-defaul
 target_link_libraries(${PROJECT_NAME} PRIVATE ${SPRIV_TOOL_OPT})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${glslang_DEFAULT_RESOURCE_LIMIT})
 
-#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/SPIRV-Tools-optd.lib )
-#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/glslang-default-resource-limitsd.lib )
-
-#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/SPIRV-Tools-opt.li )
-#target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES_PATH}/glslang-default-resource-limits.lib )
-
 #Copy Core DLL
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy_if_different 
     $<TARGET_FILE:Core> 
     $<TARGET_FILE_DIR:Editor>)
+
+if (PROFILING)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+    $<TARGET_FILE:Profiler> 
+    $<TARGET_FILE_DIR:Editor>)
+
+
+endif()
+
+
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Core)
 #target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)

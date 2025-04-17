@@ -44,6 +44,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE VulkanAPI)
 # Link glfw3.lib to Core
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_FILE}glfw3.lib)
 
+# Link Profiler.lib/Interface to Core 
+target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
+
+
+if (PROFILING)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_IMPORTS)
+endif()
 
 
 # share the header
