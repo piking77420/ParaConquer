@@ -1,7 +1,11 @@
-﻿#include <glslang/Include/glslang_c_interface.h>
+﻿#include <thread> 
+
+#include <perf_region.hpp>
+#include <glslang/Include/glslang_c_interface.h>
+#include <Imgui/imgui_internal.h>
+#include <Json/json.hpp>
 
 #include "editor.hpp"
-
 #include "asset_browser.hpp"
 #include "edit_world_window.hpp"
 #include "hierachy.hpp"
@@ -18,11 +22,20 @@
 #include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
 #include "serialize/serializer.h"
-#include <thread>
-#include <Imgui/imgui_internal.h>
 
-#include <perf_region.hpp>
-
+#include <windows.h>      // For common windows data types and function headers
+#define STRICT_TYPED_ITEMIDS
+#include <objbase.h>      // For COM headers
+#include <shobjidl.h>     // for IFileDialogEvents and IFileDialogControlEvents
+#include <shlwapi.h>
+#include <knownfolders.h> // for KnownFolder APIs/datatypes/function headers
+#include <propvarutil.h>  // for PROPVAR-related functions
+#include <propkey.h>      // for the Property key APIs/datatypes
+#include <propidl.h>      // for the Property System APIs
+#include <strsafe.h>      // for StringCchPrintfW
+#include <shtypes.h>      // for COMDLG_FILTERSPEC
+#include <new>
+#include <shobjidl.h>  // For IFileDialogEvents
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -137,7 +150,8 @@ void Editor::UnInitThridPartLib()
 
 void Editor::CompileShader()
 {
-	
+	PERF_REGION_SCOPED;
+
 	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
 	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
 
@@ -152,29 +166,109 @@ void Editor::CompileShader()
 	frag->CompileToSpriv();
 }
 
+void Editor::LookForEditorInit()
+{
+	namespace fs = std::filesystem;
+
+	// Look for editor Init or create one 
+
+	const std::filesystem::path workingDir = std::filesystem::current_path();
+	const std::string editorDataInitFile = workingDir.generic_string() + "/" + ParaConquerEditorInitFile;
+	const std::filesystem::path editorDataInitFilePath(editorDataInitFile);
+
+	if (!fs::exists(editorDataInitFilePath))
+	{
+		std::ofstream createFile(editorDataInitFile);
+
+		if (!createFile.is_open())
+		{
+			// error should be able to create file
+			exit(1);
+		}
+		createFile.close();
+	}
+
+	try
+	{
+		json j = json::parse(editorDataInitFile);
+
+		const std::string projectPath = j[EditorInitDataKeys[(uint8_t)EditorInitData::PROJECT_ABSOLUTE_PATH]];
+
+		if (projectPath.empty() || !fs::exists(std::filesystem::path(projectPath)))
+		{
+			BasicOpenFile();
+		}
+	}
+	catch (...)
+	{
+		// select A project folder
+		// to do import basic files
+		BasicOpenFile();
+	}
+	
+}
+
+void Editor::BasicOpenFile()
+{
+	std::wstring fileToOpen;
+	HRESULT hr = CoInitialize(NULL);
+	if (SUCCEEDED(hr))
+	{
+		IFileOpenDialog* pFileOpen = NULL;
+
+		// Create the FileOpenDialog object.
+		hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+			IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+		if (SUCCEEDED(hr))
+		{
+			// Show the Open dialog box.
+			hr = pFileOpen->Show(NULL);
+
+			// Get the file name from the dialog box.
+			if (SUCCEEDED(hr))
+			{
+				IShellItem* pItem;
+				hr = pFileOpen->GetResult(&pItem);
+				if (SUCCEEDED(hr))
+				{
+					PWSTR pszFilePath = NULL;
+					hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+					if (SUCCEEDED(hr))
+					{
+						// Display the file path in a message box
+						MessageBoxW(NULL, pszFilePath, L"Selected File", MB_OK);
+						CoTaskMemFree(pszFilePath);
+					}
+					pItem->Release();
+				}
+			}
+			pFileOpen->Release();
+		}
+		CoUninitialize();
+	}
+}
 
 
 void Editor::Init()
 {
 	PERF_REGION_SCOPED;
+	LookForEditorInit();
+
 
 	InitThridPartLib();
 	CompileShader();
 	gameApp.Init();
 
-
-
-	InitEditorWindows();
-	InitTestScene();
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		IMGUIContext.Render(cmd);
 		});
 
-	//Tbx::Vector3f y;
-	//Serializer::DeSerialize(&y, "TestSerilize.ser");
-
+	InitTestScene();
+	InitEditorWindows();
 }
 
 void Editor::Destroy()
@@ -183,23 +277,13 @@ void Editor::Destroy()
 
 	IMGUIContext.Destroy();
 
-	for (const EditorWindow* editorWindow : m_EditorWindows)
-		delete editorWindow;
+	for (auto& i: m_EditorWindows)
+		i.release();
 
 	gameApp.Destroy();
 
 	UnInitThridPartLib();
 }
-
-
-
-struct dqdq
-{
-	TypeId ds;
-
-	ComponentArray componentArray;
-};
-
 void Editor::UpdateEditorWindows()
 {
 	//static bool open = true;
@@ -305,7 +389,7 @@ void Editor::UpdateEditorWindows()
 
 	}
 
-	for (EditorWindow* editorWindow : m_EditorWindows)
+	for (auto& editorWindow : m_EditorWindows)
 	{
 		editorWindow->Begin();
 		editorWindow->Update();
@@ -382,19 +466,15 @@ void Editor::Run(bool* _appShouldClose)
 		IMGUIContext.NewFrame();
 		PC_CORE::Time::UpdateTime();
 
+		if (!gameApp.renderer.BeginDraw(&gameApp.window))
+			continue;
+		
 		UpdateEditorWindows();
-
 		gameApp.WorldTick();
 
-		if (!gameApp.renderer.BeginDraw(&gameApp.window))
-		{
-			continue;
-		}
-
-		for (EditorWindow* editorWindow : m_EditorWindows)
+		for (auto& editorWindow : m_EditorWindows)
 			editorWindow->Render();
-
-
+		
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
 	}
@@ -404,9 +484,9 @@ void Editor::Run(bool* _appShouldClose)
 
 void Editor::InitEditorWindows()
 {
-	m_EditorWindows.push_back(new EditWorldWindow(*this, "Scene"));
-	m_EditorWindows.push_back(new Inspector(*this, "Inspector"));
-	m_EditorWindows.push_back(new Hierachy(*this, "Hierachy"));
-	m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
-	m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
+	m_EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+	m_EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
+	m_EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
+	m_EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
+	m_EditorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
 }

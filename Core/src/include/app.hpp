@@ -12,7 +12,7 @@
 
 
 BEGIN_PCCORE
-	class App
+class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
@@ -25,8 +25,6 @@ public:
 
 	Renderer renderer;
 	
-	//ScriptingLua scriptingLua;
-
 	PhysicsWrapper physicsWrapper;
 	
 	World world;
@@ -44,9 +42,6 @@ public:
 	PC_CORE_API void WorldTick();
 	
 	PC_CORE_API static inline App* instance = nullptr;
-
-
-protected:
 };
 
 END_PCCORE

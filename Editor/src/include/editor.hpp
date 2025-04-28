@@ -11,6 +11,25 @@
 
 BEGIN_EDITOR_PCCORE
 
+enum struct EditorInitData : uint8_t 
+{
+    PROJECT_ABSOLUTE_PATH,
+    COUNT
+};
+
+constexpr std::array<const char*, (uint8_t)(EditorInitData::COUNT)> EditorInitDataKeys =
+{
+    "PROJECT_ABSOLUTE_PATH"
+};
+
+constexpr const char* ParaConquerProjectFileFormat = ".Prproject";
+constexpr const char* ParaConquerEditorInitFile = "editor.ini";
+
+struct EditorData
+{
+    std::string projectName;
+    std::filesystem::path projectPath;
+};
 
 class Editor
 {
@@ -34,8 +53,10 @@ public:
     void UpdateEditorWindows();
 
     PC_CORE::App gameApp;
+
+    EditorData editorData;
     
-    std::vector<EditorWindow*> m_EditorWindows;
+    std::vector<std::unique_ptr<EditorWindow>> m_EditorWindows;
 
     DockSpace dockSpace;
     
@@ -49,6 +70,12 @@ private:
     void UnInitThridPartLib();
 
     void CompileShader();
+
+    void LookForEditorInit();
+
+    void ParseEditorInit();
+
+    void BasicOpenFile();
 };
 
 END_PCCORE

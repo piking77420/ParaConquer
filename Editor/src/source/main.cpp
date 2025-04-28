@@ -33,65 +33,10 @@ void RelfectionHashingTest()
 
 #endif
 
-template <class Tag>
-struct stowed
-{
-    static typename Tag::type value;
-};
-template <class Tag>
-typename Tag::type stowed<Tag>::value;
-
-// Generate a static data member whose constructor initializes
-// stowed<Tag>::value.  This type will only be named in an explicit
-// instantiation, where it is legal to pass the address of a private
-// member.
-template <class Tag, typename Tag::type x>
-struct stow_private
-{
-    stow_private() { stowed<Tag>::value = x; }
-    static stow_private instance;
-};
-template <class Tag, typename Tag::type x>
-stow_private<Tag, x> stow_private<Tag, x>::instance;
-// ------- Usage -------
-// A demonstration of how to use the library, with explanation
-
-struct A
-{
-    A() : x("proof!") {}
-private:
-    char const* x;
-
-    int b = 2;
-};
-
-// A tag type for A::x.Each distinct private member you need to
-// access should have its own tag.  Each tag should contain a
-// nested ::type that is the corresponding pointer-to-member type.
-struct A_x { typedef char const* (A::* type); };
-
-// Explicit instantiation; the only place where it is legal to pass
-// the address of a private member.  Generates the static ::instance
-// that in turn initializes stowed<Tag>::value.
-template class stow_private<A_x, &A::x>;
-
-
-struct A_b { typedef int (A::* type); };
-
-
-template class stow_private<A_b, &A::b>;
-
-#define Delctype()
 
 
 int main(int argc, char* argv[])
 {
-    A a;
-    std::cout <<  a.*stowed<A_x>::value << std::endl;
-    std::cout << a.*stowed<A_b>::value << std::endl;
-    std::cout << typeid(decltype(stowed<A_x>::value)).name() << std::endl;
-
-
 #ifdef _DEBUG
     RelfectionHashingTest();
 #endif
