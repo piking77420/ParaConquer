@@ -339,7 +339,7 @@ void Renderer::CreateForwardShader()
         {
             ShaderStageType::VERTEX,
             "main_spv.vert"
-        },
+        },  
         {
             ShaderStageType::FRAGMENT,
             "main_spv.frag"

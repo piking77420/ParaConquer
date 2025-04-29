@@ -12,6 +12,12 @@
 
 
 BEGIN_PCCORE
+
+struct AppCreateInfo
+{
+	std::string appLogoPath;
+};
+
 class App
 {
 public:
@@ -29,7 +35,7 @@ public:
 	
 	World world;
 		
-	PC_CORE_API void Init();
+	PC_CORE_API void Init(const AppCreateInfo& _appCreateInfo);
 
 	PC_CORE_API void Destroy();
 	

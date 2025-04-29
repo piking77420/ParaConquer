@@ -6,7 +6,7 @@
 #include "core_header.hpp"
 #include "math/toolbox_typedef.hpp"
 
-constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
+constexpr const char* SHADER_CACHE_PATH = "shaderCache/";
 
 
 #define ALIGNAS_16 alignas(16)

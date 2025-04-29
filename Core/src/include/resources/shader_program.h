@@ -13,6 +13,7 @@
 
 BEGIN_PCCORE
 
+
 #pragma region Shader
 
 enum class ShaderStageType : size_t

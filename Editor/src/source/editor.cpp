@@ -137,6 +137,7 @@ namespace ImGui {
 }
 void Editor::InitThridPartLib()
 {
+	std::cout << "InitThridPartLib" << std::endl;
 	PERF_REGION_SCOPED;
 	glslang_initialize_process();
 
@@ -150,16 +151,20 @@ void Editor::UnInitThridPartLib()
 
 void Editor::CompileShader()
 {
+	std::cout << "CompileShader" << std::endl;
+
 	PERF_REGION_SCOPED;
 
-	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.vert");
+	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.frag");
 
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
 
-	vertex = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.vert");
-	frag = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.frag");
+	std::cout << "CompileShader 2" << std::endl;
+
+	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "shaders/draw_texture_screen_quad.vert");
+	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "shaders/draw_texture_screen_quad.frag");
 
 
 	vertex->CompileToSpriv();
@@ -259,7 +264,13 @@ void Editor::Init()
 
 	InitThridPartLib();
 	CompileShader();
-	gameApp.Init();
+
+	const AppCreateInfo appCreateInfo =
+	{
+		EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png"
+	};
+
+	gameApp.Init(appCreateInfo);
 
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 

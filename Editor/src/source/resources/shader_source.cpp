@@ -170,6 +170,8 @@ bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
 
 void ShaderSource::CompileToSpriv()
 {
+    std::cout << "CompileShader" << std::endl;
+
     std::string filePath = SHADER_CACHE_PATH + fs::path(name).filename().stem().generic_string() + "_spv" + extension;
     std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
     std::vector<char> sourceSpriv;
