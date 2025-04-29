@@ -137,8 +137,9 @@ namespace ImGui {
 }
 void Editor::InitThridPartLib()
 {
-	std::cout << "InitThridPartLib" << std::endl;
 	PERF_REGION_SCOPED;
+
+	PC_LOG("InitThridPartLib...")
 	glslang_initialize_process();
 
 }
@@ -151,17 +152,14 @@ void Editor::UnInitThridPartLib()
 
 void Editor::CompileShader()
 {
-	std::cout << "CompileShader" << std::endl;
-
 	PERF_REGION_SCOPED;
+	PC_LOG("CompileShader...")
 
 	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.vert");
 	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.frag");
 
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
-
-	std::cout << "CompileShader 2" << std::endl;
 
 	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "shaders/draw_texture_screen_quad.vert");
 	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "shaders/draw_texture_screen_quad.frag");
@@ -420,6 +418,7 @@ std::shared_ptr<Material> m2;
 void Editor::InitTestScene()
 {
 	PERF_REGION_SCOPED;
+	PC_LOG("InitTestScene...")
 
 	m1 = std::make_shared<Material>("diamond_block_material.mat");
 	m2 = std::make_shared<Material>("emerauld_block_material.mat");
@@ -495,6 +494,8 @@ void Editor::Run(bool* _appShouldClose)
 
 void Editor::InitEditorWindows()
 {
+	PC_LOG("InitEditorWindows...")
+
 	m_EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
 	m_EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
 	m_EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));

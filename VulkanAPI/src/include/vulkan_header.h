@@ -2,13 +2,11 @@
 
 #include <string>
 #include <iostream>
-
-
 #include <unordered_map>
 
 #include <vulkan/vulkan.hpp>
 
-
+#include "log.hpp"
 
 #ifdef VULKAN_DLL
 
@@ -81,39 +79,25 @@ static std::unordered_map<VkResult, std::string> ErrorDescriptions = {
 #define VK_CALL(x)  VK_CHECK_CALL(x)
 
 #ifdef NDEBUG
-#define VK_CHECK_CALL(x) VulkanCheckErrorStatus(x, __FILE__, __LINE__)
+#define VK_CHECK_CALL(x) VulkanCheckErrorStatus(x, __LINE__, __FUNCTION_NAME__, __FILENAME__)
 #else
-#define VK_CHECK_CALL(x) if constexpr (ENABLE_VALIDATION_LAYERS) VulkanCheckErrorStatus(x, __FILE__, __LINE__)
+#define VK_CHECK_CALL(x) if constexpr (ENABLE_VALIDATION_LAYERS) VulkanCheckErrorStatus(x, __LINE__, __FUNCTION_NAME__, __FILENAME__)
 #endif
     
     
-static bool VulkanCheckErrorStatus(vk::Result x, const char* file, int line)
+static bool VulkanCheckErrorStatus(vk::Result x, int _lign, const char* _func, const char* _file)
 {
     if (x != vk::Result::eSuccess)
     {
-        std::cout << "\033[1;31;49m **Vulkan Function Call Error** Description : \033[0m" << ErrorDescriptions[static_cast<VkResult>(x)] << " \033[2;90;49m [at Line : " << line << " in File : " << file << "\033[0m]" << std::endl;
+        PC_CORE::Log::Error("**Vulkan Function Call Error** Description : {}", ErrorDescriptions[static_cast<VkResult>(x)]);
+        PC_CORE::Log::PrintMetaData(_lign, _func, _file);
+
         return true;
     }
     else return false;
 }
 
-#define VK_LOG_SUCCESS(msg) std::cout << "\033[1;32m[VULKAN]\033[1;32m - SUCCESS : " << (msg) <<  " \033[0m\n";
 
-#define VK_LOG(...) std::cout , "\033[1;32m[VULKAN]\033[1;33m - LOG : " , __VA_ARGS__ , " \033[0m" , std::endl
-
-#define DEVICE VKLogicalDevice::GetDeviceManager()->GetLogicalDevice()
-
-template <typename T>
-static std::ostream& operator,(std::ostream& out, const T& t) {
-  out << t;
-  return out;
-}
-
-//overloaded version to handle all those special std::endl and others...
-static std::ostream& operator,(std::ostream& out, std::ostream&(*f)(std::ostream&)) {
-  out << f;
-  return out;
-}
  
     
 }

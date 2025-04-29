@@ -215,8 +215,7 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
     LookForSuitableDevices(vkPhysicalDevices, requestVulkanExtensions);
     *_extensionToEnable = requestVulkanExtensions;
 
-    std::string message = "Successfully created physical devices : " + GetPhysicalDevice().name;
-    PC_LOG(message)
+    PC_LOG("Successfully created physical devices : {}", GetPhysicalDevice().name);
 }
 
 int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& _physicalDevice,

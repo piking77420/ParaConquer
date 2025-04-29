@@ -43,7 +43,7 @@ void App::Destroy()
     ResourceManager::Destroy();
     PC_LOG("App Destroy")
 }
-
+    
 App::App()
 {
     instance = this;
