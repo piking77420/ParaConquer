@@ -16,7 +16,7 @@ public:
 
     SkyBoxType skyboxType = SkyBoxType::CubeMap;
     
-    Texture* texture = nullptr;
+    //Texture* texture = nullptr;
     
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
     

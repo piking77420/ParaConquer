@@ -1,17 +1,14 @@
 ﻿#pragma once
 
-#include "render_harware_interface/rhi_typedef.h"
+#include "core_header.hpp"
+#include "gbuffers.hpp"
+#include "low_renderer/frame_buffer.hpp"
 #include "math/matrix_transformation.hpp"
+#include "resources/texture.hpp"
+#include "low_renderer/descriptor_set.hpp"
 
 BEGIN_PCCORE
 
-enum class GraphicAPI
-{
-    NONE,
-    VULKAN,
-    DX3D12,
-    COUNT
-};
 
 
     struct LowLevelCamera
@@ -33,11 +30,13 @@ enum class GraphicAPI
         float deltaTime;
         float time;
         
-        FrameBufferHandle frameBufferHandle;
-        Tbx::Vector2f renderingContextSize;
+        std::shared_ptr<FrameBuffer> gbufferFrameBuffer;
+        std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
+        
+        PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
+        
+        Tbx::Vector2ui renderingContextSize;
     };
-
-
 
 
 END_PCCORE

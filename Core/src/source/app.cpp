@@ -4,26 +4,33 @@
 
 #include "log.hpp"
 #include "physics/sphere_collider.hpp"
-#include "rendering/light.hpp"
 #include "resources/resource_manager.hpp"
 
-#include "lua/lua.hpp"
 #include "time/core_time.hpp"
 
 
 using namespace PC_CORE;
+
+#define LOGO_PATH_WHITE "Logo/paraconquer_logo_white.png"
+#define LOGO_PATH_BLACK "Logo/paraconquer_logo_black.png"
 
 
 void App::Init()
 {
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window("Para Conquer Editor", "Icon/ParaConquerLogo.png");
-    renderer.InitRHiAndObject(GraphicAPI::VULKAN, &window);
+    window = Window("Para Conquer Editor", LOGO_PATH_BLACK);
 
-    // Need other init in order to init
+    const RenderHardwareInterfaceCreateInfo createInfo =
+        {
+        .GraphicsAPI = GraphicAPI::VULKAN,
+        .window = &window,
+        .appName = "Para Conquer Editor",
+        };
+    
+    rhi = Rhi(createInfo);
     ResourceManager::InitPath();
-    renderer.InitRenderResources();
+    renderer.Init();
     Time::Init();
     
     world.LoadSkyBox();
@@ -31,11 +38,12 @@ void App::Init()
 
 void App::Destroy()
 {
-    PC_LOG("App Destroy")
 
     world.skybox.Destroy();
-    ResourceManager::Destroy();
+    world.Destroy();
     renderer.Destroy();
+    ResourceManager::Destroy();
+    PC_LOG("App Destroy")
 }
 
 App::App()
@@ -44,31 +52,13 @@ App::App()
 }
 
 
-void App::Run()
+void App::WorldTick()
 {
-    /*
-    VulkanViewport vulkanViewport;
-
-    while (!windowHandle.ShouldClose())
-    {
-        windowHandle.PoolEvents();
-        PC_CORE::Time::UpdateTime();
-        HandleResize();
-        vulkanImgui.NewFrame();
-        MoveObject();
-        renderer.BeginFrame();
-        renderer.RenderViewPort(camera, vulkanViewport, world);
-        renderer.SwapBuffers();
-    } */  
-}
-
-void App::WorldLoop()
-{
-    world.sceneGraph.UpdateTransforms(&world.scene);
+    //world.sceneGraph.UpdateTransforms(&world.scene);
     
     if (world.begin)
     {
-        physicsWrapper.InitBodies(&world.scene);
+        //physicsWrapper.InitBodies(&world.scene);
         world.Begin();
         world.begin = false;
         world.run = true;
@@ -76,9 +66,9 @@ void App::WorldLoop()
     
     if (world.run)
     {
-        physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
+        //physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
         world.Update();
     }
-    world.sceneGraph.UpdateMatrix(&world.scene);
+    //world.sceneGraph.UpdateMatrix(&world.scene);
 }
 

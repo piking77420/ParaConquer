@@ -15,13 +15,13 @@ struct BoxCollider : public Component
 
     bool drawAABB = false;
     
-    Tbx::Vector3f size = Tbx::Vector3f(1.f);
+    Tbx::Vector3f extend = Tbx::Vector3f(0.5f, 0.5f, 0.5f);
     Tbx::Vector3f center;
 };
 REFLECT(BoxCollider, Component)
 REFLECT_MEMBER(BoxCollider, drawAABB)
 REFLECT_MEMBER(BoxCollider, draw)
-REFLECT_MEMBER(BoxCollider, size)
+REFLECT_MEMBER(BoxCollider, extend)
 REFLECT_MEMBER(BoxCollider, center)
 
 END_PCCORE

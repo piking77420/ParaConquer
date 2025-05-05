@@ -6,8 +6,9 @@
 
 #include <unordered_map>
 
-#include "vulkan_typedef.h"
-#include "rendering/render_harware_interface/rhi_typedef.h"
+#include <vulkan/vulkan.hpp>
+
+
 
 #ifdef VULKAN_DLL
 
@@ -26,40 +27,13 @@ constexpr bool ENABLE_VALIDATION_LAYERS = true;
 constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
+//https://community.khronos.org/t/questions-about-pushconstants/6923
+#define VULKAN_MAX_PUSH_CONSTANTS 128
 
-template <typename T, typename OBJ>
-T CastObjectToVkObject(OBJ _handle)
-{
-    if constexpr (std::is_pointer_v<T>)
-    {
-        using TValue = typename std::remove_pointer<T>::type;
-        constexpr bool IsConst = std::is_const_v<TValue>;
 
-        if constexpr (IsConst)
-        {
-            return reinterpret_cast<const T>(reinterpret_cast<const typename TValue::CType*>(_handle));
-        }
-        else
-        {
-            return reinterpret_cast<T>(reinterpret_cast<typename TValue::CType*>(_handle));
-        }
-    }
-    else
-    {
-        constexpr bool IsConst = std::is_const_v<T>;
-
-        if constexpr (IsConst)
-        {
-            return reinterpret_cast<const typename T::CType>(_handle);
-        }
-        else
-        {
-            return reinterpret_cast<typename T::CType>(_handle);
-        }
-
-    }
-    
-}
+constexpr std::array<const char*, 1> validationLayers = {
+    "VK_LAYER_KHRONOS_validation",
+};
 
 
 namespace Vulkan
@@ -106,8 +80,13 @@ static std::unordered_map<VkResult, std::string> ErrorDescriptions = {
 
 #define VK_CALL(x)  VK_CHECK_CALL(x)
 
+#ifdef NDEBUG
+#define VK_CHECK_CALL(x) VulkanCheckErrorStatus(x, __FILE__, __LINE__)
+#else
 #define VK_CHECK_CALL(x) if constexpr (ENABLE_VALIDATION_LAYERS) VulkanCheckErrorStatus(x, __FILE__, __LINE__)
-
+#endif
+    
+    
 static bool VulkanCheckErrorStatus(vk::Result x, const char* file, int line)
 {
     if (x != vk::Result::eSuccess)

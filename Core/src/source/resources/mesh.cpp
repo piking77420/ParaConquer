@@ -7,20 +7,38 @@
 #include "physics/physics_wrapper.hpp"
 
 
-//#include <OBJ_Loader.h>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
 using namespace PC_CORE;
 
-Mesh::Mesh(const fs::path& _path) : Resource(_path)
+void Mesh::Build()
 {
+    if (!pathToFile.empty())
+        LoadFromFile((fs::path)(pathToFile));
+}
+
+Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
+{
+    LoadFromFile(_path);
+}
+
+Mesh::~Mesh()
+{
+}
+
+
+void Mesh::LoadFromFile(const fs::path& _path)
+{
+    pathToFile = _path.generic_string();
+    extension = _path.extension().generic_string();
+
     uint32_t formatIndex = -1;
 
     std::vector<Vertex> verticies;
     std::vector<uint32_t> indicies;
 
-    if (!Resource::IsFormatValid(MeshSourceFormat, format, &formatIndex))
+    if (!IsFormatValid(MeshSourceFormat, extension, &formatIndex))
     {
         return;
     }
@@ -34,28 +52,9 @@ Mesh::Mesh(const fs::path& _path) : Resource(_path)
     default:;
     }
 
-    format = MeshSourceFormat.at(formatIndex);
-
-    nbrOfVertices = static_cast<uint32_t>(verticies.size());
-    nbrOfIndices = static_cast<uint32_t>(indicies.size());
-
-    vertexBuffer = VertexBuffer(verticies);
-    indexBuffer = IndexBuffer(indicies);
-}
-
-Mesh::~Mesh()
-{
-
-}
-
-uint32_t Mesh::GetNbrOfVerticies() const
-{
-    return nbrOfVertices;
-}
-
-uint32_t Mesh::GetNbrOfIndicies() const
-{
-    return nbrOfIndices;
+    extension = MeshSourceFormat.at(formatIndex);
+    vertexBuffer = VertexBuffer(verticies.data(), verticies.size() * sizeof(Vertex));
+    indexBuffer = IndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
 }
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
@@ -77,23 +76,23 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex{};
 
-            vertex.position = {
+            vertex.position = Tbx::Vector3f(
                 attrib.vertices[3 * index.vertex_index + 0],
                 attrib.vertices[3 * index.vertex_index + 1],
                 attrib.vertices[3 * index.vertex_index + 2]
-            };
+            );
 
-            vertex.normal = {
+            vertex.normal = Tbx::Vector3f(
                 attrib.vertices[3 * index.normal_index + 0],
                 attrib.vertices[3 * index.normal_index + 1],
                 attrib.vertices[3 * index.normal_index + 2]
-            };
+            );
 
 
-            vertex.textureCoord = {
+            vertex.textureCoord = Tbx::Vector2f(
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            };
+            );
 
             if (uniqueVertices.count(vertex) == 0) {
                 uniqueVertices[vertex] = static_cast<uint32_t>(_vertices.size());
@@ -104,37 +103,5 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
 
           
         }
-    }
-
-
-
-    /*
-    
-    objl::Loader Loader;
-
-    bool loadout = Loader.LoadFile(path.c_str());
-
-    if (!loadout)
-    {
-        return;
-    }
-    // to do make it for mutilpel mesh
-    for (int i = 0; i < 1; i++)
-    {
-        _vertices.resize(Loader.LoadedMeshes[i].Vertices.size());
-
-        // Copy one of the loaded meshes to be our current mesh
-        const objl::Mesh& curMesh = Loader.LoadedMeshes[i];
-        for (size_t i = 0; i < curMesh.Vertices.size(); i++)
-        {
-            
-            _vertices[i].position = Tbx::Vector3f(curMesh.Vertices[i].Position.X, curMesh.Vertices[i].Position.Y, curMesh.Vertices[i].Position.Z);
-            _vertices[i].normal = Tbx::Vector3f(curMesh.Vertices[i].Normal.X, curMesh.Vertices[i].Normal.Y, curMesh.Vertices[i].Normal.Z);
-            _vertices[i].textureCoord = Tbx::Vector2f(curMesh.Vertices[i].TextureCoordinate.X, curMesh.Vertices[i].TextureCoordinate.Y);
-        }
-        _indices = Loader.LoadedIndices;
-    } 
-    */
-
-        
+    }        
 }

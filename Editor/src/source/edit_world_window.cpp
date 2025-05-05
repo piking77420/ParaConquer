@@ -15,10 +15,9 @@ PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::str
 void PC_EDITOR_CORE::EditWorldWindow::Update()
 {
     WorldViewWindow::Update();
-    MoveCameraUpDate();
-    //if(ImGui::IsWindowFocused())
-      //  MoveCameraUpDate();
-
+    if(ImGui::IsWindowFocused())
+        MoveCameraUpDate();
+     
 }
 
 void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
@@ -60,9 +59,9 @@ void EditWorldWindow::RotateCamera(float _deltatime)
 
     camera.front = camera.front.Normalize();
     Tbx::Vector3f forward;
-    forward.x = std::cos(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
-    forward.y = std::sin(pitch * Deg2Rad);
-    forward.z = std::sin(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
+    forward.x = std::cos(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
+    forward.y = std::sin(pitch * Tbx::fDeg2Rad);
+    forward.z = std::sin(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
     
     camera.LookAt(camera.position + forward);
 }
@@ -70,40 +69,55 @@ void EditWorldWindow::RotateCamera(float _deltatime)
 void EditWorldWindow::CameratMovment(float _deltatime)
 {
     
-    Tbx::Vector3f addVector;
+    bool isPositionDirty = false;
+    Tbx::Vector3f addVector = Tbx::Vector3f::Zero();
     const Tbx::Vector3f right = Tbx::Vector3f::Cross(camera.front, camera.up);
     
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
         addVector += camera.front;
+        isPositionDirty = true;
     }
     if (ImGui::IsKeyDown(ImGuiKey_S))
     {
         addVector -= camera.front;
+        isPositionDirty = true;
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_A))
     {
         addVector -= right;
+        isPositionDirty = true;
+
     }
     if (ImGui::IsKeyDown(ImGuiKey_D))
     {
         addVector += right;
+        isPositionDirty = true;
+
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_Space))
     {
         addVector += camera.up;
+        isPositionDirty = true;
+
     }
     if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
     {
         addVector -= camera.up;
+        isPositionDirty = true;
+
     }
     
-    addVector = addVector.Normalize();  
+    addVector = addVector.Normalize();
+
+    if (!isPositionDirty)
+        return;
+
     cameraSpeed += addVector * _deltatime * cameraSpeedValue;
     camera.position += addVector * 0.5f * _deltatime * _deltatime + cameraSpeed * _deltatime;
-    cameraSpeed *= drag;
+    cameraSpeed *= pow(drag,_deltatime);
 }
 
 void EditWorldWindow::CameraChangeSpeed()

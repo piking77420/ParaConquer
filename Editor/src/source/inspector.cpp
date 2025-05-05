@@ -4,7 +4,15 @@
 #include "imgui_helper.h"
 #include <ImguiNodeEditor/imgui_node_editor.h>
 
+#include "resources/resource_manager.hpp"
+
 using namespace PC_EDITOR_CORE;
+
+static float maxf = std::numeric_limits<float>::max();
+static float minf = -maxf;
+static double maxd = std::numeric_limits<double>::max();
+static double mind = -maxd;
+
 
 
 Inspector::~Inspector()
@@ -14,40 +22,74 @@ Inspector::~Inspector()
 void Inspector::Update()
 {
     EditorWindow::Update();
-    
-    if(m_Editor->m_Selected == nullptr)
+
+
+    if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
         return;
 
-    m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
     Show();
     OnInput();
-    
 }
 
 Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
+    m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
 
+    
+    m_SpecialType =
+        {
+        &PC_CORE::Reflector::GetType<bool>(),
+        &PC_CORE::Reflector::GetType<char>(),
+        &PC_CORE::Reflector::GetType<wchar_t>(),
+        
+        &PC_CORE::Reflector::GetType<int>(),
+        &PC_CORE::Reflector::GetType<float>(),
+        &PC_CORE::Reflector::GetType<double>(),
+        
+        &PC_CORE::Reflector::GetType<uint16_t>(),
+        &PC_CORE::Reflector::GetType<uint32_t>(),
+        &PC_CORE::Reflector::GetType<uint64_t>(),
+        
+        &PC_CORE::Reflector::GetType<std::string>(),
+        &PC_CORE::Reflector::GetType<std::wstring>(),
+        
+        &PC_CORE::Reflector::GetType<Tbx::Vector2f>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector3f>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector4f>(),
+        
+        &PC_CORE::Reflector::GetType<Tbx::Vector2<double>>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector3<double>>(),
+        &PC_CORE::Reflector::GetType<Tbx::Vector4<double>>(),
+        
+        &PC_CORE::Reflector::GetType<Tbx::Quaternionf>(),
+        &PC_CORE::Reflector::GetType<Tbx::Quaterniond>(),
+        &PC_CORE::Reflector::GetType<PC_CORE::Rotation>(),
+        };
+    
 }
 
 void Inspector::Show()
 {
-    PC_CORE::Scene* scene = &m_Editor->world.scene;
-    PC_CORE::Entity* selected = m_Editor->m_Selected;
-    
-    
-    std::string* string = &selected->name;
+    /*
+    PC_CORE::EntityManager& entityManager = PC_CORE::World::GetWorld()->entityManager;
+    PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
+
+
+    std::string* string = &entityManager.GetEntityName(selectedId);
     ImGui::PushID("EntityNameInput");
     ImGui::InputText("##EntityName", string->data(), string->size());
     ImGui::PopID();
 
+
     for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
     {
-        const uint32_t currentKeyComponent = m_ReflectedTypes[i]->HashKey;
+        const uint32_t currentKeyComponent = m_ReflectedTypes[i]->typeId;
 
-        if (!scene->HasComponent(selected, currentKeyComponent))
+        if (!entityManager.HasComponent(currentKeyComponent, selectedId))
             continue;
 
-        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(scene->GetComponent(selected, currentKeyComponent));
+        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(entityManager.GetComponent(
+            currentKeyComponent, selectedId));
         auto reflectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
 
         const char* componentName = m_ReflectedTypes[i]->name.c_str();
@@ -55,151 +97,287 @@ void Inspector::Show()
         ImGui::Spacing();
 
         ImGui::PushID(static_cast<int>(currentKeyComponent));
+        ShowReflectType(reinterpret_cast<uint8_t*>(component), *m_ReflectedTypes[i]);
+        ImGui::Spacing();
 
-        for (size_t j = 0; j < reflectedMember.members.size(); j++)
+        
+
+        if (ImGui::SmallButton("Delete Component"))
         {
-            PC_CORE::Members& m = reflectedMember.members[j];
-            ImGui::PushID(static_cast<int>(currentKeyComponent + j));
-            ShowReflectedType(component, m);
-            ImGui::PopID();
-            ImGui::Spacing();
+            //entityManager.RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
+            //m_Editor->world.scene.RemoveComponent(_entity, _componentId);
         }
 
-        DeleteButton(m_Editor->m_Selected, m_ReflectedTypes[i]->HashKey);
-
-        ImGui::PopID(); 
-    }
-    
+        ImGui::PopID();
+    }*/
 }
 
 void Inspector::OnInput()
 {
-    
     if (ButtonCenteredOnLine("Add Component"))
     {
         ImGui::OpenPopup("Components");
     }
 
-    
+
     ImGui::SameLine();
     if (ImGui::BeginPopup("Components"))
     {
-        
         ImGui::SeparatorText("Component");
-        for (auto& m_ReflectedType : m_ReflectedTypes)
+        for (auto& type : m_ReflectedTypes)
         {
-            if (ImGui::Selectable(m_ReflectedType->name.c_str()))
+            if (ImGui::Selectable(type->name.c_str()))
             {
-                if (PC_CORE::World::currentWorld != nullptr)
-                {
-                    PC_CORE::World::currentWorld->scene.AddComponent(m_Editor->m_Selected, m_ReflectedType->HashKey);
-                }
-            } 
+                if (PC_CORE::World::GetWorld() == nullptr)
+                    continue;
+
+                //PC_CORE::World::GetWorld()->entityManager.AddComponent(type->typeId, m_Editor->m_SelectedEntityId);
+            }
         }
-            
+
         ImGui::EndPopup();
     }
+}
+
+
+
+void Inspector::ShowReflectType(uint8_t* _typePtr ,const PC_CORE::ReflectedType& _reflectedType)
+{
+    // TO DO ADD MEMEBER TO CHIELD FORM BASE
+    for (size_t j = 0; j < _reflectedType.metaData.members.size(); j++)
+    {
+        const PC_CORE::Members& m = _reflectedType.metaData.members[j];
+        ImGui::PushID(static_cast<int>(_reflectedType.typeId + j));
+        ShowMember(static_cast<uint8_t*>(_typePtr) + m.offset, m);
+        ImGui::PopID();
+        ImGui::Spacing();
+    }
+}
+
+void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
+{
+    const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_member.typeKey);
+    const uintmax_t typeFlag = type.typeFlags;
+    const uintmax_t& memberFlag = _member.memberFlag;
+
+    /*
+    if (IsShowable(type.typeId))
+    {
+        HandleShowAble(_memberPtr, type, _member);
+        return;
+    }
+    if (typeFlag & PC_CORE::TypeFlagBits::PTR)
+    {
+        // only for little
+        uint64_t ptr = (uint64_t)(*reinterpret_cast<uint64_t*>(_memberPtr));
+        ImGui::Text("Address %lld", ptr);
+        HandlePtr(_memberPtr, type, _member);
+    }
+    if (typeFlag & PC_CORE::TypeFlagBits::COMPOSITE)
+    {
+        for (auto& member : type.metaData.members)
+        {
+            ShowMember(_memberPtr + member.offset, member);
+        }
+    }*/
     
 }
-void Inspector::ShowReflectedType(void* begin, const PC_CORE::Members& _members)
-{
-    
-    void* dataPosition = static_cast<char*>(begin) + _members.offset;
-    const char* membersName = _members.membersName.c_str();
-    const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_members.typeKey);
 
-    if (type.typeInfo.typeInfoFlags & PC_CORE::TypeFlag::COMPOSITE)
-    {
-        for (const PC_CORE::Members& m : type.members)
+bool Inspector::IsShowable(PC_CORE::TypeId type_id)
+{
+    auto it = std::find_if(
+        m_SpecialType.begin(), m_SpecialType.end(), 
+        [type_id](const PC_CORE::ReflectedType* reflectedType)
         {
-            void* dataPosMember = static_cast<uint8_t*>(dataPosition) + m.offset;
-            ImGui::PushID((m.membersName).c_str());
-            ShowReflectedType(dataPosMember, m);
-            ImGui::PopID();
-            ImGui::Spacing();
+            return reflectedType->typeId == type_id; // Assuming GetTypeId() returns TypeId
+        });
+
+    return it != m_SpecialType.end();
+}
+
+void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type, const PC_CORE::Members& _typeAsMember)
+{
+    const PC_CORE::TypeId id = type.typeId;
+
+    if (PC_CORE::Reflector::IsTypeIdIs<bool>(id))
+    {
+        bool* value = reinterpret_cast<bool*>(ptr);
+        ImGui::Checkbox(_typeAsMember.membersName.c_str(), value);
+    }
+    if (PC_CORE::Reflector::IsTypeIdIs<wchar_t>(id))
+    {
+        
+    }
+    if (PC_CORE::Reflector::IsTypeIdIs<int>(id))
+    {
+        int* value = reinterpret_cast<int*>(ptr);
+        ImGui::DragInt(_typeAsMember.membersName.c_str(), value);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<float>(id))
+    {
+        float* value = reinterpret_cast<float*>(ptr);
+        ImGui::DragFloat(_typeAsMember.membersName.c_str(), value);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<double>(id))
+    {
+        double* value = reinterpret_cast<double*>(ptr);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, value, sizeof(float), 0.1, &mind, &maxf);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<uint16_t>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<uint32_t>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<uint64_t>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<std::string>(id))
+    {
+        std::string* value = reinterpret_cast<std::string*>(ptr);
+        ImGui::InputText("##EntityName", value->data(), value->size());
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<std::wstring>(id))
+    {
+        
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2f>(id))
+    {
+        Tbx::Vector2f* vec = reinterpret_cast<Tbx::Vector2f*>(ptr);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector2d) / sizeof(float), 0.1, &minf, &maxf);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2d>(id))
+    {
+        Tbx::Vector2d* vec = reinterpret_cast<Tbx::Vector2d*>(ptr);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector2d) / sizeof(double), 0.1, &mind, &maxd);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3f>(id))
+    {
+        Tbx::Vector3f* vec = reinterpret_cast<Tbx::Vector3f*>(ptr);
+        if (_typeAsMember.memberFlag & PC_CORE::MemberEnumFlag::COLOR)
+        {
+            ImGui::ColorPicker3(_typeAsMember.membersName.c_str(), vec->GetPtr());
+        }
+        else
+        {
+            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector3f) / sizeof(float), 0.1, &minf, &maxf);
         }
     }
-    else if (type.typeInfo.typeInfoFlags & PC_CORE::TypeFlag::ARRAY)
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3d>(id))
     {
-       
+        Tbx::Vector3d* vec = reinterpret_cast<Tbx::Vector3d*>(ptr);
+        // https://github.com/ocornut/imgui/issues/643
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1, &mind, &maxd);
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4f>(id))
+    {
+        Tbx::Vector4f* vec = reinterpret_cast<Tbx::Vector4f*>(ptr);
+        if (_typeAsMember.memberFlag & PC_CORE::MemberEnumFlag::COLOR)
+        {
+            ImGui::ColorPicker4(_typeAsMember.membersName.c_str(), vec->GetPtr());
+        }
+        else
+        {
+            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector4f) / sizeof(float), 0.1, &minf, &maxf);
+        }
+    }
+    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4d>(id))
+    {
+        Tbx::Vector4d* vec = reinterpret_cast<Tbx::Vector4d*>(ptr);
+        // https://github.com/ocornut/imgui/issues/643
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector4d) / sizeof(double), 0.1, &mind, &maxd);
+    }
+    else if (type == PC_CORE::Reflector::GetType<Tbx::Quaternionf>())
+    {
+        
+    }else if (type == PC_CORE::Reflector::GetType<Tbx::Quaterniond>())
+    {
+        
+    }
+    else if (type == PC_CORE::Reflector::GetType<PC_CORE::Rotation>())
+    {
+        PC_CORE::Rotation& rotation = *reinterpret_cast<PC_CORE::Rotation*>(ptr);
+
+        ImGui::DragScalarN("Rotation", ImGuiDataType_::ImGuiDataType_Double, rotation.eulerAngles.GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1 * M_PI_4, &mind, &maxd);
+        if (ImGui::IsItemEdited())
+        {
+            rotation.quaternion =  Tbx::Quaterniond::FromEuler(rotation.eulerAngles).Normalize();
+        }
     }
     else
     {
-        switch (type.typeInfo.dataNature)
-        {
-        case PC_CORE::DataNature::UNKNOWN:
-            break;
-        case PC_CORE::DataNature::BOOL:
-            ImGui::Checkbox(membersName, static_cast<bool*>(dataPosition));
-            break;
-        case PC_CORE::DataNature::INT:
-            ImGui::DragInt(membersName, static_cast<int*>(dataPosition));
-            break;
-        case PC_CORE::DataNature::UINT:
-            ImGui::DragInt(membersName, static_cast<int*>(dataPosition),0.1, 0);
-            break;
-        case PC_CORE::DataNature::FLOAT:
-            ImGui::DragFloat(membersName, static_cast<float*>(dataPosition),0.1, 0);
-            break;
-        case PC_CORE::DataNature::DOUBLE:
-            //ImGui::DragFloat(membersName, static_cast<double*>(dataPosition),1, 0);
-                break;
-        case PC_CORE::DataNature::VEC2:
-            ImGui::DragFloat2(membersName, static_cast<float*>(dataPosition),0.1, 0);
-            break;
-        case PC_CORE::DataNature::VEC3:
-            if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
-            {
-                ImGui::ColorPicker3(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
-            }
-            else
-            {
-                ImGui::DragFloat3(membersName, static_cast<float*>(dataPosition),0.1, 0);
-            }
-            break;
-        case PC_CORE::DataNature::VEC4:
-        case PC_CORE::DataNature::QUAT:
-            if (_members.enumFlag & PC_CORE::MemberEnumFlag::COLOR)
-            {
-                ImGui::ColorPicker4(membersName, static_cast<float*>(dataPosition),ImGuiColorEditFlags_PickerHueWheel);
-            }
-            else
-            {
-                ImGui::DragFloat4(membersName, static_cast<float*>(dataPosition),0.1, 0);
-            }
-            break;
-        case PC_CORE::DataNature::STRING :
-            {
-             
-                std::string* string = static_cast<std::string*>(dataPosition);
-                ImGui::InputText(membersName, string->data(), string->size());
-                break;   
-            }
-        case PC_CORE::DataNature::COUNT:
-            {
-                
-            }
-            break;
-        default: ;
-        }
         
     }
+
     
 }
 
-    
-void Inspector::DeleteButton(PC_CORE::Entity* _entity, uint32_t _componentId)
+void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, const PC_CORE::Members& _typeAsMember)
 {
-    
-    if (ImGui::SmallButton("Delete Component"))
+    static bool showSelectResourceMenue = false;
+    static std::string currentSelectedMember;
+
+    if (showSelectResourceMenue == false)
     {
-        m_Editor->world.scene.RemoveComponent(_entity, _componentId);
+        currentSelectedMember.clear();
+    }
+        // TO DO HANDLE SHARED PTR
+    if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type)))
+    {
+        PC_CORE::Resource** doublePtr = reinterpret_cast<PC_CORE::Resource**>(ptr);
+
+        PC_CORE::Resource* resource = *doublePtr;
+
+        ImGui::PushID(_typeAsMember.membersName.c_str());
+
+        if (resource == nullptr)
+        {
+            ImGui::Text("%s is null", _typeAsMember.membersName.c_str());
+        }
+        else
+        {
+            ImGui::Text("%s = %s", _typeAsMember.membersName.c_str(),  resource->name.c_str());
+        }
+
+        if (ImGui::Button("Select"))
+        {
+            showSelectResourceMenue = true;
+            currentSelectedMember = _typeAsMember.membersName;
+        }
+        ImGui::PopID();
+
+        if (showSelectResourceMenue && currentSelectedMember == _typeAsMember.membersName)
+        {
+
+            ImGui::Begin("Select",&showSelectResourceMenue);
+
+            auto l = [&](std::shared_ptr<PC_CORE::Resource> currentResource)
+            {
+                std::string guiidS = (std::string)currentResource->guid;
+
+                ImGui::PushID(guiidS.c_str());
+
+                if (ImGui::Button(currentResource->name.c_str()))
+                {
+                  //  *doublePtr = currentResource;
+                }
+                ImGui::PopID();
+            };
+
+            if (ImGui::Button("Set to Null"))
+            {
+                *doublePtr = nullptr;
+            }
+            
+            // remove the type of the pointer
+            PC_CORE::ResourceManager::ForEach( type.metaData.typeNatureMetaData.metaDataType.resourceRef.type, l);
+            
+            ImGui::End();
+
+        }
+
     }
 }
-
-void Inspector::PrintArray(void* begin, const PC_CORE::Members& _members)
-{
-    
-}
-
-

@@ -10,13 +10,13 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
     {
     case PC_CORE::RHIFormat::UNDEFINED:
         return vk::Format::eUndefined;
-        
+
     case PC_CORE::RHIFormat::R4G4_UNORM_PACK8:
         return vk::Format::eR4G4UnormPack8;
-        
+
     case PC_CORE::RHIFormat::R4G4B4A4_UNORM_PACK16:
         return vk::Format::eR4G4UnormPack8;
-        
+
     case PC_CORE::RHIFormat::B4G4R4A4_UNORM_PACK16:
         return vk::Format::eB4G4R4A4UnormPack16;
 
@@ -36,34 +36,34 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Unorm;
 
     case PC_CORE::RHIFormat::R8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Snorm;
 
     case PC_CORE::RHIFormat::R8_USCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Uscaled;
 
     case PC_CORE::RHIFormat::R8_SSCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Sscaled;
 
     case PC_CORE::RHIFormat::R8_UINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Uint;
 
     case PC_CORE::RHIFormat::R8_SINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Sint;
 
     case PC_CORE::RHIFormat::R8_SRGB:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8Srgb;
 
     case PC_CORE::RHIFormat::R8G8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Unorm;
 
     case PC_CORE::RHIFormat::R8G8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Snorm;
 
     case PC_CORE::RHIFormat::R8G8_USCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Uscaled;
 
     case PC_CORE::RHIFormat::R8G8_SSCALED:
         return vk::Format::eUndefined;
@@ -75,7 +75,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8_SRGB:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Srgb;
 
     case PC_CORE::RHIFormat::R8G8B8_UNORM:
         return vk::Format::eUndefined;
@@ -96,7 +96,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8B8_SRGB:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Srgb;
 
     case PC_CORE::RHIFormat::B8G8R8_UNORM:
         return vk::Format::eUndefined;
@@ -120,7 +120,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8B8A8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8A8Unorm;
 
     case PC_CORE::RHIFormat::R8G8B8A8_SNORM:
         return vk::Format::eUndefined;
@@ -387,10 +387,10 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::D32_SFLOAT:
-        return vk::Format::eUndefined;
+        return vk::Format::eD32Sfloat;
 
     case PC_CORE::RHIFormat::S8_UINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eS8Uint;
 
     case PC_CORE::RHIFormat::D16_UNORM_S8_UINT:
         return vk::Format::eUndefined;
@@ -766,6 +766,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 }
 #pragma endregion Format
 
+/*
 vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType)
 {
     vk::DescriptorType result = {};
@@ -828,38 +829,8 @@ vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _de
     }
 
     return result;
-}
+}*/
 
-vk::ShaderStageFlagBits Vulkan::RHIShaderStageToVulkan(const std::vector<PC_CORE::ShaderStageType>& _shaderStages)
-{
-    int result = {};
-    for (auto shaderStage : _shaderStages)
-    {
-        switch (shaderStage)
-        {
-        case PC_CORE::ShaderStageType::VERTEX:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eVertex);
-            break;
-        case PC_CORE::ShaderStageType::FRAGMENT:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eFragment);
-            break;
-        case PC_CORE::ShaderStageType::GEOMETRY:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eGeometry);
-            break;
-        case PC_CORE::ShaderStageType::TESSELATION:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eTessellationControl);
-            break;
-        case PC_CORE::ShaderStageType::COMPUTE:
-            result |= static_cast<int>(vk::ShaderStageFlagBits::eCompute);
-            break;
-        case PC_CORE::ShaderStageType::COUNT:
-            break;
-        default: ;
-        }
-    }
-
-    return static_cast<vk::ShaderStageFlagBits>(result);
-}
 
 vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
     PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
@@ -873,41 +844,6 @@ vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
     case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
         return vk::PipelineBindPoint::eRayTracingKHR;
     }
-}
-
-vk::BufferUsageFlags Vulkan::GetVulkanUsage(PC_CORE::GPU_BUFFER_USAGE usage)
-{
-    vk::BufferUsageFlags result = {};
-
-    switch (usage)
-    {
-   
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::VERTEX:
-        result |= vk::BufferUsageFlagBits::eVertexBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::INDEX:
-        result |= vk::BufferUsageFlagBits::eIndexBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::UNIFORM:
-        result |= vk::BufferUsageFlagBits::eUniformBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::DYNAMIC_UNIFORM:
-        result |= vk::BufferUsageFlagBits::eUniformBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::SHADER_STORAGE:
-        result |= vk::BufferUsageFlagBits::eStorageBuffer;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::TRANSFERT_SRC:
-        result |= vk::BufferUsageFlagBits::eTransferSrc;
-        break;
-    case PC_CORE::GPU_BUFFER_USAGE::NONE:
-    case PC_CORE::GPU_BUFFER_USAGE::COUNT:
-        throw std::invalid_argument("Invalid GPU buffer usage");
-        break;
-    default: ;
-    }
-    return result;
 }
 
 
@@ -926,60 +862,6 @@ vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _
     }
 }
 
-vk::CommandPoolCreateFlagBits Vulkan::CommandPoolCreateFlagBitsToVulkan(
-    PC_CORE::CommandPoolBufferFlag _flag)
-{
-    vk::CommandPoolCreateFlagBits commandPoolCreateFlagBits{};
-
-    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_RESET)
-        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-
-    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_TRANSIENT)
-        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eTransient;
-
-    if (_flag & PC_CORE::COMMAND_POOL_BUFFER_PROTECTED)
-        commandPoolCreateFlagBits = vk::CommandPoolCreateFlagBits::eProtected;
-
-    return commandPoolCreateFlagBits;
-}
-
-uint32_t Vulkan::GetQueueFamiliesIndexFromType(VulkanContext* _context, PC_CORE::QueuType queueType)
-{
-    uint32_t queueFamiliesIndex = 0;
-
-    if (queueType & PC_CORE::QueuType::GRAPHICS && queueType & PC_CORE::QueuType::TRANSFERT)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
-    }
-    else if (queueType & PC_CORE::QueuType::TRANSFERT)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.transferFamily;
-    }
-    else if (queueType & PC_CORE::QueuType::GRAPHICS)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.graphicsFamily;
-    }
-    else if (queueType & PC_CORE::QueuType::COMPUTE)
-    {
-        queueFamiliesIndex = _context->queuFamiliesIndicies.computeFamily;
-    }
-
-    return queueFamiliesIndex;
-}
-
-vk::ImageTiling Vulkan::RHiImageToVkImageTiling(PC_CORE::ImageTiling _imageTiling)
-{
-    switch (_imageTiling)
-    {
-    case PC_CORE::ImageTiling::IMAGE_TILING_OPTIMAL:
-        return vk::ImageTiling::eOptimal;
-    case PC_CORE::ImageTiling::IMAGE_TILING_LINEAR:
-        return vk::ImageTiling::eLinear;
-    case PC_CORE::ImageTiling::IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT:
-        return vk::ImageTiling::eDrmFormatModifierEXT;
-    default: ;
-    }
-}
 
 vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 {
@@ -1004,72 +886,6 @@ vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 }
 
 
-vk::ImageLayout Vulkan::RHIToVKImageLayout(PC_CORE::ImageLayout _imageLayout)
-{
-    switch (_imageLayout)
-    {
-    case PC_CORE::LAYOUT_UNDEFINED:
-        return vk::ImageLayout::eUndefined;
-    case PC_CORE::LAYOUT_GENERAL:
-        return vk::ImageLayout::eGeneral;
-    case PC_CORE::LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eColorAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
-    case PC_CORE::LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eShaderReadOnlyOptimal;
-    case PC_CORE::LAYOUT_TRANSFER_SRC_OPTIMAL:
-        return vk::ImageLayout::eTransferSrcOptimal;
-    case PC_CORE::LAYOUT_TRANSFER_DST_OPTIMAL:
-        return vk::ImageLayout::eTransferDstOptimal;
-    case PC_CORE::LAYOUT_PREINITIALIZED:
-        return vk::ImageLayout::ePreinitialized;
-    case PC_CORE::LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal;
-    case PC_CORE::LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eDepthAttachmentOptimal;
-    case PC_CORE::LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eDepthReadOnlyOptimal;
-    case PC_CORE::LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eStencilAttachmentOptimal;
-    case PC_CORE::LAYOUT_READ_ONLY_OPTIMAL:
-        return vk::ImageLayout::eReadOnlyOptimal;
-    case PC_CORE::LAYOUT_ATTACHMENT_OPTIMAL:
-        return vk::ImageLayout::eAttachmentOptimal;
-    case PC_CORE::LAYOUT_PRESENT_SRC_KHR:
-        return vk::ImageLayout::eSharedPresentKHR;
-    case PC_CORE::LAYOUT_VIDEO_DECODE_DST_KHR:
-        return vk::ImageLayout::eVideoDecodeDstKHR;
-    case PC_CORE::LAYOUT_VIDEO_DECODE_SRC_KHR:
-        return vk::ImageLayout::eVideoDecodeSrcKHR;
-    case PC_CORE::LAYOUT_VIDEO_DECODE_DPB_KHR:
-        return vk::ImageLayout::eVideoDecodeDpbKHR;
-    case PC_CORE::LAYOUT_SHARED_PRESENT_KHR:
-        return vk::ImageLayout::eSharedPresentKHR;
-    case PC_CORE::LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
-        return vk::ImageLayout::eFragmentDensityMapOptimalEXT;
-    case PC_CORE::LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-        return vk::ImageLayout::eFragmentShadingRateAttachmentOptimalKHR;
-    case PC_CORE::LAYOUT_RENDERING_LOCAL_READ_KHR:
-        return vk::ImageLayout::eRenderingLocalReadKHR;
-    case PC_CORE::LAYOUT_VIDEO_ENCODE_DST_KHR:
-        return vk::ImageLayout::eVideoEncodeDstKHR;
-    case PC_CORE::LAYOUT_VIDEO_ENCODE_SRC_KHR:
-        return vk::ImageLayout::eVideoEncodeSrcKHR;
-    case PC_CORE::LAYOUT_VIDEO_ENCODE_DPB_KHR:
-        return vk::ImageLayout::eVideoEncodeDpbKHR;
-    case PC_CORE::LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
-        return vk::ImageLayout::eAttachmentFeedbackLoopOptimalEXT;
-    default: ;
-    }
-}
-
 vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
 {
     switch (_imageViewType)
@@ -1093,32 +909,6 @@ vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _
     throw std::runtime_error("Unknown ImageViewType");
 }
 
-vk::SamplerCreateFlags Vulkan::RHIToVulkanSamplerCreateInfoFlags(PC_CORE::SamplerCreateInfoFlags _createInfoFlags)
-{
-    vk::SamplerCreateFlags samplerCreateInfo = {};
-    if (_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::SUBSAMPLED_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eSubsampledEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eDescriptorBufferCaptureReplayEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::NON_SEAMLESS_CUBE_MAP_BIT_EXT)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eNonSeamlessCubeMapEXT;
-    }
-    else if(_createInfoFlags & PC_CORE::SamplerCreateInfoFlags::IMAGE_PROCESSING_BIT_QCOM)
-    {
-        samplerCreateInfo |= vk::SamplerCreateFlagBits::eImageProcessingQCOM;
-    }
-    
-    return samplerCreateInfo;
-}
 
 vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
 {
@@ -1133,7 +923,7 @@ vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
     case PC_CORE::Filter::CUBIC_EXT:
         return vk::Filter::eLinear;
     }
-    
+
     throw std::runtime_error("Unknown Filter");
 }
 
@@ -1146,8 +936,8 @@ vk::SamplerMipmapMode Vulkan::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode 
     case PC_CORE::SamplerMipmapMode::LINEAR:
         return vk::SamplerMipmapMode::eLinear;
     }
-    
-    
+
+
     throw std::runtime_error("Unknown SamplerMipmapMode");
 }
 
@@ -1166,7 +956,7 @@ vk::SamplerAddressMode Vulkan::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAdd
     case PC_CORE::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE:
         return vk::SamplerAddressMode::eMirrorClampToEdge;
     }
-    
+
     throw std::runtime_error("Unknown SamplerAddressMode");
 }
 
@@ -1237,60 +1027,127 @@ vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode
     throw std::runtime_error("Unknown PolygonMode");
 }
 
-vk::ImageAspectFlags Vulkan::RhiTextureAspectMaskToVulkan(PC_CORE::TextureAspect _textureAspect)
+
+vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage)
 {
-    vk::ImageAspectFlags flags = {};
-    
-    if (_textureAspect & PC_CORE::TextureAspect::COLOR)
+    switch (_shaderStage)
     {
-        flags |= vk::ImageAspectFlagBits::eColor;
+    case PC_CORE::ShaderStageType::VERTEX:
+        return vk::ShaderStageFlagBits::eVertex;
+    case PC_CORE::ShaderStageType::TESSCONTROL:
+        return vk::ShaderStageFlagBits::eTessellationControl;
+    case PC_CORE::ShaderStageType::TESSEVALUATION:
+        return vk::ShaderStageFlagBits::eTessellationEvaluation;
+    case PC_CORE::ShaderStageType::GEOMETRY:
+        return vk::ShaderStageFlagBits::eGeometry;
+    case PC_CORE::ShaderStageType::FRAGMENT:
+        return vk::ShaderStageFlagBits::eFragment;
+    case PC_CORE::ShaderStageType::COMPUTE:
+        return vk::ShaderStageFlagBits::eCompute;
+    case PC_CORE::ShaderStageType::RAYGEN:
+        return vk::ShaderStageFlagBits::eRaygenNV;
+    case PC_CORE::ShaderStageType::INTERSECT:
+        return vk::ShaderStageFlagBits::eIntersectionNV;
+    case PC_CORE::ShaderStageType::ANYHIT:
+        return vk::ShaderStageFlagBits::eAnyHitNV;
+    case PC_CORE::ShaderStageType::CLOSESTHIT:
+        return vk::ShaderStageFlagBits::eClosestHitNV;
+    case PC_CORE::ShaderStageType::MISS:
+        return vk::ShaderStageFlagBits::eMissNV;
+    case PC_CORE::ShaderStageType::CALLABLE:
+        return vk::ShaderStageFlagBits::eCallableNV;
+    case PC_CORE::ShaderStageType::TASK:
+        return vk::ShaderStageFlagBits::eTaskNV;
+    case PC_CORE::ShaderStageType::MESH:
+        return vk::ShaderStageFlagBits::eMeshNV;
+    case PC_CORE::ShaderStageType::COUNT:
+    default:
+        throw std::runtime_error("Unknown ShaderStageType");
     }
-    if (_textureAspect & PC_CORE::TextureAspect::DEPTH)
-    {
-        flags |= vk::ImageAspectFlagBits::eDepth;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::STENCIL)
-    {
-        flags |= vk::ImageAspectFlagBits::eStencil;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::METADATA_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMetadata;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::PLANE_0_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::ePlane0;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::PLANE_1_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::ePlane1;
-    }
-    if (_textureAspect & PC_CORE::TextureAspect::PLANE_2_BIT)
-    {
-        flags |= vk::ImageAspectFlagBits::ePlane2;
-    }
-
-    
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_0_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane0EXT;
-    }
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_1_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane1EXT;
-    }
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_2_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane2EXT;
-    }
-
-    if (_textureAspect & PC_CORE::TextureAspect::MEMORY_PLANE_3_BIT_EXT)
-    {
-        flags |= vk::ImageAspectFlagBits::eMemoryPlane3EXT;
-    }
-
-    return flags;
 }
 
+vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
+{
+    vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
+
+    switch (_cullModeFlagBit)
+    {
+    case PC_CORE::CullModeFlagBit::None:
+        break;
+    case PC_CORE::CullModeFlagBit::Front:
+        cullModeFlags |= vk::CullModeFlagBits::eFront;
+        break;
+    case PC_CORE::CullModeFlagBit::Back:
+        cullModeFlags |= vk::CullModeFlagBits::eBack;
+        break;
+    case PC_CORE::CullModeFlagBit::FrontAndBack:
+        cullModeFlags |= vk::CullModeFlagBits::eFrontAndBack;
+        break;
+    case PC_CORE::CullModeFlagBit::Count:
+        break;
+    default: ;
+    }
+    
+    return cullModeFlags;
+}
+
+vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
+{
+    vk::BufferUsageFlags bufferUsageFlags = {};
+
+    switch (_usage)
+    {
+    case PC_CORE::BufferUsage::VertexBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;
+    case PC_CORE::BufferUsage::IndexBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
+
+    case PC_CORE::BufferUsage::UniformBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
+
+    case PC_CORE::BufferUsage::ShaderStorageBuffer:
+        return bufferUsageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
+
+    case PC_CORE::BufferUsage::Count:
+    default:
+        throw std::runtime_error("Unknown BufferUsage");
+    }
+}
+
+vk::IndexType Vulkan::RhiToIndexType(PC_CORE::IndexFormat _format)
+{
+    switch (_format)
+    {
+    case PC_CORE::IndexFormat::Uiunt8:
+        return vk::IndexType::eUint8;
+    case PC_CORE::IndexFormat::Uint16:
+        return vk::IndexType::eUint16;
+    case PC_CORE::IndexFormat::Uint32:
+        return vk::IndexType::eUint32;
+    default: throw std::runtime_error("Unknown IndexType");
+    }
+}
+
+vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
+{
+    switch (shaderProgramDescriptorType)
+    {
+    case PC_CORE::ShaderProgramDescriptorType::Sampler:
+        return vk::DescriptorType::eSampler;
+    case PC_CORE::ShaderProgramDescriptorType::CombineImageSampler:
+        return vk::DescriptorType::eCombinedImageSampler;
+    case PC_CORE::ShaderProgramDescriptorType::SampledImage:
+        return vk::DescriptorType::eSampledImage;
+    case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
+        return vk::DescriptorType::eUniformBuffer;
+    case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:
+        return vk::DescriptorType::eStorageBuffer;
+    case PC_CORE::ShaderProgramDescriptorType::InlineUniformBlock:
+        return vk::DescriptorType::eInlineUniformBlock;
+    case PC_CORE::ShaderProgramDescriptorType::AccelerationStructure:
+        return vk::DescriptorType::eAccelerationStructureKHR;
+    case PC_CORE::ShaderProgramDescriptorType::Count:
+    default:
+        throw std::runtime_error("Unknown ShaderProgramDescriptorType");
+    }
+}

@@ -61,9 +61,7 @@ Tbx::Matrix4x4f Camera::GetViewMatrix() const
 }
 
 Tbx::Matrix4x4f Camera::GetProjectionMatrix() const
-{
-    Tbx::Matrix4x4f projectionMatrix;
-    
+{    
     return m_ProjectionType == ProjectionType::PERSPECTIVE ? Tbx::PerspectiveMatrix(m_Fov, m_Aspect ,m_Near, m_Far) :
     Tbx::OrthoGraphicMatrix(m_LeftRightScreen.x,m_LeftRightScreen.y , m_BottomTopScreen.x,  m_BottomTopScreen.y, m_Near, m_Far);
 }

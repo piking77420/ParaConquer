@@ -7,31 +7,42 @@
 
 BEGIN_PCCORE
 
-struct DirLight : public Component
+struct Light : public Component
 {
-    Tbx::Vector3f color =  {1.f,1.f,1.f};
-    float intensity = 1.f;
+  
 };
-REFLECT(DirLight,Component)
+
+REFLECT(Light,Component)
+
+struct DirLight : public Light
+{
+    Tbx::Vector3f color = Tbx::Vector3f(1.f,1.f,1.f);
+    float intensity = 1.f;
+    Tbx::Vector3f ambiant = Tbx::Vector3f(0.1f,0.1f,0.1f);
+    bool isDirty = false;
+};
+REFLECT(DirLight,Light)
 REFLECT_MEMBER(DirLight, color, MemberEnumFlag::COLOR)
 REFLECT_MEMBER(DirLight, intensity)
+REFLECT_MEMBER(DirLight, ambiant, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, isDirty)
 
-struct PointLight : public Component
-{
-    Tbx::Vector3f color =  {1.f,1.f,1.f};
-    float intensity = 1.f;
-};
-REFLECT(PointLight, Component)
-REFLECT_MEMBER(PointLight, color)
-REFLECT_MEMBER(PointLight, intensity)
 
-struct SpotLight : public Component
+struct PointLight : public Light
 {
-    Tbx::Vector3f color = {1.f,1.f,1.f};
-    float intensity = 1.f;
+  
 };
-REFLECT(SpotLight, Component)
-REFLECT_MEMBER(SpotLight, color)
-REFLECT_MEMBER(SpotLight, intensity)
+REFLECT(PointLight, Light)
+
+
+struct SpotLight : public Light
+{
+    float outerCutOff;
+    float innerCutOff;
+};
+REFLECT(SpotLight, Light)
+REFLECT_MEMBER(SpotLight, outerCutOff)
+REFLECT_MEMBER(SpotLight, innerCutOff)
+
 
 END_PCCORE

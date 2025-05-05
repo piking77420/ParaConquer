@@ -5,7 +5,7 @@ using namespace PC_EDITOR_CORE;
 
 
 
-EditorWindow::EditorWindow(Editor& _editor, const std::string& _name) : m_Editor(&_editor) , name(_name)
+EditorWindow::EditorWindow(Editor& _editor, const std::string& _name) : m_Editor(&_editor), name(_name), windowFlags(0)
 {
 }
 

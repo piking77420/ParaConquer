@@ -14,7 +14,7 @@ class Camera
 {
 public:
 
-    Tbx::Vector3f position = { 2,2,2 };
+    Tbx::Vector3f position = Tbx::Vector3f(0,1,-10);
 
     Tbx::Vector3f up = Tbx::Vector3f::UnitY();
 
@@ -65,8 +65,8 @@ private:
     ProjectionType m_ProjectionType = ProjectionType::PERSPECTIVE;
     
     // in radians
-    float m_Fov = 90.f * Deg2Rad;
-    float m_Aspect = 16.f / 9.f;
+    float m_Fov = 90.f * Tbx::fDeg2Rad;
+    float m_Aspect = 16.f / 9.f;    
     float m_Near = 0.1f;
     float m_Far = 1000.f;
 

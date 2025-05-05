@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <cmath>
 #include <cstdint>
 
@@ -14,6 +15,7 @@
 #define PC_CORE_API __declspec(dllimport)
 #endif
 
+#define PC_FORCE_INLINE __forceinline
 
 
 #define DEFAULT_COPY_MOVE_OPERATIONS(type)         \

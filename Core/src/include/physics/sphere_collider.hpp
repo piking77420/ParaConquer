@@ -11,7 +11,7 @@ struct SphereCollider : public Component
 
     uint32_t body_Id = -1;
 
-    bool draw = false;
+    bool draw = false;  
 
     bool drawAABB = false;
 

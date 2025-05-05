@@ -1,94 +1,112 @@
-﻿#pragma once
-#include "core_header.hpp"
+#pragma once
+#include "light.hpp"
 #include "rendering_typedef.h"
-#include "render_pass.hpp"
-#include "buffer/index_buffer.hpp"
-#include "buffer/vertex_buffer.hpp"
-#include "buffer/uniform_buffer.hpp"
-
-#include "front_end/vulkan_app.hpp"
-#include "render_harware_interface/command_pool.hpp"
-#include "render_harware_interface/descriptor_pool.hpp"
-
+#include "low_renderer/vertex_buffer.hpp"
+#include "low_renderer/command_list.hpp"
+#include "low_renderer/index_buffer.hpp"
+#include "low_renderer/rhi_context.hpp"
+#include "low_renderer/uniform_buffer.hpp"
+#include "resources/scene_lights_manager.h"
 #include "resources/shader_program.h"
+#include "world/static_mesh.hpp"
+#include "world/transform.hpp"
 #include "world/world.hpp"
 
 BEGIN_PCCORE
-    class Window;
 
 
-struct RenderResources
+struct ViewDirExtremum
 {
-    std::array<UniformBuffer, MAX_FRAMES_IN_FLIGHT> sceneUniform;
-    SceneBufferGPU sceneBufferGPU;
+    Tbx::Vector3f topLeft;
+    Tbx::Vector3f topRight;
+    Tbx::Vector3f bottomLeft;
+    Tbx::Vector3f bottomRight;
 };
+
+class RendererSystem : public EcsSystem
+{
+
+public:
+    Signature staticMeshSignature;
+
+    Signature dirLightSignature;
+
+    RendererSystem() = default;
+
+    PC_CORE_API void Begin() override {};
+    PC_CORE_API void Tick(double deltaTime) override {};
+    PC_CORE_API void RenderingTick(double deltatime) override {};
+};
+
 
 class Renderer
 {
 public:
-    static PC_CORE_API void RenderLog(LogType _logType, const char* _message);
-public:
 
-    RenderPass forwardRenderPass;
+    std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
-    RenderPass colorPass;
+    std::shared_ptr<PC_CORE::ShaderProgram> m_ForwardShader;
+
+    std::shared_ptr<PC_CORE::ShaderProgram> m_DrawTextureScreenQuadShader;
+
+    std::shared_ptr<RhiRenderPass> forwardPass;
+
+    std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
     
-    PC_CORE_API void InitRHiAndObject(GraphicAPI _graphicAPI, Window* _window);
+    PC_CORE_API Renderer() = default;
 
-    PC_CORE_API void InitRenderResources();
+    PC_CORE_API ~Renderer() = default;
     
-    PC_CORE_API void Render(const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::World& _world);
-
-    PC_CORE_API void BeginFrame();
-
-    PC_CORE_API void EndRender();
-    
-    PC_CORE_API void SwapBuffers();
-    
-
-    PC_CORE_API void WaitDevice();
+    PC_CORE_API void Init();
 
     PC_CORE_API void Destroy();
 
-    PC_CORE_API CommandBuffer& GetCommandSwapChainBuffer();
+    PC_CORE_API bool BeginDraw(Window* _window);
+    
+    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers, World* _world);
 
-    PC_CORE_API GraphicAPI GetGraphicsAPI();
+    PC_CORE_API void SwapBuffers(Window* _window);
+
+    PC_CORE_API void DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets);
 
 private:
-
-    GraphicAPI m_GraphicApi = GraphicAPI::VULKAN;
+    World* m_CurrentWorld;
     
-    size_t m_CurrentImage;
-
-    CommandPool m_SwapChainCommandPool;
+    RhiContext* m_RhiContext;
     
-    std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_SwapChainCommandBuffers;
+    ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
 
-    RenderResources renderResources;
+    UniformBuffer cameraUniformBuffer;
 
-    ShaderProgram* m_MainShader = nullptr;
+    SceneBufferGPU sceneBufferGPU;
 
-    Window* Windowtpr = nullptr;
+    ViewDirExtremum m_ViewExtremum;
+
+    UniformBuffer m_ViewExtrmumUniformBuffer;
+
+    std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
+
+    std::shared_ptr<RendererSystem> rendererSystem;
+
+    const RenderingContext* currentRenderingContext = nullptr;
     
-    CommandBuffer* m_CommandBuffer = nullptr;
+    PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
+
+    PC_CORE_API void UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext);
+
+    PC_CORE_API void QueryWorldData(World* world);
+
+    PC_CORE_API void QueryLightDirData(DirLight& dirLight, Transform& transform);
     
-    Texture* texture = nullptr;
-    
-    std::vector<PC_CORE::DescriptorSetHandle> descriptorSets;
-    
-    PC_CORE_API void InitCommandPools();
+    PC_CORE_API void CreateForwardShader();
 
-    PC_CORE_API void InitDescriptors();
+    PC_CORE_API void CreateDrawQuadShader();
 
-    PC_CORE_API void InitShader();
+    PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
 
-    PC_CORE_API void InitBuffer();
+    PC_CORE_API void AtmoSpherePass();
 
-    PC_CORE_API void UpdateUniforms(const RenderingContext& _renderingContext);
-
-    PC_CORE_API void DrawStaticMesh(const RenderingContext& _renderingContext, const PC_CORE::World& _world);
-
-    PC_CORE_API void CreateForwardPass();
+    PC_CORE_API void InitRenderSystem();
 };
 
 END_PCCORE

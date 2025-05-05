@@ -1,18 +1,22 @@
-#pragma once
+﻿#pragma once
 
-#include "core_header.hpp"
-#include "rendering/rendering_typedef.h"
-#include "rendering/render_pass.hpp"
+#include "render_pass.hpp"
 
 BEGIN_PCCORE
-class ForwardPass 
+
+class ForwardPass : public RenderPass
 {
 public:
 
-  
+    ForwardPass();
+
+    ~ForwardPass() override = default;
+
+    void Build() override;
+    
+    void Execute() override; 
 
 private:
 };
-
 
 END_PCCORE
