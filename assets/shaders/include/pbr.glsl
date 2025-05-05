@@ -1,9 +1,3 @@
-struct Material
-{
-    vec4 albedo;
-    vec4 metallicSpecularRoughessAnisotropy;
-    vec4 emmisiveColorAo;
-};
 
 
 const float PI = 3.14159265359;

@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/c++,visualstudio,rider
-# Edit at https://www.toptal.com/developers/gitignore?templates=c++,visualstudio,rider
+# Created by https://www.toptal.com/developers/gitignore/api/visualstudio,cmake,c++,rider,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,cmake,c++,rider,visualstudiocode
 
 ### C++ ###
 # Prerequisites
@@ -18,6 +18,7 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
 # Fortran module files
 *.mod
@@ -33,6 +34,25 @@
 *.exe
 *.out
 *.app
+
+### CMake ###
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+### CMake Patch ###
+CMakeUserPresets.json
+
+# External projects
+*-prefix/
 
 ### Rider ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -112,6 +132,25 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
 
 ### VisualStudio ###
 ## Ignore Visual Studio temporary files, build results, and
@@ -489,15 +528,9 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # VS Code files for those working on multiple tools
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 *.code-workspace
 
 # Local History for Visual Studio Code
-.history/
 
 # Windows Installer files from build outputs
 *.cab
@@ -512,4 +545,13 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-# End of https://www.toptal.com/developers/gitignore/api/c++,visualstudio,rider
+# End of https://www.toptal.com/developers/gitignore/api/visualstudio,cmake,c++,rider,visualstudiocode
+
+Build/
+build/
+out/
+Out/
+
+!assets/meshs/**
+!Logo/**
+

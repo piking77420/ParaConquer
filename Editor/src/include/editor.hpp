@@ -1,39 +1,54 @@
 ﻿#pragma once
 
 #include "app.hpp"
+#include "dock_space.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
-#include "Imgui/imgui.h"
+#include "io/imgui_context.h"
+#include "physics/rigid_body.hpp"
 #include "world/transform.hpp"
+#include "reflection/reflector.hpp"
 
 BEGIN_EDITOR_PCCORE
 
 
-
-class Editor : public PC_CORE::App
+class Editor
 {
 public:
-    void Init() override;
+    void Init();
     
-    void Destroy() override;
+    void Destroy();
 
-    Editor() = default;
+    Editor();
 
-    ~Editor() = default;
+    ~Editor();
     
     void InitTestScene();
-
+    
     void DestroyTestScene();
     
-    void Run() override;
+    void Run(bool* _appShouldClose);
 
     void InitEditorWindows();
 
-    std::vector<EditorWindow*> m_EditorWindows;
-    
-    ImGuiIO* io = nullptr;
+    void UpdateEditorWindows();
 
-    Entity selected = NULL_ENTITY;
+    PC_CORE::App gameApp;
+    
+    std::vector<EditorWindow*> m_EditorWindows;
+
+    DockSpace dockSpace;
+    
+    PC_CORE::EntityId m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+
+    PC_CORE::IMGUIContext IMGUIContext;
+
+private:
+    void InitThridPartLib();
+
+    void UnInitThridPartLib();
+
+    void CompileShader();
 };
 
 END_PCCORE

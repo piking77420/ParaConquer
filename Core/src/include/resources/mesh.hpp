@@ -2,16 +2,17 @@
 
 #include "core_header.hpp"
 #include "resource.hpp"
-#include "rendering/vertex.hpp"
-#include "rendering/vulkan/vulkan_index_buffer.hpp"
-#include "rendering/vulkan/vulkan_vertex_buffer.hpp"
+#include "low_renderer/index_buffer.hpp"
+#include "low_renderer/vertex.hpp"
+#include "low_renderer/vertex_buffer.hpp"
+#include "reflection/reflector.hpp"
 
 BEGIN_PCCORE
-class Mesh : public IResource
+    class Mesh : public ResourceInterface<Mesh>
 {
 public:
 
-    enum class MeshFormat 
+    enum class MeshFormat : uint8_t
     {
         OBJ,
         GLTF,
@@ -25,23 +26,26 @@ public:
         ".gltf",
       };
 
-    std::vector<Vertex> verticies;
 
-    std::vector<uint32_t> indicies;
+    VertexBuffer vertexBuffer;
 
-    VulkanVertexBuffer vulkanVertexBuffer;
-
-    VulkanIndexBuffer vulkanIndexBuffer;
+    IndexBuffer indexBuffer;
 
     MeshFormat meshFormat;
+
+    PC_CORE_API void Build() override;
+
+    PC_CORE_API Mesh() = default;
     
-    ~Mesh() override;
-    
-    void Load(const fs::path& path) override;
+    PC_CORE_API Mesh(const fs::path& _path);
+
+    PC_CORE_API ~Mesh() override;
 
 private:
-    void LoadObj(const std::string& path);
-
+    void LoadFromFile(const fs::path& _path);
+    
+    void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);
 };
+    REFLECT(Mesh, Resource)
 
 END_PCCORE

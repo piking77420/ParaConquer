@@ -3,12 +3,14 @@
 #include <filesystem>
 #include <iostream>
 
+using namespace PC_CORE;
+
+
 void Log::Debug(const std::string& message, const char* file, const char* line)
 {
-    std::filesystem::path p = std::filesystem::path(std::string(file));
-    
+
     std::cout << ANSI_COLOR_RESET << message << ' '
-    << '[' << p.filename().generic_string().c_str() << ',' << ' ' << line << ']'<< '\n';
+        << '[' << file << ',' << ' ' << line << ']' << '\n';
 }
 
 void Log::Debug(const std::string& message)
@@ -18,8 +20,6 @@ void Log::Debug(const std::string& message)
 
 void Log::Error(const std::string& message, const char* file, const char* line)
 {
-    std::filesystem::path p = std::filesystem::path(std::string(file));
-    
     std::cout << ANSI_COLOR_RED << message << ' '
-    << '[' << p.filename().generic_string().c_str() << ',' << ' ' << line << ']'<< '\n';
+        << '[' << file << ',' << ' ' << line << ']' << '\n' << ANSI_COLOR_RESET;
 }

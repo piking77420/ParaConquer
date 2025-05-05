@@ -1,32 +1,45 @@
 ﻿#pragma once
 
-#include "component.hpp"
 #include "core_header.hpp"
-#include "reflection/reflector.hpp"
+#include "ecs/ecs_front.h"
 #include "math/quaternion.hpp"
 #include "math/toolbox_typedef.hpp"
 
 BEGIN_PCCORE
-class Transform
+
+
+struct Rotation
 {
-public:
-    MAKE_COMPONENT(Transform)
+    Tbx::Vector3d eulerAngles;
+    Tbx::Quaterniond quaternion = Tbx::Quaterniond::Identity();
+};
 
-    Entity parentId = NULL_ENTITY;
+REFLECT(Rotation)
+REFLECT_MEMBER(Rotation, eulerAngles)
+REFLECT_MEMBER(Rotation, quaternion)
+
+struct Transform : Component
+{
+    EntityId parentId = INVALID_ENTITY_ID;
+
+    Tbx::Vector3d position;
+
+    Rotation rotation;
     
-    Tbx::Vector3f position;
+    Tbx::Vector3d scale = Tbx::Vector3d::UnitOne();
 
-    Tbx::Quaternionf rotation = Tbx::Quaternionf::Identity();
-
-    Tbx::Vector3f scale = 1.f;
-
-    Tbx::Vector3f localPosition;
-
-    Tbx::Vector3f localRotation;
+    Tbx::Vector3d localPosition;
     
-}; 
-REFLECT(Transform, localPosition)
-REFLECT(Transform, localRotation)
-REFLECT(Transform, scale)
+    
+    // TO HANDLE MATRIX TO AVOID RECALCULATION
+    
+};
+// TODO PUT THE REFLECT IN THE CLASS 
+
+
+REFLECT(Transform, Component)
+REFLECT_MEMBER(Transform, position)
+REFLECT_MEMBER(Transform, rotation)
+REFLECT_MEMBER(Transform, scale)
 
 END_PCCORE

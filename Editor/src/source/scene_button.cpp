@@ -13,23 +13,21 @@ SceneButton::SceneButton(Editor& _editor, const std::string& _name) : EditorWind
 void SceneButton::Update()
 {
     EditorWindow::Update();
-
     OnEdit();
 }
 
 void SceneButton::OnEdit()
 {
-    PC_CORE::World& world = m_Editor->world;
+    PC_CORE::World& world = m_Editor->gameApp.world;
 
-    const std::string buttonName = world.begin ? "Reset" : "Play";
-
+    const std::string buttonName = world.run ? "Reset" : "Play";
+    
     ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f);
     if (ImGui::Button(buttonName.c_str()))
     {
-        if (!world.begin)
+        if (!world.run)
         {
             world.begin = true;
-            world.run = true;
         }
         else
         {
@@ -39,12 +37,11 @@ void SceneButton::OnEdit()
             m_Editor->InitTestScene();
         }
     }
+    const std::string buttonName2 = world.run ? "Pause" : "Resume";
+
     ImGui::SameLine();
-    if (ImGui::Button("Pause"))
+    if (ImGui::Button(buttonName2.c_str()))
     {
-        if (world.begin)
-        {
-            world.run = !world.run;
-        }
+        world.run = !world.run;
     }
 }

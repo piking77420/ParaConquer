@@ -1,0 +1,1 @@
+﻿#include "ecs/component.h"

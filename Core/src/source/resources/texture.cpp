@@ -1,53 +1,111 @@
 ﻿#include "resources/texture.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #include "log.hpp"
-#include "rendering/vulkan/vulkan_buffer.hpp"
-#include "rendering/vulkan/vulkan_interface.hpp"
+#include "low_renderer/rhi.hpp"
+#include "resources/file_loader.hpp"
+
 
 using namespace PC_CORE;
 
+
+
+void Texture::Build()
+{
+    if (!pathToFile.empty())
+        LoadFromFile((fs::path)pathToFile);
+
+}
+
+Texture::Texture(const CreateTextureInfo& createTextureInfo)
+{
+    for (auto& texture : m_TextureHandles)
+    {
+        if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
+        {
+            PC_LOGERROR("failed to create texture!");
+        }    
+    }
+    
+}
+
+Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_path)
+{
+    LoadFromFile(_path);
+}
+
 Texture::~Texture()
 {
-    vulkanTexture.Destroy();
+    for (auto& texture : m_TextureHandles)
+    {
+        if (texture == nullptr)
+            return;
+    
+        if (!Rhi::GetRhiContext()->gpuAllocator->DestroyTexture(&texture))
+        {
+            PC_LOGERROR("failed to destroy texture!");
+        }
+    }
+   
 }
-void Texture::Load(const fs::path& path)
-{
-    stbi_uc* pixels = stbi_load(path.generic_string().c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
-    VkDeviceSize dataImageSize=  {};
-    dataImageSize = textureSize.x * textureSize.y * 4;
 
+void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
+{
+    
+}
+
+void Texture::LoadFromFile(const fs::path& _path)
+{
+    pathToFile = _path.generic_string();
+
+    int width;
+    int height;
+
+    uint8_t* pixels = FileLoader::LoadFile(_path.generic_string().c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");
         throw std::runtime_error("failed to load texture image!");
     }
-    
-    vulkanTexture.Init(pixels, dataImageSize, textureSize);
-    stbi_image_free(pixels);
+
+    const CreateTextureInfo createTextureInfo =
+    {
+        .width = width,
+        .height = height,
+        .depth = 1,
+        .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
+        .imageType = ImageType::TYPE_2D,
+        .format = RHIFormat::R8G8B8A8_SRGB,
+        .channel = Channel::RGBA,
+        .textureAttachement = TextureAttachement::None,
+        .textureNature = TextureNature::Default,
+        .canbeSampled = true,
+        .GenerateMipMap = true,
+        .data = pixels
+    };
+
+    for (auto& texture : m_TextureHandles)
+    {
+        if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
+        {
+            PC_LOGERROR("failed to create texture!");
+        }
+    }
 
 
-    name = path.filename().generic_string();
-    format = path.extension().generic_string();
+    FileLoader::FreeData(pixels);
 }
 
-void Texture::Load(std::array<std::string, 6>& _maps)
+void Texture::Load(const std::array<std::string, 6>& _maps)
 {
-    std::array<void*, 6> datas = {};
-    for (size_t i = 0; i < datas.size(); i++)
-    {
-        datas[i] = stbi_load(_maps[i].c_str(), &textureSize.x, &textureSize.y, &textureChannel, STBI_rgb_alpha);
-    }
-    vulkanTexture.Init(datas, textureSize.x , textureSize.y);
-    for (size_t i = 0; i < datas.size(); i++)
-    {
-        stbi_image_free(datas[i]);
+  
+}
 
-    }
+std::shared_ptr<GpuHandle> Texture::GetHandle() const
+{
+    return m_TextureHandles[Rhi::GetFrameIndex()];
+}
 
-    const fs::path path(_maps[0]);
-    
-    name = path.filename().generic_string();
-    format = path.extension().generic_string();
+std::shared_ptr<GpuHandle> Texture::GetHandle(size_t _frameIndex) const
+{
+    return m_TextureHandles[_frameIndex];
 }

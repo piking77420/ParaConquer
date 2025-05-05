@@ -1,26 +1,44 @@
 ﻿#include "resources/mesh.hpp"
-#include <OBJ_Loader.h>
 
 
 #include <unordered_map>
 
 #include "log.hpp"
+#include "physics/physics_wrapper.hpp"
+
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
 
 using namespace PC_CORE;
 
-Mesh::~Mesh()
+void Mesh::Build()
 {
-    vulkanVertexBuffer.Destroy();
-    vulkanIndexBuffer.Destroy();
+    if (!pathToFile.empty())
+        LoadFromFile((fs::path)(pathToFile));
 }
 
-void Mesh::Load(const fs::path& path)
+Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
 {
-    std::string format = std::filesystem::path(path).extension().generic_string();
+    LoadFromFile(_path);
+}
+
+Mesh::~Mesh()
+{
+}
+
+
+void Mesh::LoadFromFile(const fs::path& _path)
+{
+    pathToFile = _path.generic_string();
+    extension = _path.extension().generic_string();
+
     uint32_t formatIndex = -1;
-    std::string formatToString = path.generic_string();
-    
-    if (!IResource::IsFormatValid(MeshSourceFormat, format, &formatIndex))
+
+    std::vector<Vertex> verticies;
+    std::vector<uint32_t> indicies;
+
+    if (!IsFormatValid(MeshSourceFormat, extension, &formatIndex))
     {
         return;
     }
@@ -29,46 +47,61 @@ void Mesh::Load(const fs::path& path)
     switch (meshFormat)
     {
     case MeshFormat::OBJ:
-        LoadObj(formatToString);
+        LoadObj(_path.generic_string(), verticies, indicies);
         break;
-    default: ;
+    default:;
     }
 
-    name = path.filename().generic_string();
-    format = MeshSourceFormat.at(formatIndex);
-    resourcePath = path;
-
-    vulkanVertexBuffer.Init(verticies);
-    vulkanIndexBuffer.Init(indicies);
+    extension = MeshSourceFormat.at(formatIndex);
+    vertexBuffer = VertexBuffer(verticies.data(), verticies.size() * sizeof(Vertex));
+    indexBuffer = IndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
 }
 
-void Mesh::LoadObj(const std::string& path)
+void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
 {
-    objl::Loader Loader;
 
-    bool loadout = Loader.LoadFile(path.c_str());
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string err;
 
-    if (!loadout)
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, path.c_str()))
     {
-        return;
+        throw std::runtime_error(err);
     }
-    // to do make it for mutilpel mesh
-    for (int i = 0; i < 1; i++)
-    {
-        verticies.resize(Loader.LoadedMeshes[i].Vertices.size());
 
-        // Copy one of the loaded meshes to be our current mesh
-        const objl::Mesh& curMesh = Loader.LoadedMeshes[i];
-        for (size_t i = 0; i < curMesh.Vertices.size(); i++)
-        {
-            
-            verticies[i].position = Tbx::Vector3f(curMesh.Vertices[i].Position.X, curMesh.Vertices[i].Position.Y, curMesh.Vertices[i].Position.Z);
-            verticies[i].normal = Tbx::Vector3f(curMesh.Vertices[i].Normal.X, curMesh.Vertices[i].Normal.Y, curMesh.Vertices[i].Normal.Z);
-            verticies[i].textureCoord = Tbx::Vector2f(curMesh.Vertices[i].TextureCoordinate.X, curMesh.Vertices[i].TextureCoordinate.Y);
+    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
+            Vertex vertex{};
+
+            vertex.position = Tbx::Vector3f(
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            );
+
+            vertex.normal = Tbx::Vector3f(
+                attrib.vertices[3 * index.normal_index + 0],
+                attrib.vertices[3 * index.normal_index + 1],
+                attrib.vertices[3 * index.normal_index + 2]
+            );
+
+
+            vertex.textureCoord = Tbx::Vector2f(
+                attrib.texcoords[2 * index.texcoord_index + 0],
+                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+            );
+
+            if (uniqueVertices.count(vertex) == 0) {
+                uniqueVertices[vertex] = static_cast<uint32_t>(_vertices.size());
+                _vertices.push_back(vertex);
+            }
+
+            _indices.push_back(uniqueVertices[vertex]);
+
+          
         }
-        indicies = Loader.LoadedIndices;
-    } 
-
-
-        
+    }        
 }

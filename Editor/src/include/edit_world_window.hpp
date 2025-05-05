@@ -2,7 +2,7 @@
 
 #include "editor_header.hpp"
 #include "world_view_window.hpp"
-#include "input/low_pass_filter.hpp"
+#include "io/low_pass_filter.hpp"
 
 BEGIN_EDITOR_PCCORE
 class EditWorldWindow : public WorldViewWindow
@@ -20,11 +20,11 @@ protected:
     
     PC_CORE::LowPassFilter<Tbx::Vector2f, 8> deltass;
 
-    Tbx::Vector3f cameraSpeed;
+    Tbx::Vector3f cameraSpeed = Tbx::Vector3f::Zero();
 
-    float cameraSpeedValue = 150.f;
+    float cameraSpeedValue = 50.f;
 
-    float drag = 0.95f;
+    float drag = 0.001f;
     
     float pitch = 0.0f;
     

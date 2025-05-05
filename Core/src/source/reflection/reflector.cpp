@@ -1,17 +1,36 @@
 ﻿#include "reflection/reflector.hpp"
-#include "world/component_register.h"
+
+#include <filesystem>
 
 using namespace PC_CORE;
 
-void Reflector::RegisterInternal(uint32_t _componentID, size_t _size, size_t _offset, DataType _datatype, const char* _name)
+const ReflectedType& Reflector::GetType(uint32_t _hash)
 {
-    ComponentRegister::componentRegisterMap.at(_componentID).reflecteds.push_back
-    (
-        {
-            .name = _name,
-            .size = _size,
-            .offset = _offset,
-            .datatype = _datatype
-        }
-    );
+    return m_RelfectionMap.at(_hash);
 }
+
+bool Reflector::ContaintTypeFromTypeID(TypeId typeId)
+{
+    return m_RelfectionMap.contains(typeId);
+}
+
+// REFLECT TRIVIAL TYPE //
+REFLECT(bool);
+REFLECT(char);
+REFLECT(wchar_t);
+REFLECT(int);
+REFLECT(float);
+REFLECT(double);
+REFLECT(uint8_t);
+REFLECT(uint16_t);
+REFLECT(uint32_t);
+REFLECT(uint64_t);
+
+
+using namespace std;
+REFLECT(string)
+REFLECT(wstring)
+
+
+
+

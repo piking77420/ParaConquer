@@ -1,37 +1,48 @@
 ﻿#pragma once
 
-#include "world/component.hpp"
 
 #include "math/toolbox_typedef.hpp"
 #include "reflection/reflector.hpp"
+#include "ecs/ecs_front.h"
 
 BEGIN_PCCORE
 
-struct DirLight
+struct Light : public Component
 {
-    MAKE_COMPONENT(DirLight)
-    Tbx::Vector3f color =  {1.f,1.f,1.f};
-    float intensity = 1.f;
+  
 };
-REFLECT(DirLight,color)
-REFLECT(DirLight,intensity)
 
-struct PointLight
-{
-    MAKE_COMPONENT(PointLight)
-    Tbx::Vector3f color =  {1.f,1.f,1.f};
-    float intensity = 1.f;
-};
-REFLECT(PointLight,color)
-REFLECT(PointLight,intensity)
+REFLECT(Light,Component)
 
-struct SpotLight
+struct DirLight : public Light
 {
-    MAKE_COMPONENT(SpotLight)
-    Tbx::Vector3f color = {1.f,1.f,1.f};
+    Tbx::Vector3f color = Tbx::Vector3f(1.f,1.f,1.f);
     float intensity = 1.f;
+    Tbx::Vector3f ambiant = Tbx::Vector3f(0.1f,0.1f,0.1f);
+    bool isDirty = false;
 };
-REFLECT(SpotLight,color)
-REFLECT(SpotLight,intensity)
+REFLECT(DirLight,Light)
+REFLECT_MEMBER(DirLight, color, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, intensity)
+REFLECT_MEMBER(DirLight, ambiant, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, isDirty)
+
+
+struct PointLight : public Light
+{
+  
+};
+REFLECT(PointLight, Light)
+
+
+struct SpotLight : public Light
+{
+    float outerCutOff;
+    float innerCutOff;
+};
+REFLECT(SpotLight, Light)
+REFLECT_MEMBER(SpotLight, outerCutOff)
+REFLECT_MEMBER(SpotLight, innerCutOff)
+
 
 END_PCCORE

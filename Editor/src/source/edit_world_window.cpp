@@ -1,8 +1,9 @@
 ﻿#include "edit_world_window.hpp"
 
+#include <Imgui/imgui.h>
 #include "editor.hpp"
-#include "Imgui/imgui.h"
 #include "time/core_time.hpp"
+#include "log.hpp"
 
 using namespace PC_EDITOR_CORE;
 
@@ -14,10 +15,9 @@ PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::str
 void PC_EDITOR_CORE::EditWorldWindow::Update()
 {
     WorldViewWindow::Update();
-
     if(ImGui::IsWindowFocused())
         MoveCameraUpDate();
-
+     
 }
 
 void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
@@ -36,11 +36,11 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
 
 void EditWorldWindow::RotateCamera(float _deltatime)
 {
-    if (!ImGui::IsMouseDown(ImGuiPopupFlags_MouseButtonRight))
+    if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
     {
         return;
     }
-
+    
     const auto io = ImGui::GetIO();
 
 
@@ -57,55 +57,72 @@ void EditWorldWindow::RotateCamera(float _deltatime)
     if (pitch < -MaxPitch)
         pitch = -MaxPitch;
 
-    camera.front.x = std::cos(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
-    camera.front.y = std::sin(pitch * Deg2Rad);
-    camera.front.z = std::sin(yaw * Deg2Rad) * std::cos(pitch * Deg2Rad);
     camera.front = camera.front.Normalize();
+    Tbx::Vector3f forward;
+    forward.x = std::cos(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
+    forward.y = std::sin(pitch * Tbx::fDeg2Rad);
+    forward.z = std::sin(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
+    
+    camera.LookAt(camera.position + forward);
 }
 
 void EditWorldWindow::CameratMovment(float _deltatime)
 {
-
-    const Tbx::Vector3f right = Tbx::Vector3f::Cross(camera.front, Tbx::Vector3f::UnitY());
-    camera.up = Tbx::Vector3f::Cross(right, camera.front).Normalize();
-
-    Tbx::Vector3f addVector;
-
+    
+    bool isPositionDirty = false;
+    Tbx::Vector3f addVector = Tbx::Vector3f::Zero();
+    const Tbx::Vector3f right = Tbx::Vector3f::Cross(camera.front, camera.up);
+    
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
         addVector += camera.front;
+        isPositionDirty = true;
     }
     if (ImGui::IsKeyDown(ImGuiKey_S))
     {
         addVector -= camera.front;
+        isPositionDirty = true;
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_A))
     {
         addVector -= right;
+        isPositionDirty = true;
+
     }
     if (ImGui::IsKeyDown(ImGuiKey_D))
     {
         addVector += right;
+        isPositionDirty = true;
+
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_Space))
     {
         addVector += camera.up;
+        isPositionDirty = true;
+
     }
     if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
     {
         addVector -= camera.up;
+        isPositionDirty = true;
+
     }
+    
+    addVector = addVector.Normalize();
+
+    if (!isPositionDirty)
+        return;
 
     cameraSpeed += addVector * _deltatime * cameraSpeedValue;
     camera.position += addVector * 0.5f * _deltatime * _deltatime + cameraSpeed * _deltatime;
-    cameraSpeed *= drag;
+    cameraSpeed *= pow(drag,_deltatime);
 }
 
 void EditWorldWindow::CameraChangeSpeed()
 {
-    const auto io = ImGui::GetIO();
+   // const auto io = ImGui::GetIO();
 
-    cameraSpeedValue += io.MouseWheel * cameraSpeedValue * 0.2f;
+    //cameraSpeedValue += io.MouseWheel * cameraSpeedValue * 0.2f;
 }

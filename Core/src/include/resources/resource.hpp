@@ -3,40 +3,74 @@
 #include "core_header.hpp"
 #include <filesystem>
 #include <array>
+#include <set>
+#include "log.hpp"
 
 #include "guid.hpp"
+#include "reflection/reflection_typedef.hpp"
+#include "reflection/reflector.hpp"
 
 namespace fs = std::filesystem;
 
+
+
 BEGIN_PCCORE
 
-class IResource
+class ResourceManager;
+
+
+class Resource
 {
 public:
     std::string name;
     
-    std::string format;
-
-    fs::path resourcePath;
+    std::string extension;
 
     Guid guid;
+
+    std::set<std::string> resourceDependecies;
+
+    std::string pathToFile;
+
+    // SOULD BE = 0
+    PC_CORE_API virtual void Build() {};
+
+    PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
+
+    PC_CORE_API Resource(Resource&& _other) noexcept;
     
-    IResource();
-    
-    virtual ~IResource() = default;
+    PC_CORE_API Resource();
 
-    virtual void Load(const fs::path& path) = 0;
+    PC_CORE_API Resource(const Guid& _guid) {}
 
-    virtual void WriteFile(const fs::path& path) {};
+    PC_CORE_API Resource(const std::string& _name);
 
-    template <size_t _Size>
-    static bool IsFormatValid(std::array<std::string,_Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex);
+    PC_CORE_API Resource(const fs::path& _file);
+
+    PC_CORE_API virtual ~Resource() = default;
+
 
 };
 
-template <size_t _Size>
-bool IResource::IsFormatValid(std::array<std::string, _Size> _format, const std::string& _fileFormat, uint32_t* _formatIndex)
+
+REFLECT(Resource)
+REFLECT_MEMBER(Resource, name)
+REFLECT_MEMBER(Resource, guid)
+REFLECT_MEMBER(Resource, pathToFile)
+
+
+
+template <size_t Size>
+static bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
+
+template <typename T, size_t Size>
+static bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut);
+
+
+template <size_t Size>
+bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
 {
+
     for (size_t i = 0; i < _format.size(); i++)
     {
         if (_format[i] == _fileFormat)
@@ -49,5 +83,66 @@ bool IResource::IsFormatValid(std::array<std::string, _Size> _format, const std:
     _formatIndex = nullptr;
     return false;
 }
+
+
+template <typename T,size_t Size>
+bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut)
+{
+
+    for (size_t i = 0; i < _format.size(); i++)
+    {
+        T v = static_cast<T>(i);
+
+        if (value == v)
+        {
+            *_formatOut = _format[i].c_str();
+            return true;
+        }
+    }
+    return false;
+}
+
+
+template <class T>
+class ResourceInterface : public Resource
+{
+public:
+    ResourceInterface();
+
+    ResourceInterface(const fs::path& _path);
+    
+    virtual ~ResourceInterface() override = default;
+
+    const ReflectedType& GetType() const;
+private:
+    const ReflectedType* m_ReflectedType = nullptr;
+};
+
+template <class T>
+ResourceInterface<T>::ResourceInterface() : Resource()
+{
+    static_assert(!std::is_same_v<T, Resource>, "you should not put resource in the template, place your class");
+
+    m_ReflectedType = &Reflector::GetType<T>();
+}
+
+template<class T>
+inline ResourceInterface<T>::ResourceInterface(const fs::path& _path) : Resource(_path)
+{ 
+    m_ReflectedType = &Reflector::GetType<T>();
+}
+template <class T>
+inline const ReflectedType& ResourceInterface<T>::GetType() const
+{
+    return *m_ReflectedType;
+}
+
+
+template<class T>
+concept ResourceDerived = std::is_base_of_v<Resource, T>;
+
+template <typename ResourceDerived>
+using ResourceRef = std::weak_ptr<ResourceDerived>;
+
 
 END_PCCORE

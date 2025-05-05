@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "core_header.hpp"
 #include <string>
 
 #define ANSI_COLOR_RED     "\x1b[31m"
@@ -10,19 +11,23 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 #define PC_LOG(message) \
-    Log::Debug(message,__FILE__,std::to_string(__LINE__).c_str());\
+    PC_CORE::Log::Debug(message,__FILE__,std::to_string(__LINE__).c_str());\
 
 #define PC_LOGERROR(message) \
- Log::Error(message,__FILE__,std::to_string(__LINE__).c_str());\
+ PC_CORE::Log::Error(message,__FILE__,std::to_string(__LINE__).c_str());\
 
+
+BEGIN_PCCORE
 
 class Log
 {
 public:
     
-    static void Debug(const std::string& message,const char* file,const char* line);
+    PC_CORE_API static void Debug(const std::string& message,const char* file,const char* line);
 
-    static void Debug(const std::string& message);
+    PC_CORE_API static void Debug(const std::string& message);
 
-    static void Error(const std::string& message,const char* file,const char* line);
+    PC_CORE_API static void Error(const std::string& message,const char* file,const char* line);
 };
+
+END_PCCORE

@@ -1,12 +1,11 @@
 ﻿#include "editor_window.hpp"	
 
-#include "Imgui/imgui.h"
 
 using namespace PC_EDITOR_CORE;
 
 
 
-EditorWindow::EditorWindow(Editor& _editor, const std::string& _name) : m_Editor(&_editor) , name(_name)
+EditorWindow::EditorWindow(Editor& _editor, const std::string& _name) : m_Editor(&_editor), name(_name), windowFlags(0)
 {
 }
 
@@ -23,6 +22,7 @@ void EditorWindow::End()
 
 void EditorWindow::GetInfo()
 {
+    
     resize = false;
     ImVec2 imPos = ImGui::GetWindowPos();
     ImVec2 imSize = ImGui::GetWindowSize();

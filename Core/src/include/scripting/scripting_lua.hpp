@@ -6,6 +6,7 @@
 
 BEGIN_PCCORE
 
+/*
 class ScriptingLua
 {
 public:
@@ -13,14 +14,14 @@ public:
 
 	~ScriptingLua();
 
-	static void LuaLoadModule(const std::string& _filePath);
+	PC_CORE_API static void LuaLoadModule(const std::string& _filePath);
 
-	static void RemoveModule(const std::string& _filePath);
+	PC_CORE_API static void RemoveModule(const std::string& _filePath);
 
-	static void RunFunction(const std::string& _funcName);
+	PC_CORE_API static void RunFunction(const std::string& _funcName);
 
 private:
-	static std::vector<std::string> m_Scripts;
+	PC_CORE_API static std::vector<std::string> m_Scripts;
 };
-
+*/
 END_PCCORE

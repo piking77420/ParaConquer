@@ -1,50 +1,49 @@
 #pragma once
 
 #include "core_header.hpp"
-#include "rendering/renderer.hpp"
-#include "window.hpp"
-#include "rendering/camera.hpp"
-#include "rendering/vulkan/vulkan_imgui.hpp"
-#include "rendering/vulkan/vulkan_interface.hpp"
 #include "world/world.hpp"
-#include "input/low_pass_filter.hpp"
 #include "scripting/scripting_lua.hpp"
-#include <core/physics_engine.h>
+
+#include "io/window.hpp"
+#include <io/core_io.hpp>
+
+#include "low_renderer/rhi.hpp"
+#include "rendering/renderer.hpp"
 
 
 BEGIN_PCCORE
-class App
+	class App
 {
 public:
 	static constexpr const char* appName = "ParaConquer";
-	
-	World world;
-	
-	Window windowHandle;
+
+	CoreIo coreIo;
+
+	Window window;
+
+	Rhi rhi;
 
 	Renderer renderer;
-
-	VulkanImgui vulkanImgui;
-
-	ScriptingLua scriptingLua;
+	
+	//ScriptingLua scriptingLua;
 
 	PhysicsWrapper physicsWrapper;
 	
-	virtual void Init();
+	World world;
+		
+	PC_CORE_API void Init();
 
-	virtual void Destroy();
+	PC_CORE_API void Destroy();
 	
-	App() = default;
+	PC_CORE_API App();
 
-	~App() = default;
+	PC_CORE_API ~App() = default;
 
-	virtual void Run();
+	PC_CORE_API void Run();
 	
-	void WorldLoop();
-
-	void HandleResize();
-
-	static inline App* instance = nullptr;
+	PC_CORE_API void WorldTick();
+	
+	PC_CORE_API static inline App* instance = nullptr;
 
 
 protected:

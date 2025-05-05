@@ -1,30 +1,27 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "core/physics_engine.h"
+#include "reflection/reflector.hpp"
 #include "world/scene.hpp"
+#include "core/motion_core_engine.hpp"
 
 BEGIN_PCCORE
 class PhysicsWrapper
 {
 public:
-    static constexpr float timeStep = 0.0001f;
+    static constexpr float timeStep = 0.02f;
+   
+    PC_CORE_API PhysicsWrapper() = default;
+
+    PC_CORE_API ~PhysicsWrapper() = default;
     
-    void InitPhysicBody(Scene* _scene);
-
-    void UpdatePhysics(float _deltatime, Scene* _scene);
-
-    static void AddForce(uint32_t _id, Tbx::Vector3f force);
-
-    static void AddImpulse(uint32_t _id, Tbx::Vector3f force);
-    
-    PhysicsWrapper();
-
-    ~PhysicsWrapper();
 private:
-    void InitSphereCollider(Scene* _scene);
+    MotionCoreEngine m_MotionCore;
     
-    MotionCore::PhysicsEngine physicsEngine;
 };
+
+
+
+
 
 END_PCCORE
