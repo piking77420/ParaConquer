@@ -154,7 +154,8 @@ void Editor::CompileShader()
 {
 	PERF_REGION_SCOPED;
 	PC_LOG("CompileShader...")
-
+	fs::create_directory(SHADER_CACHE_PATH);
+	
 	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.vert");
 	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.frag");
 
