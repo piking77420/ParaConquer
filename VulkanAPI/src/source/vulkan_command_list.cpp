@@ -211,14 +211,13 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _ind
 
 
     const PC_CORE::GPUHandleID gPUHandleID = _indexBuffer.bufferHandles[frameIndex];
-    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(PC_CORE::Rhi::GetResourceFromHandle(gPUHandleID));     vk::Buffer buffer = vulkanBufferHandle->buffer;
+    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(PC_CORE::Rhi::GetResourceFromHandle(gPUHandleID));     
+    vk::Buffer buffer = vulkanBufferHandle->buffer;
 
     const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());
     
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindIndexBuffer(buffer, static_cast<uint32_t>(_offset) , indexType);
 }
-
-
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const
 {
@@ -228,4 +227,20 @@ vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const
 const vk::Queue* Vulkan::VulkanCommandList::GetQueue() const
 {
     return m_Queue;
+}
+
+void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)
+{
+    // TO DO 
+    VkDebugUtilsLabelEXT markerInfo = {};
+    markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+    markerInfo.pLabelName = _debugLabel;
+
+    std::memcpy(&markerInfo.color[0], _color.data(), sizeof(float) * _color.size());
+    //vkCmdBeginDebugUtilsLabelEXT(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()], &markerInfo);
+}
+
+void Vulkan::VulkanCommandList::EndDebugLabel()
+{
+    //vkCmdEndDebugUtilsLabelEXT(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()]);
 }

@@ -26,12 +26,13 @@ namespace Vulkan
         {
             return m_Instance;
         }
-        
+
+
     private:
         vk::Instance m_Instance;
 
         vk::DebugUtilsMessengerEXT m_DebugMessenger;
-        
+
         void InitSurface(GLFWwindow* _window);
 
 #ifdef _DEBUG
@@ -41,6 +42,15 @@ namespace Vulkan
         void SetupDebugMessenger();
 
         void PopulateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& _debugMessengerCreateInfo);
-        #endif
+#endif
+
+#ifdef PROFILING
+        PFN_vkCmdBeginDebugUtilsLabelEXT m_BeginDebugLabel;
+
+        PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel;
+
+        void GetDebugFunc();
+#endif // PROFILING
+
     };
 }

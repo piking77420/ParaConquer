@@ -264,17 +264,28 @@ void Editor::Init()
 	InitThridPartLib();
 	CompileShader();
 
+#ifdef _DEBUG
 	const AppCreateInfo appCreateInfo =
 	{
 		EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png"
+		, true
 	};
+#else
+	const AppCreateInfo appCreateInfo =
+	{
+		EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png"
+		, false
+	};
+#endif // DEBUG
 
 	gameApp.Init(appCreateInfo);
 
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
+		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
+		cmd->EndDebugLabel();
 		});
 
 	InitTestScene();

@@ -16,6 +16,7 @@ BEGIN_PCCORE
     PC_CORE::GraphicAPI GraphicsAPI;
     Window* window;
     const char* appName;
+    bool gpuDebug;
 };
 
 class Rhi

@@ -24,6 +24,7 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
         .GraphicsAPI = GraphicAPI::VULKAN,
         .window = &window,
         .appName = "Para Conquer Editor",
+        .gpuDebug = _appCreateInfo.enableGpuDebug
         };
     
     rhi = Rhi(createInfo);

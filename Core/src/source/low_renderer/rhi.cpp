@@ -346,8 +346,10 @@ void Rhi::NextFrame()
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {
     RenderInstanceCreateInfo renderInstanceCreateInfo =
-           {
-        .appName = _createInfo.appName
+        {
+        .appName = _createInfo.appName,
+        .gpuDebug = _createInfo.gpuDebug
+
         };
     
     PhysicalDevicesCreateInfo physicalDevicesCreateInfo =

@@ -6,6 +6,7 @@ BEGIN_PCCORE
     struct RenderInstanceCreateInfo
     {
         const char* appName;
+        bool gpuDebug;
     };
 
 class RenderInstance
@@ -18,6 +19,7 @@ public:
     PC_CORE_API RenderInstance(const RenderInstanceCreateInfo& _renderInstanceCreateInfo) {};
 
     PC_CORE_API virtual ~RenderInstance() = default;
+
 };
 
 END_PCCORE

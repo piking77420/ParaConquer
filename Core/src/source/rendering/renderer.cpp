@@ -220,6 +220,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .clearDepth = 1.f
     };
 
+    primaryCommandList->BeginDebugLabel("Begin Forward Pass", FORWARD_DEBUG_COLOR);
     primaryCommandList->BeginRenderPass(beginRenderPassInfo);
     primaryCommandList->BindProgram(m_ForwardShader.get());
 
@@ -259,10 +260,15 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .clearDepth = 0.f,
         .clearStencil = 0.f
     };
+    primaryCommandList->EndDebugLabel();
+
+
+    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
     primaryCommandList->BeginRenderPass(drawToViewport);
     primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.get());
     DrawTextureScreenQuad(*renderingContext.viewPortDescriptorSet);
     primaryCommandList->EndRenderPass();
+    primaryCommandList->EndDebugLabel();
 }
 
 

@@ -45,6 +45,7 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
     } else {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
+    
 }
 
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
@@ -79,6 +80,7 @@ void Vulkan::VulkanInstance::PopulateDebugMessengerCreateInfo(
 }
 
 
+
 bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 {
     uint32_t layerCount;
@@ -110,8 +112,19 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 }
 
 #endif
+#ifdef PROFILING
 
+void Vulkan::VulkanInstance::GetDebugFunc()
+{
+    m_BeginDebugLabel = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT");
+    m_EndDebugLabel = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT");
 
+    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr)
+    {
+        PC_LOGERROR("Enable to get debgu label func ");
+    }
+}
+#endif 
 
 Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window) : RenderInstance(_renderInstanceCreateInfo)
 {

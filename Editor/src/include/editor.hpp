@@ -25,6 +25,7 @@ constexpr std::array<const char*, (uint8_t)(EditorInitData::COUNT)> EditorInitDa
 constexpr const char* ParaConquerProjectFileFormat = ".Prproject";
 constexpr const char* ParaConquerEditorInitFile = "editor.ini";
 
+
 struct EditorData
 {
     std::string projectName;

@@ -14,6 +14,8 @@
 
 BEGIN_PCCORE
 
+#define FORWARD_DEBUG_COLOR {0,0,1,1}
+#define FINAL_RENDER_PASS_DEBUG_COLOR {1,1,1,1}
 
 struct ViewDirExtremum
 {

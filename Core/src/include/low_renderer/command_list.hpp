@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <array>
 #include <string>
 #include <memory>
 #include <functional>
@@ -105,6 +106,10 @@ public:
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 
     PC_CORE_API void ExucuteFetchCommand();
+
+    PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
+
+    PC_CORE_API virtual void EndDebugLabel() = 0;
 
 protected:
     CommandPoolFamily m_CommandPoolFamily;

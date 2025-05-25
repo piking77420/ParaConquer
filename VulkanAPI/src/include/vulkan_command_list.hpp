@@ -43,10 +43,14 @@ public:
     VULKAN_API void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset,
         size_t _firstInstance) override;
 
-    VULKAN_API void BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount);
+    VULKAN_API void BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) override;
 
     VULKAN_API void BindIndexBuffer(const PC_CORE::IndexBuffer& _indexBuffer, size_t _offset) override;
-    
+
+    VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
+
+    VULKAN_API void EndDebugLabel() override;
+
     VULKAN_API vk::CommandBuffer GetHandle() const;
 
     VULKAN_API const vk::Queue* GetQueue() const;
@@ -55,6 +59,7 @@ private:
     std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
 
     const vk::Queue* m_Queue = VK_NULL_HANDLE;
+  
 };
     
 }
