@@ -34,11 +34,11 @@ private:
 
     void UpdateViewPortDescriptorSet();
 
-    PC_CORE::Gbuffers gbuffers;
+    PC_CORE::Gbuffers m_Gbuffers;
     
-    std::shared_ptr<PC_CORE::Texture> viewportTexture;
+    std::shared_ptr<PC_CORE::Texture> m_ViewportTexture;
 
-    std::shared_ptr<PC_CORE::FrameBuffer> finalImageViewport;
+    std::shared_ptr<PC_CORE::FrameBuffer> m_FinalImageViewport;
     
     PC_CORE::ShaderProgramDescriptorSets* m_ViewPortDescriptorSet = nullptr;
 

@@ -30,6 +30,10 @@ Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerC
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = vk::CompareOp::eAlways;
     samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    samplerInfo.minLod = 0.f;
+    // TO DO NOT HARDCODED 
+    samplerInfo.maxLod = static_cast<float>(16);
+    samplerInfo.mipLodBias = 0.0f;
 
     vk::Device device =  std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 

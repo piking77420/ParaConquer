@@ -16,22 +16,22 @@ static constexpr bool CreateBasicsResource = true;
 
 void ResourceManager::InitPath()
 {
-    
-        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
-        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
-        auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
 
-        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/viking_room.obj");
-        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/cube.obj");
-        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
-        ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
+	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
+	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
+	auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
+
+	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/viking_room.obj");
+	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/cube.obj");
+	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
+	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
 
 
-        auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
+	auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
 
-        ResourceManager::Create<Texture>((fs::path)"assets/textures/emerauld_block.png");
-    
-    
+	ResourceManager::Create<Texture>((fs::path)"assets/textures/emerauld_block.png");
+
+
    
 }
 
