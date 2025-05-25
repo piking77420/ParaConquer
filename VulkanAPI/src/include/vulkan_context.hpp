@@ -15,6 +15,8 @@ namespace Vulkan
         vk::Queue presentQueue;
         
         vk::Queue transferQueu;
+
+        vk::Fence transferFence;
         
         vk::CommandPool commandPool = VK_NULL_HANDLE;
 

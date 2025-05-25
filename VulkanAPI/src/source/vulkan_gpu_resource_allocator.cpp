@@ -41,7 +41,7 @@ bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateI
                 .device = context.GetDevice()->GetDevice(),
                 .commandPool = context.transferCommandPool,
                 .queue = context.transferQueu
-                };
+            };
 
             vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
             
@@ -57,7 +57,7 @@ bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateI
             commandBuffer.copyBuffer(stagginBuffer.buffer, vulkanBufferPtr->buffer, copyRegion);
             vmaUnmapMemory(m_allocator, stagginBuffer.allocation);
 
-            EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+            EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
         }
         break;
     case PC_CORE::BufferUsage::UniformBuffer:
@@ -161,7 +161,7 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
         
         // Wait for end command 
         TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, imageAspectFlag, mipLevel);
-        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 
 
         const uint32_t w =  _createTextureInfo.width;
@@ -185,7 +185,7 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
         
         commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
         commandBuffer.copyBufferToImage(stagginBuffer.buffer, vulkanImageHandle.image, vk::ImageLayout::eTransferDstOptimal, region );
-        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 
         commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
 
@@ -198,13 +198,13 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
         {
             TransitionImageLayout(commandBuffer, vulkanImageHandle.image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, imageAspectFlag, mipLevel);
         }
-        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 
     }
     else
     {
         TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eUndefined, finalTextureLayout, imageAspectFlag, mipLevel);
-        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
     }
 
 

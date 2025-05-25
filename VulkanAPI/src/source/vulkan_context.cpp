@@ -38,14 +38,30 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     CreateMemoryAllocator();
     
     CreateCommandPools();
+
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice);
+
+    
+    vk::FenceCreateInfo vkFenceCreateInfo;
+        
+        vkFenceCreateInfo.sType = vk::StructureType::eFenceCreateInfo,
+        vkFenceCreateInfo.pNext = nullptr,
+        vkFenceCreateInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+        
+    transferFence = device->GetDevice().createFence(vkFenceCreateInfo);
+    
 }
 
 VulkanContext::~VulkanContext()
 {
     auto device = GetDevice();
-
+    
+    device->GetDevice().destroyFence(transferFence);
+    transferFence = nullptr;
+    
     device->GetDevice().destroyCommandPool(commandPool);    
     commandPool = nullptr;
+    
     device->GetDevice().destroyCommandPool(transferCommandPool);    
     transferCommandPool = nullptr;
 }
