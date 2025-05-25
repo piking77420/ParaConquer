@@ -20,11 +20,7 @@ protected:
     
     PC_CORE::LowPassFilter<Tbx::Vector2f, 8> deltass;
 
-    Tbx::Vector3f cameraSpeed = Tbx::Vector3f::Zero();
-
-    float cameraSpeedValue = 50.f;
-
-    float drag = 0.001f;
+    float cameraSpeedValue = 10.f;
     
     float pitch = 0.0f;
     

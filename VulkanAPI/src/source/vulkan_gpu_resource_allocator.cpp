@@ -1,7 +1,7 @@
 ﻿#define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
 
-#include "vulkan_gpu_allocator.hpp"
+#include "vulkan_gpu_resource_allocator.hpp"
 
 #include "helper_functions.hpp"
 #include "rhi_vulkan_parser.hpp"
@@ -11,7 +11,7 @@
 #include "low_renderer/rhi.hpp"
 
 
-bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuHandle>* _bufferptr)
+bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GPUResource>* _bufferptr)
 {
     vk::BufferUsageFlags bufferUsageFlags;
     
@@ -58,8 +58,6 @@ bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateI
             vmaUnmapMemory(m_allocator, stagginBuffer.allocation);
 
             EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
-            
-            vmaDestroyBuffer(m_allocator,stagginBuffer.buffer, stagginBuffer.allocation);
         }
         break;
     case PC_CORE::BufferUsage::UniformBuffer:
@@ -77,9 +75,9 @@ bool Vulkan::VulkanGpuAllocator::CreateGPUBuffer(const PC_CORE::GPUBufferCreateI
     return true;
 }
 
-bool Vulkan::VulkanGpuAllocator::DestroyBuffer(std::shared_ptr<PC_CORE::GpuHandle>* _bufferptr)
+bool Vulkan::VulkanGpuAllocator::DestroyBuffer(PC_CORE::GPUResource* _bufferptr)
 {
-    std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(*_bufferptr);
+    VulkanBufferHandle* vulkanBufferPtr = reinterpret_cast<VulkanBufferHandle*>(_bufferptr);
     
     if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->buffer == VK_NULL_HANDLE)
         return false;
@@ -89,7 +87,7 @@ bool Vulkan::VulkanGpuAllocator::DestroyBuffer(std::shared_ptr<PC_CORE::GpuHandl
     return true;
 }
 
-bool Vulkan::VulkanGpuAllocator::MapBuffer(const std::shared_ptr<PC_CORE::GpuHandle>& _bufferptr, void** _mapPtr)
+bool Vulkan::VulkanGpuAllocator::MapBuffer(const std::shared_ptr<PC_CORE::GPUResource>& _bufferptr, void** _mapPtr)
 {
     std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(_bufferptr);
 
@@ -101,7 +99,7 @@ bool Vulkan::VulkanGpuAllocator::MapBuffer(const std::shared_ptr<PC_CORE::GpuHan
     return true;
 }
 
-bool Vulkan::VulkanGpuAllocator::UnMapBuffer(const std::shared_ptr<PC_CORE::GpuHandle>& _bufferptr)
+bool Vulkan::VulkanGpuAllocator::UnMapBuffer(const std::shared_ptr<PC_CORE::GPUResource>& _bufferptr)
 {
     std::shared_ptr<VulkanBufferHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanBufferHandle>(_bufferptr);
 
@@ -113,7 +111,7 @@ bool Vulkan::VulkanGpuAllocator::UnMapBuffer(const std::shared_ptr<PC_CORE::GpuH
 }
 
 bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo& _createTextureInfo,
-    std::shared_ptr<PC_CORE::GpuHandle>* _texturePtr)
+    std::shared_ptr<PC_CORE::GPUResource>* _texturePtr)
 {
     VulkanContext& context = *reinterpret_cast<VulkanContext*>(PC_CORE::Rhi::GetRhiContext());
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
@@ -187,8 +185,6 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
         TransitionImageLayout(commandBuffer,  vulkanImageHandle.image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, imageAspectFlag);
 
         EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo);
-
-        vmaDestroyBuffer(m_allocator, stagginBuffer.buffer, stagginBuffer.allocation);
     }
     else
     {
@@ -197,33 +193,26 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
     }
 
 
-    std::shared_ptr<VulkanImageHandle> vkPtr = std::make_shared<VulkanImageHandle>();
-
     vulkanImageHandle.view = CreateImageView(device, vulkanImageHandle.image, vk::ImageViewType::e2D,
     format, imageAspectFlag);
     
-    vkPtr->allocation = vulkanImageHandle.allocation;
-    vkPtr->image = vulkanImageHandle.image;
-    vkPtr->view = vulkanImageHandle.view;
-
-    *_texturePtr = vkPtr;
+    *_texturePtr = std::make_shared<VulkanImageHandle>(std::move(vulkanImageHandle));
+  
+    vulkanImageHandle.Clear();
 }
 
-bool Vulkan::VulkanGpuAllocator::DestroyTexture(std::shared_ptr<PC_CORE::GpuHandle>* _textureHandle)
+bool Vulkan::VulkanGpuAllocator::DestroyImage(PC_CORE::GPUResource* _textureHandle)
 {
-    std::shared_ptr<VulkanImageHandle> vulkanBufferPtr = std::reinterpret_pointer_cast<VulkanImageHandle>(*_textureHandle);
+    VulkanImageHandle* vulkanBufferPtr = reinterpret_cast<VulkanImageHandle*>(_textureHandle);
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 
-    
     if (vulkanBufferPtr->allocation == VK_NULL_HANDLE || vulkanBufferPtr->image == VK_NULL_HANDLE || vulkanBufferPtr->view == VK_NULL_HANDLE)
         return false;
     
     vmaDestroyImage(m_allocator, vulkanBufferPtr->image, vulkanBufferPtr->allocation);
     device.destroyImageView(vulkanBufferPtr->view);
-    
-    *_textureHandle = nullptr;
-    
-    
+       
+ 
     return true;
 }
 

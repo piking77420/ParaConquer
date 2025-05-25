@@ -3,7 +3,7 @@
 #include "low_renderer/rhi_context.hpp"
 #include "vulkan_instance.hpp"
 #include "vulkan_device.hpp"
-#include "vulkan_gpu_allocator.hpp"
+#include "vulkan_gpu_resource_allocator.hpp"
 
 namespace Vulkan
 {    

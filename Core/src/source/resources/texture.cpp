@@ -9,6 +9,42 @@ using namespace PC_CORE;
 
 
 
+Texture::Texture(const Texture& other) noexcept
+{
+    std::exchange(m_TextureChannel, other.m_TextureChannel);
+
+    std::exchange(m_TextureHandles, other.m_TextureHandles);
+
+}
+
+Texture::Texture(Texture&& other) noexcept
+{
+    std::swap(m_TextureChannel, other.m_TextureChannel);
+    std::swap(m_TextureHandles, other.m_TextureHandles);
+
+    for (size_t i = 0; i < other.m_TextureHandles.size(); i++)
+    {
+        other.m_TextureHandles[i] = GPU_INVALID_ID;
+    }
+
+}
+
+PC_CORE_API Texture& Texture::operator=(const Texture& other) noexcept
+{
+    std::exchange(m_TextureChannel, other.m_TextureChannel);
+
+    std::exchange(m_TextureHandles, other.m_TextureHandles);
+   
+    return *this;
+}
+
+PC_CORE_API Texture& Texture::operator=(Texture&& other) noexcept
+{
+    std::swap(m_TextureChannel, other.m_TextureChannel);
+    std::swap(m_TextureHandles, other.m_TextureHandles);
+    return *this;
+}
+
 void Texture::Build()
 {
     if (!pathToFile.empty())
@@ -16,14 +52,19 @@ void Texture::Build()
 
 }
 
-Texture::Texture(const CreateTextureInfo& createTextureInfo)
+Texture::Texture()
+{
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        m_TextureHandles[i] = GPU_INVALID_ID;
+    }
+}
+
+Texture::Texture(const CreateTextureInfo& _createTextureInfo)
 {
     for (auto& texture : m_TextureHandles)
     {
-        if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
-        {
-            PC_LOGERROR("failed to create texture!");
-        }    
+        texture = Rhi::CreateTexture(_createTextureInfo);
     }
     
 }
@@ -37,13 +78,11 @@ Texture::~Texture()
 {
     for (auto& texture : m_TextureHandles)
     {
-        if (texture == nullptr)
-            return;
-    
-        if (!Rhi::GetRhiContext()->gpuAllocator->DestroyTexture(&texture))
-        {
-            PC_LOGERROR("failed to destroy texture!");
-        }
+        if (texture == GPU_INVALID_ID)
+            continue;
+
+        Rhi::DestroyGpuHandle(texture);
+        texture = GPU_INVALID_ID;
     }
    
 }
@@ -85,13 +124,9 @@ void Texture::LoadFromFile(const fs::path& _path)
 
     for (auto& texture : m_TextureHandles)
     {
-        if (!Rhi::GetRhiContext()->gpuAllocator->CreateTexture(createTextureInfo, &texture))
-        {
-            PC_LOGERROR("failed to create texture!");
-        }
+        texture = Rhi::CreateTexture(createTextureInfo);
     }
-
-
+    
     FileLoader::FreeData(pixels);
 }
 
@@ -100,12 +135,7 @@ void Texture::Load(const std::array<std::string, 6>& _maps)
   
 }
 
-std::shared_ptr<GpuHandle> Texture::GetHandle() const
-{
-    return m_TextureHandles[Rhi::GetFrameIndex()];
-}
-
-std::shared_ptr<GpuHandle> Texture::GetHandle(size_t _frameIndex) const
+GPUHandleID Texture::GetGPUHandleID(int _frameIndex)
 {
     return m_TextureHandles[_frameIndex];
 }

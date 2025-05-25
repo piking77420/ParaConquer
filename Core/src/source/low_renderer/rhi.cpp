@@ -13,16 +13,39 @@ using namespace PC_CORE;
 
 Rhi::Rhi(Rhi&& other) noexcept
 {
-
     m_RhiContext = other.m_RhiContext;
     other.m_RhiContext = nullptr;
 
     m_GraphicsApi = other.m_GraphicsApi;
     other.m_GraphicsApi = GraphicAPI::NONE;
 
+    std::exchange(m_GpuResource, other.m_GpuResource);
+    
+    std::exchange(m_GPUHandleIdStack, other.m_GPUHandleIdStack);
+
     m_Instance = this;
 
 }
+
+Rhi& Rhi::operator=(Rhi&& other) noexcept
+{
+    m_RhiContext = other.m_RhiContext;
+    other.m_RhiContext = nullptr;
+
+    m_GraphicsApi = other.m_GraphicsApi;
+    other.m_GraphicsApi = GraphicAPI::NONE;
+
+
+    std::exchange(m_GpuResource, other.m_GpuResource);
+
+    std::exchange(m_GPUHandleIdStack, other.m_GPUHandleIdStack);
+
+    m_Instance = this;
+
+
+    return *this;
+}
+
 
 Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_createInfo.GraphicsAPI)
 {
@@ -53,34 +76,36 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_
     {
         PC_LOGERROR("DX12 NOT SUPPORTED YET")
     }
+
+    // init id stack
+    for (GPUHandleID i = 0; i < MAX_ID; i++)
+    {
+        m_GPUHandleIdStack.push(i);
+    }
+    
 }
 
 Rhi::~Rhi()
 {
     if (m_Instance != nullptr && m_RhiContext != nullptr)
     {
-      
         PC_LOG("Rhi Deinitialized");
+
+        for (auto& it : m_GpuResource)
+        {
+            if (it.second.use_count() != 1)
+            {
+                PC_LOGERROR("While free all gpuresource There is still a pointer pointing to resource");
+            }
+
+            it.second.reset();
+        }
 
         delete m_RhiContext;
         m_RhiContext = nullptr;
 
         m_Instance = nullptr;
     }
-}
-
-Rhi& Rhi::operator=(Rhi&& other) noexcept
-{
-    m_RhiContext = other.m_RhiContext;
-    other.m_RhiContext = nullptr;
-
-    m_GraphicsApi = other.m_GraphicsApi;
-    other.m_GraphicsApi = GraphicAPI::NONE;
-
-    m_Instance = this;
-
-
-    return *this;
 }
 
 Rhi& Rhi::GetInstance()
@@ -190,6 +215,99 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
     }
 }
 
+GPUHandleID Rhi::CreateBuffer(const GPUBufferCreateInfo& _bufferCreateInfo)
+{
+    std::shared_ptr<GPUResource> bufferPtr;
+    if (!GetRhiContext()->gpuResourceAllocator->CreateGPUBuffer(_bufferCreateInfo, &bufferPtr))
+    {
+        PC_LOGERROR("Failed to create GPU buffer {}", ToString(_bufferCreateInfo.usage));
+        return GPU_INVALID_ID;
+    }
+
+    GPUHandleID id = CreateGpuHandle();
+    m_Instance->m_GpuResource.insert({id,bufferPtr});
+
+    return id;
+}
+
+bool Rhi::DestroyGpuHandle(GPUHandleID _gpuHandleID)
+{
+    if (_gpuHandleID == GPU_INVALID_ID)
+    {
+        PC_LOGERROR("Invalid GPUHandleID");
+        return false;
+    }
+    
+    auto it = m_Instance->m_GpuResource.find(_gpuHandleID);
+    
+    if (it == m_Instance->m_GpuResource.end())
+    {
+        PC_LOGERROR("Gpu handle match no gpu resource while try destroy");
+        return false;
+    }
+    
+    if (it->second.use_count() != 1)
+    {
+        PC_LOGERROR("Delect a gpu resourece while multiple pointer pointing on it");
+        it->second.reset();
+    }
+    else
+    {
+        it->second.reset();
+    }
+  
+    m_Instance->m_GPUHandleIdStack.push(_gpuHandleID);
+    m_Instance->m_GpuResource.erase(_gpuHandleID);
+
+    return true;
+}
+
+void Rhi::MapBuffer(GPUHandleID _gPUHandleID, void** _ptr)
+{
+    std::shared_ptr<GPUResource> resource = GetGpuResource(_gPUHandleID);
+    
+    if  (!GetRhiContext()->gpuResourceAllocator->MapBuffer(resource, _ptr))
+    {
+        PC_LOGERROR("Failed to map GPU buffer");
+        *_ptr = nullptr;
+    }
+}
+
+void Rhi::UnMapBuffer(GPUHandleID _gPUHandleID)
+{
+    std::shared_ptr<GPUResource> resource = GetGpuResource(_gPUHandleID);
+    
+    if (resource == nullptr)
+        return;
+    
+    if  (!GetRhiContext()->gpuResourceAllocator->UnMapBuffer(resource))
+    {
+        PC_LOGERROR("Failed to unmap GPU buffer");
+    }
+}
+
+GPUHandleID Rhi::CreateTexture(const CreateTextureInfo& _createTexture)
+{
+    
+    std::shared_ptr<GPUResource> bufferPtr;
+    if (!GetRhiContext()->gpuResourceAllocator->CreateTexture(_createTexture, &bufferPtr))
+    {
+        PC_LOGERROR("Failed to create Texture");
+        return GPU_INVALID_ID;
+    }
+
+    GPUHandleID id = CreateGpuHandle();
+    m_Instance->m_GpuResource.insert({id,bufferPtr});
+
+    return id;
+}
+
+std::shared_ptr<GPUResource> Rhi::GetResourceFromHandle(GPUHandleID _gpuHandleId)
+{
+    auto it = m_Instance->m_GpuResource.find(_gpuHandleId);
+    return it != m_Instance->m_GpuResource.end() ? it->second : nullptr;
+}
+
 
 RhiContext* Rhi::GetRhiContext()
 {
@@ -203,10 +321,6 @@ void Rhi::NextFrame()
    
 }
 
-uint32_t Rhi::GetFrameIndex() noexcept
-{
-    return (m_Instance) ? m_Instance->m_CurrentFrame : 0;
-}
 
 
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
@@ -253,4 +367,31 @@ void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)
 
 void Rhi::DX12Initialize(const RhiContextCreateInfo& _createInfo)
 {
+}
+
+GPUHandleID Rhi::CreateGpuHandle()
+{
+    if (m_Instance->m_GPUHandleIdStack.empty())
+    {
+        PC_LOGERROR("Max GPUHandle has been reach");
+        return GPU_INVALID_ID;
+    }
+    
+    GPUHandleID outHandleId = m_Instance->m_GPUHandleIdStack.top();
+    m_Instance->m_GPUHandleIdStack.pop();
+    return outHandleId;
+}
+
+std::shared_ptr<GPUResource> Rhi::GetGpuResource(GPUHandleID _gpuHandleId)
+{
+    assert(_gpuHandleId != GPU_INVALID_ID && "Invalid GPUHandleID");
+
+    auto it = m_Instance->m_GpuResource.find(_gpuHandleId);
+    if (it == m_Instance->m_GpuResource.end())
+    {
+        PC_LOGERROR("Cannot map GPU buffer");
+        return nullptr;
+    }
+
+    return it->second;
 }

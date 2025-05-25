@@ -1,2 +1,2 @@
-﻿#include "low_renderer/gpu_allocator.hpp"
+﻿#include "low_renderer/gpu_resource_allocator.hpp"
 

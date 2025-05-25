@@ -2,25 +2,25 @@
 #include "vulkan_frame_buffer.hpp"
 #include "handles/vulkan_buffer_handle.hpp"
 #include "handles/vulkan_image_handle.hpp"
-#include "low_renderer/gpu_allocator.hpp"
+#include "low_renderer/gpu_resource_allocator.hpp"
 
 namespace Vulkan
 {
-    class VulkanGpuAllocator : public PC_CORE::GpuAllocator
+    class VulkanGpuAllocator : public PC_CORE::GpuResourceAllocator
     {
     public:
-        bool CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GpuHandle>* _bufferptr) override;
+        bool CreateGPUBuffer(const PC_CORE::GPUBufferCreateInfo& _createInfo, std::shared_ptr<PC_CORE::GPUResource>* _bufferptr) override;
         
-        bool DestroyBuffer(std::shared_ptr<PC_CORE::GpuHandle>* _bufferptr) override;
+        bool DestroyBuffer(PC_CORE::GPUResource* _bufferptr) override;
 
-        bool MapBuffer(const std::shared_ptr<PC_CORE::GpuHandle>& _bufferptr, void** _mapPtr) override;
+        bool MapBuffer(const std::shared_ptr<PC_CORE::GPUResource>& _bufferptr, void** _mapPtr) override;
 
-        bool UnMapBuffer(const std::shared_ptr<PC_CORE::GpuHandle>& _bufferptr) override;
+        bool UnMapBuffer(const std::shared_ptr<PC_CORE::GPUResource>& _bufferptr) override;
 
         bool CreateTexture(const PC_CORE::CreateTextureInfo& _createTextureInfo,
-            std::shared_ptr<PC_CORE::GpuHandle>* _texturePtr) override;
+            std::shared_ptr<PC_CORE::GPUResource>* _texturePtr) override;
         
-        bool DestroyTexture(std::shared_ptr<PC_CORE::GpuHandle>* _textureHandle) override;
+        bool DestroyImage(PC_CORE::GPUResource* _textureHandle) override;
         
         VulkanGpuAllocator(const VmaAllocatorCreateInfo& _createInfo);
         

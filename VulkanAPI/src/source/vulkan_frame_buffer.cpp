@@ -22,9 +22,11 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 		std::vector<vk::ImageView> image_views;
 		image_views.reserve(attachements->size());
 
+		
 		for (auto& attachement : *attachements)
 		{
-			PC_CORE::GpuHandle* gpuHandle = attachement->GetHandle(frame).get();
+			PC_CORE::GPUHandleID id = attachement->GetGPUHandleID(frame);
+			PC_CORE::GPUResource* gpuHandle = PC_CORE::Rhi::GetResourceFromHandle(id).get();
 			VulkanImageHandle* imageHandle = reinterpret_cast<VulkanImageHandle*>(gpuHandle);
 			image_views.emplace_back(imageHandle->view);
 				

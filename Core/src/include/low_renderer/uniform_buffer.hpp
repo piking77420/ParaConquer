@@ -19,10 +19,6 @@ public:
     
     PC_CORE_API ~UniformBuffer();
 
-    PC_CORE_API const std::shared_ptr<GpuHandle>* GetHandle() const;
-
-    PC_CORE_API std::shared_ptr<GpuHandle>* GetHandle();
-
 private:
     std::array<void*, MAX_FRAMES_IN_FLIGHT> m_MappedMemory;
 };

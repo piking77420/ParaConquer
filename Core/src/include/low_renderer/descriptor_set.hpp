@@ -4,7 +4,7 @@
 
 #include "core_header.hpp"
 #include "gpu_buffer.hpp"
-#include "gpu_handle.hpp"
+#include "gpu_resource.hpp"
 #include "sampler.hpp"
 #include "resources/texture.hpp"
 

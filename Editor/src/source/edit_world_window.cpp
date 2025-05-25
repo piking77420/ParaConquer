@@ -12,6 +12,7 @@ PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::str
 
 }
 
+
 void PC_EDITOR_CORE::EditWorldWindow::Update()
 {
     WorldViewWindow::Update();
@@ -115,9 +116,7 @@ void EditWorldWindow::CameratMovment(float _deltatime)
     if (!isPositionDirty)
         return;
 
-    cameraSpeed += addVector * _deltatime * cameraSpeedValue;
-    camera.position += addVector * 0.5f * _deltatime * _deltatime + cameraSpeed * _deltatime;
-    cameraSpeed *= pow(drag,_deltatime);
+    camera.position += (addVector * cameraSpeedValue) * _deltatime;
 }
 
 void EditWorldWindow::CameraChangeSpeed()

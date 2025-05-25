@@ -53,3 +53,4 @@ type() = default; \
     type(type&& other) = delete;                   \
     type& operator=(const type& other) = delete;   \
     type& operator=(type&& other) = delete; \
+

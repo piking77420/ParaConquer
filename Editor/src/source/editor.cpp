@@ -287,8 +287,10 @@ void Editor::Destroy()
 
 	IMGUIContext.Destroy();
 
-	for (auto& i: m_EditorWindows)
-		i.release();
+	for (auto& i : m_EditorWindows)
+	{
+		i.reset();
+	}
 
 	gameApp.Destroy();
 
@@ -309,87 +311,6 @@ void Editor::UpdateEditorWindows()
 		{
 			if (ImGui::MenuItem("SaveScene"))
 			{
-				auto world = World::GetWorld();
-				// unordoredMap Function
-				using UnordoredByteMap = std::unordered_map<uint8_t, uint8_t>;
-				using UnordoredMapIterator = typename UnordoredByteMap::iterator;
-				using ReseverMapFunction = void (UnordoredByteMap::*)(size_t);
-				using InsertMapFunction = typename UnordoredByteMap::mapped_type& (UnordoredByteMap::*)(const typename UnordoredByteMap::key_type&);
-
-				using UnordoredMapConstIterator = typename UnordoredByteMap::const_iterator;
-				using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename UnordoredByteMap::key_type, typename UnordoredByteMap::mapped_type>* (UnordoredMapConstIterator::*)() const;
-				using IncrementMapIterator = UnordoredMapConstIterator & (UnordoredMapConstIterator::*)();
-				using IncrementMapIteratorByte = std::unordered_map<uint8_t, uint8_t>::const_iterator& (std::unordered_map<uint8_t, uint8_t>::const_iterator::*)();
-
-#if 0
-
-				void* ptr = &world->m_ComponentManager.m_ComponentMapArray[Reflector::GetTypeKey<RigidBody>()];
-				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&world->m_ComponentManager.m_ComponentMapArray);
-
-				const auto& typeMap = Reflector::GetType<std::unordered_map<TypeId, ComponentArray>>();
-
-				UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
-				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
-				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
-
-				//auto rBegin = world->m_ComponentManager.m_ComponentMapArray.begin();
-				//auto rEnd = world->m_ComponentManager.m_ComponentMapArray.end();
-
-				
-
-				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
-				IncrementMapIteratorByte iteratorFunByte;
-				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
-
-				// TO DO REFLECT THE STD PAIR OF MAP TO GET THE OFFET BETWEEN THOS TWOO VALUE
-				for (UnordoredMapConstIterator it = mapByte->begin();
-					it != mapByte->end();)
-				{
-					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
-					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + typeMap.metaData.typeNatureMetaData.metaDataType.unordoredMapReflected.offsetBetweenKeyAndValueInPair);
-				
-					const auto& type = Reflector::GetType(*reinterpret_cast<const uint32_t*>(ptr));
-
-
-					const ComponentArray* arry = reinterpret_cast<const ComponentArray*>(ptr2);
-					assert(type.typeId == arry->componentType);
-
-					printf("");
-					(it.*iteratorFunByte)();
-				}
-
-				Serializer::Serialize(world->m_ComponentManager.m_ComponentMapArray, "basic_level.level");
-#else
-
-				
-				auto& map = ResourceManager::m_ResourcesMap;
-				const auto& typeMap = Reflector::GetType<decltype(ResourceManager::m_ResourcesMap)>();
-				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&ResourceManager::m_ResourcesMap);
-
-				UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
-				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
-				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
-
-				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
-				IncrementMapIteratorByte iteratorFunByte;
-				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
-
-
-				for (auto it = mapByte->begin() ; it != mapByte->end(); )
-				{
-					void* ptrr = &ResourceManager::m_ResourcesMap.at("quad.obj");
-
-					constexpr size_t sizeOfS = sizeof(std::string);
-					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
-					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + typeMap.metaData.typeNatureMetaData.metaDataType.unordoredMapReflected.offsetBetweenKeyAndValueInPair);
-
-					const std::string* s = reinterpret_cast<const std::string*>(ptr);
-					const std::shared_ptr<Resource>* r = reinterpret_cast<const std::shared_ptr<Resource>*>(ptr2);
-
-
-					(it.*iteratorFunByte)();
-				}
-#endif
 
 			}
 			ImGui::EndMenu();
@@ -496,6 +417,7 @@ void Editor::Run(bool* _appShouldClose)
 void Editor::InitEditorWindows()
 {
 	PC_LOG("InitEditorWindows...")
+
 
 	m_EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
 	m_EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));

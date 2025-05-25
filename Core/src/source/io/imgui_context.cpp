@@ -135,13 +135,15 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
 
 void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
 {
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
+        GPUHandleID id = _texture->GetGPUHandleID(i);
+        
         std::shared_ptr<Vulkan::VulkanImageHandle> handle = std::reinterpret_pointer_cast<Vulkan::VulkanImageHandle>(
-            _texture->GetHandle(i));
+            Rhi::GetResourceFromHandle(id));
         VkSampler sampler = std::reinterpret_pointer_cast<Vulkan::VulkanSampler>(Rhi::GetRhiContext()->sampler)->
             GetSampler();
-        ImGui_ImplVulkan_AddTexture(sampler, handle.get()->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        ImGui_ImplVulkan_AddTexture(sampler, handle->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 }
 

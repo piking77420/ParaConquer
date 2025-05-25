@@ -10,7 +10,7 @@ constexpr const char* SHADER_CACHE_PATH = "shaderCache/";
 
 
 #define ALIGNAS_16 alignas(16)
-constexpr  int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 BEGIN_PCCORE
     enum class GraphicAPI
@@ -521,6 +521,27 @@ enum class BufferUsage
     Count
 };
 
+inline const char* ToString(BufferUsage e)
+{
+        switch (e)
+        {
+        case BufferUsage::VertexBuffer:
+            return "VertexBuffer";
+            break;
+        case BufferUsage::IndexBuffer:
+            return "IndexBuffer";
+            break;
+        case BufferUsage::UniformBuffer:
+            return "UniformBuffer";
+            break;
+        case BufferUsage::ShaderStorageBuffer:
+            return "ShaderStorageBuffer";
+            break;
+        case BufferUsage::Count:
+        default: return "unknown";
+        }
+}
+
 struct GPUBufferCreateInfo
 {
     const void* data;
@@ -529,6 +550,20 @@ struct GPUBufferCreateInfo
 };
 
 END_PCCORE
+
+
+template <typename T, typename U>
+inline T SafeCastReinterpreCast(U* ptr)
+{
+#ifdef DEBUG
+    return dynamic_cast<T*>(ptr);
+#else
+    return reinterpret_cast<T>(ptr);
+
+#endif // DEBUG
+
+}
+
 
 
 // This descriptor must Containt Unifrom Camera at Binding 1 and final texture to viewPort

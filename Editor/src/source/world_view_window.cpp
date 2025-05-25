@@ -14,11 +14,12 @@ using namespace PC_EDITOR_CORE;
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
+    
     m_Editor->gameApp.renderer.m_DrawTextureScreenQuadShader->AllocDescriptorSet(&m_ViewPortDescriptorSet, 0);
 
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
-
+        
 }
 
 WorldViewWindow::~WorldViewWindow()
@@ -48,7 +49,7 @@ void WorldViewWindow::Update()
     Vulkan::VulkanDescriptorSets* des = reinterpret_cast<Vulkan::VulkanDescriptorSets*>(m_ViewPortDescriptorSet);
     
     ImGui::Image( reinterpret_cast<ImTextureID>(static_cast<VkDescriptorSet>(des->descriptorSets.at(static_cast<size_t>(currentImage)))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
-            ImVec2(1, 1));
+          ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()
@@ -78,7 +79,7 @@ void WorldViewWindow::Render()
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
     
-    m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &gbuffers, &m_Editor->gameApp.world);
+   m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &gbuffers, &m_Editor->gameApp.world);
 }
 
 void WorldViewWindow::ResizeViewports()
@@ -100,7 +101,8 @@ void WorldViewWindow::ResizeViewports()
         .data = nullptr
     };
 
-    viewportTexture = std::make_unique<PC_CORE::Texture>(create_texture);
+    viewportTexture.reset();
+    viewportTexture = std::make_shared<PC_CORE::Texture>(create_texture);
 
     std::vector<PC_CORE::Texture*> attachments = { viewportTexture.get() };
     

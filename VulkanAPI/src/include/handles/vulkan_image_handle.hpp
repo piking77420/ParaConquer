@@ -2,41 +2,44 @@
 
 #include <vma/vk_mem_alloc.h>
 #include "vulkan_header.h"
-#include "low_renderer/gpu_handle.hpp"
+#include "low_renderer/gpu_resource.hpp"
 
 namespace Vulkan
 {
-    class VulkanImageHandle : public PC_CORE::GpuHandle
+    class VulkanImageHandle : public PC_CORE::GPUResource
     {
     public:
     
         VulkanImageHandle(VulkanImageHandle&& _other) noexcept
         {
-            std::exchange(image, _other.image);
+            std::swap(image, _other.image);
 
-            std::exchange(view, _other.view);
+            std::swap(view, _other.view);
             
-            std::exchange(allocation, _other.allocation);
+            std::swap(allocation, _other.allocation);
         }
 
-        VulkanImageHandle& operator=(VulkanImageHandle&& _other)
+        VulkanImageHandle& operator=(VulkanImageHandle&& _other) noexcept
         {
-            std::exchange(image, _other.image);
+            std::swap(image, _other.image);
 
-            std::exchange(view, _other.view);
+            std::swap(view, _other.view);
             
-            std::exchange(allocation, _other.allocation);
+            std::swap(allocation, _other.allocation);
 
             return *this;
         }
 
-        VulkanImageHandle() = default;
+        VULKAN_API VulkanImageHandle();
 
-        ~VulkanImageHandle() override = default;
+        VULKAN_API ~VulkanImageHandle() override;
+
+        VULKAN_API void Clear() override;
         
         VkImage image;
         VkImageView view;
         VmaAllocation allocation;
+
     };
 
 }

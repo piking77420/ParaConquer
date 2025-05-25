@@ -48,11 +48,11 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
             {
                 
-                PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).
+                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).
                     uniformBufferDescriptor;
-                PC_CORE::GpuBuffer* bufferHandle = uniformBufferDescriptor->buffer;
-                VulkanBufferHandle* vulkanBufferHandle = reinterpret_cast<VulkanBufferHandle*>(bufferHandle->bufferHandles.
-                    at(f).get());
+                const PC_CORE::GPUHandleID id = uniformBufferDescriptor->buffer->bufferHandles[f];
+                
+                VulkanBufferHandle* vulkanBufferHandle = reinterpret_cast<VulkanBufferHandle*>(PC_CORE::Rhi::GetResourceFromHandle(id).get());
 
                 descriptorBufferInfos[bufferDescriptorCount].buffer = vulkanBufferHandle->buffer;
                 descriptorBufferInfos[bufferDescriptorCount].offset = 0;
@@ -67,7 +67,9 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 PC_CORE::Texture* texturePtr = imageSamplerDescriptor->texture;
                 PC_CORE::Sampler* samplerHandle = imageSamplerDescriptor->sampler;
 
-                VulkanImageHandle* vulkanImageHandle = reinterpret_cast<VulkanImageHandle*>(texturePtr->GetHandle(f).get());
+                PC_CORE::GPUHandleID id = texturePtr->GetGPUHandleID(static_cast<int>(f));
+
+                VulkanImageHandle* vulkanImageHandle = reinterpret_cast<VulkanImageHandle*>(PC_CORE::Rhi::GetResourceFromHandle(id).get());
                 VulkanSampler* vulkanSampler = reinterpret_cast<VulkanSampler*>(samplerHandle);
 
                 descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;

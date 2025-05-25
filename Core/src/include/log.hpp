@@ -70,7 +70,7 @@ private:
     template <typename ...Args>
     static inline void PrintFormat(const std::string& unformatted, Args&&... args)
     {
-        std::println("{}", std::vformat(unformatted, std::make_format_args(std::forward<Args>(args)...)));
+        std::println("{}", std::vformat(unformatted, std::make_format_args(args...)));
     }
 };
 

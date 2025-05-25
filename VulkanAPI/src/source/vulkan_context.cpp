@@ -11,7 +11,7 @@
 
 #include <vma/vk_mem_alloc.h>
 
-#include "vulkan_gpu_allocator.hpp"
+#include "vulkan_gpu_resource_allocator.hpp"
 #include "vulkan_swap_chain.hpp"
 
 using namespace Vulkan;
@@ -49,6 +49,7 @@ VulkanContext::~VulkanContext()
     device->GetDevice().destroyCommandPool(transferCommandPool);    
     transferCommandPool = nullptr;
 }
+
 
 std::shared_ptr<VulkanDevice> VulkanContext::GetDevice()
 {
@@ -88,7 +89,7 @@ void VulkanContext::CreateMemoryAllocator()
         .pTypeExternalMemoryHandleTypes = nullptr
         };
   
-    gpuAllocator = std::make_shared<Vulkan::VulkanGpuAllocator>(createInfo);
+    gpuResourceAllocator = std::make_shared<Vulkan::VulkanGpuAllocator>(createInfo);
 }
 
 void VulkanContext::CreateCommandPools()

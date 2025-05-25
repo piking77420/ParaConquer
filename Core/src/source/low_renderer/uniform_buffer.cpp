@@ -10,12 +10,7 @@ void UniformBuffer::Update(void* _data, size_t _size)
 
     if (m_MappedMemory[currentFrame] == nullptr)
     {
-        if (!Rhi::GetRhiContext()->gpuAllocator->MapBuffer(bufferHandles[currentFrame],
-                                                           &m_MappedMemory[currentFrame]))
-        {
-            PC_LOGERROR("Failed to MapBuffer unfiorm buffer");
-            return;
-        }
+        Rhi::MapBuffer(bufferHandles[currentFrame], &m_MappedMemory[currentFrame]);
     }
     memcpy(m_MappedMemory[currentFrame], _data, _size);
 }
@@ -32,25 +27,14 @@ UniformBuffer::UniformBuffer(void* _data, size_t _size)
     int i = 0;
     for (auto& b : bufferHandles)
     {
-        if (!Rhi::GetRhiContext()->gpuAllocator->CreateGPUBuffer(info, &b))
-        {
-            PC_LOGERROR("Failed to create uniformBuffer buffer");
-            return;
-        }
+        b = Rhi::CreateBuffer(info);
+        Rhi::MapBuffer(b, &m_MappedMemory[i]);
 
-        if (!Rhi::GetRhiContext()->gpuAllocator->MapBuffer(b, &m_MappedMemory[i]))
-        {
-            PC_LOGERROR("Failed to MapBuffer unfiorm buffer");
-            return;
-        }
+        if (m_MappedMemory[i] == nullptr)
+            continue;
 
         memcpy(m_MappedMemory[i], _data, _size);
-    
-        if (!Rhi::GetRhiContext()->gpuAllocator->UnMapBuffer(b))
-        {
-            PC_LOGERROR("Failed to MapBuffer unfiorm buffer");
-            return;
-        }
+        Rhi::UnMapBuffer(b);
         m_MappedMemory[i] = nullptr;
         i++;
     }
@@ -63,27 +47,15 @@ UniformBuffer::~UniformBuffer()
     for (size_t i = 0 ; i < bufferHandles.size() ; i++)
     {
 
-        if (bufferHandles[i] == nullptr)
+        if (bufferHandles[i] == GPU_INVALID_ID)
             continue;
     
         if (m_MappedMemory[i] != nullptr)
         {
-            Rhi::GetRhiContext()->gpuAllocator->UnMapBuffer(bufferHandles[i]);
+            Rhi::UnMapBuffer(bufferHandles[i]);
         }
     }
  
 }
 
-const std::shared_ptr<GpuHandle>* UniformBuffer::GetHandle() const
-{
-    const size_t currentFrame = Rhi::GetFrameIndex();
 
-    return &bufferHandles[currentFrame];
-}
-
-std::shared_ptr<GpuHandle>* UniformBuffer::GetHandle()
-{
-    const size_t currentFrame = Rhi::GetFrameIndex();
-
-    return &bufferHandles[currentFrame];
-}
