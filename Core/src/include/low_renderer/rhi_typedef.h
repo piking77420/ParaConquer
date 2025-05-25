@@ -507,13 +507,6 @@ enum class IndexFormat
 #pragma endregion RenderPass
 
 
-enum MemoryUsage
-{
-    CpuOnly,
-    GpuOnly,
-    CpuToGpu
-};
-
 enum class BufferUsage
 {
     VertexBuffer,
@@ -521,6 +514,19 @@ enum class BufferUsage
     UniformBuffer,
     ShaderStorageBuffer,
     Count
+};
+
+
+enum struct MemoryUsageType
+{
+    // not modified over life time
+    Static,
+    // can be mofied over time but not as mush as dynamic 
+    Mutable,
+    // can be modified over time
+    Dynamic,
+
+    Count,
 };
 
 inline const char* ToString(BufferUsage e)
