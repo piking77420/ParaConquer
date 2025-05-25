@@ -516,7 +516,7 @@ enum class BufferUsage
     Count
 };
 
-
+// TO DO
 enum struct MemoryUsageType
 {
     // not modified over life time
@@ -555,6 +555,7 @@ struct GPUBufferCreateInfo
     const void* data;
     size_t dataSize;
     BufferUsage usage;
+    MemoryUsageType memoryUsage;
 };
 
 
