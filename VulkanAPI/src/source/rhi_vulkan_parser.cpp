@@ -1151,3 +1151,24 @@ vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescr
         throw std::runtime_error("Unknown ShaderProgramDescriptorType");
     }
 }
+
+vk::SampleCountFlagBits Vulkan::RhiSampleCountToVuklan(uint32_t _sampleCount)
+{
+    switch (_sampleCount)
+    {
+    case 2:
+        return vk::SampleCountFlagBits::e2;
+    case 4:
+        return vk::SampleCountFlagBits::e4;
+    case 8:
+        return vk::SampleCountFlagBits::e8;
+    case 16:
+        return vk::SampleCountFlagBits::e16;
+    case 32:
+        return vk::SampleCountFlagBits::e32;
+    case 64:
+        return vk::SampleCountFlagBits::e64;
+    default:
+        return vk::SampleCountFlagBits::e1;
+    }
+}

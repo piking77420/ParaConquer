@@ -12,7 +12,6 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 
 	const VulkanRenderPass* renderPass = reinterpret_cast<const VulkanRenderPass*>(_createFrameInfo.renderPass);
 
-	std::vector<PC_CORE::Texture*>* attachements = _createFrameInfo.attachements;
 
 
 
@@ -20,12 +19,12 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 	for (auto& framebuffer : m_FrameBuffers)
 	{
 		std::vector<vk::ImageView> image_views;
-		image_views.reserve(attachements->size());
+		image_views.reserve(_createFrameInfo.attachements->size());
 
 		
-		for (auto& attachement : *attachements)
+		for (auto& attachement : *_createFrameInfo.attachements)
 		{
-			PC_CORE::GPUHandleID id = attachement->GetGPUHandleID(frame);
+			PC_CORE::GPUHandleID id = attachement.texture->GetGPUHandleID(frame);
 			PC_CORE::GPUResource* gpuHandle = PC_CORE::Rhi::GetResourceFromHandle(id).get();
 			VulkanImageHandle* imageHandle = reinterpret_cast<VulkanImageHandle*>(gpuHandle);
 			image_views.emplace_back(imageHandle->view);

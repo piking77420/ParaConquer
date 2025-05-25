@@ -43,5 +43,7 @@ namespace Vulkan
     vk::IndexType RhiToIndexType(PC_CORE::IndexFormat _format);
 
     vk::DescriptorType RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType);
+
+    vk::SampleCountFlagBits RhiSampleCountToVuklan(uint32_t _sampleCount);
 }
 

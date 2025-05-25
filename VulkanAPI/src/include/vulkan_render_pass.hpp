@@ -11,6 +11,8 @@ namespace Vulkan
       
         VULKAN_API VulkanRenderPass(PC_CORE::RHIFormat colorFormat, PC_CORE::RHIFormat depthFormat);
 
+        VULKAN_API VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint32_t _sampleCount);
+
         VULKAN_API VulkanRenderPass(PC_CORE::RHIFormat colorFormat);
 
         VULKAN_API VulkanRenderPass(vk::Format format);

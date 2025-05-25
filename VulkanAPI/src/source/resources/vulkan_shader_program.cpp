@@ -262,11 +262,12 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
     ParseRasterizer(&rasterizer, _shaderGraphicPointInfo.rasterizerInfo);
     
+    vk::SampleCountFlagBits sample = RhiSampleCountToVuklan(_shaderGraphicPointInfo.rasterizerInfo.multiSampleRasterization);
     vk::PipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
-    multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
-    multisampling.minSampleShading = 1.0f; // Optional
+    multisampling.sampleShadingEnable = sample == vk::SampleCountFlagBits::e1 ? VK_FALSE : VK_TRUE;
+    multisampling.rasterizationSamples = sample;
+    multisampling.minSampleShading = sample == vk::SampleCountFlagBits::e1 ? 1.0f : 2.0f; // Optional
     multisampling.pSampleMask = nullptr; // Optional
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampling.alphaToOneEnable = VK_FALSE; // Optional

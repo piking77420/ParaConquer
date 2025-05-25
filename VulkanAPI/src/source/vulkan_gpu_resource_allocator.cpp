@@ -120,14 +120,13 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
     VmaMemoryUsage textureMemoryUsage;
     vk::ImageLayout finalTextureLayout = vk::ImageLayout::eUndefined;
     vk::ImageAspectFlags imageAspectFlag;
-
     uint32_t mipLevel = _createTextureInfo.GenerateMipMap ? _createTextureInfo.mipsLevels : 1;
-    
     GetTextureUsage(_createTextureInfo,&textureMemoryUsage, &textureUsage, &finalTextureLayout, &imageAspectFlag);
     const vk::Format format = RHIFormatToVkFormat(_createTextureInfo.format);
+    vk::SampleCountFlagBits sampleCount = RhiSampleCountToVuklan(_createTextureInfo.samples);
     
     VulkanImageHandle vulkanImageHandle = CreateImage(_createTextureInfo.width, _createTextureInfo.height
-                                                     ,_createTextureInfo.depth, _createTextureInfo.mipsLevels,
+                                                     ,_createTextureInfo.depth, _createTextureInfo.mipsLevels, sampleCount,
                                                      RHIImageToVkImageType(_createTextureInfo.imageType),
                                                      format,
                                                      vk::ImageTiling::eOptimal, textureUsage, textureMemoryUsage);
@@ -215,6 +214,8 @@ bool Vulkan::VulkanGpuAllocator::CreateTexture(const PC_CORE::CreateTextureInfo&
     *_texturePtr = std::make_shared<VulkanImageHandle>(std::move(vulkanImageHandle));
   
     vulkanImageHandle.Clear();
+
+    return true;
 }
 
 bool Vulkan::VulkanGpuAllocator::DestroyImage(PC_CORE::GPUResource* _textureHandle)
@@ -327,7 +328,7 @@ Vulkan::VulkanBufferHandle Vulkan::VulkanGpuAllocator::CreateBuffer(size_t size,
 }
 
 Vulkan::VulkanImageHandle Vulkan::VulkanGpuAllocator::CreateImage(uint32_t width, uint32_t height, uint32_t depth,
-                                                                  uint32_t _mimpLevel,
+                                                                  uint32_t _mimpLevel, vk::SampleCountFlagBits _sampleCount,
                                                                   vk::ImageType _imageType,
                                                                   vk::Format format, vk::ImageTiling tiling,
                                                                   vk::ImageUsageFlags usage, VmaMemoryUsage imageMemory)
@@ -346,7 +347,7 @@ Vulkan::VulkanImageHandle Vulkan::VulkanGpuAllocator::CreateImage(uint32_t width
     imageInfo.usage = usage;
     imageInfo.samples = vk::SampleCountFlagBits::e1;
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
-
+    imageInfo.samples = _sampleCount;
     
     VmaAllocationCreateInfo allocationInfo = {};
     allocationInfo.usage = imageMemory;

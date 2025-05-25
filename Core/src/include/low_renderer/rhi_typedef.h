@@ -442,6 +442,8 @@ enum class IndexFormat
         Channel channel;
         TextureAttachement textureAttachement;
         TextureNature textureNature;
+
+        uint32_t samples;
         bool canbeSampled = false;
         bool GenerateMipMap = false;
         void* data;
@@ -548,6 +550,7 @@ struct GPUBufferCreateInfo
     size_t dataSize;
     BufferUsage usage;
 };
+
 
 END_PCCORE
 

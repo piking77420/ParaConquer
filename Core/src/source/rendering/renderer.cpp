@@ -26,7 +26,7 @@ void Renderer::Init()
     m_RhiContext = Rhi::GetRhiContext();
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
-    drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM);
+    drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
 
     CreateForwardShader();
@@ -238,11 +238,6 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->SetViewPort(viewportInfo);
     primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, 0, 1);
 
-
-    //std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this,
-      //                                                            std::placeholders::_1, std::placeholders::_2);
-   // _world->entityManager.ForEach<Transform, StaticMesh>(func);
-
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
     {
         DrawStaticMesh(World::GetWorld()->GetComponent<Transform>(it),
@@ -367,11 +362,12 @@ void Renderer::CreateDrawQuadShader()
 {
     PERF_REGION_SCOPED;
 
-    constexpr RasterizerInfo rasterizerInfo =
+    const RasterizerInfo rasterizerInfo =
     {
         .polygonMode = PolygonMode::Fill,
         .cullModeFlag = CullModeFlagBit::Back,
-        .frontFace = FrontFace::CounterClockwise
+        .frontFace = FrontFace::CounterClockwise,
+        .multiSampleRasterization = Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount()
     };
 
 

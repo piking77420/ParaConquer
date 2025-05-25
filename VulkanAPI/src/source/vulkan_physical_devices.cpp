@@ -17,6 +17,22 @@ float Vulkan::VulkanPhysicalDevice::GetMaxSamplerAnisotropy() const
     return properties.limits.maxSamplerAnisotropy;
 }
 
+uint32_t Vulkan::VulkanPhysicalDevice::GetMaxUsableSampleCount() const
+{
+    vk::PhysicalDeviceProperties properties;
+    physicalDevice.getProperties(&properties);
+    
+    vk::SampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+    if (counts & vk::SampleCountFlagBits::e64) { return 64; }
+    if (counts & vk::SampleCountFlagBits::e32) { return 32; }
+    if (counts & vk::SampleCountFlagBits::e16) { return 16; }
+    if (counts & vk::SampleCountFlagBits::e8) { return 8; }
+    if (counts & vk::SampleCountFlagBits::e4) { return 4; }
+    if (counts & vk::SampleCountFlagBits::e2) { return 2; }
+
+    return 1;
+}
+
 
 
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
@@ -103,6 +119,7 @@ void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice*
 void Vulkan::VulkanPhysicalDevices::GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
                                                       const vk::PhysicalDeviceFeatures& _physicalDeviceProperties)
 {
+
 }
 
 std::vector<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(

@@ -195,6 +195,26 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
     }
 }
 
+PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat, uint32_t sampleCount)
+{
+    Rhi& rhi = GetInstance();
+
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanRenderPass>(_colorFormat, sampleCount);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default:;
+    }
+}
+
 std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo)
 {
     Rhi& rhi = GetInstance();
@@ -332,9 +352,9 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
     
     PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
         {
-        {
-            SWAPCHAIN_EXT, //MESH_SHADER_EXT, ACCELERATION_EXT ,RAY_TRACING_EXT , DEFFERED_HOST_OP
-        }
+            {
+                SWAPCHAIN_EXT, //MESH_SHADER_EXT, ACCELERATION_EXT ,RAY_TRACING_EXT , DEFFERED_HOST_OP
+            }
         };
 
     const RhiContextCreateInfo renderContextCreateInfo =

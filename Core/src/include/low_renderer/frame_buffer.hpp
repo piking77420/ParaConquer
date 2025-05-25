@@ -7,12 +7,18 @@
 #include "resources/texture.hpp"
 
 BEGIN_PCCORE
-	struct CreateFrameInfo
+
+struct AttachementDescriptor
+{
+	Texture* texture;
+};
+
+struct CreateFrameInfo
 {
 	uint32_t width;
 	uint32_t height;
 
-	std::vector<Texture*>* attachements;
+	std::vector<AttachementDescriptor>* attachements;
 	RhiRenderPass* renderPass;
 };
 

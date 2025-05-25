@@ -38,7 +38,7 @@ namespace Vulkan
         VulkanBufferHandle CreateBuffer(size_t size, vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage);
 
         VulkanImageHandle CreateImage(uint32_t width, uint32_t height, uint32_t depth,
-                                      uint32_t _mimpLevel,
+                                      uint32_t _mimpLevel, vk::SampleCountFlagBits _sampleCount,
                                       vk::ImageType _imageType,
                                       vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
                                       VmaMemoryUsage imageMemory);

@@ -11,7 +11,7 @@
 #include "resources/shader_program.h"
 
 BEGIN_PCCORE
-    struct RenderHardwareInterfaceCreateInfo
+ struct RenderHardwareInterfaceCreateInfo
 {
     PC_CORE::GraphicAPI GraphicsAPI;
     Window* window;
@@ -45,6 +45,8 @@ public:
     PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat, PC_CORE::RHIFormat _depthFormat);
 
     PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat);
+
+    PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat, uint32_t sampleCount);
 
     PC_CORE_API static std::shared_ptr<FrameBuffer> CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo);
 

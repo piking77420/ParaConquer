@@ -14,17 +14,22 @@ void PC_CORE::Gbuffers::HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr
         m_size = _targetSize;
         CreateGBuffers();
 
-        std::vector<Texture*> handles;
-        handles.reserve(m_gbuffers.size());
-
-        for (auto& gbuffer : m_gbuffers)
-            handles.emplace_back(gbuffer.get());
+        std::vector<AttachementDescriptor> attachementDescritpor =
+        {
+            {
+                .texture = m_gbuffers[0].get(),
+            },
+            {
+                .texture = m_gbuffers[1].get(),
+            }
+            
+        };
         
         CreateFrameInfo create_frame_info =
             {
             .width = static_cast<uint32_t>(m_size.x),
             .height = static_cast<uint32_t>(m_size.y),
-            .attachements = &handles,
+            .attachements = &attachementDescritpor,
             .renderPass = _renderPass.get()
             };
         m_FrameBuffer = Rhi::CreateFrameBuffer(create_frame_info);
@@ -54,6 +59,8 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             .channel = Channel::DEFAULT,
             .textureAttachement = TextureAttachement::Color,
             .textureNature = TextureNature::RenderTarget,
+            .samples = 1,
+
             .canbeSampled = false,
             .GenerateMipMap = false,
             .data = nullptr,

@@ -117,6 +117,7 @@ void Texture::LoadFromFile(const fs::path& _path)
         .channel = Channel::RGBA,
         .textureAttachement = TextureAttachement::None,
         .textureNature = TextureNature::Default,
+        .samples = 1,
         .canbeSampled = true,
         .GenerateMipMap = true,
         .data = pixels

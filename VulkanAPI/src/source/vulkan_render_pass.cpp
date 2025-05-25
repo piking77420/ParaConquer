@@ -63,6 +63,52 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, PC_CO
         m_RenderPass = device->GetDevice().createRenderPass(renderPassInfo);
 }
 
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint32_t _sampleCount)
+{
+    std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(VulkanContext::GetContext().rhiDevice);
+
+    vk::AttachmentDescription colorAttachment{};
+    colorAttachment.format = RHIFormatToVkFormat(colorFormat);
+    colorAttachment.samples = vk::SampleCountFlagBits::e1;
+    colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+    colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+    colorAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+    colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eStore;
+    colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
+    colorAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+    colorAttachment.samples = RhiSampleCountToVuklan(_sampleCount);
+
+    vk::AttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+    vk::SubpassDescription subpass{};
+    subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+
+    vk::SubpassDependency dependency{};
+    dependency.srcSubpass = 0;
+    dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+
+    dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependency.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+    dependency.dstStageMask = vk::PipelineStageFlagBits::eFragmentShader;
+    dependency.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+    vk::RenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
+
+    m_RenderPass = device->GetDevice().createRenderPass(renderPassInfo);
+}
+
 Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat)
 {
     std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(VulkanContext::GetContext().rhiDevice);

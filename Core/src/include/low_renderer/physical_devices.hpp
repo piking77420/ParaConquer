@@ -34,6 +34,9 @@ BEGIN_PCCORE
         virtual ~PhysicalDevice() = default;
 
         virtual float GetMaxSamplerAnisotropy() const = 0;
+
+        virtual uint32_t GetMaxUsableSampleCount() const = 0;
+
     };
 
     class PhysicalDevices

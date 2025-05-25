@@ -12,6 +12,5 @@ ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _programShaderCreate
 
 ShaderProgram::~ShaderProgram()
 {
-	//Rhi::DestroyShader(this);
 }
 

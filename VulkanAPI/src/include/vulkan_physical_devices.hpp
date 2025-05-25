@@ -26,7 +26,9 @@ namespace Vulkan
     {
         vk::PhysicalDevice physicalDevice;
 
-        float GetMaxSamplerAnisotropy() const override ;
+        float GetMaxSamplerAnisotropy() const override;
+
+        uint32_t GetMaxUsableSampleCount() const override;
         
     };
 

@@ -99,6 +99,7 @@ struct RasterizerInfo
     PolygonMode polygonMode = PolygonMode::Fill;
     CullModeFlagBit cullModeFlag = CullModeFlagBit::Back;
     FrontFace frontFace = FrontFace::CounterClockwise;
+    uint32_t multiSampleRasterization = 1;
 };
 
 struct ShaderGraphicPointInfo

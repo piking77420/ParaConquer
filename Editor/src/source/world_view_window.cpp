@@ -96,6 +96,7 @@ void WorldViewWindow::ResizeViewports()
         .channel = PC_CORE::Channel::RGBA,
         .textureAttachement = PC_CORE::TextureAttachement::Color,
         .textureNature = PC_CORE::TextureNature::RenderTarget,
+        .samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount(),
         .canbeSampled = true,
         .GenerateMipMap = false,
         .data = nullptr
@@ -104,7 +105,12 @@ void WorldViewWindow::ResizeViewports()
     m_ViewportTexture.reset();
     m_ViewportTexture = std::make_shared<PC_CORE::Texture>(create_texture);
 
-    std::vector<PC_CORE::Texture*> attachments = { m_ViewportTexture.get() };
+    std::vector<PC_CORE::AttachementDescriptor> attachments =
+    { 
+        {
+            m_ViewportTexture.get(),
+        }
+    };
     
     const PC_CORE::CreateFrameInfo create_frame_info =
         {
