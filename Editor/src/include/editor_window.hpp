@@ -38,9 +38,12 @@ public:
 
     void GetInfo();
     
+    bool IsInsideWindow(Tbx::Vector2f _point) const;
+
     virtual void Render() {};
     
     virtual void Update() {}
+
 
 
 protected:

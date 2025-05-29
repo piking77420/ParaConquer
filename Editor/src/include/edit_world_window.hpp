@@ -18,19 +18,27 @@ public:
 protected:
     void MoveCameraUpDate();
     
-    PC_CORE::LowPassFilter<Tbx::Vector2f, 8> deltass;
+    PC_CORE::LowPassFilter<Tbx::Vector2f, 16> deltass;
 
-    float cameraSpeedValue = 10.f;
+    float cameraSpeedValue = 5.f;
     
     float pitch = 0.0f;
     
-    float yaw = 0.f;
+    float yaw = 90.f;
+
+    float cameraSensitivity = 100.f;
+
+    Tbx::Vector3f m_CameraSpeed = Tbx::Vector3f::Zero();
+
+    float smoothTime = 0.3f;
 
     void RotateCamera(float _deltatime);
 
     void CameratMovment(float _deltatime);
 
     void CameraChangeSpeed();
+
+    void HideCursor();
 };
 
 END_EDITOR_PCCORE

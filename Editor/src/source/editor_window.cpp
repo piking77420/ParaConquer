@@ -32,7 +32,17 @@ void EditorWindow::GetInfo()
     if (newSize != size)
         resize = true;
     
-    position = { imPos.x , imPos.y};
     size = { imSize.x , imSize.y};
+    position = { imPos.x , imPos.y};
 
+    position.x *= 0.5f * size.x;
+    position.y *= 0.5f * size.y;
+}
+
+bool EditorWindow::IsInsideWindow(Tbx::Vector2f _point) const
+{
+    bool outsideX = _point.x > (position.x + size.x) && _point.x < (position.x - size.x);
+    bool outsideY = _point.y > (position.y + size.y) && _point.y < (position.y - size.y);
+
+    return !(outsideX || outsideY);
 }

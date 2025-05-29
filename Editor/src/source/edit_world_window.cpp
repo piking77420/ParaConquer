@@ -2,6 +2,8 @@
 
 #include <Imgui/imgui.h>
 #include "editor.hpp"
+#include "app.hpp"
+#include "easing_function.hpp"
 #include "time/core_time.hpp"
 #include "log.hpp"
 
@@ -9,7 +11,8 @@ using namespace PC_EDITOR_CORE;
 
 PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::string& _name) : WorldViewWindow(_editor,_name)
 {
-
+    
+    RotateCamera(0.2f);
 }
 
 
@@ -33,6 +36,8 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
     RotateCamera(deltatime);
     CameratMovment(deltatime);
     CameraChangeSpeed();
+
+    HideCursor();
 }
 
 void EditWorldWindow::RotateCamera(float _deltatime)
@@ -41,15 +46,14 @@ void EditWorldWindow::RotateCamera(float _deltatime)
     {
         return;
     }
-    
+
+
     const auto io = ImGui::GetIO();
-
-
     const Tbx::Vector2f vec = { io.MouseDelta.x , -io.MouseDelta.y };
     deltass.AddSample(vec);
     const Tbx::Vector2f average = deltass.GetAvarage<Tbx::Vector2f>();
-    yaw += average.x;
-    pitch += average.y;
+    yaw += average.x * _deltatime * cameraSensitivity;
+    pitch += average.y * _deltatime * cameraSensitivity;
 
     constexpr float MaxPitch = 89.f;
 
@@ -77,46 +81,41 @@ void EditWorldWindow::CameratMovment(float _deltatime)
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
         addVector += camera.front;
-        isPositionDirty = true;
     }
     if (ImGui::IsKeyDown(ImGuiKey_S))
     {
         addVector -= camera.front;
-        isPositionDirty = true;
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_A))
     {
         addVector -= right;
-        isPositionDirty = true;
-
     }
     if (ImGui::IsKeyDown(ImGuiKey_D))
     {
         addVector += right;
-        isPositionDirty = true;
 
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_Space))
     {
         addVector += camera.up;
-        isPositionDirty = true;
-
     }
     if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
     {
         addVector -= camera.up;
-        isPositionDirty = true;
-
     }
-    
-    addVector = addVector.Normalize();
 
-    if (!isPositionDirty)
-        return;
-
-    camera.position += (addVector * cameraSpeedValue) * _deltatime;
+    float mag = addVector.Magnitude();
+    if (mag <= Tbx::Epsilon<float>())
+    {
+        camera.position = SmoothDamp(camera.position, camera.position, m_CameraSpeed, smoothTime, _deltatime);
+    }
+    else
+    {
+        Tbx::Vector3f desiredPosition = camera.position + (addVector.Normalize() * cameraSpeedValue);
+        camera.position = SmoothDamp(camera.position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
+    }
 }
 
 void EditWorldWindow::CameraChangeSpeed()
@@ -124,4 +123,26 @@ void EditWorldWindow::CameraChangeSpeed()
    // const auto io = ImGui::GetIO();
 
     //cameraSpeedValue += io.MouseWheel * cameraSpeedValue * 0.2f;
+}
+
+void EditWorldWindow::HideCursor()
+{
+    ImVec2 ImMousPos = ImGui::GetIO().MousePos;
+    Tbx::Vector2f mousePos = { ImMousPos.x , ImMousPos.y };
+        
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+    {
+        PC_CORE::App::instance->window.HideCursor(false);
+    }
+
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        PC_CORE::App::instance->window.HideCursor(true);
+    }
+   
+
+	
+
+
+
 }

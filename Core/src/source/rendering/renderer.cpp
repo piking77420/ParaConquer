@@ -163,7 +163,8 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
     sceneBufferGPU.viewInv = sceneBufferGPU.view.Invert();
     sceneBufferGPU.projInv = sceneBufferGPU.proj.Invert();
     sceneBufferGPU.vpInv = sceneBufferGPU.vp.Invert();
-
+    sceneBufferGPU.cameraNear = renderingContext.lowLevelCamera.near;
+    sceneBufferGPU.cameraFar = renderingContext.lowLevelCamera.far;
 
     cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 }
@@ -317,7 +318,7 @@ void Renderer::SwapBuffers(Window* _window)
 void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets)
 {
     primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.get(), &_ShaderProgramDescriptorSets, 0, 1);
-    primaryCommandList->Draw(6, 1, 0, 0);
+    primaryCommandList->Draw(4, 1, 0, 0);
 }
 
 void Renderer::QueryWorldData(World* world)
@@ -534,7 +535,7 @@ void Renderer::DrawSky()
     primaryCommandList->BindProgram(m_SkyRenderingShader.get());
     primaryCommandList->BindDescriptorSet(m_SkyRenderingShader.get(), m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET, 1);
     primaryCommandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
-    primaryCommandList->Draw(6, 1, 0, 0);
+    primaryCommandList->Draw(4, 1, 0, 0);
 
 }
 
