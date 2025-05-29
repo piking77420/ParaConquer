@@ -19,10 +19,19 @@ BEGIN_PCCORE
 
 struct ViewDirExtremum
 {
-    Tbx::Vector3f topLeft;
-    Tbx::Vector3f topRight;
-    Tbx::Vector3f bottomLeft;
-    Tbx::Vector3f bottomRight;
+    /*
+    Tbx::Vector3f topLeftDir;
+    float padding;
+    Tbx::Vector3f topRightDir;
+    float padding1;
+    Tbx::Vector3f bottomLeftDir;
+    float padding2;
+    Tbx::Vector3f bottomRightDir;
+    float padding3;*/
+
+    Tbx::Matrix4x4f camToWorldMatrix;
+    Tbx::Vector3f viewParam;
+    float padding;
 };
 
 class RendererSystem : public EcsSystem

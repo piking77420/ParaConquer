@@ -35,7 +35,7 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
 
     RotateCamera(deltatime);
     CameratMovment(deltatime);
-    CameraChangeSpeed();
+    CameraChangeSpeed(deltatime);
 
     HideCursor();
 }
@@ -113,16 +113,22 @@ void EditWorldWindow::CameratMovment(float _deltatime)
     }
     else
     {
-        Tbx::Vector3f desiredPosition = camera.position + (addVector.Normalize() * cameraSpeedValue);
+        Tbx::Vector3f desiredPosition = camera.position + (addVector.Normalize() * m_CameraSpeedValue);
         camera.position = SmoothDamp(camera.position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
     }
 }
 
-void EditWorldWindow::CameraChangeSpeed()
+void EditWorldWindow::CameraChangeSpeed(float _deltatime)
 {
-   // const auto io = ImGui::GetIO();
+    if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
+    {
+        m_CameraSpeedValue += _deltatime;
+    }
 
-    //cameraSpeedValue += io.MouseWheel * cameraSpeedValue * 0.2f;
+    if (ImGui::IsKeyReleased(ImGuiKey_LeftShift))
+    {
+        m_CameraSpeedValue = m_BaseCameraSpeed;
+    }
 }
 
 void EditWorldWindow::HideCursor()

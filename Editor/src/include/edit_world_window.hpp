@@ -20,7 +20,9 @@ protected:
     
     PC_CORE::LowPassFilter<Tbx::Vector2f, 16> deltass;
 
-    float cameraSpeedValue = 5.f;
+    float m_BaseCameraSpeed = 5.f;
+
+    float m_CameraSpeedValue = m_BaseCameraSpeed;
     
     float pitch = 0.0f;
     
@@ -36,7 +38,7 @@ protected:
 
     void CameratMovment(float _deltatime);
 
-    void CameraChangeSpeed();
+    void CameraChangeSpeed(float _deltatime);
 
     void HideCursor();
 };

@@ -10,4 +10,5 @@ layout(set = SCENE_DESCRIPTOR_SET, binding = CAMERA_BINDING) uniform CameraBuffe
     float deltatime;
     float near;
     float far;
+    vec3 cameraPos;
 } camera;

@@ -172,49 +172,18 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
     PERF_REGION_SCOPED;
-
-    constexpr float far = 1.f;
-    constexpr float near = 0.2f;
-
-    // TO DO FIX INVET + ADD GIZOMO FOR DEBUG
-    Tbx::Vector4f topLeftB = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, -1.f, far, 1.f);
-    Tbx::Vector4f topRightB = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, -1.f, far, 1.f);
-    Tbx::Vector4f bottomLeftB = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, 1.f, far, 1.f);
-    Tbx::Vector4f bottomRightB = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, 1.f, far, 1.f);
-
-    topLeftB /= topLeftB.w;
-    topRightB /= topRightB.w;
-    bottomLeftB /= bottomLeftB.w;
-    bottomRightB /= bottomRightB.w;
-
-    Tbx::Vector4f topLeftA = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, -1.f, near, 1.f);
-    Tbx::Vector4f topRightA = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, -1.f, near, 1.f);
-    Tbx::Vector4f bottomLeftA = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, 1.f, near, 1.f);
-    Tbx::Vector4f bottomRightA = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, 1.f, near, 1.f);
-
-    topLeftA /= topLeftA.w;
-    topRightA /= topRightA.w;
-    bottomLeftA /= bottomLeftA.w;
-    bottomRightA /= bottomRightA.w;
-    
-    const Tbx::Vector3f topLeft3 = Tbx::Vector3f(topLeftB.x - topLeftA.x, topLeftB.y - topLeftA.y, topLeftB.z - topLeftA.y);
-    const Tbx::Vector3f topRight3 = Tbx::Vector3f(topRightB.x - topRightA.x, topRightB.y - topRightA.y, topRightB.z - topRightA.z);
-    const Tbx::Vector3f bottomLeft3 = Tbx::Vector3f(
-        bottomLeftB.x - bottomLeftA.x, bottomLeftB.y - bottomLeftA.y, bottomLeftB.z - bottomLeftA.z
-    );
-    const Tbx::Vector3f bottomRight3 = Tbx::Vector3f(
-        bottomRightB.x - bottomRightA.x, bottomRightB.y - bottomRightA.y, bottomRightB.z - bottomRightA.z
-    );
+  
+    const float planeHeight = sceneBufferGPU.cameraNear * std::tan(renderingContext.lowLevelCamera.fov * 0.5f) * 2.f;
+    const float planeWidth = planeHeight * renderingContext.lowLevelCamera.aspect;
 
     m_ViewExtremum =
     {
-        .topLeft = topLeft3 ,
-        .topRight = topRight3,
-        .bottomLeft = bottomLeft3 + renderingContext.lowLevelCamera.position,
-        .bottomRight = bottomRight3 + renderingContext.lowLevelCamera.position
+        .camToWorldMatrix = sceneBufferGPU.viewInv,
+        .viewParam = Tbx::Vector3f(planeWidth, planeHeight, renderingContext.lowLevelCamera.near)
     };
 
     m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));
+
 }
 
 

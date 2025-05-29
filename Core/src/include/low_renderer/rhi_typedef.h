@@ -34,6 +34,7 @@ BEGIN_PCCORE
         float deltatime;
         float cameraNear;
         float cameraFar;
+        Tbx::Vector3f cameraPos;
     };
 
     struct ALIGNAS_16 DrawObjectBufferGPU
@@ -589,3 +590,6 @@ inline T SafeCastReinterpreCast(U* ptr)
 #define VIEWFRUSTUM_BINDING 3
     // MATERIAL_DESCRIPTOR_SET
 #define ALBEDO_BINDING 2
+
+#define CAM_DEPTH_MAX 1.f
+#define CAM_DEPTH_MIN 0.f
