@@ -58,13 +58,13 @@ void Renderer::Init()
     {
         {
             ShaderProgramDescriptorType::UniformBuffer,
-            0,
+            CAMERA_BINDING,
             &uniformBufferDescriptor,
             nullptr,
         },
         {
             ShaderProgramDescriptorType::UniformBuffer,
-            1,
+            LIGHTDATA_BINDING,
             &lightData,
             nullptr,
         }
@@ -237,7 +237,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
     };
     primaryCommandList->SetViewPort(viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, 0, 1);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
 
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
     {
@@ -438,7 +438,7 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     Mesh* mesh = _staticMesh.mesh.lock().get();
 
     // Send Data
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), material->GetDescriptorSet(), 1, 1);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), material->GetDescriptorSet(), MATERIAL_DESCRIPTOR_SET, 1);
     primaryCommandList->PushConstant(m_ForwardShader.get(), "PushConstants", &modelMatrixf,
                                      sizeof(Tbx::Matrix4x4f) * 2);
     primaryCommandList->BindVertexBuffer(mesh->vertexBuffer, 0, 1);

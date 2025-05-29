@@ -1,8 +1,8 @@
 #version 450
 
-layout(set = 1, binding = 2) uniform sampler2D texSampler;
+layout(set = MATERIAL_DESCRIPTOR_SET, binding = ALBEDO_BINDING) uniform sampler2D texSampler;
 
-layout(set = 0, binding = 1) uniform LightData
+layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform LightData
 {
     vec3 direction;
     float padding;

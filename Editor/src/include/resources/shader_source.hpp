@@ -53,6 +53,9 @@ private:
                             shaderc_shader_kind kind,
                             const std::string& source,
                             bool optimize = false);
+
+
+    static void AddPreProcessorDefVulkan();
 };
 
 END_PCCORE

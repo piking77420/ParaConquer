@@ -1,5 +1,5 @@
 
-layout(set = 0, binding = 0) uniform CameraBuffer {
+layout(set = SCENE_DESCRIPTOR_SET, binding = CAMERA_BINDING) uniform CameraBuffer {
     mat4 view;
     mat4 proj;
     mat4 vp;

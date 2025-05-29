@@ -576,7 +576,10 @@ inline T SafeCastReinterpreCast(U* ptr)
 }
 
 
+// DescriptorSet
+#define SCENE_DESCRIPTOR_SET 0
+#define MATERIAL_DESCRIPTOR_SET 1
 
-// This descriptor must Containt Unifrom Camera at Binding 1 and final texture to viewPort
-#define VIEWPORT_DESCRIPTOR 0
-#define INSTANCE_DESCRIPTOR 1
+#define CAMERA_BINDING 0
+#define LIGHTDATA_BINDING 1
+#define ALBEDO_BINDING 2

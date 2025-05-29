@@ -3,15 +3,9 @@
 #include <fstream>
 #include <iostream>
 
-
-#include <glslang/Include/glslang_c_interface.h>
-
-#include <regex>
-#include <glslang/Include/glslang_c_interface.h>
-#include <glslang/Public/resource_limits_c.h>
-
 #include "io/in_out.h"
 #include "low_renderer/rhi.hpp"
+#include "vulkan_header.h"
 
 using namespace PC_CORE;
 
@@ -65,6 +59,7 @@ void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _opt
     case GraphicAPI::VULKAN:
         shaderCompiler->options.SetForcedVersionProfile(GLSL_VERSION, shaderc_profile_core);
         shaderCompiler->options.SetSourceLanguage(shaderc_source_language_glsl);
+        AddPreProcessorDefVulkan();
         break;
     case GraphicAPI::DX3D12:
         shaderCompiler->options.SetSourceLanguage(shaderc_source_language_hlsl);
@@ -82,6 +77,19 @@ void ShaderSource::DestroyShadersCompiler()
 
     delete shaderCompiler;
     shaderCompiler = nullptr;
+}
+
+void ShaderSource::AddPreProcessorDefVulkan()
+{
+    shaderc::CompileOptions& options = shaderCompiler->options;
+
+    options.AddMacroDefinition("SCENE_DESCRIPTOR_SET", std::to_string(SCENE_DESCRIPTOR_SET));
+    options.AddMacroDefinition("MATERIAL_DESCRIPTOR_SET", std::to_string(MATERIAL_DESCRIPTOR_SET));
+
+    options.AddMacroDefinition("CAMERA_BINDING", std::to_string(CAMERA_BINDING));
+    options.AddMacroDefinition("LIGHTDATA_BINDING", std::to_string(LIGHTDATA_BINDING));
+    options.AddMacroDefinition("ALBEDO_BINDING", std::to_string(ALBEDO_BINDING));
+
 }
 
 
@@ -136,7 +144,6 @@ std::vector<uint32_t> ShaderSource::CompileFile(const std::string& source_name, 
 
     return {module.cbegin(), module.cend()};
 }
-
 
 
 static shaderc_shader_kind GetGlangShaderStage(ShaderStageType _shaderType)
