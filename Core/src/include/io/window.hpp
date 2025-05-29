@@ -30,6 +30,8 @@ BEGIN_PCCORE
         PC_CORE_API Tbx::Vector2ui GetWindowSize() const;
     
         PC_CORE_API GLFWwindow* GetHandle();
+
+        PC_CORE_API void HideCursor(bool _hide);
     
         PC_CORE_API Window(const char* _windowName, const char* _logoPath);
 

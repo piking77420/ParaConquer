@@ -32,6 +32,8 @@ BEGIN_PCCORE
         Tbx::Matrix4x4f projInv;
         float time;
         float deltatime;
+        float cameraNear;
+        float cameraFar;
     };
 
     struct ALIGNAS_16 DrawObjectBufferGPU

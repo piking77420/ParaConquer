@@ -115,6 +115,11 @@ GLFWwindow* Window::GetHandle()
     return m_Window;
 }
 
+void Window::HideCursor(bool _hide)
+{
+    glfwSetInputMode(m_Window, GLFW_CURSOR, _hide ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+}
+
 
 Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_windowName)
 {
