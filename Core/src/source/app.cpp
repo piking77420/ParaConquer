@@ -17,13 +17,13 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
 {
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window("Para Conquer Editor", _appCreateInfo.appLogoPath.c_str());
+    window = Window(_appCreateInfo.appName.data(), _appCreateInfo.appLogoPath.c_str());
 
     const RenderHardwareInterfaceCreateInfo createInfo =
         {
         .GraphicsAPI = GraphicAPI::VULKAN,
         .window = &window,
-        .appName = "Para Conquer Editor",
+        .appName = _appCreateInfo.appName.data(),
         .gpuDebug = _appCreateInfo.enableGpuDebug
         };
     

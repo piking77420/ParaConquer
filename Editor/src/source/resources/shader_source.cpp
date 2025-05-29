@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 
+
 #include <glslang/Include/glslang_c_interface.h>
 
 #include <regex>
@@ -10,47 +11,157 @@
 #include <glslang/Public/resource_limits_c.h>
 
 #include "io/in_out.h"
+#include "low_renderer/rhi.hpp"
 
 using namespace PC_CORE;
 
+constexpr int GLSL_VERSION = 450;
 
-glslang_stage_t GetGlangShaderStage(ShaderStageType _shaderType)
+void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _optimise)
+{
+    PC_LOG("Init ShadersCompiler")
+    
+    shaderCompiler = new ShaderCompiler();
+    if (_optimise) shaderCompiler->options.SetOptimizationLevel(shaderc_optimization_level_size);
+
+    switch (graphicApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        shaderCompiler->options.SetForcedVersionProfile(GLSL_VERSION, shaderc_profile_core);
+        shaderCompiler->options.SetSourceLanguage(shaderc_source_language_glsl);
+        break;
+    case GraphicAPI::DX3D12:
+        shaderCompiler->options.SetSourceLanguage(shaderc_source_language_hlsl);
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+
+    
+}
+
+void ShaderSource::DestroyShadersCompiler()
+{
+    PC_LOG("Destroy Shaders Compiler")
+
+    delete shaderCompiler;
+    shaderCompiler = nullptr;
+}
+
+
+
+std::string ShaderSource::PreprocessShader(const std::string& source_name,
+                              shaderc_shader_kind kind,
+                              const char* source) {
+    // Like -DMY_DEFINE=1
+    shaderCompiler->options.AddMacroDefinition("MY_DEFINE", "1");
+
+    shaderc::PreprocessedSourceCompilationResult result =
+        shaderCompiler->compiler.PreprocessGlsl(source, kind, source_name.c_str(), shaderCompiler->options);
+
+    if (result.GetCompilationStatus() != shaderc_compilation_status_success)
+    {
+        PC_LOGERROR("Failed to preprocess shader: {}", result.GetErrorMessage());
+        return "";
+    }
+
+    return {result.cbegin(), result.cend()};
+}
+
+
+std::string ShaderSource::CompileFileToAssembly(const std::string& source_name,
+                                  shaderc_shader_kind kind,
+                                  const std::string& source,
+                                  bool optimize = false) {
+    
+    shaderc::AssemblyCompilationResult result = shaderCompiler->compiler.CompileGlslToSpvAssembly(
+        source, kind, source_name.c_str(), shaderCompiler->options);
+
+    if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+        std::cerr << result.GetErrorMessage();
+        return "";
+    }
+
+    return {result.cbegin(), result.cend()};
+}
+
+
+std::vector<uint32_t> ShaderSource::CompileFile(const std::string& source_name, shaderc_shader_kind kind,
+    const std::string& source, bool optimize)
+{
+    // Like -DMY_DEFINE=1
+
+    shaderc::SpvCompilationResult module =
+        shaderCompiler->compiler.CompileGlslToSpv(source, kind, source_name.c_str(), shaderCompiler->options);
+
+    if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+        std::cerr << module.GetErrorMessage();
+        return {};
+    }
+
+    return {module.cbegin(), module.cend()};
+}
+
+
+
+static shaderc_shader_kind GetGlangShaderStage(ShaderStageType _shaderType)
 {
     switch (_shaderType)
     {
     case ShaderStageType::VERTEX:
-        return GLSLANG_STAGE_VERTEX;
+        return shaderc_glsl_vertex_shader;
+        break;
     case ShaderStageType::TESSCONTROL:
-        return GLSLANG_STAGE_TESSCONTROL;
+        return shaderc_tess_control_shader;
+        break;
     case ShaderStageType::TESSEVALUATION:
-        return GLSLANG_STAGE_TESSEVALUATION;
+        return shaderc_tess_evaluation_shader;
+        break;
     case ShaderStageType::GEOMETRY:
-        return GLSLANG_STAGE_GEOMETRY;
+        return shaderc_geometry_shader;
+        break;
     case ShaderStageType::FRAGMENT:
-        return GLSLANG_STAGE_FRAGMENT;
+        return shaderc_fragment_shader;
+        break;
     case ShaderStageType::COMPUTE:
-        return GLSLANG_STAGE_COMPUTE;
+        return shaderc_compute_shader;
+        break;
     case ShaderStageType::RAYGEN:
-        return GLSLANG_STAGE_RAYGEN_NV;
+        return shaderc_raygen_shader;
+        break;
     case ShaderStageType::INTERSECT:
-        return GLSLANG_STAGE_INTERSECT;
+        return shaderc_intersection_shader;
+        break;
     case ShaderStageType::ANYHIT:
-        return GLSLANG_STAGE_ANYHIT;
+        return shaderc_anyhit_shader;
+        break;
     case ShaderStageType::CLOSESTHIT:
-        return GLSLANG_STAGE_CLOSESTHIT;
+        return shaderc_closesthit_shader;
+        break;
     case ShaderStageType::MISS:
-        return GLSLANG_STAGE_MISS;
+        return shaderc_miss_shader;
+        break;
     case ShaderStageType::CALLABLE:
-        return GLSLANG_STAGE_CALLABLE;
+        return shaderc_callable_shader;
+        break;
     case ShaderStageType::TASK:
-        return GLSLANG_STAGE_TASK;
+        return shaderc_task_shader;
+        break;
     case ShaderStageType::MESH:
-        return GLSLANG_STAGE_MESH;
+        return shaderc_mesh_shader;
+        break;
     case ShaderStageType::COUNT:
     default:
-        throw std::invalid_argument("Invalid shader stage type");
+        throw std::invalid_argument("Invalid shader stage");
+
     }
+
+    throw std::invalid_argument("Invalid shader stage");
 }
+
 
 
 ShaderSource::ShaderSource() : ResourceInterface<ShaderSource>()
@@ -81,100 +192,37 @@ std::vector<char> ShaderSource::GetShaderSourceFile()
     }
 
     std::vector<char> source = PC_CORE::InOut::ReadFile(m_PathToSource.generic_string());
-    std::vector<char> sWithInclude = IncludePath(source, m_PathToSource);
-    sWithInclude.push_back('\0');
-
-
-    return sWithInclude;
+    source.emplace_back('\0');
+    return source;
 }
 
 
 
-bool ShaderSource::GetAsSpriv(std::vector<char>* _buffer)
+bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 {
-    std::vector<char> sourceCode = GetShaderSourceFile();
-   
-    auto resource = glslang_default_resource();
+    // Load shader File to memory 
+    std::vector<char> RawSourceCode = GetShaderSourceFile();
 
-
-    const glslang_input_t input =
-    {
-        .language = GLSLANG_SOURCE_GLSL,
-        .stage = GetGlangShaderStage(m_ShaderType),
-        .client = GLSLANG_CLIENT_VULKAN,
-        .client_version = GLSLANG_TARGET_VULKAN_1_4,
-        .target_language = GLSLANG_TARGET_SPV,
-        .target_language_version = GLSLANG_TARGET_SPV_1_6,
-        .code = sourceCode.data(),
-        .default_version = 100,
-        .default_profile = GLSLANG_NO_PROFILE,
-        .force_default_version_and_profile = false,
-        .forward_compatible = false,
-        .messages = GLSLANG_MSG_DEFAULT_BIT,
-        .resource = resource
-    };
-
-    glslang_shader_t* shader = glslang_shader_create(&input);
-
-
-    if (!glslang_shader_preprocess(shader, &input))
-    {
-        std::string logInfo = glslang_shader_get_info_log(shader);
-        std::string logdebug = glslang_shader_get_info_debug_log(shader);
-        
-        PC_LOGERROR("Error While preprocess Shader")
-
-        // use glslang_shader_get_info_log() and glslang_shader_get_info_debug_log()
-    }
-
-    if (!glslang_shader_parse(shader, &input))
-    {
-        std::string logInfo = glslang_shader_get_info_log(shader);
-        std::string logdebug = glslang_shader_get_info_debug_log(shader);
-            PC_LOGERROR("Error While glslang_shader_parse Shader")
-
-        // use glslang_shader_get_info_log() and glslang_shader_get_info_debug_log()
-    }
-
+    shaderc_shader_kind kind = GetGlangShaderStage(m_ShaderType);
     
-    glslang_program_t* program = glslang_program_create();
-    glslang_program_add_shader(program, shader);
+    std::string sourceCode = PreprocessShader(name, kind, RawSourceCode.data());
 
-    if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT))
-    {
-        std::string logInfo = glslang_shader_get_info_log(shader);
-        std::string logdebug = glslang_shader_get_info_debug_log(shader);
-        PC_LOGERROR("Error While glslang_program_link Shader")
-        // use glslang_program_get_info_log() and glslang_program_get_info_debug_log();
-    }
-
-    glslang_program_SPIRV_generate(program, input.stage);
-
-    if (glslang_program_SPIRV_get_messages(program))
-    {
-        printf("%s", glslang_program_SPIRV_get_messages(program));
-    }
-
-    const size_t spvCodeSize = glslang_program_SPIRV_get_size(program) * sizeof(uint32_t);
-    const uint32_t* spvPointer = glslang_program_SPIRV_get_ptr(program);
-
-    *_buffer = std::vector<char>(reinterpret_cast<const char*>(spvPointer),
-        reinterpret_cast<const char*>(spvPointer) + spvCodeSize);
-
-    glslang_shader_delete(shader);
-    glslang_program_delete(program);
-
+    std::vector<uint32_t> spriv = CompileFile(name, kind, sourceCode);
+   *_buffer = std::move(spriv);
 
     return true;
 }
 
 void ShaderSource::CompileToSpriv()
 {
+    PC_LOG("Compile {} into SPRIV", name);
+
+    
     std::string filePath = SHADER_CACHE_PATH + fs::path(name).filename().stem().generic_string() + "_spv" + extension;
     std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
-    std::vector<char> sourceSpriv;
+    std::vector<uint32_t> sourceSpriv;
 
-    if (!GetAsSpriv(&sourceSpriv))
+    if (!GetCompiledShaderSource(&sourceSpriv))
     {
         PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
         return;
@@ -188,61 +236,9 @@ void ShaderSource::CompileToSpriv()
     }
 
     // Write the contents of the vector to the file
-    f.write(sourceSpriv.data(), sourceSpriv.size());
+    f.write(reinterpret_cast<const char*>(sourceSpriv.data()), sourceSpriv.size() * sizeof(uint32_t));
 
     f.close();
-}
-
-std::vector<char> ShaderSource::IncludePath(const std::vector<char>& source, const std::filesystem::path& path)
-{
-    std::regex includeRegex(R"(#\s*include\s*\"([^\"]+)\")");
-    std::string sourceStr(source.begin(), source.end());
-
-    if (!std::regex_search(sourceStr, includeRegex))
-    {
-        return source; // Return the original source if no #include is found
-    }
-
-    std::string sourceWithoutInclude;
-    size_t globalIndexInSourceShader = 0;
-
-    auto matchesBegin = std::sregex_iterator(sourceStr.begin(), sourceStr.end(), includeRegex);
-    auto matchesEnd = std::sregex_iterator();
-
-    for (auto it = matchesBegin; it != matchesEnd; ++it)
-    {
-        const std::smatch& match = *it;
-        size_t matchStart = match.position();
-        size_t matchEnd = matchStart + match.length();
-
-        // Add the part of the source before the #include
-        sourceWithoutInclude.
-            append(sourceStr.substr(globalIndexInSourceShader, matchStart - globalIndexInSourceShader));
-
-        // Extract the include file path from the match group
-        std::string includeFile = match.str(1);
-
-        // Resolve the include path relative to the parent path
-        std::filesystem::path includeFilePath = path.parent_path() / includeFile;
-
-        // Read the included file
-        std::vector<char> includedSource = PC_CORE::InOut::ReadFile(includeFilePath.generic_string());
-
-        // Recursively process the included file for nested includes
-        includedSource = IncludePath(includedSource, includeFilePath);
-
-        // Append the processed include file content
-        sourceWithoutInclude.append(includedSource.begin(), includedSource.end());
-
-        // Update the global index
-        globalIndexInSourceShader = matchEnd;
-    }
-
-    // Append the remaining part of the source after the last #include
-    sourceWithoutInclude.append(sourceStr.substr(globalIndexInSourceShader));
-
-    // Convert the result back to std::vector<char>
-    return std::vector(sourceWithoutInclude.begin(), sourceWithoutInclude.end());
 }
 
 

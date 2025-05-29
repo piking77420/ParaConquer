@@ -66,7 +66,7 @@ public:
     PC_CORE::IMGUIContext IMGUIContext;
 
 private:
-    void InitThridPartLib();
+    void InitThridPartLib(PC_CORE::GraphicAPI graphicApi);
 
     void UnInitThridPartLib();
 

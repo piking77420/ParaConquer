@@ -135,19 +135,18 @@ namespace ImGui {
 	}
 
 }
-void Editor::InitThridPartLib()
+void Editor::InitThridPartLib(PC_CORE::GraphicAPI graphicApi)
 {
 	PERF_REGION_SCOPED;
 
 	PC_LOG("InitThridPartLib...")
-	glslang_initialize_process();
+	ShaderSource::InitShadersCompiler(graphicApi, false);
 
 }
 
 void Editor::UnInitThridPartLib()
 {
 	PERF_REGION_SCOPED;
-	glslang_finalize_process();
 }
 
 void Editor::CompileShader()
@@ -259,29 +258,20 @@ void Editor::Init()
 {
 	PERF_REGION_SCOPED;
 	LookForEditorInit();
-
-
-	InitThridPartLib();
+	
+	const AppCreateInfo appCreateInfo =
+	{
+		.appName = "Para Conquer Editor",
+		.appLogoPath = EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png",
+		.enableGpuDebug = true,
+		.graphicAPI = GraphicAPI::VULKAN
+	};
+	
+	InitThridPartLib(appCreateInfo.graphicAPI);
 	CompileShader();
-
-#ifdef _DEBUG
-	const AppCreateInfo appCreateInfo =
-	{
-		EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png"
-		, true
-	};
-#else
-	const AppCreateInfo appCreateInfo =
-	{
-		EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png"
-		, false
-	};
-#endif // DEBUG
-
 	gameApp.Init(appCreateInfo);
-
+	
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
-
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);

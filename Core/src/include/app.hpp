@@ -17,8 +17,12 @@ BEGIN_PCCORE
 
 struct AppCreateInfo
 {
+	std::string appName;
 	std::string appLogoPath;
+	
 	bool enableGpuDebug;
+	GraphicAPI graphicAPI;
+
 };
 
 class App
