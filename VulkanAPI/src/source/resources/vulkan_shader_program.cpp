@@ -278,10 +278,10 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
 
     vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
     depthStencilState.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
-    depthStencilState.depthTestEnable = VK_TRUE;
-    depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthCompareOp = vk::CompareOp::eLess;
+    depthStencilState.depthTestEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    depthStencilState.depthCompareOp = RHIToVulkanCompareOp(_shaderGraphicPointInfo.depthCompareOp);
     depthStencilState.minDepthBounds = 0.0f;
     depthStencilState.maxDepthBounds = 1.0f;
     depthStencilState.stencilTestEnable = VK_FALSE;

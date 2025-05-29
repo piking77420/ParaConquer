@@ -27,10 +27,10 @@ void Renderer::Init()
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
-    forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
 
     CreateForwardShader();
     CreateDrawQuadShader();
+    CreateSkyRenderingShader();
 
     constexpr CommandListCreateInfo commandListCreateInfo =
     {
@@ -38,12 +38,11 @@ void Renderer::Init()
     };
 
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
-    m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet, 0);
 
     cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
 
 
-    UniformBufferDescriptor uniformBufferDescriptor
+    UniformBufferDescriptor cameraBufferDescritptor
     {
         .buffer = &cameraUniformBuffer,
     };
@@ -59,7 +58,7 @@ void Renderer::Init()
         {
             ShaderProgramDescriptorType::UniformBuffer,
             CAMERA_BINDING,
-            &uniformBufferDescriptor,
+            & cameraBufferDescritptor,
             nullptr,
         },
         {
@@ -70,10 +69,32 @@ void Renderer::Init()
         }
     };
 
+    m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet, 0);
     m_ShaderProgramDescriptorSet->WriteDescriptorSets(descriptorSets);
+    
+  
+    UniformBufferDescriptor viewExtremum
+    {
+        .buffer = &m_ViewExtrmumUniformBuffer,
+    };
 
-
-    m_ViewExtrmumUniformBuffer = UniformBuffer(&m_ViewExtremum, sizeof(m_ViewExtremum));
+    descriptorSets =
+    {
+        {
+            ShaderProgramDescriptorType::UniformBuffer,
+            CAMERA_BINDING,
+            & cameraBufferDescritptor,
+            nullptr,
+        },
+        {
+            ShaderProgramDescriptorType::UniformBuffer,
+            VIEWFRUSTUM_BINDING,
+            &viewExtremum,
+            nullptr,
+        }
+    };
+    m_SkyRenderingShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET);
+    m_ShaderProgramDescriptorSetsSky->WriteDescriptorSets(descriptorSets);
 
     InitRenderSystem();
 }
@@ -196,34 +217,12 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
 }
 
 
-void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers,
+void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext,
                                       World* _world)
 {
     PERF_REGION_SCOPED;
 
     m_CurrentWorld = _world;
-
-    UpdateCameraUniformBuffer(renderingContext);
-    UpdateViewExtremumBuffer(renderingContext);
-
-    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
-        ClearValueFlags::ClearValueDepth);
-    const BeginRenderPassInfo beginRenderPassInfo =
-    {
-        .renderPass = forwardPass,
-        // shpoulmd be gbuffer
-        .frameBuffer = gbuffers->GetFrameBuffer(),
-        .renderOffSet = {0, 0},
-        .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
-        .clearValueFlags = clearValueFlags,
-        .clearColor = Tbx::Vector4f(0, 0, 0, 0.f),
-        .clearDepth = 1.f
-    };
-
-    primaryCommandList->BeginDebugLabel("Begin Forward Pass", FORWARD_DEBUG_COLOR);
-    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-    primaryCommandList->BindProgram(m_ForwardShader.get());
-
     const ViewportInfo viewportInfo =
     {
         .transform = {0, 0},
@@ -236,18 +235,44 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .scissorsOff = {0, 0},
         .scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
     };
+
+    UpdateCameraUniformBuffer(renderingContext);
+    UpdateViewExtremumBuffer(renderingContext);
+
+    
+    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
+        ClearValueFlags::ClearValueDepth);
+    const BeginRenderPassInfo beginRenderPassInfo =
+    {
+        .renderPass = forwardPass,
+        // shpoulmd be gbuffer
+        .frameBuffer = renderingContext.gbufferFrameBuffer,
+        .renderOffSet = {0, 0},
+        .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
+        .clearValueFlags = clearValueFlags,
+        .clearColor = Tbx::Vector4f(0, 0, 0, 0.f),
+        .clearDepth = 1.f
+    };
+
+    primaryCommandList->BeginDebugLabel("Begin Forward Pass", FORWARD_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+    primaryCommandList->BindProgram(m_ForwardShader.get());
+
+    
     primaryCommandList->SetViewPort(viewportInfo);
     primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
 
+    // draw all static mesh
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
-    {
         DrawStaticMesh(World::GetWorld()->GetComponent<Transform>(it),
             World::GetWorld()->GetComponent<StaticMesh>(it));
-    }
+    
 
+    // draw the sky
+    DrawSky();
     primaryCommandList->EndRenderPass();
-
-    std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
+    
+    primaryCommandList->EndDebugLabel();
 
     const BeginRenderPassInfo drawToViewport =
     {
@@ -260,11 +285,12 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .clearDepth = 0.f,
         .clearStencil = 0.f
     };
-    primaryCommandList->EndDebugLabel();
 
 
+    
     primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
     primaryCommandList->BeginRenderPass(drawToViewport);
+    primaryCommandList->SetViewPort(viewportInfo);
     primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.get());
     DrawTextureScreenQuad(*renderingContext.viewPortDescriptorSet);
     primaryCommandList->EndRenderPass();
@@ -289,7 +315,7 @@ void Renderer::SwapBuffers(Window* _window)
 void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets)
 {
     primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.get(), &_ShaderProgramDescriptorSets, 0, 1);
-    primaryCommandList->Draw(4, 1, 0, 0);
+    primaryCommandList->Draw(6, 1, 0, 0);
 }
 
 void Renderer::QueryWorldData(World* world)
@@ -371,7 +397,7 @@ void Renderer::CreateDrawQuadShader()
     const RasterizerInfo rasterizerInfo =
     {
         .polygonMode = PolygonMode::Fill,
-        .cullModeFlag = CullModeFlagBit::Back,
+        .cullModeFlag = CullModeFlagBit::None,
         .frontFace = FrontFace::CounterClockwise,
         .multiSampleRasterization = Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount()
     };
@@ -414,6 +440,60 @@ void Renderer::CreateDrawQuadShader()
     m_DrawTextureScreenQuadShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
 }
 
+void Renderer::CreateSkyRenderingShader()
+{
+    PERF_REGION_SCOPED;
+
+    const RasterizerInfo rasterizerInfo =
+    {
+        .polygonMode = PolygonMode::Fill,
+        .cullModeFlag = CullModeFlagBit::None,
+        .frontFace = FrontFace::CounterClockwise,
+    };
+
+
+    const ShaderGraphicPointInfo shaderGraphicPointInfo =
+    {
+        .rasterizerInfo = rasterizerInfo,
+        .depthCompareOp = CompareOp::LESS_OR_EQUAL,
+        .vertexInputBindingDescritions = {},
+        .vertexAttributeDescriptions = {},
+        .enableDepthTest = true,
+    };
+
+    const std::vector<std::pair<ShaderStageType, std::string>> source =
+    {
+        {
+            ShaderStageType::VERTEX,
+            "sky_rendering_spv.vert"
+        },
+        {
+            ShaderStageType::FRAGMENT,
+            "sky_rendering_spv.frag"
+        }
+    };
+
+    const ShaderInfo shaderInfo =
+    {
+        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+        .shaderInfoData = shaderGraphicPointInfo,
+        .shaderSources = source
+    };
+
+    const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
+    {
+        .shaderInfo = shaderInfo,
+        .renderPass = forwardPass,
+    };
+
+    m_SkyRenderingShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+    
+    m_ViewExtrmumUniformBuffer = UniformBuffer(&m_ViewExtremum, sizeof(m_ViewExtremum));
+
+ 
+
+}
+
 void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
 {
     PERF_REGION_SCOPED;
@@ -446,8 +526,12 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
 }
 
-void Renderer::AtmoSpherePass()
+void Renderer::DrawSky()
 {
+    primaryCommandList->BindProgram(m_SkyRenderingShader.get());
+    primaryCommandList->BindDescriptorSet(m_SkyRenderingShader.get(), m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->Draw(6, 1, 0, 0);
+
 }
 
 void Renderer::InitRenderSystem()

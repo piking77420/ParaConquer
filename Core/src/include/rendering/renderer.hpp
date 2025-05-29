@@ -51,6 +51,9 @@ public:
 
     std::shared_ptr<PC_CORE::ShaderProgram> m_DrawTextureScreenQuadShader;
 
+    std::shared_ptr<PC_CORE::ShaderProgram> m_SkyRenderingShader;
+
+
     std::shared_ptr<RhiRenderPass> forwardPass;
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
@@ -65,7 +68,7 @@ public:
 
     PC_CORE_API bool BeginDraw(Window* _window);
     
-    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers, World* _world);
+    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, World* _world);
 
     PC_CORE_API void SwapBuffers(Window* _window);
 
@@ -77,6 +80,8 @@ private:
     RhiContext* m_RhiContext;
     
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
+
+    ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsSky = nullptr;
 
     UniformBuffer cameraUniformBuffer;
 
@@ -104,9 +109,11 @@ private:
 
     PC_CORE_API void CreateDrawQuadShader();
 
+    PC_CORE_API void CreateSkyRenderingShader();
+
     PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
 
-    PC_CORE_API void AtmoSpherePass();
+    PC_CORE_API void DrawSky();
 
     PC_CORE_API void InitRenderSystem();
 };

@@ -38,7 +38,7 @@ private:
     
     std::shared_ptr<PC_CORE::Texture> m_ViewportTexture;
 
-    std::shared_ptr<PC_CORE::FrameBuffer> m_FinalImageViewport;
+    std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
 
     
     PC_CORE::ShaderProgramDescriptorSets* m_ViewPortDescriptorSet = nullptr;

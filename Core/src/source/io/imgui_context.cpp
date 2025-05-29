@@ -143,7 +143,7 @@ void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDes
             Rhi::GetResourceFromHandle(id));
         VkSampler sampler = std::reinterpret_pointer_cast<Vulkan::VulkanSampler>(Rhi::GetRhiContext()->sampler)->
             GetSampler();
-        ImGui_ImplVulkan_AddTexture(sampler, handle->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(sampler, handle->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 }
 

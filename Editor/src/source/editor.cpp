@@ -164,8 +164,13 @@ void Editor::CompileShader()
 
 	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.vert");
 	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.frag");
+	
+	vertex->CompileToSpriv();
+	frag->CompileToSpriv();
 
-
+	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.vert");
+	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.frag");
+	
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
 }
@@ -368,7 +373,7 @@ void Editor::InitTestScene()
 	World::GetWorld()->AddComponent<Transform>(sphere);
 	World::GetWorld()->AddComponent<StaticMesh>(sphere);
 	Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
-	t->position = Tbx::Vector3d(0.0f, 2.0f, 1.0f );
+	t->position = Tbx::Vector3d(0.0f, 5.0f, 1.0f );
 
 	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
 	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");

@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <vulkan/vulkan_core.h>
 
 #include "core_header.hpp"
 #include "resource.hpp"
@@ -105,6 +106,7 @@ struct RasterizerInfo
 struct ShaderGraphicPointInfo
 {
     RasterizerInfo rasterizerInfo;
+    CompareOp depthCompareOp = CompareOp::LESS;
     std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
     std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
     bool enableDepthTest = false;

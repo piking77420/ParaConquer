@@ -19,6 +19,8 @@ float Vulkan::VulkanPhysicalDevice::GetMaxSamplerAnisotropy() const
 
 uint32_t Vulkan::VulkanPhysicalDevice::GetMaxUsableSampleCount() const
 {
+    return 1;
+
     vk::PhysicalDeviceProperties properties;
     physicalDevice.getProperties(&properties);
     

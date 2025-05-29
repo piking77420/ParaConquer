@@ -46,9 +46,8 @@ void WorldViewWindow::Update()
     
     uint32_t currentImage = PC_CORE::Rhi::GetFrameIndex();
 
-    Vulkan::VulkanDescriptorSets* des = reinterpret_cast<Vulkan::VulkanDescriptorSets*>(m_ViewPortDescriptorSet);
     
-    ImGui::Image( reinterpret_cast<ImTextureID>(static_cast<VkDescriptorSet>(des->descriptorSets.at(static_cast<size_t>(currentImage)))), ImVec2{viewportPanelSize.x, viewportPanelSize.y} , ImVec2(0, 0), 
+    ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
           ImVec2(1, 1));
 }
 
@@ -75,11 +74,11 @@ void WorldViewWindow::Render()
     renderingContext.time = PC_CORE::Time::GetTime();
     renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
     renderingContext.gbufferFrameBuffer = m_Gbuffers.GetFrameBuffer();
-    renderingContext.finalImageFrameBuffer = m_FinalImageViewport;
+    renderingContext.finalImageFrameBuffer = m_FinalFrameBufferViewport;
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
     
-   m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &m_Gbuffers, &m_Editor->gameApp.world);
+   m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &m_Editor->gameApp.world);
 }
 
 void WorldViewWindow::ResizeViewports()
@@ -104,7 +103,7 @@ void WorldViewWindow::ResizeViewports()
 
     m_ViewportTexture.reset();
     m_ViewportTexture = std::make_shared<PC_CORE::Texture>(create_texture);
-
+    
     std::vector<PC_CORE::AttachementDescriptor> attachments =
     { 
         {
@@ -119,15 +118,16 @@ void WorldViewWindow::ResizeViewports()
         .attachements = &attachments,
         .renderPass = m_Editor->gameApp.renderer.drawTextureScreenQuadPass.get()
         };
-    m_FinalImageViewport = PC_CORE::Rhi::CreateFrameBuffer(create_frame_info);
-
+    m_FinalFrameBufferViewport = PC_CORE::Rhi::CreateFrameBuffer(create_frame_info);
+    
     m_Gbuffers.HandleResize({ static_cast<int32_t>(size.x), static_cast<int32_t>(size.y) }, m_Editor->gameApp.renderer.forwardPass);
 }
 
 void WorldViewWindow::UpdateViewPortDescriptorSet()
 {   
     m_Editor->IMGUIContext.RemoveImguiVulkanViewport(imguiDescriptorSet);
-    m_Editor->IMGUIContext.CreateImguiVulkanViewport( m_ViewportTexture.get(),imguiDescriptorSet);
+    m_Editor->IMGUIContext.CreateImguiVulkanViewport( m_ViewportTexture.get(), imguiDescriptorSet);
+    
     
     PC_CORE::ImageSamperDescriptor image_samper_descriptor =
     {

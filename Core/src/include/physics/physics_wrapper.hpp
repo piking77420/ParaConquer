@@ -16,7 +16,7 @@ public:
     PC_CORE_API ~PhysicsWrapper() = default;
     
 private:
-    MotionCoreEngine m_MotionCore;
+    MotionCore::MotionCoreEngine m_MotionCore;
     
 };
 

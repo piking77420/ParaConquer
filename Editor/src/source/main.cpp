@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 
     while (!appShounldClose)
     {
+        appShounldClose = true;
         Editor editor;
 
         editor.Init();

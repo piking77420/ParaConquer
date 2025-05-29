@@ -84,12 +84,13 @@ void ShaderSource::AddPreProcessorDefVulkan()
     shaderc::CompileOptions& options = shaderCompiler->options;
 
     options.AddMacroDefinition("SCENE_DESCRIPTOR_SET", std::to_string(SCENE_DESCRIPTOR_SET));
-    options.AddMacroDefinition("MATERIAL_DESCRIPTOR_SET", std::to_string(MATERIAL_DESCRIPTOR_SET));
-
     options.AddMacroDefinition("CAMERA_BINDING", std::to_string(CAMERA_BINDING));
     options.AddMacroDefinition("LIGHTDATA_BINDING", std::to_string(LIGHTDATA_BINDING));
-    options.AddMacroDefinition("ALBEDO_BINDING", std::to_string(ALBEDO_BINDING));
+    options.AddMacroDefinition("VIEWFRUSTUM_BINDING", std::to_string(VIEWFRUSTUM_BINDING));
 
+
+    options.AddMacroDefinition("MATERIAL_DESCRIPTOR_SET", std::to_string(MATERIAL_DESCRIPTOR_SET));
+    options.AddMacroDefinition("ALBEDO_BINDING", std::to_string(ALBEDO_BINDING));
 }
 
 
