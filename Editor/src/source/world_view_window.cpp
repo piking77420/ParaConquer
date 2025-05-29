@@ -40,6 +40,7 @@ void WorldViewWindow::Update()
         PC_CORE::Rhi::GetRhiContext()->WaitIdle();
         ResizeViewports();
         UpdateViewPortDescriptorSet();
+        camera.SetAspect(size.x / size.y);
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -64,7 +65,7 @@ void WorldViewWindow::Render()
         .position = camera.position,
         .front = camera.front,
         .up = camera.up,
-        .aspect = size.x / size.y,
+        .aspect = camera.GetAspect(),
         .fov = camera.GetFOV(),
         .near = camera.GetNear(),
         .far = camera.GetFar(),
@@ -80,6 +81,7 @@ void WorldViewWindow::Render()
     
    m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &m_Editor->gameApp.world);
 }
+
 
 void WorldViewWindow::ResizeViewports()
 {

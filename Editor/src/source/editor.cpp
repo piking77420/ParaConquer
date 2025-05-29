@@ -263,7 +263,7 @@ void Editor::BasicOpenFile()
 void Editor::Init()
 {
 	PERF_REGION_SCOPED;
-	LookForEditorInit();
+	//LookForEditorInit();
 	
 	const AppCreateInfo appCreateInfo =
 	{
@@ -367,13 +367,15 @@ void Editor::InitTestScene()
 	EntityId cube = World::GetWorld()->CreateEntity();
 	World::GetWorld()->AddComponent<Transform>(cube);
 	World::GetWorld()->AddComponent<StaticMesh>(cube);
+	Transform* t = &World::GetWorld()->GetComponent<Transform>(cube);
+	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f );
 
 
 	EntityId sphere = World::GetWorld()->CreateEntity();
 	World::GetWorld()->AddComponent<Transform>(sphere);
 	World::GetWorld()->AddComponent<StaticMesh>(sphere);
-	Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
-	t->position = Tbx::Vector3d(0.0f, 5.0f, 1.0f );
+	t = &World::GetWorld()->GetComponent<Transform>(sphere);
+	t->position = Tbx::Vector3d(5.0f, 0.0f, 1.0f );
 
 	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
 	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");

@@ -32,6 +32,7 @@ struct ViewDirExtremum
     Tbx::Matrix4x4f camToWorldMatrix;
     Tbx::Vector3f viewParam;
     float padding;
+    Tbx::Vector3f cameraPos;
 };
 
 class RendererSystem : public EcsSystem

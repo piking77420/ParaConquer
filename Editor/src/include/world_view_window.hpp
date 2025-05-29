@@ -19,6 +19,8 @@ BEGIN_EDITOR_PCCORE
 class WorldViewWindow : public EditorWindow
 {
 public:
+    
+
     PC_CORE::Camera camera;
     
     explicit WorldViewWindow(Editor& _editor, const std::string& _name);

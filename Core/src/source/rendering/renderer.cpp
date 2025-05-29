@@ -172,14 +172,21 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
     PERF_REGION_SCOPED;
-  
+
     const float planeHeight = sceneBufferGPU.cameraNear * std::tan(renderingContext.lowLevelCamera.fov * 0.5f) * 2.f;
     const float planeWidth = planeHeight * renderingContext.lowLevelCamera.aspect;
 
-    m_ViewExtremum =
-    {
-        .camToWorldMatrix = sceneBufferGPU.viewInv,
-        .viewParam = Tbx::Vector3f(planeWidth, planeHeight, renderingContext.lowLevelCamera.near)
+    Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(
+        renderingContext.lowLevelCamera.position,
+        renderingContext.lowLevelCamera.position + renderingContext.lowLevelCamera.front,
+        renderingContext.lowLevelCamera.up
+    );
+    
+    
+    m_ViewExtremum = {
+        .camToWorldMatrix = view.Invert(),
+        .viewParam = Tbx::Vector3f(planeWidth, planeHeight, -renderingContext.lowLevelCamera.near),
+        .cameraPos = renderingContext.lowLevelCamera.position
     };
 
     m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));

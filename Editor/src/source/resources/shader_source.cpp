@@ -96,6 +96,10 @@ void ShaderSource::AddPreProcessorDefVulkan()
     // cam 
     options.AddMacroDefinition("CAM_DEPTH_MAX", std::to_string(CAM_DEPTH_MAX));
     options.AddMacroDefinition("CAM_DEPTH_MIN", std::to_string(CAM_DEPTH_MIN));
+
+    // Math
+    options.AddMacroDefinition("MAX_FLOAT", std::to_string(std::numeric_limits<float>::max()));
+
 }
 
 

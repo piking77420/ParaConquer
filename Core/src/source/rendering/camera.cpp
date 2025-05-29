@@ -86,6 +86,11 @@ void Camera::LookAt(Tbx::Vector3f _point)
     up = Tbx::Vector3f::Cross(right, front).Normalize();
 }
 
+void Camera::SetScreenSize(int width, int height)
+{
+    m_Aspect = static_cast<float>(width) / static_cast<float>(height);
+}
+
 Camera::Camera(float _fov, float _aspect, float _near, float _far, Tbx::Vector3f _pos, Tbx::Vector3f _forward,
                Tbx::Vector3f _up) : m_Fov(_fov), m_Aspect(_aspect),  position(_pos), front(_forward), up(_up) 
 {

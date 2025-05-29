@@ -51,6 +51,8 @@ public:
     PC_CORE_API void LookAt(Tbx::Vector3f _point);
 
     PC_CORE_API Camera() = default;
+
+    PC_CORE_API void SetScreenSize(int width, int height);
     
     // Fov in radians
     PC_CORE_API Camera(float _fov, float _aspect, float _near, float _far,
