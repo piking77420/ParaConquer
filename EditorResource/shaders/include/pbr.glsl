@@ -1,8 +1,4 @@
-
-
-const float PI = 3.14159265359;
-const float InvPI = 1 / PI;
-
+#include "math.glsl"
 
 float D_GGX ( float NdotH , float m )
 {

@@ -8,4 +8,6 @@ layout(set = SCENE_DESCRIPTOR_SET, binding = CAMERA_BINDING) uniform CameraBuffe
     mat4 projInv;
     float time;
     float deltatime;
+    float near;
+    float far;
 } camera;
