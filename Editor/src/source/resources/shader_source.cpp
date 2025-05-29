@@ -16,12 +16,46 @@
 using namespace PC_CORE;
 
 constexpr int GLSL_VERSION = 450;
+constexpr const char* INCLUDE_PATH = EDITOR_RESOURCE_PATH"/shaders/include/";
+
+class Includer : public shaderc::CompileOptions::IncluderInterface
+{
+public:
+    shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type type,
+        const char* requesting_source, size_t include_depth) override
+    {
+        std::string full_path = std::string(INCLUDE_PATH) + requested_source;
+        std::ifstream file(full_path);
+        if (!file.is_open()) return nullptr;
+
+        std::string content((std::istreambuf_iterator<char>(file)),
+                             std::istreambuf_iterator<char>());
+
+        auto* result = new shaderc_include_result;
+        result->source_name = strdup(requested_source);
+        result->source_name_length = strlen(result->source_name);
+        result->content = strdup(content.c_str());
+        result->content_length = content.size();
+        result->user_data = nullptr;
+        return result;
+    }
+    void ReleaseInclude(shaderc_include_result* data) override
+    {
+        free((void*)data->source_name);
+        free((void*)data->content);
+        delete data;
+    }
+    ~Includer() override = default;
+};
+
 
 void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _optimise)
 {
     PC_LOG("Init ShadersCompiler")
     
     shaderCompiler = new ShaderCompiler();
+    shaderCompiler->options.SetIncluder(std::make_unique<Includer>());
+    
     if (_optimise) shaderCompiler->options.SetOptimizationLevel(shaderc_optimization_level_size);
 
     switch (graphicApi)
@@ -39,7 +73,6 @@ void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _opt
         break;
     default: ;
     }
-
     
 }
 
@@ -57,7 +90,6 @@ std::string ShaderSource::PreprocessShader(const std::string& source_name,
                               shaderc_shader_kind kind,
                               const char* source) {
     // Like -DMY_DEFINE=1
-    shaderCompiler->options.AddMacroDefinition("MY_DEFINE", "1");
 
     shaderc::PreprocessedSourceCompilationResult result =
         shaderCompiler->compiler.PreprocessGlsl(source, kind, source_name.c_str(), shaderCompiler->options);

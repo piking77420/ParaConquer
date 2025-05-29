@@ -147,6 +147,7 @@ void Editor::InitThridPartLib(PC_CORE::GraphicAPI graphicApi)
 void Editor::UnInitThridPartLib()
 {
 	PERF_REGION_SCOPED;
+	ShaderSource::DestroyShadersCompiler();
 }
 
 void Editor::CompileShader()
@@ -155,14 +156,14 @@ void Editor::CompileShader()
 	PC_LOG("CompileShader...")
 	fs::create_directory(SHADER_CACHE_PATH);
 	
-	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.vert");
-	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"shaders/main.frag");
+	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/main.vert");
+	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/main.frag");
 
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
 
-	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "shaders/draw_texture_screen_quad.vert");
-	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "shaders/draw_texture_screen_quad.frag");
+	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.vert");
+	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.frag");
 
 
 	vertex->CompileToSpriv();
@@ -262,7 +263,7 @@ void Editor::Init()
 	const AppCreateInfo appCreateInfo =
 	{
 		.appName = "Para Conquer Editor",
-		.appLogoPath = EDITOR_RESOURCE_PATH "logo/paraconquer_logo_black.png",
+		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/paraconquer_logo_black.png",
 		.enableGpuDebug = true,
 		.graphicAPI = GraphicAPI::VULKAN
 	};
