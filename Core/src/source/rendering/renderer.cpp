@@ -262,6 +262,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->SetViewPort(viewportInfo);
     primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
 
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
     // draw all static mesh
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
         DrawStaticMesh(World::GetWorld()->GetComponent<Transform>(it),
@@ -288,10 +289,11 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
 
     
-    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
+    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);           
     primaryCommandList->BeginRenderPass(drawToViewport);
     primaryCommandList->SetViewPort(viewportInfo);
     primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.get());
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip );
     DrawTextureScreenQuad(*renderingContext.viewPortDescriptorSet);
     primaryCommandList->EndRenderPass();
     primaryCommandList->EndDebugLabel();
@@ -528,8 +530,10 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
 
 void Renderer::DrawSky()
 {
+    
     primaryCommandList->BindProgram(m_SkyRenderingShader.get());
     primaryCommandList->BindDescriptorSet(m_SkyRenderingShader.get(), m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
     primaryCommandList->Draw(6, 1, 0, 0);
 
 }

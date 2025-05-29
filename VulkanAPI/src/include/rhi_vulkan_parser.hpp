@@ -46,5 +46,7 @@ namespace Vulkan
 
     vk::SampleCountFlagBits RhiSampleCountToVuklan(uint32_t _sampleCount);
 
+    vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology);
+
 }
 

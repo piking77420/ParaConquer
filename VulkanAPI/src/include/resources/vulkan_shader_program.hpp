@@ -34,7 +34,7 @@ namespace Vulkan
     class VulkanShaderProgram : public PC_CORE::ShaderProgram
     {
     protected:
-        static constexpr  std::array<vk::DynamicState,9> dynamicStateArray =
+        static constexpr  std::array<vk::DynamicState,10> dynamicStateArray =
        {
             vk::DynamicState::eViewport,
             vk::DynamicState::eScissor,
@@ -44,7 +44,8 @@ namespace Vulkan
             vk::DynamicState::eDepthBounds,
             vk::DynamicState::eStencilCompareMask,
             vk::DynamicState::eStencilWriteMask,
-            vk::DynamicState::eStencilReference
+            vk::DynamicState::eStencilReference,
+            vk::DynamicState::ePrimitiveTopology,
         };
     
     public:

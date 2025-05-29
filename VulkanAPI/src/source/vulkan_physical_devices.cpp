@@ -223,6 +223,8 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
     std::vector<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
         _physicalDevicesCreateInfo.requestExtensions);
 
+    // basic extension
+    requestVulkanExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
     // Look for base device
     m_PhysicalDevices.resize(vkPhysicalDevices.size());
     for (size_t i = 0; i < vkPhysicalDevices.size(); i++)

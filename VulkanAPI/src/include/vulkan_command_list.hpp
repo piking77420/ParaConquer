@@ -9,6 +9,7 @@ namespace Vulkan
 class VulkanCommandList : public PC_CORE::CommandList
 {
 public:
+    
 
     VULKAN_API VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
 
@@ -37,6 +38,8 @@ public:
         void* _data, size_t _size) override;
 
     VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;
+
+    VULKAN_API void SetPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology) override;
 
     VULKAN_API void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) override;
 

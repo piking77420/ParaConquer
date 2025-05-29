@@ -1172,3 +1172,36 @@ vk::SampleCountFlagBits Vulkan::RhiSampleCountToVuklan(uint32_t _sampleCount)
         return vk::SampleCountFlagBits::e1;
     }
 }
+
+vk::PrimitiveTopology Vulkan::RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
+{
+    switch (_primitiveTopology)
+    {
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyPointList:
+        return vk::PrimitiveTopology::ePointList;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineList:
+        return vk::PrimitiveTopology::eLineList;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineStrip:
+        return vk::PrimitiveTopology::eLineStrip;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleList:
+        return vk::PrimitiveTopology::eTriangleList;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip:
+        return vk::PrimitiveTopology::eTriangleStrip;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangle_FAN:
+        return vk::PrimitiveTopology::eTriangleFan;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineListWithAdjacency:
+        return vk::PrimitiveTopology::eLineListWithAdjacency;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineStripWithAdjacency:
+        return vk::PrimitiveTopology::eLineStripWithAdjacency;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleListWithAdjacency:
+        return vk::PrimitiveTopology::eTriangleListWithAdjacency;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency: 
+        return vk::PrimitiveTopology::eTriangleStripWithAdjacency;
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyPathList:
+        // Not directly supported in Vulkan; return something or assert
+        throw std::runtime_error("PrimitiveTopologyPathList is not supported in Vulkan.");
+    case PC_CORE::PrimitiveTopology::Count:
+    default:
+        throw std::runtime_error("Invalid or unsupported primitive topology.");
+    }
+}
