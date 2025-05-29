@@ -46,7 +46,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
         
         vkFenceCreateInfo.sType = vk::StructureType::eFenceCreateInfo,
         vkFenceCreateInfo.pNext = nullptr,
-        vkFenceCreateInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+        vkFenceCreateInfo.flags = {};
         
     transferFence = device->GetDevice().createFence(vkFenceCreateInfo);
     
