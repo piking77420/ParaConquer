@@ -17,7 +17,7 @@ BEGIN_PCCORE
 #define FORWARD_DEBUG_COLOR {0,0,1,1}
 #define FINAL_RENDER_PASS_DEBUG_COLOR {1,1,1,1}
 
-struct ViewDirExtremum
+struct AtmosphereBuffer
 {
     /*
     Tbx::Vector3f topLeftDir;
@@ -33,6 +33,12 @@ struct ViewDirExtremum
     Tbx::Vector3f viewParam;
     float padding;
     Tbx::Vector3f cameraPos;
+    float pad2;
+    Tbx::Vector3f sunDir;
+    float pad3;
+    Tbx::Vector3f sunColor;
+    float pad4;
+    Tbx::Vector3f scatteringCoeff;
 };
 
 class RendererSystem : public EcsSystem
@@ -97,9 +103,9 @@ private:
 
     SceneBufferGPU sceneBufferGPU;
 
-    ViewDirExtremum m_ViewExtremum;
+    AtmosphereBuffer m_AtomsphereBuffer;
 
-    UniformBuffer m_ViewExtrmumUniformBuffer;
+    UniformBuffer m_AtmosphereUniformBuffer;
 
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 

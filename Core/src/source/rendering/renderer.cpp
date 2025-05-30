@@ -75,7 +75,7 @@ void Renderer::Init()
   
     UniformBufferDescriptor viewExtremum
     {
-        .buffer = &m_ViewExtrmumUniformBuffer,
+        .buffer = &m_AtmosphereUniformBuffer,
     };
 
     descriptorSets =
@@ -171,8 +171,8 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 
 void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
+    /*
     PERF_REGION_SCOPED;
-
     const float planeHeight = sceneBufferGPU.cameraNear * std::tan(renderingContext.lowLevelCamera.fov * 0.5f) * 2.f;
     const float planeWidth = planeHeight * renderingContext.lowLevelCamera.aspect;
 
@@ -181,16 +181,25 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
         renderingContext.lowLevelCamera.position + renderingContext.lowLevelCamera.front,
         renderingContext.lowLevelCamera.up
     );
+
+    float scatteringStrenght = 20.f;
+    Tbx::Vector3f waveLenght = Tbx::Vector3f{700,530,400};
+    float scatterR = std::pow(400.f / waveLenght.x,4.f) * scatteringStrenght;
+    float scatterG = std::pow(400.f / waveLenght.y,4.f) * scatteringStrenght;
+    float scatterB = std::pow(400.f / waveLenght.z,4.f) * scatteringStrenght;
+
     
-    
-    m_ViewExtremum = {
+    m_AtomsphereBuffer =
+    {
         .camToWorldMatrix = view.Invert(),
         .viewParam = Tbx::Vector3f(planeWidth, planeHeight, -renderingContext.lowLevelCamera.near),
-        .cameraPos = renderingContext.lowLevelCamera.position
+        .cameraPos = renderingContext.lowLevelCamera.position,
+        .sunDir = -sceneLightsBuffer->sceneLightData.direction, // negate is important
+        .sunColor = sceneLightsBuffer->sceneLightData.color,
+        .scatteringCoeff = Tbx::Vector3f(scatterR, scatterG, scatterB)
     };
 
-    m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));
-
+    m_AtmosphereUniformBuffer.Update(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));*/
 }
 
 
@@ -247,7 +256,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     
 
     // draw the sky
-    DrawSky();
+   // DrawSky();
     primaryCommandList->EndRenderPass();
     
     primaryCommandList->EndDebugLabel();
@@ -311,13 +320,13 @@ void Renderer::QueryWorldData(World* world)
 void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
 {
     sceneLightsBuffer
-        ->sceneLightData.ambiant = dirLight.color;
+        ->sceneLightData.ambiant = dirLight.ambiant;
     sceneLightsBuffer
-        ->sceneLightData.color = dirLight.ambiant;
+        ->sceneLightData.color = dirLight.color;
     sceneLightsBuffer
         ->sceneLightData.intensity = dirLight.intensity;
     sceneLightsBuffer
-        ->sceneLightData.direction = Tbx::Quaterniond::ToEulerAngles(transform.rotation.quaternion).Normalize();
+        ->sceneLightData.direction =  Tbx::Quaterniond::ToEulerAngles(transform.rotation.quaternion).Normalize();
 }
 
 void Renderer::CreateForwardShader()
@@ -467,7 +476,7 @@ void Renderer::CreateSkyRenderingShader()
 
     m_SkyRenderingShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
     
-    m_ViewExtrmumUniformBuffer = UniformBuffer(&m_ViewExtremum, sizeof(m_ViewExtremum));
+    m_AtmosphereUniformBuffer = UniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));
 
  
 

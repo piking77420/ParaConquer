@@ -122,7 +122,7 @@ void EditWorldWindow::CameraChangeSpeed(float _deltatime)
 {
     if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
     {
-        m_CameraSpeedValue += _deltatime;
+        m_CameraSpeedValue += _deltatime * 10;
     }
 
     if (ImGui::IsKeyReleased(ImGuiKey_LeftShift))

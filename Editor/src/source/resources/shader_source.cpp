@@ -134,7 +134,7 @@ std::string ShaderSource::CompileFileToAssembly(const std::string& source_name,
         source, kind, source_name.c_str(), shaderCompiler->options);
 
     if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-        std::cerr << result.GetErrorMessage();
+        PC_LOGERROR("{}", result.GetErrorMessage());
         return "";
     }
 
@@ -151,7 +151,7 @@ std::vector<uint32_t> ShaderSource::CompileFile(const std::string& source_name, 
         shaderCompiler->compiler.CompileGlslToSpv(source, kind, source_name.c_str(), shaderCompiler->options);
 
     if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-        std::cerr << module.GetErrorMessage();
+        PC_LOGERROR("{}", module.GetErrorMessage());
         return {};
     }
 

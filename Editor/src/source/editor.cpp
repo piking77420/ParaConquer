@@ -363,11 +363,15 @@ void Editor::InitTestScene()
 	EntityId dirLight = World::GetWorld()->CreateEntity();
 	World::GetWorld()->AddComponent<DirLight>(dirLight);
 	World::GetWorld()->AddComponent<Transform>(dirLight);
-
+	Transform* t = &World::GetWorld()->GetComponent<Transform>(dirLight);
+	t->rotation = Rotation(-Tbx::Vector3f::UnitY());
+	DirLight* dir = &World::GetWorld()->GetComponent<DirLight>(dirLight);
+	dir->color = Tbx::Vector3f(1,1,1);
+	
 	EntityId cube = World::GetWorld()->CreateEntity();
 	World::GetWorld()->AddComponent<Transform>(cube);
 	World::GetWorld()->AddComponent<StaticMesh>(cube);
-	Transform* t = &World::GetWorld()->GetComponent<Transform>(cube);
+	 t = &World::GetWorld()->GetComponent<Transform>(cube);
 	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f );
 
 
@@ -375,7 +379,8 @@ void Editor::InitTestScene()
 	World::GetWorld()->AddComponent<Transform>(sphere);
 	World::GetWorld()->AddComponent<StaticMesh>(sphere);
 	t = &World::GetWorld()->GetComponent<Transform>(sphere);
-	t->position = Tbx::Vector3d(5.0f, 0.0f, 1.0f );
+	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f );
+	t->scale = Tbx::Vector3d(10.0f, 10.0f, 10.0f );
 
 	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
 	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");

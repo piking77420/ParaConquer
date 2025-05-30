@@ -32,8 +32,11 @@ public:
 
     std::string pathToFile;
 
+
     // SOULD BE = 0
     PC_CORE_API virtual void Build() {};
+
+    PC_CORE_API const std::atomic<bool>& IsLoaded() const ;
 
     PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
 
@@ -48,7 +51,9 @@ public:
     PC_CORE_API Resource(const fs::path& _file);
 
     PC_CORE_API virtual ~Resource() = default;
-
+    
+protected:
+    std::atomic<bool> m_IsLoaded;
 
 };
 

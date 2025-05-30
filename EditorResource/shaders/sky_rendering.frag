@@ -1,6 +1,7 @@
 #version 450
 #include "camera.glsl"
 
+// https://github.com/ebruneton/precomputed_atmospheric_scattering
 
 layout(set = SCENE_DESCRIPTOR_SET, binding = 3) uniform AtmosphereBuffer {
     mat4 camToWorldMatrix;
@@ -24,8 +25,8 @@ layout(location = 0) in vec2 inUv;
 const int SCATTERING_POINT = 10;
 const int NumberOfOpticalDepth = 10;
 
-const float AtmosphereRadius = 2000;
-const float PlanetRadius = 10;
+const float AtmosphereRadius = 1000;
+const float PlanetRadius = 0.1;
 const float densityFallOff = 4;
 
 // atmosphere coefficient
@@ -75,8 +76,14 @@ float PhaseFunction(float cosAngle)
 float densityAtPoint(vec3 planetPos, vec3 samplePoint)
 {
     float heightAboveSurface = distance(samplePoint, planetPos) - PlanetRadius;
-    float height01 = heightAboveSurface / (AtmosphereRadius - PlanetRadius);
-    float density = exp(-height01 * densityFallOff) * (1.0 - height01);
+    float height01 = clamp(heightAboveSurface / (AtmosphereRadius - PlanetRadius), 0.0, 1.0);
+
+    // Smoothstep makes the falloff more gradual
+    float smoothFalloff = smoothstep(0.0, 1.0, 1.0 - height01);
+
+    // Exponential falloff mimicking scale height, modulated by smoothstep
+    float density = exp(-height01 * densityFallOff) * smoothFalloff;
+
     return density;
 }
 
@@ -90,6 +97,7 @@ float ComputeOpticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 pla
     for (int i = 0; i < NumberOfOpticalDepth; i++)
     {
         float localDensity = densityAtPoint(planetPos, densitySamplePoint);
+        //return localDensity;
         opticalLength += localDensity * stepSize;
         densitySamplePoint += rayDir * stepSize;
     }
@@ -111,10 +119,10 @@ vec3 ComputeLight(vec3 planetPos, vec3 rayOrigin, vec3 rayDir, float rayLength)
 
         float sunOpticalDepth = ComputeOpticalDepth(inScatteredPoint, atmosphereBuffer.sunDir, sunRayLength, planetPos);
         float viewOpticalDepth = ComputeOpticalDepth(inScatteredPoint, -rayDir, stepSize * float(i), planetPos);
-        //return vec3(viewOpticalDepth);
 
         vec3 transmittance = exp(-(sunOpticalDepth + viewOpticalDepth) * atmosphereBuffer.scatteringCoeff) ;
         float localDensity = densityAtPoint(planetPos, inScatteredPoint);
+
 
         inScatteringLight += localDensity * transmittance * stepSize * atmosphereBuffer.scatteringCoeff;
         inScatteredPoint += rayDir * stepSize;
@@ -150,6 +158,7 @@ void main()
 
         float cosTheta = dot(rayDir, atmosphereBuffer.sunDir);
         //float phase = PhaseFunction(cosTheta);
+        
         color = light  * atmosphereBuffer.lightColor;
     }
     // we miss the atmosphere
