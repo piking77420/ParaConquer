@@ -48,7 +48,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     GbufferType gbufferType = {};
     for (auto& frameInFlight : m_gbuffers)
     {
-        CreateTextureInfo texture_info =
+        CreateImageInfo texture_info =
             {
             .width = m_size.x,
             .height = m_size.y,

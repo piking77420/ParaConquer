@@ -7,11 +7,10 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-#include "vulkan_context.hpp"
-
+#define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
 
-#include "vulkan_gpu_resource_allocator.hpp"
+#include "vulkan_context.hpp"
 #include "vulkan_swap_chain.hpp"
 
 using namespace Vulkan;
@@ -64,6 +63,9 @@ VulkanContext::~VulkanContext()
     
     device->GetDevice().destroyCommandPool(transferCommandPool);    
     transferCommandPool = nullptr;
+
+    vmaDestroyAllocator(allocator);
+    allocator = nullptr;
 }
 
 
@@ -105,7 +107,8 @@ void VulkanContext::CreateMemoryAllocator()
         .pTypeExternalMemoryHandleTypes = nullptr
         };
   
-    gpuResourceAllocator = std::make_shared<Vulkan::VulkanGpuAllocator>(createInfo);
+    vmaCreateAllocator(&createInfo ,&allocator);
+
 }
 
 void VulkanContext::CreateCommandPools()

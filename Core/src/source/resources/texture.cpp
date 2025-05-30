@@ -60,13 +60,13 @@ Texture::Texture()
     }
 }
 
-Texture::Texture(const CreateTextureInfo& _createTextureInfo)
+Texture::Texture(const CreateImageInfo& _createTextureInfo)
 {
     m_Format = _createTextureInfo.format;
     
     for (auto& texture : m_TextureHandles)
     {
-        texture = Rhi::CreateTexture(_createTextureInfo);
+        texture = Rhi::CreateImage(_createTextureInfo);
     }
     
 }
@@ -89,7 +89,7 @@ Texture::~Texture()
    
 }
 
-void Texture::CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo)
+void Texture::CreateFromCreateInfo(const CreateImageInfo& createTextureInfo)
 {
     
 }
@@ -108,7 +108,7 @@ void Texture::LoadFromFile(const fs::path& _path)
         throw std::runtime_error("failed to load texture image!");
     }
 
-    const CreateTextureInfo createTextureInfo =
+    const CreateImageInfo createTextureInfo =
     {
         .width = width,
         .height = height,
@@ -127,7 +127,7 @@ void Texture::LoadFromFile(const fs::path& _path)
 
     for (auto& texture : m_TextureHandles)
     {
-        texture = Rhi::CreateTexture(createTextureInfo);
+        texture = Rhi::CreateImage(createTextureInfo);
     }
     
     FileLoader::FreeData(pixels);

@@ -434,7 +434,7 @@ enum class IndexFormat
     };
 
 
-    struct CreateTextureInfo
+    struct CreateImageInfo
     {
         int32_t width;
         int32_t height;

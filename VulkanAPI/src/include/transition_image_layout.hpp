@@ -7,5 +7,4 @@ namespace Vulkan
 
     bool HasStencilComponent(vk::Format _format);
 
-    //void GenerateMipMaps(vk::CommandBuffer _commandBuffer, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _mipLevels);
 }

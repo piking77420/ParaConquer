@@ -86,7 +86,7 @@ void WorldViewWindow::Render()
 void WorldViewWindow::ResizeViewports()
 {
     
-    const PC_CORE::CreateTextureInfo create_texture =
+    const PC_CORE::CreateImageInfo create_texture =
     {
         .width = static_cast<int32_t>(size.x),
         .height = static_cast<int32_t>(size.y),

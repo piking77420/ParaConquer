@@ -1,41 +1,32 @@
 ﻿#pragma once
 
-#include <vma/vk_mem_alloc.h>
+#include "vulkan_handle.hpp"
 
-#include "vulkan_header.h"
-#include "low_renderer/gpu_resource.hpp"
 
 namespace Vulkan
 {
 
-    class VulkanBufferHandle : public PC_CORE::GPUResource
+    struct VulkanBufferHandle : public VulkanHandle
     {
     public:
 
-        VulkanBufferHandle(VulkanBufferHandle&& _other) noexcept
-        {
-            std::swap(buffer, _other.buffer);
-            std::swap(allocation, _other.allocation);
+        VulkanBufferHandle() = default;
 
-        }
-
-        VulkanBufferHandle& operator=(VulkanBufferHandle&& _other)
-        {
-            std::swap(buffer, _other.buffer);
-            std::swap(allocation, _other.allocation);
-
-            return *this;
-        }
-
-        VulkanBufferHandle();
-
-        ~VulkanBufferHandle() override;
-
-        VULKAN_API void Clear() override;
+        explicit VulkanBufferHandle(const PC_CORE::GPUBufferCreateInfo& _createInfo);
         
-        VkBuffer buffer;
-        VmaAllocation allocation;
-       
+        ~VulkanBufferHandle() override;
+        
+        void MapBuffer(void** _mapPtr);
+
+        void UnMapBuffer();
+
+        vk::Buffer GetBuffer() const
+        {
+            return m_VulkanBuffer;
+        }
+        
+    private:
+        VkBuffer m_VulkanBuffer = VK_NULL_HANDLE;
     };
     
 }

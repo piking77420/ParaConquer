@@ -345,7 +345,7 @@ std::shared_ptr<Material> m1;
 std::shared_ptr<Material> m2;
 
 void Editor::InitTestScene()
-{
+{	
 	PERF_REGION_SCOPED;
 	PC_LOG("InitTestScene...")
 

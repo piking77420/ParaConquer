@@ -37,3 +37,4 @@ void Vulkan::EndSingleTimeCommand(vk::CommandBuffer _commandBuffer,
 
     _singleCommandBeginInfo.device.freeCommandBuffers(_singleCommandBeginInfo.commandPool, 1, &_commandBuffer);
 }
+

@@ -3,7 +3,10 @@
 #include "log.hpp"
 #include "vulkan_command_list.hpp"
 #include "vulkan_context.hpp"
+#include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
+#include "handles/vulkan_buffer_handle.hpp"
+#include "handles/vulkan_image_handle.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_sampler.hpp"
 #include "resources/vulkan_shader_program.hpp"
@@ -93,6 +96,8 @@ Rhi::~Rhi()
 
         for (auto& it : m_GpuResource)
         {
+           
+            
             if (it.second.use_count() != 1)
             {
                 PC_LOGERROR("While free all gpuresource There is still a pointer pointing to resource");
@@ -237,12 +242,8 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
 
 GPUHandleID Rhi::CreateBuffer(const GPUBufferCreateInfo& _bufferCreateInfo)
 {
-    std::shared_ptr<GPUResource> bufferPtr;
-    if (!GetRhiContext()->gpuResourceAllocator->CreateGPUBuffer(_bufferCreateInfo, &bufferPtr))
-    {
-        PC_LOGERROR("Failed to create GPU buffer {}", ToString(_bufferCreateInfo.usage));
-        return GPU_INVALID_ID;
-    }
+    std::shared_ptr<GPUResource> bufferPtr = std::make_shared<Vulkan::VulkanBufferHandle>(_bufferCreateInfo);
+    
 
     GPUHandleID id = CreateGpuHandle();
     m_Instance->m_GpuResource.insert({id,bufferPtr});
@@ -286,11 +287,22 @@ void Rhi::MapBuffer(GPUHandleID _gPUHandleID, void** _ptr)
 {
     std::shared_ptr<GPUResource> resource = GetGpuResource(_gPUHandleID);
     
-    if  (!GetRhiContext()->gpuResourceAllocator->MapBuffer(resource, _ptr))
+    if (resource == nullptr)
+        return;
+
+    switch (m_Instance->m_GraphicsApi)
     {
-        PC_LOGERROR("Failed to map GPU buffer");
-        *_ptr = nullptr;
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        std::reinterpret_pointer_cast<Vulkan::VulkanBufferHandle>(resource)->MapBuffer(_ptr);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
     }
+    
 }
 
 void Rhi::UnMapBuffer(GPUHandleID _gPUHandleID)
@@ -299,23 +311,28 @@ void Rhi::UnMapBuffer(GPUHandleID _gPUHandleID)
     
     if (resource == nullptr)
         return;
-    
-    if  (!GetRhiContext()->gpuResourceAllocator->UnMapBuffer(resource))
+
+    switch (m_Instance->m_GraphicsApi)
     {
-        PC_LOGERROR("Failed to unmap GPU buffer");
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        std::reinterpret_pointer_cast<Vulkan::VulkanBufferHandle>(resource)->UnMapBuffer();
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
     }
+    
+  
 }
 
-GPUHandleID Rhi::CreateTexture(const CreateTextureInfo& _createTexture)
+GPUHandleID Rhi::CreateImage(const CreateImageInfo& _createImage)
 {
     
-    std::shared_ptr<GPUResource> bufferPtr;
-    if (!GetRhiContext()->gpuResourceAllocator->CreateTexture(_createTexture, &bufferPtr))
-    {
-        PC_LOGERROR("Failed to create Texture");
-        return GPU_INVALID_ID;
-    }
-
+    std::shared_ptr<GPUResource> bufferPtr = std::make_shared<Vulkan::VulkanImageHandle>(_createImage);
+  
     GPUHandleID id = CreateGpuHandle();
     m_Instance->m_GpuResource.insert({id,bufferPtr});
 
@@ -383,7 +400,6 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 
 void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)
 {
-  // m_RhiContext = std::make_shared<Vulkan::VulkanContext>(_createInfo);
     m_RhiContext = new Vulkan::VulkanContext(_createInfo);
 }
 

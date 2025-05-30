@@ -59,7 +59,7 @@ public:
 
     PC_CORE_API static void UnMapBuffer(GPUHandleID _gPUHandleID);
 
-    PC_CORE_API static GPUHandleID CreateTexture(const CreateTextureInfo& _createTexture);
+    PC_CORE_API static GPUHandleID CreateImage(const CreateImageInfo& _createImage);
 
     PC_CORE_API static std::shared_ptr<GPUResource> GetResourceFromHandle(GPUHandleID _gpuHandleId);
     

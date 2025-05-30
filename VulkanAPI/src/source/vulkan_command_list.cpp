@@ -204,7 +204,7 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _v
     const PC_CORE::GPUHandleID gPUHandleID = _vertexBuffer.bufferHandles[frameIndex];
     
     std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(PC_CORE::Rhi::GetResourceFromHandle(gPUHandleID)); 
-    vk::Buffer buffer = vulkanBufferHandle->buffer;
+    vk::Buffer buffer = vulkanBufferHandle->GetBuffer();
     vk::DeviceSize offsets[] = {0};
     
     
@@ -218,7 +218,7 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _ind
 
     const PC_CORE::GPUHandleID gPUHandleID = _indexBuffer.bufferHandles[frameIndex];
     std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(PC_CORE::Rhi::GetResourceFromHandle(gPUHandleID));     
-    vk::Buffer buffer = vulkanBufferHandle->buffer;
+    vk::Buffer buffer = vulkanBufferHandle->GetBuffer();
 
     const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());
     

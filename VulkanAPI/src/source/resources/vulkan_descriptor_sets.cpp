@@ -54,7 +54,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 
                 VulkanBufferHandle* vulkanBufferHandle = reinterpret_cast<VulkanBufferHandle*>(PC_CORE::Rhi::GetResourceFromHandle(id).get());
 
-                descriptorBufferInfos[bufferDescriptorCount].buffer = vulkanBufferHandle->buffer;
+                descriptorBufferInfos[bufferDescriptorCount].buffer = vulkanBufferHandle->GetBuffer();
                 descriptorBufferInfos[bufferDescriptorCount].offset = 0;
                 descriptorBufferInfos[bufferDescriptorCount].range = VK_WHOLE_SIZE;
                 bufferDescriptorCount++;
@@ -73,7 +73,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 VulkanSampler* vulkanSampler = reinterpret_cast<VulkanSampler*>(samplerHandle);
 
                 descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-                descriptorImageInfos[imageDescriptorCount].imageView = vulkanImageHandle->view;
+                descriptorImageInfos[imageDescriptorCount].imageView = vulkanImageHandle->GetImageView();
                 descriptorImageInfos[imageDescriptorCount].sampler = vulkanSampler->GetSampler();
                 imageDescriptorCount++;
             }

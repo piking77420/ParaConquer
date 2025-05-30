@@ -26,7 +26,7 @@ public:
     
     PC_CORE_API Texture();
 
-    PC_CORE_API Texture(const CreateTextureInfo& createTextureInfo);
+    PC_CORE_API Texture(const CreateImageInfo& createTextureInfo);
     
     PC_CORE_API Texture(const fs::path& _path);
 
@@ -45,7 +45,7 @@ private:
 
     RHIFormat m_Format;
 
-    PC_CORE_API void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
+    PC_CORE_API void CreateFromCreateInfo(const CreateImageInfo& createTextureInfo);
 
     PC_CORE_API void LoadFromFile(const fs::path& _path);
 };

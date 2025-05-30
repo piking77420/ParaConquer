@@ -27,7 +27,7 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 			PC_CORE::GPUHandleID id = attachement.texture->GetGPUHandleID(frame);
 			PC_CORE::GPUResource* gpuHandle = PC_CORE::Rhi::GetResourceFromHandle(id).get();
 			VulkanImageHandle* imageHandle = reinterpret_cast<VulkanImageHandle*>(gpuHandle);
-			image_views.emplace_back(imageHandle->view);
+			image_views.emplace_back(imageHandle->GetImageView());
 				
 
 		}

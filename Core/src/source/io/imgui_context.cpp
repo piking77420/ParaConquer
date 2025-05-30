@@ -12,8 +12,14 @@
 #include "vulkan_device.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "vulkan_swap_chain.hpp"
+#include "handles/vulkan_image_handle.hpp"
 #include "resources/vulkan_sampler.hpp"
 
+
+namespace Vulkan
+{
+    struct VulkanImageHandle;
+}
 
 using namespace PC_CORE;
 
@@ -143,7 +149,7 @@ void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDes
             Rhi::GetResourceFromHandle(id));
         VkSampler sampler = std::reinterpret_pointer_cast<Vulkan::VulkanSampler>(Rhi::GetRhiContext()->sampler)->
             GetSampler();
-        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(sampler, handle->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(sampler, handle->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 }
 
