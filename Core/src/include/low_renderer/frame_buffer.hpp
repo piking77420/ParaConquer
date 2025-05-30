@@ -8,7 +8,7 @@
 
 BEGIN_PCCORE
 
-struct AttachementDescriptor
+	struct AttachementDesriptor
 {
 	Texture* texture;
 };
@@ -18,7 +18,7 @@ struct CreateFrameInfo
 	uint32_t width;
 	uint32_t height;
 
-	std::vector<AttachementDescriptor>* attachements;
+	std::vector<AttachementDesriptor>* attachements;
 	RhiRenderPass* renderPass;
 };
 

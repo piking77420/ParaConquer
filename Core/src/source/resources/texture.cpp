@@ -62,6 +62,8 @@ Texture::Texture()
 
 Texture::Texture(const CreateTextureInfo& _createTextureInfo)
 {
+    m_Format = _createTextureInfo.format;
+    
     for (auto& texture : m_TextureHandles)
     {
         texture = Rhi::CreateTexture(_createTextureInfo);
@@ -139,4 +141,9 @@ void Texture::Load(const std::array<std::string, 6>& _maps)
 GPUHandleID Texture::GetGPUHandleID(int _frameIndex)
 {
     return m_TextureHandles[_frameIndex];
+}
+
+RHIFormat Texture::GetRHIFormat() const
+{
+    return m_Format;
 }

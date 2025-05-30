@@ -422,7 +422,7 @@ enum class IndexFormat
 
     enum class TextureAttachement
     {
-        None = 0,
+        None,
         Color = 1,
         DepthStencil = 2,
     };
@@ -561,6 +561,31 @@ struct GPUBufferCreateInfo
     MemoryUsageType memoryUsage;
 };
 
+enum struct LoadOperation
+{
+    Load ,
+    Clear,
+    DontCare,
+    None,
+};
+
+enum struct StoreOperation
+{
+    Store,
+    DontCare,
+    None,
+
+    Count,
+};
+
+enum class ShaderProgramPipelineType
+{
+    POINT_GRAPHICS,
+    COMPUTE,
+    RAYTRACING,
+
+    COUT
+};
 
 
 END_PCCORE

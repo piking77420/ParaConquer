@@ -1205,3 +1205,35 @@ vk::PrimitiveTopology Vulkan::RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _p
         throw std::runtime_error("Invalid or unsupported primitive topology.");
     }
 }
+
+vk::AttachmentLoadOp Vulkan::RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation)
+{
+    switch (_loadOperation)
+         {
+    case PC_CORE::LoadOperation::Load:
+        return vk::AttachmentLoadOp::eLoad;
+    case PC_CORE::LoadOperation::Clear:
+        return vk::AttachmentLoadOp::eClear;
+    case PC_CORE::LoadOperation::DontCare:
+        return vk::AttachmentLoadOp::eDontCare;
+    case PC_CORE::LoadOperation::None:
+    default: ;
+        throw std::runtime_error("Invalid or unsupported load operation.");
+    }
+}
+
+vk::AttachmentStoreOp Vulkan::RhiStoreOperationToVulkan(PC_CORE::StoreOperation _storeOperation)
+{
+    switch (_storeOperation)
+    {
+    case PC_CORE::StoreOperation::Store:
+        return vk::AttachmentStoreOp::eStore;
+    case PC_CORE::StoreOperation::DontCare:
+        return vk::AttachmentStoreOp::eDontCare;
+    case PC_CORE::StoreOperation::None:
+        return vk::AttachmentStoreOp::eNone;
+    case PC_CORE::StoreOperation::Count:
+    default: ;
+        throw std::runtime_error("Invalid or unsupported store operation.");
+    }
+}

@@ -48,5 +48,8 @@ namespace Vulkan
 
     vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology);
 
+    vk::AttachmentLoadOp RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation);
+
+    vk::AttachmentStoreOp RhiStoreOperationToVulkan(PC_CORE::StoreOperation _loadOperation);
 }
 

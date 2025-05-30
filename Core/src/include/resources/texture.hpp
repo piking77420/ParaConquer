@@ -35,11 +35,15 @@ public:
     PC_CORE_API void Load(const std::array<std::string,6>& _maps);
 
     PC_CORE_API GPUHandleID GetGPUHandleID(int _frameIndex);
+
+    PC_CORE_API RHIFormat GetRHIFormat() const;
     
 private:
     int m_TextureChannel = -1;
 
     std::array<GPUHandleID, MAX_FRAMES_IN_FLIGHT> m_TextureHandles;
+
+    RHIFormat m_Format;
 
     PC_CORE_API void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
 

@@ -62,14 +62,7 @@ struct ShaderSourcePath
     std::string spvCode;
 };
 
-enum class ShaderProgramPipelineType
-{
-    POINT_GRAPHICS,
-    COMPUTE,
-    RAYTRACING,
 
-    COUT
-};
 
 enum class PolygonMode
 {

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <perf_region.hpp>
 
 #include "io/in_out.h"
 #include "low_renderer/rhi.hpp"
@@ -45,6 +46,8 @@ public:
 
 void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _optimise)
 {
+    PERF_REGION_SCOPED;
+    
     PC_LOG("Init ShadersCompiler")
     
     shaderCompiler = new ShaderCompiler();

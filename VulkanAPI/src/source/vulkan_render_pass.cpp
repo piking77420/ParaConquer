@@ -4,6 +4,64 @@
 #include "vulkan_context.hpp"
 #include "vulkan_swap_chain.hpp"
 
+Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& _attachements)
+: RhiRenderPass(_attachements)
+{
+    std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(VulkanContext::GetContext().rhiDevice);
+
+    std::vector<vk::AttachmentDescription> attachments;
+    attachments.resize(_attachements.attachements.size());
+    
+    vk::AttachmentDescription dephtAttachments;
+    bool hasAttachments = false;
+
+    for (uint32_t i = 0; i < _attachements.attachements.size(); i++)
+    {
+        const PC_CORE::RenderPassAttachementDescriptor& current = _attachements.attachements[i];
+
+        vk::AttachmentDescription attachment;
+
+        attachment.flags = {};
+        attachment.format = RHIFormatToVkFormat(current.format);
+        attachment.samples = RhiSampleCountToVuklan(current.sampleCount);
+        attachment.loadOp = RhiLoadOperationToVulkan(current.load);
+        attachment.storeOp = RhiStoreOperationToVulkan(current.store);
+        attachment.stencilLoadOp = RhiLoadOperationToVulkan(current.stencilLoad);
+        attachment.stencilStoreOp = RhiStoreOperationToVulkan(current.stencilStore);
+        
+        
+        switch (current.attachementType)
+        {
+        case PC_CORE::TextureAttachement::Color:
+            attachment.initialLayout = vk::ImageLayout::eUndefined; // TO DO
+            attachment.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal; // TO DO
+            attachments[i] = attachment;
+
+            break;
+        case PC_CORE::TextureAttachement::DepthStencil:
+
+            if (hasAttachments)
+            {
+                PC_LOGERROR("Multiple Depth Attachement");
+            }
+            
+            attachment.initialLayout = vk::ImageLayout::eUndefined; // TO DO
+            attachment.finalLayout = vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal; // TO DO
+            
+            dephtAttachments = attachment;
+            hasAttachments = true;
+            break;
+        default: ;
+        }
+        
+    }
+
+    
+
+    
+    
+}
+
 Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, PC_CORE::RHIFormat depthFormat) : PC_CORE::RhiRenderPass(colorFormat, depthFormat)
 {
     std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(VulkanContext::GetContext().rhiDevice);

@@ -106,7 +106,7 @@ void WorldViewWindow::ResizeViewports()
     m_ViewportTexture.reset();
     m_ViewportTexture = std::make_shared<PC_CORE::Texture>(create_texture);
     
-    std::vector<PC_CORE::AttachementDescriptor> attachments =
+    std::vector<PC_CORE::AttachementDesriptor> attachments =
     { 
         {
             m_ViewportTexture.get(),
