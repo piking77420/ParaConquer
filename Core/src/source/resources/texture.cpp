@@ -54,14 +54,17 @@ void Texture::Build()
 
 Texture::Texture()
 {
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
+    DYNAMIC_REFLECT_INIT
+    
+    for (size_t i = 0; i < m_TextureHandles.size(); i++)
         m_TextureHandles[i] = GPU_INVALID_ID;
-    }
+    
 }
 
 Texture::Texture(const CreateImageInfo& _createTextureInfo)
 {
+    DYNAMIC_REFLECT_INIT
+    
     m_Format = _createTextureInfo.format;
     
     for (auto& texture : m_TextureHandles)
@@ -71,8 +74,10 @@ Texture::Texture(const CreateImageInfo& _createTextureInfo)
     
 }
 
-Texture::Texture(const fs::path& _path) : ResourceInterface<PC_CORE::Texture>(_path)
+Texture::Texture(const fs::path& _path) : Resource(_path)
 {
+    DYNAMIC_REFLECT_INIT
+    
     LoadFromFile(_path);
 }
 

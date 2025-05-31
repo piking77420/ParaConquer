@@ -9,6 +9,7 @@
 #include "guid.hpp"
 #include "reflection/reflection_typedef.hpp"
 #include "reflection/reflector.hpp"
+#include "serialize/iseriazable.h"
 
 namespace fs = std::filesystem;
 
@@ -19,7 +20,7 @@ BEGIN_PCCORE
 class ResourceManager;
 
 
-class Resource
+class Resource : public ISeriazable
 {
 public:
     std::string name;
@@ -32,7 +33,8 @@ public:
 
     std::string pathToFile;
 
-
+    PC_CORE_API void QueryType() override = 0;
+    
     // SOULD BE = 0
     PC_CORE_API virtual void Build() {};
 
@@ -105,41 +107,6 @@ bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, c
         }
     }
     return false;
-}
-
-
-template <class T>
-class ResourceInterface : public Resource
-{
-public:
-    ResourceInterface();
-
-    ResourceInterface(const fs::path& _path);
-    
-    virtual ~ResourceInterface() override = default;
-
-    const ReflectedType& GetType() const;
-private:
-    const ReflectedType* m_ReflectedType = nullptr;
-};
-
-template <class T>
-ResourceInterface<T>::ResourceInterface() : Resource()
-{
-    static_assert(!std::is_same_v<T, Resource>, "you should not put resource in the template, place your class");
-
-    m_ReflectedType = &Reflector::GetType<T>();
-}
-
-template<class T>
-inline ResourceInterface<T>::ResourceInterface(const fs::path& _path) : Resource(_path)
-{ 
-    m_ReflectedType = &Reflector::GetType<T>();
-}
-template <class T>
-inline const ReflectedType& ResourceInterface<T>::GetType() const
-{
-    return *m_ReflectedType;
 }
 
 

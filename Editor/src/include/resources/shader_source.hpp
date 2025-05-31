@@ -10,7 +10,7 @@
 BEGIN_PCCORE
 
 
-class ShaderSource : public PC_CORE::ResourceInterface<ShaderSource>
+class ShaderSource : public PC_CORE::Resource
 {
 public:
 
@@ -18,15 +18,17 @@ public:
 
     static void DestroyShadersCompiler();
 
+    void CompileToSpriv();
+
+    bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
+
+    IMP_DYNAMIC_REFLECT()
+
     ShaderSource();
 
     ShaderSource(const fs::path& _path);
     
-    void CompileToSpriv();
-    
     ~ShaderSource() override = default;
-
-    bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
 
 private:
     
@@ -57,5 +59,7 @@ private:
 
     static void AddPreProcessorDefVulkan();
 };
+
+REFLECT(ShaderSource)
 
 END_PCCORE

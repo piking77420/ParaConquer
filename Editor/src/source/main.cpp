@@ -3,6 +3,7 @@
 #include "reflection/reflector.hpp"
 #include "rendering/material.hpp"
 #include "resources/resource.hpp"
+#include "serialize/iseriazable.h"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -13,6 +14,37 @@ using namespace Tbx;
 
 
 constexpr TypeId NameSpaceS = COMPILE_TIME_TYPE_KEY(std::string);
+
+class TestSerialaZable : public DynamicReflectable
+{
+public:
+
+    TestSerialaZable()
+    {
+        DYNAMIC_REFLECT_INIT
+    }
+
+    ~TestSerialaZable() override = default;
+
+    IMP_DYNAMIC_REFLECT()
+};
+REFLECT(TestSerialaZable)
+
+class DerivedTestSeriaZable : public TestSerialaZable
+{
+public:
+    DerivedTestSeriaZable()
+    {
+        DYNAMIC_REFLECT_INIT
+    }
+
+    ~DerivedTestSeriaZable() override = default;
+
+    IMP_DYNAMIC_REFLECT()
+};
+
+
+REFLECT(DerivedTestSeriaZable)
 
 void RelfectionHashingTest()
 {
@@ -28,6 +60,13 @@ void RelfectionHashingTest()
 
     using d = uint32_t;
     static_assert(COMPILE_TIME_TYPE_KEY(d) == COMPILE_TIME_TYPE_KEY(unsigned int));
+
+    TestSerialaZable testSerialaZable;
+    DerivedTestSeriaZable derivedTestSeriaZable;
+
+    assert(testSerialaZable.GetTypeKey() != derivedTestSeriaZable.GetTypeKey());
+    assert(testSerialaZable.GetTypeKey() == Reflector::GetTypeKey<TestSerialaZable>());
+    assert(derivedTestSeriaZable.GetTypeKey() == Reflector::GetTypeKey<DerivedTestSeriaZable>());
 
 }
 

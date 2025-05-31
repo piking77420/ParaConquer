@@ -18,8 +18,14 @@ void Mesh::Build()
         LoadFromFile((fs::path)(pathToFile));
 }
 
-Mesh::Mesh(const fs::path& _path) : ResourceInterface(_path)
+Mesh::Mesh()
 {
+    DYNAMIC_REFLECT_INIT
+}
+
+Mesh::Mesh(const fs::path& _path) : Resource(_path)
+{
+    DYNAMIC_REFLECT_INIT
     LoadFromFile(_path);
 }
 

@@ -5,11 +5,14 @@
 
 PC_CORE::Material::Material()
 {
+    DYNAMIC_REFLECT_INIT
 }
 
 
 PC_CORE::Material::Material(const std::string& _name)
 {
+    DYNAMIC_REFLECT_INIT
+    
     name = _name;
     switch (m_MaterialType)
     {

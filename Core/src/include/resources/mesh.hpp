@@ -8,7 +8,7 @@
 #include "reflection/reflector.hpp"
 
 BEGIN_PCCORE
-    class Mesh : public ResourceInterface<Mesh>
+    class Mesh : public Resource
 {
 public:
 
@@ -33,19 +33,22 @@ public:
 
     MeshFormat meshFormat;
 
+    PC_CORE_API IMP_DYNAMIC_REFLECT()
+
     PC_CORE_API void Build() override;
 
-    PC_CORE_API Mesh() = default;
+    PC_CORE_API Mesh();
     
     PC_CORE_API Mesh(const fs::path& _path);
 
     PC_CORE_API ~Mesh() override;
+
 
 private:
     void LoadFromFile(const fs::path& _path);
     
     void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);
 };
-    REFLECT(Mesh, Resource)
+REFLECT(Mesh, Resource)
 
 END_PCCORE

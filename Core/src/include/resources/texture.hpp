@@ -11,18 +11,27 @@
 BEGIN_PCCORE
 
 
-class Texture : public ResourceInterface<Texture>
+class Texture : public Resource
 {
 public:
-    PC_CORE_API Texture(const Texture& other) noexcept;
 
-    PC_CORE_API Texture(Texture&& other) noexcept;
+    PC_CORE_API IMP_DYNAMIC_REFLECT()
+    
+    PC_CORE_API void Build() override;
+    
+    PC_CORE_API void Load(const std::array<std::string,6>& _maps);
+
+    PC_CORE_API GPUHandleID GetGPUHandleID(int _frameIndex);
+
+    PC_CORE_API RHIFormat GetRHIFormat() const;
 
     PC_CORE_API Texture& operator=(const Texture& other) noexcept;
 
     PC_CORE_API Texture& operator=(Texture&& other) noexcept;
 
-    PC_CORE_API void Build() override;
+    PC_CORE_API Texture(const Texture& other) noexcept;
+
+    PC_CORE_API Texture(Texture&& other) noexcept;
     
     PC_CORE_API Texture();
 
@@ -31,12 +40,6 @@ public:
     PC_CORE_API Texture(const fs::path& _path);
 
     PC_CORE_API ~Texture() override;
-    
-    PC_CORE_API void Load(const std::array<std::string,6>& _maps);
-
-    PC_CORE_API GPUHandleID GetGPUHandleID(int _frameIndex);
-
-    PC_CORE_API RHIFormat GetRHIFormat() const;
     
 private:
     int m_TextureChannel = -1;

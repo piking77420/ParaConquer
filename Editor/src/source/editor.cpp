@@ -37,13 +37,17 @@
 #include <new>
 #include <shobjidl.h>  // For IFileDialogEvents
 
+#include "serialize/iseriazable.h"
+
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
+
 
 
 Editor::Editor()
 {
 	PROFILER_NOOP;
+
 }
 
 Editor::~Editor()

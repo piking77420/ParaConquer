@@ -155,7 +155,7 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
         auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
         
             const std::shared_ptr<Resource>* rsPtr = reinterpret_cast<const std::shared_ptr<Resource>*>(objetPtr);
-            const ResourceInterface<Resource>* rsInterfaceDummie = reinterpret_cast<const ResourceInterface<Resource>*>(rsPtr->get());
+            const Resource* rsInterfaceDummie = reinterpret_cast<const Resource*>(rsPtr->get());
 
             assert(rsInterfaceDummie->GetType().typeId != Reflector::GetTypeKey<Resource>());
             try
@@ -302,7 +302,7 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
            
 
             const std::shared_ptr<Resource>* rsPtr = reinterpret_cast<const std::shared_ptr<Resource>*>((uint8_t*)(&itfalse->first + keyType.size));
-            const ResourceInterface<Resource>* rsInterfaceDummie = reinterpret_cast<const ResourceInterface<Resource>*>(rsPtr->get());
+            const Resource* rsInterfaceDummie = reinterpret_cast<const Resource*>(rsPtr->get());
       
            //verificatino // assert((uint8_t*)(&itfalse->first + keyType.size) == (uint8_t*)(bytePair + keyType.size));
             

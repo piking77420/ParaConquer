@@ -154,7 +154,7 @@ void ResourceManager::ForEach(const std::function<void(ResourceDerived*)>& _lamb
     
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        const ResourceInterface<ResourceDerived>* interface = reinterpret_cast<ResourceDerived*>(it->second);
+        const ResourceDerived* interface = reinterpret_cast<ResourceDerived*>(it->second);
         
         if (typeId != interface->GetType().typeId)
             continue;

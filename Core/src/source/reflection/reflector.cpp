@@ -4,6 +4,14 @@
 
 using namespace PC_CORE;
 
+const ReflectedType& Reflector::GetTypeFromRTTI(size_t typeIdFromRtti)
+{
+    const TypeId id = m_RttiToTypeId.at(typeIdFromRtti);
+
+    return m_RelfectionMap.at(id);
+}
+
+
 const ReflectedType& Reflector::GetType(uint32_t _hash)
 {
     return m_RelfectionMap.at(_hash);

@@ -134,10 +134,11 @@ struct ReflectedType
     uint32_t alignment;
     
     TypeMetaData metaData;
-
+    size_t rttiTypeId;
+    
     bool operator==(const ReflectedType& other) const
     {
-        return typeId == other.typeId;
+        return typeId == other.typeId && rttiTypeId == other.rttiTypeId;
     }
 };
 

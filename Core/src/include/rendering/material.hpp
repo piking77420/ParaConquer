@@ -16,12 +16,14 @@ class ShaderProgram;
 };
 
 
-class Material : public ResourceInterface<Material>
+class Material : public Resource
 {
 public:
     MaterialType m_MaterialType = MaterialType::Opaque;
 
     ResourceRef<Texture> m_albedo;
+
+    PC_CORE_API IMP_DYNAMIC_REFLECT();
 
     PC_CORE_API Material();
 

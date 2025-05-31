@@ -216,13 +216,15 @@ static shaderc_shader_kind GetGlangShaderStage(ShaderStageType _shaderType)
 
 
 
-ShaderSource::ShaderSource() : ResourceInterface<ShaderSource>()
+ShaderSource::ShaderSource() : Resource()
 {
-
+    DYNAMIC_REFLECT_INIT
 }
 
-ShaderSource::ShaderSource(const fs::path& _path) : ResourceInterface<ShaderSource>(_path)
+ShaderSource::ShaderSource(const fs::path& _path) : Resource(_path)
 {
+    DYNAMIC_REFLECT_INIT
+    
     uint32_t formatIndex = -1;
 
     if (!IsFormatValid(ShaderSourceFormat, extension, &formatIndex))
