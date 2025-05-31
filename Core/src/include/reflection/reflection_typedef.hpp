@@ -117,6 +117,7 @@ struct TypeMetaData
     std::vector<Members> members;
 
     // Dont Support MultiHirietence
+    // TODO Support MultiHirietence exemple handle interface
     TypeId baseClass = NullTypeId;
     
     CreateFunc createFunc = nullptr;
@@ -135,6 +136,10 @@ struct ReflectedType
     
     TypeMetaData metaData;
     size_t rttiTypeId;
+
+    DEFAULT_COPY_MOVE_OPERATIONS(ReflectedType)
+
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(ReflectedType)
     
     bool operator==(const ReflectedType& other) const
     {

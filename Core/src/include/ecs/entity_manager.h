@@ -11,7 +11,9 @@
 #include "ecs_header.h"
 #include "ecs_system.h"
 
+
 BEGIN_PCCORE
+
 
     class EntityManager
     {
@@ -39,6 +41,8 @@ BEGIN_PCCORE
         std::vector<EntityId> m_Entities;
 
         std::queue<EntityId> m_AvailableEntitiesId;
+
+        std::unique_ptr<char[]> m_EntityNameAlloc;
     private:
 
         

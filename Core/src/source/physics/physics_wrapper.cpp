@@ -61,8 +61,6 @@ REFLECT_MEMBER(Vector4d, y);
 REFLECT_MEMBER(Vector4d, z);
 REFLECT_MEMBER(Vector4d, w);
 
-// TO DO HANDLE PRIVATE FIELD
-
 REFLECT(Matrix2x2i);
 REFLECT(Matrix2x2f);
 REFLECT(Matrix2x2d);

@@ -207,12 +207,11 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
         const Array& arr = type.metaData.typeNatureMetaData.metaDataType.array;
         const ReflectedType& underLineType = Reflector::GetType(arr.type);
-        const size_t typeCount = arr.size / underLineType.size;
         try
         {
-            _jsonFile[CONTAINER_SIZE] = typeCount;
+            _jsonFile[CONTAINER_SIZE] = arr.size;
 
-            for (size_t i = 0; i < typeCount; i++)
+            for (size_t i = 0; i < arr.size; i++)
             {
                 const size_t offSet = i * underLineType.size;
                 SerializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
@@ -278,52 +277,42 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
         }
         std::string indexs;
 
-        const std::unordered_map<TypeId, ComponentArray>* realPtr = reinterpret_cast<const std::unordered_map<TypeId, ComponentArray>*>(objetPtr);
-
-
         UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
         std::memcpy(&unrefFunf, &reflectMapFunction.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
 
-
-        auto itTrue = realPtr->begin();
-        auto itTrue2 = realPtr->begin();
-
-        auto& itfalse = *reinterpret_cast<decltype(map->begin())*>(&itTrue);
- 
-
-        assert((uint64_t)&itTrue->second == (uint64_t)&itTrue2->second);
-        assert((uint64_t)&itTrue->second == (uint64_t)&itTrue2->second);
+        auto mapBegin = map->begin();
 
 
         for (size_t i = 0; i < mapSize; i++)
         {
-            
             indexs = std::to_string(i);
-           
 
-            const std::shared_ptr<Resource>* rsPtr = reinterpret_cast<const std::shared_ptr<Resource>*>((uint8_t*)(&itfalse->first + keyType.size));
-            const Resource* rsInterfaceDummie = reinterpret_cast<const Resource*>(rsPtr->get());
-      
+            auto* pair = (mapBegin.*unrefFunf)();
            //verificatino // assert((uint8_t*)(&itfalse->first + keyType.size) == (uint8_t*)(bytePair + keyType.size));
             
             //assert((uint64_t)& itTrue->second == (uint64_t)(&((itfalse.*unrefFunf)()->second)));
 
-            static_assert(sizeof(std::pair<std::string, std::shared_ptr<Resource>>) == sizeof(std::string) + sizeof(std::shared_ptr<Resource >));
+            //static_assert(sizeof(std::pair<std::string, std::shared_ptr<Resource>>) == sizeof(std::string) + sizeof(std::shared_ptr<Resource >));
             try
             {
-                SerializeType(_jsonFile[indexs][KEY], (uint8_t*)&itfalse->first , keyType.typeId);
+                const uint8_t* keyPtr = reinterpret_cast<const uint8_t*>(pair);
+                const uint8_t* valuePtr = keyPtr + reflectedMap.offsetBetweenKeyAndValueInPair;
 
-               const ComponentArray* componentArrayFalse = reinterpret_cast<const ComponentArray*>((uint8_t*)(&itfalse->first + keyType.size));
-               SerializeType(_jsonFile[indexs][VALUE], (uint8_t*)(&itfalse->first + keyType.size), valueType.typeId);
+                const int* v = reinterpret_cast<const int*>(valuePtr);
+                const float* f = reinterpret_cast<const float*>(valuePtr + 4);
+                const uint64_t* uint = reinterpret_cast<const uint64_t*>(valuePtr + 4 + 4);
+
+
+               SerializeType(_jsonFile[indexs][KEY], keyPtr, keyType.typeId);
+               //const ComponentArray* componentArrayFalse = reinterpret_cast<const ComponentArray*>((uint8_t*)(&itfalse->first + keyType.size));
+               SerializeType(_jsonFile[indexs][VALUE], valuePtr, valueType.typeId);
             }
             catch (...)
             {
                
             }
            
-            itfalse++;
-
-            itTrue++;
+            mapBegin++;
         }
 
 
@@ -583,17 +572,16 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
         {
             const Array& arr = type.metaData.typeNatureMetaData.metaDataType.array;
             const ReflectedType& underLineType = Reflector::GetType(arr.type);
-            const size_t typeCount = arr.size / underLineType.size;
 
             try
             {
-                if (_jsonFile[CONTAINER_SIZE] != typeCount)
+                if (_jsonFile[CONTAINER_SIZE] != arr.size)
                 {
                     PC_LOGERROR("array size missmacht")
                         return;
                 }
 
-                for (size_t i = 0; i < typeCount; i++)
+                for (size_t i = 0; i < arr.size; i++)
                 {
                     const size_t offSet = i * underLineType.size;
                     DeserializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
@@ -616,7 +604,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
         try
         {
             const size_t size = _jsonFile[CONTAINER_SIZE];
-            ver->resize(size* underLineType.size);
+            ver->resize(size * underLineType.size);
 
             for (size_t i = 0; i < size; i++)
             {

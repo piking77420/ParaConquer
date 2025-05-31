@@ -73,26 +73,26 @@ public:
 	{
 		constexpr TypeId componentTypId = Reflector::GetTypeKey<T>();
 
-		return reinterpret_cast<const T&>(m_ComponentMapArray[componentTypId].GetData(entityId));
+		return reinterpret_cast<const T&>(m_ComponentMapArray.at(componentTypId).GetData(entityId));
 	}
+	
 
-	ComponentTypeBit componentTypeToBitSet = 0;
-
+private:
 	std::unordered_map<TypeId, ComponentTypeBit> m_ComponentTypeToComponentBitFlag;
 
 	std::unordered_map<ComponentTypeBit, TypeId > m_ComponentBitFlagToComponentType;
 
 	std::unordered_map<TypeId, ComponentArray> m_ComponentMapArray;
-private:
-	
 
+	ComponentTypeBit componentTypeToBitSet = 0;
+	
+	REFLECT(ComponentManager)
+	REFLECT_MEMBER(ComponentManager, componentTypeToBitSet)
+	REFLECT_MEMBER(ComponentManager, m_ComponentTypeToComponentBitFlag)
+	REFLECT_MEMBER(ComponentManager, m_ComponentBitFlagToComponentType)
+	REFLECT_MEMBER(ComponentManager, m_ComponentMapArray)
 };
 
-REFLECT(ComponentManager)
-REFLECT_MEMBER(ComponentManager, componentTypeToBitSet)
-REFLECT_MEMBER(ComponentManager, m_ComponentTypeToComponentBitFlag)
-REFLECT_MEMBER(ComponentManager, m_ComponentBitFlagToComponentType)
-REFLECT_MEMBER(ComponentManager, m_ComponentMapArray)
 
 
 END_PCCORE

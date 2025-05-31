@@ -17,7 +17,10 @@
 
 BEGIN_PCCORE
 
-
+template <typename T, typename M>
+  constexpr size_t offset_of(M T::*member) {
+	return reinterpret_cast<size_t>(&(reinterpret_cast<T const volatile*>(0)->*member));
+}
 
 class Reflector
 {
@@ -62,6 +65,8 @@ public:
 	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_MapReflectFunction;
 
 	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_UnordoredMapReflectFunction;
+
+
 private:
 
 	constexpr PC_CORE_API  static std::string GetCorrectNameFromTypeId(const std::string& _name)
@@ -403,16 +408,15 @@ void Reflector::AddType()
 
 		TypeId typeId = GetTypeKey<T>();
 
-		ReflectedType type =
-		{
-			.typeId = typeId,
-			.typeFlags = {},
-			.name = name,
-			.size = sizeof(T),
-			.alignment = alignof(T),
-			.metaData = {},
-			.rttiTypeId = typeid(T).hash_code()
-		};
+		ReflectedType type{};
+		type.typeId = typeId;
+		type.typeFlags = {};
+		type.name = name;
+		type.size = sizeof(T);
+		type.alignment = alignof(T);
+		type.metaData = {};
+		type.rttiTypeId = typeid(T).hash_code();
+		
 
 		type.typeFlags = ProcessMetaData<T>(&type.metaData);
 		m_RttiToTypeId.insert({ type.rttiTypeId, typeId });
@@ -432,19 +436,26 @@ bool Reflector::ContaintType()
 #define CONCAT(x, y) CONCAT_IMPL(x, y)
 #define NEW_VAR(name) CONCAT(name, __COUNTER__)
 
+#define MAKE_REFLECTABLE \
+	friend class PC_CORE::Reflector; \
+
+
 #define REFLECT(CurrentType, ...) \
 static inline uint8_t CONCAT(reflectInfo,__COUNTER__) = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
 
 
 
-
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
-inline PC_CORE::Members CurrentType##_##memberName##_reflected = PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName),##__VA_ARGS__>(offsetof(CurrentType, memberName), #memberName);\
-
+static inline PC_CORE::Members CurrentType##_##memberName##_reflected = \
+PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName), ##__VA_ARGS__>( \
+PC_CORE::offset_of(&CurrentType::memberName), #memberName);
 
 class DynamicReflectable
 {
 public:
+
+	DEFAULT_COPY_MOVE_OPERATIONS(DynamicReflectable)
+	
 	PC_CORE_API virtual void QueryType() = 0;
 
 	const ReflectedType& GetType() const

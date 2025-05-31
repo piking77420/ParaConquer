@@ -11,6 +11,7 @@ EntityManager::EntityManager()
 {
 	m_Entities.resize(MAX_ENTITIES);
 	m_EntitesSignature.resize(MAX_ENTITIES);
+	m_EntityNameAlloc = std::make_unique<char[]>(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
 
 	for (EntityId entity = 0; entity < MAX_ENTITIES; ++entity)
 	{

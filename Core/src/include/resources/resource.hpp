@@ -34,17 +34,20 @@ public:
     std::string pathToFile;
 
     PC_CORE_API void QueryType() override = 0;
-    
     // SOULD BE = 0
     PC_CORE_API virtual void Build() {};
 
     PC_CORE_API const std::atomic<bool>& IsLoaded() const ;
 
-    PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
+    PC_CORE_API Resource& operator=(const Resource& _other) noexcept;
+
+    PC_CORE_API Resource(const Resource& _other) noexcept;
+
+    PC_CORE_API Resource& operator=(Resource&& _other) noexcept;
 
     PC_CORE_API Resource(Resource&& _other) noexcept;
     
-    PC_CORE_API Resource();
+    PC_CORE_API Resource() = default;
 
     PC_CORE_API Resource(const Guid& _guid) {}
 
