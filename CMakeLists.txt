@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 4.0)
 
 option(PROFILING "Build profiling dependencies" OFF)
+option(BUILD_TEST "Build UnitTest" ON)
 
 
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
@@ -9,6 +10,11 @@ project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
 #if(MSVC)
  #   add_compile_options(/Zc:__cplusplus)
 #endif()
+
+#unit Test
+if(BUILD_TEST)
+add_subdirectory(UnitTest)
+endif()
 
 #external first
 if (PROFILING)
