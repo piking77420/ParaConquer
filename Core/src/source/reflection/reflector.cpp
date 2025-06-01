@@ -17,6 +17,11 @@ const ReflectedType& Reflector::GetType(uint32_t _hash)
     return m_RelfectionMap.at(_hash);
 }
 
+bool Reflector::isTrivialType(TypeId _id)
+{
+    return !(GetType(_id).typeFlags & TypeFlagBits::COMPOSITE);
+}
+
 bool Reflector::ContaintTypeFromTypeID(TypeId typeId)
 {
     return m_RelfectionMap.contains(typeId);

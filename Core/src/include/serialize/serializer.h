@@ -18,11 +18,23 @@ BEGIN_PCCORE
 class Serializer
 {
 public:
+    
     template<typename T>
     static void Serialize(const T& _object, const fs::path& _fileToSerialize);
     
     template<typename T>
     static void DeSerialize(T* _object, const fs::path& _file);
+    
+    static void Serialize(TypeId _id, const void* const _object, const fs::path& _fileToSerialize)
+    {
+        Serializing(static_cast<const uint8_t*>(_object), _fileToSerialize, _id);
+    }
+    
+    static void DeSerialize(TypeId _id, void* _object, const fs::path& _file)
+    {
+        Derializing(static_cast<uint8_t*>(_object), _file, _id);
+    }
+    
     
 private:    
     PC_CORE_API static void Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);

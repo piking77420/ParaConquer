@@ -62,16 +62,28 @@ REFLECT_MEMBER(Vector4d, z);
 REFLECT_MEMBER(Vector4d, w);
 
 REFLECT(Matrix2x2i);
+REFLECT_MEMBER(Matrix2x2i, data);
 REFLECT(Matrix2x2f);
+REFLECT_MEMBER(Matrix2x2f, data);
 REFLECT(Matrix2x2d);
+REFLECT_MEMBER(Matrix2x2d, data);
+
 
 REFLECT(Matrix3x3i);
+REFLECT_MEMBER(Matrix3x3i, data);
 REFLECT(Matrix3x3f);
+REFLECT_MEMBER(Matrix3x3f, data);
 REFLECT(Matrix3x3d);
+REFLECT_MEMBER(Matrix3x3d, data);
+
 
 REFLECT(Matrix4x4i);
+REFLECT_MEMBER(Matrix4x4i, data);
 REFLECT(Matrix4x4f);
+REFLECT_MEMBER(Matrix4x4f, data);
 REFLECT(Matrix4x4d);
+REFLECT_MEMBER(Matrix4x4d, data);
+
 
 REFLECT(Quaternioni);
 REFLECT_MEMBER(Quaternioni, imaginary);

@@ -22,9 +22,9 @@ struct DirLight : public Light
     bool isDirty = false;
 };
 REFLECT(DirLight,Light)
-REFLECT_MEMBER(DirLight, color, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, color, COLOR)
 REFLECT_MEMBER(DirLight, intensity)
-REFLECT_MEMBER(DirLight, ambiant, MemberEnumFlag::COLOR)
+REFLECT_MEMBER(DirLight, ambiant, COLOR)
 REFLECT_MEMBER(DirLight, isDirty)
 
 

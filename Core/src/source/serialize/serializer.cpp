@@ -36,6 +36,7 @@ using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename Unordo
 #define RESOURCE_PTR_TYPE "resourceType"
 #define KEY "key"
 #define VALUE "value"
+#define DATA "data"
 
 #pragma region Serialization
 void TypeToString(json& outj, TypeId id, const uint8_t* objetPtr)
@@ -96,7 +97,7 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey);
 
 void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr)
 {
-    if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+    if (member.memberFlag & MemberEnumFlag::SERIALIZE)
         return;
 
     auto& type = PC_CORE::Reflector::GetType(member.typeKey);
@@ -150,7 +151,7 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
         }
         return;
     }
-    case TypeNatureMetaDataEnum::ResourceHandle : 
+    case TypeNatureMetaDataEnum::ResourceHandle: 
     {
         auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
         
@@ -204,18 +205,28 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
     }
     case TypeNatureMetaDataEnum::Array:
     {
-
         const Array& arr = type.metaData.typeNatureMetaData.metaDataType.array;
         const ReflectedType& underLineType = Reflector::GetType(arr.type);
         try
         {
             _jsonFile[CONTAINER_SIZE] = arr.size;
 
-            for (size_t i = 0; i < arr.size; i++)
+            if (Reflector::isTrivialType(underLineType.typeId))
             {
-                const size_t offSet = i * underLineType.size;
-                SerializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
+                std::vector<uint8_t> data(arr.size * underLineType.size);
+                std::memcpy(data.data(), objetPtr, data.size());
+                _jsonFile[DATA] = json::binary(data);
             }
+            else
+            {
+                for (size_t i = 0; i < arr.size; i++)
+                {
+                    const size_t offSet = i * underLineType.size;
+                    SerializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
+                }
+            }
+
+            
         }
         catch (...)
         {
@@ -240,21 +251,26 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
             return;
         }
 
-        for (size_t i = 0; i < typeCount; i++)
+        if (Reflector::isTrivialType(underLineType.typeId))
         {
-            const size_t offSet = i * underLineType.size;
-            SerializeType(_jsonFile[std::to_string(i)], ver->data() + offSet, underLineType.typeId);
-        }
+            std::vector<uint8_t> data(ver->size() * underLineType.size);
+            std::memcpy(data.data(), objetPtr, data.size());
+            _jsonFile[DATA] = json::binary(data);
 
+        }
+        else
+        {
+            for (size_t i = 0; i < typeCount; i++)
+            {
+                const size_t offSet = i * underLineType.size;
+                SerializeType(_jsonFile[std::to_string(i)], ver->data() + offSet, underLineType.typeId);
+            }
+        }
+            
         return;
     }
     return;
     case TypeNatureMetaDataEnum::Map:
-    {
-       
-       
-        return;
-    }
     case TypeNatureMetaDataEnum::UnordoredMap:
     {
         uint8_t* dirtyPtr = const_cast<uint8_t*>(objetPtr);
@@ -288,20 +304,10 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
             indexs = std::to_string(i);
 
             auto* pair = (mapBegin.*unrefFunf)();
-           //verificatino // assert((uint8_t*)(&itfalse->first + keyType.size) == (uint8_t*)(bytePair + keyType.size));
-            
-            //assert((uint64_t)& itTrue->second == (uint64_t)(&((itfalse.*unrefFunf)()->second)));
-
-            //static_assert(sizeof(std::pair<std::string, std::shared_ptr<Resource>>) == sizeof(std::string) + sizeof(std::shared_ptr<Resource >));
             try
             {
                 const uint8_t* keyPtr = reinterpret_cast<const uint8_t*>(pair);
                 const uint8_t* valuePtr = keyPtr + reflectedMap.offsetBetweenKeyAndValueInPair;
-
-                const int* v = reinterpret_cast<const int*>(valuePtr);
-                const float* f = reinterpret_cast<const float*>(valuePtr + 4);
-                const uint64_t* uint = reinterpret_cast<const uint64_t*>(valuePtr + 4 + 4);
-
 
                SerializeType(_jsonFile[indexs][KEY], keyPtr, keyType.typeId);
                //const ComponentArray* componentArrayFalse = reinterpret_cast<const ComponentArray*>((uint8_t*)(&itfalse->first + keyType.size));
@@ -328,7 +334,7 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
     {
         for (auto& member : type.metaData.members)
         {
-            if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+            if (member.memberFlag & MemberEnumFlag::SERIALIZE)
                 continue;
 
             const uint8_t* ptr = objetPtr + member.offset;
@@ -341,6 +347,7 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
         TypeToString(_jsonFile, _typeKey, objetPtr);
     }
 }
+
 
 
 void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
@@ -575,20 +582,30 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
             try
             {
+                size_t s = _jsonFile[CONTAINER_SIZE];
                 if (_jsonFile[CONTAINER_SIZE] != arr.size)
                 {
                     PC_LOGERROR("array size missmacht")
                         return;
                 }
-
-                for (size_t i = 0; i < arr.size; i++)
+                if (Reflector::isTrivialType(underLineType.typeId))
                 {
-                    const size_t offSet = i * underLineType.size;
-                    DeserializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
+                    std::vector<uint8_t> bytes = _jsonFile["data"]["bytes"].get<std::vector<uint8_t>>();
+                    std::memcpy(objetPtr, bytes.data(), arr.size * underLineType.size);
                 }
+                else
+                {
+                    for (size_t i = 0; i < arr.size; i++)
+                    {
+                        const size_t offSet = i * underLineType.size;
+                        DeserializeType(_jsonFile[std::to_string(i)], objetPtr + offSet, underLineType.typeId);
+                    }
+                }
+               
             }
-            catch (...)
+            catch (const std::exception& e)
             {
+                std::cerr << "Exception caught: " << e.what() << std::endl;
 
             }
            
@@ -606,10 +623,17 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
             const size_t size = _jsonFile[CONTAINER_SIZE];
             ver->resize(size * underLineType.size);
 
-            for (size_t i = 0; i < size; i++)
+            if (Reflector::isTrivialType(underLineType.typeId))
             {
-                const size_t offSet = i * underLineType.size;
-                DeserializeType(_jsonFile[std::to_string(i)], ver->data() + offSet, underLineType.typeId);
+                *ver = _jsonFile["data"]["bytes"].get<std::vector<uint8_t>>();
+            }
+            else
+            {
+                for (size_t i = 0; i < size; i++)
+                {
+                    const size_t offSet = i * underLineType.size;
+                    DeserializeType(_jsonFile[std::to_string(i)], ver->data() + offSet, underLineType.typeId);
+                }    
             }
         }
         catch (...)
@@ -682,7 +706,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
         for (auto& member : type.metaData.members)
         {
-            if (member.memberFlag & MemberEnumFlag::NOTSERIALIZE)
+            if (member.memberFlag & MemberEnumFlag::SERIALIZE)
                 continue;
 
             uint8_t* ptr = objetPtr + member.offset;

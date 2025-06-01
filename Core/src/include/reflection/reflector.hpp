@@ -49,7 +49,7 @@ public:
 	PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
 
 	template<typename Holder, typename MemberType, MemberEnumFlag enumFlag = NONE_MEMBER_ENUM_FLAG>
-	static Members ReflectMember(size_t _offset, const char* _memberName);
+	static uint8_t ReflectMember(size_t _offset, const char* _memberName);
 
 	template<typename Holder, typename BaseClass = void>
 	static uint8_t ReflectType();
@@ -59,6 +59,8 @@ public:
 
 	template <typename T>
 	static bool isTrivialType();
+
+	static bool isTrivialType(TypeId _id);
 
 	PC_CORE_API static bool ContaintTypeFromTypeID(TypeId typeId);
 
@@ -193,35 +195,29 @@ private:
 			RelfectedString& relfectedString = typeMetaData->typeNatureMetaData.metaDataType.relfectedString;
 			relfectedString.type = isw ? GetTypeKey<wchar_t>() : GetTypeKey<char>();
 		}
-
-
-		if constexpr (is_map<T>::value)
-		{
 		
 
-		}
-
-		if constexpr (is_unordered_map<T>::value)
+		if constexpr (is_unordered_map<T>::value || is_map<T>::value)
 		{
 			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::UnordoredMap;
-			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.unordoredMapReflected;
+			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.mapReflected;
 			rm.key = GetTypeKey<typename T::key_type>();
 			rm.value = GetTypeKey<typename T::mapped_type>();
 
 			using MapPair = std::pair<typename T::key_type, typename T::mapped_type>;
 			rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
 			using MapIterator = typename T::iterator;
-			using UnordoredMapConstIterator = typename T::const_iterator;
+			using MapConstIterator = typename T::const_iterator;
 
 			using ReseverMapFunction = void (T::*)(size_t);
 			using InsertMapFunction = typename T::mapped_type& (T::*)(const typename T::key_type&);
-			using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename T::key_type, typename T::mapped_type>* (UnordoredMapConstIterator::*)() const;
+			using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename T::key_type, typename T::mapped_type>* (MapConstIterator::*)() const;
 			using IncrementMapIterator = MapIterator & (MapIterator::*)();
 
 
 			ReseverMapFunction reserverFunctionMapType = &T::reserve;
 			InsertMapFunction insertFunctionMapType = static_cast<InsertMapFunction>(&T::operator[]);
-			UnorderedMapUnrefConstIteratorFunc unref = &UnordoredMapConstIterator::operator->;
+			UnorderedMapUnrefConstIteratorFunc unref = &MapConstIterator::operator->;
 			IncrementMapIterator increment = &MapIterator::operator++;
 
 
@@ -296,14 +292,14 @@ bool Reflector::IsBaseOf(const ReflectedType& type)
 
 
 template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag>
-Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
+uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
 	std::unordered_map<uint32_t, ReflectedType>& memberMap = m_RelfectionMap;
 
 	if (!ContaintType<Holder>())
 	{
 		PC_LOGERROR("ReflectMember Holder member not found")
-			return {};
+			return 0;
 	}
 
 	if (!ContaintType<MemberType>())
@@ -315,7 +311,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 	{
 		// is there aldready a member name as
 		if (member.membersName == _memberName)
-			return member;
+			return 0;
 
 	}
 
@@ -330,7 +326,7 @@ Members Reflector::ReflectMember(size_t _offset, const char* _memberName)
 
 
 	memberMap.at(holderKey).metaData.members.push_back(members);
-	return members;
+	return 0;
 }
 
 template <typename Holder, typename BaseClass>
@@ -394,7 +390,7 @@ std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 template <typename T>
 bool Reflector::isTrivialType()
 {
-	return !(GetType<T>().typeFlags & TypeFlagBits::COMPOSITE);
+	return isTrivialType(GetTypeKey<T>());
 }
 
 
@@ -446,7 +442,7 @@ static inline uint8_t CONCAT(reflectInfo,__COUNTER__) = PC_CORE::Reflector::Refl
 
 
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
-static inline PC_CORE::Members CurrentType##_##memberName##_reflected = \
+static inline uint8_t CurrentType##_##memberName##_reflected = \
 PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName), ##__VA_ARGS__>( \
 PC_CORE::offset_of(&CurrentType::memberName), #memberName);
 

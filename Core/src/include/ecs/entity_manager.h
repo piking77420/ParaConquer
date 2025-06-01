@@ -34,23 +34,24 @@ BEGIN_PCCORE
 
         PC_CORE_API const Signature& GetSignature(EntityId entity) const;
 
-        uint32_t m_LivingEntityCount = 0;
-
-        std::vector<Signature> m_EntitesSignature;
-
-        std::vector<EntityId> m_Entities;
-
-        std::queue<EntityId> m_AvailableEntitiesId;
-
-        std::unique_ptr<char[]> m_EntityNameAlloc;
+       
     private:
+    uint32_t m_LivingEntityCount = 0;
 
-        
+    std::vector<Signature> m_EntitesSignature;
+
+    std::vector<EntityId> m_Entities;
+
+    std::queue<EntityId> m_AvailableEntitiesId;
+
+    std::unique_ptr<char[]> m_EntityNameAlloc;
+    
+    REFLECT(EntityManager)
+    REFLECT_MEMBER(EntityManager, m_LivingEntityCount);
+    //REFLECT_MEMBER(EntityManager, m_EntitesSignature); TODO
+
        
     };
         
-REFLECT(EntityManager)
-REFLECT_MEMBER(EntityManager, m_LivingEntityCount);
-//REFLECT_MEMBER(EntityManager, m_EntitesSignature); TODO
 
 END_PCCORE

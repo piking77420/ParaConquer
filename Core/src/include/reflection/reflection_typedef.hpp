@@ -29,7 +29,7 @@ enum TypeFlagBits
 enum MemberEnumFlag
 {
     NONE_MEMBER_ENUM_FLAG,
-    NOTSERIALIZE,
+    SERIALIZE,
     COLOR,
     HIDE_INSPECTOR,
 };
@@ -55,6 +55,7 @@ enum struct TypeNatureMetaDataEnum
     Vector,
     Map,
     UnordoredMap,
+    Set,
 };
 
 struct ResourceRefType
@@ -105,7 +106,6 @@ struct TypeNatureMetaData
         Array array;
         Vector vector;
         ReflectedMap mapReflected;
-        ReflectedMap unordoredMapReflected;
 
     }metaDataType;
 };
@@ -209,7 +209,6 @@ struct ReflectMapFunction
     uint64_t insertFunction;
     uint64_t unrefFunc;
     uint64_t incrementFunc;
-
 };
 
 
