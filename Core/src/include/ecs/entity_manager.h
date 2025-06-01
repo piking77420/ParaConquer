@@ -24,8 +24,12 @@ BEGIN_PCCORE
 
         PC_CORE_API ~EntityManager();
 
-        PC_CORE_API EntityId CreateEntity();
+        PC_CORE_API EntityId CreateEntity(const std::string& _name);
 
+        PC_CORE_API EntityId CreateEntity(std::string&& _name);
+
+        PC_CORE_API std::string_view GetEntityName(EntityId) const;
+    
         PC_CORE_API void RemoveEntity(EntityId entityId);
 
         PC_CORE_API void SetSignature(EntityId entityId, const Signature& signature);
@@ -44,7 +48,9 @@ BEGIN_PCCORE
 
     std::queue<EntityId> m_AvailableEntitiesId;
 
-    std::unique_ptr<char[]> m_EntityNameAlloc;
+    std::vector<char> m_EntityNameAlloc;
+
+    std::bitset<MAX_ENTITIES> m_EntityEnableFlags;
     
     REFLECT(EntityManager)
     REFLECT_MEMBER(EntityManager, m_LivingEntityCount);

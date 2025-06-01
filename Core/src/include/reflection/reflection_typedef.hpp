@@ -145,6 +145,16 @@ struct ReflectedType
     {
         return typeId == other.typeId && rttiTypeId == other.rttiTypeId;
     }
+
+    const Members* GetMemberByName(const std::string& _memberName) const
+    {
+        auto it  = std::find_if(metaData.members.begin(), metaData.members.end(),[&_memberName](const Members& _m)
+        {
+            return _m.membersName == _memberName;
+        });
+
+        return it == metaData.members.end() ? nullptr : &(*it);
+    }
 };
 
 // Chat gpt

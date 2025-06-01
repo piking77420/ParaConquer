@@ -8,6 +8,7 @@ using Destructor = void(*)(void*);
 
 BEGIN_PCCORE
 
+
 class ComponentArray
 {
 public:
@@ -25,8 +26,15 @@ public:
 
 	PC_CORE_API bool HasComponent(EntityId entityId) const;
 
-	uint8_t watcherValue = std::numeric_limits<uint8_t>::max();
+	
 
+private:
+	PC_FORCE_INLINE void PushData(EntityId entityId);
+
+	PC_FORCE_INLINE void RemoveData(EntityId entityId);
+
+	PC_CORE_API void GetComponentInfo();
+	
 	std::vector<uint8_t> m_ComponentData;
 
 	TypeId componentType;
@@ -43,25 +51,17 @@ public:
 
 	Destructor destructor;
 
-private:
-	PC_FORCE_INLINE void PushData(EntityId entityId);
-
-	PC_FORCE_INLINE void RemoveData(EntityId entityId);
-
-	PC_CORE_API void GetComponentInfo();
+	REFLECT(ComponentArray)
+	REFLECT_MEMBER(ComponentArray, m_ComponentData)
+	REFLECT_MEMBER(ComponentArray, componentType)
+	REFLECT_MEMBER(ComponentArray, m_Volume)
+	REFLECT_MEMBER(ComponentArray, m_IndexToEntity)
+	REFLECT_MEMBER(ComponentArray, m_EntityToIndex)
 
 };
 
 
-constexpr size_t off = offsetof(ComponentArray, m_ComponentData);
 
-
-REFLECT(ComponentArray)
-REFLECT_MEMBER(ComponentArray, m_ComponentData)
-//REFLECT_MEMBER(ComponentArray, componentType)
-//REFLECT_MEMBER(ComponentArray, m_Volume)
-//REFLECT_MEMBER(ComponentArray, m_IndexToEntity)
-//REFLECT_MEMBER(ComponentArray, m_EntityToIndex)
 
 
 END_PCCORE

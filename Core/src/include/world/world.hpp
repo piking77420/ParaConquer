@@ -37,9 +37,14 @@ public:
 
 
 
-    FORCEINLINE EntityId CreateEntity()
+    FORCEINLINE EntityId CreateEntity(std::string&& name)
     {
-        return m_EntityManager.CreateEntity();
+        return m_EntityManager.CreateEntity(name);
+    }
+
+    FORCEINLINE EntityId CreateEntity(const std::string& name)
+    {
+        return m_EntityManager.CreateEntity(name);
     }
 
     FORCEINLINE void RemoveEntity(EntityId _entityId)
@@ -95,20 +100,23 @@ public:
     }
 
 
+
+private:
+    PC_CORE_API static inline World* m_World = nullptr;
+
     ComponentManager m_ComponentManager;
 
     EntityManager m_EntityManager;
 
     SystemManager m_SystemManagers;
-
-private:
-    PC_CORE_API static inline World* m_World = nullptr;
+    
+    REFLECT(World)
+    REFLECT_MEMBER(World, m_ComponentManager)
+    REFLECT_MEMBER(World, m_EntityManager)
+    REFLECT_MEMBER(World, m_SystemManagers)
 };
 
-REFLECT(World)
-REFLECT_MEMBER(World, m_ComponentManager)
-//REFLECT_MEMBER(World, m_EntityManager)
-//REFLECT_MEMBER(World, m_SystemManagers)
+
 
 
 END_PCCORE

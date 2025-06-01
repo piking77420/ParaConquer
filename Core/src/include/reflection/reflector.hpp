@@ -64,6 +64,16 @@ public:
 
 	PC_CORE_API static bool ContaintTypeFromTypeID(TypeId typeId);
 
+	template <typename T, typename F>
+	static bool GetPtrToTypeField(T* _object,const std::string& _fieldName, F** _outPtrToField);
+
+	template <typename T, typename F>
+	static bool GetPtrToTypeField(const T& _object, const std::string& _fieldName, const F** _outPtrToField);
+
+	PC_CORE_API static bool GetPtrToTypeField(TypeId _id, void* _object,const std::string& _fieldName,  void** _outPtrToField);
+
+	PC_CORE_API static bool GetPtrToTypeField(TypeId _id , const void* _object,const std::string& _fieldName, const void** _outPtrToField);
+
 	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_MapReflectFunction;
 
 	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_UnordoredMapReflectFunction;
@@ -391,6 +401,18 @@ template <typename T>
 bool Reflector::isTrivialType()
 {
 	return isTrivialType(GetTypeKey<T>());
+}
+
+template <typename T, typename F>
+bool Reflector::GetPtrToTypeField(T* _object, const std::string& _fieldName, F** _outPtrToField)
+{
+	return GetPtrToTypeField(GetTypeKey<T>(), _object, _fieldName, reinterpret_cast<void**>(_outPtrToField));
+}
+
+template <typename T, typename F>
+bool Reflector::GetPtrToTypeField(const T& _object, const std::string& _fieldName, const F** _outPtrToField)
+{
+	return GetPtrToTypeField(GetTypeKey<T>(), &_object, _fieldName, reinterpret_cast<void**>(_outPtrToField));
 }
 
 

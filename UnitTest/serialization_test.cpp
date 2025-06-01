@@ -269,3 +269,28 @@ TEST(Serialization, MapTrivial)
     }
 
 }
+
+class TestISerizableClass : public ISeriazable
+{
+public:
+  
+    
+    ~TestISerizableClass() override = default;
+
+    TestISerizableClass()
+    {
+        DYNAMIC_REFLECT_INIT
+    }
+
+    IMP_DYNAMIC_REFLECT()
+
+private:
+    REFLECT(TestISerizableClass)
+    
+};
+
+
+TEST(Serialization, ISeriazable)
+{
+    
+}

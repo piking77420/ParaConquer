@@ -364,7 +364,7 @@ void Editor::InitTestScene()
 	m2->Build();
 
 
-	EntityId dirLight = World::GetWorld()->CreateEntity();
+	EntityId dirLight = World::GetWorld()->CreateEntity("dirLight");
 	World::GetWorld()->AddComponent<DirLight>(dirLight);
 	World::GetWorld()->AddComponent<Transform>(dirLight);
 	Transform* t = &World::GetWorld()->GetComponent<Transform>(dirLight);
@@ -372,14 +372,14 @@ void Editor::InitTestScene()
 	DirLight* dir = &World::GetWorld()->GetComponent<DirLight>(dirLight);
 	dir->color = Tbx::Vector3f(1,1,1);
 	
-	EntityId cube = World::GetWorld()->CreateEntity();
+	EntityId cube = World::GetWorld()->CreateEntity("cube");
 	World::GetWorld()->AddComponent<Transform>(cube);
 	World::GetWorld()->AddComponent<StaticMesh>(cube);
 	 t = &World::GetWorld()->GetComponent<Transform>(cube);
 	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f );
 
 
-	EntityId sphere = World::GetWorld()->CreateEntity();
+	EntityId sphere = World::GetWorld()->CreateEntity("sphere");
 	World::GetWorld()->AddComponent<Transform>(sphere);
 	World::GetWorld()->AddComponent<StaticMesh>(sphere);
 	t = &World::GetWorld()->GetComponent<Transform>(sphere);

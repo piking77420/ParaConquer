@@ -8,6 +8,9 @@
 
 BEGIN_PCCORE
 
+using ComponentArrayMap = std::unordered_map<TypeId, ComponentArray>;
+
+
 class ComponentManager
 {
 public:
@@ -49,7 +52,7 @@ public:
 
 	PC_CORE_API PC_FORCE_INLINE void DestroyEntity(EntityId _entity, Signature _entitySignature)
 	{
-		for (uint32_t i = 0; i < componentTypeToBitSet; i++)
+		for (uint32_t i = 0; i < m_ComponentTypeCount; i++)
 		{
 			if (_entitySignature.test(i))
 			{
@@ -75,19 +78,20 @@ public:
 
 		return reinterpret_cast<const T&>(m_ComponentMapArray.at(componentTypId).GetData(entityId));
 	}
+
 	
+	uint32_t GetComponentCount() const  { return m_ComponentTypeCount; }
 
 private:
 	std::unordered_map<TypeId, ComponentTypeBit> m_ComponentTypeToComponentBitFlag;
 
 	std::unordered_map<ComponentTypeBit, TypeId > m_ComponentBitFlagToComponentType;
 
-	std::unordered_map<TypeId, ComponentArray> m_ComponentMapArray;
+	ComponentArrayMap m_ComponentMapArray;
 
-	ComponentTypeBit componentTypeToBitSet = 0;
+	uint32_t m_ComponentTypeCount = 0;
 	
 	REFLECT(ComponentManager)
-	REFLECT_MEMBER(ComponentManager, componentTypeToBitSet)
 	REFLECT_MEMBER(ComponentManager, m_ComponentTypeToComponentBitFlag)
 	REFLECT_MEMBER(ComponentManager, m_ComponentBitFlagToComponentType)
 	REFLECT_MEMBER(ComponentManager, m_ComponentMapArray)

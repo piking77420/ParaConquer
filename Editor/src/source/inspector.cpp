@@ -23,7 +23,7 @@ void Inspector::Update()
 {
     EditorWindow::Update();
 
-
+    m_Editor->m_SelectedEntityId = 0;
     if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
         return;
 
@@ -65,21 +65,81 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
         &PC_CORE::Reflector::GetType<Tbx::Quaterniond>(),
         &PC_CORE::Reflector::GetType<PC_CORE::Rotation>(),
         };
+
+    PC_CORE::World* w = &PC_CORE::App::instance->world;
     
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::World, PC_CORE::EntityManager>(w, "m_EntityManager", &entityManagerPtr);
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::World, PC_CORE::ComponentManager>(w, "m_ComponentManager", &componentManagerPtr);
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::ComponentManager, PC_CORE::ComponentArrayMap>(componentManagerPtr, "m_ComponentMapArray", &componentArrayMapPtr);
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::ComponentManager, std::unordered_map<PC_CORE::ComponentTypeBit, PC_CORE::TypeId >>(componentManagerPtr, "m_ComponentBitFlagToComponentType", &componentTypeBitToTypeId);
+    
+
+    if (entityManagerPtr == nullptr)
+    {
+        PC_LOGERROR("EntityManagerPtr == nullptr");
+        return;
+    }
+
+    if (componentManagerPtr == nullptr)
+    {
+        PC_LOGERROR("ComponentManagerPtr == nullptr");
+        return;
+    }
+
+    if (componentArrayMapPtr == nullptr)
+    {
+        PC_LOGERROR("ComponentArrayMapPtr == nullptr");
+        return;
+    }
 }
 
 void Inspector::Show()
 {
-    /*
-    PC_CORE::EntityManager& entityManager = PC_CORE::World::GetWorld()->entityManager;
+    auto w = PC_CORE::World::GetWorld();
+
+    
+    const uint32_t ComponentCount = componentManagerPtr->GetComponentCount();
     PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
+    selectedId = 0;
 
 
-    std::string* string = &entityManager.GetEntityName(selectedId);
-    ImGui::PushID("EntityNameInput");
-    ImGui::InputText("##EntityName", string->data(), string->size());
-    ImGui::PopID();
+    std::string_view string = entityManagerPtr->GetEntityName(selectedId);
+    //ImGui::PushID("EntityNameInput");
+    //ImGui::InputText("##EntityName", const_cast<char*>(string.data()), string.size());
+    //ImGui::PopID();
 
+
+    const auto& signature = entityManagerPtr->GetSignature(selectedId);
+
+    for (int i = 0; i < ComponentCount; ++i)
+    {
+        if (!signature.test(i))
+            continue;
+
+        PC_CORE::TypeId componentTypeId = componentTypeBitToTypeId->at(i); 
+        PC_CORE::ComponentArray* arr = &componentArrayMapPtr->at(componentTypeId);
+        PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->GetData(selectedId));
+        const auto& reflectedMember = PC_CORE::Reflector::GetType(componentTypeId);
+
+        const char* componentName = m_ReflectedTypes[i]->name.c_str();
+        ImGui::Text(componentName);
+        ImGui::Spacing();
+
+        ImGui::PushID(static_cast<int>(componentTypeId));
+        ShowReflectType(reinterpret_cast<uint8_t*>(component), *m_ReflectedTypes[i]);
+        ImGui::Spacing();
+
+        
+
+        if (ImGui::SmallButton("Delete Component"))
+        {
+            //entityManager.RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
+            //m_Editor->world.scene.RemoveComponent(_entity, _componentId);
+        }
+
+        ImGui::PopID();
+    }
+    /*
 
     for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
     {
@@ -160,26 +220,27 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
     const uintmax_t typeFlag = type.typeFlags;
     const uintmax_t& memberFlag = _member.memberFlag;
 
-    /*
+    
     if (IsShowable(type.typeId))
     {
         HandleShowAble(_memberPtr, type, _member);
         return;
     }
+    /*
     if (typeFlag & PC_CORE::TypeFlagBits::PTR)
     {
         // only for little
         uint64_t ptr = (uint64_t)(*reinterpret_cast<uint64_t*>(_memberPtr));
         ImGui::Text("Address %lld", ptr);
         HandlePtr(_memberPtr, type, _member);
-    }
+    }*/
     if (typeFlag & PC_CORE::TypeFlagBits::COMPOSITE)
     {
         for (auto& member : type.metaData.members)
         {
             ShowMember(_memberPtr + member.offset, member);
         }
-    }*/
+    }
     
 }
 

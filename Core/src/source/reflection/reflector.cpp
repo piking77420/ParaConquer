@@ -27,6 +27,34 @@ bool Reflector::ContaintTypeFromTypeID(TypeId typeId)
     return m_RelfectionMap.contains(typeId);
 }
 
+bool Reflector::GetPtrToTypeField(TypeId _id, void* _object, const std::string& _fieldName, void** _outPtrToField)
+{
+    auto& t = GetType(_id);
+
+    const auto* m = t.GetMemberByName(_fieldName);
+    if (m == nullptr)
+        return false;
+
+    *_outPtrToField = static_cast<uint8_t*>(_object) + m->offset;
+    return true;
+}
+
+bool Reflector::GetPtrToTypeField(TypeId _id, const void* _object, const std::string& _fieldName,
+    const void** _outPtrToField)
+{
+    auto& t = GetType(_id);
+
+    const auto* m = t.GetMemberByName(_fieldName);
+    if (m == nullptr)
+        return false;
+
+    *_outPtrToField = static_cast<const uint8_t*>(_object) + m->offset;
+    return true;
+}
+
+
+
+
 // REFLECT TRIVIAL TYPE //
 REFLECT(bool);
 REFLECT(char);

@@ -2,6 +2,7 @@
 
 #include "edit_world_window.hpp"
 #include "ecs/archetype.h"
+#include "ecs/components_manager.hpp"
 #include "physics/sphere_collider.hpp"
 #include "reflection/reflection_typedef.hpp"
 #include "world/scene.hpp"
@@ -20,11 +21,7 @@ public:
     Inspector(Editor& _editor, const std::string& _name);
 
 private:
-    enum class ShowableReflect
-    {
-        // ENUMATE ALL SHOWALBEL TYPE 
-    };
-
+    
     
     void Show();
 
@@ -46,6 +43,15 @@ private:
 
     template <typename T>
     T* GetPtrToData(uint8_t* ptr);
+
+    PC_CORE::EntityManager* entityManagerPtr = nullptr;
+
+    PC_CORE::ComponentManager* componentManagerPtr = nullptr;
+
+    PC_CORE::ComponentArrayMap* componentArrayMapPtr = nullptr;
+
+    std::unordered_map<PC_CORE::ComponentTypeBit, PC_CORE::TypeId >* componentTypeBitToTypeId = nullptr;
+    
 };
 
     template <typename T>
