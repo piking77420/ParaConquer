@@ -8,6 +8,7 @@
 #include <optional>
 #include <type_traits>
 
+#include "perf_region.hpp"
 #include "compiletime_key.hpp"
 #include "log.hpp"
 #include "math/toolbox_typedef.hpp"
@@ -147,8 +148,8 @@ private:
 		}
 		if constexpr (is_weak_ptr_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::ResourceRefType;
-			ResourceRefType& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.resourceRef;
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::WeakPtr;
+			WeakPtr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.weakPtr;
 
 			TypeId ptrType = GetTypeKey<typename T::element_type>();
 			if (!m_RelfectionMap.contains(ptrType))
@@ -160,8 +161,8 @@ private:
 		}
 		if constexpr (is_shared_ptr_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::ResourceHandle;
-			ResourceRefType& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.resourceRef;
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::SharedPtr;
+			SharedPtr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.sharedPtr;
 
 			TypeId ptrType = GetTypeKey<typename T::element_type>();
 			if (!m_RelfectionMap.contains(ptrType))
@@ -242,6 +243,10 @@ private:
 			m_UnordoredMapReflectFunction.insert({ GetTypeKey<T>(), reflectMapFunction });
 		}
 
+		if constexpr (is_bit_set<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::BitSet;
+		}
 
 
 		if constexpr (!std::is_abstract_v<T>)
@@ -304,6 +309,8 @@ bool Reflector::IsBaseOf(const ReflectedType& type)
 template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag>
 uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
 {
+	PERF_REGION_SCOPED;
+	
 	std::unordered_map<uint32_t, ReflectedType>& memberMap = m_RelfectionMap;
 
 	if (!ContaintType<Holder>())
@@ -336,6 +343,8 @@ uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
 template <typename Holder, typename BaseClass>
 uint8_t Reflector::ReflectType()
 {
+	PERF_REGION_SCOPED;
+	
 	constexpr uint32_t KeyHolder = GetTypeKey<Holder>();
 
 	if (ContaintType<Holder>())
@@ -377,6 +386,8 @@ uint8_t Reflector::ReflectType()
 template <typename T>
 std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
 {
+	PERF_REGION_SCOPED;
+	
 	constexpr uint32_t hashCode = GetTypeKey<T>();
 	std::vector<const ReflectedType*> types;
 
@@ -413,6 +424,8 @@ bool Reflector::GetPtrToTypeField(const T& _object, const std::string& _fieldNam
 template <typename T>
 void Reflector::AddType()
 {
+	PERF_REGION_SCOPED;
+	
 	if (!ContaintType<T>())
 	{
 		// Create New Node in map

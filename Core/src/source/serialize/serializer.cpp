@@ -115,10 +115,10 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
     switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
-    case TypeNatureMetaDataEnum::ResourceRefType:
+    case TypeNatureMetaDataEnum::WeakPtr:
     {
         uint64_t ptr = (uint64_t)objetPtr;
-        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type);
+        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.weakPtr.type);
 
         if (Reflector::IsBaseOf<Resource>(typeRef))
         {
@@ -151,9 +151,9 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
         }
         return;
     }
-    case TypeNatureMetaDataEnum::ResourceHandle: 
+    case TypeNatureMetaDataEnum::SharedPtr: 
     {
-        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
+        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.sharedPtr.type);
         
             const std::shared_ptr<Resource>* rsPtr = reinterpret_cast<const std::shared_ptr<Resource>*>(objetPtr);
             const Resource* rsInterfaceDummie = reinterpret_cast<const Resource*>(rsPtr->get());
@@ -310,7 +310,6 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
                 const uint8_t* valuePtr = keyPtr + reflectedMap.offsetBetweenKeyAndValueInPair;
 
                SerializeType(_jsonFile[indexs][KEY], keyPtr, keyType.typeId);
-               //const ComponentArray* componentArrayFalse = reinterpret_cast<const ComponentArray*>((uint8_t*)(&itfalse->first + keyType.size));
                SerializeType(_jsonFile[indexs][VALUE], valuePtr, valueType.typeId);
             }
             catch (...)
@@ -324,6 +323,14 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
         return;
     }
+    case TypeNatureMetaDataEnum::BitSet:
+        {
+            _jsonFile[CONTAINER_SIZE] = type.size;
+            std::vector<uint8_t> data(type.size);
+            std::memcpy(data.data(), objetPtr, data.size());
+            _jsonFile[DATA] = json::binary(data);
+            return;
+        }
     case TypeNatureMetaDataEnum::None:
     default:
         break;
@@ -469,11 +476,11 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
     switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
-    case TypeNatureMetaDataEnum::ResourceRefType:
+    case TypeNatureMetaDataEnum::WeakPtr:
     {
         uint64_t ptr = (uint64_t)objetPtr;
 
-        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type);
+        auto& typeRef = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.weakPtr.type);
         if (Reflector::IsBaseOf<Resource>(typeRef))
         {
             ResourceRef<PC_CORE::Resource>* doublePtr = reinterpret_cast<ResourceRef<PC_CORE::Resource>*>(ptr);
@@ -506,9 +513,9 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
         }
         return;
     }
-    case TypeNatureMetaDataEnum::ResourceHandle:
+    case TypeNatureMetaDataEnum::SharedPtr:
     {
-        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceHandleType.type);
+        auto& pointedType = Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.sharedPtr.type);
         try
         {
             TypeId pointedTypeId = _jsonFile[RESOURCE_PTR_TYPE];
@@ -612,7 +619,6 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
             return;
         }
-        break;
     case TypeNatureMetaDataEnum::Vector:
     {
         std::vector<uint8_t>* ver = reinterpret_cast<std::vector<uint8_t>*>(objetPtr);
@@ -640,15 +646,9 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
         {
 
         }
-
-        return;
+            return;
     }
-        break;
     case TypeNatureMetaDataEnum::Map:
-    {
-      
-        return;
-    }
     case TypeNatureMetaDataEnum::UnordoredMap:
     {
         UnordoredByteMap& map = *reinterpret_cast<UnordoredByteMap*>(objetPtr);
@@ -693,6 +693,20 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
         }
         return;
     }
+    case TypeNatureMetaDataEnum::BitSet:
+        {
+            size_t s = _jsonFile[CONTAINER_SIZE];
+            if (_jsonFile[CONTAINER_SIZE] != type.size)
+            {
+                PC_LOGERROR("bitset size missmacht")
+                    break;
+            }
+            
+            std::vector<uint8_t> bytes = _jsonFile["data"]["bytes"].get<std::vector<uint8_t>>();
+            std::memcpy(objetPtr, bytes.data(), type.size);
+            return;
+            
+        }
     case TypeNatureMetaDataEnum::None:
     default:
         break;

@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <bitset>
 
 BEGIN_PCCORE
 
@@ -48,21 +49,26 @@ struct Members
 enum struct TypeNatureMetaDataEnum
 {
     None,
-    ResourceRefType,
-    ResourceHandle,
+    WeakPtr,
+    SharedPtr,
     String,
     Array,
     Vector,
     Map,
     UnordoredMap,
+    BitSet,
     Set,
 };
 
-struct ResourceRefType
+struct ReflectedBitSet
+{
+};
+
+struct WeakPtr
 {
     TypeId type;
 };
-struct ResourceHandleType
+struct SharedPtr
 {
     TypeId type;
 };
@@ -100,12 +106,13 @@ struct TypeNatureMetaData
     TypeNatureMetaDataEnum metaDataTypeEnum;
     union TypeNatureMetaUnion
     {
-        ResourceRefType resourceRef;
-        ResourceHandleType resourceHandleType;
+        WeakPtr weakPtr;
+        SharedPtr sharedPtr;
         RelfectedString relfectedString;
         Array array;
         Vector vector;
         ReflectedMap mapReflected;
+        ReflectedBitSet bitSet;
 
     }metaDataType;
 };
@@ -207,6 +214,14 @@ struct is_unordered_map : std::false_type {};
 
 template <typename Key, typename Value, typename... Args>
 struct is_unordered_map<std::unordered_map<Key, Value, Args...>> : std::true_type {};
+
+template <typename>
+struct is_bit_set : std::false_type {};
+
+template <size_t _size>
+struct is_bit_set<std::bitset<_size>> : std::true_type {};
+
+
 
 template <typename T>
 std::size_t HashFunction(const void* obj) {

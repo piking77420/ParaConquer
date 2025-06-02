@@ -29,11 +29,14 @@ bool Reflector::ContaintTypeFromTypeID(TypeId typeId)
 
 bool Reflector::GetPtrToTypeField(TypeId _id, void* _object, const std::string& _fieldName, void** _outPtrToField)
 {
-    auto& t = GetType(_id);
+    const auto& t = GetType(_id);
 
     const auto* m = t.GetMemberByName(_fieldName);
     if (m == nullptr)
+    {
+        PC_LOGERROR("There is no members name as {} in {} type", _fieldName, t.name);
         return false;
+    }
 
     *_outPtrToField = static_cast<uint8_t*>(_object) + m->offset;
     return true;
@@ -42,11 +45,14 @@ bool Reflector::GetPtrToTypeField(TypeId _id, void* _object, const std::string& 
 bool Reflector::GetPtrToTypeField(TypeId _id, const void* _object, const std::string& _fieldName,
     const void** _outPtrToField)
 {
-    auto& t = GetType(_id);
+    const auto& t = GetType(_id);
 
     const auto* m = t.GetMemberByName(_fieldName);
     if (m == nullptr)
+    {
+        PC_LOGERROR("There is no members name as {} in {} type", _fieldName, t.name);
         return false;
+    }
 
     *_outPtrToField = static_cast<const uint8_t*>(_object) + m->offset;
     return true;

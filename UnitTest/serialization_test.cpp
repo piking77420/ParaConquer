@@ -1,3 +1,4 @@
+#include <map>
 #include <gtest/gtest.h>
 
 #include "reflection/reflector.hpp"
@@ -270,6 +271,25 @@ TEST(Serialization, MapTrivial)
 
 }
 
+REFLECT(std::bitset<100>);
+
+TEST(Serialization, BiteSet)
+{
+    std::bitset<100> bitset;
+
+    for (size_t i = 0; i < bitset.size(); i++)
+    {
+        bitset.set(i, i % 2);
+    }
+
+    Serializer::Serialize(bitset, "SerializedResourceBitSet.test");
+
+    std::bitset<100> bitset2;
+    Serializer::DeSerialize(&bitset2, "SerializedResourceBitSet.test");
+
+    EXPECT_EQ(bitset,  bitset2);
+}
+
 class TestISerizableClass : public ISeriazable
 {
 public:
@@ -294,3 +314,4 @@ TEST(Serialization, ISeriazable)
 {
     
 }
+
