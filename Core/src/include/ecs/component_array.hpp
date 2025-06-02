@@ -39,13 +39,14 @@ private:
 
 	TypeId componentType;
 
+	uint32_t componentSize;
+
 	size_t m_Volume = 0;
 
 	std::unordered_map<EntityId, size_t> m_EntityToIndex;
 
 	std::unordered_map<EntityId, size_t> m_IndexToEntity;
 
-	uint32_t componentSize;
 
 	Constructor constructor;
 

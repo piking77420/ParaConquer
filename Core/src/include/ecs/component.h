@@ -22,10 +22,11 @@ private:
     // IN ORDER TO HAVE THE ENTITY ID AT CONTRUCTOR
     EntityId entityId;
 
+    REFLECT(Component);
+    REFLECT_MEMBER(Component, entityId);
 };
 template<class T>
    concept ComponentDerived = std::is_base_of_v<Component, T>;
 
-REFLECT(Component)
 
 END_PCCORE

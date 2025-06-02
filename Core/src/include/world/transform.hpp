@@ -26,7 +26,7 @@ struct Rotation
     {
         
     }
-
+        
     ~Rotation() = default;
 };
 

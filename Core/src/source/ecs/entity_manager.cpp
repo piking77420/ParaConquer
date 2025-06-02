@@ -2,6 +2,7 @@
 
 #include <numbers>
 
+#include "perf_region.hpp"
 #include "log.hpp"
 #include "ecs/component.h"
 
@@ -9,6 +10,8 @@ using namespace PC_CORE;
 
 EntityManager::EntityManager()
 {
+	PERF_REGION_SCOPED;
+
 	m_EntitesSignature.resize(MAX_ENTITIES);
 	m_EntityNameAlloc.resize(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
 
@@ -25,6 +28,8 @@ EntityManager::~EntityManager()
 
 EntityId EntityManager::CreateEntity(const std::string& _name)
 {
+	PERF_REGION_SCOPED;
+
 	assert(m_LivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
 	assert(_name.size() < MAX_ENTITY_NAME_LENGHT && "Entity name is too long.");
 	
@@ -32,13 +37,17 @@ EntityId EntityManager::CreateEntity(const std::string& _name)
 	m_EntityEnableFlags.set(id,	true);
 	m_AvailableEntitiesId.pop();
 	std::memcpy(&m_EntityNameAlloc[id * MAX_ENTITY_NAME_LENGHT],_name.data(), _name.size() + 1);
+	
 	++m_LivingEntityCount;
 
+	
 	return id;
 }
 
 EntityId EntityManager::CreateEntity(std::string&& _name)
 {
+	PERF_REGION_SCOPED;
+
 	assert(m_LivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
 	assert(_name.size() < MAX_ENTITY_NAME_LENGHT && "Entity name is too long.");
 	
@@ -53,6 +62,8 @@ EntityId EntityManager::CreateEntity(std::string&& _name)
 
 std::string_view EntityManager::GetEntityName(EntityId _id) const
 {
+	PERF_REGION_SCOPED;
+
 	if (!m_EntityEnableFlags.test(false))
 	{
 		PC_LOGERROR("Attempting to get entity's name from entity list that doesn't exist EntityId = {}.", _id);
@@ -67,6 +78,8 @@ std::string_view EntityManager::GetEntityName(EntityId _id) const
 
 void EntityManager::RemoveEntity(EntityId entityId)
 {
+	PERF_REGION_SCOPED;
+
 	assert(entityId < MAX_ENTITIES && "Entity out of range.");
 
 	if (!m_EntityEnableFlags.test(entityId))
@@ -88,6 +101,8 @@ void EntityManager::RemoveEntity(EntityId entityId)
 
 void EntityManager::SetSignature(EntityId entityId, const Signature& signature)
 {
+	PERF_REGION_SCOPED;
+
 	if (!m_EntityEnableFlags.test(entityId))
 	{
 		PC_LOGERROR("Attempting to SetSignature entity list that doesn't exist EntityId = {}.", entityId);
@@ -99,6 +114,8 @@ void EntityManager::SetSignature(EntityId entityId, const Signature& signature)
 
 Signature& EntityManager::GetSignature(EntityId entity)
 {
+	PERF_REGION_SCOPED;
+
 	assert(entity < MAX_ENTITIES ,"Entity out of range.");
 
 	if (!m_EntityEnableFlags.test(entity))
@@ -111,6 +128,8 @@ Signature& EntityManager::GetSignature(EntityId entity)
 
 const Signature& EntityManager::GetSignature(EntityId entity) const
 {
+	PERF_REGION_SCOPED;
+
 	assert(entity < MAX_ENTITIES, "Entity out of range.");
 
 	if (!m_EntityEnableFlags.test(entity))

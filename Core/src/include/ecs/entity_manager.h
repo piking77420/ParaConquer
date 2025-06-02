@@ -43,9 +43,7 @@ BEGIN_PCCORE
     uint32_t m_LivingEntityCount = 0;
 
     std::vector<Signature> m_EntitesSignature;
-
-    std::vector<EntityId> m_Entities;
-
+    
     std::queue<EntityId> m_AvailableEntitiesId;
 
     std::vector<char> m_EntityNameAlloc;
@@ -54,7 +52,10 @@ BEGIN_PCCORE
     
     REFLECT(EntityManager)
     REFLECT_MEMBER(EntityManager, m_LivingEntityCount);
-    //REFLECT_MEMBER(EntityManager, m_EntitesSignature); TODO
+    REFLECT_MEMBER(EntityManager, m_EntitesSignature);
+    REFLECT_MEMBER(EntityManager, m_AvailableEntitiesId);
+    REFLECT_MEMBER(EntityManager, m_EntityNameAlloc);
+    REFLECT_MEMBER(EntityManager, m_EntityEnableFlags);
 
        
     };
