@@ -23,7 +23,6 @@ void Inspector::Update()
 {
     EditorWindow::Update();
 
-    m_Editor->m_SelectedEntityId = 0;
     if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
         return;
 
@@ -95,18 +94,17 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
-    auto w = PC_CORE::World::GetWorld();
+    PC_CORE::World* w = PC_CORE::World::GetWorld();
 
     
     const uint32_t ComponentCount = componentManagerPtr->GetComponentCount();
-    PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
-    selectedId = 0;
+    const PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
 
 
     std::string_view string = entityManagerPtr->GetEntityName(selectedId);
-    //ImGui::PushID("EntityNameInput");
-    //ImGui::InputText("##EntityName", const_cast<char*>(string.data()), string.size());
-    //ImGui::PopID();
+    ImGui::PushID("EntityNameInput");
+    ImGui::InputText("##EntityName", const_cast<char*>(string.data()), PC_CORE::MAX_ENTITY_NAME_LENGHT);
+    ImGui::PopID();
 
 
     const auto& signature = entityManagerPtr->GetSignature(selectedId);
@@ -133,7 +131,7 @@ void Inspector::Show()
 
         if (ImGui::SmallButton("Delete Component"))
         {
-            //entityManager.RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
+            //componentManagerPtr->RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
             //m_Editor->world.scene.RemoveComponent(_entity, _componentId);
         }
 
@@ -226,14 +224,15 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
         HandleShowAble(_memberPtr, type, _member);
         return;
     }
-    /*
-    if (typeFlag & PC_CORE::TypeFlagBits::PTR)
+    
+    if (type.metaData.typeNatureMetaData.metaDataTypeEnum == PC_CORE::TypeNatureMetaDataEnum::WeakPtr 
+        && PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.weakPtr.type)))
     {
         // only for little
         uint64_t ptr = (uint64_t)(*reinterpret_cast<uint64_t*>(_memberPtr));
         ImGui::Text("Address %lld", ptr);
         HandlePtr(_memberPtr, type, _member);
-    }*/
+    }
     if (typeFlag & PC_CORE::TypeFlagBits::COMPOSITE)
     {
         for (auto& member : type.metaData.members)
@@ -365,7 +364,7 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
         ImGui::DragScalarN("Rotation", ImGuiDataType_::ImGuiDataType_Double, rotation.eulerAngles.GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1 * M_PI_4, &mind, &maxd);
         if (ImGui::IsItemEdited())
         {
-            rotation.quaternion =  Tbx::Quaterniond::FromEuler(rotation.eulerAngles).Normalize();
+            rotation.quaternion = Tbx::Quaterniond::FromEuler(rotation.eulerAngles);
         }
     }
     else
@@ -385,37 +384,32 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
     {
         currentSelectedMember.clear();
     }
-        // TO DO HANDLE SHARED PTR
-    if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.resourceRef.type)))
+    PC_CORE::ResourceRef<PC_CORE::Resource>* doublePtr = reinterpret_cast<PC_CORE::ResourceRef<PC_CORE::Resource>*>(ptr);
+
+    ImGui::PushID(_typeAsMember.membersName.c_str());
+
+
+    if (doublePtr->expired())
     {
-        PC_CORE::Resource** doublePtr = reinterpret_cast<PC_CORE::Resource**>(ptr);
+        ImGui::Text("%s is null", _typeAsMember.membersName.c_str());
+    }
+    else
+    {
+    }
 
-        PC_CORE::Resource* resource = *doublePtr;
+    if (ImGui::Button("Select"))
+    {
+        showSelectResourceMenue = true;
+        currentSelectedMember = _typeAsMember.membersName;
+    }
+    ImGui::PopID();
 
-        ImGui::PushID(_typeAsMember.membersName.c_str());
+    if (showSelectResourceMenue && currentSelectedMember == _typeAsMember.membersName)
+    {
 
-        if (resource == nullptr)
-        {
-            ImGui::Text("%s is null", _typeAsMember.membersName.c_str());
-        }
-        else
-        {
-            ImGui::Text("%s = %s", _typeAsMember.membersName.c_str(),  resource->name.c_str());
-        }
+        ImGui::Begin("Select", &showSelectResourceMenue);
 
-        if (ImGui::Button("Select"))
-        {
-            showSelectResourceMenue = true;
-            currentSelectedMember = _typeAsMember.membersName;
-        }
-        ImGui::PopID();
-
-        if (showSelectResourceMenue && currentSelectedMember == _typeAsMember.membersName)
-        {
-
-            ImGui::Begin("Select",&showSelectResourceMenue);
-
-            auto l = [&](std::shared_ptr<PC_CORE::Resource> currentResource)
+        auto l = [&](std::shared_ptr<PC_CORE::Resource> currentResource)
             {
                 std::string guiidS = (std::string)currentResource->guid;
 
@@ -423,22 +417,21 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
 
                 if (ImGui::Button(currentResource->name.c_str()))
                 {
-                  //  *doublePtr = currentResource;
+                    *doublePtr = currentResource;
+                    showSelectResourceMenue = false;
                 }
                 ImGui::PopID();
             };
 
-            if (ImGui::Button("Set to Null"))
-            {
-                *doublePtr = nullptr;
-            }
-            
-            // remove the type of the pointer
-            PC_CORE::ResourceManager::ForEach( type.metaData.typeNatureMetaData.metaDataType.resourceRef.type, l);
-            
-            ImGui::End();
-
+        if (ImGui::Button("Set to Null"))
+        {
+            *doublePtr = {};
         }
+
+        // remove the type of the pointer
+        PC_CORE::ResourceManager::ForEach(type.metaData.typeNatureMetaData.metaDataType.weakPtr.type, l);
+
+        ImGui::End();
 
     }
 }

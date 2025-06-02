@@ -9,7 +9,9 @@ using namespace PC_EDITOR_CORE;
 
 Hierachy::Hierachy(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::World, PC_CORE::EntityManager>(&PC_CORE::App::instance->world, "m_EntityManager", &m_EntityManagerPtr);
     
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::EntityManager, std::bitset<PC_CORE::MAX_ENTITIES>>(m_EntityManagerPtr, "m_EntityEnableFlags", &m_EnableEntitiesBitSetPtr);
 }
 
 void Hierachy::Update()
@@ -20,20 +22,32 @@ void Hierachy::Update()
 
 void Hierachy::ShowGraph()
 {
-    /*
-    PC_CORE::EntityManager& ent = PC_CORE::World::GetWorld()->entityManager;
+    if (m_EntityManagerPtr == nullptr)
+    {
+        PC_LOGERROR("m_EntityManagerPtr is nullPtr");
+        return;
+    }
+    
+    
+    if (m_EnableEntitiesBitSetPtr == nullptr)
+    {
+        PC_LOGERROR("m_EnableEntitiesBitSetPtr is nullPtr");
+        return;
+    }
+    
     
     bool hasSelected = false;
 
-    size_t entityCapacity = ent.GetEntityCapacity();
-    for (size_t i = 0 ; i < entityCapacity; i++)
+    for (size_t i = 0 ; i < m_EnableEntitiesBitSetPtr->size(); i++)
     {
-        PC_CORE::EntityId id = static_cast<PC_CORE::EntityId>(i);
-        if (!ent.IsValidEntityId(id))
-            return;
+        if (!m_EnableEntitiesBitSetPtr->test(i))
+            continue;
         
-        PC_CORE::Entity& entity = ent.GetEntity(id);
-        if (ImGui::Button(entity.name.c_str()))
+        PC_CORE::EntityId id = static_cast<PC_CORE::EntityId>(i);
+        auto entName = m_EntityManagerPtr->GetEntityName(i);
+        
+
+        if (ImGui::Button(entName.data()))
         {
             m_Editor->m_SelectedEntityId = id;
             hasSelected = true;
@@ -48,5 +62,5 @@ void Hierachy::ShowGraph()
             m_Editor->m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
         }
     }
-    */
+    
 }
