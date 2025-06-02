@@ -18,7 +18,6 @@ file(GLOB_RECURSE HEADER_FILES src/include/*.h src/include/*.hpp src/inline/*.in
 if (PROFILING)
 
 set(TRACY_PUBLIC_DIR "${CMAKE_SOURCE_DIR}/tracy/public")
-
 set(TRACY_CLIENT_SRC "${TRACY_PUBLIC_DIR}/TracyClient.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TRACY_CLIENT_SRC} ${HEADER_FILES})

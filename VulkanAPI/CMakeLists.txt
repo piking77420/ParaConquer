@@ -25,7 +25,14 @@ add_library(${PROJECT_NAME}  ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)   
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC src/externals/include)
+target_include_directories(${PROJECT_NAME} PUBLIC src/externals/include)
 
+if (PROFILING)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Profiler/src/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/tracy/public)
+target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_IMPORTS)
+
+endif()
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/MotionCore/MotionCore/src/include)

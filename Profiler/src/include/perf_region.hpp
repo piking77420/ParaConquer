@@ -17,7 +17,7 @@
 #define PROFILER_NOOP TracyNoop
 
 #define PERF_REGION_SCOPED ZoneScoped
-#define PERF_REGION_SCOPEDN ZoneScopedN
+#define PERF_REGION_SCOPEDN(x) ZoneScopedN(x)
 #define PERF_REGION_SCOPEDC ZoneScopedC(x)
 #define PERF_REGION_SCOPEDNC ZoneScopedNC(x,y)
 
