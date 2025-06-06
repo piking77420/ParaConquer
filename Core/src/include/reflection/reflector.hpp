@@ -324,7 +324,7 @@ uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
 		AddType<MemberType>();
 	}
 	const uint32_t holderKey = GetTypeKey<Holder>();
-	for (auto&& member : memberMap.at(holderKey).metaData.members)
+	for (const auto& member : memberMap.at(holderKey).metaData.members)
 	{
 		// is there aldready a member name as
 		if (member.membersName == _memberName)
