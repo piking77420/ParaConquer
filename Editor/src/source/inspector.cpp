@@ -55,7 +55,7 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
         &PC_CORE::Reflector::GetType<Tbx::Vector2f>(),
         &PC_CORE::Reflector::GetType<Tbx::Vector3f>(),
         &PC_CORE::Reflector::GetType<Tbx::Vector4f>(),
-        
+
         &PC_CORE::Reflector::GetType<Tbx::Vector2<double>>(),
         &PC_CORE::Reflector::GetType<Tbx::Vector3<double>>(),
         &PC_CORE::Reflector::GetType<Tbx::Vector4<double>>(),
@@ -307,7 +307,7 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
     else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2f>(id))
     {
         Tbx::Vector2f* vec = reinterpret_cast<Tbx::Vector2f*>(ptr);
-        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector2d) / sizeof(float), 0.1, &minf, &maxf);
+        ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Float, vec->GetPtr(), sizeof(Tbx::Vector2d) / sizeof(float), 0.1, &minf, &maxf);
     }
     else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2d>(id))
     {
@@ -323,7 +323,7 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
         }
         else
         {
-            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector3f) / sizeof(float), 0.1, &minf, &maxf);
+            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Float, vec->GetPtr(), sizeof(Tbx::Vector3f) / sizeof(float), 0.1, &minf, &maxf);
         }
     }
     else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3d>(id))
@@ -341,7 +341,7 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
         }
         else
         {
-            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Double, vec->GetPtr(), sizeof(Tbx::Vector4f) / sizeof(float), 0.1, &minf, &maxf);
+            ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_::ImGuiDataType_Float, vec->GetPtr(), sizeof(Tbx::Vector4f) / sizeof(float), 0.1, &minf, &maxf);
         }
     }
     else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4d>(id))
