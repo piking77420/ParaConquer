@@ -15,6 +15,7 @@ void* Vulkan::VulkanSwapChain::GetFrameBuffer()
 
 Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height): SwapChain(_widht, _height)
 {
+    PERF_REGION_SCOPED;
     CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
     CreateImageViews();
     CreateFrameBuffers();

@@ -5,6 +5,8 @@
 #include "resources/file_loader.hpp"
 #include <log.hpp>
 
+#include "perf_region.hpp"
+
 
 using namespace PC_CORE;
 
@@ -123,6 +125,7 @@ void Window::HideCursor(bool _hide)
 
 Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_windowName)
 {
+    PERF_REGION_SCOPED;
     m_Monitor = glfwGetPrimaryMonitor();
     Mode = glfwGetVideoMode(m_Monitor);
     monitorSize = { static_cast<uint32_t>(Mode->width), static_cast<uint32_t>(Mode->height)};

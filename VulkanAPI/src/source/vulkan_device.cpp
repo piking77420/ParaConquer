@@ -1,5 +1,7 @@
 ﻿#include "vulkan_device.hpp"
 
+#include "perf_region.hpp"
+
 vk::Device Vulkan::VulkanDevice::GetDevice() const
 {
     return m_Device;
@@ -8,6 +10,7 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
 Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable,  vk::Queue* _graphicQueue ,
                                    vk::Queue* _presentQueue,  vk::Queue* _transferQueue)
 {
+    PERF_REGION_SCOPED;
     vk::PhysicalDevice vkPhysicalDevice = _vulkanPhysicalDevices->GetVulkanDevice();
 
     constexpr uint32_t QueuIndex = 0;

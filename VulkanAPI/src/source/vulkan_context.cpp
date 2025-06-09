@@ -17,6 +17,8 @@ using namespace Vulkan;
 
 VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo) : RhiContext(rhiContextCreateInfo)
 {
+    PERF_REGION_SCOPED;
+    
     std::vector<std::string> extensionToEnable;
     
     renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate, rhiContextCreateInfo.WindowHandle);
@@ -53,6 +55,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
 
 VulkanContext::~VulkanContext()
 {
+    PERF_REGION_SCOPED;
     auto device = GetDevice();
     
     device->GetDevice().destroyFence(transferFence);
@@ -87,6 +90,7 @@ void VulkanContext::WaitIdleInstance()
 
 void VulkanContext::CreateMemoryAllocator()
 {
+    PERF_REGION_SCOPED;
     vk::Instance instance = std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->GetVulkanInstance();
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice)->GetDevice();
     vk::PhysicalDevice phydevice = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices)->GetVulkanDevice();
@@ -113,6 +117,7 @@ void VulkanContext::CreateMemoryAllocator()
 
 void VulkanContext::CreateCommandPools()
 {
+    PERF_REGION_SCOPED;
     const std::vector<QueueFamilyIndices>& queueFamilyIndices = GetPhysicalDevices()->GetQueuesFamilies();
     auto device = GetDevice();
     

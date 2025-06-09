@@ -15,6 +15,7 @@ using namespace PC_CORE;
 
 void App::Init(const AppCreateInfo& _appCreateInfo)
 {
+    PERF_REGION_SCOPED;
     PC_LOG("App Init")
     // Can init without any depedancies
     window = Window(_appCreateInfo.appName.data(), _appCreateInfo.appLogoPath.c_str());
@@ -31,14 +32,10 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     ResourceManager::InitPath();
     renderer.Init();
     Time::Init();
-    
-    world.LoadSkyBox();
 }
 
 void App::Destroy()
 {
-
-    world.skybox.Destroy();
     world.Destroy();
     renderer.Destroy();
     ResourceManager::Destroy();
@@ -53,21 +50,7 @@ App::App()
 
 void App::WorldTick()
 {
-    //world.sceneGraph.UpdateTransforms(&world.scene);
-    
-    if (world.begin)
-    {
-        //physicsWrapper.InitBodies(&world.scene);
-        world.Begin();
-        world.begin = false;
-        world.run = true;
-    }
-    
-    if (world.run)
-    {
-        //physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
-        world.Update();
-    }
-    //world.sceneGraph.UpdateMatrix(&world.scene);
+    world.Begin();
+    world.Update();
 }
 

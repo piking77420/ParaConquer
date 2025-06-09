@@ -11,8 +11,6 @@ BEGIN_PCCORE
 class World
 {
 public:
-
-    Skybox skybox;
     
     bool begin = false;
 
@@ -25,17 +23,13 @@ public:
     PC_CORE_API void Begin();
 
     PC_CORE_API void Update();
-
-    PC_CORE_API void LoadSkyBox();
-
+    
     PC_CORE_API void Destroy();
 
     PC_CORE_API FORCEINLINE static World* GetWorld()
     {
         return m_World;
     }
-
-
 
     FORCEINLINE EntityId CreateEntity(std::string&& name)
     {
