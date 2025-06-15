@@ -27,8 +27,6 @@ using InsertMapFunction = typename UnordoredByteMap::mapped_type& (UnordoredByte
 
 using UnordoredMapConstIterator = typename UnordoredByteMap::const_iterator;
 using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename UnordoredByteMap::key_type, typename UnordoredByteMap::mapped_type>* (UnordoredMapConstIterator::*)() const;
-
-
 //
 
 

@@ -14,7 +14,7 @@ EntityManager::EntityManager()
 	DYNAMIC_REFLECT_INIT;
 
 	m_EntitesSignature.resize(MAX_ENTITIES);
-	m_EntityNameAlloc.reserve(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
+	m_EntityNameAlloc.resize(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
 
 	for (EntityId entity = 0; entity < MAX_ENTITIES; entity++)
 	{

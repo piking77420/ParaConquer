@@ -519,7 +519,6 @@ void QueryType() override \
 	m_Type = &Reflector::GetTypeFromRTTI(typeid(*this).hash_code());\
 }\
 
-//  we check if m_Type != nullptr be cause we don't want a base class to overwrite the m_type of a derived class
 
 
 #define DYNAMIC_REFLECT_INIT \
