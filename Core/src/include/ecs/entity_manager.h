@@ -52,6 +52,7 @@ BEGIN_PCCORE
     
     REFLECT(EntityManager)
     REFLECT_MEMBER(EntityManager, m_LivingEntityCount);
+    REFLECT(Signature)
     REFLECT_MEMBER(EntityManager, m_EntitesSignature);
     REFLECT_MEMBER(EntityManager, m_AvailableEntitiesId);
     REFLECT_MEMBER(EntityManager, m_EntityNameAlloc);
@@ -59,6 +60,6 @@ BEGIN_PCCORE
 
        
     };
-        
+
 
 END_PCCORE

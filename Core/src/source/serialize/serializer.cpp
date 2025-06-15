@@ -213,7 +213,8 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
             if (Reflector::isTrivialType(underLineType.typeId))
             {
-                std::vector<uint8_t> data(arr.size * underLineType.size);
+                std::vector<uint8_t> data;
+                data.resize(arr.size * underLineType.size);
                 std::memcpy(data.data(), objetPtr, data.size());
                 _jsonFile[DATA] = json::binary(data);
             }
@@ -253,8 +254,10 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
         if (Reflector::isTrivialType(underLineType.typeId))
         {
-            std::vector<uint8_t> data(ver->size() * underLineType.size);
-            std::memcpy(data.data(), objetPtr, data.size());
+            std::vector<uint8_t> data;
+            data.resize(ver->size() * underLineType.size);
+            
+            std::memcpy(data.data(), ver->data(), data.size());
             _jsonFile[DATA] = json::binary(data);
 
         }

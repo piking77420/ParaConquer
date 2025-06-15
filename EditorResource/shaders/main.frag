@@ -24,10 +24,11 @@ void main()
 {
     vec3 normal = normalize(fragNormal);
     vec3 lightDir = lightData.direction;  
-    float diff = max(dot(normal, -lightDir), 0.0);
+    float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = diff * lightData.color * lightData.intensity;
 
     vec3 outColorVec3 = (diffuse + lightData.ambiant) * texture(texSampler, fragTexCoord).xyz;
 
     outColor = vec4(outColorVec3, 1.0);
+
 }

@@ -32,13 +32,11 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     renderer.Init();
     Time::Init();
     
-    world.LoadSkyBox();
 }
 
 void App::Destroy()
 {
 
-    world.skybox.Destroy();
     world.Destroy();
     renderer.Destroy();
     ResourceManager::Destroy();

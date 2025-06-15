@@ -493,14 +493,14 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     // Compute Matrix
     Tbx::Matrix4x4d modelMatrixd[2];
 
-    modelMatrixd[0] = Tbx::Trs4x4<double>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
+    modelMatrixd[0] = Tbx::Trs4x4<float>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
         _transform.scale);
 
-    modelMatrixd[1] = modelMatrixd[0].Transpose();
+    modelMatrixd[1] = modelMatrixd[0].Invert().Transpose();
 
     Tbx::Matrix4x4f modelMatrixf[2];
-    modelMatrixf[0] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[0]);
-    modelMatrixf[1] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[1]);
+    modelMatrixf[0] = modelMatrixd[0];
+    modelMatrixf[1] = modelMatrixd[1];
 
     Material* material = _staticMesh.material.lock().get();
     Mesh* mesh = _staticMesh.mesh.lock().get();

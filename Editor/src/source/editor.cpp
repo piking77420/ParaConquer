@@ -322,7 +322,7 @@ void Editor::UpdateEditorWindows()
 		{
 			if (ImGui::MenuItem("SaveScene"))
 			{
-
+				Serializer::Serialize(*World::GetWorld(),"TestScene.map");
 			}
 			ImGui::EndMenu();
 
@@ -368,7 +368,7 @@ void Editor::InitTestScene()
 	World::GetWorld()->AddComponent<DirLight>(dirLight);
 	World::GetWorld()->AddComponent<Transform>(dirLight);
 	Transform* t = &World::GetWorld()->GetComponent<Transform>(dirLight);
-	t->rotation = Rotation(-Tbx::Vector3f::UnitY());
+	t->rotation = Rotation(Tbx::Vector3f::UnitY());
 	DirLight* dir = &World::GetWorld()->GetComponent<DirLight>(dirLight);
 	dir->color = Tbx::Vector3f(1,1,1);
 	
@@ -387,7 +387,7 @@ void Editor::InitTestScene()
 	t->scale = Tbx::Vector3d(10.0f, 10.0f, 10.0f );
 
 	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
-	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+	mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
 	mesh->material = m1;
 
 	StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);

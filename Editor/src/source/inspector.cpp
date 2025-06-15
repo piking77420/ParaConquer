@@ -361,7 +361,7 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
     {
         PC_CORE::Rotation& rotation = *reinterpret_cast<PC_CORE::Rotation*>(ptr);
 
-        ImGui::DragScalarN("Rotation", ImGuiDataType_::ImGuiDataType_Double, rotation.eulerAngles.GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1 * M_PI_4, &mind, &maxd);
+        ImGui::DragScalarN("Rotation", ImGuiDataType_::ImGuiDataType_Float, rotation.eulerAngles.GetPtr(), sizeof(Tbx::Vector3d) / sizeof(double), 0.1 , &mind, &maxd);
         if (ImGui::IsItemEdited())
         {
             rotation.quaternion = Tbx::Quaterniond::FromEuler(rotation.eulerAngles);
