@@ -43,6 +43,7 @@ private:
 
 	size_t m_Volume = 0;
 
+	// TO DO CHANGE FOR VECTOR
 	std::unordered_map<EntityId, size_t> m_EntityToIndex;
 
 	std::unordered_map<EntityId, size_t> m_IndexToEntity;
