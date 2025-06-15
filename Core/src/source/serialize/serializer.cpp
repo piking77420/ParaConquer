@@ -112,6 +112,9 @@ void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* obje
 void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 {
     const ReflectedType& type = Reflector::GetType(_typeKey);
+    PERF_REGION_SCOPED_NAME_DYNAMIC(("SerializeType : " + type.name).c_str());
+
+    
 
     switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
@@ -369,10 +372,15 @@ void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _
         return;
     }
     const ReflectedType& type = Reflector::GetType(_typeKey);
+    
     json j;
     SerializeType(j[type.name], objetPtr, _typeKey);
 
-    myfile << std::setw(4) << j.dump(4);
+    {
+        PERF_REGION_SCOPED_NAMED("Dump JSON");
+        myfile << std::setw(4) << j.dump(4);
+    }
+  
     myfile.close();
 }
 #pragma endregion
@@ -476,6 +484,7 @@ void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* ob
 void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 {
     const ReflectedType& type = Reflector::GetType(_typeKey);
+    PERF_REGION_SCOPED_NAME_DYNAMIC(("DeserializeType : " + type.name).c_str());
 
     switch (type.metaData.typeNatureMetaData.metaDataTypeEnum)
     {
@@ -741,9 +750,15 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
 void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
 {
+    json j;
     std::ifstream f(_fileToSerialize.generic_string());
-    json j = json::parse(f);
+
+    {
+        PERF_REGION_SCOPED_NAMED("Parse JSON");
+        j = json::parse(f);
+    }
     f.close();
+
     
     const ReflectedType& type = Reflector::GetType(_typeKey);
     DeserializeType(j[type.name], _objetPtr, _typeKey);

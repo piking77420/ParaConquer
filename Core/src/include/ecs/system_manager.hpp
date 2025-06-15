@@ -14,25 +14,24 @@ public:
 	template <SystemDerived T>
 	std::shared_ptr<T> RegisterSystem()
 	{
-		constexpr TypeId systemTypeId = Reflector::GetTypeKey<T>();
-
-		auto sPtr = std::make_shared<T>();
-		m_Systems.insert(std::make_pair(systemTypeId, sPtr));
-
-		return sPtr;
+		auto system = std::make_shared<T>();
+		m_Systems.emplace_back(system);
+		return system;
 	}
 
 	template <SystemDerived T>
 	std::shared_ptr<T> GetSystem()
 	{
 		constexpr TypeId systemTypeId = Reflector::GetTypeKey<T>();
-		auto it = m_Systems.find(systemTypeId);
 
-		 if (it != m_Systems.end())
-		 {
-			 return *it;
-		 }
-
+		for (auto it = m_Systems.begin(); it != m_Systems.end(); ++it)
+		{
+			if (it->get()->GetTypeKey() == systemTypeId)
+			{
+				return it;
+			}
+		}
+		
 		 return nullptr;
 	}
 
@@ -40,24 +39,20 @@ public:
 	PC_FORCE_INLINE void EntityDestroyed(EntityId entityId, Signature entityIdSignature)
 	{
 		for (auto& it : m_Systems)
-		{
-			it.second->OnEntityDestroy(entityId, entityIdSignature);
-		}
+			it->OnEntityDestroy(entityId, entityIdSignature);
+		
 	}
 
 	PC_FORCE_INLINE void EntitySignatureChanged(EntityId entityId, Signature entityIdSignature)
 	{
 		for (auto& it : m_Systems)
-		{
-			auto const& sys = it.second;
-
-			sys->OnEntitySignatureChange(entityId, entityIdSignature);
-		}
+			it->OnEntitySignatureChange(entityId, entityIdSignature);
+		
 	}		
 
 
 private:
-	std::unordered_map<TypeId, std::shared_ptr<EcsSystem>> m_Systems;
+	std::vector<std::shared_ptr<EcsSystem>> m_Systems;
 };
 
 REFLECT(SystemManager)

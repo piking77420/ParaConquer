@@ -249,10 +249,12 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
 
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+
+    Level& level = World::GetWorld()->level;
     // draw all static mesh
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
-        DrawStaticMesh(World::GetWorld()->GetComponent<Transform>(it),
-            World::GetWorld()->GetComponent<StaticMesh>(it));
+        DrawStaticMesh(level.GetComponent<Transform>(it),
+            level.GetComponent<StaticMesh>(it));
     
 
     // draw the sky
@@ -309,10 +311,10 @@ void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderP
 void Renderer::QueryWorldData(World* world)
 {
     PERF_REGION_SCOPED;
-
+    Level& level = world->level;
     for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->dirLightSignature])
     {
-        QueryLightDirData(world->GetComponent<DirLight>(it), world->GetComponent<Transform>(it));
+        QueryLightDirData(level.GetComponent<DirLight>(it), level.GetComponent<Transform>(it));
     }
 
 }
@@ -527,15 +529,16 @@ void Renderer::DrawSky()
 void Renderer::InitRenderSystem()
 {
     PERF_REGION_SCOPED;
+    Level& level = World::GetWorld()->level;
 
-    rendererSystem = World::GetWorld()->RegisterSystem<RendererSystem>();
+    rendererSystem = level.RegisterSystem<RendererSystem>();
     
-    rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(),true);
-    rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<StaticMesh>(), true);
+    rendererSystem->staticMeshSignature.set(level.GetComponentTypeBit<Transform>(),true);
+    rendererSystem->staticMeshSignature.set(level.GetComponentTypeBit<StaticMesh>(), true);
     rendererSystem->AddSignature(rendererSystem->staticMeshSignature);
 
-    rendererSystem->dirLightSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(), true);
-    rendererSystem->dirLightSignature.set(World::GetWorld()->GetComponentTypeBit<DirLight>(), true);
+    rendererSystem->dirLightSignature.set(level.GetComponentTypeBit<Transform>(), true);
+    rendererSystem->dirLightSignature.set(level.GetComponentTypeBit<DirLight>(), true);
     rendererSystem->AddSignature(rendererSystem->dirLightSignature);
 
 }

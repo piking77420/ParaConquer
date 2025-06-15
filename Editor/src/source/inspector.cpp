@@ -65,10 +65,10 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
         &PC_CORE::Reflector::GetType<PC_CORE::Rotation>(),
         };
 
-    PC_CORE::World* w = &PC_CORE::App::instance->world;
+    PC_CORE::Level& lvl = PC_CORE::App::instance->world.level;
     
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::World, PC_CORE::EntityManager>(w, "m_EntityManager", &entityManagerPtr);
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::World, PC_CORE::ComponentManager>(w, "m_ComponentManager", &componentManagerPtr);
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::Level, PC_CORE::EntityManager>(&lvl, "m_EntityManager", &entityManagerPtr);
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::Level, PC_CORE::ComponentManager>(&lvl, "m_ComponentManager", &componentManagerPtr);
     PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::ComponentManager, PC_CORE::ComponentArrayMap>(componentManagerPtr, "m_ComponentMapArray", &componentArrayMapPtr);
     PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::ComponentManager, std::unordered_map<PC_CORE::ComponentTypeBit, PC_CORE::TypeId >>(componentManagerPtr, "m_ComponentBitFlagToComponentType", &componentTypeBitToTypeId);
     
@@ -96,6 +96,12 @@ void Inspector::Show()
 {
     PC_CORE::World* w = PC_CORE::World::GetWorld();
 
+    if (componentManagerPtr == nullptr)
+    {
+        PC_LOGERROR("ComponentManagerPtr == nullptr");
+        return;
+    }
+
     
     const uint32_t ComponentCount = componentManagerPtr->GetComponentCount();
     const PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
@@ -109,7 +115,7 @@ void Inspector::Show()
 
     const auto& signature = entityManagerPtr->GetSignature(selectedId);
 
-    for (int i = 0; i < ComponentCount; ++i)
+    for (uint32_t i = 0; i < ComponentCount; ++i)
     {
         if (!signature.test(i))
             continue;
@@ -117,7 +123,6 @@ void Inspector::Show()
         PC_CORE::TypeId componentTypeId = componentTypeBitToTypeId->at(i); 
         PC_CORE::ComponentArray* arr = &componentArrayMapPtr->at(componentTypeId);
         PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->GetData(selectedId));
-        const auto& reflectedMember = PC_CORE::Reflector::GetType(componentTypeId);
 
         const char* componentName = m_ReflectedTypes[i]->name.c_str();
         ImGui::Text(componentName);
@@ -131,43 +136,13 @@ void Inspector::Show()
 
         if (ImGui::SmallButton("Delete Component"))
         {
-            //componentManagerPtr->RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
-            //m_Editor->world.scene.RemoveComponent(_entity, _componentId);
+            componentManagerPtr->RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
+            w->level.RemoveComponentInteral(selectedId, m_ReflectedTypes[i]->typeId);
         }
 
         ImGui::PopID();
     }
-    /*
-
-    for (size_t i = 0; i < m_ReflectedTypes.size(); i++)
-    {
-        const uint32_t currentKeyComponent = m_ReflectedTypes[i]->typeId;
-
-        if (!entityManager.HasComponent(currentKeyComponent, selectedId))
-            continue;
-
-        PC_CORE::Component* component = static_cast<PC_CORE::Component*>(entityManager.GetComponent(
-            currentKeyComponent, selectedId));
-        auto reflectedMember = PC_CORE::Reflector::GetType(currentKeyComponent);
-
-        const char* componentName = m_ReflectedTypes[i]->name.c_str();
-        ImGui::Text(componentName);
-        ImGui::Spacing();
-
-        ImGui::PushID(static_cast<int>(currentKeyComponent));
-        ShowReflectType(reinterpret_cast<uint8_t*>(component), *m_ReflectedTypes[i]);
-        ImGui::Spacing();
-
-        
-
-        if (ImGui::SmallButton("Delete Component"))
-        {
-            //entityManager.RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
-            //m_Editor->world.scene.RemoveComponent(_entity, _componentId);
-        }
-
-        ImGui::PopID();
-    }*/
+  
 }
 
 void Inspector::OnInput()

@@ -321,8 +321,16 @@ void Editor::UpdateEditorWindows()
 		{
 			if (ImGui::MenuItem("SaveScene"))
 			{
-				Serializer::Serialize(*World::GetWorld(),"TestScene.map");
+				Level& l = World::GetWorld()->level;
+				Serializer::Serialize(l,"TestScene.map");
 			}
+			if (ImGui::MenuItem("LoadScene"))
+			{
+				Level& l = World::GetWorld()->level;
+				Serializer::DeSerialize(&l,"TestScene.map");
+				
+			}
+			
 			ImGui::EndMenu();
 
 		}
@@ -342,8 +350,6 @@ void Editor::UpdateEditorWindows()
 }
 
 
-REFLECT(std::vector<Transform>)
-
 std::shared_ptr<Material> m1;
 std::shared_ptr<Material> m2;
 
@@ -362,34 +368,35 @@ void Editor::InitTestScene()
 	m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block.png");
 	m2->Build();
 
+	auto& level = World::GetWorld()->level;
 
-	EntityId dirLight = World::GetWorld()->CreateEntity("dirLight");
-	World::GetWorld()->AddComponent<DirLight>(dirLight);
-	World::GetWorld()->AddComponent<Transform>(dirLight);
-	Transform* t = &World::GetWorld()->GetComponent<Transform>(dirLight);
+	EntityId dirLight = level.CreateEntity("dirLight");
+	level.AddComponent<DirLight>(dirLight);
+	level.AddComponent<Transform>(dirLight);
+	Transform* t = &level.GetComponent<Transform>(dirLight);
 	t->rotation = Rotation(Tbx::Vector3f::UnitY());
-	DirLight* dir = &World::GetWorld()->GetComponent<DirLight>(dirLight);
-	dir->color = Tbx::Vector3f(1,1,1);
-	
-	EntityId cube = World::GetWorld()->CreateEntity("cube");
-	World::GetWorld()->AddComponent<Transform>(cube);
-	World::GetWorld()->AddComponent<StaticMesh>(cube);
-	 t = &World::GetWorld()->GetComponent<Transform>(cube);
-	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f );
+	DirLight* dir = &level.GetComponent<DirLight>(dirLight);
+	dir->color = Tbx::Vector3f(1, 1, 1);
+
+	EntityId cube = level.CreateEntity("cube");
+	level.AddComponent<Transform>(cube);
+	level.AddComponent<StaticMesh>(cube);
+	t = &level.GetComponent<Transform>(cube);
+	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f);
 
 
-	EntityId sphere = World::GetWorld()->CreateEntity("sphere");
-	World::GetWorld()->AddComponent<Transform>(sphere);
-	World::GetWorld()->AddComponent<StaticMesh>(sphere);
-	t = &World::GetWorld()->GetComponent<Transform>(sphere);
-	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f );
-	t->scale = Tbx::Vector3d(10.0f, 10.0f, 10.0f );
+	EntityId sphere = level.CreateEntity("sphere");
+	level.AddComponent<Transform>(sphere);
+	level.AddComponent<StaticMesh>(sphere);
+	t = &level.GetComponent<Transform>(sphere);
+	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+	t->scale = Tbx::Vector3d(10.0f, 10.0f, 10.0f);
 
-	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
+	StaticMesh* mesh = &level.GetComponent<StaticMesh>(cube);
 	mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
 	mesh->material = m1;
 
-	StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
+	StaticMesh* mesh2 = &level.GetComponent<StaticMesh>(sphere);
 	mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
 	mesh2->material = m2;
 

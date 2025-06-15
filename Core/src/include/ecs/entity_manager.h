@@ -10,19 +10,20 @@
 #include "core_header.hpp"
 #include "ecs_header.h"
 #include "ecs_system.h"
+#include "serialize/iseriazable.h"
 
 
 BEGIN_PCCORE
-
-
-    class EntityManager
+    class EntityManager : public ISeriazable
     {
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(EntityManager)
 
+        IMP_DYNAMIC_REFLECT();
+
         PC_CORE_API EntityManager();
 
-        PC_CORE_API ~EntityManager();
+        PC_CORE_API ~EntityManager() override = default;
 
         PC_CORE_API EntityId CreateEntity(const std::string& _name);
 
@@ -47,18 +48,15 @@ BEGIN_PCCORE
     std::queue<EntityId> m_AvailableEntitiesId;
 
     std::vector<char> m_EntityNameAlloc;
-
+    
     std::bitset<MAX_ENTITIES> m_EntityEnableFlags;
     
     REFLECT(EntityManager)
     REFLECT_MEMBER(EntityManager, m_LivingEntityCount);
-    REFLECT(Signature)
     REFLECT_MEMBER(EntityManager, m_EntitesSignature);
     REFLECT_MEMBER(EntityManager, m_AvailableEntitiesId);
     REFLECT_MEMBER(EntityManager, m_EntityNameAlloc);
     REFLECT_MEMBER(EntityManager, m_EntityEnableFlags);
-
-       
     };
 
 

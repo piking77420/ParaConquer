@@ -17,9 +17,13 @@
 #define PROFILER_NOOP TracyNoop
 
 #define PERF_REGION_SCOPED ZoneScoped
-#define PERF_REGION_SCOPEDN(x) ZoneScopedN(x)
+#define PERF_REGION_SCOPED_NAMED(x) ZoneScopedN(x)
 #define PERF_REGION_SCOPEDC ZoneScopedC(x)
 #define PERF_REGION_SCOPEDNC ZoneScopedNC(x,y)
+
+#define PERF_REGION_SCOPED_NAME_DYNAMIC(x) \
+ZoneScoped; \
+ZoneName(x, strlen(x))
 
 
 

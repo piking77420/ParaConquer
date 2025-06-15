@@ -11,9 +11,10 @@ using namespace PC_CORE;
 EntityManager::EntityManager()
 {
 	PERF_REGION_SCOPED;
+	DYNAMIC_REFLECT_INIT;
 
 	m_EntitesSignature.resize(MAX_ENTITIES);
-	m_EntityNameAlloc.resize(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
+	m_EntityNameAlloc.reserve(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
 
 	for (EntityId entity = 0; entity < MAX_ENTITIES; entity++)
 	{
@@ -22,9 +23,6 @@ EntityManager::EntityManager()
 	
 }
 
-EntityManager::~EntityManager()
-{
-}
 
 EntityId EntityManager::CreateEntity(const std::string& _name)
 {
@@ -54,7 +52,8 @@ EntityId EntityManager::CreateEntity(std::string&& _name)
 	EntityId id = m_AvailableEntitiesId.front();
 	m_EntityEnableFlags.set(id,	true);
 	m_AvailableEntitiesId.pop();
-	*reinterpret_cast<std::string*>(&m_EntityNameAlloc[id * MAX_ENTITY_NAME_LENGHT]) = std::move(_name);
+
+	std::memcpy(&m_EntityNameAlloc[id * MAX_ENTITY_NAME_LENGHT], _name.data(), _name.size() + 1);
 	++m_LivingEntityCount;
 
 	return id;

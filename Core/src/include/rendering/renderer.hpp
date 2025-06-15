@@ -45,15 +45,27 @@ class RendererSystem : public EcsSystem
 {
 
 public:
+
+    DEFAULT_COPY_MOVE_OPERATIONS(RendererSystem)
+    
     Signature staticMeshSignature;
 
     Signature dirLightSignature;
 
-    RendererSystem() = default;
+    RendererSystem()
+    {
+        DYNAMIC_REFLECT_INIT;
+    }
+
+    IMP_DYNAMIC_REFLECT();
 
     PC_CORE_API void Begin() override {};
     PC_CORE_API void Tick(double deltaTime) override {};
     PC_CORE_API void RenderingTick(double deltatime) override {};
+private:
+    REFLECT(RendererSystem)
+    REFLECT_MEMBER(RendererSystem, staticMeshSignature);
+    REFLECT_MEMBER(RendererSystem, dirLightSignature);
 };
 
 

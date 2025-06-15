@@ -29,8 +29,10 @@ void World::Update()
 {
     if (run)
     {
+        PERF_REGION_SCOPED;
         //TO DO CALL SYS UpDATE
-        Update();
+
+        
     }
 }
 

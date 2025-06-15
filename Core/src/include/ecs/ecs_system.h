@@ -7,9 +7,12 @@
 BEGIN_PCCORE
 
 
-class EcsSystem
+class EcsSystem : public DynamicReflectable
 {
 public:
+
+    DEFAULT_COPY_MOVE_OPERATIONS(EcsSystem)
+    
     PC_CORE_API EcsSystem() = default;
 
     PC_CORE_API virtual ~EcsSystem() = default;

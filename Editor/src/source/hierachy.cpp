@@ -9,7 +9,7 @@ using namespace PC_EDITOR_CORE;
 
 Hierachy::Hierachy(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::World, PC_CORE::EntityManager>(&PC_CORE::App::instance->world, "m_EntityManager", &m_EntityManagerPtr);
+    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::Level, PC_CORE::EntityManager>(&PC_CORE::App::instance->world.level, "m_EntityManager", &m_EntityManagerPtr);
     
     PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::EntityManager, std::bitset<PC_CORE::MAX_ENTITIES>>(m_EntityManagerPtr, "m_EntityEnableFlags", &m_EnableEntitiesBitSetPtr);
 }

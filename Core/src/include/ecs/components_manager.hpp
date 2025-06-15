@@ -19,14 +19,20 @@ public:
 	PC_CORE_API ~ComponentManager() = default;
 
 	template <ComponentDerived T>
-	PC_FORCE_INLINE ComponentTypeBit GetComponentType() const
+	PC_FORCE_INLINE ComponentTypeBit GetComponentTypeBit() const
 	{
 		constexpr TypeId componentTypeId = Reflector::GetTypeKey<T>();
-
-
+		
 		assert(m_ComponentTypeToComponentBitFlag.find(componentTypeId) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
 
 		return m_ComponentTypeToComponentBitFlag.find(componentTypeId)->second;
+	}
+
+	PC_FORCE_INLINE ComponentTypeBit GetComponentTypeBit(TypeId id) const
+	{
+		assert(m_ComponentTypeToComponentBitFlag.find(id) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
+
+		return m_ComponentTypeToComponentBitFlag.find(id)->second;
 	}
 
 	template <ComponentDerived T>
