@@ -16,6 +16,7 @@ static constexpr bool CreateBasicsResource = true;
 
 void ResourceManager::InitPath()
 {
+    PERF_REGION_SCOPED;
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
 	auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");

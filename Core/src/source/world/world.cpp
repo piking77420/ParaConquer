@@ -16,12 +16,22 @@ World::World()
 
 void World::Begin()
 {
-    //scene.Begin();
+    if (begin)
+    {
+        PERF_REGION_SCOPED;
+        //TO DO CALL SYS BEGIN
+        begin = false;
+        run = true;
+    }
 }
 
 void World::Update()
 {
-    //scene.Update();
+    if (run)
+    {
+        //TO DO CALL SYS UpDATE
+        Update();
+    }
 }
 
 void World::Destroy()

@@ -52,6 +52,8 @@ Rhi& Rhi::operator=(Rhi&& other) noexcept
 
 Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_createInfo.GraphicsAPI)
 {
+    PERF_REGION_SCOPED;
+    
     PC_LOG("Rhi Initialize")
     if (m_Instance != nullptr)
     {

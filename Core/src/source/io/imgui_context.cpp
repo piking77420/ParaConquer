@@ -36,6 +36,7 @@ static void CheckError(VkResult err)
 
 void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
 {
+    PERF_REGION_SCOPED;
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = &ImGui::GetIO();

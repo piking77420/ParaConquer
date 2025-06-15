@@ -11,6 +11,8 @@
 #include <windows.h>
 #include <memory>
 
+#include "perf_region.hpp"
+
 
 #ifdef _DEBUG
 
@@ -128,6 +130,8 @@ void Vulkan::VulkanInstance::GetDebugFunc()
 
 Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window) : RenderInstance(_renderInstanceCreateInfo)
 {
+    PERF_REGION_SCOPED;
+    
     vk::ApplicationInfo appInfo = {};
     appInfo.sType = vk::StructureType::eApplicationInfo;
     appInfo.pApplicationName = _renderInstanceCreateInfo.appName;

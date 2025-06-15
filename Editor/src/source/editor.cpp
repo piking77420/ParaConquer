@@ -267,7 +267,6 @@ void Editor::BasicOpenFile()
 void Editor::Init()
 {
 	PERF_REGION_SCOPED;
-	//LookForEditorInit();
 	
 	const AppCreateInfo appCreateInfo =
 	{
@@ -316,7 +315,7 @@ void Editor::UpdateEditorWindows()
 	dockSpace.BeginDockSpace();
 	if (ImGui::BeginMenuBar())
 	{
-	;
+	
 
 		if (ImGui::BeginMenu("File"))
 		{

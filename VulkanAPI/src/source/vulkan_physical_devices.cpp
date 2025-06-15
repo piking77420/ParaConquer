@@ -57,6 +57,7 @@ Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
     const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable)
     : PhysicalDevices(_physicalDevicesCreateInfo)
 {
+    PERF_REGION_SCOPED;
     Initialize(_physicalDevicesCreateInfo, _extensionToEnable);
     QueryQueueFamilies();
 }

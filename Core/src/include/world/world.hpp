@@ -30,8 +30,6 @@ public:
         return m_World;
     }
 
-
-
     FORCEINLINE EntityId CreateEntity(std::string&& name)
     {
         return m_EntityManager.CreateEntity(name);
