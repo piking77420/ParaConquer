@@ -33,7 +33,9 @@ BEGIN_PCCORE
 
         PC_CORE_API void HideCursor(bool _hide);
     
-        PC_CORE_API Window(const char* _windowName, const char* _logoPath);
+        PC_CORE_API void SetIcon(const char* _iconPath);
+
+        PC_CORE_API Window(const char* _windowName);
 
         PC_CORE_API Window() = default;
 

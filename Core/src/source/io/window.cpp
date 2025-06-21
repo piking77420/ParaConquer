@@ -122,8 +122,34 @@ void Window::HideCursor(bool _hide)
     glfwSetInputMode(m_Window, GLFW_CURSOR, _hide ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 }
 
+void Window::SetIcon(const char* _iconPath)
+{
+    if (_iconPath == nullptr || *_iconPath == '\0')
+    {
+        PC_LOGERROR("Icon path is null or empty.");
+        return;
+    }
 
-Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_windowName)
+    int x, y, channel;
+    uint8_t* rawData = FileLoader::LoadFile(_iconPath, &x, &y, &channel, Channel::RGBA);
+
+    if (!rawData || x <= 0 || y <= 0)
+    {
+        PC_LOGERROR("Failed to load icon image file '{}'", _iconPath);
+        return;
+    }
+
+    std::unique_ptr<uint8_t[]> data(rawData);
+
+    GLFWimage image;
+    image.pixels = data.get();
+    image.width = x;
+    image.height = y;
+
+    glfwSetWindowIcon(m_Window, 1, &image);
+}
+
+Window::Window(const char* _windowName) : m_WindowName(_windowName)
 {
     PERF_REGION_SCOPED;
     m_Monitor = glfwGetPrimaryMonitor();
@@ -146,22 +172,6 @@ Window::Window(const char* _windowName, const char* _logoPath) : m_WindowName(_w
 
     glfwSetFramebufferSizeCallback(m_Window, FramebufferResizeCallback);
     glfwSetWindowUserPointer(m_Window, this);
-
-    
-    int x,y, channel;
-    uint8_t* icongLogo = FileLoader::LoadFile(_logoPath, &x, &y, &channel, Channel::RGBA);
-
-    if (_logoPath == nullptr || icongLogo[0] == ' ')
-    {
-        PC_LOGERROR("Failed to load icongLogo file");
-    }
-
-    GLFWimage images[1];
-    images[0].pixels = icongLogo;
-    images[0].width = static_cast<uint32_t>(x);
-    images[0].height = static_cast<uint32_t>(y);
-
-    glfwSetWindowIcon(m_Window, 1, images);
 }
 
 Window::~Window()
