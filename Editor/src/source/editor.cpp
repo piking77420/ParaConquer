@@ -390,7 +390,7 @@ void Editor::InitTestScene()
 	t = &level.GetComponent<Transform>(cube);
 	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f);
 
-
+	
 	EntityId sphere = level.CreateEntity("sphere");
 	level.AddComponent<Transform>(sphere);
 	level.AddComponent<StaticMesh>(sphere);
@@ -402,6 +402,7 @@ void Editor::InitTestScene()
 	mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
 	mesh->material = m1;
 
+	
 	StaticMesh* mesh2 = &level.GetComponent<StaticMesh>(sphere);
 	mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
 	mesh2->material = m2;

@@ -127,7 +127,7 @@ void Inspector::Show()
 
         PC_CORE::TypeId componentTypeId = componentTypeBitToTypeId->at(i); 
         PC_CORE::ComponentArray* arr = &componentArrayMapPtr->at(componentTypeId);
-        PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->GetData(selectedId));
+        PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->Get(selectedId));
 
         const char* componentName = m_ReflectedTypes[i]->name.c_str();
         ImGui::Text(componentName);
