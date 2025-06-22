@@ -11,10 +11,7 @@ project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
  #   add_compile_options(/Zc:__cplusplus)
 #endif()
 
-#unit Test
-if(BUILD_TEST)
-add_subdirectory(UnitTest)
-endif()
+
 
 #external first
 if (PROFILING)
@@ -31,4 +28,11 @@ add_subdirectory(Profiler)
 add_subdirectory(MotionCore/MotionCore)
 add_subdirectory(VulkanAPI)
 add_subdirectory(Core)
+
+
+#unit Test
+if(BUILD_TEST)
+add_subdirectory(UnitTest)
+endif()
+
 add_subdirectory(Editor)

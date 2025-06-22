@@ -25,11 +25,22 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest_main)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+        $<TARGET_FILE:Core> 
+        $<TARGET_FILE_DIR:UnitTest>
+    COMMENT "Copying Core.dll to UnitTest output directory"
+)
+
+target_link_libraries(UnitTest PUBLIC Core)
+
+if (PROFILING)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-    $<TARGET_FILE:Core> 
+    $<TARGET_FILE:Profiler> 
     $<TARGET_FILE_DIR:UnitTest>)
-target_link_libraries(${PROJECT_NAME} PUBLIC Core)
-#target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)
+
+target_link_libraries(UnitTest PUBLIC Profiler)
+endif()
 
 
 # Goole test
