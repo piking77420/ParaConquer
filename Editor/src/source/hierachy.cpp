@@ -1,6 +1,7 @@
 ﻿#include "hierachy.hpp"
 
 #include "editor.hpp"
+#include "command/editor_command_create_entity.hpp"
 #include "world/transform.hpp"
 #include "world/world.hpp"
 #include "ecs/entity_manager.h"
@@ -13,6 +14,7 @@ Hierachy::Hierachy(Editor& _editor, const std::string& _name) : EditorWindow(_ed
     
     PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::EntityManager, std::bitset<PC_CORE::MAX_ENTITIES>>(m_EntityManagerPtr, "m_EntityEnableFlags", &m_EnableEntitiesBitSetPtr);
 }
+
 
 void Hierachy::Update()
 {
@@ -37,7 +39,6 @@ void Hierachy::ShowGraph()
     
     
     bool hasSelected = false;
-
     for (size_t i = 0 ; i < m_EnableEntitiesBitSetPtr->size(); i++)
     {
         if (!m_EnableEntitiesBitSetPtr->test(i))
@@ -62,5 +63,21 @@ void Hierachy::ShowGraph()
             m_Editor->m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
         }
     }
+
+    if (IsCursorInsideWindow() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+        ImGui::OpenPopup("HierarchyAction", 0);
+
+    
+    if (ImGui::BeginPopup("HierarchyAction"))
+    {
+        if (ImGui::Selectable("CreateEntity"))
+        {
+            m_Editor->PushCommand<EditorCommandCreateEntity>();
+        }
+        ImGui::EndPopup();
+    }
+
+   
+    
     
 }

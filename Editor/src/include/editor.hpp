@@ -4,6 +4,7 @@
 #include "dock_space.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
+#include "command/editor_command.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
 #include "world/transform.hpp"
@@ -42,6 +43,11 @@ public:
     Editor();
 
     ~Editor();
+
+    template <EditorCommandDerived T, typename ...Args>
+    void PushCommand(Args&&... args);
+
+    void RewindCommand();
     
     void InitTestScene();
     
@@ -51,8 +57,10 @@ public:
 
     void InitEditorWindows();
 
-    void UpdateEditorWindows();
+    void EditorCommandUpdate();
 
+    void UpdateEditorWindows();
+    
     PC_CORE::App gameApp;
 
     EditorData editorData;
@@ -77,6 +85,17 @@ private:
     void ParseEditorInit();
 
     void BasicOpenFile();
+    
+    std::vector<std::unique_ptr<EditorCommand>> m_EditorCommands;
 };
 
-END_PCCORE
+template <EditorCommandDerived T, typename ... Args>
+void Editor::PushCommand(Args&&... args)
+{
+    m_EditorCommands.emplace_back(
+           std::make_unique<T>(*this, std::forward<Args>(args)...)
+   );
+}
+
+
+END_EDITOR_PCCORE

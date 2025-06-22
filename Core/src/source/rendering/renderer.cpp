@@ -252,7 +252,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     Level& level = World::GetWorld()->level;
     // draw all static mesh
-    for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
+    for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->staticMeshSignature))
         DrawStaticMesh(level.GetComponent<Transform>(it),
             level.GetComponent<StaticMesh>(it));
     
@@ -312,7 +312,7 @@ void Renderer::QueryWorldData(World* world)
 {
     PERF_REGION_SCOPED;
     Level& level = world->level;
-    for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->dirLightSignature])
+    for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->dirLightSignature))
     {
         QueryLightDirData(level.GetComponent<DirLight>(it), level.GetComponent<Transform>(it));
     }

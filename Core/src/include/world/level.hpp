@@ -17,6 +17,11 @@ public:
     PC_CORE_API ~Level() override = default;
 
     IMP_DYNAMIC_REFLECT()
+
+    FORCEINLINE EntityId CreateEntity()
+    {
+        return m_EntityManager.CreateEntity();
+    }
     
     FORCEINLINE EntityId CreateEntity(std::string&& name)
     {
@@ -39,16 +44,7 @@ public:
     template <ComponentDerived T>
     void AddComponent(EntityId _entityId)
     {
-        m_ComponentManager.AddComponent<T>(_entityId);
-
-        Signature* signature = m_EntityManager.GetSignature(_entityId);
-
-        if (signature != nullptr)
-        {
-            signature->set(m_ComponentManager.GetComponentTypeBit<T>(), true);
-            m_SystemManagers.EntitySignatureChanged(_entityId, *signature);
-        }
-
+        UpdateSignature(_entityId, Reflector::GetTypeKey<T>(), true);
     }
 
     template <ComponentDerived T>
@@ -60,13 +56,7 @@ public:
     template<ComponentDerived T>
     void RemoveComponent(EntityId entity)
     {
-        m_ComponentManager.RemoveComponent(entity, Reflector::GetTypeKey<T>());
-
-        Signature& signature = m_EntityManager.GetSignature(entity);
-        signature.set(m_ComponentManager.GetComponentTypeBit<T>(), false);
-        m_EntityManager.SetSignature(entity, signature);
-
-        m_SystemManagers.EntitySignatureChanged(entity, signature);
+        UpdateSignature(entity, Reflector::GetTypeKey<T>(), true);
     }
 
 
@@ -84,20 +74,14 @@ public:
         return m_SystemManagers.RegisterSystem<T>();
     }
 
-
-    //internal
-    void RemoveComponentInteral(EntityId entity, TypeId typeId)
+    void AddComponent(EntityId entity, TypeId typeId)
     {
-        m_ComponentManager.RemoveComponent(entity, typeId);
-
-        Signature* signature = m_EntityManager.GetSignature(entity);
-        if (signature != nullptr)
-        {
-            signature->set(m_ComponentManager.GetComponentTypeBit(typeId), false);
-            m_EntityManager.SetSignature(entity, *signature);
-
-            m_SystemManagers.EntitySignatureChanged(entity, *signature);
-        }
+        UpdateSignature(entity, typeId, true);
+    }
+    
+    void RemoveComponent(EntityId entity, TypeId typeId)
+    {
+        UpdateSignature(entity, typeId, false);
     }
     
 
@@ -108,8 +92,30 @@ private:
 
     SystemManager m_SystemManagers;
 
-  
+    void UpdateSignature(EntityId entity, TypeId typeId, bool hasComponent)
+    {
+        if (hasComponent)
+        {
+            m_ComponentManager.AddComponent(entity, typeId);
+        }
+        else
+        {
+            m_ComponentManager.RemoveComponent(entity, typeId);
+        }
 
+        Signature* signaturePtr = m_EntityManager.GetSignature(entity);
+        if (signaturePtr != nullptr)
+        {
+            Signature oldSignature = *signaturePtr;
+            Signature newSignature = oldSignature;
+
+            newSignature.set(m_ComponentManager.GetComponentTypeBit(typeId), hasComponent);
+            m_EntityManager.SetSignature(entity, newSignature);
+
+            m_SystemManagers.EntitySignatureChanged(entity, oldSignature, newSignature);
+        }
+    }
+    
     REFLECT(Level)
     REFLECT_MEMBER(Level, m_ComponentManager)
     REFLECT_MEMBER(Level, m_EntityManager)

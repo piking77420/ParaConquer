@@ -38,14 +38,26 @@ public:
 	template <ComponentDerived T>
 	PC_FORCE_INLINE void AddComponent(EntityId entityId)
 	{
-		assert(m_ComponentTypeToComponentBitFlag.find(Reflector::GetTypeKey<T>()) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
+		AddComponent(entityId, Reflector::GetTypeKey<T>());
+	}
+	
+	PC_FORCE_INLINE void AddComponent(EntityId entityId,  TypeId componentType)
+	{
+		assert(m_ComponentTypeToComponentBitFlag.find(componentType) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
 
-		m_ComponentMapArray[Reflector::GetTypeKey<T>()].AddEntityData(entityId);
+		m_ComponentMapArray[componentType].AddEntityData(entityId);
 	}
 
 	PC_FORCE_INLINE void RemoveComponent(EntityId _entityId, TypeId componentType)
 	{
-		m_ComponentMapArray[componentType].RemoveEntityData(_entityId);
+		auto it = m_ComponentMapArray.find(componentType);
+		if (it == m_ComponentMapArray.end())
+		{
+			PC_LOGERROR("Failed to remove component {} for entity id {}", componentType, _entityId);
+			return;
+		}
+
+		it->second.RemoveEntityData(_entityId);
 	}
 
 	template <ComponentDerived T>

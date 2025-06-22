@@ -39,7 +39,7 @@ public:
 	static bool IsBaseOf(const ReflectedType& type);
 
 	template <typename T>
-	constexpr static TypeId GetTypeKey()
+	CONSTEVAL static TypeId GetTypeKey()
 	{
 		return COMPILE_TIME_TYPE_KEY(T);
 	}

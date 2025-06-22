@@ -43,10 +43,10 @@ public:
 		
 	}
 
-	PC_FORCE_INLINE void EntitySignatureChanged(EntityId entityId, Signature entityIdSignature)
+	PC_FORCE_INLINE void EntitySignatureChanged(EntityId entityId, const Signature& _oldSignature, const Signature& _newSignature)
 	{
 		for (auto& it : m_Systems)
-			it->OnEntitySignatureChange(entityId, entityIdSignature);
+			it->OnEntitySignatureChange(entityId, _oldSignature, _newSignature);
 		
 	}		
 

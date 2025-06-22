@@ -99,16 +99,20 @@ void ComponentArray::RemoveData(EntityId entityId)
 		return;
 
 	const size_t indexOfRemovedEntity = m_EntityToIndex[entityId];
-	const size_t indexOfLastElement = (m_Volume - 1) * componentSize;
+	const size_t indexOfLastElement = m_Volume - 1;
 
 	destructor(&m_ComponentData[indexOfRemovedEntity]);
-	memcpy(&m_ComponentData[indexOfRemovedEntity], &m_ComponentData[indexOfRemovedEntity], componentSize);
 
-	EntityId entityOfLastElement = m_IndexToEntity[indexOfLastElement];
-	m_EntityToIndex[entityOfLastElement] = indexOfRemovedEntity;
-	m_IndexToEntity[indexOfRemovedEntity] = entityOfLastElement;
+	if (indexOfRemovedEntity != indexOfLastElement)
+	{
+		memcpy(&m_ComponentData[indexOfRemovedEntity], &m_ComponentData[indexOfLastElement], componentSize);
 
-	m_IndexToEntity.erase(entityId);
+		EntityId entityOfLastElement = m_IndexToEntity[indexOfLastElement];
+		m_EntityToIndex[entityOfLastElement] = indexOfRemovedEntity;
+		m_IndexToEntity[indexOfRemovedEntity] = entityOfLastElement;
+	}
+
+	m_EntityToIndex.erase(entityId);
 	m_IndexToEntity.erase(indexOfLastElement);
 
 	--m_Volume;

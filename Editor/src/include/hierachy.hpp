@@ -14,12 +14,12 @@ BEGIN_EDITOR_PCCORE
     class Hierachy : public EditorWindow
 {
 public:
+    void Update() override;
 
     Hierachy(Editor& _editor , const std::string& name);
     
     ~Hierachy() override = default;
     
-    void Update() override;
 private:
     void ShowGraph();
 

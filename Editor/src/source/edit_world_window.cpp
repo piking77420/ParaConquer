@@ -97,15 +97,6 @@ void EditWorldWindow::CameratMovment(float _deltatime)
 
     }
 
-    if (ImGui::IsKeyDown(ImGuiKey_Space))
-    {
-        addVector += camera.up;
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
-    {
-        addVector -= camera.up;
-    }
-
     float mag = addVector.Magnitude();
     if (mag <= Tbx::Epsilon<float>())
     {
@@ -133,6 +124,10 @@ void EditWorldWindow::CameraChangeSpeed(float _deltatime)
 
 void EditWorldWindow::HideCursor()
 {
+    if (!IsCursorInsideWindow())
+        return;
+
+    
     ImVec2 ImMousPos = ImGui::GetIO().MousePos;
     Tbx::Vector2f mousePos = { ImMousPos.x , ImMousPos.y };
         
@@ -145,10 +140,4 @@ void EditWorldWindow::HideCursor()
     {
         PC_CORE::App::instance->window.HideCursor(true);
     }
-   
-
-	
-
-
-
 }

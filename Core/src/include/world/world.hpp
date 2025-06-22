@@ -12,29 +12,29 @@ BEGIN_PCCORE
 class World
 {
 public:
+
+    PC_CORE_API FORCEINLINE static World* GetWorld()
+    {
+        return m_World;
+    }
+    
     bool begin = false;
 
     bool run = false;
 
     Level level;
-
-    PC_CORE_API World();
     
-    PC_CORE_API ~World() = default;
-
     PC_CORE_API void Begin();
 
     PC_CORE_API void Update();
     
     PC_CORE_API void Destroy();
 
-    PC_CORE_API FORCEINLINE static World* GetWorld()
-    {
-        return m_World;
-    }
-
-   
-
+    PC_CORE_API void LoadLevel(const Level& _level);
+    
+    PC_CORE_API World();
+    
+    PC_CORE_API ~World() = default;
 
 private:
     PC_CORE_API static inline World* m_World = nullptr;

@@ -315,8 +315,6 @@ void Editor::UpdateEditorWindows()
 	dockSpace.BeginDockSpace();
 	if (ImGui::BeginMenuBar())
 	{
-	
-
 		if (ImGui::BeginMenu("File"))
 		{
 			if (ImGui::MenuItem("SaveScene"))
@@ -345,13 +343,21 @@ void Editor::UpdateEditorWindows()
 		editorWindow->End();
 	}
 
-
+	EditorCommandUpdate();
 	dockSpace.EndDockSpace();
 }
 
 
 std::shared_ptr<Material> m1;
 std::shared_ptr<Material> m2;
+
+void Editor::RewindCommand()
+{
+	if (m_EditorCommands.empty())
+		return;
+
+	m_EditorCommands.pop_back();
+}
 
 void Editor::InitTestScene()
 {	
@@ -448,4 +454,12 @@ void Editor::InitEditorWindows()
 	m_EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
 	m_EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
 	m_EditorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
+}
+
+void Editor::EditorCommandUpdate()
+{
+	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
+	{
+		RewindCommand();
+	}
 }

@@ -12,15 +12,35 @@ EntityManager::EntityManager()
 {
 	PERF_REGION_SCOPED;
 	DYNAMIC_REFLECT_INIT;
-
-
-	for (EntityId entity = 0; entity < MAX_ENTITIES; entity++)
-	{
-		m_AvailableEntitiesId.push(entity);
-	}
 	
+	for (EntityId entity = 0; entity < MAX_ENTITIES; entity++)
+		m_AvailableEntitiesId.push(entity);
 }
 
+
+EntityId EntityManager::CreateEntity()
+{
+	PERF_REGION_SCOPED;
+
+	assert(m_LivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
+	
+	EntityId id = m_AvailableEntitiesId.front();
+	m_EntityEnableFlags.set(id,	true);
+	m_AvailableEntitiesId.pop();
+
+	// set name
+	m_EntityNameAlloc.Add(id);
+	char* namePtr = m_EntityNameAlloc.At(id).data();
+	
+	std::string name = "Entity_" + std::to_string(id);
+	std::memcpy(namePtr, name.data(), name.size() + 1);
+	
+	// set signature
+	m_EntitesSignature.Add(id);
+
+	++m_LivingEntityCount;
+	return id;
+}
 
 EntityId EntityManager::CreateEntity(const std::string& _name)
 {

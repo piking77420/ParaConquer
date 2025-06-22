@@ -25,6 +25,8 @@ BEGIN_PCCORE
 
         PC_CORE_API ~EntityManager() override = default;
 
+        PC_CORE_API EntityId CreateEntity();
+
         PC_CORE_API EntityId CreateEntity(const std::string& _name);
 
         PC_CORE_API std::string_view GetEntityName(EntityId) const;
@@ -42,7 +44,9 @@ BEGIN_PCCORE
     uint32_t m_LivingEntityCount = 0;
 
     SpareSet<Signature> m_EntitesSignature;
-    
+
+    // to do reflect and serializable queu and stack
+    // replace with stack
     std::queue<EntityId> m_AvailableEntitiesId;
 
     SpareSet<std::array<char, 255>> m_EntityNameAlloc;

@@ -40,15 +40,18 @@ public:
     
     bool IsInsideWindow(Tbx::Vector2f _point) const;
 
+    bool IsCursorInsideWindow() const ;
+
     virtual void Render() {};
     
-    virtual void Update() {}
-
-
+    virtual void Update()
+    {
+      
+    }
 
 protected:
     Editor* m_Editor = nullptr;
-
+    
 };
 
 END_EDITOR_PCCORE

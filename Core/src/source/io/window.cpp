@@ -111,6 +111,13 @@ Tbx::Vector2ui Window::GetWindowSize() const
     return m_WindowSize;
 }
 
+Tbx::Vector2d Window::GetCursorPos() const
+{
+    Tbx::Vector2d out;
+    glfwGetCursorPos(m_Window, &out.x, &out.y);
+    return out;
+}
+
 
 GLFWwindow* Window::GetHandle()
 {

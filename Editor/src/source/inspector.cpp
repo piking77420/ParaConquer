@@ -4,6 +4,8 @@
 #include "imgui_helper.h"
 #include <ImguiNodeEditor/imgui_node_editor.h>
 
+#include "command/editor_command_add_component.hpp"
+#include "command/editor_command_remove_component.hpp"
 #include "resources/resource_manager.hpp"
 
 using namespace PC_EDITOR_CORE;
@@ -139,8 +141,7 @@ void Inspector::Show()
 
         if (ImGui::SmallButton("Delete Component"))
         {
-            componentManagerPtr->RemoveComponent(m_ReflectedTypes[i]->typeId, m_Editor->m_SelectedEntityId);
-            w->level.RemoveComponentInteral(selectedId, m_ReflectedTypes[i]->typeId);
+            m_Editor->PushCommand<EditorCommandRemoveComponent>(selectedId, m_ReflectedTypes[i]->typeId);
         }
 
         ImGui::PopID();
@@ -167,7 +168,7 @@ void Inspector::OnInput()
                 if (PC_CORE::World::GetWorld() == nullptr)
                     continue;
 
-                //PC_CORE::World::GetWorld()->entityManager.AddComponent(type->typeId, m_Editor->m_SelectedEntityId);
+                m_Editor->PushCommand<EditorCommandAddComponent>(m_Editor->m_SelectedEntityId, type->typeId);
             }
         }
 
