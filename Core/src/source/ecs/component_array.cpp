@@ -4,15 +4,16 @@
 
 using namespace PC_CORE;
 
-ComponentArray::ComponentArray() : m_ComponentType(PC_CORE::NullTypeId)
+ComponentArray::ComponentArray()
 {
+	
 }
 
 ComponentArray::ComponentArray(TypeId typeId) : m_ComponentType(typeId)
 {
 	const auto& type = Reflector::GetType(m_ComponentType);
 	
-	componentSize = static_cast<uint32_t>(type.size);
+	m_ComponentSize = static_cast<uint32_t>(type.size);
 	constructor = type.metaData.createFunc;
 	destructor = type.metaData.deleteFunc;
 }
@@ -29,10 +30,10 @@ void ComponentArray::Add(EntityId entityId)
 		
 		m_EntityIndexData[entityId] = newIndex;
 		
-		if (m_ComponentData.size() < (newIndex + 1) * componentSize)
-			m_ComponentData.resize((newIndex + 1) * componentSize);
+		if (m_ComponentData.size() < (newIndex + 1) * m_ComponentSize)
+			m_ComponentData.resize((newIndex + 1) * m_ComponentSize);
 
-		constructor(&m_ComponentData[newIndex * componentSize]);
+		constructor(&m_ComponentData[newIndex * m_ComponentSize]);
 
 		++m_Volume;
 	}
@@ -46,7 +47,7 @@ uint8_t& ComponentArray::Get(EntityId entityId)
 	assert(m_EntityIndexData[entityId] != std::numeric_limits<size_t>::max() && "Invalid index");
 
 
-	return m_ComponentData[m_EntityIndexData[entityId] * componentSize];
+	return m_ComponentData[m_EntityIndexData[entityId] * m_ComponentSize];
 }
 
 const uint8_t& ComponentArray::Get(EntityId entityId) const
@@ -55,7 +56,7 @@ const uint8_t& ComponentArray::Get(EntityId entityId) const
 	assert(m_EntityIndexData[entityId] != std::numeric_limits<size_t>::max() && "Invalid index");
 
 
-	return m_ComponentData[m_EntityIndexData[entityId] * componentSize];
+	return m_ComponentData[m_EntityIndexData[entityId] * m_ComponentSize];
 }
 bool ComponentArray::HasComponent(EntityId entityId) const
 {
@@ -74,13 +75,13 @@ void ComponentArray::Remove(EntityId entityId)
 	size_t removedIndex = m_EntityIndexData[entityId];
 	size_t lastIndex = m_Volume - 1;
 
-	destructor(&m_ComponentData[removedIndex * componentSize]);
+	destructor(&m_ComponentData[removedIndex * m_ComponentSize]);
 
 	if (removedIndex != lastIndex)
 	{
-		std::memcpy(&m_ComponentData[lastIndex * componentSize],
-			   &m_ComponentData[removedIndex * componentSize],
-			   componentSize);
+		std::memcpy(&m_ComponentData[lastIndex * m_ComponentSize],
+			   &m_ComponentData[removedIndex * m_ComponentSize],
+			   m_ComponentSize);
 
 		// update mapping
 		for (auto& i : m_EntityIndexData)

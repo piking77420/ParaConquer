@@ -33,7 +33,7 @@ private:
 
 	TypeId m_ComponentType;
 
-	uint32_t componentSize;
+	uint32_t m_ComponentSize;
 
 	size_t m_Volume = 0;
 
@@ -44,6 +44,7 @@ private:
 	REFLECT(ComponentArray)
 	REFLECT_MEMBER(ComponentArray, m_ComponentData)
 	REFLECT_MEMBER(ComponentArray, m_EntityIndexData)
+	REFLECT_MEMBER(ComponentArray, m_ComponentSize)
 
 	REFLECT_MEMBER(ComponentArray, m_ComponentType)
 	REFLECT_MEMBER(ComponentArray, m_Volume)
