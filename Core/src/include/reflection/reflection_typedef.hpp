@@ -5,9 +5,10 @@
 #include <map>
 #include <bitset>
 
-BEGIN_PCCORE
+#include "data_structure/spare_set.hpp"
 
-using TypeId = uint32_t; 
+    BEGIN_PCCORE
+        using TypeId = uint32_t; 
 static constexpr TypeId NullTypeId = 0;
 using TypeFlag = uintmax_t;
 
@@ -58,6 +59,7 @@ enum struct TypeNatureMetaDataEnum
     UnordoredMap,
     BitSet,
     Set,
+    SparseSet,
 };
 
 struct ReflectedBitSet
@@ -95,10 +97,27 @@ struct ReflectedMap
     TypeId value;
     uint32_t offsetBetweenKeyAndValueInPair;
 };
+struct ReflectMapFunction
+{
+    uint64_t reserveFunction;
+    uint64_t insertFunction;
+    uint64_t unrefFunc;
+    uint64_t incrementFunc;
+};
+
+
 
 struct Set
 {
     TypeId type;
+};
+
+struct ReflectedSparset
+{
+    TypeId denseVector;
+    uint32_t denseVectorOffSet;
+    TypeId spareVector;
+    uint32_t spareVectorOffset;
 };
 
 struct TypeNatureMetaData
@@ -113,6 +132,7 @@ struct TypeNatureMetaData
         Vector vector;
         ReflectedMap mapReflected;
         ReflectedBitSet bitSet;
+        ReflectedSparset reflectedSparset;
 
     }metaDataType;
 };
@@ -164,15 +184,12 @@ struct ReflectedType
     }
 };
 
-// Chat gpt
 template<typename T>
 struct is_vector : std::false_type {};
 
-// Specialization (for vectors)
 template<typename T>
 struct is_vector<std::vector<T>> : std::true_type {};
 
-// Convenience variable template
 template<typename T>
 inline constexpr bool is_vector_v = is_vector<std::decay_t<T>>::value;
 
@@ -221,20 +238,18 @@ struct is_bit_set : std::false_type {};
 template <size_t _size>
 struct is_bit_set<std::bitset<_size>> : std::true_type {};
 
+template <typename>
+struct is_sparse_set : std::false_type {};
+
+template <typename T>
+struct is_sparse_set<SpareSet<T>> : std::true_type {};
+
 
 
 template <typename T>
 std::size_t HashFunction(const void* obj) {
     return std::hash<T>{}(*static_cast<const T*>(obj));
 }
-
-struct ReflectMapFunction
-{
-    uint64_t reserveFunction;
-    uint64_t insertFunction;
-    uint64_t unrefFunc;
-    uint64_t incrementFunc;
-};
 
 
 

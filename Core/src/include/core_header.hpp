@@ -54,3 +54,10 @@ type() = default; \
     type& operator=(const type& other) = delete;   \
     type& operator=(type&& other) = delete; \
 
+BEGIN_PCCORE
+
+template <typename T, typename M>
+  static constexpr size_t offset_of(M T::*member) {
+    return reinterpret_cast<size_t>(&(reinterpret_cast<T const volatile*>(0)->*member));
+}
+END_PCCORE

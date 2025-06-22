@@ -3,17 +3,12 @@
 #include <vector>
 
 #include "core_header.hpp"
-#include "reflection/reflector.hpp"
 
 BEGIN_PCCORE
-template <class T>
+    template <class T>
 class SpareSet
 {
 public:
-    void Add(size_t _sparseId, const T& _value);
-
-    void Remove(size_t _sparseId);
-
     using iterator = typename std::vector<T>::iterator;
     using const_iterator = typename std::vector<T>::const_iterator;
     
@@ -26,12 +21,37 @@ public:
     const_iterator cbegin() const { return m_Dense.cbegin(); }
     const_iterator cend() const { return m_Dense.cend(); }
 
+    using DenseType = T;
+    using SparseType = size_t;
+    
+    void Add(size_t _sparseId, const T& _value);
+
+    void Add(size_t _sparseId);
+
+    void Add(size_t _sparseId, T&& _value);
+    
+    void Remove(size_t _sparseId);
+
+    size_t Size() const { return m_Dense.size(); }
+
+    bool Empty() const { return m_Dense.empty(); }
+
+    T& At(size_t _index) { return m_Dense[m_Sparse[_index]]; }
+
+    const T& At(size_t _index) const { return m_Dense[m_Sparse[_index]]; }
+
+    T& operator[](size_t _index) { return At(_index); }
+
+    const T& operator[](size_t _index) const { return At(_index); }
+
+
 private:
-    std::vector<uint8_t> m_Dense;
+    std::vector<T> m_Dense;
     
     std::vector<size_t> m_Sparse;
-
 };
+
+
 
 template <class T>
 void SpareSet<T>::Add(size_t _sparseId, const T& _value)
@@ -49,6 +69,43 @@ void SpareSet<T>::Add(size_t _sparseId, const T& _value)
     size_t denseIndex = m_Dense.size();
     m_Sparse[_sparseId] = denseIndex;
     m_Dense.push_back(_value);
+}
+
+template <class T>
+void SpareSet<T>::Add(size_t _sparseId)
+{
+    if (_sparseId >= m_Sparse.size())
+        m_Sparse.resize(_sparseId + 1, std::numeric_limits<size_t>::max()); // default to invalid
+
+    // If already present, update the value
+    if (m_Sparse[_sparseId] != std::numeric_limits<size_t>::max())
+    {
+        if constexpr (std::is_default_constructible_v<T>)
+            new T(&m_Dense[m_Sparse[_sparseId]]);
+        return;
+    }
+
+    size_t denseIndex = m_Dense.size();
+    m_Sparse[_sparseId] = denseIndex;
+    m_Dense.emplace_back();
+}
+
+template <class T>
+void SpareSet<T>::Add(size_t _sparseId, T&& _value)
+{
+    if (_sparseId >= m_Sparse.size())
+        m_Sparse.resize(_sparseId + 1, std::numeric_limits<size_t>::max()); // default to invalid
+
+    // If already present, update the value
+    if (m_Sparse[_sparseId] != std::numeric_limits<size_t>::max())
+    {
+        m_Dense[m_Sparse[_sparseId]] = std::move(_value);
+        return;
+    }
+
+    size_t denseIndex = m_Dense.size();
+    m_Sparse[_sparseId] = denseIndex;
+    m_Dense.emplace_back(std::move(_value));
 }
 
 template <class T>

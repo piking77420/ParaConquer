@@ -18,10 +18,7 @@
 
 BEGIN_PCCORE
 
-template <typename T, typename M>
-  constexpr size_t offset_of(M T::*member) {
-	return reinterpret_cast<size_t>(&(reinterpret_cast<T const volatile*>(0)->*member));
-}
+
 
 class Reflector
 {
@@ -242,6 +239,25 @@ private:
 
 			m_UnordoredMapReflectFunction.insert({ GetTypeKey<T>(), reflectMapFunction });
 		}
+
+		if constexpr (is_sparse_set<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::SparseSet;
+			auto& sparsetReflected = typeMetaData->typeNatureMetaData.metaDataType.reflectedSparset;
+			
+			// unsure that those type are reflected as well
+			ReflectType<std::vector<typename T::DenseType>>();
+			sparsetReflected.denseVector = GetTypeKey<std::vector<typename T::DenseType>>();
+
+			ReflectType<std::vector<typename T::SparseType>>();
+			sparsetReflected.spareVector = GetTypeKey<std::vector<typename T::SparseType>>();
+
+			// HARDOCODED TO FIND A BETTER WAY
+			sparsetReflected.spareVectorOffset = sizeof(std::vector<typename T::DenseType>);
+			sparsetReflected.denseVectorOffSet = 0;
+
+		}
+		
 
 		if constexpr (is_bit_set<T>::value)
 		{

@@ -5,7 +5,7 @@
 #include "resources/resource.hpp"
 #include "resources/resource_manager.hpp"
 #include "serialize/serializer.h"
-
+#include "data_structure/spare_set.hpp"
 
 using namespace PC_CORE;
 
@@ -74,6 +74,9 @@ struct DataTest
     int x;
     float y;
     uint64_t z;
+
+    auto operator<=>(const DataTest&) const = default;
+    
     REFLECT(DataTest)
     REFLECT_MEMBER(DataTest, x);
     REFLECT_MEMBER(DataTest, y);
@@ -289,6 +292,29 @@ TEST(Serialization, BiteSet)
 
     EXPECT_EQ(bitset,  bitset2);
 }
+
+REFLECT(SpareSet<DataTest>);
+
+
+TEST(Serialization, SpareSet)
+{
+    
+    SpareSet<DataTest> spareSet;
+    spareSet.Add(5, DataTest(1,2,3));
+    spareSet.Add(3, DataTest(4,5,6));
+    spareSet.Add(0, DataTest(7,8,9));
+    Serializer::Serialize(spareSet, "SpareSet.test");
+    SpareSet<DataTest> spareSet2;
+    Serializer::DeSerialize(&spareSet2, "SpareSet.test");
+
+
+    EXPECT_EQ(spareSet2[5],spareSet[5]);
+    EXPECT_EQ(spareSet2[3], spareSet[3]);
+    EXPECT_EQ(spareSet2[0], spareSet[0]);
+
+    
+}
+
 
 class TestISerizableClass : public ISeriazable
 {

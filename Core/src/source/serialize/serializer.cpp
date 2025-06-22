@@ -36,6 +36,9 @@ using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename Unordo
 #define VALUE "value"
 #define DATA "data"
 
+#define SPARSE_SET_DENSE "dense"
+#define SPARSE_SET_SPARSE "sparse"
+
 #pragma region Serialization
 void TypeToString(json& outj, TypeId id, const uint8_t* objetPtr)
 {
@@ -255,11 +258,8 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
         if (Reflector::isTrivialType(underLineType.typeId))
         {
-            std::vector<uint8_t> data;
-            data.resize(ver->size() * underLineType.size);
-            
-            std::memcpy(data.data(), ver->data(), data.size());
-            _jsonFile[DATA] = json::binary(data);
+           
+            _jsonFile[DATA] = json::binary(*ver);
 
         }
         else
@@ -333,6 +333,17 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
             std::vector<uint8_t> data(type.size);
             std::memcpy(data.data(), objetPtr, data.size());
             _jsonFile[DATA] = json::binary(data);
+            return;
+        }
+    case TypeNatureMetaDataEnum::SparseSet:
+        {
+            const auto& reflectedSparSet = type.metaData.typeNatureMetaData.metaDataType.reflectedSparset;
+
+            // dense vector
+            SerializeType(_jsonFile[SPARSE_SET_DENSE], objetPtr + reflectedSparSet.denseVectorOffSet, reflectedSparSet.denseVector);
+            // spares vector
+            SerializeType(_jsonFile[SPARSE_SET_SPARSE], objetPtr + reflectedSparSet.spareVectorOffset, reflectedSparSet.spareVector);
+            
             return;
         }
     case TypeNatureMetaDataEnum::None:
@@ -636,15 +647,15 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
         const ReflectedType& underLineType = Reflector::GetType(vector.type);
         try
         {
-            const size_t size = _jsonFile[CONTAINER_SIZE];
-            ver->resize(size * underLineType.size);
 
             if (Reflector::isTrivialType(underLineType.typeId))
             {
-                *ver = _jsonFile["data"]["bytes"].get<std::vector<uint8_t>>();
+                *ver = _jsonFile[DATA]["bytes"].get<std::vector<uint8_t>>();
             }
             else
             {
+                const size_t size = _jsonFile[CONTAINER_SIZE];
+                ver->resize(size* underLineType.size);
                 for (size_t i = 0; i < size; i++)
                 {
                     const size_t offSet = i * underLineType.size;
@@ -716,6 +727,18 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
             std::memcpy(objetPtr, bytes.data(), type.size);
             return;
             
+        }
+    case TypeNatureMetaDataEnum::SparseSet:
+        {
+            const auto& reflectedSparSet = type.metaData.typeNatureMetaData.metaDataType.reflectedSparset;
+
+            // dense vector
+            DeserializeType(_jsonFile[SPARSE_SET_DENSE], objetPtr + reflectedSparSet.denseVectorOffSet, reflectedSparSet.denseVector);
+            
+            // spares vector
+            DeserializeType(_jsonFile[SPARSE_SET_SPARSE], objetPtr + reflectedSparSet.spareVectorOffset, reflectedSparSet.spareVector);
+            
+            return;
         }
     case TypeNatureMetaDataEnum::None:
     default:
