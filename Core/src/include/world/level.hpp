@@ -30,9 +30,9 @@ public:
 
     FORCEINLINE void RemoveEntity(EntityId _entityId)
     {
-        Signature entitySignature = m_EntityManager.GetSignature(_entityId);
-        m_SystemManagers.EntityDestroyed(_entityId, entitySignature);
-        m_ComponentManager.DestroyEntity(_entityId, entitySignature);
+        Signature* entitySignature = m_EntityManager.GetSignature(_entityId);
+        m_SystemManagers.EntityDestroyed(_entityId, *entitySignature);
+        m_ComponentManager.DestroyEntity(_entityId, *entitySignature);
         m_EntityManager.RemoveEntity(_entityId);
     }
 
@@ -41,10 +41,14 @@ public:
     {
         m_ComponentManager.AddComponent<T>(_entityId);
 
-        Signature& signature = m_EntityManager.GetSignature(_entityId);
-        signature.set(m_ComponentManager.GetComponentTypeBit<T>(), true);
+        Signature* signature = m_EntityManager.GetSignature(_entityId);
 
-        m_SystemManagers.EntitySignatureChanged(_entityId, signature);
+        if (signature != nullptr)
+        {
+            signature->set(m_ComponentManager.GetComponentTypeBit<T>(), true);
+            m_SystemManagers.EntitySignatureChanged(_entityId, *signature);
+        }
+
     }
 
     template <ComponentDerived T>
@@ -86,11 +90,14 @@ public:
     {
         m_ComponentManager.RemoveComponent(entity, typeId);
 
-        Signature& signature = m_EntityManager.GetSignature(entity);
-        signature.set(m_ComponentManager.GetComponentTypeBit(typeId), false);
-        m_EntityManager.SetSignature(entity, signature);
+        Signature* signature = m_EntityManager.GetSignature(entity);
+        if (signature != nullptr)
+        {
+            signature->set(m_ComponentManager.GetComponentTypeBit(typeId), false);
+            m_EntityManager.SetSignature(entity, *signature);
 
-        m_SystemManagers.EntitySignatureChanged(entity, signature);
+            m_SystemManagers.EntitySignatureChanged(entity, *signature);
+        }
     }
     
 

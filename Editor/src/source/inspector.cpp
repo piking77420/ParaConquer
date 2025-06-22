@@ -115,9 +115,12 @@ void Inspector::Show()
 
     const auto& signature = entityManagerPtr->GetSignature(selectedId);
 
+    if (signature == nullptr)
+        return;
+
     for (uint32_t i = 0; i < ComponentCount; ++i)
     {
-        if (!signature.test(i))
+        if (!signature->test(i))
             continue;
 
         PC_CORE::TypeId componentTypeId = componentTypeBitToTypeId->at(i); 

@@ -36,7 +36,12 @@ public:
 
     bool Empty() const { return m_Dense.empty(); }
 
-    T& At(size_t _index) { return m_Dense[m_Sparse[_index]]; }
+    bool Contain(size_t _index) const
+    {
+        return _index < m_Sparse.size();
+    }
+
+    T& At(size_t _index) { return m_Dense[m_Sparse[_index]];}
 
     const T& At(size_t _index) const { return m_Dense[m_Sparse[_index]]; }
 
@@ -81,7 +86,7 @@ void SpareSet<T>::Add(size_t _sparseId)
     if (m_Sparse[_sparseId] != std::numeric_limits<size_t>::max())
     {
         if constexpr (std::is_default_constructible_v<T>)
-            new T(&m_Dense[m_Sparse[_sparseId]]);
+            m_Dense[m_Sparse[_sparseId]] = T();
         return;
     }
 

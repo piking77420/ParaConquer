@@ -183,6 +183,8 @@ private:
 		{
 			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Array;
 			Array& arrayType = typeMetaData->typeNatureMetaData.metaDataType.array;
+
+			ReflectType<std::remove_extent_t<T>>();
 			arrayType.type = GetTypeKey<std::remove_extent_t<T>>();
 			// Determine the size of the array
 			constexpr std::size_t arraySize = std::extent_v<T>;
@@ -192,6 +194,8 @@ private:
 		{
 			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Vector;
 			Vector& vectorType = typeMetaData->typeNatureMetaData.metaDataType.vector;
+			ReflectType<typename std::remove_extent<typename T::value_type>::type>();
+
 			vectorType.type = GetTypeKey<typename std::remove_extent<typename T::value_type>::type>();
 
 		}

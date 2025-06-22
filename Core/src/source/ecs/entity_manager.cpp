@@ -13,8 +13,6 @@ EntityManager::EntityManager()
 	PERF_REGION_SCOPED;
 	DYNAMIC_REFLECT_INIT;
 
-	m_EntitesSignature.resize(MAX_ENTITIES);
-	m_EntityNameAlloc.resize(MAX_ENTITIES * MAX_ENTITY_NAME_LENGHT);
 
 	for (EntityId entity = 0; entity < MAX_ENTITIES; entity++)
 	{
@@ -34,30 +32,22 @@ EntityId EntityManager::CreateEntity(const std::string& _name)
 	EntityId id = m_AvailableEntitiesId.front();
 	m_EntityEnableFlags.set(id,	true);
 	m_AvailableEntitiesId.pop();
-	std::memcpy(&m_EntityNameAlloc[id * MAX_ENTITY_NAME_LENGHT],_name.data(), _name.size() + 1);
+
+	// set name
+	m_EntityNameAlloc.Add(id);
+	char* namePtr = &m_EntityNameAlloc.At(id)[0];
+	std::memcpy(namePtr, _name.data(), _name.size() + 1);
 	
+	// set signature
+	m_EntitesSignature.Add(id);
+
 	++m_LivingEntityCount;
 
 	
 	return id;
 }
 
-EntityId EntityManager::CreateEntity(std::string&& _name)
-{
-	PERF_REGION_SCOPED;
 
-	assert(m_LivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
-	assert(_name.size() < MAX_ENTITY_NAME_LENGHT && "Entity name is too long.");
-	
-	EntityId id = m_AvailableEntitiesId.front();
-	m_EntityEnableFlags.set(id,	true);
-	m_AvailableEntitiesId.pop();
-
-	std::memcpy(&m_EntityNameAlloc[id * MAX_ENTITY_NAME_LENGHT], _name.data(), _name.size() + 1);
-	++m_LivingEntityCount;
-
-	return id;
-}
 
 std::string_view EntityManager::GetEntityName(EntityId _id) const
 {
@@ -69,7 +59,7 @@ std::string_view EntityManager::GetEntityName(EntityId _id) const
 		return {};
 	}
 
-	const char* entityNameBegin = &m_EntityNameAlloc[_id * MAX_ENTITY_NAME_LENGHT];
+	const char* entityNameBegin = &m_EntityNameAlloc[_id][0];
 	size_t lenght = std::strlen(entityNameBegin);
 	
 	return std::string_view(entityNameBegin, lenght);
@@ -88,7 +78,7 @@ void EntityManager::RemoveEntity(EntityId entityId)
 	}
 
 
-	m_EntitesSignature[entityId].reset();
+	m_EntitesSignature.Remove(entityId);
 	m_EntityEnableFlags.set(entityId,	false);
 
 	// push the new available id
@@ -108,10 +98,15 @@ void EntityManager::SetSignature(EntityId entityId, const Signature& signature)
 		return;
 	}
 	
+	if (!m_EntitesSignature.Contain(entityId))
+	{
+		PC_LOGERROR("Attempting to SetSignature but m_EntitesSignature dense list failed for EntityId = {}.", entityId);
+		return;
+	}
 	m_EntitesSignature[entityId] = signature;
 }
 
-Signature& EntityManager::GetSignature(EntityId entity)
+Signature* EntityManager::GetSignature(EntityId entity)
 {
 	PERF_REGION_SCOPED;
 
@@ -120,12 +115,20 @@ Signature& EntityManager::GetSignature(EntityId entity)
 	if (!m_EntityEnableFlags.test(entity))
 	{
 		PC_LOGERROR("Attempting to GetSignature entity list that doesn't exist EntityId = {}.", entity);
+		return nullptr;
 	}
 
-	return m_EntitesSignature[entity];
+	if (!m_EntitesSignature.Contain(entity))
+	{
+		PC_LOGERROR("Attempting to GetSignature but m_EntitesSignature dense list failed for EntityId = {}.", entity);
+		return nullptr;
+		
+	}
+
+	return &m_EntitesSignature[entity];
 }
 
-const Signature& EntityManager::GetSignature(EntityId entity) const
+const Signature* EntityManager::GetSignature(EntityId entity) const
 {
 	PERF_REGION_SCOPED;
 
@@ -134,8 +137,15 @@ const Signature& EntityManager::GetSignature(EntityId entity) const
 	if (!m_EntityEnableFlags.test(entity))
 	{
 		PC_LOGERROR("Attempting to GetSignature entity list that doesn't exist EntityId = {}.", entity);
+		return nullptr;
+	}
+
+	if (!m_EntitesSignature.Contain(entity))
+	{
+		PC_LOGERROR("Attempting to GetSignature but m_EntitesSignature dense list failed for EntityId = {}.", entity);
+		return nullptr;
 	}
 
 
-	return m_EntitesSignature[entity];
+	return &m_EntitesSignature[entity];
 }
