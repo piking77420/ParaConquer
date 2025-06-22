@@ -15,7 +15,9 @@ constexpr uint8_t MAX_ENTITY_NAME_LENGHT = std::numeric_limits<uint8_t>::max();
 
 constexpr uint32_t MAX_COMPONENT = 1024;
 using Signature = std::bitset<MAX_COMPONENT>;
-constexpr size_t s = sizeof(Signature);
 REFLECT(Signature)
+
+static_assert(MAX_ENTITIES % 2 == 0, "MAX_ENTITIES should be a multiple of 2");
+static_assert(MAX_COMPONENT % 2 == 0, "MAX_COMPONENT should be a multiple of 2");
 
 END_PCCORE

@@ -53,6 +53,12 @@ public:
         return m_ComponentManager.GetComponent<T>(_entityId);
     }
 
+    template <ComponentDerived T>
+    const T& GetComponent(EntityId _entityId) const
+    {
+        return m_ComponentManager.GetComponent<T>(_entityId);
+    }
+
     template<ComponentDerived T>
     void RemoveComponent(EntityId entity)
     {
@@ -82,6 +88,17 @@ public:
     void RemoveComponent(EntityId entity, TypeId typeId)
     {
         UpdateSignature(entity, typeId, false);
+    }
+
+
+    uint8_t& GetComponent(EntityId _entityId, TypeId typeId)
+    {
+        return m_ComponentManager.GetComponent(_entityId, typeId);
+    }
+
+    const uint8_t& GetComponent(EntityId _entityId, TypeId typeId) const
+    {
+        return m_ComponentManager.GetComponent(_entityId, typeId);
     }
     
 

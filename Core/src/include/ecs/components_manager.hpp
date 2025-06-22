@@ -45,7 +45,7 @@ public:
 	{
 		assert(m_ComponentTypeToComponentBitFlag.find(componentType) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
 
-		m_ComponentMapArray[componentType].AddEntityData(entityId);
+		m_ComponentMapArray[componentType].Add(entityId);
 	}
 
 	PC_FORCE_INLINE void RemoveComponent(EntityId _entityId, TypeId componentType)
@@ -57,7 +57,7 @@ public:
 			return;
 		}
 
-		it->second.RemoveEntityData(_entityId);
+		it->second.Remove(_entityId);
 	}
 
 	template <ComponentDerived T>
@@ -74,7 +74,7 @@ public:
 		{
 			if (_entitySignature.test(i))
 			{
-				m_ComponentMapArray[m_ComponentBitFlagToComponentType[i]].RemoveEntityData(_entity);
+				m_ComponentMapArray[m_ComponentBitFlagToComponentType[i]].Remove(_entity);
 			}
 		}
 
@@ -86,7 +86,7 @@ public:
 	{
 		constexpr TypeId componentTypId = Reflector::GetTypeKey<T>();
 
-		return reinterpret_cast<T&>(m_ComponentMapArray[componentTypId].GetData(entityId));
+		return reinterpret_cast<T&>(GetComponent(entityId, componentTypId));
 	}
 
 	template <ComponentDerived T>
@@ -94,7 +94,19 @@ public:
 	{
 		constexpr TypeId componentTypId = Reflector::GetTypeKey<T>();
 
-		return reinterpret_cast<const T&>(m_ComponentMapArray.at(componentTypId).GetData(entityId));
+		return reinterpret_cast<const T&>(GetComponent(entityId, componentTypId));
+	}
+
+	PC_FORCE_INLINE uint8_t& GetComponent(EntityId entityId, TypeId _componentId)
+	{
+
+		return m_ComponentMapArray.at(_componentId).Get(entityId);
+	}
+
+	PC_FORCE_INLINE const uint8_t& GetComponent(EntityId entityId, TypeId _componentId) const
+	{
+
+		return m_ComponentMapArray.at(_componentId).Get(entityId);
 	}
 
 	
