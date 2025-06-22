@@ -172,6 +172,8 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 
 void Vulkan::VulkanSwapChain::CreateSyncObjects()
 {
+    PC_LOG("CreateSyncObjects");
+
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);
 
@@ -288,7 +290,9 @@ void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
 
 void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window)
 {
-    const Vulkan::VulkanCommandList* vcommandList = reinterpret_cast<const Vulkan::VulkanCommandList*>(_commandList);
+    
+    const Vulkan::VulkanCommandList* vcommandList = dynamic_cast<const Vulkan::VulkanCommandList*>(_commandList);
+
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
     vk::CommandBuffer commandBuffer = vcommandList->GetHandle();
@@ -311,7 +315,7 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     // Ensure proper error handling for queue submission
-    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence)); // Changed `queu` to `queue`
+    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence));
 
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
@@ -326,6 +330,7 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
 
     // Check if the presentation queue supports presentation and handle errors
     vk::Result result = VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo);
+    /*
 
     if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
     {
@@ -334,7 +339,7 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     else if (result != vk::Result::eSuccess)
     {
         VK_CALL(result);
-    }
+    }*/
 }
 
 void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHandle)

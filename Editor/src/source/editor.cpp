@@ -281,11 +281,12 @@ void Editor::Init()
 	gameApp.Init(appCreateInfo);
 	
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
+	/*
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
 		cmd->EndDebugLabel();
-		});
+		});*/
 
 	InitTestScene();
 	InitEditorWindows();
@@ -426,19 +427,19 @@ void Editor::Run(bool* _appShouldClose)
 
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
-		IMGUIContext.NewFrame();
 		PC_CORE::Time::UpdateTime();
+		//IMGUIContext.NewFrame();
 
-		if (!gameApp.renderer.BeginDraw(&gameApp.window))
-			continue;
+		//if (!gameApp.renderer.BeginDraw(&gameApp.window))
+			//continue;
 		
-		UpdateEditorWindows();
+		//UpdateEditorWindows();
 		gameApp.WorldTick();
 
-		for (auto& editorWindow : m_EditorWindows)
-			editorWindow->Render();
+		//for (auto& editorWindow : m_EditorWindows)
+			//editorWindow->Render();
 		
-		gameApp.renderer.SwapBuffers(&gameApp.window);
+		//gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
 	}
 

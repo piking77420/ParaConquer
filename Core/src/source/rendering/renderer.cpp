@@ -292,12 +292,13 @@ void Renderer::SwapBuffers(Window* _window)
 {
     PERF_REGION_SCOPED;
 
+    
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
     swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
     primaryCommandList->ExucuteFetchCommand();
     swapChain->EndSwapChainRenderPass(primaryCommandList.get());
     primaryCommandList->EndRecordCommands();
-
+    
     m_RhiContext->swapChain->Present(primaryCommandList.get(), _window);
     Rhi::NextFrame();
 }
