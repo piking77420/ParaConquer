@@ -32,6 +32,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Profiler/
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/tracy/public)
 target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_IMPORTS)
 
+else()
+target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
+
+
 endif()
 
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 
-option(PROFILING "Build profiling dependencies" ON)
+option(PROFILING "Build profiling dependencies" OFF)
 option(BUILD_TEST "Build UnitTest" ON)
 
 
