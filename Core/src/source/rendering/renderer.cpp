@@ -123,22 +123,19 @@ void Renderer::Destroy()
 }
 
 
-bool Renderer::BeginDraw(Window* _window)
+void Renderer::BeginDraw(Window* _window)
 {
     PERF_REGION_SCOPED;
 
-    bool hasObtainSwapChian = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
-    if (hasObtainSwapChian)
-    {
-        primaryCommandList->Reset();
-        primaryCommandList->BeginRecordCommands();
-    }
+    m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+
+    primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
 
     QueryWorldData(World::GetWorld());
     sceneLightsBuffer
         ->Fecth();
 
-    return hasObtainSwapChian;
 }
 
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)

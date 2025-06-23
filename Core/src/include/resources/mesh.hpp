@@ -5,6 +5,7 @@
 #include "low_renderer/index_buffer.hpp"
 #include "low_renderer/vertex.hpp"
 #include "low_renderer/vertex_buffer.hpp"
+#include "primitive/aabb.hpp"
 #include "reflection/reflector.hpp"
 
 BEGIN_PCCORE
@@ -33,6 +34,7 @@ public:
 
     MeshFormat meshFormat;
 
+
     PC_CORE_API IMP_DYNAMIC_REFLECT()
 
     PC_CORE_API void Build() override;
@@ -45,6 +47,8 @@ public:
 
 
 private:
+    MotionCore::Aabb<double> m_Aabb;
+    
     void LoadFromFile(const fs::path& _path);
     
     void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);

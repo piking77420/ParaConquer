@@ -1,4 +1,6 @@
-﻿#include "vulkan_command_list.hpp"
+﻿#include "perf_region.hpp"
+
+#include "vulkan_command_list.hpp"
 
 #include "rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
@@ -8,6 +10,7 @@
 #include "low_renderer/rhi.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_shader_program.hpp"
+
 
 
 Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
@@ -69,6 +72,7 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
     m_CommandBuffer[frameIndex].begin(commandBufferBeginInfo);
+
 }
 
 void Vulkan::VulkanCommandList::EndRecordCommands()
@@ -237,16 +241,23 @@ const vk::Queue* Vulkan::VulkanCommandList::GetQueue() const
 
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)
 {
-    // TO DO 
+
+#ifdef PROFILING
     VkDebugUtilsLabelEXT markerInfo = {};
     markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     markerInfo.pLabelName = _debugLabel;
 
     std::memcpy(&markerInfo.color[0], _color.data(), sizeof(float) * _color.size());
-    //vkCmdBeginDebugUtilsLabelEXT(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()], &markerInfo);
+    static auto begindDebugLabelPtrFunc = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(PC_CORE::Rhi::GetRhiContext()->renderInstance)->GetPFN_vkCmdBeginDebugUtilsLabelEXT();
+    begindDebugLabelPtrFunc(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()], &markerInfo);
+#endif
+ 
 }
 
 void Vulkan::VulkanCommandList::EndDebugLabel()
 {
-    //vkCmdEndDebugUtilsLabelEXT(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()]);
+#ifdef PROFILING
+    static auto endDebugLabelPtrFunc = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(PC_CORE::Rhi::GetRhiContext()->renderInstance)->GetPFN_vkCmdEndDebugUtilsLabelEXT();
+    endDebugLabelPtrFunc(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()]);
+#endif
 }

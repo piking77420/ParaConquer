@@ -94,7 +94,7 @@ public:
 
     PC_CORE_API void Destroy();
 
-    PC_CORE_API bool BeginDraw(Window* _window);
+    PC_CORE_API void BeginDraw(Window* _window);
     
     PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, World* _world);
 

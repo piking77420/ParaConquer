@@ -27,6 +27,17 @@ namespace Vulkan
             return m_Instance;
         }
 
+#ifdef PROFILING
+        PFN_vkCmdBeginDebugUtilsLabelEXT GetPFN_vkCmdBeginDebugUtilsLabelEXT() const
+        {
+            return m_BeginDebugLabel;
+        }
+
+        PFN_vkCmdEndDebugUtilsLabelEXT GetPFN_vkCmdEndDebugUtilsLabelEXT() const
+        {
+            return m_EndDebugLabel;
+        }
+#endif
 
     private:
         vk::Instance m_Instance;

@@ -118,8 +118,8 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 
 void Vulkan::VulkanInstance::GetDebugFunc()
 {
-    m_BeginDebugLabel = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT");
-    m_EndDebugLabel = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT");
+    m_BeginDebugLabel = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT"));
+    m_EndDebugLabel = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdEndDebugUtilsLabelEXT"));
 
     if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr)
     {
@@ -127,7 +127,7 @@ void Vulkan::VulkanInstance::GetDebugFunc()
     }
 }
 #endif 
-
+    
 Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window) : RenderInstance(_renderInstanceCreateInfo)
 {
     PERF_REGION_SCOPED;
@@ -180,6 +180,11 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 #endif
 
     InitSurface(_window);
+
+#ifdef PROFILING
+    GetDebugFunc();
+#endif
+    
 }
 
 

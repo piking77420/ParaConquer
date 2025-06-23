@@ -434,17 +434,18 @@ void Editor::Run(bool* _appShouldClose)
 		PC_CORE::Time::UpdateTime();
 		IMGUIContext.NewFrame();
 
-		if (gameApp.renderer.BeginDraw(&gameApp.window))
-		{
-			UpdateEditorWindows();
-			gameApp.WorldTick();
+		gameApp.renderer.BeginDraw(&gameApp.window);
+		
+		UpdateEditorWindows();
+		gameApp.WorldTick();
 
-			for (auto& editorWindow : m_EditorWindows)
-				editorWindow->Render();
+		for (auto& editorWindow : m_EditorWindows)
+			editorWindow->Render();
 
-			gameApp.renderer.SwapBuffers(&gameApp.window);
-			PERF_FRAME_MARK;
-		}
+		gameApp.renderer.SwapBuffers(&gameApp.window);
+		PERF_FRAME_MARK;
+
+		
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();
