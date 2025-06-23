@@ -127,7 +127,7 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
         GetVulkanDevice(),
         .Device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(vkcontext->rhiDevice)->GetDevice(),
         .QueueFamily = 0,
-        .Queue = vkcontext->graphicsQueue,
+        .Queue = vkcontext->mainQueue,
         .DescriptorPool = descriptorPool,
         .RenderPass = renderPass,
         .MinImageCount = static_cast<uint32_t>(swapChain->GetNbrOfImage()),

@@ -37,7 +37,8 @@ ZoneName(x, strlen(x))
 #define PROFILER_NOOP
 
 #define PERF_REGION_SCOPED 
-#define PERF_REGION_SCOPED_NAMED(x) 
+#define PERF_REGION_SCOPED_NAMED(x)
+#define PERF_REGION_SCOPEDN 
 #define PERF_REGION_SCOPEDC 
 #define PERF_REGION_SCOPEDNC
 

@@ -35,7 +35,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_IMPORTS)
 else()
 target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
 
-
 endif()
 
 

@@ -20,7 +20,7 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     {
     case PC_CORE::CommandPoolFamily::Graphics:
         commandPool = vulkanContext.commandPool;
-        m_Queue = &vulkanContext.graphicsQueue;
+        m_Queue = &vulkanContext.mainQueue;
         break;
     case PC_CORE::CommandPoolFamily::Compute:
         break;

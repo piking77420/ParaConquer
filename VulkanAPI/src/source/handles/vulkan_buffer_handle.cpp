@@ -31,7 +31,7 @@ Vulkan::VulkanBufferHandle::VulkanBufferHandle(const PC_CORE::GPUBufferCreateInf
             {
                 .device = context.GetDevice()->GetDevice(),
                 .commandPool = context.transferCommandPool,
-                .queue = context.transferQueu
+                .queue = context.mainQueue
             };
 
             vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);

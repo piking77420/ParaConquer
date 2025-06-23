@@ -45,7 +45,7 @@ public:
     template<class ResourceDerived>
     static std::shared_ptr<ResourceDerived> Get();
 
-    static std::shared_ptr<Resource> GetByGuid(const Guid& _guid);
+    PC_CORE_API static std::shared_ptr<Resource> GetByGuid(const Guid& _guid);
 
     template<class ResourceDerived>
     static bool Delete(const std::string& _name);

@@ -19,8 +19,8 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     PC_LOG("App Init")
     // Can init without any depedancies
     window = Window(_appCreateInfo.appName.data());
-    window.SetIcon(_appCreateInfo.appLogoPath.c_str());
-    
+    window.SetIcon(_appCreateInfo.appLogoPath.data());
+
     const RenderHardwareInterfaceCreateInfo createInfo =
         {
         .GraphicsAPI = GraphicAPI::VULKAN,

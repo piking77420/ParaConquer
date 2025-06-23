@@ -11,7 +11,9 @@ class SpareSet
 public:
     using iterator = typename std::vector<T>::iterator;
     using const_iterator = typename std::vector<T>::const_iterator;
-    
+
+    // TO DO BET ITERATOR
+    // ITERATE OVER AVAILABLE INDDICIES
     iterator begin() { return m_Dense.begin(); }
     iterator end() { return m_Dense.end(); }
 
