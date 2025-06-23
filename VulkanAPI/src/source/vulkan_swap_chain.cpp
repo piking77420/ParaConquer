@@ -292,7 +292,11 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
     vk::CommandBuffer commandBuffer = vcommandList->GetHandle();
+
     const vk::Queue& queue = *vcommandList->GetQueue();
+    const vk::Queue& prensetQueu = VulkanContext::GetContext().mainQueue;
+
+
 
     vk::SubmitInfo submitInfo{};
     submitInfo.sType = vk::StructureType::eSubmitInfo;
@@ -310,12 +314,10 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    // Ensure proper error handling for queue submission
-    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence)); // Changed `queu` to `queue`
+    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence));
 
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
-
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
@@ -324,8 +326,7 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &m_SwapChainImageIndex;
 
-    // Check if the presentation queue supports presentation and handle errors
-    vk::Result result = VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo);
+    vk::Result result = prensetQueu.presentKHR(&presentInfo);
 
     if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
     {

@@ -294,6 +294,7 @@ void Renderer::SwapBuffers(Window* _window)
 
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
     swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
+
     primaryCommandList->ExucuteFetchCommand();
     swapChain->EndSwapChainRenderPass(primaryCommandList.get());
     primaryCommandList->EndRecordCommands();

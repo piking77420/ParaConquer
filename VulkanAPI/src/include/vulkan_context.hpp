@@ -11,12 +11,8 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-        vk::Queue graphicsQueue;
-
-        vk::Queue presentQueue;
+        vk::Queue mainQueue;
         
-        vk::Queue transferQueu;
-
         vk::Fence transferFence;
         
         vk::CommandPool commandPool = VK_NULL_HANDLE;

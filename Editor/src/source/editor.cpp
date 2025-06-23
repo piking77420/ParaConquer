@@ -1,9 +1,13 @@
 ﻿#include <thread> 
+#include <chrono>
+#include <iostream>
+
 
 #include <perf_region.hpp>
 #include <glslang/Include/glslang_c_interface.h>
 #include <Imgui/imgui_internal.h>
 #include <Json/json.hpp>
+
 
 #include "editor.hpp"
 #include "asset_browser.hpp"
@@ -281,6 +285,7 @@ void Editor::Init()
 	gameApp.Init(appCreateInfo);
 	
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
+
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
@@ -422,17 +427,18 @@ void Editor::Run(bool* _appShouldClose)
 		IMGUIContext.NewFrame();
 		PC_CORE::Time::UpdateTime();
 
-		if (!gameApp.renderer.BeginDraw(&gameApp.window))
-			continue;
-		
-		UpdateEditorWindows();
-		gameApp.WorldTick();
+		if (gameApp.renderer.BeginDraw(&gameApp.window))
+		{
+			UpdateEditorWindows();
+			gameApp.WorldTick();
 
-		for (auto& editorWindow : m_EditorWindows)
-			editorWindow->Render();
-		
-		gameApp.renderer.SwapBuffers(&gameApp.window);
-		PERF_FRAME_MARK;
+			for (auto& editorWindow : m_EditorWindows)
+				editorWindow->Render();
+
+			gameApp.renderer.SwapBuffers(&gameApp.window);
+			PERF_FRAME_MARK;
+
+		}
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();

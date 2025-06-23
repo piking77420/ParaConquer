@@ -7,8 +7,7 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
     return m_Device;
 }
 
-Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable,  vk::Queue* _graphicQueue ,
-                                   vk::Queue* _presentQueue,  vk::Queue* _transferQueue)
+Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable, vk::Queue* _graphicQueue)                                  
 {
     PERF_REGION_SCOPED;
     vk::PhysicalDevice vkPhysicalDevice = _vulkanPhysicalDevices->GetVulkanDevice();
@@ -74,11 +73,12 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     if (_graphicQueue != nullptr)
         *_graphicQueue = m_Device.getQueue(QueuIndex, 0);
 
+    /*
     if (_presentQueue != nullptr)
         *_presentQueue = m_Device.getQueue(QueuIndex, 1);
 
     if (_transferQueue != nullptr)
-        *_transferQueue = m_Device.getQueue(QueuIndex, 2);
+        *_transferQueue = m_Device.getQueue(QueuIndex, 2);*/
 }
 
 Vulkan::VulkanDevice::~VulkanDevice()

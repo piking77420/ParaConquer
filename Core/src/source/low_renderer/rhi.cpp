@@ -353,14 +353,10 @@ RhiContext* Rhi::GetRhiContext()
     return m_Instance->m_RhiContext;
 }
 
-
 void Rhi::NextFrame()
 {
     m_Instance->m_CurrentFrame = (m_Instance->m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-   
 }
-
-
 
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {
@@ -368,7 +364,6 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
         {
         .appName = _createInfo.appName,
         .gpuDebug = _createInfo.gpuDebug
-
         };
     
     PhysicalDevicesCreateInfo physicalDevicesCreateInfo =

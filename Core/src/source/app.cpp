@@ -18,7 +18,8 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     PERF_REGION_SCOPED;
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window(_appCreateInfo.appName.data(), _appCreateInfo.appLogoPath.c_str());
+    window = Window(_appCreateInfo.appName.data());
+    window.SetIcon(_appCreateInfo.appLogoPath.data());
 
     const RenderHardwareInterfaceCreateInfo createInfo =
         {

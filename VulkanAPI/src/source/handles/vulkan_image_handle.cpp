@@ -59,7 +59,7 @@ Vulkan::VulkanImageHandle::VulkanImageHandle(const PC_CORE::CreateImageInfo& _cr
     {
         .device = device,
         .commandPool = context.transferCommandPool,
-        .queue = context.transferQueu
+        .queue = context.mainQueue
     };
 
     vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
