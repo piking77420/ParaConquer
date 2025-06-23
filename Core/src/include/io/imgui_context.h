@@ -8,7 +8,7 @@
 
 BEGIN_PCCORE
 
-#define IMGUI_RENDER_DEBUG_COLOR {0,1,0,0}
+#define IMGUI_RENDER_DEBUG_COLOR {0,1,0,1}
 
 	class  IMGUIContext
 {

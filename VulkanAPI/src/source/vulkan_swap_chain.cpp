@@ -35,7 +35,7 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 
 
 
-bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
+void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
@@ -50,19 +50,14 @@ bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
         HandleRecreateSwapChain(windowHandle);
-
-        return false;
     }
     else if (vk::Result::eSuccess != result)
     {
         VK_CALL(result);
-
-        return false;
     }
 
     m_SwapChainImageIndex = nextImageIndex;
     VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject[frameIndex].inFlightFence));
-    return true;
 }
 
 size_t Vulkan::VulkanSwapChain::GetNbrOfImage() const

@@ -23,7 +23,7 @@ public:
     
     PC_CORE_API virtual void Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window) = 0;
 
-    PC_CORE_API virtual bool GetSwapChainImageIndex(PC_CORE::Window* windowHandle) = 0;
+    PC_CORE_API virtual void GetSwapChainImageIndex(PC_CORE::Window* windowHandle) = 0;
 
     PC_CORE_API virtual void HandleRecreateSwapChain(PC_CORE::Window* windowHandle) = 0;
 

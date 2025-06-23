@@ -286,6 +286,7 @@ void Editor::Init()
 	
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 
+	
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
@@ -427,18 +428,18 @@ void Editor::Run(bool* _appShouldClose)
 		IMGUIContext.NewFrame();
 		PC_CORE::Time::UpdateTime();
 
-		if (gameApp.renderer.BeginDraw(&gameApp.window))
-		{
-			UpdateEditorWindows();
-			gameApp.WorldTick();
+		gameApp.renderer.BeginDraw(&gameApp.window);
+		
+		UpdateEditorWindows();
+		gameApp.WorldTick();
 
-			for (auto& editorWindow : m_EditorWindows)
-				editorWindow->Render();
+		for (auto& editorWindow : m_EditorWindows)
+			editorWindow->Render();
 
-			gameApp.renderer.SwapBuffers(&gameApp.window);
-			PERF_FRAME_MARK;
+		gameApp.renderer.SwapBuffers(&gameApp.window);
+		PERF_FRAME_MARK;
 
-		}
+		
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();
