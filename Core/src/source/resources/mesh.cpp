@@ -60,7 +60,7 @@ void Mesh::LoadFromFile(const fs::path& _path)
 
     extension = MeshSourceFormat.at(formatIndex);
     vertexBuffer = VertexBuffer(verticies.data(), verticies.size() * sizeof(Vertex));
-    indexBuffer = IndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
+    indexBuffer = RhiIndexBuffer(indicies.data(), indicies.size() * sizeof(uint32_t));
 }
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)

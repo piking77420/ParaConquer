@@ -1,175 +1,159 @@
-﻿#include "vulkan_image.hpp"
+﻿
+#include "vulkan_image.hpp"
 
-void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t height, uint32_t depth, uint32_t _mimpLevel,
-    vk::SampleCountFlagBits _sampleCount, vk::ImageType _imageType, vk::Format format, vk::ImageTiling tiling,
-    vk::ImageUsageFlags usage, VmaMemoryUsage imageMemory, VkImage* _outImage, VmaAllocation* _outAllocation)
+#include "helper_functions.hpp"
+#include "rhi_vulkan_parser.hpp"
+#include "transition_image_layout.hpp"
+#include "vulkan_buffer_helper.hpp"
+#include "vulkan_context.hpp"
+#include "vulkan_image_helper.hpp"
+#include "low_renderer/rhi.hpp"
+
+
+static int GetMultiplayer(PC_CORE::Channel _channel)
 {
-    vk::ImageCreateInfo imageInfo{};
-    imageInfo.sType = vk::StructureType::eImageCreateInfo;
-    imageInfo.imageType = _imageType;
-    imageInfo.extent.width = width;
-    imageInfo.extent.height = height;
-    imageInfo.extent.depth = depth;
-    imageInfo.mipLevels = _mimpLevel;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = format;
-    imageInfo.tiling = tiling;
-    imageInfo.initialLayout = vk::ImageLayout::eUndefined;
-    imageInfo.usage = usage;
-    imageInfo.samples = vk::SampleCountFlagBits::e1;
-    imageInfo.sharingMode = vk::SharingMode::eExclusive;
-    imageInfo.samples = _sampleCount;
-    
-    VmaAllocationCreateInfo allocationInfo = {};
-    allocationInfo.usage = imageMemory;
-    
-   
-    vmaCreateImage(allocatore, reinterpret_cast<VkImageCreateInfo*>(&imageInfo), &allocationInfo, _outImage, _outAllocation, nullptr);
-}
-
-vk::ImageView Vulkan::CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
-                                      vk::Format _format, vk::ImageAspectFlags imageAspect, uint32_t _mipLevels)
-{
-    vk::ImageViewCreateInfo imageInfo{};
-    imageInfo.sType  = vk::StructureType::eImageViewCreateInfo;
-    imageInfo.image = _image;
-    imageInfo.viewType = _imageType;
-    imageInfo.format = _format;
-    imageInfo.subresourceRange.aspectMask = imageAspect;
-    imageInfo.subresourceRange.baseMipLevel = 0;
-    imageInfo.subresourceRange.baseArrayLayer = 0;
-    imageInfo.subresourceRange.layerCount = 1;
-    imageInfo.subresourceRange.levelCount = _mipLevels;
-
-    vk::ImageView imageView;
-
-    VK_CALL(_device.createImageView(&imageInfo, nullptr, &imageView));
-
-    return imageView;
-}
-
-void Vulkan::GetTextureUsage(const PC_CORE::CreateImageInfo& _createTextureInfo, VmaMemoryUsage* _memoryUsage,
-    vk::ImageUsageFlags* _usage, vk::ImageLayout* _finalLoayout, vk::ImageAspectFlags* _imageAspectFlag)
-{
-    *_memoryUsage = VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY;
-
-    switch (_createTextureInfo.textureNature)
+    switch (_channel)
     {
-    case PC_CORE::TextureNature::Default:
-        *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
-        *_finalLoayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        *_imageAspectFlag = vk::ImageAspectFlagBits::eColor;
+    case PC_CORE::Channel::GREY:
+    case PC_CORE::Channel::ALPHA:
+        return 1;
         break;
-    case PC_CORE::TextureNature::RenderTarget:
-        switch (_createTextureInfo.textureAttachement)
-        {
-    case PC_CORE::TextureAttachement::None:
-            break;
-    case PC_CORE::TextureAttachement::Color:
-            *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-            *_finalLoayout = vk::ImageLayout::eColorAttachmentOptimal;
-            *_imageAspectFlag = vk::ImageAspectFlagBits::eColor;
-
-            break;
-    case PC_CORE::TextureAttachement::DepthStencil:
-            *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment;
-            *_finalLoayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-            *_imageAspectFlag = vk::ImageAspectFlagBits::eDepth;
-            break;
-        }
-        
+    case PC_CORE::Channel::RGB:
+        return 3; 
         break;
+    case PC_CORE::Channel::RGBA:
+        return  4;
+        break;
+    case PC_CORE::Channel::DEFAULT:
+    default: ;
     }
 
-    if (_createTextureInfo.canbeSampled)
-        *_usage |= vk::ImageUsageFlagBits::eSampled;
-
-    if (_createTextureInfo.GenerateMipMap)
-        *_usage |= vk::ImageUsageFlagBits::eTransferSrc;
+    throw std::runtime_error("Vulkan::VulkanGpuAllocator::GetMultiplayer: Invalid Channel");
 }
 
-void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image, vk::ImageAspectFlags aspectFlag,
-                            vk::Format format, int32_t imageWidth, int32_t imageHeight, uint32_t _mipLevel)
+
+
+Vulkan::VulkanImageHandle::VulkanImageHandle(const PC_CORE::CreateImageInfo& _createTextureInfo)
 {
-    //VkFormatProperties formatProperties;
-     //vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
+    auto& context = VulkanContext::GetContext();
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 
-     //if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
-       //  throw std::runtime_error("texture image format does not support linear blitting!");
-     //}
+    vk::ImageUsageFlags textureUsage;
+    VmaMemoryUsage textureMemoryUsage;
+    vk::ImageLayout finalTextureLayout = vk::ImageLayout::eUndefined;
+    vk::ImageAspectFlags imageAspectFlag;
+    uint32_t mipLevel = _createTextureInfo.GenerateMipMap ? _createTextureInfo.mipsLevels : 1;
+    GetTextureUsage(_createTextureInfo,&textureMemoryUsage, &textureUsage, &finalTextureLayout, &imageAspectFlag);
+    const vk::Format format = RHIFormatToVkFormat(_createTextureInfo.format);
+    vk::SampleCountFlagBits sampleCount = RhiSampleCountToVuklan(_createTextureInfo.samples);
 
-     vk::ImageMemoryBarrier barrier{};
-     barrier.sType = vk::StructureType::eImageMemoryBarrier;
-     barrier.image = image;
-     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-     barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-     barrier.subresourceRange.baseArrayLayer = 0;
-     barrier.subresourceRange.layerCount = 1;
-     barrier.subresourceRange.levelCount = 1;
+    
+    // create buffer and alloc
+   CreateImage(context.allocator, _createTextureInfo.width
+               ,_createTextureInfo.height, _createTextureInfo.depth, _createTextureInfo.mipsLevels,
+               sampleCount,
+               RHIImageToVkImageType(_createTextureInfo.imageType),
+               format, vk::ImageTiling::eOptimal, textureUsage, textureMemoryUsage, &m_VulkanImage, &m_VmaAllocation);
 
-     int32_t mipWidth = imageWidth;
-     int32_t mipHeight = imageHeight;
+    const SingleCommandBeginInfo singleCommandBeginInfo =
+    {
+        .device = device,
+        .commandPool = context.transferCommandPool,
+        .queue = context.mainQueue
+    };
 
-     for (uint32_t i = 1; i < _mipLevel; i++) 
-     {
-         barrier.subresourceRange.baseMipLevel = i - 1;
-         barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-         barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
-         barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-         barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
+    
+    if (_createTextureInfo.textureNature == PC_CORE::TextureNature::Default && _createTextureInfo.data != nullptr)
+    {
+        int multiplayer = GetMultiplayer(_createTextureInfo.channel);
+    
+        if (_createTextureInfo.depth < 1 )
+        {
+            PC_LOGERROR("Vulkan::VulkanGpuAllocator::CreateTexture: _createTextureInfo.depth < 1 )");
+        }
+    
+        size_t imageSize = static_cast<size_t>(_createTextureInfo.width * _createTextureInfo.height * _createTextureInfo.depth * multiplayer);
 
-         vk::DependencyFlags depencyFlag{};
-         _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, depencyFlag,
-             0, nullptr,
-             0, nullptr,
-             1, &barrier);
-      
-         vk::ImageBlit blit{};
-         blit.srcOffsets[0] = vk::Offset3D({ 0, 0, 0});
-         blit.srcOffsets[1] = vk::Offset3D({ mipWidth, mipHeight, 1 }) ;
-         blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-         blit.srcSubresource.mipLevel = i - 1;
-         blit.srcSubresource.baseArrayLayer = 0;
-         blit.srcSubresource.layerCount = 1;
-         blit.dstOffsets[0] = vk::Offset3D{ 0, 0, 0 };
-         blit.dstOffsets[1] = vk::Offset3D{ mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-         blit.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-         blit.dstSubresource.mipLevel = i;
-         blit.dstSubresource.baseArrayLayer = 0;
-         blit.dstSubresource.layerCount = 1;
+        VmaAllocation stagingBufferAlloc = VK_NULL_HANDLE;
+        VkBuffer stagingBuffer = VK_NULL_HANDLE;
+        
+        
+        CreateBuffer(context.allocator, imageSize, vk::BufferUsageFlagBits::eTransferSrc, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU,
+            &stagingBuffer, &stagingBufferAlloc);
 
-         _commandBuffer.blitImage(
-             image, vk::ImageLayout::eTransferSrcOptimal,
-             image, vk::ImageLayout::eTransferDstOptimal,
-             1, &blit,
-             vk::Filter::eLinear);
+        void* data = nullptr;
+        vmaMapMemory(context.allocator, stagingBufferAlloc, &data);
+        memcpy(data, _createTextureInfo.data, imageSize);
+        vmaUnmapMemory(context.allocator, stagingBufferAlloc);
+        
+        // Wait for end command 
+        TransitionImageLayout(commandBuffer,  m_VulkanImage, format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, imageAspectFlag, mipLevel);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 
-         barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
-         barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-         barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-         barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
 
-         vk::DependencyFlags innerLoopDepencyFlag{};
-         _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, innerLoopDepencyFlag,
-             0, nullptr,
-             0, nullptr,
-             1, &barrier);
+        const uint32_t w =  _createTextureInfo.width;
+        const uint32_t h =  _createTextureInfo.height;
+        const uint32_t d =  _createTextureInfo.depth;
+    
+        vk::BufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = imageAspectFlag;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = VkOffset3D{0, 0, 0};
+        region.imageExtent = vk::Extent3D{
+            w,
+            h,
+            d
+        };
+        
+        commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
+        commandBuffer.copyBufferToImage(stagingBuffer, m_VulkanImage, vk::ImageLayout::eTransferDstOptimal, region );
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 
-         if (mipWidth > 1) mipWidth /= 2;
-         if (mipHeight > 1) mipHeight /= 2;
-     }
+        // usless buffer now
+        DestroyBuffer(device, context.allocator, stagingBuffer, stagingBufferAlloc);
 
-     barrier.subresourceRange.baseMipLevel = _mipLevel - 1;
-     barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-     barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-     barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-     barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
 
-     vk::DependencyFlags depencyFlag{};
-     _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, depencyFlag,
-         0, nullptr,
-         0, nullptr,
-         1, &barrier);
- 
+        if (mipLevel != 1)
+        {
+            //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
+            GenerateMipMap(commandBuffer, m_VulkanImage, imageAspectFlag, format, _createTextureInfo.width, _createTextureInfo.height, mipLevel);
+        }
+        else
+        {
+            TransitionImageLayout(commandBuffer, m_VulkanImage, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, imageAspectFlag, mipLevel);
+        }
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+
+    }
+    else
+    {
+        TransitionImageLayout(commandBuffer,  m_VulkanImage, format, vk::ImageLayout::eUndefined, finalTextureLayout, imageAspectFlag, mipLevel);
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    }
+
+
+    m_VulkanImageView = CreateImageView(device, m_VulkanImage, vk::ImageViewType::e2D, format, imageAspectFlag, mipLevel);
 }
+
+Vulkan::VulkanImageHandle::~VulkanImageHandle()
+{
+    if (m_VulkanImage == VK_NULL_HANDLE || m_VulkanImageView == VK_NULL_HANDLE || m_VmaAllocation == VK_NULL_HANDLE)
+        return;
+
+    auto& context = VulkanContext::GetContext();
+    
+    vmaDestroyImage(  context.allocator, m_VulkanImage, m_VmaAllocation);
+    context.GetDevice()->GetDevice().destroyImageView(m_VulkanImageView);
+
+    m_VulkanImageView = VK_NULL_HANDLE;
+    m_VulkanImage = VK_NULL_HANDLE;
+    m_VmaAllocation = VK_NULL_HANDLE;
+}
+

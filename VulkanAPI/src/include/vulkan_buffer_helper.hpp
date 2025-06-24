@@ -6,8 +6,6 @@
 
 namespace Vulkan
 {
-    
-    
     VULKAN_API  vk::BufferUsageFlags GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsage bufferUsage);
     
     VULKAN_API  void CreateBuffer(VmaAllocator allocator, size_t size, vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage,
@@ -18,5 +16,4 @@ namespace Vulkan
     
 
     VULKAN_API  VmaMemoryUsage GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage);
-
 }

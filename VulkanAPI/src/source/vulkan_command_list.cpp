@@ -215,7 +215,7 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _v
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindVertexBuffers(_firstBinding, _bindingCount, &buffer, offsets);
 }
 
-void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::IndexBuffer& _indexBuffer, size_t _offset)
+void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset)
 {
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
 

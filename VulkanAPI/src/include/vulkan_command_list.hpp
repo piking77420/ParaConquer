@@ -48,7 +48,7 @@ public:
 
     VULKAN_API void BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) override;
 
-    VULKAN_API void BindIndexBuffer(const PC_CORE::IndexBuffer& _indexBuffer, size_t _offset) override;
+    VULKAN_API void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) override;
 
     VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 

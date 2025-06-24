@@ -39,7 +39,7 @@ void Renderer::Init()
 
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
 
-    cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    cameraUniformBuffer = RhiUniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
 
 
     UniformBufferDescriptor cameraBufferDescritptor
@@ -477,7 +477,7 @@ void Renderer::CreateSkyRenderingShader()
 
     m_SkyRenderingShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
     
-    m_AtmosphereUniformBuffer = UniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));
+    m_AtmosphereUniformBuffer = RhiUniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));
 
  
 

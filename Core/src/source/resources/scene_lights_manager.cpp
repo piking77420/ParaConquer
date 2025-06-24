@@ -3,7 +3,7 @@
 
 PC_CORE::SceneLightsBuffer::SceneLightsBuffer()
 {
-    uniformBuffer = UniformBuffer(&sceneLightData, sizeof(sceneLightData));
+    uniformBuffer = RhiUniformBuffer(&sceneLightData, sizeof(sceneLightData));
 }
 
 void PC_CORE::SceneLightsBuffer::Fecth()

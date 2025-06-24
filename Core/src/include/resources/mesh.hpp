@@ -2,9 +2,9 @@
 
 #include "core_header.hpp"
 #include "resource.hpp"
-#include "low_renderer/index_buffer.hpp"
+#include "low_renderer/rhi_index_buffer.hpp"
 #include "low_renderer/vertex.hpp"
-#include "low_renderer/vertex_buffer.hpp"
+#include "low_renderer/rhi_vertex_buffer.hpp"
 #include "primitive/aabb.hpp"
 #include "reflection/reflector.hpp"
 
@@ -30,7 +30,7 @@ public:
 
     VertexBuffer vertexBuffer;
 
-    IndexBuffer indexBuffer;
+    RhiIndexBuffer indexBuffer;
 
     MeshFormat meshFormat;
 

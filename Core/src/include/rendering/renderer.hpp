@@ -1,11 +1,11 @@
 #pragma once
 #include "light.hpp"
 #include "rendering_typedef.h"
-#include "low_renderer/vertex_buffer.hpp"
+#include "low_renderer/rhi_vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
-#include "low_renderer/index_buffer.hpp"
+#include "low_renderer/rhi_index_buffer.hpp"
 #include "low_renderer/rhi_context.hpp"
-#include "low_renderer/uniform_buffer.hpp"
+#include "low_renderer/rhi_uniform_buffer.hpp"
 #include "resources/scene_lights_manager.h"
 #include "resources/shader_program.h"
 #include "world/static_mesh.hpp"
@@ -111,13 +111,13 @@ private:
 
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsSky = nullptr;
 
-    UniformBuffer cameraUniformBuffer;
+    RhiUniformBuffer cameraUniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
 
     AtmosphereBuffer m_AtomsphereBuffer;
 
-    UniformBuffer m_AtmosphereUniformBuffer;
+    RhiUniformBuffer m_AtmosphereUniformBuffer;
 
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 

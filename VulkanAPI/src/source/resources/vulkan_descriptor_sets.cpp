@@ -6,7 +6,7 @@
 #include "handles/vulkan_image_handle.hpp"
 #include "low_renderer/gpu_buffer.hpp"
 #include "low_renderer/rhi.hpp"
-#include "low_renderer/uniform_buffer.hpp"
+#include "low_renderer/rhi_uniform_buffer.hpp"
 #include "resources/vulkan_sampler.hpp"
 
 void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& _shaderProgramDescriptorSet)
