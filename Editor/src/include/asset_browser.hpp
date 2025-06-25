@@ -4,7 +4,7 @@
 #include "core_header.hpp"
 #include "resources/resource.hpp"
 #include "file_system_watcher.h"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 BEGIN_EDITOR_PCCORE
     class AssetBrowser : public EditorWindow
@@ -19,7 +19,7 @@ public:
     ~AssetBrowser() override = default  ;
 private:
 
-    PC_CORE::Texture m_FolderTexture;
+    PC_CORE::Texture2D m_FolderTexture;
 
     fs::path m_BasePath;
 

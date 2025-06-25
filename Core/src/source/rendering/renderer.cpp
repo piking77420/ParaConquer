@@ -7,7 +7,7 @@
 #include "time/core_time.hpp"
 #include "math/matrix_transformation.hpp"
 #include "rendering/light.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "rendering/render_passes/render_pass.hpp"

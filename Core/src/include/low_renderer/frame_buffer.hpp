@@ -5,12 +5,12 @@
 #include "rhi_render_pass.hpp"
 #include "math/matrix3x3.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 BEGIN_PCCORE
 	struct AttachementDesriptor
 {
-	Texture* texture;
+	Texture2D* texture;
 };
 
 struct CreateFrameInfo

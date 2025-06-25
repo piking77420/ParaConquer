@@ -9,7 +9,7 @@
 #include "buffer/vulkan_buffer.hpp"
 #include "low_renderer/rhi.hpp"
 
-Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo& _createTextureInfo) : m_VulkanTexture(_createTextureInfo.textureMemoryUsage)
+Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _createTextureInfo) : m_VulkanTexture(_createTextureInfo.textureMemoryUsage)
 {
 	if (_createTextureInfo.depth < 1)
 	{
@@ -23,8 +23,6 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo& _create
 	const vk::Format format = RHIFormatToVkFormat(_createTextureInfo.format);
 	const uint32_t mipLevel = _createTextureInfo.GenerateMipMap ? _createTextureInfo.mipsLevels : 1;
 	const vk::SampleCountFlagBits sampleCount = RhiSampleCountToVuklan(_createTextureInfo.samples);
-
-
 	vk::ImageUsageFlags textureUsage = GetMemoryPropertyFlags(_createTextureInfo.textureUsage);
 
 	// if generate mip maps then image need to be transfer src

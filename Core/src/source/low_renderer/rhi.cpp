@@ -12,6 +12,7 @@
 #include "resources/vulkan_sampler.hpp"
 #include "resources/vulkan_shader_program.hpp"
 #include "texture/vulkan_texture_2d.hpp"
+#include "texture/vulkan_texture_3d.hpp"
 
 using namespace PC_CORE;
 
@@ -252,7 +253,7 @@ std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, ui
 }
 
 
-std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInfo& _createImageInfo)
+std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInfo2D& _createImageInfo)
 {
     Rhi& rhi = GetInstance();
 
@@ -264,6 +265,26 @@ std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInf
         break;
     case GraphicAPI::VULKAN:
         return std::make_shared<Vulkan::VulkanTexture2D>(_createImageInfo);
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+}
+
+std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const PC_CORE::CreateImageInfo3D& _createImageInfo3D)
+{
+    Rhi& rhi = GetInstance();
+
+    static_assert(std::is_base_of_v<RhiTexture3D, Vulkan::VulkanTexture3D>,"");
+    
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanTexture3D>(_createImageInfo3D);
     case GraphicAPI::DX3D12:
         break;
     case GraphicAPI::COUNT:

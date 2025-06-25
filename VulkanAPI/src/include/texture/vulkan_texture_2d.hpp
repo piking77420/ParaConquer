@@ -21,7 +21,7 @@ namespace Vulkan
             return m_VulkanTexture;
         }
         
-        VulkanTexture2D(const PC_CORE::CreateImageInfo& _createTextureInfo);
+        VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _createTextureInfo);
     
         VulkanTexture2D() = default;
 

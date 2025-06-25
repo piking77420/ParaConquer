@@ -49,7 +49,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     for (auto& frameInFlight : m_gbuffers)
     {
     
-        CreateImageInfo texture_info =
+        CreateImageInfo2D texture_info =
         {
             .width = m_size.x,
             .height = m_size.y,
@@ -81,12 +81,12 @@ void PC_CORE::Gbuffers::CreateGBuffers()
         default: ;
         }
         
-        frameInFlight = std::make_shared<Texture>(texture_info);
+        frameInFlight = std::make_shared<Texture2D>(texture_info);
         gbufferType = static_cast<GbufferType>((static_cast<int>(gbufferType) + 1) % GbufferType::Count); 
     }
 }
 
-std::shared_ptr<PC_CORE::Texture> PC_CORE::Gbuffers::GetTexture(GbufferType type) const
+std::shared_ptr<PC_CORE::Texture2D> PC_CORE::Gbuffers::GetTexture(GbufferType type) const
 {
     const size_t index = static_cast<size_t>(type);
 

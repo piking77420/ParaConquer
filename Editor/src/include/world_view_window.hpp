@@ -6,7 +6,7 @@
 #include "low_renderer/descriptor_set.hpp"
 #include "rendering/camera.hpp"
 #include "rendering/rendering_typedef.h"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 #include "rendering/rendering_typedef.h"
 
 #include <vulkan/vulkan.h>
@@ -39,7 +39,7 @@ private:
 
     PC_CORE::Gbuffers m_Gbuffers;
     
-    PC_CORE::Texture m_ViewportTexture;
+    PC_CORE::Texture2D m_ViewportTexture;
 
     std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
 

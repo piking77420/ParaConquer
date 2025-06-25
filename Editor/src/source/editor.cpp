@@ -374,11 +374,11 @@ void Editor::InitTestScene()
 	m1 = std::make_shared<Material>("diamond_block_material.mat");
 	m2 = std::make_shared<Material>("emerauld_block_material.mat");
 
-	m1->m_albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
+	m1->m_albedo = ResourceManager::Get<Texture2D>("diamond_block.jpg");
 	m1->Build();
 
 
-	m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block.png");
+	m2->m_albedo = ResourceManager::Get<Texture2D>("emerauld_block.png");
 	m2->Build();
 
 	auto& level = World::GetWorld()->level;

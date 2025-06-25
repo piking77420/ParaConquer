@@ -87,7 +87,7 @@ void WorldViewWindow::Render()
 void WorldViewWindow::ResizeViewports()
 {
     
-    const PC_CORE::CreateImageInfo create_texture =
+    const PC_CORE::CreateImageInfo2D create_texture =
    {
         .width =  static_cast<int32_t>(size.x),
         .height = static_cast<int32_t>(size.y),
@@ -103,7 +103,7 @@ void WorldViewWindow::ResizeViewports()
     };
 
    // assert(false && "TO DO Handle move constructor and other case");
-    m_ViewportTexture = PC_CORE::Texture(create_texture);
+    m_ViewportTexture = PC_CORE::Texture2D(create_texture);
     
     std::vector<PC_CORE::AttachementDesriptor> attachments =
     { 

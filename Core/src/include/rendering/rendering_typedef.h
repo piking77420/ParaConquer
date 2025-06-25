@@ -4,7 +4,7 @@
 #include "gbuffers.hpp"
 #include "low_renderer/frame_buffer.hpp"
 #include "math/matrix_transformation.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 #include "low_renderer/descriptor_set.hpp"
 
 BEGIN_PCCORE

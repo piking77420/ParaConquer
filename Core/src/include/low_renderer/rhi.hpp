@@ -11,6 +11,7 @@
 #include "rhi_context.hpp"
 
 #include "rhi_index_buffer.hpp"
+#include "rhi_texture_3d.hpp"
 #include "rhi_uniform_buffer.hpp"
 #include "rhi_vertex_buffer.hpp"
 
@@ -64,7 +65,9 @@ public:
 
     PC_CORE_API static std::shared_ptr<RhiUniformBuffer> CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage);
     
-    PC_CORE_API static std::shared_ptr<RhiTexture2D> CreateTexture2D(const PC_CORE::CreateImageInfo& _createImageInfo);
+    PC_CORE_API static std::shared_ptr<RhiTexture2D> CreateTexture2D(const PC_CORE::CreateImageInfo2D& _createImageInfo);
+
+    PC_CORE_API static std::shared_ptr<RhiTexture3D> CreateTexture3D(const PC_CORE::CreateImageInfo3D& _createImageInfo3D);
 
     PC_CORE_API static std::shared_ptr<RhiSampler> CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo);
 

@@ -2,6 +2,8 @@
 
 #include "low_renderer/rhi_resource.hpp"
 
+BEGIN_PCCORE
+
 class RhiTexture : public PC_CORE::RhiResource
 {
 public:
@@ -11,3 +13,5 @@ public:
 
     virtual ~RhiTexture() = default;
 };
+
+END_PCCORE

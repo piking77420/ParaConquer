@@ -4,7 +4,7 @@
 
 #include "rendering_typedef.h"
 #include "low_renderer/frame_buffer.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 BEGIN_PCCORE
 enum GbufferType
@@ -34,10 +34,10 @@ public:
         return m_size;
     }
 
-    PC_CORE_API std::shared_ptr<Texture> GetTexture(GbufferType type) const;
+    PC_CORE_API std::shared_ptr<Texture2D> GetTexture(GbufferType type) const;
     
 private:
-    std::array<std::shared_ptr<Texture>, GbufferType::Count> m_gbuffers;
+    std::array<std::shared_ptr<Texture2D>, GbufferType::Count> m_gbuffers;
 
     std::shared_ptr<FrameBuffer> m_FrameBuffer;
 

@@ -2,7 +2,7 @@
 
 #include "core_header.hpp"
 #include "low_renderer/descriptor_set.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 BEGIN_PCCORE
 
@@ -21,7 +21,7 @@ class Material : public Resource
 public:
     MaterialType m_MaterialType = MaterialType::Opaque;
 
-    ResourceRef<Texture> m_albedo;
+    ResourceRef<Texture2D> m_albedo;
 
     PC_CORE_API IMP_DYNAMIC_REFLECT();
 

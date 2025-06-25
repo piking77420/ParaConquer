@@ -141,7 +141,7 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
+void IMGUIContext::CreateImguiVulkanViewport(Texture2D* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
 {
     const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetRhiTexture2D()->GetNativeHandle());
 

@@ -2,7 +2,7 @@
 #include <string>
 
 #include "core_header.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 BEGIN_PCCORE
 class Skybox
@@ -16,7 +16,7 @@ public:
 
     SkyBoxType skyboxType = SkyBoxType::CubeMap;
     
-    //Texture* texture = nullptr;
+    //Texture2D* texture = nullptr;
     
     PC_CORE_API void Load(std::array<std::string,6>& _maps);
     

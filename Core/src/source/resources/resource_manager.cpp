@@ -4,7 +4,7 @@
 #include "rendering/material.hpp"
 #include "rendering/sampler.hpp"
 #include "resources/mesh.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 #include "serialize/serializer.h"
 
@@ -28,9 +28,9 @@ void ResourceManager::InitPath()
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
 
-    auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
+    auto it2 = ResourceManager::Create<Texture2D>((fs::path)"assets/textures/diamond_block.jpg");
 
-	ResourceManager::Create<Texture>((fs::path)"assets/textures/emerauld_block.png");
+	ResourceManager::Create<Texture2D>((fs::path)"assets/textures/emerauld_block.png");
 
 
     
