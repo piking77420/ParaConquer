@@ -11,12 +11,13 @@
 
 #include <vulkan/vulkan.h>
 
+namespace PC_CORE
+{
+    class RhiTexture2D;
+}
+
 BEGIN_EDITOR_PCCORE
-
-
-
-
-class WorldViewWindow : public EditorWindow
+    class WorldViewWindow : public EditorWindow
 {
 public:
     
@@ -38,7 +39,7 @@ private:
 
     PC_CORE::Gbuffers m_Gbuffers;
     
-    std::shared_ptr<PC_CORE::Texture> m_ViewportTexture;
+    PC_CORE::Texture m_ViewportTexture;
 
     std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
 

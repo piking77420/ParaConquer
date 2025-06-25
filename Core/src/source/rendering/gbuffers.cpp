@@ -48,36 +48,33 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     GbufferType gbufferType = {};
     for (auto& frameInFlight : m_gbuffers)
     {
+    
         CreateImageInfo texture_info =
-            {
+        {
             .width = m_size.x,
             .height = m_size.y,
             .depth = 1,
             .mipsLevels = 1,
-            .imageType = ImageType::TYPE_2D,
             .format = RHIFormat::COUNT,
             .channel = Channel::DEFAULT,
-            .textureAttachement = TextureAttachement::Color,
-            .textureNature = TextureNature::RenderTarget,
+            .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
+            .textureMemoryUsage = TextureMemoryUsage::GPU_Only,
             .samples = 1,
-
-            .canbeSampled = false,
             .GenerateMipMap = false,
             .data = nullptr,
-            };
+        };
 
         switch (gbufferType)
         {
         case Albedo:
             texture_info.format = RHIFormat::R8G8B8A8_UNORM;
             texture_info.channel = Channel::RGBA;
-            texture_info.textureAttachement = TextureAttachement::Color;
 
             break;
         case Depth:
             texture_info.format = RHIFormat::D32_SFLOAT;
             texture_info.channel = Channel::GREY;
-            texture_info.textureAttachement = TextureAttachement::DepthStencil;
+            texture_info.textureUsage = TextureUsage::Depth;
             break;
         case Count:
             break;

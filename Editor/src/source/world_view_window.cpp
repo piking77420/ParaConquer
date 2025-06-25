@@ -1,9 +1,9 @@
 ﻿#include "world_view_window.hpp"
 
 #include "editor.hpp"
-#include "vulkan_header.h"
 #include "time/core_time.hpp"
 #include "Imgui/imgui_impl_vulkan.h"
+#include "resources/resource_manager.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 
 #undef near
@@ -59,6 +59,7 @@ void WorldViewWindow::Render()
         return;
     
     
+    
     PC_CORE::RenderingContext renderingContext;
     renderingContext.lowLevelCamera =
     {
@@ -87,29 +88,27 @@ void WorldViewWindow::ResizeViewports()
 {
     
     const PC_CORE::CreateImageInfo create_texture =
-    {
-        .width = static_cast<int32_t>(size.x),
+   {
+        .width =  static_cast<int32_t>(size.x),
         .height = static_cast<int32_t>(size.y),
         .depth = 1,
         .mipsLevels = 1,
-        .imageType = PC_CORE::ImageType::TYPE_2D,
         .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
         .channel = PC_CORE::Channel::RGBA,
-        .textureAttachement = PC_CORE::TextureAttachement::Color,
-        .textureNature = PC_CORE::TextureNature::RenderTarget,
+        .textureUsage = PC_CORE::TextureUsage::RenderTarget | PC_CORE::TextureUsage::Sampled,
+        .textureMemoryUsage = PC_CORE::TextureMemoryUsage::GPU_Only,
         .samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount(),
-        .canbeSampled = true,
         .GenerateMipMap = false,
-        .data = nullptr
+       . data = nullptr
     };
 
-    m_ViewportTexture.reset();
-    m_ViewportTexture = std::make_shared<PC_CORE::Texture>(create_texture);
+   // assert(false && "TO DO Handle move constructor and other case");
+    m_ViewportTexture = PC_CORE::Texture(create_texture);
     
     std::vector<PC_CORE::AttachementDesriptor> attachments =
     { 
         {
-            m_ViewportTexture.get(),
+            &m_ViewportTexture,
         }
     };
     
@@ -127,13 +126,15 @@ void WorldViewWindow::ResizeViewports()
 
 void WorldViewWindow::UpdateViewPortDescriptorSet()
 {   
-    m_Editor->IMGUIContext.RemoveImguiVulkanViewport(imguiDescriptorSet);
-    m_Editor->IMGUIContext.CreateImguiVulkanViewport( m_ViewportTexture.get(), imguiDescriptorSet);
     
+    m_Editor->IMGUIContext.RemoveImguiVulkanViewport(imguiDescriptorSet);
+    m_Editor->IMGUIContext.CreateImguiVulkanViewport( &m_ViewportTexture, imguiDescriptorSet);
+    
+    std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
     
     PC_CORE::ImageSamperDescriptor image_samper_descriptor =
     {
-        .sampler = PC_CORE::Rhi::GetRhiContext()->sampler.get(),
+        .sampler = sampler.get(),
         .texture = m_Gbuffers.GetTexture(PC_CORE::GbufferType::Albedo).get()
     };
 

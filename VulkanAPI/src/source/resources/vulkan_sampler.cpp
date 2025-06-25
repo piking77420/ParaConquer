@@ -4,17 +4,17 @@
 #include "vulkan_device.hpp"
 #include "low_renderer/rhi.hpp"
 
-Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) : Sampler(_samplerCreateInfo)
+Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) : RhiSampler(_samplerCreateInfo)
 {
     const float maxAnisotopie = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxSamplerAnisotropy();
     
     vk::SamplerCreateInfo samplerInfo{};
     samplerInfo.sType = vk::StructureType::eSamplerCreateInfo;
-    samplerInfo.magFilter = RHIToVulkanFilter(m_MagFilter);
-    samplerInfo.minFilter = RHIToVulkanFilter(m_MinFilter);
-    samplerInfo.addressModeU = RHIToVulkanSamplerAddressMode(m_U);
-    samplerInfo.addressModeV = RHIToVulkanSamplerAddressMode(m_V);
-    samplerInfo.addressModeW = RHIToVulkanSamplerAddressMode(m_W);
+    samplerInfo.magFilter = RHIToVulkanFilter(magFilter);
+    samplerInfo.minFilter = RHIToVulkanFilter(minFilter);
+    samplerInfo.addressModeU = RHIToVulkanSamplerAddressMode(samU);
+    samplerInfo.addressModeV = RHIToVulkanSamplerAddressMode(samV);
+    samplerInfo.addressModeW = RHIToVulkanSamplerAddressMode(samW);
     if (maxAnisotopie > 0.f)
     {
         samplerInfo.anisotropyEnable = VK_TRUE;

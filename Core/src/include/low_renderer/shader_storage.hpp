@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+/*
 #include "gpu_buffer.hpp"
 
 BEGIN_PCCORE
@@ -20,3 +21,4 @@ private:
 };
 
 END_PCCORE
+*/

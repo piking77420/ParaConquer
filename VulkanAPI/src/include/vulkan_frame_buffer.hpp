@@ -23,6 +23,7 @@ namespace Vulkan
         VULKAN_API vk::Framebuffer GetFramebuffer() const;
         
     private:
+
         std::array<vk::Framebuffer, MAX_FRAMES_IN_FLIGHT> m_FrameBuffers;
 
         bool m_OwnBySwapChain = false;

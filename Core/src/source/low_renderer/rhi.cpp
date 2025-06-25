@@ -5,11 +5,13 @@
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
-#include "handles/vulkan_buffer_handle.hpp"
-#include "handles/vulkan_image_handle.hpp"
+#include "buffer/vulkan_index_buffer.hpp"
+#include "buffer/vulkan_uniform_buffer.hpp"
+#include "buffer/vulkan_vertex_buffer.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_sampler.hpp"
 #include "resources/vulkan_shader_program.hpp"
+#include "texture/vulkan_texture_2d.hpp"
 
 using namespace PC_CORE;
 
@@ -21,10 +23,6 @@ Rhi::Rhi(Rhi&& other) noexcept
 
     m_GraphicsApi = other.m_GraphicsApi;
     other.m_GraphicsApi = GraphicAPI::NONE;
-
-    std::exchange(m_GpuResource, other.m_GpuResource);
-    
-    std::exchange(m_GPUHandleIdStack, other.m_GPUHandleIdStack);
 
     m_Instance = this;
 
@@ -38,13 +36,7 @@ Rhi& Rhi::operator=(Rhi&& other) noexcept
     m_GraphicsApi = other.m_GraphicsApi;
     other.m_GraphicsApi = GraphicAPI::NONE;
 
-
-    std::exchange(m_GpuResource, other.m_GpuResource);
-
-    std::exchange(m_GPUHandleIdStack, other.m_GPUHandleIdStack);
-
     m_Instance = this;
-
 
     return *this;
 }
@@ -63,31 +55,6 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_
     m_Instance = this;
    
     Init(_createInfo);
-    
-    const SamplerCreateInfo createInfo =
-          {
-        .magFilter = Filter::LINEAR,
-        .minFilter = Filter::LINEAR,
-        .u = SamplerAddressMode::REPEAT,
-        .v = SamplerAddressMode::REPEAT,
-        .w = SamplerAddressMode::REPEAT
-        };
-
-    if (m_GraphicsApi == GraphicAPI::VULKAN)
-    {
-        m_RhiContext->sampler = std::make_unique<Vulkan::VulkanSampler>(createInfo);
-    }
-    else
-    {
-        PC_LOGERROR("DX12 NOT SUPPORTED YET")
-    }
-
-    // init id stack
-    for (GPUHandleID i = 0; i < MAX_ID; i++)
-    {
-        m_GPUHandleIdStack.push(i);
-    }
-    
 }
 
 Rhi::~Rhi()
@@ -95,19 +62,7 @@ Rhi::~Rhi()
     if (m_Instance != nullptr && m_RhiContext != nullptr)
     {
         PC_LOG("Rhi Deinitialized");
-
-        for (auto& it : m_GpuResource)
-        {
-           
-            
-            if (it.second.use_count() != 1)
-            {
-                PC_LOGERROR("While free all gpuresource There is still a pointer pointing to resource");
-            }
-
-            it.second.reset();
-        }
-
+        
         delete m_RhiContext;
         m_RhiContext = nullptr;
 
@@ -242,111 +197,100 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
     }
 }
 
-GPUHandleID Rhi::CreateBuffer(const GPUBufferCreateInfo& _bufferCreateInfo)
+std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format,
+    BufferMemoryUsage _usage)
 {
-    std::shared_ptr<GPUResource> bufferPtr = std::make_shared<Vulkan::VulkanBufferHandle>(_bufferCreateInfo);
-    
+    Rhi& rhi = GetInstance();
 
-    GPUHandleID id = CreateGpuHandle();
-    m_Instance->m_GpuResource.insert({id,bufferPtr});
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanIndexBuffer>(_data, _sizeInByte, _format, _usage);
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::NONE:
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
 
-    return id;
+    return nullptr;
 }
 
-bool Rhi::DestroyGpuHandle(GPUHandleID _gpuHandleID)
+std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage)
 {
-    if (_gpuHandleID == GPU_INVALID_ID)
-    {
-        PC_LOGERROR("Invalid GPUHandleID");
-        return false;
-    }
-    
-    auto it = m_Instance->m_GpuResource.find(_gpuHandleID);
-    
-    if (it == m_Instance->m_GpuResource.end())
-    {
-        PC_LOGERROR("Gpu handle match no gpu resource while try destroy");
-        return false;
-    }
-    
-    if (it->second.use_count() != 1)
-    {
-        PC_LOGERROR("Delect a gpu resourece while multiple pointer pointing on it");
-        it->second.reset();
-    }
-    else
-    {
-        it->second.reset();
-    }
-  
-    m_Instance->m_GPUHandleIdStack.push(_gpuHandleID);
-    m_Instance->m_GpuResource.erase(_gpuHandleID);
+    Rhi& rhi = GetInstance();
 
-    return true;
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanVertexBuffer>(_data, _sizeInByte, _usage);
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::NONE:
+    case GraphicAPI::COUNT:
+    default: ;
+    }
 }
 
-void Rhi::MapBuffer(GPUHandleID _gPUHandleID, void** _ptr)
+std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage)
 {
-    std::shared_ptr<GPUResource> resource = GetGpuResource(_gPUHandleID);
-    
-    if (resource == nullptr)
-        return;
+    Rhi& rhi = GetInstance();
 
-    switch (m_Instance->m_GraphicsApi)
+    switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::NONE:
         break;
     case GraphicAPI::VULKAN:
-        std::reinterpret_pointer_cast<Vulkan::VulkanBufferHandle>(resource)->MapBuffer(_ptr);
-        break;
+        return std::make_shared<Vulkan::VulkanUniformBuffer>(_data, _sizeInByte, _usage);
     case GraphicAPI::DX3D12:
         break;
     case GraphicAPI::COUNT:
         break;
+    default: ;
     }
-    
 }
 
-void Rhi::UnMapBuffer(GPUHandleID _gPUHandleID)
-{
-    std::shared_ptr<GPUResource> resource = GetGpuResource(_gPUHandleID);
-    
-    if (resource == nullptr)
-        return;
 
-    switch (m_Instance->m_GraphicsApi)
+std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInfo& _createImageInfo)
+{
+    Rhi& rhi = GetInstance();
+
+    static_assert(std::is_base_of_v<RhiTexture2D, Vulkan::VulkanTexture2D>,"");
+    
+    switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::NONE:
         break;
     case GraphicAPI::VULKAN:
-        std::reinterpret_pointer_cast<Vulkan::VulkanBufferHandle>(resource)->UnMapBuffer();
-        break;
+        return std::make_shared<Vulkan::VulkanTexture2D>(_createImageInfo);
     case GraphicAPI::DX3D12:
         break;
     case GraphicAPI::COUNT:
         break;
+    default: ;
     }
-    
-  
 }
 
-GPUHandleID Rhi::CreateImage(const CreateImageInfo& _createImage)
+std::shared_ptr<RhiSampler> Rhi::CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo)
 {
+    Rhi& rhi = GetInstance();
+
+    static_assert(std::is_base_of_v<RhiSampler, Vulkan::VulkanSampler>,"");
     
-    std::shared_ptr<GPUResource> bufferPtr = std::make_shared<Vulkan::VulkanImageHandle>(_createImage);
-  
-    GPUHandleID id = CreateGpuHandle();
-    m_Instance->m_GpuResource.insert({id,bufferPtr});
-
-    return id;
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanSampler>(_samplerCreateInfo);
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
 }
-
-std::shared_ptr<GPUResource> Rhi::GetResourceFromHandle(GPUHandleID _gpuHandleId)
-{
-    auto it = m_Instance->m_GpuResource.find(_gpuHandleId);
-    return it != m_Instance->m_GpuResource.end() ? it->second : nullptr;
-}
-
 
 RhiContext* Rhi::GetRhiContext()
 {
@@ -402,31 +346,4 @@ void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)
 
 void Rhi::DX12Initialize(const RhiContextCreateInfo& _createInfo)
 {
-}
-
-GPUHandleID Rhi::CreateGpuHandle()
-{
-    if (m_Instance->m_GPUHandleIdStack.empty())
-    {
-        PC_LOGERROR("Max GPUHandle has been reach");
-        return GPU_INVALID_ID;
-    }
-    
-    GPUHandleID outHandleId = m_Instance->m_GPUHandleIdStack.top();
-    m_Instance->m_GPUHandleIdStack.pop();
-    return outHandleId;
-}
-
-std::shared_ptr<GPUResource> Rhi::GetGpuResource(GPUHandleID _gpuHandleId)
-{
-    assert(_gpuHandleId != GPU_INVALID_ID && "Invalid GPUHandleID");
-
-    auto it = m_Instance->m_GpuResource.find(_gpuHandleId);
-    if (it == m_Instance->m_GpuResource.end())
-    {
-        PC_LOGERROR("Cannot map GPU buffer");
-        return nullptr;
-    }
-
-    return it->second;
 }

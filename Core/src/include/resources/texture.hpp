@@ -2,36 +2,35 @@
 
 #include "core_header.hpp"
 #include "resource.hpp"
-#include "low_renderer/gpu_resource.hpp"
+#include "low_renderer/rhi_texure_2d.hpp"
 #include "math/toolbox_typedef.hpp"
 #include "reflection/reflector.hpp"
 #include "low_renderer/rhi_typedef.h"
+#include "rendering/buffer/gpu_buffer.hpp"
 
 
 BEGIN_PCCORE
-
-
-class Texture : public Resource
+    class Texture : public Resource , public IGpuResource
 {
 public:
-
+    
+    std::shared_ptr<RhiResource> GetRhiHandle() const override
+    {
+        return m_Texture2D;
+    }
+    
+    std::shared_ptr<RhiTexture2D> GetRhiTexture2D()
+    {
+        return m_Texture2D;
+    }
+    
     PC_CORE_API IMP_DYNAMIC_REFLECT()
+    
+    DEFAULT_COPY_MOVE_OPERATIONS(Texture)
     
     PC_CORE_API void Build() override;
     
-    PC_CORE_API void Load(const std::array<std::string,6>& _maps);
-
-    PC_CORE_API GPUHandleID GetGPUHandleID(int _frameIndex);
-
     PC_CORE_API RHIFormat GetRHIFormat() const;
-
-    PC_CORE_API Texture& operator=(const Texture& other) noexcept;
-
-    PC_CORE_API Texture& operator=(Texture&& other) noexcept;
-
-    PC_CORE_API Texture(const Texture& other) noexcept;
-
-    PC_CORE_API Texture(Texture&& other) noexcept;
     
     PC_CORE_API Texture();
 
@@ -44,12 +43,10 @@ public:
 private:
     int m_TextureChannel = -1;
 
-    std::array<GPUHandleID, MAX_FRAMES_IN_FLIGHT> m_TextureHandles;
-
+    std::shared_ptr<RhiTexture2D> m_Texture2D;
+    
     RHIFormat m_Format;
-
-    PC_CORE_API void CreateFromCreateInfo(const CreateImageInfo& createTextureInfo);
-
+    
     PC_CORE_API void LoadFromFile(const fs::path& _path);
 };
 

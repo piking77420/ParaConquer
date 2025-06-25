@@ -48,48 +48,117 @@ vk::ImageView Vulkan::CreateImageView(vk::Device _device, vk::Image _image, vk::
     return imageView;
 }
 
-void Vulkan::GetTextureUsage(const PC_CORE::CreateImageInfo& _createTextureInfo, VmaMemoryUsage* _memoryUsage,
-    vk::ImageUsageFlags* _usage, vk::ImageLayout* _finalLoayout, vk::ImageAspectFlags* _imageAspectFlag)
+VmaMemoryUsage Vulkan::GetTextureMemoryUsage(PC_CORE::TextureMemoryUsage textureUsage)
 {
-    *_memoryUsage = VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY;
+    using namespace PC_CORE;
 
-    switch (_createTextureInfo.textureNature)
+    switch (textureUsage)
     {
-    case PC_CORE::TextureNature::Default:
-        *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
-        *_finalLoayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        *_imageAspectFlag = vk::ImageAspectFlagBits::eColor;
-        break;
-    case PC_CORE::TextureNature::RenderTarget:
-        switch (_createTextureInfo.textureAttachement)
-        {
-    case PC_CORE::TextureAttachement::None:
-            break;
-    case PC_CORE::TextureAttachement::Color:
-            *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eColorAttachment;
-            *_finalLoayout = vk::ImageLayout::eColorAttachmentOptimal;
-            *_imageAspectFlag = vk::ImageAspectFlagBits::eColor;
+    case TextureMemoryUsage::GPU_Only:
+        return VMA_MEMORY_USAGE_GPU_ONLY;
 
-            break;
-    case PC_CORE::TextureAttachement::DepthStencil:
-            *_usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eDepthStencilAttachment;
-            *_finalLoayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-            *_imageAspectFlag = vk::ImageAspectFlagBits::eDepth;
-            break;
-        }
-        
-        break;
+    case TextureMemoryUsage::CPU_To_GPU:
+        return VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+    case TextureMemoryUsage::GPU_To_CPU:
+        return VMA_MEMORY_USAGE_GPU_TO_CPU;
+
+    default:
+        assert(false && "Unknown TextureMemoryUsage");
+        return VMA_MEMORY_USAGE_UNKNOWN;
     }
-
-    if (_createTextureInfo.canbeSampled)
-        *_usage |= vk::ImageUsageFlagBits::eSampled;
-
-    if (_createTextureInfo.GenerateMipMap)
-        *_usage |= vk::ImageUsageFlagBits::eTransferSrc;
 }
 
-void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image, vk::ImageAspectFlags aspectFlag,
-                            vk::Format format, int32_t imageWidth, int32_t imageHeight, uint32_t _mipLevel)
+
+vk::ImageUsageFlags Vulkan::GetMemoryPropertyFlags(PC_CORE::TextureUsage usage)
+{
+    using namespace PC_CORE;
+
+    VkImageUsageFlags flags = 0;
+
+    if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
+        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    if ( ((usage & TextureUsage::Depth) == TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == TextureUsage::Stencil) ) 
+        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
+        flags |= VK_IMAGE_USAGE_STORAGE_BIT;
+
+    if ((usage & TextureUsage::TransferSrc) == TextureUsage::TransferSrc)
+        flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    if ((usage & TextureUsage::TransferDst) == TextureUsage::TransferDst)
+        flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    // Fallback/default
+    if (flags == 0)
+        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    return static_cast<vk::ImageUsageFlags>(flags);
+}
+
+vk::ImageAspectFlags Vulkan::GetImageAspectFlags(PC_CORE::TextureUsage usage)
+{
+    using namespace PC_CORE;
+
+    vk::ImageAspectFlags flags = {};
+
+    if ((usage & TextureUsage::Depth) == TextureUsage::Depth)
+    {
+        flags |= vk::ImageAspectFlagBits::eDepth;
+    }
+    else if ((usage & TextureUsage::Stencil) == TextureUsage::Stencil)
+    {
+        flags |= vk::ImageAspectFlagBits::eStencil;
+    }
+    else 
+    {
+        flags |= vk::ImageAspectFlagBits::eColor;
+    }
+
+ 
+
+    return flags;
+}
+
+vk::ImageLayout Vulkan::GetImageLayout(PC_CORE::TextureUsage usage)
+{
+    using namespace PC_CORE;
+
+    if ((usage & TextureUsage::Depth) == TextureUsage::Depth && (usage & TextureUsage::Stencil) == TextureUsage::Stencil)
+        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+    if ((usage & TextureUsage::Depth) == TextureUsage::Depth)
+        return vk::ImageLayout::eDepthAttachmentOptimal;
+
+    if ((usage & TextureUsage::Depth) == TextureUsage::Stencil)
+        return vk::ImageLayout::eStencilAttachmentOptimal;
+
+    if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+        return vk::ImageLayout::eColorAttachmentOptimal;
+
+    if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
+        return vk::ImageLayout::eGeneral;
+
+    if ((usage & TextureUsage::TransferDst) == TextureUsage::TransferDst)
+        return vk::ImageLayout::eTransferDstOptimal;
+
+    if ((usage & TextureUsage::TransferSrc) == TextureUsage::TransferSrc)
+        return vk::ImageLayout::eTransferSrcOptimal;
+
+    if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+
+    // Fallback default
+    return vk::ImageLayout::eUndefined;
+}
+
+void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image,
+                           int32_t imageWidth, int32_t imageHeight, vk::Format format,  uint32_t _mipLevel, vk::ImageAspectFlags aspectFlag, vk::ImageLayout _imageLayout)
 {
     //VkFormatProperties formatProperties;
      //vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
@@ -172,4 +241,23 @@ void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image, v
          0, nullptr,
          1, &barrier);
  
+}
+
+int Vulkan::GetMultiplayer(PC_CORE::Channel _channel)
+{
+    switch (_channel)
+    {
+    case PC_CORE::Channel::DEFAULT:
+        return 1;
+    case PC_CORE::Channel::GREY:
+        return 1;
+    case PC_CORE::Channel::ALPHA:
+        return 1;
+    case PC_CORE::Channel::RGB:
+        return 3;
+    case PC_CORE::Channel::RGBA:
+        return 4;
+    default:
+        return 0; // or throw an exception if it's an invalid enum
+    }
 }

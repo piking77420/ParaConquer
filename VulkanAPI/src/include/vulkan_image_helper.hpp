@@ -16,8 +16,17 @@ namespace Vulkan
     VULKAN_API   vk::ImageView CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
         vk::Format _format, vk::ImageAspectFlags imageAspect , uint32_t _mipLevels);
 
-    VULKAN_API  void GetTextureUsage(const PC_CORE::CreateImageInfo& _createTextureInfo, VmaMemoryUsage* _memoryUsage, vk::ImageUsageFlags* _usage,
-        vk::ImageLayout* _finalLoayout, vk::ImageAspectFlags* _imageAspectFlag);
-    
-    VULKAN_API  void GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image, vk::ImageAspectFlags aspectFlag , vk::Format format, int32_t imageWidth, int32_t imageHeight, uint32_t _mipLevel);
+    VULKAN_API  VmaMemoryUsage GetTextureMemoryUsage(PC_CORE::TextureMemoryUsage _textureMemoryUsage);
+
+    VULKAN_API  vk::ImageUsageFlags GetMemoryPropertyFlags(PC_CORE::TextureUsage _textureUsage);
+
+    VULKAN_API vk::ImageAspectFlags GetImageAspectFlags(PC_CORE::TextureUsage _textureUsage);
+
+    VULKAN_API vk::ImageLayout GetImageLayout(PC_CORE::TextureUsage _textureUsage);
+
+
+    VULKAN_API  void GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image,
+        int32_t imageWidth, int32_t imageHeight, vk::Format format, uint32_t _mipLevel, vk::ImageAspectFlags aspectFlag, vk::ImageLayout _imageLayout);
+
+    VULKAN_API int GetMultiplayer(PC_CORE::Channel _channel);
 }

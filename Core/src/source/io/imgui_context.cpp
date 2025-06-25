@@ -12,8 +12,9 @@
 #include "vulkan_device.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "vulkan_swap_chain.hpp"
-#include "handles/vulkan_image_handle.hpp"
+#include "resources/resource_manager.hpp"
 #include "resources/vulkan_sampler.hpp"
+#include "texture/vulkan_texture_2d.hpp"
 
 
 namespace Vulkan
@@ -142,16 +143,19 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
 
 void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
 {
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetRhiTexture2D()->GetNativeHandle());
+
+    std::shared_ptr<Sampler> sampler = ResourceManager::Get<Sampler>("LinearRepeat");
+    const VkSampler* vkSamplers = static_cast<const VkSampler*>(sampler->GetRhiHandle()->GetNativeHandle());
+    
+    if (vkSamplers == nullptr)
     {
-        GPUHandleID id = _texture->GetGPUHandleID(i);
-        
-        std::shared_ptr<Vulkan::VulkanImageHandle> handle = std::reinterpret_pointer_cast<Vulkan::VulkanImageHandle>(
-            Rhi::GetResourceFromHandle(id));
-        VkSampler sampler = std::reinterpret_pointer_cast<Vulkan::VulkanSampler>(Rhi::GetRhiContext()->sampler)->
-            GetSampler();
-        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(sampler, handle->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        PC_LOGERROR("Vulkan sampler is null");
+        return;
     }
+    for (int i = 0; i < textureAndAlloc->size(); i++)
+        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, textureAndAlloc->at(i).imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    
 }
 
 void IMGUIContext::RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)

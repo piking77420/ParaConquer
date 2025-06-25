@@ -6,7 +6,7 @@
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
-#include "handles/vulkan_buffer_handle.hpp"
+#include "buffer/vulkan_buffer.hpp"
 #include "low_renderer/rhi.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_shader_program.hpp"
@@ -200,33 +200,25 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount), static_cast<uint32_t>(_instanceCount), static_cast<uint32_t>(_firstIndex), _vertexOffset, static_cast<uint32_t>(_firstInstance));
 }
 
-void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding,
+void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding,
                                                  uint32_t _bindingCount)
 {
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
-
-    const PC_CORE::GPUHandleID gPUHandleID = _vertexBuffer.bufferHandles[frameIndex];
     
-    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(PC_CORE::Rhi::GetResourceFromHandle(gPUHandleID)); 
-    vk::Buffer buffer = vulkanBufferHandle->GetBuffer();
+    const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_vertexBuffer.GetNativeHandle());
+    
     vk::DeviceSize offsets[] = {0};
     
-    
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindVertexBuffers(_firstBinding, _bindingCount, &buffer, offsets);
+    m_CommandBuffer[frameIndex].bindVertexBuffers(_firstBinding, _bindingCount, &bufferAndAllocs->at(frameIndex).buffer, offsets);
 }
 
 void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset)
 {
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
-
-
-    const PC_CORE::GPUHandleID gPUHandleID = _indexBuffer.bufferHandles[frameIndex];
-    std::shared_ptr<Vulkan::VulkanBufferHandle> vulkanBufferHandle = std::reinterpret_pointer_cast<VulkanBufferHandle>(PC_CORE::Rhi::GetResourceFromHandle(gPUHandleID));     
-    vk::Buffer buffer = vulkanBufferHandle->GetBuffer();
-
+    const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
     const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());
     
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindIndexBuffer(buffer, static_cast<uint32_t>(_offset) , indexType);
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset) , indexType);
 }
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const

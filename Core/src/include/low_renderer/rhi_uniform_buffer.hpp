@@ -8,12 +8,20 @@ BEGIN_PCCORE
 class RhiUniformBuffer : public RhiBuffer
 {
 public:
+    
+    const void* GetNativeHandle() const override = 0;
+    
+    void MapData(void** _ptr) override
+    {
+        
+    }
+    
+    void UnmapData() override
+    {
+        
+    }
 
     DEFAULT_COPY_MOVE_OPERATIONS(RhiUniformBuffer)
-
-    PC_CORE_API virtual void Update(void* _data, size_t _size) = 0;
-
-    PC_CORE_API RhiUniformBuffer(const GPUBufferCreateInfo& _createInfo);
     
     PC_CORE_API RhiUniformBuffer() = default;
     

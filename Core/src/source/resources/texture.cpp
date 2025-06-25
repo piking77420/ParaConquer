@@ -9,41 +9,6 @@ using namespace PC_CORE;
 
 
 
-Texture::Texture(const Texture& other) noexcept
-{
-    std::exchange(m_TextureChannel, other.m_TextureChannel);
-
-    std::exchange(m_TextureHandles, other.m_TextureHandles);
-
-}
-
-Texture::Texture(Texture&& other) noexcept
-{
-    std::swap(m_TextureChannel, other.m_TextureChannel);
-    std::swap(m_TextureHandles, other.m_TextureHandles);
-
-    for (size_t i = 0; i < other.m_TextureHandles.size(); i++)
-    {
-        other.m_TextureHandles[i] = GPU_INVALID_ID;
-    }
-
-}
-
-PC_CORE_API Texture& Texture::operator=(const Texture& other) noexcept
-{
-    std::exchange(m_TextureChannel, other.m_TextureChannel);
-
-    std::exchange(m_TextureHandles, other.m_TextureHandles);
-   
-    return *this;
-}
-
-PC_CORE_API Texture& Texture::operator=(Texture&& other) noexcept
-{
-    std::swap(m_TextureChannel, other.m_TextureChannel);
-    std::swap(m_TextureHandles, other.m_TextureHandles);
-    return *this;
-}
 
 void Texture::Build()
 {
@@ -55,10 +20,6 @@ void Texture::Build()
 Texture::Texture()
 {
     DYNAMIC_REFLECT_INIT
-    
-    for (size_t i = 0; i < m_TextureHandles.size(); i++)
-        m_TextureHandles[i] = GPU_INVALID_ID;
-    
 }
 
 Texture::Texture(const CreateImageInfo& _createTextureInfo)
@@ -67,10 +28,7 @@ Texture::Texture(const CreateImageInfo& _createTextureInfo)
     
     m_Format = _createTextureInfo.format;
     
-    for (auto& texture : m_TextureHandles)
-    {
-        texture = Rhi::CreateImage(_createTextureInfo);
-    }
+    m_Texture2D = Rhi::CreateTexture2D(_createTextureInfo);
     
 }
 
@@ -83,21 +41,9 @@ Texture::Texture(const fs::path& _path) : Resource(_path)
 
 Texture::~Texture()
 {
-    for (auto& texture : m_TextureHandles)
-    {
-        if (texture == GPU_INVALID_ID)
-            continue;
-
-        Rhi::DestroyGpuHandle(texture);
-        texture = GPU_INVALID_ID;
-    }
-   
 }
 
-void Texture::CreateFromCreateInfo(const CreateImageInfo& createTextureInfo)
-{
-    
-}
+
 
 void Texture::LoadFromFile(const fs::path& _path)
 {
@@ -113,40 +59,28 @@ void Texture::LoadFromFile(const fs::path& _path)
         throw std::runtime_error("failed to load texture image!");
     }
 
+
+    
     const CreateImageInfo createTextureInfo =
     {
         .width = width,
         .height = height,
         .depth = 1,
         .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
-        .imageType = ImageType::TYPE_2D,
         .format = RHIFormat::R8G8B8A8_SRGB,
         .channel = Channel::RGBA,
-        .textureAttachement = TextureAttachement::None,
-        .textureNature = TextureNature::Default,
+        .textureUsage = TextureUsage::Sampled | TextureUsage::TransferDst,
+        .textureMemoryUsage = TextureMemoryUsage::GPU_Only,
         .samples = 1,
-        .canbeSampled = true,
         .GenerateMipMap = true,
         .data = pixels
     };
 
-    for (auto& texture : m_TextureHandles)
-    {
-        texture = Rhi::CreateImage(createTextureInfo);
-    }
+   m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);
     
     FileLoader::FreeData(pixels);
 }
 
-void Texture::Load(const std::array<std::string, 6>& _maps)
-{
-  
-}
-
-GPUHandleID Texture::GetGPUHandleID(int _frameIndex)
-{
-    return m_TextureHandles[_frameIndex];
-}
 
 RHIFormat Texture::GetRHIFormat() const
 {

@@ -367,11 +367,29 @@ BEGIN_PCCORE
 
 #pragma endregion
 
-enum class IndexFormat
+
+enum struct BufferMemoryUsage
 {
-    Uiunt8,
-    Uint16,
-    Uint32
+    Static,   // Not modified over its lifetime
+    Mutable,  // Occasionally modified (e.g., once per frame)
+    Dynamic,  // Frequently modified (e.g., multiple times per frame)
+
+    Count     // Total enum values
+};
+enum struct TextureMemoryUsage
+{
+    GPU_Only,       // Device-local
+    CPU_To_GPU,     // Host-visible (upload)
+    GPU_To_CPU,     // Host-readable (readback)
+    Count // Total enum values
+};
+
+
+enum class IndexFormat : int
+{
+    Uiunt8 = 1,
+    Uint16 = 2,
+    Uint32 = 4
 };
 
 #pragma region Image
@@ -385,19 +403,6 @@ enum class IndexFormat
         RGB = 3,
         RGBA = 4
     };
-
-
-    enum class ImageType
-    {
-        TYPE_1D,
-        TYPE_2D,
-        TYPE_e3D,
-        TYPE_CUBE,
-        TYPE_1DARRAY,
-        TYPE_2DARRAY,
-        TYPE_CUBEARRAY
-    };
-
 
     enum class ComponentSwizzle
     {
@@ -427,12 +432,28 @@ enum class IndexFormat
         DepthStencil = 2,
     };
 
-    enum class TextureNature
+    enum class TextureUsage : uint32_t
     {
-        Default = 0,
-        RenderTarget,
+        None = 0,
+        Sampled = 1 << 0,  // Shader-readable (SRV)
+        RenderTarget = 1 << 1,  // Color attachment (ex: RGBA render target)
+        Depth = 1 << 2,  // Depth attachment
+        Stencil = 1 << 3,  // Stencil attachment
+        Storage = 1 << 4,  // Shader-writable (UAV)
+        TransferSrc = 1 << 5,  // Can be used as source in copy
+        TransferDst = 1 << 6,  // Can be used as destination in copy
     };
 
+    inline TextureUsage operator|(TextureUsage a, TextureUsage b) {
+        return static_cast<TextureUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+    }
+    inline TextureUsage operator&(TextureUsage a, TextureUsage b) {
+        return static_cast<TextureUsage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+    }
+
+    inline bool HasUsage(TextureUsage usage, TextureUsage flag) {
+        return (static_cast<uint32_t>(usage) & static_cast<uint32_t>(flag)) != 0;
+    }
 
     struct CreateImageInfo
     {
@@ -440,14 +461,12 @@ enum class IndexFormat
         int32_t height;
         int32_t depth;
         uint32_t mipsLevels;
-        ImageType imageType;
         RHIFormat format;
         Channel channel;
-        TextureAttachement textureAttachement;
-        TextureNature textureNature;
+        TextureUsage textureUsage;
+        TextureMemoryUsage textureMemoryUsage;
 
         uint32_t samples;
-        bool canbeSampled = false;
         bool GenerateMipMap = false;
         void* data;
     };
@@ -519,19 +538,6 @@ enum class BufferUsage
     Count
 };
 
-// TO DO
-enum struct MemoryUsageType
-{
-    // not modified over life time
-    Static,
-    // can be mofied over time but not as mush as dynamic 
-    Mutable,
-    // can be modified over time
-    Dynamic,
-
-    Count,
-};
-
 inline const char* ToString(BufferUsage e)
 {
         switch (e)
@@ -552,14 +558,6 @@ inline const char* ToString(BufferUsage e)
         default: return "unknown";
         }
 }
-
-struct GPUBufferCreateInfo
-{
-    const void* data;
-    size_t dataSize;
-    BufferUsage usage;
-    MemoryUsageType memoryUsage;
-};
 
 enum struct LoadOperation
 {

@@ -2,15 +2,17 @@
 
 #include "rhi_vulkan_parser.hpp"
 #include "vulkan_device.hpp"
-#include "handles/vulkan_buffer_handle.hpp"
-#include "handles/vulkan_image_handle.hpp"
-#include "low_renderer/gpu_buffer.hpp"
+#include "buffer/vulkan_buffer.hpp"
+
+
 #include "low_renderer/rhi.hpp"
 #include "low_renderer/rhi_uniform_buffer.hpp"
 #include "resources/vulkan_sampler.hpp"
+#include "texture/vulkan_texture.hpp"
 
 void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& _shaderProgramDescriptorSet)
 {
+   
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->
         GetDevice();
 
@@ -48,13 +50,11 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
             {
                 
-                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).
-                    uniformBufferDescriptor;
-                const PC_CORE::GPUHandleID id = uniformBufferDescriptor->buffer->bufferHandles[f];
+                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).uniformBufferDescriptor;
                 
-                VulkanBufferHandle* vulkanBufferHandle = reinterpret_cast<VulkanBufferHandle*>(PC_CORE::Rhi::GetResourceFromHandle(id).get());
+                const std::vector<BufferAndAlloc>* textureAndAlloc = static_cast<const std::vector<BufferAndAlloc>*>(uniformBufferDescriptor->buffer->GetRhiHandle()->GetNativeHandle());
 
-                descriptorBufferInfos[bufferDescriptorCount].buffer = vulkanBufferHandle->GetBuffer();
+                descriptorBufferInfos[bufferDescriptorCount].buffer = textureAndAlloc->at(f).buffer;
                 descriptorBufferInfos[bufferDescriptorCount].offset = 0;
                 descriptorBufferInfos[bufferDescriptorCount].range = VK_WHOLE_SIZE;
                 bufferDescriptorCount++;
@@ -64,17 +64,12 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 PC_CORE::ImageSamperDescriptor* imageSamplerDescriptor = _shaderProgramDescriptorSet.at(i).
                     imageSamperDescriptor;
 
-                PC_CORE::Texture* texturePtr = imageSamplerDescriptor->texture;
-                PC_CORE::Sampler* samplerHandle = imageSamplerDescriptor->sampler;
-
-                PC_CORE::GPUHandleID id = texturePtr->GetGPUHandleID(static_cast<int>(f));
-
-                VulkanImageHandle* vulkanImageHandle = reinterpret_cast<VulkanImageHandle*>(PC_CORE::Rhi::GetResourceFromHandle(id).get());
-                VulkanSampler* vulkanSampler = reinterpret_cast<VulkanSampler*>(samplerHandle);
-
+                const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture->GetRhiHandle()->GetNativeHandle());
+                const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(imageSamplerDescriptor->sampler->GetRhiHandle()->GetNativeHandle());
+                
                 descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-                descriptorImageInfos[imageDescriptorCount].imageView = vulkanImageHandle->GetImageView();
-                descriptorImageInfos[imageDescriptorCount].sampler = vulkanSampler->GetSampler();
+                descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
+                descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
                 imageDescriptorCount++;
             }
 

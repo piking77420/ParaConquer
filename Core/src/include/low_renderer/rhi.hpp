@@ -3,15 +3,22 @@
 #include <memory>
 #include <stack>
 
-#include "command_list.hpp"
 #include "core_header.hpp"
-#include "rhi_context.hpp"
 #include "rhi_typedef.h"
+
+#include "command_list.hpp"
 #include "io/window.hpp"
+#include "rhi_context.hpp"
+
+#include "rhi_index_buffer.hpp"
+#include "rhi_uniform_buffer.hpp"
+#include "rhi_vertex_buffer.hpp"
+
 #include "resources/shader_program.h"
+#include "rhi_texure_2d.hpp"
 
 BEGIN_PCCORE
- struct RenderHardwareInterfaceCreateInfo
+    struct RenderHardwareInterfaceCreateInfo
 {
     PC_CORE::GraphicAPI GraphicsAPI;
     Window* window;
@@ -51,18 +58,16 @@ public:
 
     PC_CORE_API static std::shared_ptr<FrameBuffer> CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo);
 
-    PC_CORE_API static GPUHandleID CreateBuffer(const GPUBufferCreateInfo& _bufferCreateInfo);
+    PC_CORE_API static std::shared_ptr<RhiIndexBuffer> CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, BufferMemoryUsage _usage); 
 
-    PC_CORE_API static bool DestroyGpuHandle(GPUHandleID _gPUHandleID);
+    PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage); 
 
-    PC_CORE_API static void MapBuffer(GPUHandleID _gPUHandleID, void** _ptr);
-
-    PC_CORE_API static void UnMapBuffer(GPUHandleID _gPUHandleID);
-
-    PC_CORE_API static GPUHandleID CreateImage(const CreateImageInfo& _createImage);
-
-    PC_CORE_API static std::shared_ptr<GPUResource> GetResourceFromHandle(GPUHandleID _gpuHandleId);
+    PC_CORE_API static std::shared_ptr<RhiUniformBuffer> CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage);
     
+    PC_CORE_API static std::shared_ptr<RhiTexture2D> CreateTexture2D(const PC_CORE::CreateImageInfo& _createImageInfo);
+
+    PC_CORE_API static std::shared_ptr<RhiSampler> CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo);
+
     PC_CORE_API static RhiContext* GetRhiContext();
     
     PC_CORE_API static void NextFrame();
@@ -81,20 +86,12 @@ private:
     RhiContext* m_RhiContext = nullptr;
 
     uint32_t  m_CurrentFrame = 0;
-
-    std::unordered_map<GPUHandleID, std::shared_ptr<GPUResource>> m_GpuResource;
-
-    std::stack<GPUHandleID> m_GPUHandleIdStack;
-
+    
     void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
     void VulkanInitialize(const RhiContextCreateInfo& _createInfo);
 
     void DX12Initialize(const RhiContextCreateInfo& _createInfo);
-
-    static GPUHandleID CreateGpuHandle();
-
-    static std::shared_ptr<GPUResource> GetGpuResource(GPUHandleID _gpuHandleId);
 };
 
 

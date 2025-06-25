@@ -49,7 +49,7 @@ Resource::Resource(Resource&& _other) noexcept
 	pathToFile = std::move(_other.pathToFile);
 }
 
-Resource::Resource(const std::string& _name) : name(_name)
+Resource::Resource(const std::string& _name) : name(_name) , guid(Guid::New())
 {
 	
 }

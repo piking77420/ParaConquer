@@ -12,10 +12,11 @@ namespace Vulkan
     vk::PipelineBindPoint RhiPipelineBindPointToVulkan(PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType);
     
     vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
-    
+
+    /*
     vk::ImageType RHIImageToVkImageType(PC_CORE::ImageType _imageType);
     
-    vk::ImageViewType RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageType);
+    vk::ImageViewType RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageType);*/
     
     inline vk::ComponentSwizzle RHIToVulkanComponentSwizzle(PC_CORE::ComponentSwizzle _componentSwizzle)
     {

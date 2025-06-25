@@ -6,12 +6,17 @@
 #include <functional>
 
 #include "core_header.hpp"
+#include "math/toolbox_typedef.hpp"
+
 #include "frame_buffer.hpp"
 #include "rhi_index_buffer.hpp"
 #include "rhi_render_pass.hpp"
-#include "math/toolbox_typedef.hpp"
-#include "resources/shader_program.h"
 #include "rhi_vertex_buffer.hpp"
+
+
+#include "resources/shader_program.h"
+#include "rendering/buffer/index_buffer.hpp"
+#include "rendering/buffer/vertex_buffer.hpp"
 
 BEGIN_PCCORE
     class FrameBuffer;
@@ -101,9 +106,9 @@ public:
 
     PC_CORE_API virtual void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset, size_t _firstInstance) = 0;
 
-    PC_CORE_API virtual void BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
+    PC_CORE_API virtual void BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
 
-    PC_CORE_API virtual void BindIndexBuffer(const RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;
+    PC_CORE_API virtual void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;
 
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 

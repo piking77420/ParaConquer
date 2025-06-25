@@ -7,6 +7,8 @@
 #include "low_renderer/rhi_vertex_buffer.hpp"
 #include "primitive/aabb.hpp"
 #include "reflection/reflector.hpp"
+#include "rendering/buffer/index_buffer.hpp"
+#include "rendering/buffer/vertex_buffer.hpp"
 
 BEGIN_PCCORE
     class Mesh : public Resource
@@ -30,7 +32,7 @@ public:
 
     VertexBuffer vertexBuffer;
 
-    RhiIndexBuffer indexBuffer;
+    IndexBuffer indexBuffer;
 
     MeshFormat meshFormat;
 

@@ -24,6 +24,13 @@ void Renderer::Init()
     PERF_REGION_SCOPED;
 
     m_RhiContext = Rhi::GetRhiContext();
+    constexpr CommandListCreateInfo commandListCreateInfo =
+    {
+        ._commandPoolFamily = CommandPoolFamily::Graphics
+    };
+
+    primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
+    
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
     forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
@@ -32,14 +39,9 @@ void Renderer::Init()
     CreateDrawQuadShader();
     CreateSkyRenderingShader();
 
-    constexpr CommandListCreateInfo commandListCreateInfo =
-    {
-        ._commandPoolFamily = CommandPoolFamily::Graphics
-    };
+ 
 
-    primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
-
-    cameraUniformBuffer = RhiUniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), BufferMemoryUsage::Dynamic);
 
 
     UniformBufferDescriptor cameraBufferDescritptor
@@ -72,11 +74,6 @@ void Renderer::Init()
     m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet, 0);
     m_ShaderProgramDescriptorSet->WriteDescriptorSets(descriptorSets);
     
-  
-    UniformBufferDescriptor viewExtremum
-    {
-        .buffer = &m_AtmosphereUniformBuffer,
-    };
 
     descriptorSets =
     {
@@ -86,19 +83,10 @@ void Renderer::Init()
             & cameraBufferDescritptor,
             nullptr,
         },
-        {
-            ShaderProgramDescriptorType::UniformBuffer,
-            VIEWFRUSTUM_BINDING,
-            &viewExtremum,
-            nullptr,
-        }
     };
-    m_SkyRenderingShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET);
-    m_ShaderProgramDescriptorSetsSky->WriteDescriptorSets(descriptorSets);
-
     InitRenderSystem();
-}
 
+}
 void Renderer::Destroy()
 {
     if (m_ForwardShader.use_count() != 1)
@@ -129,19 +117,22 @@ void Renderer::BeginDraw(Window* _window)
 
     m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
 
+
     primaryCommandList->Reset();
     primaryCommandList->BeginRecordCommands();
 
+    
     QueryWorldData(World::GetWorld());
     sceneLightsBuffer
         ->Fecth();
-
+        
 }
 
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
     PERF_REGION_SCOPED;
 
+    
     currentRenderingContext = &renderingContext;
     SceneBufferGPU& sceneBufferGpu = sceneBufferGPU;
 
@@ -203,6 +194,7 @@ void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderi
 void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext,
                                       World* _world)
 {
+    
     PERF_REGION_SCOPED;
 
     m_CurrentWorld = _world;
@@ -310,6 +302,7 @@ void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderP
 void Renderer::QueryWorldData(World* world)
 {
     PERF_REGION_SCOPED;
+    
     Level& level = world->level;
     for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->dirLightSignature))
     {
@@ -431,6 +424,7 @@ void Renderer::CreateDrawQuadShader()
 
 void Renderer::CreateSkyRenderingShader()
 {
+    /*
     PERF_REGION_SCOPED;
 
     const RasterizerInfo rasterizerInfo =
@@ -477,10 +471,7 @@ void Renderer::CreateSkyRenderingShader()
 
     m_SkyRenderingShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
     
-    m_AtmosphereUniformBuffer = RhiUniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));
-
- 
-
+    m_AtmosphereUniformBuffer = RhiUniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));*/
 }
 
 void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
@@ -510,8 +501,8 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), material->GetDescriptorSet(), MATERIAL_DESCRIPTOR_SET, 1);
     primaryCommandList->PushConstant(m_ForwardShader.get(), "PushConstants", &modelMatrixf,
                                      sizeof(Tbx::Matrix4x4f) * 2);
-    primaryCommandList->BindVertexBuffer(mesh->vertexBuffer, 0, 1);
-    primaryCommandList->BindIndexBuffer(mesh->indexBuffer, 0);
+    primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
+    primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
     primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
 }
 

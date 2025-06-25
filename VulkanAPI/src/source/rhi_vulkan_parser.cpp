@@ -862,7 +862,7 @@ vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _
     }
 }
 
-
+/*
 vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 {
     switch (_imageType)
@@ -908,7 +908,7 @@ vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _
 
     throw std::runtime_error("Unknown ImageViewType");
 }
-
+*/
 
 vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
 {

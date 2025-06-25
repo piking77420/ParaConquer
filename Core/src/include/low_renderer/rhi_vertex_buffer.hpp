@@ -11,19 +11,12 @@ class RhiVertexBuffer : public RhiBuffer
 public:
     DEFAULT_COPY_MOVE_OPERATIONS(RhiVertexBuffer)
 
-    RhiVertexBuffer(const Vertex* _vertices, uint32_t _size);
+    RhiVertexBuffer(const Vertex* _vertices, uint32_t _size, BufferMemoryUsage _memoryUsage);
     
     RhiVertexBuffer() = default;
     
     ~RhiVertexBuffer() override = default;
-
-    inline size_t GetNbrOfVerticies() const
-    {
-        return m_NbrOfVerticies;
-    }
-
 private:
-    size_t m_NbrOfVerticies = 0;
 };
 
 END_PCCORE

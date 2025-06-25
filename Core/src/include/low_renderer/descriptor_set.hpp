@@ -3,10 +3,11 @@
 #include <vector>
 
 #include "core_header.hpp"
-#include "gpu_buffer.hpp"
-#include "gpu_resource.hpp"
-#include "sampler.hpp"
-#include "resources/texture.hpp"
+
+#include "rendering/gpu_resource.hpp"
+
+#include "rhi_sampler.hpp"
+#include "rendering/sampler.hpp"
 
 BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
@@ -24,12 +25,12 @@ BEGIN_PCCORE
     struct ImageSamperDescriptor
     {
         Sampler* sampler;
-        Texture* texture;
+        IGpuResource* texture;
     };
 
     struct UniformBufferDescriptor
     {
-        GpuBuffer* buffer;
+        IGpuResource* buffer;
     };
 
 

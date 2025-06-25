@@ -286,12 +286,13 @@ void Editor::Init()
 	
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 	
+	
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
 		cmd->EndDebugLabel();
 		});
-
+	
 	InitTestScene();
 	InitEditorWindows();
 }
@@ -366,6 +367,7 @@ void Editor::RewindCommand()
 
 void Editor::InitTestScene()
 {	
+	
 	PERF_REGION_SCOPED;
 	PC_LOG("InitTestScene...")
 

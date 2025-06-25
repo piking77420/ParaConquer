@@ -2,6 +2,7 @@
 
 #include "low_renderer/rhi.hpp"
 
+/*
 PC_CORE::ShaderStorage::ShaderStorage(void* _data, size_t _size, MemoryUsageType MemoryUsageType)
 {
     const GPUBufferCreateInfo info =
@@ -27,3 +28,4 @@ PC_CORE::ShaderStorage::~ShaderStorage()
 {
     
 }
+*/

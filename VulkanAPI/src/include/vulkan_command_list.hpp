@@ -3,6 +3,7 @@
 #include "vulkan_header.h"
 #include "low_renderer/command_list.hpp"
 
+
 namespace Vulkan
 {
    
@@ -46,7 +47,7 @@ public:
     VULKAN_API void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset,
         size_t _firstInstance) override;
 
-    VULKAN_API void BindVertexBuffer(const PC_CORE::VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) override;
+    VULKAN_API void BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) override;
 
     VULKAN_API void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) override;
 

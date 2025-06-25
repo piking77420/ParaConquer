@@ -111,14 +111,15 @@ private:
 
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsSky = nullptr;
 
-    RhiUniformBuffer cameraUniformBuffer;
+    UniformBuffer cameraUniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
 
+    /*
     AtmosphereBuffer m_AtomsphereBuffer;
 
-    RhiUniformBuffer m_AtmosphereUniformBuffer;
-
+    UniformBuffer m_AtmosphereUniformBuffer;
+*/
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 
     std::shared_ptr<RendererSystem> rendererSystem;

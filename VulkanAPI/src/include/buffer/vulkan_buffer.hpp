@@ -3,20 +3,36 @@
 #include <vma/vk_mem_alloc.h>
 
 #include "vulkan_header.h"
+#include "vulkan_context.hpp"
 #include "low_renderer/rhi_buffer.h"
+
 
 namespace Vulkan
 {
-    class VULKAN_API VulkanBuffer : public PC_CORE::RhiBuffer
+    struct BufferAndAlloc
+    {
+        vk::Buffer buffer = VK_NULL_HANDLE;
+        VmaAllocation alloc = VK_NULL_HANDLE;
+
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(BufferAndAlloc)
+        
+        DEFAULT_COPY_MOVE_OPERATIONS(BufferAndAlloc)
+    };
+    
+    class VULKAN_API VulkanBuffer
     {
     public:
-        VulkanBuffer();
+
+        DEFAULT_COPY_MOVE_OPERATIONS(VulkanBuffer)
+
+        std::vector<BufferAndAlloc> bufferAndAlloc;
+
+        VulkanBuffer(PC_CORE::BufferMemoryUsage _usage);
         
-        ~VulkanBuffer() override = default;
-    private:
-        // TO DO use a vector if data is static for multiple frame
-        std::array<vk::Buffer, MAX_FRAMES_IN_FLIGHT> buffers;
-        std::array<VmaAllocation, MAX_FRAMES_IN_FLIGHT> allocations;
+        VulkanBuffer() = default;
+        
+        ~VulkanBuffer();
+        
     };
     
 }

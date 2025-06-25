@@ -33,7 +33,10 @@ public:
 
     PC_CORE_API void Build() override;
 
-    const ShaderProgramDescriptorSets* GetDescriptorSet();
+    const ShaderProgramDescriptorSets* GetDescriptorSet() const
+    {
+        return m_pShaderProgramDescriptorSets;
+    }
 
 private:
     ShaderProgramDescriptorSets* m_pShaderProgramDescriptorSets = nullptr;

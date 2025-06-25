@@ -2,6 +2,7 @@
 
 #include "stb_image.h"
 #include "rendering/material.hpp"
+#include "rendering/sampler.hpp"
 #include "resources/mesh.hpp"
 #include "resources/texture.hpp"
 
@@ -18,6 +19,7 @@ void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
+    
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
 	auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
 
@@ -26,13 +28,22 @@ void ResourceManager::InitPath()
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
 
-
-	auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
+    auto it2 = ResourceManager::Create<Texture>((fs::path)"assets/textures/diamond_block.jpg");
 
 	ResourceManager::Create<Texture>((fs::path)"assets/textures/emerauld_block.png");
 
 
-   
+    
+    const SamplerCreateInfo info =
+        {
+        .SamplerName = "LinearRepeat",
+        .magFilter = Filter::LINEAR,
+        .minFilter = Filter::LINEAR,
+        .u = SamplerAddressMode::REPEAT,
+        .v = SamplerAddressMode::REPEAT,
+        .w = SamplerAddressMode::REPEAT
+        };
+    ResourceManager::Create<PC_CORE::Sampler>(info);
 }
 
 void ResourceManager::Destroy()

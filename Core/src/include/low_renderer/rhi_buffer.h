@@ -1,18 +1,27 @@
 ﻿#pragma once
 
-#include "rhi_typedef.h"
+#include "rhi_resource.hpp"
 
 BEGIN_PCCORE
 
-class RhiBuffer
+class RhiBuffer : public RhiResource
 {
 public:
 
-    PC_CORE_API RhiBuffer(const GPUBufferCreateInfo& _createInfo);
+    DEFAULT_COPY_MOVE_OPERATIONS(RhiBuffer)
     
     PC_CORE_API RhiBuffer() = default;
 
     PC_CORE_API virtual ~RhiBuffer() = default;
+
+    virtual void MapData(void** _ptr)
+    {
+        
+    }
+    virtual void UnmapData()
+    {
+        
+    }
 
 private:
     
