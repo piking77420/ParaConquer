@@ -32,15 +32,13 @@ void Renderer::Init()
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
     
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
-    forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
+    CreateForwardRenderPass();
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
 
     CreateForwardShader();
     CreateDrawQuadShader();
     CreateSkyRenderingShader();
-
- 
-
+    
     cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), BufferMemoryUsage::Dynamic);
 
 
@@ -531,4 +529,65 @@ void Renderer::InitRenderSystem()
     rendererSystem->dirLightSignature.set(level.GetComponentTypeBit<DirLight>(), true);
     rendererSystem->AddSignature(rendererSystem->dirLightSignature);
 
+}
+
+void Renderer::CreateForwardRenderPass()
+{
+    std::vector<RenderPassAttachementDescriptor> colorAttachement;
+    colorAttachement.resize(1);
+
+    colorAttachement[0] =
+        {
+        .attachmentType = AttachmentType::Color,
+        .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+        .sampleCount = 1,
+        .load = LoadOperation::Clear,
+        .store = StoreOperation::Store,
+        .stencilLoad = LoadOperation::DontCare,
+        .stencilStore = StoreOperation::DontCare,
+        };
+
+    RenderPassAttachementDescriptor depthAttachement =
+     {
+        .attachmentType = AttachmentType::Depth,
+        .format = PC_CORE::RHIFormat::D32_SFLOAT,
+        .sampleCount = 1,
+        .load = LoadOperation::Clear,
+        .store = StoreOperation::Store,
+        .stencilLoad = LoadOperation::DontCare,
+        .stencilStore = StoreOperation::DontCare,
+        };
+
+    std::vector<SubPassDescription> subPassDescriptions;
+    subPassDescriptions.resize(1);
+
+    subPassDescriptions[0] =
+        {
+        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+        .colorAttachementDescriptorIndicies = {0},
+        .subPassDependcies =
+        {
+            .srcStageMask = static_cast<PipelineStageFlags>(
+                PipelineStageFlagBits::ColorAttachmentOutput | PipelineStageFlagBits::EarlyFragmentTests
+            ),
+            .dstStageMask = static_cast<PipelineStageFlags>(
+                PipelineStageFlagBits::FragmentShader
+            ),
+            .srcAccessMask = {}, // you can set this to ColorAttachmentWrite or DepthStencilAttachmentWrite if needed
+            .dstAccessMask = static_cast<AccessFlags>(
+                AccessFlagBits::ShaderRead
+            )
+        },
+        .useDepth = true, 
+        };
+  
+    PC_CORE::RenderPassDescriptor renderPassDescriptor =
+        {
+            .colorAttachement = colorAttachement,
+            .depthAttachment = &depthAttachement,
+            .subPasses = subPassDescriptions
+        };
+
+    forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
+    
 }

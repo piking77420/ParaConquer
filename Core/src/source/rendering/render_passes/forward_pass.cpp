@@ -8,9 +8,6 @@ PC_CORE::ForwardPass::ForwardPass()
 
 }
 
-void PC_CORE::ForwardPass::Build()
-{
-}
 
 void PC_CORE::ForwardPass::Execute()
 {

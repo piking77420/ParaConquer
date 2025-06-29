@@ -601,44 +601,45 @@ enum class ShaderProgramPipelineType
     COUT
 };
 
-enum class PipelineStageFlagBits : uint8_t
+enum class PipelineStageFlagBits : uint64_t
 {
-    TopOfPipe,
-    DrawIndirect,
-    VertexInput,
-    VertexShader,
-    TessellationControlShader,
-    TessellationEvaluationShader,
-    GeometryShader,
-    FragmentShader,
-    EarlyFragmentTests,
-    LateFragmentTests,
-    ColorAttachmentOutput,
-    ComputeShader,
-    Transfer,
-    BottomOfPipe,
-    Host,
-    AllGraphics,
-    AllCommands,
-    None,
-    NoneKHR,
-    TransformFeedbackEXT,
-    ConditionalRenderingEXT,
-    AccelerationStructureBuildKHR,
-    AccelerationStructureBuildNV,
-    RayTracingShaderKHR,
-    RayTracingShaderNV,
-    FragmentDensityProcessEXT,
-    FragmentShadingRateAttachmentKHR,
-    ShadingRateImageNV,
-    CommandPreprocessNV,
-    CommandPreprocessEXT,
-    TaskShaderEXT,
-    TaskShaderNV,
-    MeshShaderEXT,
-    MeshShaderNV
+    None                             = 0,
+    TopOfPipe                        = 1ULL << 0,
+    DrawIndirect                     = 1ULL << 1,
+    VertexInput                      = 1ULL << 2,
+    VertexShader                     = 1ULL << 3,
+    TessellationControlShader        = 1ULL << 4,
+    TessellationEvaluationShader     = 1ULL << 5,
+    GeometryShader                   = 1ULL << 6,
+    FragmentShader                   = 1ULL << 7,
+    EarlyFragmentTests               = 1ULL << 8,
+    LateFragmentTests                = 1ULL << 9,
+    ColorAttachmentOutput            = 1ULL << 10,
+    ComputeShader                    = 1ULL << 11,
+    Transfer                         = 1ULL << 12,
+    BottomOfPipe                     = 1ULL << 13,
+    Host                             = 1ULL << 14,
+    AllGraphics                      = 1ULL << 15,
+    AllCommands                      = 1ULL << 16,
+    NoneKHR                          = 1ULL << 17,
+    TransformFeedbackEXT             = 1ULL << 18,
+    ConditionalRenderingEXT          = 1ULL << 19,
+    AccelerationStructureBuildKHR    = 1ULL << 20,
+    AccelerationStructureBuildNV     = 1ULL << 21,
+    RayTracingShaderKHR              = 1ULL << 22,
+    RayTracingShaderNV               = 1ULL << 23,
+    FragmentDensityProcessEXT        = 1ULL << 24,
+    FragmentShadingRateAttachmentKHR= 1ULL << 25,
+    ShadingRateImageNV               = 1ULL << 26,
+    CommandPreprocessNV              = 1ULL << 27,
+    CommandPreprocessEXT             = 1ULL << 28,
+    TaskShaderEXT                    = 1ULL << 29,
+    TaskShaderNV                     = 1ULL << 30,
+    MeshShaderEXT                    = 1ULL << 31,
+    MeshShaderNV                     = 1ULL << 32
 };
-using PipelineStageFlags = size_t;
+
+using PipelineStageFlags = uint64_t;
 
 inline PipelineStageFlags operator|(PipelineStageFlagBits a, PipelineStageFlagBits b) {
     return static_cast<PipelineStageFlags>(a) | static_cast<PipelineStageFlags>(b);
@@ -658,48 +659,48 @@ inline PipelineStageFlags& operator&=(PipelineStageFlags& lhs, PipelineStageFlag
     return lhs;
 }
 
-enum class AccessFlagBits : uint8_t
+//----------------------------------------
+
+enum class AccessFlagBits : uint64_t
 {
-    IndirectCommandRead,
-    IndexRead,
-    VertexAttributeRead,
-    UniformRead,
-    InputAttachmentRead,
-    ShaderRead,
-    ShaderWrite,
-    ColorAttachmentRead,
-    ColorAttachmentWrite,
-    DepthStencilAttachmentRead,
-    DepthStencilAttachmentWrite,
-    TransferRead,
-    TransferWrite,
-    HostRead,
-    HostWrite,
-    MemoryRead,
-    MemoryWrite,
-    None,
-    NoneKHR,
-    TransformFeedbackWriteEXT,
-    TransformFeedbackCounterReadEXT,
-    TransformFeedbackCounterWriteEXT,
-    ConditionalRenderingReadEXT,
-    ColorAttachmentReadNoncoherentEXT,
-    AccelerationStructureReadKHR,
-    AccelerationStructureReadNV,
-    AccelerationStructureWriteKHR,
-    AccelerationStructureWriteNV,
-    FragmentDensityMapReadEXT,
-    FragmentShadingRateAttachmentReadKHR,
-    ShadingRateImageReadNV,
-    CommandPreprocessReadNV,
-    CommandPreprocessReadEXT,
-    CommandPreprocessWriteNV,
-    CommandPreprocessWriteEXT
+    None                                   = 0,
+    IndirectCommandRead                    = 1ULL << 0,
+    IndexRead                              = 1ULL << 1,
+    VertexAttributeRead                    = 1ULL << 2,
+    UniformRead                            = 1ULL << 3,
+    InputAttachmentRead                    = 1ULL << 4,
+    ShaderRead                             = 1ULL << 5,
+    ShaderWrite                            = 1ULL << 6,
+    ColorAttachmentRead                    = 1ULL << 7,
+    ColorAttachmentWrite                   = 1ULL << 8,
+    DepthStencilAttachmentRead             = 1ULL << 9,
+    DepthStencilAttachmentWrite            = 1ULL << 10,
+    TransferRead                           = 1ULL << 11,
+    TransferWrite                          = 1ULL << 12,
+    HostRead                               = 1ULL << 13,
+    HostWrite                              = 1ULL << 14,
+    MemoryRead                             = 1ULL << 15,
+    MemoryWrite                            = 1ULL << 16,
+    NoneKHR                                = 1ULL << 17,
+    TransformFeedbackWriteEXT              = 1ULL << 18,
+    TransformFeedbackCounterReadEXT        = 1ULL << 19,
+    TransformFeedbackCounterWriteEXT       = 1ULL << 20,
+    ConditionalRenderingReadEXT            = 1ULL << 21,
+    ColorAttachmentReadNoncoherentEXT      = 1ULL << 22,
+    AccelerationStructureReadKHR           = 1ULL << 23,
+    AccelerationStructureReadNV            = 1ULL << 24,
+    AccelerationStructureWriteKHR          = 1ULL << 25,
+    AccelerationStructureWriteNV           = 1ULL << 26,
+    FragmentDensityMapReadEXT              = 1ULL << 27,
+    FragmentShadingRateAttachmentReadKHR   = 1ULL << 28,
+    ShadingRateImageReadNV                 = 1ULL << 29,
+    CommandPreprocessReadNV                = 1ULL << 30,
+    CommandPreprocessReadEXT               = 1ULL << 31,
+    CommandPreprocessWriteNV               = 1ULL << 32,
+    CommandPreprocessWriteEXT              = 1ULL << 33
 };
 
-using AccessFlags = size_t;
-
-// Bitwise operators for AccessFlagBits producing AccessFlags
+using AccessFlags = uint64_t;
 
 inline AccessFlags operator|(AccessFlagBits a, AccessFlagBits b) {
     return static_cast<AccessFlags>(a) | static_cast<AccessFlags>(b);
@@ -718,7 +719,6 @@ inline AccessFlags& operator&=(AccessFlags& lhs, AccessFlagBits rhs) {
     lhs &= static_cast<AccessFlags>(rhs);
     return lhs;
 }
-
 END_PCCORE
 
 

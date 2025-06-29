@@ -178,6 +178,26 @@ PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFor
     }
 }
 
+std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor)
+{
+    Rhi& rhi = GetInstance();
+
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanRenderPass>(_renderPassDescriptor);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+}
+
 std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo)
 {
     Rhi& rhi = GetInstance();

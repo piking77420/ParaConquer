@@ -145,6 +145,8 @@ private:
     PC_CORE_API void DrawSky();
 
     PC_CORE_API void InitRenderSystem();
+
+    PC_CORE_API void CreateForwardRenderPass();
 };
 
 END_PCCORE

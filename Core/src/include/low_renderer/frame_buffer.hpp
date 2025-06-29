@@ -8,7 +8,7 @@
 #include "resources/texture_2d.hpp"
 
 BEGIN_PCCORE
-	struct AttachementDesriptor
+	struct FrameBufferAttachementDesriptor
 {
 	Texture2D* texture;
 };
@@ -18,7 +18,7 @@ struct CreateFrameInfo
 	uint32_t width;
 	uint32_t height;
 
-	std::vector<AttachementDesriptor>* attachements;
+	std::vector<FrameBufferAttachementDesriptor>* attachements;
 	RhiRenderPass* renderPass;
 };
 

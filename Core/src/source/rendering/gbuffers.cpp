@@ -14,7 +14,7 @@ void PC_CORE::Gbuffers::HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr
         m_size = _targetSize;
         CreateGBuffers();
 
-        std::vector<AttachementDesriptor> attachementDescritpor =
+        std::vector<FrameBufferAttachementDesriptor> attachementDescritpor =
         {
             {
                 .texture = m_gbuffers[0].get(),

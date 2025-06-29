@@ -57,6 +57,8 @@ public:
 
     PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat, uint32_t sampleCount);
 
+    PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor);
+
     PC_CORE_API static std::shared_ptr<FrameBuffer> CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo);
 
     PC_CORE_API static std::shared_ptr<RhiIndexBuffer> CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, BufferMemoryUsage _usage); 

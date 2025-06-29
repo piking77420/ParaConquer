@@ -26,9 +26,11 @@ namespace Vulkan
     protected:
         vk::RenderPass m_RenderPass = VK_NULL_HANDLE;
 
-        void ParseAttachmentLayout(const PC_CORE::AttachementDescriptor& _attachment, vk::AttachmentDescription* _attachmentLayouts);
+        void ParseAttachmentLayout(const PC_CORE::RenderPassAttachementDescriptor& _attachment, vk::AttachmentDescription* _attachmentLayouts);
 
         void ParseDependcies(const PC_CORE::SubPassDependcies& _subPassDependcies, vk::SubpassDependency* _vkdependency);
+
+        vk::ImageLayout GetImageLayoutSubPass(PC_CORE::AttachmentType _attachmentType);
     };
     
 }

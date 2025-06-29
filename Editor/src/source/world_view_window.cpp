@@ -105,7 +105,7 @@ void WorldViewWindow::ResizeViewports()
    // assert(false && "TO DO Handle move constructor and other case");
     m_ViewportTexture = PC_CORE::Texture2D(create_texture);
     
-    std::vector<PC_CORE::AttachementDesriptor> attachments =
+    std::vector<PC_CORE::FrameBufferAttachementDesriptor> attachments =
     { 
         {
             &m_ViewportTexture,

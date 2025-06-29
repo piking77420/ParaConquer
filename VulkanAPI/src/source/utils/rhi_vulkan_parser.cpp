@@ -1316,73 +1316,73 @@ vk::AccessFlags Vulkan::Utils::RhiAccessFlagToVulkan(PC_CORE::AccessFlags access
     using AccessBit = PC_CORE::AccessFlagBits;
     using AccessFlags = PC_CORE::AccessFlags;
 
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndirectCommandRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndirectCommandRead)))
         vkFlags |= vk::AccessFlagBits::eIndirectCommandRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndexRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndexRead)))
         vkFlags |= vk::AccessFlagBits::eIndexRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::VertexAttributeRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::VertexAttributeRead)))
         vkFlags |= vk::AccessFlagBits::eVertexAttributeRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::UniformRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::UniformRead)))
         vkFlags |= vk::AccessFlagBits::eUniformRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::InputAttachmentRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::InputAttachmentRead)))
         vkFlags |= vk::AccessFlagBits::eInputAttachmentRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderRead)))
         vkFlags |= vk::AccessFlagBits::eShaderRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderWrite)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderWrite)))
         vkFlags |= vk::AccessFlagBits::eShaderWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentRead)))
         vkFlags |= vk::AccessFlagBits::eColorAttachmentRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentWrite)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentWrite)))
         vkFlags |= vk::AccessFlagBits::eColorAttachmentWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentRead)))
         vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentWrite)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentWrite)))
         vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferRead)))
         vkFlags |= vk::AccessFlagBits::eTransferRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferWrite)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferWrite)))
         vkFlags |= vk::AccessFlagBits::eTransferWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostRead)))
         vkFlags |= vk::AccessFlagBits::eHostRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostWrite)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostWrite)))
         vkFlags |= vk::AccessFlagBits::eHostWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryRead)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryRead)))
         vkFlags |= vk::AccessFlagBits::eMemoryRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryWrite)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryWrite)))
         vkFlags |= vk::AccessFlagBits::eMemoryWrite;
 
     // Extensions
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackWriteEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackWriteEXT)))
         vkFlags |= vk::AccessFlagBits::eTransformFeedbackWriteEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterReadEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterReadEXT)))
         vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterWriteEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterWriteEXT)))
         vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterWriteEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ConditionalRenderingReadEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ConditionalRenderingReadEXT)))
         vkFlags |= vk::AccessFlagBits::eConditionalRenderingReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentReadNoncoherentEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentReadNoncoherentEXT)))
         vkFlags |= vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadKHR)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadKHR)))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadKHR;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadNV)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadNV)))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteKHR)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteKHR)))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteKHR;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteNV)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteNV)))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentDensityMapReadEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentDensityMapReadEXT)))
         vkFlags |= vk::AccessFlagBits::eFragmentDensityMapReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentShadingRateAttachmentReadKHR)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentShadingRateAttachmentReadKHR)))
         vkFlags |= vk::AccessFlagBits::eFragmentShadingRateAttachmentReadKHR;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShadingRateImageReadNV)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShadingRateImageReadNV)))
         vkFlags |= vk::AccessFlagBits::eShadingRateImageReadNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadNV)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadNV)))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadEXT)))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteNV)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteNV)))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteEXT)) != 0)
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteEXT)))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteEXT;
 
     return vkFlags;
