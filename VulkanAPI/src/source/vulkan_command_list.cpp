@@ -2,7 +2,7 @@
 
 #include "vulkan_command_list.hpp"
 
-#include "rhi_vulkan_parser.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
@@ -184,7 +184,7 @@ void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPo
 
 void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
 {
-    vk::PrimitiveTopology topology = RhiPrimitiveTopology(_primitiveTopology);
+    vk::PrimitiveTopology topology = Utils::RhiPrimitiveTopology(_primitiveTopology);
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setPrimitiveTopology(topology);
 }
 
@@ -216,7 +216,7 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _
 {
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
     const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
-    const vk::IndexType indexType = Vulkan::RhiToIndexType(_indexBuffer.GetIndexFormat());
+    const vk::IndexType indexType = Vulkan::Utils::RhiToIndexType(_indexBuffer.GetIndexFormat());
     
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset) , indexType);
 }

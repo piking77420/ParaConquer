@@ -1,6 +1,6 @@
 ﻿#include "resources/vulkan_sampler.hpp"
 
-#include "rhi_vulkan_parser.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_device.hpp"
 #include "low_renderer/rhi.hpp"
 
@@ -10,11 +10,11 @@ Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerC
     
     vk::SamplerCreateInfo samplerInfo{};
     samplerInfo.sType = vk::StructureType::eSamplerCreateInfo;
-    samplerInfo.magFilter = RHIToVulkanFilter(magFilter);
-    samplerInfo.minFilter = RHIToVulkanFilter(minFilter);
-    samplerInfo.addressModeU = RHIToVulkanSamplerAddressMode(samU);
-    samplerInfo.addressModeV = RHIToVulkanSamplerAddressMode(samV);
-    samplerInfo.addressModeW = RHIToVulkanSamplerAddressMode(samW);
+    samplerInfo.magFilter = Utils::RHIToVulkanFilter(magFilter);
+    samplerInfo.minFilter = Utils::RHIToVulkanFilter(minFilter);
+    samplerInfo.addressModeU = Utils::RHIToVulkanSamplerAddressMode(samU);
+    samplerInfo.addressModeV = Utils::RHIToVulkanSamplerAddressMode(samV);
+    samplerInfo.addressModeW = Utils::RHIToVulkanSamplerAddressMode(samW);
     if (maxAnisotopie > 0.f)
     {
         samplerInfo.anisotropyEnable = VK_TRUE;
@@ -31,7 +31,7 @@ Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerC
     samplerInfo.compareOp = vk::CompareOp::eAlways;
     samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
     samplerInfo.minLod = 0.f;
-    // TO DO NOT HARDCODED 
+    // TODO NOT HARDCODED 
     samplerInfo.maxLod = static_cast<float>(16);
     samplerInfo.mipLodBias = 0.0f;
 

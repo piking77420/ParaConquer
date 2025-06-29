@@ -1,6 +1,6 @@
 ﻿#include "resources/vulkan_descriptor_sets.hpp"
 
-#include "rhi_vulkan_parser.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_device.hpp"
 #include "buffer/vulkan_buffer.hpp"
 
@@ -97,7 +97,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             descriptorWrites[descriptorWriteIndex].sType = vk::StructureType::eWriteDescriptorSet;
             descriptorWrites[descriptorWriteIndex].dstBinding = _shaderProgramDescriptorSet.at(i).bindingIndex;
             descriptorWrites[descriptorWriteIndex].dstArrayElement = 0;
-            descriptorWrites[descriptorWriteIndex].descriptorType = RhiToDescriptorType(
+            descriptorWrites[descriptorWriteIndex].descriptorType = Utils::RhiToDescriptorType(
                 _shaderProgramDescriptorSet.at(i).shaderProgramDescriptorType);
             descriptorWrites[descriptorWriteIndex].descriptorCount = 1;
 
@@ -111,6 +111,8 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 descriptorWrites[descriptorWriteIndex].pImageInfo = &descriptorImageInfos[imageDescriptorCount];
                 imageDescriptorCount++;
                 break;
+            default:
+                assert(false && "Unsupported shader program descriptor type");
             }
         }
         descriptorWriteOffset += _shaderProgramDescriptorSet.size();    

@@ -1,7 +1,7 @@
-﻿#include "rhi_vulkan_parser.hpp"
+﻿#include "utils/rhi_vulkan_parser.hpp"
 
 #pragma region Format
-vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
+vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 {
     vk::Format format = {};
     // TODO MAKE ALL FORMAT
@@ -767,7 +767,7 @@ vk::Format Vulkan::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 #pragma endregion Format
 
 /*
-vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType)
+vk::DescriptorType Vulkan::Utils::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType)
 {
     vk::DescriptorType result = {};
     switch (_descriptorType)
@@ -832,7 +832,7 @@ vk::DescriptorType Vulkan::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _de
 }*/
 
 
-vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
+vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
     PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
 {
     switch (_shaderProgramPipelineType)
@@ -847,7 +847,7 @@ vk::PipelineBindPoint Vulkan::RhiPipelineBindPointToVulkan(
 }
 
 
-vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
+vk::VertexInputRate Vulkan::Utils::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate)
 {
     switch (_vertexInputRate)
     {
@@ -863,7 +863,7 @@ vk::VertexInputRate Vulkan::RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _
 }
 
 /*
-vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
+vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 {
     switch (_imageType)
     {
@@ -886,7 +886,7 @@ vk::ImageType Vulkan::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
 }
 
 
-vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
+vk::ImageViewType Vulkan::Utils::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
 {
     switch (_imageViewType)
     {
@@ -910,7 +910,7 @@ vk::ImageViewType Vulkan::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _
 }
 */
 
-vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
+vk::Filter Vulkan::Utils::RHIToVulkanFilter(PC_CORE::Filter _filter)
 {
     switch (_filter)
     {
@@ -927,7 +927,7 @@ vk::Filter Vulkan::RHIToVulkanFilter(PC_CORE::Filter _filter)
     throw std::runtime_error("Unknown Filter");
 }
 
-vk::SamplerMipmapMode Vulkan::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode _mipmapMode)
+vk::SamplerMipmapMode Vulkan::Utils::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode _mipmapMode)
 {
     switch (_mipmapMode)
     {
@@ -941,7 +941,7 @@ vk::SamplerMipmapMode Vulkan::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode 
     throw std::runtime_error("Unknown SamplerMipmapMode");
 }
 
-vk::SamplerAddressMode Vulkan::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAddressMode _samplerAddressMode)
+vk::SamplerAddressMode Vulkan::Utils::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAddressMode _samplerAddressMode)
 {
     switch (_samplerAddressMode)
     {
@@ -960,7 +960,7 @@ vk::SamplerAddressMode Vulkan::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAdd
     throw std::runtime_error("Unknown SamplerAddressMode");
 }
 
-vk::CompareOp Vulkan::RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
+vk::CompareOp Vulkan::Utils::RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
 {
     switch (_compareOp)
     {
@@ -985,7 +985,7 @@ vk::CompareOp Vulkan::RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
     throw std::runtime_error("Unknown CompareOp");
 }
 
-vk::BorderColor Vulkan::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
+vk::BorderColor Vulkan::Utils::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
 {
     switch (_borderColor)
     {
@@ -1010,7 +1010,7 @@ vk::BorderColor Vulkan::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
     throw std::runtime_error("Unknown BorderColor");
 }
 
-vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode)
+vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode)
 {
     switch (_polygonMode)
     {
@@ -1028,7 +1028,7 @@ vk::PolygonMode Vulkan::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode
 }
 
 
-vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage)
+vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage)
 {
     switch (_shaderStage)
     {
@@ -1066,7 +1066,7 @@ vk::ShaderStageFlagBits Vulkan::RhiToShaderStage(PC_CORE::ShaderStageType _shade
     }
 }
 
-vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
+vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
 {
     vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
 
@@ -1091,7 +1091,7 @@ vk::CullModeFlags Vulkan::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBi
     return cullModeFlags;
 }
 
-vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
+vk::BufferUsageFlags Vulkan::Utils::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
 {
     vk::BufferUsageFlags bufferUsageFlags = {};
 
@@ -1114,7 +1114,7 @@ vk::BufferUsageFlags Vulkan::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
     }
 }
 
-vk::IndexType Vulkan::RhiToIndexType(PC_CORE::IndexFormat _format)
+vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
 {
     switch (_format)
     {
@@ -1128,7 +1128,7 @@ vk::IndexType Vulkan::RhiToIndexType(PC_CORE::IndexFormat _format)
     }
 }
 
-vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
+vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
 {
     switch (shaderProgramDescriptorType)
     {
@@ -1152,7 +1152,7 @@ vk::DescriptorType Vulkan::RhiToDescriptorType(const PC_CORE::ShaderProgramDescr
     }
 }
 
-vk::SampleCountFlagBits Vulkan::RhiSampleCountToVuklan(uint32_t _sampleCount)
+vk::SampleCountFlagBits Vulkan::Utils::RhiSampleCountToVuklan(uint32_t _sampleCount)
 {
     switch (_sampleCount)
     {
@@ -1173,7 +1173,7 @@ vk::SampleCountFlagBits Vulkan::RhiSampleCountToVuklan(uint32_t _sampleCount)
     }
 }
 
-vk::PrimitiveTopology Vulkan::RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
+vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
 {
     switch (_primitiveTopology)
     {
@@ -1206,7 +1206,7 @@ vk::PrimitiveTopology Vulkan::RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _p
     }
 }
 
-vk::AttachmentLoadOp Vulkan::RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation)
+vk::AttachmentLoadOp Vulkan::Utils::RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation)
 {
     switch (_loadOperation)
          {
@@ -1216,13 +1216,12 @@ vk::AttachmentLoadOp Vulkan::RhiLoadOperationToVulkan(PC_CORE::LoadOperation _lo
         return vk::AttachmentLoadOp::eClear;
     case PC_CORE::LoadOperation::DontCare:
         return vk::AttachmentLoadOp::eDontCare;
-    case PC_CORE::LoadOperation::None:
     default: ;
         throw std::runtime_error("Invalid or unsupported load operation.");
     }
 }
 
-vk::AttachmentStoreOp Vulkan::RhiStoreOperationToVulkan(PC_CORE::StoreOperation _storeOperation)
+vk::AttachmentStoreOp Vulkan::Utils::RhiStoreOperationToVulkan(PC_CORE::StoreOperation _storeOperation)
 {
     switch (_storeOperation)
     {
@@ -1230,9 +1229,6 @@ vk::AttachmentStoreOp Vulkan::RhiStoreOperationToVulkan(PC_CORE::StoreOperation 
         return vk::AttachmentStoreOp::eStore;
     case PC_CORE::StoreOperation::DontCare:
         return vk::AttachmentStoreOp::eDontCare;
-    case PC_CORE::StoreOperation::None:
-        return vk::AttachmentStoreOp::eNone;
-    case PC_CORE::StoreOperation::Count:
     default: ;
         throw std::runtime_error("Invalid or unsupported store operation.");
     }

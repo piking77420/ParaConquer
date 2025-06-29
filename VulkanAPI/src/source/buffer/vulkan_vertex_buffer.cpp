@@ -1,7 +1,7 @@
 ﻿#include "buffer/vulkan_vertex_buffer.hpp"
 
-#include "helper_functions.hpp"
-#include "vulkan_buffer_helper.hpp"
+#include "utils/helper_functions.hpp"
+#include "utils/vulkan_buffer_helper.hpp"
 
 
 Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::BufferMemoryUsage _usage) : m_VulkanBuffer(_usage)
@@ -15,14 +15,14 @@ Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(const void* _data, uint32_t _size
 
     for (size_t i = 0; i < stagingBufferAndAlloc.size(); i++)
     {
-        CreateBuffer(context.allocator, _sizeInByte, outBufferUsage,
+        Utils::CreateBuffer(context.allocator, _sizeInByte, outBufferUsage,
              VMA_MEMORY_USAGE_GPU_ONLY, reinterpret_cast<VkBuffer*>(&m_VulkanBuffer.bufferAndAlloc[i].buffer), &m_VulkanBuffer.bufferAndAlloc[i].alloc);
 
-        CreateBuffer(context.allocator, _sizeInByte, vk::BufferUsageFlagBits::eTransferSrc,
+        Utils::CreateBuffer(context.allocator, _sizeInByte, vk::BufferUsageFlagBits::eTransferSrc,
             VMA_MEMORY_USAGE_CPU_TO_GPU, reinterpret_cast<VkBuffer*>(&stagingBufferAndAlloc[i].buffer), &stagingBufferAndAlloc[i].alloc);
     }
     
-    SingleCommandBeginInfo singleCommandBeginInfo =
+    Utils::SingleCommandBeginInfo singleCommandBeginInfo =
     {
         .device = context.GetDevice()->GetDevice(),
         .commandPool = context.transferCommandPool,

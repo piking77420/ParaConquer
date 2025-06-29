@@ -5,13 +5,13 @@
 #include "rhi_typedef.h"
 
 BEGIN_PCCORE
-    struct RenderPassAttachementDescriptor
+
+struct AttachementDescriptor
 {
-    TextureAttachement attachementType;
+    AttachmentType attachmentType;
     RHIFormat format;
-    bool readOnly = false;
-    
     int sampleCount;
+
     PC_CORE::LoadOperation load;
     PC_CORE::StoreOperation store;
 
@@ -19,13 +19,21 @@ BEGIN_PCCORE
     PC_CORE::StoreOperation stencilStore;
 };
 
-struct RenderPassDescriptor
+struct SubPassDescription
 {
-    ShaderProgramPipelineType ShaderProgramPipelineType; 
-    std::vector<RenderPassAttachementDescriptor> attachements;
+    ShaderProgramPipelineType shaderProgramPipelineType;
+    std::vector<size_t> attachmentDescriptorIndices;
 };
 
+struct RenderPassDescriptor
+{
+    std::vector<AttachementDescriptor> attachments;
+    
+    std::vector<SubPassDescription> subPasses;
+};
 
+// this class represent a pass within is frame buffer attemechement
+// collection of pass for a same frame buffer
 class RhiRenderPass
 {
 public:
@@ -39,6 +47,13 @@ public:
     PC_CORE_API virtual ~RhiRenderPass() = default;
     
 protected:
+    ShaderProgramPipelineType m_ShaderProgramPipelineType;
+
+    uint32_t AttachementCount;
+    
+    bool m_HasDepth = false;
+    
+    bool m_HasStencil = false;
 };
 
 END_PCCORE

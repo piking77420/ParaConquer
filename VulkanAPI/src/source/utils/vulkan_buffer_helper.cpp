@@ -1,9 +1,10 @@
-﻿#include "vulkan_buffer_helper.hpp"
+﻿#include "utils/vulkan_buffer_helper.hpp"
 
+#include "utils/rhi_vulkan_parser.hpp"
 
-#include "rhi_vulkan_parser.hpp"
+using namespace Vulkan::Utils;
 
-vk::BufferUsageFlags Vulkan::GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsage bufferUsage)
+vk::BufferUsageFlags Vulkan::Utils::GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsage bufferUsage)
 {
     vk::BufferUsageFlags based = RhiToBufferUsage(bufferUsage);
     
@@ -22,7 +23,7 @@ vk::BufferUsageFlags Vulkan::GetVulkanBufferUsageFlagsClient(PC_CORE::BufferUsag
 
 }
 
-void Vulkan::CreateBuffer(VmaAllocator allocator, size_t size, vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage,
+void Vulkan::Utils::CreateBuffer(VmaAllocator allocator, size_t size, vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage,
                           VkBuffer* _outBuffer, VmaAllocation* _outAllocation)
 {
     vk::BufferCreateInfo bufferCreate{};
@@ -41,13 +42,12 @@ void Vulkan::CreateBuffer(VmaAllocator allocator, size_t size, vk::BufferUsageFl
     )));
 }
 
-void Vulkan::DestroyBuffer(vk::Device device, VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation)
+void Vulkan::Utils::DestroyBuffer(vk::Device device, VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation)
 {
     vmaDestroyBuffer(  allocator, buffer, allocation);
-    //device.destroyBuffer(buffer);
 }
 
-VmaMemoryUsage Vulkan::GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage)
+VmaMemoryUsage Vulkan::Utils::GetVmaMemoryUsage(PC_CORE::BufferUsage bufferUsage)
 {
     switch (bufferUsage)
     {

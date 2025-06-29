@@ -1,11 +1,11 @@
 ﻿#include "texture/vulkan_texture_2d.hpp"
 
-#include "helper_functions.hpp"
-#include "rhi_vulkan_parser.hpp"
-#include "transition_image_layout.hpp"
-#include "vulkan_buffer_helper.hpp"
+#include "utils/helper_functions.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
+#include "utils/transition_image_layout.hpp"
+#include "utils/vulkan_buffer_helper.hpp"
 #include "vulkan_context.hpp"
-#include "vulkan_image_helper.hpp"
+#include "utils/vulkan_image_helper.hpp"
 #include "buffer/vulkan_buffer.hpp"
 #include "low_renderer/rhi.hpp"
 
@@ -20,9 +20,9 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _crea
 	vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 
 	// parse values
-	const vk::Format format = RHIFormatToVkFormat(_createTextureInfo.format);
+	const vk::Format format = Utils::RHIFormatToVkFormat(_createTextureInfo.format);
 	const uint32_t mipLevel = _createTextureInfo.GenerateMipMap ? _createTextureInfo.mipsLevels : 1;
-	const vk::SampleCountFlagBits sampleCount = RhiSampleCountToVuklan(_createTextureInfo.samples);
+	const vk::SampleCountFlagBits sampleCount = Utils::RhiSampleCountToVuklan(_createTextureInfo.samples);
 	vk::ImageUsageFlags textureUsage = GetMemoryPropertyFlags(_createTextureInfo.textureUsage);
 
 	// if generate mip maps then image need to be transfer src
@@ -44,7 +44,7 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _crea
 			reinterpret_cast<VkImage*>(&m_VulkanTexture.textureAndAlloc[i].image), &m_VulkanTexture.textureAndAlloc[i].allocation);
 	}
 
-	const SingleCommandBeginInfo singleCommandBeginInfo =
+	const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
 	{
 			.device = device,
 			.commandPool = context.transferCommandPool,
@@ -71,7 +71,7 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _crea
 		for (size_t i = 0; i < m_VulkanTexture.textureAndAlloc.size(); i++)
 		{
 			VkBuffer* buffPtr = reinterpret_cast<VkBuffer*>(&bufferAndAllocs[i].buffer);
-			CreateBuffer(context.allocator, imageSize, vk::BufferUsageFlagBits::eTransferSrc, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU,
+			Utils::CreateBuffer(context.allocator, imageSize, vk::BufferUsageFlagBits::eTransferSrc, VmaMemoryUsage::VMA_MEMORY_USAGE_CPU_TO_GPU,
 				buffPtr, &bufferAndAllocs[i].alloc);
 
 			vmaMapMemory(context.allocator, bufferAndAllocs[i].alloc, &mappedData[i]);

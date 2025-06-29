@@ -23,4 +23,7 @@ public:
      ~Texture() = default;
 };
 
+REFLECT(Texture, Resource)
+
+
 END_PCCORE

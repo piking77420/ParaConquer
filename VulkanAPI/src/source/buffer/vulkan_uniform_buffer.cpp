@@ -1,7 +1,8 @@
 ﻿#include "buffer/vulkan_uniform_buffer.hpp"
 
-#include "vulkan_buffer_helper.hpp"
+#include "utils/vulkan_buffer_helper.hpp"
 #include "low_renderer/rhi.hpp"
+#include "utils/vulkan_buffer_helper.hpp"
 
 void Vulkan::VulkanUniformBuffer::MapData(void** _ptr)
 {
@@ -30,7 +31,7 @@ Vulkan::VulkanUniformBuffer::VulkanUniformBuffer(const void* _data, uint32_t _si
     
     for (size_t i = 0; i < m_VulkanBuffer.bufferAndAlloc.size(); i++)
     {
-        CreateBuffer(context.allocator, _sizeInByte, vk::BufferUsageFlagBits::eUniformBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU
-                , reinterpret_cast<VkBuffer*>(&m_VulkanBuffer.bufferAndAlloc[i].buffer), &m_VulkanBuffer.bufferAndAlloc[i].alloc);
+        Utils::CreateBuffer(context.allocator, _sizeInByte, vk::BufferUsageFlagBits::eUniformBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU
+                            , reinterpret_cast<VkBuffer*>(&m_VulkanBuffer.bufferAndAlloc[i].buffer), &m_VulkanBuffer.bufferAndAlloc[i].alloc);
     }
 }

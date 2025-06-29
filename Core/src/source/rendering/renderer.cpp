@@ -458,7 +458,7 @@ void Renderer::CreateSkyRenderingShader()
 
     const ShaderInfo shaderInfo =
     {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+        .shaderProgramPipelineType = shaderProgramPipelineType::POINT_GRAPHICS,
         .shaderInfoData = shaderGraphicPointInfo,
         .shaderSources = source
     };

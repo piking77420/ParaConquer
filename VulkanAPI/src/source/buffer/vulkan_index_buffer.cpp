@@ -1,7 +1,7 @@
 ﻿#include "buffer/vulkan_index_buffer.hpp"
 
-#include "helper_functions.hpp"
-#include "vulkan_buffer_helper.hpp"
+#include "utils/helper_functions.hpp"
+#include "utils/vulkan_buffer_helper.hpp"
 
 Vulkan::VulkanIndexBuffer::VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format,
                                              PC_CORE::BufferMemoryUsage _usage)  : m_VulkanBuffer(_usage)
@@ -20,21 +20,21 @@ Vulkan::VulkanIndexBuffer::VulkanIndexBuffer(const void* _data, uint32_t _sizeIn
 
     for (size_t i = 0; i < stagingBufferAndAlloc.size(); i++)
     {
-        CreateBuffer(context.allocator, _sizeInByte, outBufferUsage,
-             VMA_MEMORY_USAGE_GPU_ONLY, reinterpret_cast<VkBuffer*>(&m_VulkanBuffer.bufferAndAlloc[i].buffer), &m_VulkanBuffer.bufferAndAlloc[i].alloc);
+        Utils::CreateBuffer(context.allocator, _sizeInByte, outBufferUsage,
+                            VMA_MEMORY_USAGE_GPU_ONLY, reinterpret_cast<VkBuffer*>(&m_VulkanBuffer.bufferAndAlloc[i].buffer), &m_VulkanBuffer.bufferAndAlloc[i].alloc);
 
-        CreateBuffer(context.allocator, _sizeInByte, vk::BufferUsageFlagBits::eTransferSrc,
+        Utils::CreateBuffer(context.allocator, _sizeInByte, vk::BufferUsageFlagBits::eTransferSrc,
             VMA_MEMORY_USAGE_CPU_TO_GPU, reinterpret_cast<VkBuffer*>(&stagingBufferAndAlloc[i].buffer), &stagingBufferAndAlloc[i].alloc);
     }
-    
-    SingleCommandBeginInfo singleCommandBeginInfo =
+
+    Utils::SingleCommandBeginInfo singleCommandBeginInfo =
     {
         .device = context.GetDevice()->GetDevice(),
         .commandPool = context.transferCommandPool,
         .queue = context.mainQueue
     };
 
-    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
+    vk::CommandBuffer commandBuffer = Utils::BeginSingleTimeCommand(singleCommandBeginInfo);
 
     for (size_t i = 0; i < stagingBufferAndAlloc.size(); i++)
     {
@@ -51,7 +51,7 @@ Vulkan::VulkanIndexBuffer::VulkanIndexBuffer(const void* _data, uint32_t _sizeIn
         vmaUnmapMemory(context.allocator, stagingBufferAndAlloc[i].alloc);
     }
 
-    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    Utils::EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 
 
     for (auto& bufferAndAlloc : stagingBufferAndAlloc)

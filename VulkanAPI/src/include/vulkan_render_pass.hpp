@@ -23,10 +23,10 @@ namespace Vulkan
         VULKAN_API ~VulkanRenderPass() override;
 
         VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
-        
-        
     protected:
         vk::RenderPass m_RenderPass = VK_NULL_HANDLE;
+
+        void ParseAttachmentLayout(const PC_CORE::AttachementDescriptor& _attachment, vk::AttachmentDescription* _attachmentLayouts);
     };
     
 }

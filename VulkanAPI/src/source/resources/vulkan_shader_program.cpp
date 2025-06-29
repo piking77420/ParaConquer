@@ -4,7 +4,7 @@
 #include <map>
 
 #include "resources/vulkan_descriptor_sets.hpp"
-#include "rhi_vulkan_parser.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_render_pass.hpp"
 #include "io/in_out.h"
@@ -209,7 +209,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size(); i++)
     {
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType = vk::StructureType::ePipelineShaderStageCreateInfo;
-        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = RhiToShaderStage(_programShaderCreateInfo.shaderInfo.shaderSources[i].first);
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = Utils::RhiToShaderStage(_programShaderCreateInfo.shaderInfo.shaderSources[i].first);
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.vkShaderModules[i];
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.modulesReflected[i].entry_point_name;
     }
@@ -262,7 +262,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
     ParseRasterizer(&rasterizer, _shaderGraphicPointInfo.rasterizerInfo);
     
-    vk::SampleCountFlagBits sample = RhiSampleCountToVuklan(_shaderGraphicPointInfo.rasterizerInfo.multiSampleRasterization);
+    vk::SampleCountFlagBits sample = Utils::RhiSampleCountToVuklan(_shaderGraphicPointInfo.rasterizerInfo.multiSampleRasterization);
     vk::PipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
     multisampling.sampleShadingEnable = sample == vk::SampleCountFlagBits::e1 ? VK_FALSE : VK_TRUE;
@@ -281,7 +281,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     depthStencilState.depthTestEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
     depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
     depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
-    depthStencilState.depthCompareOp = RHIToVulkanCompareOp(_shaderGraphicPointInfo.depthCompareOp);
+    depthStencilState.depthCompareOp = Utils::RHIToVulkanCompareOp(_shaderGraphicPointInfo.depthCompareOp);
     depthStencilState.minDepthBounds = 0.0f;
     depthStencilState.maxDepthBounds = 1.0f;
     depthStencilState.stencilTestEnable = VK_FALSE;
@@ -486,9 +486,9 @@ void VulkanShaderProgram::ParseRasterizer(
 {
     _pipelineRasterizationStateCreateInfo->depthClampEnable = VK_FALSE;
     _pipelineRasterizationStateCreateInfo->rasterizerDiscardEnable = VK_FALSE;
-    _pipelineRasterizationStateCreateInfo->polygonMode = RhiPolygonModeToVulkan(_rasterizerInfo.polygonMode);
+    _pipelineRasterizationStateCreateInfo->polygonMode = Utils::RhiPolygonModeToVulkan(_rasterizerInfo.polygonMode);
     _pipelineRasterizationStateCreateInfo->lineWidth = 1.0f;
-    _pipelineRasterizationStateCreateInfo->cullMode = RhiToCullMode(_rasterizerInfo.cullModeFlag);
+    _pipelineRasterizationStateCreateInfo->cullMode = Utils::RhiToCullMode(_rasterizerInfo.cullModeFlag);
     
     _pipelineRasterizationStateCreateInfo->frontFace = _rasterizerInfo.frontFace == PC_CORE::FrontFace::Clockwise ?  vk::FrontFace::eClockwise
     : vk::FrontFace::eCounterClockwise;
@@ -530,7 +530,7 @@ vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDe
     vk::VertexInputBindingDescription vkvertexInputBindingDescription{};
     vkvertexInputBindingDescription.binding = _vertexInputBindingDescrition.binding;
     vkvertexInputBindingDescription.stride = _vertexInputBindingDescrition.stride;
-    vkvertexInputBindingDescription.inputRate = RhiInputRateToVkInputRate(_vertexInputBindingDescrition.vertexInputRate);
+    vkvertexInputBindingDescription.inputRate = Utils::RhiInputRateToVkInputRate(_vertexInputBindingDescrition.vertexInputRate);
 
     return vkvertexInputBindingDescription;
 }
@@ -542,7 +542,7 @@ vk::VertexInputAttributeDescription VulkanShaderProgram::ParseVertexInputAttribu
     vkvertexInputAttributeDescription.location = _vertexAttributeDescription.location;
     vkvertexInputAttributeDescription.binding = _vertexAttributeDescription.binding;
     vkvertexInputAttributeDescription.offset = _vertexAttributeDescription.offset;
-    vkvertexInputAttributeDescription.format = RHIFormatToVkFormat(_vertexAttributeDescription.format);
+    vkvertexInputAttributeDescription.format = Utils::RHIFormatToVkFormat(_vertexAttributeDescription.format);
 
     return vkvertexInputAttributeDescription;
 }

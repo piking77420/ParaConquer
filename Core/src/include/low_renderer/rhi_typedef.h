@@ -10,7 +10,9 @@ constexpr const char* SHADER_CACHE_PATH = "shaderCache/";
 
 
 #define ALIGNAS_16 alignas(16)
+
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr size_t MAX_COLOR_ATTACHMENTS = 7;
 
 BEGIN_PCCORE
     enum class GraphicAPI
@@ -425,11 +427,13 @@ enum class IndexFormat : int
     };
 
 
-    enum class TextureAttachement
+    enum class AttachmentType
     {
         None,
         Color = 1,
-        DepthStencil = 2,
+        Depth,
+        Stencil,
+        DepthStencil,
     };
 
     enum class TextureUsage : uint32_t
@@ -580,16 +584,12 @@ enum struct LoadOperation
     Load ,
     Clear,
     DontCare,
-    None,
 };
 
 enum struct StoreOperation
 {
     Store,
     DontCare,
-    None,
-
-    Count,
 };
 
 enum class ShaderProgramPipelineType

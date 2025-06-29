@@ -1,6 +1,6 @@
-﻿#include "helper_functions.hpp"
+﻿#include "utils/helper_functions.hpp"
 
-vk::CommandBuffer Vulkan::BeginSingleTimeCommand(const SingleCommandBeginInfo& _singleCommandBeginInfo)
+vk::CommandBuffer Vulkan::Utils::BeginSingleTimeCommand(const SingleCommandBeginInfo& _singleCommandBeginInfo)
 {
     vk::CommandBufferAllocateInfo allocateInfo;
     allocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
@@ -21,7 +21,7 @@ vk::CommandBuffer Vulkan::BeginSingleTimeCommand(const SingleCommandBeginInfo& _
 
 
 
-void Vulkan::EndSingleTimeCommand(vk::CommandBuffer _commandBuffer,
+void Vulkan::Utils::EndSingleTimeCommand(vk::CommandBuffer _commandBuffer,
     const SingleCommandBeginInfo& _singleCommandBeginInfo, vk::Fence _fence)
 {
     _commandBuffer.end();
