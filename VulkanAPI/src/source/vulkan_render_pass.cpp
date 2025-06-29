@@ -140,9 +140,7 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     
         vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(_renderPassDescriptor.colorAttachement.size() - subPass.colorAttachementDescriptorIndicies.size());
         vkSubpass.pPreserveAttachments = subpassPreserved.data() + preserveOffset;
-
-        vkSubpass.pResolveAttachments
-
+        
         refOffset += subPass.colorAttachementDescriptorIndicies.size();
         preserveOffset += vkSubpass.preserveAttachmentCount;
     }
