@@ -601,6 +601,123 @@ enum class ShaderProgramPipelineType
     COUT
 };
 
+enum class PipelineStageFlagBits : uint8_t
+{
+    TopOfPipe,
+    DrawIndirect,
+    VertexInput,
+    VertexShader,
+    TessellationControlShader,
+    TessellationEvaluationShader,
+    GeometryShader,
+    FragmentShader,
+    EarlyFragmentTests,
+    LateFragmentTests,
+    ColorAttachmentOutput,
+    ComputeShader,
+    Transfer,
+    BottomOfPipe,
+    Host,
+    AllGraphics,
+    AllCommands,
+    None,
+    NoneKHR,
+    TransformFeedbackEXT,
+    ConditionalRenderingEXT,
+    AccelerationStructureBuildKHR,
+    AccelerationStructureBuildNV,
+    RayTracingShaderKHR,
+    RayTracingShaderNV,
+    FragmentDensityProcessEXT,
+    FragmentShadingRateAttachmentKHR,
+    ShadingRateImageNV,
+    CommandPreprocessNV,
+    CommandPreprocessEXT,
+    TaskShaderEXT,
+    TaskShaderNV,
+    MeshShaderEXT,
+    MeshShaderNV
+};
+using PipelineStageFlags = size_t;
+
+inline PipelineStageFlags operator|(PipelineStageFlagBits a, PipelineStageFlagBits b) {
+    return static_cast<PipelineStageFlags>(a) | static_cast<PipelineStageFlags>(b);
+}
+
+inline PipelineStageFlags operator&(PipelineStageFlagBits a, PipelineStageFlagBits b) {
+    return static_cast<PipelineStageFlags>(a) & static_cast<PipelineStageFlags>(b);
+}
+
+inline PipelineStageFlags& operator|=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs) {
+    lhs |= static_cast<PipelineStageFlags>(rhs);
+    return lhs;
+}
+
+inline PipelineStageFlags& operator&=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs) {
+    lhs &= static_cast<PipelineStageFlags>(rhs);
+    return lhs;
+}
+
+enum class AccessFlagBits : uint8_t
+{
+    IndirectCommandRead,
+    IndexRead,
+    VertexAttributeRead,
+    UniformRead,
+    InputAttachmentRead,
+    ShaderRead,
+    ShaderWrite,
+    ColorAttachmentRead,
+    ColorAttachmentWrite,
+    DepthStencilAttachmentRead,
+    DepthStencilAttachmentWrite,
+    TransferRead,
+    TransferWrite,
+    HostRead,
+    HostWrite,
+    MemoryRead,
+    MemoryWrite,
+    None,
+    NoneKHR,
+    TransformFeedbackWriteEXT,
+    TransformFeedbackCounterReadEXT,
+    TransformFeedbackCounterWriteEXT,
+    ConditionalRenderingReadEXT,
+    ColorAttachmentReadNoncoherentEXT,
+    AccelerationStructureReadKHR,
+    AccelerationStructureReadNV,
+    AccelerationStructureWriteKHR,
+    AccelerationStructureWriteNV,
+    FragmentDensityMapReadEXT,
+    FragmentShadingRateAttachmentReadKHR,
+    ShadingRateImageReadNV,
+    CommandPreprocessReadNV,
+    CommandPreprocessReadEXT,
+    CommandPreprocessWriteNV,
+    CommandPreprocessWriteEXT
+};
+
+using AccessFlags = size_t;
+
+// Bitwise operators for AccessFlagBits producing AccessFlags
+
+inline AccessFlags operator|(AccessFlagBits a, AccessFlagBits b) {
+    return static_cast<AccessFlags>(a) | static_cast<AccessFlags>(b);
+}
+
+inline AccessFlags operator&(AccessFlagBits a, AccessFlagBits b) {
+    return static_cast<AccessFlags>(a) & static_cast<AccessFlags>(b);
+}
+
+inline AccessFlags& operator|=(AccessFlags& lhs, AccessFlagBits rhs) {
+    lhs |= static_cast<AccessFlags>(rhs);
+    return lhs;
+}
+
+inline AccessFlags& operator&=(AccessFlags& lhs, AccessFlagBits rhs) {
+    lhs &= static_cast<AccessFlags>(rhs);
+    return lhs;
+}
 
 END_PCCORE
 

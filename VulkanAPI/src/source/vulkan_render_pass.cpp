@@ -131,15 +131,16 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     std::vector<vk::SubpassDependency> dependencies;
     dependencies.resize(subPasses.size());
 
-    dependencies[0] = {
-        .srcSubpass = VK_SUBPASS_EXTERNAL,
-        .dstSubpass = 0u,
-        .srcStageMask = vk::PipelineStageFlagBits::eBottomOfPipe,
-        .dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        .srcAccessMask = vk::AccessFlagBits::eMemoryRead,
-        .dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
-        .dependencyFlags = vk::DependencyFlagBits::eByRegion
-    };
+
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0u;
+    dependencies[0].srcStageMask = {};
+    dependencies[0].dstStageMask = {};
+    dependencies[0].srcAccessMask = {};
+    dependencies[0].dstAccessMask = {};
+    dependencies[0].dependencyFlags = {};
+
+    ParseDependcies(_attachments.subPasses[0].subPassDependcies, &dependencies[0]);
 
     for (uint32_t i = 1; i < dependencies.size(); i++) // start from 1
     {
@@ -147,14 +148,8 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
 
         dep.srcSubpass = i - 1;
         dep.dstSubpass = i;
-
-        dep.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-        dep.dstStageMask = vk::PipelineStageFlagBits::eFragmentShader;
-
-        dep.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-        dep.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-
-        dep.dependencyFlags = vk::DependencyFlagBits::eByRegion;
+        ParseDependcies(_attachments.subPasses[i].subPassDependcies, &dep);
+        dep.dependencyFlags = {};
     }
 
     vk::RenderPassCreateInfo renderPassInfo = {};
@@ -430,4 +425,14 @@ void Vulkan::VulkanRenderPass::ParseAttachmentLayout(const PC_CORE::AttachementD
         break;
     default: ;
     }
+}
+
+void Vulkan::VulkanRenderPass::ParseDependcies(const PC_CORE::SubPassDependcies& _subPassDependcies,
+                                               vk::SubpassDependency* _vkdependency)
+{
+    _vkdependency->srcStageMask = Utils::RhiPipelineStageToVulkan(_subPassDependcies.srcStageMask);
+    _vkdependency->dstStageMask = Utils::RhiPipelineStageToVulkan(_subPassDependcies.dstStageMask);
+
+    _vkdependency->srcAccessMask = Utils::RhiAccessFlagToVulkan(_subPassDependcies.srcAccessMask);
+    _vkdependency->dstAccessMask = Utils::RhiAccessFlagToVulkan(_subPassDependcies.dstAccessMask);
 }

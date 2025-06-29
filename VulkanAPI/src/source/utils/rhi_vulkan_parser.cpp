@@ -1233,3 +1233,157 @@ vk::AttachmentStoreOp Vulkan::Utils::RhiStoreOperationToVulkan(PC_CORE::StoreOpe
         throw std::runtime_error("Invalid or unsupported store operation.");
     }
 }
+
+vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::PipelineStageFlags stageFlags)
+{
+    vk::PipelineStageFlags vkFlags = {};
+
+    using StageBit = PC_CORE::PipelineStageFlagBits;
+
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TopOfPipe))
+        vkFlags |= vk::PipelineStageFlagBits::eTopOfPipe;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::DrawIndirect))
+        vkFlags |= vk::PipelineStageFlagBits::eDrawIndirect;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::VertexInput))
+        vkFlags |= vk::PipelineStageFlagBits::eVertexInput;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::VertexShader))
+        vkFlags |= vk::PipelineStageFlagBits::eVertexShader;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TessellationControlShader))
+        vkFlags |= vk::PipelineStageFlagBits::eTessellationControlShader;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TessellationEvaluationShader))
+        vkFlags |= vk::PipelineStageFlagBits::eTessellationEvaluationShader;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::GeometryShader))
+        vkFlags |= vk::PipelineStageFlagBits::eGeometryShader;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::FragmentShader))
+        vkFlags |= vk::PipelineStageFlagBits::eFragmentShader;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::EarlyFragmentTests))
+        vkFlags |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::LateFragmentTests))
+        vkFlags |= vk::PipelineStageFlagBits::eLateFragmentTests;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ColorAttachmentOutput))
+        vkFlags |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ComputeShader))
+        vkFlags |= vk::PipelineStageFlagBits::eComputeShader;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::Transfer))
+        vkFlags |= vk::PipelineStageFlagBits::eTransfer;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::BottomOfPipe))
+        vkFlags |= vk::PipelineStageFlagBits::eBottomOfPipe;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::Host))
+        vkFlags |= vk::PipelineStageFlagBits::eHost;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AllGraphics))
+        vkFlags |= vk::PipelineStageFlagBits::eAllGraphics;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AllCommands))
+        vkFlags |= vk::PipelineStageFlagBits::eAllCommands;
+
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TransformFeedbackEXT))
+        vkFlags |= vk::PipelineStageFlagBits::eTransformFeedbackEXT;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ConditionalRenderingEXT))
+        vkFlags |= vk::PipelineStageFlagBits::eConditionalRenderingEXT;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AccelerationStructureBuildKHR))
+        vkFlags |= vk::PipelineStageFlagBits::eAccelerationStructureBuildKHR;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AccelerationStructureBuildNV))
+        vkFlags |= vk::PipelineStageFlagBits::eAccelerationStructureBuildNV;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::RayTracingShaderKHR))
+        vkFlags |= vk::PipelineStageFlagBits::eRayTracingShaderKHR;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::RayTracingShaderNV))
+        vkFlags |= vk::PipelineStageFlagBits::eRayTracingShaderNV;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::FragmentDensityProcessEXT))
+        vkFlags |= vk::PipelineStageFlagBits::eFragmentDensityProcessEXT;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::FragmentShadingRateAttachmentKHR))
+        vkFlags |= vk::PipelineStageFlagBits::eFragmentShadingRateAttachmentKHR;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ShadingRateImageNV))
+        vkFlags |= vk::PipelineStageFlagBits::eShadingRateImageNV;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::CommandPreprocessNV))
+        vkFlags |= vk::PipelineStageFlagBits::eCommandPreprocessNV;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::CommandPreprocessEXT))
+        vkFlags |= vk::PipelineStageFlagBits::eCommandPreprocessEXT;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TaskShaderEXT))
+        vkFlags |= vk::PipelineStageFlagBits::eTaskShaderEXT;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TaskShaderNV))
+        vkFlags |= vk::PipelineStageFlagBits::eTaskShaderNV;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::MeshShaderEXT))
+        vkFlags |= vk::PipelineStageFlagBits::eMeshShaderEXT;
+    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::MeshShaderNV))
+        vkFlags |= vk::PipelineStageFlagBits::eMeshShaderNV;
+
+    return vkFlags;
+}
+
+vk::AccessFlags Vulkan::Utils::RhiAccessFlagToVulkan(PC_CORE::AccessFlags accessFlags)
+{
+    vk::AccessFlags vkFlags{};
+
+    using AccessBit = PC_CORE::AccessFlagBits;
+    using AccessFlags = PC_CORE::AccessFlags;
+
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndirectCommandRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eIndirectCommandRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndexRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eIndexRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::VertexAttributeRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eVertexAttributeRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::UniformRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eUniformRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::InputAttachmentRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eInputAttachmentRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eShaderRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderWrite)) != 0)
+        vkFlags |= vk::AccessFlagBits::eShaderWrite;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eColorAttachmentRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentWrite)) != 0)
+        vkFlags |= vk::AccessFlagBits::eColorAttachmentWrite;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentWrite)) != 0)
+        vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eTransferRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferWrite)) != 0)
+        vkFlags |= vk::AccessFlagBits::eTransferWrite;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eHostRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostWrite)) != 0)
+        vkFlags |= vk::AccessFlagBits::eHostWrite;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryRead)) != 0)
+        vkFlags |= vk::AccessFlagBits::eMemoryRead;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryWrite)) != 0)
+        vkFlags |= vk::AccessFlagBits::eMemoryWrite;
+
+    // Extensions
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackWriteEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eTransformFeedbackWriteEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterReadEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterReadEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterWriteEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterWriteEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ConditionalRenderingReadEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eConditionalRenderingReadEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentReadNoncoherentEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadKHR)) != 0)
+        vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadKHR;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadNV)) != 0)
+        vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadNV;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteKHR)) != 0)
+        vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteKHR;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteNV)) != 0)
+        vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteNV;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentDensityMapReadEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eFragmentDensityMapReadEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentShadingRateAttachmentReadKHR)) != 0)
+        vkFlags |= vk::AccessFlagBits::eFragmentShadingRateAttachmentReadKHR;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShadingRateImageReadNV)) != 0)
+        vkFlags |= vk::AccessFlagBits::eShadingRateImageReadNV;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadNV)) != 0)
+        vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadNV;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadEXT;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteNV)) != 0)
+        vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteNV;
+    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteEXT)) != 0)
+        vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteEXT;
+
+    return vkFlags;
+}

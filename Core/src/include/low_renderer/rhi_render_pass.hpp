@@ -19,10 +19,22 @@ struct AttachementDescriptor
     PC_CORE::StoreOperation stencilStore;
 };
 
+struct SubPassDependcies
+{
+    PipelineStageFlags srcStageMask;
+    PipelineStageFlags dstStageMask;
+  
+    AccessFlags srcAccessMask;
+    AccessFlags dstAccessMask;
+  
+};
+
 struct SubPassDescription
 {
     ShaderProgramPipelineType shaderProgramPipelineType;
     std::vector<size_t> attachmentDescriptorIndices;
+
+    SubPassDependcies subPassDependcies;
 };
 
 struct RenderPassDescriptor
