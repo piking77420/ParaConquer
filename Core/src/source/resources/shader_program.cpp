@@ -6,11 +6,20 @@
 using namespace PC_CORE;
 
 
-ShaderProgram::ShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo) : m_ProgramShaderCreateInfo(_programShaderCreateInfo)
+void ShaderProgram::AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets, size_t set)
 {
+    m_ShaderProgram->AllocDescriptorSet(_shaderProgramDescriptorSets, set);
 }
 
-ShaderProgram::~ShaderProgram()
+void ShaderProgram::FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets)
 {
+    m_ShaderProgram->FreeDescriptorSet(_shaderProgramDescriptorSets);
+}
+
+ShaderProgram::ShaderProgram(const std::string& _shaderName, const ProgramShaderCreateInfo& _programShaderCreateInfo) : Resource(_shaderName)
+{
+    DYNAMIC_REFLECT_INIT
+    
+    m_ShaderProgram = Rhi::CreateRhiShaderProgram(_programShaderCreateInfo);
 }
 

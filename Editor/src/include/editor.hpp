@@ -85,6 +85,8 @@ private:
     void ParseEditorInit();
 
     void BasicOpenFile();
+
+    void ReloadShaders();
     
     std::vector<std::unique_ptr<EditorCommand>> m_EditorCommands;
 };

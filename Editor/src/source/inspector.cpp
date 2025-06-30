@@ -404,7 +404,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
 
         if (ImGui::Button("Set to Null"))
         {
-            *doublePtr = {};
+            (*doublePtr).reset();
         }
 
         // remove the type of the pointer

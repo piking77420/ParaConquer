@@ -34,8 +34,7 @@ PC_CORE::Material::Material(const std::string& _name)
 
 PC_CORE::Material::~Material()
 {
-    
-    // TO DO HANDLE RESOURCES INTRA DEPENDANCIES
+   
     if (!m_ShaderProgram.expired())
         m_ShaderProgram.lock()->FreeDescriptorSet(&m_pShaderProgramDescriptorSets);
 }
@@ -60,7 +59,7 @@ void PC_CORE::Material::Build()
    {
         {
             ShaderProgramDescriptorType::CombineImageSampler,
-            2,
+            ALBEDO_BINDING,
             nullptr,
             &imageSamperDescriptor,
         },

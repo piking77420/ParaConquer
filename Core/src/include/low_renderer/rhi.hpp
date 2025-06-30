@@ -11,11 +11,11 @@
 #include "rhi_context.hpp"
 
 #include "rhi_index_buffer.hpp"
+#include "rhi_shader_program.hpp"
 #include "rhi_texture_3d.hpp"
 #include "rhi_uniform_buffer.hpp"
 #include "rhi_vertex_buffer.hpp"
 
-#include "resources/shader_program.h"
 #include "rhi_texure_2d.hpp"
 
 BEGIN_PCCORE
@@ -45,10 +45,8 @@ public:
 
     PC_CORE_API static Rhi& GetInstance();
 
-    PC_CORE_API static std::shared_ptr<ShaderProgram> CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo);
-
-    PC_CORE_API static void DestroyShader(ShaderProgram* _shaderprogram);
-
+    PC_CORE_API static std::shared_ptr<RhiShaderProgram> CreateRhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo);
+    
     PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
 
     PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(PC_CORE::RHIFormat _colorFormat, PC_CORE::RHIFormat _depthFormat);

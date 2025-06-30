@@ -76,7 +76,7 @@ Rhi& Rhi::GetInstance()
     return *m_Instance;
 }
 
-std::shared_ptr<ShaderProgram> Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo)
+std::shared_ptr<RhiShaderProgram> Rhi::CreateRhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo)
 {
     Rhi& rhi = GetInstance();
     
@@ -95,10 +95,6 @@ std::shared_ptr<ShaderProgram> Rhi::CreateShader(const ProgramShaderCreateInfo& 
     
 }
 
-void Rhi::DestroyShader(ShaderProgram* _shaderprogram)
-{
-    delete _shaderprogram;
-}
 
 std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
 {

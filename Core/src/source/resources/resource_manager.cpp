@@ -81,9 +81,7 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
         
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        const std::shared_ptr<const Material> interface = std::reinterpret_pointer_cast<const Material>(it->second);
-        
-        if (typeID != interface->GetType().typeId)
+        if (typeID != it->second->GetType().typeId)
             continue;
         
         _lamba(it->second);
