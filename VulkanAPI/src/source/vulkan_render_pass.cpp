@@ -242,15 +242,30 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint3
     colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eStore;
     colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
     colorAttachment.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    
+    vk::AttachmentDescription colorAttachmentResolve{};
+    colorAttachmentResolve.format = Utils::RHIFormatToVkFormat(colorFormat);
+    colorAttachmentResolve.samples = vk::SampleCountFlagBits::e1;
+    colorAttachmentResolve.loadOp = vk::AttachmentLoadOp::eClear;
+    colorAttachmentResolve.storeOp = vk::AttachmentStoreOp::eStore;
+    colorAttachmentResolve.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+    colorAttachmentResolve.stencilStoreOp = vk::AttachmentStoreOp::eStore;
+    colorAttachmentResolve.initialLayout = vk::ImageLayout::eUndefined;
+    colorAttachmentResolve.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
     vk::AttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
 
+    vk::AttachmentReference colorAttachmentResolveRef{};
+    colorAttachmentResolveRef.attachment = 1;
+    colorAttachmentResolveRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+    
     vk::SubpassDescription subpass{};
     subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
     vk::SubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -260,10 +275,12 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint3
     dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
+    std::array<vk::AttachmentDescription, 2> attachments = {colorAttachment, colorAttachmentResolve};
+    
     vk::RenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.attachmentCount = attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;

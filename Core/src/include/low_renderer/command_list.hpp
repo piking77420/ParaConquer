@@ -46,7 +46,8 @@ struct BeginRenderPassInfo
     Tbx::Vector2ui extent;
 
     ClearValueFlags clearValueFlags;
-    Tbx::Vector4f clearColor;
+    Tbx::Vector4f* clearColor;
+    size_t clearValueCount;
     float clearDepth = 0.f;
     float clearStencil = 0.f;
     
