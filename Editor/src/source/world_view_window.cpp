@@ -87,7 +87,7 @@ void WorldViewWindow::Render()
 void WorldViewWindow::ResizeViewports()
 {
     
-    const PC_CORE::CreateImageInfo2D create_texture =
+    PC_CORE::CreateImageInfo2D create_texture =
    {
         .width =  static_cast<int32_t>(size.x),
         .height = static_cast<int32_t>(size.y),
@@ -97,18 +97,23 @@ void WorldViewWindow::ResizeViewports()
         .channel = PC_CORE::Channel::RGBA,
         .textureUsage = PC_CORE::TextureUsage::RenderTarget | PC_CORE::TextureUsage::Sampled,
         .textureMemoryUsage = PC_CORE::TextureMemoryUsage::GPU_Only,
-        .samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount(),
+        .samples = 1,
         .GenerateMipMap = false,
        . data = nullptr
     };
 
    // assert(false && "TO DO Handle move constructor and other case");
-    m_ViewportTexture = PC_CORE::Texture2D(create_texture);
+    m_OutRenderImage = PC_CORE::Texture2D(create_texture);
+    create_texture.samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
+    m_ResolvedTexture = PC_CORE::Texture2D(create_texture);
     
     std::vector<PC_CORE::FrameBufferAttachementDesriptor> attachments =
     { 
         {
-            &m_ViewportTexture,
+            &m_ResolvedTexture,
+        },
+        {
+            &m_OutRenderImage
         }
     };
     
@@ -128,7 +133,7 @@ void WorldViewWindow::UpdateViewPortDescriptorSet()
 {   
     
     m_Editor->IMGUIContext.RemoveImguiVulkanViewport(imguiDescriptorSet);
-    m_Editor->IMGUIContext.CreateImguiVulkanViewport( &m_ViewportTexture, imguiDescriptorSet);
+    m_Editor->IMGUIContext.CreateImguiVulkanViewport( &m_OutRenderImage, imguiDescriptorSet);
     
     std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
     

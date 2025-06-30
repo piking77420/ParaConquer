@@ -39,7 +39,9 @@ private:
 
     PC_CORE::Gbuffers m_Gbuffers;
     
-    PC_CORE::Texture2D m_ViewportTexture;
+    PC_CORE::Texture2D m_OutRenderImage;
+    
+    PC_CORE::Texture2D m_ResolvedTexture;
 
     std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
 

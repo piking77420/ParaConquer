@@ -215,15 +215,20 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
+
+    std::array<Tbx::Vector4f, 1> clearValues =  {
+        Tbx::Vector4f(0, 0, 0, 0.f),
+        };
+    
     const BeginRenderPassInfo beginRenderPassInfo =
     {
         .renderPass = forwardPass,
-        // shpoulmd be gbuffer
         .frameBuffer = renderingContext.gbufferFrameBuffer,
         .renderOffSet = {0, 0},
         .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
         .clearValueFlags = clearValueFlags,
-        .clearColor = Tbx::Vector4f(0, 0, 0, 0.f),
+        .clearColor = clearValues.data(),
+        .clearValueCount = clearValues.size(),
         .clearDepth = 1.f
     };
 
@@ -250,6 +255,11 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     
     primaryCommandList->EndDebugLabel();
 
+    std::array<Tbx::Vector4f, 2> clearValues2 =  {
+        Tbx::Vector4f(0, 0, 0, 0.f),
+        Tbx::Vector4f(0, 0, 0, 0.f),
+        };
+    
     const BeginRenderPassInfo drawToViewport =
     {
         .renderPass = drawTextureScreenQuadPass,
@@ -257,7 +267,8 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .renderOffSet = {0, 0},
         .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
         .clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor),
-        .clearColor = Tbx::Vector4f(0, 0, 0, 1.f),
+        .clearColor = clearValues2.data(),
+        .clearValueCount = clearValues2.size(),
         .clearDepth = 0.f,
         .clearStencil = 0.f
     };

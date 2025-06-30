@@ -93,21 +93,26 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     renderPassInfo.renderArea.offset = vk::Offset2D{_BeginRenderPassInfo.renderOffSet.x, _BeginRenderPassInfo.renderOffSet.y};
     renderPassInfo.renderArea.extent = vk::Extent2D{_BeginRenderPassInfo.extent.x, _BeginRenderPassInfo.extent.y};
 
+    constexpr size_t MaxClearValues = 10;
     size_t clearCount = 0;
-    vk::ClearValue clearValues[3];
+    std::array<vk::ClearValue, MaxClearValues> clearValues;
+    assert(_BeginRenderPassInfo.clearValueCount <  clearValues.size() && "clearValues.size() should be graeter than _BeginRenderPassInfo.clearValueCount");
     
     if ((_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueColor) &&
     (_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueDepth))
     {
-        clearValues[0].color.setFloat32({
-            _BeginRenderPassInfo.clearColor.x,
-            _BeginRenderPassInfo.clearColor.y,
-            _BeginRenderPassInfo.clearColor.z,
-            _BeginRenderPassInfo.clearColor.w
-        });
-
-        clearValues[1].depthStencil.setDepth(_BeginRenderPassInfo.clearDepth);
-        clearCount = 2;
+        // Clear + Depht
+        clearCount = _BeginRenderPassInfo.clearValueCount + 1;
+        for (size_t i = 0; i < _BeginRenderPassInfo.clearValueCount; i++)
+        {
+            clearValues[0].color.setFloat32({
+           _BeginRenderPassInfo.clearColor[i].x,
+           _BeginRenderPassInfo.clearColor[i].y,
+           _BeginRenderPassInfo.clearColor[i].z,
+           _BeginRenderPassInfo.clearColor[i].w});
+        }
+       
+        clearValues[clearCount - 1].depthStencil.setDepth(_BeginRenderPassInfo.clearDepth);
     }
     else if (_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueDepth)
     {
@@ -117,16 +122,18 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     }
     else if (_BeginRenderPassInfo.clearValueFlags & PC_CORE::ClearValueFlags::ClearValueColor)
     {
-        clearValues[0].color.setFloat32({
-            _BeginRenderPassInfo.clearColor.x,
-            _BeginRenderPassInfo.clearColor.y,
-            _BeginRenderPassInfo.clearColor.z,
-            _BeginRenderPassInfo.clearColor.w
-        });
-        clearCount = 1;
+        clearCount = _BeginRenderPassInfo.clearValueCount;
+        for (size_t i = 0; i < _BeginRenderPassInfo.clearValueCount; i++)
+        {
+            clearValues[0].color.setFloat32({
+           _BeginRenderPassInfo.clearColor[i].x,
+           _BeginRenderPassInfo.clearColor[i].y,
+           _BeginRenderPassInfo.clearColor[i].z,
+           _BeginRenderPassInfo.clearColor[i].w});
+        }
     }
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearCount);
-    renderPassInfo.pClearValues = clearValues;
+    renderPassInfo.pClearValues = clearValues.data();
 
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
