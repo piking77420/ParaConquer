@@ -51,10 +51,11 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             {
                 
                 const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).uniformBufferDescriptor;
-                
-                const std::vector<BufferAndAlloc>* textureAndAlloc = static_cast<const std::vector<BufferAndAlloc>*>(uniformBufferDescriptor->buffer->GetRhiHandle()->GetNativeHandle());
 
-                descriptorBufferInfos[bufferDescriptorCount].buffer = textureAndAlloc->at(f).buffer;
+                const VulkanBuffer* buffer = static_cast<const VulkanBuffer*>(uniformBufferDescriptor->buffer->GetRhiHandle()->GetNativeHandle());
+                assert(buffer->bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
+                
+                descriptorBufferInfos[bufferDescriptorCount].buffer = buffer->bufferAndAlloc.at(f).buffer;
                 descriptorBufferInfos[bufferDescriptorCount].offset = 0;
                 descriptorBufferInfos[bufferDescriptorCount].range = VK_WHOLE_SIZE;
                 bufferDescriptorCount++;

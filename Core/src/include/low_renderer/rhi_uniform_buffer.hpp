@@ -22,8 +22,16 @@ public:
     }
 
     DEFAULT_COPY_MOVE_OPERATIONS(RhiUniformBuffer)
+
+    PC_CORE_API RhiUniformBuffer(size_t _sizeInByte, PC_CORE::BufferMemoryUsage memoryUsage) : RhiBuffer(_sizeInByte, memoryUsage)
+    {
+        
+    }
+    PC_CORE_API RhiUniformBuffer() : RhiBuffer(0, PC_CORE::BufferMemoryUsage::Count)
+    {
+        
+    }
     
-    PC_CORE_API RhiUniformBuffer() = default;
     
     PC_CORE_API virtual ~RhiUniformBuffer() = default;
 private:

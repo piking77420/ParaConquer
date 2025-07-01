@@ -25,7 +25,7 @@ void Vulkan::VulkanUniformBuffer::UnmapData()
 }
 
 Vulkan::VulkanUniformBuffer::VulkanUniformBuffer(const void* _data, uint32_t _sizeInByte,
-                                                 PC_CORE::BufferMemoryUsage _usage)  : m_VulkanBuffer(_usage)
+                                                 PC_CORE::BufferMemoryUsage _usage)  :  m_VulkanBuffer(_usage)
 {
     auto& context = VulkanContext::GetContext();
     

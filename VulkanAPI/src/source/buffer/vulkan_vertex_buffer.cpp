@@ -4,7 +4,7 @@
 #include "utils/vulkan_buffer_helper.hpp"
 
 
-Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::BufferMemoryUsage _usage) : m_VulkanBuffer(_usage)
+Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::BufferMemoryUsage _usage) : RhiVertexBuffer(_sizeInByte, _usage) , m_VulkanBuffer(_usage)
 {
     auto& context = VulkanContext::GetContext();
 

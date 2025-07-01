@@ -12,6 +12,11 @@ public:
     
     PC_CORE_API RhiBuffer() = default;
 
+    PC_CORE_API RhiBuffer(size_t _sizeInByte, PC_CORE::BufferMemoryUsage _usage) : m_MemoryUsage(_usage) , m_SizeInByte(_sizeInByte)
+    {
+        
+    }
+
     PC_CORE_API virtual ~RhiBuffer() = default;
 
     virtual void MapData(void** _ptr)
@@ -23,8 +28,20 @@ public:
         
     }
 
+    size_t GetSize() const
+    {
+        return m_SizeInByte;
+    }
+
+    PC_CORE::BufferMemoryUsage GetMemoryUsage() const
+    {
+        return m_MemoryUsage;
+    }
+
 private:
-    
+    PC_CORE::BufferMemoryUsage m_MemoryUsage = PC_CORE::BufferMemoryUsage::Count;
+
+    size_t m_SizeInByte = 0;
 };
 
 END_PCCORE

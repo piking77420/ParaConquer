@@ -13,13 +13,21 @@ public:
     IndexFormat GetIndexFormat() const;
 
     uint32_t GetIndexCount() const;
+
+    RhiIndexBuffer(size_t _sizeInByte, PC_CORE::BufferMemoryUsage _memoryUsage) : RhiBuffer(_sizeInByte, _memoryUsage)
+    {
+        
+    }
     
-    RhiIndexBuffer() = default;
+    RhiIndexBuffer() : RhiBuffer(0, PC_CORE::BufferMemoryUsage::Count)
+    {
+        
+    }
 
     ~RhiIndexBuffer() override = default;
 
 protected:
-    IndexFormat m_IndexFormat = IndexFormat::Uint16;
+    IndexFormat m_IndexFormat = IndexFormat::Uiunt8;
     
     uint32_t m_IndexCount = 0;
 
