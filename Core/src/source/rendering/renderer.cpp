@@ -32,15 +32,13 @@ void Renderer::Init()
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
     
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
-    forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
+    CreateForwardRenderPass();
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
 
     CreateForwardShader();
     CreateDrawQuadShader();
     CreateSkyRenderingShader();
-
- 
-
+    
     cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), BufferMemoryUsage::Dynamic);
 
 
@@ -89,25 +87,10 @@ void Renderer::Init()
 }
 void Renderer::Destroy()
 {
-    if (m_ForwardShader.use_count() != 1)
-    {
-        PC_LOGERROR("There is still a reference to the shader");
-        m_ForwardShader.reset();
-    }
-
-    if (m_DrawTextureScreenQuadShader.use_count() != 1)
-    {
-        PC_LOGERROR("There is still a reference to the shader");
-        m_DrawTextureScreenQuadShader.reset();
-    }
-
-    m_ForwardShader.reset();
-    m_DrawTextureScreenQuadShader.reset();
-
-    primaryCommandList = nullptr;
+   
+    // TODO(avoir make shader a shared ptr or remove acquire beacause of resoure manager) Release Shader
     m_ForwardShader = nullptr;
-    forwardPass = nullptr;
-    drawTextureScreenQuadPass = nullptr;
+    m_DrawTextureScreenQuadShader = nullptr;
 }
 
 
@@ -380,7 +363,7 @@ void Renderer::CreateForwardShader()
     };
 
 
-    m_ForwardShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+    m_ForwardShader = ResourceManager::Create<ShaderProgram>("ForwardShader", triangleCreateInfo);
 }
 
 void Renderer::CreateDrawQuadShader()
@@ -429,8 +412,7 @@ void Renderer::CreateDrawQuadShader()
         .renderPass = drawTextureScreenQuadPass,
     };
 
-
-    m_DrawTextureScreenQuadShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+    m_DrawTextureScreenQuadShader = ResourceManager::Create<ShaderProgram>("DrawQuadShader", triangleCreateInfo);
 }
 
 void Renderer::CreateSkyRenderingShader()
@@ -480,7 +462,7 @@ void Renderer::CreateSkyRenderingShader()
         .renderPass = forwardPass,
     };
 
-    m_SkyRenderingShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+    m_SkyRenderingShader = PC_CORE::Rhi::CreateRhiShaderProgram(triangleCreateInfo);
     
     m_AtmosphereUniformBuffer = RhiUniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));*/
 }
@@ -542,4 +524,65 @@ void Renderer::InitRenderSystem()
     rendererSystem->dirLightSignature.set(level.GetComponentTypeBit<DirLight>(), true);
     rendererSystem->AddSignature(rendererSystem->dirLightSignature);
 
+}
+
+void Renderer::CreateForwardRenderPass()
+{
+    std::vector<RenderPassAttachementDescriptor> colorAttachement;
+    colorAttachement.resize(1);
+
+    colorAttachement[0] =
+        {
+        .attachmentType = AttachmentType::Color,
+        .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+        .sampleCount = 1,
+        .load = LoadOperation::Clear,
+        .store = StoreOperation::Store,
+        .stencilLoad = LoadOperation::DontCare,
+        .stencilStore = StoreOperation::DontCare,
+        };
+
+    RenderPassAttachementDescriptor depthAttachement =
+     {
+        .attachmentType = AttachmentType::Depth,
+        .format = PC_CORE::RHIFormat::D32_SFLOAT,
+        .sampleCount = 1,
+        .load = LoadOperation::Clear,
+        .store = StoreOperation::Store,
+        .stencilLoad = LoadOperation::DontCare,
+        .stencilStore = StoreOperation::DontCare,
+        };
+
+    std::vector<SubPassDescription> subPassDescriptions;
+    subPassDescriptions.resize(1);
+
+    subPassDescriptions[0] =
+        {
+        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+        .colorAttachementDescriptorIndicies = {0},
+        .subPassDependcies =
+        {
+            .srcStageMask = static_cast<PipelineStageFlags>(
+                PipelineStageFlagBits::ColorAttachmentOutput | PipelineStageFlagBits::EarlyFragmentTests
+            ),
+            .dstStageMask = static_cast<PipelineStageFlags>(
+                PipelineStageFlagBits::FragmentShader
+            ),
+            .srcAccessMask = {}, // you can set this to ColorAttachmentWrite or DepthStencilAttachmentWrite if needed
+            .dstAccessMask = static_cast<AccessFlags>(
+                AccessFlagBits::ShaderRead
+            )
+        },
+        .useDepth = true, 
+        };
+  
+    PC_CORE::RenderPassDescriptor renderPassDescriptor =
+        {
+            .colorAttachement = colorAttachement,
+            .depthAttachment = &depthAttachement,
+            .subPasses = subPassDescriptions
+        };
+
+    forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
+    
 }

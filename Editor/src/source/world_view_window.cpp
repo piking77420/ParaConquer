@@ -107,7 +107,7 @@ void WorldViewWindow::ResizeViewports()
     create_texture.samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
     m_ResolvedTexture = PC_CORE::Texture2D(create_texture);
     
-    std::vector<PC_CORE::AttachementDesriptor> attachments =
+    std::vector<PC_CORE::FrameBufferAttachementDesriptor> attachments =
     { 
         {
             &m_ResolvedTexture,

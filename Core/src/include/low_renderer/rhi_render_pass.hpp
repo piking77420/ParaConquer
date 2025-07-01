@@ -6,7 +6,7 @@
 
 BEGIN_PCCORE
 
-struct AttachementDescriptor
+struct RenderPassAttachementDescriptor
 {
     AttachmentType attachmentType;
     RHIFormat format;
@@ -32,14 +32,16 @@ struct SubPassDependcies
 struct SubPassDescription
 {
     ShaderProgramPipelineType shaderProgramPipelineType;
-    std::vector<size_t> attachmentDescriptorIndices;
+    std::vector<size_t> colorAttachementDescriptorIndicies;
 
     SubPassDependcies subPassDependcies;
+    bool useDepth;
 };
 
 struct RenderPassDescriptor
 {
-    std::vector<AttachementDescriptor> attachments;
+    std::vector<RenderPassAttachementDescriptor> colorAttachement;
+    RenderPassAttachementDescriptor* depthAttachment;
     
     std::vector<SubPassDescription> subPasses;
 };

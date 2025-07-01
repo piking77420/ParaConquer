@@ -2,7 +2,7 @@
 
 #include <vulkan_header.h>
 
-#include "resources/shader_program.h"
+#include "low_renderer/rhi_shader_program.hpp"
 
 struct SpvReflectShaderModule;
 
@@ -31,7 +31,7 @@ namespace Vulkan
 
     constexpr uint32_t MAX_ALLOC_DESCRIPTOR_SET = 100 * MAX_FRAMES_IN_FLIGHT;
     
-    class VulkanShaderProgram : public PC_CORE::ShaderProgram
+    class VulkanShaderProgram : public PC_CORE::RhiShaderProgram
     {
     protected:
         static constexpr  std::array<vk::DynamicState,10> dynamicStateArray =
@@ -66,6 +66,11 @@ namespace Vulkan
         vk::Pipeline GetPipeline() const;
 
         vk::PipelineLayout GetPipelineLayout() const;
+
+        PC_CORE_API virtual const void* GetNativeHandle() const
+        {
+            return &m_Pipeline;
+        }
 
     protected:
 
@@ -106,8 +111,9 @@ namespace Vulkan
             , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions);
 
 #pragma endregion ParseRegion 
-       
-    }; 
+      
+
+    };
 }
 
 

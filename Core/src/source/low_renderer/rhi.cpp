@@ -76,7 +76,7 @@ Rhi& Rhi::GetInstance()
     return *m_Instance;
 }
 
-std::shared_ptr<ShaderProgram> Rhi::CreateShader(const ProgramShaderCreateInfo& _programShaderCreateInfo)
+std::shared_ptr<RhiShaderProgram> Rhi::CreateRhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo)
 {
     Rhi& rhi = GetInstance();
     
@@ -95,10 +95,6 @@ std::shared_ptr<ShaderProgram> Rhi::CreateShader(const ProgramShaderCreateInfo& 
     
 }
 
-void Rhi::DestroyShader(ShaderProgram* _shaderprogram)
-{
-    delete _shaderprogram;
-}
 
 std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
 {
@@ -175,6 +171,26 @@ PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFor
     case GraphicAPI::COUNT:
         break;
     default:;
+    }
+}
+
+std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor)
+{
+    Rhi& rhi = GetInstance();
+
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanRenderPass>(_renderPassDescriptor);
+        break;
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
     }
 }
 

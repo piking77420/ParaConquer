@@ -5,6 +5,7 @@
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/rhi_index_buffer.hpp"
 #include "low_renderer/rhi_context.hpp"
+#include "low_renderer/rhi_shader_program.hpp"
 #include "low_renderer/rhi_uniform_buffer.hpp"
 #include "resources/scene_lights_manager.h"
 #include "resources/shader_program.h"
@@ -77,11 +78,12 @@ public:
 
     std::shared_ptr<PC_CORE::ShaderProgram> m_ForwardShader;
 
+
+    // TO DO TO RESOURE REF
     std::shared_ptr<PC_CORE::ShaderProgram> m_DrawTextureScreenQuadShader;
 
     std::shared_ptr<PC_CORE::ShaderProgram> m_SkyRenderingShader;
-
-
+    
     std::shared_ptr<RhiRenderPass> forwardPass;
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
@@ -145,6 +147,8 @@ private:
     PC_CORE_API void DrawSky();
 
     PC_CORE_API void InitRenderSystem();
+
+    PC_CORE_API void CreateForwardRenderPass();
 };
 
 END_PCCORE

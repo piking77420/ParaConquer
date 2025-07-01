@@ -129,9 +129,9 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
     _commandBuffer.pushConstants(m_PipelineLayout,pushConstatnField.shaderStage, pushConstatnField.pushConstantOffSet, pushConstatnField.pushConstantSize, data);
 }
 
-VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : ShaderProgram(_programShaderCreateInfo)
+VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : RhiShaderProgram(_programShaderCreateInfo)
 {
-    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo);
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(_programShaderCreateInfo);
     
         
     switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
@@ -584,4 +584,5 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputStat
 
     return returnVertexInputStateCreateInfo;
 }
+
 #pragma endregion ParseRegion 

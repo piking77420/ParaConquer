@@ -267,6 +267,11 @@ void Editor::BasicOpenFile()
 	}
 }
 
+void Editor::ReloadShaders()
+{
+	
+}
+
 
 void Editor::Init()
 {
@@ -314,9 +319,9 @@ void Editor::Destroy()
 }
 void Editor::UpdateEditorWindows()
 {
-	//static bool open = true;
+	static bool open = true;
 
-	//ImGui::ShowDemoWindow(&open);
+	ImGui::ShowDemoWindow(&open);
 
 	dockSpace.BeginDockSpace();
 	if (ImGui::BeginMenuBar())
@@ -332,14 +337,26 @@ void Editor::UpdateEditorWindows()
 			{
 				Level& l = World::GetWorld()->level;
 				Serializer::DeSerialize(&l,"TestScene.map");
-				
 			}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Rendering"))
+		{
+			auto l = [&](std::shared_ptr<Resource> _shader)
+			{
+				if (ImGui::MenuItem(_shader->name.c_str()))
+				{
+
+					// reload shader
+				}
+			};
+			
+			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<PC_CORE::ShaderProgram>(), l);
 			
 			ImGui::EndMenu();
-
 		}
 		ImGui::EndMenuBar();
-
 	}
 
 	for (auto& editorWindow : m_EditorWindows)
@@ -371,8 +388,8 @@ void Editor::InitTestScene()
 	PERF_REGION_SCOPED;
 	PC_LOG("InitTestScene...")
 
-	m1 = std::make_shared<Material>("diamond_block_material.mat");
-	m2 = std::make_shared<Material>("emerauld_block_material.mat");
+	m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
+	m2 = ResourceManager::Create<Material>("emerauld_block_material.mat");
 
 	m1->m_albedo = ResourceManager::Get<Texture2D>("diamond_block.jpg");
 	m1->Build();
