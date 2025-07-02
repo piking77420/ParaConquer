@@ -58,7 +58,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             .format = RHIFormat::COUNT,
             .channel = Channel::DEFAULT,
             .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
-            .textureMemoryUsage = TextureMemoryUsage::GPU_Only,
+            .memoryVisibility = MemoryLocalisation::GPU_Only,
             .samples = 1,
             .GenerateMipMap = false,
             .data = nullptr,

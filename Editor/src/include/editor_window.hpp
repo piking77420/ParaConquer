@@ -49,6 +49,11 @@ public:
       
     }
 
+    virtual void OnPlayButton()
+    {}
+
+    virtual void OnResetScene(){}
+
 protected:
     Editor* m_Editor = nullptr;
     

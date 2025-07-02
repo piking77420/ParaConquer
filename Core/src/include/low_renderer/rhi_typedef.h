@@ -370,7 +370,7 @@ BEGIN_PCCORE
 #pragma endregion
 
 
-enum struct BufferMemoryUsage
+enum struct MemoryUsage
 {
     Static,   // Not modified over its lifetime
     Mutable,  // Occasionally modified (e.g., once per frame)
@@ -378,11 +378,13 @@ enum struct BufferMemoryUsage
 
     Count     // Total enum values
 };
-enum struct TextureMemoryUsage
+enum struct MemoryLocalisation
 {
     GPU_Only,       // Device-local
+    CPU_Only,       // Host Only
     CPU_To_GPU,     // Host-visible (upload)
     GPU_To_CPU,     // Host-readable (readback)
+    
     Count // Total enum values
 };
 
@@ -468,7 +470,7 @@ enum class IndexFormat : int
         RHIFormat format;
         Channel channel;
         TextureUsage textureUsage;
-        TextureMemoryUsage textureMemoryUsage;
+        MemoryLocalisation memoryVisibility;
 
         uint32_t samples;
         bool GenerateMipMap = false;
@@ -484,7 +486,8 @@ enum class IndexFormat : int
         RHIFormat format;
         Channel channel;
         TextureUsage textureUsage;
-        TextureMemoryUsage textureMemoryUsage;
+        MemoryUsage bufferMemoryUsage;
+        MemoryLocalisation memoryVisibility;
 
         uint32_t samples;
         bool GenerateMipMap = false;
@@ -549,35 +552,6 @@ enum class IndexFormat : int
 #pragma endregion RenderPass
 
 
-enum class BufferUsage
-{
-    VertexBuffer,
-    IndexBuffer,
-    UniformBuffer,
-    ShaderStorageBuffer,
-    Count
-};
-
-inline const char* ToString(BufferUsage e)
-{
-        switch (e)
-        {
-        case BufferUsage::VertexBuffer:
-            return "VertexBuffer";
-            break;
-        case BufferUsage::IndexBuffer:
-            return "IndexBuffer";
-            break;
-        case BufferUsage::UniformBuffer:
-            return "UniformBuffer";
-            break;
-        case BufferUsage::ShaderStorageBuffer:
-            return "ShaderStorageBuffer";
-            break;
-        case BufferUsage::Count:
-        default: return "unknown";
-        }
-}
 
 enum struct LoadOperation
 {
@@ -749,3 +723,4 @@ inline T SafeCastReinterpreCast(U* ptr)
 
 #define CAM_DEPTH_MAX 1.f
 #define CAM_DEPTH_MIN 0.f
+

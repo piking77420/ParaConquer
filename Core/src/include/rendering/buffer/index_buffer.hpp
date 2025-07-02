@@ -32,11 +32,11 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
 
-        IndexBuffer(uint8_t* _indicies, size_t _count, BufferMemoryUsage _memoryUsageFlag);
+        IndexBuffer(uint8_t* _indicies, size_t _count, MemoryUsage _memoryUsageFlag);
 
-        IndexBuffer(uint16_t* _indicies, size_t _count, BufferMemoryUsage _memoryUsageFlag);
+        IndexBuffer(uint16_t* _indicies, size_t _count, MemoryUsage _memoryUsageFlag);
 
-        IndexBuffer(uint32_t* _indicies, size_t _count, BufferMemoryUsage _memoryUsageFlag);
+        IndexBuffer(uint32_t* _indicies, size_t _count, MemoryUsage _memoryUsageFlag);
 
         IndexBuffer() = default;
 

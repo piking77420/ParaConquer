@@ -5,6 +5,7 @@
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "command/editor_command.hpp"
+#include "editor_sub_system/editor_sub_system.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
 #include "world/transform.hpp"
@@ -65,13 +66,17 @@ public:
 
     EditorData editorData;
     
-    std::vector<std::unique_ptr<EditorWindow>> m_EditorWindows;
-
     DockSpace dockSpace;
     
     PC_CORE::EntityId m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
     PC_CORE::IMGUIContext IMGUIContext;
+
+    std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
+
+    std::vector<std::unique_ptr<EditorWindow>> editorWindows;
+    
+    std::vector<std::unique_ptr<EditorCommand>> editorCommands;
 
 private:
     void InitThridPartLib(PC_CORE::GraphicAPI graphicApi);
@@ -87,14 +92,16 @@ private:
     void BasicOpenFile();
 
     void ReloadShaders();
-    
-    std::vector<std::unique_ptr<EditorCommand>> m_EditorCommands;
+
+    void InitSubSystem();
+
+
 };
 
 template <EditorCommandDerived T, typename ... Args>
 void Editor::PushCommand(Args&&... args)
 {
-    m_EditorCommands.emplace_back(
+    editorCommands.emplace_back(
            std::make_unique<T>(*this, std::forward<Args>(args)...)
    );
 }

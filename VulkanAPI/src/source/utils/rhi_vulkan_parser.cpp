@@ -1091,28 +1091,6 @@ vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::CullModeFlagBit _cullMod
     return cullModeFlags;
 }
 
-vk::BufferUsageFlags Vulkan::Utils::RhiToBufferUsage(PC_CORE::BufferUsage _usage)
-{
-    vk::BufferUsageFlags bufferUsageFlags = {};
-
-    switch (_usage)
-    {
-    case PC_CORE::BufferUsage::VertexBuffer:
-        return bufferUsageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;
-    case PC_CORE::BufferUsage::IndexBuffer:
-        return bufferUsageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
-
-    case PC_CORE::BufferUsage::UniformBuffer:
-        return bufferUsageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
-
-    case PC_CORE::BufferUsage::ShaderStorageBuffer:
-        return bufferUsageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
-
-    case PC_CORE::BufferUsage::Count:
-    default:
-        throw std::runtime_error("Unknown BufferUsage");
-    }
-}
 
 vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
 {
@@ -1386,6 +1364,25 @@ vk::AccessFlags Vulkan::Utils::RhiAccessFlagToVulkan(PC_CORE::AccessFlags access
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteEXT;
 
     return vkFlags;
+}
+
+VmaMemoryUsage Vulkan::Utils::RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation _memoryVisibility)
+{
+    switch (_memoryVisibility)
+    {
+    case PC_CORE::MemoryLocalisation::GPU_Only:
+        return VMA_MEMORY_USAGE_GPU_ONLY;
+    case PC_CORE::MemoryLocalisation::CPU_Only:
+        return VMA_MEMORY_USAGE_CPU_ONLY;
+    case PC_CORE::MemoryLocalisation::CPU_To_GPU:
+        return VMA_MEMORY_USAGE_CPU_TO_GPU;
+    case PC_CORE::MemoryLocalisation::GPU_To_CPU:
+        return VMA_MEMORY_USAGE_GPU_TO_CPU;
+    case PC_CORE::MemoryLocalisation::Count:
+    default:
+        assert(false);
+    }
+    return VMA_MEMORY_USAGE_MAX_ENUM;
 }
 
 

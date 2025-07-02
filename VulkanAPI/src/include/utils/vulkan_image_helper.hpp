@@ -16,7 +16,7 @@ namespace Vulkan
     VULKAN_API   vk::ImageView CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
         vk::Format _format, vk::ImageAspectFlags imageAspect , uint32_t _mipLevels);
 
-    VULKAN_API  VmaMemoryUsage GetTextureMemoryUsage(PC_CORE::TextureMemoryUsage _textureMemoryUsage);
+    VULKAN_API  VmaMemoryUsage GetTextureMemoryUsage(PC_CORE::MemoryLocalisation _textureMemoryUsage);
 
     VULKAN_API  vk::ImageUsageFlags GetMemoryPropertyFlags(PC_CORE::TextureUsage _textureUsage);
 

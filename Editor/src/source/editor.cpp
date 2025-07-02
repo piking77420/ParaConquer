@@ -41,6 +41,7 @@
 #include <new>
 #include <shobjidl.h>  // For IFileDialogEvents
 
+#include "editor_sub_system/debug_draw_context.hpp"
 #include "serialize/iseriazable.h"
 
 using namespace PC_EDITOR_CORE;
@@ -181,6 +182,12 @@ void Editor::CompileShader()
 	
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
+
+	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
+	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
+	
+	vertex->CompileToSpriv();
+	frag->CompileToSpriv();
 }
 
 void Editor::LookForEditorInit()
@@ -272,6 +279,11 @@ void Editor::ReloadShaders()
 	
 }
 
+void Editor::InitSubSystem()
+{
+	editorSubSystems.push_back(std::make_unique<DebugDrawContext>(*this));
+}
+
 
 void Editor::Init()
 {
@@ -308,7 +320,7 @@ void Editor::Destroy()
 
 	IMGUIContext.Destroy();
 
-	for (auto& i : m_EditorWindows)
+	for (auto& i : editorWindows)
 	{
 		i.reset();
 	}
@@ -359,7 +371,7 @@ void Editor::UpdateEditorWindows()
 		ImGui::EndMenuBar();
 	}
 
-	for (auto& editorWindow : m_EditorWindows)
+	for (auto& editorWindow : editorWindows)
 	{
 		editorWindow->Begin();
 		editorWindow->Update();
@@ -376,10 +388,10 @@ std::shared_ptr<Material> m2;
 
 void Editor::RewindCommand()
 {
-	if (m_EditorCommands.empty())
+	if (editorCommands.empty())
 		return;
 
-	m_EditorCommands.pop_back();
+	editorCommands.pop_back();
 }
 
 void Editor::InitTestScene()
@@ -458,7 +470,7 @@ void Editor::Run(bool* _appShouldClose)
 		UpdateEditorWindows();
 		gameApp.WorldTick();
 
-		for (auto& editorWindow : m_EditorWindows)
+		for (auto& editorWindow : editorWindows)
 			editorWindow->Render();
 
 		gameApp.renderer.SwapBuffers(&gameApp.window);
@@ -475,11 +487,11 @@ void Editor::InitEditorWindows()
 	PC_LOG("InitEditorWindows...")
 
 
-	m_EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
-	m_EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
-	m_EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
-	m_EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
-	m_EditorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
+	editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
+	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
+	editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
+	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
 }
 
 void Editor::EditorCommandUpdate()

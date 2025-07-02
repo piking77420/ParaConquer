@@ -19,7 +19,6 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
 
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
-        
 }
 
 WorldViewWindow::~WorldViewWindow()
@@ -71,7 +70,6 @@ void WorldViewWindow::Render()
         .near = camera.GetNear(),
         .far = camera.GetFar(),
         .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
-
     };
     renderingContext.time = PC_CORE::Time::GetTime();
     renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
@@ -79,6 +77,7 @@ void WorldViewWindow::Render()
     renderingContext.finalImageFrameBuffer = m_FinalFrameBufferViewport;
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
+    renderingContext.renderingContextFlag = m_RenderingContextFlag;
     
    m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext, &m_Editor->gameApp.world);
 }
@@ -96,7 +95,7 @@ void WorldViewWindow::ResizeViewports()
         .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
         .channel = PC_CORE::Channel::RGBA,
         .textureUsage = PC_CORE::TextureUsage::RenderTarget | PC_CORE::TextureUsage::Sampled,
-        .textureMemoryUsage = PC_CORE::TextureMemoryUsage::GPU_Only,
+        .memoryVisibility = PC_CORE::MemoryLocalisation::GPU_Only,
         .samples = 1,
         .GenerateMipMap = false,
        . data = nullptr

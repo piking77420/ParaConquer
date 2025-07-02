@@ -54,6 +54,9 @@ type() = default; \
     type& operator=(const type& other) = delete;   \
     type& operator=(type&& other) = delete; \
 
+
+
+
 BEGIN_PCCORE
 
 template <typename T, typename M>

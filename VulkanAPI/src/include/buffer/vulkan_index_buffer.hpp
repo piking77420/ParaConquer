@@ -14,8 +14,12 @@ public:
         return &m_VulkanBuffer;
     }
 
-    VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format,
-                      PC_CORE::BufferMemoryUsage _usage);
+    void MapData(void** _ptr) override;
+        
+    void UnmapData() override;
+
+    VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format, PC_CORE::MemoryLocalisation _visibility,
+                      PC_CORE::MemoryUsage _usage);
 
     ~VulkanIndexBuffer() override = default;
     

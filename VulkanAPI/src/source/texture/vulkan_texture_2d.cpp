@@ -9,7 +9,7 @@
 #include "buffer/vulkan_buffer.hpp"
 #include "low_renderer/rhi.hpp"
 
-Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _createTextureInfo) : m_VulkanTexture(_createTextureInfo.textureMemoryUsage)
+Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _createTextureInfo) : m_VulkanTexture(_createTextureInfo.memoryVisibility)
 {
 	if (_createTextureInfo.depth < 1)
 	{
@@ -28,7 +28,7 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _crea
 	// if generate mip maps then image need to be transfer src
 	textureUsage = mipLevel > 1 ? textureUsage | vk::ImageUsageFlagBits::eTransferSrc : textureUsage;
 
-	const VmaMemoryUsage vmaMemoryUsage = GetTextureMemoryUsage(_createTextureInfo.textureMemoryUsage);
+	const VmaMemoryUsage vmaMemoryUsage = GetTextureMemoryUsage(_createTextureInfo.memoryVisibility);
 	const vk::ImageAspectFlags aspectFlags = GetImageAspectFlags(_createTextureInfo.textureUsage);
 
 	vk::ImageLayout finalImageLayout = GetImageLayout(_createTextureInfo.textureUsage);

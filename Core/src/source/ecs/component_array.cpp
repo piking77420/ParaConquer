@@ -82,7 +82,7 @@ void ComponentArray::Remove(EntityId entityId)
 		std::memcpy(&m_ComponentData[lastIndex * m_ComponentSize],
 			   &m_ComponentData[removedIndex * m_ComponentSize],
 			   m_ComponentSize);
-
+		
 		// update mapping
 		for (auto& i : m_EntityIndexData)
 		{

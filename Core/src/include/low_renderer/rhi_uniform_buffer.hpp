@@ -23,11 +23,11 @@ public:
 
     DEFAULT_COPY_MOVE_OPERATIONS(RhiUniformBuffer)
 
-    PC_CORE_API RhiUniformBuffer(size_t _sizeInByte, PC_CORE::BufferMemoryUsage memoryUsage) : RhiBuffer(_sizeInByte, memoryUsage)
+    PC_CORE_API RhiUniformBuffer(size_t _sizeInByte, PC_CORE::MemoryLocalisation _localisation, PC_CORE::MemoryUsage memoryUsage) : RhiBuffer(_sizeInByte,_localisation, memoryUsage)
     {
         
     }
-    PC_CORE_API RhiUniformBuffer() : RhiBuffer(0, PC_CORE::BufferMemoryUsage::Count)
+    PC_CORE_API RhiUniformBuffer() : RhiBuffer()
     {
         
     }

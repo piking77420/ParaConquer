@@ -19,8 +19,8 @@ namespace Vulkan
         
         void UnmapData() override;
         
-        VulkanUniformBuffer(const void* _data, uint32_t _sizeInByte,
-        PC_CORE::BufferMemoryUsage _usage);
+        VulkanUniformBuffer(const void* _data, uint32_t _sizeInByte,PC_CORE::MemoryLocalisation _visibility,
+        PC_CORE::MemoryUsage _usage);
 
         ~VulkanUniformBuffer() override = default;
 

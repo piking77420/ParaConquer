@@ -48,23 +48,23 @@ vk::ImageView Vulkan::CreateImageView(vk::Device _device, vk::Image _image, vk::
     return imageView;
 }
 
-VmaMemoryUsage Vulkan::GetTextureMemoryUsage(PC_CORE::TextureMemoryUsage textureUsage)
+VmaMemoryUsage Vulkan::GetTextureMemoryUsage(PC_CORE::MemoryLocalisation textureUsage)
 {
     using namespace PC_CORE;
 
     switch (textureUsage)
     {
-    case TextureMemoryUsage::GPU_Only:
+    case MemoryLocalisation::GPU_Only:
         return VMA_MEMORY_USAGE_GPU_ONLY;
 
-    case TextureMemoryUsage::CPU_To_GPU:
+    case MemoryLocalisation::CPU_To_GPU:
         return VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    case TextureMemoryUsage::GPU_To_CPU:
+    case MemoryLocalisation::GPU_To_CPU:
         return VMA_MEMORY_USAGE_GPU_TO_CPU;
 
     default:
-        assert(false && "Unknown TextureMemoryUsage");
+        assert(false && "Unknown memoryVisibility");
         return VMA_MEMORY_USAGE_UNKNOWN;
     }
 }

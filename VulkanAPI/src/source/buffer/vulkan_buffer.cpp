@@ -1,9 +1,29 @@
 ﻿#include "buffer/vulkan_buffer.hpp"
 
+#include "low_renderer/rhi.hpp"
 #include "utils/helper_functions.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "utils/vulkan_buffer_helper.hpp"
 
-Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::BufferMemoryUsage memoryUsage)
+void Vulkan::VulkanBuffer::MapData(void** _mapData)
+{
+    auto& context = VulkanContext::GetContext();
+
+    vk::Result r = static_cast<vk::Result>(vmaMapMemory(context.allocator,
+                                                        bufferAndAlloc[PC_CORE::Rhi::GetFrameIndex()].alloc, _mapData));
+    VK_CALL(r);
+
+    if (r != vk::Result::eSuccess)
+        *_mapData = nullptr;
+}
+
+void Vulkan::VulkanBuffer::UnMapData()
+{
+    auto& context = VulkanContext::GetContext();
+    vmaUnmapMemory(context.allocator, bufferAndAlloc[PC_CORE::Rhi::GetFrameIndex()].alloc);
+}
+
+Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage)
 {
    if (_sizeInByte <= 0)
    {
@@ -13,20 +33,23 @@ Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::
     
     bufferAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);
     assert(bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
+    
+    CreateInternalBuffer(_data, _sizeInByte, bufferUsage, Utils::RhiMemoryUsageToVulkan(_visibility));
 
+    // TODO TAKE ACOUT OF MEMMROY USAGE
+    /*
     switch (memoryUsage)
     {
-    case PC_CORE::BufferMemoryUsage::Static:
-        CreateStaticBuffer(_data, _sizeInByte, bufferUsage);
+    case PC_CORE::MemoryUsage::Static:
         break;
-    case PC_CORE::BufferMemoryUsage::Mutable:
+    case PC_CORE::MemoryUsage::Mutable:
         break;
-    case PC_CORE::BufferMemoryUsage::Dynamic:
+    case PC_CORE::MemoryUsage::Dynamic:
         break;
-    case PC_CORE::BufferMemoryUsage::Count:
+    case PC_CORE::MemoryUsage::Count:
     default:
         assert(false && "Invalid memory usage");
-    }
+    }*/
 }
 
 Vulkan::VulkanBuffer::~VulkanBuffer()
@@ -43,41 +66,51 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
     }
 }
 
-void Vulkan::VulkanBuffer::CreateStaticBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage)
+void Vulkan::VulkanBuffer::CreateInternalBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage)
 {
-    auto& context = VulkanContext::GetContext();
-    for (size_t i = 0; i < bufferAndAlloc.size(); i++)
-        Utils::CreateBuffer(context.allocator, _size, bufferUsage, VMA_MEMORY_USAGE_GPU_ONLY
-                            , reinterpret_cast<VkBuffer*>(&bufferAndAlloc[i].buffer), &bufferAndAlloc[i].alloc);
-    
-    SendDataToGPUMemory(_data, _size);
-}
+    vk::BufferUsageFlags clientFlag = bufferUsage;
 
-void Vulkan::VulkanBuffer::CreateMutableBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage)
-{
-    auto& context = VulkanContext::GetContext();
-    for (size_t i = 0; i < bufferAndAlloc.size(); i++)
-        Utils::CreateBuffer(context.allocator, _size, bufferUsage, VMA_MEMORY_USAGE_CPU_TO_GPU
-                            , reinterpret_cast<VkBuffer*>(&bufferAndAlloc[i].buffer), &bufferAndAlloc[i].alloc);
-    
+    bool SandDataToGPU = false;
 
-    if (_data == nullptr)
-        return;
-
-    SendDataToGPUMemory(_data, _size);
-}
-
-void Vulkan::VulkanBuffer::CreateDynamicBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage)
-{
-    auto& context = VulkanContext::GetContext();
-    
-    for (size_t i = 0; i < bufferAndAlloc.size(); i++)
+    switch (memoryUsage)
     {
-        Utils::CreateBuffer(context.allocator, _size, bufferUsage, VMA_MEMORY_USAGE_CPU_TO_GPU
-                            , reinterpret_cast<VkBuffer*>(&bufferAndAlloc[i].buffer), &bufferAndAlloc[i].alloc);
+        break;
+    case VMA_MEMORY_USAGE_GPU_ONLY:
+        clientFlag |= vk::BufferUsageFlagBits::eTransferDst;
+        SandDataToGPU = true;
+        break;
+    case VMA_MEMORY_USAGE_CPU_ONLY:
+        break;
+    case VMA_MEMORY_USAGE_CPU_TO_GPU:
+        clientFlag |= vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc;
+        SandDataToGPU = true;
+        break;
+    case VMA_MEMORY_USAGE_GPU_TO_CPU:
+        clientFlag |= vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc;
+        SandDataToGPU = true;
+        break;
+    case VMA_MEMORY_USAGE_CPU_COPY:
+    case VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED:
+    case VMA_MEMORY_USAGE_AUTO:
+    case VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE:
+    case VMA_MEMORY_USAGE_AUTO_PREFER_HOST:
+    case VMA_MEMORY_USAGE_MAX_ENUM:
+    case VMA_MEMORY_USAGE_UNKNOWN:
+    default:
+        assert(false && "Invalid memory usage");
     }
- 
+    
+    auto& context = VulkanContext::GetContext();
+    for (size_t i = 0; i < bufferAndAlloc.size(); i++)
+        Utils::CreateBuffer(context.allocator, _size, clientFlag, memoryUsage
+                            , reinterpret_cast<VkBuffer*>(&bufferAndAlloc[i].buffer), &bufferAndAlloc[i].alloc);
+
+    if (_data != nullptr && SandDataToGPU)
+        SendDataToGPUMemory(_data, _size);
 }
+
+
+
 
 void Vulkan::VulkanBuffer::SendDataToGPUMemory(const void* _data, uint32_t _size)
 {

@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <array>
+
 #include "gpu_buffer.hpp"
 #include "low_renderer/rhi_uniform_buffer.hpp"
 
@@ -14,7 +16,7 @@ public:
 
     void Update(void* _data, size_t _size);
 
-    explicit UniformBuffer(void* _data, size_t _size, BufferMemoryUsage _usage);
+    explicit UniformBuffer(void* _data, size_t _size, MemoryUsage _usage);
 
     explicit UniformBuffer() = default;
 
@@ -22,7 +24,6 @@ public:
 
 private:
     std::shared_ptr<RhiBuffer> m_RhiBuffer;
-    
 };
 
 END_PCCORE

@@ -81,7 +81,7 @@ void ShaderSource::DestroyShadersCompiler()
     delete shaderCompiler;
     shaderCompiler = nullptr;
 }
-
+ 
 void ShaderSource::AddPreProcessorDefVulkan()
 {
     shaderc::CompileOptions& options = shaderCompiler->options;
@@ -102,6 +102,8 @@ void ShaderSource::AddPreProcessorDefVulkan()
 
     // Math
     options.AddMacroDefinition("MAX_FLOAT", std::to_string(std::numeric_limits<float>::max()));
+
+    
 
 }
 

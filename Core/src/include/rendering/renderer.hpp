@@ -87,6 +87,10 @@ public:
     std::shared_ptr<RhiRenderPass> forwardPass;
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
+
+#ifdef WITH_EDITOR
+    std::vector<std::function<void(CommandList*, const RenderingContext&)>> UserCustomForwardPass;
+#endif
     
     PC_CORE_API Renderer() = default;
 

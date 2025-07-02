@@ -59,8 +59,8 @@ void Mesh::LoadFromFile(const fs::path& _path)
     }
 
     extension = MeshSourceFormat.at(formatIndex);
-    vertexBuffer = VertexBuffer(verticies.data(), verticies.size(), BufferMemoryUsage::Static);
-    indexBuffer = IndexBuffer(indicies.data(), indicies.size(), BufferMemoryUsage::Static);
+    vertexBuffer = VertexBuffer(verticies.data(), verticies.size(),PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Static);
+    indexBuffer = IndexBuffer(indicies.data(), indicies.size(), MemoryUsage::Static);
 }
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)

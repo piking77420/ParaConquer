@@ -11,8 +11,8 @@ using namespace PC_EDITOR_CORE;
 
 PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::string& _name) : WorldViewWindow(_editor,_name)
 {
-    
     RotateCamera(0.2f);
+    m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
 }
 
 

@@ -214,15 +214,15 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
     }
 }
 
-std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format,
-    BufferMemoryUsage _usage)
+std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, MemoryLocalisation _visibility,
+    MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::VULKAN:
-        return std::make_shared<Vulkan::VulkanIndexBuffer>(_data, _sizeInByte, _format, _usage);
+        return std::make_shared<Vulkan::VulkanIndexBuffer>(_data, _sizeInByte, _format,_visibility, _usage);
     case GraphicAPI::DX3D12:
         break;
     case GraphicAPI::NONE:
@@ -234,14 +234,14 @@ std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32
     return nullptr;
 }
 
-std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage)
+std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::VULKAN:
-        return std::make_shared<Vulkan::VulkanVertexBuffer>(_data, _sizeInByte, _usage);
+        return std::make_shared<Vulkan::VulkanVertexBuffer>(_data, _sizeInByte,_visibility, _usage);
     case GraphicAPI::DX3D12:
         break;
     case GraphicAPI::NONE:
@@ -250,7 +250,7 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint
     }
 }
 
-std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage)
+std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
@@ -259,7 +259,7 @@ std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, ui
     case GraphicAPI::NONE:
         break;
     case GraphicAPI::VULKAN:
-        return std::make_shared<Vulkan::VulkanUniformBuffer>(_data, _sizeInByte, _usage);
+        return std::make_shared<Vulkan::VulkanUniformBuffer>(_data, _sizeInByte, _visibility, _usage);
     case GraphicAPI::DX3D12:
         break;
     case GraphicAPI::COUNT:

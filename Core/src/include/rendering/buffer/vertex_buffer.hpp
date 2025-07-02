@@ -29,7 +29,7 @@ public:
     
     DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
 
-    VertexBuffer(Vertex* _vertices, size_t _count, BufferMemoryUsage _usage);
+    VertexBuffer(Vertex* _vertices, size_t _count, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
 
     VertexBuffer() = default;
 

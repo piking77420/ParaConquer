@@ -26,20 +26,20 @@ namespace Vulkan
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanBuffer)
 
         std::vector<BufferAndAlloc> bufferAndAlloc;
+
+        void MapData(void** _mapData);
+
+        void UnMapData();
         
-        VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::BufferMemoryUsage memoryUsage);
+        VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage);
         
         VulkanBuffer() = default;
         
         ~VulkanBuffer();
 
     private:
-        void CreateStaticBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage);
-
-        void CreateMutableBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage);
-
-        void CreateDynamicBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage);
-
+        void CreateInternalBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage);
+        
         void SendDataToGPUMemory(const void* _data, uint32_t _size);
 
     };

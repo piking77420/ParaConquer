@@ -39,7 +39,7 @@ void Renderer::Init()
     CreateDrawQuadShader();
     CreateSkyRenderingShader();
     
-    cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), BufferMemoryUsage::Dynamic);
+    cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), MemoryUsage::Dynamic);
 
 
     UniformBufferDescriptor cameraBufferDescritptor
@@ -232,8 +232,12 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->staticMeshSignature))
         DrawStaticMesh(level.GetComponent<Transform>(it),
             level.GetComponent<StaticMesh>(it));
-    
 
+#ifdef WITH_EDITOR
+    for (auto& it : UserCustomForwardPass)
+        it(primaryCommandList.get(), *currentRenderingContext);
+#endif
+    
     // draw the sky
    // DrawSky();
     primaryCommandList->EndRenderPass();
@@ -259,7 +263,6 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     };
 
 
-    
     primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);           
     primaryCommandList->BeginRenderPass(drawToViewport);
     primaryCommandList->SetViewPort(viewportInfo);

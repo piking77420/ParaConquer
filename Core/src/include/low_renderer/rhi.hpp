@@ -59,11 +59,11 @@ public:
 
     PC_CORE_API static std::shared_ptr<FrameBuffer> CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo);
 
-    PC_CORE_API static std::shared_ptr<RhiIndexBuffer> CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, BufferMemoryUsage _usage); 
+    PC_CORE_API static std::shared_ptr<RhiIndexBuffer> CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, MemoryLocalisation _visibility, MemoryUsage _usage); 
 
-    PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage); 
+    PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage); 
 
-    PC_CORE_API static std::shared_ptr<RhiUniformBuffer> CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, BufferMemoryUsage _usage);
+    PC_CORE_API static std::shared_ptr<RhiUniformBuffer> CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage);
     
     PC_CORE_API static std::shared_ptr<RhiTexture2D> CreateTexture2D(const PC_CORE::CreateImageInfo2D& _createImageInfo);
 

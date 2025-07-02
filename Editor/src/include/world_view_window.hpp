@@ -11,6 +11,7 @@
 
 #include <vulkan/vulkan.h>
 
+
 namespace PC_CORE
 {
     class RhiTexture2D;
@@ -20,8 +21,6 @@ BEGIN_EDITOR_PCCORE
     class WorldViewWindow : public EditorWindow
 {
 public:
-    
-
     PC_CORE::Camera camera;
     
     explicit WorldViewWindow(Editor& _editor, const std::string& _name);
@@ -31,6 +30,9 @@ public:
     void Update() override;
     
     void Render() override;
+
+protected:
+    PC_CORE::BitFlags<PC_CORE::RenderingContextFlag> m_RenderingContextFlag;
 
 private:
     void ResizeViewports();
@@ -44,11 +46,11 @@ private:
     PC_CORE::Texture2D m_ResolvedTexture;
 
     std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
-
     
     PC_CORE::ShaderProgramDescriptorSets* m_ViewPortDescriptorSet = nullptr;
 
     std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> imguiDescriptorSet;
+
 };
 
 END_EDITOR_PCCORE

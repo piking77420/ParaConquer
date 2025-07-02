@@ -42,9 +42,7 @@ namespace Vulkan
         vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage);
 
         vk::CullModeFlags RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit);
-
-        vk::BufferUsageFlags RhiToBufferUsage(PC_CORE::BufferUsage _usage);
-
+        
         vk::IndexType RhiToIndexType(PC_CORE::IndexFormat _format);
 
         vk::DescriptorType RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType);
@@ -61,6 +59,8 @@ namespace Vulkan
         vk::PipelineStageFlags RhiPipelineStageToVulkan(PC_CORE::PipelineStageFlags _stageFlags);
 
         vk::AccessFlags RhiAccessFlagToVulkan(PC_CORE::AccessFlags _accessFlag);
+
+        VmaMemoryUsage RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation _memoryUsage);
         
     }
     

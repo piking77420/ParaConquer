@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "enum_class_bit_flag.hpp"
 #include "gbuffers.hpp"
 #include "low_renderer/frame_buffer.hpp"
 #include "math/matrix_transformation.hpp"
@@ -24,6 +25,15 @@ BEGIN_PCCORE
         bool isOrthographic;
     };
 
+#ifdef WITH_EDITOR
+    enum class RenderingContextFlag
+    {
+        DebugDrawGeometry = 1 << 0  
+    };
+    
+
+#endif
+
     struct RenderingContext
     {
         LowLevelCamera lowLevelCamera;
@@ -36,6 +46,9 @@ BEGIN_PCCORE
         PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
         
         Tbx::Vector2ui renderingContextSize;
+#ifdef WITH_EDITOR
+        BitFlags<RenderingContextFlag> renderingContextFlag;
+#endif
     };
 
 

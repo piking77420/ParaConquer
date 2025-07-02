@@ -5,9 +5,18 @@
 #include "io/low_pass_filter.hpp"
 
 BEGIN_EDITOR_PCCORE
-class EditWorldWindow : public WorldViewWindow
+    class EditWorldWindow : public WorldViewWindow
 {
 public:
+    void OnPlayButton() override
+    {
+        m_RenderingContextFlag &= ~PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+    }
+    
+    void OnResetScene() override
+    {
+        m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+    }
 
     explicit EditWorldWindow(Editor& _editor, const std::string& _name);
     
@@ -33,6 +42,7 @@ protected:
     Tbx::Vector3f m_CameraSpeed = Tbx::Vector3f::Zero();
 
     float smoothTime = 0.3f;
+
 
     void RotateCamera(float _deltatime);
 

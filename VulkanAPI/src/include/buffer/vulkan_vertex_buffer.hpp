@@ -13,10 +13,14 @@ namespace Vulkan
         {
             return &m_VulkanBuffer;
         }
+
+        void MapData(void** _ptr) override;
+        
+        void UnmapData() override;
         
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanVertexBuffer)
         
-        VULKAN_API VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::BufferMemoryUsage _usage);
+        VULKAN_API VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage _usage);
 
         VULKAN_API VulkanVertexBuffer() = default;
         

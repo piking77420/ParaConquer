@@ -14,12 +14,12 @@ public:
 
     uint32_t GetIndexCount() const;
 
-    RhiIndexBuffer(size_t _sizeInByte, PC_CORE::BufferMemoryUsage _memoryUsage) : RhiBuffer(_sizeInByte, _memoryUsage)
+    RhiIndexBuffer(size_t _sizeInByte, MemoryLocalisation _visibility, PC_CORE::MemoryUsage _memoryUsage) : RhiBuffer(_sizeInByte,_visibility, _memoryUsage)
     {
         
     }
     
-    RhiIndexBuffer() : RhiBuffer(0, PC_CORE::BufferMemoryUsage::Count)
+    RhiIndexBuffer() : RhiBuffer(0, PC_CORE::MemoryLocalisation::Count, PC_CORE::MemoryUsage::Count)
     {
         
     }

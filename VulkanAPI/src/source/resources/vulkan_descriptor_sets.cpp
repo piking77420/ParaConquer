@@ -39,7 +39,6 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     bufferDescriptorCount = 0;
     imageDescriptorCount = 0;
     
-
     for (size_t f = 0; f < descriptorSets.size(); f++)
     {
         for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)

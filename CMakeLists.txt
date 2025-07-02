@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 4.0)
 option(PROFILING "Build profiling dependencies" OFF)
 option(BUILD_TEST "Build UnitTest" ON)
 
+add_compile_definitions(WITH_EDITOR=1)
+
 
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
 

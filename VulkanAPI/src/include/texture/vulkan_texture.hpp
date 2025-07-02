@@ -26,7 +26,7 @@ namespace Vulkan
         
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanTexture)
         
-        VulkanTexture(PC_CORE::TextureMemoryUsage _usage);
+        VulkanTexture(PC_CORE::MemoryLocalisation _usage);
         
         VulkanTexture() = default;
         

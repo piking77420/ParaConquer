@@ -70,7 +70,7 @@ void Texture2D::LoadFromFile(const fs::path& _path)
         .format = RHIFormat::R8G8B8A8_SRGB,
         .channel = Channel::RGBA,
         .textureUsage = TextureUsage::Sampled | TextureUsage::TransferDst,
-        .textureMemoryUsage = TextureMemoryUsage::GPU_Only,
+        .memoryVisibility = MemoryLocalisation::GPU_Only,
         .samples = 1,
         .GenerateMipMap = true,
         .data = pixels

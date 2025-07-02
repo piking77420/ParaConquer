@@ -2,7 +2,7 @@
 
 #include "vulkan_context.hpp"
 
-Vulkan::VulkanTexture::VulkanTexture(PC_CORE::TextureMemoryUsage _usage)
+Vulkan::VulkanTexture::VulkanTexture(PC_CORE::MemoryLocalisation _usage)
 {
     //TODO
     textureAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);

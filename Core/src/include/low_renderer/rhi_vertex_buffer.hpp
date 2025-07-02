@@ -10,10 +10,10 @@ class RhiVertexBuffer : public RhiBuffer
 {
 public:
     DEFAULT_COPY_MOVE_OPERATIONS(RhiVertexBuffer)
-
-    PC_CORE_API RhiVertexBuffer(size_t _sizeInByte, BufferMemoryUsage _memoryUsage);
     
-    PC_CORE_API RhiVertexBuffer() : RhiBuffer(0, PC_CORE::BufferMemoryUsage::Count)
+    PC_CORE_API RhiVertexBuffer(size_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility, MemoryUsage _memoryUsage);
+    
+    PC_CORE_API RhiVertexBuffer() : RhiBuffer(0, PC_CORE::MemoryLocalisation::Count, PC_CORE::MemoryUsage::Count)
     {
         
     }
