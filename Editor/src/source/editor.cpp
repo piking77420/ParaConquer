@@ -471,6 +471,7 @@ void Editor::Run(bool* _appShouldClose)
 		gameApp.renderer.BeginDraw(&gameApp.window);
 		
 		UpdateEditor();
+		DebugDrawContext::DrawSphere(Tbx::Vector3d{0.,10.,0.}, 2.f, Tbx::Vector3d{ 0.,0.5,1.});
 		gameApp.WorldTick();
 
 		for (auto& editorWindow : editorWindows)

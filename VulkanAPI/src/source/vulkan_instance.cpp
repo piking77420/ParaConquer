@@ -114,7 +114,7 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 }
 
 #endif
-#ifdef PROFILING
+#ifdef WITH_EDITOR || PROFING
 
 void Vulkan::VulkanInstance::GetDebugFunc()
 {
@@ -181,7 +181,7 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 
     InitSurface(_window);
 
-#ifdef PROFILING
+#ifdef  WITH_EDITOR || PROFING
     GetDebugFunc();
 #endif
     

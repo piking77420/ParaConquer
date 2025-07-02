@@ -88,6 +88,8 @@ public:
 
     std::shared_ptr<RhiRenderPass> drawTextureScreenQuadPass;
 
+    UniformBuffer cameraUniformBuffer;
+
 #ifdef WITH_EDITOR
     std::vector<std::function<void(CommandList*, const RenderingContext&)>> UserCustomForwardPass;
 #endif
@@ -113,11 +115,10 @@ private:
     
     RhiContext* m_RhiContext;
     
-    ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSet = nullptr;
+    ShaderProgramDescriptorSets* m_ShaderProgramSceneDescriptorSet = nullptr;
 
     ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsSky = nullptr;
 
-    UniformBuffer cameraUniformBuffer;
 
     SceneBufferGPU sceneBufferGPU;
 

@@ -333,10 +333,10 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R32G32B32A32_SINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR32G32B32A32Sint;
 
     case PC_CORE::RHIFormat::R32G32B32A32_SFLOAT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR32G32B32A32Sfloat;
 
     case PC_CORE::RHIFormat::R64_UINT:
         return vk::Format::eUndefined;

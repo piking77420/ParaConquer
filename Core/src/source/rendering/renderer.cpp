@@ -69,8 +69,8 @@ void Renderer::Init()
         }
     };
 
-    m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet, 0);
-    m_ShaderProgramDescriptorSet->WriteDescriptorSets(descriptorSets);
+    m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, 0);
+    m_ShaderProgramSceneDescriptorSet->WriteDescriptorSets(descriptorSets);
     
 
     descriptorSets =
@@ -136,6 +136,7 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
     sceneBufferGPU.vpInv = sceneBufferGPU.vp.Invert();
     sceneBufferGPU.cameraNear = renderingContext.lowLevelCamera.near;
     sceneBufferGPU.cameraFar = renderingContext.lowLevelCamera.far;
+    sceneBufferGPU.cameraPos = renderingContext.lowLevelCamera.position;
 
     cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 }
@@ -217,13 +218,13 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .clearDepth = 1.f
     };
 
-    primaryCommandList->BeginDebugLabel("Begin Forward Pass", FORWARD_DEBUG_COLOR);
+    primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
     primaryCommandList->BeginRenderPass(beginRenderPassInfo);
     primaryCommandList->BindProgram(m_ForwardShader.get());
 
     
     primaryCommandList->SetViewPort(viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
 
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 

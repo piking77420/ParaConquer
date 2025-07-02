@@ -215,7 +215,6 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer&
     const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_vertexBuffer.GetNativeHandle());
     
     vk::DeviceSize offsets[] = {0};
-    
     m_CommandBuffer[frameIndex].bindVertexBuffers(_firstBinding, _bindingCount, &bufferAndAllocs->at(frameIndex).buffer, offsets);
 }
 
@@ -241,7 +240,7 @@ const vk::Queue* Vulkan::VulkanCommandList::GetQueue() const
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)
 {
 
-#ifdef PROFILING
+#ifdef  WITH_EDITOR || PROFING
     VkDebugUtilsLabelEXT markerInfo = {};
     markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     markerInfo.pLabelName = _debugLabel;
@@ -255,7 +254,7 @@ void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const s
 
 void Vulkan::VulkanCommandList::EndDebugLabel()
 {
-#ifdef PROFILING
+#ifdef  WITH_EDITOR || PROFING
     static auto endDebugLabelPtrFunc = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(PC_CORE::Rhi::GetRhiContext()->renderInstance)->GetPFN_vkCmdEndDebugUtilsLabelEXT();
     endDebugLabelPtrFunc(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()]);
 #endif

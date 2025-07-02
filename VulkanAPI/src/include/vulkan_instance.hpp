@@ -27,7 +27,7 @@ namespace Vulkan
             return m_Instance;
         }
 
-#ifdef PROFILING
+#ifdef  WITH_EDITOR || PROFING
         PFN_vkCmdBeginDebugUtilsLabelEXT GetPFN_vkCmdBeginDebugUtilsLabelEXT() const
         {
             return m_BeginDebugLabel;
@@ -55,7 +55,7 @@ namespace Vulkan
         void PopulateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& _debugMessengerCreateInfo);
 #endif
 
-#ifdef PROFILING
+#ifdef  WITH_EDITOR || PROFING
         PFN_vkCmdBeginDebugUtilsLabelEXT m_BeginDebugLabel;
 
         PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel;

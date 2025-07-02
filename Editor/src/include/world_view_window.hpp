@@ -32,7 +32,7 @@ public:
     void Render() override;
 
 protected:
-    size_t m_RenderingContextFlag;
+    size_t m_RenderingContextFlag = 0;
 
 private:
     void ResizeViewports();

@@ -45,7 +45,7 @@ void PC_CORE::ForwardPass::Execute()
         .scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
     };
     primaryCommandList->SetViewPort(viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader, m_ShaderProgramDescriptorSet, 0, 1);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader, m_ShaderProgramSceneDescriptorSet, 0, 1);
 
 
     std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this,
