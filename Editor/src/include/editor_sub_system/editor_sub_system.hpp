@@ -14,9 +14,9 @@ public:
     
     EditorSubSystem(Editor& _editor) : m_Editor(_editor) {}
 
-    virtual void OnRender() {}
+    virtual void Render() {}
 
-    virtual void Tick(float _deltaTime){}
+    virtual void Update(){}
     
     virtual ~EditorSubSystem() = default;
 

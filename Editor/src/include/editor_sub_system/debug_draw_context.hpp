@@ -16,19 +16,19 @@ class DebugDrawContext : public EditorSubSystem
 {
 public:
 
-	static void DrawLine(Tbx::Vector3f _p1, Tbx::Vector3f _p2, float _thickNess = 1.f);
+	static void DrawLine(Tbx::Vector3d _p1, Tbx::Vector3d _p2, float _thickNess = 1.f);
 
-	static void DrawSphere(Tbx::Vector3f _p1, float _radius = 0.5f);
+	static void DrawSphere(Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector4f _color = Tbx::Vector4f(1., 1.,1. ,1.));
 	
-	static void DrawBox(Tbx::Vector3f _p1, Tbx::Vector3f _size);
+	static void DrawBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size);
 	
-	static void DrawWireSphere(Tbx::Vector3f _p1, float _radius = 0.5f);
+	static void DrawWireSphere(Tbx::Vector3d _p1, float _radius = 0.5f);
 	
-	static void DrawWireBox(Tbx::Vector3f _p1, Tbx::Vector3f _size);
+	static void DrawWireBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size);
 
 	DEFAULT_COPY_MOVE_OPERATIONS(DebugDrawContext);
 
-	void OnRender() override;
+	void Render() override;
 	
 	DebugDrawContext(Editor& _editor);
 
@@ -36,28 +36,30 @@ public:
 
 private:
 	static inline DebugDrawContext* m_Instance;
-
-	enum struct PrimitiveType
-	{
-		Sphere,
-		Box,
-		Capsule,
-		Ray,
-		Count,
-	};
-
+	
 	struct PrimitiveGpuResources
 	{
-		PC_CORE::UniformBuffer uniformBuffer;
+		PC_CORE::VertexBuffer vertexBuffer;
 		PC_CORE::ShaderProgramDescriptorSets* descriptorSet = nullptr;
-		PC_CORE::ResourceRef<PC_CORE::ShaderProgram> shaderProgram;
 	};
+
+	static const size_t MAX_GIZMO_PRIMITIVE = 1024;
 	
-	std::array<PrimitiveGpuResources,static_cast<size_t>(PrimitiveType::Count)> m_DebugDrawRsource;
+	struct GpuBufferGizmo
+	{
+		Tbx::Matrix4x4f buffer[MAX_GIZMO_PRIMITIVE];
+	};
+
+	PrimitiveGpuResources m_SpherePrimitiveGpuResources;
+	
+	PC_CORE::ResourceRef<PC_CORE::ShaderProgram> m_ShaderProgram;
+	
+	std::vector<Tbx::Matrix4x4f> m_SphereGizmoBuffers;
 	
 	void CreateShaders();
 	
 	void DrawDebugPrimitive(PC_CORE::CommandList* _commandList, const PC_CORE::RenderingContext& _renderingContext);
+
 	
 };
 

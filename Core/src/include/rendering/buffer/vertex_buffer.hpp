@@ -8,7 +8,7 @@
 
 BEGIN_PCCORE
 
-PC_CORE_API class VertexBuffer final : public GpuBuffer
+class VertexBuffer final : public GpuBuffer
 {
 public:
 
@@ -26,14 +26,18 @@ public:
     {
         return m_RhiBuffer;     
     }
+
+    PC_CORE_API void Update(void* _data, size_t _size) const;
     
     DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
 
-    VertexBuffer(Vertex* _vertices, size_t _count, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+    PC_CORE_API VertexBuffer(Vertex* _vertices, size_t _count, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
 
-    VertexBuffer() = default;
+    PC_CORE_API VertexBuffer(size_t _sizeInBytes, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+    
+    PC_CORE_API VertexBuffer() = default;
 
-    ~VertexBuffer() override = default;
+    PC_CORE_API ~VertexBuffer() override = default;
 private:
     size_t m_Count = 0;
 

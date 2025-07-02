@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "enum_class_bit_flag.hpp"
 #include "gbuffers.hpp"
 #include "low_renderer/frame_buffer.hpp"
 #include "math/matrix_transformation.hpp"
@@ -26,7 +25,7 @@ BEGIN_PCCORE
     };
 
 #ifdef WITH_EDITOR
-    enum class RenderingContextFlag
+    enum RenderingContextFlag
     {
         DebugDrawGeometry = 1 << 0  
     };
@@ -47,7 +46,7 @@ BEGIN_PCCORE
         
         Tbx::Vector2ui renderingContextSize;
 #ifdef WITH_EDITOR
-        BitFlags<RenderingContextFlag> renderingContextFlag;
+        size_t renderingContextFlag;
 #endif
     };
 

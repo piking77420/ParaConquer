@@ -32,7 +32,9 @@ namespace Vulkan
         void UnMapData();
         
         VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage);
-        
+
+        VulkanBuffer(uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage);
+
         VulkanBuffer() = default;
         
         ~VulkanBuffer();

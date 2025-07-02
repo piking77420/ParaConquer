@@ -250,6 +250,25 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint
     }
 }
 
+std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(uint32_t _sizeInByte, MemoryLocalisation _visibility,
+    MemoryUsage _usage)
+{
+    Rhi& rhi = GetInstance();
+
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::NONE:
+        break;
+    case GraphicAPI::VULKAN:
+        return std::make_shared<Vulkan::VulkanVertexBuffer>(_sizeInByte, _visibility, _usage);
+    case GraphicAPI::DX3D12:
+        break;
+    case GraphicAPI::COUNT:
+        break;
+    default: ;
+    }
+}
+
 std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();

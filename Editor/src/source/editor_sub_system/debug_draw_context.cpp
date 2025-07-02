@@ -4,60 +4,53 @@
 #include "resources/resource_manager.hpp"
 
 
-void PC_EDITOR_CORE::DebugDrawContext::DrawSphere(Tbx::Vector3f _p1, float _radius)
+void PC_EDITOR_CORE::DebugDrawContext::DrawSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector4f _color)
 {
+    Tbx::Vector3f p1 = _p1;
     
+    const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
+    (       _radius, 0.f, 0.f, 0.f,
+            0.f, _radius, 0.f, 0.f,
+            0.f, 0.f, _radius, 0.f,
+            p1.x, p1.y, p1.z, 1.f
+    );
+
+    m_Instance->m_SphereGizmoBuffers.push_back(matrix);
 }
 
-void PC_EDITOR_CORE::DebugDrawContext::OnRender()
+void PC_EDITOR_CORE::DebugDrawContext::Render()
 {
-    EditorSubSystem::OnRender();
+    EditorSubSystem::Render();
+    m_SpherePrimitiveGpuResources.vertexBuffer.Update(m_Instance->m_SphereGizmoBuffers.data(),
+        m_Instance->m_SphereGizmoBuffers.size() * sizeof(Tbx::Matrix4x4f));
     
+    m_SphereGizmoBuffers.clear();
 }
 
 PC_EDITOR_CORE::DebugDrawContext::DebugDrawContext(Editor& _editor) : EditorSubSystem(_editor)
 {
-    
     m_Instance = this;
     
     m_Editor.gameApp.renderer.UserCustomForwardPass.push_back(
      std::bind(&PC_EDITOR_CORE::DebugDrawContext::DrawDebugPrimitive, this,
-               std::placeholders::_1, std::placeholders::_2)
- );
+               std::placeholders::_1, std::placeholders::_2));
+    /*
     CreateShaders();
-    m_GizmoShader.lock()->AllocDescriptorSet(&m_DescriptorSet, 0);
-
-    
-    
-    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
-   {
-        {
-            PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
-            CAMERA_BINDING,
-            & cameraBufferDescritptor,
-            nullptr,
-        },
-        
-   };
-
+    m_ShaderProgram.lock()->AllocDescriptorSet(&m_SpherePrimitiveGpuResources.descriptorSet, 0);
+*/
+    m_SpherePrimitiveGpuResources.vertexBuffer = PC_CORE::VertexBuffer(sizeof(GpuBufferGizmo), PC_CORE::MemoryLocalisation::CPU_Only, PC_CORE::MemoryUsage::Dynamic);
 }
 
 void PC_EDITOR_CORE::DebugDrawContext::CreateShaders()
 {
-    
+    /*
     constexpr PC_CORE::RasterizerInfo rasterizerInfo =
       {
         .polygonMode = PC_CORE::PolygonMode::Fill,
         .cullModeFlag = PC_CORE::CullModeFlagBit::Back,
         .frontFace = PC_CORE::FrontFace::CounterClockwise
     };
-
-    PC_CORE::VertexInputBindingDescrition vertexInputBindingInstance =
-        {
-        .binding = 1,
-        .stride = ,
-        .vertexInputRate = vk::VertexInputRate::eInstance
-        }
+    
     
 
     const PC_CORE::ShaderGraphicPointInfo shaderGraphicPointInfo =
@@ -95,7 +88,7 @@ void PC_EDITOR_CORE::DebugDrawContext::CreateShaders()
         .renderPass = m_Editor.gameApp.renderer.forwardPass,
         };
 
-    m_GizmoShader = PC_CORE::ResourceManager::Create<PC_CORE::ShaderProgram>();
+    m_ShaderProgram = PC_CORE::ResourceManager::Create<PC_CORE::ShaderProgram>();*/
 }
 
 void PC_EDITOR_CORE::DebugDrawContext::DrawDebugPrimitive(PC_CORE::CommandList* _commandList,

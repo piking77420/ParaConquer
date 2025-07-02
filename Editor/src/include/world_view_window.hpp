@@ -32,7 +32,7 @@ public:
     void Render() override;
 
 protected:
-    PC_CORE::BitFlags<PC_CORE::RenderingContextFlag> m_RenderingContextFlag;
+    size_t m_RenderingContextFlag;
 
 private:
     void ResizeViewports();

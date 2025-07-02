@@ -311,7 +311,7 @@ void Editor::Init()
 		});
 	
 	InitTestScene();
-	InitEditorWindows();
+	InitEditor();
 }
 
 void Editor::Destroy()
@@ -329,7 +329,7 @@ void Editor::Destroy()
 
 	UnInitThridPartLib();
 }
-void Editor::UpdateEditorWindows()
+void Editor::UpdateEditor()
 {
 	static bool open = true;
 
@@ -377,6 +377,9 @@ void Editor::UpdateEditorWindows()
 		editorWindow->Update();
 		editorWindow->End();
 	}
+
+	for (auto& sub : editorSubSystems)
+		sub->Update();
 
 	EditorCommandUpdate();
 	dockSpace.EndDockSpace();
@@ -467,11 +470,13 @@ void Editor::Run(bool* _appShouldClose)
 
 		gameApp.renderer.BeginDraw(&gameApp.window);
 		
-		UpdateEditorWindows();
+		UpdateEditor();
 		gameApp.WorldTick();
 
 		for (auto& editorWindow : editorWindows)
 			editorWindow->Render();
+		for (auto& sub : editorSubSystems)
+			sub->Render();
 
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
@@ -482,16 +487,18 @@ void Editor::Run(bool* _appShouldClose)
 	Rhi::GetRhiContext()->WaitIdle();
 }
 
-void Editor::InitEditorWindows()
+void Editor::InitEditor()
 {
-	PC_LOG("InitEditorWindows...")
-
-
+	PC_LOG("InitEditorWindow...")
 	editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
 	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
 	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
 	editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
 	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
+
+	PC_LOG("InitEditorSystem")
+	editorSubSystems.push_back(std::make_unique<DebugDrawContext>(*this));
+	
 }
 
 void Editor::EditorCommandUpdate()

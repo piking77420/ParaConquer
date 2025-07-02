@@ -61,7 +61,9 @@ public:
 
     PC_CORE_API static std::shared_ptr<RhiIndexBuffer> CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, MemoryLocalisation _visibility, MemoryUsage _usage); 
 
-    PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage); 
+    PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage);
+
+    PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage); 
 
     PC_CORE_API static std::shared_ptr<RhiUniformBuffer> CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage);
     

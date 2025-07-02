@@ -52,6 +52,21 @@ Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::
     }*/
 }
 
+Vulkan::VulkanBuffer::VulkanBuffer(uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage,
+    PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage)
+{
+    if (_sizeInByte <= 0)
+    {
+        PC_LOGERROR("Trying to create a Vulkan buffer with zero size");
+        return;
+    }
+    
+    bufferAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);
+    assert(bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
+    
+    CreateInternalBuffer(nullptr, _sizeInByte, bufferUsage, Utils::RhiMemoryUsageToVulkan(_visibility));
+}
+
 Vulkan::VulkanBuffer::~VulkanBuffer()
 {
     for (auto& alloc : bufferAndAlloc)

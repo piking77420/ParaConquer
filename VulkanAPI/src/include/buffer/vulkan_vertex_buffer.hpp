@@ -22,6 +22,8 @@ namespace Vulkan
         
         VULKAN_API VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage _usage);
 
+        VULKAN_API VulkanVertexBuffer(uint32_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage _usage);
+        
         VULKAN_API VulkanVertexBuffer() = default;
         
         VULKAN_API ~VulkanVertexBuffer() override = default;

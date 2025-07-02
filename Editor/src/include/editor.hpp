@@ -56,11 +56,11 @@ public:
     
     void Run(bool* _appShouldClose);
 
-    void InitEditorWindows();
+    void InitEditor();
 
     void EditorCommandUpdate();
 
-    void UpdateEditorWindows();
+    void UpdateEditor();
     
     PC_CORE::App gameApp;
 

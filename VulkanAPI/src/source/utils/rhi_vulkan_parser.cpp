@@ -72,28 +72,28 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8_SINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8Sint;
 
     case PC_CORE::RHIFormat::R8G8_SRGB:
         return vk::Format::eR8G8Srgb;
 
     case PC_CORE::RHIFormat::R8G8B8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Snorm;
 
     case PC_CORE::RHIFormat::R8G8B8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Snorm;
 
     case PC_CORE::RHIFormat::R8G8B8_USCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Uscaled;
 
     case PC_CORE::RHIFormat::R8G8B8_SSCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Sscaled;
 
     case PC_CORE::RHIFormat::R8G8B8_UINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Uint;
 
     case PC_CORE::RHIFormat::R8G8B8_SINT:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8Sint;
 
     case PC_CORE::RHIFormat::R8G8B8_SRGB:
         return vk::Format::eR8G8B8Srgb;
@@ -688,7 +688,7 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 
     case PC_CORE::RHIFormat::ASTC_5x4_SFLOAT_BLOCK:
         return vk::Format::eUndefined;
-
+// here
     case PC_CORE::RHIFormat::ASTC_5x5_SFLOAT_BLOCK:
         return vk::Format::eUndefined;
 
