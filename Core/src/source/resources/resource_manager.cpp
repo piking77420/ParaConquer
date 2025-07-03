@@ -19,10 +19,11 @@ void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
-    
+
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
 	auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
 
+    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/capsule.obj");
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/viking_room.obj");
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/cube.obj");
 	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");

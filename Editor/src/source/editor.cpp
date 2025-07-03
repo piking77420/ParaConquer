@@ -41,7 +41,6 @@
 #include <new>
 #include <shobjidl.h>  // For IFileDialogEvents
 
-#include "editor_sub_system/debug_draw_context.hpp"
 #include "serialize/iseriazable.h"
 
 using namespace PC_EDITOR_CORE;
@@ -281,7 +280,6 @@ void Editor::ReloadShaders()
 
 void Editor::InitSubSystem()
 {
-	editorSubSystems.push_back(std::make_unique<DebugDrawContext>(*this));
 }
 
 
@@ -363,7 +361,7 @@ void Editor::UpdateEditor()
 					// reload shader
 				}
 			};
-			
+			  
 			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<PC_CORE::ShaderProgram>(), l);
 			
 			ImGui::EndMenu();
@@ -471,7 +469,7 @@ void Editor::Run(bool* _appShouldClose)
 		gameApp.renderer.BeginDraw(&gameApp.window);
 		
 		UpdateEditor();
-		DebugDrawContext::DrawSphere(Tbx::Vector3d{0.,10.,0.}, 2.f, Tbx::Vector3d{ 0.,0.5,1.});
+		DebugDrawContext::DrawWireSphere(Tbx::Vector3d{0.,10.,0.}, 2.f, Tbx::Vector3d{ 0.,0.5,1.});
 		gameApp.WorldTick();
 
 		for (auto& editorWindow : editorWindows)
@@ -498,7 +496,6 @@ void Editor::InitEditor()
 	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
 
 	PC_LOG("InitEditorSystem")
-	editorSubSystems.push_back(std::make_unique<DebugDrawContext>(*this));
 	
 }
 

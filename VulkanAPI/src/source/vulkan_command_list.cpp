@@ -195,6 +195,11 @@ void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::PrimitiveTopology 
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setPrimitiveTopology(topology);
 }
 
+void Vulkan::VulkanCommandList::SetLineWidth(float _widht)
+{
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setLineWidth(_widht);
+}
+
 void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex,
                                      uint32_t _firstInstance)
 {

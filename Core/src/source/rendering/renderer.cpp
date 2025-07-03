@@ -83,12 +83,13 @@ void Renderer::Init()
         },
     };
     InitRenderSystem();
-
+    m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 }
 void Renderer::Destroy()
 {
    
     // TODO(avoir make shader a shared ptr or remove acquire beacause of resoure manager) Release Shader
+    m_DebugDrawContext.reset();
     m_ForwardShader = nullptr;
     m_DrawTextureScreenQuadShader = nullptr;
 }
@@ -104,7 +105,7 @@ void Renderer::BeginDraw(Window* _window)
     primaryCommandList->Reset();
     primaryCommandList->BeginRecordCommands();
 
-    
+    m_DebugDrawContext->Prepare();
     QueryWorldData(World::GetWorld());
     sceneLightsBuffer
         ->Fecth();
@@ -237,6 +238,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)
         it(primaryCommandList.get(), *currentRenderingContext);
+    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), renderingContext);
 #endif
     
     // draw the sky

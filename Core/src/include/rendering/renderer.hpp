@@ -1,6 +1,7 @@
 #pragma once
 #include "light.hpp"
 #include "rendering_typedef.h"
+#include "debug/debug_draw_context.hpp"
 #include "low_renderer/rhi_vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/rhi_index_buffer.hpp"
@@ -132,6 +133,11 @@ private:
     std::shared_ptr<RendererSystem> rendererSystem;
 
     const RenderingContext* currentRenderingContext = nullptr;
+    
+#ifdef WITH_EDITOR
+    std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
+#endif
+    
     
     PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
 

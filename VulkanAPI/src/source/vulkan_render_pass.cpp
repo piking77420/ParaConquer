@@ -7,7 +7,7 @@
 Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& _renderPassDescriptor)
     : RhiRenderPass(_renderPassDescriptor)
 {
-    PERF_REGION_SCOPED
+    PERF_REGION_SCOPED;
     
     std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);

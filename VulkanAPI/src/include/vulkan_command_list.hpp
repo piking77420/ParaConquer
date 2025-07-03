@@ -42,6 +42,8 @@ public:
 
     VULKAN_API void SetPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology) override;
 
+    VULKAN_API void SetLineWidth(float _widht) override;
+
     VULKAN_API void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) override;
 
     VULKAN_API void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset,
