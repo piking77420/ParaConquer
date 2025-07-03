@@ -21,6 +21,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     
     std::vector<std::string> extensionToEnable;
     
+    
     renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate, rhiContextCreateInfo.WindowHandle);
     
     physicalDevices = std::make_shared<VulkanPhysicalDevices>(*rhiContextCreateInfo.physicalDevicesCreateInfo, &extensionToEnable);

@@ -370,7 +370,8 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
         {
             {
                 SWAPCHAIN_EXT, //MESH_SHADER_EXT, ACCELERATION_EXT ,RAY_TRACING_EXT , DEFFERED_HOST_OP
-            }
+            },
+        
         };
 
     const RhiContextCreateInfo renderContextCreateInfo =

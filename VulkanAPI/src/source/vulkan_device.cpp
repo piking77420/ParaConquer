@@ -38,23 +38,30 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
 
 
     vk::PhysicalDeviceFeatures deviceFeatures = vkPhysicalDevice.getFeatures();
-
+    
     std::vector<const char*> enabledExtensionNames;
     enabledExtensionNames.reserve(_extensionToEnable.size());
-    
-    for (const auto& extension : _extensionToEnable)
-        {
+    for (const auto& extension : _extensionToEnable) {
         enabledExtensionNames.emplace_back(extension.c_str());
     }
+
+    vk::PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedFeatures2;
+    extendedFeatures2.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState2FeaturesEXT;
+    extendedFeatures2.pNext = nullptr;
+
+    vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedFeatures3;
+    extendedFeatures2.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
+    extendedFeatures2.pNext = &extendedFeatures2;
     
     vk::DeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfo.data();
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfo.size());
-    deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &deviceFeatures; // features de base
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensionNames.size());
     deviceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames.data();
-    
+    deviceCreateInfo.pNext = &extendedFeatures3;
+
 #ifdef _DEBUG
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {

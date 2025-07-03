@@ -14,6 +14,7 @@
 
 
 
+
 BEGIN_PCCORE
     constexpr int32_t NULL_PHYSICAL_DEVICE = -1;
 
