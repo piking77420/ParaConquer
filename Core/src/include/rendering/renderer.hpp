@@ -1,7 +1,7 @@
 #pragma once
 #include "light.hpp"
 #include "rendering_typedef.h"
-#include "debug/debug_draw_context.hpp"
+#include "debug_helper/debug_draw_context.hpp"
 #include "low_renderer/rhi_vertex_buffer.hpp"
 #include "low_renderer/command_list.hpp"
 #include "low_renderer/rhi_index_buffer.hpp"
