@@ -457,6 +457,8 @@ void Editor::DestroyTestScene()
 
 void Editor::Run(bool* _appShouldClose)
 {
+	Tbx::Vector3d gizmoPos = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+	
 	while (!gameApp.window.ShouldClose())
 	{
 		PERF_REGION_SCOPED;
@@ -469,9 +471,10 @@ void Editor::Run(bool* _appShouldClose)
 		gameApp.renderer.BeginDraw(&gameApp.window);
 		
 		UpdateEditor();
-		DebugDrawContext::DrawWireSphere(Tbx::Vector3d{0.,10.,0.}, 2.f, Tbx::Vector3d{ 0.,0.5,1.});
 		gameApp.WorldTick();
 
+		DebugDrawContext::DrawBox(gizmoPos, Tbx::Vector3d{ 1.,1,1.}, Tbx::Vector3d{ 0.,0.5,1.});
+		
 		for (auto& editorWindow : editorWindows)
 			editorWindow->Render();
 		for (auto& sub : editorSubSystems)

@@ -320,7 +320,7 @@ void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
     sceneLightsBuffer
         ->sceneLightData.intensity = dirLight.intensity;
     sceneLightsBuffer
-        ->sceneLightData.direction =  Tbx::Quaterniond::ToEulerAngles(transform.rotation.quaternion).Normalize();
+        ->sceneLightData.direction = Tbx::Quaternionf::ToEulerAngles(transform.rotation.quaternion).Normalize();
 }
 
 void Renderer::CreateForwardShader()
@@ -484,7 +484,8 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     // Compute Matrix
     Tbx::Matrix4x4d modelMatrixd[2];
 
-    modelMatrixd[0] = Tbx::Trs4x4<float>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
+    Tbx::Vector3d d = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
+    modelMatrixd[0] = Tbx::Trs4x4<float>(_transform.position - d , _transform.rotation.quaternion,
         _transform.scale);
 
     modelMatrixd[1] = modelMatrixd[0].Invert().Transpose();

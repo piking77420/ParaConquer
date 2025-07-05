@@ -11,7 +11,7 @@ BEGIN_PCCORE
 struct Rotation
 {
     Tbx::Vector3f eulerAngles;
-    Tbx::Quaternionf quaternion = Tbx::Quaterniond::Identity();
+    Tbx::Quaternionf quaternion = Tbx::Quaternionf::Identity();
 
     Rotation() = default;
     

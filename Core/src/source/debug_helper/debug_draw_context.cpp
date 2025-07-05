@@ -8,7 +8,7 @@
 
 void PC_CORE::DebugDrawContext::DrawSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
 {
-    Tbx::Vector3f p1 = _p1;
+    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
 
     const float segment = _radius * 2.f;
     const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
@@ -21,9 +21,32 @@ void PC_CORE::DebugDrawContext::DrawSphere(Tbx::Vector3d _p1, float _radius, Tbx
     m_Instance->m_PrimitiveData[static_cast<size_t>(PrimitiveType::Sphere)].matrixBuffer.push_back(matrix);
 }
 
+void PC_CORE::DebugDrawContext::DrawBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size,
+    Tbx::Vector3f _color)
+{
+    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
+
+    Tbx::Matrix3x3f rotMatrix = Tbx::Rotation3x3<float>(static_cast<Tbx::Vector3f>(euler));
+
+    const Tbx::Vector3f sz = static_cast<Tbx::Vector3f>(_size);
+    const Tbx::Matrix3x3f matrix3 = rotMatrix * Tbx::Matrix3x3f
+    (sz.x, 0.f, 0.f,
+     0.f, sz.y, 0.f,
+     0.f, 0.f, sz.z);
+
+    const Tbx::Matrix4x4f m = Tbx::Matrix4x4f
+    (   matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
+        matrix3.data[3], matrix3.data[4], matrix3.data[5], _color.y,
+        matrix3.data[6], matrix3.data[7], matrix3.data[8], _color.z,
+        p1.x, p1.y, p1.z, 1.f
+    );
+
+    m_Instance->m_PrimitiveData[static_cast<size_t>(PrimitiveType::Box)].matrixBuffer.push_back(m);
+}
+
 void PC_CORE::DebugDrawContext::DrawWireSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
 {
-    Tbx::Vector3f p1 = _p1;
+    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
 
     const float segment = _radius * 2.f;
     const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
