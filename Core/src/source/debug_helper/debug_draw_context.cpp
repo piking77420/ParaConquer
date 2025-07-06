@@ -6,73 +6,82 @@
 
 #define GIZMO_PASS {1.f, 0.0f, 1.f, 0.5f}
 
+void PC_CORE::DebugDrawContext::DrawRay(Tbx::Vector3d _p1, Tbx::Vector3d _dir, float _distance, Tbx::Vector3f _color)
+{
+    const Tbx::Vector4f p1 = Tbx::Vector4f(static_cast<float>(_p1.x), static_cast<float>(_p1.y), static_cast<float>(_p1.z), 0);
+    const Tbx::Vector4f dir = Tbx::Vector4f(static_cast<float>(_dir.x), static_cast<float>(_dir.y), static_cast<float>(_dir.z), 0);
+    const Tbx::Vector4f color = Tbx::Vector4f(static_cast<float>(_color.x), static_cast<float>(_color.y), static_cast<float>(_color.z), 0);
+
+    const Tbx::Vector4f p2 = p1 + (dir.Normalize() * _distance);
+
+
+    m_Instance->m_RayPrimitiveData.rayBuffer.emplace_back(RayDataPerInstance
+        { 
+           p1,p2,color
+        });
+    m_Instance->m_RayPrimitiveData.rayCount++;
+}
+
 void PC_CORE::DebugDrawContext::DrawSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
 {
-    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
-
-    const float segment = _radius * 2.f;
-    const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
-    (segment, 0.f, 0.f, _color.x,
-     0.f, segment, 0.f, _color.y,
-     0.f, 0.f, segment, _color.z,
-     p1.x, p1.y, p1.z, 1.f
-    );
-
-    m_Instance->m_PrimitiveData[static_cast<size_t>(PrimitiveType::Sphere)].matrixBuffer.push_back(matrix);
+    PushSphereGizmo(PrimitiveType::Sphere, _p1, _radius, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size,
     Tbx::Vector3f _color)
 {
-    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
+    PushBoxGizmo(PrimitiveType::Box, _p1, euler, _size, _color);
+}
 
-    Tbx::Matrix3x3f rotMatrix = Tbx::Rotation3x3<float>(static_cast<Tbx::Vector3f>(euler));
+void PC_CORE::DebugDrawContext::DrawWireBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color)
+{
+    PushBoxGizmo(PrimitiveType::WireBox, _p1, euler, _size, _color);
+}
 
-    const Tbx::Vector3f sz = static_cast<Tbx::Vector3f>(_size);
-    const Tbx::Matrix3x3f matrix3 = rotMatrix * Tbx::Matrix3x3f
-    (sz.x, 0.f, 0.f,
-     0.f, sz.y, 0.f,
-     0.f, 0.f, sz.z);
+void PC_CORE::DebugDrawContext::DrawCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color)
+{
+    PushCapsuleGizmo(PrimitiveType::Capusle, _p1, euler, _radius, _height, _color);
+}
 
-    const Tbx::Matrix4x4f m = Tbx::Matrix4x4f
-    (   matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
-        matrix3.data[3], matrix3.data[4], matrix3.data[5], _color.y,
-        matrix3.data[6], matrix3.data[7], matrix3.data[8], _color.z,
-        p1.x, p1.y, p1.z, 1.f
-    );
-
-    m_Instance->m_PrimitiveData[static_cast<size_t>(PrimitiveType::Box)].matrixBuffer.push_back(m);
+void PC_CORE::DebugDrawContext::DrawWireCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color)
+{
+    PushCapsuleGizmo(PrimitiveType::WireCapsule, _p1, euler, _radius, _height, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawWireSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
 {
-    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
-
-    const float segment = _radius * 2.f;
-    const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
-    (segment, 0.f, 0.f, _color.x,
-     0.f, segment, 0.f, _color.y,
-     0.f, 0.f, segment, _color.z,
-     p1.x, p1.y, p1.z, 1.f
-    );
-    m_Instance->m_PrimitiveData[static_cast<size_t>(PrimitiveType::WireSphere)].matrixBuffer.push_back(matrix);
-
+    PushSphereGizmo(PrimitiveType::WireSphere, _p1, _radius, _color);
 }
 
 void PC_CORE::DebugDrawContext::Prepare()
 {
     for (int i = 0; i < m_PrimitiveData.size(); i++)
     {
-        m_PrimitiveData[i].primitiveVertexBuffer.Update(m_PrimitiveData[i].matrixBuffer.data(),
-                                                        m_PrimitiveData[i].matrixBuffer.size() * sizeof(
-                                                            Tbx::Matrix4x4f));
+        size_t updateDataSize = m_PrimitiveData[i].matrixBuffer.size() * sizeof(Tbx::Matrix4x4f);
+        assert(updateDataSize < GIZMO_BUFFER_SIZE && "updateDataSize should be less than GIZMO_BUFFER_SIZE");
+        updateDataSize = std::clamp(updateDataSize, (size_t)0, GIZMO_BUFFER_SIZE);
 
-        m_PrimitiveData[i].primitiveCount = m_PrimitiveData[i].matrixBuffer.size();
+		m_PrimitiveData[i].primitiveVertexBuffer.Update(m_PrimitiveData[i].matrixBuffer.data(),
+			updateDataSize);
+
+        m_PrimitiveData[i].primitiveCount = std::clamp(m_PrimitiveData[i].matrixBuffer.size(), (size_t)0, MAX_GIZMO_PRIMITIVE);
         m_PrimitiveData[i].matrixBuffer.clear();
+    }
+
+    {
+        size_t updateRaySize = m_RayPrimitiveData.rayBuffer.size() * sizeof(RayDataPerInstance);
+
+        assert(updateRaySize < RAY_BUFFER_SIZE && "updateRaySize should be less than RAY_BUFFER_SIZE");
+        updateRaySize = std::clamp(updateRaySize, (size_t)0, RAY_BUFFER_SIZE);
+
+        m_RayPrimitiveData.vertexBuffer.Update(m_RayPrimitiveData.rayBuffer.data(), updateRaySize);
+        m_RayPrimitiveData.rayCount = std::clamp(m_RayPrimitiveData.rayBuffer.size(), (size_t)0, MAX_RAY_COUNT);
+
+        m_RayPrimitiveData.rayBuffer.clear();
     }
 }
 
-void PC_CORE::DebugDrawContext::CreateShaders()
+void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 {
     constexpr PC_CORE::RasterizerInfo rasterizerInfo =
     {
@@ -178,6 +187,106 @@ void PC_CORE::DebugDrawContext::CreateShaders()
     m_ShaderProgramDescriptorSets->WriteDescriptorSets(descriptorWrites);
 }
 
+void PC_CORE::DebugDrawContext::CreateRayShaders()
+{
+    constexpr PC_CORE::RasterizerInfo rasterizerInfo =
+    {
+        .polygonMode = PC_CORE::PolygonMode::Line,
+        .cullModeFlag = PC_CORE::CullModeFlagBit::None,
+        .frontFace = PC_CORE::FrontFace::CounterClockwise
+    };
+
+    PC_CORE::VertexInputBindingDescrition vertexBindingDescrition =
+    {
+        .binding = 0,
+        .stride = sizeof(RayDataPerInstance),
+        .vertexInputRate = PC_CORE::VertexInputRate::INSTANCE
+    };
+
+
+    std::vector<PC_CORE::VertexAttributeDescription> attributeDescription;
+
+    attributeDescription.push_back(
+        {
+            .binding = 0,
+            .location = 0,
+            .format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
+            .offset = 0
+        });
+    attributeDescription.push_back(
+        {
+            .binding = 0,
+            .location = 1,
+            .format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
+            .offset = sizeof(Tbx::Vector4f),
+        });
+    attributeDescription.push_back(
+        {
+            .binding = 0,
+            .location = 2,
+            .format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
+            .offset = sizeof(Tbx::Vector4f) * 2,
+        });
+
+    const PC_CORE::ShaderGraphicPointInfo shaderGraphicPointInfo =
+    {
+        .rasterizerInfo = rasterizerInfo,
+        .vertexInputBindingDescritions = {vertexBindingDescrition},
+        .vertexAttributeDescriptions = attributeDescription,
+        .enableDepthTest = true,
+    };
+
+
+    const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> source =
+    {
+        {
+            PC_CORE::ShaderStageType::VERTEX,
+            "debug_draw_ray_spv.vert"
+        },
+        {
+            PC_CORE::ShaderStageType::FRAGMENT,
+            "debug_draw_spv.frag"
+        }
+    };
+
+    PC_CORE::ShaderInfo shaderInfo =
+    {
+        .shaderProgramPipelineType = PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS,
+        .shaderInfoData = shaderGraphicPointInfo,
+        .shaderSources = source
+    };
+
+
+    PC_CORE::ProgramShaderCreateInfo _programShaderCreateInfo =
+    {
+        .shaderInfo = shaderInfo,
+        .renderPass = m_Renderer->forwardPass,
+    };
+
+    m_ShaderProgramRay = PC_CORE::ResourceManager::Create<PC_CORE::ShaderProgram>(
+        "DebugGizmoShaderRay", _programShaderCreateInfo);
+    m_ShaderProgramRay.lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsRay, SCENE_DESCRIPTOR_SET);
+
+    PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
+    {
+        .buffer = &m_Renderer->cameraUniformBuffer
+    };
+
+    PC_CORE::ShaderProgramDescriptorWrite descriptor =
+    {
+        .shaderProgramDescriptorType = PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
+        .bindingIndex = CAMERA_BINDING,
+        .uniformBufferDescriptor = &uniformBufferDescriptor,
+        .imageSamperDescriptor = nullptr,
+    };
+
+    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorWrites =
+    {
+        descriptor
+    };
+    m_ShaderProgramDescriptorSetsRay->WriteDescriptorSets(descriptorWrites);
+}
+
 void PC_CORE::DebugDrawContext::DrawDebugPrimitive(PC_CORE::CommandList* _commandList,
                                                    const PC_CORE::RenderingContext& _renderingContext)
 {
@@ -214,8 +323,21 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(PC_CORE::CommandList* _comman
             }
         }
     }
-    
-    // reset
+
+    // Ray
+    if (m_RayPrimitiveData.rayCount != 0)
+    if (auto sray = m_ShaderProgramRay.lock())
+    {
+        needReset = true;
+
+        _commandList->BindProgram(sray.get());
+        _commandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyLineList);
+        _commandList->SetLineWidth(1.f);
+        _commandList->BindDescriptorSet(sray.get(), m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET, 1);
+        _commandList->BindVertexBuffer(*m_RayPrimitiveData.vertexBuffer.GetRhiBuffer(), 0, 1);
+        _commandList->Draw(2, m_RayPrimitiveData.rayCount, 0, 0);
+    }
+
     if (needReset)
         _commandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleList);
     
@@ -228,7 +350,8 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 {
     m_Instance = this;
 
-    CreateShaders();
+    CreatePrimitiveShaders();
+    CreateRayShaders();
 
     // Init primitive
     size_t primitiveIndex = static_cast<size_t>(PrimitiveType::Sphere);
@@ -252,5 +375,68 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 
     for (size_t i = 0; i < m_PrimitiveData.size(); i++)
         m_PrimitiveData[i].primitiveVertexBuffer = PC_CORE::VertexBuffer(
-            sizeof(GpuBufferGizmo), PC_CORE::MemoryLocalisation::CPU_Only, PC_CORE::MemoryUsage::Dynamic);
+            GIZMO_BUFFER_SIZE, PC_CORE::MemoryLocalisation::CPU_Only, PC_CORE::MemoryUsage::Dynamic);
+
+
+    m_RayPrimitiveData.vertexBuffer = PC_CORE::VertexBuffer(
+        RAY_BUFFER_SIZE, PC_CORE::MemoryLocalisation::CPU_Only, PC_CORE::MemoryUsage::Dynamic);
+}
+
+
+
+void PC_CORE::DebugDrawContext::PushBoxGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color)
+{
+    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
+
+    Tbx::Matrix3x3f rotMatrix = Tbx::Rotation3x3<float>(static_cast<Tbx::Vector3f>(euler));
+
+    const Tbx::Vector3f sz = static_cast<Tbx::Vector3f>(_size);
+    const Tbx::Matrix3x3f matrix3 = rotMatrix * Tbx::Matrix3x3f
+    (sz.x, 0.f, 0.f,
+        0.f, sz.y, 0.f,
+        0.f, 0.f, sz.z);
+
+    const Tbx::Matrix4x4f m = Tbx::Matrix4x4f
+    (matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
+        matrix3.data[3], matrix3.data[4], matrix3.data[5], _color.y,
+        matrix3.data[6], matrix3.data[7], matrix3.data[8], _color.z,
+        p1.x, p1.y, p1.z, 1.f
+    );
+
+    m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(m);
+}
+
+void PC_CORE::DebugDrawContext::PushSphereGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
+{
+    const Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
+
+    const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
+    (_radius, 0.f, 0.f, _color.x,
+        0.f, _radius, 0.f, _color.y,
+        0.f, 0.f, _radius, _color.z,
+        p1.x, p1.y, p1.z, 1.f
+    );
+    m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(matrix);
+}
+
+void PC_CORE::DebugDrawContext::PushCapsuleGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color)
+{
+    Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
+
+    Tbx::Matrix3x3f rotMatrix = Tbx::Rotation3x3<float>(static_cast<Tbx::Vector3f>(euler));
+
+   
+    const Tbx::Matrix3x3f matrix3 = rotMatrix * Tbx::Matrix3x3f
+    (_radius, 0.f, 0.f,
+        0.f, _height, 0.f,
+        0.f, 0.f, _radius);
+
+    const Tbx::Matrix4x4f m = Tbx::Matrix4x4f
+    (matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
+        matrix3.data[3], matrix3.data[4], matrix3.data[5], _color.y,
+        matrix3.data[6], matrix3.data[7], matrix3.data[8], _color.z,
+        p1.x, p1.y, p1.z, 1.f
+    );
+
+    m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(m);
 }

@@ -20,7 +20,7 @@ class PC_CORE_API DebugDrawContext
 {
 public:
 
-	static void DrawLine(Tbx::Vector3d _p1, Tbx::Vector3d _p2, float _thickNess = 1.f);
+	static void DrawRay(Tbx::Vector3d _p1, Tbx::Vector3d _dir, float _distance = 1.f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
 	static void DrawSphere(Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f,1.f));
 
@@ -28,7 +28,11 @@ public:
 	
 	static void DrawWireSphere(Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f,1.f));
 	
-	static void DrawWireBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size);
+	static void DrawWireBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+	static void DrawCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+	static void DrawWireCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
 	void DrawDebugPrimitive(PC_CORE::CommandList* _commandList, const PC_CORE::RenderingContext& _renderingContex);
 
@@ -45,12 +49,12 @@ private:
 	
 	Renderer* m_Renderer;
 
-	static const size_t MAX_GIZMO_PRIMITIVE = 1024;
-	
-	struct GpuBufferGizmo
-	{
-		Tbx::Matrix4x4f buffer[MAX_GIZMO_PRIMITIVE];
-	};
+	static constexpr size_t MAX_GIZMO_PRIMITIVE = 10000;
+	static constexpr size_t GIZMO_BUFFER_SIZE = sizeof(Tbx::Matrix4x4f) * MAX_GIZMO_PRIMITIVE;
+
+	using RayDataPerInstance = std::array<Tbx::Vector4f, 3>;
+	static constexpr size_t MAX_RAY_COUNT = 1024;
+	static constexpr size_t RAY_BUFFER_SIZE = sizeof(RayDataPerInstance) * MAX_RAY_COUNT;
 
 	enum class PrimitiveType
 	{
@@ -71,17 +75,38 @@ private:
 		PC_CORE::VertexBuffer primitiveVertexBuffer;
 	};
 
+	struct RayCastPrimitiveData
+	{
+		
+		std::vector<RayDataPerInstance> rayBuffer;
+		std::vector<float> rayThicknessBuffer;
+
+		size_t rayCount;
+		PC_CORE::VertexBuffer vertexBuffer;
+	};
+
 	std::array<PrimitiveData, static_cast<size_t>(PrimitiveType::Count)> m_PrimitiveData;
+
+	RayCastPrimitiveData m_RayPrimitiveData;
 	
 	PC_CORE::ResourceRef<PC_CORE::ShaderProgram> m_ShaderProgram;
 	
 	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSets;
 
+	PC_CORE::ResourceRef<PC_CORE::ShaderProgram> m_ShaderProgramRay;
 	
-	void CreateShaders();
-	
+	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsRay;
 
+	void CreatePrimitiveShaders();
+
+	void CreateRayShaders();
 	
+	static void PushBoxGizmo(PrimitiveType _primitiveType,
+		Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+	static void PushSphereGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+	static void PushCapsuleGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 };
 
 

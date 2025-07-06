@@ -245,7 +245,7 @@ const vk::Queue* Vulkan::VulkanCommandList::GetQueue() const
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)
 {
 
-#ifdef  WITH_EDITOR || PROFING
+#ifdef  DEBUG_GPU_ON
     VkDebugUtilsLabelEXT markerInfo = {};
     markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     markerInfo.pLabelName = _debugLabel;
@@ -259,7 +259,7 @@ void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const s
 
 void Vulkan::VulkanCommandList::EndDebugLabel()
 {
-#ifdef  WITH_EDITOR || PROFING
+#ifdef  DEBUG_GPU_ON
     static auto endDebugLabelPtrFunc = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(PC_CORE::Rhi::GetRhiContext()->renderInstance)->GetPFN_vkCmdEndDebugUtilsLabelEXT();
     endDebugLabelPtrFunc(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()]);
 #endif

@@ -99,10 +99,10 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eR8G8B8Srgb;
 
     case PC_CORE::RHIFormat::B8G8R8_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eB8G8R8Unorm;
 
     case PC_CORE::RHIFormat::B8G8R8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eB8G8R8A8Snorm;
 
     case PC_CORE::RHIFormat::B8G8R8_USCALED:
         return vk::Format::eUndefined;
@@ -761,6 +761,8 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
     case PC_CORE::RHIFormat::COUNT:
         break;
     }
+
+    assert(false);
 
     return format;
 }

@@ -14,7 +14,7 @@
 #include "perf_region.hpp"
 
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
 
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
@@ -113,11 +113,9 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
     return true;
 }
 
-#endif
-#ifdef WITH_EDITOR || PROFING
-
 void Vulkan::VulkanInstance::GetDebugFunc()
 {
+
     m_BeginDebugLabel = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT"));
     m_EndDebugLabel = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdEndDebugUtilsLabelEXT"));
 
@@ -143,7 +141,7 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -160,7 +158,7 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         if (!CheckValidationLayerSupport())
@@ -175,16 +173,13 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 #endif
     VK_CHECK_CALL(vk::createInstance(&instanceCreateInfo, nullptr, &m_Instance));
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     SetupDebugMessenger();
+    GetDebugFunc();
 #endif
 
     InitSurface(_window);
 
-#ifdef  WITH_EDITOR || PROFING
-    GetDebugFunc();
-#endif
-    
 }
 
 
@@ -212,7 +207,7 @@ Vulkan::VulkanInstance::~VulkanInstance()
 {
 
     m_Instance.destroySurfaceKHR(surface);
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);

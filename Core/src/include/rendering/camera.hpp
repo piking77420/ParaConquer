@@ -70,7 +70,7 @@ private:
     float m_Fov = 90.f * Tbx::fDeg2Rad;
     float m_Aspect = 16.f / 9.f;    
     float m_Near = 0.1f;
-    float m_Far = 1000.f;
+    float m_Far = 10000.f;
 
     
     Tbx::Vector2f m_BottomTopScreen;

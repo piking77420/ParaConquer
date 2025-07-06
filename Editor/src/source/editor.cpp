@@ -42,6 +42,7 @@
 #include <shobjidl.h>  // For IFileDialogEvents
 
 #include "serialize/iseriazable.h"
+#include <random> // pour std::mt19937 et std::uniform_real_distribution
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -103,6 +104,8 @@ namespace ImGui {
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o1, bb.Min.y + r), r, bg_col);
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o2, bb.Min.y + r), r, bg_col);
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o3, bb.Min.y + r), r, bg_col);
+
+		return true;
 	}
 
 	bool Spinner(const char* label, float radius, int thickness, const ImU32& color) {
@@ -140,6 +143,7 @@ namespace ImGui {
 		}
 
 		window->DrawList->PathStroke(color, false, thickness);
+		return true;
 	}
 
 }
@@ -164,8 +168,8 @@ void Editor::CompileShader()
 	PC_LOG("CompileShader...")
 	fs::create_directory(SHADER_CACHE_PATH);
 	
-	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/main.vert");
-	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/main.frag");
+	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/forward/forward.vert");
+	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/forward/forward.frag");
 
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
@@ -182,11 +186,18 @@ void Editor::CompileShader()
 	vertex->CompileToSpriv();
 	frag->CompileToSpriv();
 
-	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
-	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
+	{
+		vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
+		frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
+
+		vertex->CompileToSpriv();
+		frag->CompileToSpriv();
+
+		vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw_ray.vert");
+		vertex->CompileToSpriv();
+	}
 	
-	vertex->CompileToSpriv();
-	frag->CompileToSpriv();
+
 }
 
 void Editor::LookForEditorInit()
@@ -457,8 +468,7 @@ void Editor::DestroyTestScene()
 
 void Editor::Run(bool* _appShouldClose)
 {
-	Tbx::Vector3d gizmoPos = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-	
+
 	while (!gameApp.window.ShouldClose())
 	{
 		PERF_REGION_SCOPED;
@@ -472,8 +482,6 @@ void Editor::Run(bool* _appShouldClose)
 		
 		UpdateEditor();
 		gameApp.WorldTick();
-
-		DebugDrawContext::DrawBox(gizmoPos, Tbx::Vector3d{ 1.,1,1.}, Tbx::Vector3d{ 0.,0.5,1.});
 		
 		for (auto& editorWindow : editorWindows)
 			editorWindow->Render();

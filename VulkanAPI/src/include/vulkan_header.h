@@ -4,6 +4,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "low_renderer/rhi_typedef.h"
+
 #include <vulkan/vulkan.hpp>
 
 #include "log.hpp"
@@ -19,7 +21,7 @@
 #define VULKAN_API
 #endif // VULKAN_DLL
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
 constexpr bool ENABLE_VALIDATION_LAYERS = true;
 #else
 constexpr bool ENABLE_VALIDATION_LAYERS = false;

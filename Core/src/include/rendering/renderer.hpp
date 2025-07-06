@@ -160,6 +160,8 @@ private:
     PC_CORE_API void InitRenderSystem();
 
     PC_CORE_API void CreateForwardRenderPass();
+
+    PC_CORE_API void ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 };
 
 END_PCCORE

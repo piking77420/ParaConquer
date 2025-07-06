@@ -27,7 +27,7 @@ namespace Vulkan
             return m_Instance;
         }
 
-#ifdef  WITH_EDITOR || PROFING
+#ifdef  DEBUG_GPU_ON
         PFN_vkCmdBeginDebugUtilsLabelEXT GetPFN_vkCmdBeginDebugUtilsLabelEXT() const
         {
             return m_BeginDebugLabel;
@@ -46,22 +46,20 @@ namespace Vulkan
 
         void InitSurface(GLFWwindow* _window);
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
 
         bool CheckValidationLayerSupport();
 
         void SetupDebugMessenger();
 
         void PopulateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& _debugMessengerCreateInfo);
-#endif
 
-#ifdef  WITH_EDITOR || PROFING
         PFN_vkCmdBeginDebugUtilsLabelEXT m_BeginDebugLabel;
 
         PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel;
 
         void GetDebugFunc();
-#endif // PROFILING
+#endif  DEBUG_GPU_ON
 
     };
 }

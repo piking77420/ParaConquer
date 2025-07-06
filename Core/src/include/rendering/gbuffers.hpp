@@ -10,6 +10,10 @@ BEGIN_PCCORE
 enum GbufferType
 {
     Albedo,
+    /*
+    Normal,
+    RoughnessMetallicAo,
+    WorldPosition,*/
     Depth,
 
     Count

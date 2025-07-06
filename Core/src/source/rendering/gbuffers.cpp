@@ -64,13 +64,26 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             .data = nullptr,
         };
 
+        static_assert(static_cast<size_t>(GbufferType::Depth) == static_cast<size_t>(GbufferType::Count) - 1, "Last GBuffer Shoulbe be depth for texture usage purpose" );
         switch (gbufferType)
         {
         case Albedo:
+            texture_info.format = RHIFormat::R8G8B8A8_UNORM; // TODO GAMA CORRECTION 
+            texture_info.channel = Channel::RGBA;
+            break;
+            /*
+        case Normal:
             texture_info.format = RHIFormat::R8G8B8A8_UNORM;
             texture_info.channel = Channel::RGBA;
-
             break;
+        case RoughnessMetallicAo:
+            texture_info.format = RHIFormat::R8G8B8A8_UNORM;
+            texture_info.channel = Channel::RGBA;
+            break;
+        case WorldPosition:
+            texture_info.format = RHIFormat::R8G8B8A8_UNORM;
+            texture_info.channel = Channel::RGBA;
+            break;*/
         case Depth:
             texture_info.format = RHIFormat::D32_SFLOAT;
             texture_info.channel = Channel::GREY;

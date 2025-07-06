@@ -11,7 +11,7 @@ constexpr const char* SHADER_CACHE_PATH = "shaderCache/";
 
 #define ALIGNAS_16 alignas(16)
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 constexpr size_t MAX_COLOR_ATTACHMENTS = 7;
 
 BEGIN_PCCORE
@@ -724,3 +724,11 @@ inline T SafeCastReinterpreCast(U* ptr)
 #define CAM_DEPTH_MAX 1.f
 #define CAM_DEPTH_MIN 0.f
 
+
+
+// PREPROCESSOR
+
+
+#if defined(_DEBUG) || defined(PROFILING)
+#define DEBUG_GPU_ON 1
+#endif

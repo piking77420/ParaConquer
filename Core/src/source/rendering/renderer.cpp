@@ -199,54 +199,8 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     UpdateCameraUniformBuffer(renderingContext);
     UpdateViewExtremumBuffer(renderingContext);
 
-    
-    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
-        ClearValueFlags::ClearValueDepth);
-
-    std::array<Tbx::Vector4f, 1> clearValues =  {
-        Tbx::Vector4f(0, 0, 0, 0.f),
-        };
-    
-    const BeginRenderPassInfo beginRenderPassInfo =
-    {
-        .renderPass = forwardPass,
-        .frameBuffer = renderingContext.gbufferFrameBuffer,
-        .renderOffSet = {0, 0},
-        .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
-        .clearValueFlags = clearValueFlags,
-        .clearColor = clearValues.data(),
-        .clearValueCount = clearValues.size(),
-        .clearDepth = 1.f
-    };
-
-    primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
-    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-    primaryCommandList->BindProgram(m_ForwardShader.get());
-
-    
-    primaryCommandList->SetViewPort(viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
-
-    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
-
-    Level& level = World::GetWorld()->level;
-    // draw all static mesh
-    for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->staticMeshSignature))
-        DrawStaticMesh(level.GetComponent<Transform>(it),
-            level.GetComponent<StaticMesh>(it));
-
-#ifdef WITH_EDITOR
-    for (auto& it : UserCustomForwardPass)
-        it(primaryCommandList.get(), *currentRenderingContext);
-    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), renderingContext);
-#endif
-    
-    // draw the sky
-   // DrawSky();
-    primaryCommandList->EndRenderPass();
-    
-    primaryCommandList->EndDebugLabel();
-
+    ForwardPass(renderingContext, viewportInfo);
+   
     std::array<Tbx::Vector4f, 2> clearValues2 =  {
         Tbx::Vector4f(0, 0, 0, 0.f),
         Tbx::Vector4f(0, 0, 0, 0.f),
@@ -347,11 +301,11 @@ void Renderer::CreateForwardShader()
     {
         {
             ShaderStageType::VERTEX,
-            "main_spv.vert"
+            "forward_spv.vert"
         },  
         {
             ShaderStageType::FRAGMENT,
-            "main_spv.frag"
+            "forward_spv.frag"
         }
     };
 
@@ -485,7 +439,7 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     Tbx::Matrix4x4d modelMatrixd[2];
 
     Tbx::Vector3d d = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
-    modelMatrixd[0] = Tbx::Trs4x4<float>(_transform.position - d , _transform.rotation.quaternion,
+    modelMatrixd[0] = Tbx::Trs4x4<double>(_transform.position - d , static_cast<Tbx::Quaterniond>(_transform.rotation.quaternion),
         _transform.scale);
 
     modelMatrixd[1] = modelMatrixd[0].Invert().Transpose();
@@ -592,4 +546,55 @@ void Renderer::CreateForwardRenderPass()
 
     forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
     
+}
+
+void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+{
+    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
+        ClearValueFlags::ClearValueDepth);
+
+    std::array<Tbx::Vector4f, 1> clearValues = {
+        Tbx::Vector4f(0, 0, 0, 0.f),
+    };
+
+    const BeginRenderPassInfo beginRenderPassInfo =
+    {
+        .renderPass = forwardPass,
+        .frameBuffer = _renderingContext.gbufferFrameBuffer,
+        .renderOffSet = {0, 0},
+        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .clearValueFlags = clearValueFlags,
+        .clearColor = clearValues.data(),
+        .clearValueCount = clearValues.size(),
+        .clearDepth = 1.f
+    };
+
+
+    primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+
+    primaryCommandList->BindProgram(m_ForwardShader.get());
+
+
+    primaryCommandList->SetViewPort(_viewportInfo);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+
+    Level& level = World::GetWorld()->level;
+    // draw all static mesh
+    for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->staticMeshSignature))
+        DrawStaticMesh(level.GetComponent<Transform>(it),
+            level.GetComponent<StaticMesh>(it));
+
+#ifdef WITH_EDITOR
+    for (auto& it : UserCustomForwardPass)
+        it(primaryCommandList.get(), *currentRenderingContext);
+    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
+#endif
+    // draw the sky
+   // DrawSky();
+    primaryCommandList->EndRenderPass();
+
+    primaryCommandList->EndDebugLabel();
 }

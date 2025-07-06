@@ -2,6 +2,8 @@
 
 #include "core_header.hpp"
 
+#include "rhi_typedef.h"
+
 BEGIN_PCCORE
     struct RenderInstanceCreateInfo
     {
