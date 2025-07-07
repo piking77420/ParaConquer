@@ -12,8 +12,6 @@ public:
 
     ~ForwardPass() override = default;
     
-    void Execute() override; 
-
 private:
 };
 

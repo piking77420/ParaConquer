@@ -287,10 +287,27 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
     m_ShaderProgramDescriptorSetsRay->WriteDescriptorSets(descriptorWrites);
 }
 
+bool PC_CORE::DebugDrawContext::NeedToRender()
+{
+    for (size_t i = 0; i < m_PrimitiveData.size(); i++)
+    {
+        if (m_PrimitiveData[i].primitiveCount > 0)
+            return true;
+    }
+
+    if (m_RayPrimitiveData.rayCount > 0)
+        return true;
+
+    return false;
+}
+
 void PC_CORE::DebugDrawContext::DrawDebugPrimitive(PC_CORE::CommandList* _commandList,
                                                    const PC_CORE::RenderingContext& _renderingContext)
 {
     if (!(_renderingContext.renderingContextFlag & PC_CORE::RenderingContextFlag::DebugDrawGeometry))
+        return;
+
+    if (!NeedToRender())
         return;
 
     _commandList->BeginDebugLabel("Gizmo Pass", GIZMO_PASS);
@@ -397,7 +414,7 @@ void PC_CORE::DebugDrawContext::PushBoxGizmo(PrimitiveType _primitiveType, Tbx::
         0.f, 0.f, sz.z);
 
     const Tbx::Matrix4x4f m = Tbx::Matrix4x4f
-    (matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
+    (   matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
         matrix3.data[3], matrix3.data[4], matrix3.data[5], _color.y,
         matrix3.data[6], matrix3.data[7], matrix3.data[8], _color.z,
         p1.x, p1.y, p1.z, 1.f
@@ -411,7 +428,7 @@ void PC_CORE::DebugDrawContext::PushSphereGizmo(PrimitiveType _primitiveType, Tb
     const Tbx::Vector3f p1 = static_cast<Tbx::Vector3f>(_p1);
 
     const Tbx::Matrix4x4f matrix = Tbx::Matrix4x4f
-    (_radius, 0.f, 0.f, _color.x,
+    (   _radius, 0.f, 0.f, _color.x,
         0.f, _radius, 0.f, _color.y,
         0.f, 0.f, _radius, _color.z,
         p1.x, p1.y, p1.z, 1.f
@@ -427,7 +444,7 @@ void PC_CORE::DebugDrawContext::PushCapsuleGizmo(PrimitiveType _primitiveType, T
 
    
     const Tbx::Matrix3x3f matrix3 = rotMatrix * Tbx::Matrix3x3f
-    (_radius, 0.f, 0.f,
+        (_radius, 0.f, 0.f,
         0.f, _height, 0.f,
         0.f, 0.f, _radius);
 

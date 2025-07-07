@@ -130,8 +130,11 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default:
+    assert(false);
     }
+
+    return nullptr;
 }
 
 std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat)
@@ -150,8 +153,10 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: 
+        assert(false);
     }
+    return nullptr;
 }
 
 PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat, uint32_t sampleCount)
@@ -170,8 +175,10 @@ PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFor
         break;
     case GraphicAPI::COUNT:
         break;
-    default:;
+    default:
+        assert(false);
     }
+    return nullptr;
 }
 
 std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor)
@@ -190,8 +197,11 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(const RenderPassDescriptor&
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: 
+        assert(false);
     }
+
+    return nullptr;
 }
 
 std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo)
@@ -210,7 +220,7 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: assert(false);
     }
 }
 
@@ -228,7 +238,7 @@ std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32
     case GraphicAPI::NONE:
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: assert(false);
     }
 
     return nullptr;
@@ -246,8 +256,9 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint
         break;
     case GraphicAPI::NONE:
     case GraphicAPI::COUNT:
-    default: ;
+    default: assert(false);
     }
+    return nullptr;
 }
 
 std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(uint32_t _sizeInByte, MemoryLocalisation _visibility,
@@ -265,8 +276,10 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(uint32_t _sizeInByte, M
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: 
+        assert(false);
     }
+    return nullptr;
 }
 
 std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage)
@@ -283,7 +296,8 @@ std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, ui
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: 
+        assert(false);
     }
 }
 
@@ -304,7 +318,8 @@ std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInf
         break;
     case GraphicAPI::COUNT:
         break;
-    default: ;
+    default: 
+        assert(false);
     }
 }
 

@@ -8,6 +8,14 @@ namespace Vulkan
     class VulkanRenderPass : public PC_CORE::RhiRenderPass
     {
     public:
+
+        VULKAN_API const void* GetNativeHandle() const override
+        {
+            return m_RenderPass;
+        }
+
+        VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
+
         VULKAN_API VulkanRenderPass(const PC_CORE::RenderPassDescriptor& _attachements);
         
         VulkanRenderPass(PC_CORE::RHIFormat colorFormat, PC_CORE::RHIFormat depthFormat);
@@ -22,7 +30,6 @@ namespace Vulkan
 
         VULKAN_API ~VulkanRenderPass() override;
 
-        VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
     protected:
         vk::RenderPass m_RenderPass = VK_NULL_HANDLE;
 
@@ -31,6 +38,7 @@ namespace Vulkan
         void ParseDependcies(const PC_CORE::SubPassDependcies& _subPassDependcies, vk::SubpassDependency* _vkdependency);
 
         vk::ImageLayout GetImageLayoutSubPass(PC_CORE::AttachmentType _attachmentType);
+  
     };
     
 }

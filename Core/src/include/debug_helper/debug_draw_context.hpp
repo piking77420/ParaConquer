@@ -49,7 +49,7 @@ private:
 	
 	Renderer* m_Renderer;
 
-	static constexpr size_t MAX_GIZMO_PRIMITIVE = 10000;
+	static constexpr size_t MAX_GIZMO_PRIMITIVE = 2048;
 	static constexpr size_t GIZMO_BUFFER_SIZE = sizeof(Tbx::Matrix4x4f) * MAX_GIZMO_PRIMITIVE;
 
 	using RayDataPerInstance = std::array<Tbx::Vector4f, 3>;
@@ -101,6 +101,8 @@ private:
 
 	void CreateRayShaders();
 	
+	bool NeedToRender();
+
 	static void PushBoxGizmo(PrimitiveType _primitiveType,
 		Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 

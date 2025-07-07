@@ -492,3 +492,4 @@ vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPass(PC_CORE::Attachm
         assert(false);
     }
 }
+

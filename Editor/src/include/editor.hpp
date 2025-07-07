@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <atomic>
+
 #include "app.hpp"
 #include "dock_space.hpp"
 #include "editor_header.hpp"
@@ -87,13 +89,9 @@ private:
 
     void LookForEditorInit();
 
-    void ParseEditorInit();
-
     void BasicOpenFile();
 
     void ReloadShaders();
-
-    void InitSubSystem();
 
 
 };

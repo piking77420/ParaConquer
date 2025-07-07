@@ -88,7 +88,7 @@ void Renderer::Init()
 void Renderer::Destroy()
 {
    
-    // TODO(avoir make shader a shared ptr or remove acquire beacause of resoure manager) Release Shader
+    // TODO(avoir make shader a shared ptr or remove acquire beacause of resoure manager Release Shader
     m_DebugDrawContext.reset();
     m_ForwardShader = nullptr;
     m_DrawTextureScreenQuadShader = nullptr;

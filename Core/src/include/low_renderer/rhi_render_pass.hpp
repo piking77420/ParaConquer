@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "rhi_typedef.h"
+#include "rhi_resource.hpp"
 
 BEGIN_PCCORE
 
@@ -48,7 +49,7 @@ struct RenderPassDescriptor
 
 // this class represent a pass within is frame buffer attemechement
 // collection of pass for a same frame buffer
-class RhiRenderPass
+class RhiRenderPass : public RhiResource
 {
 public:
     

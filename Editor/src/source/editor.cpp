@@ -10,6 +10,8 @@
 
 
 #include "editor.hpp"
+#include "resources/resource_manager.hpp"
+
 #include "asset_browser.hpp"
 #include "edit_world_window.hpp"
 #include "hierachy.hpp"
@@ -282,15 +284,6 @@ void Editor::BasicOpenFile()
 		}
 		CoUninitialize();
 	}
-}
-
-void Editor::ReloadShaders()
-{
-	
-}
-
-void Editor::InitSubSystem()
-{
 }
 
 
