@@ -172,31 +172,19 @@ void Editor::CompileShader()
 	
 	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/forward/forward.vert");
 	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/forward/forward.frag");
-
-	vertex->CompileToSpriv();
-	frag->CompileToSpriv();
-
+	
 	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.vert");
 	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.frag");
 	
-	vertex->CompileToSpriv();
-	frag->CompileToSpriv();
-
 	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.vert");
 	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.frag");
-	
-	vertex->CompileToSpriv();
-	frag->CompileToSpriv();
 
 	{
 		vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
 		frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
 
-		vertex->CompileToSpriv();
-		frag->CompileToSpriv();
 
 		vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw_ray.vert");
-		vertex->CompileToSpriv();
 	}
 	
 
@@ -361,12 +349,12 @@ void Editor::UpdateEditor()
 			{
 				if (ImGui::MenuItem(_shader->name.c_str()))
 				{
-
+					_shader->Reload();
 					// reload shader
 				}
 			};
 			  
-			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<PC_CORE::ShaderProgram>(), l);
+			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<PC_CORE::ShaderSource>(), l);
 			
 			ImGui::EndMenu();
 		}

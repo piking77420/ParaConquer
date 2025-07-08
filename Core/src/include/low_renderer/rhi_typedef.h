@@ -461,37 +461,32 @@ enum class IndexFormat : int
         return (static_cast<uint32_t>(usage) & static_cast<uint32_t>(flag)) != 0;
     }
 
-    struct CreateImageInfo2D
+    enum class TextureType
     {
-        int32_t width;
-        int32_t height;
-        int32_t depth;
-        uint32_t mipsLevels;
-        RHIFormat format;
-        Channel channel;
-        TextureUsage textureUsage;
-        MemoryLocalisation memoryVisibility;
-
-        uint32_t samples;
-        bool GenerateMipMap = false;
-        void* data;
+        Texture2D,
+        Array2D,
+        CubeMap,
+        Count,
     };
+        
 
-    struct CreateImageInfo3D
+    struct CreateImageInfo
     {
         int32_t width;
         int32_t height;
         int32_t depth;
         uint32_t mipsLevels;
+
+        TextureType textureType;
         RHIFormat format;
         Channel channel;
+        
         TextureUsage textureUsage;
-        MemoryUsage bufferMemoryUsage;
         MemoryLocalisation memoryVisibility;
 
         uint32_t samples;
         bool GenerateMipMap = false;
-        std::vector<void*> data;
+        std::vector<void*> datas;
     };
 
 

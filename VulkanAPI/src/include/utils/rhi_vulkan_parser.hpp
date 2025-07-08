@@ -4,7 +4,7 @@
 #include "vulkan_image_helper.hpp"
 #include "low_renderer/rhi_typedef.h"
 #include "low_renderer/descriptor_set.hpp"
-#include "resources/shader_program.h"
+#include "low_renderer/rhi_shader_program.hpp"
 
 namespace Vulkan
 {

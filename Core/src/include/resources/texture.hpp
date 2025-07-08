@@ -8,6 +8,7 @@ BEGIN_PCCORE
 PC_CORE_API class Texture : public Resource , public IGpuResource
 {
 public:
+    
      IMP_DYNAMIC_REFLECT()
 
      Texture()

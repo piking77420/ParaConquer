@@ -7,6 +7,7 @@
 #include "math/toolbox_typedef.hpp"
 #include "rendering/rendering_typedef.h"
 #include "rendering/buffer/uniform_buffer.hpp"
+#include "resources/graphic_shader.hpp"
 #include "resources/mesh.hpp"
 #include "scripting/scripting_lua.hpp"
 
@@ -89,11 +90,11 @@ private:
 
 	RayCastPrimitiveData m_RayPrimitiveData;
 	
-	PC_CORE::ResourceRef<PC_CORE::ShaderProgram> m_ShaderProgram;
+	PC_CORE::ResourceRef<PC_CORE::GraphicShader> m_ShaderProgram;
 	
 	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSets;
 
-	PC_CORE::ResourceRef<PC_CORE::ShaderProgram> m_ShaderProgramRay;
+	PC_CORE::ResourceRef<PC_CORE::GraphicShader> m_ShaderProgramRay;
 	
 	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsRay;
 

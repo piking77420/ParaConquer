@@ -12,9 +12,7 @@ using namespace PC_CORE;
 
 void Texture2D::Build()
 {
-    if (!pathToFile.empty())
-        LoadFromFile((fs::path)pathToFile);
-
+    
 }
 
 Texture2D::Texture2D()
@@ -22,7 +20,7 @@ Texture2D::Texture2D()
     DYNAMIC_REFLECT_INIT
 }
 
-Texture2D::Texture2D(const CreateImageInfo2D& _createTextureInfo)
+Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo)
 {
     DYNAMIC_REFLECT_INIT
     
@@ -47,8 +45,6 @@ Texture2D::~Texture2D()
 
 void Texture2D::LoadFromFile(const fs::path& _path)
 {
-    pathToFile = _path.generic_string();
-
     int width;
     int height;
 
@@ -61,19 +57,20 @@ void Texture2D::LoadFromFile(const fs::path& _path)
 
 
     
-    const CreateImageInfo2D createTextureInfo =
+    const CreateImageInfo createTextureInfo =
     {
         .width = width,
         .height = height,
         .depth = 1,
         .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
+        .textureType = TextureType::Texture2D,
         .format = RHIFormat::R8G8B8A8_SRGB,
         .channel = Channel::RGBA,
         .textureUsage = TextureUsage::Sampled | TextureUsage::TransferDst,
         .memoryVisibility = MemoryLocalisation::GPU_Only,
         .samples = 1,
         .GenerateMipMap = true,
-        .data = pixels
+        .datas = {reinterpret_cast<void*>(pixels)}
     };
 
    m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);

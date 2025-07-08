@@ -9,7 +9,7 @@
 #include "low_renderer/rhi_shader_program.hpp"
 #include "low_renderer/rhi_uniform_buffer.hpp"
 #include "resources/scene_lights_manager.h"
-#include "resources/shader_program.h"
+#include "resources/graphic_shader.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "world/world.hpp"
@@ -77,13 +77,13 @@ public:
 
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
-    std::shared_ptr<PC_CORE::ShaderProgram> m_ForwardShader;
+    std::shared_ptr<PC_CORE::GraphicShader> m_ForwardShader;
 
 
     // TO DO TO RESOURE REF
-    std::shared_ptr<PC_CORE::ShaderProgram> m_DrawTextureScreenQuadShader;
+    std::shared_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
-    std::shared_ptr<PC_CORE::ShaderProgram> m_SkyRenderingShader;
+    std::shared_ptr<PC_CORE::GraphicShader> m_SkyRenderingShader;
     
     std::shared_ptr<RhiRenderPass> forwardPass;
 

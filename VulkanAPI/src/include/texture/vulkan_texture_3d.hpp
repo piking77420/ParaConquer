@@ -12,7 +12,7 @@ namespace Vulkan
     public:
         const void* GetNativeHandle() const override;
 
-        VulkanTexture3D(const PC_CORE::CreateImageInfo3D& _createInfo);
+        VulkanTexture3D(const PC_CORE::CreateImageInfo& _createInfo);
 
         VulkanTexture3D() = default;
 

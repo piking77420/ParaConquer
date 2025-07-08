@@ -4,7 +4,7 @@
 
 #include "resources/resource.hpp"
 #include "low_renderer/rhi_typedef.h"
-#include "resources/shader_program.h"
+#include "rendering/shader_program.hpp"
 
 
 BEGIN_PCCORE
@@ -18,8 +18,8 @@ public:
 
     static void DestroyShadersCompiler();
 
-    void CompileToSpriv();
-
+    void Reload() override;
+    
     bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
 
     IMP_DYNAMIC_REFLECT()
@@ -45,15 +45,20 @@ private:
     static inline ShaderCompiler* shaderCompiler = nullptr;
     
     std::vector<char> GetShaderSourceFile();
+    
+    std::string GetShaderBinarySprivName();
 
-    std::string PreprocessShader(const std::string& source_name, shaderc_shader_kind kind, const char* source);
-    std::string CompileFileToAssembly(const std::string& source_name, shaderc_shader_kind kind,
-                                      const std::string& source,
+   bool PreprocessShader(const std::string& source_name,
+                              shaderc_shader_kind kind,
+                              const char* source, std::string* outCode);
+
+    bool CompileFileToAssembly(const std::string& source_name, shaderc_shader_kind kind,
+                                      const std::string& source,  std::string* outCode,
                                       bool optimize);
 
-    std::vector<uint32_t> CompileFile(const std::string& source_name,
+    bool CompileFile(const std::string& source_name,
                             shaderc_shader_kind kind,
-                            const std::string& source,
+                            const std::string& source, std::vector<uint32_t>* _outCode,
                             bool optimize = false);
 
 

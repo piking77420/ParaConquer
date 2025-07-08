@@ -86,19 +86,20 @@ void WorldViewWindow::Render()
 void WorldViewWindow::ResizeViewports()
 {
     
-    PC_CORE::CreateImageInfo2D create_texture =
+    PC_CORE::CreateImageInfo create_texture =
    {
         .width =  static_cast<int32_t>(size.x),
         .height = static_cast<int32_t>(size.y),
         .depth = 1,
         .mipsLevels = 1,
+        .textureType = PC_CORE::TextureType::Texture2D,
         .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
         .channel = PC_CORE::Channel::RGBA,
         .textureUsage = PC_CORE::TextureUsage::RenderTarget | PC_CORE::TextureUsage::Sampled,
         .memoryVisibility = PC_CORE::MemoryLocalisation::GPU_Only,
         .samples = 1,
         .GenerateMipMap = false,
-       . data = nullptr
+        .datas = {}
     };
 
    // assert(false && "TO DO Handle move constructor and other case");

@@ -7,6 +7,8 @@
 #include "io/in_out.h"
 #include "low_renderer/rhi.hpp"
 #include "vulkan_header.h"
+#include "resources/resource_manager.hpp"
+#include "resources/shader_source_binary.hpp"
 
 using namespace PC_CORE;
 
@@ -81,7 +83,9 @@ void ShaderSource::DestroyShadersCompiler()
     delete shaderCompiler;
     shaderCompiler = nullptr;
 }
- 
+
+
+
 void ShaderSource::AddPreProcessorDefVulkan()
 {
     shaderc::CompileOptions& options = shaderCompiler->options;
@@ -109,9 +113,9 @@ void ShaderSource::AddPreProcessorDefVulkan()
 
 
 
-std::string ShaderSource::PreprocessShader(const std::string& source_name,
+bool ShaderSource::PreprocessShader(const std::string& source_name,
                               shaderc_shader_kind kind,
-                              const char* source) {
+                              const char* source, std::string* outCode) {
     // Like -DMY_DEFINE=1
 
     shaderc::PreprocessedSourceCompilationResult result =
@@ -120,16 +124,17 @@ std::string ShaderSource::PreprocessShader(const std::string& source_name,
     if (result.GetCompilationStatus() != shaderc_compilation_status_success)
     {
         PC_LOGERROR("Failed to preprocess shader: {}", result.GetErrorMessage());
-        return "";
+        return false;
     }
 
-    return {result.cbegin(), result.cend()};
+    *outCode = {result.cbegin(), result.cend()};
+    return true;
 }
 
 
-std::string ShaderSource::CompileFileToAssembly(const std::string& source_name,
+bool ShaderSource::CompileFileToAssembly(const std::string& source_name,
                                   shaderc_shader_kind kind,
-                                  const std::string& source,
+                                  const std::string& source, std::string* outCode, 
                                   bool optimize = false) {
     
     shaderc::AssemblyCompilationResult result = shaderCompiler->compiler.CompileGlslToSpvAssembly(
@@ -137,15 +142,17 @@ std::string ShaderSource::CompileFileToAssembly(const std::string& source_name,
 
     if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
         PC_LOGERROR("{}", result.GetErrorMessage());
-        return "";
+        return false;
     }
 
-    return {result.cbegin(), result.cend()};
+    *outCode = {result.cbegin(), result.cend()};
 }
 
 
-std::vector<uint32_t> ShaderSource::CompileFile(const std::string& source_name, shaderc_shader_kind kind,
-    const std::string& source, bool optimize)
+bool ShaderSource::CompileFile(const std::string& source_name,
+                            shaderc_shader_kind kind,
+                            const std::string& source, std::vector<uint32_t>* _outCode,
+                            bool optimize)
 {
     // Like -DMY_DEFINE=1
 
@@ -154,10 +161,11 @@ std::vector<uint32_t> ShaderSource::CompileFile(const std::string& source_name, 
 
     if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
         PC_LOGERROR("{}", module.GetErrorMessage());
-        return {};
+        return false;
     }
 
-    return {module.cbegin(), module.cend()};
+    *_outCode = {module.cbegin(), module.cend()};
+    return true;
 }
 
 
@@ -237,7 +245,33 @@ ShaderSource::ShaderSource(const fs::path& _path) : Resource(_path)
     extension = ShaderSourceFormat[formatIndex];
     m_ShaderType = static_cast<ShaderStageType>(formatIndex);
     m_PathToSource = _path;
+
+    
+    PC_LOG("Compile {} into SPRIV", name);
+    
+    std::vector<uint32_t> sourceSpriv;
+    if (!GetCompiledShaderSource(&sourceSpriv))
+    {
+        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
+        return;
+    }
+
+    auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv);
 }
+
+void ShaderSource::Reload()
+{
+    Resource::Reload();
+    
+    std::vector<uint32_t> sourceSpriv;
+    if (!GetCompiledShaderSource(&sourceSpriv))
+    {
+        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
+        return;
+    }
+    BroadCastReload();
+}
+
 
 std::vector<char> ShaderSource::GetShaderSourceFile()
 {
@@ -260,43 +294,27 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
     std::vector<char> RawSourceCode = GetShaderSourceFile();
 
     shaderc_shader_kind kind = GetGlangShaderStage(m_ShaderType);
-    
-    std::string sourceCode = PreprocessShader(name, kind, RawSourceCode.data());
 
-    std::vector<uint32_t> spriv = CompileFile(name, kind, sourceCode);
+    std::string sourceCode;
+    if (!PreprocessShader(name, kind, RawSourceCode.data(), &sourceCode))
+        return false;
+
+    std::vector<uint32_t> spriv;
+    if (!CompileFile(name, kind, sourceCode, &spriv))
+    {
+        return false;
+    }
+
    *_buffer = std::move(spriv);
-
     return true;
 }
 
-void ShaderSource::CompileToSpriv()
+
+
+std::string ShaderSource::GetShaderBinarySprivName()
 {
-    PC_LOG("Compile {} into SPRIV", name);
-
-    
-    std::string filePath = SHADER_CACHE_PATH + fs::path(name).filename().stem().generic_string() + "_spv" + extension;
-    std::fstream f(filePath, std::ios::binary | std::ios::out | std::ios::trunc);
-    std::vector<uint32_t> sourceSpriv;
-
-    if (!GetCompiledShaderSource(&sourceSpriv))
-    {
-        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
-        return;
-    }
-
-    if (!f.is_open())
-    {
-        std::cerr << "Failed to open file " << filePath << std::endl;
-        PC_LOGERROR("File is not open");
-        return;
-    }
-
-    // Write the contents of the vector to the file
-    f.write(reinterpret_cast<const char*>(sourceSpriv.data()), sourceSpriv.size() * sizeof(uint32_t));
-
-    f.close();
+    return fs::path(name).filename().stem().generic_string() + "_spv" + extension;
 }
-
 
 
 

@@ -6,17 +6,18 @@
 #include <vulkan/vulkan_core.h>
 
 #include "core_header.hpp"
-#include "resource.hpp"
 #include "low_renderer/descriptor_set.hpp"
 #include "low_renderer/rhi_typedef.h"
 #include "low_renderer/rhi_render_pass.hpp"
 #include "low_renderer/rhi_shader_program.hpp"
 #include "low_renderer/vertex.hpp"
+#include "resources/shader_source_binary.hpp"
 
 BEGIN_PCCORE
 
+    using SourceList = std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>;
 
-
+    // MAKE COMPUTE RAY AND GRAPHIC PROGRAMM
     class ShaderProgram : public Resource , public IGpuResource
     {
     public:
@@ -26,6 +27,11 @@ BEGIN_PCCORE
             return m_ShaderProgram;
         }
 
+        ShaderProgramPipelineType GetPipelineType() const
+        {
+            return m_ShaderProgramPipelineType;
+        }
+
         // TODO ABSTRACT THIS 
         PC_CORE_API void AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets, size_t set);
         // TODO ABSTRACT THIS 
@@ -33,7 +39,8 @@ BEGIN_PCCORE
 
         IMP_DYNAMIC_REFLECT()
     
-        PC_CORE_API ShaderProgram(const std::string& _shaderName, const ProgramShaderCreateInfo& _programShaderCreateInfo);
+        PC_CORE_API ShaderProgram(const std::string& _shaderName,
+            ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>& _sources);
 
         PC_CORE_API ShaderProgram()
         {
@@ -42,9 +49,13 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual ~ShaderProgram() = default;
 
-    private:
+    protected:
         std::shared_ptr<RhiShaderProgram> m_ShaderProgram;
 
+        ShaderProgramPipelineType m_ShaderProgramPipelineType;
+
+        static std::vector<std::pair<ShaderStageType, std::string>> SourceListToSourcePath(const SourceList& _sourceList);
+    
         REFLECT(ShaderProgram, Resource);
     
     };

@@ -49,19 +49,20 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     for (auto& frameInFlight : m_gbuffers)
     {
     
-        CreateImageInfo2D texture_info =
+        CreateImageInfo texture_info =
         {
             .width = m_size.x,
             .height = m_size.y,
             .depth = 1,
             .mipsLevels = 1,
+            .textureType = TextureType::Texture2D,
             .format = RHIFormat::COUNT,
             .channel = Channel::DEFAULT,
             .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
             .memoryVisibility = MemoryLocalisation::GPU_Only,
             .samples = 1,
             .GenerateMipMap = false,
-            .data = nullptr,
+            .datas = {},
         };
 
         static_assert(static_cast<size_t>(GbufferType::Depth) == static_cast<size_t>(GbufferType::Count) - 1, "Last GBuffer Shoulbe be depth for texture usage purpose" );

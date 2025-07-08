@@ -179,9 +179,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
          {
              PC_LOGERROR("Failed to parse shader source for shader ");
          }
-        std::string spvFile = SHADER_CACHE_PATH + shaderSource.second;
-
-        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = PC_CORE::InOut::ReadFile(spvFile);
+        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = PC_CORE::InOut::ReadFile(shaderSource.second);
 
     }
 
@@ -322,7 +320,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pColorBlendState = &colorBlending;
     graphicsPipelineInfo.pDynamicState = &dynamicState;
     graphicsPipelineInfo.layout = m_PipelineLayout;
-    graphicsPipelineInfo.renderPass = std::reinterpret_pointer_cast<VulkanRenderPass>(m_ProgramShaderCreateInfo.renderPass)->GetVulkanRenderPass();
+    graphicsPipelineInfo.renderPass = reinterpret_cast<VulkanRenderPass*>(m_ProgramShaderCreateInfo.renderPass)->GetVulkanRenderPass();
     graphicsPipelineInfo.subpass = 0;
 
     auto result = device->GetDevice().createGraphicsPipeline(nullptr, graphicsPipelineInfo);

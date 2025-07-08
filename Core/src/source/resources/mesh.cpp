@@ -14,8 +14,7 @@ using namespace PC_CORE;
 
 void Mesh::Build()
 {
-    if (!pathToFile.empty())
-        LoadFromFile((fs::path)(pathToFile));
+    
 }
 
 Mesh::Mesh()
@@ -36,7 +35,6 @@ Mesh::~Mesh()
 
 void Mesh::LoadFromFile(const fs::path& _path)
 {
-    pathToFile = _path.generic_string();
     extension = _path.extension().generic_string();
 
     uint32_t formatIndex = -1;

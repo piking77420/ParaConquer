@@ -68,7 +68,7 @@ std::shared_ptr<Resource> ResourceManager::GetByGuid(const Guid& _guid)
 {
     for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
     {
-        if (it->second->guid == _guid)
+        if (it->second->GetGuid() == _guid)
             return it->second;
     }
 
@@ -89,6 +89,64 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
     }
     
 }
+
+void ResourceManager::LinkDepencies(const std::string& _parentResource, const std::string& _childResource)
+{
+    /*
+    assert(!_parentResource.empty() && !_childResource.empty() && "Resource are null");
+
+    
+    if (_parentResource == _childResource)
+    {
+        PC_LOGERROR("Try to link dependencies between itself, {}", _parentResource)
+    }
+    
+    auto itp = m_ResourcesMap.find(_parentResource);
+    if (itp == m_ResourcesMap.end())
+    {
+        PC_LOGERROR("There is no resource name as {}", _parentResource);
+        return;
+    }
+    auto itc = m_ResourcesMap.find(_childResource);
+    if (itc == m_ResourcesMap.end())
+    {
+        PC_LOGERROR("There is no resource name as {}", _childResource);
+        return;
+    }
+
+    // TODO FIND IF CIRCULAR DEPENDICIES
+
+    // Compute parent
+    m_ResourceToChildren[_parentResource].push_back(itc->second);
+    m_ResourceToParents[_childResource].push_back(itp->second);*/
+}
+
+void ResourceManager::ReloadResourceDepencencies(const std::string& _parentResource)
+{
+    /*
+    auto it = m_ResourceToChildren.find(_parentResource);
+    if (it == m_ResourceToChildren.end())
+        return;
+
+    for (auto itc = it->second.begin(); itc != it->second.end(); itc++)
+    {
+           if (auto resource = itc->lock())
+               resource->BroadCastReload();
+           
+    }*/
+}
+
+const std::vector<std::weak_ptr<Resource>>* ResourceManager::GetChildResource(const std::string& _resourceName)
+{
+    auto itp = m_ResourceToChildren.find(_resourceName);
+    if (itp == m_ResourceToChildren.end())
+    {
+        return nullptr;
+    }
+
+    return nullptr;
+}
+
 
 void ResourceManager::SerializeResource()
 {

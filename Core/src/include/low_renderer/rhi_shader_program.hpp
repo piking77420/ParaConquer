@@ -135,7 +135,7 @@ struct ShaderInfo
 struct ProgramShaderCreateInfo
 {
     ShaderInfo shaderInfo;
-    std::shared_ptr<RhiRenderPass> renderPass;
+    RhiRenderPass* renderPass;
 };
 
 #pragma endregion

@@ -390,7 +390,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
 
         auto l = [&](std::shared_ptr<PC_CORE::Resource> currentResource)
             {
-                std::string guiidS = (std::string)currentResource->guid;
+                std::string guiidS = static_cast<std::string>(currentResource->GetGuid());
 
                 ImGui::PushID(guiidS.c_str());
 

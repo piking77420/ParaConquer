@@ -140,11 +140,11 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
                 if (resourceSPtr != nullptr)
                 {
-                    _jsonFile["Guid"] = std::string(resourceSPtr->guid);
+                    _jsonFile["Guid"] = std::string(resourceSPtr->GetGuid());
                 }
                 else
                 {
-                    _jsonFile["Guid"] = resourceSPtr->guid.Empty();
+                    _jsonFile["Guid"] = Guid::Empty();
                 }
             }
             catch (...)

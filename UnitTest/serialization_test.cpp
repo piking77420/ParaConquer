@@ -134,8 +134,8 @@ TEST(Serialization, SerializationRes)
 
     std::shared_ptr<SerializedResource> d = rRef.lock();
     EXPECT_TRUE(d->name == deserializedResource.name);
-    EXPECT_TRUE(d->guid == deserializedResource.guid);
-    EXPECT_TRUE(d->guid == deserializedResource.guid);
+    EXPECT_TRUE(d->GetGuid() == deserializedResource.GetGuid());
+    EXPECT_TRUE(d->GetGuid() == deserializedResource.GetGuid());
     
     EXPECT_EQ(d->m_DataTest.x, deserializedResource.m_DataTest.x);
     EXPECT_FLOAT_EQ(d->m_DataTest.y , deserializedResource.m_DataTest.y);
@@ -210,7 +210,7 @@ TEST(Serialization, VectorNotTrivial)
     for (size_t i = 0 ; i < deserializedResource.size() ; i++)
     {
         EXPECT_TRUE(resourceVector[i].name == deserializedResource[i].name);
-        EXPECT_TRUE(resourceVector[i].guid == deserializedResource[i].guid);
+        EXPECT_TRUE(resourceVector[i].GetGuid() == deserializedResource[i].GetGuid());
     
         EXPECT_EQ(resourceVector[i].m_DataTest.x, deserializedResource[i].m_DataTest.x);
         EXPECT_FLOAT_EQ(resourceVector[i].m_DataTest.y , deserializedResource[i].m_DataTest.y);

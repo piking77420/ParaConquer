@@ -9,7 +9,7 @@
 #include "buffer/vulkan_buffer.hpp"
 #include "low_renderer/rhi.hpp"
 
-Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _createTextureInfo) : m_VulkanTexture(_createTextureInfo.memoryVisibility)
+Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo& _createTextureInfo) : m_VulkanTexture(_createTextureInfo.memoryVisibility)
 {
 	if (_createTextureInfo.depth < 1)
 	{
@@ -52,7 +52,7 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _crea
 	};
 
 
-	if (_createTextureInfo.data != nullptr)
+	if (_createTextureInfo.datas.size() != 0)
 	{
 		vk::ImageLayout beginImageLayout = vk::ImageLayout::eUndefined;
 
@@ -75,7 +75,7 @@ Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo2D& _crea
 				buffPtr, &bufferAndAllocs[i].alloc);
 
 			vmaMapMemory(context.allocator, bufferAndAllocs[i].alloc, &mappedData[i]);
-			memcpy(mappedData[i], _createTextureInfo.data, imageSize);
+			memcpy(mappedData[i], _createTextureInfo.datas[0], imageSize);
 			vmaUnmapMemory(context.allocator, bufferAndAllocs[i].alloc);
 		}
 

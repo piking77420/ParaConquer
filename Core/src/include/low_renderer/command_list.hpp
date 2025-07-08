@@ -14,7 +14,7 @@
 #include "rhi_vertex_buffer.hpp"
 
 
-#include "resources/shader_program.h"
+#include "rendering/shader_program.hpp"
 #include "rendering/buffer/index_buffer.hpp"
 #include "rendering/buffer/vertex_buffer.hpp"
 

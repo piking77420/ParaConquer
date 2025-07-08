@@ -302,11 +302,11 @@ std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, ui
 }
 
 
-std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInfo2D& _createImageInfo)
+std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInfo& _createImageInfo)
 {
     Rhi& rhi = GetInstance();
 
-    static_assert(std::is_base_of_v<RhiTexture2D, Vulkan::VulkanTexture2D>,"");
+    static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture2D>,"");
     
     switch (rhi.m_GraphicsApi)
     {
@@ -323,7 +323,7 @@ std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInf
     }
 }
 
-std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const PC_CORE::CreateImageInfo3D& _createImageInfo3D)
+std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const PC_CORE::CreateImageInfo& _createImageInfo3D)
 {
     Rhi& rhi = GetInstance();
 

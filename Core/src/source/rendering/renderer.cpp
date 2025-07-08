@@ -15,6 +15,7 @@
 #include <perf_region.hpp>
 
 #include "math/toolbox_typedef.hpp"
+#include "resources/shader_source_binary.hpp"
 
 using namespace PC_CORE;
 
@@ -297,33 +298,26 @@ void Renderer::CreateForwardShader()
         .enableDepthTest = true,
     };
 
-    const std::vector<std::pair<ShaderStageType, std::string>> source =
+    const SourceList sources =
     {
         {
             ShaderStageType::VERTEX,
-            "forward_spv.vert"
+            ResourceManager::Get<ShaderSourceBinary>("forward_spv.vert"),
         },  
         {
             ShaderStageType::FRAGMENT,
-            "forward_spv.frag"
+            ResourceManager::Get<ShaderSourceBinary>("forward_spv.frag")
         }
     };
 
-    const ShaderInfo shaderInfo =
-    {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
-    };
+    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+        .shaderGraphicPointInfo = shaderGraphicPointInfo,
+        .sourceList = sources,
+        .renderPass = forwardPass.get()
+        };
 
-    const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = forwardPass,
-    };
-
-
-    m_ForwardShader = ResourceManager::Create<ShaderProgram>("ForwardShader", triangleCreateInfo);
+    m_ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
 }
 
 void Renderer::CreateDrawQuadShader()
@@ -347,32 +341,27 @@ void Renderer::CreateDrawQuadShader()
         .enableDepthTest = false,
     };
 
-    const std::vector<std::pair<ShaderStageType, std::string>> source =
+    const SourceList sources =
     {
         {
             ShaderStageType::VERTEX,
-            "draw_texture_screen_quad_spv.vert"
+            ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.vert"),
         },
         {
             ShaderStageType::FRAGMENT,
-            "draw_texture_screen_quad_spv.frag"
+             ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.frag")
         }
     };
 
-    const ShaderInfo shaderInfo =
-    {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
-    };
+    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+      {
+        .shaderGraphicPointInfo = shaderGraphicPointInfo,
+        .sourceList = sources,
+        .renderPass = drawTextureScreenQuadPass.get()
+        };
 
-    const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = drawTextureScreenQuadPass,
-    };
-
-    m_DrawTextureScreenQuadShader = ResourceManager::Create<ShaderProgram>("DrawQuadShader", triangleCreateInfo);
+    
+    m_DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>("DrawQuadShader", graphicShaderProgramCreateInfo);
 }
 
 void Renderer::CreateSkyRenderingShader()
@@ -534,7 +523,7 @@ void Renderer::CreateForwardRenderPass()
                 AccessFlagBits::ShaderRead
             )
         },
-        .useDepth = true, 
+        .useDepth = true,
         };
   
     PC_CORE::RenderPassDescriptor renderPassDescriptor =

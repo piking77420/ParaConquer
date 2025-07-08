@@ -35,7 +35,7 @@ public:
     
     PC_CORE_API Texture2D();
 
-    PC_CORE_API Texture2D(const CreateImageInfo2D& createTextureInfo);
+    PC_CORE_API Texture2D(const CreateImageInfo& createTextureInfo);
     
     PC_CORE_API Texture2D(const fs::path& _path);
 

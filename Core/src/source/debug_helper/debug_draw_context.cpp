@@ -3,6 +3,7 @@
 
 #include "rendering/renderer.hpp"
 #include "resources/resource_manager.hpp"
+#include "resources/shader_source_binary.hpp"
 
 #define GIZMO_PASS {1.f, 0.0f, 1.f, 0.5f}
 
@@ -137,34 +138,29 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
     };
 
 
-    const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> source =
+    const SourceList source =
     {
         {
             PC_CORE::ShaderStageType::VERTEX,
-            "debug_draw_spv.vert"
+            ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.vert")
         },
         {
             PC_CORE::ShaderStageType::FRAGMENT,
-            "debug_draw_spv.frag"
+            ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.frag")
         }
     };
 
-    PC_CORE::ShaderInfo shaderInfo =
-    {
-        .shaderProgramPipelineType = PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
-    };
+    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+        .shaderGraphicPointInfo = shaderGraphicPointInfo,
+        .sourceList = source,
+        .renderPass = m_Renderer->forwardPass.get()
+        };
+    
 
-
-    PC_CORE::ProgramShaderCreateInfo _programShaderCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = m_Renderer->forwardPass,
-    };
-
-    m_ShaderProgram = PC_CORE::ResourceManager::Create<PC_CORE::ShaderProgram>(
-        "DebugGizmoShader", _programShaderCreateInfo);
+    m_ShaderProgram = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
+        "DebugGizmoShader", graphicShaderProgramCreateInfo);
+    
     m_ShaderProgram.lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET);
 
     PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
@@ -237,34 +233,29 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
     };
 
 
-    const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> source =
+    const SourceList source =
     {
         {
             PC_CORE::ShaderStageType::VERTEX,
-            "debug_draw_ray_spv.vert"
+            ResourceManager::Get<ShaderSourceBinary>("debug_draw_ray_spv.vert")
+
         },
         {
             PC_CORE::ShaderStageType::FRAGMENT,
-            "debug_draw_spv.frag"
+            ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.frag")
+
         }
     };
 
-    PC_CORE::ShaderInfo shaderInfo =
-    {
-        .shaderProgramPipelineType = PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
-    };
+    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+        .shaderGraphicPointInfo = shaderGraphicPointInfo,
+        .sourceList = source,
+        .renderPass = m_Renderer->forwardPass.get()
+        };
 
-
-    PC_CORE::ProgramShaderCreateInfo _programShaderCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = m_Renderer->forwardPass,
-    };
-
-    m_ShaderProgramRay = PC_CORE::ResourceManager::Create<PC_CORE::ShaderProgram>(
-        "DebugGizmoShaderRay", _programShaderCreateInfo);
+    m_ShaderProgramRay = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
+        "DebugGizmoShaderRay", graphicShaderProgramCreateInfo);
     m_ShaderProgramRay.lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsRay, SCENE_DESCRIPTOR_SET);
 
     PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
