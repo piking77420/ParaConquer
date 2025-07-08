@@ -256,7 +256,7 @@ ShaderSource::ShaderSource(const fs::path& _path) : Resource(_path)
         return;
     }
 
-    auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv);
+    auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv, m_ShaderType);
 
     Resource::LinkDependencies(this, s.get());
 }
@@ -271,6 +271,8 @@ void ShaderSource::Reload()
         PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
         return;
     }
+    auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv, m_ShaderType);
+    s->WriteSprivToFile(&sourceSpriv);
     BroadCastReload();
 }
 

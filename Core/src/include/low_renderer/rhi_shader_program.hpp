@@ -10,51 +10,6 @@
 BEGIN_PCCORE
 #pragma region Shader
 
-enum class ShaderStageType : size_t
-{
-    VERTEX,
-    TESSCONTROL,
-    TESSEVALUATION,
-    GEOMETRY,
-    FRAGMENT,
-    COMPUTE,
-    RAYGEN,
-    INTERSECT,
-    ANYHIT,
-    CLOSESTHIT,
-    MISS,
-    CALLABLE,
-    TASK,
-    MESH,
-
-    COUNT
-};
-
-const std::array<std::string, 14> ShaderSourceFormat =
-{
-    ".vert",
-    ".tessc",
-    ".tessv",
-    ".geom",
-    ".frag",
-    ".comp",
-    ".raygen",
-    ".intersect",
-    ".anyhit",
-    ".closesthit",
-    ".miss",
-    ".callable",
-    ".task"
-    ".mesh",
-};
-
-
-struct ShaderSourcePath
-{
-    std::string shaderSourceCodePath;
-    std::string spvCode;
-};
-
 
 
 enum class PolygonMode
@@ -129,30 +84,16 @@ struct ShaderInfo
 {
     ShaderProgramPipelineType shaderProgramPipelineType;
     ShaderInfoData shaderInfoData;
-    std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
 };
 
 struct ProgramShaderCreateInfo
 {
     ShaderInfo shaderInfo;
     RhiRenderPass* renderPass;
+    std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
 };
 
-#pragma endregion
 
-static inline ShaderStageType ShaderFormatToShaderType(const char* _formatWithPoint)
-{
-    for (int i = 0; i < static_cast<int>(ShaderStageType::COUNT); i++)
-    {
-        if (_stricmp(_formatWithPoint, ShaderSourceFormat[i].c_str()) == 0)
-        {
-            return static_cast<ShaderStageType>(i);
-        }
-    }
-
-    // Return a default value or handle the error when no match is found
-    return ShaderStageType::COUNT;
-}
 
 #pragma endregion Shader
 
@@ -164,6 +105,8 @@ public:
     PC_CORE_API virtual void FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets) = 0;
 
     
+    PC_CORE_API virtual void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources) = 0;
+
     PC_CORE_API RhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 
     PC_CORE_API RhiShaderProgram() = default;

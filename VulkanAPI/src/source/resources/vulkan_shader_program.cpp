@@ -131,14 +131,16 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
 
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : RhiShaderProgram(_programShaderCreateInfo)
 {
-    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(_programShaderCreateInfo);
-    
+    PERF_REGION_SCOPED;
+
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo.shaderSources);
+
         
     switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
     {
     case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
         {
-            const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(_programShaderCreateInfo.shaderInfo.shaderInfoData);
+            const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(m_ProgramShaderCreateInfo.shaderInfo.shaderInfoData);
             CreatePipeLinePointGraphicsPipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
         }
         break;
@@ -156,16 +158,18 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
     
     for (auto& vkShaderModule : vulkanShaderProgramCreateContex.vkShaderModules)
         vulkanShaderProgramCreateContex.device.destroyShaderModule(vkShaderModule);
+
 }
 
 
-VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(
-    const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo)
+VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources)
 {
-    const  size_t shaderStageCount = _programShaderCreateInfo.shaderInfo.shaderSources.size();
+    PERF_REGION_SCOPED;
+
+    const  size_t shaderStageCount = _programShaderCreateInfo.size();
 
     VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex;
-    vulkanShaderProgramCreateContex.device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
+    vulkanShaderProgramCreateContex.device = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice)->GetDevice();
     vulkanShaderProgramCreateContex.spvModuleSourceCode = std::vector<std::vector<char>>(shaderStageCount);
     vulkanShaderProgramCreateContex.modulesReflected = std::vector<SpvReflectShaderModule>(shaderStageCount);
     vulkanShaderProgramCreateContex.vkShaderModules = std::vector<vk::ShaderModule>(shaderStageCount);
@@ -173,7 +177,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 
     for (size_t i = 0; i < shaderStageCount; i++)
     {
-        const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo.shaderInfo.shaderSources[i];
+        const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo[i];
         const char* format = nullptr;
          if (!GetFormatFromValue(PC_CORE::ShaderSourceFormat, shaderSource.first, &format))
          {
@@ -191,7 +195,10 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     
     
     // Reflection Start
-    ParseSpvRelfection(vulkanShaderProgramCreateContex);
+    if (_createDescriptorResources)
+        ParseDescriptor(vulkanShaderProgramCreateContex);
+
+    ParsePushConstantRange(vulkanShaderProgramCreateContex);
     CreatePushConstantMapFromReflection(vulkanShaderProgramCreateContex.modulesReflected);
     
     // Create Modules
@@ -209,7 +216,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size(); i++)
     {
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType = vk::StructureType::ePipelineShaderStageCreateInfo;
-        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = Utils::RhiToShaderStage(_programShaderCreateInfo.shaderInfo.shaderSources[i].first);
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = Utils::RhiToShaderStage(_programShaderCreateInfo[i].first);
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.vkShaderModules[i];
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.modulesReflected[i].entry_point_name;
     }
@@ -279,7 +286,6 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
     depthStencilState.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
     depthStencilState.depthTestEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
-    depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
     depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
     depthStencilState.depthCompareOp = Utils::RHIToVulkanCompareOp(_shaderGraphicPointInfo.depthCompareOp);
     depthStencilState.minDepthBounds = 0.0f;
@@ -351,12 +357,11 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<
 }
 #pragma region ParseRegion
 
-void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
+void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
 {
     std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
     
     std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
-    std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContext.pushConstantRanges;
 
     // Compute Unique Set
     for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
@@ -369,20 +374,6 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
         }
     
     // Resize Vector
-    uint32_t pushConstantRangeCount = 0;
-    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
-    {
-        //for (auto& set : moduleIndex.descriptor_sets)
-        //{
-            //if (set.set == std::numeric_limits<uint32_t>::max())
-              //  continue;
-            //layoutsMap[set.set].resize(layoutsMap[set.set].size() + set.binding_count);
-        //}
-        pushConstantRangeCount += moduleIndex.push_constant_block_count;
-    }
-    pushConstantRanges->resize(pushConstantRangeCount);
-
-
     uint32_t descritptorCount = 0;
     for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
     {
@@ -413,26 +404,7 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
         }
     }
 
-    pushConstantRangeCount = 0;
 
-    // PushRange
-    for (size_t i = 0; i < _vulkanShaderProgramCreateContext.modulesReflected.size(); i++)
-    {
-        const uint32_t pushConstantCount = _vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_block_count;
-        if (pushConstantCount == 0)
-            continue;
-
-        for (size_t j = 0; j < pushConstantCount; j++)
-        {
-            SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContext.modulesReflected[j].push_constant_blocks;
-
-            vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
-            pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
-            pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
-            pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
-            pushConstantRangeCount++;
-        }
-    }
 
     std::vector<std::vector<vk::DescriptorSetLayoutBinding>> layouts;
     layouts.reserve(layoutsMap.size());
@@ -581,6 +553,91 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputStat
     returnVertexInputStateCreateInfo.pVertexAttributeDescriptions = _vertexInputAttributeDescriptions->data();
 
     return returnVertexInputStateCreateInfo;
+}
+
+void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+{
+    std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContex.pushConstantRanges;
+
+    uint32_t pushConstantRangeCount = 0;
+    for (auto& moduleIndex : _vulkanShaderProgramCreateContex.modulesReflected)
+    {
+        //for (auto& set : moduleIndex.descriptor_sets)
+        //{
+            //if (set.set == std::numeric_limits<uint32_t>::max())
+              //  continue;
+            //layoutsMap[set.set].resize(layoutsMap[set.set].size() + set.binding_count);
+        //}
+        pushConstantRangeCount += moduleIndex.push_constant_block_count;
+    }
+    pushConstantRanges->resize(pushConstantRangeCount);
+
+    pushConstantRangeCount = 0;
+
+    // PushRange
+    for (size_t i = 0; i < _vulkanShaderProgramCreateContex.modulesReflected.size(); i++)
+    {
+        const uint32_t pushConstantCount = _vulkanShaderProgramCreateContex.modulesReflected[i].push_constant_block_count;
+        if (pushConstantCount == 0)
+            continue;
+
+        for (size_t j = 0; j < pushConstantCount; j++)
+        {
+            SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContex.modulesReflected[j].push_constant_blocks;
+
+            vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
+            pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
+            pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
+            pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContex.modulesReflected[i].shader_stage);
+            pushConstantRangeCount++;
+        }
+    }
+}
+
+void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources)
+{
+    PERF_REGION_SCOPED;
+
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice)->GetDevice();
+
+
+    if (m_PipelineLayout != VK_NULL_HANDLE)
+    {
+        device.destroyPipelineLayout(m_PipelineLayout);
+        m_PipelineLayout = VK_NULL_HANDLE;
+    }
+
+    if (m_Pipeline != VK_NULL_HANDLE)
+    {
+        device.destroyPipeline(m_Pipeline);
+        m_Pipeline = VK_NULL_HANDLE;
+    }
+    m_PushConstantMap.clear();
+
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(_sources, false);
+    switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
+    {
+    case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
+    {
+        const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(m_ProgramShaderCreateInfo.shaderInfo.shaderInfoData);
+        CreatePipeLinePointGraphicsPipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
+    }
+    break;
+    case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+        break;
+    case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
+        break;
+    case PC_CORE::ShaderProgramPipelineType::COUT:
+        break;
+    default:;
+    }
+
+    for (auto& spvReflect : vulkanShaderProgramCreateContex.modulesReflected)
+        spvReflectDestroyShaderModule(&spvReflect);
+
+    for (auto& vkShaderModule : vulkanShaderProgramCreateContex.vkShaderModules)
+        vulkanShaderProgramCreateContex.device.destroyShaderModule(vkShaderModule);
+
 }
 
 #pragma endregion ParseRegion 

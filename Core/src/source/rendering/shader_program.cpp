@@ -6,16 +6,40 @@
 using namespace PC_CORE;
 
 
+PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
+{
+    PERF_REGION_SCOPED;
+
+    // TODO FILTER PARENT 
+
+    auto p = GetParentResource();
+
+    std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> sources;
+
+    
+    for (auto& code : p)
+    {
+        std::shared_ptr<ShaderSourceBinary> shaderSourceBinary;
+        if (ResourceManager::TryGetAs<PC_CORE::ShaderSourceBinary>(code, &shaderSourceBinary))
+        {
+            sources.push_back(std::make_pair(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetPath().generic_string()));
+        }
+    }
+
+    if (!sources.empty())
+        m_RhiShaderProgram->HotReload(sources);
+}
+
 void ShaderProgram::AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets, size_t set)
 {
     PERF_REGION_SCOPED;
-    m_ShaderProgram->AllocDescriptorSet(_shaderProgramDescriptorSets, set);
+    m_RhiShaderProgram->AllocDescriptorSet(_shaderProgramDescriptorSets, set);
 }
 
 void ShaderProgram::FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets)
 {
     PERF_REGION_SCOPED;
-    m_ShaderProgram->FreeDescriptorSet(_shaderProgramDescriptorSets);
+    m_RhiShaderProgram->FreeDescriptorSet(_shaderProgramDescriptorSets);
 }
 
 ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType,
@@ -31,10 +55,7 @@ ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipeli
     
     for (const auto& source : _sources)
     {
-        if  (auto s = source.second.lock())
-        {
-            ResourceManager::LinkDepencies(s->name, name);
-        }
+        Resource::LinkDependencies(source.second.lock().get(), this);
     }
 }
 

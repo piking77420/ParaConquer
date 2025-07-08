@@ -24,13 +24,15 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual std::shared_ptr<RhiResource> GetRhiHandle() const
         {
-            return m_ShaderProgram;
+            return m_RhiShaderProgram;
         }
+
+        PC_CORE_API void OnParentReload(const Guid& _parentGuid) override;
 
         ShaderProgramPipelineType GetPipelineType() const
         {
             return m_ShaderProgramPipelineType;
-        }
+        } 
 
         // TODO ABSTRACT THIS 
         PC_CORE_API void AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets, size_t set);
@@ -50,13 +52,14 @@ BEGIN_PCCORE
         PC_CORE_API virtual ~ShaderProgram() = default;
 
     protected:
-        std::shared_ptr<RhiShaderProgram> m_ShaderProgram;
+        std::shared_ptr<RhiShaderProgram> m_RhiShaderProgram;
 
         ShaderProgramPipelineType m_ShaderProgramPipelineType;
 
         static std::vector<std::pair<ShaderStageType, std::string>> SourceListToSourcePath(const SourceList& _sourceList);
     
         REFLECT(ShaderProgram, Resource);
+
     
     };
 

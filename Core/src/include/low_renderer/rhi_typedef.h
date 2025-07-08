@@ -2,6 +2,8 @@
 
 #include <variant>
 #include <vector>
+#include <array>
+#include <string>
 
 #include "core_header.hpp"
 #include "math/toolbox_typedef.hpp"
@@ -369,6 +371,43 @@ BEGIN_PCCORE
 
 #pragma endregion
 
+    enum class ShaderStageType : size_t
+    {
+        VERTEX,
+        TESSCONTROL,
+        TESSEVALUATION,
+        GEOMETRY,
+        FRAGMENT,
+        COMPUTE,
+        RAYGEN,
+        INTERSECT,
+        ANYHIT,
+        CLOSESTHIT,
+        MISS,
+        CALLABLE,
+        TASK,
+        MESH,
+
+        COUNT
+    };
+
+    const std::array<std::string, 14> ShaderSourceFormat =
+    {
+        ".vert",
+        ".tessc",
+        ".tessv",
+        ".geom",
+        ".frag",
+        ".comp",
+        ".raygen",
+        ".intersect",
+        ".anyhit",
+        ".closesthit",
+        ".miss",
+        ".callable",
+        ".task"
+        ".mesh",
+    };
 
 enum struct MemoryUsage
 {
@@ -702,6 +741,7 @@ inline T SafeCastReinterpreCast(U* ptr)
 #endif // DEBUG
 
 }
+
 
 
 // DescriptorSet

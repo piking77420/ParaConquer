@@ -8,6 +8,7 @@ struct SpvReflectShaderModule;
 
 namespace Vulkan
 {
+
     struct VulkanShaderProgramCreateContex
     {
         std::vector<std::vector<char>> spvModuleSourceCode;
@@ -31,7 +32,7 @@ namespace Vulkan
 
     constexpr uint32_t MAX_ALLOC_DESCRIPTOR_SET = 100 * MAX_FRAMES_IN_FLIGHT;
     
-    class VulkanShaderProgram : public PC_CORE::RhiShaderProgram
+    class VULKAN_API VulkanShaderProgram : public PC_CORE::RhiShaderProgram
     {
     protected:
         static constexpr  std::array<vk::DynamicState,10> dynamicStateArray =
@@ -67,7 +68,7 @@ namespace Vulkan
 
         vk::PipelineLayout GetPipelineLayout() const;
 
-        PC_CORE_API virtual const void* GetNativeHandle() const
+        virtual const void* GetNativeHandle() const
         {
             return &m_Pipeline;
         }
@@ -86,14 +87,15 @@ namespace Vulkan
 
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
 
-        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo);
+        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources = true);
+
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
 
         void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion
-        void ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);
+        void ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);
         
         void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo, const PC_CORE::RasterizerInfo& _rasterizerInfo);
 
@@ -110,8 +112,11 @@ namespace Vulkan
             std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
             , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions);
 
+        void ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
+
 #pragma endregion ParseRegion 
       
+        void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources) override;
 
     };
 }

@@ -40,6 +40,9 @@ public:
     template<class ResourceDerived>
     static std::shared_ptr<ResourceDerived> Get(const Guid& _guid);
 
+    template<class ResourceDerived>
+    static bool TryGetAs(const Guid& _guid, std::shared_ptr<ResourceDerived>* _outPtr);
+
     PC_CORE_API static const std::string& GetName(const Guid& _guid); 
     
     template<class ResourceDerived>
@@ -59,9 +62,6 @@ public:
     
     PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
-    PC_CORE_API static void LinkDepencies(const std::string& _parentResource, const std::string& _childResource);
-
-    PC_CORE_API void ReloadResourceDepencencies(const std::string& _parentResource);
 
 private:
     PC_CORE_API static inline std::unordered_map<Guid, std::shared_ptr<Resource>> m_ResourcesMap;
@@ -134,6 +134,24 @@ std::shared_ptr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
 
 
     return m_ResourcesMap.at(_guid);
+}
+
+template<class ResourceDerived>
+inline bool ResourceManager::TryGetAs(const Guid& _guid, std::shared_ptr<ResourceDerived>* _outPtr)
+{
+    auto it = m_ResourcesMap.find(_guid);
+    if (it == m_ResourcesMap.end())
+    {
+        PC_LOGERROR("Cant find resource")
+        return false;
+    }
+
+    if (it->second->GetType().typeId != Reflector::GetTypeKey<ResourceDerived>())
+        return false;
+
+    *_outPtr = std::reinterpret_pointer_cast<ResourceDerived>(it->second);
+
+    return true;
 }
 
 template <class ResourceDerived>

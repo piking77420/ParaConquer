@@ -33,7 +33,7 @@ public:
     PC_CORE_API virtual void Build() {};
 
     // Reload base on modificated parent ?
-    PC_CORE_API virtual void OnParentReload(Guid _parentGuid)
+    PC_CORE_API virtual void OnParentReload(const Guid& _parentGuid)
     {
         PC_LOG("OnParentReload {}", name)
     };
@@ -85,6 +85,16 @@ protected:
     std::atomic<bool> m_IsLoaded;
 
     Guid m_Guid;
+
+    const std::vector<Guid>& GetParentResource() const
+    {
+        return m_ParentsResource;
+    }
+
+    const std::vector<Guid>& GetChildResource() const
+    {
+        return m_ChildsResource;
+    }
 
 private:
     friend ResourceManager; // Only the ResourceManager is friend, he in charge of loading resource after all 

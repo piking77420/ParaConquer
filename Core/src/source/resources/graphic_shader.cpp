@@ -10,7 +10,6 @@ PC_CORE::GraphicShader::GraphicShader(const std::string& _shaderName,
   {
         .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
         .shaderInfoData = _graphicShaderProgramCreateInfo.shaderGraphicPointInfo,
-        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList)
     };
     // TODO check if source extension are suitable for pipelyne
 
@@ -18,9 +17,10 @@ PC_CORE::GraphicShader::GraphicShader(const std::string& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
+        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList)
     };
 
-    m_ShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
+    m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
 }
 
 PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
@@ -30,7 +30,6 @@ PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
   {
         .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
         .shaderInfoData = _graphicShaderProgramCreateInfo.shaderGraphicPointInfo,
-        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList)
     };
     // TODO check if source extension are suitable for pipelyne
 
@@ -38,9 +37,10 @@ PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
+        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList)
     };
 
-    m_ShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
+    m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
     
 }
 

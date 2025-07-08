@@ -349,6 +349,7 @@ void Editor::UpdateEditor()
 			{
 				if (ImGui::MenuItem(_shader->name.c_str()))
 				{
+					Rhi::GetRhiContext()->WaitIdle();
 					_shader->Reload();
 					// reload shader
 				}

@@ -26,8 +26,9 @@ void Resource::BroadCastReload()
 		}
 #endif
 
-		
-		ResourceManager::Get<Resource>(child)->OnParentReload(GetGuid());
+		auto r = ResourceManager::Get<Resource>(child);
+		r->OnParentReload(GetGuid());
+		r->BroadCastReload();
 	}
 }
 
