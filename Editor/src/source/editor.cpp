@@ -376,8 +376,7 @@ void Editor::UpdateEditor()
 }
 
 
-std::shared_ptr<Material> m1;
-std::shared_ptr<Material> m2;
+
 
 void Editor::RewindCommand()
 {
@@ -393,8 +392,8 @@ void Editor::InitTestScene()
 	PERF_REGION_SCOPED;
 	PC_LOG("InitTestScene...")
 
-	m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
-	m2 = ResourceManager::Create<Material>("emerauld_block_material.mat");
+	std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
+	std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material.mat");
 
 	m1->m_albedo = ResourceManager::Get<Texture2D>("diamond_block.jpg");
 	m1->Build();

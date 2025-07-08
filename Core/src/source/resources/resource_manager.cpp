@@ -51,28 +51,30 @@ void ResourceManager::Destroy()
 {
     SerializeResource();
 
-    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    for (auto it = m_NameToGuid.begin(); it != m_NameToGuid.end(); it++)
     {
 
-        if (it->second.use_count() > 1)
+        m_ResourcesMap[it->second];
+        if (m_ResourcesMap[it->second].use_count() > 1)
         {
-            PC_LOGERROR("There is a remaining reference before destroyed by the resource manager " + it->second->name);
+            PC_LOGERROR("There is a remaining reference before destroyed by the resource manager " + m_ResourcesMap[it->second]->name);
         }
-        it->second.reset();
-        it->second = nullptr;
+        m_ResourcesMap[it->second].reset();
+        m_ResourcesMap[it->second] = nullptr;
     }
-    m_ResourcesMap.clear();
+    m_NameToGuid.clear();
 }
 
-std::shared_ptr<Resource> ResourceManager::GetByGuid(const Guid& _guid)
-{
-    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
-    {
-        if (it->second->GetGuid() == _guid)
-            return it->second;
-    }
 
-    return nullptr;
+const std::string& ResourceManager::GetName(const Guid& _guid)
+{
+    return m_ResourcesMap.at(_guid)->name;
+}
+
+
+bool ResourceManager::Exist(const Guid& _guid)
+{
+    return m_ResourcesMap.contains(_guid);
 }
 
 void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
@@ -134,17 +136,6 @@ void ResourceManager::ReloadResourceDepencencies(const std::string& _parentResou
                resource->BroadCastReload();
            
     }*/
-}
-
-const std::vector<std::weak_ptr<Resource>>* ResourceManager::GetChildResource(const std::string& _resourceName)
-{
-    auto itp = m_ResourceToChildren.find(_resourceName);
-    if (itp == m_ResourceToChildren.end())
-    {
-        return nullptr;
-    }
-
-    return nullptr;
 }
 
 

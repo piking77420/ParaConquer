@@ -77,13 +77,13 @@ public:
 
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
-    std::shared_ptr<PC_CORE::GraphicShader> m_ForwardShader;
+    std::weak_ptr<PC_CORE::GraphicShader> m_ForwardShader;
 
 
     // TO DO TO RESOURE REF
-    std::shared_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
+    std::weak_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
-    std::shared_ptr<PC_CORE::GraphicShader> m_SkyRenderingShader;
+    std::weak_ptr<PC_CORE::GraphicShader> m_SkyRenderingShader;
     
     std::shared_ptr<RhiRenderPass> forwardPass;
 

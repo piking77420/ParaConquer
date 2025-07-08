@@ -257,6 +257,8 @@ ShaderSource::ShaderSource(const fs::path& _path) : Resource(_path)
     }
 
     auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv);
+
+    Resource::LinkDependencies(this, s.get());
 }
 
 void ShaderSource::Reload()

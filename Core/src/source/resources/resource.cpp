@@ -8,21 +8,27 @@
 using namespace PC_CORE;
 
 
+void Resource::LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild)
+{
+	_resourceParent->m_ChildsResource.emplace_back(_resourceChild->GetGuid());
+	_resourceChild->m_ParentsResource.emplace_back(_resourceParent->GetGuid());
+}
+
 void Resource::BroadCastReload()
 {
-	/*
-	auto childs = ResourceManager::GetChildResource(name);
-	if  (childs == nullptr)
-		return;
-
-	for (auto& child : *childs)
+	for (auto& child : m_ChildsResource)
 	{
-		
-		if (auto ptr = child.lock())
+#ifdef WITH_EDITOR && _DEBUG
+		if (!ResourceManager::Exist(child))
 		{
-			ptr->OnParentReload(name);
+			// TODO FORMAT GUID
+			PC_LOGERROR("Invalid child guid, parent = {}, child guid = {}", name);
 		}
-	}*/
+#endif
+
+		
+		ResourceManager::Get<Resource>(child)->OnParentReload(GetGuid());
+	}
 }
 
 const std::atomic<bool>& Resource::IsLoaded() const
@@ -36,6 +42,8 @@ Resource& Resource::operator=(const Resource& _other) noexcept
 	name = _other.name;
 	extension = _other.extension;
 	m_Guid = Guid::New();
+	m_ChildsResource = _other.m_ChildsResource;
+	m_ParentsResource = _other.m_ParentsResource;
 	
 	return *this;
 }
@@ -46,6 +54,8 @@ Resource& Resource::operator=(Resource&& _other) noexcept
 	name = std::move(_other.name);
 	extension = std::move(_other.extension);
 	m_Guid = Guid::New();
+	m_ChildsResource = std::move(_other.m_ChildsResource);
+	m_ParentsResource = std::move(_other.m_ParentsResource);
 	
 	return *this;
 }
@@ -53,7 +63,7 @@ Resource& Resource::operator=(Resource&& _other) noexcept
 
 Resource::Resource(const Resource& _other) noexcept : ISeriazable(_other), 
 name(_other.name), extension(_other.extension),
-m_Guid(Guid::New())
+m_Guid(Guid::New()), m_ChildsResource(_other.m_ChildsResource), m_ParentsResource(_other.m_ParentsResource)
 {
 	
 }
@@ -64,6 +74,8 @@ Resource::Resource(Resource&& _other) noexcept
 	name = std::move(_other.name);
 	extension = std::move(_other.extension);
 	m_Guid = _other.m_Guid;
+	m_ChildsResource = std::move(_other.m_ChildsResource);
+	m_ParentsResource = std::move(_other.m_ParentsResource);
 }
 
 Resource::Resource(const std::string& _name) : name(_name) , m_Guid(Guid::New())
@@ -76,7 +88,7 @@ Resource::Resource(std::string&& _name) : name(std::move(_name)) , m_Guid(Guid::
 	
 }
 
-Resource::Resource(const fs::path& _file)
+Resource::Resource(const fs::path& _file) : m_Guid(Guid::New())
 {
 	fs::path pathFileName = _file.filename();
 	name = pathFileName.generic_string();	

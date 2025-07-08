@@ -28,13 +28,14 @@ public:
 
     PC_CORE_API void Update();
     
-    PC_CORE_API void Destroy();
-
     PC_CORE_API void LoadLevel(const Level& _level);
     
     PC_CORE_API World();
     
-    PC_CORE_API ~World() = default;
+    PC_CORE_API ~World()
+    {
+        m_World = nullptr;
+    };
 
 private:
     PC_CORE_API static inline World* m_World = nullptr;

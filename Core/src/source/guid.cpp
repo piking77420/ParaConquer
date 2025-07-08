@@ -33,6 +33,8 @@ bool Guid::operator!=(const Guid& other) const { return !(*this == other); }
 
 Guid::operator std::string() const
 {
+	PC_LOGERROR("qsdsqdqsdsqdsqdsqdqsdsq");
+
 	return std::format("{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}-{:X}", data1, data2, data3, data4[0], data4[1], data4[2], data4[3], data4[4], data4[5], data4[6], data4[7]);
 }
 

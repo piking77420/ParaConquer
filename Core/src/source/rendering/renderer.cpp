@@ -70,7 +70,7 @@ void Renderer::Init()
         }
     };
 
-    m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, 0);
+    m_ForwardShader.lock()->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, 0);
     m_ShaderProgramSceneDescriptorSet->WriteDescriptorSets(descriptorSets);
     
 
@@ -86,15 +86,6 @@ void Renderer::Init()
     InitRenderSystem();
     m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 }
-void Renderer::Destroy()
-{
-   
-    // TODO(avoir make shader a shared ptr or remove acquire beacause of resoure manager Release Shader
-    m_DebugDrawContext.reset();
-    m_ForwardShader = nullptr;
-    m_DrawTextureScreenQuadShader = nullptr;
-}
-
 
 void Renderer::BeginDraw(Window* _window)
 {
@@ -224,7 +215,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);           
     primaryCommandList->BeginRenderPass(drawToViewport);
     primaryCommandList->SetViewPort(viewportInfo);
-    primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.get());
+    primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip );
     DrawTextureScreenQuad(*renderingContext.viewPortDescriptorSet);
     primaryCommandList->EndRenderPass();
@@ -250,7 +241,7 @@ void Renderer::SwapBuffers(Window* _window)
 
 void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets)
 {
-    primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.get(), &_ShaderProgramDescriptorSets, 0, 1);
+    primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(), &_ShaderProgramDescriptorSets, 0, 1);
     primaryCommandList->Draw(4, 1, 0, 0);
 }
 
@@ -441,8 +432,8 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     Mesh* mesh = _staticMesh.mesh.lock().get();
 
     // Send Data
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), material->GetDescriptorSet(), MATERIAL_DESCRIPTOR_SET, 1);
-    primaryCommandList->PushConstant(m_ForwardShader.get(), "PushConstants", &modelMatrixf,
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), material->GetDescriptorSet(), MATERIAL_DESCRIPTOR_SET, 1);
+    primaryCommandList->PushConstant(m_ForwardShader.lock().get(), "PushConstants", &modelMatrixf,
                                      sizeof(Tbx::Matrix4x4f) * 2);
     primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
     primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
@@ -452,8 +443,8 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
 void Renderer::DrawSky()
 {
     
-    primaryCommandList->BindProgram(m_SkyRenderingShader.get());
-    primaryCommandList->BindDescriptorSet(m_SkyRenderingShader.get(), m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->BindProgram(m_SkyRenderingShader.lock().get());
+    primaryCommandList->BindDescriptorSet(m_SkyRenderingShader.lock().get(), m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET, 1);
     primaryCommandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
     primaryCommandList->Draw(4, 1, 0, 0);
 
@@ -562,11 +553,11 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
     primaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
-    primaryCommandList->BindProgram(m_ForwardShader.get());
+    primaryCommandList->BindProgram(m_ForwardShader.lock().get());
 
 
     primaryCommandList->SetViewPort(_viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
 
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 

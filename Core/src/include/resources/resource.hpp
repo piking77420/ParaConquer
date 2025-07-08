@@ -33,7 +33,7 @@ public:
     PC_CORE_API virtual void Build() {};
 
     // Reload base on modificated parent ?
-    PC_CORE_API virtual void OnParentReload(const std::string& _reloadedResourceParent)
+    PC_CORE_API virtual void OnParentReload(Guid _parentGuid)
     {
         PC_LOG("OnParentReload {}", name)
     };
@@ -43,9 +43,10 @@ public:
         PC_LOG("Reload {}", name)
     }
 
+    static PC_CORE_API void LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild);
+
     // Reload 
     PC_CORE_API void BroadCastReload();
-
     
     PC_CORE_API const Guid& GetGuid() const
     {
@@ -62,18 +63,21 @@ public:
 
     PC_CORE_API Resource(Resource&& _other) noexcept;
     
-    PC_CORE_API Resource() = default;
+    PC_CORE_API Resource() : m_Guid(Guid::New())
+    {
+
+    }
 
     PC_CORE_API Resource(const Guid& _guid) : m_Guid(_guid)
     {
         
     }
-
     PC_CORE_API Resource(const std::string& _name);
     
     PC_CORE_API Resource(std::string&& _name);
 
     PC_CORE_API Resource(const fs::path& _file);
+
     
     PC_CORE_API virtual ~Resource() = default;
     
@@ -85,10 +89,15 @@ protected:
 private:
     friend ResourceManager; // Only the ResourceManager is friend, he in charge of loading resource after all 
 
+    std::vector<Guid> m_ParentsResource;
+
+    std::vector<Guid> m_ChildsResource;
     
     REFLECT(Resource)
     REFLECT_MEMBER(Resource, name)
     REFLECT_MEMBER(Resource, m_Guid)
+    REFLECT_MEMBER(Resource, m_ParentsResource)
+    REFLECT_MEMBER(Resource, m_ChildsResource)
 };
 
 

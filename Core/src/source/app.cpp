@@ -37,8 +37,6 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
 
 void App::Destroy()
 {
-    world.Destroy();
-    renderer.Destroy();
     ResourceManager::Destroy();
     PC_LOG("App Destroy")
 }

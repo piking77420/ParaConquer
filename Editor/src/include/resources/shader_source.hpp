@@ -24,9 +24,9 @@ public:
 
     IMP_DYNAMIC_REFLECT()
 
-    ShaderSource();
+    explicit ShaderSource();
 
-    ShaderSource(const fs::path& _path);
+    explicit ShaderSource(const fs::path& _path);
     
     ~ShaderSource() override = default;
 

@@ -517,7 +517,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
                 }
                 else
                 {
-                    std::shared_ptr<Resource> r = PC_CORE::ResourceManager::GetByGuid(g);
+                    std::shared_ptr<Resource> r = PC_CORE::ResourceManager::Get<Resource>(g);
                     if (r == nullptr)
                     {
                         PC_LOGERROR("There is no matching guiid ");

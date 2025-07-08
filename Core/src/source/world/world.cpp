@@ -36,10 +36,6 @@ void World::Update()
     }
 }
 
-void World::Destroy()
-{
-    m_World = nullptr;
-}
 
 void World::LoadLevel(const Level& _level)
 {

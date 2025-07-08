@@ -38,13 +38,19 @@ public:
     static std::shared_ptr<ResourceDerived> Get(const std::string& _name);
 
     template<class ResourceDerived>
+    static std::shared_ptr<ResourceDerived> Get(const Guid& _guid);
+
+    PC_CORE_API static const std::string& GetName(const Guid& _guid); 
+    
+    template<class ResourceDerived>
     static bool Exist(const std::string& _name);
+
+    
+    PC_CORE_API static bool Exist(const Guid& _guid);
 
     template<class ResourceDerived>
     static std::shared_ptr<ResourceDerived> Get();
-
-    PC_CORE_API static std::shared_ptr<Resource> GetByGuid(const Guid& _guid);
-
+    
     template<class ResourceDerived>
     static bool Delete(const std::string& _name);
 
@@ -57,27 +63,17 @@ public:
 
     PC_CORE_API void ReloadResourceDepencencies(const std::string& _parentResource);
 
-    PC_CORE_API static const std::vector<std::weak_ptr<Resource>>* GetChildResource(const std::string& _resourceName);    
-    
 private:
-    PC_CORE_API static inline std::unordered_map<std::string, std::shared_ptr<Resource>> m_ResourcesMap;
+    PC_CORE_API static inline std::unordered_map<Guid, std::shared_ptr<Resource>> m_ResourcesMap;
 
-    // Maps a resource to the resources that depend on it (its parents)
-    PC_CORE_API static inline std::unordered_map<std::string, std::vector<std::weak_ptr<Resource>>> m_ResourceToParents;
+    PC_CORE_API static inline std::unordered_map<std::string, Guid> m_NameToGuid;
 
-    // Maps a resource to the resources it depends on (its children)
-    PC_CORE_API static inline std::unordered_map<std::string, std::vector<std::weak_ptr<Resource>>> m_ResourceToChildren;
-    
     PC_CORE_API static void SerializeResource();
 
     PC_CORE_API static void DeserializeResource();
 
-
     
     REFLECT(std::shared_ptr<Resource>)
-    REFLECT(std::unordered_map<std::string, std::shared_ptr<Resource>>)
-    REFLECT(std::unordered_map<Guid, std::vector<std::weak_ptr<Resource>>>)
-    
 };
 
 
@@ -88,8 +84,9 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(const fs::path& path)
 {
     
     std::shared_ptr<Resource> newR = std::make_shared<ResourceDerived>(path);
-   
-    m_ResourcesMap.insert({ newR->name, newR });
+    
+    m_ResourcesMap.insert({newR->GetGuid(), newR});
+    m_NameToGuid.insert({ newR->name, newR->GetGuid() });
 
     return std::reinterpret_pointer_cast<ResourceDerived>(newR);
 }
@@ -99,9 +96,14 @@ template<class ResourceDerived, typename... Arg>
 std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 {
     std::shared_ptr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
-    m_ResourcesMap.insert({ newR->name, newR });
+    
+    auto& resourcesMap = m_ResourcesMap;
+    resourcesMap.insert({newR->GetGuid(), newR});
+    auto& nameToGuid = m_NameToGuid;
 
-    return newR;
+    nameToGuid.insert({ newR->name, newR->GetGuid() });
+
+    return std::reinterpret_pointer_cast<ResourceDerived>(newR);
 }
 
 
@@ -109,10 +111,15 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 template <class ResourceDerived>
 std::shared_ptr<ResourceDerived> ResourceManager::Get(const std::string& _name)
 {
-    auto it = m_ResourcesMap.find(_name);
-    if (it != m_ResourcesMap.end())
+    auto it = m_NameToGuid.find(_name);
+    if (it != m_NameToGuid.end())
     {
-        return std::reinterpret_pointer_cast<ResourceDerived>(it->second);
+        auto r = m_ResourcesMap.at(it->second);
+        assert(r->GetGuid() == it->second);
+        assert(r->name ==  _name);
+
+        
+        return std::reinterpret_pointer_cast<ResourceDerived>(r);
     }
 
     PC_LOGERROR("There is no resource with this name " + _name);
@@ -121,9 +128,18 @@ std::shared_ptr<ResourceDerived> ResourceManager::Get(const std::string& _name)
 }
 
 template <class ResourceDerived>
+std::shared_ptr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
+{
+    assert(m_ResourcesMap.contains(_guid));
+
+
+    return m_ResourcesMap.at(_guid);
+}
+
+template <class ResourceDerived>
 bool ResourceManager::Exist(const std::string& _name)
 {
-    return m_ResourcesMap.contains(_name);
+    return m_NameToGuid.contains(_name);
 }
 
 template <class ResourceDerived>
@@ -144,17 +160,27 @@ std::shared_ptr<ResourceDerived> ResourceManager::Get()
 template <class ResourceDerived>
 bool ResourceManager::Delete(const std::string& _name)
 {
-
-    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    auto itGuid = m_NameToGuid.find(_name);
+    if (itGuid == m_NameToGuid.end())
     {
-        if (it->second->name == _name)
-        {
-            delete it->second;
-            m_ResourcesMap.erase(it);
-            return true;
-        }
+        PC_LOGERROR("There is no m_NameToGuid map {}", _name);
+        return false;
     }
-    return false;
+    
+    auto it = m_ResourcesMap.find(itGuid->second);
+
+    if (it == m_ResourcesMap.end())
+    {
+        PC_LOGERROR("There is no m_ResourcesMap map {}", _name);
+        return false;
+    }
+    assert(it->second->name == _name);
+    
+    PC_LOG("Erase resource name as {}", it->second->name);
+    it->second.reset();
+    m_ResourcesMap.erase(it);
+    
+    return true;
 }
 
 template <class ResourceDerived>
@@ -162,7 +188,7 @@ void ResourceManager::ForEach(const std::function<void(ResourceDerived*)>& _lamb
 {
     const TypeId typeId = Reflector::GetTypeKey<ResourceDerived>();
     
-    for (auto it = m_ResourcesMap.begin(); it != m_ResourcesMap.end(); it++)
+    for (auto it = m_NameToGuid.begin(); it != m_NameToGuid.end(); it++)
     {
         const ResourceDerived* interface = reinterpret_cast<ResourceDerived*>(it->second);
         
