@@ -1,7 +1,8 @@
 ﻿#pragma once
+
 #include <iostream>
+
 #include <string>
-#include <print>
 #include <format>
 #include <ranges>
 
@@ -47,30 +48,26 @@ class Log
 public:
     
     template <typename ...Args>
-    inline static void Debug(const std::string& unformatted, Args&&... args)
+    static inline void Debug(const std::string& unformatted, Args&&... args)
     {
-        //std::print(ANSI_COLOR_RESET);        
-        //PrintFormat(unformatted, std::forward<Args>(args)...);
+        std::cout << ANSI_COLOR_RESET;        
+        PrintFormat(unformatted, std::forward<Args>(args)...);
     }
 
     template <typename ...Args>
     static inline void Error(const std::string& unformatted, Args&&... args)
     {
-        //std::print(ANSI_COLOR_RED);
-        //PrintFormat(unformatted, std::forward<Args>(args)...);
+        std::cout << ANSI_COLOR_RED;
+        PrintFormat(unformatted, std::forward<Args>(args)...);
     }
 
-    PC_CORE_API static inline void PrintMetaData(int _lign, const char* _func, const char* _file)
-    {
-       // std::println("[{}, {}, {}]", _file, _func, _lign);
-        //std::print("\n");
-    }
+    PC_CORE_API static void PrintMetaData(int _lign, const char* _func, const char* _file);
 
 private:
     template <typename ...Args>
     static inline void PrintFormat(const std::string& unformatted, Args&&... args)
     {
-        //std::println("{}", std::vformat(unformatted, std::make_format_args(args...)));
+        std::cout << std::vformat(unformatted, std::make_format_args(args...)) << '\n';
     }
 };
 

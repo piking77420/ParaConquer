@@ -1,4 +1,7 @@
 ﻿#pragma once
+
+#include <filesystem>
+
 #include "editor_header.hpp"
 #include "editor_window.hpp"
 #include "core_header.hpp"
@@ -21,11 +24,11 @@ private:
 
     PC_CORE::Texture2D m_FolderTexture;
 
-    //fs::path m_BasePath;
+    std::filesystem::path m_BasePath;
 
-    //fs::path m_CurrenPath;
+    std::filesystem::path m_CurrenPath;
 
-    //fs::path m_SelectedItem;
+    std::filesystem::path m_SelectedItem;
 
     FileSystemWatcher m_fileWatcher;
 
@@ -35,7 +38,7 @@ private:
     
     void CreateFile(const std::string& _filename) const;
     
-    //std::string GetUniqueFileName(const fs::path& directory, const std::string& baseName, const std::string& extension) const;
+    std::string GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const;
 
     void OnFileSelectedClick();
 

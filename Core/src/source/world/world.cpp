@@ -30,9 +30,14 @@ void World::Update()
 {
     PERF_REGION_SCOPED;
 
+    //DebugDrawContext::DrawSphere(Tbx::Vector3d{ 0,20,0 }, 10, Tbx::Vector3f(0.5, 1, 0));
+
+
     if (run)
     {
         //TO DO CALL SYS UpDATE
+
+        
     }
 }
 

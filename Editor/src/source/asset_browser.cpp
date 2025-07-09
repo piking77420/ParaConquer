@@ -13,8 +13,8 @@ using namespace PC_EDITOR_CORE;
 AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
     constexpr const char* projectBaseAssetPath = "assets";
-    //m_BasePath = std::filesystem::path(projectBaseAssetPath);
-    //m_CurrenPath = m_BasePath;
+    m_BasePath = std::filesystem::path(projectBaseAssetPath);
+    m_CurrenPath = m_BasePath;
     m_fileWatcher.LauchWatcher(projectBaseAssetPath);
 }
 
@@ -52,7 +52,7 @@ void AssetBrowser::CreateAsset() const
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
             ImGui::OpenPopup("createAssets");
 
-    /*
+    
     if (ImGui::BeginPopup("createAssets"))
     {
         ImGui::SeparatorText("Assets");
@@ -64,13 +64,13 @@ void AssetBrowser::CreateAsset() const
         }
 
         ImGui::EndPopup();
-    }*/
+    }
     
 }
 
 void AssetBrowser::RenderDirectories()
 {
-    /*
+    
     float columnSpacing = 100;
     float padding = 16.f;
     float thumbailSize = 64;
@@ -92,7 +92,7 @@ void AssetBrowser::RenderDirectories()
 
     ImGui::Columns(colomnCount, 0, false);
 
-    for (auto& entry : fs::directory_iterator(m_CurrenPath))
+    for (auto& entry : std::filesystem::directory_iterator(m_CurrenPath))
     {
         const auto& path = entry.path();
         auto relative = path.relative_path();
@@ -130,7 +130,7 @@ void AssetBrowser::RenderDirectories()
 
     }
 
-    ImGui::Columns(1);*/
+    ImGui::Columns(1);
 }
 
 void AssetBrowser::CreateFile(const std::string& _filename) const
@@ -148,24 +148,24 @@ void AssetBrowser::CreateFile(const std::string& _filename) const
     }
 }
 
-/*
-std::string AssetBrowser::GetUniqueFileName(const fs::path& directory, const std::string& baseName, const std::string& extension) const
+
+std::string AssetBrowser::GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const
 {
     std::string fileName = baseName + extension;
     int counter = 1;
 
-    while (fs::exists(directory / fileName))
+    while (std::filesystem::exists(directory / fileName))
     {
         fileName = baseName + "_" + std::to_string(counter) + extension;
         ++counter;
     }
 
     return fileName;
-}*/
+}
 
 void AssetBrowser::OnFileSelectedClick()
 {
-    /*
+    
     if (m_SelectedItem.empty())
     {
         PC_LOGERROR("m_SelectedItem is empty")
@@ -183,5 +183,5 @@ void AssetBrowser::OnFileSelectedClick()
         PC_LOG("Load level selected: {}", fileName);    
     }
     
-    m_SelectedItem = fileName;*/
+    m_SelectedItem = fileName;
 }
