@@ -63,6 +63,13 @@ void Renderer::Init()
         .buffer = &sceneLightsBuffer
         ->uniformBuffer,
     };
+
+    ImageSamperDescriptor skyboxCubeMapDescritptor
+   {
+       .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
+       .texture = m_Cubemap.get()
+   };
+
     
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
@@ -79,6 +86,12 @@ void Renderer::Init()
             &lightData,
             nullptr,
         },
+        {
+            ShaderProgramDescriptorType::CombineImageSampler,
+            FORWARD_SKYBOX_CUBEMAP,
+            nullptr,
+            &skyboxCubeMapDescritptor,
+        }
     };
 
     m_ForwardShader.lock()->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET);
@@ -98,20 +111,15 @@ void Renderer::Init()
     };
     m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET);
     descriptorSetsSkybox.cameraDescriptorSet->WriteDescriptorSets(descriptorSets);
-    ImageSamperDescriptor skyboxDescritptor
-   {
-       .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
-       .texture = m_Cubemap.get()
-   };
-
+ 
     descriptorSets =
        {
         {
             ShaderProgramDescriptorType::CombineImageSampler,
             SKYBOX_BINDING,
-             nullptr,
-            &skyboxDescritptor,
-        },
+            nullptr,
+            &skyboxCubeMapDescritptor,
+        }
     };
     m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET);
     descriptorSetsSkybox.cubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);

@@ -95,7 +95,7 @@ void ShaderSource::AddPreProcessorDefVulkan()
     options.AddMacroDefinition("SCENE_DESCRIPTOR_SET", std::to_string(SCENE_DESCRIPTOR_SET));
     options.AddMacroDefinition("CAMERA_BINDING", std::to_string(CAMERA_BINDING));
     options.AddMacroDefinition("LIGHTDATA_BINDING", std::to_string(LIGHTDATA_BINDING));
-    options.AddMacroDefinition("VIEWFRUSTUM_BINDING", std::to_string(VIEWFRUSTUM_BINDING));
+    options.AddMacroDefinition("FORWARD_SKYBOX_CUBEMAP", std::to_string(FORWARD_SKYBOX_CUBEMAP));
 
 
     options.AddMacroDefinition("MATERIAL_DESCRIPTOR_SET", std::to_string(MATERIAL_DESCRIPTOR_SET));
