@@ -1,14 +1,13 @@
-﻿
-/*include "serialize/serializer.h"
+﻿#include "serialize/serializer.h"
 
 
+#include <fstream>
 #include <any>
+#include <unordered_map>
 
 #include "GLFW/glfw3native.h"
 #include "resources/resource.hpp"
 #include "resources/resource_manager.hpp"
-#include <unordered_map>
-#include <ecs/component_array.hpp>
 
 using namespace PC_CORE;
 
@@ -373,9 +372,9 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
 
 
-void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
+void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const std::string& _fileToSerialize, TypeId _typeKey)
 {
-    std::ofstream myfile(_fileToSerialize.generic_string());
+    std::ofstream myfile(_fileToSerialize);
 
     if (!myfile.is_open()) 
     {
@@ -770,10 +769,10 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 }
 
 
-void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey)
+void Serializer::Derializing(uint8_t* _objetPtr, const std::string&_fileToSerialize, TypeId _typeKey)
 {
     json j;
-    std::ifstream f(_fileToSerialize.generic_string());
+    std::ifstream f(_fileToSerialize);
 
     {
         PERF_REGION_SCOPED_NAMED("Parse JSON");
@@ -787,4 +786,3 @@ void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerializ
 }
 
 #pragma endregion
-*/

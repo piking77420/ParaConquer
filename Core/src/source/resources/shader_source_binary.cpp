@@ -1,6 +1,6 @@
 ﻿#include "resources/shader_source_binary.hpp"
 
-
+#include <fstream>
 
 void PC_CORE::ShaderSourceBinary::OnParentReload(const Guid& _parentGuid)
 {

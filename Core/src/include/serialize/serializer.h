@@ -1,10 +1,10 @@
 ﻿#pragma once
 
 
-//#include <Json/json.hpp>
 //#include <filesystem>
-#include <fstream>
-//using json = nlohmann::json;
+#include <string>
+#include <Json/json.hpp>
+using json = nlohmann::json;
 
 #include "core_header.hpp"
 #include "reflection/reflector.hpp"
@@ -13,7 +13,7 @@
 
 
 BEGIN_PCCORE
-/*
+
 
 
 class Serializer
@@ -21,31 +21,31 @@ class Serializer
 public:
     
     template<typename T>
-    static void Serialize(const T& _object, const fs::path& _fileToSerialize);
+    static void Serialize(const T& _object, const std::string& _fileToSerialize);
     
     template<typename T>
-    static void DeSerialize(T* _object, const fs::path& _file);
+    static void DeSerialize(T* _object, const std::string& _file);
     
-    static void Serialize(TypeId _id, const void* const _object, const fs::path& _fileToSerialize)
+    static void Serialize(TypeId _id, const void* const _object, std::string& _fileToSerialize)
     {
         Serializing(static_cast<const uint8_t*>(_object), _fileToSerialize, _id);
     }
     
-    static void DeSerialize(TypeId _id, void* _object, const fs::path& _file)
+    static void DeSerialize(TypeId _id, void* _object, std::string& _file)
     {
         Derializing(static_cast<uint8_t*>(_object), _file, _id);
     }
     
     
 private:    
-    PC_CORE_API static void Serializing(const uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);
+    PC_CORE_API static void Serializing(const uint8_t* objetPtr, const std::string& _fileToSerialize, TypeId _typeKey);
 
-    PC_CORE_API static void Derializing(uint8_t* objetPtr, const fs::path& _fileToSerialize, TypeId _typeKey);
+    PC_CORE_API static void Derializing(uint8_t* objetPtr, const std::string& _fileToSerialize, TypeId _typeKey);
 
 };
 
 template <typename T>
-void Serializer::Serialize(const T& _object, const fs::path& _fileToSerialize)
+void Serializer::Serialize(const T& _object, const std::string& _fileToSerialize)
 {
     PERF_REGION_SCOPED;
     static_assert(!std::is_pointer_v<T>, "you shouldn't serialize a raw ptr");
@@ -53,12 +53,12 @@ void Serializer::Serialize(const T& _object, const fs::path& _fileToSerialize)
 }
 
 template <typename T>
-void Serializer::DeSerialize(T* _object,const fs::path& _file)
+void Serializer::DeSerialize(T* _object,const std::string& _file)
 {
     PERF_REGION_SCOPED;
     static_assert(!std::is_pointer_v<std::remove_pointer_t<T*>>, "you should deSerialize only to a value");
 
     Derializing(reinterpret_cast<uint8_t*>(_object), _file, COMPILE_TIME_TYPE_KEY(T));
 }
-*/
+
 END_PCCORE

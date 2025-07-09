@@ -7,6 +7,8 @@
 #include "resources/vulkan_sampler.hpp"
 #include "world/world.hpp"
 
+#include <fstream>
+
 using namespace PC_EDITOR_CORE;
 
 
