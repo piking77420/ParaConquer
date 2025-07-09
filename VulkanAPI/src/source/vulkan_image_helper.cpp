@@ -1,8 +1,8 @@
 ﻿#include "utils/vulkan_image_helper.hpp"
 
-void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t height, uint32_t depth, uint32_t _mimpLevel,
+void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t height, uint32_t depth, uint32_t arrayLayers, uint32_t _mimpLevel,
                          vk::SampleCountFlagBits _sampleCount, vk::ImageType _imageType, vk::Format format, vk::ImageTiling tiling,
-                         vk::ImageUsageFlags usage, VmaMemoryUsage imageMemory, VkImage* _outImage, VmaAllocation* _outAllocation)
+                         vk::ImageUsageFlags usage, vk::ImageCreateFlags createFlag, VmaMemoryUsage imageMemory, VkImage* _outImage, VmaAllocation* _outAllocation)
 {
     vk::ImageCreateInfo imageInfo{};
     imageInfo.sType = vk::StructureType::eImageCreateInfo;
@@ -11,7 +11,7 @@ void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t heigh
     imageInfo.extent.height = height;
     imageInfo.extent.depth = depth;
     imageInfo.mipLevels = _mimpLevel;
-    imageInfo.arrayLayers = 1;
+    imageInfo.arrayLayers = arrayLayers;
     imageInfo.format = format;
     imageInfo.tiling = tiling;
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
@@ -19,7 +19,8 @@ void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t heigh
     imageInfo.samples = vk::SampleCountFlagBits::e1;
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
     imageInfo.samples = _sampleCount;
-    
+    imageInfo.flags = createFlag;
+        
     VmaAllocationCreateInfo allocationInfo = {};
     allocationInfo.usage = imageMemory;
     
@@ -28,7 +29,7 @@ void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t heigh
 }
 
 vk::ImageView Vulkan::CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
-                                      vk::Format _format, vk::ImageAspectFlags imageAspect, uint32_t _mipLevels)
+                                      vk::Format _format, vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _mipLevels)
 {
     vk::ImageViewCreateInfo imageInfo{};
     imageInfo.sType  = vk::StructureType::eImageViewCreateInfo;
@@ -38,8 +39,8 @@ vk::ImageView Vulkan::CreateImageView(vk::Device _device, vk::Image _image, vk::
     imageInfo.subresourceRange.aspectMask = imageAspect;
     imageInfo.subresourceRange.baseMipLevel = 0;
     imageInfo.subresourceRange.baseArrayLayer = 0;
-    imageInfo.subresourceRange.layerCount = 1;
     imageInfo.subresourceRange.levelCount = _mipLevels;
+    imageInfo.subresourceRange.layerCount = _layerCount;
 
     vk::ImageView imageView;
 
@@ -87,13 +88,7 @@ vk::ImageUsageFlags Vulkan::GetMemoryPropertyFlags(PC_CORE::TextureUsage usage)
 
     if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
-
-    if ((usage & TextureUsage::TransferSrc) == TextureUsage::TransferSrc)
-        flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
-    if ((usage & TextureUsage::TransferDst) == TextureUsage::TransferDst)
-        flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
+    
     // Fallback/default
     if (flags == 0)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -144,21 +139,15 @@ vk::ImageLayout Vulkan::GetImageLayout(PC_CORE::TextureUsage usage)
     if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
         return vk::ImageLayout::eGeneral;
 
-    if ((usage & TextureUsage::TransferDst) == TextureUsage::TransferDst)
-        return vk::ImageLayout::eTransferDstOptimal;
-
-    if ((usage & TextureUsage::TransferSrc) == TextureUsage::TransferSrc)
-        return vk::ImageLayout::eTransferSrcOptimal;
-
     if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
         return vk::ImageLayout::eShaderReadOnlyOptimal;
-
+    
     // Fallback default
     return vk::ImageLayout::eUndefined;
 }
 
 void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image,
-                           int32_t imageWidth, int32_t imageHeight, vk::Format format,  uint32_t _mipLevel, vk::ImageAspectFlags aspectFlag, vk::ImageLayout _imageLayout)
+                           int32_t imageWidth, int32_t imageHeight, vk::Format format,  uint32_t _mipLevel, vk::ImageAspectFlags aspectFlag)
 {
     //VkFormatProperties formatProperties;
      //vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
@@ -172,7 +161,7 @@ void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image,
      barrier.image = image;
      barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
      barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-     barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+     barrier.subresourceRange.aspectMask = aspectFlag;
      barrier.subresourceRange.baseArrayLayer = 0;
      barrier.subresourceRange.layerCount = 1;
      barrier.subresourceRange.levelCount = 1;
@@ -197,13 +186,13 @@ void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image,
          vk::ImageBlit blit{};
          blit.srcOffsets[0] = vk::Offset3D({ 0, 0, 0});
          blit.srcOffsets[1] = vk::Offset3D({ mipWidth, mipHeight, 1 }) ;
-         blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+         blit.srcSubresource.aspectMask = aspectFlag;
          blit.srcSubresource.mipLevel = i - 1;
          blit.srcSubresource.baseArrayLayer = 0;
          blit.srcSubresource.layerCount = 1;
          blit.dstOffsets[0] = vk::Offset3D{ 0, 0, 0 };
          blit.dstOffsets[1] = vk::Offset3D{ mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-         blit.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+         blit.dstSubresource.aspectMask = aspectFlag;
          blit.dstSubresource.mipLevel = i;
          blit.dstSubresource.baseArrayLayer = 0;
          blit.dstSubresource.layerCount = 1;

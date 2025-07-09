@@ -1,7 +1,7 @@
 ﻿#include "utils/transition_image_layout.hpp"
 
 void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image image, vk::Format format,
-    vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect, uint32_t _levelCount)
+    vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _levelCount)
 {
 
     vk::ImageMemoryBarrier barrier{};
@@ -15,7 +15,7 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image i
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = _levelCount;
     barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.layerCount = _layerCount;
 
     vk::PipelineStageFlags sourceStage;
     vk::PipelineStageFlags destinationStage;

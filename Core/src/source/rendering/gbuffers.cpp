@@ -54,6 +54,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             .width = m_size.x,
             .height = m_size.y,
             .depth = 1,
+            .layerCount = 1,
             .mipsLevels = 1,
             .textureType = TextureType::Texture2D,
             .format = RHIFormat::COUNT,

@@ -101,6 +101,10 @@ void ShaderSource::AddPreProcessorDefVulkan()
     options.AddMacroDefinition("MATERIAL_DESCRIPTOR_SET", std::to_string(MATERIAL_DESCRIPTOR_SET));
     options.AddMacroDefinition("ALBEDO_BINDING", std::to_string(ALBEDO_BINDING));
 
+    
+    options.AddMacroDefinition("ENVIRONEMENT_DESCRIPTOR_SET", std::to_string(ENVIRONEMENT_DESCRIPTOR_SET));
+    options.AddMacroDefinition("SKYBOX_BINDING", std::to_string(SKYBOX_BINDING));
+
 
     // cam 
     options.AddMacroDefinition("CAM_DEPTH_MAX", std::to_string(CAM_DEPTH_MAX));

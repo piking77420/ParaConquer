@@ -485,8 +485,6 @@ enum class IndexFormat : int
         Depth = 1 << 2,  // Depth attachment
         Stencil = 1 << 3,  // Stencil attachment
         Storage = 1 << 4,  // Shader-writable (UAV)
-        TransferSrc = 1 << 5,  // Can be used as source in copy
-        TransferDst = 1 << 6,  // Can be used as destination in copy
     };
 
     inline TextureUsage operator|(TextureUsage a, TextureUsage b) {
@@ -505,6 +503,7 @@ enum class IndexFormat : int
         Texture2D,
         Array2D,
         CubeMap,
+        CubeMapArray,
         Count,
     };
         
@@ -514,6 +513,7 @@ enum class IndexFormat : int
         int32_t width;
         int32_t height;
         int32_t depth;
+        uint32_t layerCount;
         uint32_t mipsLevels;
 
         TextureType textureType;
@@ -747,6 +747,7 @@ inline T SafeCastReinterpreCast(U* ptr)
 // DescriptorSet
 #define SCENE_DESCRIPTOR_SET 0
 #define MATERIAL_DESCRIPTOR_SET 1
+#define ENVIRONEMENT_DESCRIPTOR_SET 1
 
 // Binding
     // SCENE_DESCRIPTOR_SET
@@ -755,6 +756,9 @@ inline T SafeCastReinterpreCast(U* ptr)
 #define VIEWFRUSTUM_BINDING 3
     // MATERIAL_DESCRIPTOR_SET
 #define ALBEDO_BINDING 2
+
+// ENVIRONEMENT_DESCRIPTOR_SET
+#define SKYBOX_BINDING 0 
 
 #define CAM_DEPTH_MAX 1.f
 #define CAM_DEPTH_MIN 0.f

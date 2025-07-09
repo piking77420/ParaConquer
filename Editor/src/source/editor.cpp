@@ -197,6 +197,14 @@ void Editor::CompileShader()
 	auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("debug_draw_ray.vert");
 	debugDrawRayVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw_ray.vert");
 
+	// skybox
+	{
+		auto skyboxVert = ResourceManager::Create<ShaderSource>("cube_map_skybox.vert");
+		skyboxVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/cube_map_skybox/cube_map_skybox.vert");
+
+		auto skyboxFrag = ResourceManager::Create<ShaderSource>("cube_map_skybox.frag");
+		skyboxFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/cube_map_skybox/cube_map_skybox.frag");
+	}
 
 }
 

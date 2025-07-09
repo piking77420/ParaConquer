@@ -44,7 +44,6 @@ public:
     PC_CORE_API ~Texture2D() override;
     
 private:
-    int m_TextureChannel = -1;
 
     std::shared_ptr<RhiTexture2D> m_Texture2D;
     

@@ -865,53 +865,72 @@ vk::VertexInputRate Vulkan::Utils::RhiInputRateToVkInputRate(PC_CORE::VertexInpu
     }
 }
 
-/*
-vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::ImageType _imageType)
+vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::TextureType _textureType)
 {
-    switch (_imageType)
+    switch (_textureType)
     {
-    case PC_CORE::ImageType::TYPE_1D:
-        return vk::ImageType::e1D;
-    case PC_CORE::ImageType::TYPE_2D:
+    case PC_CORE::TextureType::Texture2D:
         return vk::ImageType::e2D;
-    case PC_CORE::ImageType::TYPE_e3D:
-        return vk::ImageType::e3D;
-    case PC_CORE::ImageType::TYPE_CUBE:
+        break;
+    case PC_CORE::TextureType::Array2D:
+        return vk::ImageType::e3D; 
+        break;
+    case PC_CORE::TextureType::CubeMap:
         return vk::ImageType::e2D;
-    case PC_CORE::ImageType::TYPE_1DARRAY:
-        return vk::ImageType::e2D;
-    case PC_CORE::ImageType::TYPE_2DARRAY:
+    case PC_CORE::TextureType::CubeMapArray:
         return vk::ImageType::e3D;
-    case PC_CORE::ImageType::TYPE_CUBEARRAY:
-        return vk::ImageType::e3D;
+    case PC_CORE::TextureType::Count:
+    default: assert(false);
     }
-    return vk::ImageType::e1D;
+
+    return {};
 }
 
-
-vk::ImageViewType Vulkan::Utils::RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageViewType)
+vk::ImageViewType Vulkan::Utils::RHIImageToVkImageViewType(PC_CORE::TextureType _textureType)
 {
-    switch (_imageViewType)
+    switch (_textureType)
     {
-    case PC_CORE::ImageType::TYPE_1D:
-        return vk::ImageViewType::e1D;
-    case PC_CORE::ImageType::TYPE_2D:
+    case PC_CORE::TextureType::Texture2D:
         return vk::ImageViewType::e2D;
-    case PC_CORE::ImageType::TYPE_e3D:
-        return vk::ImageViewType::e3D;
-    case PC_CORE::ImageType::TYPE_CUBE:
-        return vk::ImageViewType::eCube;
-    case PC_CORE::ImageType::TYPE_1DARRAY:
-        return vk::ImageViewType::e1DArray;
-    case PC_CORE::ImageType::TYPE_2DARRAY:
+        break;
+    case PC_CORE::TextureType::Array2D:
         return vk::ImageViewType::e2DArray;
-    case PC_CORE::ImageType::TYPE_CUBEARRAY:
-        return vk::ImageViewType::eCubeArray;
+        break;
+    case PC_CORE::TextureType::CubeMap:
+        return vk::ImageViewType::eCube;
+        break;
+    case PC_CORE::TextureType::Count:
+        break;
+    default: 
+        assert(false);
     }
 
-    throw std::runtime_error("Unknown ImageViewType");
 }
-*/
+
+vk::ImageCreateFlags Vulkan::Utils::ImageCreateFlagFromTextureType(PC_CORE::TextureType _textureType)
+{
+    vk::ImageCreateFlags createFlag = {};
+
+    switch (_textureType)
+    {
+    case PC_CORE::TextureType::Texture2D:
+        break;
+    case PC_CORE::TextureType::Array2D:
+        createFlag |= vk::ImageCreateFlagBits::e2DArrayCompatible;
+        break;
+    case PC_CORE::TextureType::CubeMap:
+    case PC_CORE::TextureType::CubeMapArray:
+        createFlag |= vk::ImageCreateFlagBits::eCubeCompatible;
+        break;
+    case PC_CORE::TextureType::Count:
+        break;
+    default: ;
+    }
+
+    return createFlag;
+}
+
+
 
 vk::Filter Vulkan::Utils::RHIToVulkanFilter(PC_CORE::Filter _filter)
 {

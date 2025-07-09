@@ -19,7 +19,7 @@ namespace Vulkan
         ~VulkanTexture3D() = default;
     
     private:
-        VulkanTexture m_Texture;    
+        VulkanTexture m_VulkanTexture;
     };
     
 }

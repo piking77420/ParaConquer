@@ -91,6 +91,7 @@ void WorldViewWindow::ResizeViewports()
         .width =  static_cast<int32_t>(size.x),
         .height = static_cast<int32_t>(size.y),
         .depth = 1,
+        .layerCount = 1,
         .mipsLevels = 1,
         .textureType = PC_CORE::TextureType::Texture2D,
         .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,

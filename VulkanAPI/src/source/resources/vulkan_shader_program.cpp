@@ -78,6 +78,7 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
 
 void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set)
 {
+
     std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout[set]);
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
     VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets();
@@ -399,31 +400,46 @@ void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulk
                 descriptorTypeCount[static_cast<vk::DescriptorType>(spvBinding.descriptor_type)] += spvBinding.count;
                 descritptorCount += spvBinding.count;
 
-                layoutsMap[s.set].push_back(descriptorSetLayout);
+                auto& bindingsVec = layoutsMap[s.set];
+                bool found = false;
+
+                for (auto& existingBinding : bindingsVec)
+                {
+                    if (existingBinding.binding == descriptorSetLayout.binding)
+                    {
+                        // Fusionner les shader stage flags (par ex. vertex + fragment)
+                        existingBinding.stageFlags |= descriptorSetLayout.stageFlags;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    bindingsVec.push_back(descriptorSetLayout);
+                }
             }
         }
     }
 
 
 
-    std::vector<std::vector<vk::DescriptorSetLayoutBinding>> layouts;
-    layouts.reserve(layoutsMap.size());
+    uint32_t maxSet = 0;
+    for (const auto& it : layoutsMap)
+        maxSet = std::max(maxSet, it.first);
 
-    for (auto& l : layoutsMap)
-    {
-        layouts.emplace_back(l.second);
-    }
+    m_DescriptorSetLayout.clear();
+    m_DescriptorSetLayout.resize(maxSet + 1, VK_NULL_HANDLE);
 
-    // DescriptoSetLayout
-    m_DescriptorSetLayout.reserve(layouts.size());
-    for (size_t i = 0; i < layouts.size(); i++)
+    for (const auto& it : layoutsMap)
     {
-        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
         descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
-        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layouts[i].size());
-        descriptorSetLayoutCreateInfo.pBindings = layouts[i].data();
+        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(it.second.size());
+        descriptorSetLayoutCreateInfo.pBindings = it.second.data();
 
-       m_DescriptorSetLayout.emplace_back(_vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo));
+        m_DescriptorSetLayout[it.first] =
+            _vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
     }
 
 

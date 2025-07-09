@@ -9,6 +9,11 @@ class Texture : public Resource, public IGpuResource
 {
 public:
 
+	TextureType GetType() const
+	{
+		return m_TextureType;
+	}
+	
 	IMP_DYNAMIC_REFLECT()
 
 		PC_CORE_API    explicit Texture()
@@ -25,6 +30,10 @@ public:
 	~Texture() = default;
 protected:
 	REFLECT(Texture, Resource)
+
+	TextureType m_TextureType = TextureType::Count;
+
+	int m_TextureChannel = -1;
 };
 
 

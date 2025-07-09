@@ -17,11 +17,13 @@ namespace Vulkan
     
         vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
 
-        /*
-        vk::ImageType RHIImageToVkImageType(PC_CORE::ImageType _imageType);
         
-        vk::ImageViewType RHIImageTypeToVulkanImageViewType(PC_CORE::ImageType _imageType);*/
-    
+        vk::ImageType RHIImageToVkImageType(PC_CORE::TextureType _textureType);
+        
+        vk::ImageViewType RHIImageToVkImageViewType(PC_CORE::TextureType _textureType);
+
+        vk::ImageCreateFlags ImageCreateFlagFromTextureType(PC_CORE::TextureType _textureType);
+
         inline vk::ComponentSwizzle RHIToVulkanComponentSwizzle(PC_CORE::ComponentSwizzle _componentSwizzle)
         {
             return static_cast<vk::ComponentSwizzle>(_componentSwizzle);

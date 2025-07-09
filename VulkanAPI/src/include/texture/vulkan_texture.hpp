@@ -26,13 +26,14 @@ namespace Vulkan
         
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanTexture)
         
-        VulkanTexture(PC_CORE::MemoryLocalisation _usage);
+        VulkanTexture(const PC_CORE::CreateImageInfo& _createTextureInfo);
         
         VulkanTexture() = default;
         
         ~VulkanTexture();
     private:
-        
+        void SendDataToGpu(uint32_t _imageWidht, uint32_t _imageHeight, int32_t _imageDepth, uint32_t _layerCount, PC_CORE::Channel _channel,
+            vk::Format _format, vk::ImageAspectFlags _aspectFlags, const std::vector<void*>& _datas, uint32_t _mimpLeve, vk::ImageLayout _finalImageLayout);
     };
     
 }

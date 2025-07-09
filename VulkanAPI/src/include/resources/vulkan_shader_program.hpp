@@ -82,7 +82,7 @@ namespace Vulkan
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
 
         std::vector<vk::DescriptorSetLayout> m_DescriptorSetLayout;
-
+        
         vk::DescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
