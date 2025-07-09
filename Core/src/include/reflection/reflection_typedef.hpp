@@ -122,7 +122,7 @@ struct ReflectedSparset
 
 struct TypeNatureMetaData
 {
-    TypeNatureMetaDataEnum metaDataTypeEnum;
+    TypeNatureMetaDataEnum metaDataTypeEnum = TypeNatureMetaDataEnum::None;
     union TypeNatureMetaUnion
     {
         WeakPtr weakPtr;
@@ -154,15 +154,15 @@ struct TypeMetaData
 
 struct ReflectedType
 {
-    TypeId typeId;
-    uintmax_t typeFlags;
+    TypeId typeId{};
+    uintmax_t typeFlags{};
     
-    std::string name;
-    size_t size;
-    uint32_t alignment;
+    std::string name{};
+    size_t size{};
+    uint32_t alignment{};
     
-    TypeMetaData metaData;
-    size_t rttiTypeId;
+    TypeMetaData metaData{};
+    size_t rttiTypeId{};
 
     DEFAULT_COPY_MOVE_OPERATIONS(ReflectedType)
 
@@ -182,6 +182,8 @@ struct ReflectedType
 
         return it == metaData.members.end() ? nullptr : &(*it);
     }
+
+
 };
 
 template<typename T>

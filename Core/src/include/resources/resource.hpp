@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include <filesystem>
 #include <array>
 #include <set>
 #include "log.hpp"
@@ -11,7 +10,6 @@
 #include "reflection/reflector.hpp"
 #include "serialize/iseriazable.h"
 
-namespace fs = std::filesystem;
 
 
 
@@ -27,6 +25,8 @@ public:
     std::string name;
     
     std::string extension;
+
+    PC_CORE_API virtual void LoadFromFile(const std::string& _path);
     
     PC_CORE_API void QueryType() override = 0;
     // SOULD BE = 0
@@ -76,9 +76,6 @@ public:
     
     PC_CORE_API Resource(std::string&& _name);
 
-    PC_CORE_API Resource(const fs::path& _file);
-
-    
     PC_CORE_API virtual ~Resource() = default;
     
 protected:

@@ -1,9 +1,6 @@
 ﻿#pragma once
 
-
 #include "level.hpp"
-#include "skybox.hpp"
-#include "physics/physics_wrapper.hpp";
 #include "ecs/entity_manager.h"
 #include "ecs/components_manager.hpp"
 #include "ecs/system_manager.hpp"

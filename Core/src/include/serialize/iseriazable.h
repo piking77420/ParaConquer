@@ -13,6 +13,7 @@ class ISeriazable : public DynamicReflectable
 public:
    PC_CORE_API void QueryType() override = 0;
 
+   /*
    PC_CORE_API void Seriliaze(const fs::path& _path) const 
    {
       if (m_Type == nullptr)
@@ -21,7 +22,7 @@ public:
          return;
       }
       
-      Serializer::Serialize(m_Type->typeId, this, _path);
+      //Serializer::Serialize(m_Type->typeId, this, _path);
    }
 
    PC_CORE_API void DeSeriliaze(const fs::path& _path)
@@ -32,8 +33,8 @@ public:
          return;
       }
       
-      Serializer::DeSerialize(m_Type->typeId, this, _path);
-   }
+      //Serializer::DeSerialize(m_Type->typeId, this, _path);
+   }*/
    
    DEFAULT_COPY_MOVE_OPERATIONS(ISeriazable)
    

@@ -1,17 +1,19 @@
+
+#define BOOST_SYSTEM_NO_DEPRECATED
+
+#include <iostream>
 #include "editor.hpp"
 
-using namespace PC_EDITOR_CORE;
-using namespace PC_CORE;
-using namespace Tbx;
 
 
 int main(int argc, char* argv[])
 {
+    
     bool appShounldClose = false;
     while (!appShounldClose)
     {
         appShounldClose = true;
-        Editor editor;
+        PC_EDITOR_CORE::Editor editor;
 
         editor.Init();
         editor.Run(&appShounldClose);
@@ -19,7 +21,6 @@ int main(int argc, char* argv[])
     }
 
   
-
 
     return 0;
 }

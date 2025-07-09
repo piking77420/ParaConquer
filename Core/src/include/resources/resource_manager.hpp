@@ -28,9 +28,6 @@ public:
 
     PC_CORE_API static void Destroy();
 
-    template<class ResourceDerived>
-    static std::shared_ptr<ResourceDerived>  Create(const fs::path& path);
-    
     template<class ResourceDerived, typename... Arg>
     static std::shared_ptr<ResourceDerived>  Create(Arg... args);
     
@@ -76,20 +73,6 @@ private:
     REFLECT(std::shared_ptr<Resource>)
 };
 
-
-
-
-template <class ResourceDerived>
-std::shared_ptr<ResourceDerived> ResourceManager::Create(const fs::path& path)
-{
-    
-    std::shared_ptr<Resource> newR = std::make_shared<ResourceDerived>(path);
-    
-    m_ResourcesMap.insert({newR->GetGuid(), newR});
-    m_NameToGuid.insert({ newR->name, newR->GetGuid() });
-
-    return std::reinterpret_pointer_cast<ResourceDerived>(newR);
-}
 
 
 template<class ResourceDerived, typename... Arg>

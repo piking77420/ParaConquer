@@ -7,6 +7,13 @@
 
 using namespace PC_CORE;
 
+#include <filesystem>
+void Resource::LoadFromFile(const std::string& _path)
+{
+	std::filesystem::path pathFileName = std::filesystem::path(_path).filename();
+	name = pathFileName.generic_string();
+	extension = pathFileName.extension().generic_string();
+}
 
 void Resource::LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild)
 {
@@ -87,13 +94,6 @@ Resource::Resource(const std::string& _name) : name(_name) , m_Guid(Guid::New())
 Resource::Resource(std::string&& _name) : name(std::move(_name)) , m_Guid(Guid::New())
 {
 	
-}
-
-Resource::Resource(const fs::path& _file) : m_Guid(Guid::New())
-{
-	fs::path pathFileName = _file.filename();
-	name = pathFileName.generic_string();	
-	extension = pathFileName.extension().generic_string();
 }
 
 

@@ -24,6 +24,8 @@ public:
     {
         return m_Texture2D;
     }
+
+    PC_CORE_API void LoadFromFile(const std::string& _path) override;
     
     PC_CORE_API IMP_DYNAMIC_REFLECT()
     
@@ -35,10 +37,10 @@ public:
     
     PC_CORE_API Texture2D();
 
+    PC_CORE_API Texture2D(const std::string& _name);
+
     PC_CORE_API Texture2D(const CreateImageInfo& createTextureInfo);
     
-    PC_CORE_API Texture2D(const fs::path& _path);
-
     PC_CORE_API ~Texture2D() override;
     
 private:
@@ -47,8 +49,6 @@ private:
     std::shared_ptr<RhiTexture2D> m_Texture2D;
     
     RHIFormat m_Format;
-    
-    PC_CORE_API void LoadFromFile(const fs::path& _path);
 };
 
 REFLECT(Texture2D, Resource)

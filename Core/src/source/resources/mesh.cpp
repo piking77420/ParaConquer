@@ -12,9 +12,16 @@
 
 using namespace PC_CORE;
 
+
+
 void Mesh::Build()
 {
     
+}
+
+Mesh::Mesh(const std::string& _name) : Resource(_name)
+{
+    DYNAMIC_REFLECT_INIT
 }
 
 Mesh::Mesh()
@@ -22,21 +29,13 @@ Mesh::Mesh()
     DYNAMIC_REFLECT_INIT
 }
 
-Mesh::Mesh(const fs::path& _path) : Resource(_path)
-{
-    DYNAMIC_REFLECT_INIT
-    LoadFromFile(_path);
-}
-
 Mesh::~Mesh()
 {
 }
 
-
-void Mesh::LoadFromFile(const fs::path& _path)
+void Mesh::LoadFromFile(const std::string& _path)
 {
-    extension = _path.extension().generic_string();
-
+    Resource::LoadFromFile(_path);
     uint32_t formatIndex = -1;
 
     std::vector<Vertex> verticies;
@@ -48,18 +47,20 @@ void Mesh::LoadFromFile(const fs::path& _path)
     }
     meshFormat = static_cast<MeshFormat>(formatIndex);
 
+    LoadObj(_path, verticies, indicies);
+
     switch (meshFormat)
     {
     case MeshFormat::OBJ:
-        LoadObj(_path.generic_string(), verticies, indicies);
         break;
     default:;
     }
 
     extension = MeshSourceFormat.at(formatIndex);
-    vertexBuffer = VertexBuffer(verticies.data(), verticies.size(),PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Static);
+    vertexBuffer = VertexBuffer(verticies.data(), verticies.size(), PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Static);
     indexBuffer = IndexBuffer(indicies.data(), indicies.size(), MemoryUsage::Static);
 }
+
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
 {

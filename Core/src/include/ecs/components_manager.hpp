@@ -23,14 +23,14 @@ public:
 	{
 		constexpr TypeId componentTypeId = Reflector::GetTypeKey<T>();
 		
-		assert(m_ComponentTypeToComponentBitFlag.find(componentTypeId) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
+		assert(m_ComponentTypeToComponentBitFlag.find(componentTypeId) != m_ComponentTypeToComponentBitFlag.end() && "There is no component has this type");
 
 		return m_ComponentTypeToComponentBitFlag.find(componentTypeId)->second;
 	}
 
 	PC_FORCE_INLINE ComponentTypeBit GetComponentTypeBit(TypeId id) const
 	{
-		assert(m_ComponentTypeToComponentBitFlag.find(id) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
+		assert(m_ComponentTypeToComponentBitFlag.find(id) != m_ComponentTypeToComponentBitFlag.end() && "There is no component has this type");
 
 		return m_ComponentTypeToComponentBitFlag.find(id)->second;
 	}
@@ -43,7 +43,7 @@ public:
 	
 	PC_FORCE_INLINE void AddComponent(EntityId entityId,  TypeId componentType)
 	{
-		assert(m_ComponentTypeToComponentBitFlag.find(componentType) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
+		assert(m_ComponentTypeToComponentBitFlag.find(componentType) != m_ComponentTypeToComponentBitFlag.end() && "There is no component has this type");
 
 		m_ComponentMapArray[componentType].Add(entityId);
 	}
@@ -63,7 +63,7 @@ public:
 	template <ComponentDerived T>
 	PC_FORCE_INLINE bool HasComponent(EntityId _entityId)
 	{
-		assert(m_ComponentTypeToComponentBitFlag.find(Reflector::GetTypeKey<T>()) != m_ComponentTypeToComponentBitFlag.end(), "There is no component has this type");
+		assert(m_ComponentTypeToComponentBitFlag.find(Reflector::GetTypeKey<T>()) != m_ComponentTypeToComponentBitFlag.end() && "There is no component has this type");
 
 		return m_ComponentMapArray[Reflector::GetTypeKey<T>()].HasComponent(_entityId);
 	}

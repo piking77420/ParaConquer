@@ -6,7 +6,7 @@
 #include <perf_region.hpp>
 #include <glslang/Include/glslang_c_interface.h>
 #include <Imgui/imgui_internal.h>
-#include <Json/json.hpp>
+//#include <Json/json.hpp>
 
 
 #include "editor.hpp"
@@ -168,30 +168,41 @@ void Editor::CompileShader()
 {
 	PERF_REGION_SCOPED;
 	PC_LOG("CompileShader...")
-	fs::create_directory(SHADER_CACHE_PATH);
+	//fs::create_directory(SHADER_CACHE_PATH);
 	
-	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/forward/forward.vert");
-	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH"/shaders/forward/forward.frag");
-	
-	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.vert");
-	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.frag");
-	
-	vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.vert");
-	frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.frag");
+	auto forwardVert = ResourceManager::Create<ShaderSource>("forward.vert");
+	forwardVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/forward/forward.vert");
 
-	{
-		vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
-		frag = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
+	auto forwardFrag = ResourceManager::Create<ShaderSource>("forward.frag");
+	forwardFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/forward/forward.frag");
 
+	auto screenQuadVert = ResourceManager::Create<ShaderSource>("draw_texture_screen_quad.vert");
+	screenQuadVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.vert");
 
-		vertex = ResourceManager::Create<ShaderSource>(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw_ray.vert");
-	}
-	
+	auto screenQuadFrag = ResourceManager::Create<ShaderSource>("draw_texture_screen_quad.frag");
+	screenQuadFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.frag");
+
+	auto skyRenderingVert = ResourceManager::Create<ShaderSource>("sky_rendering.vert");
+	skyRenderingVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.vert");
+
+	auto skyRenderingFrag = ResourceManager::Create<ShaderSource>("sky_rendering.frag");
+	skyRenderingFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.frag");
+
+	auto debugDrawVert = ResourceManager::Create<ShaderSource>("debug_draw.vert");
+	debugDrawVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
+
+	auto debugDrawFrag = ResourceManager::Create<ShaderSource>("debug_draw.frag");
+	debugDrawFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
+
+	auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("debug_draw_ray.vert");
+	debugDrawRayVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw_ray.vert");
+
 
 }
 
 void Editor::LookForEditorInit()
 {
+	/*
 	namespace fs = std::filesystem;
 
 	// Look for editor Init or create one 
@@ -228,7 +239,7 @@ void Editor::LookForEditorInit()
 		// select A project folder
 		// to do import basic files
 		BasicOpenFile();
-	}
+	}*/
 	
 }
 
@@ -321,9 +332,9 @@ void Editor::Destroy()
 }
 void Editor::UpdateEditor()
 {
-	static bool open = true;
-
-	ImGui::ShowDemoWindow(&open);
+	
+	//static bool open = true;
+	//ImGui::ShowDemoWindow(&open);
 
 	dockSpace.BeginDockSpace();
 	if (ImGui::BeginMenuBar())
@@ -333,12 +344,12 @@ void Editor::UpdateEditor()
 			if (ImGui::MenuItem("SaveScene"))
 			{
 				Level& l = World::GetWorld()->level;
-				Serializer::Serialize(l,"TestScene.map");
+				//Serializer::Serialize(l,"TestScene.map");
 			}
 			if (ImGui::MenuItem("LoadScene"))
 			{
 				Level& l = World::GetWorld()->level;
-				Serializer::DeSerialize(&l,"TestScene.map");
+				//Serializer::DeSerialize(&l,"TestScene.map");
 			}
 			ImGui::EndMenu();
 		}
@@ -374,6 +385,7 @@ void Editor::UpdateEditor()
 
 	EditorCommandUpdate();
 	dockSpace.EndDockSpace();
+
 }
 
 
@@ -463,7 +475,7 @@ void Editor::Run(bool* _appShouldClose)
 		
 		UpdateEditor();
 		gameApp.WorldTick();
-		
+
 		for (auto& editorWindow : editorWindows)
 			editorWindow->Render();
 		for (auto& sub : editorSubSystems)

@@ -13,8 +13,8 @@ using namespace PC_EDITOR_CORE;
 AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
     constexpr const char* projectBaseAssetPath = "assets";
-    m_BasePath = std::filesystem::path(projectBaseAssetPath);
-    m_CurrenPath = m_BasePath;
+    //m_BasePath = std::filesystem::path(projectBaseAssetPath);
+    //m_CurrenPath = m_BasePath;
     m_fileWatcher.LauchWatcher(projectBaseAssetPath);
 }
 
@@ -30,7 +30,7 @@ void PC_EDITOR_CORE::AssetBrowser::Update()
 
     if (!IsCursorInsideWindow() || ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
-        m_SelectedItem = "";
+        //m_SelectedItem = "";
     }
 
     if (IsCursorInsideWindow() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
@@ -52,6 +52,7 @@ void AssetBrowser::CreateAsset() const
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
             ImGui::OpenPopup("createAssets");
 
+    /*
     if (ImGui::BeginPopup("createAssets"))
     {
         ImGui::SeparatorText("Assets");
@@ -63,12 +64,13 @@ void AssetBrowser::CreateAsset() const
         }
 
         ImGui::EndPopup();
-    }
+    }*/
     
 }
 
 void AssetBrowser::RenderDirectories()
 {
+    /*
     float columnSpacing = 100;
     float padding = 16.f;
     float thumbailSize = 64;
@@ -128,7 +130,7 @@ void AssetBrowser::RenderDirectories()
 
     }
 
-    ImGui::Columns(1);
+    ImGui::Columns(1);*/
 }
 
 void AssetBrowser::CreateFile(const std::string& _filename) const
@@ -146,6 +148,7 @@ void AssetBrowser::CreateFile(const std::string& _filename) const
     }
 }
 
+/*
 std::string AssetBrowser::GetUniqueFileName(const fs::path& directory, const std::string& baseName, const std::string& extension) const
 {
     std::string fileName = baseName + extension;
@@ -158,10 +161,11 @@ std::string AssetBrowser::GetUniqueFileName(const fs::path& directory, const std
     }
 
     return fileName;
-}
+}*/
 
 void AssetBrowser::OnFileSelectedClick()
 {
+    /*
     if (m_SelectedItem.empty())
     {
         PC_LOGERROR("m_SelectedItem is empty")
@@ -179,5 +183,5 @@ void AssetBrowser::OnFileSelectedClick()
         PC_LOG("Load level selected: {}", fileName);    
     }
     
-    m_SelectedItem = fileName;
+    m_SelectedItem = fileName;*/
 }

@@ -5,26 +5,28 @@
 #include "rendering/gpu_resource.hpp"
 
 BEGIN_PCCORE
-PC_CORE_API class Texture : public Resource , public IGpuResource
+class Texture : public Resource, public IGpuResource
 {
 public:
-    
-     IMP_DYNAMIC_REFLECT()
 
-     Texture()
-    {
-        DYNAMIC_REFLECT_INIT;
-    }
+	IMP_DYNAMIC_REFLECT()
 
-     explicit Texture(const fs::path& _path) : Resource(_path) 
-     {
-         DYNAMIC_REFLECT_INIT;
-     }
+		PC_CORE_API    explicit Texture()
+	{
+		DYNAMIC_REFLECT_INIT;
+	}
 
-     ~Texture() = default;
+	Texture(const std::string& _name) : Resource(_name)
+	{
+
+	}
+
+
+	~Texture() = default;
+protected:
+	REFLECT(Texture, Resource)
 };
 
-REFLECT(Texture, Resource)
 
 
 END_PCCORE

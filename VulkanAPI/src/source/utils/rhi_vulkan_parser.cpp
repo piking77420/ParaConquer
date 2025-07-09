@@ -846,6 +846,7 @@ vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
     case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
         return vk::PipelineBindPoint::eRayTracingKHR;
     }
+    return vk::PipelineBindPoint::eGraphics;
 }
 
 

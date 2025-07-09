@@ -49,28 +49,28 @@ public:
     template <typename ...Args>
     inline static void Debug(const std::string& unformatted, Args&&... args)
     {
-        std::print(ANSI_COLOR_RESET);        
-        PrintFormat(unformatted, std::forward<Args>(args)...);
+        //std::print(ANSI_COLOR_RESET);        
+        //PrintFormat(unformatted, std::forward<Args>(args)...);
     }
 
     template <typename ...Args>
     static inline void Error(const std::string& unformatted, Args&&... args)
     {
-        std::print(ANSI_COLOR_RED);
-        PrintFormat(unformatted, std::forward<Args>(args)...);
+        //std::print(ANSI_COLOR_RED);
+        //PrintFormat(unformatted, std::forward<Args>(args)...);
     }
 
     PC_CORE_API static inline void PrintMetaData(int _lign, const char* _func, const char* _file)
     {
-        std::println("[{}, {}, {}]", _file, _func, _lign);
-        std::print("\n");
+       // std::println("[{}, {}, {}]", _file, _func, _lign);
+        //std::print("\n");
     }
 
 private:
     template <typename ...Args>
     static inline void PrintFormat(const std::string& unformatted, Args&&... args)
     {
-        std::println("{}", std::vformat(unformatted, std::make_format_args(args...)));
+        //std::println("{}", std::vformat(unformatted, std::make_format_args(args...)));
     }
 };
 

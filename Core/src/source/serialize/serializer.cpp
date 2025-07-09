@@ -1,4 +1,5 @@
-﻿#include "serialize/serializer.h"
+﻿
+/*include "serialize/serializer.h"
 
 
 #include <any>
@@ -786,3 +787,4 @@ void Serializer::Derializing(uint8_t* _objetPtr, const fs::path& _fileToSerializ
 }
 
 #pragma endregion
+*/

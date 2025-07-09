@@ -21,11 +21,11 @@ private:
 
     PC_CORE::Texture2D m_FolderTexture;
 
-    fs::path m_BasePath;
+    //fs::path m_BasePath;
 
-    fs::path m_CurrenPath;
+    //fs::path m_CurrenPath;
 
-    fs::path m_SelectedItem;
+    //fs::path m_SelectedItem;
 
     FileSystemWatcher m_fileWatcher;
 
@@ -35,7 +35,7 @@ private:
     
     void CreateFile(const std::string& _filename) const;
     
-    std::string GetUniqueFileName(const fs::path& directory, const std::string& baseName, const std::string& extension) const;
+    //std::string GetUniqueFileName(const fs::path& directory, const std::string& baseName, const std::string& extension) const;
 
     void OnFileSelectedClick();
 

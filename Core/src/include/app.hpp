@@ -37,9 +37,7 @@ public:
 	Rhi rhi;
 
 	Renderer renderer;
-	
-	PhysicsWrapper physicsWrapper;
-	
+		
 	World world;
 		
 	PC_CORE_API void Init(const AppCreateInfo& _appCreateInfo);

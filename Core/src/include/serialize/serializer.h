@@ -1,10 +1,10 @@
 ﻿#pragma once
 
 
-#include <filesystem>
-#include <Json/json.hpp>
+//#include <Json/json.hpp>
+//#include <filesystem>
 #include <fstream>
-using json = nlohmann::json;
+//using json = nlohmann::json;
 
 #include "core_header.hpp"
 #include "reflection/reflector.hpp"
@@ -13,7 +13,7 @@ using json = nlohmann::json;
 
 
 BEGIN_PCCORE
-namespace fs = std::filesystem;
+/*
 
 
 class Serializer
@@ -60,5 +60,5 @@ void Serializer::DeSerialize(T* _object,const fs::path& _file)
 
     Derializing(reinterpret_cast<uint8_t*>(_object), _file, COMPILE_TIME_TYPE_KEY(T));
 }
-
+*/
 END_PCCORE

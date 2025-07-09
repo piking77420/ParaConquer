@@ -18,20 +18,35 @@ static constexpr bool CreateBasicsResource = true;
 void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
-	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/rounded_cube.obj");
+    auto s = ResourceManager::Create<Mesh>("rounded_cube.obj");
+    s->LoadFromFile("assets/meshs/obj/rounded_cube.obj");
 
-	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/quad.obj");
-	auto it = ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/sphere.obj");
+    auto mesh1 = ResourceManager::Create<Mesh>("quad.obj");
+    mesh1->LoadFromFile("assets/meshs/obj/quad.obj");
 
-    ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/capsule.obj");
-	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/viking_room.obj");
-	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/cube.obj");
-	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/untitled.obj");
-	ResourceManager::Create<Mesh>((fs::path)"assets/meshs/obj/suzanne.obj");
+    auto mesh2 = ResourceManager::Create<Mesh>("sphere.obj");
+    mesh2->LoadFromFile("assets/meshs/obj/sphere.obj");
 
-    auto it2 = ResourceManager::Create<Texture2D>((fs::path)"assets/textures/diamond_block.jpg");
+    auto mesh3 = ResourceManager::Create<Mesh>("capsule.obj");
+    mesh3->LoadFromFile("assets/meshs/obj/capsule.obj");
 
-	ResourceManager::Create<Texture2D>((fs::path)"assets/textures/emerauld_block.png");
+    auto mesh4 = ResourceManager::Create<Mesh>("viking_room.obj");
+    mesh4->LoadFromFile("assets/meshs/obj/viking_room.obj");
+
+    auto mesh5 = ResourceManager::Create<Mesh>("cube.obj");
+    mesh5->LoadFromFile("assets/meshs/obj/cube.obj");
+
+    auto mesh6 = ResourceManager::Create<Mesh>("untitled.obj");
+    mesh6->LoadFromFile("assets/meshs/obj/untitled.obj");
+
+    auto mesh7 = ResourceManager::Create<Mesh>("suzanne.obj");
+    mesh7->LoadFromFile("assets/meshs/obj/suzanne.obj");
+
+    auto texture1 = ResourceManager::Create<Texture2D>("diamond_block.jpg");
+    texture1->LoadFromFile("assets/textures/diamond_block.jpg");
+
+    auto texture2 = ResourceManager::Create<Texture2D>("emerauld_block.png");
+    texture2->LoadFromFile("assets/textures/emerauld_block.png");
 
 
     

@@ -1,4 +1,5 @@
 ﻿#include "world/world.hpp"
+#include <debug_helper/debug_draw_context.hpp>
 
 using namespace PC_CORE;
 
@@ -27,12 +28,11 @@ void World::Begin()
 
 void World::Update()
 {
+    PERF_REGION_SCOPED;
+
     if (run)
     {
-        PERF_REGION_SCOPED;
         //TO DO CALL SYS UpDATE
-
-        
     }
 }
 

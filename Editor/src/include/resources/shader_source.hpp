@@ -22,11 +22,13 @@ public:
     
     bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
 
+    PC_CORE_API void LoadFromFile(const std::string& _path) override;
+
     IMP_DYNAMIC_REFLECT()
 
     explicit ShaderSource();
 
-    explicit ShaderSource(const fs::path& _path);
+    explicit ShaderSource(const std::string& _name);
     
     ~ShaderSource() override = default;
 
@@ -34,7 +36,7 @@ private:
     
     ShaderStageType m_ShaderType;
 
-    fs::path m_PathToSource;
+    std::string m_PathToSource;
 
     struct ShaderCompiler   
     {

@@ -9,7 +9,7 @@ class PC_CORE_API ShaderSourceBinary : public PC_CORE::Resource
 {
 public:
 
-    const fs::path& GetPath()
+    const std::string& GetPath()
     {
         return m_Path;
     }
@@ -37,7 +37,7 @@ public:
     ~ShaderSourceBinary() override = default;
 
 private:
-    fs::path m_Path;
+    std::string m_Path;
 
     ShaderStageType m_ShaderStageType;
 

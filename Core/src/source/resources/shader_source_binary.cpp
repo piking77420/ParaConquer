@@ -15,7 +15,7 @@ void PC_CORE::ShaderSourceBinary::WriteSprivToFile(const std::vector<uint32_t>* 
 
     if (!f.is_open())
     {
-        PC_LOGERROR("File is not open {}", m_Path.generic_string());
+        PC_LOGERROR("File is not open {}", m_Path);
         return;
     }
 

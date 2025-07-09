@@ -20,6 +20,11 @@ Texture2D::Texture2D()
     DYNAMIC_REFLECT_INIT
 }
 
+Texture2D::Texture2D(const std::string& _name) : Texture(_name)
+{
+    DYNAMIC_REFLECT_INIT
+}
+
 Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo)
 {
     DYNAMIC_REFLECT_INIT
@@ -30,25 +35,19 @@ Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo)
     
 }
 
-Texture2D::Texture2D(const fs::path& _path) : Texture(_path)
-{
-    DYNAMIC_REFLECT_INIT
-    
-    LoadFromFile(_path);
-}
 
 Texture2D::~Texture2D()
 {
 }
 
-
-
-void Texture2D::LoadFromFile(const fs::path& _path)
+void Texture2D::LoadFromFile(const std::string& _path)
 {
+    Resource::LoadFromFile(_path);
+
     int width;
     int height;
 
-    uint8_t* pixels = FileLoader::LoadFile(_path.generic_string().c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
+    uint8_t* pixels = FileLoader::LoadFile(_path.c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");
@@ -56,7 +55,7 @@ void Texture2D::LoadFromFile(const fs::path& _path)
     }
 
 
-    
+
     const CreateImageInfo createTextureInfo =
     {
         .width = width,
@@ -73,11 +72,10 @@ void Texture2D::LoadFromFile(const fs::path& _path)
         .datas = {reinterpret_cast<void*>(pixels)}
     };
 
-   m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);
-    
+    m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);
+
     FileLoader::FreeData(pixels);
 }
-
 
 RHIFormat Texture2D::GetRHIFormat() const
 {
