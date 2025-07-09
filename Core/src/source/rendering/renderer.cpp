@@ -31,18 +31,28 @@ void Renderer::Init()
     };
 
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
-    
+    std::array<std::string, 6> maps
+   {
+       "assets/textures/skybox/right.jpg",
+       "assets/textures/skybox/left.jpg",
+       "assets/textures/skybox/top.jpg",
+       "assets/textures/skybox/bottom.jpg",
+       "assets/textures/skybox/front.jpg",
+       "assets/textures/skybox/back.jpg",
+   };
+    m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);
+
     sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
     CreateForwardRenderPass();
     drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
 
     CreateForwardShader();
     CreateDrawQuadShader();
-    CreateSkyRenderingShader();
+    CreateCubeMapShader();
     
     cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), MemoryUsage::Dynamic);
 
-
+    /////////////////////////////////////////////////
     UniformBufferDescriptor cameraBufferDescritptor
     {
         .buffer = &cameraUniformBuffer,
@@ -53,6 +63,7 @@ void Renderer::Init()
         .buffer = &sceneLightsBuffer
         ->uniformBuffer,
     };
+    
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
     {
@@ -67,15 +78,17 @@ void Renderer::Init()
             LIGHTDATA_BINDING,
             &lightData,
             nullptr,
-        }
+        },
     };
 
-    m_ForwardShader.lock()->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, 0);
+    m_ForwardShader.lock()->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET);
     m_ShaderProgramSceneDescriptorSet->WriteDescriptorSets(descriptorSets);
     
 
+    ////////////////////////////////////////////
+   
     descriptorSets =
-    {
+   {
         {
             ShaderProgramDescriptorType::UniformBuffer,
             CAMERA_BINDING,
@@ -83,8 +96,30 @@ void Renderer::Init()
             nullptr,
         },
     };
+    m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET);
+    descriptorSetsSkybox.cameraDescriptorSet->WriteDescriptorSets(descriptorSets);
+    ImageSamperDescriptor skyboxDescritptor
+   {
+       .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
+       .texture = m_Cubemap.get()
+   };
+
+    descriptorSets =
+       {
+        {
+            ShaderProgramDescriptorType::CombineImageSampler,
+            SKYBOX_BINDING,
+             nullptr,
+            &skyboxDescritptor,
+        },
+    };
+    m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET);
+    descriptorSetsSkybox.cubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);
+   
     InitRenderSystem();
     m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
+    m_CubeMesh = ResourceManager::Get<Mesh>("cube.obj");
+   
 }
 
 void Renderer::BeginDraw(Window* _window)
@@ -355,9 +390,8 @@ void Renderer::CreateDrawQuadShader()
     m_DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>("DrawQuadShader", graphicShaderProgramCreateInfo);
 }
 
-void Renderer::CreateSkyRenderingShader()
+void Renderer::CreateCubeMapShader()
 {
-    /*
     PERF_REGION_SCOPED;
 
     const RasterizerInfo rasterizerInfo =
@@ -365,46 +399,54 @@ void Renderer::CreateSkyRenderingShader()
         .polygonMode = PolygonMode::Fill,
         .cullModeFlag = CullModeFlagBit::None,
         .frontFace = FrontFace::CounterClockwise,
+        .multiSampleRasterization = 1
     };
 
+    VertexAttributeDescription vertexAttributeDescription =
+        {
+        .binding = 0,
+        .location = 0,
+        .format = RHIFormat::R32G32B32_SFLOAT,
+        .offset = 0
+        };
 
     const ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
         .depthCompareOp = CompareOp::LESS_OR_EQUAL,
-        .vertexInputBindingDescritions = {},
-        .vertexAttributeDescriptions = {},
+        .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
+        .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)},
         .enableDepthTest = true,
     };
 
-    const std::vector<std::pair<ShaderStageType, std::string>> source =
+    const SourceList source =
     {
         {
             ShaderStageType::VERTEX,
-            "sky_rendering_spv.vert"
+            ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.vert")
         },
         {
             ShaderStageType::FRAGMENT,
-            "sky_rendering_spv.frag"
+            ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.frag")
         }
     };
 
     const ShaderInfo shaderInfo =
     {
-        .shaderProgramPipelineType = shaderProgramPipelineType::POINT_GRAPHICS,
+        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
         .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
     };
 
-    const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = forwardPass,
-    };
+    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+      {
+        .shaderGraphicPointInfo = shaderGraphicPointInfo,
+        .sourceList = source,
+        .renderPass = forwardPass.get(),
+        };
 
-    m_SkyRenderingShader = PC_CORE::Rhi::CreateRhiShaderProgram(triangleCreateInfo);
-    
-    m_AtmosphereUniformBuffer = RhiUniformBuffer(&m_AtomsphereBuffer, sizeof(m_AtomsphereBuffer));*/
+
+    m_CubeMapShader = ResourceManager::Create<PC_CORE::GraphicShader>("SkyboxShader", graphicShaderProgramCreateInfo);
+
 }
 
 void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
@@ -440,15 +482,16 @@ void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMes
     primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
 }
 
-void Renderer::DrawSky()
+void Renderer::DrawSkyBox()
 {
-    
-    primaryCommandList->BindProgram(m_SkyRenderingShader.lock().get());
-    primaryCommandList->BindDescriptorSet(m_SkyRenderingShader.lock().get(), m_ShaderProgramDescriptorSetsSky, SCENE_DESCRIPTOR_SET, 1);
-    primaryCommandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
-    primaryCommandList->Draw(4, 1, 0, 0);
-
+    primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
+    primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET, 1);
+    primaryCommandList->BindVertexBuffer(*m_CubeMesh->vertexBuffer.GetRhiBuffer(), 0, 1);
+    primaryCommandList->BindIndexBuffer(*m_CubeMesh->indexBuffer.GetRhiBuffer(), 0);
+    primaryCommandList->DrawIndexed(m_CubeMesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
 }
+
 
 void Renderer::InitRenderSystem()
 {
@@ -567,6 +610,7 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
         DrawStaticMesh(level.GetComponent<Transform>(it),
             level.GetComponent<StaticMesh>(it));
 
+    DrawSkyBox();
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)
         it(primaryCommandList.get(), *currentRenderingContext);

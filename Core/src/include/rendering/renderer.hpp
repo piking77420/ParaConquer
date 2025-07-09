@@ -10,6 +10,7 @@
 #include "low_renderer/rhi_uniform_buffer.hpp"
 #include "resources/scene_lights_manager.h"
 #include "resources/graphic_shader.hpp"
+#include "resources/texture_3d.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "world/world.hpp"
@@ -83,7 +84,7 @@ public:
     // TO DO TO RESOURE REF
     std::weak_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
-    std::weak_ptr<PC_CORE::GraphicShader> m_SkyRenderingShader;
+    std::weak_ptr<PC_CORE::GraphicShader> m_CubeMapShader;
     
     std::shared_ptr<RhiRenderPass> forwardPass;
 
@@ -118,16 +119,21 @@ private:
     
     ShaderProgramDescriptorSets* m_ShaderProgramSceneDescriptorSet = nullptr;
 
-    ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsSky = nullptr;
+    struct DescriptorSetsSkybox
+    {
+        ShaderProgramDescriptorSets* cameraDescriptorSet = nullptr;
 
+        ShaderProgramDescriptorSets* cubeMapDescriptorSet = nullptr;
+    }descriptorSetsSkybox;
+    
+  
 
     SceneBufferGPU sceneBufferGPU;
 
-    /*
-    AtmosphereBuffer m_AtomsphereBuffer;
+    std::shared_ptr<Texture3D> m_Cubemap;
 
-    UniformBuffer m_AtmosphereUniformBuffer;
-*/
+    std::shared_ptr<Mesh> m_CubeMesh;
+
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 
     std::shared_ptr<RendererSystem> rendererSystem;
@@ -151,12 +157,12 @@ private:
 
     PC_CORE_API void CreateDrawQuadShader();
 
-    PC_CORE_API void CreateSkyRenderingShader();
+    PC_CORE_API void CreateCubeMapShader();
 
     PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
 
-    PC_CORE_API void DrawSky();
-
+    PC_CORE_API void DrawSkyBox();
+    
     PC_CORE_API void InitRenderSystem();
 
     PC_CORE_API void CreateForwardRenderPass();
