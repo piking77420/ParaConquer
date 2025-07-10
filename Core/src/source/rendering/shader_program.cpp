@@ -22,7 +22,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
         std::shared_ptr<ShaderSourceBinary> shaderSourceBinary;
         if (ResourceManager::TryGetAs<PC_CORE::ShaderSourceBinary>(code, &shaderSourceBinary))
         {
-            sources.push_back(std::make_pair(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetPath()));
+            sources.emplace_back(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetPath());
         }
     }
 

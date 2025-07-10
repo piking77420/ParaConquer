@@ -27,7 +27,7 @@ public:
 protected:
     void MoveCameraUpDate();
     
-    PC_CORE::LowPassFilter<Tbx::Vector2f, 8> deltass;
+    PC_CORE::LowPassFilter<Tbx::Vector2f, 6> deltass;
 
     float m_BaseCameraSpeed = 5.f;
 

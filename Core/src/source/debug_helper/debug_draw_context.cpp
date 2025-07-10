@@ -132,9 +132,13 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
     const PC_CORE::ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
+        .dephInfo =
+        {
+            .depthCompareOp = CompareOp::LESS,
+            .enableDepthTest = true
+            },
         .vertexInputBindingDescritions = {PC_CORE::Vertex::GetBindingDescrition(0), vertexBindingDescrition},
         .vertexAttributeDescriptions = attributeDescription,
-        .enableDepthTest = true,
     };
 
 
@@ -227,9 +231,13 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
     const PC_CORE::ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
+        .dephInfo =
+     {
+            .depthCompareOp = CompareOp::LESS,
+            .enableDepthTest = true
+            },
         .vertexInputBindingDescritions = {vertexBindingDescrition},
         .vertexAttributeDescriptions = attributeDescription,
-        .enableDepthTest = true,
     };
 
 

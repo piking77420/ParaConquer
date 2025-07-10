@@ -63,6 +63,12 @@ namespace Vulkan
         vk::AccessFlags RhiAccessFlagToVulkan(PC_CORE::AccessFlags _accessFlag);
 
         VmaMemoryUsage RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation _memoryUsage);
+
+        vk::BlendFactor RhiBlendFactorToVulkan(PC_CORE::BlendFactor _blendFactor);
+
+        vk::BlendOp RhiBlendOpToVulkan(PC_CORE::BlendOp _blendOp);
+
+        vk::ColorComponentFlags RhiColorComponent(PC_CORE::ColorComponent _colorComponent);
         
     }
     

@@ -195,6 +195,23 @@ void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::PrimitiveTopology 
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setPrimitiveTopology(topology);
 }
 
+void Vulkan::VulkanCommandList::SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount)
+{
+    // TO DO
+    /*
+    const vk::ColorBlendEquationEXT blendEq =
+        {
+        .srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+        .dstColorBlendFactor = vk::BlendFactor::eOneMinusConstantAlpha,
+        .colorBlendOp = vk::BlendOp::eAdd,
+        .srcAlphaBlendFactor = vk::BlendFactor::eOne,
+        .dstAlphaBlendFactor = vk::BlendFactor::eZero,
+        .alphaBlendOp = vk::BlendOp::eAdd,
+        };
+
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setColorBlendEquationEXT(_firstAttachement, _attachementCount, &blendEq);*/
+}
+
 void Vulkan::VulkanCommandList::SetLineWidth(float _widht)
 {
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setLineWidth(_widht);

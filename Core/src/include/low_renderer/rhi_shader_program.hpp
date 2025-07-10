@@ -60,13 +60,32 @@ struct RasterizerInfo
     uint32_t multiSampleRasterization = 1;
 };
 
+struct BlendInfo
+{
+    bool enabled = false;
+    BlendFactor srcColorBlendFactor = BlendFactor::One;
+    BlendFactor dstColorBlendFactor = BlendFactor::Zero;
+    BlendOp colorBlendOp = BlendOp::eAdd;
+    BlendFactor srcAlphaBlendFactor = BlendFactor::One;
+    BlendFactor dstAlphaBlendFactor = BlendFactor::Zero;
+    BlendOp alphaBlendOp = BlendOp::eAdd;
+    ColorComponent colorMask = static_cast<ColorComponent>(ColorComponent_R | ColorComponent_G | ColorComponent_B | ColorComponent_A);
+};
+
+struct DephStencilInfo
+{
+    CompareOp depthCompareOp = CompareOp::LESS;
+    bool enableDepthTest = false;
+};
+
 struct ShaderGraphicPointInfo
 {
     RasterizerInfo rasterizerInfo;
-    CompareOp depthCompareOp = CompareOp::LESS;
+    DephStencilInfo dephInfo;
+    BlendInfo blendInfo;
+    
     std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
     std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
-    bool enableDepthTest = false;
 };
 
 struct ShaderRayTracingInfo

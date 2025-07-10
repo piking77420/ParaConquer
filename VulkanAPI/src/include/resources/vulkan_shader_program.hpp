@@ -41,12 +41,12 @@ namespace Vulkan
             vk::DynamicState::eScissor,
             vk::DynamicState::eLineWidth,
             vk::DynamicState::eDepthBias,
-            vk::DynamicState::eBlendConstants,
             vk::DynamicState::eDepthBounds,
             vk::DynamicState::eStencilCompareMask,
             vk::DynamicState::eStencilWriteMask,
             vk::DynamicState::eStencilReference,
             vk::DynamicState::ePrimitiveTopology,
+            vk::DynamicState::eBlendConstants,
         };
     
     public:
@@ -99,7 +99,9 @@ namespace Vulkan
         
         void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo, const PC_CORE::RasterizerInfo& _rasterizerInfo);
 
-        void ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState/*, const PC_CORE::*/);
+        void ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo);
+
+        void ParsePipelineDepthStencilAttachmentState(vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo, const PC_CORE::DephStencilInfo& _dephInfo);
 
         void ParseParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo, const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState );
         

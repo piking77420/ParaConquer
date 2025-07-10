@@ -394,9 +394,13 @@ void Renderer::CreateShaders()
         const ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
             .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+                {
+                .depthCompareOp = CompareOp::LESS,
+                .enableDepthTest = true
+                },
             .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
             .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
-            .enableDepthTest = true,
         };
 
         const SourceList sources =
@@ -444,10 +448,13 @@ void Renderer::CreateShaders()
         const ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
             .rasterizerInfo = rasterizerInfo,
-            .depthCompareOp = CompareOp::LESS_OR_EQUAL,
+            .dephInfo =
+            {
+                .depthCompareOp = CompareOp::LESS_OR_EQUAL,
+                .enableDepthTest = true
+                },
             .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
             .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)},
-            .enableDepthTest = true,
         };
 
         const SourceList source =
@@ -496,9 +503,13 @@ void Renderer::CreateShaders()
         const ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
             .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+         {
+                .depthCompareOp = CompareOp::LESS,
+                .enableDepthTest = true
+                },
             .vertexInputBindingDescritions = {},
             .vertexAttributeDescriptions = {},
-            .enableDepthTest = false,
         };
 
         const SourceList sources =

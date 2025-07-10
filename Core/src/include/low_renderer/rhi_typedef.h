@@ -58,6 +58,47 @@ BEGIN_PCCORE
 
 
 #pragma endregion
+    enum class BlendFactor : uint8_t
+    {
+        Zero,
+        One,
+        SrcColor,
+        OneMinusSrcColor,
+        DstColor,
+        OneMinusDstColor,
+        SrcAlpha,
+        OneMinusSrcAlpha,
+        DstAlpha,
+        OneMinusDstAlpha,
+        ConstantColor,
+        OneMinusConstantColor,
+        ConstantAlpha,
+        OneMinusConstantAlpha,
+        SrcAlphaSaturate,
+        Src1Color,
+        OneMinusSrc1Color,
+        Src1Alpha,
+        OneMinusSrc1Alpha
+    };
+
+    enum class BlendOp : uint8_t
+    {
+        eAdd,
+        eSubtract,
+        eReverseSubtract,
+        eMin,
+        eMax,
+    };
+
+    enum ColorComponent : uint8_t
+    {
+        None = 0,
+        ColorComponent_R  = 1 << 0, 
+        ColorComponent_G  = 1 << 1,
+        ColorComponent_B  = 1 << 2, 
+        ColorComponent_A  = 1 << 3  
+    };
+ 
 
     enum class RHIFormat
     {
@@ -409,31 +450,32 @@ BEGIN_PCCORE
         ".mesh",
     };
 
-enum struct MemoryUsage
-{
-    Static,   // Not modified over its lifetime
-    Mutable,  // Occasionally modified (e.g., once per frame)
-    Dynamic,  // Frequently modified (e.g., multiple times per frame)
+    enum struct MemoryUsage
+    {
+        Static, // Not modified over its lifetime
+        Mutable, // Occasionally modified (e.g., once per frame)
+        Dynamic, // Frequently modified (e.g., multiple times per frame)
 
-    Count     // Total enum values
-};
-enum struct MemoryLocalisation
-{
-    GPU_Only,       // Device-local
-    CPU_Only,       // Host Only
-    CPU_To_GPU,     // Host-visible (upload)
-    GPU_To_CPU,     // Host-readable (readback)
-    
-    Count // Total enum values
-};
+        Count // Total enum values
+    };
+
+    enum struct MemoryLocalisation
+    {
+        GPU_Only, // Device-local
+        CPU_Only, // Host Only
+        CPU_To_GPU, // Host-visible (upload)
+        GPU_To_CPU, // Host-readable (readback)
+
+        Count // Total enum values
+    };
 
 
-enum class IndexFormat : int
-{
-    Uiunt8 = 1,
-    Uint16 = 2,
-    Uint32 = 4
-};
+    enum class IndexFormat : int
+    {
+        Uiunt8 = 1,
+        Uint16 = 2,
+        Uint32 = 4
+    };
 
 #pragma region Image
 
@@ -480,21 +522,25 @@ enum class IndexFormat : int
     enum class TextureUsage : uint32_t
     {
         None = 0,
-        Sampled = 1 << 0,  // Shader-readable (SRV)
-        RenderTarget = 1 << 1,  // Color attachment (ex: RGBA render target)
-        Depth = 1 << 2,  // Depth attachment
-        Stencil = 1 << 3,  // Stencil attachment
-        Storage = 1 << 4,  // Shader-writable (UAV)
+        Sampled = 1 << 0, // Shader-readable (SRV)
+        RenderTarget = 1 << 1, // Color attachment (ex: RGBA render target)
+        Depth = 1 << 2, // Depth attachment
+        Stencil = 1 << 3, // Stencil attachment
+        Storage = 1 << 4, // Shader-writable (UAV)
     };
 
-    inline TextureUsage operator|(TextureUsage a, TextureUsage b) {
+    inline TextureUsage operator|(TextureUsage a, TextureUsage b)
+    {
         return static_cast<TextureUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
     }
-    inline TextureUsage operator&(TextureUsage a, TextureUsage b) {
+
+    inline TextureUsage operator&(TextureUsage a, TextureUsage b)
+    {
         return static_cast<TextureUsage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
     }
 
-    inline bool HasUsage(TextureUsage usage, TextureUsage flag) {
+    inline bool HasUsage(TextureUsage usage, TextureUsage flag)
+    {
         return (static_cast<uint32_t>(usage) & static_cast<uint32_t>(flag)) != 0;
     }
 
@@ -506,7 +552,7 @@ enum class IndexFormat : int
         CubeMapArray,
         Count,
     };
-        
+
 
     struct CreateImageInfo
     {
@@ -519,7 +565,7 @@ enum class IndexFormat : int
         TextureType textureType;
         RHIFormat format;
         Channel channel;
-        
+
         TextureUsage textureUsage;
         MemoryLocalisation memoryVisibility;
 
@@ -582,151 +628,160 @@ enum class IndexFormat : int
 
 #pragma region RenderPass
 
-  
+
 #pragma endregion RenderPass
 
 
+    enum struct LoadOperation
+    {
+        Load,
+        Clear,
+        DontCare,
+    };
 
-enum struct LoadOperation
-{
-    Load ,
-    Clear,
-    DontCare,
-};
+    enum struct StoreOperation
+    {
+        Store,
+        DontCare,
+    };
 
-enum struct StoreOperation
-{
-    Store,
-    DontCare,
-};
+    enum class ShaderProgramPipelineType
+    {
+        POINT_GRAPHICS,
+        COMPUTE,
+        RAYTRACING,
 
-enum class ShaderProgramPipelineType
-{
-    POINT_GRAPHICS,
-    COMPUTE,
-    RAYTRACING,
+        COUT
+    };
 
-    COUT
-};
+    enum class PipelineStageFlagBits : uint64_t
+    {
+        None = 0,
+        TopOfPipe = 1ULL << 0,
+        DrawIndirect = 1ULL << 1,
+        VertexInput = 1ULL << 2,
+        VertexShader = 1ULL << 3,
+        TessellationControlShader = 1ULL << 4,
+        TessellationEvaluationShader = 1ULL << 5,
+        GeometryShader = 1ULL << 6,
+        FragmentShader = 1ULL << 7,
+        EarlyFragmentTests = 1ULL << 8,
+        LateFragmentTests = 1ULL << 9,
+        ColorAttachmentOutput = 1ULL << 10,
+        ComputeShader = 1ULL << 11,
+        Transfer = 1ULL << 12,
+        BottomOfPipe = 1ULL << 13,
+        Host = 1ULL << 14,
+        AllGraphics = 1ULL << 15,
+        AllCommands = 1ULL << 16,
+        NoneKHR = 1ULL << 17,
+        TransformFeedbackEXT = 1ULL << 18,
+        ConditionalRenderingEXT = 1ULL << 19,
+        AccelerationStructureBuildKHR = 1ULL << 20,
+        AccelerationStructureBuildNV = 1ULL << 21,
+        RayTracingShaderKHR = 1ULL << 22,
+        RayTracingShaderNV = 1ULL << 23,
+        FragmentDensityProcessEXT = 1ULL << 24,
+        FragmentShadingRateAttachmentKHR = 1ULL << 25,
+        ShadingRateImageNV = 1ULL << 26,
+        CommandPreprocessNV = 1ULL << 27,
+        CommandPreprocessEXT = 1ULL << 28,
+        TaskShaderEXT = 1ULL << 29,
+        TaskShaderNV = 1ULL << 30,
+        MeshShaderEXT = 1ULL << 31,
+        MeshShaderNV = 1ULL << 32
+    };
 
-enum class PipelineStageFlagBits : uint64_t
-{
-    None                             = 0,
-    TopOfPipe                        = 1ULL << 0,
-    DrawIndirect                     = 1ULL << 1,
-    VertexInput                      = 1ULL << 2,
-    VertexShader                     = 1ULL << 3,
-    TessellationControlShader        = 1ULL << 4,
-    TessellationEvaluationShader     = 1ULL << 5,
-    GeometryShader                   = 1ULL << 6,
-    FragmentShader                   = 1ULL << 7,
-    EarlyFragmentTests               = 1ULL << 8,
-    LateFragmentTests                = 1ULL << 9,
-    ColorAttachmentOutput            = 1ULL << 10,
-    ComputeShader                    = 1ULL << 11,
-    Transfer                         = 1ULL << 12,
-    BottomOfPipe                     = 1ULL << 13,
-    Host                             = 1ULL << 14,
-    AllGraphics                      = 1ULL << 15,
-    AllCommands                      = 1ULL << 16,
-    NoneKHR                          = 1ULL << 17,
-    TransformFeedbackEXT             = 1ULL << 18,
-    ConditionalRenderingEXT          = 1ULL << 19,
-    AccelerationStructureBuildKHR    = 1ULL << 20,
-    AccelerationStructureBuildNV     = 1ULL << 21,
-    RayTracingShaderKHR              = 1ULL << 22,
-    RayTracingShaderNV               = 1ULL << 23,
-    FragmentDensityProcessEXT        = 1ULL << 24,
-    FragmentShadingRateAttachmentKHR= 1ULL << 25,
-    ShadingRateImageNV               = 1ULL << 26,
-    CommandPreprocessNV              = 1ULL << 27,
-    CommandPreprocessEXT             = 1ULL << 28,
-    TaskShaderEXT                    = 1ULL << 29,
-    TaskShaderNV                     = 1ULL << 30,
-    MeshShaderEXT                    = 1ULL << 31,
-    MeshShaderNV                     = 1ULL << 32
-};
+    using PipelineStageFlags = uint64_t;
 
-using PipelineStageFlags = uint64_t;
+    inline PipelineStageFlags operator|(PipelineStageFlagBits a, PipelineStageFlagBits b)
+    {
+        return static_cast<PipelineStageFlags>(a) | static_cast<PipelineStageFlags>(b);
+    }
 
-inline PipelineStageFlags operator|(PipelineStageFlagBits a, PipelineStageFlagBits b) {
-    return static_cast<PipelineStageFlags>(a) | static_cast<PipelineStageFlags>(b);
-}
+    inline PipelineStageFlags operator&(PipelineStageFlagBits a, PipelineStageFlagBits b)
+    {
+        return static_cast<PipelineStageFlags>(a) & static_cast<PipelineStageFlags>(b);
+    }
 
-inline PipelineStageFlags operator&(PipelineStageFlagBits a, PipelineStageFlagBits b) {
-    return static_cast<PipelineStageFlags>(a) & static_cast<PipelineStageFlags>(b);
-}
+    inline PipelineStageFlags& operator|=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs)
+    {
+        lhs |= static_cast<PipelineStageFlags>(rhs);
+        return lhs;
+    }
 
-inline PipelineStageFlags& operator|=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs) {
-    lhs |= static_cast<PipelineStageFlags>(rhs);
-    return lhs;
-}
+    inline PipelineStageFlags& operator&=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs)
+    {
+        lhs &= static_cast<PipelineStageFlags>(rhs);
+        return lhs;
+    }
 
-inline PipelineStageFlags& operator&=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs) {
-    lhs &= static_cast<PipelineStageFlags>(rhs);
-    return lhs;
-}
+    //----------------------------------------
 
-//----------------------------------------
+    enum class AccessFlagBits : uint64_t
+    {
+        None = 0,
+        IndirectCommandRead = 1ULL << 0,
+        IndexRead = 1ULL << 1,
+        VertexAttributeRead = 1ULL << 2,
+        UniformRead = 1ULL << 3,
+        InputAttachmentRead = 1ULL << 4,
+        ShaderRead = 1ULL << 5,
+        ShaderWrite = 1ULL << 6,
+        ColorAttachmentRead = 1ULL << 7,
+        ColorAttachmentWrite = 1ULL << 8,
+        DepthStencilAttachmentRead = 1ULL << 9,
+        DepthStencilAttachmentWrite = 1ULL << 10,
+        TransferRead = 1ULL << 11,
+        TransferWrite = 1ULL << 12,
+        HostRead = 1ULL << 13,
+        HostWrite = 1ULL << 14,
+        MemoryRead = 1ULL << 15,
+        MemoryWrite = 1ULL << 16,
+        NoneKHR = 1ULL << 17,
+        TransformFeedbackWriteEXT = 1ULL << 18,
+        TransformFeedbackCounterReadEXT = 1ULL << 19,
+        TransformFeedbackCounterWriteEXT = 1ULL << 20,
+        ConditionalRenderingReadEXT = 1ULL << 21,
+        ColorAttachmentReadNoncoherentEXT = 1ULL << 22,
+        AccelerationStructureReadKHR = 1ULL << 23,
+        AccelerationStructureReadNV = 1ULL << 24,
+        AccelerationStructureWriteKHR = 1ULL << 25,
+        AccelerationStructureWriteNV = 1ULL << 26,
+        FragmentDensityMapReadEXT = 1ULL << 27,
+        FragmentShadingRateAttachmentReadKHR = 1ULL << 28,
+        ShadingRateImageReadNV = 1ULL << 29,
+        CommandPreprocessReadNV = 1ULL << 30,
+        CommandPreprocessReadEXT = 1ULL << 31,
+        CommandPreprocessWriteNV = 1ULL << 32,
+        CommandPreprocessWriteEXT = 1ULL << 33
+    };
 
-enum class AccessFlagBits : uint64_t
-{
-    None                                   = 0,
-    IndirectCommandRead                    = 1ULL << 0,
-    IndexRead                              = 1ULL << 1,
-    VertexAttributeRead                    = 1ULL << 2,
-    UniformRead                            = 1ULL << 3,
-    InputAttachmentRead                    = 1ULL << 4,
-    ShaderRead                             = 1ULL << 5,
-    ShaderWrite                            = 1ULL << 6,
-    ColorAttachmentRead                    = 1ULL << 7,
-    ColorAttachmentWrite                   = 1ULL << 8,
-    DepthStencilAttachmentRead             = 1ULL << 9,
-    DepthStencilAttachmentWrite            = 1ULL << 10,
-    TransferRead                           = 1ULL << 11,
-    TransferWrite                          = 1ULL << 12,
-    HostRead                               = 1ULL << 13,
-    HostWrite                              = 1ULL << 14,
-    MemoryRead                             = 1ULL << 15,
-    MemoryWrite                            = 1ULL << 16,
-    NoneKHR                                = 1ULL << 17,
-    TransformFeedbackWriteEXT              = 1ULL << 18,
-    TransformFeedbackCounterReadEXT        = 1ULL << 19,
-    TransformFeedbackCounterWriteEXT       = 1ULL << 20,
-    ConditionalRenderingReadEXT            = 1ULL << 21,
-    ColorAttachmentReadNoncoherentEXT      = 1ULL << 22,
-    AccelerationStructureReadKHR           = 1ULL << 23,
-    AccelerationStructureReadNV            = 1ULL << 24,
-    AccelerationStructureWriteKHR          = 1ULL << 25,
-    AccelerationStructureWriteNV           = 1ULL << 26,
-    FragmentDensityMapReadEXT              = 1ULL << 27,
-    FragmentShadingRateAttachmentReadKHR   = 1ULL << 28,
-    ShadingRateImageReadNV                 = 1ULL << 29,
-    CommandPreprocessReadNV                = 1ULL << 30,
-    CommandPreprocessReadEXT               = 1ULL << 31,
-    CommandPreprocessWriteNV               = 1ULL << 32,
-    CommandPreprocessWriteEXT              = 1ULL << 33
-};
+    using AccessFlags = uint64_t;
 
-using AccessFlags = uint64_t;
+    inline AccessFlags operator|(AccessFlagBits a, AccessFlagBits b)
+    {
+        return static_cast<AccessFlags>(a) | static_cast<AccessFlags>(b);
+    }
 
-inline AccessFlags operator|(AccessFlagBits a, AccessFlagBits b) {
-    return static_cast<AccessFlags>(a) | static_cast<AccessFlags>(b);
-}
+    inline AccessFlags operator&(AccessFlagBits a, AccessFlagBits b)
+    {
+        return static_cast<AccessFlags>(a) & static_cast<AccessFlags>(b);
+    }
 
-inline AccessFlags operator&(AccessFlagBits a, AccessFlagBits b) {
-    return static_cast<AccessFlags>(a) & static_cast<AccessFlags>(b);
-}
+    inline AccessFlags& operator|=(AccessFlags& lhs, AccessFlagBits rhs)
+    {
+        lhs |= static_cast<AccessFlags>(rhs);
+        return lhs;
+    }
 
-inline AccessFlags& operator|=(AccessFlags& lhs, AccessFlagBits rhs) {
-    lhs |= static_cast<AccessFlags>(rhs);
-    return lhs;
-}
+    inline AccessFlags& operator&=(AccessFlags& lhs, AccessFlagBits rhs)
+    {
+        lhs &= static_cast<AccessFlags>(rhs);
+        return lhs;
+    }
 
-inline AccessFlags& operator&=(AccessFlags& lhs, AccessFlagBits rhs) {
-    lhs &= static_cast<AccessFlags>(rhs);
-    return lhs;
-}
+
 END_PCCORE
 
 
@@ -739,9 +794,7 @@ inline T SafeCastReinterpreCast(U* ptr)
     return reinterpret_cast<T>(ptr);
 
 #endif // DEBUG
-
 }
-
 
 
 // DescriptorSet
@@ -750,19 +803,18 @@ inline T SafeCastReinterpreCast(U* ptr)
 #define ENVIRONEMENT_DESCRIPTOR_SET 1
 
 // Binding
-    // SCENE_DESCRIPTOR_SET
+// SCENE_DESCRIPTOR_SET
 #define CAMERA_BINDING 0
 #define LIGHTDATA_BINDING 1
 #define FORWARD_SKYBOX_CUBEMAP 2
-    // MATERIAL_DESCRIPTOR_SET
+// MATERIAL_DESCRIPTOR_SET
 #define ALBEDO_BINDING 2
 
 // ENVIRONEMENT_DESCRIPTOR_SET
-#define SKYBOX_BINDING 0 
+#define SKYBOX_BINDING 0
 
 #define CAM_DEPTH_MAX 1.f
 #define CAM_DEPTH_MIN 0.f
-
 
 
 // PREPROCESSOR

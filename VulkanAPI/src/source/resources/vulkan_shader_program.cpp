@@ -281,19 +281,11 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
     vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-    ParsePipelineColorBlendAttachmentState(&colorBlendAttachment);
+    ParsePipelineColorBlendAttachmentState(&colorBlendAttachment, &_shaderGraphicPointInfo.blendInfo);
 
 
-    vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
-    depthStencilState.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
-    depthStencilState.depthTestEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
-    depthStencilState.depthWriteEnable = _shaderGraphicPointInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
-    depthStencilState.depthCompareOp = Utils::RHIToVulkanCompareOp(_shaderGraphicPointInfo.depthCompareOp);
-    depthStencilState.minDepthBounds = 0.0f;
-    depthStencilState.maxDepthBounds = 1.0f;
-    depthStencilState.stencilTestEnable = VK_FALSE;
-    depthStencilState.front = vk::StencilOpState(); // Optional
-    depthStencilState.back = vk::StencilOpState(); // Optional
+    vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+    ParsePipelineDepthStencilAttachmentState(&depthStencilState, _shaderGraphicPointInfo.dephInfo);
 
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo;
@@ -320,7 +312,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pViewportState = &viewportState;
     graphicsPipelineInfo.pRasterizationState = &rasterizer;
     
-    if (_shaderGraphicPointInfo.enableDepthTest)
+    if (_shaderGraphicPointInfo.dephInfo.enableDepthTest)
         graphicsPipelineInfo.pDepthStencilState = &depthStencilState;
     
     graphicsPipelineInfo.pMultisampleState = &multisampling;
@@ -484,17 +476,34 @@ void VulkanShaderProgram::ParseRasterizer(
     
 }
 
-void VulkanShaderProgram::ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState)
+void VulkanShaderProgram::ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo)
 {
-    _PipelineColorBlendAttachmentState->colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-    _PipelineColorBlendAttachmentState->blendEnable = VK_FALSE;
-    _PipelineColorBlendAttachmentState->srcColorBlendFactor = vk::BlendFactor::eOne; // Optional
-    _PipelineColorBlendAttachmentState->dstColorBlendFactor = vk::BlendFactor::eZero; // Optional
-    _PipelineColorBlendAttachmentState->colorBlendOp = vk::BlendOp::eAdd; // Optional
-    _PipelineColorBlendAttachmentState->srcAlphaBlendFactor = vk::BlendFactor::eOne; // Optional
-    _PipelineColorBlendAttachmentState->dstAlphaBlendFactor = vk::BlendFactor::eZero; // Optional
-    _PipelineColorBlendAttachmentState->alphaBlendOp = vk::BlendOp::eAdd;
-    
+
+   
+    _PipelineColorBlendAttachmentState->colorWriteMask =
+        Utils::RhiColorComponent(_blendInfo->colorMask);
+    _PipelineColorBlendAttachmentState->blendEnable = _blendInfo->enabled ? VK_TRUE : VK_FALSE;
+    _PipelineColorBlendAttachmentState->srcColorBlendFactor =  Utils::RhiBlendFactorToVulkan(_blendInfo->srcColorBlendFactor);
+    _PipelineColorBlendAttachmentState->dstColorBlendFactor = Utils::RhiBlendFactorToVulkan(_blendInfo->dstColorBlendFactor); 
+    _PipelineColorBlendAttachmentState->colorBlendOp = Utils::RhiBlendOpToVulkan(_blendInfo->colorBlendOp); 
+    _PipelineColorBlendAttachmentState->srcAlphaBlendFactor = Utils::RhiBlendFactorToVulkan(_blendInfo->srcAlphaBlendFactor); 
+    _PipelineColorBlendAttachmentState->dstAlphaBlendFactor = Utils::RhiBlendFactorToVulkan(_blendInfo->dstAlphaBlendFactor); 
+    _PipelineColorBlendAttachmentState->alphaBlendOp =  Utils::RhiBlendOpToVulkan(_blendInfo->alphaBlendOp);
+}
+
+void VulkanShaderProgram::ParsePipelineDepthStencilAttachmentState(
+    vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
+    const PC_CORE::DephStencilInfo& _dephInfo)
+{
+    _PipelineDepthStencilStateCreateInfo->sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
+    _PipelineDepthStencilStateCreateInfo->depthTestEnable = _dephInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    _PipelineDepthStencilStateCreateInfo->depthWriteEnable = _dephInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    _PipelineDepthStencilStateCreateInfo->depthCompareOp = Utils::RHIToVulkanCompareOp(_dephInfo.depthCompareOp);
+    _PipelineDepthStencilStateCreateInfo->minDepthBounds = 0.0f;
+    _PipelineDepthStencilStateCreateInfo->maxDepthBounds = 1.0f;
+    _PipelineDepthStencilStateCreateInfo->stencilTestEnable = VK_FALSE;
+    _PipelineDepthStencilStateCreateInfo->front = vk::StencilOpState(); // Optional
+    _PipelineDepthStencilStateCreateInfo->back = vk::StencilOpState(); // Optional
 }
 
 void VulkanShaderProgram::ParseParsePipelineColorBlendAttachmentState(
@@ -509,6 +518,7 @@ void VulkanShaderProgram::ParseParsePipelineColorBlendAttachmentState(
     _PipelineColorBlendStateCreateInfo->blendConstants[1] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[2] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[3] = 0.0f; // Optional
+
 }
 
 vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDescription(

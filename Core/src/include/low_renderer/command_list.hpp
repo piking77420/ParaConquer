@@ -103,6 +103,8 @@ public:
 
     PC_CORE_API virtual void SetPrimitiveTopology(PrimitiveTopology _primitiveTopology) = 0;
 
+    PC_CORE_API virtual void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) = 0;
+
     PC_CORE_API virtual void SetLineWidth(float _widht) = 0;
 
     PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) = 0;

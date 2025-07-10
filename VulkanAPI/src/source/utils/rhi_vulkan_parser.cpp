@@ -1407,4 +1407,117 @@ VmaMemoryUsage Vulkan::Utils::RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation
     return VMA_MEMORY_USAGE_MAX_ENUM;
 }
 
+vk::BlendFactor Vulkan::Utils::RhiBlendFactorToVulkan(PC_CORE::BlendFactor _blendFactor)
+{
+    vk::BlendFactor blendFactor = vk::BlendFactor::eZero;
+    switch (_blendFactor)
+    {
+    case PC_CORE::BlendFactor::Zero:
+        break;
+    case PC_CORE::BlendFactor::One:
+        blendFactor = vk::BlendFactor::eOne;
+        break;
+    case PC_CORE::BlendFactor::SrcColor:
+        blendFactor = vk::BlendFactor::eSrcColor;
+        break;
+    case PC_CORE::BlendFactor::OneMinusSrcColor:
+        blendFactor = vk::BlendFactor::eOneMinusSrcColor;
+        break;
+    case PC_CORE::BlendFactor::DstColor:
+        blendFactor = vk::BlendFactor::eDstColor;
+        break;
+    case PC_CORE::BlendFactor::OneMinusDstColor:
+        blendFactor = vk::BlendFactor::eOneMinusDstColor;
+        break;
+    case PC_CORE::BlendFactor::SrcAlpha:
+        blendFactor = vk::BlendFactor::eSrcAlpha;
+        break;
+    case PC_CORE::BlendFactor::OneMinusSrcAlpha:
+        blendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+        break;
+    case PC_CORE::BlendFactor::DstAlpha:
+        blendFactor = vk::BlendFactor::eDstAlpha;
+        break;
+    case PC_CORE::BlendFactor::OneMinusDstAlpha:
+        blendFactor = vk::BlendFactor::eOneMinusDstAlpha;
+        break;
+    case PC_CORE::BlendFactor::ConstantColor:
+        blendFactor = vk::BlendFactor::eConstantColor;
+        break;
+    case PC_CORE::BlendFactor::OneMinusConstantColor:
+        blendFactor = vk::BlendFactor::eOneMinusConstantColor;
+        break;
+    case PC_CORE::BlendFactor::ConstantAlpha:
+        blendFactor = vk::BlendFactor::eConstantAlpha;
+        break;
+    case PC_CORE::BlendFactor::OneMinusConstantAlpha:
+        blendFactor = vk::BlendFactor::eOneMinusConstantAlpha;
+        break;
+    case PC_CORE::BlendFactor::SrcAlphaSaturate:
+        blendFactor = vk::BlendFactor::eSrcAlphaSaturate;
+        break;
+    case PC_CORE::BlendFactor::Src1Color:
+        blendFactor = vk::BlendFactor::eSrc1Color;
+        break;
+    case PC_CORE::BlendFactor::OneMinusSrc1Color:
+        blendFactor = vk::BlendFactor::eOneMinusSrc1Color;
+        break;
+    case PC_CORE::BlendFactor::Src1Alpha:
+        blendFactor = vk::BlendFactor::eSrc1Alpha;
+        break;
+    case PC_CORE::BlendFactor::OneMinusSrc1Alpha:
+        blendFactor = vk::BlendFactor::eOneMinusSrc1Alpha;
+        break;
+    default: assert(false);
+    }
+    return blendFactor;
+}
+
+vk::BlendOp Vulkan::Utils::RhiBlendOpToVulkan(PC_CORE::BlendOp _blendOp)
+{
+    vk::BlendOp blendOp = vk::BlendOp::eAdd;
+    switch (_blendOp)
+    {
+    case PC_CORE::BlendOp::eAdd:
+        break;
+    case PC_CORE::BlendOp::eSubtract:
+        blendOp = vk::BlendOp::eSubtract;
+        break;
+    case PC_CORE::BlendOp::eReverseSubtract:
+        blendOp = vk::BlendOp::eReverseSubtract;
+        break;
+    case PC_CORE::BlendOp::eMin:
+        blendOp = vk::BlendOp::eMin;
+        break;
+    case PC_CORE::BlendOp::eMax:
+        blendOp = vk::BlendOp::eMax;
+        break;
+    default: assert(false);
+    }
+
+    return blendOp;
+}
+
+vk::ColorComponentFlags Vulkan::Utils::RhiColorComponent(PC_CORE::ColorComponent _colorComponent)
+{
+    vk::ColorComponentFlags f = {};
+    if (_colorComponent & PC_CORE::ColorComponent_R)
+    {
+        f |= vk::ColorComponentFlagBits::eR;
+    }
+    if (_colorComponent & PC_CORE::ColorComponent_G)
+    {
+        f |= vk::ColorComponentFlagBits::eG;
+    }
+    if (_colorComponent & PC_CORE::ColorComponent_B)
+    {
+        f |= vk::ColorComponentFlagBits::eB;
+    }
+    if (_colorComponent & PC_CORE::ColorComponent_A)
+    {
+        f |= vk::ColorComponentFlagBits::eA;
+    }
+    return f;
+}
+
 
