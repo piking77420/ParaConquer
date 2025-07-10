@@ -21,9 +21,19 @@ EntityId EntityManager::CreateEntity()
 
 	assert(m_LivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
 	
-	EntityId id = m_AvailableEntitiesId.front();
+	EntityId id = INVALID_ENTITY_ID;
+	if (m_AvailableEntitiesId.empty())
+	{
+		id = m_EntityIdCounter++;
+	}
+	else
+	{
+		id = m_AvailableEntitiesId.front();
+		m_AvailableEntitiesId.pop();
+	}
+
+	assert(id != INVALID_ENTITY_ID);
 	m_EntityEnableFlags.set(id,	true);
-	m_AvailableEntitiesId.pop();
 
 	// set name
 	m_EntityNameAlloc.Add(id);
