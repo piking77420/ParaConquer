@@ -38,6 +38,6 @@ void main()
 
     vec3 finalColor = lighting + skyBoxColor * 0.2; 
 
-    outColor = vec4(skyBoxColor * 0.2, 1.0);
+    outColor = vec4(finalColor, 1.0);
 
 }

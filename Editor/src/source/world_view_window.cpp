@@ -123,7 +123,7 @@ void WorldViewWindow::ResizeViewports()
         .width = static_cast<uint32_t>(size.x),
         .height = static_cast<uint32_t>(size.y),
         .attachements = &attachments,
-        .renderPass = m_Editor->gameApp.renderer.drawTextureScreenQuadPass.get()
+        .renderPass = m_Editor->gameApp.renderer.drawToFinalViewPort.get()
         };
     m_FinalFrameBufferViewport = PC_CORE::Rhi::CreateFrameBuffer(create_frame_info);
     

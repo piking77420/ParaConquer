@@ -407,7 +407,6 @@ void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulk
                 {
                     if (existingBinding.binding == descriptorSetLayout.binding)
                     {
-                        // Fusionner les shader stage flags (par ex. vertex + fragment)
                         existingBinding.stageFlags |= descriptorSetLayout.stageFlags;
                         found = true;
                         break;
