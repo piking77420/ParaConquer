@@ -206,12 +206,16 @@ void Renderer::ClearRenderData()
 
 void Renderer::DrawSkyBox()
 {
-    primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
-    primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
-    primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET, 1);
-    primaryCommandList->BindVertexBuffer(*m_CubeMesh->vertexBuffer.GetRhiBuffer(), 0, 1);
-    primaryCommandList->BindIndexBuffer(*m_CubeMesh->indexBuffer.GetRhiBuffer(), 0);
-    primaryCommandList->DrawIndexed(m_CubeMesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+    if (auto cube = m_CubeMesh.lock())
+    {
+
+        primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
+        primaryCommandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+    }
 }
 
 
@@ -588,7 +592,7 @@ void Renderer::CreateDescriptorSets()
     ImageSamperDescriptor skyboxCubeMapDescritptor
     {
         .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
-        .texture = m_Cubemap.get()
+        .texture = m_Cubemap.lock().get()
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;

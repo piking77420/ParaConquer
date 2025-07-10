@@ -78,9 +78,9 @@ private:
     
     SceneBufferGPU sceneBufferGPU;
 
-    std::shared_ptr<Texture3D> m_Cubemap;
+    std::weak_ptr<Texture3D> m_Cubemap;
 
-    std::shared_ptr<Mesh> m_CubeMesh;
+    std::weak_ptr<Mesh> m_CubeMesh;
 
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
 
