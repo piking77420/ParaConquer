@@ -24,8 +24,6 @@ public:
 
 	PC_CORE_API void Remove(EntityId entityId);
 
-	PC_CORE_API bool HasComponent(EntityId entityId) const;
-
 private:
 	std::vector<uint8_t> m_ComponentData;
 
@@ -40,6 +38,8 @@ private:
 	Constructor constructor = nullptr;
 
 	Destructor destructor = nullptr;
+
+	PC_CORE_API bool HasComponent(EntityId entityId) const;
 
 	REFLECT(ComponentArray)
 	REFLECT_MEMBER(ComponentArray, m_ComponentData)

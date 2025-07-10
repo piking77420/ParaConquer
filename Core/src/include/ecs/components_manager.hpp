@@ -60,15 +60,7 @@ public:
 		it->second.Remove(_entityId);
 	}
 
-	template <ComponentDerived T>
-	PC_FORCE_INLINE bool HasComponent(EntityId _entityId)
-	{
-		assert(m_ComponentTypeToComponentBitFlag.find(Reflector::GetTypeKey<T>()) != m_ComponentTypeToComponentBitFlag.end() && "There is no component has this type");
-
-		return m_ComponentMapArray[Reflector::GetTypeKey<T>()].HasComponent(_entityId);
-	}
-
-	PC_CORE_API PC_FORCE_INLINE void DestroyEntity(EntityId _entity, Signature _entitySignature)
+	PC_CORE_API PC_FORCE_INLINE void DestroyEntity(EntityId _entity, const Signature& _entitySignature)
 	{
 		for (uint32_t i = 0; i < m_ComponentTypeCount; i++)
 		{
@@ -77,8 +69,6 @@ public:
 				m_ComponentMapArray[m_ComponentBitFlagToComponentType[i]].Remove(_entity);
 			}
 		}
-
-		
 	}
 
 	template <ComponentDerived T>

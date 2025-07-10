@@ -15,32 +15,17 @@
 #include <perf_region.hpp>
 
 #include "math/toolbox_typedef.hpp"
+#include "rendering/render_system.hpp"
 #include "resources/shader_source_binary.hpp"
 
 using namespace PC_CORE;
 
 
-void Renderer::InitRenderSystem()
-{
-    PERF_REGION_SCOPED;
-    Level& level = World::GetWorld()->level;
-
-    rendererSystem = level.RegisterSystem<RendererSystem>();
-
-    rendererSystem->staticMeshSignature.set(level.GetComponentTypeBit<Transform>(), true);
-    rendererSystem->staticMeshSignature.set(level.GetComponentTypeBit<StaticMesh>(), true);
-    rendererSystem->AddSignature(rendererSystem->staticMeshSignature);
-
-    rendererSystem->dirLightSignature.set(level.GetComponentTypeBit<Transform>(), true);
-    rendererSystem->dirLightSignature.set(level.GetComponentTypeBit<DirLight>(), true);
-    rendererSystem->AddSignature(rendererSystem->dirLightSignature);
-
-}
-
 void Renderer::Init()
 {
     PERF_REGION_SCOPED;
-
+     World::GetWorld()->level.RegisterSystem<RendererSystem>(&m_RenderWorldData);
+    
     m_RhiContext = Rhi::GetRhiContext();
     constexpr CommandListCreateInfo commandListCreateInfo =
     {
@@ -53,9 +38,7 @@ void Renderer::Init()
     CreateShaders();
     CreateThirdPartyResources();
     CreateDescriptorSets();
-   
-    InitRenderSystem();
-
+    
 
     m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 }
@@ -65,18 +48,43 @@ void Renderer::BeginDraw(Window* _window)
     PERF_REGION_SCOPED;
 
     m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
-
-
     primaryCommandList->Reset();
     primaryCommandList->BeginRecordCommands();
 
     m_DebugDrawContext->Prepare();
-    QueryWorldData(World::GetWorld());
-    sceneLightsBuffer
-        ->Fecth();
-        
+    UpdateLightData();
+    sceneLightsBuffer->Fecth();
 }
 
+void Renderer::UpdateLightData()
+{
+    for (size_t i = 0; i < m_RenderWorldData.lightData.size(); i++)
+    {
+        LightData& lightData = m_RenderWorldData.lightData[i];
+        
+        switch (lightData.lightType)
+        {
+        case LightType::Directional:
+            sceneLightsBuffer->sceneLightData.ambiant = lightData.data.directionalLight.color;
+            sceneLightsBuffer
+                ->sceneLightData.color = lightData.data.directionalLight.color;
+            sceneLightsBuffer
+                ->sceneLightData.intensity = lightData.data.directionalLight.intensity;
+            sceneLightsBuffer
+                ->sceneLightData.direction = lightData.data.directionalLight.direction;
+            break;
+        case LightType::Spotlight:
+        case LightType::Point:
+        case LightType::Area:
+        case LightType::Count:
+            break;
+        default:
+            assert(false && "Not implemented light type");
+        }
+
+        
+    }
+}
 
 
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
@@ -108,6 +116,7 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 
     cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 }
+
 
 
 void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext,
@@ -149,70 +158,50 @@ void Renderer::SwapBuffers(Window* _window)
 
     primaryCommandList->ExucuteFetchCommand();
     swapChain->EndSwapChainRenderPass(primaryCommandList.get());
+
     primaryCommandList->EndRecordCommands();
-    
+    ClearRenderData();
     m_RhiContext->swapChain->Present(primaryCommandList.get(), _window);
     Rhi::NextFrame();
 }
 
-void Renderer::QueryWorldData(World* world)
+
+
+void Renderer::DrawStaticMesh()
 {
     PERF_REGION_SCOPED;
     
-    Level& level = world->level;
-    for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->dirLightSignature))
+    Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
+    for (size_t i = 0; i < m_RenderWorldData.staticMeshData.size(); i++)
     {
-        QueryLightDirData(level.GetComponent<DirLight>(it), level.GetComponent<Transform>(it));
+        Tbx::Matrix4x4f modelMatrixf[2];
+
+        m_RenderWorldData.staticMeshData[i].worldMatrix[12] -= currentRenderingContext->lowLevelCamera.position.x;
+        m_RenderWorldData.staticMeshData[i].worldMatrix[13] -= currentRenderingContext->lowLevelCamera.position.y;
+        m_RenderWorldData.staticMeshData[i].worldMatrix[14] -= currentRenderingContext->lowLevelCamera.position.z;
+
+        modelMatrixf[0] = m_RenderWorldData.staticMeshData[i].worldMatrix;
+        modelMatrixf[1] = m_RenderWorldData.staticMeshData[i].normalInvertMatrix;
+
+        const ShaderProgramDescriptorSets* materialDescriptor = m_RenderWorldData.staticMeshData[i].descriptorSet;
+        const Mesh* mesh = m_RenderWorldData.staticMeshData[i].mesh;
+
+        // Send Data
+        primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        primaryCommandList->PushConstant(m_ForwardShader.lock().get(), "PushConstants", &modelMatrixf,
+                                         sizeof(Tbx::Matrix4x4f) * 2);
+        primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
+        primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
     }
-
+  
 }
 
-void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
+void Renderer::ClearRenderData()
 {
-    sceneLightsBuffer
-        ->sceneLightData.ambiant = dirLight.ambiant;
-    sceneLightsBuffer
-        ->sceneLightData.color = dirLight.color;
-    sceneLightsBuffer
-        ->sceneLightData.intensity = dirLight.intensity;
-    sceneLightsBuffer
-        ->sceneLightData.direction = Tbx::Quaternionf::ToEulerAngles(transform.rotation.quaternion).Normalize();
+    m_RenderWorldData.lightData.clear();
+    m_RenderWorldData.staticMeshData.clear();
 }
-
-
-void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
-{
-    PERF_REGION_SCOPED;
-
-    if (_staticMesh.material.expired() || _staticMesh.mesh.expired())
-        return;
-
-    
-    // Compute Matrix
-    Tbx::Matrix4x4d modelMatrixd[2];
-
-    Tbx::Vector3d d = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
-    modelMatrixd[0] = Tbx::Trs4x4<double>(_transform.position - d , static_cast<Tbx::Quaterniond>(_transform.rotation.quaternion),
-        _transform.scale);
-
-    modelMatrixd[1] = modelMatrixd[0].Invert().Transpose();
-
-    Tbx::Matrix4x4f modelMatrixf[2];
-    modelMatrixf[0] = modelMatrixd[0];
-    modelMatrixf[1] = modelMatrixd[1];
-
-    Material* material = _staticMesh.material.lock().get();
-    Mesh* mesh = _staticMesh.mesh.lock().get();
-
-    // Send Data
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), material->GetDescriptorSet(), MATERIAL_DESCRIPTOR_SET, 1);
-    primaryCommandList->PushConstant(m_ForwardShader.lock().get(), "PushConstants", &modelMatrixf,
-                                     sizeof(Tbx::Matrix4x4f) * 2);
-    primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
-    primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
-    primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
-}
-
 
 
 void Renderer::DrawSkyBox()
@@ -259,12 +248,9 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
 
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-    Level& level = World::GetWorld()->level;
+    
     // draw all static mesh
-    for (const auto& it : *rendererSystem->GetEntityIdList(rendererSystem->staticMeshSignature))
-        DrawStaticMesh(level.GetComponent<Transform>(it),
-            level.GetComponent<StaticMesh>(it));
-
+    DrawStaticMesh();
     DrawSkyBox();
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)

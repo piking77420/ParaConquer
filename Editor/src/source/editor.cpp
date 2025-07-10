@@ -168,7 +168,7 @@ void Editor::CompileShader()
 {
 	PERF_REGION_SCOPED;
 	PC_LOG("CompileShader...")
-	//fs::create_directory(SHADER_CACHE_PATH);
+	std::filesystem::create_directory(SHADER_CACHE_PATH);
 	
 	auto forwardVert = ResourceManager::Create<ShaderSource>("forward.vert");
 	forwardVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/forward/forward.vert");
@@ -340,7 +340,7 @@ void Editor::Destroy()
 }
 void Editor::UpdateEditor()
 {
-	
+	PERF_REGION_SCOPED;
 	//static bool open = true;
 	//ImGui::ShowDemoWindow(&open);
 
@@ -381,12 +381,16 @@ void Editor::UpdateEditor()
 		ImGui::EndMenuBar();
 	}
 
-	for (auto& editorWindow : editorWindows)
 	{
-		editorWindow->Begin();
-		editorWindow->Update();
-		editorWindow->End();
+		PERF_REGION_SCOPED_NAMED("Update Windows");
+		for (auto& editorWindow : editorWindows)
+		{
+			editorWindow->Begin();
+			editorWindow->Update();
+			editorWindow->End();
+		}
 	}
+	
 
 	for (auto& sub : editorSubSystems)
 		sub->Update();
@@ -394,6 +398,11 @@ void Editor::UpdateEditor()
 	EditorCommandUpdate();
 	dockSpace.EndDockSpace();
 
+
+	for (auto& editorWindow : editorWindows)
+		editorWindow->Render();
+	for (auto& sub : editorSubSystems)
+		sub->Render();
 }
 
 
@@ -477,17 +486,14 @@ void Editor::Run(bool* _appShouldClose)
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
 		PC_CORE::Time::UpdateTime();
+
+
+		gameApp.WorldTick(PC_CORE::Time::DeltaTime());
+
 		IMGUIContext.NewFrame();
-
 		gameApp.renderer.BeginDraw(&gameApp.window);
-		
 		UpdateEditor();
-		gameApp.WorldTick();
-
-		for (auto& editorWindow : editorWindows)
-			editorWindow->Render();
-		for (auto& sub : editorSubSystems)
-			sub->Render();
+	
 
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;

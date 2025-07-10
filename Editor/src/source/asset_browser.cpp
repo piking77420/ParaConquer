@@ -28,6 +28,7 @@ void AssetBrowser::Render()
 
 void PC_EDITOR_CORE::AssetBrowser::Update()
 {
+    PERF_REGION_SCOPED;
     EditorWindow::Update();
 
     if (!IsCursorInsideWindow() || ImGui::IsMouseClicked(ImGuiMouseButton_Left))

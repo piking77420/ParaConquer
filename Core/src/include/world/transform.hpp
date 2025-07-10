@@ -34,6 +34,7 @@ REFLECT(Rotation)
 REFLECT_MEMBER(Rotation, eulerAngles)
 REFLECT_MEMBER(Rotation, quaternion)
 
+// TODO be more cache friendly for rendering fetch data
 struct Transform : Component
 {
     EntityId parentId = INVALID_ENTITY_ID;

@@ -24,6 +24,7 @@ Inspector::~Inspector()
 void Inspector::Update()
 {
     EditorWindow::Update();
+    PERF_REGION_SCOPED;
 
     if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
         return;
@@ -96,6 +97,7 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
 
 void Inspector::Show()
 {
+    PERF_REGION_SCOPED;
     PC_CORE::World* w = PC_CORE::World::GetWorld();
 
     if (componentManagerPtr == nullptr)
@@ -151,6 +153,8 @@ void Inspector::Show()
 
 void Inspector::OnInput()
 {
+    PERF_REGION_SCOPED;
+
     if (ButtonCenteredOnLine("Add Component"))
     {
         ImGui::OpenPopup("Components");

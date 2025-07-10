@@ -4,9 +4,10 @@
 #include "ecs/entity_manager.h"
 #include "ecs/components_manager.hpp"
 #include "ecs/system_manager.hpp"
+#include "rendering/rendering_typedef.h"
 
 BEGIN_PCCORE
-class World
+    class World
 {
 public:
 
@@ -23,11 +24,14 @@ public:
     
     PC_CORE_API void Begin();
 
-    PC_CORE_API void Update();
+    PC_CORE_API void Update(double _tick);
+
+    PC_CORE_API void RenderingTick(double _tick);
     
     PC_CORE_API void LoadLevel(const Level& _level);
     
     PC_CORE_API World();
+
     
     PC_CORE_API ~World()
     {
@@ -36,7 +40,12 @@ public:
 
 private:
     PC_CORE_API static inline World* m_World = nullptr;
-    
+
+
+    void GetStaticMesh(RenderingWorldData& _renderData, EntityId _entityId);
+
+    void GetStaticLightData(RenderingWorldData& _renderData, EntityId _entityId);
+
     REFLECT(World)
     REFLECT_MEMBER(World, level)
 };

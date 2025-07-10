@@ -47,9 +47,12 @@ App::App()
 }
 
 
-void App::WorldTick()
+void App::WorldTick(double _tick)
 {
+    PERF_REGION_SCOPED;
+
     world.Begin();
-    world.Update();
+    world.Update(_tick);
+    world.RenderingTick(_tick);
 }
 

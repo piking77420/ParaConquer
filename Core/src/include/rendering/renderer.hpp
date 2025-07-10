@@ -20,44 +20,15 @@ BEGIN_PCCORE
 #define FORWARD_DEBUG_COLOR {0,0,1,1}
 #define FINAL_RENDER_PASS_DEBUG_COLOR {1,1,1,1}
 
-
-class RendererSystem : public EcsSystem
-{
-
-public:
-
-    DEFAULT_COPY_MOVE_OPERATIONS(RendererSystem)
-    
-    Signature staticMeshSignature;
-
-    Signature dirLightSignature;
-
-    RendererSystem()
-    {
-        DYNAMIC_REFLECT_INIT;
-    }
-
-    IMP_DYNAMIC_REFLECT();
-
-    PC_CORE_API void Begin() override {};
-    PC_CORE_API void Tick(double deltaTime) override {};
-    PC_CORE_API void RenderingTick(double deltatime) override {};
-private:
-    REFLECT(RendererSystem)
-    REFLECT_MEMBER(RendererSystem, staticMeshSignature);
-    REFLECT_MEMBER(RendererSystem, dirLightSignature);
-};
-
-
-
 class Renderer
 {
 public:
 
+
+
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
     std::weak_ptr<PC_CORE::GraphicShader> m_ForwardShader;
-
 
     // TO DO TO RESOURE REF
     std::weak_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
@@ -92,6 +63,9 @@ private:
     World* m_CurrentWorld;
     
     RhiContext* m_RhiContext;
+
+    // Critical section
+    RenderingWorldData m_RenderWorldData;
     
     ShaderProgramDescriptorSets* m_ShaderProgramSceneDescriptorSet = nullptr;
 
@@ -102,8 +76,6 @@ private:
         ShaderProgramDescriptorSets* cubeMapDescriptorSet = nullptr;
     }descriptorSetsSkybox;
     
-  
-
     SceneBufferGPU sceneBufferGPU;
 
     std::shared_ptr<Texture3D> m_Cubemap;
@@ -111,8 +83,6 @@ private:
     std::shared_ptr<Mesh> m_CubeMesh;
 
     std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
-
-    std::shared_ptr<RendererSystem> rendererSystem;
 
     const RenderingContext* currentRenderingContext = nullptr;
     
@@ -130,13 +100,11 @@ private:
     
     PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
 
-    PC_CORE_API void QueryWorldData(World* world);
-
-    PC_CORE_API void QueryLightDirData(DirLight& dirLight, Transform& transform);
+    PC_CORE_API void UpdateLightData();
     
-    PC_CORE_API void DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh);
+    PC_CORE_API void DrawStaticMesh();
 
-    PC_CORE_API void InitRenderSystem();
+    PC_CORE_API void ClearRenderData();
 
     PC_CORE_API void DrawSkyBox();
 

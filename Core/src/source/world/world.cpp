@@ -1,6 +1,10 @@
 ﻿#include "world/world.hpp"
 #include <debug_helper/debug_draw_context.hpp>
 
+#include "rendering/light.hpp"
+#include "world/static_mesh.hpp"
+#include "world/transform.hpp"
+
 using namespace PC_CORE;
 
 
@@ -15,6 +19,7 @@ World::World()
     m_World = this;
 }
 
+
 void World::Begin()
 {
     if (begin)
@@ -22,11 +27,12 @@ void World::Begin()
         PERF_REGION_SCOPED;
         //TO DO CALL SYS BEGIN
         begin = false;
+        level.Begin();
         run = true;
     }
 }
 
-void World::Update()
+void World::Update(double _tick)
 {
     PERF_REGION_SCOPED;
 
@@ -35,15 +41,18 @@ void World::Update()
 
     if (run)
     {
-        //TO DO CALL SYS UpDATE
-
-        
+        level.Update(_tick);
     }
+}
+
+void World::RenderingTick(double _tick)
+{
+    level.RenderingTick(_tick);
 }
 
 
 void World::LoadLevel(const Level& _level)
 {
-    level = _level;
+    //level = _level;
+    assert(false);
 }
-

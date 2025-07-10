@@ -11,6 +11,14 @@ class SystemManager
 {
 public:
 
+	template <SystemDerived T, typename... P>
+	std::shared_ptr<T> RegisterSystem(P&&... args)
+	{
+		auto system = std::make_shared<T>(std::forward<P>(args)...);
+		m_Systems.emplace_back(system);
+		return system;
+	}
+
 	template <SystemDerived T>
 	std::shared_ptr<T> RegisterSystem()
 	{
@@ -49,6 +57,31 @@ public:
 			it->OnEntitySignatureChange(entityId, _oldSignature, _newSignature);
 		
 	}		
+
+	PC_CORE_API void Begin()
+	{
+		for (auto& it : m_Systems)
+		{
+			it->Begin();
+		}
+	}
+
+	PC_CORE_API void Update(double _tick)
+	{
+		for (auto& it : m_Systems)
+		{
+			it->Tick(_tick);
+		}
+	}
+
+
+	PC_CORE_API void RenderingTick(double _tick)
+	{
+		for (auto& it : m_Systems)
+		{
+			it->RenderingTick(_tick);
+		}
+	}
 
 
 private:

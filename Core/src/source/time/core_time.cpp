@@ -2,14 +2,14 @@
 
 #include <GLFW/glfw3.h>
 
-float PC_CORE::Time::GetTime()
+double PC_CORE::Time::GetTime()
 {
-    return static_cast<float>(currentTime);
+    return currentTime;
 }
 
-float PC_CORE::Time::DeltaTime()
+double PC_CORE::Time::DeltaTime()
 {
-    return static_cast<float>(deltaTime);
+    return deltaTime;
 }
 
 void PC_CORE::Time::UpdateTime()

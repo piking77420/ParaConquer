@@ -19,7 +19,7 @@ class ShaderProgram;
 class Material : public Resource
 {
 public:
-    MaterialType m_MaterialType = MaterialType::Opaque;
+    MaterialType materialType = MaterialType::Opaque;
 
     ResourceRef<Texture2D> m_albedo;
 

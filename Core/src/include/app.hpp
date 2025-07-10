@@ -50,7 +50,7 @@ public:
 
 	PC_CORE_API void Run();
 	
-	PC_CORE_API void WorldTick();
+	PC_CORE_API void WorldTick(double _tick);
 	
 	PC_CORE_API static inline App* instance = nullptr;
 };

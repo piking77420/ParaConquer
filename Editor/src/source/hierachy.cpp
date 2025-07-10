@@ -18,6 +18,7 @@ Hierachy::Hierachy(Editor& _editor, const std::string& _name) : EditorWindow(_ed
 
 void Hierachy::Update()
 {
+    PERF_REGION_SCOPED;
     EditorWindow::Update();
     ShowGraph();
 }
@@ -38,22 +39,30 @@ void Hierachy::ShowGraph()
     }
     
     
+    // TODO test multiple bytes at once 
     bool hasSelected = false;
-    for (size_t i = 0 ; i < m_EnableEntitiesBitSetPtr->size(); i++)
-    {
-        if (!m_EnableEntitiesBitSetPtr->test(i))
-            continue;
-        
-        PC_CORE::EntityId id = static_cast<PC_CORE::EntityId>(i);
-        auto entName = m_EntityManagerPtr->GetEntityName(i);
-        
+    const size_t byteCount = m_EnableEntitiesBitSetPtr->size();
 
-        if (ImGui::Button(entName.data()))
+    std::bitset<PC_CORE::MAX_ENTITIES> bitsetIterator = *m_EnableEntitiesBitSetPtr;
+    for (size_t i = 0 ; i < byteCount; i++)
+    {
+        if (bitsetIterator == 0)
+            break;
+
+        if (m_EnableEntitiesBitSetPtr->test(i))
         {
-            m_Editor->m_SelectedEntityId = id;
-            hasSelected = true;
+            PC_CORE::EntityId id = static_cast<PC_CORE::EntityId>(i);
+            auto entName = m_EntityManagerPtr->GetEntityName(i);
+
+            if (ImGui::Button(entName.data()))
+            {
+                m_Editor->m_SelectedEntityId = id;
+                hasSelected = true;
+            }
         }
+        bitsetIterator.set(i, false);
     }
+
 
     if (!hasSelected)
     {

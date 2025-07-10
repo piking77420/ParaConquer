@@ -16,7 +16,7 @@ PC_CORE::Material::Material(const std::string& _name)
     DYNAMIC_REFLECT_INIT
     
     name = _name;
-    switch (m_MaterialType)
+    switch (materialType)
     {
     case MaterialType::Opaque:
         m_ShaderProgram = App::instance->renderer.m_ForwardShader;

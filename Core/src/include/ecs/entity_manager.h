@@ -39,15 +39,19 @@ BEGIN_PCCORE
 
         PC_CORE_API const Signature* GetSignature(EntityId entity) const;
 
-       
+        PC_CORE_API PC_FORCE_INLINE bool IsValid(EntityId _id) const
+        {
+            return m_EntityEnableFlags.test(_id);
+        }
     private:
     uint32_t m_LivingEntityCount = 0;
 
     SpareSet<Signature> m_EntitesSignature;
 
-    // to do reflect and serializable queu and stack
-    // replace with stack
+    // this queu is a queu of available entity id
     std::queue<EntityId> m_AvailableEntitiesId;
+
+    uint32_t m_EntityIdCounter = 0;
 
     SpareSet<std::array<char, 255>> m_EntityNameAlloc;
     
@@ -57,6 +61,7 @@ BEGIN_PCCORE
     REFLECT_MEMBER(EntityManager, m_LivingEntityCount);
     REFLECT_MEMBER(EntityManager, m_EntitesSignature);
     REFLECT_MEMBER(EntityManager, m_AvailableEntitiesId);
+    REFLECT_MEMBER(EntityManager, m_EntityIdCounter);
     REFLECT_MEMBER(EntityManager, m_EntityNameAlloc);
     REFLECT_MEMBER(EntityManager, m_EntityEnableFlags);
 

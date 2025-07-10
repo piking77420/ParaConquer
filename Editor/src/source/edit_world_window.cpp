@@ -18,6 +18,8 @@ PC_EDITOR_CORE::EditWorldWindow::EditWorldWindow(Editor& _editor, const std::str
 
 void PC_EDITOR_CORE::EditWorldWindow::Update()
 {
+    PERF_REGION_SCOPED;
+
     WorldViewWindow::Update();
     if(ImGui::IsWindowFocused())
         MoveCameraUpDate();

@@ -72,10 +72,18 @@ public:
         return m_ComponentManager.GetComponentTypeBit<T>();
     }
 
+    template<SystemDerived T, typename... P>
+    PC_FORCE_INLINE std::shared_ptr<T> RegisterSystem(P&&... args)
+    {
+        static_assert(!std::is_same_v<T, EcsSystem>, "EcsSystem is pure virtual");
+
+        return m_SystemManagers.RegisterSystem<T>(std::forward<P>(args)...);
+    }
+
     template<SystemDerived T>
     PC_FORCE_INLINE std::shared_ptr<T> RegisterSystem()
     {
-        static_assert(!std::is_same_v<T, EcsSystem>, "EcsSystem is pure virtual ");
+        static_assert(!std::is_same_v<T, EcsSystem>, "EcsSystem is pure virtual");
 
         return m_SystemManagers.RegisterSystem<T>();
     }
@@ -101,7 +109,43 @@ public:
         return m_ComponentManager.GetComponent(_entityId, typeId);
     }
     
+    PC_CORE_API PC_FORCE_INLINE bool IsValid(EntityId _id) const
+    {
+        return m_EntityManager.IsValid(_id);
+    }
 
+    PC_CORE_API Signature* GetSignature(EntityId entity)
+    {
+        return m_EntityManager.GetSignature(entity);
+    }
+
+    PC_CORE_API const Signature* GetSignature(EntityId entity) const
+    {
+        return m_EntityManager.GetSignature(entity);
+    }
+
+    template <ComponentDerived... T>
+    PC_FORCE_INLINE bool HasComponent(EntityId _entityId)
+    {
+        auto signature = m_EntityManager.GetSignature(_entityId);
+        return (signature->test(GetComponentTypeBit<T>()) && ...);
+    }
+
+    PC_CORE_API void Begin()
+    {
+        m_SystemManagers.Begin();
+    }
+
+    PC_CORE_API void Update(double _tick)
+    {
+        m_SystemManagers.Update(_tick);
+    }
+
+
+    PC_CORE_API void RenderingTick(double _tick)
+    {
+        m_SystemManagers.RenderingTick(_tick);
+    }
 private:
     ComponentManager m_ComponentManager;
 
@@ -111,6 +155,8 @@ private:
 
     void UpdateSignature(EntityId entity, TypeId typeId, bool hasComponent)
     {
+        PERF_REGION_SCOPED;
+        
         if (hasComponent)
         {
             m_ComponentManager.AddComponent(entity, typeId);

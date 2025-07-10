@@ -12,9 +12,6 @@ EntityManager::EntityManager()
 {
 	PERF_REGION_SCOPED;
 	DYNAMIC_REFLECT_INIT;
-	
-	for (EntityId entity = 0; entity < MAX_ENTITIES; entity++)
-		m_AvailableEntitiesId.push(entity);
 }
 
 
@@ -49,9 +46,19 @@ EntityId EntityManager::CreateEntity(const std::string& _name)
 	assert(m_LivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
 	assert(_name.size() < MAX_ENTITY_NAME_LENGHT && "Entity name is too long.");
 	
-	EntityId id = m_AvailableEntitiesId.front();
+	EntityId id = INVALID_ENTITY_ID;
+	if (m_AvailableEntitiesId.empty())
+	{
+		id = m_EntityIdCounter++;
+	}
+	else
+	{
+		id = m_AvailableEntitiesId.front();
+		m_AvailableEntitiesId.pop();
+	}
+	
+	assert(id != INVALID_ENTITY_ID);
 	m_EntityEnableFlags.set(id,	true);
-	m_AvailableEntitiesId.pop();
 
 	// set name
 	m_EntityNameAlloc.Add(id);

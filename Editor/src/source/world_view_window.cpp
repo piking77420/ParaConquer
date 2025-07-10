@@ -53,6 +53,8 @@ void WorldViewWindow::Update()
 
 void WorldViewWindow::Render()
 {
+    PERF_REGION_SCOPED;
+
     EditorWindow::Render();
     if (size == Tbx::Vector2f{0.f, 0.f})
         return;
