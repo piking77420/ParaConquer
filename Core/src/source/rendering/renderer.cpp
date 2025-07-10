@@ -7,7 +7,7 @@
 #include "time/core_time.hpp"
 #include "math/matrix_transformation.hpp"
 #include "rendering/light.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "rendering/render_passes/render_pass.hpp"
@@ -15,6 +15,8 @@
 #include <perf_region.hpp>
 
 #include "math/toolbox_typedef.hpp"
+#include "rendering/render_system.hpp"
+#include "resources/shader_source_binary.hpp"
 
 using namespace PC_CORE;
 
@@ -22,108 +24,74 @@ using namespace PC_CORE;
 void Renderer::Init()
 {
     PERF_REGION_SCOPED;
-
+     World::GetWorld()->level.RegisterSystem<RendererSystem>(&m_RenderWorldData);
+    
     m_RhiContext = Rhi::GetRhiContext();
-    sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
-    forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
-    drawTextureScreenQuadPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM);
-    forwardPass = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, PC_CORE::RHIFormat::D32_SFLOAT);
-
-    CreateForwardShader();
-    CreateDrawQuadShader();
-
     constexpr CommandListCreateInfo commandListCreateInfo =
     {
         ._commandPoolFamily = CommandPoolFamily::Graphics
     };
 
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
-    m_ForwardShader->AllocDescriptorSet(&m_ShaderProgramDescriptorSet, 0);
 
-    cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU));
+    CreateRenderPasss();
+    CreateShaders();
+    CreateThirdPartyResources();
+    CreateDescriptorSets();
+    
 
-
-    UniformBufferDescriptor uniformBufferDescriptor
-    {
-        .buffer = &cameraUniformBuffer,
-    };
-
-    UniformBufferDescriptor lightData
-    {
-        .buffer = &sceneLightsBuffer
-        ->uniformBuffer,
-    };
-
-    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
-    {
-        {
-            ShaderProgramDescriptorType::UniformBuffer,
-            0,
-            &uniformBufferDescriptor,
-            nullptr,
-        },
-        {
-            ShaderProgramDescriptorType::UniformBuffer,
-            1,
-            &lightData,
-            nullptr,
-        }
-    };
-
-    m_ShaderProgramDescriptorSet->WriteDescriptorSets(descriptorSets);
-
-
-    m_ViewExtrmumUniformBuffer = UniformBuffer(&m_ViewExtremum, sizeof(m_ViewExtremum));
-
-    InitRenderSystem();
+    m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 }
 
-void Renderer::Destroy()
-{
-    if (m_ForwardShader.use_count() != 1)
-    {
-        PC_LOGERROR("There is still a reference to the shader");
-        m_ForwardShader.reset();
-    }
-
-    if (m_DrawTextureScreenQuadShader.use_count() != 1)
-    {
-        PC_LOGERROR("There is still a reference to the shader");
-        m_DrawTextureScreenQuadShader.reset();
-    }
-
-    m_ForwardShader.reset();
-    m_DrawTextureScreenQuadShader.reset();
-
-    primaryCommandList = nullptr;
-    m_ForwardShader = nullptr;
-    forwardPass = nullptr;
-    drawTextureScreenQuadPass = nullptr;
-}
-
-
-bool Renderer::BeginDraw(Window* _window)
+void Renderer::BeginDraw(Window* _window)
 {
     PERF_REGION_SCOPED;
 
-    bool hasObtainSwapChian = m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
-    if (hasObtainSwapChian)
-    {
-        primaryCommandList->Reset();
-        primaryCommandList->BeginRecordCommands();
-    }
+    m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+    primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
 
-    QueryWorldData(World::GetWorld());
-    sceneLightsBuffer
-        ->Fecth();
-
-    return hasObtainSwapChian;
+    m_DebugDrawContext->Prepare();
+    UpdateLightData();
+    sceneLightsBuffer->Fecth();
 }
+
+void Renderer::UpdateLightData()
+{
+    for (size_t i = 0; i < m_RenderWorldData.lightData.size(); i++)
+    {
+        LightData& lightData = m_RenderWorldData.lightData[i];
+        
+        switch (lightData.lightType)
+        {
+        case LightType::Directional:
+            sceneLightsBuffer->sceneLightData.ambiant = lightData.data.directionalLight.color;
+            sceneLightsBuffer
+                ->sceneLightData.color = lightData.data.directionalLight.color;
+            sceneLightsBuffer
+                ->sceneLightData.intensity = lightData.data.directionalLight.intensity;
+            sceneLightsBuffer
+                ->sceneLightData.direction = lightData.data.directionalLight.direction;
+            break;
+        case LightType::Spotlight:
+        case LightType::Point:
+        case LightType::Area:
+        case LightType::Count:
+            break;
+        default:
+            assert(false && "Not implemented light type");
+        }
+
+        
+    }
+}
+
 
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
     PERF_REGION_SCOPED;
 
+    
     currentRenderingContext = &renderingContext;
     SceneBufferGPU& sceneBufferGpu = sceneBufferGPU;
 
@@ -142,87 +110,23 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
     sceneBufferGPU.viewInv = sceneBufferGPU.view.Invert();
     sceneBufferGPU.projInv = sceneBufferGPU.proj.Invert();
     sceneBufferGPU.vpInv = sceneBufferGPU.vp.Invert();
-
+    sceneBufferGPU.cameraNear = renderingContext.lowLevelCamera.near;
+    sceneBufferGPU.cameraFar = renderingContext.lowLevelCamera.far;
+    sceneBufferGPU.cameraPos = renderingContext.lowLevelCamera.position;
 
     cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
 }
 
-void Renderer::UpdateViewExtremumBuffer(const PC_CORE::RenderingContext& renderingContext)
-{
-    PERF_REGION_SCOPED;
-
-    constexpr float far = 1.f;
-    constexpr float near = 0.2f;
-
-    // TO DO FIX INVET + ADD GIZOMO FOR DEBUG
-    Tbx::Vector4f topLeftB = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, -1.f, far, 1.f);
-    Tbx::Vector4f topRightB = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, -1.f, far, 1.f);
-    Tbx::Vector4f bottomLeftB = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, 1.f, far, 1.f);
-    Tbx::Vector4f bottomRightB = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, 1.f, far, 1.f);
-
-    topLeftB /= topLeftB.w;
-    topRightB /= topRightB.w;
-    bottomLeftB /= bottomLeftB.w;
-    bottomRightB /= bottomRightB.w;
-
-    Tbx::Vector4f topLeftA = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, -1.f, near, 1.f);
-    Tbx::Vector4f topRightA = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, -1.f, near, 1.f);
-    Tbx::Vector4f bottomLeftA = sceneBufferGPU.vpInv * Tbx::Vector4f(-1.f, 1.f, near, 1.f);
-    Tbx::Vector4f bottomRightA = sceneBufferGPU.vpInv * Tbx::Vector4f(1.f, 1.f, near, 1.f);
-
-    topLeftA /= topLeftA.w;
-    topRightA /= topRightA.w;
-    bottomLeftA /= bottomLeftA.w;
-    bottomRightA /= bottomRightA.w;
-    
-    const Tbx::Vector3f topLeft3 = Tbx::Vector3f(topLeftB.x - topLeftA.x, topLeftB.y - topLeftA.y, topLeftB.z - topLeftA.y);
-    const Tbx::Vector3f topRight3 = Tbx::Vector3f(topRightB.x - topRightA.x, topRightB.y - topRightA.y, topRightB.z - topRightA.z);
-    const Tbx::Vector3f bottomLeft3 = Tbx::Vector3f(
-        bottomLeftB.x - bottomLeftA.x, bottomLeftB.y - bottomLeftA.y, bottomLeftB.z - bottomLeftA.z
-    );
-    const Tbx::Vector3f bottomRight3 = Tbx::Vector3f(
-        bottomRightB.x - bottomRightA.x, bottomRightB.y - bottomRightA.y, bottomRightB.z - bottomRightA.z
-    );
-
-    m_ViewExtremum =
-    {
-        .topLeft = topLeft3 ,
-        .topRight = topRight3,
-        .bottomLeft = bottomLeft3 + renderingContext.lowLevelCamera.position,
-        .bottomRight = bottomRight3 + renderingContext.lowLevelCamera.position
-    };
-
-    m_ViewExtrmumUniformBuffer.Update(&m_ViewExtremum, sizeof(m_ViewExtremum));
-}
 
 
-void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, Gbuffers* gbuffers,
+void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext,
                                       World* _world)
 {
+    
     PERF_REGION_SCOPED;
+    UpdateCameraUniformBuffer(renderingContext);
 
     m_CurrentWorld = _world;
-
-    UpdateCameraUniformBuffer(renderingContext);
-    UpdateViewExtremumBuffer(renderingContext);
-
-    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
-        ClearValueFlags::ClearValueDepth);
-    const BeginRenderPassInfo beginRenderPassInfo =
-    {
-        .renderPass = forwardPass,
-        // shpoulmd be gbuffer
-        .frameBuffer = gbuffers->GetFrameBuffer(),
-        .renderOffSet = {0, 0},
-        .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
-        .clearValueFlags = clearValueFlags,
-        .clearColor = Tbx::Vector4f(0, 0, 0, 0.f),
-        .clearDepth = 1.f
-    };
-
-    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-    primaryCommandList->BindProgram(m_ForwardShader.get());
-
     const ViewportInfo viewportInfo =
     {
         .transform = {0, 0},
@@ -235,231 +139,521 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .scissorsOff = {0, 0},
         .scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
     };
+
     primaryCommandList->SetViewPort(viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), m_ShaderProgramDescriptorSet, 0, 1);
 
-
-    //std::function<void(Transform&, StaticMesh&)> func = std::bind(&Renderer::DrawStaticMesh, this,
-      //                                                            std::placeholders::_1, std::placeholders::_2);
-   // _world->entityManager.ForEach<Transform, StaticMesh>(func);
-
-    for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->staticMeshSignature])
-    {
-        DrawStaticMesh(World::GetWorld()->GetComponent<Transform>(it),
-            World::GetWorld()->GetComponent<StaticMesh>(it));
-    }
-
-    primaryCommandList->EndRenderPass();
-
-    std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
-
-    const BeginRenderPassInfo drawToViewport =
-    {
-        .renderPass = drawTextureScreenQuadPass,
-        .frameBuffer = renderingContext.finalImageFrameBuffer,
-        .renderOffSet = {0, 0},
-        .extent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y},
-        .clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor),
-        .clearColor = Tbx::Vector4f(0, 0, 0, 1.f),
-        .clearDepth = 0.f,
-        .clearStencil = 0.f
-    };
-    primaryCommandList->BeginRenderPass(drawToViewport);
-    primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.get());
-    DrawTextureScreenQuad(*renderingContext.viewPortDescriptorSet);
-    primaryCommandList->EndRenderPass();
+    ForwardPass(renderingContext, viewportInfo);
+    FinalPass(renderingContext, viewportInfo);
 }
+
 
 
 void Renderer::SwapBuffers(Window* _window)
 {
     PERF_REGION_SCOPED;
 
+    
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
     swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
+
     primaryCommandList->ExucuteFetchCommand();
     swapChain->EndSwapChainRenderPass(primaryCommandList.get());
-    primaryCommandList->EndRecordCommands();
 
+    primaryCommandList->EndRecordCommands();
+    ClearRenderData();
     m_RhiContext->swapChain->Present(primaryCommandList.get(), _window);
     Rhi::NextFrame();
 }
 
-void Renderer::DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets)
+
+
+void Renderer::DrawStaticMesh()
 {
-    primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.get(), &_ShaderProgramDescriptorSets, 0, 1);
-    primaryCommandList->Draw(4, 1, 0, 0);
+    PERF_REGION_SCOPED;
+    
+    Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
+    for (size_t i = 0; i < m_RenderWorldData.staticMeshData.size(); i++)
+    {
+        Tbx::Matrix4x4f modelMatrixf[2];
+
+        m_RenderWorldData.staticMeshData[i].worldMatrix[12] -= currentRenderingContext->lowLevelCamera.position.x;
+        m_RenderWorldData.staticMeshData[i].worldMatrix[13] -= currentRenderingContext->lowLevelCamera.position.y;
+        m_RenderWorldData.staticMeshData[i].worldMatrix[14] -= currentRenderingContext->lowLevelCamera.position.z;
+
+        modelMatrixf[0] = m_RenderWorldData.staticMeshData[i].worldMatrix;
+        modelMatrixf[1] = m_RenderWorldData.staticMeshData[i].normalInvertMatrix;
+
+        const ShaderProgramDescriptorSets* materialDescriptor = m_RenderWorldData.staticMeshData[i].descriptorSet;
+        const Mesh* mesh = m_RenderWorldData.staticMeshData[i].mesh;
+
+        // Send Data
+        primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        primaryCommandList->PushConstant(m_ForwardShader.lock().get(), "PushConstants", &modelMatrixf,
+                                         sizeof(Tbx::Matrix4x4f) * 2);
+        primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
+        primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+    }
+  
 }
 
-void Renderer::QueryWorldData(World* world)
+void Renderer::ClearRenderData()
+{
+    m_RenderWorldData.lightData.clear();
+    m_RenderWorldData.staticMeshData.clear();
+}
+
+
+void Renderer::DrawSkyBox()
+{
+    if (auto cube = m_CubeMesh.lock())
+    {
+
+        primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
+        primaryCommandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+    }
+}
+
+
+void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+{
+    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
+        ClearValueFlags::ClearValueDepth);
+
+    std::array<Tbx::Vector4f, 1> clearValues = {
+        Tbx::Vector4f(0, 0, 0, 0.f),
+    };
+
+    const BeginRenderPassInfo beginRenderPassInfo =
+    {
+        .renderPass = forwardPass,
+        .frameBuffer = _renderingContext.gbufferFrameBuffer,
+        .renderOffSet = {0, 0},
+        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .clearValueFlags = clearValueFlags,
+        .clearColor = clearValues.data(),
+        .clearValueCount = clearValues.size(),
+        .clearDepth = 1.f
+    };
+
+
+    primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+
+    primaryCommandList->BindProgram(m_ForwardShader.lock().get());
+
+
+    primaryCommandList->SetViewPort(_viewportInfo);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+
+    
+    // draw all static mesh
+    DrawStaticMesh();
+    DrawSkyBox();
+#ifdef WITH_EDITOR
+    for (auto& it : UserCustomForwardPass)
+        it(primaryCommandList.get(), *currentRenderingContext);
+    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
+#endif
+    primaryCommandList->EndRenderPass();
+
+    primaryCommandList->EndDebugLabel();
+}
+
+void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+{
+    std::array<Tbx::Vector4f, 2> clearValues2 = {
+       Tbx::Vector4f(0, 0, 0, 0.f),
+       Tbx::Vector4f(0, 0, 0, 0.f),
+    };
+
+    const BeginRenderPassInfo drawToViewport =
+    {
+        .renderPass = drawToFinalViewPort,
+        .frameBuffer = _renderingContext.finalImageFrameBuffer,
+        .renderOffSet = {0, 0},
+        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor),
+        .clearColor = clearValues2.data(),
+        .clearValueCount = clearValues2.size(),
+        .clearDepth = 0.f,
+        .clearStencil = 0.f
+    };
+
+
+    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(drawToViewport);
+    primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+
+    primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(), _renderingContext.viewPortDescriptorSet, 0, 1);
+    primaryCommandList->Draw(4, 1, 0, 0);
+
+    primaryCommandList->EndRenderPass();
+    primaryCommandList->EndDebugLabel();
+}
+
+
+
+#pragma region CreateRenderPasss
+
+void Renderer::CreateRenderPasss()
 {
     PERF_REGION_SCOPED;
 
-    for (auto& it : rendererSystem->m_SignatureEntitiesSet[rendererSystem->dirLightSignature])
+    // Forward
     {
-        QueryLightDirData(world->GetComponent<DirLight>(it), world->GetComponent<Transform>(it));
+        PERF_REGION_SCOPED_NAMED("Create Forward RenderPass");
+
+        std::vector<RenderPassAttachementDescriptor> colorAttachement;
+        colorAttachement.resize(1);
+
+        colorAttachement[0] =
+        {
+        .attachmentType = AttachmentType::Color,
+        .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+        .sampleCount = 1,
+        .load = LoadOperation::Clear,
+        .store = StoreOperation::Store,
+        .stencilLoad = LoadOperation::DontCare,
+        .stencilStore = StoreOperation::DontCare,
+        };
+
+        RenderPassAttachementDescriptor depthAttachement =
+        {
+           .attachmentType = AttachmentType::Depth,
+           .format = PC_CORE::RHIFormat::D32_SFLOAT,
+           .sampleCount = 1,
+           .load = LoadOperation::Clear,
+           .store = StoreOperation::Store,
+           .stencilLoad = LoadOperation::DontCare,
+           .stencilStore = StoreOperation::DontCare,
+        };
+
+        std::vector<SubPassDescription> subPassDescriptions;
+        subPassDescriptions.resize(1);
+
+        subPassDescriptions[0] =
+        {
+        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+        .colorAttachementDescriptorIndicies = {0},
+        .subPassDependcies =
+        {
+            .srcStageMask = static_cast<PipelineStageFlags>(
+                PipelineStageFlagBits::ColorAttachmentOutput | PipelineStageFlagBits::EarlyFragmentTests
+            ),
+            .dstStageMask = static_cast<PipelineStageFlags>(
+                PipelineStageFlagBits::FragmentShader
+            ),
+            .srcAccessMask = {}, // you can set this to ColorAttachmentWrite or DepthStencilAttachmentWrite if needed
+            .dstAccessMask = static_cast<AccessFlags>(
+                AccessFlagBits::ShaderRead
+            )
+        },
+        .useDepth = true,
+        };
+
+        PC_CORE::RenderPassDescriptor renderPassDescriptor =
+        {
+            .colorAttachement = colorAttachement,
+            .depthAttachment = &depthAttachement,
+            .subPasses = subPassDescriptions
+        };
+
+        forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
+
     }
 
+    // Draw To Final Viewport
+    {
+        PERF_REGION_SCOPED_NAMED("Create Draw To Final Viewport");
+        drawToFinalViewPort = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
+    }
 }
 
-void Renderer::QueryLightDirData(DirLight& dirLight, Transform& transform)
-{
-    sceneLightsBuffer
-        ->sceneLightData.ambiant = dirLight.color;
-    sceneLightsBuffer
-        ->sceneLightData.color = dirLight.ambiant;
-    sceneLightsBuffer
-        ->sceneLightData.intensity = dirLight.intensity;
-    sceneLightsBuffer
-        ->sceneLightData.direction = Tbx::Quaterniond::ToEulerAngles(transform.rotation.quaternion).Normalize();
-}
 
-void Renderer::CreateForwardShader()
+#pragma endregion CreateRenderPasss
+
+#pragma region CreateShaders
+void Renderer::CreateShaders()
 {
     PERF_REGION_SCOPED;
 
-    constexpr RasterizerInfo rasterizerInfo =
     {
-        .polygonMode = PolygonMode::Fill,
-        .cullModeFlag = CullModeFlagBit::Back,
-        .frontFace = FrontFace::CounterClockwise
-    };
-
-
-    const ShaderGraphicPointInfo shaderGraphicPointInfo =
-    {
-        .rasterizerInfo = rasterizerInfo,
-        .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
-        .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
-        .enableDepthTest = true,
-    };
-
-    const std::vector<std::pair<ShaderStageType, std::string>> source =
-    {
+        PERF_REGION_SCOPED_NAMED("Forward Shader");
+        constexpr RasterizerInfo rasterizerInfo =
         {
-            ShaderStageType::VERTEX,
-            "main_spv.vert"
-        },
+            .polygonMode = PolygonMode::Fill,
+            .cullModeFlag = CullModeFlagBit::Back,
+            .frontFace = FrontFace::CounterClockwise
+        };
+
+
+        const ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
-            ShaderStageType::FRAGMENT,
-            "main_spv.frag"
-        }
-    };
+            .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+                {
+                .depthCompareOp = CompareOp::LESS,
+                .enableDepthTest = true
+                },
+            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
+            .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
+        };
 
-    const ShaderInfo shaderInfo =
+        const SourceList sources =
+        {
+            {
+                ShaderStageType::VERTEX,
+                ResourceManager::Get<ShaderSourceBinary>("forward_spv.vert"),
+            },
+            {
+                ShaderStageType::FRAGMENT,
+                ResourceManager::Get<ShaderSourceBinary>("forward_spv.frag")
+            }
+        };
+
+        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+        .shaderGraphicPointInfo = shaderGraphicPointInfo,
+        .sourceList = sources,
+        .renderPass = forwardPass.get()
+        };
+
+        m_ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
+    }
+
+    // SkyBox Shader
     {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
-    };
+        PERF_REGION_SCOPED_NAMED("SkyBox Shader");
 
-    const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
+        const RasterizerInfo rasterizerInfo =
+        {
+            .polygonMode = PolygonMode::Fill,
+            .cullModeFlag = CullModeFlagBit::None,
+            .frontFace = FrontFace::CounterClockwise,
+            .multiSampleRasterization = 1
+        };
+
+        VertexAttributeDescription vertexAttributeDescription =
+        {
+        .binding = 0,
+        .location = 0,
+        .format = RHIFormat::R32G32B32_SFLOAT,
+        .offset = 0
+        };
+
+        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        {
+            .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+            {
+                .depthCompareOp = CompareOp::LESS_OR_EQUAL,
+                .enableDepthTest = true
+                },
+            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
+            .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)},
+        };
+
+        const SourceList source =
+        {
+            {
+                ShaderStageType::VERTEX,
+                ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.vert")
+            },
+            {
+                ShaderStageType::FRAGMENT,
+                ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.frag")
+            }
+        };
+
+        const ShaderInfo shaderInfo =
+        {
+            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+            .shaderInfoData = shaderGraphicPointInfo,
+        };
+
+        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+          .shaderGraphicPointInfo = shaderGraphicPointInfo,
+          .sourceList = source,
+          .renderPass = forwardPass.get(),
+        };
+
+
+        m_CubeMapShader = ResourceManager::Create<PC_CORE::GraphicShader>("SkyboxShader", graphicShaderProgramCreateInfo);
+
+    }
+
+    // Draw to final viewport
     {
-        .shaderInfo = shaderInfo,
-        .renderPass = forwardPass,
-    };
+        PERF_REGION_SCOPED_NAMED("CreateDrawToFinalViewport Programm");
+
+        const RasterizerInfo rasterizerInfo =
+        {
+            .polygonMode = PolygonMode::Fill,
+            .cullModeFlag = CullModeFlagBit::None,
+            .frontFace = FrontFace::CounterClockwise,
+            .multiSampleRasterization = Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount()
+        };
 
 
-    m_ForwardShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        {
+            .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+         {
+                .depthCompareOp = CompareOp::LESS,
+                .enableDepthTest = true
+                },
+            .vertexInputBindingDescritions = {},
+            .vertexAttributeDescriptions = {},
+        };
+
+        const SourceList sources =
+        {
+            {
+                ShaderStageType::VERTEX,
+                ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.vert"),
+            },
+            {
+                ShaderStageType::FRAGMENT,
+                 ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.frag")
+            }
+        };
+
+        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+          .shaderGraphicPointInfo = shaderGraphicPointInfo,
+          .sourceList = sources,
+          .renderPass = drawToFinalViewPort.get()
+        };
+
+
+        m_DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>("DrawQuadShader", graphicShaderProgramCreateInfo);
+    }
 }
 
-void Renderer::CreateDrawQuadShader()
+#pragma endregion CreateShaders
+
+
+#pragma region CreateThirdPartyResources
+
+void Renderer::CreateThirdPartyResources()
 {
     PERF_REGION_SCOPED;
-
-    constexpr RasterizerInfo rasterizerInfo =
     {
-        .polygonMode = PolygonMode::Fill,
-        .cullModeFlag = CullModeFlagBit::Back,
-        .frontFace = FrontFace::CounterClockwise
-    };
-
-
-    const ShaderGraphicPointInfo shaderGraphicPointInfo =
-    {
-        .rasterizerInfo = rasterizerInfo,
-        .vertexInputBindingDescritions = {},
-        .vertexAttributeDescriptions = {},
-        .enableDepthTest = false,
-    };
-
-    const std::vector<std::pair<ShaderStageType, std::string>> source =
-    {
+        PERF_REGION_SCOPED_NAMED("Create Cube Map");
+        std::array<std::string, 6> maps
         {
-            ShaderStageType::VERTEX,
-            "draw_texture_screen_quad_spv.vert"
-        },
-        {
-            ShaderStageType::FRAGMENT,
-            "draw_texture_screen_quad_spv.frag"
-        }
-    };
+            "assets/textures/skybox/right.jpg",
+            "assets/textures/skybox/left.jpg",
+            "assets/textures/skybox/top.jpg",
+            "assets/textures/skybox/bottom.jpg",
+            "assets/textures/skybox/front.jpg",
+            "assets/textures/skybox/back.jpg",
+        };
+        m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);
 
-    const ShaderInfo shaderInfo =
+    }
     {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-        .shaderInfoData = shaderGraphicPointInfo,
-        .shaderSources = source
-    };
+        sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
 
-    const PC_CORE::ProgramShaderCreateInfo triangleCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = drawTextureScreenQuadPass,
-    };
+        cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), MemoryUsage::Dynamic);
 
-
-    m_DrawTextureScreenQuadShader = PC_CORE::Rhi::CreateShader(triangleCreateInfo);
+        m_CubeMesh = ResourceManager::Get<Mesh>("cube.obj");
+    }
 }
+#pragma endregion CreateThirdPartyResources
 
-void Renderer::DrawStaticMesh(PC_CORE::Transform& _transform, PC_CORE::StaticMesh& _staticMesh)
+#pragma region CreateDescriptorSets
+
+void Renderer::CreateDescriptorSets()
 {
     PERF_REGION_SCOPED;
+    /////////////////////////////////////////////////
+    UniformBufferDescriptor cameraBufferDescritptor
+    {
+        .buffer = &cameraUniformBuffer,
+    };
 
-    if (_staticMesh.material.expired() || _staticMesh.mesh.expired())
-        return;
+    UniformBufferDescriptor lightData
+    {
+        .buffer = &sceneLightsBuffer
+        ->uniformBuffer,
+    };
 
-    
-    // Compute Matrix
-    Tbx::Matrix4x4d modelMatrixd[2];
+    ImageSamperDescriptor skyboxCubeMapDescritptor
+    {
+        .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
+        .texture = m_Cubemap.lock().get()
+    };
 
-    modelMatrixd[0] = Tbx::Trs4x4<double>(_transform.position - currentRenderingContext->lowLevelCamera.position, _transform.rotation.quaternion,
-        _transform.scale);
+    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
 
-    modelMatrixd[1] = modelMatrixd[0].Transpose();
+    {
+        PERF_REGION_SCOPED_NAMED("Create Forward Shader DescriptorSet");
 
-    Tbx::Matrix4x4f modelMatrixf[2];
-    modelMatrixf[0] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[0]);
-    modelMatrixf[1] = static_cast<Tbx::Matrix4x4<float>>(modelMatrixd[1]);
+        descriptorSets =
+        {
+            {
+                ShaderProgramDescriptorType::UniformBuffer,
+                CAMERA_BINDING,
+                &cameraBufferDescritptor,
+                nullptr,
+            },
+            {
+                ShaderProgramDescriptorType::UniformBuffer,
+                LIGHTDATA_BINDING,
+                &lightData,
+                nullptr,
+            },
+            {
+                ShaderProgramDescriptorType::CombineImageSampler,
+                FORWARD_SKYBOX_CUBEMAP,
+                nullptr,
+                &skyboxCubeMapDescritptor,
+            }
+        };
 
-    Material* material = _staticMesh.material.lock().get();
-    Mesh* mesh = _staticMesh.mesh.lock().get();
+        m_ForwardShader.lock()->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET);
+        m_ShaderProgramSceneDescriptorSet->WriteDescriptorSets(descriptorSets);
+    }
 
-    // Send Data
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.get(), material->GetDescriptorSet(), 1, 1);
-    primaryCommandList->PushConstant(m_ForwardShader.get(), "PushConstants", &modelMatrixf,
-                                     sizeof(Tbx::Matrix4x4f) * 2);
-    primaryCommandList->BindVertexBuffer(mesh->vertexBuffer, 0, 1);
-    primaryCommandList->BindIndexBuffer(mesh->indexBuffer, 0);
-    primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+  
+    {
+        PERF_REGION_SCOPED_NAMED("Skybox Shader DescriptorSets");
+
+        descriptorSets =
+        {
+             {
+                 ShaderProgramDescriptorType::UniformBuffer,
+                 CAMERA_BINDING,
+                 &cameraBufferDescritptor,
+                 nullptr,
+             },
+        };
+        m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET);
+        descriptorSetsSkybox.cameraDescriptorSet->WriteDescriptorSets(descriptorSets);
+
+        descriptorSets =
+        {
+         {
+             ShaderProgramDescriptorType::CombineImageSampler,
+             SKYBOX_BINDING,
+             nullptr,
+             &skyboxCubeMapDescritptor,
+         }
+        };
+        m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cubeMapDescriptorSet, ENVIRONEMENT_DESCRIPTOR_SET);
+        descriptorSetsSkybox.cubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);
+    }
+   
 }
-
-void Renderer::AtmoSpherePass()
-{
-}
-
-void Renderer::InitRenderSystem()
-{
-    PERF_REGION_SCOPED;
-
-    rendererSystem = World::GetWorld()->RegisterSystem<RendererSystem>();
-    
-    rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(),true);
-    rendererSystem->staticMeshSignature.set(World::GetWorld()->GetComponentTypeBit<StaticMesh>(), true);
-    rendererSystem->AddSignature(rendererSystem->staticMeshSignature);
-
-    rendererSystem->dirLightSignature.set(World::GetWorld()->GetComponentTypeBit<Transform>(), true);
-    rendererSystem->dirLightSignature.set(World::GetWorld()->GetComponentTypeBit<DirLight>(), true);
-    rendererSystem->AddSignature(rendererSystem->dirLightSignature);
-
-}
+#pragma endregion CreateDescriptorSets

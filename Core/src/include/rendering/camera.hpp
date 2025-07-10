@@ -51,6 +51,8 @@ public:
     PC_CORE_API void LookAt(Tbx::Vector3f _point);
 
     PC_CORE_API Camera() = default;
+
+    PC_CORE_API void SetScreenSize(int width, int height);
     
     // Fov in radians
     PC_CORE_API Camera(float _fov, float _aspect, float _near, float _far,
@@ -68,7 +70,7 @@ private:
     float m_Fov = 90.f * Tbx::fDeg2Rad;
     float m_Aspect = 16.f / 9.f;    
     float m_Near = 0.1f;
-    float m_Far = 1000.f;
+    float m_Far = 10000.f;
 
     
     Tbx::Vector2f m_BottomTopScreen;

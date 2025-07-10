@@ -1,18 +1,21 @@
 ﻿#pragma once
 
 #include "vulkan_header.h"
-#include "low_renderer/sampler.hpp"
+#include "low_renderer/rhi_sampler.hpp"
 
 
 namespace Vulkan
 {
-    class VulkanSampler : public PC_CORE::Sampler
+    class VulkanSampler : public PC_CORE::RhiSampler
     {
     public:
         
-        
+        const void* GetNativeHandle() const override
+        {
+            return &m_Sampler;
+        }
         VulkanSampler(VulkanSampler&& _other) noexcept
-            : Sampler(std::move(_other)), m_Sampler(_other.m_Sampler)
+            : RhiSampler(std::move(_other)), m_Sampler(_other.m_Sampler)
         {
             _other.m_Sampler = nullptr;
         }
@@ -21,7 +24,7 @@ namespace Vulkan
         {
             if (this != &_other)
             {
-                PC_CORE::Sampler::operator=(std::move(_other));
+                PC_CORE::RhiSampler::operator=(std::move(_other));
 
                 m_Sampler = _other.m_Sampler;
                 _other.m_Sampler = nullptr;

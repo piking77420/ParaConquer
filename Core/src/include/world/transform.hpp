@@ -10,14 +10,31 @@ BEGIN_PCCORE
 
 struct Rotation
 {
-    Tbx::Vector3d eulerAngles;
-    Tbx::Quaterniond quaternion = Tbx::Quaterniond::Identity();
+    Tbx::Vector3f eulerAngles;
+    Tbx::Quaternionf quaternion = Tbx::Quaternionf::Identity();
+
+    Rotation() = default;
+    
+    Rotation(Tbx::Quaternionf q)
+    {
+        auto Qn = quaternion.Normalize();
+        quaternion = Qn;
+        eulerAngles = Tbx::Quaternionf::ToEulerAngles(quaternion);
+    }
+
+    Rotation(Tbx::Vector3f eulerAngle) : eulerAngles(eulerAngle), quaternion( Tbx::Quaternionf::FromEuler(eulerAngle).Normalize())
+    {
+        
+    }
+        
+    ~Rotation() = default;
 };
 
 REFLECT(Rotation)
 REFLECT_MEMBER(Rotation, eulerAngles)
 REFLECT_MEMBER(Rotation, quaternion)
 
+// TODO be more cache friendly for rendering fetch data
 struct Transform : Component
 {
     EntityId parentId = INVALID_ENTITY_ID;

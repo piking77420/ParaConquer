@@ -1,5 +1,14 @@
 ﻿#include "asset_browser.hpp"
 
+#include <Imgui/imgui_impl_vulkan.h>
+
+#include "editor_format.hpp"
+#include "low_renderer/rhi.hpp"
+#include "resources/vulkan_sampler.hpp"
+#include "world/world.hpp"
+
+#include <fstream>
+
 using namespace PC_EDITOR_CORE;
 
 
@@ -11,13 +20,58 @@ AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWi
     m_fileWatcher.LauchWatcher(projectBaseAssetPath);
 }
 
-void PC_EDITOR_CORE::AssetBrowser::Update()
+
+void AssetBrowser::Render()
 {
-    EditorWindow::Update();
-    RenderBrowser();
+    EditorWindow::Render();
 }
 
-void AssetBrowser::RenderBrowser()
+void PC_EDITOR_CORE::AssetBrowser::Update()
+{
+    PERF_REGION_SCOPED;
+    EditorWindow::Update();
+
+    if (!IsCursorInsideWindow() || ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        //m_SelectedItem = "";
+    }
+
+    if (IsCursorInsideWindow() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+        ImGui::OpenPopup("CreateAsset", 0);
+
+    if (ImGui::BeginPopup("CreateAsset"))
+    {
+        CreateAsset();
+        ImGui::EndPopup();
+    }
+
+    RenderDirectories();
+}
+
+
+
+void AssetBrowser::CreateAsset() const
+{
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            ImGui::OpenPopup("createAssets");
+
+    
+    if (ImGui::BeginPopup("createAssets"))
+    {
+        ImGui::SeparatorText("Assets");
+
+        if (ImGui::Selectable("Level"))
+        {
+            auto s = GetUniqueFileName(m_CurrenPath, "Level", std::string(PC_Level));
+            CreateFile((m_CurrenPath / s).string());
+        }
+
+        ImGui::EndPopup();
+    }
+    
+}
+
+void AssetBrowser::RenderDirectories()
 {
     
     float columnSpacing = 100;
@@ -41,7 +95,7 @@ void AssetBrowser::RenderBrowser()
 
     ImGui::Columns(colomnCount, 0, false);
 
-    for (auto& entry : fs::directory_iterator(m_CurrenPath))
+    for (auto& entry : std::filesystem::directory_iterator(m_CurrenPath))
     {
         const auto& path = entry.path();
         auto relative = path.relative_path();
@@ -49,12 +103,11 @@ void AssetBrowser::RenderBrowser()
         
         if (entry.is_directory())
         {
-
             //ImGui::ImageButton((ImTextureID)FolderIcon->ID, { thumbailSize,thumbailSize }, { 0,1 }, { 1,0 });
 
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
-                m_CurrenPath = path;
+                m_CurrenPath = entry;
             }
             ImGui::Text(name.c_str());
         }
@@ -62,15 +115,76 @@ void AssetBrowser::RenderBrowser()
         {
             if (ImGui::Button(name.c_str(), { thumbailSize,thumbailSize }))
             {
-                std::string ressourcename = path.filename().generic_string();
-              
+                if (m_SelectedItem == entry)
+                {
+                    OnFileSelectedClick();
+                }
+                
+                if (m_SelectedItem.empty())
+                {
+                    m_SelectedItem = entry;
+                    PC_LOG("File selected: {}", name);
+
+                }
+                    
             }
-            ImGui::Text(name.c_str());
         }
         ImGui::NextColumn();
 
     }
 
     ImGui::Columns(1);
+}
+
+void AssetBrowser::CreateFile(const std::string& _filename) const
+{
+    std::ofstream file(_filename);
     
+    if (file.is_open())
+    {
+        file.close();
+        PC_LOG("File created: {}", _filename);
+    }
+    else
+    {
+        PC_LOG("Failed to created: {}", _filename);
+    }
+}
+
+
+std::string AssetBrowser::GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const
+{
+    std::string fileName = baseName + extension;
+    int counter = 1;
+
+    while (std::filesystem::exists(directory / fileName))
+    {
+        fileName = baseName + "_" + std::to_string(counter) + extension;
+        ++counter;
+    }
+
+    return fileName;
+}
+
+void AssetBrowser::OnFileSelectedClick()
+{
+    
+    if (m_SelectedItem.empty())
+    {
+        PC_LOGERROR("m_SelectedItem is empty")
+        return;
+    }
+
+    
+    std::string fileName = m_SelectedItem.string();
+    PC_LOG("File clicked: {}", fileName);
+
+    std::string fileFormat = m_SelectedItem.extension().string();
+
+    if (fileFormat == PC_Level)
+    {
+        PC_LOG("Load level selected: {}", fileName);    
+    }
+    
+    m_SelectedItem = fileName;
 }

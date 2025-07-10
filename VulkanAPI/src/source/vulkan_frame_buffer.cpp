@@ -3,7 +3,7 @@
 #include "vulkan_context.hpp"
 #include "vulkan_render_pass.hpp"
 #include "low_renderer/rhi.hpp"
-#include "handles/vulkan_image_handle.hpp"
+#include "texture/vulkan_texture_2d.hpp"
 
 Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _createFrameInfo)
 	: FrameBuffer(_createFrameInfo)
@@ -12,23 +12,23 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 
 	const VulkanRenderPass* renderPass = reinterpret_cast<const VulkanRenderPass*>(_createFrameInfo.renderPass);
 
-	std::vector<PC_CORE::Texture*>* attachements = _createFrameInfo.attachements;
 
-
+	
 
 	int frame = 0;
 	for (auto& framebuffer : m_FrameBuffers)
 	{
 		std::vector<vk::ImageView> image_views;
-		image_views.reserve(attachements->size());
+		image_views.reserve(_createFrameInfo.attachements->size());
+		
 
-		for (auto& attachement : *attachements)
+		
+		for (auto& attachement : *_createFrameInfo.attachements)
 		{
-			PC_CORE::GpuHandle* gpuHandle = attachement->GetHandle(frame).get();
-			VulkanImageHandle* imageHandle = reinterpret_cast<VulkanImageHandle*>(gpuHandle);
-			image_views.emplace_back(imageHandle->view);
-				
+			const VulkanTexture& texture = *reinterpret_cast<const VulkanTexture*>(attachement.texture->GetRhiHandle()->GetNativeHandle());
+			assert(texture.textureAndAlloc[frame].imageView != VK_NULL_HANDLE);
 
+			image_views.emplace_back(texture.textureAndAlloc[frame].imageView);
 		}
 
 		vk::FramebufferCreateInfo framebufferCreateInfo{};

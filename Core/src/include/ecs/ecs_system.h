@@ -7,9 +7,12 @@
 BEGIN_PCCORE
 
 
-class EcsSystem
+class EcsSystem : public DynamicReflectable
 {
 public:
+
+    DEFAULT_COPY_MOVE_OPERATIONS(EcsSystem)
+    
     PC_CORE_API EcsSystem() = default;
 
     PC_CORE_API virtual ~EcsSystem() = default;
@@ -23,33 +26,61 @@ public:
 
     PC_CORE_API void OnEntityDestroy(EntityId id, Signature _signature)
     {
-        auto it = m_SignatureEntitiesSet.find(_signature);
+        auto it = GetEntitySet(_signature);
 
-        if (it == m_SignatureEntitiesSet.end())
+        if (it == nullptr)
             return;
 
-        it->second.erase(id)    ;
+        it->erase(id)    ;
     }
 
-    PC_CORE_API PC_FORCE_INLINE bool OnEntitySignatureChange(EntityId id, Signature _signature)
+    PC_CORE_API PC_FORCE_INLINE void OnEntitySignatureChange(EntityId id, const Signature& _old, const Signature& _new)
     {
-        auto it = m_SignatureEntitiesSet.find(_signature);
-   
-        if (it == m_SignatureEntitiesSet.end())
-            return false;
-        
-        it->second.insert(id);
-        return true;
+        {
+            // delete
+            std::set<EntityId>* it = GetEntitySet(_old);
+            if (it != nullptr)
+                it->erase(id);
+        }
+
+        {
+            // add
+            std::set<EntityId>* it = GetEntitySet(_new);
+            if (it != nullptr)
+                it->emplace(id);
+        }
+
     }
 
-    PC_CORE_API PC_FORCE_INLINE void AddSignature(Signature _signature)
+    PC_CORE_API PC_FORCE_INLINE void AddSignature(const Signature& _signature)
     {
-        m_SignatureEntitiesSet.insert({ _signature,{} });
+        m_SignatureEntitiesSet.emplace_back(_signature, std::set<EntityId>());
     }
 
+    const std::set<EntityId>* GetEntityIdList(const Signature& _signature) const
+    {
+        for (auto& it : m_SignatureEntitiesSet)
+        {
+            if (it.first == _signature)
+                return &it.second;
+        }
+
+        return nullptr;
+    }
     
-public:
-    std::unordered_map<Signature, std::set<EntityId>> m_SignatureEntitiesSet;
+protected:
+    std::vector<std::pair<Signature, std::set<EntityId>>> m_SignatureEntitiesSet;
+
+    std::set<EntityId>* GetEntitySet(const Signature& _signature)
+    {
+        for (auto& it : m_SignatureEntitiesSet)
+        {
+            if (it.first == _signature)
+                return &it.second;
+        }
+
+        return nullptr;
+    }
 
 };
 

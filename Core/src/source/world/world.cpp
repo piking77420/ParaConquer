@@ -1,4 +1,9 @@
 ﻿#include "world/world.hpp"
+#include <debug_helper/debug_draw_context.hpp>
+
+#include "rendering/light.hpp"
+#include "world/static_mesh.hpp"
+#include "world/transform.hpp"
 
 using namespace PC_CORE;
 
@@ -14,33 +19,40 @@ World::World()
     m_World = this;
 }
 
+
 void World::Begin()
 {
-    //scene.Begin();
+    if (begin)
+    {
+        PERF_REGION_SCOPED;
+        //TO DO CALL SYS BEGIN
+        begin = false;
+        level.Begin();
+        run = true;
+    }
 }
 
-void World::Update()
+void World::Update(double _tick)
 {
-    //scene.Update();
+    PERF_REGION_SCOPED;
+
+    DebugDrawContext::DrawWireSphere(Tbx::Vector3d{ 0,20,0 }, 10, Tbx::Vector3f(0.5, 1, 0));
+
+
+    if (run)
+    {
+        level.Update(_tick);
+    }
 }
 
-void World::LoadSkyBox()
+void World::RenderingTick(double _tick)
 {
-    std::array<std::string, 6> skyboxImage =
-   {
-        "assets/textures/skybox/right.jpg",
-        "assets/textures/skybox/left.jpg",
-        "assets/textures/skybox/top.jpg",
-        "assets/textures/skybox/bottom.jpg",
-        "assets/textures/skybox/front.jpg",
-        "assets/textures/skybox/back.jpg"
-    };
-
-    skybox.Load(skyboxImage);
+    level.RenderingTick(_tick);
 }
 
-void World::Destroy()
+
+void World::LoadLevel(const Level& _level)
 {
-    m_World = nullptr;
+    //level = _level;
+    assert(false);
 }
-

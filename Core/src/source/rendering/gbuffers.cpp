@@ -14,17 +14,22 @@ void PC_CORE::Gbuffers::HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr
         m_size = _targetSize;
         CreateGBuffers();
 
-        std::vector<Texture*> handles;
-        handles.reserve(m_gbuffers.size());
-
-        for (auto& gbuffer : m_gbuffers)
-            handles.emplace_back(gbuffer.get());
+        std::vector<FrameBufferAttachementDesriptor> attachementDescritpor =
+        {
+            {
+                .texture = m_gbuffers[0].get(),
+            },
+            {
+                .texture = m_gbuffers[1].get(),
+            }
+            
+        };
         
         CreateFrameInfo create_frame_info =
             {
             .width = static_cast<uint32_t>(m_size.x),
             .height = static_cast<uint32_t>(m_size.y),
-            .attachements = &handles,
+            .attachements = &attachementDescritpor,
             .renderPass = _renderPass.get()
             };
         m_FrameBuffer = Rhi::CreateFrameBuffer(create_frame_info);
@@ -43,46 +48,60 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     GbufferType gbufferType = {};
     for (auto& frameInFlight : m_gbuffers)
     {
-        CreateTextureInfo texture_info =
-            {
+    
+        CreateImageInfo texture_info =
+        {
             .width = m_size.x,
             .height = m_size.y,
             .depth = 1,
+            .layerCount = 1,
             .mipsLevels = 1,
-            .imageType = ImageType::TYPE_2D,
+            .textureType = TextureType::Texture2D,
             .format = RHIFormat::COUNT,
             .channel = Channel::DEFAULT,
-            .textureAttachement = TextureAttachement::Color,
-            .textureNature = TextureNature::RenderTarget,
-            .canbeSampled = false,
+            .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
+            .memoryVisibility = MemoryLocalisation::GPU_Only,
+            .samples = 1,
             .GenerateMipMap = false,
-            .data = nullptr,
-            };
+            .datas = {},
+        };
 
+        static_assert(static_cast<size_t>(GbufferType::Depth) == static_cast<size_t>(GbufferType::Count) - 1, "Last GBuffer Shoulbe be depth for texture usage purpose" );
         switch (gbufferType)
         {
         case Albedo:
+            texture_info.format = RHIFormat::R8G8B8A8_UNORM; // TODO GAMA CORRECTION 
+            texture_info.channel = Channel::RGBA;
+            break;
+            /*
+        case Normal:
             texture_info.format = RHIFormat::R8G8B8A8_UNORM;
             texture_info.channel = Channel::RGBA;
-            texture_info.textureAttachement = TextureAttachement::Color;
-
             break;
+        case RoughnessMetallicAo:
+            texture_info.format = RHIFormat::R8G8B8A8_UNORM;
+            texture_info.channel = Channel::RGBA;
+            break;
+        case WorldPosition:
+            texture_info.format = RHIFormat::R8G8B8A8_UNORM;
+            texture_info.channel = Channel::RGBA;
+            break;*/
         case Depth:
             texture_info.format = RHIFormat::D32_SFLOAT;
             texture_info.channel = Channel::GREY;
-            texture_info.textureAttachement = TextureAttachement::DepthStencil;
+            texture_info.textureUsage = TextureUsage::Depth;
             break;
         case Count:
             break;
         default: ;
         }
         
-        frameInFlight = std::make_shared<Texture>(texture_info);
+        frameInFlight = std::make_shared<Texture2D>(texture_info);
         gbufferType = static_cast<GbufferType>((static_cast<int>(gbufferType) + 1) % GbufferType::Count); 
     }
 }
 
-std::shared_ptr<PC_CORE::Texture> PC_CORE::Gbuffers::GetTexture(GbufferType type) const
+std::shared_ptr<PC_CORE::Texture2D> PC_CORE::Gbuffers::GetTexture(GbufferType type) const
 {
     const size_t index = static_cast<size_t>(type);
 

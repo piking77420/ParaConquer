@@ -1,16 +1,22 @@
 ﻿#pragma once
 
+#include <array>
 #include <string>
 #include <memory>
 #include <functional>
 
 #include "core_header.hpp"
-#include "frame_buffer.hpp"
-#include "index_buffer.hpp"
-#include "rhi_render_pass.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "resources/shader_program.h"
-#include "vertex_buffer.hpp"
+
+#include "frame_buffer.hpp"
+#include "rhi_index_buffer.hpp"
+#include "rhi_render_pass.hpp"
+#include "rhi_vertex_buffer.hpp"
+
+
+#include "rendering/shader_program.hpp"
+#include "rendering/buffer/index_buffer.hpp"
+#include "rendering/buffer/vertex_buffer.hpp"
 
 BEGIN_PCCORE
     class FrameBuffer;
@@ -40,7 +46,8 @@ struct BeginRenderPassInfo
     Tbx::Vector2ui extent;
 
     ClearValueFlags clearValueFlags;
-    Tbx::Vector4f clearColor;
+    Tbx::Vector4f* clearColor;
+    size_t clearValueCount;
     float clearDepth = 0.f;
     float clearStencil = 0.f;
     
@@ -94,17 +101,27 @@ public:
 
     PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
+    PC_CORE_API virtual void SetPrimitiveTopology(PrimitiveTopology _primitiveTopology) = 0;
+
+    PC_CORE_API virtual void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) = 0;
+
+    PC_CORE_API virtual void SetLineWidth(float _widht) = 0;
+
     PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) = 0;
 
     PC_CORE_API virtual void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset, size_t _firstInstance) = 0;
 
-    PC_CORE_API virtual void BindVertexBuffer(const VertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
+    PC_CORE_API virtual void BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
 
-    PC_CORE_API virtual void BindIndexBuffer(const IndexBuffer& _indexBuffer, size_t _offset) = 0;
+    PC_CORE_API virtual void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;
 
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 
     PC_CORE_API void ExucuteFetchCommand();
+
+    PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
+
+    PC_CORE_API virtual void EndDebugLabel() = 0;
 
 protected:
     CommandPoolFamily m_CommandPoolFamily;

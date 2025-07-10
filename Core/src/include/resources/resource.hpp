@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include <filesystem>
 #include <array>
 #include <set>
 #include "log.hpp"
@@ -9,8 +8,8 @@
 #include "guid.hpp"
 #include "reflection/reflection_typedef.hpp"
 #include "reflection/reflector.hpp"
+#include "serialize/iseriazable.h"
 
-namespace fs = std::filesystem;
 
 
 
@@ -19,45 +18,104 @@ BEGIN_PCCORE
 class ResourceManager;
 
 
-class Resource
+class Resource : public ISeriazable
 {
 public:
+
     std::string name;
     
     std::string extension;
 
-    Guid guid;
-
-    std::set<std::string> resourceDependecies;
-
-    std::string pathToFile;
-
+    PC_CORE_API virtual void LoadFromFile(const std::string& _path);
+    
+    PC_CORE_API void QueryType() override = 0;
     // SOULD BE = 0
     PC_CORE_API virtual void Build() {};
 
-    PC_CORE_API Resource& operator=(Resource&& _other) noexcept = default;
+    // Reload base on modificated parent ?
+    PC_CORE_API virtual void OnParentReload(const Guid& _parentGuid)
+    {
+        PC_LOG("OnParentReload {}", name)
+    };
+
+    PC_CORE_API virtual void Reload()
+    {
+        PC_LOG("Reload {}", name)
+    }
+
+    static PC_CORE_API void LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild);
+
+    // Reload 
+    PC_CORE_API void BroadCastReload();
+    
+    PC_CORE_API const Guid& GetGuid() const
+    {
+        return m_Guid;
+    }
+
+    PC_CORE_API const std::atomic<bool>& IsLoaded() const ;
+
+    PC_CORE_API Resource& operator=(const Resource& _other) noexcept;
+
+    PC_CORE_API Resource(const Resource& _other) noexcept;
+
+    PC_CORE_API Resource& operator=(Resource&& _other) noexcept;
 
     PC_CORE_API Resource(Resource&& _other) noexcept;
     
-    PC_CORE_API Resource();
+    PC_CORE_API Resource() : m_Guid(Guid::New())
+    {
 
-    PC_CORE_API Resource(const Guid& _guid) {}
+    }
 
+    PC_CORE_API Resource(const Guid& _guid) : m_Guid(_guid)
+    {
+        
+    }
     PC_CORE_API Resource(const std::string& _name);
-
-    PC_CORE_API Resource(const fs::path& _file);
+    
+    PC_CORE_API Resource(std::string&& _name);
 
     PC_CORE_API virtual ~Resource() = default;
+    
+protected:
+    std::atomic<bool> m_IsLoaded;
 
+    Guid m_Guid;
 
+    const std::vector<Guid>& GetParentResource() const
+    {
+        return m_ParentsResource;
+    }
+
+    const std::vector<Guid>& GetChildResource() const
+    {
+        return m_ChildsResource;
+    }
+
+private:
+    friend ResourceManager; // Only the ResourceManager is friend, he in charge of loading resource after all 
+
+    std::vector<Guid> m_ParentsResource;
+
+    std::vector<Guid> m_ChildsResource;
+    
+    REFLECT(Resource)
+    REFLECT_MEMBER(Resource, name)
+    REFLECT_MEMBER(Resource, m_Guid)
+    REFLECT_MEMBER(Resource, m_ParentsResource)
+    REFLECT_MEMBER(Resource, m_ChildsResource)
 };
 
 
-REFLECT(Resource)
-REFLECT_MEMBER(Resource, name)
-REFLECT_MEMBER(Resource, guid)
-REFLECT_MEMBER(Resource, pathToFile)
 
+
+
+template<class T>
+concept ResourceDerived = std::is_base_of_v<Resource, T>;
+
+template <typename ResourceDerived>
+using ResourceRef = std::weak_ptr<ResourceDerived>;
 
 
 template <size_t Size>
@@ -102,47 +160,6 @@ bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, c
     return false;
 }
 
-
-template <class T>
-class ResourceInterface : public Resource
-{
-public:
-    ResourceInterface();
-
-    ResourceInterface(const fs::path& _path);
-    
-    virtual ~ResourceInterface() override = default;
-
-    const ReflectedType& GetType() const;
-private:
-    const ReflectedType* m_ReflectedType = nullptr;
-};
-
-template <class T>
-ResourceInterface<T>::ResourceInterface() : Resource()
-{
-    static_assert(!std::is_same_v<T, Resource>, "you should not put resource in the template, place your class");
-
-    m_ReflectedType = &Reflector::GetType<T>();
-}
-
-template<class T>
-inline ResourceInterface<T>::ResourceInterface(const fs::path& _path) : Resource(_path)
-{ 
-    m_ReflectedType = &Reflector::GetType<T>();
-}
-template <class T>
-inline const ReflectedType& ResourceInterface<T>::GetType() const
-{
-    return *m_ReflectedType;
-}
-
-
-template<class T>
-concept ResourceDerived = std::is_base_of_v<Resource, T>;
-
-template <typename ResourceDerived>
-using ResourceRef = std::weak_ptr<ResourceDerived>;
 
 
 END_PCCORE

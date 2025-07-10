@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "low_renderer/uniform_buffer.hpp"
+#include "low_renderer/rhi_uniform_buffer.hpp"
 #include "math/matrix2x2.hpp"
 #include "math/toolbox_typedef.hpp"
-//#include "rendering/buffer/uniform_buffer.hpp"
+#include "rendering/buffer/uniform_buffer.hpp"
 
 BEGIN_PCCORE
 
@@ -23,11 +23,11 @@ class SceneLightsBuffer
 {
 public:
     
-    SceneLightsBuffer();
+    PC_CORE_API SceneLightsBuffer();
 
-    ~SceneLightsBuffer() = default;
+    PC_CORE_API ~SceneLightsBuffer() = default;
 
-    void Fecth();
+    PC_CORE_API void Fecth();
 
     UniformBuffer uniformBuffer;
 

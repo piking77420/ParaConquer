@@ -1,5 +1,7 @@
 ﻿#include "editor_window.hpp"	
 
+#include "editor.hpp"
+
 
 using namespace PC_EDITOR_CORE;
 
@@ -22,17 +24,28 @@ void EditorWindow::End()
 
 void EditorWindow::GetInfo()
 {
-    
-    resize = false;
     ImVec2 imPos = ImGui::GetWindowPos();
     ImVec2 imSize = ImGui::GetWindowSize();
 
     Tbx::Vector2f newSize = { imSize.x , imSize.y};
+    resize = (newSize != size);
     
-    if (newSize != size)
-        resize = true;
-    
-    position = { imPos.x , imPos.y};
     size = { imSize.x , imSize.y};
+    position = { imPos.x , imPos.y};
+}
 
+bool EditorWindow::IsInsideWindow(Tbx::Vector2f _point) const
+{
+    const bool insideX = (_point.x >= position.x) && (_point.x <= (position.x + size.x));
+    const bool insideY = (_point.y >= position.y) && (_point.y <= (position.y + size.y));
+
+    return insideX && insideY;
+}
+
+bool EditorWindow::IsCursorInsideWindow() const 
+{
+    const auto cursorPos = m_Editor->gameApp.window.GetCursorPos();
+    
+
+    return IsInsideWindow({static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y)});
 }

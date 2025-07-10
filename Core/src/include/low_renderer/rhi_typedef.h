@@ -2,15 +2,19 @@
 
 #include <variant>
 #include <vector>
+#include <array>
+#include <string>
 
 #include "core_header.hpp"
 #include "math/toolbox_typedef.hpp"
 
-constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
+constexpr const char* SHADER_CACHE_PATH = "shaderCache/";
 
 
 #define ALIGNAS_16 alignas(16)
-constexpr  int MAX_FRAMES_IN_FLIGHT = 2;
+
+constexpr int MAX_FRAMES_IN_FLIGHT = 3;
+constexpr size_t MAX_COLOR_ATTACHMENTS = 7;
 
 BEGIN_PCCORE
     enum class GraphicAPI
@@ -32,6 +36,9 @@ BEGIN_PCCORE
         Tbx::Matrix4x4f projInv;
         float time;
         float deltatime;
+        float cameraNear;
+        float cameraFar;
+        Tbx::Vector3f cameraPos;
     };
 
     struct ALIGNAS_16 DrawObjectBufferGPU
@@ -51,6 +58,47 @@ BEGIN_PCCORE
 
 
 #pragma endregion
+    enum class BlendFactor : uint8_t
+    {
+        Zero,
+        One,
+        SrcColor,
+        OneMinusSrcColor,
+        DstColor,
+        OneMinusDstColor,
+        SrcAlpha,
+        OneMinusSrcAlpha,
+        DstAlpha,
+        OneMinusDstAlpha,
+        ConstantColor,
+        OneMinusConstantColor,
+        ConstantAlpha,
+        OneMinusConstantAlpha,
+        SrcAlphaSaturate,
+        Src1Color,
+        OneMinusSrc1Color,
+        Src1Alpha,
+        OneMinusSrc1Alpha
+    };
+
+    enum class BlendOp : uint8_t
+    {
+        eAdd,
+        eSubtract,
+        eReverseSubtract,
+        eMin,
+        eMax,
+    };
+
+    enum ColorComponent : uint8_t
+    {
+        None = 0,
+        ColorComponent_R  = 1 << 0, 
+        ColorComponent_G  = 1 << 1,
+        ColorComponent_B  = 1 << 2, 
+        ColorComponent_A  = 1 << 3  
+    };
+ 
 
     enum class RHIFormat
     {
@@ -364,12 +412,70 @@ BEGIN_PCCORE
 
 #pragma endregion
 
-enum class IndexFormat
-{
-    Uiunt8,
-    Uint16,
-    Uint32
-};
+    enum class ShaderStageType : size_t
+    {
+        VERTEX,
+        TESSCONTROL,
+        TESSEVALUATION,
+        GEOMETRY,
+        FRAGMENT,
+        COMPUTE,
+        RAYGEN,
+        INTERSECT,
+        ANYHIT,
+        CLOSESTHIT,
+        MISS,
+        CALLABLE,
+        TASK,
+        MESH,
+
+        COUNT
+    };
+
+    const std::array<std::string, 14> ShaderSourceFormat =
+    {
+        ".vert",
+        ".tessc",
+        ".tessv",
+        ".geom",
+        ".frag",
+        ".comp",
+        ".raygen",
+        ".intersect",
+        ".anyhit",
+        ".closesthit",
+        ".miss",
+        ".callable",
+        ".task"
+        ".mesh",
+    };
+
+    enum struct MemoryUsage
+    {
+        Static, // Not modified over its lifetime
+        Mutable, // Occasionally modified (e.g., once per frame)
+        Dynamic, // Frequently modified (e.g., multiple times per frame)
+
+        Count // Total enum values
+    };
+
+    enum struct MemoryLocalisation
+    {
+        GPU_Only, // Device-local
+        CPU_Only, // Host Only
+        CPU_To_GPU, // Host-visible (upload)
+        GPU_To_CPU, // Host-readable (readback)
+
+        Count // Total enum values
+    };
+
+
+    enum class IndexFormat : int
+    {
+        Uiunt8 = 1,
+        Uint16 = 2,
+        Uint32 = 4
+    };
 
 #pragma region Image
 
@@ -382,19 +488,6 @@ enum class IndexFormat
         RGB = 3,
         RGBA = 4
     };
-
-
-    enum class ImageType
-    {
-        TYPE_1D,
-        TYPE_2D,
-        TYPE_e3D,
-        TYPE_CUBE,
-        TYPE_1DARRAY,
-        TYPE_2DARRAY,
-        TYPE_CUBEARRAY
-    };
-
 
     enum class ComponentSwizzle
     {
@@ -417,34 +510,68 @@ enum class IndexFormat
     };
 
 
-    enum class TextureAttachement
+    enum class AttachmentType
+    {
+        None,
+        Color = 1,
+        Depth,
+        Stencil,
+        DepthStencil,
+    };
+
+    enum class TextureUsage : uint32_t
     {
         None = 0,
-        Color = 1,
-        DepthStencil = 2,
+        Sampled = 1 << 0, // Shader-readable (SRV)
+        RenderTarget = 1 << 1, // Color attachment (ex: RGBA render target)
+        Depth = 1 << 2, // Depth attachment
+        Stencil = 1 << 3, // Stencil attachment
+        Storage = 1 << 4, // Shader-writable (UAV)
     };
 
-    enum class TextureNature
+    inline TextureUsage operator|(TextureUsage a, TextureUsage b)
     {
-        Default = 0,
-        RenderTarget,
+        return static_cast<TextureUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+    }
+
+    inline TextureUsage operator&(TextureUsage a, TextureUsage b)
+    {
+        return static_cast<TextureUsage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+    }
+
+    inline bool HasUsage(TextureUsage usage, TextureUsage flag)
+    {
+        return (static_cast<uint32_t>(usage) & static_cast<uint32_t>(flag)) != 0;
+    }
+
+    enum class TextureType
+    {
+        Texture2D,
+        Array2D,
+        CubeMap,
+        CubeMapArray,
+        Count,
     };
 
 
-    struct CreateTextureInfo
+    struct CreateImageInfo
     {
         int32_t width;
         int32_t height;
         int32_t depth;
+        uint32_t layerCount;
         uint32_t mipsLevels;
-        ImageType imageType;
+
+        TextureType textureType;
         RHIFormat format;
         Channel channel;
-        TextureAttachement textureAttachement;
-        TextureNature textureNature;
-        bool canbeSampled = false;
+
+        TextureUsage textureUsage;
+        MemoryLocalisation memoryVisibility;
+
+        uint32_t samples;
         bool GenerateMipMap = false;
-        void* data;
+        std::vector<void*> datas;
     };
 
 
@@ -501,36 +628,198 @@ enum class IndexFormat
 
 #pragma region RenderPass
 
-  
+
 #pragma endregion RenderPass
 
 
-enum MemoryUsage
-{
-    CpuOnly,
-    GpuOnly,
-    CpuToGpu
-};
+    enum struct LoadOperation
+    {
+        Load,
+        Clear,
+        DontCare,
+    };
 
-enum class BufferUsage
-{
-    VertexBuffer,
-    IndexBuffer,
-    UniformBuffer,
-    ShaderStorageBuffer,
-    Count
-};
+    enum struct StoreOperation
+    {
+        Store,
+        DontCare,
+    };
 
-struct GPUBufferCreateInfo
-{
-    const void* data;
-    size_t dataSize;
-    BufferUsage usage;
-};
+    enum class ShaderProgramPipelineType
+    {
+        POINT_GRAPHICS,
+        COMPUTE,
+        RAYTRACING,
+
+        COUT
+    };
+
+    enum class PipelineStageFlagBits : uint64_t
+    {
+        None = 0,
+        TopOfPipe = 1ULL << 0,
+        DrawIndirect = 1ULL << 1,
+        VertexInput = 1ULL << 2,
+        VertexShader = 1ULL << 3,
+        TessellationControlShader = 1ULL << 4,
+        TessellationEvaluationShader = 1ULL << 5,
+        GeometryShader = 1ULL << 6,
+        FragmentShader = 1ULL << 7,
+        EarlyFragmentTests = 1ULL << 8,
+        LateFragmentTests = 1ULL << 9,
+        ColorAttachmentOutput = 1ULL << 10,
+        ComputeShader = 1ULL << 11,
+        Transfer = 1ULL << 12,
+        BottomOfPipe = 1ULL << 13,
+        Host = 1ULL << 14,
+        AllGraphics = 1ULL << 15,
+        AllCommands = 1ULL << 16,
+        NoneKHR = 1ULL << 17,
+        TransformFeedbackEXT = 1ULL << 18,
+        ConditionalRenderingEXT = 1ULL << 19,
+        AccelerationStructureBuildKHR = 1ULL << 20,
+        AccelerationStructureBuildNV = 1ULL << 21,
+        RayTracingShaderKHR = 1ULL << 22,
+        RayTracingShaderNV = 1ULL << 23,
+        FragmentDensityProcessEXT = 1ULL << 24,
+        FragmentShadingRateAttachmentKHR = 1ULL << 25,
+        ShadingRateImageNV = 1ULL << 26,
+        CommandPreprocessNV = 1ULL << 27,
+        CommandPreprocessEXT = 1ULL << 28,
+        TaskShaderEXT = 1ULL << 29,
+        TaskShaderNV = 1ULL << 30,
+        MeshShaderEXT = 1ULL << 31,
+        MeshShaderNV = 1ULL << 32
+    };
+
+    using PipelineStageFlags = uint64_t;
+
+    inline PipelineStageFlags operator|(PipelineStageFlagBits a, PipelineStageFlagBits b)
+    {
+        return static_cast<PipelineStageFlags>(a) | static_cast<PipelineStageFlags>(b);
+    }
+
+    inline PipelineStageFlags operator&(PipelineStageFlagBits a, PipelineStageFlagBits b)
+    {
+        return static_cast<PipelineStageFlags>(a) & static_cast<PipelineStageFlags>(b);
+    }
+
+    inline PipelineStageFlags& operator|=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs)
+    {
+        lhs |= static_cast<PipelineStageFlags>(rhs);
+        return lhs;
+    }
+
+    inline PipelineStageFlags& operator&=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs)
+    {
+        lhs &= static_cast<PipelineStageFlags>(rhs);
+        return lhs;
+    }
+
+    //----------------------------------------
+
+    enum class AccessFlagBits : uint64_t
+    {
+        None = 0,
+        IndirectCommandRead = 1ULL << 0,
+        IndexRead = 1ULL << 1,
+        VertexAttributeRead = 1ULL << 2,
+        UniformRead = 1ULL << 3,
+        InputAttachmentRead = 1ULL << 4,
+        ShaderRead = 1ULL << 5,
+        ShaderWrite = 1ULL << 6,
+        ColorAttachmentRead = 1ULL << 7,
+        ColorAttachmentWrite = 1ULL << 8,
+        DepthStencilAttachmentRead = 1ULL << 9,
+        DepthStencilAttachmentWrite = 1ULL << 10,
+        TransferRead = 1ULL << 11,
+        TransferWrite = 1ULL << 12,
+        HostRead = 1ULL << 13,
+        HostWrite = 1ULL << 14,
+        MemoryRead = 1ULL << 15,
+        MemoryWrite = 1ULL << 16,
+        NoneKHR = 1ULL << 17,
+        TransformFeedbackWriteEXT = 1ULL << 18,
+        TransformFeedbackCounterReadEXT = 1ULL << 19,
+        TransformFeedbackCounterWriteEXT = 1ULL << 20,
+        ConditionalRenderingReadEXT = 1ULL << 21,
+        ColorAttachmentReadNoncoherentEXT = 1ULL << 22,
+        AccelerationStructureReadKHR = 1ULL << 23,
+        AccelerationStructureReadNV = 1ULL << 24,
+        AccelerationStructureWriteKHR = 1ULL << 25,
+        AccelerationStructureWriteNV = 1ULL << 26,
+        FragmentDensityMapReadEXT = 1ULL << 27,
+        FragmentShadingRateAttachmentReadKHR = 1ULL << 28,
+        ShadingRateImageReadNV = 1ULL << 29,
+        CommandPreprocessReadNV = 1ULL << 30,
+        CommandPreprocessReadEXT = 1ULL << 31,
+        CommandPreprocessWriteNV = 1ULL << 32,
+        CommandPreprocessWriteEXT = 1ULL << 33
+    };
+
+    using AccessFlags = uint64_t;
+
+    inline AccessFlags operator|(AccessFlagBits a, AccessFlagBits b)
+    {
+        return static_cast<AccessFlags>(a) | static_cast<AccessFlags>(b);
+    }
+
+    inline AccessFlags operator&(AccessFlagBits a, AccessFlagBits b)
+    {
+        return static_cast<AccessFlags>(a) & static_cast<AccessFlags>(b);
+    }
+
+    inline AccessFlags& operator|=(AccessFlags& lhs, AccessFlagBits rhs)
+    {
+        lhs |= static_cast<AccessFlags>(rhs);
+        return lhs;
+    }
+
+    inline AccessFlags& operator&=(AccessFlags& lhs, AccessFlagBits rhs)
+    {
+        lhs &= static_cast<AccessFlags>(rhs);
+        return lhs;
+    }
+
 
 END_PCCORE
 
 
-// This descriptor must Containt Unifrom Camera at Binding 1 and final texture to viewPort
-#define VIEWPORT_DESCRIPTOR 0
-#define INSTANCE_DESCRIPTOR 1
+template <typename T, typename U>
+inline T SafeCastReinterpreCast(U* ptr)
+{
+#ifdef DEBUG
+    return dynamic_cast<T*>(ptr);
+#else
+    return reinterpret_cast<T>(ptr);
+
+#endif // DEBUG
+}
+
+
+// DescriptorSet
+#define SCENE_DESCRIPTOR_SET 0
+#define MATERIAL_DESCRIPTOR_SET 1
+#define ENVIRONEMENT_DESCRIPTOR_SET 1
+
+// Binding
+// SCENE_DESCRIPTOR_SET
+#define CAMERA_BINDING 0
+#define LIGHTDATA_BINDING 1
+#define FORWARD_SKYBOX_CUBEMAP 2
+// MATERIAL_DESCRIPTOR_SET
+#define ALBEDO_BINDING 2
+
+// ENVIRONEMENT_DESCRIPTOR_SET
+#define SKYBOX_BINDING 0
+
+#define CAM_DEPTH_MAX 1.f
+#define CAM_DEPTH_MIN 0.f
+
+
+// PREPROCESSOR
+
+
+#if defined(_DEBUG) || defined(PROFILING)
+#define DEBUG_GPU_ON 1
+#endif

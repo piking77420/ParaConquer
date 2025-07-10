@@ -7,9 +7,9 @@ BEGIN_PCCORE
 class Time
 {
 public:
-    PC_CORE_API static float GetTime();
+    PC_CORE_API static double GetTime();
 
-    PC_CORE_API static float DeltaTime();
+    PC_CORE_API static double DeltaTime();
 
     PC_CORE_API static void UpdateTime();
 

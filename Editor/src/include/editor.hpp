@@ -1,9 +1,13 @@
 ﻿#pragma once
 
+#include <atomic>
+
 #include "app.hpp"
 #include "dock_space.hpp"
 #include "editor_header.hpp"
 #include "editor_window.hpp"
+#include "command/editor_command.hpp"
+#include "editor_sub_system/editor_sub_system.hpp"
 #include "io/imgui_context.h"
 #include "physics/rigid_body.hpp"
 #include "world/transform.hpp"
@@ -11,6 +15,26 @@
 
 BEGIN_EDITOR_PCCORE
 
+enum struct EditorInitData : uint8_t 
+{
+    PROJECT_ABSOLUTE_PATH,
+    COUNT
+};
+
+constexpr std::array<const char*, (uint8_t)(EditorInitData::COUNT)> EditorInitDataKeys =
+{
+    "PROJECT_ABSOLUTE_PATH"
+};
+
+constexpr const char* ParaConquerProjectFileFormat = ".Prproject";
+constexpr const char* ParaConquerEditorInitFile = "editor.ini";
+
+
+struct EditorData
+{
+    std::string projectName;
+    std::filesystem::path projectPath;
+};
 
 class Editor
 {
@@ -22,6 +46,11 @@ public:
     Editor();
 
     ~Editor();
+
+    template <EditorCommandDerived T, typename ...Args>
+    void PushCommand(Args&&... args);
+
+    void RewindCommand();
     
     void InitTestScene();
     
@@ -29,26 +58,51 @@ public:
     
     void Run(bool* _appShouldClose);
 
-    void InitEditorWindows();
+    void InitEditor();
 
-    void UpdateEditorWindows();
+    void EditorCommandUpdate();
 
-    PC_CORE::App gameApp;
+    void UpdateEditor();
     
-    std::vector<EditorWindow*> m_EditorWindows;
+    PC_CORE::App gameApp;
 
+    EditorData editorData;
+    
     DockSpace dockSpace;
     
     PC_CORE::EntityId m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
     PC_CORE::IMGUIContext IMGUIContext;
 
+    std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
+
+    std::vector<std::unique_ptr<EditorWindow>> editorWindows;
+    
+    std::vector<std::unique_ptr<EditorCommand>> editorCommands;
+
 private:
-    void InitThridPartLib();
+    void InitThridPartLib(PC_CORE::GraphicAPI graphicApi);
 
     void UnInitThridPartLib();
 
     void CompileShader();
+
+    void LookForEditorInit();
+
+    void BasicOpenFile();
+
+    void ReloadShaders();
+
+
 };
 
-END_PCCORE
+template <EditorCommandDerived T, typename ... Args>
+void Editor::PushCommand(Args&&... args)
+{
+    editorCommands.emplace_back(
+           std::make_unique<T>(*this, std::forward<Args>(args)...)
+   );
+}
+
+
+END_EDITOR_PCCORE

@@ -1,6 +1,16 @@
-﻿#include <glslang/Include/glslang_c_interface.h>
+﻿#include <thread> 
+#include <chrono>
+#include <iostream>
+
+
+#include <perf_region.hpp>
+#include <glslang/Include/glslang_c_interface.h>
+#include <Imgui/imgui_internal.h>
+//#include <Json/json.hpp>
+
 
 #include "editor.hpp"
+#include "resources/resource_manager.hpp"
 
 #include "asset_browser.hpp"
 #include "edit_world_window.hpp"
@@ -18,19 +28,33 @@
 #include "resources/shader_source.hpp"
 #include "world/static_mesh.hpp"
 #include "serialize/serializer.h"
-#include <thread>
-#include <Imgui/imgui_internal.h>
 
-#include <perf_region.hpp>
+#include <windows.h>      // For common windows data types and function headers
+#define STRICT_TYPED_ITEMIDS
+#include <objbase.h>      // For COM headers
+#include <shobjidl.h>     // for IFileDialogEvents and IFileDialogControlEvents
+#include <shlwapi.h>
+#include <knownfolders.h> // for KnownFolder APIs/datatypes/function headers
+#include <propvarutil.h>  // for PROPVAR-related functions
+#include <propkey.h>      // for the Property key APIs/datatypes
+#include <propidl.h>      // for the Property System APIs
+#include <strsafe.h>      // for StringCchPrintfW
+#include <shtypes.h>      // for COMDLG_FILTERSPEC
+#include <new>
+#include <shobjidl.h>  // For IFileDialogEvents
 
+#include "serialize/iseriazable.h"
+#include <random> // pour std::mt19937 et std::uniform_real_distribution
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
 
+
 Editor::Editor()
 {
 	PROFILER_NOOP;
+
 }
 
 Editor::~Editor()
@@ -82,6 +106,8 @@ namespace ImGui {
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o1, bb.Min.y + r), r, bg_col);
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o2, bb.Min.y + r), r, bg_col);
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + circleEnd - o3, bb.Min.y + r), r, bg_col);
+
+		return true;
 	}
 
 	bool Spinner(const char* label, float radius, int thickness, const ImU32& color) {
@@ -119,62 +145,182 @@ namespace ImGui {
 		}
 
 		window->DrawList->PathStroke(color, false, thickness);
+		return true;
 	}
 
 }
-void Editor::InitThridPartLib()
+void Editor::InitThridPartLib(PC_CORE::GraphicAPI graphicApi)
 {
 	PERF_REGION_SCOPED;
-	glslang_initialize_process();
+
+	PC_LOG("InitThridPartLib...")
+	ShaderSource::InitShadersCompiler(graphicApi, false);
 
 }
 
 void Editor::UnInitThridPartLib()
 {
 	PERF_REGION_SCOPED;
-	glslang_finalize_process();
+	ShaderSource::DestroyShadersCompiler();
 }
 
 void Editor::CompileShader()
 {
+	PERF_REGION_SCOPED;
+	PC_LOG("CompileShader...")
+	std::filesystem::create_directory(SHADER_CACHE_PATH);
 	
-	std::shared_ptr<ShaderSource> vertex = ResourceManager::Create<ShaderSource>("assets/shaders/main.vert");
-	std::shared_ptr<ShaderSource> frag = ResourceManager::Create<ShaderSource>("assets/shaders/main.frag");
+	auto forwardVert = ResourceManager::Create<ShaderSource>("forward.vert");
+	forwardVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/forward/forward.vert");
 
-	vertex->CompileToSpriv();
-	frag->CompileToSpriv();
+	auto forwardFrag = ResourceManager::Create<ShaderSource>("forward.frag");
+	forwardFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/forward/forward.frag");
 
-	vertex = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.vert");
-	frag = ResourceManager::Create<ShaderSource>("assets/shaders/draw_texture_screen_quad.frag");
+	auto screenQuadVert = ResourceManager::Create<ShaderSource>("draw_texture_screen_quad.vert");
+	screenQuadVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.vert");
 
+	auto screenQuadFrag = ResourceManager::Create<ShaderSource>("draw_texture_screen_quad.frag");
+	screenQuadFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/draw_texture_screen_quad.frag");
 
-	vertex->CompileToSpriv();
-	frag->CompileToSpriv();
+	auto skyRenderingVert = ResourceManager::Create<ShaderSource>("sky_rendering.vert");
+	skyRenderingVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.vert");
+
+	auto skyRenderingFrag = ResourceManager::Create<ShaderSource>("sky_rendering.frag");
+	skyRenderingFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/sky_rendering.frag");
+
+	auto debugDrawVert = ResourceManager::Create<ShaderSource>("debug_draw.vert");
+	debugDrawVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
+
+	auto debugDrawFrag = ResourceManager::Create<ShaderSource>("debug_draw.frag");
+	debugDrawFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
+
+	auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("debug_draw_ray.vert");
+	debugDrawRayVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw_ray.vert");
+
+	// skybox
+	{
+		auto skyboxVert = ResourceManager::Create<ShaderSource>("cube_map_skybox.vert");
+		skyboxVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/cube_map_skybox/cube_map_skybox.vert");
+
+		auto skyboxFrag = ResourceManager::Create<ShaderSource>("cube_map_skybox.frag");
+		skyboxFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/cube_map_skybox/cube_map_skybox.frag");
+	}
+
 }
 
+void Editor::LookForEditorInit()
+{
+	/*
+	namespace fs = std::filesystem;
+
+	// Look for editor Init or create one 
+
+	const std::filesystem::path workingDir = std::filesystem::current_path();
+	const std::string editorDataInitFile = workingDir.generic_string() + "/" + ParaConquerEditorInitFile;
+	const std::filesystem::path editorDataInitFilePath(editorDataInitFile);
+
+	if (!fs::exists(editorDataInitFilePath))
+	{
+		std::ofstream createFile(editorDataInitFile);
+
+		if (!createFile.is_open())
+		{
+			// error should be able to create file
+			exit(1);
+		}
+		createFile.close();
+	}
+
+	try
+	{
+		json j = json::parse(editorDataInitFile);
+
+		const std::string projectPath = j[EditorInitDataKeys[(uint8_t)EditorInitData::PROJECT_ABSOLUTE_PATH]];
+
+		if (projectPath.empty() || !fs::exists(std::filesystem::path(projectPath)))
+		{
+			BasicOpenFile();
+		}
+	}
+	catch (...)
+	{
+		// select A project folder
+		// to do import basic files
+		BasicOpenFile();
+	}*/
+	
+}
+
+void Editor::BasicOpenFile()
+{
+	std::wstring fileToOpen;
+	HRESULT hr = CoInitialize(NULL);
+	if (SUCCEEDED(hr))
+	{
+		IFileOpenDialog* pFileOpen = NULL;
+
+		// Create the FileOpenDialog object.
+		hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+			IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+		if (SUCCEEDED(hr))
+		{
+			// Show the Open dialog box.
+			hr = pFileOpen->Show(NULL);
+
+			// Get the file name from the dialog box.
+			if (SUCCEEDED(hr))
+			{
+				IShellItem* pItem;
+				hr = pFileOpen->GetResult(&pItem);
+				if (SUCCEEDED(hr))
+				{
+					PWSTR pszFilePath = NULL;
+					hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+					if (SUCCEEDED(hr))
+					{
+						// Display the file path in a message box
+						MessageBoxW(NULL, pszFilePath, L"Selected File", MB_OK);
+						CoTaskMemFree(pszFilePath);
+					}
+					pItem->Release();
+				}
+			}
+			pFileOpen->Release();
+		}
+		CoUninitialize();
+	}
+}
 
 
 void Editor::Init()
 {
 	PERF_REGION_SCOPED;
-
-	InitThridPartLib();
+	
+	const AppCreateInfo appCreateInfo =
+	{
+		.appName = "Para Conquer Editor",
+		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/paraconquer_logo_black.png",
+		.enableGpuDebug = true,
+		.graphicAPI = GraphicAPI::VULKAN
+	};
+	
+	InitThridPartLib(appCreateInfo.graphicAPI);
 	CompileShader();
-	gameApp.Init();
-
-
-
-	InitEditorWindows();
-	InitTestScene();
+	gameApp.Init(appCreateInfo);
+	
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
-
+	
+	
 	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
+		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
+		cmd->EndDebugLabel();
 		});
-
-	//Tbx::Vector3f y;
-	//Serializer::DeSerialize(&y, "TestSerilize.ser");
-
+	
+	InitTestScene();
+	InitEditor();
 }
 
 void Editor::Destroy()
@@ -183,180 +329,139 @@ void Editor::Destroy()
 
 	IMGUIContext.Destroy();
 
-	for (const EditorWindow* editorWindow : m_EditorWindows)
-		delete editorWindow;
+	for (auto& i : editorWindows)
+	{
+		i.reset();
+	}
 
 	gameApp.Destroy();
 
 	UnInitThridPartLib();
 }
-
-
-
-struct dqdq
+void Editor::UpdateEditor()
 {
-	TypeId ds;
-
-	ComponentArray componentArray;
-};
-
-void Editor::UpdateEditorWindows()
-{
+	PERF_REGION_SCOPED;
 	//static bool open = true;
-
 	//ImGui::ShowDemoWindow(&open);
 
 	dockSpace.BeginDockSpace();
 	if (ImGui::BeginMenuBar())
 	{
-	;
-
 		if (ImGui::BeginMenu("File"))
 		{
 			if (ImGui::MenuItem("SaveScene"))
 			{
-				auto world = World::GetWorld();
-				// unordoredMap Function
-				using UnordoredByteMap = std::unordered_map<uint8_t, uint8_t>;
-				using UnordoredMapIterator = typename UnordoredByteMap::iterator;
-				using ReseverMapFunction = void (UnordoredByteMap::*)(size_t);
-				using InsertMapFunction = typename UnordoredByteMap::mapped_type& (UnordoredByteMap::*)(const typename UnordoredByteMap::key_type&);
-
-				using UnordoredMapConstIterator = typename UnordoredByteMap::const_iterator;
-				using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename UnordoredByteMap::key_type, typename UnordoredByteMap::mapped_type>* (UnordoredMapConstIterator::*)() const;
-				using IncrementMapIterator = UnordoredMapConstIterator & (UnordoredMapConstIterator::*)();
-				using IncrementMapIteratorByte = std::unordered_map<uint8_t, uint8_t>::const_iterator& (std::unordered_map<uint8_t, uint8_t>::const_iterator::*)();
-
-#if 0
-
-				void* ptr = &world->m_ComponentManager.m_ComponentMapArray[Reflector::GetTypeKey<RigidBody>()];
-				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&world->m_ComponentManager.m_ComponentMapArray);
-
-				const auto& typeMap = Reflector::GetType<std::unordered_map<TypeId, ComponentArray>>();
-
-				UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
-				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
-				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
-
-				//auto rBegin = world->m_ComponentManager.m_ComponentMapArray.begin();
-				//auto rEnd = world->m_ComponentManager.m_ComponentMapArray.end();
-
-				
-
-				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
-				IncrementMapIteratorByte iteratorFunByte;
-				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
-
-				// TO DO REFLECT THE STD PAIR OF MAP TO GET THE OFFET BETWEEN THOS TWOO VALUE
-				for (UnordoredMapConstIterator it = mapByte->begin();
-					it != mapByte->end();)
-				{
-					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
-					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + typeMap.metaData.typeNatureMetaData.metaDataType.unordoredMapReflected.offsetBetweenKeyAndValueInPair);
-				
-					const auto& type = Reflector::GetType(*reinterpret_cast<const uint32_t*>(ptr));
-
-
-					const ComponentArray* arry = reinterpret_cast<const ComponentArray*>(ptr2);
-					assert(type.typeId == arry->componentType);
-
-					printf("");
-					(it.*iteratorFunByte)();
-				}
-
-				Serializer::Serialize(world->m_ComponentManager.m_ComponentMapArray, "basic_level.level");
-#else
-
-				
-				auto& map = ResourceManager::m_ResourcesMap;
-				const auto& typeMap = Reflector::GetType<decltype(ResourceManager::m_ResourcesMap)>();
-				std::unordered_map<uint8_t, uint8_t>* mapByte = reinterpret_cast<std::unordered_map<uint8_t, uint8_t>*>(&ResourceManager::m_ResourcesMap);
-
-				UnorderedMapUnrefConstIteratorFunc unrefFunf = nullptr;
-				auto& mapfuns = Reflector::m_UnordoredMapReflectFunction.at(typeMap.typeId);
-				std::memcpy(&unrefFunf, &mapfuns.unrefFunc, sizeof(UnorderedMapUnrefConstIteratorFunc));
-
-				IncrementMapIterator incrementFunc = &std::unordered_map<uint8_t, uint8_t>::const_iterator::operator++;
-				IncrementMapIteratorByte iteratorFunByte;
-				memcpy(&iteratorFunByte, &incrementFunc, sizeof(IncrementMapIteratorByte));
-
-
-				for (auto it = mapByte->begin() ; it != mapByte->end(); )
-				{
-					void* ptrr = &ResourceManager::m_ResourcesMap.at("quad.obj");
-
-					constexpr size_t sizeOfS = sizeof(std::string);
-					const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&(it.*unrefFunf)()->first);
-					const uint8_t* ptr2 = reinterpret_cast<const uint8_t*>((&(it.*unrefFunf)()->first) + typeMap.metaData.typeNatureMetaData.metaDataType.unordoredMapReflected.offsetBetweenKeyAndValueInPair);
-
-					const std::string* s = reinterpret_cast<const std::string*>(ptr);
-					const std::shared_ptr<Resource>* r = reinterpret_cast<const std::shared_ptr<Resource>*>(ptr2);
-
-
-					(it.*iteratorFunByte)();
-				}
-#endif
-
+				Level& l = World::GetWorld()->level;
+				//Serializer::Serialize(l,"TestScene.map");
+			}
+			if (ImGui::MenuItem("LoadScene"))
+			{
+				Level& l = World::GetWorld()->level;
+				//Serializer::DeSerialize(&l,"TestScene.map");
 			}
 			ImGui::EndMenu();
+		}
 
+		if (ImGui::BeginMenu("Rendering"))
+		{
+			auto l = [&](std::shared_ptr<Resource> _shader)
+			{
+				if (ImGui::MenuItem(_shader->name.c_str()))
+				{
+					Rhi::GetRhiContext()->WaitIdle();
+					_shader->Reload();
+					// reload shader
+				}
+			};
+			  
+			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<PC_CORE::ShaderSource>(), l);
+			
+			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
-
 	}
 
-	for (EditorWindow* editorWindow : m_EditorWindows)
 	{
-		editorWindow->Begin();
-		editorWindow->Update();
-		editorWindow->End();
+		PERF_REGION_SCOPED_NAMED("Update Windows");
+		for (auto& editorWindow : editorWindows)
+		{
+			editorWindow->Begin();
+			editorWindow->Update();
+			editorWindow->End();
+		}
 	}
+	
 
+	for (auto& sub : editorSubSystems)
+		sub->Update();
 
+	EditorCommandUpdate();
 	dockSpace.EndDockSpace();
+
+
+	for (auto& editorWindow : editorWindows)
+		editorWindow->Render();
+	for (auto& sub : editorSubSystems)
+		sub->Render();
 }
 
 
-REFLECT(std::vector<Transform>)
 
-std::shared_ptr<Material> m1;
-std::shared_ptr<Material> m2;
+
+void Editor::RewindCommand()
+{
+	if (editorCommands.empty())
+		return;
+
+	editorCommands.pop_back();
+}
 
 void Editor::InitTestScene()
-{
+{	
+	
 	PERF_REGION_SCOPED;
+	PC_LOG("InitTestScene...")
 
-	m1 = std::make_shared<Material>("diamond_block_material.mat");
-	m2 = std::make_shared<Material>("emerauld_block_material.mat");
+	std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
+	std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("emerauld_block_material.mat");
 
-	m1->m_albedo = ResourceManager::Get<Texture>("diamond_block.jpg");
+	m1->m_albedo = ResourceManager::Get<Texture2D>("diamond_block.jpg");
 	m1->Build();
 
 
-	m2->m_albedo = ResourceManager::Get<Texture>("emerauld_block.png");
+	m2->m_albedo = ResourceManager::Get<Texture2D>("emerauld_block.png");
 	m2->Build();
 
+	auto& level = World::GetWorld()->level;
 
-	EntityId dirLight = World::GetWorld()->CreateEntity();
-	World::GetWorld()->AddComponent<DirLight>(dirLight);
-	World::GetWorld()->AddComponent<Transform>(dirLight);
+	EntityId dirLight = level.CreateEntity("dirLight");
+	level.AddComponent<DirLight>(dirLight);
+	level.AddComponent<Transform>(dirLight);
+	Transform* t = &level.GetComponent<Transform>(dirLight);
+	t->rotation = Rotation(Tbx::Vector3f::UnitY());
+	DirLight* dir = &level.GetComponent<DirLight>(dirLight);
+	dir->color = Tbx::Vector3f(1, 1, 1);
 
-	EntityId cube = World::GetWorld()->CreateEntity();
-	World::GetWorld()->AddComponent<Transform>(cube);
-	World::GetWorld()->AddComponent<StaticMesh>(cube);
+	EntityId cube = level.CreateEntity("cube");
+	level.AddComponent<Transform>(cube);
+	level.AddComponent<StaticMesh>(cube);
+	t = &level.GetComponent<Transform>(cube);
+	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f);
 
+	
+	EntityId sphere = level.CreateEntity("sphere");
+	level.AddComponent<Transform>(sphere);
+	level.AddComponent<StaticMesh>(sphere);
+	t = &level.GetComponent<Transform>(sphere);
+	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+	t->scale = Tbx::Vector3d(10.0f, 10.0f, 10.0f);
 
-	EntityId sphere = World::GetWorld()->CreateEntity();
-	World::GetWorld()->AddComponent<Transform>(sphere);
-	World::GetWorld()->AddComponent<StaticMesh>(sphere);
-	Transform* t = &World::GetWorld()->GetComponent<Transform>(sphere);
-	t->position = Tbx::Vector3d(0.0f, 2.0f, 1.0f );
-
-	StaticMesh* mesh = &World::GetWorld()->GetComponent<StaticMesh>(cube);
-	mesh->mesh = ResourceManager::Get<Mesh>("cube.obj");
+	StaticMesh* mesh = &level.GetComponent<StaticMesh>(cube);
+	mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
 	mesh->material = m1;
 
-	StaticMesh* mesh2 = &World::GetWorld()->GetComponent<StaticMesh>(sphere);
+	
+	StaticMesh* mesh2 = &level.GetComponent<StaticMesh>(sphere);
 	mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
 	mesh2->material = m2;
 
@@ -373,40 +478,49 @@ void Editor::DestroyTestScene()
 
 void Editor::Run(bool* _appShouldClose)
 {
+
 	while (!gameApp.window.ShouldClose())
 	{
 		PERF_REGION_SCOPED;
 
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
-		IMGUIContext.NewFrame();
 		PC_CORE::Time::UpdateTime();
 
-		UpdateEditorWindows();
 
-		gameApp.WorldTick();
+		gameApp.WorldTick(PC_CORE::Time::DeltaTime());
 
-		if (!gameApp.renderer.BeginDraw(&gameApp.window))
-		{
-			continue;
-		}
-
-		for (EditorWindow* editorWindow : m_EditorWindows)
-			editorWindow->Render();
-
+		IMGUIContext.NewFrame();
+		gameApp.renderer.BeginDraw(&gameApp.window);
+		UpdateEditor();
+	
 
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
+
+		
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();
 }
 
-void Editor::InitEditorWindows()
+void Editor::InitEditor()
 {
-	m_EditorWindows.push_back(new EditWorldWindow(*this, "Scene"));
-	m_EditorWindows.push_back(new Inspector(*this, "Inspector"));
-	m_EditorWindows.push_back(new Hierachy(*this, "Hierachy"));
-	m_EditorWindows.push_back(new SceneButton(*this, "SceneButton"));
-	m_EditorWindows.push_back(new AssetBrowser(*this, "AssetBrowser"));
+	PC_LOG("InitEditorWindow...")
+	editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
+	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
+	editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
+	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
+
+	PC_LOG("InitEditorSystem")
+	
+}
+
+void Editor::EditorCommandUpdate()
+{
+	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
+	{
+		RewindCommand();
+	}
 }

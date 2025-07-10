@@ -13,6 +13,8 @@
 #define DEFFERED_HOST_OP "DEFFERED_HOST_OP"
 
 
+
+
 BEGIN_PCCORE
     constexpr int32_t NULL_PHYSICAL_DEVICE = -1;
 
@@ -34,6 +36,9 @@ BEGIN_PCCORE
         virtual ~PhysicalDevice() = default;
 
         virtual float GetMaxSamplerAnisotropy() const = 0;
+
+        virtual uint32_t GetMaxUsableSampleCount() const = 0;
+
     };
 
     class PhysicalDevices

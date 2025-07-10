@@ -17,10 +17,17 @@
 #define PROFILER_NOOP TracyNoop
 
 #define PERF_REGION_SCOPED ZoneScoped
-#define PERF_REGION_SCOPEDN ZoneScopedN
+#define PERF_REGION_SCOPED_NAMED(x) ZoneScopedN(x)
 #define PERF_REGION_SCOPEDC ZoneScopedC(x)
 #define PERF_REGION_SCOPEDNC ZoneScopedNC(x,y)
 
+#define PERF_REGION_SCOPED_NAME_DYNAMIC(x) \
+ZoneScoped; \
+ZoneName(x, strlen(x))
+
+
+// TO DO A LOT OF REFACTOR
+#define VK_PERF_REGION()
 
 
 #define PERF_FRAME_MARK FrameMark
@@ -33,9 +40,12 @@
 #define PROFILER_NOOP
 
 #define PERF_REGION_SCOPED 
+#define PERF_REGION_SCOPED_NAMED(x)
 #define PERF_REGION_SCOPEDN 
 #define PERF_REGION_SCOPEDC 
 #define PERF_REGION_SCOPEDNC
+
+#define PERF_REGION_SCOPED_NAME_DYNAMIC(x)
 
 #define PERF_FRAME_MARK 
 #define PERF_FRAME_MARK_NAMED 

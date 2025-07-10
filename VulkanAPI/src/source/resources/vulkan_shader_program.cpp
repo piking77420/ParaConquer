@@ -4,7 +4,7 @@
 #include <map>
 
 #include "resources/vulkan_descriptor_sets.hpp"
-#include "rhi_vulkan_parser.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_render_pass.hpp"
 #include "io/in_out.h"
@@ -78,6 +78,7 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
 
 void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set)
 {
+
     std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout[set]);
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
     VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets();
@@ -129,16 +130,18 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
     _commandBuffer.pushConstants(m_PipelineLayout,pushConstatnField.shaderStage, pushConstatnField.pushConstantOffSet, pushConstatnField.pushConstantSize, data);
 }
 
-VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : ShaderProgram(_programShaderCreateInfo)
+VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : RhiShaderProgram(_programShaderCreateInfo)
 {
-    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo);
-    
+    PERF_REGION_SCOPED;
+
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo.shaderSources);
+
         
     switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
     {
     case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
         {
-            const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(_programShaderCreateInfo.shaderInfo.shaderInfoData);
+            const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(m_ProgramShaderCreateInfo.shaderInfo.shaderInfoData);
             CreatePipeLinePointGraphicsPipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
         }
         break;
@@ -156,16 +159,18 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
     
     for (auto& vkShaderModule : vulkanShaderProgramCreateContex.vkShaderModules)
         vulkanShaderProgramCreateContex.device.destroyShaderModule(vkShaderModule);
+
 }
 
 
-VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(
-    const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo)
+VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources)
 {
-    const  size_t shaderStageCount = _programShaderCreateInfo.shaderInfo.shaderSources.size();
+    PERF_REGION_SCOPED;
+
+    const  size_t shaderStageCount = _programShaderCreateInfo.size();
 
     VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex;
-    vulkanShaderProgramCreateContex.device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
+    vulkanShaderProgramCreateContex.device = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice)->GetDevice();
     vulkanShaderProgramCreateContex.spvModuleSourceCode = std::vector<std::vector<char>>(shaderStageCount);
     vulkanShaderProgramCreateContex.modulesReflected = std::vector<SpvReflectShaderModule>(shaderStageCount);
     vulkanShaderProgramCreateContex.vkShaderModules = std::vector<vk::ShaderModule>(shaderStageCount);
@@ -173,15 +178,13 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 
     for (size_t i = 0; i < shaderStageCount; i++)
     {
-        const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo.shaderInfo.shaderSources[i];
+        const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo[i];
         const char* format = nullptr;
          if (!GetFormatFromValue(PC_CORE::ShaderSourceFormat, shaderSource.first, &format))
          {
              PC_LOGERROR("Failed to parse shader source for shader ");
          }
-        std::string spvFile = SHADER_CACHE_PATH + shaderSource.second;
-
-        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = PC_CORE::InOut::ReadFile(spvFile);
+        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = PC_CORE::InOut::ReadFile(shaderSource.second);
 
     }
 
@@ -189,9 +192,14 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     {
         spvReflectCreateShaderModule(vulkanShaderProgramCreateContex.spvModuleSourceCode[i].size(), vulkanShaderProgramCreateContex.spvModuleSourceCode[i].data(), &vulkanShaderProgramCreateContex.modulesReflected[i]);
     }
+
+    
     
     // Reflection Start
-    ParseSpvRelfection(vulkanShaderProgramCreateContex);
+    if (_createDescriptorResources)
+        ParseDescriptor(vulkanShaderProgramCreateContex);
+
+    ParsePushConstantRange(vulkanShaderProgramCreateContex);
     CreatePushConstantMapFromReflection(vulkanShaderProgramCreateContex.modulesReflected);
     
     // Create Modules
@@ -209,7 +217,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size(); i++)
     {
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType = vk::StructureType::ePipelineShaderStageCreateInfo;
-        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = RhiToShaderStage(_programShaderCreateInfo.shaderInfo.shaderSources[i].first);
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = Utils::RhiToShaderStage(_programShaderCreateInfo[i].first);
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.vkShaderModules[i];
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.modulesReflected[i].entry_point_name;
     }
@@ -262,30 +270,22 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
     ParseRasterizer(&rasterizer, _shaderGraphicPointInfo.rasterizerInfo);
     
+    vk::SampleCountFlagBits sample = Utils::RhiSampleCountToVuklan(_shaderGraphicPointInfo.rasterizerInfo.multiSampleRasterization);
     vk::PipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
-    multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
-    multisampling.minSampleShading = 1.0f; // Optional
+    multisampling.sampleShadingEnable = sample == vk::SampleCountFlagBits::e1 ? VK_FALSE : VK_TRUE;
+    multisampling.rasterizationSamples = sample;
+    multisampling.minSampleShading = sample == vk::SampleCountFlagBits::e1 ? 1.0f : 0.1f; // Optional
     multisampling.pSampleMask = nullptr; // Optional
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
     vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-    ParsePipelineColorBlendAttachmentState(&colorBlendAttachment);
+    ParsePipelineColorBlendAttachmentState(&colorBlendAttachment, &_shaderGraphicPointInfo.blendInfo);
 
 
-    vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
-    depthStencilState.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
-    depthStencilState.depthTestEnable = VK_TRUE;
-    depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthCompareOp = vk::CompareOp::eLess;
-    depthStencilState.minDepthBounds = 0.0f;
-    depthStencilState.maxDepthBounds = 1.0f;
-    depthStencilState.stencilTestEnable = VK_FALSE;
-    depthStencilState.front = vk::StencilOpState(); // Optional
-    depthStencilState.back = vk::StencilOpState(); // Optional
+    vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+    ParsePipelineDepthStencilAttachmentState(&depthStencilState, _shaderGraphicPointInfo.dephInfo);
 
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo;
@@ -312,14 +312,14 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pViewportState = &viewportState;
     graphicsPipelineInfo.pRasterizationState = &rasterizer;
     
-    if (_shaderGraphicPointInfo.enableDepthTest)
+    if (_shaderGraphicPointInfo.dephInfo.enableDepthTest)
         graphicsPipelineInfo.pDepthStencilState = &depthStencilState;
     
     graphicsPipelineInfo.pMultisampleState = &multisampling;
     graphicsPipelineInfo.pColorBlendState = &colorBlending;
     graphicsPipelineInfo.pDynamicState = &dynamicState;
     graphicsPipelineInfo.layout = m_PipelineLayout;
-    graphicsPipelineInfo.renderPass = std::reinterpret_pointer_cast<VulkanRenderPass>(m_ProgramShaderCreateInfo.renderPass)->GetVulkanRenderPass();
+    graphicsPipelineInfo.renderPass = reinterpret_cast<VulkanRenderPass*>(m_ProgramShaderCreateInfo.renderPass)->GetVulkanRenderPass();
     graphicsPipelineInfo.subpass = 0;
 
     auto result = device->GetDevice().createGraphicsPipeline(nullptr, graphicsPipelineInfo);
@@ -350,12 +350,11 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<
 }
 #pragma region ParseRegion
 
-void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
+void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
 {
     std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
     
     std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
-    std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContext.pushConstantRanges;
 
     // Compute Unique Set
     for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
@@ -368,20 +367,6 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
         }
     
     // Resize Vector
-    uint32_t pushConstantRangeCount = 0;
-    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
-    {
-        //for (auto& set : moduleIndex.descriptor_sets)
-        //{
-            //if (set.set == std::numeric_limits<uint32_t>::max())
-              //  continue;
-            //layoutsMap[set.set].resize(layoutsMap[set.set].size() + set.binding_count);
-        //}
-        pushConstantRangeCount += moduleIndex.push_constant_block_count;
-    }
-    pushConstantRanges->resize(pushConstantRangeCount);
-
-
     uint32_t descritptorCount = 0;
     for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
     {
@@ -407,50 +392,45 @@ void VulkanShaderProgram::ParseSpvRelfection(VulkanShaderProgramCreateContex& _v
                 descriptorTypeCount[static_cast<vk::DescriptorType>(spvBinding.descriptor_type)] += spvBinding.count;
                 descritptorCount += spvBinding.count;
 
-                layoutsMap[s.set].push_back(descriptorSetLayout);
+                auto& bindingsVec = layoutsMap[s.set];
+                bool found = false;
+
+                for (auto& existingBinding : bindingsVec)
+                {
+                    if (existingBinding.binding == descriptorSetLayout.binding)
+                    {
+                        existingBinding.stageFlags |= descriptorSetLayout.stageFlags;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    bindingsVec.push_back(descriptorSetLayout);
+                }
             }
         }
     }
 
-    pushConstantRangeCount = 0;
 
-    // PushRange
-    for (size_t i = 0; i < _vulkanShaderProgramCreateContext.modulesReflected.size(); i++)
+
+    uint32_t maxSet = 0;
+    for (const auto& it : layoutsMap)
+        maxSet = std::max(maxSet, it.first);
+
+    m_DescriptorSetLayout.clear();
+    m_DescriptorSetLayout.resize(maxSet + 1, VK_NULL_HANDLE);
+
+    for (const auto& it : layoutsMap)
     {
-        const uint32_t pushConstantCount = _vulkanShaderProgramCreateContext.modulesReflected[i].push_constant_block_count;
-        if (pushConstantCount == 0)
-            continue;
-
-        for (size_t j = 0; j < pushConstantCount; j++)
-        {
-            SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContext.modulesReflected[j].push_constant_blocks;
-
-            vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
-            pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
-            pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
-            pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContext.modulesReflected[i].shader_stage);
-            pushConstantRangeCount++;
-        }
-    }
-
-    std::vector<std::vector<vk::DescriptorSetLayoutBinding>> layouts;
-    layouts.reserve(layoutsMap.size());
-
-    for (auto& l : layoutsMap)
-    {
-        layouts.emplace_back(l.second);
-    }
-
-    // DescriptoSetLayout
-    m_DescriptorSetLayout.reserve(layouts.size());
-    for (size_t i = 0; i < layouts.size(); i++)
-    {
-        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
         descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
-        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layouts[i].size());
-        descriptorSetLayoutCreateInfo.pBindings = layouts[i].data();
+        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(it.second.size());
+        descriptorSetLayoutCreateInfo.pBindings = it.second.data();
 
-       m_DescriptorSetLayout.emplace_back(_vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo));
+        m_DescriptorSetLayout[it.first] =
+            _vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
     }
 
 
@@ -485,9 +465,9 @@ void VulkanShaderProgram::ParseRasterizer(
 {
     _pipelineRasterizationStateCreateInfo->depthClampEnable = VK_FALSE;
     _pipelineRasterizationStateCreateInfo->rasterizerDiscardEnable = VK_FALSE;
-    _pipelineRasterizationStateCreateInfo->polygonMode = RhiPolygonModeToVulkan(_rasterizerInfo.polygonMode);
+    _pipelineRasterizationStateCreateInfo->polygonMode = Utils::RhiPolygonModeToVulkan(_rasterizerInfo.polygonMode);
     _pipelineRasterizationStateCreateInfo->lineWidth = 1.0f;
-    _pipelineRasterizationStateCreateInfo->cullMode = RhiToCullMode(_rasterizerInfo.cullModeFlag);
+    _pipelineRasterizationStateCreateInfo->cullMode = Utils::RhiToCullMode(_rasterizerInfo.cullModeFlag);
     
     _pipelineRasterizationStateCreateInfo->frontFace = _rasterizerInfo.frontFace == PC_CORE::FrontFace::Clockwise ?  vk::FrontFace::eClockwise
     : vk::FrontFace::eCounterClockwise;
@@ -496,17 +476,34 @@ void VulkanShaderProgram::ParseRasterizer(
     
 }
 
-void VulkanShaderProgram::ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState)
+void VulkanShaderProgram::ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo)
 {
-    _PipelineColorBlendAttachmentState->colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-    _PipelineColorBlendAttachmentState->blendEnable = VK_FALSE;
-    _PipelineColorBlendAttachmentState->srcColorBlendFactor = vk::BlendFactor::eOne; // Optional
-    _PipelineColorBlendAttachmentState->dstColorBlendFactor = vk::BlendFactor::eZero; // Optional
-    _PipelineColorBlendAttachmentState->colorBlendOp = vk::BlendOp::eAdd; // Optional
-    _PipelineColorBlendAttachmentState->srcAlphaBlendFactor = vk::BlendFactor::eOne; // Optional
-    _PipelineColorBlendAttachmentState->dstAlphaBlendFactor = vk::BlendFactor::eZero; // Optional
-    _PipelineColorBlendAttachmentState->alphaBlendOp = vk::BlendOp::eAdd;
-    
+
+   
+    _PipelineColorBlendAttachmentState->colorWriteMask =
+        Utils::RhiColorComponent(_blendInfo->colorMask);
+    _PipelineColorBlendAttachmentState->blendEnable = _blendInfo->enabled ? VK_TRUE : VK_FALSE;
+    _PipelineColorBlendAttachmentState->srcColorBlendFactor =  Utils::RhiBlendFactorToVulkan(_blendInfo->srcColorBlendFactor);
+    _PipelineColorBlendAttachmentState->dstColorBlendFactor = Utils::RhiBlendFactorToVulkan(_blendInfo->dstColorBlendFactor); 
+    _PipelineColorBlendAttachmentState->colorBlendOp = Utils::RhiBlendOpToVulkan(_blendInfo->colorBlendOp); 
+    _PipelineColorBlendAttachmentState->srcAlphaBlendFactor = Utils::RhiBlendFactorToVulkan(_blendInfo->srcAlphaBlendFactor); 
+    _PipelineColorBlendAttachmentState->dstAlphaBlendFactor = Utils::RhiBlendFactorToVulkan(_blendInfo->dstAlphaBlendFactor); 
+    _PipelineColorBlendAttachmentState->alphaBlendOp =  Utils::RhiBlendOpToVulkan(_blendInfo->alphaBlendOp);
+}
+
+void VulkanShaderProgram::ParsePipelineDepthStencilAttachmentState(
+    vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
+    const PC_CORE::DephStencilInfo& _dephInfo)
+{
+    _PipelineDepthStencilStateCreateInfo->sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
+    _PipelineDepthStencilStateCreateInfo->depthTestEnable = _dephInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    _PipelineDepthStencilStateCreateInfo->depthWriteEnable = _dephInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
+    _PipelineDepthStencilStateCreateInfo->depthCompareOp = Utils::RHIToVulkanCompareOp(_dephInfo.depthCompareOp);
+    _PipelineDepthStencilStateCreateInfo->minDepthBounds = 0.0f;
+    _PipelineDepthStencilStateCreateInfo->maxDepthBounds = 1.0f;
+    _PipelineDepthStencilStateCreateInfo->stencilTestEnable = VK_FALSE;
+    _PipelineDepthStencilStateCreateInfo->front = vk::StencilOpState(); // Optional
+    _PipelineDepthStencilStateCreateInfo->back = vk::StencilOpState(); // Optional
 }
 
 void VulkanShaderProgram::ParseParsePipelineColorBlendAttachmentState(
@@ -521,6 +518,7 @@ void VulkanShaderProgram::ParseParsePipelineColorBlendAttachmentState(
     _PipelineColorBlendStateCreateInfo->blendConstants[1] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[2] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[3] = 0.0f; // Optional
+
 }
 
 vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDescription(
@@ -529,7 +527,7 @@ vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDe
     vk::VertexInputBindingDescription vkvertexInputBindingDescription{};
     vkvertexInputBindingDescription.binding = _vertexInputBindingDescrition.binding;
     vkvertexInputBindingDescription.stride = _vertexInputBindingDescrition.stride;
-    vkvertexInputBindingDescription.inputRate = RhiInputRateToVkInputRate(_vertexInputBindingDescrition.vertexInputRate);
+    vkvertexInputBindingDescription.inputRate = Utils::RhiInputRateToVkInputRate(_vertexInputBindingDescrition.vertexInputRate);
 
     return vkvertexInputBindingDescription;
 }
@@ -541,7 +539,7 @@ vk::VertexInputAttributeDescription VulkanShaderProgram::ParseVertexInputAttribu
     vkvertexInputAttributeDescription.location = _vertexAttributeDescription.location;
     vkvertexInputAttributeDescription.binding = _vertexAttributeDescription.binding;
     vkvertexInputAttributeDescription.offset = _vertexAttributeDescription.offset;
-    vkvertexInputAttributeDescription.format = RHIFormatToVkFormat(_vertexAttributeDescription.format);
+    vkvertexInputAttributeDescription.format = Utils::RHIFormatToVkFormat(_vertexAttributeDescription.format);
 
     return vkvertexInputAttributeDescription;
 }
@@ -581,4 +579,90 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputStat
 
     return returnVertexInputStateCreateInfo;
 }
+
+void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+{
+    std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContex.pushConstantRanges;
+
+    uint32_t pushConstantRangeCount = 0;
+    for (auto& moduleIndex : _vulkanShaderProgramCreateContex.modulesReflected)
+    {
+        //for (auto& set : moduleIndex.descriptor_sets)
+        //{
+            //if (set.set == std::numeric_limits<uint32_t>::max())
+              //  continue;
+            //layoutsMap[set.set].resize(layoutsMap[set.set].size() + set.binding_count);
+        //}
+        pushConstantRangeCount += moduleIndex.push_constant_block_count;
+    }
+    pushConstantRanges->resize(pushConstantRangeCount);
+
+    pushConstantRangeCount = 0;
+
+    // PushRange
+    for (size_t i = 0; i < _vulkanShaderProgramCreateContex.modulesReflected.size(); i++)
+    {
+        const uint32_t pushConstantCount = _vulkanShaderProgramCreateContex.modulesReflected[i].push_constant_block_count;
+        if (pushConstantCount == 0)
+            continue;
+
+        for (size_t j = 0; j < pushConstantCount; j++)
+        {
+            SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContex.modulesReflected[j].push_constant_blocks;
+
+            vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
+            pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
+            pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
+            pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContex.modulesReflected[i].shader_stage);
+            pushConstantRangeCount++;
+        }
+    }
+}
+
+void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources)
+{
+    PERF_REGION_SCOPED;
+
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice)->GetDevice();
+
+
+    if (m_PipelineLayout != VK_NULL_HANDLE)
+    {
+        device.destroyPipelineLayout(m_PipelineLayout);
+        m_PipelineLayout = VK_NULL_HANDLE;
+    }
+
+    if (m_Pipeline != VK_NULL_HANDLE)
+    {
+        device.destroyPipeline(m_Pipeline);
+        m_Pipeline = VK_NULL_HANDLE;
+    }
+    m_PushConstantMap.clear();
+
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(_sources, false);
+    switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
+    {
+    case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
+    {
+        const PC_CORE::ShaderGraphicPointInfo& shaderGraphicPointInfo = std::get<0>(m_ProgramShaderCreateInfo.shaderInfo.shaderInfoData);
+        CreatePipeLinePointGraphicsPipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
+    }
+    break;
+    case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+        break;
+    case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
+        break;
+    case PC_CORE::ShaderProgramPipelineType::COUT:
+        break;
+    default:;
+    }
+
+    for (auto& spvReflect : vulkanShaderProgramCreateContex.modulesReflected)
+        spvReflectDestroyShaderModule(&spvReflect);
+
+    for (auto& vkShaderModule : vulkanShaderProgramCreateContex.vkShaderModules)
+        vulkanShaderProgramCreateContex.device.destroyShaderModule(vkShaderModule);
+
+}
+
 #pragma endregion ParseRegion 

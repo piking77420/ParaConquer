@@ -1,20 +1,20 @@
 ﻿#include "resources/vulkan_sampler.hpp"
 
-#include "rhi_vulkan_parser.hpp"
+#include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_device.hpp"
 #include "low_renderer/rhi.hpp"
 
-Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) : Sampler(_samplerCreateInfo)
+Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) : RhiSampler(_samplerCreateInfo)
 {
     const float maxAnisotopie = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxSamplerAnisotropy();
     
     vk::SamplerCreateInfo samplerInfo{};
     samplerInfo.sType = vk::StructureType::eSamplerCreateInfo;
-    samplerInfo.magFilter = RHIToVulkanFilter(m_MagFilter);
-    samplerInfo.minFilter = RHIToVulkanFilter(m_MinFilter);
-    samplerInfo.addressModeU = RHIToVulkanSamplerAddressMode(m_U);
-    samplerInfo.addressModeV = RHIToVulkanSamplerAddressMode(m_V);
-    samplerInfo.addressModeW = RHIToVulkanSamplerAddressMode(m_W);
+    samplerInfo.magFilter = Utils::RHIToVulkanFilter(magFilter);
+    samplerInfo.minFilter = Utils::RHIToVulkanFilter(minFilter);
+    samplerInfo.addressModeU = Utils::RHIToVulkanSamplerAddressMode(samU);
+    samplerInfo.addressModeV = Utils::RHIToVulkanSamplerAddressMode(samV);
+    samplerInfo.addressModeW = Utils::RHIToVulkanSamplerAddressMode(samW);
     if (maxAnisotopie > 0.f)
     {
         samplerInfo.anisotropyEnable = VK_TRUE;
@@ -30,6 +30,10 @@ Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerC
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = vk::CompareOp::eAlways;
     samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    samplerInfo.minLod = 0.f;
+    // TODO NOT HARDCODED 
+    samplerInfo.maxLod = static_cast<float>(16);
+    samplerInfo.mipLodBias = 0.0f;
 
     vk::Device device =  std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
 

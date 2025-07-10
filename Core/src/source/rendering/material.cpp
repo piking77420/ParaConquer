@@ -1,17 +1,22 @@
 ﻿#include "rendering/material.hpp"
 
 #include "app.hpp"
+#include "rendering/sampler.hpp"
+#include "resources/resource_manager.hpp"
 
 
 PC_CORE::Material::Material()
 {
+    DYNAMIC_REFLECT_INIT
 }
 
 
 PC_CORE::Material::Material(const std::string& _name)
 {
+    DYNAMIC_REFLECT_INIT
+    
     name = _name;
-    switch (m_MaterialType)
+    switch (materialType)
     {
     case MaterialType::Opaque:
         m_ShaderProgram = App::instance->renderer.m_ForwardShader;
@@ -22,13 +27,14 @@ PC_CORE::Material::Material(const std::string& _name)
     default: ;
     }
     
+    
     if (!m_ShaderProgram.expired())
         m_ShaderProgram.lock()->AllocDescriptorSet(&m_pShaderProgramDescriptorSets, 1);
 }
 
 PC_CORE::Material::~Material()
 {
-    // TO DO HANDLE RESOURCES INTRA DEPENDANCIES
+   
     if (!m_ShaderProgram.expired())
         m_ShaderProgram.lock()->FreeDescriptorSet(&m_pShaderProgramDescriptorSets);
 }
@@ -43,8 +49,8 @@ void PC_CORE::Material::Build()
 
 
     ImageSamperDescriptor imageSamperDescriptor =
-       {
-        .sampler = Rhi::GetRhiContext()->sampler.get(),
+    {
+        .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
         .texture = m_albedo.lock().get()
     };
 
@@ -53,16 +59,12 @@ void PC_CORE::Material::Build()
    {
         {
             ShaderProgramDescriptorType::CombineImageSampler,
-            2,
+            ALBEDO_BINDING,
             nullptr,
             &imageSamperDescriptor,
         },
    };
 
-    m_pShaderProgramDescriptorSets->WriteDescriptorSets(descriptorSets);
+   m_pShaderProgramDescriptorSets->WriteDescriptorSets(descriptorSets);
 }
 
-const PC_CORE::ShaderProgramDescriptorSets* PC_CORE::Material::GetDescriptorSet()
-{
-    return m_pShaderProgramDescriptorSets;
-}

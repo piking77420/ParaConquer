@@ -12,11 +12,11 @@ void Skybox::Load(std::array<std::string, 6>& _maps)
     /*
     if (skyboxType == SkyBoxType::Procedural)
     {
-        texture = ResourceManager::Get<Texture>("skydom.png");
+        texture = ResourceManager::Get<Texture2D>("skydom.png");
     }
     else
     {
-        texture = new Texture();
+        texture = new Texture2D();
         texture->Load(_maps);
 
     }*/

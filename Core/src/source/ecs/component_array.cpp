@@ -6,121 +6,96 @@ using namespace PC_CORE;
 
 ComponentArray::ComponentArray()
 {
-	try
-	{
-		GetComponentInfo();
-
-	}
-	catch (...)
-	{
-
-	}
-}
-
-ComponentArray::ComponentArray(TypeId typeId) : componentType(typeId)
-{
-	GetComponentInfo();
-	m_ComponentData.reserve(MAX_ENTITIES * componentSize);
-}
-
-void ComponentArray::AddEntityData(EntityId entityId)
-{
-	assert(m_EntityToIndex.find(entityId) == m_EntityToIndex.end(), "This entity has aldrealy this component");
-
-	if (m_EntityToIndex.find(entityId) == m_EntityToIndex.end())
-	{
-		PushData(entityId);
-	}
-}
-
-void ComponentArray::PushData(EntityId entityId)
-{
-
-	// Push New Component
-	const size_t newIndex = m_Volume * componentSize;
-	m_EntityToIndex[entityId] = newIndex;
-	m_IndexToEntity[newIndex] = entityId;
 	
-	if (newIndex >= m_ComponentData.size())
-	{
-		m_ComponentData.resize(m_ComponentData.size() + componentSize);
-		Component* c = reinterpret_cast<Component*>(&m_ComponentData[newIndex]);
+}
 
-	}
-	else
-	{
-		// Scary undefined behaviours 
-		Component* c = reinterpret_cast<Component*>(&m_ComponentData[newIndex]);
-		uint32_t& ComponentEntityId = *reinterpret_cast<uint32_t*>(c);
-		ComponentEntityId = entityId;
-	}
-
+ComponentArray::ComponentArray(TypeId typeId) : m_ComponentType(typeId)
+{
+	const auto& type = Reflector::GetType(m_ComponentType);
 	
-
-	
-
-	constructor(&m_ComponentData[newIndex]);
-	m_Volume++;
+	m_ComponentSize = static_cast<uint32_t>(type.size);
+	constructor = type.metaData.createFunc;
+	destructor = type.metaData.deleteFunc;
 }
 
-uint8_t& ComponentArray::GetData(EntityId entityId)
+void ComponentArray::Add(EntityId entityId)
 {
-	assert(m_EntityToIndex.find(entityId) != m_EntityToIndex.end() && "Get non-existent component.");
+	if (m_EntityIndexData.size() <= entityId)
+		m_EntityIndexData.resize(entityId + 1, std::numeric_limits<size_t>::max());
 
-	return m_ComponentData[m_EntityToIndex[entityId]];
-}
-
-const uint8_t& ComponentArray::GetData(EntityId entityId) const
-{
-	assert(m_EntityToIndex.find(entityId) != m_EntityToIndex.end() && "Get non-existent component.");
-
-	return m_ComponentData[m_EntityToIndex.at(entityId)];
-}
-
-void ComponentArray::RemoveEntityData(EntityId entityId)
-{
-	if (m_EntityToIndex.find(entityId) != m_EntityToIndex.end())
+	if (m_EntityIndexData[entityId] == std::numeric_limits<size_t>::max())
 	{
-		RemoveData(entityId);
-	}
+		// allocate new ellement
+		size_t newIndex = m_Volume;
+		
+		m_EntityIndexData[entityId] = newIndex;
+		
+		if (m_ComponentData.size() < (newIndex + 1) * m_ComponentSize)
+			m_ComponentData.resize((newIndex + 1) * m_ComponentSize);
 
+		constructor(&m_ComponentData[newIndex * m_ComponentSize]);
+
+		++m_Volume;
+	}
+	
 }
 
+
+uint8_t& ComponentArray::Get(EntityId entityId)
+{
+	assert(entityId < m_EntityIndexData.size() && "OutSide range");
+	assert(m_EntityIndexData[entityId] != std::numeric_limits<size_t>::max() && "Invalid index");
+
+
+	return m_ComponentData[m_EntityIndexData[entityId] * m_ComponentSize];
+}
+
+const uint8_t& ComponentArray::Get(EntityId entityId) const
+{
+	assert(entityId < m_EntityIndexData.size() && "OutSide range");
+	assert(m_EntityIndexData[entityId] != std::numeric_limits<size_t>::max() && "Invalid index");
+
+
+	return m_ComponentData[m_EntityIndexData[entityId] * m_ComponentSize];
+}
 bool ComponentArray::HasComponent(EntityId entityId) const
 {
-	return m_EntityToIndex.find(entityId) != m_EntityToIndex.end();
+	return entityId < m_EntityIndexData.size() &&
+			   m_EntityIndexData[entityId] != std::numeric_limits<size_t>::max();
 }
 
-void ComponentArray::RemoveData(EntityId entityId)
+void ComponentArray::Remove(EntityId entityId)
 {
-	assert(m_EntityToIndex.find(entityId) != m_EntityToIndex.end() && "Removing non-existent component");
-
-	if (m_Volume == 0)
+	if (!HasComponent(entityId))
+	{
+		PC_LOGERROR("Attempting to remove entity's {} non-existent component ({})", entityId, m_ComponentType);
 		return;
+	}
 
-	const size_t indexOfRemovedEntity = m_EntityToIndex[entityId];
-	const size_t indexOfLastElement = (m_Volume - 1) * componentSize;
+	size_t removedIndex = m_EntityIndexData[entityId];
+	size_t lastIndex = m_Volume - 1;
 
-	destructor(&m_ComponentData[indexOfRemovedEntity]);
-	memcpy(&m_ComponentData[indexOfRemovedEntity], &m_ComponentData[indexOfRemovedEntity], componentSize);
+	destructor(&m_ComponentData[removedIndex * m_ComponentSize]);
 
-	EntityId entityOfLastElement = m_IndexToEntity[indexOfLastElement];
-	m_EntityToIndex[entityOfLastElement] = indexOfRemovedEntity;
-	m_IndexToEntity[indexOfRemovedEntity] = entityOfLastElement;
+	if (removedIndex != lastIndex)
+	{
+		std::memcpy(&m_ComponentData[lastIndex * m_ComponentSize],
+			   &m_ComponentData[removedIndex * m_ComponentSize],
+			   m_ComponentSize);
+		
+		// update mapping
+		for (auto& i : m_EntityIndexData)
+		{
+			if (i == lastIndex)
+			{
+				i = removedIndex;
+				break;
+			}
+		}
+	}
 
-	m_IndexToEntity.erase(entityId);
-	m_IndexToEntity.erase(indexOfLastElement);
-
+	m_EntityIndexData[entityId] = std::numeric_limits<size_t>::max();
 	--m_Volume;
 }
 
-void ComponentArray::GetComponentInfo()
-{
-	const auto& type = Reflector::GetType(componentType);
 
-
-	componentSize = type.size;
-	constructor = type.metaData.createFunc;
-	destructor = type.metaData.deleteFunc;
-
-}

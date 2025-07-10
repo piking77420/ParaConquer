@@ -1,18 +1,24 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+
 #include "rhi_render_pass.hpp"
 #include "math/matrix3x3.hpp"
 #include "math/toolbox_typedef.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 
 BEGIN_PCCORE
-	struct CreateFrameInfo
+	struct FrameBufferAttachementDesriptor
+{
+	Texture2D* texture;
+};
+
+struct CreateFrameInfo
 {
 	uint32_t width;
 	uint32_t height;
 
-	std::vector<Texture*>* attachements;
+	std::vector<FrameBufferAttachementDesriptor>* attachements;
 	RhiRenderPass* renderPass;
 };
 

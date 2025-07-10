@@ -2,48 +2,40 @@
 
 #include "core_header.hpp"
 #include "resource.hpp"
-#include "low_renderer/gpu_handle.hpp"
-#include "math/toolbox_typedef.hpp"
-#include "reflection/reflector.hpp"
-#include "low_renderer/rhi_typedef.h"
-
+#include "rendering/gpu_resource.hpp"
 
 BEGIN_PCCORE
-
-
-class Texture : public ResourceInterface<Texture>
+class Texture : public Resource, public IGpuResource
 {
 public:
 
-    DEFAULT_COPY_MOVE_OPERATIONS(Texture)
+	TextureType GetType() const
+	{
+		return m_TextureType;
+	}
+	
+	IMP_DYNAMIC_REFLECT()
 
-    PC_CORE_API void Build() override;
-    
-    PC_CORE_API Texture() = default;
+		PC_CORE_API    explicit Texture()
+	{
+		DYNAMIC_REFLECT_INIT;
+	}
 
-    PC_CORE_API Texture(const CreateTextureInfo& createTextureInfo);
-    
-    PC_CORE_API Texture(const fs::path& _path);
+	Texture(const std::string& _name) : Resource(_name)
+	{
 
-    PC_CORE_API ~Texture() override;
-    
-    PC_CORE_API void Load(const std::array<std::string,6>& _maps);
-   
-    PC_CORE_API  std::shared_ptr<GpuHandle> GetHandle() const;
+	}
 
-    PC_CORE_API  std::shared_ptr<GpuHandle> GetHandle(size_t _frameIndex) const;
 
-private:
-    int m_TextureChannel = -1;
+	~Texture() = default;
+protected:
+	REFLECT(Texture, Resource)
 
-    std::array<std::shared_ptr<GpuHandle>, MAX_FRAMES_IN_FLIGHT> m_TextureHandles;
+	TextureType m_TextureType = TextureType::Count;
 
-    PC_CORE_API void CreateFromCreateInfo(const CreateTextureInfo& createTextureInfo);
-
-    PC_CORE_API void LoadFromFile(const fs::path& _path);
+	int m_TextureChannel = -1;
 };
 
-REFLECT(Texture, Resource)
 
 
 END_PCCORE

@@ -20,7 +20,7 @@ namespace Vulkan
 
         VULKAN_API vk::SurfaceFormatKHR GetSurfaceFormat();
 
-        VULKAN_API bool GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
+        VULKAN_API void GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
 
         VULKAN_API size_t GetNbrOfImage() const;
 

@@ -2,15 +2,14 @@
 
 #include "core_header.hpp"
 #include "gbuffers.hpp"
+#include "material.hpp"
 #include "low_renderer/frame_buffer.hpp"
 #include "math/matrix_transformation.hpp"
-#include "resources/texture.hpp"
+#include "resources/texture_2d.hpp"
 #include "low_renderer/descriptor_set.hpp"
+#include "resources/mesh.hpp"
 
 BEGIN_PCCORE
-
-
-
     struct LowLevelCamera
     {
         Tbx::Vector3f position;
@@ -24,6 +23,15 @@ BEGIN_PCCORE
         bool isOrthographic;
     };
 
+#ifdef WITH_EDITOR
+    enum RenderingContextFlag
+    {
+        DebugDrawGeometry = 1 << 0  
+    };
+    
+
+#endif
+
     struct RenderingContext
     {
         LowLevelCamera lowLevelCamera;
@@ -36,6 +44,78 @@ BEGIN_PCCORE
         PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
         
         Tbx::Vector2ui renderingContextSize;
+#ifdef WITH_EDITOR
+        size_t renderingContextFlag;
+#endif
+    };
+
+
+    struct StaticMeshData
+    {
+        PC_CORE::MaterialType materialType;
+        const PC_CORE::ShaderProgramDescriptorSets* descriptorSet;
+        const PC_CORE::Mesh* mesh;
+
+        Tbx::Matrix4x4d worldMatrix;
+        // TO DO PASS IT TO MAT3
+        Tbx::Matrix4x4d normalInvertMatrix;
+
+    };
+
+    enum class LightType : uint8_t
+    {
+        Directional,
+        Spotlight,
+        Point,
+        Area,
+        Count,
+    };
+
+    struct DirectionalLightData
+    {
+        Tbx::Vector3f color;
+        float intensity;
+        Tbx::Vector3f direction;
+    };
+
+    struct SpotLightData
+    {
+        Tbx::Vector3f color;
+        float intensity;
+        Tbx::Vector3f direction;
+        float cutoff;
+        Tbx::Vector3f position;
+        float outerCutOff;
+    };
+
+    struct PointLightData
+    {
+        Tbx::Vector3f color;
+        float intensity;
+        Tbx::Vector3f position;
+        float maxRadius;
+    };
+
+    
+    // World Data
+    struct LightData
+    {
+        LightType lightType;
+        union Data
+        {
+            DirectionalLightData directionalLight;
+            SpotLightData spotLight;
+            PointLightData pointLightData;
+
+        }data;
+    };
+
+
+
+    struct RenderingWorldData
+    {
+        std::vector<StaticMeshData> staticMeshData;
+        std::vector<LightData> lightData;
     };
 
 

@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.26)
 project(Core VERSION 0.1.0 LANGUAGES C CXX)
 
 if(MSVC)
+   add_compile_options(/ZI)       ## Edit and Continue
+   set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} /INCREMENTAL")
+
     add_compile_options(/MP)
 endif()
 
@@ -50,6 +53,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
 
 if (PROFILING)
     target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_IMPORTS)
+else()
+target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
+
 endif()
 
 

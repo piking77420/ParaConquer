@@ -11,64 +11,48 @@
 
 using namespace PC_CORE;
 
-#define LOGO_PATH_WHITE "Logo/paraconquer_logo_white.png"
-#define LOGO_PATH_BLACK "Logo/paraconquer_logo_black.png"
 
 
-void App::Init()
+void App::Init(const AppCreateInfo& _appCreateInfo)
 {
+    PERF_REGION_SCOPED;
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window("Para Conquer Editor", LOGO_PATH_BLACK);
+    window = Window(_appCreateInfo.appName.data());
+    window.SetIcon(_appCreateInfo.appLogoPath.data());
 
     const RenderHardwareInterfaceCreateInfo createInfo =
         {
         .GraphicsAPI = GraphicAPI::VULKAN,
         .window = &window,
-        .appName = "Para Conquer Editor",
+        .appName = _appCreateInfo.appName.data(),
+        .gpuDebug = _appCreateInfo.enableGpuDebug
         };
     
     rhi = Rhi(createInfo);
     ResourceManager::InitPath();
     renderer.Init();
     Time::Init();
-    
-    world.LoadSkyBox();
 }
 
 void App::Destroy()
 {
-
-    world.skybox.Destroy();
-    world.Destroy();
-    renderer.Destroy();
     ResourceManager::Destroy();
     PC_LOG("App Destroy")
 }
-
+    
 App::App()
 {
     instance = this;
 }
 
 
-void App::WorldTick()
+void App::WorldTick(double _tick)
 {
-    //world.sceneGraph.UpdateTransforms(&world.scene);
-    
-    if (world.begin)
-    {
-        //physicsWrapper.InitBodies(&world.scene);
-        world.Begin();
-        world.begin = false;
-        world.run = true;
-    }
-    
-    if (world.run)
-    {
-        //physicsWrapper.UpdatePhysics(PC_CORE::Time::DeltaTime(), &world.scene);
-        world.Update();
-    }
-    //world.sceneGraph.UpdateMatrix(&world.scene);
+    PERF_REGION_SCOPED;
+
+    world.Begin();
+    world.Update(_tick);
+    world.RenderingTick(_tick);
 }
 

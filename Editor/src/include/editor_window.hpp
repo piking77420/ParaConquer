@@ -38,14 +38,25 @@ public:
 
     void GetInfo();
     
+    bool IsInsideWindow(Tbx::Vector2f _point) const;
+
+    bool IsCursorInsideWindow() const ;
+
     virtual void Render() {};
     
-    virtual void Update() {}
+    virtual void Update()
+    {
+      
+    }
 
+    virtual void OnPlayButton()
+    {}
+
+    virtual void OnResetScene(){}
 
 protected:
     Editor* m_Editor = nullptr;
-
+    
 };
 
 END_EDITOR_PCCORE

@@ -15,6 +15,7 @@ void* Vulkan::VulkanSwapChain::GetFrameBuffer()
 
 Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height): SwapChain(_widht, _height)
 {
+    PERF_REGION_SCOPED;
     CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
     CreateImageViews();
     CreateFrameBuffers();
@@ -34,7 +35,7 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 
 
 
-bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
+void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
@@ -49,19 +50,14 @@ bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
         HandleRecreateSwapChain(windowHandle);
-
-        return false;
     }
     else if (vk::Result::eSuccess != result)
     {
         VK_CALL(result);
-
-        return false;
     }
 
     m_SwapChainImageIndex = nextImageIndex;
     VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject[frameIndex].inFlightFence));
-    return true;
 }
 
 size_t Vulkan::VulkanSwapChain::GetNbrOfImage() const
@@ -291,7 +287,11 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
     vk::CommandBuffer commandBuffer = vcommandList->GetHandle();
+
     const vk::Queue& queue = *vcommandList->GetQueue();
+    const vk::Queue& prensetQueu = VulkanContext::GetContext().mainQueue;
+
+
 
     vk::SubmitInfo submitInfo{};
     submitInfo.sType = vk::StructureType::eSubmitInfo;
@@ -309,12 +309,10 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    // Ensure proper error handling for queue submission
-    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence)); // Changed `queu` to `queue`
+    VK_CALL(queue.submit(1, &submitInfo, m_SyncObject[frameIndex].inFlightFence));
 
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
-
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
@@ -323,8 +321,7 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &m_SwapChainImageIndex;
 
-    // Check if the presentation queue supports presentation and handle errors
-    vk::Result result = VulkanContext::GetContext().presentQueue.presentKHR(&presentInfo);
+    vk::Result result = prensetQueu.presentKHR(&presentInfo);
 
     if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
     {

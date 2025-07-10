@@ -28,13 +28,15 @@ void SceneButton::OnEdit()
         if (!world.run)
         {
             world.begin = true;
+            for (auto& it : m_Editor->editorWindows)
+                it->OnPlayButton();
         }
         else
         {
             world.begin = false;
             world.run = false;
-            m_Editor->DestroyTestScene();
-            m_Editor->InitTestScene();
+            for (auto& it : m_Editor->editorWindows)
+                it->OnResetScene();
         }
     }
     const std::string buttonName2 = world.run ? "Pause" : "Resume";

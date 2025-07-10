@@ -7,23 +7,25 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-#include "vulkan_context.hpp"
-
+#define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
 
-#include "vulkan_gpu_allocator.hpp"
+#include "vulkan_context.hpp"
 #include "vulkan_swap_chain.hpp"
 
 using namespace Vulkan;
 
 VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo) : RhiContext(rhiContextCreateInfo)
 {
+    PERF_REGION_SCOPED;
+    
     std::vector<std::string> extensionToEnable;
+    
     
     renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate, rhiContextCreateInfo.WindowHandle);
     
     physicalDevices = std::make_shared<VulkanPhysicalDevices>(*rhiContextCreateInfo.physicalDevicesCreateInfo, &extensionToEnable);
-    rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &graphicsQueue, &presentQueue, &transferQueu);
+    rhiDevice = std::make_shared<Vulkan::VulkanDevice>(std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices), extensionToEnable,  &mainQueue);
 
     GLFWwindow* window = const_cast<GLFWwindow*>(static_cast<const GLFWwindow*>(rhiContextCreateInfo.WindowHandle));
 
@@ -38,17 +40,38 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
     CreateMemoryAllocator();
     
     CreateCommandPools();
+
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice);
+
+    
+    vk::FenceCreateInfo vkFenceCreateInfo;
+        
+        vkFenceCreateInfo.sType = vk::StructureType::eFenceCreateInfo,
+        vkFenceCreateInfo.pNext = nullptr,
+        vkFenceCreateInfo.flags = {};
+        
+    transferFence = device->GetDevice().createFence(vkFenceCreateInfo);
+    
 }
 
 VulkanContext::~VulkanContext()
 {
+    PERF_REGION_SCOPED;
     auto device = GetDevice();
-
+    
+    device->GetDevice().destroyFence(transferFence);
+    transferFence = nullptr;
+    
     device->GetDevice().destroyCommandPool(commandPool);    
     commandPool = nullptr;
+    
     device->GetDevice().destroyCommandPool(transferCommandPool);    
     transferCommandPool = nullptr;
+
+    vmaDestroyAllocator(allocator);
+    allocator = nullptr;
 }
+
 
 std::shared_ptr<VulkanDevice> VulkanContext::GetDevice()
 {
@@ -68,6 +91,7 @@ void VulkanContext::WaitIdleInstance()
 
 void VulkanContext::CreateMemoryAllocator()
 {
+    PERF_REGION_SCOPED;
     vk::Instance instance = std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->GetVulkanInstance();
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice)->GetDevice();
     vk::PhysicalDevice phydevice = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(physicalDevices)->GetVulkanDevice();
@@ -88,11 +112,13 @@ void VulkanContext::CreateMemoryAllocator()
         .pTypeExternalMemoryHandleTypes = nullptr
         };
   
-    gpuAllocator = std::make_shared<Vulkan::VulkanGpuAllocator>(createInfo);
+    vmaCreateAllocator(&createInfo ,&allocator);
+
 }
 
 void VulkanContext::CreateCommandPools()
 {
+    PERF_REGION_SCOPED;
     const std::vector<QueueFamilyIndices>& queueFamilyIndices = GetPhysicalDevices()->GetQueuesFamilies();
     auto device = GetDevice();
     

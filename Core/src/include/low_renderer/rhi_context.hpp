@@ -3,11 +3,10 @@
 #include <memory>
 
 #include "core_header.hpp"
-#include "gpu_allocator.hpp"
 #include "render_instance.hpp"
 #include "physical_devices.hpp"
 #include "rhi_device.hpp"
-#include "sampler.hpp"
+#include "rhi_sampler.hpp"
 #include "swap_chain.hpp"
 
 BEGIN_PCCORE
@@ -29,10 +28,6 @@ BEGIN_PCCORE
         std::shared_ptr<PC_CORE::RhiDevice> rhiDevice;
 
         std::shared_ptr<PC_CORE::SwapChain> swapChain;
-
-        std::shared_ptr<PC_CORE::GpuAllocator> gpuAllocator;
-
-        std::shared_ptr<PC_CORE::Sampler> sampler;
         
         static RhiContext& GetContext() 
         {

@@ -11,8 +11,10 @@
 #include <windows.h>
 #include <memory>
 
+#include "perf_region.hpp"
 
-#ifdef _DEBUG
+
+#ifdef DEBUG_GPU_ON
 
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
@@ -21,7 +23,18 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
     const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData)
 {
-    std::cerr << "[validation layer] : " << pCallbackData->pMessage << '\n' << '\n';
+    if (messageSeverity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose)
+    {
+        PC_LOG("[validation layer {} ] : {}", "Verbose", pCallbackData->pMessage)
+    }
+    else if ( messageSeverity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo)
+    {
+        PC_LOG("[validation layer {} ] : {}", "Info", pCallbackData->pMessage)
+    }
+    else
+    {
+        PC_LOGERROR("[validation layer] : {}", pCallbackData->pMessage);
+    }
 
     return VK_FALSE;
 }
@@ -34,6 +47,7 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
     } else {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
+    
 }
 
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
@@ -68,6 +82,7 @@ void Vulkan::VulkanInstance::PopulateDebugMessengerCreateInfo(
 }
 
 
+
 bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 {
     uint32_t layerCount;
@@ -98,12 +113,23 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
     return true;
 }
 
-#endif
+void Vulkan::VulkanInstance::GetDebugFunc()
+{
 
+    m_BeginDebugLabel = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT"));
+    m_EndDebugLabel = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdEndDebugUtilsLabelEXT"));
 
-
+    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr)
+    {
+        PC_LOGERROR("Enable to get debgu label func ");
+    }
+}
+#endif 
+    
 Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window) : RenderInstance(_renderInstanceCreateInfo)
 {
+    PERF_REGION_SCOPED;
+    
     vk::ApplicationInfo appInfo = {};
     appInfo.sType = vk::StructureType::eApplicationInfo;
     appInfo.pApplicationName = _renderInstanceCreateInfo.appName;
@@ -115,7 +141,7 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -132,7 +158,7 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         if (!CheckValidationLayerSupport())
@@ -147,11 +173,13 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 #endif
     VK_CHECK_CALL(vk::createInstance(&instanceCreateInfo, nullptr, &m_Instance));
 
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     SetupDebugMessenger();
+    GetDebugFunc();
 #endif
 
     InitSurface(_window);
+
 }
 
 
@@ -179,7 +207,7 @@ Vulkan::VulkanInstance::~VulkanInstance()
 {
 
     m_Instance.destroySurfaceKHR(surface);
-#ifdef _DEBUG
+#ifdef DEBUG_GPU_ON
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);

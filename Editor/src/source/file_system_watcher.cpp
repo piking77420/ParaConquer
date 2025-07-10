@@ -12,16 +12,17 @@ DWORD BytesReturned;
 
 void FileSystemWatcher::LauchWatcher(const char* _projectBaseAssetPath)
 {
-	m_ProjectBaseAssetPath = _projectBaseAssetPath;
+	//m_ProjectBaseAssetPath = _projectBaseAssetPath;
 	m_Watch = true;
 	//worker = std::thread(&FileSystemWatcher::WorkerMainLoop, this);
 }
 
+/*
 bool FileSystemWatcher::ResourceDirty(std::filesystem::path* _outItemFile)
 {
 	
 	return false;
-}
+}*/
 
 FileSystemWatcher::~FileSystemWatcher()
 {

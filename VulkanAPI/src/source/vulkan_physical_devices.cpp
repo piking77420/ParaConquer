@@ -17,6 +17,22 @@ float Vulkan::VulkanPhysicalDevice::GetMaxSamplerAnisotropy() const
     return properties.limits.maxSamplerAnisotropy;
 }
 
+uint32_t Vulkan::VulkanPhysicalDevice::GetMaxUsableSampleCount() const
+{
+    vk::PhysicalDeviceProperties properties;
+    physicalDevice.getProperties(&properties);
+    
+    vk::SampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+    if (counts & vk::SampleCountFlagBits::e64) { return 64; }
+    if (counts & vk::SampleCountFlagBits::e32) { return 32; }
+    if (counts & vk::SampleCountFlagBits::e16) { return 16; }
+    if (counts & vk::SampleCountFlagBits::e8) { return 8; }
+    if (counts & vk::SampleCountFlagBits::e4) { return 4; }
+    if (counts & vk::SampleCountFlagBits::e2) { return 2; }
+
+    return 1;
+}
+
 
 
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
@@ -39,6 +55,7 @@ Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
     const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable)
     : PhysicalDevices(_physicalDevicesCreateInfo)
 {
+    PERF_REGION_SCOPED;
     Initialize(_physicalDevicesCreateInfo, _extensionToEnable);
     QueryQueueFamilies();
 }
@@ -103,6 +120,7 @@ void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice*
 void Vulkan::VulkanPhysicalDevices::GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
                                                       const vk::PhysicalDeviceFeatures& _physicalDeviceProperties)
 {
+       
 }
 
 std::vector<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
@@ -204,19 +222,21 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
     std::vector<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
         _physicalDevicesCreateInfo.requestExtensions);
 
+    // basic extension
+    requestVulkanExtensions.emplace_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    requestVulkanExtensions.emplace_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+    requestVulkanExtensions.emplace_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
     // Look for base device
     m_PhysicalDevices.resize(vkPhysicalDevices.size());
     for (size_t i = 0; i < vkPhysicalDevices.size(); i++)
-    {
         m_PhysicalDevices[i] = new VulkanPhysicalDevice();
-    }
+    
     
     
     LookForSuitableDevices(vkPhysicalDevices, requestVulkanExtensions);
     *_extensionToEnable = requestVulkanExtensions;
 
-    std::string message = "Successfully created physical devices : " + GetPhysicalDevice().name;
-    PC_LOG(message)
+    PC_LOG("Successfully created physical devices : {}", GetPhysicalDevice().name);
 }
 
 int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& _physicalDevice,
@@ -240,6 +260,10 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     {
         score = std::numeric_limits<int32_t>::min();
         PC_LOGERROR("Unsuported extension!")
+        
+        for (const auto& extension : requiredExtensions)
+            PC_LOGERROR("Extension requiered: {} ", extension);
+        
     }
     
     VulkanContext* vulkanContext = reinterpret_cast<VulkanContext*>(&VulkanContext::GetContext());
@@ -259,7 +283,7 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     vk::PhysicalDeviceProperties2 deviceProperties = {};
     deviceProperties.sType = vk::StructureType::ePhysicalDeviceProperties2;
     myPhysicalDevice->physicalDevice.getProperties2(&deviceProperties);
-
+    
     GetDeviceProperties(myPhysicalDevice, deviceProperties.properties);
     GetDeviceFeatures(myPhysicalDevice, deviceFeatures2.features);
     // Evaluate score based on VkPhysicalDeviceFeatures

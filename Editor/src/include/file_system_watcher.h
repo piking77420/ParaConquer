@@ -1,7 +1,6 @@
 #pragma once
 
 #include <thread>
-#include <filesystem>
 #include <unordered_map>
 #include <mutex>
 
@@ -19,14 +18,14 @@ public:
 
 	void LauchWatcher(const char* _projectBaseAssetPath);
 
-	bool ResourceDirty(std::filesystem::path* _outItemFile);
+	//bool ResourceDirty(std::filesystem::path* _outItemFile);
 
 private:
 	std::thread worker;
 
-	std::filesystem::path m_ProjectBaseAssetPath;
+	//std::filesystem::path m_ProjectBaseAssetPath;
 
-	bool m_Watch = false;
+	std::atomic<bool> m_Watch = false;
 
 	std::mutex resourceChangeMutex;
 

@@ -1,24 +1,25 @@
 ﻿#pragma once
 
+#include <vma/vk_mem_alloc.h>
+
 #include "low_renderer/rhi_context.hpp"
 #include "vulkan_instance.hpp"
 #include "vulkan_device.hpp"
-#include "vulkan_gpu_allocator.hpp"
 
 namespace Vulkan
 {    
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-        vk::Queue graphicsQueue;
-
-        vk::Queue presentQueue;
+        vk::Queue mainQueue;
         
-        vk::Queue transferQueu;
+        vk::Fence transferFence;
         
         vk::CommandPool commandPool = VK_NULL_HANDLE;
 
         vk::CommandPool transferCommandPool = VK_NULL_HANDLE;
+
+        VmaAllocator allocator = VK_NULL_HANDLE;
         
         VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 

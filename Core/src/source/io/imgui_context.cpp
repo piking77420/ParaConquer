@@ -12,8 +12,15 @@
 #include "vulkan_device.hpp"
 #include "vulkan_physical_devices.hpp"
 #include "vulkan_swap_chain.hpp"
+#include "resources/resource_manager.hpp"
 #include "resources/vulkan_sampler.hpp"
+#include "texture/vulkan_texture_2d.hpp"
 
+
+namespace Vulkan
+{
+    struct VulkanImageHandle;
+}
 
 using namespace PC_CORE;
 
@@ -30,6 +37,7 @@ static void CheckError(VkResult err)
 
 void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
 {
+    PERF_REGION_SCOPED;
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = &ImGui::GetIO();
@@ -120,7 +128,7 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
         GetVulkanDevice(),
         .Device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(vkcontext->rhiDevice)->GetDevice(),
         .QueueFamily = 0,
-        .Queue = vkcontext->graphicsQueue,
+        .Queue = vkcontext->mainQueue,
         .DescriptorPool = descriptorPool,
         .RenderPass = renderPass,
         .MinImageCount = static_cast<uint32_t>(swapChain->GetNbrOfImage()),
@@ -133,16 +141,21 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void IMGUIContext::CreateImguiVulkanViewport(Texture* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
+void IMGUIContext::CreateImguiVulkanViewport(Texture2D* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
 {
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetRhiTexture2D()->GetNativeHandle());
+
+    std::shared_ptr<Sampler> sampler = ResourceManager::Get<Sampler>("LinearRepeat");
+    const VkSampler* vkSamplers = static_cast<const VkSampler*>(sampler->GetRhiHandle()->GetNativeHandle());
+    
+    if (vkSamplers == nullptr)
     {
-        std::shared_ptr<Vulkan::VulkanImageHandle> handle = std::reinterpret_pointer_cast<Vulkan::VulkanImageHandle>(
-            _texture->GetHandle(i));
-        VkSampler sampler = std::reinterpret_pointer_cast<Vulkan::VulkanSampler>(Rhi::GetRhiContext()->sampler)->
-            GetSampler();
-        ImGui_ImplVulkan_AddTexture(sampler, handle.get()->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        PC_LOGERROR("Vulkan sampler is null");
+        return;
     }
+    for (int i = 0; i < textureAndAlloc->size(); i++)
+        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, textureAndAlloc->at(i).imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    
 }
 
 void IMGUIContext::RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)

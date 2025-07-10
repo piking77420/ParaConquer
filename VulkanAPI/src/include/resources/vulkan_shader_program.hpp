@@ -2,12 +2,13 @@
 
 #include <vulkan_header.h>
 
-#include "resources/shader_program.h"
+#include "low_renderer/rhi_shader_program.hpp"
 
 struct SpvReflectShaderModule;
 
 namespace Vulkan
 {
+
     struct VulkanShaderProgramCreateContex
     {
         std::vector<std::vector<char>> spvModuleSourceCode;
@@ -31,20 +32,21 @@ namespace Vulkan
 
     constexpr uint32_t MAX_ALLOC_DESCRIPTOR_SET = 100 * MAX_FRAMES_IN_FLIGHT;
     
-    class VulkanShaderProgram : public PC_CORE::ShaderProgram
+    class VULKAN_API VulkanShaderProgram : public PC_CORE::RhiShaderProgram
     {
     protected:
-        static constexpr  std::array<vk::DynamicState,9> dynamicStateArray =
+        static constexpr  std::array<vk::DynamicState,10> dynamicStateArray =
        {
             vk::DynamicState::eViewport,
             vk::DynamicState::eScissor,
             vk::DynamicState::eLineWidth,
             vk::DynamicState::eDepthBias,
-            vk::DynamicState::eBlendConstants,
             vk::DynamicState::eDepthBounds,
             vk::DynamicState::eStencilCompareMask,
             vk::DynamicState::eStencilWriteMask,
-            vk::DynamicState::eStencilReference
+            vk::DynamicState::eStencilReference,
+            vk::DynamicState::ePrimitiveTopology,
+            vk::DynamicState::eBlendConstants,
         };
     
     public:
@@ -66,6 +68,11 @@ namespace Vulkan
 
         vk::PipelineLayout GetPipelineLayout() const;
 
+        virtual const void* GetNativeHandle() const
+        {
+            return &m_Pipeline;
+        }
+
     protected:
 
         size_t m_DescriptorSetAllocCount = 0;
@@ -75,23 +82,26 @@ namespace Vulkan
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
 
         std::vector<vk::DescriptorSetLayout> m_DescriptorSetLayout;
-
+        
         vk::DescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
 
-        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo);
+        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources = true);
+
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
 
         void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion
-        void ParseSpvRelfection(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);
+        void ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);
         
         void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo, const PC_CORE::RasterizerInfo& _rasterizerInfo);
 
-        void ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState/*, const PC_CORE::*/);
+        void ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo);
+
+        void ParsePipelineDepthStencilAttachmentState(vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo, const PC_CORE::DephStencilInfo& _dephInfo);
 
         void ParseParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo, const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState );
         
@@ -104,9 +114,13 @@ namespace Vulkan
             std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
             , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions);
 
+        void ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
+
 #pragma endregion ParseRegion 
-       
-    }; 
+      
+        void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources) override;
+
+    };
 }
 
 
