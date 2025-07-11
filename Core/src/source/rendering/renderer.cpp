@@ -142,7 +142,8 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     primaryCommandList->SetViewPort(viewportInfo);
 
-    
+
+    DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 }
@@ -168,7 +169,7 @@ void Renderer::SwapBuffers(Window* _window)
 
 
 
-void Renderer::DrawStaticMesh(MaterialType type)
+void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader)
 {
     PERF_REGION_SCOPED;
     
@@ -193,8 +194,10 @@ void Renderer::DrawStaticMesh(MaterialType type)
         const Mesh* mesh = m_RenderWorldData.staticMeshData[i].mesh;
 
         // Send Data
-        primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
-        primaryCommandList->PushConstant(m_ForwardShader.lock().get(), "PushConstants", &modelMatrixf,
+
+        primaryCommandList->BindDescriptorSet(shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        
+        primaryCommandList->PushConstant(shader.get(), "PushConstants", &modelMatrixf,
                                          sizeof(Tbx::Matrix4x4f) * 2);
         primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
         primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
@@ -231,7 +234,7 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
         ClearValueFlags::ClearValueDepth);
 
     std::array<Tbx::Vector4f, 1> clearValues = {
-        Tbx::Vector4f(0, 0, 0, 0.f),
+        Tbx::Vector4f(0, 1, 0, 1.f),
     };
 
     const BeginRenderPassInfo beginRenderPassInfo =
@@ -251,16 +254,13 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
     primaryCommandList->BindProgram(m_ForwardShader.lock().get());
-
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
     primaryCommandList->SetViewPort(_viewportInfo);
     primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
-
-    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
-
     
     // draw all static mesh
-    DrawStaticMesh(MaterialType::Opaque);
+    DrawStaticMesh(MaterialType::Opaque, m_ForwardShader.lock());
     DrawSkyBox();
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)
@@ -278,11 +278,10 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
         ClearValueFlags::ClearValueDepth);
     
     std::array<Tbx::Vector4f, static_cast<uint8_t>(GbufferType::Count)> clearValues2 = {
-        Tbx::Vector4f(0, 0, 0, 0.f),
-        Tbx::Vector4f(0, 0, 0, 0.f),
+        Tbx::Vector4f(0, 1, 0, 1.f),
      };
     
-    const BeginRenderPassInfo drawToViewport =
+    const BeginRenderPassInfo beginRenderPassInfo =
     {
         .renderPass = renderPasses.defferedPass,
         .frameBuffer = _renderingContext.gbufferFrameBuffer,
@@ -291,16 +290,24 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
         .clearValueFlags = clearValueFlags,
         .clearColor = clearValues2.data(),
         .clearValueCount = clearValues2.size(),
-        .clearDepth = 0.f,
-        .clearStencil = 0.f
+        .clearDepth = 1.f
     };
 
     primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
-    primaryCommandList->BeginRenderPass(drawToViewport);
+    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
-    
+    if (std::shared_ptr sGeometry = m_GeometryBufferShader.lock())
+    {
+        primaryCommandList->BindProgram(sGeometry.get());
+        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+
+        primaryCommandList->BindDescriptorSet(sGeometry.get(), m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+        DrawStaticMesh(MaterialType::Opaque, m_GeometryBufferShader.lock());
+    }
+    primaryCommandList->NextSubPass();
     
     primaryCommandList->EndRenderPass();
+    primaryCommandList->EndDebugLabel();
 }
 
 void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
@@ -552,6 +559,53 @@ void Renderer::CreateShaders()
 {
     PERF_REGION_SCOPED;
 
+
+    {
+        PERF_REGION_SCOPED_NAMED("Geometry Shader");
+        constexpr RasterizerInfo rasterizerInfo =
+      {
+            .polygonMode = PolygonMode::Fill,
+            .cullModeFlag = CullModeFlagBit::Back,
+            .frontFace = FrontFace::CounterClockwise
+        };
+
+
+        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        {
+            .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+                {
+                .depthCompareOp = CompareOp::LESS,
+                .enableDepthTest = true
+                },
+            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
+            .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
+        };
+
+        const SourceList sources =
+        {
+            {
+                ShaderStageType::VERTEX,
+                ResourceManager::Get<ShaderSourceBinary>("geometry_spv.vert"),
+            },
+            {
+                ShaderStageType::FRAGMENT,
+                ResourceManager::Get<ShaderSourceBinary>("geometry_spv.frag")
+            }
+        };
+
+        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+            .shaderGraphicPointInfo = shaderGraphicPointInfo,
+            .sourceList = sources,
+            .renderPass = renderPasses.defferedPass.get(),
+            // COUNT because we avoid depth but there is still final image 
+            .colorAttachementCount = 4
+            };
+
+        m_GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
+    }
+
     {
         PERF_REGION_SCOPED_NAMED("Forward Shader");
         constexpr RasterizerInfo rasterizerInfo =
@@ -590,7 +644,8 @@ void Renderer::CreateShaders()
         {
         .shaderGraphicPointInfo = shaderGraphicPointInfo,
         .sourceList = sources,
-        .renderPass = renderPasses.forwardPass.get()
+        .renderPass = renderPasses.forwardPass.get(),
+        .colorAttachementCount = 1
         };
 
         m_ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
@@ -651,6 +706,7 @@ void Renderer::CreateShaders()
           .shaderGraphicPointInfo = shaderGraphicPointInfo,
           .sourceList = source,
           .renderPass = renderPasses.forwardPass.get(),
+          .colorAttachementCount = 1,
         };
 
 
@@ -699,7 +755,9 @@ void Renderer::CreateShaders()
         {
           .shaderGraphicPointInfo = shaderGraphicPointInfo,
           .sourceList = sources,
-          .renderPass = renderPasses.drawToFinalViewPort.get()
+          .renderPass = renderPasses.drawToFinalViewPort.get(),
+          .colorAttachementCount = 1,
+
         };
 
 
@@ -763,6 +821,21 @@ void Renderer::CreateDescriptorSets()
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
+
+    {
+        PERF_REGION_SCOPED_NAMED("Create Geometry Shader DescriptorSet");
+        descriptorSets =
+               {
+            {
+                ShaderProgramDescriptorType::UniformBuffer,
+                CAMERA_BINDING,
+                &cameraBufferDescritptor,
+                nullptr,
+            }
+               };
+        m_GeometryBufferShader.lock()->AllocDescriptorSet(&m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET);
+        m_GeometryBufferDescriptorSet->WriteDescriptorSets(descriptorSets);
+    }
 
     {
         PERF_REGION_SCOPED_NAMED("Create Forward Shader DescriptorSet");

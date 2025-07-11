@@ -99,11 +99,12 @@ namespace Vulkan
         
         void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo, const PC_CORE::RasterizerInfo& _rasterizerInfo);
 
-        void ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo);
+        void ParsePipelineColorAttachementBlendState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo);
 
         void ParsePipelineDepthStencilAttachmentState(vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo, const PC_CORE::DephStencilInfo& _dephInfo);
 
-        void ParseParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo, const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState );
+        void ParseParsePipelineColorBlendState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo, const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState , size_t _PipelineColorBlendAttachmentSize,
+            const PC_CORE::BlendInfo* _blendInfo);
         
         vk::VertexInputBindingDescription ParseVertexInputBindingDescription(const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition);
 

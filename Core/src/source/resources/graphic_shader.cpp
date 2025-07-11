@@ -17,7 +17,8 @@ PC_CORE::GraphicShader::GraphicShader(const std::string& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
-        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList)
+        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList),
+        .attachementCount = _graphicShaderProgramCreateInfo.colorAttachementCount
     };
 
     m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
@@ -37,7 +38,8 @@ PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
-        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList)
+        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList),
+        .attachementCount = _graphicShaderProgramCreateInfo.colorAttachementCount
     };
 
     m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);

@@ -280,17 +280,22 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
-    vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-    ParsePipelineColorBlendAttachmentState(&colorBlendAttachment, &_shaderGraphicPointInfo.blendInfo);
+    std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments(
+        m_ProgramShaderCreateInfo.attachementCount);
 
+    for (size_t i = 0; i < colorBlendAttachments.size(); ++i) {
+        ParsePipelineColorAttachementBlendState(&colorBlendAttachments[i], &_shaderGraphicPointInfo.blendInfo);
+    }
 
-    vk::PipelineDepthStencilStateCreateInfo depthStencilState;
+    vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
     ParsePipelineDepthStencilAttachmentState(&depthStencilState, _shaderGraphicPointInfo.dephInfo);
 
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo;
-    ParseParsePipelineColorBlendAttachmentState(&colorBlending, &colorBlendAttachment);
-
+    colorBlending.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
+    colorBlending.pAttachments = colorBlendAttachments.data();
+    
+    ParseParsePipelineColorBlendState(&colorBlending, colorBlendAttachments.data(), colorBlendAttachments.size(), &_shaderGraphicPointInfo.blendInfo);
 
     vk::PipelineLayoutCreateInfo  pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
@@ -476,10 +481,8 @@ void VulkanShaderProgram::ParseRasterizer(
     
 }
 
-void VulkanShaderProgram::ParsePipelineColorBlendAttachmentState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo)
+void VulkanShaderProgram::ParsePipelineColorAttachementBlendState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const PC_CORE::BlendInfo* _blendInfo)
 {
-
-   
     _PipelineColorBlendAttachmentState->colorWriteMask =
         Utils::RhiColorComponent(_blendInfo->colorMask);
     _PipelineColorBlendAttachmentState->blendEnable = _blendInfo->enabled ? VK_TRUE : VK_FALSE;
@@ -506,20 +509,21 @@ void VulkanShaderProgram::ParsePipelineDepthStencilAttachmentState(
     _PipelineDepthStencilStateCreateInfo->back = vk::StencilOpState(); // Optional
 }
 
-void VulkanShaderProgram::ParseParsePipelineColorBlendAttachmentState(
+void VulkanShaderProgram::ParseParsePipelineColorBlendState(
     vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo,
-    const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState)
+    const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
+    size_t _PipelineColorBlendAttachmentSize, const PC_CORE::BlendInfo* _blendInfo)
 {
     _PipelineColorBlendStateCreateInfo->logicOpEnable = VK_FALSE;
     _PipelineColorBlendStateCreateInfo->logicOp = vk::LogicOp::eCopy; // Optional
-    _PipelineColorBlendStateCreateInfo->attachmentCount = 1;
+    _PipelineColorBlendStateCreateInfo->attachmentCount = _PipelineColorBlendAttachmentSize;
     _PipelineColorBlendStateCreateInfo->pAttachments = _PipelineColorBlendAttachmentState;
     _PipelineColorBlendStateCreateInfo->blendConstants[0] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[1] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[2] = 0.0f; // Optional
     _PipelineColorBlendStateCreateInfo->blendConstants[3] = 0.0f; // Optional
-
 }
+
 
 vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDescription(
     const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition)

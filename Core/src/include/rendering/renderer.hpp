@@ -45,6 +45,8 @@ public:
     std::weak_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
     std::weak_ptr<PC_CORE::GraphicShader> m_CubeMapShader;
+
+    std::weak_ptr<PC_CORE::GraphicShader> m_GeometryBufferShader;
     
     RenderPasses renderPasses;
 
@@ -83,10 +85,10 @@ private:
     struct DescriptorSetsSkybox
     {
         ShaderProgramDescriptorSets* cameraDescriptorSet = nullptr;
-
         ShaderProgramDescriptorSets* cubeMapDescriptorSet = nullptr;
     }descriptorSetsSkybox;
-    
+
+    ShaderProgramDescriptorSets* m_GeometryBufferDescriptorSet = nullptr;
 
     std::weak_ptr<Texture3D> m_Cubemap;
 
@@ -112,7 +114,7 @@ private:
 
     PC_CORE_API void UpdateLightData();
     
-    PC_CORE_API void DrawStaticMesh(MaterialType type);
+    PC_CORE_API void DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader);
 
     PC_CORE_API void ClearRenderData();
 

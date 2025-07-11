@@ -106,7 +106,8 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         {
         .shaderGraphicPointInfo = shaderGraphicPointInfo,
         .sourceList = sourceList,
-        .renderPass = m_Editor->gameApp.renderer.renderPasses.forwardPass.get()
+        .renderPass = m_Editor->gameApp.renderer.renderPasses.forwardPass.get(),
+        .colorAttachementCount = 1
         };
     
     

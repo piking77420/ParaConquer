@@ -215,6 +215,15 @@ void Editor::CompileShader()
 			EDITOR_RESOURCE_PATH "/shaders/draw_sprite/draw_sprite.frag");
 	}
 
+	// geometry buffer
+	{
+		auto geometryVert = ResourceManager::Create<ShaderSource>("geometry.frag",
+		EDITOR_RESOURCE_PATH "/shaders/geometry/geometry.vert");
+		
+		auto geometryFrag = ResourceManager::Create<ShaderSource>("geometry.frag",
+		EDITOR_RESOURCE_PATH "/shaders/geometry/geometry.frag");
+	}
+
 }
 
 void Editor::LookForEditorInit()

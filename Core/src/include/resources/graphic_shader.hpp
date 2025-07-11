@@ -9,6 +9,7 @@ struct GraphicShaderProgramCreateInfo
     ShaderGraphicPointInfo shaderGraphicPointInfo;
     SourceList sourceList;
     RhiRenderPass* renderPass;
+    uint32_t colorAttachementCount;
 };
 
 class GraphicShader : public PC_CORE::ShaderProgram

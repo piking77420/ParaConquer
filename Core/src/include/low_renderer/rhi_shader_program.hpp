@@ -110,6 +110,7 @@ struct ProgramShaderCreateInfo
     ShaderInfo shaderInfo;
     RhiRenderPass* renderPass;
     std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
+    uint32_t attachementCount;
 };
 
 
