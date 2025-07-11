@@ -138,6 +138,11 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
 
+void Vulkan::VulkanCommandList::NextSubPass()
+{
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].nextSubpass(vk::SubpassContents::eInline);
+}
+
 void Vulkan::VulkanCommandList::EndRenderPass()
 {
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].endRenderPass();

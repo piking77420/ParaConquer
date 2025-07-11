@@ -6,6 +6,9 @@ if(MSVC)
     add_compile_options(/ZI)     ## Edit and Continue
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} /INCREMENTAL")
     add_compile_options(/MP)
+
+    ## set editor to be default project
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 endif()
 
 set(CMAKE_CXX_STANDARD 23)

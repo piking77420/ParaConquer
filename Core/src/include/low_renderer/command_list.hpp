@@ -90,6 +90,8 @@ public:
     PC_CORE_API virtual void BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo) = 0;
 
     PC_CORE_API virtual void EndRenderPass() = 0;
+
+    PC_CORE_API virtual void NextSubPass() = 0;
     
     PC_CORE_API virtual void BindDescriptorSet(const ShaderProgram* _shaderProgram, const ShaderProgramDescriptorSets* _shaderProgramDescriptorSets,
         size_t _firstSet, size_t _descriptorSetCount) = 0;

@@ -17,8 +17,21 @@
 
 BEGIN_PCCORE
 
+// TODO
+
+#define PREPASS_COLOR {1,0.2,1,1}
+
 #define FORWARD_DEBUG_COLOR {0,0,1,1}
+#define GEOMETRY_PASS_COLOR {0,0.2,1,1}
+#define DEFERD_PASS_COLOR {1,0.2,1,1}
 #define FINAL_RENDER_PASS_DEBUG_COLOR {1,1,1,1}
+
+struct RenderPasses
+{
+    std::shared_ptr<RhiRenderPass> defferedPass;
+    std::shared_ptr<RhiRenderPass> forwardPass;
+    std::shared_ptr<RhiRenderPass> drawToFinalViewPort;
+};
 
 class Renderer
 {
@@ -33,9 +46,7 @@ public:
 
     std::weak_ptr<PC_CORE::GraphicShader> m_CubeMapShader;
     
-    std::shared_ptr<RhiRenderPass> forwardPass;
-
-    std::shared_ptr<RhiRenderPass> drawToFinalViewPort;
+    RenderPasses renderPasses;
 
     UniformBuffer cameraUniformBuffer;
 
@@ -101,13 +112,15 @@ private:
 
     PC_CORE_API void UpdateLightData();
     
-    PC_CORE_API void DrawStaticMesh();
+    PC_CORE_API void DrawStaticMesh(MaterialType type);
 
     PC_CORE_API void ClearRenderData();
 
     PC_CORE_API void DrawSkyBox();
 
     PC_CORE_API void ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
+
+    PC_CORE_API void DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 
     PC_CORE_API void FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 };

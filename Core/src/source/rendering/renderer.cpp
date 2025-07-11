@@ -142,6 +142,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     primaryCommandList->SetViewPort(viewportInfo);
 
+    
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 }
@@ -167,21 +168,26 @@ void Renderer::SwapBuffers(Window* _window)
 
 
 
-void Renderer::DrawStaticMesh()
+void Renderer::DrawStaticMesh(MaterialType type)
 {
     PERF_REGION_SCOPED;
     
     Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
     for (size_t i = 0; i < m_RenderWorldData.staticMeshData.size(); i++)
     {
+        if (m_RenderWorldData.staticMeshData[i].materialType != type)
+            continue;
+        
         Tbx::Matrix4x4f modelMatrixf[2];
-
-        m_RenderWorldData.staticMeshData[i].worldMatrix[12] -= currentRenderingContext->lowLevelCamera.position.x;
-        m_RenderWorldData.staticMeshData[i].worldMatrix[13] -= currentRenderingContext->lowLevelCamera.position.y;
-        m_RenderWorldData.staticMeshData[i].worldMatrix[14] -= currentRenderingContext->lowLevelCamera.position.z;
-
+        // Apply offset to the copy one
         modelMatrixf[0] = m_RenderWorldData.staticMeshData[i].worldMatrix;
+        modelMatrixf[0][12] -= cameraOffset.x;
+        modelMatrixf[0][13] -= cameraOffset.y;
+        modelMatrixf[0][14] -= cameraOffset.z;
+        
         modelMatrixf[1] = m_RenderWorldData.staticMeshData[i].normalInvertMatrix;
+        
+     
 
         const ShaderProgramDescriptorSets* materialDescriptor = m_RenderWorldData.staticMeshData[i].descriptorSet;
         const Mesh* mesh = m_RenderWorldData.staticMeshData[i].mesh;
@@ -230,8 +236,8 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
 
     const BeginRenderPassInfo beginRenderPassInfo =
     {
-        .renderPass = forwardPass,
-        .frameBuffer = _renderingContext.gbufferFrameBuffer,
+        .renderPass = renderPasses.forwardPass,
+        .frameBuffer = _renderingContext.forwardFrameBuffer,
         .renderOffSet = {0, 0},
         .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
         .clearValueFlags = clearValueFlags,
@@ -254,7 +260,7 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
 
     
     // draw all static mesh
-    DrawStaticMesh();
+    DrawStaticMesh(MaterialType::Opaque);
     DrawSkyBox();
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)
@@ -266,6 +272,37 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->EndDebugLabel();
 }
 
+void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+{
+    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
+        ClearValueFlags::ClearValueDepth);
+    
+    std::array<Tbx::Vector4f, static_cast<uint8_t>(GbufferType::Count)> clearValues2 = {
+        Tbx::Vector4f(0, 0, 0, 0.f),
+        Tbx::Vector4f(0, 0, 0, 0.f),
+     };
+    
+    const BeginRenderPassInfo drawToViewport =
+    {
+        .renderPass = renderPasses.defferedPass,
+        .frameBuffer = _renderingContext.gbufferFrameBuffer,
+        .renderOffSet = {0, 0},
+        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .clearValueFlags = clearValueFlags,
+        .clearColor = clearValues2.data(),
+        .clearValueCount = clearValues2.size(),
+        .clearDepth = 0.f,
+        .clearStencil = 0.f
+    };
+
+    primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
+    primaryCommandList->BeginRenderPass(drawToViewport);
+
+    
+    
+    primaryCommandList->EndRenderPass();
+}
+
 void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
     std::array<Tbx::Vector4f, 2> clearValues2 = {
@@ -275,7 +312,7 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
 
     const BeginRenderPassInfo drawToViewport =
     {
-        .renderPass = drawToFinalViewPort,
+        .renderPass = renderPasses.drawToFinalViewPort,
         .frameBuffer = _renderingContext.finalImageFrameBuffer,
         .renderOffSet = {0, 0},
         .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
@@ -306,7 +343,137 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
 void Renderer::CreateRenderPasss()
 {
     PERF_REGION_SCOPED;
+    
+    {
+        
+        PERF_REGION_SCOPED_NAMED("Create Defferd RenderPass");
 
+        std::vector<RenderPassAttachementDescriptor> colorAttachements;
+        // + 1 final image 
+        colorAttachements.resize(static_cast<std::vector<RenderPassAttachementDescriptor>::size_type>(GbufferType::Depth) + 1);
+        
+        colorAttachements[static_cast<uint8_t>(GbufferType::Albedo)] =
+        {
+            .attachmentType = AttachmentType::Color,
+            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .sampleCount = 1,
+            .load = LoadOperation::Clear,
+            .store = StoreOperation::Store,
+            .stencilLoad = LoadOperation::DontCare,
+            .stencilStore = StoreOperation::DontCare,
+        };
+        colorAttachements[static_cast<uint8_t>(GbufferType::Normal)] =
+        {
+            .attachmentType = AttachmentType::Color,
+            .format = PC_CORE::RHIFormat::R8G8_UNORM,
+            .sampleCount = 1,
+            .load = LoadOperation::Clear,
+            .store = StoreOperation::Store,
+            .stencilLoad = LoadOperation::DontCare,
+            .stencilStore = StoreOperation::DontCare,
+        };
+        colorAttachements[static_cast<uint8_t>(GbufferType::RoughnessMetallicAo)] =
+        {
+            .attachmentType = AttachmentType::Color,
+            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .sampleCount = 1,
+            .load = LoadOperation::Clear,
+            .store = StoreOperation::Store,
+            .stencilLoad = LoadOperation::DontCare,
+            .stencilStore = StoreOperation::DontCare,
+        };
+        colorAttachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
+       {
+            .attachmentType = AttachmentType::Color,
+            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .sampleCount = 1,
+            .load = LoadOperation::Clear,
+            .store = StoreOperation::Store,
+            .stencilLoad = LoadOperation::DontCare,
+            .stencilStore = StoreOperation::DontCare,
+        };
+        RenderPassAttachementDescriptor depthAttachement =
+        {
+            .attachmentType = AttachmentType::Depth,
+            .format = PC_CORE::RHIFormat::D32_SFLOAT,
+            .sampleCount = 1,
+            .load = LoadOperation::Clear,
+            .store = StoreOperation::Store,
+            .stencilLoad = LoadOperation::DontCare,
+            .stencilStore = StoreOperation::DontCare,
+         };
+
+        // out image
+        colorAttachements[colorAttachements.size() - 1] =
+       {
+            .attachmentType = AttachmentType::Color,
+            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .sampleCount = 1,
+            .load = LoadOperation::Clear,
+            .store = StoreOperation::Store,
+            .stencilLoad = LoadOperation::DontCare,
+            .stencilStore = StoreOperation::DontCare,
+        };
+
+        // Geometry subpass and deffered lighting
+        std::vector<SubPassDescription> subPassDescriptions;
+        subPassDescriptions.resize(2);
+
+        subPassDescriptions[0] =
+       {
+            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+            .colorAttachementDescriptorIndicies = {
+                static_cast<size_t>(GbufferType::Albedo),
+                static_cast<size_t>(GbufferType::Normal),
+                static_cast<size_t>(GbufferType::RoughnessMetallicAo),
+                static_cast<size_t>(GbufferType::WorldPosition)
+            },
+            .subPassDependcies =
+            {
+                .srcStageMask = static_cast<PipelineStageFlags>(
+                    PipelineStageFlagBits::ColorAttachmentOutput | PipelineStageFlagBits::EarlyFragmentTests
+                ),
+                .dstStageMask = static_cast<PipelineStageFlags>(
+                    PipelineStageFlagBits::FragmentShader
+                ),
+                .srcAccessMask = {}, 
+                .dstAccessMask = static_cast<AccessFlags>(
+                    AccessFlagBits::ShaderRead
+                )
+            },
+            .useDepth = true,
+            };
+        subPassDescriptions[1] =
+       {
+            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+            .colorAttachementDescriptorIndicies = {
+                colorAttachements.size() - 1,
+            },
+            .subPassDependcies =
+            {
+                .srcStageMask = static_cast<PipelineStageFlags>(
+                    PipelineStageFlagBits::ColorAttachmentOutput | PipelineStageFlagBits::EarlyFragmentTests
+                ),
+                .dstStageMask = static_cast<PipelineStageFlags>(
+                    PipelineStageFlagBits::FragmentShader
+                ),
+                .srcAccessMask = {},
+                .dstAccessMask = static_cast<AccessFlags>(
+                    AccessFlagBits::ShaderRead
+                )
+            },
+            .useDepth = true,
+            };
+        PC_CORE::RenderPassDescriptor renderPassDescriptor =
+        {
+            .colorAttachement = colorAttachements,
+            .depthAttachment = &depthAttachement,
+            .subPasses = subPassDescriptions
+        };
+
+        renderPasses.defferedPass = Rhi::CreateRenderPass(renderPassDescriptor);
+    }
+    
     // Forward
     {
         PERF_REGION_SCOPED_NAMED("Create Forward RenderPass");
@@ -366,14 +533,14 @@ void Renderer::CreateRenderPasss()
             .subPasses = subPassDescriptions
         };
 
-        forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
+        renderPasses.forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
 
     }
 
     // Draw To Final Viewport
     {
         PERF_REGION_SCOPED_NAMED("Create Draw To Final Viewport");
-        drawToFinalViewPort = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
+        renderPasses.drawToFinalViewPort = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM, Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount());
     }
 }
 
@@ -423,7 +590,7 @@ void Renderer::CreateShaders()
         {
         .shaderGraphicPointInfo = shaderGraphicPointInfo,
         .sourceList = sources,
-        .renderPass = forwardPass.get()
+        .renderPass = renderPasses.forwardPass.get()
         };
 
         m_ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
@@ -483,7 +650,7 @@ void Renderer::CreateShaders()
         {
           .shaderGraphicPointInfo = shaderGraphicPointInfo,
           .sourceList = source,
-          .renderPass = forwardPass.get(),
+          .renderPass = renderPasses.forwardPass.get(),
         };
 
 
@@ -532,7 +699,7 @@ void Renderer::CreateShaders()
         {
           .shaderGraphicPointInfo = shaderGraphicPointInfo,
           .sourceList = sources,
-          .renderPass = drawToFinalViewPort.get()
+          .renderPass = renderPasses.drawToFinalViewPort.get()
         };
 
 

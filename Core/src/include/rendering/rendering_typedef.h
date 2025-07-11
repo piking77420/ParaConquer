@@ -1,11 +1,8 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
-#include "gbuffers.hpp"
 #include "material.hpp"
 #include "low_renderer/frame_buffer.hpp"
-#include "math/matrix_transformation.hpp"
-#include "resources/texture_2d.hpp"
 #include "low_renderer/descriptor_set.hpp"
 #include "resources/mesh.hpp"
 
@@ -39,6 +36,7 @@ BEGIN_PCCORE
         float time;
         
         std::shared_ptr<FrameBuffer> gbufferFrameBuffer;
+        std::shared_ptr<FrameBuffer> forwardFrameBuffer;
         std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
         
         PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
@@ -49,6 +47,17 @@ BEGIN_PCCORE
 #endif
     };
 
+    enum struct GbufferType : std::uint8_t
+    {
+        Albedo,
+        Normal,
+        RoughnessMetallicAo,
+        WorldPosition,
+        Depth,
+
+        Count
+    };
+    
 
     struct StaticMeshData
     {

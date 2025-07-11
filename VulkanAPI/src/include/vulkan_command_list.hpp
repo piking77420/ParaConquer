@@ -26,6 +26,8 @@ public:
 
     VULKAN_API void BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo) override;
 
+    VULKAN_API void NextSubPass() override;
+
     VULKAN_API void EndRenderPass() override;
 
     VULKAN_API void BindDescriptorSet(const PC_CORE::ShaderProgram* _shaderProgram,

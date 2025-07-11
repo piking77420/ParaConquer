@@ -78,7 +78,7 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eR8G8Srgb;
 
     case PC_CORE::RHIFormat::R8G8B8_UNORM:
-        return vk::Format::eR8G8B8Snorm;
+        return vk::Format::eR8G8B8A8Unorm;
 
     case PC_CORE::RHIFormat::R8G8B8_SNORM:
         return vk::Format::eR8G8B8Snorm;

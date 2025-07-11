@@ -11,6 +11,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "rendering/gbuffers.hpp"
+
 
 namespace PC_CORE
 {
@@ -41,10 +43,10 @@ private:
 
     PC_CORE::Gbuffers m_Gbuffers;
     
-    PC_CORE::Texture2D m_OutRenderImage;
+    PC_CORE::Texture2D m_FinalImage;
     
     PC_CORE::Texture2D m_ResolvedTexture;
-
+    
     std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
     
     PC_CORE::ShaderProgramDescriptorSets* m_ViewPortDescriptorSet = nullptr;

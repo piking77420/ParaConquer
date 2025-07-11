@@ -75,7 +75,9 @@ void WorldViewWindow::Render()
     };
     renderingContext.time = PC_CORE::Time::GetTime();
     renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
-    renderingContext.gbufferFrameBuffer = m_Gbuffers.GetFrameBuffer();
+    renderingContext.forwardFrameBuffer = m_Gbuffers.GetForwardFrameBuffer();
+    renderingContext.gbufferFrameBuffer = m_Gbuffers.GetGbufferFrameBuffer();
+
     renderingContext.finalImageFrameBuffer = m_FinalFrameBufferViewport;
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
@@ -106,7 +108,7 @@ void WorldViewWindow::ResizeViewports()
     };
 
    // assert(false && "TO DO Handle move constructor and other case");
-    m_OutRenderImage = PC_CORE::Texture2D(create_texture);
+    m_FinalImage = PC_CORE::Texture2D(create_texture);
     create_texture.samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
     m_ResolvedTexture = PC_CORE::Texture2D(create_texture);
     
@@ -116,7 +118,7 @@ void WorldViewWindow::ResizeViewports()
             &m_ResolvedTexture,
         },
         {
-            &m_OutRenderImage
+            &m_FinalImage
         }
     };
     
@@ -125,25 +127,26 @@ void WorldViewWindow::ResizeViewports()
         .width = static_cast<uint32_t>(size.x),
         .height = static_cast<uint32_t>(size.y),
         .attachements = &attachments,
-        .renderPass = m_Editor->gameApp.renderer.drawToFinalViewPort.get()
+        .renderPass = m_Editor->gameApp.renderer.renderPasses.drawToFinalViewPort.get()
         };
     m_FinalFrameBufferViewport = PC_CORE::Rhi::CreateFrameBuffer(create_frame_info);
     
-    m_Gbuffers.HandleResize({ static_cast<int32_t>(size.x), static_cast<int32_t>(size.y) }, m_Editor->gameApp.renderer.forwardPass);
+    m_Gbuffers.HandleResize({ static_cast<int32_t>(size.x), static_cast<int32_t>(size.y) }, m_Editor->gameApp.renderer.renderPasses.forwardPass,
+        m_Editor->gameApp.renderer.renderPasses.defferedPass);
 }
 
 void WorldViewWindow::UpdateViewPortDescriptorSet()
 {   
     
     m_Editor->IMGUIContext.RemoveImguiVulkanViewport(imguiDescriptorSet);
-    m_Editor->IMGUIContext.CreateImguiVulkanViewport( &m_OutRenderImage, imguiDescriptorSet);
+    m_Editor->IMGUIContext.CreateImguiVulkanViewport( &m_FinalImage, imguiDescriptorSet);
     
     std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
     
     PC_CORE::ImageSamperDescriptor image_samper_descriptor =
     {
         .sampler = sampler.get(),
-        .texture = m_Gbuffers.GetTexture(PC_CORE::GbufferType::Albedo).get()
+        .texture = &m_Gbuffers.GetImage()
     };
 
     PC_CORE::ShaderProgramDescriptorWrite shaderProgramDescriptorWrite =

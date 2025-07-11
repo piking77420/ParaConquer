@@ -158,7 +158,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
         {
         .shaderGraphicPointInfo = shaderGraphicPointInfo,
         .sourceList = source,
-        .renderPass = m_Renderer->forwardPass.get()
+        .renderPass = m_Renderer->renderPasses.forwardPass.get()
         };
     
 
@@ -259,7 +259,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
         {
         .shaderGraphicPointInfo = shaderGraphicPointInfo,
         .sourceList = source,
-        .renderPass = m_Renderer->forwardPass.get()
+        .renderPass = m_Renderer->renderPasses.forwardPass.get()
         };
 
     m_ShaderProgramRay = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
