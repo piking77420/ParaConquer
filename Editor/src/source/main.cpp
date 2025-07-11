@@ -3,16 +3,15 @@
 #include "editor.hpp"
 
 
-#define RENDER_DOC_INJECTION 1
-
+#define WAIT_DEBUG_GPU_INJECTION 0
 
 int main(int argc, char* argv[])
 {
 
-#if RENDER_DOC_INJECTION
-    std::getchar();
+#if WAIT_DEBUG_GPU_INJECTION
+std::getchar();
 #endif
-    
+
     bool appShounldClose = false;
     while (!appShounldClose)
     {
