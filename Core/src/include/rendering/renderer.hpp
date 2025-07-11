@@ -22,7 +22,7 @@ BEGIN_PCCORE
 #define PREPASS_COLOR {1,0.2,1,1}
 
 #define FORWARD_DEBUG_COLOR {0,0,1,1}
-#define GEOMETRY_PASS_COLOR {0,0.2,1,1}
+#define GEOMETRY_PASS_COLOR {0.1,0.7,0.2,1}
 #define DEFERD_PASS_COLOR {1,0.2,1,1}
 #define FINAL_RENDER_PASS_DEBUG_COLOR {1,1,1,1}
 
@@ -47,6 +47,9 @@ public:
     std::weak_ptr<PC_CORE::GraphicShader> m_CubeMapShader;
 
     std::weak_ptr<PC_CORE::GraphicShader> m_GeometryBufferShader;
+
+    std::weak_ptr<PC_CORE::GraphicShader> m_DeferedShader;
+
     
     RenderPasses renderPasses;
 

@@ -143,7 +143,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->SetViewPort(viewportInfo);
 
 
-    DefferdPass(renderingContext, viewportInfo);
+    DeferredPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 }
@@ -272,7 +272,7 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->EndDebugLabel();
 }
 
-void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+void Renderer::DeferredPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
@@ -304,10 +304,13 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
         primaryCommandList->BindDescriptorSet(sGeometry.get(), m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
         DrawStaticMesh(MaterialType::Opaque, m_GeometryBufferShader.lock());
     }
+    primaryCommandList->EndDebugLabel();
     primaryCommandList->NextSubPass();
+    primaryCommandList->BeginDebugLabel("DeferredPass", DEFFERD_PASS_COLOR);
+
+
     
     primaryCommandList->EndRenderPass();
-    primaryCommandList->EndDebugLabel();
 }
 
 void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
@@ -602,6 +605,52 @@ void Renderer::CreateShaders()
             // COUNT because we avoid depth but there is still final image 
             .colorAttachementCount = 4
             };
+
+        m_GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
+    }
+
+    {
+        PERF_REGION_SCOPED_NAMED("Defferd Shader");
+        constexpr RasterizerInfo rasterizerInfo =
+        {
+              .polygonMode = PolygonMode::Fill,
+              .cullModeFlag = CullModeFlagBit::None,
+              .frontFace = FrontFace::CounterClockwise
+        };
+
+
+        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        {
+            .rasterizerInfo = rasterizerInfo,
+            .dephInfo =
+                {
+                .depthCompareOp = CompareOp::LESS,
+                .enableDepthTest = false
+                },
+            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
+            .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
+        };
+
+        const SourceList sources =
+        {
+            {
+                ShaderStageType::VERTEX,
+                ResourceManager::Get<ShaderSourceBinary>("geometry_spv.vert"),
+            },
+            {
+                ShaderStageType::FRAGMENT,
+                ResourceManager::Get<ShaderSourceBinary>("geometry_spv.frag")
+            }
+        };
+
+        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+        {
+            .shaderGraphicPointInfo = shaderGraphicPointInfo,
+            .sourceList = sources,
+            .renderPass = renderPasses.defferedPass.get(),
+            // COUNT because we avoid depth but there is still final image 
+            .colorAttachementCount = 4
+        };
 
         m_GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
     }
