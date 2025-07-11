@@ -25,7 +25,14 @@ Texture2D::Texture2D(const std::string& _name) : Texture(_name)
     DYNAMIC_REFLECT_INIT
 }
 
-Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo)
+Texture2D::Texture2D(const std::string& _name, const std::string& _path) : Texture(_name)
+{
+    DYNAMIC_REFLECT_INIT
+    
+    LoadFromFile(_path);
+}
+
+Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo) 
 {
     DYNAMIC_REFLECT_INIT
     

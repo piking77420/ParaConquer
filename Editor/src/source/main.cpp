@@ -1,13 +1,17 @@
 
-#define BOOST_SYSTEM_NO_DEPRECATED
-
 #include <iostream>
 #include "editor.hpp"
 
 
+#define RENDER_DOC_INJECTION 1
+
 
 int main(int argc, char* argv[])
 {
+
+#if RENDER_DOC_INJECTION
+    std::getchar();
+#endif
     
     bool appShounldClose = false;
     while (!appShounldClose)

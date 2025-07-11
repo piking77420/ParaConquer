@@ -23,9 +23,7 @@ BEGIN_PCCORE
 class Renderer
 {
 public:
-
-
-
+    
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
     std::weak_ptr<PC_CORE::GraphicShader> m_ForwardShader;
@@ -41,8 +39,10 @@ public:
 
     UniformBuffer cameraUniformBuffer;
 
+    SceneBufferGPU sceneBufferGPU;
+
 #ifdef WITH_EDITOR
-    std::vector<std::function<void(CommandList*, const RenderingContext&)>> UserCustomForwardPass;
+    std::vector<std::function<void(Renderer& ,CommandList*, const RenderingContext&, const RenderingWorldData*)>> UserCustomForwardPass;
 #endif
     
     PC_CORE_API Renderer() = default;
@@ -76,7 +76,6 @@ private:
         ShaderProgramDescriptorSets* cubeMapDescriptorSet = nullptr;
     }descriptorSetsSkybox;
     
-    SceneBufferGPU sceneBufferGPU;
 
     std::weak_ptr<Texture3D> m_Cubemap;
 

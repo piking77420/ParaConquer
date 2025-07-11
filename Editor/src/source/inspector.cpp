@@ -26,7 +26,7 @@ void Inspector::Update()
     EditorWindow::Update();
     PERF_REGION_SCOPED;
 
-    if (m_Editor->m_SelectedEntityId == PC_CORE::INVALID_ENTITY_ID)
+    if (m_Editor->selectedEntityId == PC_CORE::INVALID_ENTITY_ID)
         return;
 
     Show();
@@ -108,7 +108,7 @@ void Inspector::Show()
 
     
     const uint32_t ComponentCount = componentManagerPtr->GetComponentCount();
-    const PC_CORE::EntityId selectedId = m_Editor->m_SelectedEntityId;
+    const PC_CORE::EntityId selectedId = m_Editor->selectedEntityId;
 
 
     std::string_view string = entityManagerPtr->GetEntityName(selectedId);
@@ -172,7 +172,7 @@ void Inspector::OnInput()
                 if (PC_CORE::World::GetWorld() == nullptr)
                     continue;
 
-                m_Editor->PushCommand<EditorCommandAddComponent>(m_Editor->m_SelectedEntityId, type->typeId);
+                m_Editor->PushCommand<EditorCommandAddComponent>(m_Editor->selectedEntityId, type->typeId);
             }
         }
 

@@ -113,7 +113,11 @@ void ShaderSource::AddPreProcessorDefVulkan()
     // Math
     options.AddMacroDefinition("MAX_FLOAT", std::to_string(std::numeric_limits<float>::max()));
 
-    
+
+    // SPRITE
+    options.AddMacroDefinition("SPRITE_SET", std::to_string(SPRITE_SET));
+    options.AddMacroDefinition("SPRITE_TEXTURE", std::to_string(SPRITE_TEXTURE));
+
 
 }
 
@@ -241,7 +245,12 @@ ShaderSource::ShaderSource(const std::string& _name) : Resource(_name)
 {
     DYNAMIC_REFLECT_INIT
     
-   
+}
+
+ShaderSource::ShaderSource(const std::string& _name, std::string _path) : Resource(_name)
+{
+    DYNAMIC_REFLECT_INIT
+    ShaderSource::LoadFromFile(_path);
 }
 
 void ShaderSource::Reload()

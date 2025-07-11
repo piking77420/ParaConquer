@@ -36,7 +36,7 @@ public:
     VULKAN_API void BindProgram(const PC_CORE::ShaderProgram* _shaderProgramm) override;
 
     VULKAN_API void PushConstant(const PC_CORE::ShaderProgram* _shaderProgram, const std::string& _pushConstantKey,
-        void* _data, size_t _size) override;
+        const  void* _data, size_t _size) override;
 
     VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;
 

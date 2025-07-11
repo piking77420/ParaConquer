@@ -56,7 +56,7 @@ void Hierachy::ShowGraph()
 
             if (ImGui::Button(entName.data()))
             {
-                m_Editor->m_SelectedEntityId = id;
+                m_Editor->selectedEntityId = id;
                 hasSelected = true;
             }
         }
@@ -69,7 +69,7 @@ void Hierachy::ShowGraph()
         
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowFocused())
         {
-            m_Editor->m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+            m_Editor->selectedEntityId = PC_CORE::INVALID_ENTITY_ID;
         }
     }
 

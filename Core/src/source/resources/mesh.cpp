@@ -24,6 +24,12 @@ Mesh::Mesh(const std::string& _name) : Resource(_name)
     DYNAMIC_REFLECT_INIT
 }
 
+Mesh::Mesh(const std::string& _name, const std::string& _path) : Resource(_name)
+{
+    DYNAMIC_REFLECT_INIT
+    Mesh::LoadFromFile(_path);
+}
+
 Mesh::Mesh()
 {
     DYNAMIC_REFLECT_INIT

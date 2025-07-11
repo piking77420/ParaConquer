@@ -97,7 +97,7 @@ public:
     PC_CORE_API virtual void BindProgram(const ShaderProgram* _shaderProgramm) = 0;
 
     PC_CORE_API virtual void PushConstant(const PC_CORE::ShaderProgram* _shaderProgram, const std::string& _pushConstantKey,
-        void* _data, size_t _size) = 0;
+        const void* _data, size_t _size) = 0;
 
     PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 

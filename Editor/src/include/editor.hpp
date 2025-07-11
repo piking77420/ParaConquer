@@ -5,6 +5,7 @@
 #include "app.hpp"
 #include "dock_space.hpp"
 #include "editor_header.hpp"
+#include "editor_renderer.hpp"
 #include "editor_window.hpp"
 #include "command/editor_command.hpp"
 #include "editor_sub_system/editor_sub_system.hpp"
@@ -70,7 +71,7 @@ public:
     
     DockSpace dockSpace;
     
-    PC_CORE::EntityId m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+    PC_CORE::EntityId selectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
     PC_CORE::IMGUIContext IMGUIContext;
 
@@ -92,8 +93,8 @@ private:
     void BasicOpenFile();
 
     void ReloadShaders();
-
-
+    
+    EditorRenderer m_EditorRenderer;
 };
 
 template <EditorCommandDerived T, typename ... Args>

@@ -65,10 +65,10 @@ struct BlendInfo
     bool enabled = false;
     BlendFactor srcColorBlendFactor = BlendFactor::One;
     BlendFactor dstColorBlendFactor = BlendFactor::Zero;
-    BlendOp colorBlendOp = BlendOp::eAdd;
+    BlendOp colorBlendOp = BlendOp::Add;
     BlendFactor srcAlphaBlendFactor = BlendFactor::One;
     BlendFactor dstAlphaBlendFactor = BlendFactor::Zero;
-    BlendOp alphaBlendOp = BlendOp::eAdd;
+    BlendOp alphaBlendOp = BlendOp::Add;
     ColorComponent colorMask = static_cast<ColorComponent>(ColorComponent_R | ColorComponent_G | ColorComponent_B | ColorComponent_A);
 };
 

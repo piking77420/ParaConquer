@@ -44,6 +44,8 @@ public:
 
     PC_CORE_API Mesh(const std::string& _name);
 
+    PC_CORE_API Mesh(const std::string& _name, const std::string& _path);
+
     PC_CORE_API Mesh();
     
     PC_CORE_API ~Mesh() override;

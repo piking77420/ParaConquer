@@ -83,7 +83,7 @@ BEGIN_PCCORE
 
     enum class BlendOp : uint8_t
     {
-        eAdd,
+        Add,
         eSubtract,
         eReverseSubtract,
         eMin,
@@ -815,6 +815,10 @@ inline T SafeCastReinterpreCast(U* ptr)
 
 #define CAM_DEPTH_MAX 1.f
 #define CAM_DEPTH_MIN 0.f
+
+// SPRITE
+#define SPRITE_SET 1
+#define SPRITE_TEXTURE 0
 
 
 // PREPROCESSOR

@@ -39,6 +39,8 @@ public:
 
     PC_CORE_API Texture2D(const std::string& _name);
 
+    PC_CORE_API Texture2D(const std::string& _name, const std::string& _path);
+
     PC_CORE_API Texture2D(const CreateImageInfo& createTextureInfo);
     
     PC_CORE_API ~Texture2D() override;

@@ -206,6 +206,15 @@ void Editor::CompileShader()
 		skyboxFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/cube_map_skybox/cube_map_skybox.frag");
 	}
 
+	// sprite
+	{
+		auto spriteVert = ResourceManager::Create<ShaderSource>("draw_sprite.vert"
+			, EDITOR_RESOURCE_PATH "/shaders/draw_sprite/draw_sprite.vert");
+
+		auto spriteFrag = ResourceManager::Create<ShaderSource>("draw_sprite.frag",
+			EDITOR_RESOURCE_PATH "/shaders/draw_sprite/draw_sprite.frag");
+	}
+
 }
 
 void Editor::LookForEditorInit()
@@ -469,7 +478,7 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
-	m_SelectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+	selectedEntityId = PC_CORE::INVALID_ENTITY_ID;
 
 
 	//ResourceManager::Delete<Material>("material1");
@@ -514,7 +523,8 @@ void Editor::InitEditor()
 	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
 
 	PC_LOG("InitEditorSystem")
-	
+	m_EditorRenderer = EditorRenderer(*this);
+	m_EditorRenderer.PushCustomCommand();
 }
 
 void Editor::EditorCommandUpdate()

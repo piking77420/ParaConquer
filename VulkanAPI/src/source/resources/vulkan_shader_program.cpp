@@ -108,7 +108,7 @@ void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets
     m_DescriptorSetAllocCount = 0;
 }
 
-void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, void* data, size_t _size) const
+void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data, size_t _size) const
 {
 #ifdef _DEBUG
     if (_size > VULKAN_MAX_PUSH_CONSTANTS)

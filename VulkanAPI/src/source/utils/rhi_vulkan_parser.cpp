@@ -1478,7 +1478,7 @@ vk::BlendOp Vulkan::Utils::RhiBlendOpToVulkan(PC_CORE::BlendOp _blendOp)
     vk::BlendOp blendOp = vk::BlendOp::eAdd;
     switch (_blendOp)
     {
-    case PC_CORE::BlendOp::eAdd:
+    case PC_CORE::BlendOp::Add:
         break;
     case PC_CORE::BlendOp::eSubtract:
         blendOp = vk::BlendOp::eSubtract;

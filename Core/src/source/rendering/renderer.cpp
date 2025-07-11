@@ -258,7 +258,7 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     DrawSkyBox();
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)
-        it(primaryCommandList.get(), *currentRenderingContext);
+        it(*this, primaryCommandList.get(), *currentRenderingContext, &m_RenderWorldData);
     m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
 #endif
     primaryCommandList->EndRenderPass();

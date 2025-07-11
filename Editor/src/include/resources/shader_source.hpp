@@ -29,6 +29,8 @@ public:
     explicit ShaderSource();
 
     explicit ShaderSource(const std::string& _name);
+
+    explicit ShaderSource(const std::string& _name, std::string _path);
     
     ~ShaderSource() override = default;
 
