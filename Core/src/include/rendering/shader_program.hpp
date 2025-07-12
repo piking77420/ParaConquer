@@ -49,7 +49,16 @@ BEGIN_PCCORE
             DYNAMIC_REFLECT_INIT
         }
 
-        PC_CORE_API virtual ~ShaderProgram() = default;
+        PC_CORE_API virtual ~ShaderProgram() override
+        {
+            if (m_RhiShaderProgram.use_count() > 1)
+            {
+                PC_LOGERROR("There is still a reference to the m_RhiShaderProgram, {}", name)
+            }
+
+
+            PC_LOG("Destroy ShaderProgram, {}", name);
+        }
 
     protected:
         std::shared_ptr<RhiShaderProgram> m_RhiShaderProgram;

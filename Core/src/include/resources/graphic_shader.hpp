@@ -27,7 +27,7 @@ public:
         DYNAMIC_REFLECT_INIT
     }
 
-    PC_CORE_API virtual ~GraphicShader() = default;
+    PC_CORE_API virtual ~GraphicShader() override = default;
 
 private:
 

@@ -37,6 +37,8 @@ namespace Vulkan
         {
             return m_EndDebugLabel;
         }
+
+        void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNameInfo);
 #endif
 
     private:
@@ -57,6 +59,8 @@ namespace Vulkan
         PFN_vkCmdBeginDebugUtilsLabelEXT m_BeginDebugLabel;
 
         PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel;
+
+        PFN_vkSetDebugUtilsObjectNameEXT m_DebugName;
 
         void GetDebugFunc();
 #endif  DEBUG_GPU_ON

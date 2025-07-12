@@ -78,11 +78,14 @@ private:
 template<class ResourceDerived, typename... Arg>
 std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 {
+
     std::shared_ptr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
     
     auto& resourcesMap = m_ResourcesMap;
     resourcesMap.insert({newR->GetGuid(), newR});
     auto& nameToGuid = m_NameToGuid;
+
+    assert(!nameToGuid.contains(newR->name) && "There is a resource with the same name already");
 
     nameToGuid.insert({ newR->name, newR->GetGuid() });
 

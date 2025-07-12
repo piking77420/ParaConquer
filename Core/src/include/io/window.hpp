@@ -34,6 +34,8 @@ BEGIN_PCCORE
         PC_CORE_API GLFWwindow* GetHandle();
 
         PC_CORE_API void HideCursor(bool _hide);
+
+        PC_CORE_API void SetCursorPos(Tbx::Vector2f _pos) const;
     
         PC_CORE_API void SetIcon(const char* _iconPath);
 

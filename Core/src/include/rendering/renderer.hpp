@@ -48,7 +48,7 @@ public:
 
     std::weak_ptr<PC_CORE::GraphicShader> m_GeometryBufferShader;
 
-    std::weak_ptr<PC_CORE::GraphicShader> m_DeferedShader;
+    //std::weak_ptr<PC_CORE::GraphicShader> m_DeferedShader;
 
     
     RenderPasses renderPasses;

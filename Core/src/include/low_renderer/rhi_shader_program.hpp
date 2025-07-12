@@ -103,6 +103,7 @@ struct ShaderInfo
 {
     ShaderProgramPipelineType shaderProgramPipelineType;
     ShaderInfoData shaderInfoData;
+    std::string shaderName;
 };
 
 struct ProgramShaderCreateInfo

@@ -129,6 +129,11 @@ void Window::HideCursor(bool _hide)
     glfwSetInputMode(m_Window, GLFW_CURSOR, _hide ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 }
 
+void Window::SetCursorPos(Tbx::Vector2f _pos) const
+{
+    glfwSetCursorPos(m_Window, (double)_pos.x, (double)_pos.y);
+}
+
 void Window::SetIcon(const char* _iconPath)
 {
     if (_iconPath == nullptr || *_iconPath == '\0')

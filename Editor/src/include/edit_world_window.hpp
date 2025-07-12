@@ -43,7 +43,6 @@ protected:
 
     float smoothTime = 0.3f;
 
-
     void RotateCamera(float _deltatime);
 
     void CameratMovment(float _deltatime);

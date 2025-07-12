@@ -143,7 +143,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     primaryCommandList->SetViewPort(viewportInfo);
 
 
-    DeferredPass(renderingContext, viewportInfo);
+    DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 }
@@ -272,15 +272,16 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->EndDebugLabel();
 }
 
-void Renderer::DeferredPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
+    
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
-    
+
     std::array<Tbx::Vector4f, static_cast<uint8_t>(GbufferType::Count)> clearValues2 = {
         Tbx::Vector4f(0, 1, 0, 1.f),
-     };
-    
+    };
+
     const BeginRenderPassInfo beginRenderPassInfo =
     {
         .renderPass = renderPasses.defferedPass,
@@ -302,16 +303,17 @@ void Renderer::DeferredPass(const PC_CORE::RenderingContext& _renderingContext, 
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
         primaryCommandList->BindDescriptorSet(sGeometry.get(), m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
-        DrawStaticMesh(MaterialType::Opaque, m_GeometryBufferShader.lock());
+        DrawStaticMesh(MaterialType::Opaque, sGeometry);
     }
     primaryCommandList->EndDebugLabel();
     primaryCommandList->NextSubPass();
-    primaryCommandList->BeginDebugLabel("DeferredPass", DEFFERD_PASS_COLOR);
+    primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
 
 
-    
+
     primaryCommandList->EndRenderPass();
 }
+
 
 void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
@@ -610,6 +612,7 @@ void Renderer::CreateShaders()
     }
 
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Defferd Shader");
         constexpr RasterizerInfo rasterizerInfo =
         {
@@ -652,7 +655,7 @@ void Renderer::CreateShaders()
             .colorAttachementCount = 4
         };
 
-        m_GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
+        //m_GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);*/
     }
 
     {

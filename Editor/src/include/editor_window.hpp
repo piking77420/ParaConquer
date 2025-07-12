@@ -40,7 +40,8 @@ public:
     
     bool IsInsideWindow(Tbx::Vector2f _point) const;
 
-    bool IsCursorInsideWindow() const ;
+    bool IsCursorInsideWindow() const;
+
 
     virtual void Render() {};
     

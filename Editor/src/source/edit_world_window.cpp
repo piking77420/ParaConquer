@@ -35,11 +35,11 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
         deltass.Reset();
     }
 
+    HideCursor();
     RotateCamera(deltatime);
     CameratMovment(deltatime);
     CameraChangeSpeed(deltatime);
 
-    HideCursor();
 }
 
 void EditWorldWindow::RotateCamera(float _deltatime)
@@ -126,10 +126,7 @@ void EditWorldWindow::CameraChangeSpeed(float _deltatime)
 
 void EditWorldWindow::HideCursor()
 {
-    if (!IsCursorInsideWindow())
-        return;
-
-    
+   
     ImVec2 ImMousPos = ImGui::GetIO().MousePos;
     Tbx::Vector2f mousePos = { ImMousPos.x , ImMousPos.y };
         

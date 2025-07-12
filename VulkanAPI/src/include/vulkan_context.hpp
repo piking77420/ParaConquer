@@ -44,5 +44,15 @@ namespace Vulkan
         VULKAN_API void WaitIdleInstance() override;
     };
 
+
+#define GET_VK_INSTANCE \
+    std::reinterpret_pointer_cast<VulkanInstance>(VulkanContext::GetContext().renderInstance) \
+
+#define GET_VK_DEVICE \
+    std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice) \
+
+#define SET_VK_DEBUG_NAME(debugInfo)\
+    GET_VK_INSTANCE->SetDebugName(GET_VK_DEVICE->GetDevice(), &debugInfo)\
+
 }
 

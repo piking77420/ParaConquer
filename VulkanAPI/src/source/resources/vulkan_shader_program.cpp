@@ -229,7 +229,8 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 
 void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo)
 {
-    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice);
+    std::shared_ptr<VulkanDevice> device = GET_VK_DEVICE;
+
 
     vk::PipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
@@ -328,6 +329,14 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.subpass = 0;
 
     auto result = device->GetDevice().createGraphicsPipeline(nullptr, graphicsPipelineInfo);
+
+    vk::DebugUtilsObjectNameInfoEXT nameInfo{};
+    nameInfo.objectType = vk::ObjectType::ePipeline;
+    nameInfo.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkPipeline>(result.value));
+    nameInfo.pObjectName = m_ProgramShaderCreateInfo.shaderInfo.shaderName.c_str();
+
+    SET_VK_DEBUG_NAME(nameInfo);
+
     m_Pipeline = result.value;
 }
 
@@ -660,6 +669,7 @@ void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE:
         break;
     default:;
     }
+    
 
     for (auto& spvReflect : vulkanShaderProgramCreateContex.modulesReflected)
         spvReflectDestroyShaderModule(&spvReflect);

@@ -119,9 +119,13 @@ void Vulkan::VulkanInstance::GetDebugFunc()
     m_BeginDebugLabel = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT"));
     m_EndDebugLabel = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdEndDebugUtilsLabelEXT"));
 
-    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr)
+    m_DebugName = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(m_Instance, "vkSetDebugUtilsObjectNameEXT"));
+
+
+    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr || m_DebugName == nullptr)
     {
         PC_LOGERROR("Enable to get debgu label func ");
+        assert(false);
     }
 }
 #endif 
@@ -183,6 +187,11 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 }
 
 
+
+void Vulkan::VulkanInstance::SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNameInfo)
+{
+    m_DebugName(_device, reinterpret_cast<const VkDebugUtilsObjectNameInfoEXT*>(pNameInfo));
+}
 
 void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
 {
