@@ -2,6 +2,7 @@
 
 #include <vma/vk_mem_alloc.h>
 
+#include "vulkan_descritptor_manager.hpp"
 #include "low_renderer/rhi_context.hpp"
 #include "vulkan_instance.hpp"
 #include "vulkan_device.hpp"
@@ -20,6 +21,8 @@ namespace Vulkan
         vk::CommandPool transferCommandPool = VK_NULL_HANDLE;
 
         VmaAllocator allocator = VK_NULL_HANDLE;
+
+        VulkanDescritptorManager descritptorManager;
         
         VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 

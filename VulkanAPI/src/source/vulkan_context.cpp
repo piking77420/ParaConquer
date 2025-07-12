@@ -58,6 +58,8 @@ VulkanContext::~VulkanContext()
 {
     PERF_REGION_SCOPED;
     auto device = GetDevice();
+
+    descritptorManager.ClearCaches();
     
     device->GetDevice().destroyFence(transferFence);
     transferFence = nullptr;

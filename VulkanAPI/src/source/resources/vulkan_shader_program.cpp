@@ -19,23 +19,7 @@ using namespace Vulkan;
 VulkanShaderProgram::~VulkanShaderProgram()
 {
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
-
-    for (size_t i = 0; i < m_DescriptorSetLayout.size(); i++)
-    {
-        if (m_DescriptorSetLayout[i] != VK_NULL_HANDLE)
-        {
-            device.destroyDescriptorSetLayout(m_DescriptorSetLayout[i]);
-            m_DescriptorSetLayout[i] = VK_NULL_HANDLE;
-        }
-    }
-   
-
-    if (m_DescriptorPool != VK_NULL_HANDLE)
-    {
-        device.destroyDescriptorPool(m_DescriptorPool);
-        m_DescriptorPool = VK_NULL_HANDLE;
-    }
-
+    
     if (m_PipelineLayout != VK_NULL_HANDLE)
     {
         device.destroyPipelineLayout(m_PipelineLayout);
@@ -80,13 +64,15 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
 void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set)
 {
 
-    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorSetLayout[set]);
+    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
+    
+    std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, cache->descriptorSetLayout[set]);
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
     VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets();
     
     vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
     descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
-    descriptorSetAllocateInfo.descriptorPool = m_DescriptorPool;
+    descriptorSetAllocateInfo.descriptorPool = cache->descriptorPool;
     descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
     
@@ -99,10 +85,13 @@ void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSet
 
 void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets)
 {
+    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
+
+    
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
     VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<VulkanDescriptorSets*>(*shaderProgramDescriptorSets);
 
-    device.freeDescriptorSets(m_DescriptorPool, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), vulkanDescriptorSets->descriptorSets.data());
+    device.freeDescriptorSets(cache->descriptorPool, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), vulkanDescriptorSets->descriptorSets.data());
     
     delete *shaderProgramDescriptorSets;
     *shaderProgramDescriptorSets = nullptr;
@@ -300,10 +289,13 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     
     ParseParsePipelineColorBlendState(&colorBlending, colorBlendAttachments.data(), colorBlendAttachments.size(), &_shaderGraphicPointInfo.blendInfo);
 
+
+    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
+
     vk::PipelineLayoutCreateInfo  pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(m_DescriptorSetLayout.size()); // Optional
-    pipelineLayoutInfo.pSetLayouts = m_DescriptorSetLayout.data(); // Optional
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache->descriptorSetLayout.size()); // Optional
+    pipelineLayoutInfo.pSetLayouts = cache->descriptorSetLayout.data(); // Optional
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pushConstantRanges.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
@@ -368,107 +360,7 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<
 
 void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
 {
-    std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
-    std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
-
-    // Compute Unique Set
-    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
-        for (size_t i = 0; i < moduleIndex.descriptor_set_count; i++)
-        {
-            if (moduleIndex.descriptor_sets[i].set != std::numeric_limits<uint32_t>::max())
-            {
-                layoutsMap.insert({ moduleIndex.descriptor_bindings[i].set ,{} });
-            }
-        }
-    
-    // Resize Vector
-    uint32_t descritptorCount = 0;
-    for (auto& moduleIndex : _vulkanShaderProgramCreateContext.modulesReflected)
-    {
-        for (size_t setIndex = 0 ; setIndex < moduleIndex.descriptor_set_count; setIndex++)
-        {
-            SpvReflectDescriptorSet& s = moduleIndex.descriptor_sets[setIndex];
-
-            if (s.binding_count == 0)
-                continue;
-
-
-            for (size_t descriptorIndex = 0; descriptorIndex < s.binding_count; descriptorIndex++)
-            {
-                 SpvReflectDescriptorBinding& spvBinding = *s.bindings[descriptorIndex];
-
-                 vk::DescriptorSetLayoutBinding descriptorSetLayout{};
-                descriptorSetLayout.binding =  spvBinding.binding;
-                descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvBinding.descriptor_type);
-                descriptorSetLayout.descriptorCount = spvBinding.count;
-                descriptorSetLayout.stageFlags = static_cast<vk::ShaderStageFlags>(moduleIndex.shader_stage);
-                descriptorSetLayout.pImmutableSamplers = nullptr;// optional
-
-                descriptorTypeCount[static_cast<vk::DescriptorType>(spvBinding.descriptor_type)] += spvBinding.count;
-                descritptorCount += spvBinding.count;
-
-                auto& bindingsVec = layoutsMap[s.set];
-                bool found = false;
-
-                for (auto& existingBinding : bindingsVec)
-                {
-                    if (existingBinding.binding == descriptorSetLayout.binding)
-                    {
-                        existingBinding.stageFlags |= descriptorSetLayout.stageFlags;
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    bindingsVec.push_back(descriptorSetLayout);
-                }
-            }
-        }
-    }
-    
-    uint32_t maxSet = 0;
-    for (const auto& it : layoutsMap)
-        maxSet = std::max(maxSet, it.first);
-
-    m_DescriptorSetLayout.clear();
-    m_DescriptorSetLayout.resize(maxSet + 1, VK_NULL_HANDLE);
-
-    for (const auto& it : layoutsMap)
-    {
-        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-        descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
-        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(it.second.size());
-        descriptorSetLayoutCreateInfo.pBindings = it.second.data();
-
-        m_DescriptorSetLayout[it.first] =
-            _vulkanShaderProgramCreateContext.device.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
-    }
-
-
-    // Descriptor Pool
-    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(descriptorTypeCount.size());
-
-    size_t i = 0;
-    for (auto it = descriptorTypeCount.begin(); it != descriptorTypeCount.end();)
-    {
-        vk::DescriptorPoolSize& descriptorPoolSize = descriptorPoolSizes[i];
-        descriptorPoolSize.type = it->first;
-        descriptorPoolSize.descriptorCount = it->second * static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-        i++;
-        it++;
-    }
-    
-    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
-    descriptorPoolCreateInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo;
-    descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
-    descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-    descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
-    descriptorPoolCreateInfo.maxSets = MAX_ALLOC_DESCRIPTOR_SET;
-
-    m_DescriptorPool = _vulkanShaderProgramCreateContext.device.createDescriptorPool(descriptorPoolCreateInfo);
-
+    m_DescriptorId = VulkanContext::GetContext().descritptorManager.GetDescriptorId(_vulkanShaderProgramCreateContext.modulesReflected); 
 }
 
 

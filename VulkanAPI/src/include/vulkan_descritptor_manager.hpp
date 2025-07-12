@@ -108,10 +108,14 @@ inline bool operator==(const Vulkan::SetBindingMap& a, const Vulkan::SetBindingM
     public:
         size_t GetDescriptorId(const std::vector<SpvReflectShaderModule>& _modules);
 
+        void ClearCaches();
+
+        Vulkan::CacheDescriptorSets* GetDescriptorSets(size_t setID) const;
+        
     private:
         
         bool FindInCache(const std::vector<SpvReflectShaderModule>& _modules, SetBindingMap* _outSetBindingMap,
-                         const std::shared_ptr<CacheDescriptorSets>* cache) const;
+                          std::shared_ptr<CacheDescriptorSets>* cache) const;
 
         size_t m_IdCounter = 0;
 

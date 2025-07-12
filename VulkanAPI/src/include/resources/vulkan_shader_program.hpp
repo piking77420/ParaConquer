@@ -74,20 +74,17 @@ namespace Vulkan
 
     protected:
 
+        size_t m_DescriptorId = std::numeric_limits<size_t>::max();
+
         size_t m_DescriptorSetAllocCount = 0;
         
         vk::PipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
-
-        std::vector<vk::DescriptorSetLayout> m_DescriptorSetLayout;
         
-        vk::DescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
-
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
 
         VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources = true);
-
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
 
