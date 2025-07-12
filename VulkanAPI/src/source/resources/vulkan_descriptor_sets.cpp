@@ -26,6 +26,8 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             bufferDescriptorCount++;
         if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)
             imageDescriptorCount++;
+        if (_shaderProgramDescriptorSet[i].inputAttachementDescriptor != nullptr)
+            imageDescriptorCount++;
     }
 
     // Double the size per frame in flight
@@ -45,7 +47,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
         {
             assert(!(_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr && _shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)); 
 
-            
+            // TO DO REFACTOR THIS
             if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
             {
                 
@@ -67,6 +69,20 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture->GetRhiHandle()->GetNativeHandle());
                 const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(imageSamplerDescriptor->sampler->GetRhiHandle()->GetNativeHandle());
                 
+                descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
+                descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
+                imageDescriptorCount++;
+            }
+
+            if (_shaderProgramDescriptorSet[i].inputAttachementDescriptor != nullptr)
+            {
+                PC_CORE::InputAttachementDescriptor* inputAttachementDescriptor = _shaderProgramDescriptorSet.at(i).
+                    inputAttachementDescriptor;
+
+                const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(inputAttachementDescriptor->image->GetRhiHandle()->GetNativeHandle());
+                const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(inputAttachementDescriptor->image->GetRhiHandle()->GetNativeHandle());
+
                 descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
                 descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
                 descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
@@ -107,7 +123,11 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 descriptorWrites[descriptorWriteIndex].pBufferInfo = &descriptorBufferInfos[bufferDescriptorCount];
                 bufferDescriptorCount++;
                 break;
-            case PC_CORE::ShaderProgramDescriptorType::CombineImageSampler:
+            case PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler:
+                descriptorWrites[descriptorWriteIndex].pImageInfo = &descriptorImageInfos[imageDescriptorCount];
+                imageDescriptorCount++;
+                break;
+            case PC_CORE::ShaderProgramDescriptorType::InputAttachment:
                 descriptorWrites[descriptorWriteIndex].pImageInfo = &descriptorImageInfos[imageDescriptorCount];
                 imageDescriptorCount++;
                 break;

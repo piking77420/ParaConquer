@@ -1130,11 +1130,13 @@ vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
 
 vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
 {
+    vk::DescriptorType::eInputAttachment;
+
     switch (shaderProgramDescriptorType)
     {
     case PC_CORE::ShaderProgramDescriptorType::Sampler:
         return vk::DescriptorType::eSampler;
-    case PC_CORE::ShaderProgramDescriptorType::CombineImageSampler:
+    case PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler:
         return vk::DescriptorType::eCombinedImageSampler;
     case PC_CORE::ShaderProgramDescriptorType::SampledImage:
         return vk::DescriptorType::eSampledImage;
@@ -1142,6 +1144,8 @@ vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(const PC_CORE::ShaderProgr
         return vk::DescriptorType::eUniformBuffer;
     case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:
         return vk::DescriptorType::eStorageBuffer;
+    case PC_CORE::ShaderProgramDescriptorType::InputAttachment:
+        return vk::DescriptorType::eInputAttachment;
     case PC_CORE::ShaderProgramDescriptorType::InlineUniformBlock:
         return vk::DescriptorType::eInlineUniformBlock;
     case PC_CORE::ShaderProgramDescriptorType::AccelerationStructure:

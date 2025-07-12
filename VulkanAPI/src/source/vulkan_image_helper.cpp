@@ -81,7 +81,7 @@ vk::ImageUsageFlags Vulkan::GetMemoryPropertyFlags(PC_CORE::TextureUsage usage)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
     if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
-        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 
     if ( ((usage & TextureUsage::Depth) == TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == TextureUsage::Stencil) ) 
         flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -114,7 +114,6 @@ vk::ImageAspectFlags Vulkan::GetImageAspectFlags(PC_CORE::TextureUsage usage)
     {
         flags |= vk::ImageAspectFlagBits::eColor;
     }
-
  
 
     return flags;

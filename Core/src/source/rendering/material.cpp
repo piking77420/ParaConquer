@@ -58,10 +58,11 @@ void PC_CORE::Material::Build()
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
    {
         {
-            ShaderProgramDescriptorType::CombineImageSampler,
+            ShaderProgramDescriptorType::CombinedImageSampler,
             ALBEDO_BINDING,
             nullptr,
             &imageSamperDescriptor,
+            nullptr
         },
    };
 

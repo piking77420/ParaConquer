@@ -269,7 +269,7 @@ void ShaderSource::Reload()
         PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
         return;
     }
-    auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv, m_ShaderType);
+    auto s = ResourceManager::Get<ShaderSourceBinary>(GetShaderBinarySprivName());
     s->WriteSprivToFile(&sourceSpriv);
     BroadCastReload();
 }

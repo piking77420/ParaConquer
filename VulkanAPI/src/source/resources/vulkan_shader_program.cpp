@@ -317,6 +317,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     
     graphicsPipelineInfo.pMultisampleState = &multisampling;
     graphicsPipelineInfo.pColorBlendState = &colorBlending;
+    
     graphicsPipelineInfo.pDynamicState = &dynamicState;
     graphicsPipelineInfo.layout = m_PipelineLayout;
     graphicsPipelineInfo.renderPass = reinterpret_cast<VulkanRenderPass*>(m_ProgramShaderCreateInfo.renderPass)->GetVulkanRenderPass();

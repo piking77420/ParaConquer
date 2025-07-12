@@ -43,7 +43,7 @@ struct SubPassDescription
 
 struct RenderPassDescriptor
 {
-    std::vector<RenderPassAttachementDescriptor> colorAttachement;
+    std::vector<RenderPassAttachementDescriptor> attachement;
     RenderPassAttachementDescriptor* depthAttachment;
     
     std::vector<SubPassDescription> subPasses;

@@ -24,7 +24,7 @@ void main()
     // PACKING Normal
     // https://imgur.com/EY26dUU
     vec3 normal = normalize(mat3(PushConstants.normalInvMatrix) * inNormal);
-    outNormal = normalize(normal.xy) * sqrt((normal.z * 0.5) + 0.5);
+    outNormal = normal.xy / (normal.z + 1.0);
     
     outRoughnessMetallicAo = vec4(1,0,1,1);
     outWorldPosition = worldPos;

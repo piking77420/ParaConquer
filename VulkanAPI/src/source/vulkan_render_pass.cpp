@@ -12,96 +12,83 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     std::shared_ptr<Vulkan::VulkanDevice> device =
         std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(VulkanContext::GetContext().rhiDevice);
 
-    assert(_renderPassDescriptor.colorAttachement.size() < MAX_COLOR_ATTACHMENTS &&
+    assert(_renderPassDescriptor.attachement.size() < MAX_COLOR_ATTACHMENTS &&
         "MAX_COLOR_ATTACHMENTS has been reached");
 
     bool hasDepthAttachment = _renderPassDescriptor.depthAttachment != nullptr;
 
     // ---------------- Attachment Descriptions ----------------
-    std::vector<vk::AttachmentDescription> attachments(
-        _renderPassDescriptor.colorAttachement.size() + static_cast<size_t>(hasDepthAttachment));
-
-    for (uint32_t i = 0; i < _renderPassDescriptor.colorAttachement.size(); i++)
-    {
-        const auto& attachment = _renderPassDescriptor.colorAttachement[i];
-        vk::AttachmentDescription& vkAttachment = attachments[i];
-
-        vkAttachment.flags = {};
-        vkAttachment.format = Utils::RHIFormatToVkFormat(attachment.format);
-        vkAttachment.samples = Utils::RhiSampleCountToVuklan(attachment.sampleCount);
-        vkAttachment.loadOp = Utils::RhiLoadOperationToVulkan(attachment.load);
-        vkAttachment.storeOp = Utils::RhiStoreOperationToVulkan(attachment.store);
-        vkAttachment.stencilLoadOp = Utils::RhiLoadOperationToVulkan(attachment.stencilLoad);
-        vkAttachment.stencilStoreOp = Utils::RhiStoreOperationToVulkan(attachment.stencilStore);
-        vkAttachment.initialLayout = vk::ImageLayout::eUndefined;
-
-        ParseAttachmentLayout(attachment, &vkAttachment);
-    }
-
-    if (hasDepthAttachment)
-    {
-        vk::AttachmentDescription depthDesc{};
-        depthDesc.format = Utils::RHIFormatToVkFormat(_renderPassDescriptor.depthAttachment->format);
-        depthDesc.samples = Utils::RhiSampleCountToVuklan(_renderPassDescriptor.depthAttachment->sampleCount);
-        depthDesc.loadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->load);
-        depthDesc.storeOp = Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->store);
-        depthDesc.stencilLoadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilLoad);
-        depthDesc.stencilStoreOp =
-            Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilStore);
-        depthDesc.initialLayout = vk::ImageLayout::eUndefined;
-
-        size_t depthIndex = attachments.size() - 1;
-        attachments[depthIndex] = depthDesc;
-        ParseAttachmentLayout(*_renderPassDescriptor.depthAttachment, &attachments[depthIndex]);
-    }
+    std::vector<vk::AttachmentDescription> vkAttachments = ParseAttahchementDescription(_renderPassDescriptor, hasDepthAttachment);
 
     // ---------------- Attachment References ----------------
-    std::vector<vk::AttachmentReference> attachmentReferences;
+    std::vector<vk::AttachmentReference> colorAttachmentReferences;
+    std::vector<vk::AttachmentReference> inputAttachementReferences;
+
     std::vector<uint32_t> subpassPreserved;
-    size_t totalAttachmentRefs = 0;
+
+    size_t colorAttachementRefsCount = 0;
+    size_t inputAttachementRefsCount = 0;
+
     size_t totalPreserved = 0;
 
     for (const auto& subpass : _renderPassDescriptor.subPasses)
     {
-        totalAttachmentRefs += subpass.colorAttachementDescriptorIndicies.size();
-        totalPreserved += _renderPassDescriptor.colorAttachement.size() - subpass.colorAttachementDescriptorIndicies.
+        const size_t colorAttachementCount = subpass.colorAttachementDescriptorIndicies.
             size();
+
+        const size_t inputAttachementCount = subpass.inputAttachementDescriptorIndicies.
+            size();
+
+        const size_t preserved = _renderPassDescriptor.attachement.size() - colorAttachementCount - inputAttachementCount;
+
+        colorAttachementRefsCount += colorAttachementCount;
+        inputAttachementRefsCount += inputAttachementCount;
+        totalPreserved += preserved;
     }
 
-    attachmentReferences.resize(totalAttachmentRefs);
+    colorAttachmentReferences.resize(colorAttachementRefsCount);
+    inputAttachementReferences.resize(inputAttachementRefsCount);
     subpassPreserved.resize(totalPreserved);
 
-    size_t refIndex = 0;
+    size_t colorIndex = 0;
+    size_t inputIndex = 0;
     size_t preservedIndex = 0;
 
-    for (uint32_t i = 0; i < static_cast<uint32_t>(_renderPassDescriptor.subPasses.size()); ++i)
+    const uint32_t subPassCount = static_cast<uint32_t>(_renderPassDescriptor.subPasses.size());
+    for (uint32_t i = 0; i < subPassCount; ++i)
     {
         const auto& subpass = _renderPassDescriptor.subPasses[i];
-
-      
 
         assert(subpass.useDepth ? (hasDepthAttachment) : true  &&
             "Subpass uses depth but no depth attachment provided");
 
         std::set<uint32_t> usedIndices(subpass.colorAttachementDescriptorIndicies.begin(),
                                        subpass.colorAttachementDescriptorIndicies.end());
+        for (auto& it : subpass.inputAttachementDescriptorIndicies)
+            usedIndices.emplace(it);
 
         // Fill preserved
-        for (uint32_t att = 0; att < static_cast<uint32_t>(_renderPassDescriptor.colorAttachement.size()); ++att)
-        {
+        for (uint32_t att = 0; att < static_cast<uint32_t>(_renderPassDescriptor.attachement.size()); ++att)
             if (!usedIndices.contains(att))
-            {
                 subpassPreserved[preservedIndex++] = att;
-            }
-        }
-
+            
         for (uint32_t j = 0; j < subpass.colorAttachementDescriptorIndicies.size(); ++j)
         {
-            uint32_t attachmentIndex = subpass.colorAttachementDescriptorIndicies[j];
-            attachmentReferences[refIndex].attachment = attachmentIndex;
-            attachmentReferences[refIndex].layout = GetImageLayoutSubPass(
-                _renderPassDescriptor.colorAttachement[attachmentIndex].attachmentType);
-            ++refIndex;
+            const uint32_t attachmentIndex = subpass.colorAttachementDescriptorIndicies[j];
+            PC_CORE::AttachmentType _attachmentType = _renderPassDescriptor.attachement[attachmentIndex].attachmentType;
+
+            colorAttachmentReferences[colorIndex].attachment = attachmentIndex;   
+            colorAttachmentReferences[colorIndex].layout = GetImageLayoutSubPass(_renderPassDescriptor.attachement[attachmentIndex].attachmentType);
+            colorIndex++;
+        }
+
+        for (uint32_t j = 0; j < subpass.inputAttachementDescriptorIndicies.size(); ++j)
+        {
+            const uint32_t attachmentIndex = subpass.inputAttachementDescriptorIndicies[j];
+            inputAttachementReferences[inputIndex].attachment = attachmentIndex;
+            inputAttachementReferences[inputIndex].layout = GetImageLayoutSubPassForInputAttachement(
+                _renderPassDescriptor.attachement[attachmentIndex].attachmentType);
+            inputIndex++;
         }
     }
 
@@ -109,34 +96,55 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     vk::AttachmentReference depthAttachmentRef;
     if (hasDepthAttachment)
     {
-        depthAttachmentRef.attachment = static_cast<uint32_t>(attachments.size() - 1);
+        depthAttachmentRef.attachment = static_cast<uint32_t>(vkAttachments.size() - 1);
         depthAttachmentRef.layout = GetImageLayoutSubPass(_renderPassDescriptor.depthAttachment->attachmentType);
     }
 
     // ---------------- Subpasses ----------------
     std::vector<vk::SubpassDescription> subPasses(_renderPassDescriptor.subPasses.size());
 
-    uint32_t refOffset = 0;
-    uint32_t preserveOffset = 0;
+    uint32_t colorAttachementOffset = 0;
+    uint32_t inputAttachementOffset = 0;
+    uint32_t preserveAttachementOffset = 0;
 
     for (uint32_t i = 0; i < static_cast<uint32_t>(_renderPassDescriptor.subPasses.size()); ++i)
     {
         const auto& subPass = _renderPassDescriptor.subPasses[i];
         auto& vkSubpass = subPasses[i];
 
+        const uint32_t colorAttCount = static_cast<uint32_t>(subPass.colorAttachementDescriptorIndicies.size());
+        const uint32_t inputAttCount = static_cast<uint32_t>(subPass.inputAttachementDescriptorIndicies.size());
+
         vkSubpass.flags = {};
         vkSubpass.pipelineBindPoint = Utils::RhiPipelineBindPointToVulkan(subPass.shaderProgramPipelineType);
 
-        vkSubpass.colorAttachmentCount = static_cast<uint32_t>(subPass.colorAttachementDescriptorIndicies.size());
-        vkSubpass.pColorAttachments = &attachmentReferences[refOffset];
+
+        vkSubpass.colorAttachmentCount = 0;
+        if (vkSubpass.colorAttachmentCount < colorAttachmentReferences.size())
+        {
+            vkSubpass.colorAttachmentCount = colorAttCount;
+            vkSubpass.pColorAttachments = &colorAttachmentReferences[colorAttachementOffset];
+        }
+      
+        vkSubpass.inputAttachmentCount = 0;
+        if (inputAttachementOffset < inputAttachementReferences.size())
+        {
+            vkSubpass.inputAttachmentCount = inputAttCount;
+            vkSubpass.pInputAttachments = &inputAttachementReferences[inputAttachementOffset];
+        }
+       
         vkSubpass.pDepthStencilAttachment = subPass.useDepth ? &depthAttachmentRef : nullptr;
 
-        vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(
-            _renderPassDescriptor.colorAttachement.size() - subPass.colorAttachementDescriptorIndicies.size());
-        vkSubpass.pPreserveAttachments = subpassPreserved.data() + preserveOffset;
-
-        refOffset += subPass.colorAttachementDescriptorIndicies.size();
-        preserveOffset += vkSubpass.preserveAttachmentCount;
+        vkSubpass.preserveAttachmentCount = 0;
+        if (preserveAttachementOffset < subpassPreserved.size())
+        {
+            vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(_renderPassDescriptor.attachement.size()) - colorAttCount - inputAttCount;
+            vkSubpass.pPreserveAttachments = &subpassPreserved[preserveAttachementOffset];
+        }
+      
+        preserveAttachementOffset += vkSubpass.preserveAttachmentCount;
+        colorAttachementOffset += subPass.colorAttachementDescriptorIndicies.size();
+        preserveAttachementOffset += vkSubpass.preserveAttachmentCount;
     }
 
     // ---------------- Dependencies ----------------
@@ -158,8 +166,8 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     // ---------------- Create Render Pass ----------------
     vk::RenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(vkAttachments.size());
+    renderPassInfo.pAttachments = vkAttachments.data();
     renderPassInfo.subpassCount = static_cast<uint32_t>(subPasses.size());
     renderPassInfo.pSubpasses = subPasses.data();
     renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
@@ -503,3 +511,46 @@ vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttacheme
 
     return {};
 }
+
+std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahchementDescription(const PC_CORE::RenderPassDescriptor& _renderPassDescriptor, bool _hasdepth)
+{
+    std::vector<vk::AttachmentDescription> vkAttachments(
+        _renderPassDescriptor.attachement.size() + static_cast<size_t>(_hasdepth));
+
+    for (uint32_t i = 0; i < _renderPassDescriptor.attachement.size(); i++)
+    {
+        const auto& attachment = _renderPassDescriptor.attachement[i];
+        vk::AttachmentDescription& vkAttachment = vkAttachments[i];
+
+        vkAttachment.flags = {};
+        vkAttachment.format = Utils::RHIFormatToVkFormat(attachment.format);
+        vkAttachment.samples = Utils::RhiSampleCountToVuklan(attachment.sampleCount);
+        vkAttachment.loadOp = Utils::RhiLoadOperationToVulkan(attachment.load);
+        vkAttachment.storeOp = Utils::RhiStoreOperationToVulkan(attachment.store);
+        vkAttachment.stencilLoadOp = Utils::RhiLoadOperationToVulkan(attachment.stencilLoad);
+        vkAttachment.stencilStoreOp = Utils::RhiStoreOperationToVulkan(attachment.stencilStore);
+        vkAttachment.initialLayout = vk::ImageLayout::eUndefined;
+
+        ParseAttachmentLayout(attachment, &vkAttachment);
+    }
+
+    if (_hasdepth)
+    {
+        vk::AttachmentDescription depthDesc{};
+        depthDesc.format = Utils::RHIFormatToVkFormat(_renderPassDescriptor.depthAttachment->format);
+        depthDesc.samples = Utils::RhiSampleCountToVuklan(_renderPassDescriptor.depthAttachment->sampleCount);
+        depthDesc.loadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->load);
+        depthDesc.storeOp = Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->store);
+        depthDesc.stencilLoadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilLoad);
+        depthDesc.stencilStoreOp =
+            Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilStore);
+        depthDesc.initialLayout = vk::ImageLayout::eUndefined;
+
+        size_t depthIndex = vkAttachments.size() - 1;
+        vkAttachments[depthIndex] = depthDesc;
+        ParseAttachmentLayout(*_renderPassDescriptor.depthAttachment, &vkAttachments[depthIndex]);
+    }
+
+    return vkAttachments;
+}
+

@@ -143,23 +143,22 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
     descriptorSets.resize(static_cast<uint8_t>(GbufferType::Depth));
-    std::array<ImageSamperDescriptor, static_cast<uint8_t>(GbufferType::Depth)> imageSampersDescriptor;
-    Sampler* sampler = ResourceManager::Get<Sampler>("ClampToEdge").get();
-    
+    std::array<InputAttachementDescriptor, static_cast<uint8_t>(GbufferType::Depth)> inputAttachements;
+
     for (size_t i = 0; i < static_cast<uint8_t>(GbufferType::Depth); i++)
     {
-        imageSampersDescriptor[i] =
+        inputAttachements[i] =
             {
-            .sampler = sampler,
-            .texture = m_Gbuffers[i].get(),
+            .image = m_Gbuffers[i].get(),
             },
         
         descriptorSets[i] =
             {
-            .shaderProgramDescriptorType = ShaderProgramDescriptorType::CombineImageSampler,
+            .shaderProgramDescriptorType = ShaderProgramDescriptorType::InputAttachment,
             .bindingIndex = static_cast<uint32_t>(i),
             .uniformBufferDescriptor = nullptr,
-            .imageSamperDescriptor = &imageSampersDescriptor[i]
+            .imageSamperDescriptor = nullptr,
+            .inputAttachementDescriptor = &inputAttachements[i]
             };
     }
     deferredShader->AllocDescriptorSet(&m_DescriptorSets, GBUFFER_SET);

@@ -41,6 +41,9 @@ namespace Vulkan
   
         vk::ImageLayout GetImageLayoutSubPassForInputAttachement(PC_CORE::AttachmentType _attachmentType);
 
+
+        std::vector<vk::AttachmentDescription> ParseAttahchementDescription(const PC_CORE::RenderPassDescriptor& _renderPassDescriptor, bool _hasdepth);
+
     };
     
 }

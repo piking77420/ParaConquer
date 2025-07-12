@@ -230,12 +230,6 @@ void Renderer::DrawSkyBox()
 
 void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
-	ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
-		ClearValueFlags::ClearValueDepth);
-
-	std::array<Tbx::Vector4f, 1> clearValues = {
-		Tbx::Vector4f(0, 1, 0, 1.f),
-	};
 
 	const BeginRenderPassInfo beginRenderPassInfo =
 	{
@@ -243,9 +237,9 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
 		.frameBuffer = _renderingContext.forwardFrameBuffer,
 		.renderOffSet = {0, 0},
 		.extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
-		.clearValueFlags = clearValueFlags,
-		.clearColor = clearValues.data(),
-		.clearValueCount = clearValues.size(),
+		.clearValueFlags = {},
+		.clearColor = nullptr,
+		.clearValueCount = 0,
 		.clearDepth = 1.f
 	};
 
@@ -373,11 +367,11 @@ void Renderer::CreateRenderPasss()
 
 		PERF_REGION_SCOPED_NAMED("Create Defferd RenderPass");
 
-		std::vector<RenderPassAttachementDescriptor> colorAttachements;
+		std::vector<RenderPassAttachementDescriptor> attachements;
 		// + 1 final image 
-		colorAttachements.resize(static_cast<std::vector<RenderPassAttachementDescriptor>::size_type>(GbufferType::Depth) + 1);
+		attachements.resize(static_cast<std::vector<RenderPassAttachementDescriptor>::size_type>(GbufferType::Depth) + 1);
 
-		colorAttachements[static_cast<uint8_t>(GbufferType::Albedo)] =
+		attachements[static_cast<uint8_t>(GbufferType::Albedo)] =
 		{
 			.attachmentType = AttachmentType::Color,
 			.format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
@@ -387,7 +381,7 @@ void Renderer::CreateRenderPasss()
 			.stencilLoad = LoadOperation::DontCare,
 			.stencilStore = StoreOperation::DontCare,
 		};
-		colorAttachements[static_cast<uint8_t>(GbufferType::Normal)] =
+		attachements[static_cast<uint8_t>(GbufferType::Normal)] =
 		{
 			.attachmentType = AttachmentType::Color,
 			.format = PC_CORE::RHIFormat::R8G8_UNORM,
@@ -397,7 +391,7 @@ void Renderer::CreateRenderPasss()
 			.stencilLoad = LoadOperation::DontCare,
 			.stencilStore = StoreOperation::DontCare,
 		};
-		colorAttachements[static_cast<uint8_t>(GbufferType::RoughnessMetallicAo)] =
+		attachements[static_cast<uint8_t>(GbufferType::RoughnessMetallicAo)] =
 		{
 			.attachmentType = AttachmentType::Color,
 			.format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
@@ -407,7 +401,7 @@ void Renderer::CreateRenderPasss()
 			.stencilLoad = LoadOperation::DontCare,
 			.stencilStore = StoreOperation::DontCare,
 		};
-		colorAttachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
+		attachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
 		{
 			 .attachmentType = AttachmentType::Color,
 			 .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
@@ -429,7 +423,7 @@ void Renderer::CreateRenderPasss()
 		};
 
 		// out image
-		colorAttachements[colorAttachements.size() - 1] =
+		attachements[attachements.size() - 1] =
 		{
 			 .attachmentType = AttachmentType::Color,
 			 .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
@@ -472,10 +466,16 @@ void Renderer::CreateRenderPasss()
 		subPassDescriptions[1] =
 		{
 			 .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-			 .colorAttachementDescriptorIndicies =
-				{
-				 colorAttachements.size() - 1,
-			 },
+			 .colorAttachementDescriptorIndicies = 
+			{
+				attachements.size() - 1
+			},
+				.inputAttachementDescriptorIndicies = {
+				 static_cast<size_t>(GbufferType::Albedo),
+				 static_cast<size_t>(GbufferType::Normal),
+				 static_cast<size_t>(GbufferType::RoughnessMetallicAo),
+				 static_cast<size_t>(GbufferType::WorldPosition)
+			},
 			 .subPassDependcies =
 			 {
 				 .srcStageMask = static_cast<PipelineStageFlags>(
@@ -493,7 +493,7 @@ void Renderer::CreateRenderPasss()
 		};
 		PC_CORE::RenderPassDescriptor renderPassDescriptor =
 		{
-			.colorAttachement = colorAttachements,
+			.attachement = attachements,
 			.depthAttachment = &depthAttachement,
 			.subPasses = subPassDescriptions
 		};
@@ -513,7 +513,7 @@ void Renderer::CreateRenderPasss()
 		.attachmentType = AttachmentType::Color,
 		.format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
 		.sampleCount = 1,
-		.load = LoadOperation::Clear,
+		.load = LoadOperation::Load,
 		.store = StoreOperation::Store,
 		.stencilLoad = LoadOperation::DontCare,
 		.stencilStore = StoreOperation::DontCare,
@@ -524,7 +524,7 @@ void Renderer::CreateRenderPasss()
 		   .attachmentType = AttachmentType::Depth,
 		   .format = PC_CORE::RHIFormat::D32_SFLOAT,
 		   .sampleCount = 1,
-		   .load = LoadOperation::Clear,
+		   .load = LoadOperation::Load,
 		   .store = StoreOperation::Store,
 		   .stencilLoad = LoadOperation::DontCare,
 		   .stencilStore = StoreOperation::DontCare,
@@ -556,7 +556,7 @@ void Renderer::CreateRenderPasss()
 
 		PC_CORE::RenderPassDescriptor renderPassDescriptor =
 		{
-			.colorAttachement = colorAttachement,
+			.attachement = colorAttachement,
 			.depthAttachment = &depthAttachement,
 			.subPasses = subPassDescriptions
 		};
@@ -668,7 +668,7 @@ void Renderer::CreateShaders()
 			.shaderGraphicPointInfo = shaderGraphicPointInfo,
 			.sourceList = sources,
 			.renderPass = renderPasses.defferedPass.get(),
-			.colorAttachementCount = 4,
+			.colorAttachementCount = 1,
 			.subPassIndex = 1,
 		};
 
@@ -940,18 +940,21 @@ void Renderer::CreateDescriptorSets()
 				CAMERA_BINDING,
 				&cameraBufferDescritptor,
 				nullptr,
+				nullptr
 			},
 			{
 				ShaderProgramDescriptorType::UniformBuffer,
 				LIGHTDATA_BINDING,
 				&lightData,
 				nullptr,
+				nullptr
 			},
 			{
-				ShaderProgramDescriptorType::CombineImageSampler,
+				ShaderProgramDescriptorType::CombinedImageSampler,
 				FORWARD_SKYBOX_CUBEMAP,
 				nullptr,
 				&skyboxCubeMapDescritptor,
+				nullptr
 			}
 		};
 
@@ -978,7 +981,7 @@ void Renderer::CreateDescriptorSets()
 		descriptorSets =
 		{
 		 {
-			 ShaderProgramDescriptorType::CombineImageSampler,
+			 ShaderProgramDescriptorType::CombinedImageSampler,
 			 SKYBOX_BINDING,
 			 nullptr,
 			 &skyboxCubeMapDescritptor,

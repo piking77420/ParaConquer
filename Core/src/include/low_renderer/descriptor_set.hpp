@@ -13,10 +13,11 @@ BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
     {
         Sampler,
-        CombineImageSampler,
+        CombinedImageSampler,
         SampledImage,
         UniformBuffer,
         StorageBuffer,
+        InputAttachment,
         InlineUniformBlock,
         AccelerationStructure,
         Count,
@@ -33,6 +34,10 @@ BEGIN_PCCORE
         IGpuResource* buffer;
     };
 
+    struct InputAttachementDescriptor
+    {
+        IGpuResource* image;
+    };
 
     struct ShaderProgramDescriptorWrite
     {
@@ -40,6 +45,7 @@ BEGIN_PCCORE
         uint32_t bindingIndex;
         UniformBufferDescriptor* uniformBufferDescriptor;
         ImageSamperDescriptor* imageSamperDescriptor;
+        InputAttachementDescriptor* inputAttachementDescriptor = nullptr;
     };
 
     struct ShaderProgramDescriptorSets

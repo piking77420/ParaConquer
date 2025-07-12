@@ -147,7 +147,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     descriptorSets =
         {
         {
-            PC_CORE::ShaderProgramDescriptorType::CombineImageSampler,
+            PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler,
             SPRITE_TEXTURE,
             nullptr,
             &directionalTexture,
