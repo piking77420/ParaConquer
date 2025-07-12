@@ -7,7 +7,7 @@ layout(location = 2) out vec4 outRoughnessMetallicAo;
 layout(location = 3) out vec4 outWorldPosition;
 
 // Inputs du vertex shader
-layout(location = 0) in vec2 inNormal;
+layout(location = 0) in vec3 inNormal;
 layout(location = 1) in vec4 inRoughnessMetallicAo;
 layout(location = 2) in vec4 inWorldPosition;
 layout(location = 3) in vec2 inTexCoord;
@@ -18,7 +18,10 @@ layout(set = MATERIAL_DESCRIPTOR_SET, binding = ALBEDO_BINDING) uniform sampler2
 void main()
 {
     outColor = texture(u_AlbedoTexture, inTexCoord);
-    outNormal = inNormal;
+    // PACKING Normal
+    // https://imgur.com/EY26dUU
+    outNormal = inNormal.xy / (inNormal.z + 1.0);
+    
     outRoughnessMetallicAo = inRoughnessMetallicAo;
     outWorldPosition = inWorldPosition;
 }

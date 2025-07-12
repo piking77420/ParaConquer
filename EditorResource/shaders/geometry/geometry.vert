@@ -7,7 +7,7 @@ layout(location = 2) in vec2 inTexCoord;
 
 
 
-layout(location = 0) out vec2 outNormal;
+layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec4 outRoughnessMetallicAo;
 layout(location = 2) out vec4 outWorldPosition;
 layout(location = 3) out vec2 outTexCoord;
@@ -20,13 +20,11 @@ layout(push_constant) uniform constants {
 void main()
 {
     vec4 worldPos = camera.vp * PushConstants.model * vec4(inPosition, 1.0);
-    
-    // PACKING Normal
-    // https://imgur.com/EY26dUU
     vec3 normal = normalize(mat3(PushConstants.normalInvMatrix) * inNormal);
-    outNormal = normal.xy / (normal.z + 1.0);
+    outNormal = normal;
     
     outRoughnessMetallicAo = vec4(1,0,1,1);
     outWorldPosition = worldPos;
     gl_Position = worldPos;
+    outTexCoord = inTexCoord;
 }
