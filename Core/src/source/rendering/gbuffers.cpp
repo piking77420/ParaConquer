@@ -1,6 +1,8 @@
 ﻿#include "rendering/gbuffers.hpp"
 
+#include "app.hpp"
 #include "low_renderer/rhi.hpp"
+#include "resources/resource_manager.hpp"
 
 
 std::shared_ptr<PC_CORE::FrameBuffer> PC_CORE::Gbuffers::GetGbufferFrameBuffer() const
@@ -136,6 +138,32 @@ void PC_CORE::Gbuffers::CreateGBuffers()
         frameInFlight = std::make_shared<Texture2D>(texture_info);
         gbufferType = static_cast<GbufferType>((static_cast<int>(gbufferType) + 1) % static_cast<uint8_t>(GbufferType::Count)); 
     }
+
+    std::shared_ptr<GraphicShader> deferredShader = App::instance->renderer.m_DeferedShader.lock();
+    
+    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
+    descriptorSets.resize(static_cast<uint8_t>(GbufferType::Depth));
+    std::array<ImageSamperDescriptor, static_cast<uint8_t>(GbufferType::Depth)> imageSampersDescriptor;
+    Sampler* sampler = ResourceManager::Get<Sampler>("ClampToEdge").get();
+    
+    for (size_t i = 0; i < static_cast<uint8_t>(GbufferType::Depth); i++)
+    {
+        imageSampersDescriptor[i] =
+            {
+            .sampler = sampler,
+            .texture = m_Gbuffers[i].get(),
+            },
+        
+        descriptorSets[i] =
+            {
+            .shaderProgramDescriptorType = ShaderProgramDescriptorType::CombineImageSampler,
+            .bindingIndex = static_cast<uint32_t>(i),
+            .uniformBufferDescriptor = nullptr,
+            .imageSamperDescriptor = &imageSampersDescriptor[i]
+            };
+    }
+    deferredShader->AllocDescriptorSet(&m_DescriptorSets, GBUFFER_SET);
+    m_DescriptorSets->WriteDescriptorSets(descriptorSets);
 }
 
 std::shared_ptr<PC_CORE::Texture2D> PC_CORE::Gbuffers::GetTexture(GbufferType type) const

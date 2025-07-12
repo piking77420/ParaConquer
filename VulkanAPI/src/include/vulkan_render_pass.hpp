@@ -39,6 +39,8 @@ namespace Vulkan
 
         vk::ImageLayout GetImageLayoutSubPass(PC_CORE::AttachmentType _attachmentType);
   
+        vk::ImageLayout GetImageLayoutSubPassForInputAttachement(PC_CORE::AttachmentType _attachmentType);
+
     };
     
 }

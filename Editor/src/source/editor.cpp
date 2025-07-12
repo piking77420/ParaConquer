@@ -224,6 +224,12 @@ void Editor::CompileShader()
 		EDITOR_RESOURCE_PATH "/shaders/geometry/geometry.frag");
 	}
 
+	// deferred
+	{
+		auto ddeferredFrag = ResourceManager::Create<ShaderSource>("deferred.frag",
+		EDITOR_RESOURCE_PATH "/shaders/deferred/deferred.frag");
+	}
+
 }
 
 void Editor::LookForEditorInit()

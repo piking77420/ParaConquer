@@ -30,10 +30,12 @@ struct SubPassDependcies
   
 };
 
+
 struct SubPassDescription
 {
     ShaderProgramPipelineType shaderProgramPipelineType;
     std::vector<size_t> colorAttachementDescriptorIndicies;
+    std::vector<size_t> inputAttachementDescriptorIndicies;
 
     SubPassDependcies subPassDependcies;
     bool useDepth;

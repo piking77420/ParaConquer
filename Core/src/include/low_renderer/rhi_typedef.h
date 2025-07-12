@@ -821,6 +821,13 @@ inline T SafeCastReinterpreCast(U* ptr)
 #define SPRITE_TEXTURE 0
 
 
+// Deffered 
+#define GBUFFER_SET 1
+#define G_ALBEDO 0
+#define G_NORMAL 1
+#define G_ROUGNESS_METALLIC_AO 2
+#define G_WORLD_POSITION 3
+
 // PREPROCESSOR
 
 

@@ -118,6 +118,12 @@ void ShaderSource::AddPreProcessorDefVulkan()
     options.AddMacroDefinition("SPRITE_SET", std::to_string(SPRITE_SET));
     options.AddMacroDefinition("SPRITE_TEXTURE", std::to_string(SPRITE_TEXTURE));
 
+    //Deffered
+    options.AddMacroDefinition("GBUFFER_SET", std::to_string(GBUFFER_SET));
+    options.AddMacroDefinition("G_ALBEDO", std::to_string(G_ALBEDO));
+    options.AddMacroDefinition("G_NORMAL", std::to_string(G_NORMAL));
+    options.AddMacroDefinition("G_ROUGNESS_METALLIC_AO", std::to_string(G_ROUGNESS_METALLIC_AO));
+    options.AddMacroDefinition("G_WORLD_POSITION", std::to_string(G_WORLD_POSITION));
 
 }
 

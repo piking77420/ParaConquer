@@ -15,6 +15,11 @@ public:
     PC_CORE_API std::shared_ptr<FrameBuffer> GetGbufferFrameBuffer() const;
 
     PC_CORE_API std::shared_ptr<FrameBuffer> GetForwardFrameBuffer() const;
+
+    PC_CORE_API ShaderProgramDescriptorSets* GetDescritptorSet() const
+    {
+        return m_DescriptorSets;
+    }
     
     PC_CORE_API void HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr<RhiRenderPass> _forwardPass, std::shared_ptr<RhiRenderPass> _gbufferPass);
 
@@ -35,6 +40,8 @@ public:
     {
         return m_Image;
     }
+
+
     
 private:
     std::array<std::shared_ptr<Texture2D>, static_cast<uint8_t>(GbufferType::Count)> m_Gbuffers;
@@ -46,6 +53,8 @@ private:
     std::shared_ptr<FrameBuffer> m_ForwardFrameBuffer;
 
     Tbx::Vector2i m_size;
+
+    ShaderProgramDescriptorSets* m_DescriptorSets;
 
     PC_CORE_API void CreateGBuffers();
 };

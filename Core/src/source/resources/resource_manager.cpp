@@ -49,6 +49,17 @@ void ResourceManager::InitPath()
         .w = SamplerAddressMode::REPEAT
         };
     ResourceManager::Create<PC_CORE::Sampler>(info);
+
+    SamplerCreateInfo ClampToEdgeInfo =
+    {
+        .SamplerName = "ClampToEdge",
+        .magFilter = Filter::NEAREST,
+        .minFilter = Filter::NEAREST,
+        .u = SamplerAddressMode::CLAMP_TO_EDGE,
+        .v = SamplerAddressMode::CLAMP_TO_EDGE,
+        .w = SamplerAddressMode::CLAMP_TO_EDGE
+        };
+    ResourceManager::Create<PC_CORE::Sampler>(ClampToEdgeInfo);
 }
 
 void ResourceManager::Destroy()

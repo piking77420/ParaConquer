@@ -1,5 +1,6 @@
 #version 450
 
+#include "camera.glsl"
 
 layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform LightData
 {

@@ -78,7 +78,9 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     {
         const auto& subpass = _renderPassDescriptor.subPasses[i];
 
-        assert(subpass.useDepth == hasDepthAttachment &&
+      
+
+        assert(subpass.useDepth ? (hasDepthAttachment) : true  &&
             "Subpass uses depth but no depth attachment provided");
 
         std::set<uint32_t> usedIndices(subpass.colorAttachementDescriptorIndicies.begin(),
@@ -473,6 +475,26 @@ vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPass(PC_CORE::Attachm
     case PC_CORE::AttachmentType::Stencil:
     case PC_CORE::AttachmentType::DepthStencil:
         return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+        break;
+    case PC_CORE::AttachmentType::None:
+    default:
+        assert(false);
+    }
+
+    return {};
+}
+
+vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttachement(PC_CORE::AttachmentType _attachmentType)
+{
+    switch (_attachmentType)
+    {
+    case PC_CORE::AttachmentType::Color:
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+        break;
+    case PC_CORE::AttachmentType::Depth:
+    case PC_CORE::AttachmentType::Stencil:
+    case PC_CORE::AttachmentType::DepthStencil:
+        return vk::ImageLayout::eDepthReadOnlyOptimal;
         break;
     case PC_CORE::AttachmentType::None:
     default:

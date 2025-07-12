@@ -320,7 +320,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pDynamicState = &dynamicState;
     graphicsPipelineInfo.layout = m_PipelineLayout;
     graphicsPipelineInfo.renderPass = reinterpret_cast<VulkanRenderPass*>(m_ProgramShaderCreateInfo.renderPass)->GetVulkanRenderPass();
-    graphicsPipelineInfo.subpass = 0;
+    graphicsPipelineInfo.subpass = m_ProgramShaderCreateInfo.subPassIndex;
 
     auto result = device->GetDevice().createGraphicsPipeline(nullptr, graphicsPipelineInfo);
 

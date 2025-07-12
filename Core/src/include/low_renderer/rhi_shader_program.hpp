@@ -112,6 +112,7 @@ struct ProgramShaderCreateInfo
     RhiRenderPass* renderPass;
     std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
     uint32_t attachementCount;
+    uint32_t subPassIndex;
 };
 
 

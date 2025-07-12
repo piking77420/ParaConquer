@@ -40,7 +40,8 @@ BEGIN_PCCORE
         std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
         
         PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
-        
+        PC_CORE::ShaderProgramDescriptorSets* gbufferDescriptorSet;
+
         Tbx::Vector2ui renderingContextSize;
 #ifdef WITH_EDITOR
         size_t renderingContextFlag;

@@ -160,6 +160,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	.sourceList = source,
 	.renderPass = m_Renderer->renderPasses.forwardPass.get(),
 		.colorAttachementCount = 1,
+		.subPassIndex = 0,
 	};
 
 
@@ -262,6 +263,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 	.sourceList = source,
 	.renderPass = m_Renderer->renderPasses.forwardPass.get(),
 	.colorAttachementCount = 1,
+		.subPassIndex = 0,
 	};
 
 	m_ShaderProgramRay = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
