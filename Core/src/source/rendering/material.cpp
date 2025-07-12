@@ -19,17 +19,17 @@ PC_CORE::Material::Material(const std::string& _name)
     switch (materialType)
     {
     case MaterialType::Opaque:
-        m_ShaderProgram = App::instance->renderer.m_ForwardShader;
+        m_ShaderProgram = App::instance->renderer.m_GeometryBufferShader;
         break;
     case MaterialType::Transparent:
-        //m_ShaderProgram = App::instance->renderer.m_ForwardShader;
+        m_ShaderProgram = App::instance->renderer.m_ForwardShader;
         break;
     default: ;
     }
     
     
     if (!m_ShaderProgram.expired())
-        m_ShaderProgram.lock()->AllocDescriptorSet(&m_pShaderProgramDescriptorSets, 1);
+        m_ShaderProgram.lock()->AllocDescriptorSet(&m_pShaderProgramDescriptorSets, MATERIAL_DESCRIPTOR_SET);
 }
 
 PC_CORE::Material::~Material()

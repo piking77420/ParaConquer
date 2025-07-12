@@ -72,8 +72,7 @@ void Vulkan::VulkanInstance::PopulateDebugMessengerCreateInfo(
     vk::DebugUtilsMessengerCreateInfoEXT& createInfo)
 {
     createInfo.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
-    createInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-    | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo;
+    createInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
     
     createInfo.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
@@ -187,11 +186,13 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 }
 
 
+#ifdef  DEBUG_GPU_ON
 
 void Vulkan::VulkanInstance::SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNameInfo)
 {
     m_DebugName(_device, reinterpret_cast<const VkDebugUtilsObjectNameInfoEXT*>(pNameInfo));
 }
+#endif
 
 void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
 {

@@ -51,8 +51,12 @@ namespace Vulkan
 #define GET_VK_DEVICE \
     std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice) \
 
+#ifdef  DEBUG_GPU_ON
 #define SET_VK_DEBUG_NAME(debugInfo)\
     GET_VK_INSTANCE->SetDebugName(GET_VK_DEVICE->GetDevice(), &debugInfo)\
 
+#else
+    #define SET_VK_DEBUG_NAME(x)
+#endif
 }
 

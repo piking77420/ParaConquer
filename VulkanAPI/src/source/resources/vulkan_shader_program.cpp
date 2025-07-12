@@ -6,6 +6,7 @@
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "utils/rhi_vulkan_parser.hpp"
 #include "vulkan_context.hpp"
+#include "vulkan_descritptor_manager.hpp"
 #include "vulkan_render_pass.hpp"
 #include "io/in_out.h"
 
@@ -127,7 +128,8 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
         PC_LOGERROR("MissMatch size in pushconstant")
     }
     
-    _commandBuffer.pushConstants(m_PipelineLayout,pushConstatnField.shaderStage, pushConstatnField.pushConstantOffSet, pushConstatnField.pushConstantSize, data);
+    _commandBuffer.pushConstants(m_PipelineLayout, pushConstatnField.shaderStage,
+        pushConstatnField.pushConstantOffSet, pushConstatnField.pushConstantSize, data);
 }
 
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : RhiShaderProgram(_programShaderCreateInfo)
@@ -367,7 +369,6 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<
 void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
 {
     std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
-    
     std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
 
     // Compute Unique Set
@@ -426,9 +427,7 @@ void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulk
             }
         }
     }
-
-
-
+    
     uint32_t maxSet = 0;
     for (const auto& it : layoutsMap)
         maxSet = std::max(maxSet, it.first);

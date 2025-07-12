@@ -30,7 +30,6 @@ namespace Vulkan
     };
     
 
-    constexpr uint32_t MAX_ALLOC_DESCRIPTOR_SET = 100 * MAX_FRAMES_IN_FLIGHT;
     
     class VULKAN_API VulkanShaderProgram : public PC_CORE::RhiShaderProgram
     {

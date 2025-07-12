@@ -506,13 +506,12 @@ void Editor::Run(bool* _appShouldClose)
 		PC_CORE::Time::UpdateTime();
 
 
-		gameApp.WorldTick(PC_CORE::Time::DeltaTime());
-
 		IMGUIContext.NewFrame();
+
+		gameApp.WorldTick(PC_CORE::Time::DeltaTime());
+		
 		gameApp.renderer.BeginDraw(&gameApp.window);
 		UpdateEditor();
-	
-
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
 
