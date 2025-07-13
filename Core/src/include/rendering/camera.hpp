@@ -14,11 +14,11 @@ class Camera
 {
 public:
 
-    Tbx::Vector3f position = Tbx::Vector3f(0,1,-10);
+    Tbx::Vector3d position = Tbx::Vector3d(0,1,-10);
 
-    Tbx::Vector3f up = Tbx::Vector3f::UnitY();
+    Tbx::Vector3d up = Tbx::Vector3d::UnitY();
 
-    Tbx::Vector3f front = Tbx::Vector3f::UnitZ();
+    Tbx::Vector3d front = Tbx::Vector3d::UnitZ();
     
     PC_CORE_API void SetProjectionType(ProjectionType projectionType);
 
@@ -40,15 +40,15 @@ public:
 
     PC_CORE_API float GetFar() const;
 
-    PC_CORE_API Tbx::Matrix4x4f GetViewMatrix() const;
+    PC_CORE_API Tbx::Matrix4x4d GetViewMatrix() const;
 
-    PC_CORE_API Tbx::Matrix4x4f GetProjectionMatrix() const;
+    PC_CORE_API Tbx::Matrix4x4d GetProjectionMatrix() const;
 
-    PC_CORE_API Tbx::Matrix4x4f GetVPMatrix() const;
+    PC_CORE_API Tbx::Matrix4x4d GetVPMatrix() const;
     
-    PC_CORE_API void LookAt(Tbx::Vector3f _point, Tbx::Vector3f _up);
+    PC_CORE_API void LookAt(Tbx::Vector3d _point, Tbx::Vector3d _up);
 
-    PC_CORE_API void LookAt(Tbx::Vector3f _point);
+    PC_CORE_API void LookAt(Tbx::Vector3d _point);
 
     PC_CORE_API Camera() = default;
 
@@ -56,10 +56,10 @@ public:
     
     // Fov in radians
     PC_CORE_API Camera(float _fov, float _aspect, float _near, float _far,
-        Tbx::Vector3f _pos,  Tbx::Vector3f _forward, Tbx::Vector3f _up);
+        Tbx::Vector3d _pos,  Tbx::Vector3d _forward, Tbx::Vector3d _up);
     
     PC_CORE_API Camera(Tbx::Vector2f screenSize, float _near, float _far,
-        Tbx::Vector3f _pos,  Tbx::Vector3f _forward, Tbx::Vector3f _up);
+        Tbx::Vector3d _pos,  Tbx::Vector3d _forward, Tbx::Vector3d _up);
 
     PC_CORE_API ~Camera() = default;
     

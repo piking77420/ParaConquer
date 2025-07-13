@@ -8,7 +8,6 @@
 #include "low_renderer/rhi_context.hpp"
 #include "low_renderer/rhi_shader_program.hpp"
 #include "low_renderer/rhi_uniform_buffer.hpp"
-#include "resources/scene_lights_manager.h"
 #include "resources/graphic_shader.hpp"
 #include "resources/texture_3d.hpp"
 #include "world/static_mesh.hpp"
@@ -102,12 +101,13 @@ private:
 
     std::unique_ptr<GPUDynamicLightData> gpuDynamicLightData;
 
-    UniformBuffer dynamicLightUniformBuffer;
+    UniformBuffer gpuLightUniformBufferStaging;
+    UniformBuffer gpuLightUniformBuffer;
 
     const RenderingContext* currentRenderingContext = nullptr;
     
 #ifdef WITH_EDITOR
-    std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
+   // std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
 #endif
     
     PC_CORE_API void CreateRenderPasss();
@@ -120,7 +120,7 @@ private:
     
     PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
 
-    PC_CORE_API void UpdateLightData();
+    PC_CORE_API void UpdateLightData(const RenderingContext& _context, CommandList* commandList);
     
     PC_CORE_API void DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader);
 

@@ -65,10 +65,10 @@ void EditWorldWindow::RotateCamera(float _deltatime)
         pitch = -MaxPitch;
 
     camera.front = camera.front.Normalize();
-    Tbx::Vector3f forward;
-    forward.x = std::cos(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
-    forward.y = std::sin(pitch * Tbx::fDeg2Rad);
-    forward.z = std::sin(yaw * Tbx::fDeg2Rad) * std::cos(pitch * Tbx::fDeg2Rad);
+    Tbx::Vector3d forward;
+    forward.x = std::cos(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
+    forward.y = std::sin(pitch * Tbx::dDeg2Rad);
+    forward.z = std::sin(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
     
     camera.LookAt(camera.position + forward);
 }
@@ -77,8 +77,8 @@ void EditWorldWindow::CameratMovment(float _deltatime)
 {
     
     bool isPositionDirty = false;
-    Tbx::Vector3f addVector = Tbx::Vector3f::Zero();
-    const Tbx::Vector3f right = Tbx::Vector3f::Cross(camera.front, camera.up);
+    Tbx::Vector3d addVector = Tbx::Vector3d::Zero();
+    const Tbx::Vector3d right = Tbx::Vector3d::Cross(camera.front, camera.up);
     
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
@@ -106,7 +106,7 @@ void EditWorldWindow::CameratMovment(float _deltatime)
     }
     else
     {
-        Tbx::Vector3f desiredPosition = camera.position + (addVector.Normalize() * m_CameraSpeedValue);
+        Tbx::Vector3d desiredPosition = camera.position + (addVector.Normalize() * m_CameraSpeedValue);
         camera.position = SmoothDamp(camera.position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
     }
 }

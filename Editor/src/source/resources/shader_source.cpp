@@ -62,17 +62,17 @@ void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _opt
 
     switch (graphicApi)
     {
-    case GraphicAPI::NONE:
+    case GraphicAPI::None:
         break;
-    case GraphicAPI::VULKAN:
+    case GraphicAPI::Vulkan:
         shaderCompiler->options.SetForcedVersionProfile(GLSL_VERSION, shaderc_profile_core);
         shaderCompiler->options.SetSourceLanguage(shaderc_source_language_glsl);
         AddPreProcessorDefVulkan();
         break;
-    case GraphicAPI::DX3D12:
+    case GraphicAPI::Dx3D12:
         shaderCompiler->options.SetSourceLanguage(shaderc_source_language_hlsl);
         break;
-    case GraphicAPI::COUNT:
+    case GraphicAPI::Count:
         break;
     default: ;
     }
@@ -196,49 +196,49 @@ static shaderc_shader_kind GetGlangShaderStage(ShaderStageType _shaderType)
 {
     switch (_shaderType)
     {
-    case ShaderStageType::VERTEX:
+    case ShaderStageType::Vertex:
         return shaderc_glsl_vertex_shader;
         break;
-    case ShaderStageType::TESSCONTROL:
+    case ShaderStageType::TessControl:
         return shaderc_tess_control_shader;
         break;
-    case ShaderStageType::TESSEVALUATION:
+    case ShaderStageType::Tessevaluation:
         return shaderc_tess_evaluation_shader;
         break;
-    case ShaderStageType::GEOMETRY:
+    case ShaderStageType::Geometry:
         return shaderc_geometry_shader;
         break;
-    case ShaderStageType::FRAGMENT:
+    case ShaderStageType::Fragment:
         return shaderc_fragment_shader;
         break;
-    case ShaderStageType::COMPUTE:
+    case ShaderStageType::Compute:
         return shaderc_compute_shader;
         break;
-    case ShaderStageType::RAYGEN:
+    case ShaderStageType::Raygen:
         return shaderc_raygen_shader;
         break;
-    case ShaderStageType::INTERSECT:
+    case ShaderStageType::Intersect:
         return shaderc_intersection_shader;
         break;
-    case ShaderStageType::ANYHIT:
+    case ShaderStageType::Anyhit:
         return shaderc_anyhit_shader;
         break;
-    case ShaderStageType::CLOSESTHIT:
+    case ShaderStageType::Closesthit:
         return shaderc_closesthit_shader;
         break;
-    case ShaderStageType::MISS:
+    case ShaderStageType::Miss:
         return shaderc_miss_shader;
         break;
-    case ShaderStageType::CALLABLE:
+    case ShaderStageType::Callable:
         return shaderc_callable_shader;
         break;
-    case ShaderStageType::TASK:
+    case ShaderStageType::Task:
         return shaderc_task_shader;
         break;
-    case ShaderStageType::MESH:
+    case ShaderStageType::Mesh:
         return shaderc_mesh_shader;
         break;
-    case ShaderStageType::COUNT:
+    case ShaderStageType::Count:
     default:
         throw std::invalid_argument("Invalid shader stage");
 

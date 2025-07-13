@@ -251,7 +251,55 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _
     const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
     const vk::IndexType indexType = Vulkan::Utils::RhiToIndexType(_indexBuffer.GetIndexFormat());
     
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset) , indexType);
+    m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset) , indexType);
+}
+
+void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
+    PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage)
+{
+    assert(
+        _src.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::CPU_To_GPU ||
+        _src.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::CPU_Only
+    );
+
+    assert(_dst.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::GPU_Only);
+
+
+    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+
+    const std::vector<BufferAndAlloc>* bufferAndAllocSrc = reinterpret_cast<const std::vector<BufferAndAlloc>*>(_src.GetNativeHandle());
+    const std::vector<BufferAndAlloc>* bufferAndAllocDst = reinterpret_cast<const std::vector<BufferAndAlloc>*>(_dst.GetNativeHandle());
+
+    vk::Buffer bufferSrc = bufferAndAllocSrc->at(frameIndex).buffer;
+    vk::Buffer bufferDst = bufferAndAllocDst->at(frameIndex).buffer;
+
+    vk::BufferCopy bufferCopy = {};
+    bufferCopy.dstOffset = static_cast<uint32_t>(_dstoffset);
+    bufferCopy.srcOffset = static_cast<uint32_t>(_srcOffSet);
+    bufferCopy.size = static_cast<uint32_t>(_sizeInBytes);
+
+
+    m_CommandBuffer[frameIndex].copyBuffer(bufferSrc, bufferDst, 1, &bufferCopy);
+
+    vk::BufferMemoryBarrier bufferBarrier{};
+    bufferBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    bufferBarrier.dstAccessMask = vk::AccessFlagBits::eShaderRead; // or eShaderWrite if the shader writes to it
+    bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    bufferBarrier.buffer = bufferDst;
+    bufferBarrier.offset = 0;
+    bufferBarrier.size = VK_WHOLE_SIZE;
+
+    
+
+    m_CommandBuffer[frameIndex].pipelineBarrier(
+        vk::PipelineStageFlagBits::eTransfer,              // srcStage
+        Vulkan::Utils::RhiPipelineStageToVulkan(_dstBufferUsage),
+        {},
+        nullptr,
+        bufferBarrier,
+        nullptr
+    );
 }
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const

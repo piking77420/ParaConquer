@@ -46,7 +46,7 @@ public:
 	~DebugDrawContext() = default;
 
 private:
-	static inline DebugDrawContext* m_Instance;
+	static inline DebugDrawContext* m_Instance = nullptr;
 	
 	Renderer* m_Renderer;
 

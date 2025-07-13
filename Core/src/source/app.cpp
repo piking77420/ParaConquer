@@ -23,7 +23,7 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
 
     const RenderHardwareInterfaceCreateInfo createInfo =
         {
-        .GraphicsAPI = GraphicAPI::VULKAN,
+        .GraphicsAPI = GraphicAPI::Vulkan,
         .window = &window,
         .appName = _appCreateInfo.appName.data(),
         .gpuDebug = _appCreateInfo.enableGpuDebug

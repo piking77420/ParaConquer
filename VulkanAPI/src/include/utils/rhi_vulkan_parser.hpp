@@ -58,9 +58,9 @@ namespace Vulkan
         vk::AttachmentStoreOp RhiStoreOperationToVulkan(PC_CORE::StoreOperation _loadOperation);
 
 
-        vk::PipelineStageFlags RhiPipelineStageToVulkan(PC_CORE::PipelineStageFlags _stageFlags);
+        vk::PipelineStageFlags RhiPipelineStageToVulkan(PC_CORE::GpuPipelineStageFlagBits _stageFlags);
 
-        vk::AccessFlags RhiAccessFlagToVulkan(PC_CORE::AccessFlags _accessFlag);
+        vk::AccessFlags RhiAccessFlagToVulkan(PC_CORE::GpuAccessFlag _accessFlag);
 
         VmaMemoryUsage RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation _memoryUsage);
 

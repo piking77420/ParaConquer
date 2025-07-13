@@ -39,7 +39,7 @@ protected:
 
     float cameraSensitivity = 100.f;
 
-    Tbx::Vector3f m_CameraSpeed = Tbx::Vector3f::Zero();
+    Tbx::Vector3d m_CameraSpeed = Tbx::Vector3d::Zero();
 
     float smoothTime = 0.3f;
 

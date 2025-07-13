@@ -33,6 +33,8 @@ private:
 
     Signature m_DirLightSignature;
 
+    Signature m_PointLightSignature;
+    
     PC_CORE::RenderingWorldData* m_RenderingData;
 
     void ClearRenderingData();

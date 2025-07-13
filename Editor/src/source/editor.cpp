@@ -327,7 +327,7 @@ void Editor::Init()
 		.appName = "Para Conquer Editor",
 		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/paraconquer_logo_black.png",
 		.enableGpuDebug = true,
-		.graphicAPI = GraphicAPI::VULKAN
+		.graphicAPI = GraphicAPI::Vulkan
 	};
 	
 	InitThridPartLib(appCreateInfo.graphicAPI);
@@ -488,6 +488,14 @@ void Editor::InitTestScene()
 	StaticMesh* mesh2 = &level.GetComponent<StaticMesh>(sphere);
 	mesh2->mesh = ResourceManager::Get<Mesh>("sphere.obj");
 	mesh2->material = m2;
+
+
+	EntityId pointLight = level.CreateEntity("pointLight");
+	level.AddComponent<Transform>(pointLight);
+	level.AddComponent<PointLight>(pointLight);
+	t = &level.GetComponent<Transform>(pointLight);
+	t->position = Tbx::Vector3d(0.0f, 5.0f, 5.0f);
+	t->scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
 }
 

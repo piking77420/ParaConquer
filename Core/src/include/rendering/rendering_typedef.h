@@ -9,7 +9,7 @@
 BEGIN_PCCORE
     struct LowLevelCamera
     {
-        Tbx::Vector3f position;
+        Tbx::Vector3d position;
         Tbx::Vector3f front;
         Tbx::Vector3f up;
 
@@ -95,7 +95,7 @@ BEGIN_PCCORE
         float intensity;
         Tbx::Vector3f direction;
         float cutoff;
-        Tbx::Vector3f position;
+        Tbx::Vector3d position;
         float outerCutOff;
     };
 
@@ -103,8 +103,7 @@ BEGIN_PCCORE
     {
         Tbx::Vector3f color;
         float intensity;
-        Tbx::Vector3f position;
-        float maxRadius;
+        Tbx::Vector3d position;
     };
 
     
@@ -146,7 +145,8 @@ BEGIN_PCCORE
         Tbx::Vector3f direction;
         float cutoff;
         Tbx::Vector3f color;
-        float outCutOff;
+        float outerCutOff;
+        float maxRange;
     };
 
     struct ALIGNAS_16 PointLightGPU
@@ -159,7 +159,7 @@ BEGIN_PCCORE
 
     struct ALIGNAS_16 GPUDynamicLightData
     {
-        DirectionalLightGPU DirectionalLights[MAX_DIRLIGHT];
+        DirectionalLightGPU directionalLights[MAX_DIRLIGHT];
         SpotLightGPU spothLights[MAX_SPOTLIGHT];
         PointLightGPU pointLights[MAX_POINTLIGHT];
     };

@@ -6,6 +6,9 @@
 PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_editor)
 {
     m_DirectionalLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("directional_light_sprite", EDITOR_RESOURCE_PATH "/icons/dirlight_icon.png");
+    m_SpotLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("spot_light_sprite", EDITOR_RESOURCE_PATH "/icons/spot_light.png");
+    m_PointLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("point_light_sprite", EDITOR_RESOURCE_PATH "/icons/point_light.png");
+
     InitResources();
    
 }
@@ -24,6 +27,10 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
                                                     const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::RenderingWorldData* _renderingWorldData)
 {
     PERF_FRAME_MARK;
+ 
+    m_DirectionalLightIndices.clear();
+    m_SpotLightIndices.clear();
+    m_PointLightIndices.clear();
 
     if (auto p = m_DrawSpriteShader.lock())
     {
@@ -32,19 +39,60 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
         _commandList->BindDescriptorSet(p.get(), m_CameraSet, SCENE_DESCRIPTOR_SET, 1);
 
         // Dir light
-        _commandList->BindDescriptorSet(p.get(), m_DirectionalDescriptorSet, SPRITE_SET, 1);
-        const Tbx::Vector3f cameraPos = _renderingContext.lowLevelCamera.position;
+        const Tbx::Vector3f cameraPos = static_cast<Tbx::Vector3f>(_renderingContext.lowLevelCamera.position);
         for (size_t i = 0; i < _renderingWorldData->lightData.size(); i++)
         {
-            if (_renderingWorldData->lightData[i].lightType != PC_CORE::LightType::Directional)
-                continue;
+            switch (_renderingWorldData->lightData[i].lightType)
+            {
+            case PC_CORE::LightType::Directional:
+                m_DirectionalLightIndices.push_back(i);
+                break;
+            case PC_CORE::LightType::Spotlight:
+                m_SpotLightIndices.push_back(i);
+                break;
+            case PC_CORE::LightType::Point:
+                m_PointLightIndices.push_back(i);
+                break;
+            case PC_CORE::LightType::Area:
+            case PC_CORE::LightType::Count:
+            default:
+                assert(false);
+            }
+        }
 
-            const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(-cameraPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
+        if (!m_DirectionalLightIndices.empty())
+            _commandList->BindDescriptorSet(p.get(), m_DirectionalDescriptorSet, SPRITE_SET, 1);
+        for (size_t i = 0; i < m_DirectionalLightIndices.size(); i++)
+        {
+             const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(-static_cast<Tbx::Vector3<float>>(_renderingContext.lowLevelCamera.position), Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
+             _commandList->PushConstant(p.get(), "PushConstants", &invertView, sizeof(invertView));
+             _commandList->Draw(4, 1, 0, 0);
+        }
 
+        if (!m_SpotLightIndices.empty())
+            _commandList->BindDescriptorSet(p.get(), m_SpotLightDescriptorSet, SPRITE_SET, 1);
+        for (size_t i = 0; i < m_SpotLightIndices.size(); i++)
+        {
+            auto& spothlight = _renderingWorldData->lightData.at(m_SpotLightIndices[i]).data.spotLight;
+            Tbx::Vector3f pointPos = static_cast<Tbx::Vector3f>(spothlight.position - _renderingContext.lowLevelCamera.position);
             
+            const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(pointPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
             _commandList->PushConstant(p.get(), "PushConstants", &invertView, sizeof(invertView));
             _commandList->Draw(4, 1, 0, 0);
-        }            
+        }
+
+        if (!m_PointLightIndices.empty())
+            _commandList->BindDescriptorSet(p.get(), m_PointLightDescriptorSet, SPRITE_SET, 1);
+        for (size_t i = 0; i < m_PointLightIndices.size(); i++)
+        {
+            auto& pointLight = _renderingWorldData->lightData.at(m_PointLightIndices[i]).data.pointLightData;
+            Tbx::Vector3f pointPos = static_cast<Tbx::Vector3f>(pointLight.position - _renderingContext.lowLevelCamera.position);
+            
+            const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(pointPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
+            _commandList->PushConstant(p.get(), "PushConstants", &invertView, sizeof(invertView));
+            _commandList->Draw(4, 1, 0, 0);
+        }
+        
     }
     
 }
@@ -93,11 +141,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     PC_CORE::SourceList sourceList =
         {
         {
-            PC_CORE::ShaderStageType::VERTEX,
+            PC_CORE::ShaderStageType::Vertex,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("draw_sprite_spv.vert"),
         },
         {
-            PC_CORE::ShaderStageType::FRAGMENT,
+            PC_CORE::ShaderStageType::Fragment,
                 PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("draw_sprite_spv.frag")
         }
         };
@@ -120,6 +168,8 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     
     lockedShader->AllocDescriptorSet(&m_CameraSet, SCENE_DESCRIPTOR_SET);
     lockedShader->AllocDescriptorSet(&m_DirectionalDescriptorSet, SPRITE_SET);
+    lockedShader->AllocDescriptorSet(&m_SpotLightDescriptorSet, SPRITE_SET);
+    lockedShader->AllocDescriptorSet(&m_PointLightDescriptorSet, SPRITE_SET);
 
     PC_CORE::UniformBufferDescriptor cameraBufferDescritptor
   {
@@ -130,6 +180,18 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     {
         .sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat").get(),
         .texture = m_DirectionalLightTexture.lock().get()
+    };
+
+    PC_CORE::ImageSamperDescriptor spothLightTexture
+    {
+        .sampler = directionalTexture.sampler,
+        .texture = m_SpotLightTexture.lock().get()
+    };
+
+    PC_CORE::ImageSamperDescriptor pointLightTexture
+    {
+        .sampler = directionalTexture.sampler,
+        .texture = m_PointLightTexture.lock().get()
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
@@ -154,4 +216,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         }
     };
     m_DirectionalDescriptorSet->WriteDescriptorSets(descriptorSets);
+
+    descriptorSets[0].imageSamperDescriptor = &spothLightTexture;
+    m_SpotLightDescriptorSet->WriteDescriptorSets(descriptorSets);
+
+    descriptorSets[0].imageSamperDescriptor = &pointLightTexture;
+    m_PointLightDescriptorSet->WriteDescriptorSets(descriptorSets);
+    
 }

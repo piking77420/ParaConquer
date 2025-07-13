@@ -14,9 +14,16 @@ public:
         return m_RhiBuffer;
     }
 
+    std::shared_ptr<RhiBuffer> GetRhiBuffer() const
+    {
+        return m_RhiBuffer;
+    }
+
     void Update(void* _data, size_t _size);
 
-    explicit UniformBuffer(void* _data, size_t _size, MemoryUsage _usage);
+    explicit UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage);
+
+    explicit UniformBuffer(size_t _size, MemoryLocalisation _memoryLocalisation,  MemoryUsage _usage);
 
     explicit UniformBuffer() = default;
 

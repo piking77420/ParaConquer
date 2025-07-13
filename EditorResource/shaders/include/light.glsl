@@ -15,6 +15,7 @@ struct SpotLightData
     float cutoff;
     vec3 color;
     float outCutOff;
+    float maxRange;
 };
 
 struct PointLightData

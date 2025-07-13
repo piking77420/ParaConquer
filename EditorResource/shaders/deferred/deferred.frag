@@ -13,21 +13,29 @@ layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec2 uv;
 
-vec3 GetNormal(vec2 packedNormal)
+vec3 Decode(vec2 f)
 {
-    float f = dot(packedNormal, packedNormal);
-    vec3 n;
-    n.xy = 2.0 * packedNormal;
-    n.z = f - 1.0;
+    f = f * 2.0 - 1.0; // [0,1] -> [-1,1]
+
+    vec3 n = vec3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
+
+    if (n.z < 0.0)
+    {
+        float oldX = n.x;
+        n.x = (1.0 - abs(n.y)) * sign(oldX);
+        n.y = (1.0 - abs(oldX)) * sign(n.y);
+    }
+
     return normalize(n);
 }
-
 void main()
 {
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
-    vec2 packedNormal = subpassLoad(inputNormal).xy;
-    vec3 normal = GetNormal(packedNormal);
-    vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
+    
+    vec2 packedNormal = subpassLoad(inputRoughnessMettalicAo).xy;
+    vec3 normal = Decode(subpassLoad(inputNormal).rg);
+    
+    //vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
     vec3 worldPositionTexSampler = subpassLoad(inputWorldPosition).rgb;
     
     
@@ -35,5 +43,5 @@ void main()
     
     
 
-    outColor = vec4(normal, 1.0);
+    outColor = vec4(lightSceneData.dirlights[0].color, 1.0);
 }

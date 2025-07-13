@@ -117,6 +117,9 @@ public:
 
     PC_CORE_API virtual void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;
 
+    PC_CORE_API virtual void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
+        PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage) = 0;
+
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 
     PC_CORE_API void ExucuteFetchCommand();

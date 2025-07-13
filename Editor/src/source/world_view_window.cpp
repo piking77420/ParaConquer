@@ -64,8 +64,8 @@ void WorldViewWindow::Render()
     renderingContext.lowLevelCamera =
     {
         .position = camera.position,
-        .front = camera.front,
-        .up = camera.up,
+        .front = static_cast<Tbx::Vector3f>(camera.front),
+        .up = static_cast<Tbx::Vector3f>(camera.up),
         .aspect = camera.GetAspect(),
         .fov = camera.GetFOV(),
         .near = camera.GetNear(),

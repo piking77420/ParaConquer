@@ -54,7 +54,7 @@ private:
 
     Tbx::Vector2i m_size;
 
-    ShaderProgramDescriptorSets* m_DescriptorSets;
+    ShaderProgramDescriptorSets* m_DescriptorSets = nullptr;
 
     PC_CORE_API void CreateGBuffers();
 };

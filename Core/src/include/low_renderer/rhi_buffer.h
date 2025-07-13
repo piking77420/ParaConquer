@@ -22,10 +22,8 @@ public:
 
     virtual void MapData(void** _ptr)
     {
-        assert(_ptr != nullptr);
         assert(
             m_MemoryVisibility == MemoryLocalisation::CPU_To_GPU ||
-            m_MemoryVisibility == MemoryLocalisation::GPU_To_CPU ||
             m_MemoryVisibility == MemoryLocalisation::CPU_Only
         );
 

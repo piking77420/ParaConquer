@@ -9,6 +9,9 @@
 
 void PC_CORE::DebugDrawContext::DrawRay(Tbx::Vector3d _p1, Tbx::Vector3d _dir, float _distance, Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	const Tbx::Vector4f p1 = Tbx::Vector4f(static_cast<float>(_p1.x), static_cast<float>(_p1.y), static_cast<float>(_p1.z), 0);
 	const Tbx::Vector4f dir = Tbx::Vector4f(static_cast<float>(_dir.x), static_cast<float>(_dir.y), static_cast<float>(_dir.z), 0);
 	const Tbx::Vector4f color = Tbx::Vector4f(static_cast<float>(_color.x), static_cast<float>(_color.y), static_cast<float>(_color.z), 0);
@@ -25,32 +28,50 @@ void PC_CORE::DebugDrawContext::DrawRay(Tbx::Vector3d _p1, Tbx::Vector3d _dir, f
 
 void PC_CORE::DebugDrawContext::DrawSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	PushSphereGizmo(PrimitiveType::Sphere, _p1, _radius, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size,
 	Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	PushBoxGizmo(PrimitiveType::Box, _p1, euler, _size, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawWireBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	PushBoxGizmo(PrimitiveType::WireBox, _p1, euler, _size, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	PushCapsuleGizmo(PrimitiveType::Capusle, _p1, euler, _radius, _height, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawWireCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	PushCapsuleGizmo(PrimitiveType::WireCapsule, _p1, euler, _radius, _height, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawWireSphere(Tbx::Vector3d _p1, float _radius, Tbx::Vector3f _color)
 {
+	if (m_Instance == nullptr)
+		return;
+
 	PushSphereGizmo(PrimitiveType::WireSphere, _p1, _radius, _color);
 }
 
@@ -145,11 +166,11 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	const SourceList source =
 	{
 		{
-			PC_CORE::ShaderStageType::VERTEX,
+			PC_CORE::ShaderStageType::Vertex,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.vert")
 		},
 		{
-			PC_CORE::ShaderStageType::FRAGMENT,
+			PC_CORE::ShaderStageType::Fragment,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.frag")
 		}
 	};
@@ -246,12 +267,12 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 	const SourceList source =
 	{
 		{
-			PC_CORE::ShaderStageType::VERTEX,
+			PC_CORE::ShaderStageType::Vertex,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_ray_spv.vert")
 
 		},
 		{
-			PC_CORE::ShaderStageType::FRAGMENT,
+			PC_CORE::ShaderStageType::Fragment,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.frag")
 
 		}

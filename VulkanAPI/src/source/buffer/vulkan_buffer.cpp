@@ -19,6 +19,7 @@ void Vulkan::VulkanBuffer::MapData(void** _mapData)
 
 void Vulkan::VulkanBuffer::UnMapData()
 {
+
     auto& context = VulkanContext::GetContext();
     vmaUnmapMemory(context.allocator, bufferAndAlloc[PC_CORE::Rhi::GetFrameIndex()].alloc);
 }

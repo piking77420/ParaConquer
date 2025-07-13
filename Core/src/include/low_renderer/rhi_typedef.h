@@ -19,10 +19,10 @@ constexpr size_t MAX_COLOR_ATTACHMENTS = 7;
 BEGIN_PCCORE
     enum class GraphicAPI
     {
-        NONE,
-        VULKAN,
-        DX3D12,
-        COUNT
+        None,
+        Vulkan,
+        Dx3D12,
+        Count
     };
 
 
@@ -414,23 +414,25 @@ BEGIN_PCCORE
 
     enum class ShaderStageType : size_t
     {
-        VERTEX,
-        TESSCONTROL,
-        TESSEVALUATION,
-        GEOMETRY,
-        FRAGMENT,
-        COMPUTE,
-        RAYGEN,
-        INTERSECT,
-        ANYHIT,
-        CLOSESTHIT,
-        MISS,
-        CALLABLE,
-        TASK,
-        MESH,
+        Vertex,
+        TessControl,
+        Tessevaluation,
+        Geometry,
+        Fragment,
+        Compute,
+        Raygen,
+        Intersect,
+        Anyhit,
+        Closesthit,
+        Miss,
+        Callable,
+        Task,
+        Mesh,
 
-        COUNT
+        Count
     };
+
+    ENUM_FLAGS(ShaderStageType)
 
     const std::array<std::string, 14> ShaderSourceFormat =
     {
@@ -654,7 +656,7 @@ BEGIN_PCCORE
         COUT
     };
 
-    enum class PipelineStageFlagBits : uint64_t
+    enum class GpuPipelineStageFlagBits : uint64_t
     {
         None = 0,
         TopOfPipe = 1ULL << 0,
@@ -692,33 +694,11 @@ BEGIN_PCCORE
         MeshShaderNV = 1ULL << 32
     };
 
-    using PipelineStageFlags = uint64_t;
-
-    inline PipelineStageFlags operator|(PipelineStageFlagBits a, PipelineStageFlagBits b)
-    {
-        return static_cast<PipelineStageFlags>(a) | static_cast<PipelineStageFlags>(b);
-    }
-
-    inline PipelineStageFlags operator&(PipelineStageFlagBits a, PipelineStageFlagBits b)
-    {
-        return static_cast<PipelineStageFlags>(a) & static_cast<PipelineStageFlags>(b);
-    }
-
-    inline PipelineStageFlags& operator|=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs)
-    {
-        lhs |= static_cast<PipelineStageFlags>(rhs);
-        return lhs;
-    }
-
-    inline PipelineStageFlags& operator&=(PipelineStageFlags& lhs, PipelineStageFlagBits rhs)
-    {
-        lhs &= static_cast<PipelineStageFlags>(rhs);
-        return lhs;
-    }
+    ENUM_FLAGS(GpuPipelineStageFlagBits)
 
     //----------------------------------------
 
-    enum class AccessFlagBits : uint64_t
+    enum class GpuAccessFlag : uint64_t
     {
         None = 0,
         IndirectCommandRead = 1ULL << 0,
@@ -757,32 +737,8 @@ BEGIN_PCCORE
         CommandPreprocessWriteEXT = 1ULL << 33
     };
 
-    using AccessFlags = uint64_t;
-
-    inline AccessFlags operator|(AccessFlagBits a, AccessFlagBits b)
-    {
-        return static_cast<AccessFlags>(a) | static_cast<AccessFlags>(b);
-    }
-
-    inline AccessFlags operator&(AccessFlagBits a, AccessFlagBits b)
-    {
-        return static_cast<AccessFlags>(a) & static_cast<AccessFlags>(b);
-    }
-
-    inline AccessFlags& operator|=(AccessFlags& lhs, AccessFlagBits rhs)
-    {
-        lhs |= static_cast<AccessFlags>(rhs);
-        return lhs;
-    }
-
-    inline AccessFlags& operator&=(AccessFlags& lhs, AccessFlagBits rhs)
-    {
-        lhs &= static_cast<AccessFlags>(rhs);
-        return lhs;
-    }
-
-
-
+    ENUM_FLAGS(GpuAccessFlag)
+   
 
 
 
@@ -791,12 +747,15 @@ END_PCCORE
 
 
 template <typename T, typename U>
-inline T SafeCastReinterpreCast(U* ptr)
+inline T* SafeCastReinterpreCast(U* ptr)
 {
 #ifdef DEBUG
-    return dynamic_cast<T*>(ptr);
+
+    T* ptr = dynamic_cast<T*>(ptr);
+    assert(ptr != nullptr);
+    return ptr;
 #else
-    return reinterpret_cast<T>(ptr);
+    return reinterpret_cast<T*>(ptr);
 
 #endif // DEBUG
 }

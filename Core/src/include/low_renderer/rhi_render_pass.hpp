@@ -22,11 +22,11 @@ struct RenderPassAttachementDescriptor
 
 struct SubPassDependcies
 {
-    PipelineStageFlags srcStageMask;
-    PipelineStageFlags dstStageMask;
+    GpuPipelineStageFlagBits srcStageMask;
+    GpuPipelineStageFlagBits dstStageMask;
   
-    AccessFlags srcAccessMask;
-    AccessFlags dstAccessMask;
+    GpuAccessFlag srcAccessMask;
+    GpuAccessFlag dstAccessMask;
   
 };
 

@@ -18,7 +18,12 @@ void PC_CORE::UniformBuffer::Update(void* _data, size_t _size)
     m_RhiBuffer->UnmapData();
 }
 
-PC_CORE::UniformBuffer::UniformBuffer(void* _data, size_t _size, MemoryUsage _usage)
+PC_CORE::UniformBuffer::UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage)
 {
-    m_RhiBuffer = Rhi::CreateUniformBuffer(_data, _size, PC_CORE::MemoryLocalisation::CPU_Only, _usage);
+    m_RhiBuffer = Rhi::CreateUniformBuffer(_data, _size, _memoryLocalisation, _usage);
+}
+
+PC_CORE::UniformBuffer::UniformBuffer(size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage)
+{
+    m_RhiBuffer = Rhi::CreateUniformBuffer(nullptr, _size, _memoryLocalisation, _usage);
 }

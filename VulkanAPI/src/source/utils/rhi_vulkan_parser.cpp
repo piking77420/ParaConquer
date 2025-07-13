@@ -1054,35 +1054,35 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType
 {
     switch (_shaderStage)
     {
-    case PC_CORE::ShaderStageType::VERTEX:
+    case PC_CORE::ShaderStageType::Vertex:
         return vk::ShaderStageFlagBits::eVertex;
-    case PC_CORE::ShaderStageType::TESSCONTROL:
+    case PC_CORE::ShaderStageType::TessControl:
         return vk::ShaderStageFlagBits::eTessellationControl;
-    case PC_CORE::ShaderStageType::TESSEVALUATION:
+    case PC_CORE::ShaderStageType::Tessevaluation:
         return vk::ShaderStageFlagBits::eTessellationEvaluation;
-    case PC_CORE::ShaderStageType::GEOMETRY:
+    case PC_CORE::ShaderStageType::Geometry:
         return vk::ShaderStageFlagBits::eGeometry;
-    case PC_CORE::ShaderStageType::FRAGMENT:
+    case PC_CORE::ShaderStageType::Fragment:
         return vk::ShaderStageFlagBits::eFragment;
-    case PC_CORE::ShaderStageType::COMPUTE:
+    case PC_CORE::ShaderStageType::Compute:
         return vk::ShaderStageFlagBits::eCompute;
-    case PC_CORE::ShaderStageType::RAYGEN:
+    case PC_CORE::ShaderStageType::Raygen:
         return vk::ShaderStageFlagBits::eRaygenNV;
-    case PC_CORE::ShaderStageType::INTERSECT:
+    case PC_CORE::ShaderStageType::Intersect:
         return vk::ShaderStageFlagBits::eIntersectionNV;
-    case PC_CORE::ShaderStageType::ANYHIT:
+    case PC_CORE::ShaderStageType::Anyhit:
         return vk::ShaderStageFlagBits::eAnyHitNV;
-    case PC_CORE::ShaderStageType::CLOSESTHIT:
+    case PC_CORE::ShaderStageType::Closesthit:
         return vk::ShaderStageFlagBits::eClosestHitNV;
-    case PC_CORE::ShaderStageType::MISS:
+    case PC_CORE::ShaderStageType::Miss:
         return vk::ShaderStageFlagBits::eMissNV;
-    case PC_CORE::ShaderStageType::CALLABLE:
+    case PC_CORE::ShaderStageType::Callable:
         return vk::ShaderStageFlagBits::eCallableNV;
-    case PC_CORE::ShaderStageType::TASK:
+    case PC_CORE::ShaderStageType::Task:
         return vk::ShaderStageFlagBits::eTaskNV;
-    case PC_CORE::ShaderStageType::MESH:
+    case PC_CORE::ShaderStageType::Mesh:
         return vk::ShaderStageFlagBits::eMeshNV;
-    case PC_CORE::ShaderStageType::COUNT:
+    case PC_CORE::ShaderStageType::Count:
     default:
         throw std::runtime_error("Unknown ShaderStageType");
     }
@@ -1238,155 +1238,151 @@ vk::AttachmentStoreOp Vulkan::Utils::RhiStoreOperationToVulkan(PC_CORE::StoreOpe
     }
 }
 
-vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::PipelineStageFlags stageFlags)
+vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::GpuPipelineStageFlagBits stageFlags)
 {
     vk::PipelineStageFlags vkFlags = {};
 
-    using StageBit = PC_CORE::PipelineStageFlagBits;
+    using StageBit = PC_CORE::GpuPipelineStageFlagBits;
 
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TopOfPipe))
+    if (stageFlags & StageBit::TopOfPipe)
         vkFlags |= vk::PipelineStageFlagBits::eTopOfPipe;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::DrawIndirect))
+    if (stageFlags & StageBit::DrawIndirect)
         vkFlags |= vk::PipelineStageFlagBits::eDrawIndirect;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::VertexInput))
+    if (stageFlags & StageBit::VertexInput)
         vkFlags |= vk::PipelineStageFlagBits::eVertexInput;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::VertexShader))
+    if (stageFlags & StageBit::VertexShader)
         vkFlags |= vk::PipelineStageFlagBits::eVertexShader;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TessellationControlShader))
+    if (stageFlags & StageBit::TessellationControlShader)
         vkFlags |= vk::PipelineStageFlagBits::eTessellationControlShader;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TessellationEvaluationShader))
+    if (stageFlags & StageBit::TessellationEvaluationShader)
         vkFlags |= vk::PipelineStageFlagBits::eTessellationEvaluationShader;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::GeometryShader))
+    if (stageFlags & StageBit::GeometryShader)
         vkFlags |= vk::PipelineStageFlagBits::eGeometryShader;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::FragmentShader))
+    if (stageFlags & StageBit::FragmentShader)
         vkFlags |= vk::PipelineStageFlagBits::eFragmentShader;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::EarlyFragmentTests))
+    if (stageFlags & StageBit::EarlyFragmentTests)
         vkFlags |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::LateFragmentTests))
+    if (stageFlags & StageBit::LateFragmentTests)
         vkFlags |= vk::PipelineStageFlagBits::eLateFragmentTests;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ColorAttachmentOutput))
+    if (stageFlags & StageBit::ColorAttachmentOutput)
         vkFlags |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ComputeShader))
+    if (stageFlags & StageBit::ComputeShader)
         vkFlags |= vk::PipelineStageFlagBits::eComputeShader;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::Transfer))
+    if (stageFlags & StageBit::Transfer)
         vkFlags |= vk::PipelineStageFlagBits::eTransfer;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::BottomOfPipe))
+    if (stageFlags & StageBit::BottomOfPipe)
         vkFlags |= vk::PipelineStageFlagBits::eBottomOfPipe;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::Host))
+    if (stageFlags & StageBit::Host)
         vkFlags |= vk::PipelineStageFlagBits::eHost;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AllGraphics))
+    if (stageFlags & StageBit::AllGraphics)
         vkFlags |= vk::PipelineStageFlagBits::eAllGraphics;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AllCommands))
+    if (stageFlags & StageBit::AllCommands)
         vkFlags |= vk::PipelineStageFlagBits::eAllCommands;
 
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TransformFeedbackEXT))
+    if (stageFlags & StageBit::TransformFeedbackEXT)
         vkFlags |= vk::PipelineStageFlagBits::eTransformFeedbackEXT;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ConditionalRenderingEXT))
+    if (stageFlags & StageBit::ConditionalRenderingEXT)
         vkFlags |= vk::PipelineStageFlagBits::eConditionalRenderingEXT;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AccelerationStructureBuildKHR))
+    if (stageFlags & StageBit::AccelerationStructureBuildKHR)
         vkFlags |= vk::PipelineStageFlagBits::eAccelerationStructureBuildKHR;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::AccelerationStructureBuildNV))
+    if (stageFlags & StageBit::AccelerationStructureBuildNV)
         vkFlags |= vk::PipelineStageFlagBits::eAccelerationStructureBuildNV;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::RayTracingShaderKHR))
+    if (stageFlags & StageBit::RayTracingShaderKHR)
         vkFlags |= vk::PipelineStageFlagBits::eRayTracingShaderKHR;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::RayTracingShaderNV))
+    if (stageFlags & StageBit::RayTracingShaderNV)
         vkFlags |= vk::PipelineStageFlagBits::eRayTracingShaderNV;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::FragmentDensityProcessEXT))
+    if (stageFlags & StageBit::FragmentDensityProcessEXT)
         vkFlags |= vk::PipelineStageFlagBits::eFragmentDensityProcessEXT;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::FragmentShadingRateAttachmentKHR))
+    if (stageFlags & StageBit::FragmentShadingRateAttachmentKHR)
         vkFlags |= vk::PipelineStageFlagBits::eFragmentShadingRateAttachmentKHR;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::ShadingRateImageNV))
+    if (stageFlags & StageBit::ShadingRateImageNV)
         vkFlags |= vk::PipelineStageFlagBits::eShadingRateImageNV;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::CommandPreprocessNV))
+    if (stageFlags & StageBit::CommandPreprocessNV)
         vkFlags |= vk::PipelineStageFlagBits::eCommandPreprocessNV;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::CommandPreprocessEXT))
+    if (stageFlags & StageBit::CommandPreprocessEXT)
         vkFlags |= vk::PipelineStageFlagBits::eCommandPreprocessEXT;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TaskShaderEXT))
+    if (stageFlags & StageBit::TaskShaderEXT)
         vkFlags |= vk::PipelineStageFlagBits::eTaskShaderEXT;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::TaskShaderNV))
+    if (stageFlags & StageBit::TaskShaderNV)
         vkFlags |= vk::PipelineStageFlagBits::eTaskShaderNV;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::MeshShaderEXT))
+    if (stageFlags & StageBit::MeshShaderEXT)
         vkFlags |= vk::PipelineStageFlagBits::eMeshShaderEXT;
-    if (stageFlags & static_cast<PC_CORE::PipelineStageFlags>(StageBit::MeshShaderNV))
+    if (stageFlags & StageBit::MeshShaderNV)
         vkFlags |= vk::PipelineStageFlagBits::eMeshShaderNV;
 
     return vkFlags;
 }
 
-vk::AccessFlags Vulkan::Utils::RhiAccessFlagToVulkan(PC_CORE::AccessFlags accessFlags)
+vk::AccessFlags Vulkan::Utils::RhiAccessFlagToVulkan(PC_CORE::GpuAccessFlag accessFlags)
 {
     vk::AccessFlags vkFlags{};
-
-    using AccessBit = PC_CORE::AccessFlagBits;
-    using AccessFlags = PC_CORE::AccessFlags;
-
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndirectCommandRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::IndirectCommandRead))
         vkFlags |= vk::AccessFlagBits::eIndirectCommandRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::IndexRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::IndexRead))
         vkFlags |= vk::AccessFlagBits::eIndexRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::VertexAttributeRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::VertexAttributeRead))
         vkFlags |= vk::AccessFlagBits::eVertexAttributeRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::UniformRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::UniformRead))
         vkFlags |= vk::AccessFlagBits::eUniformRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::InputAttachmentRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::InputAttachmentRead))
         vkFlags |= vk::AccessFlagBits::eInputAttachmentRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ShaderRead))
         vkFlags |= vk::AccessFlagBits::eShaderRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShaderWrite)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ShaderWrite))
         vkFlags |= vk::AccessFlagBits::eShaderWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ColorAttachmentRead))
         vkFlags |= vk::AccessFlagBits::eColorAttachmentRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentWrite)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ColorAttachmentWrite))
         vkFlags |= vk::AccessFlagBits::eColorAttachmentWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::DepthStencilAttachmentRead))
         vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::DepthStencilAttachmentWrite)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::DepthStencilAttachmentWrite))
         vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::TransferRead))
         vkFlags |= vk::AccessFlagBits::eTransferRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransferWrite)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::TransferWrite))
         vkFlags |= vk::AccessFlagBits::eTransferWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::HostRead))
         vkFlags |= vk::AccessFlagBits::eHostRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::HostWrite)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::HostWrite))
         vkFlags |= vk::AccessFlagBits::eHostWrite;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryRead)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::MemoryRead))
         vkFlags |= vk::AccessFlagBits::eMemoryRead;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::MemoryWrite)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::MemoryWrite))
         vkFlags |= vk::AccessFlagBits::eMemoryWrite;
 
     // Extensions
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackWriteEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::TransformFeedbackWriteEXT))
         vkFlags |= vk::AccessFlagBits::eTransformFeedbackWriteEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterReadEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::TransformFeedbackCounterReadEXT))
         vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::TransformFeedbackCounterWriteEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::TransformFeedbackCounterWriteEXT))
         vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterWriteEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ConditionalRenderingReadEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ConditionalRenderingReadEXT))
         vkFlags |= vk::AccessFlagBits::eConditionalRenderingReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ColorAttachmentReadNoncoherentEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ColorAttachmentReadNoncoherentEXT))
         vkFlags |= vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadKHR)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureReadKHR))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadKHR;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureReadNV)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureReadNV))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteKHR)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureWriteKHR))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteKHR;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::AccelerationStructureWriteNV)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureWriteNV))
         vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentDensityMapReadEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::FragmentDensityMapReadEXT))
         vkFlags |= vk::AccessFlagBits::eFragmentDensityMapReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::FragmentShadingRateAttachmentReadKHR)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::FragmentShadingRateAttachmentReadKHR))
         vkFlags |= vk::AccessFlagBits::eFragmentShadingRateAttachmentReadKHR;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::ShadingRateImageReadNV)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::ShadingRateImageReadNV))
         vkFlags |= vk::AccessFlagBits::eShadingRateImageReadNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadNV)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessReadNV))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessReadEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessReadEXT))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadEXT;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteNV)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessWriteNV))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteNV;
-    if ((accessFlags & static_cast<AccessFlags>(AccessBit::CommandPreprocessWriteEXT)))
+    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessWriteEXT))
         vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteEXT;
 
     return vkFlags;

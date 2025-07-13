@@ -57,6 +57,9 @@ public:
 
     VULKAN_API void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) override;
 
+    VULKAN_API  void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
+        PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage) override;
+
     VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 
     VULKAN_API void EndDebugLabel() override;

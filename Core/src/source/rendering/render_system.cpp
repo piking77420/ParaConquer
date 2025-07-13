@@ -20,6 +20,10 @@ PC_CORE::RendererSystem::RendererSystem(PC_CORE::RenderingWorldData* renderingWo
     m_DirLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_DirLightSignature.set(l.GetComponentTypeBit<DirLight>(), true);
     AddSignature(m_DirLightSignature);
+
+    m_PointLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
+    m_PointLightSignature.set(l.GetComponentTypeBit<PointLight>(), true);
+    AddSignature(m_PointLightSignature);
 }
 
 void PC_CORE::RendererSystem::RenderingTick(double deltatime)
@@ -77,8 +81,6 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
 {
     std::set<EntityId>& dirLights = *GetEntitySet(m_DirLightSignature);
-
-
     for (auto& ent : dirLights)
     {
         const DirLight& dirLight = _level.GetComponent<DirLight>(ent);
@@ -96,7 +98,23 @@ void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
         m_RenderingData->lightData.push_back(lightData);
     }
 
+    std::set<EntityId>& pointLights = *GetEntitySet(m_PointLightSignature);
 
-    
+    for (auto& ent : pointLights)
+    {
+        const PointLight& pointLight = _level.GetComponent<PointLight>(ent);
+        const Transform& transform = _level.GetComponent<Transform>(ent);
+
+        LightData lightData;
+        lightData.lightType = LightType::Point;
+        lightData.data.pointLightData  =
+        {
+          .color = pointLight.color,
+          .intensity = pointLight.intensity,
+          .position = transform.position,
+            };
+
+        m_RenderingData->lightData.push_back(lightData);
+    }
 }
 

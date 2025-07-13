@@ -37,6 +37,13 @@ void PC_CORE::Gbuffers::HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr
             .datas = {},
         };
         m_Image = Texture2D(imageInfo);
+
+        if (m_DescriptorSets != nullptr)
+        {
+            std::shared_ptr<GraphicShader> deferredShader = App::instance->renderer.m_DeferedShader.lock();
+            deferredShader->FreeDescriptorSet(&m_DescriptorSets);
+        }
+
         CreateGBuffers();
 
         // forward
