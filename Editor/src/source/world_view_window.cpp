@@ -47,7 +47,7 @@ void WorldViewWindow::Update()
     uint32_t currentImage = PC_CORE::Rhi::GetFrameIndex();
 
     
-    //ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0), ImVec2(1, 1));
+    ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0), ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()

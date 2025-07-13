@@ -529,8 +529,19 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         vkAttachment.stencilLoadOp = Utils::RhiLoadOperationToVulkan(attachment.stencilLoad);
         vkAttachment.stencilStoreOp = Utils::RhiStoreOperationToVulkan(attachment.stencilStore);
 
-        vkAttachment.initialLayout = attachment.load == PC_CORE::LoadOperation::Load ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined;
-        ParseAttachmentLayout(attachment, &vkAttachment);
+        if (attachment.load == PC_CORE::LoadOperation::Load)
+        {
+            vkAttachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+            vkAttachment.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+        }
+        else
+        {
+            vkAttachment.initialLayout = vk::ImageLayout::eUndefined;
+            ParseAttachmentLayout(attachment, &vkAttachment);
+        }
+
+        
     }
 
     if (_hasdepth)
