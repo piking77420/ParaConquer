@@ -53,28 +53,42 @@ void Renderer::BeginDraw(Window* _window)
 
 	m_DebugDrawContext->Prepare();
 	UpdateLightData();
-	sceneLightsBuffer->Fecth();
 }
 
 void Renderer::UpdateLightData()
 {
+	size_t updateDirLight = 0;
+	size_t spotLight = 0;
+	size_t pointLightUpdate = 0;
+
 	for (size_t i = 0; i < m_RenderWorldData.lightData.size(); i++)
 	{
 		LightData& lightData = m_RenderWorldData.lightData[i];
 
+
 		switch (lightData.lightType)
 		{
 		case LightType::Directional:
-			sceneLightsBuffer->sceneLightData.ambiant = lightData.data.directionalLight.color;
-			sceneLightsBuffer
-				->sceneLightData.color = lightData.data.directionalLight.color;
-			sceneLightsBuffer
-				->sceneLightData.intensity = lightData.data.directionalLight.intensity;
-			sceneLightsBuffer
-				->sceneLightData.direction = lightData.data.directionalLight.direction;
+			
+			if (updateDirLight >= MAX_DIRLIGHT)
+				continue;
+
+			
+
+			updateDirLight++;
 			break;
 		case LightType::Spotlight:
+			if (spotLight >= MAX_SPOTLIGHT)
+				continue;
+
+			spotLight++;
+			break;
 		case LightType::Point:
+			if (pointLightUpdate >= MAX_SPOTLIGHT)
+				continue;
+
+
+			pointLightUpdate++;
 		case LightType::Area:
 		case LightType::Count:
 			break;
@@ -315,7 +329,7 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
 		primaryCommandList->Draw(4, 1, 0, 0);
 	}
 
-
+	primaryCommandList->EndDebugLabel();
 
 	primaryCommandList->EndRenderPass();
 }
@@ -479,7 +493,7 @@ void Renderer::CreateRenderPasss()
 			 .subPassDependcies =
 			 {
 				 .srcStageMask = static_cast<PipelineStageFlags>(
-					 PipelineStageFlagBits::ColorAttachmentOutput | PipelineStageFlagBits::EarlyFragmentTests
+					 PipelineStageFlagBits::ColorAttachmentOutput
 				 ),
 				 .dstStageMask = static_cast<PipelineStageFlags>(
 					 PipelineStageFlagBits::FragmentShader
@@ -860,7 +874,8 @@ void Renderer::CreateThirdPartyResources()
 
 	}
 	{
-		sceneLightsBuffer = std::make_unique<SceneLightsBuffer>();
+		gpuDynamicLightData = std::make_unique<GPUDynamicLightData>();
+		dynamicLightUniformBuffer = UniformBuffer(&gpuDynamicLightData, sizeof(GPUDynamicLightData), MemoryUsage::Dynamic);
 
 		cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU), MemoryUsage::Dynamic);
 
@@ -882,8 +897,7 @@ void Renderer::CreateDescriptorSets()
 
 	UniformBufferDescriptor lightData
 	{
-		.buffer = &sceneLightsBuffer
-		->uniformBuffer,
+		.buffer = &dynamicLightUniformBuffer,
 	};
 
 	ImageSamperDescriptor skyboxCubeMapDescritptor

@@ -418,15 +418,15 @@ void Vulkan::VulkanRenderPass::ParseAttachmentLayout(const PC_CORE::RenderPassAt
     case PC_CORE::AttachmentType::Color:
         if (isInputOnly)
         {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            _attachmentLayouts->finalLayout = vk::ImageLayout::eColorAttachmentOptimal;  
         }
         else if (doesWriteValue)
         {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            _attachmentLayouts->finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
         }
         else if (doesReadValue)
         {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            _attachmentLayouts->finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
         }
         else
         {
@@ -439,8 +439,7 @@ void Vulkan::VulkanRenderPass::ParseAttachmentLayout(const PC_CORE::RenderPassAt
     case PC_CORE::AttachmentType::DepthStencil:
         if (isInputOnly)
         {
-            // Si tu as activé la feature `separateDepthStencilLayouts`, tu peux utiliser des layouts plus spécifiques ici
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            _attachmentLayouts->finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
         }
         else if (doesWriteValue)
         {
@@ -448,7 +447,7 @@ void Vulkan::VulkanRenderPass::ParseAttachmentLayout(const PC_CORE::RenderPassAt
         }
         else if (doesReadValue)
         {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+            _attachmentLayouts->finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
         }
         else
         {
@@ -529,8 +528,8 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         vkAttachment.storeOp = Utils::RhiStoreOperationToVulkan(attachment.store);
         vkAttachment.stencilLoadOp = Utils::RhiLoadOperationToVulkan(attachment.stencilLoad);
         vkAttachment.stencilStoreOp = Utils::RhiStoreOperationToVulkan(attachment.stencilStore);
-        vkAttachment.initialLayout = vk::ImageLayout::eUndefined;
 
+        vkAttachment.initialLayout = attachment.load == PC_CORE::LoadOperation::Load ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::eUndefined;
         ParseAttachmentLayout(attachment, &vkAttachment);
     }
 
@@ -544,7 +543,7 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         depthDesc.stencilLoadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilLoad);
         depthDesc.stencilStoreOp =
             Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilStore);
-        depthDesc.initialLayout = vk::ImageLayout::eUndefined;
+        depthDesc.initialLayout = _renderPassDescriptor.depthAttachment->load == PC_CORE::LoadOperation::Load ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined;
 
         size_t depthIndex = vkAttachments.size() - 1;
         vkAttachments[depthIndex] = depthDesc;

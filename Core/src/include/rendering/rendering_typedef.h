@@ -72,6 +72,7 @@ BEGIN_PCCORE
 
     };
 
+
     enum class LightType : uint8_t
     {
         Directional,
@@ -116,11 +117,8 @@ BEGIN_PCCORE
             DirectionalLightData directionalLight;
             SpotLightData spotLight;
             PointLightData pointLightData;
-
         }data;
     };
-
-
 
     struct RenderingWorldData
     {
@@ -128,5 +126,42 @@ BEGIN_PCCORE
         std::vector<LightData> lightData;
     };
 
+
+#define MAX_DIRLIGHT 1
+#define MAX_POINTLIGHT 10
+#define MAX_SPOTLIGHT 10
+
+    struct ALIGNAS_16 DirectionalLightGPU
+    {
+        Tbx::Vector3f direction;
+        float intensity;
+        Tbx::Vector3f color;
+        float padding;
+    };
+
+    struct ALIGNAS_16 SpotLightGPU
+    {
+        Tbx::Vector3f position;
+        float intensity;
+        Tbx::Vector3f direction;
+        float cutoff;
+        Tbx::Vector3f color;
+        float outCutOff;
+    };
+
+    struct ALIGNAS_16 PointLightGPU
+    {
+        Tbx::Vector3f position;
+        float maxRange;
+        Tbx::Vector3f color;
+        float intensity;
+    };
+
+    struct ALIGNAS_16 GPUDynamicLightData
+    {
+        DirectionalLightGPU DirectionalLights[MAX_DIRLIGHT];
+        SpotLightGPU spothLights[MAX_SPOTLIGHT];
+        PointLightGPU pointLights[MAX_POINTLIGHT];
+    };
 
 END_PCCORE

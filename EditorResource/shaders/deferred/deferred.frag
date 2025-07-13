@@ -1,16 +1,8 @@
 #version 450
 
 #include "camera.glsl"
-
-layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform LightData
-{
-    vec3 direction;
-    float padding;
-    vec3 color;
-    float intensity;
-    vec3 ambiant;
-    float padding3;
-} lightData;
+#include "light.glsl"
+#include "pbr.glsl"
 
 layout(set = GBUFFER_SET, binding = G_ALBEDO, input_attachment_index = 0) uniform subpassInput inputAlbedo;
 layout(set = GBUFFER_SET, binding = G_NORMAL, input_attachment_index = 1) uniform subpassInput inputNormal;
@@ -33,12 +25,15 @@ vec3 GetNormal(vec2 packedNormal)
 void main()
 {
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
-
     vec2 packedNormal = subpassLoad(inputNormal).xy;
     vec3 normal = GetNormal(packedNormal);
-
     vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
     vec3 worldPositionTexSampler = subpassLoad(inputWorldPosition).rgb;
+    
+    
+    
+    
+    
 
-    outColor = vec4(albedo, 1.0);
+    outColor = vec4(normal, 1.0);
 }

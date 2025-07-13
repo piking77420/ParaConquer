@@ -11,6 +11,7 @@
 #include "resources/shader_source_binary.hpp"
 
 #include <filesystem>
+#include <rendering/rendering_typedef.h>
 
 using namespace PC_CORE;
 
@@ -91,6 +92,12 @@ void ShaderSource::DestroyShadersCompiler()
 void ShaderSource::AddPreProcessorDefVulkan()
 {
     shaderc::CompileOptions& options = shaderCompiler->options;
+
+    //lIGHT
+
+    options.AddMacroDefinition("MAX_DIRLIGHT", std::to_string(MAX_DIRLIGHT));
+    options.AddMacroDefinition("MAX_SPOTLIGHT", std::to_string(MAX_SPOTLIGHT));
+    options.AddMacroDefinition("MAX_POINTLIGHT", std::to_string(MAX_POINTLIGHT));
 
     options.AddMacroDefinition("SCENE_DESCRIPTOR_SET", std::to_string(SCENE_DESCRIPTOR_SET));
     options.AddMacroDefinition("CAMERA_BINDING", std::to_string(CAMERA_BINDING));

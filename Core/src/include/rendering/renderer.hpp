@@ -100,7 +100,9 @@ private:
 
     std::weak_ptr<Mesh> m_CubeMesh;
 
-    std::unique_ptr<SceneLightsBuffer> sceneLightsBuffer;
+    std::unique_ptr<GPUDynamicLightData> gpuDynamicLightData;
+
+    UniformBuffer dynamicLightUniformBuffer;
 
     const RenderingContext* currentRenderingContext = nullptr;
     

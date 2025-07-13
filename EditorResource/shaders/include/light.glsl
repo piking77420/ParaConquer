@@ -1,40 +1,36 @@
 
-#define SCENE_DESCRIPTOR 0
-#define LIGHT_SCENE_DATA_BINDING 1
-
-struct GpuDirLight
+struct DirectionalData
 {
     vec3 direction;
-    vec3 color;
     float intensity;
+    vec3 color;
+    float padding;
 };
 
-struct GpuPointLight
+struct SpotLightData
 {
     vec3 position;
-    vec3 color;
     float intensity;
-};
-
-struct GpuSpotLight
-{
-    vec3 position;
     vec3 direction;
+    float cutoff;
+    vec3 color;
+    float outCutOff;
+};
+
+struct PointLightData
+{
+    vec3 position;
+    float maxRange;
     vec3 color;
     float intensity;
 };
 
 
-layout(set = SCENE_DESCRIPTOR, binding = LIGHT_SCENE_DATA_BINDING) uniform LightSceneData
+layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform DynamicLightData
 {
-	int dirlightCount;
-	int pointLightCount;
-	int spothLightCount;
-
-	GpuDirLight gpuDirLight;
-	GpuPointLight gpuPointLights[];
-	GpuSpotLight gpuSpotLights[];	    
-
-
+    DirectionalData dirlights[MAX_DIRLIGHT];
+    SpotLightData spothLights[MAX_SPOTLIGHT];
+    PointLightData pointLights[MAX_POINTLIGHT];
+    
 } lightSceneData;
 
