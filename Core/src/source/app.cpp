@@ -5,14 +5,14 @@
 #include "log.hpp"
 #include "physics/sphere_collider.hpp"
 #include "resources/resource_manager.hpp"
+#include "thread/thread_utils.hpp"
 
 #include "time/core_time.hpp"
 
 
 using namespace PC_CORE;
 
-
-
+ 
 void App::Init(const AppCreateInfo& _appCreateInfo)
 {
     PERF_REGION_SCOPED;

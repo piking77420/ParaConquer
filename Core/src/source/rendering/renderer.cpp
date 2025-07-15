@@ -56,7 +56,7 @@ void Renderer::BeginDraw(Window* _window)
 
 void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* commandList)
 {
-    PERF_REGION_SCOPED
+    PERF_REGION_SCOPED;
     
     size_t updateDirLight = 0;
     size_t spotLight = 0;

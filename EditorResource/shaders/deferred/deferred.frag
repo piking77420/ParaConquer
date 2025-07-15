@@ -43,5 +43,5 @@ void main()
     
     
 
-    outColor = vec4(lightSceneData.dirlights[0].color, 1.0);
+    outColor = vec4(albedo * dot(lightSceneData.dirlights[0].direction, normal) , 1.0);
 }
