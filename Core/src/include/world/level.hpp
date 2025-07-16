@@ -62,7 +62,7 @@ public:
     template<ComponentDerived T>
     void RemoveComponent(EntityId entity)
     {
-        UpdateSignature(entity, Reflector::GetTypeKey<T>(), true);
+        UpdateSignature(entity, Reflector::GetTypeKey<T>(), false);
     }
 
 
@@ -129,6 +129,11 @@ public:
     {
         auto signature = m_EntityManager.GetSignature(_entityId);
         return (signature->test(GetComponentTypeBit<T>()) && ...);
+    }
+
+    std::string_view GetEntityName(EntityId _entityId) const
+    {
+        return m_EntityManager.GetEntityName(_entityId);
     }
 
     PC_CORE_API void Begin()

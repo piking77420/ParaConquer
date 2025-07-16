@@ -213,6 +213,9 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
     Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
     for (size_t i = 0; i < m_RenderWorldData.staticMeshData.size(); i++)
     {
+        if (!m_RenderWorldData.staticMeshData[i].mesh->IsLoaded())
+            continue;
+
         if (m_RenderWorldData.staticMeshData[i].materialType != type)
             continue;
 

@@ -18,6 +18,7 @@ BEGIN_PCCORE
     using SourceList = std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>;
 
     // MAKE COMPUTE RAY AND GRAPHIC PROGRAMM
+    // TO DO MAY SEPARATE RESOURCE AND GPU RESOURCE
     class ShaderProgram : public Resource , public IGpuResource
     {
     public:

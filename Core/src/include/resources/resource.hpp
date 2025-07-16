@@ -79,7 +79,6 @@ public:
     PC_CORE_API virtual ~Resource() = default;
     
 protected:
-    std::atomic<bool> m_IsLoaded;
 
     Guid m_Guid;
 
@@ -99,6 +98,8 @@ private:
     std::vector<Guid> m_ParentsResource;
 
     std::vector<Guid> m_ChildsResource;
+
+    std::atomic<bool> m_IsLoaded;
     
     REFLECT(Resource)
     REFLECT_MEMBER(Resource, name)

@@ -33,6 +33,9 @@ void ComponentArray::Add(EntityId entityId)
 		if (m_ComponentData.size() < (newIndex + 1) * m_ComponentSize)
 			m_ComponentData.resize((newIndex + 1) * m_ComponentSize);
 
+		// set component Enitity Id
+		*reinterpret_cast<uint32_t*>(&m_ComponentData[newIndex * m_ComponentSize]) = entityId;
+
 		constructor(&m_ComponentData[newIndex * m_ComponentSize]);
 
 		++m_Volume;
@@ -79,9 +82,9 @@ void ComponentArray::Remove(EntityId entityId)
 
 	if (removedIndex != lastIndex)
 	{
-		std::memcpy(&m_ComponentData[lastIndex * m_ComponentSize],
-			   &m_ComponentData[removedIndex * m_ComponentSize],
-			   m_ComponentSize);
+		std::memcpy(&m_ComponentData[removedIndex * m_ComponentSize],
+			&m_ComponentData[lastIndex * m_ComponentSize],
+			m_ComponentSize);
 		
 		// update mapping
 		for (auto& i : m_EntityIndexData)

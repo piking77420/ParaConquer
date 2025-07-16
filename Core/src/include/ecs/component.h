@@ -15,12 +15,18 @@ struct Component
     {
         return entityId;
     }
-    
+
+    bool operator==(const Component&) const = default;
+
+    bool operator!=(const Component&) const = default;
+
 private:
     // DO NOT INIT THIS VALUE OR I WILL KILL YOU
     // THIS entityId IS SET BEFORE THE CONSTRUCTOR 
     // IN ORDER TO HAVE THE ENTITY ID AT CONTRUCTOR
     EntityId entityId;
+
+    static_assert(sizeof(Component::entityId) == sizeof(EntityId), "Entity Id must be alone and first");
 
     REFLECT(Component);
     REFLECT_MEMBER(Component, entityId);

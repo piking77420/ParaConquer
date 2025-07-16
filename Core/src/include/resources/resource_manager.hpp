@@ -80,6 +80,7 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 {
 
     std::shared_ptr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
+    newR->m_IsLoaded = true;
     
     auto& resourcesMap = m_ResourcesMap;
     resourcesMap.insert({newR->GetGuid(), newR});
