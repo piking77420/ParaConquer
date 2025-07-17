@@ -21,11 +21,12 @@ public:
     Inspector(Editor& _editor, const std::string& _name);
 
 private:
-    
-    
+
+    void ShowEntity(PC_CORE::EntityId _id);
+
     void Show();
 
-    void OnInput();
+    void ShowResource(PC_CORE::Resource* _resource);
     
     void ShowReflectType(uint8_t* _typePtr, const PC_CORE::ReflectedType& _reflectedType);
 
@@ -33,7 +34,9 @@ private:
 
     bool IsShowable(PC_CORE::TypeId type_id);
     
-    std::vector<const PC_CORE::ReflectedType*> m_ReflectedTypes;
+    std::vector<const PC_CORE::ReflectedType*> m_ComponentReflected;
+    
+    std::vector<const PC_CORE::ReflectedType*> m_ResourceReflected;
 
     std::vector<const PC_CORE::ReflectedType*> m_SpecialType;
 

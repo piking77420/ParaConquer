@@ -154,7 +154,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 }
 
 
-VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources)
+VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources)
 {
     PERF_REGION_SCOPED;
 
@@ -169,7 +169,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 
     for (size_t i = 0; i < shaderStageCount; i++)
     {
-        const std::pair<PC_CORE::ShaderStageType, std::string>& shaderSource = _programShaderCreateInfo[i];
+        const std::pair<PC_CORE::ShaderStageTypeFlag, std::string>& shaderSource = _programShaderCreateInfo[i];
         const char* format = nullptr;
          if (!GetFormatFromValue(PC_CORE::ShaderSourceFormat, shaderSource.first, &format))
          {
@@ -524,7 +524,7 @@ void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCrea
     }
 }
 
-void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources)
+void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _sources)
 {
     PERF_REGION_SCOPED;
 

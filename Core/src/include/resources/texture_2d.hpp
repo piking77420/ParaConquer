@@ -34,6 +34,12 @@ public:
     PC_CORE_API void Build() override;
     
     PC_CORE_API RHIFormat GetRHIFormat() const;
+
+    Tbx::Vector2i GetSize() const
+    {
+        return m_Size;
+    }
+
     
     PC_CORE_API Texture2D();
 
@@ -50,6 +56,8 @@ private:
     std::shared_ptr<RhiTexture2D> m_Texture2D;
     
     RHIFormat m_Format;
+
+    Tbx::Vector2i m_Size;
 };
 
 REFLECT(Texture2D, Resource)

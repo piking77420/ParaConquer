@@ -1050,39 +1050,39 @@ vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _poly
 }
 
 
-vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStage)
+vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageTypeFlag _shaderStage)
 {
     switch (_shaderStage)
     {
-    case PC_CORE::ShaderStageType::Vertex:
+    case PC_CORE::ShaderStageTypeFlag::Vertex:
         return vk::ShaderStageFlagBits::eVertex;
-    case PC_CORE::ShaderStageType::TessControl:
+    case PC_CORE::ShaderStageTypeFlag::TessControl:
         return vk::ShaderStageFlagBits::eTessellationControl;
-    case PC_CORE::ShaderStageType::Tessevaluation:
+    case PC_CORE::ShaderStageTypeFlag::Tessevaluation:
         return vk::ShaderStageFlagBits::eTessellationEvaluation;
-    case PC_CORE::ShaderStageType::Geometry:
+    case PC_CORE::ShaderStageTypeFlag::Geometry:
         return vk::ShaderStageFlagBits::eGeometry;
-    case PC_CORE::ShaderStageType::Fragment:
+    case PC_CORE::ShaderStageTypeFlag::Fragment:
         return vk::ShaderStageFlagBits::eFragment;
-    case PC_CORE::ShaderStageType::Compute:
+    case PC_CORE::ShaderStageTypeFlag::Compute:
         return vk::ShaderStageFlagBits::eCompute;
-    case PC_CORE::ShaderStageType::Raygen:
+    case PC_CORE::ShaderStageTypeFlag::Raygen:
         return vk::ShaderStageFlagBits::eRaygenNV;
-    case PC_CORE::ShaderStageType::Intersect:
+    case PC_CORE::ShaderStageTypeFlag::Intersect:
         return vk::ShaderStageFlagBits::eIntersectionNV;
-    case PC_CORE::ShaderStageType::Anyhit:
+    case PC_CORE::ShaderStageTypeFlag::Anyhit:
         return vk::ShaderStageFlagBits::eAnyHitNV;
-    case PC_CORE::ShaderStageType::Closesthit:
+    case PC_CORE::ShaderStageTypeFlag::Closesthit:
         return vk::ShaderStageFlagBits::eClosestHitNV;
-    case PC_CORE::ShaderStageType::Miss:
+    case PC_CORE::ShaderStageTypeFlag::Miss:
         return vk::ShaderStageFlagBits::eMissNV;
-    case PC_CORE::ShaderStageType::Callable:
+    case PC_CORE::ShaderStageTypeFlag::Callable:
         return vk::ShaderStageFlagBits::eCallableNV;
-    case PC_CORE::ShaderStageType::Task:
+    case PC_CORE::ShaderStageTypeFlag::Task:
         return vk::ShaderStageFlagBits::eTaskNV;
-    case PC_CORE::ShaderStageType::Mesh:
+    case PC_CORE::ShaderStageTypeFlag::Mesh:
         return vk::ShaderStageFlagBits::eMeshNV;
-    case PC_CORE::ShaderStageType::Count:
+    case PC_CORE::ShaderStageTypeFlag::Count:
     default:
         throw std::runtime_error("Unknown ShaderStageType");
     }

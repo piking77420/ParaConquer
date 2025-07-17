@@ -6,6 +6,7 @@
 
 #include "editor_header.hpp"
 
+#include "resources/resource_manager.hpp";
 
 BEGIN_EDITOR_PCCORE
 

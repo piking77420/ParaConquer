@@ -141,11 +141,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     PC_CORE::SourceList sourceList =
         {
         {
-            PC_CORE::ShaderStageType::Vertex,
+            PC_CORE::ShaderStageTypeFlag::Vertex,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("draw_sprite_spv.vert"),
         },
         {
-            PC_CORE::ShaderStageType::Fragment,
+            PC_CORE::ShaderStageTypeFlag::Fragment,
                 PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("draw_sprite_spv.frag")
         }
         };

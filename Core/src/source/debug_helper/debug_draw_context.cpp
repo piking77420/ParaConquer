@@ -166,11 +166,11 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	const SourceList source =
 	{
 		{
-			PC_CORE::ShaderStageType::Vertex,
+			PC_CORE::ShaderStageTypeFlag::Vertex,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.vert")
 		},
 		{
-			PC_CORE::ShaderStageType::Fragment,
+			PC_CORE::ShaderStageTypeFlag::Fragment,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.frag")
 		}
 	};
@@ -267,12 +267,12 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 	const SourceList source =
 	{
 		{
-			PC_CORE::ShaderStageType::Vertex,
+			PC_CORE::ShaderStageTypeFlag::Vertex,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_ray_spv.vert")
 
 		},
 		{
-			PC_CORE::ShaderStageType::Fragment,
+			PC_CORE::ShaderStageTypeFlag::Fragment,
 			ResourceManager::Get<ShaderSourceBinary>("debug_draw_spv.frag")
 
 		}

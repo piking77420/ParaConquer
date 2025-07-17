@@ -26,18 +26,14 @@ void Inspector::Update()
     EditorWindow::Update();
     PERF_REGION_SCOPED;
 
-    if (m_Editor->selectedEntityId == PC_CORE::INVALID_ENTITY_ID)
-        return;
-
     Show();
-    OnInput();
 }
 
 Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-    m_ReflectedTypes = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
-
-    
+    m_ComponentReflected = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
+    m_ResourceReflected = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Resource>();
+ 
     m_SpecialType =
         {
         &PC_CORE::Reflector::GetType<bool>(),
@@ -93,7 +89,8 @@ Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_
         PC_LOGERROR("ComponentArrayMapPtr == nullptr");
         return;
     }
-}
+}   
+
 
 void Inspector::Show()
 {
@@ -106,18 +103,34 @@ void Inspector::Show()
         return;
     }
 
-    
+    if (std::holds_alternative<std::monostate>(m_Editor->selectedObject))
+        return;
+
+    if (std::holds_alternative<PC_CORE::EntityId>(m_Editor->selectedObject))
+    {
+        ShowEntity(std::get<PC_CORE::EntityId>(m_Editor->selectedObject));
+    }
+
+    if (std::holds_alternative<PC_CORE::ResourceRef<PC_CORE::Resource>>(m_Editor->selectedObject))
+    {
+        // TODO
+    }
+
+}
+
+void Inspector::ShowEntity(PC_CORE::EntityId _id)
+{
+    if (_id == PC_CORE::INVALID_ENTITY_ID)
+        return;
+
     const uint32_t ComponentCount = componentManagerPtr->GetComponentCount();
-    const PC_CORE::EntityId selectedId = m_Editor->selectedEntityId;
-
-
-    std::string_view string = entityManagerPtr->GetEntityName(selectedId);
+    std::string_view string = entityManagerPtr->GetEntityName(_id);
     ImGui::PushID("EntityNameInput");
     ImGui::InputText("##EntityName", const_cast<char*>(string.data()), PC_CORE::MAX_ENTITY_NAME_LENGHT);
     ImGui::PopID();
 
 
-    const auto& signature = entityManagerPtr->GetSignature(selectedId);
+    const auto& signature = entityManagerPtr->GetSignature(_id);
 
     if (signature == nullptr)
         return;
@@ -127,35 +140,30 @@ void Inspector::Show()
         if (!signature->test(i))
             continue;
 
-        PC_CORE::TypeId componentTypeId = componentTypeBitToTypeId->at(i); 
+        PC_CORE::TypeId componentTypeId = componentTypeBitToTypeId->at(i);
         PC_CORE::ComponentArray* arr = &componentArrayMapPtr->at(componentTypeId);
-        PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->Get(selectedId));
+        PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->Get(_id));
 
-        const char* componentName = m_ReflectedTypes[i]->name.c_str();
+        const char* componentName = m_ComponentReflected[i]->name.c_str();
         ImGui::Text(componentName);
         ImGui::Spacing();
 
         ImGui::PushID(static_cast<int>(componentTypeId));
-        ShowReflectType(reinterpret_cast<uint8_t*>(component), *m_ReflectedTypes[i]);
+        ShowReflectType(reinterpret_cast<uint8_t*>(component), *m_ComponentReflected[i]);
         ImGui::Spacing();
 
-        
+
 
         if (ImGui::SmallButton("Delete Component"))
         {
-            m_Editor->PushCommand<EditorCommandRemoveComponent>(selectedId, m_ReflectedTypes[i]->typeId);
+            m_Editor->PushCommand<EditorCommandRemoveComponent>(_id, m_ComponentReflected[i]->typeId);
         }
 
         ImGui::PopID();
     }
-  
-}
 
-void Inspector::OnInput()
-{
-    PERF_REGION_SCOPED;
 
-    if (ButtonCenteredOnLine("Add Component"))
+    if (ImGui::ButtonCenteredOnLine("Add Component"))
     {
         ImGui::OpenPopup("Components");
     }
@@ -165,14 +173,14 @@ void Inspector::OnInput()
     if (ImGui::BeginPopup("Components"))
     {
         ImGui::SeparatorText("Component");
-        for (auto& type : m_ReflectedTypes)
+        for (auto& type : m_ComponentReflected)
         {
             if (ImGui::Selectable(type->name.c_str()))
             {
                 if (PC_CORE::World::GetWorld() == nullptr)
                     continue;
 
-                m_Editor->PushCommand<EditorCommandAddComponent>(m_Editor->selectedEntityId, type->typeId);
+                m_Editor->PushCommand<EditorCommandAddComponent>(_id, type->typeId);
             }
         }
 
@@ -180,7 +188,11 @@ void Inspector::OnInput()
     }
 }
 
-
+void Inspector::ShowResource(PC_CORE::Resource* _resource)
+{
+    const PC_CORE::ReflectedType& type = _resource->GetType();
+    ShowReflectType(reinterpret_cast<uint8_t*>(_resource), type);
+}
 
 void Inspector::ShowReflectType(uint8_t* _typePtr ,const PC_CORE::ReflectedType& _reflectedType)
 {

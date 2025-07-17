@@ -110,7 +110,7 @@ struct ProgramShaderCreateInfo
 {
     ShaderInfo shaderInfo;
     RhiRenderPass* renderPass;
-    std::vector<std::pair<ShaderStageType, std::string>> shaderSources;
+    std::vector<std::pair<ShaderStageTypeFlag, std::string>> shaderSources;
     uint32_t attachementCount;
     uint32_t subPassIndex;
 };
@@ -127,7 +127,7 @@ public:
     PC_CORE_API virtual void FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets) = 0;
 
     
-    PC_CORE_API virtual void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageType, std::string>>& _sources) = 0;
+    PC_CORE_API virtual void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _sources) = 0;
 
     PC_CORE_API RhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 

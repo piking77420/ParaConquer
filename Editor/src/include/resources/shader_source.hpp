@@ -36,7 +36,7 @@ public:
 
 private:
     
-    ShaderStageType m_ShaderType;
+    ShaderStageTypeFlag m_ShaderType;
 
     std::string m_PathToSource;
 

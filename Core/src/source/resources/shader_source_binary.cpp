@@ -26,13 +26,13 @@ void PC_CORE::ShaderSourceBinary::WriteSprivToFile(const std::vector<uint32_t>* 
 }
 
 
-PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType) : Resource(_name), m_Path(SHADER_CACHE_PATH + name), m_ShaderStageType(_shaderStageType)
+PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType) : Resource(_name), m_Path(SHADER_CACHE_PATH + name), m_ShaderStageType(_shaderStageType)
 {
     DYNAMIC_REFLECT_INIT
     WriteSprivToFile(_sprivCode);
 }
 
-PC_CORE::ShaderSourceBinary::ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType) : Resource(std::move(_name)), m_Path(SHADER_CACHE_PATH + name), m_ShaderStageType(_shaderStageType)
+PC_CORE::ShaderSourceBinary::ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType) : Resource(std::move(_name)), m_Path(SHADER_CACHE_PATH + name), m_ShaderStageType(_shaderStageType)
 {
     DYNAMIC_REFLECT_INIT
 

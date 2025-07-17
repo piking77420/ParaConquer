@@ -632,11 +632,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageType::Vertex,
+                ShaderStageTypeFlag::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("geometry_spv.vert"),
             },
             {
-                ShaderStageType::Fragment,
+                ShaderStageTypeFlag::Fragment,
                 ResourceManager::Get<ShaderSourceBinary>("geometry_spv.frag")
             }
         };
@@ -679,11 +679,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageType::Vertex,
+                ShaderStageTypeFlag::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.vert"),
             },
             {
-                ShaderStageType::Fragment,
+                ShaderStageTypeFlag::Fragment,
                 ResourceManager::Get<ShaderSourceBinary>("deferred_spv.frag")
             }
         };
@@ -725,11 +725,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageType::Vertex,
+                ShaderStageTypeFlag::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("forward_spv.vert"),
             },
             {
-                ShaderStageType::Fragment,
+                ShaderStageTypeFlag::Fragment,
                 ResourceManager::Get<ShaderSourceBinary>("forward_spv.frag")
             }
         };
@@ -781,11 +781,11 @@ void Renderer::CreateShaders()
         const SourceList source =
         {
             {
-                ShaderStageType::Vertex,
+                ShaderStageTypeFlag::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.vert")
             },
             {
-                ShaderStageType::Fragment,
+                ShaderStageTypeFlag::Fragment,
                 ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.frag")
             }
         };
@@ -840,11 +840,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageType::Vertex,
+                ShaderStageTypeFlag::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.vert"),
             },
             {
-                ShaderStageType::Fragment,
+                ShaderStageTypeFlag::Fragment,
                 ResourceManager::Get<ShaderSourceBinary>("draw_texture_screen_quad_spv.frag")
             }
         };

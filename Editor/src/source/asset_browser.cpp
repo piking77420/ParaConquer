@@ -1,13 +1,15 @@
 ﻿#include "asset_browser.hpp"
 
 #include <Imgui/imgui_impl_vulkan.h>
-
+#include "editor.hpp"
 #include "editor_format.hpp"
 #include "low_renderer/rhi.hpp"
 #include "resources/vulkan_sampler.hpp"
 #include "world/world.hpp"
 
+
 #include <fstream>
+#include <imgui_helper.h>
 
 using namespace PC_EDITOR_CORE;
 
@@ -17,7 +19,45 @@ AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWi
     constexpr const char* projectBaseAssetPath = "assets";
     m_BasePath = std::filesystem::path(projectBaseAssetPath);
     m_CurrenPath = m_BasePath;
+
+    ReloadOldAssets();
     m_fileWatcher.LauchWatcher(projectBaseAssetPath);
+
+    for (size_t i = 0; i < m_AssetBrowserTexture.size() - 1; i++)
+    {
+        const AssetsBrowserTexturesType assetsBrowserTexturesType = static_cast<AssetsBrowserTexturesType>(i);
+        switch (assetsBrowserTexturesType)
+        {
+        case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Folder:
+            m_AssetBrowserTexture[i].texure = PC_CORE::Texture2D("folder.png", EDITOR_RESOURCE_PATH "/icons/folder.png");
+            break;
+        case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Texture:
+            break;
+        case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Cout:
+        default:
+            assert(false);
+            break;
+        }
+
+        m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_AssetBrowserTexture[i].texure, &m_AssetBrowserTexture[i].descritproSet, 1);
+    }
+}
+
+void AssetBrowser::ReloadOldAssets()
+{
+    // TO DOES THIS TO FILE SYSTEM WATCHER
+    // READ project resource files
+    // read each sub file in project dir 
+    // if name match in project resource files
+    // Add to project with old guid else load resoirce
+}
+
+AssetBrowser::~AssetBrowser()
+{
+    for (size_t i = 0; i < m_AssetBrowserTexture.size(); i++)
+    {
+        m_Editor->IMGUIContext.DestroyVulkanTexture(&m_AssetBrowserTexture[i].descritproSet, 1);
+    }
 }
 
 
@@ -46,6 +86,14 @@ void PC_EDITOR_CORE::AssetBrowser::Update()
     }
 
     RenderDirectories();
+
+    if (!m_HasSelectedObject && 
+        ImGui::IsWindowFocused() && IsCursorInsideWindow() 
+        && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+    {
+        m_Editor->selectedObject = std::monostate();
+        m_HasSelectedObject = false;
+    }
 }
 
 
@@ -73,7 +121,8 @@ void AssetBrowser::CreateAsset() const
 
 void AssetBrowser::RenderDirectories()
 {
-    
+    PERF_REGION_SCOPED;
+
     float columnSpacing = 100;
     float padding = 16.f;
     float thumbailSize = 64;
@@ -103,12 +152,15 @@ void AssetBrowser::RenderDirectories()
         
         if (entry.is_directory())
         {
-            //ImGui::ImageButton((ImTextureID)FolderIcon->ID, { thumbailSize,thumbailSize }, { 0,1 }, { 1,0 });
+           
+            const AssetsBrowserTextures& icon = m_AssetBrowserTexture[(int)AssetsBrowserTexturesType::Folder];
 
+            ImGui::Image((ImTextureID)icon.descritproSet, { thumbailSize, thumbailSize }, { 0, 0 }, { 1, 1 });
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
+                m_HasSelectedObject = true;
                 m_CurrenPath = entry;
-            }
+            }   
             ImGui::Text(name.c_str());
         }
         else
@@ -117,6 +169,7 @@ void AssetBrowser::RenderDirectories()
             {
                 if (m_SelectedItem == entry)
                 {
+                    m_HasSelectedObject = true;
                     OnFileSelectedClick();
                 }
                 
@@ -124,13 +177,14 @@ void AssetBrowser::RenderDirectories()
                 {
                     m_SelectedItem = entry;
                     PC_LOG("File selected: {}", name);
-
                 }
                     
             }
         }
-        ImGui::NextColumn();
 
+
+
+        ImGui::NextColumn();
     }
 
     ImGui::Columns(1);

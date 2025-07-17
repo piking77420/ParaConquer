@@ -192,53 +192,53 @@ bool ShaderSource::CompileFile(const std::string& source_name,
 }
 
 
-static shaderc_shader_kind GetGlangShaderStage(ShaderStageType _shaderType)
+static shaderc_shader_kind GetGlangShaderStage(ShaderStageTypeFlag _shaderType)
 {
     switch (_shaderType)
     {
-    case ShaderStageType::Vertex:
+    case ShaderStageTypeFlag::Vertex:
         return shaderc_glsl_vertex_shader;
         break;
-    case ShaderStageType::TessControl:
+    case ShaderStageTypeFlag::TessControl:
         return shaderc_tess_control_shader;
         break;
-    case ShaderStageType::Tessevaluation:
+    case ShaderStageTypeFlag::Tessevaluation:
         return shaderc_tess_evaluation_shader;
         break;
-    case ShaderStageType::Geometry:
+    case ShaderStageTypeFlag::Geometry:
         return shaderc_geometry_shader;
         break;
-    case ShaderStageType::Fragment:
+    case ShaderStageTypeFlag::Fragment:
         return shaderc_fragment_shader;
         break;
-    case ShaderStageType::Compute:
+    case ShaderStageTypeFlag::Compute:
         return shaderc_compute_shader;
         break;
-    case ShaderStageType::Raygen:
+    case ShaderStageTypeFlag::Raygen:
         return shaderc_raygen_shader;
         break;
-    case ShaderStageType::Intersect:
+    case ShaderStageTypeFlag::Intersect:
         return shaderc_intersection_shader;
         break;
-    case ShaderStageType::Anyhit:
+    case ShaderStageTypeFlag::Anyhit:
         return shaderc_anyhit_shader;
         break;
-    case ShaderStageType::Closesthit:
+    case ShaderStageTypeFlag::Closesthit:
         return shaderc_closesthit_shader;
         break;
-    case ShaderStageType::Miss:
+    case ShaderStageTypeFlag::Miss:
         return shaderc_miss_shader;
         break;
-    case ShaderStageType::Callable:
+    case ShaderStageTypeFlag::Callable:
         return shaderc_callable_shader;
         break;
-    case ShaderStageType::Task:
+    case ShaderStageTypeFlag::Task:
         return shaderc_task_shader;
         break;
-    case ShaderStageType::Mesh:
+    case ShaderStageTypeFlag::Mesh:
         return shaderc_mesh_shader;
         break;
-    case ShaderStageType::Count:
+    case ShaderStageTypeFlag::Count:
     default:
         throw std::invalid_argument("Invalid shader stage");
 
@@ -329,7 +329,7 @@ void ShaderSource::LoadFromFile(const std::string& _path)
     }
 
      extension = ShaderSourceFormat[formatIndex];
-    m_ShaderType = static_cast<ShaderStageType>(formatIndex);
+    m_ShaderType = static_cast<ShaderStageTypeFlag>(formatIndex);
     m_PathToSource = _path;
 
 

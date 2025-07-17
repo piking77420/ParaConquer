@@ -141,7 +141,7 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void IMGUIContext::CreateImguiVulkanViewport(Texture2D* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
+void IMGUIContext::CreateImguiVulkanTexture(Texture2D* _texture, VkDescriptorSet* _descriptors, size_t _descriptorsCount)
 {
     const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetRhiTexture2D()->GetNativeHandle());
 
@@ -154,18 +154,18 @@ void IMGUIContext::CreateImguiVulkanViewport(Texture2D* _texture, std::array<VkD
         return;
     }
     for (int i = 0; i < textureAndAlloc->size(); i++)
-        _viewPortId[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, textureAndAlloc->at(i).imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        _descriptors[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, textureAndAlloc->at(i).imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     
 }
 
-void IMGUIContext::RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId)
+void IMGUIContext::DestroyVulkanTexture(VkDescriptorSet* _descriptors, size_t _descriptorsCount)
 {
-    for (size_t i = 0; i < _viewPortId.size(); i++)
+    for (size_t i = 0; i < _descriptorsCount; i++)
     {
-        if (_viewPortId[i] == VK_NULL_HANDLE)
+        if (_descriptors[i] == VK_NULL_HANDLE)
             continue;
 
-        ImGui_ImplVulkan_RemoveTexture(_viewPortId[i]);
+        ImGui_ImplVulkan_RemoveTexture(_descriptors[i]);
     }
 }
 

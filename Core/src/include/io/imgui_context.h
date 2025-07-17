@@ -27,9 +27,10 @@ public:
 
 	PC_CORE_API void Render(CommandList* _commandBuffer);
 
-	PC_CORE_API void CreateImguiVulkanViewport(Texture2D* _texture, std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId);
+	// TO HANDLE NOT ONLY FRAME INFLIGHT TEXTURE
+	PC_CORE_API void CreateImguiVulkanTexture(Texture2D* _texture, VkDescriptorSet* _descriptors, size_t _descriptorsCount);
 
-	PC_CORE_API void RemoveImguiVulkanViewport(std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>& _viewPortId);
+	PC_CORE_API void DestroyVulkanTexture(VkDescriptorSet* _descriptors, size_t _descriptorsCount);
 
 private:
 	vk::DescriptorPool descriptorPool;

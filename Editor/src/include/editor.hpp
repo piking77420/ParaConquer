@@ -30,12 +30,18 @@ constexpr std::array<const char*, (uint8_t)(EditorInitData::COUNT)> EditorInitDa
 constexpr const char* ParaConquerProjectFileFormat = ".Prproject";
 constexpr const char* ParaConquerEditorInitFile = "editor.ini";
 
-
-struct EditorData
+struct ProjectData
 {
     std::string projectName;
     std::filesystem::path projectPath;
 };
+
+struct EditorData
+{
+    ProjectData projectData;
+};
+
+using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ResourceRef<PC_CORE::Resource>>;
 
 class Editor
 {
@@ -71,7 +77,7 @@ public:
     
     DockSpace dockSpace;
     
-    PC_CORE::EntityId selectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+    EditableSelectedObj selectedObject;
 
     PC_CORE::IMGUIContext IMGUIContext;
 

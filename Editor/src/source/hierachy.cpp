@@ -56,7 +56,7 @@ void Hierachy::ShowGraph()
 
             if (ImGui::Button(entName.data()))
             {
-                m_Editor->selectedEntityId = id;
+                m_Editor->selectedObject = id;
                 hasSelected = true;
             }
         }
@@ -67,9 +67,9 @@ void Hierachy::ShowGraph()
     if (!hasSelected)
     {
         
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowFocused())
+        if (ImGui::IsWindowFocused() && IsCursorInsideWindow() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
         {
-            m_Editor->selectedEntityId = PC_CORE::INVALID_ENTITY_ID;
+            m_Editor->selectedObject = std::monostate();
         }
     }
 

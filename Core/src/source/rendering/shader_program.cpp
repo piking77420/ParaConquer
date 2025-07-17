@@ -14,7 +14,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 
     auto p = GetParentResource();
 
-    std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> sources;
+    std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> sources;
 
     
     for (auto& code : p)
@@ -43,7 +43,7 @@ void ShaderProgram::FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgr
 }
 
 ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType,
-    const std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>& _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+    const std::vector<std::pair<ShaderStageTypeFlag, std::weak_ptr<ShaderSourceBinary>>>& _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     PERF_REGION_SCOPED;
     
@@ -59,13 +59,13 @@ ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipeli
     }
 }
 
-std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> PC_CORE::ShaderProgram::SourceListToSourcePath(
+std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> PC_CORE::ShaderProgram::SourceListToSourcePath(
     const SourceList& _sourceList)
 {
 
     PERF_REGION_SCOPED;
     
-    std::vector<std::pair<PC_CORE::ShaderStageType, std::string>> output;
+    std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> output;
     output.reserve(_sourceList.size());
 
     for (size_t i = 0; i < _sourceList.size(); i++)

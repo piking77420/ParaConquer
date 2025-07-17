@@ -412,7 +412,7 @@ BEGIN_PCCORE
 
 #pragma endregion
 
-    enum class ShaderStageType : size_t
+    enum class ShaderStageTypeFlag : size_t
     {
         Vertex,
         TessControl,
@@ -432,25 +432,9 @@ BEGIN_PCCORE
         Count
     };
 
-    ENUM_FLAGS(ShaderStageType)
+    ENUM_FLAGS(ShaderStageTypeFlag)
 
-    const std::array<std::string, 14> ShaderSourceFormat =
-    {
-        ".vert",
-        ".tessc",
-        ".tessv",
-        ".geom",
-        ".frag",
-        ".comp",
-        ".raygen",
-        ".intersect",
-        ".anyhit",
-        ".closesthit",
-        ".miss",
-        ".callable",
-        ".task"
-        ".mesh",
-    };
+   
 
     enum struct MemoryUsage
     {

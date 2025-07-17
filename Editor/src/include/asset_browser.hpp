@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <vulkan/vulkan.h>
 
 #include "editor_header.hpp"
 #include "editor_window.hpp"
@@ -10,6 +11,8 @@
 #include "resources/texture_2d.hpp"
 
 BEGIN_EDITOR_PCCORE
+
+
     class AssetBrowser : public EditorWindow
 {
 public:
@@ -19,10 +22,23 @@ public:
 
     AssetBrowser(Editor& _editor, const std::string& _name);
     
-    ~AssetBrowser() override = default  ;
+    ~AssetBrowser() override;
 private:
 
-    PC_CORE::Texture2D m_FolderTexture;
+	enum struct AssetsBrowserTexturesType
+	{
+		Folder,
+		Texture,
+		Cout
+	};
+
+    struct AssetsBrowserTextures
+    {
+        VkDescriptorSet descritproSet;
+        PC_CORE::Texture2D texure;
+    };
+
+    std::array<AssetsBrowserTextures, (size_t)AssetsBrowserTexturesType::Cout> m_AssetBrowserTexture;
 
     std::filesystem::path m_BasePath;
 
@@ -31,6 +47,10 @@ private:
     std::filesystem::path m_SelectedItem;
 
     FileSystemWatcher m_fileWatcher;
+
+    bool m_HasSelectedObject = false;
+
+    void ReloadOldAssets();
 
     void CreateAsset() const;
 

@@ -32,7 +32,7 @@ Texture2D::Texture2D(const std::string& _name, const std::string& _path) : Textu
     LoadFromFile(_path);
 }
 
-Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo) 
+Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo) : m_Size(_createTextureInfo.width, _createTextureInfo.height)
 {
     DYNAMIC_REFLECT_INIT
     
@@ -60,7 +60,7 @@ void Texture2D::LoadFromFile(const std::string& _path)
         PC_LOGERROR("failed to load texture image!");
         throw std::runtime_error("failed to load texture image!");
     }
-
+    m_Size = { width, height };
 
 
     const CreateImageInfo createTextureInfo =

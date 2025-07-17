@@ -47,22 +47,22 @@ void Mesh::LoadFromFile(const std::string& _path)
     std::vector<Vertex> verticies;
     std::vector<uint32_t> indicies;
 
-    if (!IsFormatValid(MeshSourceFormat, extension, &formatIndex))
+    if (!IsFormatValid(ModelSourceFormat, extension, &formatIndex))
     {
         return;
     }
-    meshFormat = static_cast<MeshFormat>(formatIndex);
+    meshFormat = static_cast<ModelFormat>(formatIndex);
 
     LoadObj(_path, verticies, indicies);
 
     switch (meshFormat)
     {
-    case MeshFormat::OBJ:
+    case ModelFormat::Obj:
         break;
     default:;
     }
 
-    extension = MeshSourceFormat.at(formatIndex);
+    extension = ModelSourceFormat.at(formatIndex);
     vertexBuffer = VertexBuffer(verticies.data(), verticies.size(), PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Static);
     indexBuffer = IndexBuffer(indicies.data(), indicies.size(), MemoryUsage::Static);
     

@@ -1,15 +1,18 @@
 ﻿#pragma once
 
-#include "core_header.hpp"
 #include <array>
 #include <set>
+
+
 #include "log.hpp"
+#include "core_header.hpp"
+
 
 #include "guid.hpp"
 #include "reflection/reflection_typedef.hpp"
 #include "reflection/reflector.hpp"
 #include "serialize/iseriazable.h"
-
+#include "resource_format.hpp"
 
 
 
@@ -119,47 +122,6 @@ template <typename ResourceDerived>
 using ResourceRef = std::weak_ptr<ResourceDerived>;
 
 
-template <size_t Size>
-static bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex);
-
-template <typename T, size_t Size>
-static bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut);
-
-
-template <size_t Size>
-bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat, uint32_t* _formatIndex)
-{
-
-    for (size_t i = 0; i < _format.size(); i++)
-    {
-        if (_format[i] == _fileFormat)
-        {
-            *_formatIndex = static_cast<uint32_t>(i);
-            return true;
-        }
-    }
-
-    _formatIndex = nullptr;
-    return false;
-}
-
-
-template <typename T,size_t Size>
-bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value, const char** _formatOut)
-{
-
-    for (size_t i = 0; i < _format.size(); i++)
-    {
-        T v = static_cast<T>(i);
-
-        if (value == v)
-        {
-            *_formatOut = _format[i].c_str();
-            return true;
-        }
-    }
-    return false;
-}
 
 
 

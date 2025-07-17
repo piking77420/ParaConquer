@@ -14,7 +14,7 @@ public:
         return m_Path;
     }
 
-    ShaderStageType GetShaderStageType() const
+    ShaderStageTypeFlag GetShaderStageType() const
     {
         return m_ShaderStageType;
     }
@@ -30,16 +30,16 @@ public:
 
     void WriteSprivToFile(const std::vector<uint32_t>* _sprivCode);
 
-    ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType);
+    ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType);
     
-    ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType);
+    ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType);
     
     ~ShaderSourceBinary() override = default;
 
 private:
     std::string m_Path;
 
-    ShaderStageType m_ShaderStageType;
+    ShaderStageTypeFlag m_ShaderStageType;
 
     REFLECT(ShaderSourceBinary, PC_CORE::Resource);
     REFLECT_MEMBER(ShaderSourceBinary, m_Path);

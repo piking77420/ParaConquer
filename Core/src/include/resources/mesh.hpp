@@ -11,30 +11,16 @@
 #include "rendering/buffer/vertex_buffer.hpp"
 
 BEGIN_PCCORE
-    class Mesh : public Resource
+ class Mesh : public Resource
 {
 public:
 
-    enum class MeshFormat : uint8_t
-    {
-        OBJ,
-        GLTF,
-
-        MESHFORMATMAX
-    };
-
-    static inline  std::array<std::string, 2> MeshSourceFormat
-    {
-        ".obj",
-        ".gltf",
-      };
-
-
+  
     VertexBuffer vertexBuffer;
 
     IndexBuffer indexBuffer;
 
-    MeshFormat meshFormat;
+    ModelFormat meshFormat;
 
     PC_CORE_API void LoadFromFile(const std::string& _path) override;
 

@@ -138,8 +138,8 @@ void WorldViewWindow::ResizeViewports()
 void WorldViewWindow::UpdateViewPortDescriptorSet()
 {   
     
-    m_Editor->IMGUIContext.RemoveImguiVulkanViewport(imguiDescriptorSet);
-    m_Editor->IMGUIContext.CreateImguiVulkanViewport( &m_FinalImage, imguiDescriptorSet);
+    m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture( &m_FinalImage, imguiDescriptorSet.data(), imguiDescriptorSet.size());
     
     std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
     
