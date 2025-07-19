@@ -41,6 +41,9 @@ Mesh::~Mesh()
 
 void Mesh::LoadFromFile(const std::string& _path)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     Resource::LoadFromFile(_path);
     uint32_t formatIndex = -1;
 
@@ -71,6 +74,8 @@ void Mesh::LoadFromFile(const std::string& _path)
 
 void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;

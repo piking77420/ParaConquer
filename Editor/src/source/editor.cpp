@@ -64,6 +64,7 @@ Editor::~Editor()
 void Editor::InitThridPartLib(PC_CORE::GraphicAPI graphicApi)
 {
 	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Editor);
 
 	PC_LOG("InitThridPartLib...")
 	ShaderSource::InitShadersCompiler(graphicApi, false);
@@ -73,12 +74,16 @@ void Editor::InitThridPartLib(PC_CORE::GraphicAPI graphicApi)
 void Editor::UnInitThridPartLib()
 {
 	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Editor);
+
 	ShaderSource::DestroyShadersCompiler();
 }
 
 void Editor::CompileShader()
 {
 	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Editor);
+
 	PC_LOG("CompileShader...")
 	std::filesystem::create_directory(SHADER_CACHE_PATH);
 	
@@ -233,6 +238,7 @@ void Editor::BasicOpenFile()
 void Editor::Init()
 {
 	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Editor);
 	
 	const AppCreateInfo appCreateInfo =
 	{
@@ -263,12 +269,11 @@ void Editor::Destroy()
 {
 	PERF_REGION_SCOPED;
 
-	IMGUIContext.Destroy();
-
 	// editor window need core
 	for (auto& i : editorWindows)
 		i.reset();
-	
+
+	IMGUIContext.Destroy();
 
 	gameApp.Destroy();
 
@@ -356,6 +361,7 @@ void Editor::InitTestScene()
 {	
 	
 	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Editor);
 	PC_LOG("InitTestScene...")
 
 	std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("diamond_block_material.mat");
@@ -413,6 +419,8 @@ void Editor::InitTestScene()
 
 void Editor::DestroyTestScene()
 {
+
+
 	if (std::holds_alternative<EntityId>(selectedObject))
 		selectedObject = std::monostate();
 
@@ -427,6 +435,7 @@ void Editor::Run(bool* _appShouldClose)
 	while (!gameApp.window.ShouldClose())
 	{
 		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Editor);
 
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
@@ -450,7 +459,10 @@ void Editor::Run(bool* _appShouldClose)
 
 void Editor::InitEditor()
 {
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Editor);
 	PC_LOG("InitEditorWindow...")
+
 	editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
 	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
 	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
@@ -466,6 +478,9 @@ void Editor::EditorCommandUpdate()
 {
 	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
 	{
+		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Editor);
+
 		RewindCommand();
 	}
 }

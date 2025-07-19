@@ -52,6 +52,7 @@ public:
 void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _optimise)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
     
     PC_LOG("Init ShadersCompiler")
     
@@ -81,6 +82,8 @@ void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _opt
 
 void ShaderSource::DestroyShadersCompiler()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
     PC_LOG("Destroy Shaders Compiler")
 
     delete shaderCompiler;
@@ -91,8 +94,11 @@ void ShaderSource::DestroyShadersCompiler()
 
 void ShaderSource::AddPreProcessorDefVulkan()
 {
-    shaderc::CompileOptions& options = shaderCompiler->options;
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
 
+
+    shaderc::CompileOptions& options = shaderCompiler->options;
     //lIGHT
 
     options.AddMacroDefinition("MAX_DIRLIGHT", std::to_string(MAX_DIRLIGHT));
@@ -141,6 +147,9 @@ bool ShaderSource::PreprocessShader(const std::string& source_name,
                               const char* source, std::string* outCode) {
     // Like -DMY_DEFINE=1
 
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     shaderc::PreprocessedSourceCompilationResult result =
         shaderCompiler->compiler.PreprocessGlsl(source, kind, source_name.c_str(), shaderCompiler->options);
 
@@ -160,6 +169,9 @@ bool ShaderSource::CompileFileToAssembly(const std::string& source_name,
                                   const std::string& source, std::string* outCode, 
                                   bool optimize = false) {
     
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     shaderc::AssemblyCompilationResult result = shaderCompiler->compiler.CompileGlslToSpvAssembly(
         source, kind, source_name.c_str(), shaderCompiler->options);
 
@@ -177,6 +189,8 @@ bool ShaderSource::CompileFile(const std::string& source_name,
                             const std::string& source, std::vector<uint32_t>* _outCode,
                             bool optimize)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
     // Like -DMY_DEFINE=1
 
     shaderc::SpvCompilationResult module =
@@ -284,6 +298,9 @@ void ShaderSource::Reload()
 
 std::vector<char> ShaderSource::GetShaderSourceFile()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     if (m_PathToSource.empty())
     {
         PC_LOGERROR("Resource path is empty while trying to get data from it")
@@ -299,6 +316,9 @@ std::vector<char> ShaderSource::GetShaderSourceFile()
 
 bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     // Load shader File to memory 
     std::vector<char> RawSourceCode = GetShaderSourceFile();
 
@@ -320,6 +340,9 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 
 void ShaderSource::LoadFromFile(const std::string& _path)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     Resource::LoadFromFile(_path);
     uint32_t formatIndex = -1;
 
@@ -351,6 +374,9 @@ void ShaderSource::LoadFromFile(const std::string& _path)
 
 std::string ShaderSource::GetShaderBinarySprivName()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
     return std::filesystem::path(name).filename().stem().generic_string() + "_spv" + extension;
 }
 

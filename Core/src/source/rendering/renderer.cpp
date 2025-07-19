@@ -24,6 +24,8 @@ using namespace PC_CORE;
 void Renderer::Init()
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     World::GetWorld()->level.RegisterSystem<RendererSystem>(&m_RenderWorldData);
 
     m_RhiContext = Rhi::GetRhiContext();
@@ -46,6 +48,7 @@ void Renderer::Init()
 void Renderer::BeginDraw(Window* _window)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
     m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
     primaryCommandList->Reset();
@@ -57,6 +60,7 @@ void Renderer::BeginDraw(Window* _window)
 void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* commandList)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
     
     size_t updateDirLight = 0;
     size_t spotLight = 0;
@@ -129,6 +133,7 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
 void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
 
     currentRenderingContext = &renderingContext;
@@ -162,6 +167,8 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
                                       World* _world)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     UpdateLightData(renderingContext, primaryCommandList.get());
     UpdateCameraUniformBuffer(renderingContext);
 
@@ -191,6 +198,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 void Renderer::SwapBuffers(Window* _window)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
 
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
@@ -209,6 +217,7 @@ void Renderer::SwapBuffers(Window* _window)
 void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
     Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
     for (size_t i = 0; i < m_RenderWorldData.staticMeshData.size(); i++)
@@ -246,6 +255,9 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
 
 void Renderer::ClearRenderData()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     m_RenderWorldData.lightData.clear();
     m_RenderWorldData.staticMeshData.clear();
 }
@@ -253,6 +265,9 @@ void Renderer::ClearRenderData()
 
 void Renderer::DrawSkyBox()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     if (auto cube = m_CubeMesh.lock())
     {
         primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
@@ -269,6 +284,9 @@ void Renderer::DrawSkyBox()
 
 void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     const BeginRenderPassInfo beginRenderPassInfo =
     {
         .renderPass = renderPasses.forwardPass,
@@ -307,6 +325,9 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
 
 void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
 
@@ -361,6 +382,9 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
 
 void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     std::array<Tbx::Vector4f, 2> clearValues2 = {
         Tbx::Vector4f(0, 0, 0, 0.f),
         Tbx::Vector4f(0, 0, 0, 0.f),
@@ -399,6 +423,7 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
 void Renderer::CreateRenderPasss()
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
     {
         PERF_REGION_SCOPED_NAMED("Create Defferd RenderPass");
@@ -605,6 +630,7 @@ void Renderer::CreateRenderPasss()
 void Renderer::CreateShaders()
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
 
     {
@@ -872,6 +898,8 @@ void Renderer::CreateShaders()
 void Renderer::CreateThirdPartyResources()
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     {
         PERF_REGION_SCOPED_NAMED("Create Cube Map");
         std::array<std::string, 6> maps
@@ -906,6 +934,8 @@ void Renderer::CreateThirdPartyResources()
 void Renderer::CreateDescriptorSets()
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
     /////////////////////////////////////////////////
     UniformBufferDescriptor cameraBufferDescritptor
     {

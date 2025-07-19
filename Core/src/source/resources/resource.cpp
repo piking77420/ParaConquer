@@ -10,6 +10,9 @@ using namespace PC_CORE;
 #include <filesystem>
 void Resource::LoadFromFile(const std::string& _path)
 {
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Resource);
+
 	std::filesystem::path pathFileName = std::filesystem::path(_path).filename();
 	name = pathFileName.generic_string();
 	extension = pathFileName.extension().generic_string();
@@ -17,12 +20,18 @@ void Resource::LoadFromFile(const std::string& _path)
 
 void Resource::LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild)
 {
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Resource);
+
 	_resourceParent->m_ChildsResource.emplace_back(_resourceChild->GetGuid());
 	_resourceChild->m_ParentsResource.emplace_back(_resourceParent->GetGuid());
 }
 
 void Resource::BroadCastReload()
 {
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Resource);
+
 	for (auto& child : m_ChildsResource)
 	{
 #ifdef WITH_EDITOR && _DEBUG
