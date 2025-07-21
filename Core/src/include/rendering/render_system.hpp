@@ -22,12 +22,13 @@ public:
 
     PC_CORE_API void RenderingTick(double deltatime) override;
 
-    PC_CORE_API RendererSystem(PC_CORE::RenderingWorldData* renderingWorldData);
-
     PC_CORE_API RendererSystem() = default;
+
+    PC_CORE_API RendererSystem(PC_CORE::RenderingWorldData* _renderingWorldData);
 
     PC_CORE_API ~RendererSystem() override = default;
 private:
+    PC_CORE::RenderingWorldData* m_RenderingDataPtr = nullptr;
 
     Signature m_StaticMeshSignature;
 
@@ -35,10 +36,6 @@ private:
 
     Signature m_PointLightSignature;
     
-    PC_CORE::RenderingWorldData* m_RenderingData;
-
-    void ClearRenderingData();
-
     void PopulateStaticMeshes(const Level& _level);
 
     void PopulateLight(const Level& _level);

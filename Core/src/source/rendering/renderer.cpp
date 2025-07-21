@@ -21,12 +21,20 @@
 using namespace PC_CORE;
 
 
-void Renderer::Init()
+void Renderer::GetRenderingData(const RenderingWorldData& _newRenderingData)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    World::GetWorld()->level.RegisterSystem<RendererSystem>(&m_RenderWorldData);
+
+    m_RenderWorldData.Clear();
+    m_RenderWorldData = _newRenderingData;
+}
+
+void Renderer::Init()
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
 
     m_RhiContext = Rhi::GetRhiContext();
     constexpr CommandListCreateInfo commandListCreateInfo =
@@ -163,8 +171,7 @@ void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& render
 }
 
 
-void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext,
-                                      World* _world)
+void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -172,7 +179,6 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     UpdateLightData(renderingContext, primaryCommandList.get());
     UpdateCameraUniformBuffer(renderingContext);
 
-    m_CurrentWorld = _world;
     const ViewportInfo viewportInfo =
     {
         .transform = {0, 0},

@@ -56,6 +56,8 @@ public:
 
     SceneBufferGPU sceneBufferGPU;
 
+    PC_CORE_API void GetRenderingData(const RenderingWorldData& _newRenderingData);
+
 #ifdef WITH_EDITOR
     std::vector<std::function<void(Renderer& ,CommandList*, const RenderingContext&, const RenderingWorldData*)>> UserCustomForwardPass;
 #endif
@@ -68,15 +70,13 @@ public:
     
     PC_CORE_API void BeginDraw(Window* _window);
     
-    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext, World* _world);
+    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext);
 
     PC_CORE_API void SwapBuffers(Window* _window);
 
     PC_CORE_API void DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets);
 
-private:
-    World* m_CurrentWorld;
-    
+private:    
     RhiContext* m_RhiContext;
 
     // Critical section

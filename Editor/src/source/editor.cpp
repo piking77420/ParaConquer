@@ -46,6 +46,8 @@
 #include "serialize/iseriazable.h"
 #include <random> // pour std::mt19937 et std::uniform_real_distribution
 
+#include "rendering/render_system.hpp"
+
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
@@ -261,6 +263,12 @@ void Editor::Init()
 		cmd->EndDebugLabel();
 		});
 	
+
+	// TO AVOID USING A SYSTEM TO GET ENTIES SYGNATURE 
+	// TO DO FIND A WAY TO ITERATE OVER A BIT SET OF 100000000 QUICKLY
+	//https://en.wikipedia.org/wiki/Van_Emde_Boas_tree
+	World::GetWorld()->level.RegisterSystem<PC_CORE::RendererSystem>(&gameApp.renderingWorldData);
+
 	InitTestScene();
 	InitEditor();
 }
@@ -431,21 +439,24 @@ void Editor::DestroyTestScene()
 
 void Editor::Run(bool* _appShouldClose)
 {
-
+	// begin game thread
 	while (!gameApp.window.ShouldClose())
 	{
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Editor);
 
+		
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
 		PC_CORE::Time::UpdateTime();
 
 
 		IMGUIContext.NewFrame();
-
 		gameApp.WorldTick(PC_CORE::Time::DeltaTime());
-		
+		gameApp.renderer.GetRenderingData(gameApp.renderingWorldData);
+
+		// end game thread
+		// begin render thread
 		gameApp.renderer.BeginDraw(&gameApp.window);
 		UpdateEditor();
 		gameApp.renderer.SwapBuffers(&gameApp.window);

@@ -36,6 +36,8 @@ public:
 
 	Rhi rhi;
 
+	RenderingWorldData renderingWorldData;
+
 	Renderer renderer;
 		
 	World world;

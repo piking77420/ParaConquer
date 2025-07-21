@@ -121,6 +121,16 @@ BEGIN_PCCORE
 
     struct RenderingWorldData
     {
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderingWorldData);
+
+        DEFAULT_COPY_MOVE_OPERATIONS(RenderingWorldData);
+
+        void Clear()
+        {
+            staticMeshData.clear();
+            lightData.clear();
+        }
+
         std::vector<StaticMeshData> staticMeshData;
         std::vector<LightData> lightData;
     };
