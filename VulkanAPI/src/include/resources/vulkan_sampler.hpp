@@ -9,11 +9,16 @@ namespace Vulkan
     class VulkanSampler : public PC_CORE::RhiSampler
     {
     public:
-        
         const void* GetNativeHandle() const override
         {
             return &m_Sampler;
         }
+        
+        void* GetNativeHandle() override
+        {
+            return &m_Sampler;
+        }
+        
         VulkanSampler(VulkanSampler&& _other) noexcept
             : RhiSampler(std::move(_other)), m_Sampler(_other.m_Sampler)
         {

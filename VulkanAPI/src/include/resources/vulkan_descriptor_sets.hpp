@@ -7,15 +7,21 @@ namespace Vulkan
 {
     struct VulkanDescriptorSets : public PC_CORE::ShaderProgramDescriptorSets
     {
-        void WriteDescriptorSets(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) override;
 
-        VulkanDescriptorSets() = default;
+        VULKAN_API const void* GetNativeHandle() const override;
+
+        VULKAN_API void* GetNativeHandle() override;
+
+
+        VULKAN_API void WriteDescriptorSets(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) override;
+
+        VULKAN_API VulkanDescriptorSets() = default;
         
-        ~VulkanDescriptorSets() override = default;
+        VULKAN_API ~VulkanDescriptorSets() override = default;
 
-        std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets;
     private:
-        
+        std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT> m_DescriptorSets;
+
     };
 
 }

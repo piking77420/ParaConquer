@@ -15,6 +15,11 @@ namespace Vulkan
         {
             return &m_VulkanTexture;
         }
+        
+        PC_CORE_API void* GetNativeHandle() override
+        {
+            return &m_VulkanTexture;
+        }
 
         PC_CORE_API const VulkanTexture& GetHandle() const
         {

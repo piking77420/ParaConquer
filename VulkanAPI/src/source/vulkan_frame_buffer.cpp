@@ -11,10 +11,7 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 	std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
 
 	const VulkanRenderPass* renderPass = reinterpret_cast<const VulkanRenderPass*>(_createFrameInfo.renderPass);
-
-
 	
-
 	int frame = 0;
 	for (auto& framebuffer : m_FrameBuffers)
 	{
@@ -47,7 +44,7 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 }
 
 
-Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uint32_t widht, uint32_t height, bool _ownBySwapChain) : m_FrameBuffers(_vkFramebuffer), m_OwnBySwapChain(_ownBySwapChain)
+Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uint32_t widht, uint32_t height) : m_FrameBuffers(_vkFramebuffer)
 {
 	m_Width = widht;
 	m_Height = height;
@@ -55,9 +52,6 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uin
 
 Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
 {
-	if (m_OwnBySwapChain)
-		return;
-
 	for (auto& framebuffer : m_FrameBuffers)
 	{
 		if (framebuffer == VK_NULL_HANDLE)

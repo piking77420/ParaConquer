@@ -14,6 +14,11 @@ namespace Vulkan
             return m_RenderPass;
         }
 
+        VULKAN_API void* GetNativeHandle() override
+        {
+            return m_RenderPass;
+        }
+
         VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
 
         VULKAN_API VulkanRenderPass(const PC_CORE::RenderPassDescriptor& _attachements);

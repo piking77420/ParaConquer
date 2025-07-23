@@ -14,6 +14,11 @@ public:
         return &m_VulkanBuffer;
     }
 
+    void* GetNativeHandle() override
+    {
+        return &m_VulkanBuffer;
+    }
+    
     void MapData(void** _ptr) override;
         
     void UnmapData() override;

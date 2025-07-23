@@ -8,8 +8,12 @@ namespace Vulkan
     class VulkanVertexBuffer : public PC_CORE::RhiVertexBuffer
     {
     public:
-
         const void* GetNativeHandle() const override 
+        {
+            return &m_VulkanBuffer;
+        }
+
+        void* GetNativeHandle() override 
         {
             return &m_VulkanBuffer;
         }

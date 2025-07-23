@@ -22,7 +22,7 @@ struct CreateFrameInfo
 	RhiRenderPass* renderPass;
 };
 
-class FrameBuffer
+class FrameBuffer : public RhiResource
 {
 public:
 

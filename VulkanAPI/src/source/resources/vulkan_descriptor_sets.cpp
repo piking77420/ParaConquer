@@ -41,7 +41,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     bufferDescriptorCount = 0;
     imageDescriptorCount = 0;
     
-    for (size_t f = 0; f < descriptorSets.size(); f++)
+    for (size_t f = 0; f < m_DescriptorSets.size(); f++)
     {
         for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
         {
@@ -96,14 +96,14 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     // Reset counters before descriptor writes
   
 
-    std::vector<vk::WriteDescriptorSet> descriptorWrites(_shaderProgramDescriptorSet.size() * descriptorSets.size());
+    std::vector<vk::WriteDescriptorSet> descriptorWrites(_shaderProgramDescriptorSet.size() * m_DescriptorSets.size());
     
 
     size_t descriptorWriteOffset = 0;
     bufferDescriptorCount = 0;
     imageDescriptorCount = 0;
 
-    for (size_t f = 0; f < descriptorSets.size(); f++)
+    for (size_t f = 0; f < m_DescriptorSets.size(); f++)
     {
         
         
@@ -142,14 +142,24 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     size_t descritionWriteOffset = 0;
 
 
-    for (size_t i = 0; i < descriptorSets.size(); i++)
+    for (size_t i = 0; i < m_DescriptorSets.size(); i++)
     {
         for (size_t j = 0; j < _shaderProgramDescriptorSet.size(); j++)
         {
-            descriptorWrites[descritionWriteOffset].dstSet = descriptorSets[i];
+            descriptorWrites[descritionWriteOffset].dstSet = m_DescriptorSets[i];
             descritionWriteOffset++;
         }
         device.updateDescriptorSets(static_cast<uint32_t>(descritproWriteCount), descriptorWrites.data() + descritproWriteCount * i, 0, nullptr);
     }
     
+}
+
+const void* Vulkan::VulkanDescriptorSets::GetNativeHandle() const
+{
+    return &m_DescriptorSets;
+}
+
+void* Vulkan::VulkanDescriptorSets::GetNativeHandle()
+{
+    return &m_DescriptorSets;
 }

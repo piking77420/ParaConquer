@@ -9,12 +9,22 @@ namespace Vulkan
     class VulkanFrameBuffer : public PC_CORE::FrameBuffer
     {
     public:
+
+        VULKAN_API const void* GetNativeHandle() const override
+        {
+            return &m_FrameBuffers;
+        }
+
+        VULKAN_API void* GetNativeHandle() override
+        {
+            return &m_FrameBuffers;
+        }
         
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanFrameBuffer)
 
         VULKAN_API explicit VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _createFrameInfo);
         
-        VULKAN_API explicit VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uint32_t widht, uint32_t height, bool _ownBySwapChain = false);
+        VULKAN_API explicit VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uint32_t widht, uint32_t height);
         
         VULKAN_API VulkanFrameBuffer() = default;
 
@@ -23,10 +33,7 @@ namespace Vulkan
         VULKAN_API vk::Framebuffer GetFramebuffer() const;
         
     private:
-
         std::array<vk::Framebuffer, MAX_FRAMES_IN_FLIGHT> m_FrameBuffers;
-
-        bool m_OwnBySwapChain = false;
     };
 
 }

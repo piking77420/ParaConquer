@@ -48,7 +48,7 @@ BEGIN_PCCORE
         InputAttachementDescriptor* inputAttachementDescriptor = nullptr;
     };
 
-    struct ShaderProgramDescriptorSets
+    struct ShaderProgramDescriptorSets : public RhiResource
     {
         PC_CORE_API virtual void WriteDescriptorSets(
             const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) = 0;

@@ -67,10 +67,15 @@ namespace Vulkan
 
         vk::PipelineLayout GetPipelineLayout() const;
 
-        virtual const void* GetNativeHandle() const
+        const void* GetNativeHandle() const override
         {
             return &m_Pipeline;
         }
+        void* GetNativeHandle() override
+        {
+            return &m_Pipeline;
+        }
+        
 
     protected:
 
