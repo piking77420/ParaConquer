@@ -17,6 +17,7 @@
 #include "rendering/shader_program.hpp"
 #include "rendering/buffer/index_buffer.hpp"
 #include "rendering/buffer/vertex_buffer.hpp"
+#include "rhi_fence.hpp"
 
 BEGIN_PCCORE
     class FrameBuffer;
@@ -123,6 +124,8 @@ public:
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 
     PC_CORE_API void ExucuteFetchCommand();
+
+    PC_CORE_API virtual void Submit(const std::shared_ptr<RhiFence>& _fences) = 0;
 
     PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
 

@@ -44,6 +44,12 @@ void Renderer::Init()
 
     primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
 
+    const RhiFenceCreateInfo rhiFenceCreateInfo =
+    {
+        .signaled = false
+    };
+    m_PendingResourceFence = Rhi::CreateFence(rhiFenceCreateInfo);
+
     CreateRenderPasss();
     CreateShaders();
     CreateThirdPartyResources();
@@ -58,11 +64,12 @@ void Renderer::BeginDraw(Window* _window)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
-    primaryCommandList->Reset();
-    primaryCommandList->BeginRecordCommands();
+	m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+	
 
-    //m_DebugDrawContext->Prepare();
+	primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
+	//m_DebugDrawContext->Prepare();
 }
 
 void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* commandList)

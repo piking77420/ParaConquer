@@ -60,6 +60,8 @@ public:
     VULKAN_API  void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
         PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage) override;
 
+    VULKAN_API void Submit(const std::shared_ptr<PC_CORE::RhiFence>& _fences) override;
+
     VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 
     VULKAN_API void EndDebugLabel() override;

@@ -5,6 +5,7 @@
 #include "vulkan_context.hpp"
 #include "vulkan_frame_buffer.hpp"
 #include "vulkan_render_pass.hpp"
+#include "vulkan_fence.hpp"
 #include "buffer/vulkan_index_buffer.hpp"
 #include "buffer/vulkan_uniform_buffer.hpp"
 #include "buffer/vulkan_vertex_buffer.hpp"
@@ -13,6 +14,8 @@
 #include "resources/vulkan_shader_program.hpp"
 #include "texture/vulkan_texture_2d.hpp"
 #include "texture/vulkan_texture_3d.hpp"
+
+#include "utils/helper_functions.hpp"
 
 using namespace PC_CORE;
 
@@ -362,6 +365,26 @@ std::shared_ptr<RhiSampler> Rhi::CreateSampler(const PC_CORE::SamplerCreateInfo&
     default: ;
     }
 }
+
+PC_CORE_API std::shared_ptr<RhiFence> Rhi::CreateFence(const RhiFenceCreateInfo& _rhiFenceCreateInfo)
+{
+    Rhi& rhi = GetInstance();
+
+        
+    switch (rhi.m_GraphicsApi)
+    {
+    case GraphicAPI::None:
+        break;
+    case GraphicAPI::Vulkan:
+        return std::make_shared<Vulkan::VulkanFence>(_rhiFenceCreateInfo);
+    case GraphicAPI::Dx3D12:
+    case GraphicAPI::Count:
+        assert(false);
+        break;
+    default:;
+    }
+}
+
 
 RhiContext* Rhi::GetRhiContext()
 {

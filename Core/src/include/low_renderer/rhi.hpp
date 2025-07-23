@@ -17,6 +17,7 @@
 #include "rhi_vertex_buffer.hpp"
 
 #include "rhi_texure_2d.hpp"
+#
 
 BEGIN_PCCORE
     struct RenderHardwareInterfaceCreateInfo
@@ -72,6 +73,8 @@ public:
     PC_CORE_API static std::shared_ptr<RhiTexture3D> CreateTexture3D(const PC_CORE::CreateImageInfo& _createImageInfo3D);
 
     PC_CORE_API static std::shared_ptr<RhiSampler> CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo);
+
+    PC_CORE_API static std::shared_ptr<RhiFence> CreateFence(const RhiFenceCreateInfo& _rhiFenceCreateInfo);
 
     PC_CORE_API static RhiContext* GetRhiContext();
     

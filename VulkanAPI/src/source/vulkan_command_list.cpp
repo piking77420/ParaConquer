@@ -10,6 +10,7 @@
 #include "low_renderer/rhi.hpp"
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_shader_program.hpp"
+#include "vulkan_fence.hpp"
 
 
 
@@ -155,11 +156,15 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::ShaderProgram* 
     const size_t currentFrame = PC_CORE::Rhi::GetFrameIndex();
     
     const VulkanShaderProgram* shaderProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram->GetRhiHandle().get());
+
     const VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSets*>(_shaderProgramDescriptorSets);
-    
+    const std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT>& descriptorHandles = *static_cast<const std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT>*>(vulkanDescriptorSets->GetNativeHandle());
+
+    vk::DescriptorSet currentDescriptorSet = descriptorHandles[currentFrame];
+
     m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram->GetPipelineBindPoint(),
         shaderProgram->GetPipelineLayout(), static_cast<uint32_t>(_firstSet), _descriptorSetCount,
-        vulkanDescriptorSets->descriptorSets.data() + currentFrame,
+        &currentDescriptorSet,
         0, nullptr);
 }
 
@@ -248,7 +253,7 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer&
 void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset)
 {
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
-    const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
+    const std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
     const vk::IndexType indexType = Vulkan::Utils::RhiToIndexType(_indexBuffer.GetIndexFormat());
     
     m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset) , indexType);
@@ -300,6 +305,30 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
         bufferBarrier,
         nullptr
     );
+}
+
+VULKAN_API void Vulkan::VulkanCommandList::Submit(const std::shared_ptr<PC_CORE::RhiFence>& _fences)
+{
+    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+
+    vk::CommandBuffer commandBuffer = m_CommandBuffer[frameIndex];
+    vk::Fence fence = reinterpret_cast<VulkanFence*>(_fences.get())->GetVkFence(frameIndex);
+   
+ 
+    vk::SubmitInfo submitInfo{};
+    submitInfo.sType = vk::StructureType::eSubmitInfo;
+    submitInfo.pWaitSemaphores = nullptr;
+    submitInfo.pWaitDstStageMask = {};
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
+
+    const vk::Queue& queue = *GetQueue();
+
+    VK_CALL(queue.submit( 1, &submitInfo, fence));
+
 }
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const

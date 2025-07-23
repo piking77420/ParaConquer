@@ -79,6 +79,9 @@ public:
 private:    
     RhiContext* m_RhiContext;
 
+    std::shared_ptr<RhiFence> m_PendingResourceFence;
+
+   
     // Critical section
     RenderingWorldData m_RenderWorldData;
     
