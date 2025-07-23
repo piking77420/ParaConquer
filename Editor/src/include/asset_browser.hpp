@@ -28,8 +28,8 @@ private:
 	enum struct AssetsBrowserTexturesType
 	{
 		Folder,
-		Texture,
-		Cout
+		//Texture, TODO
+	 	Cout
 	};
 
     struct AssetsBrowserTextures

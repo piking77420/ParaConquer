@@ -23,15 +23,13 @@ AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWi
     ReloadOldAssets();
     m_fileWatcher.LauchWatcher(projectBaseAssetPath);
 
-    for (size_t i = 0; i < m_AssetBrowserTexture.size() - 1; i++)
+    for (size_t i = 0; i < m_AssetBrowserTexture.size(); i++)
     {
         const AssetsBrowserTexturesType assetsBrowserTexturesType = static_cast<AssetsBrowserTexturesType>(i);
         switch (assetsBrowserTexturesType)
         {
         case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Folder:
             m_AssetBrowserTexture[i].texure = PC_CORE::Texture2D("folder.png", EDITOR_RESOURCE_PATH "/icons/folder.png");
-            break;
-        case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Texture:
             break;
         case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Cout:
         default:
