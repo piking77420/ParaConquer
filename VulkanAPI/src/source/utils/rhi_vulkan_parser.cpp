@@ -240,13 +240,13 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R16G16_UNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR16G16Unorm;
 
     case PC_CORE::RHIFormat::R16G16_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR16G16Snorm;
 
     case PC_CORE::RHIFormat::R16G16_USCALED:
-        return vk::Format::eUndefined;
+        return vk::Format::eR16G16Uscaled;
 
     case PC_CORE::RHIFormat::R16G16_SSCALED:
         return vk::Format::eUndefined;

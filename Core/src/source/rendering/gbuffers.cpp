@@ -121,7 +121,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             texture_info.channel = Channel::RGBA;
             break;
         case GbufferType::Normal:
-            texture_info.format = RHIFormat::R8G8_UNORM;
+            texture_info.format = RHIFormat::R16G16_SNORM;
             texture_info.channel = Channel::RGB;
             break;
         case GbufferType::RoughnessMetallicAo:

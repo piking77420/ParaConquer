@@ -459,7 +459,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::Normal)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R8G8_UNORM,
+            .format = PC_CORE::RHIFormat::R16G16_SNORM,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
