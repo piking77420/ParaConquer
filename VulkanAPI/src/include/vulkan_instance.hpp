@@ -38,6 +38,23 @@ namespace Vulkan
             return m_EndDebugLabel;
         }
 
+        PFN_vkResetQueryPoolEXT GetPFN_vkResetQueryPoolEXT() const
+        {
+            return m_Qpreset;
+        }
+
+        PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT() const
+        {
+            return m_Gpdctd;
+        }
+
+        PFN_vkGetCalibratedTimestampsEXT GetPFN_vkGetCalibratedTimestampsEXT() const
+        {
+            return m_Gct;
+        }
+
+
+
         void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNameInfo);
 #endif
 
@@ -61,6 +78,12 @@ namespace Vulkan
         PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel;
 
         PFN_vkSetDebugUtilsObjectNameEXT m_DebugName;
+
+        PFN_vkResetQueryPoolEXT m_Qpreset;
+
+        PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT m_Gpdctd;
+
+        PFN_vkGetCalibratedTimestampsEXT m_Gct;
 
         void GetDebugFunc();
 #endif  DEBUG_GPU_ON

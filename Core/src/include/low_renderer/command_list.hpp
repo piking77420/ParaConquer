@@ -29,6 +29,7 @@ BEGIN_PCCORE
     Count
 };
 
+
 enum ClearValueFlags : uint32_t
 {
     ClearValueNone    = 0,
@@ -65,9 +66,16 @@ struct ViewportInfo
     Tbx::Vector2ui scissorsextent;
 };
 
+enum struct CommandBufferType
+{
+    Primary,
+    Secondary
+};
+
 struct CommandListCreateInfo
 {
-    CommandPoolFamily _commandPoolFamily;
+    CommandPoolFamily commandPoolFamily;
+    CommandBufferType commandBufferType;
 };
 
 class CommandList
@@ -83,6 +91,8 @@ public:
     PC_CORE_API virtual ~CommandList() = default;
 
     PC_CORE_API virtual void Reset() = 0;
+
+    PC_CORE_API virtual void MergeCommands(CommandList* _secondaries, size_t _count) = 0;
 
     PC_CORE_API virtual void BeginRecordCommands() = 0;
 
@@ -123,7 +133,7 @@ public:
 
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 
-    PC_CORE_API void ExucuteFetchCommand();
+    PC_CORE_API void ExecuteExternalCommand();
 
     PC_CORE_API virtual void Submit(const std::shared_ptr<RhiFence>& _fences) = 0;
 
@@ -131,8 +141,11 @@ public:
 
     PC_CORE_API virtual void EndDebugLabel() = 0;
 
+
 protected:
     CommandPoolFamily m_CommandPoolFamily;
+
+    CommandBufferType m_CommandBufferType;
 
     std::vector<std::function<void(CommandList*)>> m_FecthCommands;
 };

@@ -117,11 +117,13 @@ void Vulkan::VulkanInstance::GetDebugFunc()
 
     m_BeginDebugLabel = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT"));
     m_EndDebugLabel = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdEndDebugUtilsLabelEXT"));
-
     m_DebugName = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(m_Instance, "vkSetDebugUtilsObjectNameEXT"));
+    m_Qpreset = reinterpret_cast<PFN_vkResetQueryPoolEXT>(vkGetInstanceProcAddr(m_Instance, "vkResetQueryPoolEXT"));
+	m_Gpdctd = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT>(vkGetInstanceProcAddr(m_Instance, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT"));
+	m_Gct = reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(vkGetInstanceProcAddr(m_Instance, "vkGetCalibratedTimestampsEXT"));
 
-
-    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr || m_DebugName == nullptr)
+    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr || m_DebugName == nullptr || 
+        m_Qpreset == nullptr || m_Gpdctd == nullptr || m_Gct == nullptr)
     {
         PC_LOGERROR("Enable to get debgu label func ");
         assert(false);

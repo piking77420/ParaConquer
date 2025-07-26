@@ -286,6 +286,7 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
 
     vk::CommandBuffer commandBuffer = vcommandList->GetHandle();
 
+    // TO DO MOVE THOS in vulkan context 
     const vk::Queue& queue = *vcommandList->GetQueue();
     const vk::Queue& prensetQueu = VulkanContext::GetContext().mainQueue;
 

@@ -35,13 +35,6 @@ BEGIN_PCCORE
             return *m_CurrentContext;
         }
 
-        void PushPendingResourceFunction(const std::function<void(CommandList*)>& func)
-        {
-            m_PendingResourceFuncion.push_back(func);
-        }
-
-        void HandlePendingResourceFunction(CommandList* _commandList);
-
         PC_CORE_API RhiContext(const RhiContextCreateInfo& rhiContextCreateInfo);
      
         PC_CORE_API RhiContext() = delete;
@@ -55,6 +48,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void WaitIdleInstance() = 0;
 
+    
         std::vector<std::function<void(CommandList*)>> m_PendingResourceFuncion;
 
     };

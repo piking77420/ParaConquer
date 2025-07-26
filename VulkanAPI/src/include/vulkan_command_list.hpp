@@ -2,6 +2,7 @@
 
 #include "vulkan_header.h"
 #include "low_renderer/command_list.hpp"
+#include "tracy/TracyVulkan.hpp"
 
 
 namespace Vulkan
@@ -19,6 +20,8 @@ public:
     VULKAN_API ~VulkanCommandList() override;
     
     VULKAN_API void Reset() override;
+
+    VULKAN_API void MergeCommands(CommandList* _secondaries, size_t _count) override;
 
     VULKAN_API void BeginRecordCommands() override;
 
@@ -74,6 +77,10 @@ private:
     std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
 
     const vk::Queue* m_Queue = VK_NULL_HANDLE;
+
+#ifdef  DEBUG_GPU_ON
+    tracy::VkCtx* m_VkTracyContext = nullptr;
+#endif
   
 };
     

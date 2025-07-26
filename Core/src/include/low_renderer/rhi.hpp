@@ -93,7 +93,7 @@ private:
 
     RhiContext* m_RhiContext = nullptr;
 
-    uint32_t  m_CurrentFrame = 0;
+    uint32_t m_CurrentFrame = 0;
     
     void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 

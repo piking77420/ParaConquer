@@ -29,9 +29,6 @@ ZoneName(x, strlen(x))
 #define PERF_REGION_COLOR_NAME(name, x) ZoneColor(name, x);
 
 
-// TO DO A LOT OF REFACTOR
-#define VK_PERF_REGION()
-
 
 #define PERF_FRAME_MARK FrameMark
 #define PERF_FRAME_MARK_NAMED FrameMarkNamed(x)

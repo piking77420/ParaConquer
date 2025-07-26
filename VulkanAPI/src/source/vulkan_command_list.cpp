@@ -14,9 +14,13 @@
 
 
 
+
 Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
 : CommandList(_commandListCreateInfo)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     VulkanContext& vulkanContext = VulkanContext::GetContext();
     vk::CommandPool commandPool = VK_NULL_HANDLE;
     
@@ -32,6 +36,8 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
         break;
     default: ;
     }
+
+    m_CommandBufferType = _commandListCreateInfo.commandBufferType;
     
     if (commandPool == VK_NULL_HANDLE)
     {
@@ -42,7 +48,9 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     vk::CommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     commandBufferAllocateInfo.commandPool = commandPool;
-    commandBufferAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
+    commandBufferAllocateInfo.level = m_CommandBufferType == PC_CORE::CommandBufferType::Primary ?
+        vk::CommandBufferLevel::ePrimary : vk::CommandBufferLevel::eSecondary;
+
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_CommandBuffer.size());
 
    std::vector<vk::CommandBuffer> vec = vulkanContext.GetDevice()->GetDevice().allocateCommandBuffers(commandBufferAllocateInfo);
@@ -51,6 +59,17 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     {
         m_CommandBuffer[i] = vec[i];
     }
+#ifdef  DEBUG_GPU_ON
+    vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
+    vk::Device device = GET_VK_DEVICE->GetDevice();
+    VulkanInstance& instance = *std::reinterpret_pointer_cast<VulkanInstance>(vulkanContext.renderInstance).get();
+
+    //m_VkTracyContext = tracy::CreateVkContext(physDv, device,
+      //  instance.GetPFN_vkResetQueryPoolEXT(),
+        //instance.GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(),
+        //instance.GetPFN_vkGetCalibratedTimestampsEXT());
+       
+#endif
 }
 
 Vulkan::VulkanCommandList::~VulkanCommandList()
@@ -60,17 +79,57 @@ Vulkan::VulkanCommandList::~VulkanCommandList()
 
 void Vulkan::VulkanCommandList::Reset()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].reset();
+}
+
+void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count)
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    assert(_count != 0);
+
+    assert(m_CommandBufferType == PC_CORE::CommandBufferType::Primary);
+
+    vk::CommandBuffer* commandBuffers = reinterpret_cast<vk::CommandBuffer*>(_malloca(sizeof(vk::CommandBuffer) * _count));
+
+    for (size_t i = 0; i < _count; i++)
+    {
+        VulkanCommandList* otherVk = reinterpret_cast<VulkanCommandList*>(_other);
+        commandBuffers[i] = otherVk->m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()];
+    }
+
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].executeCommands(_count, commandBuffers);
 }
 
 void Vulkan::VulkanCommandList::BeginRecordCommands()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+
+    vk::CommandBufferInheritanceInfo inheritanceInfo;
+    if (m_CommandBufferType == PC_CORE::CommandBufferType::Secondary)
+    {
+		inheritanceInfo.sType = vk::StructureType::eCommandBufferInheritanceInfo;
+		inheritanceInfo.pNext = nullptr;
+		inheritanceInfo.renderPass = VK_NULL_HANDLE;
+        inheritanceInfo.subpass = {};
+		inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+		inheritanceInfo.occlusionQueryEnable = {};
+		inheritanceInfo.queryFlags = {};
+		inheritanceInfo.pipelineStatistics = {};
+    }
     
+
     vk::CommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
     commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits(); // Optional
-    commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+    commandBufferBeginInfo.pInheritanceInfo = m_CommandBufferType == PC_CORE::CommandBufferType::Secondary ? &inheritanceInfo : nullptr; // Optional
 
     m_CommandBuffer[frameIndex].begin(commandBufferBeginInfo);
 
@@ -78,11 +137,17 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
 
 void Vulkan::VulkanCommandList::EndRecordCommands()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
      m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].end();
 }
 
 void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     std::shared_ptr<const VulkanFrameBuffer> frameBuffer = std::reinterpret_pointer_cast<const  VulkanFrameBuffer>(_BeginRenderPassInfo.frameBuffer);
     std::shared_ptr<const  VulkanRenderPass> renderPass = std::reinterpret_pointer_cast<const  VulkanRenderPass>(_BeginRenderPassInfo.renderPass);
 
@@ -141,11 +206,15 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 
 void Vulkan::VulkanCommandList::NextSubPass()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].nextSubpass(vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanCommandList::EndRenderPass()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].endRenderPass();
 }
 
@@ -153,6 +222,10 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::ShaderProgram* 
     const PC_CORE::ShaderProgramDescriptorSets* _shaderProgramDescriptorSets, size_t _firstSet,
     size_t _descriptorSetCount)
 {
+
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     const size_t currentFrame = PC_CORE::Rhi::GetFrameIndex();
     
     const VulkanShaderProgram* shaderProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram->GetRhiHandle().get());
@@ -170,12 +243,17 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::ShaderProgram* 
 
 void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::ShaderProgram* _shaderProgramm)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     const VulkanShaderProgram* vshadeProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgramm->GetRhiHandle().get());
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindPipeline(vshadeProgram->GetPipelineBindPoint(), vshadeProgram->GetPipeline());
 }
 
 void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::ShaderProgram* _shaderProgram, const std::string& _pushConstantKey, const void* _data, const size_t _size)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
     const VulkanShaderProgram* vshadeProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram->GetRhiHandle().get()); 
 
     vshadeProgram->PushConstant(GetHandle(), _pushConstantKey, _data, _size);
@@ -183,6 +261,8 @@ void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::ShaderProgram* _shad
 
 void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPort)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
     vk::Viewport viewport{};
     viewport.x = _viewPort.transform.x;
     viewport.y = _viewPort.transform.y;
@@ -201,6 +281,9 @@ void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPo
 
 void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     vk::PrimitiveTopology topology = Utils::RhiPrimitiveTopology(_primitiveTopology);
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setPrimitiveTopology(topology);
 }
@@ -236,12 +319,18 @@ void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCo
 void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex,
     int32_t _vertexOffset, size_t _firstInstance)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount), static_cast<uint32_t>(_instanceCount), static_cast<uint32_t>(_firstIndex), _vertexOffset, static_cast<uint32_t>(_firstInstance));
 }
 
 void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding,
                                                  uint32_t _bindingCount)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
     
     const  std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_vertexBuffer.GetNativeHandle());
@@ -252,6 +341,9 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer&
 
 void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex(); 
     const std::vector<BufferAndAlloc>* bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
     const vk::IndexType indexType = Vulkan::Utils::RhiToIndexType(_indexBuffer.GetIndexFormat());
@@ -262,6 +354,9 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _
 void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
     PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     assert(
         _src.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::CPU_To_GPU ||
         _src.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::CPU_Only
@@ -309,6 +404,9 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
 
 VULKAN_API void Vulkan::VulkanCommandList::Submit(const std::shared_ptr<PC_CORE::RhiFence>& _fences)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
     vk::CommandBuffer commandBuffer = m_CommandBuffer[frameIndex];
