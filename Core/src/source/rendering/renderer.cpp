@@ -37,18 +37,6 @@ void Renderer::Init()
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     m_RhiContext = Rhi::GetRhiContext();
-    constexpr CommandListCreateInfo commandListCreateInfo =
-    {
-        ._commandPoolFamily = CommandPoolFamily::Graphics
-    };
-
-    primaryCommandList = PC_CORE::Rhi::CreateCommandList(commandListCreateInfo);
-
-    const RhiFenceCreateInfo rhiFenceCreateInfo =
-    {
-        .signaled = false
-    };
-    m_PendingResourceFence = Rhi::CreateFence(rhiFenceCreateInfo);
 
     CreateRenderPasss();
     CreateShaders();
@@ -65,11 +53,6 @@ void Renderer::BeginDraw(Window* _window)
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
 	m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
-	
-
-	primaryCommandList->Reset();
-    primaryCommandList->BeginRecordCommands();
-	//m_DebugDrawContext->Prepare();
 }
 
 void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* commandList)
@@ -182,6 +165,10 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
+
+    primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
+    //m_DebugDrawContext->Prepare();
 
     UpdateLightData(renderingContext, primaryCommandList.get());
     UpdateCameraUniformBuffer(renderingContext);

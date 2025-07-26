@@ -38,16 +38,15 @@ public:
     
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
-    std::weak_ptr<PC_CORE::GraphicShader> m_ForwardShader;
+    ResourceRef<PC_CORE::GraphicShader> m_ForwardShader;
 
-    // TO DO TO RESOURE REF
-    std::weak_ptr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
+    ResourceRef<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
-    std::weak_ptr<PC_CORE::GraphicShader> m_CubeMapShader;
+    ResourceRef<PC_CORE::GraphicShader> m_CubeMapShader;
 
-    std::weak_ptr<PC_CORE::GraphicShader> m_GeometryBufferShader;
+    ResourceRef<PC_CORE::GraphicShader> m_GeometryBufferShader;
 
-    std::weak_ptr<PC_CORE::GraphicShader> m_DeferedShader;
+    ResourceRef<PC_CORE::GraphicShader> m_DeferedShader;
 
     
     RenderPasses renderPasses;
