@@ -15,7 +15,8 @@
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
-   
+#define ANSI_COLOR_DARK_GRAY "\x1b[90m"
+
 #ifndef __FUNCTION_NAME__
 #ifdef WIN32   //WINDOWS
 #define __FUNCTION_NAME__   __FUNCTION__  
@@ -36,6 +37,10 @@ static inline const char* extract_filename(const char* path) {
 PC_CORE::Log::Debug(unformatted, ##__VA_ARGS__);\
 PC_CORE::Log::PrintMetaData(__LINE__, __FUNCTION_NAME__, __FILENAME__);\
 
+#define PC_LOG_VERBOSE(unformatted, ...) \
+PC_CORE::Log::Verbose(unformatted, ##__VA_ARGS__);\
+PC_CORE::Log::PrintMetaData(__LINE__, __FUNCTION_NAME__, __FILENAME__);\
+
 #define PC_LOGERROR(unformatted, ...) \
 PC_CORE::Log::Error(unformatted, ##__VA_ARGS__);\
 PC_CORE::Log::PrintMetaData(__LINE__, __FUNCTION_NAME__, __FILENAME__);\
@@ -51,6 +56,13 @@ public:
     static inline void Debug(const std::string& unformatted, Args&&... args)
     {
         std::cout << ANSI_COLOR_RESET;        
+        PrintFormat(unformatted, std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args>
+    static inline void Verbose(const std::string& unformatted, Args&&... args)
+    {
+        std::cout << ANSI_COLOR_DARK_GRAY;
         PrintFormat(unformatted, std::forward<Args>(args)...);
     }
 
