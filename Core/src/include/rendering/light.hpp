@@ -9,28 +9,23 @@ BEGIN_PCCORE
 
 struct Light : public Component
 {
-    bool isDirty = false;
+    bool isDirty = true;
     Tbx::Vector3f color = Tbx::Vector3f(1.f,1.f,1.f);
     float intensity = 1.f;
+
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(Light);
 };
 
 REFLECT(Light,Component)
+REFLECT_MEMBER(Light, isDirty)
 REFLECT_MEMBER(Light, color, COLOR)
 REFLECT_MEMBER(Light, intensity)
 
 struct DirLight : public Light
 {
-   
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(DirLight);
 };
 REFLECT(DirLight, Light)
-
-
-
-struct PointLight : public Light
-{
-};
-REFLECT(PointLight, Light)
-REFLECT_MEMBER(DirLight, isDirty)
 
 struct SpotLight : public Light
 {
@@ -41,5 +36,13 @@ REFLECT(SpotLight, Light)
 REFLECT_MEMBER(SpotLight, outerCutOff)
 REFLECT_MEMBER(SpotLight, innerCutOff)
 
+
+
+struct PointLight : public Light
+{
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(PointLight);
+
+};
+REFLECT(PointLight, Light)
 
 END_PCCORE
