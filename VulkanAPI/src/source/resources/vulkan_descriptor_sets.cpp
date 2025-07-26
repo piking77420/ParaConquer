@@ -154,6 +154,24 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     
 }
 
+Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(vk::DescriptorPool _descitptorPool, vk::DescriptorSetAllocateInfo _vkDescriptorSetAllocateInfo) : m_DescitptorPool(_descitptorPool)
+{
+    vk::Device d = GET_VK_DEVICE->GetDevice();
+
+    PC_LOG_VERBOSE("CreateDescritptor Set");
+    VK_CALL(d.allocateDescriptorSets(&_vkDescriptorSetAllocateInfo, m_DescriptorSets.data()));
+}
+
+Vulkan::VulkanDescriptorSets::~VulkanDescriptorSets()
+{
+    if (m_DescitptorPool == VK_NULL_HANDLE)
+        return;
+
+    vk::Device d = GET_VK_DEVICE->GetDevice();
+
+    d.freeDescriptorSets(m_DescitptorPool, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), m_DescriptorSets.data());
+}
+
 const void* Vulkan::VulkanDescriptorSets::GetNativeHandle() const
 {
     return &m_DescriptorSets;

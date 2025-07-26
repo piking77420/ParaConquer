@@ -64,21 +64,19 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
 void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set)
 {
 
-    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
+    Vulkan::CacheDescriptorSets* cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
     
     std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, cache->descriptorSetLayout[set]);
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
-    VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets();
-    
+
     vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
     descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
     descriptorSetAllocateInfo.descriptorPool = cache->descriptorPool;
     descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
-    
-    std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT>* descriptorHandles = reinterpret_cast<std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT>*>(vulkanDescriptorSets->GetNativeHandle());
 
-    VK_CALL(device.allocateDescriptorSets(&descriptorSetAllocateInfo, descriptorHandles->data()));
+    VulkanDescriptorSets* vulkanDescriptorSets = new VulkanDescriptorSets(cache->descriptorPool, descriptorSetAllocateInfo);
+    
 
     *shaderProgramDescriptorSets = vulkanDescriptorSets;
     m_DescriptorSetAllocCount++;
@@ -86,19 +84,9 @@ void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSet
 
 void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets)
 {
-    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
-
-    
-    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)->GetDevice();
-    VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<VulkanDescriptorSets*>(*shaderProgramDescriptorSets);
-
-    auto descriptorHandles = static_cast<std::array<vk::DescriptorSet, MAX_FRAMES_IN_FLIGHT>*>(vulkanDescriptorSets->GetNativeHandle());
-
-    device.freeDescriptorSets(cache->descriptorPool, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), descriptorHandles->data());
-    
     delete *shaderProgramDescriptorSets;
     *shaderProgramDescriptorSets = nullptr;
-    m_DescriptorSetAllocCount = 0;
+    --m_DescriptorSetAllocCount;
 }
 
 void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data, size_t _size) const
