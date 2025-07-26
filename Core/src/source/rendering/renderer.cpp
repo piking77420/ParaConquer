@@ -40,9 +40,15 @@ void Renderer::Init()
 
     m_RhiContext = Rhi::GetRhiContext();
 
+    PC_CORE::CommandListCreateInfo commandListCreateInfo =
+    {
+       .commandPoolFamily = PC_CORE::CommandPoolFamily::Graphics,
+       .commandBufferType = CommandBufferType::Primary,
+    };
 
+    primaryCommandList = Rhi::CreateCommandList(commandListCreateInfo);
 
-    CreateCommandBuffers();
+   
     CreateRenderPasss();
     CreateShaders();
     CreateThirdPartyResources();
@@ -171,13 +177,13 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    commandList->Reset();
-    commandList->BeginRecordCommands();
+    primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
     
 
     //m_DebugDrawContext->Prepare();
 
-    UpdateLightData(renderingContext, commandList.get());
+    UpdateLightData(renderingContext, primaryCommandList.get());
     UpdateCameraUniformBuffer(renderingContext);
 
     const ViewportInfo viewportInfo =
@@ -193,14 +199,14 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
         .scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
     };
 
-    commandList->SetViewPort(viewportInfo);
+    primaryCommandList->SetViewPort(viewportInfo);
 
 
     DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 
-    commandList->EndRecordCommands();
+    primaryCommandList->EndRecordCommands();
 }
 
 
@@ -210,19 +216,19 @@ void Renderer::SwapBuffers(Window* _window)
     PERF_REGION_COLOR(PerfRegion::Rendering);
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
 
-    swapChainCommandList->Reset();
-    swapChainCommandList->BeginRecordCommands();
+    primaryCommandList->Reset();
+    primaryCommandList->BeginRecordCommands();
 
-    swapChainCommandList->MergeCommands(commandList.get(), 1);
+    primaryCommandList->MergeCommands(primaryCommandList.get(), 1);
 
-    swapChain->BeginSwapChainRenderPass(swapChainCommandList.get());
-    swapChainCommandList->ExecuteExternalCommand();
-    swapChain->EndSwapChainRenderPass(swapChainCommandList.get());
+    swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
+    primaryCommandList->ExecuteExternalCommand();
+    swapChain->EndSwapChainRenderPass(primaryCommandList.get());
 
-    swapChainCommandList->EndRecordCommands();
+    primaryCommandList->EndRecordCommands();
 
     ClearRenderData();
-    m_RhiContext->swapChain->Present(swapChainCommandList.get(), _window);
+    m_RhiContext->swapChain->Present(primaryCommandList.get(), _window);
     Rhi::NextFrame();
 }
 
@@ -256,13 +262,13 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
 
         // Send Data
 
-        commandList->BindDescriptorSet(shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
 
-        commandList->PushConstant(shader.get(), "PushConstants", &modelMatrixf,
-                                         sizeof(Tbx::Matrix4x4f) * 2);
-        commandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
-        commandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
-        commandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+        primaryCommandList->PushConstant(shader.get(), "PushConstants", &modelMatrixf,
+            sizeof(Tbx::Matrix4x4f) * 2);
+        primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
+        primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
     }
 }
 
@@ -283,14 +289,14 @@ void Renderer::DrawSkyBox()
 
     if (auto cube = m_CubeMesh.lock())
     {
-        commandList->BindProgram(m_CubeMapShader.lock().get());
-        commandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet,
-                                              SCENE_DESCRIPTOR_SET, 1);
-        commandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet,
-                                              ENVIRONEMENT_DESCRIPTOR_SET, 1);
-        commandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
-        commandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
-        commandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+        primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet,
+            SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet,
+            ENVIRONEMENT_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
+        primaryCommandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
     }
 }
 
@@ -313,27 +319,27 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     };
 
 
-    commandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
-    commandList->BeginRenderPass(beginRenderPassInfo);
+    primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
-    commandList->BindProgram(m_ForwardShader.lock().get());
-    commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+    primaryCommandList->BindProgram(m_ForwardShader.lock().get());
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-    commandList->SetViewPort(_viewportInfo);
-    commandList->BindDescriptorSet(m_ForwardShader.lock().get(), m_ShaderProgramSceneDescriptorSet,
-                                          SCENE_DESCRIPTOR_SET, 1);
+    primaryCommandList->SetViewPort(_viewportInfo);
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), m_ShaderProgramSceneDescriptorSet,
+        SCENE_DESCRIPTOR_SET, 1);
 
     // draw all static mesh
     DrawStaticMesh(MaterialType::Transparent, m_ForwardShader.lock());
     DrawSkyBox();
 #ifdef WITH_EDITOR
     for (auto& it : UserCustomForwardPass)
-        it(*this, commandList.get(), *currentRenderingContext, &m_RenderWorldData);
+        it(*this, primaryCommandList.get(), *currentRenderingContext, &m_RenderWorldData);
     //m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
 #endif
-    commandList->EndRenderPass();
+    primaryCommandList->EndRenderPass();
 
-    commandList->EndDebugLabel();
+    primaryCommandList->EndDebugLabel();
 }
 
 void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
@@ -360,36 +366,36 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
         .clearDepth = 1.f
     };
 
-    commandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
-    commandList->BeginRenderPass(beginRenderPassInfo);
+    primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
+    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
     if (std::shared_ptr sGeometry = m_GeometryBufferShader.lock())
     {
-        commandList->BindProgram(sGeometry.get());
-        commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+        primaryCommandList->BindProgram(sGeometry.get());
+        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-        commandList->BindDescriptorSet(sGeometry.get(), m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(sGeometry.get(), m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
         DrawStaticMesh(MaterialType::Opaque, sGeometry);
     }
-    commandList->EndDebugLabel();
+    primaryCommandList->EndDebugLabel();
 
-    commandList->NextSubPass();
+    primaryCommandList->NextSubPass();
 
-    commandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
+    primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
 
     if (std::shared_ptr sDeferred = m_DeferedShader.lock())
     {
-        commandList->BindProgram(sDeferred.get());
-        commandList->BindDescriptorSet(sDeferred.get(), m_DeferdDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
-        commandList->BindDescriptorSet(sDeferred.get(), _renderingContext.gbufferDescriptorSet, GBUFFER_SET, 1);
+        primaryCommandList->BindProgram(sDeferred.get());
+        primaryCommandList->BindDescriptorSet(sDeferred.get(), m_DeferdDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(sDeferred.get(), _renderingContext.gbufferDescriptorSet, GBUFFER_SET, 1);
 
-        commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
-        commandList->Draw(4, 1, 0, 0);
+        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        primaryCommandList->Draw(4, 1, 0, 0);
     }
 
-    commandList->EndDebugLabel();
+    primaryCommandList->EndDebugLabel();
 
-    commandList->EndRenderPass();
+    primaryCommandList->EndRenderPass();
 }
 
 
@@ -417,35 +423,21 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
     };
 
 
-    commandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
-    commandList->BeginRenderPass(drawToViewport);
-    commandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
-    commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(drawToViewport);
+    primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
+    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
-    commandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
-                                          _renderingContext.viewPortDescriptorSet, 0, 1);
-    commandList->Draw(4, 1, 0, 0);
+    primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
+        _renderingContext.viewPortDescriptorSet, 0, 1);
+    primaryCommandList->Draw(4, 1, 0, 0);
 
-    commandList->EndRenderPass();
-    commandList->EndDebugLabel();
+    primaryCommandList->EndRenderPass();
+    primaryCommandList->EndDebugLabel();
 }
 
 
 #pragma region CreateRenderPasss
-
-void Renderer::CreateCommandBuffers()
-{
-    PC_CORE::CommandListCreateInfo commandListCreateInfo =
-    {
-        .commandPoolFamily = CommandPoolFamily::Graphics,
-        .commandBufferType = CommandBufferType::Secondary,
-    };
-
-    commandList = Rhi::CreateCommandList(commandListCreateInfo);
-
-    commandListCreateInfo.commandBufferType = CommandBufferType::Primary;
-    swapChainCommandList = Rhi::CreateCommandList(commandListCreateInfo);
-}
 
 void Renderer::CreateRenderPasss()
 {
