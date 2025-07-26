@@ -60,11 +60,6 @@ void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
     VK_CALL(vulkanDevice->GetDevice().resetFences(1, &m_SyncObject[frameIndex].inFlightFence));
 }
 
-size_t Vulkan::VulkanSwapChain::GetNbrOfImage() const
-{
-    return m_SwapChainImage.size();
-}
-
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
     const std::vector<vk::SurfaceFormatKHR>& availableFormats)
 {
@@ -230,7 +225,8 @@ void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
 
     const vk::SurfaceFormatKHR surfaceFormatKHR = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
     const vk::PresentModeKHR presentModeKHR = ChooseSwapPresentMode(swapChainSupportDetails.presentModes);
-    
+
+
     m_Extent2D = swapChainSupportDetails.capabilities.currentExtent;
     m_SurfaceFormat = surfaceFormatKHR;
     m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_SurfaceFormat.format);
@@ -279,6 +275,8 @@ void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
     VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
     m_SwapChainImage.resize(imageCount);
     VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, m_SwapChainImage.data()));
+
+    m_SwapChainImageCount = m_SwapChainImage.size();
 }
 
 void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window)
@@ -290,8 +288,6 @@ void Vulkan::VulkanSwapChain::Present(const PC_CORE::CommandList* _commandList, 
 
     const vk::Queue& queue = *vcommandList->GetQueue();
     const vk::Queue& prensetQueu = VulkanContext::GetContext().mainQueue;
-
-
 
     vk::SubmitInfo submitInfo{};
     submitInfo.sType = vk::StructureType::eSubmitInfo;

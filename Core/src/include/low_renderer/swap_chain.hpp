@@ -42,6 +42,12 @@ public:
     {
         return m_SwapChainHeight;   
     }
+
+    PC_CORE_API size_t GetNbrOfImage() const
+    {
+        return m_SwapChainImageCount;
+    }
+
 protected:
     std::shared_ptr<RhiRenderPass> m_SwapChainRenderPass;
     
@@ -50,6 +56,8 @@ protected:
     uint32_t m_SwapChainWidth = 0;
 
     uint32_t m_SwapChainHeight = 0;
+
+    uint8_t m_SwapChainImageCount = 0;
 };
 
 END_PCCORE
