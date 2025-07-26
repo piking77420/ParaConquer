@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "core_header.hpp"
+#include "material_instance.hpp"
 #include "low_renderer/descriptor_set.hpp"
 #include "resources/texture_2d.hpp"
 
@@ -15,6 +16,25 @@ class ShaderProgram;
     
 };
 
+enum struct MaterialAttribute : uint8_t
+{
+    Color,
+    Roughness,
+    Metallic,
+    Normal,
+    Ao,
+};
+
+enum struct MaterialValueType : uint8_t
+{
+    Scalar,
+    Vec2,
+    Vec3,
+    Vec4,
+    TextureSample,
+};
+
+
 
 class Material : public Resource
 {
@@ -22,6 +42,8 @@ public:
     MaterialType materialType = MaterialType::Opaque;
 
     ResourceRef<Texture2D> m_albedo;
+
+    std::shared_ptr<MaterialInstance> CreateMaterialInstance();
 
     PC_CORE_API IMP_DYNAMIC_REFLECT();
 
@@ -35,13 +57,15 @@ public:
 
     const ShaderProgramDescriptorSets* GetDescriptorSet() const
     {
-        return m_pShaderProgramDescriptorSets;
+        return m_PShaderProgramDescriptorSets;
     }
 
 private:
-    ShaderProgramDescriptorSets* m_pShaderProgramDescriptorSets = nullptr;
+    ShaderProgramDescriptorSets* m_PShaderProgramDescriptorSets = nullptr;
 
     ResourceRef<ShaderProgram> m_ShaderProgram;
+
+    std::vector<std::shared_ptr<MaterialInstance>> m_MaterialInstances;
 };
 
 REFLECT(Material, Resource)

@@ -5,17 +5,21 @@
 #include "resources/resource_manager.hpp"
 
 
+std::shared_ptr<PC_CORE::MaterialInstance> PC_CORE::Material::CreateMaterialInstance()
+{
+    return nullptr;
+}
+
 PC_CORE::Material::Material()
 {
     DYNAMIC_REFLECT_INIT
 }
 
 
-PC_CORE::Material::Material(const std::string& _name)
+PC_CORE::Material::Material(const std::string& _name) : Resource(_name)
 {
     DYNAMIC_REFLECT_INIT
     
-    name = _name;
     switch (materialType)
     {
     case MaterialType::Opaque:
@@ -29,14 +33,14 @@ PC_CORE::Material::Material(const std::string& _name)
     
     
     if (!m_ShaderProgram.expired())
-        m_ShaderProgram.lock()->AllocDescriptorSet(&m_pShaderProgramDescriptorSets, MATERIAL_DESCRIPTOR_SET);
+        m_ShaderProgram.lock()->AllocDescriptorSet(&m_PShaderProgramDescriptorSets, MATERIAL_DESCRIPTOR_SET);
 }
 
 PC_CORE::Material::~Material()
 {
    
     if (!m_ShaderProgram.expired())
-        m_ShaderProgram.lock()->FreeDescriptorSet(&m_pShaderProgramDescriptorSets);
+        m_ShaderProgram.lock()->FreeDescriptorSet(&m_PShaderProgramDescriptorSets);
 }
 
 void PC_CORE::Material::Build()
@@ -66,6 +70,6 @@ void PC_CORE::Material::Build()
         },
    };
 
-   m_pShaderProgramDescriptorSets->WriteDescriptorSets(descriptorSets);
+   m_PShaderProgramDescriptorSets->WriteDescriptorSets(descriptorSets);
 }
 
