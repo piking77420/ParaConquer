@@ -9,7 +9,7 @@ float D_GGX(float NoH, float roughness)
     float k = roughness / (1.0 - NoH * NoH + a * a);
     return k * k * (1.0 / PI);
 }
-
+    
 
 // FO soudld be 0.04 for most dielectric
 // F1 should be 1
@@ -32,13 +32,6 @@ float G_GGX(float NoV, float NoL, float roughness) {
     float GGXL = GGX(NoL, a);
     return GGXV * GGXL;
 }
-// ----------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------
-vec3 F_Schlick(float u, vec3 f0 ,float f90 )
-{
-	return f0 + ( f90 - f0 ) * pow (1.f - u , 5.f);
-}
 
 
 float Fd_Lambert() {
@@ -48,8 +41,8 @@ float Fd_Lambert() {
 vec3 BRDF(vec3 diffuseColor, float NoV, float NoL, float NoH, float LoH, float roughness, float metallic)
 {
     float D = D_GGX(NoH, roughness);
-    float V = V_SmithGGXCorrelated(NoV, NoL, roughness);
-    vec3  F = F_Schlick(LoH, 0.04, 1);
+    float V = G_GGX(NoV, NoL, roughness);
+    vec3  F = F_Schlick(LoH, vec3(0.04), 1);
 
     vec3 Fr = (D * V) * F;
     

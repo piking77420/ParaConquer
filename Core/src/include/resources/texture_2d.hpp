@@ -30,9 +30,7 @@ public:
     PC_CORE_API IMP_DYNAMIC_REFLECT()
     
     DEFAULT_COPY_MOVE_OPERATIONS(Texture2D)
-    
-    PC_CORE_API void Build() override;
-    
+        
     PC_CORE_API RHIFormat GetRHIFormat() const;
 
     Tbx::Vector2i GetSize() const

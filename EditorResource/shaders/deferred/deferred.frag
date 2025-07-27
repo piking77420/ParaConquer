@@ -26,20 +26,65 @@ vec3 Decode(vec2 f)
     return normalize(n);
 }
 
+
+
 void main()
 {
+    outColor = vec4(0);
+    
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
-    vec3 normal = Decode(subpassLoad(inputNormal).rg);
-    //vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
-    vec3 worldPos = subpassLoad(inputWorldPosition).rgb;
-    vec3 viewDir = normalize(worldPos);
-    
-    float NdotV = dot(normal, viewDir);
-    
-    // iterate over each ligt
-    
-    for
-    
+    vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
+    vec3 viewSpacePos = subpassLoad(inputWorldPosition).rgb;
 
-    outColor = vec4(normal, 1);
+    vec3 N = Decode(subpassLoad(inputNormal).rg);
+    vec3 V = normalize(viewSpacePos);
+    float NoV = abs(dot(N, V)) + 1e-5;
+    
+    float roughness = roughnessMettalicAo.x * roughnessMettalicAo.x;
+    float metallic = roughnessMettalicAo.y;
+
+    // iterate over each light
+    
+    // for each dirlight
+    for(int i = 0; i < lightSceneData.dirLightCount; i++)
+    {
+        DirectionalData dirlight = lightSceneData.dirlights[i];
+        vec3 L = normalize(dirlight.direction);
+        vec3 H = normalize(V + L);
+        float NoL = max(dot(N, L), 1.0);
+        float NoH = max(dot(H, V), 1.0);
+        float LoH = max(dot(L, H), 1.0);
+
+        vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, roughness, metallic);
+        vec3 radiance = dirlight.color * dirlight.intensity;
+    }
+    // for each spothlight
+    // TODO
+    
+    // for each pointLight
+    for(int i = 0; i < lightSceneData.pointLightCount; i++)
+    {
+        PointLightData pointLight = lightSceneData.pointLights[i];
+        vec3 fragmentToLight = pointLight.position - viewSpacePos;
+        float fragmentToLightNorm = length(fragmentToLight);
+        outColor = vec4(viewSpacePos, 1);
+
+        if (fragmentToLightNorm >= pointLight.maxRange)
+                continue;
+        
+        vec3 L = fragmentToLight / fragmentToLightNorm; // position are in view space
+        vec3 H = normalize(V + L);
+        float NoL = max(dot(N, L), 1.0);
+        float NoH = max(dot(H, V), 1.0);
+        float LoH = max(dot(L, H), 1.0);
+        vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, 1, 0);
+        
+        float distanceFrag = fragmentToLightNorm;
+        float attenuation = 1.0 / (distanceFrag * distanceFrag);
+        vec3 radiance = pointLight.color * pointLight.intensity * attenuation;
+        
+        
+    }
+    //outColor = vec4(lightSceneData.pointLights[0].color * lightSceneData.pointLights[0].intensity, 1);
+
 }

@@ -133,10 +133,10 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
     }
     gpuDynamicLightData->dirLightCount = updateDirLight;
     gpuDynamicLightData->spothLightCount = spotLight;
-    gpuDynamicLightData->spothLightCount = pointLightUpdate;
+    gpuDynamicLightData->pointLightCount = pointLightUpdate;
 
 
-
+    constexpr size_t size = sizeof(GPUDynamicLightData);
     gpuLightUniformBufferStaging.Update(gpuDynamicLightData.get(), sizeof(GPUDynamicLightData));
 
     commandList->CopyBuffer(*gpuLightUniformBufferStaging.GetRhiBuffer(),

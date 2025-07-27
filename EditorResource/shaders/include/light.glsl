@@ -35,5 +35,6 @@ layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform DynamicL
     int dirLightCount;
     int spothLightCount;
     int pointLightCount;
+    int _pad; // padding
 } lightSceneData;
 

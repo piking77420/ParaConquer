@@ -7,14 +7,6 @@
 
 using namespace PC_CORE;
 
-
-
-
-void Texture2D::Build()
-{
-    
-}
-
 Texture2D::Texture2D()
 {
     DYNAMIC_REFLECT_INIT
@@ -39,7 +31,6 @@ Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo) : m_Size(_create
     m_Format = _createTextureInfo.format;
     
     m_Texture2D = Rhi::CreateTexture2D(_createTextureInfo);
-    
 }
 
 

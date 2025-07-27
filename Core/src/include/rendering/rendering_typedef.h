@@ -145,7 +145,7 @@ BEGIN_PCCORE
         Tbx::Vector3f direction;
         float intensity;
         Tbx::Vector3f color;
-        float padding;
+        float _pad;
     };
 
     struct ALIGNAS_16 SpotLightGPU
@@ -157,6 +157,7 @@ BEGIN_PCCORE
         Tbx::Vector3f color;
         float outerCutOff;
         float maxRange;
+        float _pad[3];
     };
 
     struct ALIGNAS_16 PointLightGPU
@@ -167,14 +168,15 @@ BEGIN_PCCORE
         float intensity;
     };
 
-    struct ALIGNAS_16 GPUDynamicLightData
+    struct ALIGNAS_16 GPUDynamicLightData   
     {
         DirectionalLightGPU directionalLights[MAX_DIRLIGHT];
         SpotLightGPU spothLights[MAX_SPOTLIGHT];
         PointLightGPU pointLights[MAX_POINTLIGHT];
         int dirLightCount;
         int spothLightCount;
-        int pointLightCount;
+        int pointLightCount;    
+        int _pad;
     };
 
 END_PCCORE
