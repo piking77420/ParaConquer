@@ -45,7 +45,7 @@ PC_CORE::Material::~Material()
 
 void PC_CORE::Material::Build()
 {
-    if (m_albedo.expired())
+    if (albedo.expired())
     {
         PC_LOGERROR("albedo texture expired");
         return;
@@ -55,7 +55,7 @@ void PC_CORE::Material::Build()
     ImageSamperDescriptor imageSamperDescriptor =
     {
         .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
-        .texture = m_albedo.lock().get()
+        .texture = albedo.lock().get()
     };
 
     

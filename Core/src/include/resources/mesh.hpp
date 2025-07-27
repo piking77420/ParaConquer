@@ -14,8 +14,6 @@ BEGIN_PCCORE
  class Mesh : public Resource
 {
 public:
-
-  
     VertexBuffer vertexBuffer;
 
     IndexBuffer indexBuffer;
@@ -25,8 +23,6 @@ public:
     PC_CORE_API void LoadFromFile(const std::string& _path) override;
 
     PC_CORE_API IMP_DYNAMIC_REFLECT()
-
-    PC_CORE_API void Build() override;
 
     PC_CORE_API Mesh(const std::string& _name);
 

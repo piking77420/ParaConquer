@@ -32,8 +32,6 @@ public:
     PC_CORE_API virtual void LoadFromFile(const std::string& _path);
     
     PC_CORE_API void QueryType() override = 0;
-    // SOULD BE = 0
-    PC_CORE_API virtual void Build() {};
 
     // Reload base on modificated parent ?
     PC_CORE_API virtual void OnParentReload(const Guid& _parentGuid)

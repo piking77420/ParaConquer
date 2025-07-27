@@ -41,7 +41,14 @@ class Material : public Resource
 public:
     MaterialType materialType = MaterialType::Opaque;
 
-    ResourceRef<Texture2D> m_albedo;
+    ResourceRef<Texture2D> albedo;
+
+    ResourceRef<Texture2D> metallic;
+
+    ResourceRef<Texture2D> roughess;
+
+    ResourceRef<Texture2D> normal;
+
 
     std::shared_ptr<MaterialInstance> CreateMaterialInstance();
 
@@ -53,7 +60,7 @@ public:
 
     PC_CORE_API ~Material();
 
-    PC_CORE_API void Build() override;
+    PC_CORE_API void Build();
 
     const ShaderProgramDescriptorSets* GetDescriptorSet() const
     {

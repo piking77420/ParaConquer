@@ -32,6 +32,8 @@ layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform DynamicL
     DirectionalData dirlights[MAX_DIRLIGHT];
     SpotLightData spothLights[MAX_SPOTLIGHT];
     PointLightData pointLights[MAX_POINTLIGHT];
-    
+    int dirLightCount;
+    int spothLightCount;
+    int pointLightCount;
 } lightSceneData;
 

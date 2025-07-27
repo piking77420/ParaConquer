@@ -60,7 +60,7 @@ private:
 	enum class PrimitiveType
 	{
 		Sphere,
-		Box,
+		Box,	
 		Capusle,
 		WireSphere,
 		WireBox,

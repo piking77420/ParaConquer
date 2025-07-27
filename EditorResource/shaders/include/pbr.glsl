@@ -1,45 +1,59 @@
 #include "math.glsl"
 
-float D_GGX ( float NdotH , float m )
+//https://github.com/google/filament
+//https://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
+
+float D_GGX(float NoH, float roughness) 
 {
- // Divide by PI is apply later
- float m2 = m * m ;
- float f = ( NdotH * m2 - NdotH ) * NdotH + 1;
- return m2 / (f * f) ;
+    float a = NoH * roughness;
+    float k = roughness / (1.0 - NoH * NoH + a * a);
+    return k * k * (1.0 / PI);
 }
 
-// ----------------------------------------------------------------------------
-float GeometrySchlickGGX(float NdotV, float roughness)
+
+// FO soudld be 0.04 for most dielectric
+// F1 should be 1
+vec3 F_Schlick(float u, vec3 f0, float f90) {
+    return f0 + (vec3(f90) - f0) * pow(u, 5.0);
+}
+
+float GGX(float NdotV, float a2)
 {
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+    float num = 2.0 * NdotV;
+    float denum = NdotV + sqrt(a2 + (1.0 - a2) * (NdotV * NdotV));
+    return num / denum;
+}
 
-    float nom = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return nom / denom;
+// NoV dot(Normal , ViewDir)
+// Nol dot(Normal, lightIncident)
+float G_GGX(float NoV, float NoL, float roughness) {
+    float a = roughness * roughness; // aSq
+    float GGXV = GGX(NoV, a);
+    float GGXL = GGX(NoL, a);
+    return GGXV * GGXL;
 }
 // ----------------------------------------------------------------------------
 
-float V_SmithGGXCorrelated (float NdotL , float NdotV , float alphaG )
-{
-    //Original formulation of G_SmithGGX Correlated
-    //float lambda_v = ( -1 + sqrt ( alphaG2 * (1 - NdotL2 ) / NdotL2 + 1)) * 0.5 f;
-    //float lambda_l = ( -1 + sqrt ( alphaG2 * (1 - NdotV2 ) / NdotV2 + 1)) * 0.5 f;
-    //G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l );
-    //V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * NdotL * NdotV );
-
-    // This is the optimize version
-    float alphaG2 = alphaG * alphaG ;
-    // Caution : the " NdotL *" and " NdotV *" are explicitely inversed , this is not a mistake .
-    float Lambda_GGXV = NdotL * sqrt (( - NdotV * alphaG2 + NdotV ) * NdotV + alphaG2 );
-    float Lambda_GGXL = NdotV * sqrt (( - NdotL * alphaG2 + NdotL ) * NdotL + alphaG2 );
-
- return 0.5f / ( Lambda_GGXV + Lambda_GGXL );
-}
-
 // ----------------------------------------------------------------------------
-vec3 F_Schlick (vec3 f0 ,float f90 ,float u )
+vec3 F_Schlick(float u, vec3 f0 ,float f90 )
 {
 	return f0 + ( f90 - f0 ) * pow (1.f - u , 5.f);
+}
+
+
+float Fd_Lambert() {
+    return 1.0 / PI;
+}
+
+vec3 BRDF(vec3 diffuseColor, float NoV, float NoL, float NoH, float LoH, float roughness, float metallic)
+{
+    float D = D_GGX(NoH, roughness);
+    float V = V_SmithGGXCorrelated(NoV, NoL, roughness);
+    vec3  F = F_Schlick(LoH, 0.04, 1);
+
+    vec3 Fr = (D * V) * F;
+    
+    vec3 Fd = diffuseColor * Fd_Lambert() * (vec3(1.0) - F);
+    
+    return Fr + Fd;
 }

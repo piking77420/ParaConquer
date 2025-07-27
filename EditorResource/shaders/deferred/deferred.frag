@@ -31,12 +31,15 @@ void main()
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
     vec3 normal = Decode(subpassLoad(inputNormal).rg);
     //vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
-    vec3 worldPositionTexSampler = subpassLoad(inputWorldPosition).rgb;
-
+    vec3 worldPos = subpassLoad(inputWorldPosition).rgb;
+    vec3 viewDir = normalize(worldPos);
+    
+    float NdotV = dot(normal, viewDir);
+    
+    // iterate over each ligt
+    
+    for
+    
 
     outColor = vec4(normal, 1);
-    
-    
-
-    //outColor = vec4(albedo * dot(lightSceneData.dirlights[0].direction, normal) , 1.0);
 }

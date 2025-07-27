@@ -172,6 +172,9 @@ BEGIN_PCCORE
         DirectionalLightGPU directionalLights[MAX_DIRLIGHT];
         SpotLightGPU spothLights[MAX_SPOTLIGHT];
         PointLightGPU pointLights[MAX_POINTLIGHT];
+        int dirLightCount;
+        int spothLightCount;
+        int pointLightCount;
     };
 
 END_PCCORE

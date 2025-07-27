@@ -71,9 +71,9 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
     
-    size_t updateDirLight = 0;
-    size_t spotLight = 0;
-    size_t pointLightUpdate = 0;
+    int updateDirLight = 0;
+    int spotLight = 0;
+    int pointLightUpdate = 0;
 
     for (size_t i = 0; i < m_RenderWorldData.lightData.size(); i++)
     {
@@ -131,6 +131,11 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
             assert(false && "Not implemented light type");
         }
     }
+    gpuDynamicLightData->dirLightCount = updateDirLight;
+    gpuDynamicLightData->spothLightCount = spotLight;
+    gpuDynamicLightData->spothLightCount = pointLightUpdate;
+
+
 
     gpuLightUniformBufferStaging.Update(gpuDynamicLightData.get(), sizeof(GPUDynamicLightData));
 
