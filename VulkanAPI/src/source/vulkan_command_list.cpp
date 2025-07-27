@@ -356,8 +356,7 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _
     m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset) , indexType);
 }
 
-void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
-    PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage)
+void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -396,7 +395,7 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
     bufferBarrier.size = VK_WHOLE_SIZE;
 
     
-
+    /*
     m_CommandBuffer[frameIndex].pipelineBarrier(
         vk::PipelineStageFlagBits::eTransfer,              // srcStage
         Vulkan::Utils::RhiPipelineStageToVulkan(_dstBufferUsage),
@@ -404,7 +403,64 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
         nullptr,
         bufferBarrier,
         nullptr
-    );
+    );*/
+}
+
+void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcStageMask, PC_CORE::GpuPipelineStageFlagBits dstStageMask, 
+    const PC_CORE::MemoryBarrier* _memoryBarrier, size_t _memoryBarrierCount, 
+    const PC_CORE::BufferMemoryBarrier* _buffermemoryBarrier, size_t _bufferMemoryBarrierCount,
+    const PC_CORE::ImageMemoryBarrier* _imageMemoryBarrier, size_t _imageMemoryBarrierCount)
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+    
+    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+
+    const vk::PipelineStageFlags srcStageFlag = Vulkan::Utils::RhiPipelineStageToVulkan(srcStageMask);
+    const vk::PipelineStageFlags dstStageFlag = Vulkan::Utils::RhiPipelineStageToVulkan(dstStageMask);
+
+    // Memory Barrier
+    std::vector<vk::MemoryBarrier> vkMemoryBarriers;
+    vkMemoryBarriers.resize(_memoryBarrierCount);
+    for (size_t i = 0; i < _memoryBarrierCount; i++)
+    {
+        vkMemoryBarriers[i].sType = vk::StructureType::eMemoryBarrier;
+        vkMemoryBarriers[i].pNext = nullptr;
+        vkMemoryBarriers[i].srcAccessMask = Vulkan::Utils::RhiAccessFlagToVulkan(_memoryBarrier[i].srcAccessMask);
+        vkMemoryBarriers[i].dstAccessMask = Vulkan::Utils::RhiAccessFlagToVulkan(_memoryBarrier[i].dstAccessMask);
+    }
+    // BufferMemoryBarrier
+    std::vector<vk::BufferMemoryBarrier> vkBufferBarrier;
+    vkBufferBarrier.resize(_bufferMemoryBarrierCount);
+
+    for (size_t i = 0; i < _bufferMemoryBarrierCount; i++)
+    {
+        VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(_buffermemoryBarrier[i].buffer->GetNativeHandle());
+
+		vkBufferBarrier[i].sType = vk::StructureType::eBufferMemoryBarrier;
+		vkBufferBarrier[i].pNext = nullptr;
+		vkBufferBarrier[i].srcAccessMask = Vulkan::Utils::RhiAccessFlagToVulkan(_buffermemoryBarrier[i].srcAccessMask);
+		vkBufferBarrier[i].dstAccessMask = Vulkan::Utils::RhiAccessFlagToVulkan(_buffermemoryBarrier[i].dstAccessMask);
+		vkBufferBarrier[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		vkBufferBarrier[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		vkBufferBarrier[i].buffer = vkBuffer->bufferAndAlloc[frameIndex].buffer;
+		vkBufferBarrier[i].offset = _buffermemoryBarrier[i].offset;
+		vkBufferBarrier[i].size = _buffermemoryBarrier[i].size;       
+    }
+
+    std::vector<vk::ImageMemoryBarrier> vkImageBarrier;
+    vkImageBarrier.resize(_imageMemoryBarrierCount);
+    assert(vkImageBarrier.size() == 0, "TODO");
+
+    for (size_t i = 0; i < _imageMemoryBarrierCount; i++)
+    {
+        
+    }
+
+    m_CommandBuffer[frameIndex].pipelineBarrier(srcStageFlag, dstStageFlag, {},
+        static_cast<uint32_t>(vkMemoryBarriers.size()), vkMemoryBarriers.data(),
+        static_cast<uint32_t>(vkBufferBarrier.size()),vkBufferBarrier.data(),
+        0, nullptr);
 }
 
 void Vulkan::VulkanCommandList::Flush()

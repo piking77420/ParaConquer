@@ -133,9 +133,24 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
     }
 
     gpuLightUniformBufferStaging.Update(gpuDynamicLightData.get(), sizeof(GPUDynamicLightData));
+
     commandList->CopyBuffer(*gpuLightUniformBufferStaging.GetRhiBuffer(),
-                               *gpuLightUniformBuffer.GetRhiBuffer(), 0, 0, sizeof(GPUDynamicLightData),
-                               GpuPipelineStageFlagBits::FragmentShader);
+                               *gpuLightUniformBuffer.GetRhiBuffer(), 0, 0, sizeof(GPUDynamicLightData));
+
+    const BufferMemoryBarrier barrier =
+    {
+        .srcAccessMask = GpuAccessFlag::TransferWrite,
+        .dstAccessMask = GpuAccessFlag::ShaderRead,
+        .buffer = gpuLightUniformBuffer.GetRhiBuffer().get(),
+        .offset = 0,
+        .size = sizeof(GPUDynamicLightData),
+    };
+    commandList->Barrier(
+        GpuPipelineStageFlagBits::Transfer,
+        GpuPipelineStageFlagBits::FragmentShader,
+        nullptr, 0,
+        &barrier, 1,
+        nullptr, 0);
 }
 
 

@@ -78,6 +78,28 @@ struct CommandListCreateInfo
     CommandBufferType commandBufferType;
 };
 
+struct MemoryBarrier
+{
+    GpuAccessFlag srcAccessMask;
+    GpuAccessFlag dstAccessMask;
+};
+
+struct BufferMemoryBarrier
+{
+    GpuAccessFlag srcAccessMask;
+    GpuAccessFlag dstAccessMask;
+    RhiBuffer* buffer;
+    size_t offset;
+    size_t size;
+};
+
+struct ImageMemoryBarrier
+{
+    // TODO
+    GpuAccessFlag srcAccessMask;
+    GpuAccessFlag dstAccessMask;
+};
+
 class CommandList
 {
 public:
@@ -128,8 +150,12 @@ public:
 
     PC_CORE_API virtual void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;
 
-    PC_CORE_API virtual void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
-        PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage) = 0;
+    PC_CORE_API virtual void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes) = 0;
+
+    PC_CORE_API virtual void Barrier(PC_CORE::GpuPipelineStageFlagBits srcStageMask, PC_CORE::GpuPipelineStageFlagBits dstStageMask,
+        const PC_CORE::MemoryBarrier* _memoryBarrier, size_t _memoryBarrierCount,
+        const PC_CORE::BufferMemoryBarrier* _buffermemoryBarrier, size_t _bufferMemoryBarrierCount,
+        const PC_CORE::ImageMemoryBarrier* _imageMemoryBarrier, size_t _imageMemoryBarrierCount) = 0;
 
     PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
 

@@ -59,8 +59,12 @@ public:
 
     VULKAN_API void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) override;
 
-    VULKAN_API  void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
-        PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage) override;
+    VULKAN_API  void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes) override;
+
+    VULKAN_API void Barrier(PC_CORE::GpuPipelineStageFlagBits srcStageMask, PC_CORE::GpuPipelineStageFlagBits dstStageMask,
+        const PC_CORE::MemoryBarrier* _memoryBarrier, size_t _memoryBarrierCount,
+        const PC_CORE::BufferMemoryBarrier* _buffermemoryBarrier, size_t _bufferMemoryBarrierCount,
+        const PC_CORE::ImageMemoryBarrier* _imageMemoryBarrier, size_t _imageMemoryBarrierCount) override;
 
     VULKAN_API void Flush() override;
 
