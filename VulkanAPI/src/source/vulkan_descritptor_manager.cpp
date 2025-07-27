@@ -7,6 +7,9 @@
 
 size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvReflectShaderModule>& _modules)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     SetBindingMap bindingMap;
     std::shared_ptr<CacheDescriptorSets> cache = nullptr;
     if (FindInCache(_modules, &bindingMap, &cache))
@@ -143,7 +146,9 @@ Vulkan::CacheDescriptorSets* Vulkan::VulkanDescritptorManager::GetDescriptorSets
 
 bool Vulkan::VulkanDescritptorManager::FindInCache(const std::vector<SpvReflectShaderModule>& _modules, SetBindingMap* _outSetBindingMap,   std::shared_ptr<CacheDescriptorSets>* cache) const
 {
-    
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     for (const auto& module : _modules)
     {
         for (uint32_t i = 0; i < module.descriptor_binding_count; ++i)

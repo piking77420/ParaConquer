@@ -58,7 +58,7 @@ void Renderer::Init()
     //m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 }
 
-void Renderer::BeginDraw(Window* _window)
+void Renderer::BeginFrame(Window* _window)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -205,8 +205,6 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
-
-    primaryCommandList->EndRecordCommands();
 }
 
 
@@ -216,19 +214,15 @@ void Renderer::SwapBuffers(Window* _window)
     PERF_REGION_COLOR(PerfRegion::Rendering);
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
 
-    primaryCommandList->Reset();
-    primaryCommandList->BeginRecordCommands();
-
-    primaryCommandList->MergeCommands(primaryCommandList.get(), 1);
-
     swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
     primaryCommandList->ExecuteExternalCommand();
     swapChain->EndSwapChainRenderPass(primaryCommandList.get());
 
     primaryCommandList->EndRecordCommands();
 
+    primaryCommandList->Flush();
     ClearRenderData();
-    m_RhiContext->swapChain->Present(primaryCommandList.get(), _window);
+    m_RhiContext->swapChain->Present(_window);
     Rhi::NextFrame();
 }
 

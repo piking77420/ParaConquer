@@ -457,7 +457,7 @@ void Editor::Run(bool* _appShouldClose)
 
 		// end game thread
 		// begin render thread
-		gameApp.renderer.BeginDraw(&gameApp.window);
+		gameApp.renderer.BeginFrame(&gameApp.window);
 		UpdateEditor();
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;

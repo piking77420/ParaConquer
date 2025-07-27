@@ -22,7 +22,7 @@ namespace Vulkan
 
         VULKAN_API void GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
 
-        VULKAN_API void Present(const PC_CORE::CommandList* _commandList, PC_CORE::Window* _window) override;
+        VULKAN_API void Present(PC_CORE::Window* _window) override;
         
         VULKAN_API void HandleRecreateSwapChain(PC_CORE::Window* windowHandle) override;
 
@@ -49,8 +49,6 @@ namespace Vulkan
         
         vk::SurfaceFormatKHR m_SurfaceFormat;
 
-        std::array<SyncObject, MAX_FRAMES_IN_FLIGHT> m_SyncObject;
-
         const vk::Queue* m_PresentQueue;
         
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -62,10 +60,6 @@ namespace Vulkan
         void CreateImageViews();
         
         void CreateFrameBuffers();
-
-        void CreateSyncObjects();
-
-        void DestroySyncObjects();
 
         void CleanUpSwapChain();
 

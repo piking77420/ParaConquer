@@ -1,8 +1,11 @@
 ﻿#include "utils/transition_image_layout.hpp"
 
+
 void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image image, vk::Format format,
     vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _levelCount)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
     vk::ImageMemoryBarrier barrier{};
     barrier.sType = vk::StructureType::eImageMemoryBarrier;

@@ -31,9 +31,8 @@ namespace Vulkan
 		VULKAN_API VulkanFence()
 		{
 			for (size_t i = 0; i < m_Fences.size(); i++)
-			{
 				m_Fences[i] = VK_NULL_HANDLE;
-			}
+			
 		}
 
 		~VulkanFence() override;

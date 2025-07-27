@@ -12,7 +12,9 @@
 
 void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& _shaderProgramDescriptorSet)
 {
-   
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->
         GetDevice();
 

@@ -15,6 +15,10 @@
 
 Vulkan::VulkanTexture::VulkanTexture(const PC_CORE::CreateImageInfo& _createTextureInfo)
 {
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
 	textureAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);
 
 	auto& context = VulkanContext::GetContext();
@@ -108,6 +112,9 @@ Vulkan::VulkanTexture::~VulkanTexture()
 void Vulkan::VulkanTexture::SendDataToGpu(uint32_t _imageWidht, uint32_t _imageHeight, int32_t _imageDepth, uint32_t _layerCount, PC_CORE::Channel _channel,
 	vk::Format _format, const vk::ImageAspectFlags _aspectFlags, const std::vector<void*>& _datas, uint32_t _mimpLevel, vk::ImageLayout _finalImageLayout)
 {
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Rhi);
+
 	auto& context = VulkanContext::GetContext();
 	vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->
 		GetDevice();

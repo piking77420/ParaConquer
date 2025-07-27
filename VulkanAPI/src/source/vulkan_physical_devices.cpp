@@ -79,6 +79,9 @@ Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::UpdateSwapChainSu
 void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices,
                                                            const std::vector<std::string>& _requestExtensions)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     std::vector<int32_t> devicesScore;
     devicesScore.resize(_physicalDevices.size());
 

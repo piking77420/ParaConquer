@@ -2,7 +2,6 @@
 
 #include "vulkan_header.h"
 #include "low_renderer/command_list.hpp"
-#include "tracy/TracyVulkan.hpp"
 
 
 namespace Vulkan
@@ -63,7 +62,7 @@ public:
     VULKAN_API  void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes,
         PC_CORE::GpuPipelineStageFlagBits _dstBufferUsage) override;
 
-    VULKAN_API void Submit(const std::shared_ptr<PC_CORE::RhiFence>& _fences) override;
+    VULKAN_API void Flush() override;
 
     VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 
@@ -71,14 +70,10 @@ public:
 
     VULKAN_API vk::CommandBuffer GetHandle() const;
 
-    VULKAN_API const vk::Queue* GetQueue() const;
-
 private:
     std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
 
-    const vk::Queue* m_Queue = VK_NULL_HANDLE;
-
-#ifdef  DEBUG_GPU_ON
+#ifdef  defined(PROFILING)
     tracy::VkCtx* m_VkTracyContext = nullptr;
 #endif
   

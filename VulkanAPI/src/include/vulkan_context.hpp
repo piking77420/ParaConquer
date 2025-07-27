@@ -9,21 +9,41 @@
 
 namespace Vulkan
 {    
+    struct SyncObject
+    {
+        vk::Semaphore imageAvailableSemaphore;
+
+        vk::Semaphore computeFinishedSemaphore;
+        vk::Fence computeInFlightFence;
+
+        vk::Semaphore renderFinishedSemaphore;
+        vk::Fence inFlightFence;
+    };
+
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
+        
+        std::array<SyncObject, MAX_FRAMES_IN_FLIGHT> syncObjects;
+
         vk::Queue mainQueue;
-        
-        vk::Fence transferFence;
-        
+
+        vk::Queue computeQueu;
+                
         vk::CommandPool commandPool = VK_NULL_HANDLE;
 
         vk::CommandPool transferCommandPool = VK_NULL_HANDLE;
 
+        vk::Fence transferFence;
+
         VmaAllocator allocator = VK_NULL_HANDLE;
 
         VulkanDescritptorManager descritptorManager;
+
+        std::vector<vk::CommandBuffer> renderFrameCommandBuffer;
         
+        std::vector<vk::CommandBuffer> computeCommandBuffer;
+
         VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 
         VULKAN_API ~VulkanContext() override;
@@ -45,6 +65,11 @@ namespace Vulkan
         VULKAN_API void CreateCommandPools();
 
         VULKAN_API void WaitIdleInstance() override;
+
+        VULKAN_API void CreateSyncObjects();
+
+        VULKAN_API void DestroySyncObjects();
+
     };
 
 

@@ -28,7 +28,6 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     {
     case PC_CORE::CommandPoolFamily::Graphics:
         commandPool = vulkanContext.commandPool;
-        m_Queue = &vulkanContext.mainQueue;
         break;
     case PC_CORE::CommandPoolFamily::Compute:
         break;
@@ -59,7 +58,7 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     {
         m_CommandBuffer[i] = vec[i];
     }
-#ifdef  DEBUG_GPU_ON
+#ifdef defined(PROFILING) 
     vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
     vk::Device device = GET_VK_DEVICE->GetDevice();
     VulkanInstance& instance = *std::reinterpret_pointer_cast<VulkanInstance>(vulkanContext.renderInstance).get();
@@ -91,7 +90,7 @@ void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     assert(_count != 0);
-
+    assert(this != _other);
     assert(m_CommandBufferType == PC_CORE::CommandBufferType::Primary);
 
     vk::CommandBuffer* commandBuffers = reinterpret_cast<vk::CommandBuffer*>(_malloca(sizeof(vk::CommandBuffer) * _count));
@@ -307,12 +306,18 @@ void Vulkan::VulkanCommandList::SetBlendEquation(uint32_t _firstAttachement, uin
 
 void Vulkan::VulkanCommandList::SetLineWidth(float _widht)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setLineWidth(_widht);
 }
 
 void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex,
                                      uint32_t _firstInstance)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].draw(_vertexCount, _instanceCount, _firstVertex, _firstInstance);
 }
 
@@ -402,30 +407,26 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
     );
 }
 
-VULKAN_API void Vulkan::VulkanCommandList::Submit(const std::shared_ptr<PC_CORE::RhiFence>& _fences)
+void Vulkan::VulkanCommandList::Flush()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    VulkanContext& vkContext = VulkanContext::GetContext();
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
-    vk::CommandBuffer commandBuffer = m_CommandBuffer[frameIndex];
-    vk::Fence fence = reinterpret_cast<VulkanFence*>(_fences.get())->GetVkFence(frameIndex);
-   
- 
-    vk::SubmitInfo submitInfo{};
-    submitInfo.sType = vk::StructureType::eSubmitInfo;
-    submitInfo.pWaitSemaphores = nullptr;
-    submitInfo.pWaitDstStageMask = {};
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-    submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = nullptr;
-
-    const vk::Queue& queue = *GetQueue();
-
-    VK_CALL(queue.submit( 1, &submitInfo, fence));
+    switch (m_CommandPoolFamily)
+    {
+    case PC_CORE::CommandPoolFamily::Graphics:
+        vkContext.renderFrameCommandBuffer.push_back(m_CommandBuffer[frameIndex]);
+        break;
+    case PC_CORE::CommandPoolFamily::Compute:
+        vkContext.computeCommandBuffer.push_back(m_CommandBuffer[frameIndex]);
+        break;
+    case PC_CORE::CommandPoolFamily::Count:
+        break;
+    default:;
+    }
 
 }
 
@@ -434,10 +435,6 @@ vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const
     return m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()];
 }
 
-const vk::Queue* Vulkan::VulkanCommandList::GetQueue() const
-{
-    return m_Queue;
-}
 
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)
 {

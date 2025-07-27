@@ -67,7 +67,7 @@ public:
     
     PC_CORE_API void Init();
     
-    PC_CORE_API void BeginDraw(Window* _window);
+    PC_CORE_API void BeginFrame(Window* _window);
     
     PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext);
 

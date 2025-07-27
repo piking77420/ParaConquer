@@ -63,6 +63,8 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
 
 void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets, size_t set)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
     Vulkan::CacheDescriptorSets* cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
     
@@ -84,6 +86,9 @@ void VulkanShaderProgram::AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSet
 
 void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     delete *shaderProgramDescriptorSets;
     *shaderProgramDescriptorSets = nullptr;
     --m_DescriptorSetAllocCount;
@@ -91,6 +96,9 @@ void VulkanShaderProgram::FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets
 
 void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data, size_t _size) const
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
 #ifdef _DEBUG
     if (_size > VULKAN_MAX_PUSH_CONSTANTS)
     {
@@ -115,6 +123,7 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
 VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo) : RhiShaderProgram(_programShaderCreateInfo)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
     VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo.shaderSources);
 
@@ -148,6 +157,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const  size_t shaderStageCount = _programShaderCreateInfo.size();
 
@@ -211,6 +221,9 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 
 void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     std::shared_ptr<VulkanDevice> device = GET_VK_DEVICE;
 
 
@@ -328,6 +341,9 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
 
 void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     for (size_t module = 0; module < _spvReflectShaderModule.size(); module++)
     {
         for (size_t pushConstant = 0; pushConstant < _spvReflectShaderModule[module].push_constant_block_count; pushConstant++)
@@ -478,17 +494,14 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputStat
 
 void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContex.pushConstantRanges;
 
     uint32_t pushConstantRangeCount = 0;
     for (auto& moduleIndex : _vulkanShaderProgramCreateContex.modulesReflected)
     {
-        //for (auto& set : moduleIndex.descriptor_sets)
-        //{
-            //if (set.set == std::numeric_limits<uint32_t>::max())
-              //  continue;
-            //layoutsMap[set.set].resize(layoutsMap[set.set].size() + set.binding_count);
-        //}
         pushConstantRangeCount += moduleIndex.push_constant_block_count;
     }
     pushConstantRanges->resize(pushConstantRangeCount);
@@ -518,6 +531,7 @@ void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCrea
 void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _sources)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice)->GetDevice();
 

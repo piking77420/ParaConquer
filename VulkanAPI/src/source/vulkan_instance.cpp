@@ -134,6 +134,7 @@ void Vulkan::VulkanInstance::GetDebugFunc()
 Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window) : RenderInstance(_renderInstanceCreateInfo)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
     
     vk::ApplicationInfo appInfo = {};
     appInfo.sType = vk::StructureType::eApplicationInfo;

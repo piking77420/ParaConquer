@@ -135,7 +135,7 @@ public:
 
     PC_CORE_API void ExecuteExternalCommand();
 
-    PC_CORE_API virtual void Submit(const std::shared_ptr<RhiFence>& _fences) = 0;
+    PC_CORE_API virtual void Flush() = 0;
 
     PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
 

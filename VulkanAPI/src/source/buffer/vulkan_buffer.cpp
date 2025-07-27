@@ -31,6 +31,9 @@ Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::
        PC_LOGERROR("Trying to create a Vulkan buffer with zero size");
        return;
    }
+
+   PERF_REGION_SCOPED;
+   PERF_REGION_COLOR(PerfRegion::Rhi);
     
     bufferAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);
     assert(bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
@@ -132,6 +135,9 @@ void Vulkan::VulkanBuffer::SendDataToGPUMemory(const void* _data, uint32_t _size
 {
     if (_data == nullptr || _size == 0)
         return;
+
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
     
     auto& context = VulkanContext::GetContext();
     

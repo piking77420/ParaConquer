@@ -8,6 +8,11 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "perf_region.hpp"
+
+#ifdef PROFILING
+#include "tracy/TracyVulkan.hpp"
+#endif
 #include "log.hpp"
 
 #ifdef VULKAN_DLL
