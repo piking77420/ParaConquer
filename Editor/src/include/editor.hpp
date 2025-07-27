@@ -101,6 +101,8 @@ private:
     void ReloadShaders();
     
     EditorRenderer m_EditorRenderer;
+
+
 };
 
 template <EditorCommandDerived T, typename ... Args>

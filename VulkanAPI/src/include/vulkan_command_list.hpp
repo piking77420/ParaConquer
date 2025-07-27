@@ -76,7 +76,7 @@ public:
 
 private:
     std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
-
+    
 #ifdef  defined(PROFILING)
     tracy::VkCtx* m_VkTracyContext = nullptr;
 #endif

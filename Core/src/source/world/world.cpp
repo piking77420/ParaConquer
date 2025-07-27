@@ -36,9 +36,6 @@ void World::Update(double _tick)
 {
     PERF_REGION_SCOPED;
 
-    DebugDrawContext::DrawWireSphere(Tbx::Vector3d{ 0,20,0 }, 10, Tbx::Vector3f(0.5, 1, 0));
-
-
     if (run)
     {
         level.Update(_tick);

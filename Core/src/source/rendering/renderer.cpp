@@ -53,9 +53,9 @@ void Renderer::Init()
     CreateShaders();
     CreateThirdPartyResources();
     CreateDescriptorSets();
-
-
-    //m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
+#ifdef WITH_EDITOR
+    m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
+#endif
 }
 
 void Renderer::BeginFrame(Window* _window)
@@ -194,9 +194,10 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     primaryCommandList->Reset();
     primaryCommandList->BeginRecordCommands();
-    
+#ifdef WITH_EDITOR
+    m_DebugDrawContext->Prepare();
+#endif
 
-    //m_DebugDrawContext->Prepare();
 
     UpdateLightData(renderingContext, primaryCommandList.get());
     UpdateCameraUniformBuffer(renderingContext);
@@ -342,9 +343,9 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     DrawStaticMesh(MaterialType::Transparent, m_ForwardShader.lock());
     DrawSkyBox();
 #ifdef WITH_EDITOR
+    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
     for (auto& it : UserCustomForwardPass)
         it(*this, primaryCommandList.get(), *currentRenderingContext, &m_RenderWorldData);
-    //m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
 #endif
     primaryCommandList->EndRenderPass();
 

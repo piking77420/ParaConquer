@@ -20,6 +20,7 @@ public:
 
     void PushCustomCommand();
     
+    void DrawSelectedEntity();
 private:
     Editor* m_Editor = nullptr;
 

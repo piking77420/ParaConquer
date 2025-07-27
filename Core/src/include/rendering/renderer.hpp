@@ -109,7 +109,7 @@ private:
     const RenderingContext* currentRenderingContext = nullptr;
     
 #ifdef WITH_EDITOR
-   // std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
+   std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
 #endif
     
     PC_CORE_API void CreateRenderPasss();

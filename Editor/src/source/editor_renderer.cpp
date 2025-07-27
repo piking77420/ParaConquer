@@ -2,6 +2,7 @@
 
 #include "editor.hpp"
 #include "resources/resource_manager.hpp"
+#include "debug_helper/debug_draw_context.hpp"
 
 PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_editor)
 {
@@ -21,6 +22,25 @@ void PC_EDITOR_CORE::EditorRenderer::PushCustomCommand()
                           std::forward<T2>(PH3), std::forward<T3>(PH4));
        }
    );
+}
+
+void PC_EDITOR_CORE::EditorRenderer::DrawSelectedEntity()
+{
+    if (!std::holds_alternative<PC_CORE::EntityId>(m_Editor->selectedObject))
+    {
+        return;
+    }
+
+    PC_CORE::EntityId selectedEntity = std::get<PC_CORE::EntityId>(m_Editor->selectedObject);
+
+    if (m_Editor->gameApp.world.level.HasComponent<PC_CORE::Transform>(selectedEntity) && m_Editor->gameApp.world.level.HasComponent<PC_CORE::PointLight>(selectedEntity))
+    {
+        PC_CORE::Transform& t = m_Editor->gameApp.world.level.GetComponent<PC_CORE::Transform>(selectedEntity);
+        PC_CORE::PointLight& p = m_Editor->gameApp.world.level.GetComponent<PC_CORE::PointLight>(selectedEntity);
+
+        PC_CORE::DebugDrawContext::DrawWireSphere(t.position, std::sqrt(p.intensity), Tbx::Vector3f(0, 1, 0));
+    }
+
 }
 
 void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer ,PC_CORE::CommandList* _commandList,

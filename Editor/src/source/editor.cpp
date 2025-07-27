@@ -339,7 +339,6 @@ void Editor::UpdateEditor()
 			editorWindow->End();
 		}
 	}
-	
 
 	for (auto& sub : editorSubSystems)
 		sub->Update();
@@ -347,11 +346,16 @@ void Editor::UpdateEditor()
 	EditorCommandUpdate();
 	dockSpace.EndDockSpace();
 
+	{
+		PERF_REGION_SCOPED_NAMED("Editor Render");
+		m_EditorRenderer.DrawSelectedEntity();
 
-	for (auto& editorWindow : editorWindows)
-		editorWindow->Render();
-	for (auto& sub : editorSubSystems)
-		sub->Render();
+		for (auto& editorWindow : editorWindows)
+			editorWindow->Render();
+		for (auto& sub : editorSubSystems)
+			sub->Render();
+	}
+	
 }
 
 
