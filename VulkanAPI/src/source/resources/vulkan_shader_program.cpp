@@ -533,6 +533,8 @@ void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE:
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    PC_LOG("HotReload {}", m_ProgramShaderCreateInfo.shaderInfo.shaderName.c_str());
+
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice)->GetDevice();
 
 

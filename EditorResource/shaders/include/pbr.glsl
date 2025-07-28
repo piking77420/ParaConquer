@@ -48,5 +48,5 @@ vec3 BRDF(vec3 diffuseColor, float NoV, float NoL, float NoH, float LoH, float r
     
     vec3 Fd = diffuseColor * Fd_Lambert() * (vec3(1.0) - F);
     
-    return Fr + Fd;
+    return F;
 }

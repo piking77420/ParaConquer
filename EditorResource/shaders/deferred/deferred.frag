@@ -51,9 +51,9 @@ void main()
         DirectionalData dirlight = lightSceneData.dirlights[i];
         vec3 L = normalize(dirlight.direction);
         vec3 H = normalize(V + L);
-        float NoL = max(dot(N, L), 1.0);
-        float NoH = max(dot(H, V), 1.0);
-        float LoH = max(dot(L, H), 1.0);
+        float NoL = max(dot(N, L), 0.0);
+        float NoH = max(dot(N, H), 0.0);
+        float LoH = max(dot(L, H), 0.0);
 
         vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, roughness, metallic);
         vec3 radiance = dirlight.color * dirlight.intensity;
@@ -66,29 +66,26 @@ void main()
     {
         PointLightData pointLight = lightSceneData.pointLights[i];
         
-        vec3 fragmentViewPos = viewSpacePos;
-        vec3 pointLightViewPos = pointLight.position;
-        
-        vec3 fragmentViewPosToLight = ( pointLightViewPos - fragmentViewPos );
-        float fragmentToLightNorm = length(fragmentViewPosToLight);
+        vec3 fragmentViewPosToLight = ( pointLight.position - viewSpacePos  );
+        float fragLightDistance = length(fragmentViewPosToLight);
 
-
-        if (fragmentToLightNorm >= pointLight.maxRange * pointLight.maxRange)
-                continue;
-
+        if (fragLightDistance >= pointLight.maxRange)
+           continue;
     
-        vec3 L = fragmentViewPosToLight / fragmentToLightNorm; // position are in view space
+        vec3 L = fragmentViewPosToLight / fragLightDistance;
         vec3 H = normalize(V + L);
-        float NoL = max(dot(N, L), 1.0);
-        float NoH = max(dot(H, V), 1.0);
-        float LoH = max(dot(L, H), 1.0);
-        vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, 1, 0);
+        float NoL = max(dot(N, L), 0.0);
+        float NoH = max(dot(N, H), 0.0);
+        float LoH = max(dot(L, H), 0.0);
 
-
-        float distanceFrag = fragmentToLightNorm;
-        float attenuation = GetSquareFalloffAttenuation(-fragmentViewPosToLight, 1.0F / pointLight.maxRange);
-        vec3 radiance = pointLight.color * attenuation * pointLight.intensity;
-        outColor += vec4(radiance, 1);
+        
+        float debugRoughess = 0.8f;
+        float metallic = 0.1;
+        vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, debugRoughess, metallic);
+        
+        float attenuation = GetSquareFalloffAttenuation(fragmentViewPosToLight, 1.0F / pointLight.maxRange);
+        vec3 radiance = pointLight.color * attenuation * pointLight.intensity * NoL;
+        outColor = vec4(radiance, 1);
 
     }
     //outColor = vec4(lightSceneData.pointLights[0].color * lightSceneData.pointLights[0].intensity, 1);

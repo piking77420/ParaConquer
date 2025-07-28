@@ -19,11 +19,16 @@ layout(push_constant) uniform constants {
 void main()
 {
     // to do optimise this
-    outWorldPosition = camera.view * PushConstants.model * vec4(inPosition, 1.0);
-    vec4 worldPos = outWorldPosition;
-    vec3 normal = normalize(mat3(PushConstants.normalInvMatrix) * inNormal);
-    outNormal = normal;
+    // math accurate but some mat can be done cpu side
+
+    vec4 viewPos = camera.view * PushConstants.model * vec4(inPosition, 1.0);
     
-    gl_Position = camera.vp * PushConstants.model * vec4(inPosition, 1.0);
+    // normal 
+    outNormal = normalize( mat3(camera.view) * mat3(PushConstants.normalInvMatrix) * inNormal);
+    // viewPos
+    outWorldPosition = viewPos;
+    // fragpos
+    gl_Position = camera.proj * viewPos;
+    // uv
     outTexCoord = inTexCoord;
 }
