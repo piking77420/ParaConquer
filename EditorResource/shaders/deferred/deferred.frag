@@ -30,7 +30,7 @@ vec3 Decode(vec2 f)
 
 void main()
 {
-    outColor = vec4(0);
+    vec3 Lo = vec3(0);
     
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
     vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
@@ -42,10 +42,12 @@ void main()
     
     float roughness = roughnessMettalicAo.x * roughnessMettalicAo.x;
     float metallic = roughnessMettalicAo.y;
-
+    roughness = 0;
+     metallic = 0.9;
     // iterate over each light
     
     // for each dirlight
+    /*
     for(int i = 0; i < lightSceneData.dirLightCount; i++)
     {
         DirectionalData dirlight = lightSceneData.dirlights[i];
@@ -57,7 +59,7 @@ void main()
 
         vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, roughness, metallic);
         vec3 radiance = dirlight.color * dirlight.intensity;
-    }
+    }*/
     // for each spothlight
     // TODO
     
@@ -69,25 +71,22 @@ void main()
         vec3 fragmentViewPosToLight = ( pointLight.position - viewSpacePos  );
         float fragLightDistance = length(fragmentViewPosToLight);
 
-        if (fragLightDistance >= pointLight.maxRange)
-           continue;
+        //if (fragLightDistance >= pointLight.maxRange)
+          // continue;
     
         vec3 L = fragmentViewPosToLight / fragLightDistance;
         vec3 H = normalize(V + L);
         float NoL = max(dot(N, L), 0.0);
         float NoH = max(dot(N, H), 0.0);
         float LoH = max(dot(L, H), 0.0);
-
-        
-        float debugRoughess = 0.8f;
-        float metallic = 0.1;
-        vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, debugRoughess, metallic);
+       
         
         float attenuation = GetSquareFalloffAttenuation(fragmentViewPosToLight, 1.0F / pointLight.maxRange);
-        vec3 radiance = pointLight.color * attenuation * pointLight.intensity * NoL;
-        outColor = vec4(radiance, 1);
+        vec3 radiance = pointLight.color * attenuation * pointLight.intensity;
 
+        vec3 diffuseColor = (1.0 - metallic) * albedo.rgb; 
+        Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, roughness) * radiance * NoL;
     }
     //outColor = vec4(lightSceneData.pointLights[0].color * lightSceneData.pointLights[0].intensity, 1);
-
+    outColor = vec4(Lo, 1);
 }
