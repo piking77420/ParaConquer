@@ -113,15 +113,19 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
             spotLight++;
             break;
         case LightType::Point:
-            if (pointLightUpdate >= MAX_SPOTLIGHT)
+            if (pointLightUpdate >= MAX_POINTLIGHT)
                 continue;
 
         {
-            PointLightGPU& pointLightGpu = gpuDynamicLightData->pointLights[pointLightUpdate];
-            pointLightGpu.position = static_cast<Tbx::Vector3f>(lightData.data.pointLightData.position - _context.lowLevelCamera.position);
-            pointLightGpu.maxRange = std::sqrt(lightData.data.pointLightData.intensity);
-            pointLightGpu.intensity = lightData.data.pointLightData.intensity;
-            pointLightGpu.color = lightData.data.pointLightData.color;
+				const Tbx::Vector3f p3 = static_cast<Tbx::Vector3f>(lightData.data.pointLightData.position - _context.lowLevelCamera.position);
+				const Tbx::Vector4f p4 = sceneBufferGPU.view * Tbx::Vector4f(p3.x, p3.y, p3.z, 1.0);
+				const Tbx::Vector3f p3ViewSpace = Tbx::Vector3f(p4.x, p4.y, p4.z);
+
+				PointLightGPU& pointLightGpu = gpuDynamicLightData->pointLights[pointLightUpdate];
+				pointLightGpu.position = p3ViewSpace;
+				pointLightGpu.maxRange = std::sqrt(lightData.data.pointLightData.intensity);
+				pointLightGpu.intensity = lightData.data.pointLightData.intensity;
+				pointLightGpu.color = lightData.data.pointLightData.color;
         }
             pointLightUpdate++;
             break;
@@ -500,7 +504,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,

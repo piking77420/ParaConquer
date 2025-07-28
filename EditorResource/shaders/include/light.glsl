@@ -38,3 +38,10 @@ layout(set = SCENE_DESCRIPTOR_SET, binding = LIGHTDATA_BINDING) uniform DynamicL
     int _pad; // padding
 } lightSceneData;
 
+
+float GetSquareFalloffAttenuation(vec3 posToLight, float lightInvRadius) {
+    float distanceSquare = dot(posToLight, posToLight);
+    float factor = distanceSquare * lightInvRadius * lightInvRadius;
+    float smoothFactor = max(1.0 - factor * factor, 0.0);
+    return (smoothFactor * smoothFactor) / max(distanceSquare, 1e-4);
+}

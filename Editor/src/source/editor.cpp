@@ -387,32 +387,15 @@ void Editor::InitTestScene()
 	m2->Build();
 
 	auto& level = World::GetWorld()->level;
-
-	EntityId dirLight = level.CreateEntity("dirLight");
-	level.AddComponent<DirLight>(dirLight);
-	level.AddComponent<Transform>(dirLight);
-	Transform* t = &level.GetComponent<Transform>(dirLight);
-	t->rotation = Rotation(Tbx::Vector3f::UnitY());
-	DirLight* dir = &level.GetComponent<DirLight>(dirLight);
-	dir->color = Tbx::Vector3f(1, 1, 1);
-
-	EntityId cube = level.CreateEntity("cube");
-	level.AddComponent<Transform>(cube);
-	level.AddComponent<StaticMesh>(cube);
-	t = &level.GetComponent<Transform>(cube);
-	t->position = Tbx::Vector3d(5.0f, 5.0f, 1.0f);
-
 	
+
+
 	EntityId sphere = level.CreateEntity("sphere");
 	level.AddComponent<Transform>(sphere);
 	level.AddComponent<StaticMesh>(sphere);
-	t = &level.GetComponent<Transform>(sphere);
+	Transform* t = &level.GetComponent<Transform>(sphere);
 	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-	t->scale = Tbx::Vector3d(10.0f, 10.0f, 10.0f);
-
-	StaticMesh* mesh = &level.GetComponent<StaticMesh>(cube);
-	mesh->mesh = ResourceManager::Get<Mesh>("rounded_cube.obj");
-	mesh->material = m1;
+	t->scale = Tbx::Vector3d(2.0f, 2.0f, 2.0f);
 
 	
 	StaticMesh* mesh2 = &level.GetComponent<StaticMesh>(sphere);
@@ -424,9 +407,11 @@ void Editor::InitTestScene()
 	level.AddComponent<Transform>(pointLight);
 	level.AddComponent<PointLight>(pointLight);
 	t = &level.GetComponent<Transform>(pointLight);
-	t->position = Tbx::Vector3d(0.0f, 5.0f, 5.0f);
+	t->position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
 	t->scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
+	PointLight& p = level.GetComponent<PointLight>(pointLight);
+	p.intensity = 5.f;
 }
 
 void Editor::DestroyTestScene()

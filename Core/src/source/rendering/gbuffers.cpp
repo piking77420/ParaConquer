@@ -129,7 +129,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             texture_info.channel = Channel::RGBA;
             break;
         case GbufferType::WorldPosition:
-            texture_info.format = RHIFormat::R8G8B8A8_UNORM;
+            texture_info.format = RHIFormat::R16G16B16A16_SFLOAT;
             texture_info.channel = Channel::RGBA;
             break;
         case GbufferType::Depth:
