@@ -22,6 +22,8 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     VulkanContext& vulkanContext = VulkanContext::GetContext();
+    vk::Device device = GET_VK_DEVICE->GetDevice();
+
     vk::CommandPool commandPool = VK_NULL_HANDLE;
     
     switch (m_CommandPoolFamily)
@@ -52,12 +54,17 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
 
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_CommandBuffer.size());
 
-   std::vector<vk::CommandBuffer> vec = vulkanContext.GetDevice()->GetDevice().allocateCommandBuffers(commandBufferAllocateInfo);
+   std::vector<vk::CommandBuffer> vec = device.allocateCommandBuffers(commandBufferAllocateInfo);
 
     for (uint32_t i = 0; i < m_CommandBuffer.size(); i++)
-    {
         m_CommandBuffer[i] = vec[i];
-    }
+
+    vk::SemaphoreCreateInfo sCreateInfo;
+    sCreateInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+
+    for (auto& s : m_Semaphore)
+        s = device.createSemaphore(sCreateInfo);
+    
 #ifdef defined(PROFILING) 
     vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
     vk::Device device = GET_VK_DEVICE->GetDevice();
@@ -73,7 +80,10 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
 
 Vulkan::VulkanCommandList::~VulkanCommandList()
 {
-    
+    vk::Device device = GET_VK_DEVICE->GetDevice();
+    for (auto& s : m_Semaphore)
+        device.destroySemaphore(s);
+
 }
 
 void Vulkan::VulkanCommandList::Reset()
@@ -463,10 +473,12 @@ void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcSta
         0, nullptr);
 }
 
-void Vulkan::VulkanCommandList::Flush()
+void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandMethod, PC_CORE::GpuPipelineStageFlagBits _waitGpuPipelineStageFlag)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    assert(_flushCommandMethod == PC_CORE::FlushCommandMethod::Sync);
 
     VulkanContext& vkContext = VulkanContext::GetContext();
     const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
@@ -474,12 +486,11 @@ void Vulkan::VulkanCommandList::Flush()
     switch (m_CommandPoolFamily)
     {
     case PC_CORE::CommandPoolFamily::Graphics:
-        vkContext.renderFrameCommandBuffer.push_back(m_CommandBuffer[frameIndex]);
+        vkContext.flushedCommands.emplace_back(FlushCommand{ m_CommandBuffer[frameIndex], m_Semaphore[frameIndex], _waitGpuPipelineStageFlag });
         break;
-    case PC_CORE::CommandPoolFamily::Compute:
-        vkContext.computeCommandBuffer.push_back(m_CommandBuffer[frameIndex]);
-        break;
+    case PC_CORE::CommandPoolFamily::Compute: // not implemented yet
     case PC_CORE::CommandPoolFamily::Count:
+        assert(false);
         break;
     default:;
     }

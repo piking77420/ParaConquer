@@ -2,6 +2,7 @@
 
 #include "vulkan_header.h"
 #include "vulkan_render_pass.hpp"
+#include "vulkan_command_list.hpp"
 #include "io/window.hpp"
 #include "low_renderer/swap_chain.hpp"
 
@@ -56,6 +57,12 @@ namespace Vulkan
         vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 
         vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities , uint32_t _width, uint32_t _height);
+
+
+        Vulkan::VulkanCommandList* GetVulkanCommandList()
+        {
+            return reinterpret_cast<Vulkan::VulkanCommandList*>(m_CommandList.get());
+        }
 
         void CreateImageViews();
         

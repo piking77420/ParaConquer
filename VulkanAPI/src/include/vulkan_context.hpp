@@ -13,11 +13,18 @@ namespace Vulkan
     {
         vk::Semaphore imageAvailableSemaphore;
 
-        vk::Semaphore computeFinishedSemaphore;
-        vk::Fence computeInFlightFence;
+        //vk::Semaphore computeFinishedSemaphore;
+        //vk::Fence computeInFlightFence;
 
-        vk::Semaphore renderFinishedSemaphore;
         vk::Fence inFlightFence;
+    };
+
+    // to do make it batchable
+    struct FlushCommand
+    {
+        vk::CommandBuffer cmd;
+        vk::Semaphore semaphore;
+        PC_CORE::GpuPipelineStageFlagBits waitStages;
     };
 
     class VulkanContext : public PC_CORE::RhiContext
@@ -27,8 +34,6 @@ namespace Vulkan
         std::array<SyncObject, MAX_FRAMES_IN_FLIGHT> syncObjects;
 
         vk::Queue mainQueue;
-
-        vk::Queue computeQueu;
                 
         vk::CommandPool commandPool = VK_NULL_HANDLE;
 
@@ -40,9 +45,7 @@ namespace Vulkan
 
         VulkanDescritptorManager descritptorManager;
 
-        std::vector<vk::CommandBuffer> renderFrameCommandBuffer;
-        
-        std::vector<vk::CommandBuffer> computeCommandBuffer;
+        std::vector<FlushCommand> flushedCommands;
 
         VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 
@@ -60,6 +63,7 @@ namespace Vulkan
         VULKAN_API static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
     
     private:
+
         VULKAN_API void CreateMemoryAllocator();
         
         VULKAN_API void CreateCommandPools();

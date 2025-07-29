@@ -50,6 +50,8 @@ public:
 
 protected:
     std::shared_ptr<RhiRenderPass> m_SwapChainRenderPass;
+
+    std::shared_ptr<CommandList> m_CommandList;
     
     uint32_t m_SwapChainImageIndex = 0;
 

@@ -66,7 +66,8 @@ public:
         const PC_CORE::BufferMemoryBarrier* _buffermemoryBarrier, size_t _bufferMemoryBarrierCount,
         const PC_CORE::ImageMemoryBarrier* _imageMemoryBarrier, size_t _imageMemoryBarrierCount) override;
 
-    VULKAN_API void Flush() override;
+    VULKAN_API void Flush(PC_CORE::FlushCommandMethod _flushCommandMethod, 
+        PC_CORE::GpuPipelineStageFlagBits _waitGpuPipelineStageFlag) override;
 
     VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 
@@ -76,6 +77,8 @@ public:
 
 private:
     std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
+
+    std::array<vk::Semaphore, MAX_FRAMES_IN_FLIGHT> m_Semaphore;
     
 #ifdef  defined(PROFILING)
     tracy::VkCtx* m_VkTracyContext = nullptr;

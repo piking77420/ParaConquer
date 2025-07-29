@@ -47,6 +47,7 @@ void Renderer::Init()
     };
 
     primaryCommandList = Rhi::CreateCommandList(commandListCreateInfo);
+    swapChainPassCommandList = Rhi::CreateCommandList(commandListCreateInfo);
 
    
     CreateRenderPasss();
@@ -230,6 +231,11 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
+
+    primaryCommandList->EndRecordCommands();
+    primaryCommandList->Flush(FlushCommandMethod::Sync
+        , GpuPipelineStageFlagBits::ColorAttachmentOutput); // flush
+
 }
 
 
@@ -239,13 +245,18 @@ void Renderer::SwapBuffers(Window* _window)
     PERF_REGION_COLOR(PerfRegion::Rendering);
     std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
 
-    swapChain->BeginSwapChainRenderPass(primaryCommandList.get());
-    primaryCommandList->ExecuteExternalCommand();
-    swapChain->EndSwapChainRenderPass(primaryCommandList.get());
 
-    primaryCommandList->EndRecordCommands();
+    swapChainPassCommandList->Reset();
+    swapChainPassCommandList->BeginRecordCommands();
 
-    primaryCommandList->Flush();
+    swapChain->BeginSwapChainRenderPass(swapChainPassCommandList.get());
+    swapChainPassCommandList->ExecuteExternalCommand();
+    swapChain->EndSwapChainRenderPass(swapChainPassCommandList.get());
+
+    swapChainPassCommandList->EndRecordCommands();
+    swapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStageFlagBits::ColorAttachmentOutput);
+  
+
     ClearRenderData();
     m_RhiContext->swapChain->Present(_window);
     Rhi::NextFrame();

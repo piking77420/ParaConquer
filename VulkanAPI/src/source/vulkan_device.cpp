@@ -8,7 +8,7 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
 }
 
 Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable, 
-    vk::Queue* _graphicQueue, vk::Queue* _computeQueu)
+    vk::Queue* _graphicQueue)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -82,9 +82,6 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     
     if (_graphicQueue != nullptr)
         *_graphicQueue = m_Device.getQueue(QueuIndex, 0);
-    if (_computeQueu != nullptr)
-        *_computeQueu = m_Device.getQueue(QueuIndex, 1);
-
 
     /*
     if (_presentQueue != nullptr)

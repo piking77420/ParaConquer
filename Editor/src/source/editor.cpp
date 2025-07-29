@@ -257,7 +257,7 @@ void Editor::Init()
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 	
 	
-	gameApp.renderer.primaryCommandList->RecordFetchCommand([&](CommandList* cmd) {
+	gameApp.renderer.swapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
 		cmd->EndDebugLabel();

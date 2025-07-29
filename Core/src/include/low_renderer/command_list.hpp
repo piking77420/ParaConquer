@@ -100,6 +100,12 @@ struct ImageMemoryBarrier
     GpuAccessFlag dstAccessMask;
 };
 
+enum struct FlushCommandMethod
+{
+    Sync, // will flush command at once at the end of tick
+    Async, // send directly to gpu // TODO
+};
+
 class CommandList
 {
 public:
@@ -161,7 +167,8 @@ public:
 
     PC_CORE_API void ExecuteExternalCommand();
 
-    PC_CORE_API virtual void Flush() = 0;
+    PC_CORE_API virtual void Flush(FlushCommandMethod _flushCommandMethod, 
+        PC_CORE::GpuPipelineStageFlagBits _waitGpuPipelineStageFlag) = 0;
 
     PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
 

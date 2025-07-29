@@ -38,6 +38,9 @@ public:
     
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
+    std::shared_ptr<PC_CORE::CommandList> swapChainPassCommandList;
+
+
     ResourceRef<PC_CORE::GraphicShader> m_ForwardShader;
 
     ResourceRef<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
@@ -48,7 +51,6 @@ public:
 
     ResourceRef<PC_CORE::GraphicShader> m_DeferedShader;
 
-    
     RenderPasses renderPasses;
 
     UniformBuffer cameraUniformBuffer;
