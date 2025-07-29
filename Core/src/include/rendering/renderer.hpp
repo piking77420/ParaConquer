@@ -17,7 +17,6 @@
 BEGIN_PCCORE
 
 // TODO
-
 #define PREPASS_COLOR {1,0.2,1,1}
 
 #define FORWARD_DEBUG_COLOR {0,0,1,1}
@@ -138,5 +137,7 @@ private:
 
     PC_CORE_API void FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 };
+
+    
 
 END_PCCORE

@@ -111,21 +111,29 @@ bool Vulkan::VulkanInstance::CheckValidationLayerSupport()
 
     return true;
 }
+#endif
 
 void Vulkan::VulkanInstance::GetDebugFunc()
 {
-
+#ifdef  DEBUG_GPU_ON
     m_BeginDebugLabel = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdBeginDebugUtilsLabelEXT"));
     m_EndDebugLabel = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetInstanceProcAddr(m_Instance, "vkCmdEndDebugUtilsLabelEXT"));
     m_DebugName = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetInstanceProcAddr(m_Instance, "vkSetDebugUtilsObjectNameEXT"));
-    m_Qpreset = reinterpret_cast<PFN_vkResetQueryPoolEXT>(vkGetInstanceProcAddr(m_Instance, "vkResetQueryPoolEXT"));
-	m_Gpdctd = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT>(vkGetInstanceProcAddr(m_Instance, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT"));
-	m_Gct = reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(vkGetInstanceProcAddr(m_Instance, "vkGetCalibratedTimestampsEXT"));
 
-    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr || m_DebugName == nullptr || 
-        m_Qpreset == nullptr || m_Gpdctd == nullptr || m_Gct == nullptr)
+
+    if (m_EndDebugLabel == nullptr || m_BeginDebugLabel == nullptr || m_DebugName == nullptr)
     {
         PC_LOGERROR("Enable to get debgu label func ");
+        assert(false);
+    }
+#endif
+
+#ifdef  PROFILING
+
+    m_Gpdctd = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT>(vkGetInstanceProcAddr(m_Instance, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT"));
+    if (m_Gpdctd == nullptr)
+    {
+        PC_LOGERROR("Enable to get Profiling func ");
         assert(false);
     }
 }
@@ -153,6 +161,7 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 #endif
+
     
     vk::InstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = vk::StructureType::eInstanceCreateInfo;
@@ -225,7 +234,7 @@ Vulkan::VulkanInstance::~VulkanInstance()
     {
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
     }
-    #endif
+#endif
     
     m_Instance.destroy();
 }

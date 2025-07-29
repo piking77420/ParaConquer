@@ -175,7 +175,7 @@ void IMGUIContext::Render(CommandList* _commandBuffer)
     ImGui::Render();
 
     ImDrawData* draw_data = ImGui::GetDrawData();
-    vk::CommandBuffer commandBuffer = reinterpret_cast<Vulkan::VulkanCommandList*>(_commandBuffer)->GetHandle();
+    vk::CommandBuffer commandBuffer = reinterpret_cast<Vulkan::VulkanCommandList*>(_commandBuffer)->GetVkHandle();
     ImGui_ImplVulkan_RenderDrawData(draw_data, commandBuffer);
 
     if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

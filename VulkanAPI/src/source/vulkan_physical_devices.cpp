@@ -150,6 +150,12 @@ std::vector<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensio
             out[i] = VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME;
     }
 
+#ifdef PROFILING
+    out.push_back(VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME);
+    out.push_back(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
+#endif // PROFILING
+
+
     return out;
 }
 

@@ -202,6 +202,8 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
+    Vulkan::VulkanCommandList* vkCommandList = reinterpret_cast<Vulkan::VulkanCommandList*>(primaryCommandList.get());
+
     primaryCommandList->Reset();
     primaryCommandList->BeginRecordCommands();
 #ifdef WITH_EDITOR

@@ -18,9 +18,30 @@ namespace Vulkan
         VulkanDevice() = default;
 
         ~VulkanDevice() override;
+
+#ifdef  PROFILING
+        PFN_vkResetQueryPoolEXT GetPFN_vkResetQueryPoolEXT() const
+        {
+            return m_Qpreset;
+        }
+
+        PFN_vkGetCalibratedTimestampsEXT GetPFN_vkGetCalibratedTimestampsEXT() const
+        {
+            return m_Gct;
+        }
+#endif
+
         
     private:
         vk::Device m_Device;
+
+        void GetExtensionFunctions();
+
+#ifdef PROFILING
+        PFN_vkResetQueryPoolEXT m_Qpreset = nullptr;
+
+        PFN_vkGetCalibratedTimestampsEXT m_Gct = nullptr;
+#endif 
 
     };
 

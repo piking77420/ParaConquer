@@ -366,12 +366,12 @@ void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _co
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    vcommandList->GetHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    vcommandList->GetVkHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
     
 }
         
 void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
     VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
-    vcommandList->GetHandle().endRenderPass();
+    vcommandList->GetVkHandle().endRenderPass();
 }

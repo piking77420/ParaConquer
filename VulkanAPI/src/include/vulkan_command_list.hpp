@@ -10,6 +10,10 @@ namespace Vulkan
 class VulkanCommandList : public PC_CORE::CommandList
 {
 public:
+
+#ifdef PROFILING
+    tracy::VkCtx* tracyContext = nullptr;
+#endif
     
 
     VULKAN_API VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
@@ -73,16 +77,15 @@ public:
 
     VULKAN_API void EndDebugLabel() override;
 
-    VULKAN_API vk::CommandBuffer GetHandle() const;
+    VULKAN_API vk::CommandBuffer GetVkHandle() const;
+
 
 private:
     std::array<vk::CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffer;
 
     std::array<vk::Semaphore, MAX_FRAMES_IN_FLIGHT> m_Semaphore;
     
-#ifdef  defined(PROFILING)
-    tracy::VkCtx* m_VkTracyContext = nullptr;
-#endif
+
   
 };
     

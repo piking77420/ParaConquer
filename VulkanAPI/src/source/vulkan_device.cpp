@@ -48,19 +48,36 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
         enabledExtensionNames.emplace_back(extension.c_str());
     }
 
-    vk::PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedFeatures2;
+#ifdef PROFILING
+    VkPhysicalDeviceHostQueryResetFeatures hostQueryResetFeatures{};
+    hostQueryResetFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES;
+
+    VkPhysicalDeviceFeatures2 features2{};
+    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.pNext = &hostQueryResetFeatures;
+
+    vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, &features2);
+
+    hostQueryResetFeatures.hostQueryReset = VK_TRUE;
+#endif // PROFILING
+
+    vk::PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedFeatures2{};
     extendedFeatures2.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState2FeaturesEXT;
     extendedFeatures2.pNext = nullptr;
 
-    vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedFeatures3;
-    extendedFeatures2.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
-    extendedFeatures2.pNext = &extendedFeatures2;
-    
+    vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedFeatures3{};
+    extendedFeatures3.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
+    extendedFeatures3.pNext = &extendedFeatures2;
+
+#ifdef PROFILING
+    extendedFeatures2.pNext = &hostQueryResetFeatures;
+#endif
+
     vk::DeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfo.data();
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfo.size());
-    deviceCreateInfo.pEnabledFeatures = &deviceFeatures; // features de base
+    deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensionNames.size());
     deviceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames.data();
     deviceCreateInfo.pNext = &extendedFeatures3;
@@ -78,7 +95,7 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     
 #endif
     m_Device = vkPhysicalDevice.createDevice(deviceCreateInfo, nullptr);
-
+    GetExtensionFunctions();
     
     if (_graphicQueue != nullptr)
         *_graphicQueue = m_Device.getQueue(QueuIndex, 0);
@@ -96,5 +113,21 @@ Vulkan::VulkanDevice::~VulkanDevice()
     if (m_Device != nullptr)
     {
         m_Device.destroy();
+    }
+}
+
+void Vulkan::VulkanDevice::GetExtensionFunctions()
+{
+    m_Qpreset = reinterpret_cast<PFN_vkResetQueryPoolEXT>(
+        vkGetDeviceProcAddr(m_Device, "vkResetQueryPoolEXT")
+        );
+    m_Gct = reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(
+        vkGetDeviceProcAddr(m_Device, "vkGetCalibratedTimestampsEXT")
+        );
+
+    if (m_Gct == nullptr || m_Qpreset == nullptr)
+    {
+        PC_LOGERROR("Enable to get profiling func");
+        assert(false);
     }
 }

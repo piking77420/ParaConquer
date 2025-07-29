@@ -65,15 +65,15 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     for (auto& s : m_Semaphore)
         s = device.createSemaphore(sCreateInfo);
     
-#ifdef defined(PROFILING) 
+#ifdef PROFILING
     vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
-    vk::Device device = GET_VK_DEVICE->GetDevice();
     VulkanInstance& instance = *std::reinterpret_pointer_cast<VulkanInstance>(vulkanContext.renderInstance).get();
+    VulkanDevice& vulkanDevice = *GET_VK_DEVICE.get();
 
-    //m_VkTracyContext = tracy::CreateVkContext(physDv, device,
-      //  instance.GetPFN_vkResetQueryPoolEXT(),
-        //instance.GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(),
-        //instance.GetPFN_vkGetCalibratedTimestampsEXT());
+    tracyContext = tracy::CreateVkContext(physDv, device,
+        vulkanDevice.GetPFN_vkResetQueryPoolEXT(),
+        instance.GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(),
+        vulkanDevice.GetPFN_vkGetCalibratedTimestampsEXT());
        
 #endif
 }
@@ -141,7 +141,6 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     commandBufferBeginInfo.pInheritanceInfo = m_CommandBufferType == PC_CORE::CommandBufferType::Secondary ? &inheritanceInfo : nullptr; // Optional
 
     m_CommandBuffer[frameIndex].begin(commandBufferBeginInfo);
-
 }
 
 void Vulkan::VulkanCommandList::EndRecordCommands()
@@ -265,7 +264,7 @@ void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::ShaderProgram* _shad
     PERF_REGION_COLOR(PerfRegion::Rhi);
     const VulkanShaderProgram* vshadeProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram->GetRhiHandle().get()); 
 
-    vshadeProgram->PushConstant(GetHandle(), _pushConstantKey, _data, _size);
+    vshadeProgram->PushConstant(GetVkHandle(), _pushConstantKey, _data, _size);
 }
 
 void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPort)
@@ -497,7 +496,7 @@ void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandM
 
 }
 
-vk::CommandBuffer Vulkan::VulkanCommandList::GetHandle() const
+vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle() const
 {
     return m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()];
 }
