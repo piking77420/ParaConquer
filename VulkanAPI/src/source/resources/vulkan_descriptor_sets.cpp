@@ -24,11 +24,18 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     // Count descriptors
     for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
     {
-        if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
+        const PC_CORE::Descriptor& des = _shaderProgramDescriptorSet[i].descriptor;
+
+        if (std::holds_alternative<PC_CORE::UniformBufferDescriptor>(des))
             bufferDescriptorCount++;
-        if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)
+
+        if (std::holds_alternative<PC_CORE::ImageSamperDescriptor>(des))
             imageDescriptorCount++;
-        if (_shaderProgramDescriptorSet[i].inputAttachementDescriptor != nullptr)
+
+        if (std::holds_alternative<PC_CORE::ImageDescriptor>(des))
+            imageDescriptorCount++;
+
+        if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
             imageDescriptorCount++;
     }
 
@@ -47,41 +54,48 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     {
         for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
         {
-            assert(!(_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr && _shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)); 
+            const PC_CORE::Descriptor& des = _shaderProgramDescriptorSet[i].descriptor;
 
-            // TO DO REFACTOR THIS
-            if (_shaderProgramDescriptorSet[i].uniformBufferDescriptor != nullptr)
+            if (std::holds_alternative<PC_CORE::UniformBufferDescriptor>(des))
             {
-                
-                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = _shaderProgramDescriptorSet.at(i).uniformBufferDescriptor;
+                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = &std::get<PC_CORE::UniformBufferDescriptor>(des);
 
                 const VulkanBuffer* buffer = static_cast<const VulkanBuffer*>(uniformBufferDescriptor->buffer->GetRhiHandle()->GetNativeHandle());
-                assert(buffer->bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
-                
+                assert(buffer->bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsported resource dynamic size in function of thier memory usage");
+
                 descriptorBufferInfos[bufferDescriptorCount].buffer = buffer->bufferAndAlloc.at(f).buffer;
                 descriptorBufferInfos[bufferDescriptorCount].offset = 0;
                 descriptorBufferInfos[bufferDescriptorCount].range = VK_WHOLE_SIZE;
                 bufferDescriptorCount++;
             }
-            if (_shaderProgramDescriptorSet[i].imageSamperDescriptor != nullptr)    
+
+            if (std::holds_alternative<PC_CORE::ImageSamperDescriptor>(des))
             {
-                PC_CORE::ImageSamperDescriptor* imageSamplerDescriptor = _shaderProgramDescriptorSet.at(i).
-                    imageSamperDescriptor;
+                const PC_CORE::ImageSamperDescriptor* imageSamplerDescriptor = &std::get<PC_CORE::ImageSamperDescriptor>(des);
 
                 const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture->GetRhiHandle()->GetNativeHandle());
                 const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(imageSamplerDescriptor->sampler->GetRhiHandle()->GetNativeHandle());
-                
+
                 descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
                 descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
                 descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
                 imageDescriptorCount++;
             }
 
-            if (_shaderProgramDescriptorSet[i].inputAttachementDescriptor != nullptr)
+            if (std::holds_alternative<PC_CORE::ImageDescriptor>(des))
             {
-                PC_CORE::InputAttachementDescriptor* inputAttachementDescriptor = _shaderProgramDescriptorSet.at(i).
-                    inputAttachementDescriptor;
+                const PC_CORE::ImageDescriptor* imageSamplerDescriptor = &std::get<PC_CORE::ImageDescriptor>(des);
 
+                const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture->GetRhiHandle()->GetNativeHandle());
+
+                descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
+                imageDescriptorCount++;
+            }
+
+            if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
+            {
+                const PC_CORE::InputAttachementDescriptor* inputAttachementDescriptor = &std::get<PC_CORE::InputAttachementDescriptor>(des);
                 const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(inputAttachementDescriptor->image->GetRhiHandle()->GetNativeHandle());
                 const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(inputAttachementDescriptor->image->GetRhiHandle()->GetNativeHandle());
 
@@ -90,8 +104,6 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
                 imageDescriptorCount++;
             }
-
-            
         }
     }
     

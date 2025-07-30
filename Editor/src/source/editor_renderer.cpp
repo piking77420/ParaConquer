@@ -216,12 +216,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
         {
-        {
-            PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
-            CAMERA_BINDING,
-            &cameraBufferDescritptor,
-            nullptr,
-        }
+            {
+                PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
+                CAMERA_BINDING,
+                cameraBufferDescritptor,
+            }
         };
         
     m_CameraSet->WriteDescriptorSets(descriptorSets);
@@ -231,16 +230,15 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         {
             PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler,
             SPRITE_TEXTURE,
-            nullptr,
-            &directionalTexture,
+            directionalTexture,
         }
     };
     m_DirectionalDescriptorSet->WriteDescriptorSets(descriptorSets);
 
-    descriptorSets[0].imageSamperDescriptor = &spothLightTexture;
+    descriptorSets[0].descriptor = spothLightTexture;
     m_SpotLightDescriptorSet->WriteDescriptorSets(descriptorSets);
 
-    descriptorSets[0].imageSamperDescriptor = &pointLightTexture;
+    descriptorSets[0].descriptor = pointLightTexture;
     m_PointLightDescriptorSet->WriteDescriptorSets(descriptorSets);
     
 }

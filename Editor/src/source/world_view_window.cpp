@@ -152,8 +152,7 @@ void WorldViewWindow::UpdateViewPortDescriptorSet()
     {
         .shaderProgramDescriptorType = PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler,
         .bindingIndex = 0,
-        .uniformBufferDescriptor = nullptr,
-        .imageSamperDescriptor = &image_samper_descriptor
+        .descriptor = image_samper_descriptor
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> writes =

@@ -64,9 +64,7 @@ void PC_CORE::Material::Build()
         {
             ShaderProgramDescriptorType::CombinedImageSampler,
             ALBEDO_BINDING,
-            nullptr,
-            &imageSamperDescriptor,
-            nullptr
+            imageSamperDescriptor,
         },
    };
 

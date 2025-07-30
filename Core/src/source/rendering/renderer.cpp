@@ -1013,8 +1013,7 @@ void Renderer::CreateDescriptorSets()
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 CAMERA_BINDING,
-                &cameraBufferDescritptor,
-                nullptr,
+                cameraBufferDescritptor,
             }
         };
         m_GeometryBufferShader.lock()->AllocDescriptorSet(&m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET);
@@ -1028,14 +1027,12 @@ void Renderer::CreateDescriptorSets()
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 CAMERA_BINDING,
-                &cameraBufferDescritptor,
-                nullptr,
+                cameraBufferDescritptor,
             },
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 LIGHTDATA_BINDING,
-                &lightData,
-                nullptr,
+                lightData,
             }
         };
         m_DeferedShader.lock()->AllocDescriptorSet(&m_DeferdDescriptorSet, SCENE_DESCRIPTOR_SET);
@@ -1050,23 +1047,17 @@ void Renderer::CreateDescriptorSets()
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 CAMERA_BINDING,
-                &cameraBufferDescritptor,
-                nullptr,
-                nullptr
+                cameraBufferDescritptor,
             },
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 LIGHTDATA_BINDING,
-                &lightData,
-                nullptr,
-                nullptr
+                lightData,
             },
             {
                 ShaderProgramDescriptorType::CombinedImageSampler,
                 FORWARD_SKYBOX_CUBEMAP,
-                nullptr,
-                &skyboxCubeMapDescritptor,
-                nullptr
+                skyboxCubeMapDescritptor,
             }
         };
 
@@ -1083,8 +1074,7 @@ void Renderer::CreateDescriptorSets()
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 CAMERA_BINDING,
-                &cameraBufferDescritptor,
-                nullptr,
+                cameraBufferDescritptor,
             },
         };
         m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET);
@@ -1095,8 +1085,7 @@ void Renderer::CreateDescriptorSets()
             {
                 ShaderProgramDescriptorType::CombinedImageSampler,
                 SKYBOX_BINDING,
-                nullptr,
-                &skyboxCubeMapDescritptor,
+                skyboxCubeMapDescritptor,
             }
         };
         m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cubeMapDescriptorSet,

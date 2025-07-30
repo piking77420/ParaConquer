@@ -146,27 +146,30 @@ void PC_CORE::Gbuffers::CreateGBuffers()
         gbufferType = static_cast<GbufferType>((static_cast<int>(gbufferType) + 1) % static_cast<uint8_t>(GbufferType::Count)); 
     }
 
-    std::shared_ptr<GraphicShader> deferredShader = App::instance->renderer.m_DeferedShader.lock();
-    
-    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
-    descriptorSets.resize(static_cast<uint8_t>(GbufferType::Depth));
-    std::array<InputAttachementDescriptor, static_cast<uint8_t>(GbufferType::Depth)> inputAttachements;
-
-    for (size_t i = 0; i < static_cast<uint8_t>(GbufferType::Depth); i++)
     {
-        inputAttachements[i] =
+        std::shared_ptr<GraphicShader> deferredShader = App::instance->renderer.m_DeferedShader.lock();
+
+        std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
+        descriptorSets.resize(static_cast<uint8_t>(GbufferType::Depth));
+        std::array<InputAttachementDescriptor, static_cast<uint8_t>(GbufferType::Depth)> inputAttachements;
+
+        for (size_t i = 0; i < static_cast<uint8_t>(GbufferType::Depth); i++)
+        {
+            inputAttachements[i] =
             {
             .image = m_Gbuffers[i].get(),
             },
-        
-        descriptorSets[i] =
+
+            descriptorSets[i] =
             {
             .shaderProgramDescriptorType = ShaderProgramDescriptorType::InputAttachment,
             .bindingIndex = static_cast<uint32_t>(i),
-            .uniformBufferDescriptor = nullptr,
-            .imageSamperDescriptor = nullptr,
-            .inputAttachementDescriptor = &inputAttachements[i]
+            .descriptor = inputAttachements[i]
             };
+        }
+        deferredShader->AllocDescriptorSet(&m_DescriptorSets, GBUFFER_SET);
+        m_DescriptorSets->WriteDescriptorSets(descriptorSets);
+    }
     }
     deferredShader->AllocDescriptorSet(&m_DescriptorSets, GBUFFER_SET);
     m_DescriptorSets->WriteDescriptorSets(descriptorSets);

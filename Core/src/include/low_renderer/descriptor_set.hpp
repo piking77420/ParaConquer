@@ -12,15 +12,28 @@
 BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
     {
-        Sampler,
-        CombinedImageSampler,
-        SampledImage,
-        UniformBuffer,
-        StorageBuffer,
-        InputAttachment,
-        InlineUniformBlock,
-        AccelerationStructure,
-        Count,
+	    Sampler,
+	    CombinedImageSampler,
+	    SampledImage,
+	    StorageImage,
+	    UniformBuffer,
+	    StorageBuffer,
+	    InputAttachment,
+	    InlineUniformBlock,
+	    AccelerationStructure,
+	    Count,
+    };
+
+// TODO REFATOR with a variant
+
+    struct UniformBufferDescriptor
+    {
+        IGpuResource* buffer;
+    };
+
+    struct ImageDescriptor
+    {
+        IGpuResource* texture;
     };
 
     struct ImageSamperDescriptor
@@ -28,24 +41,19 @@ BEGIN_PCCORE
         Sampler* sampler;
         IGpuResource* texture;
     };
-
-    struct UniformBufferDescriptor
-    {
-        IGpuResource* buffer;
-    };
-
+  
     struct InputAttachementDescriptor
     {
         IGpuResource* image;
     };
 
+    using Descriptor = std::variant<UniformBufferDescriptor, ImageSamperDescriptor, ImageDescriptor, InputAttachementDescriptor>;
     struct ShaderProgramDescriptorWrite
     {
         ShaderProgramDescriptorType shaderProgramDescriptorType;
         uint32_t bindingIndex;
-        UniformBufferDescriptor* uniformBufferDescriptor;
-        ImageSamperDescriptor* imageSamperDescriptor;
-        InputAttachementDescriptor* inputAttachementDescriptor = nullptr;
+
+        Descriptor descriptor;
     };
 
     struct ShaderProgramDescriptorSets : public RhiResource

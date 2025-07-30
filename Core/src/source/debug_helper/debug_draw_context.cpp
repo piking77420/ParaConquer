@@ -199,8 +199,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	{
 		.shaderProgramDescriptorType = PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
 		.bindingIndex = CAMERA_BINDING,
-		.uniformBufferDescriptor = &uniformBufferDescriptor,
-		.imageSamperDescriptor = nullptr,
+		.descriptor = uniformBufferDescriptor,
 	};
 
 	std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorWrites =
@@ -300,8 +299,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 	{
 		.shaderProgramDescriptorType = PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
 		.bindingIndex = CAMERA_BINDING,
-		.uniformBufferDescriptor = &uniformBufferDescriptor,
-		.imageSamperDescriptor = nullptr,
+		.descriptor = uniformBufferDescriptor,
 	};
 
 	std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorWrites =
