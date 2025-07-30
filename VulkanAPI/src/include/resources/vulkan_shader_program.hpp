@@ -93,6 +93,8 @@ namespace Vulkan
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
 
+        void CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderComputeInfo& _shaderComputeInfo);
+
         void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion

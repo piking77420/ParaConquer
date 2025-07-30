@@ -137,6 +137,10 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
         }
         break;
     case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+        {
+            const PC_CORE::ShaderComputeInfo& shaderGraphicPointInfo = std::get<1>(m_ProgramShaderCreateInfo.shaderInfo.shaderInfoData);
+            CreateComputePipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
+        }
         break;
     case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
         break;
@@ -217,6 +221,30 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     return vulkanShaderProgramCreateContex;
 }
 
+
+void Vulkan::VulkanShaderProgram::CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderComputeInfo& _shaderComputeInfo)
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+    std::shared_ptr<VulkanDevice> device = GET_VK_DEVICE;
+    vk::Device d = device->GetDevice();
+
+    if (_vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size() != 1)
+    {
+        PC_LOGERROR("Compute Pipeline shoulde have one shader stage");
+        return;
+    }
+    
+    vk::ComputePipelineCreateInfo vkComputeCreateInfo;
+    vkComputeCreateInfo.sType = vk::StructureType::eComputePipelineCreateInfo;
+    vkComputeCreateInfo.layout = m_PipelineLayout;
+    vkComputeCreateInfo.stage = _vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[0];
+
+    auto r = d.createComputePipeline(nullptr, vkComputeCreateInfo);
+    VK_CALL(r.result);
+
+    m_Pipeline = r.value;
+}
 
 
 void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo)
@@ -561,6 +589,10 @@ void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE:
     }
     break;
     case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+    {
+         const PC_CORE::ShaderComputeInfo& shaderGraphicPointInfo = std::get<1>(m_ProgramShaderCreateInfo.shaderInfo.shaderInfoData);
+            CreateComputePipeline(vulkanShaderProgramCreateContex, shaderGraphicPointInfo);
+    }
         break;
     case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
         break;

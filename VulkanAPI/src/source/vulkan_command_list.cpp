@@ -81,9 +81,14 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
 Vulkan::VulkanCommandList::~VulkanCommandList()
 {
     vk::Device device = GET_VK_DEVICE->GetDevice();
+
     for (auto& s : m_Semaphore)
         device.destroySemaphore(s);
 
+#ifdef PROFILING
+    tracy::DestroyVkContext(tracyContext);
+    tracyContext = nullptr;
+#endif
 }
 
 void Vulkan::VulkanCommandList::Reset()

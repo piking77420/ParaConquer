@@ -96,7 +96,7 @@ struct ShaderComputeInfo
 {
 };
 
-using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderRayTracingInfo, ShaderComputeInfo>;
+using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderComputeInfo, ShaderRayTracingInfo>;
 
 
 struct ShaderInfo
