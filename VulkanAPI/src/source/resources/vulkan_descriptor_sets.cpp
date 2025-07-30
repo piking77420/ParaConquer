@@ -88,7 +88,18 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
 
                 const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture->GetRhiHandle()->GetNativeHandle());
 
-                descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                descriptorImageInfos[imageDescriptorCount].imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
+                //VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+                // VK_IMAGE_LAYOUT_GENERAL, 
+                // VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL, 
+                // VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL, 
+                // VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, 
+                // VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, 
+                // VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL, 
+                // VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL,
+                // VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ.
+
                 descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
                 imageDescriptorCount++;
             }
