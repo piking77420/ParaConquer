@@ -515,6 +515,7 @@ BEGIN_PCCORE
         Storage = 1 << 4, // Shader-writable (UAV)
     };
 
+
     inline TextureUsage operator|(TextureUsage a, TextureUsage b)
     {
         return static_cast<TextureUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
@@ -529,6 +530,22 @@ BEGIN_PCCORE
     {
         return (static_cast<uint32_t>(usage) & static_cast<uint32_t>(flag)) != 0;
     }
+
+    // may in future rename as resoure state like D3D12
+    enum class ImageState : uint8_t
+    {
+        Common,
+        General,
+        RenderTargetOptimal,
+        DepthStencilOptimal,
+        DepthStencilReadOptimal,
+        ShaderReadOptimal,
+        TransferSrcOptimal,
+        TransferDstOptimal,
+
+        Count,
+    };
+    static_assert((uint8_t)ImageState::Count < 255, "Out of bound enum");
 
     enum class TextureType
     {
