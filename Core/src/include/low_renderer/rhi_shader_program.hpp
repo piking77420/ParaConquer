@@ -109,7 +109,7 @@ struct ShaderInfo
 struct ProgramShaderCreateInfo
 {
     ShaderInfo shaderInfo;
-    RhiRenderPass* renderPass;
+    RhiRenderPass* renderPass; // is optional TODO check raytracing pipeline use it 
     std::vector<std::pair<ShaderStageTypeFlag, std::string>> shaderSources;
     uint32_t attachementCount;
     uint32_t subPassIndex;

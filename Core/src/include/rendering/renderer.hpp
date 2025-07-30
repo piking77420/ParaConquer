@@ -13,16 +13,17 @@
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "world/world.hpp"
+#include "resources/compute_shader.hpp"
 
 BEGIN_PCCORE
-
-// TODO
+    // TODO
 #define PREPASS_COLOR {1,0.2,1,1}
 
 #define FORWARD_DEBUG_COLOR {0,0,1,1}
 #define GEOMETRY_PASS_COLOR {0.1,0.7,0.2,1}
 #define DEFERD_PASS_COLOR {1,0.2,1,1}
 #define FINAL_RENDER_PASS_DEBUG_COLOR {1,1,1,1}
+#define POST_PROCESS {1,0,1,1}
 
 struct RenderPasses
 {
@@ -48,6 +49,8 @@ public:
     ResourceRef<PC_CORE::GraphicShader> m_GeometryBufferShader;
 
     ResourceRef<PC_CORE::GraphicShader> m_DeferedShader;
+
+    ResourceRef<PC_CORE::ComputeShader> m_AcesShader;
 
     RenderPasses renderPasses;
 
@@ -133,6 +136,8 @@ private:
     PC_CORE_API void ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 
     PC_CORE_API void DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
+
+    PC_CORE_API void PostProcess(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 
     PC_CORE_API void FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
 };

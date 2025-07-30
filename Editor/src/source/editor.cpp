@@ -136,11 +136,17 @@ void Editor::CompileShader()
 
 	// geometry buffer
 	{
-		auto geometryVert = ResourceManager::Create<ShaderSource>("geometry.frag",
+		auto geometryVert = ResourceManager::Create<ShaderSource>("geometry.vert",
 		EDITOR_RESOURCE_PATH "/shaders/geometry/geometry.vert");
 		
 		auto geometryFrag = ResourceManager::Create<ShaderSource>("geometry.frag",
 		EDITOR_RESOURCE_PATH "/shaders/geometry/geometry.frag");
+	}
+
+	// Tone Map
+	{
+		auto toneMap = ResourceManager::Create<ShaderSource>("aces.comp",
+		EDITOR_RESOURCE_PATH "/shaders/post_process/aces.comp");
 	}
 
 	// deferred

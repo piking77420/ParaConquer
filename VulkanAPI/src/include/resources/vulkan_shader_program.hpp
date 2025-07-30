@@ -93,6 +93,8 @@ namespace Vulkan
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
 
+        void CreatePipelineLayout(vk::Device _device, const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
+
         void CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderComputeInfo& _shaderComputeInfo);
 
         void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);

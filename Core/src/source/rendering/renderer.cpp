@@ -1,24 +1,24 @@
 #include "rendering/renderer.hpp"
 
+#include <thread>
+#include <perf_region.hpp>
+
 #include "low_renderer/rhi.hpp"
 #include "low_renderer/vertex.hpp"
 #include "resources/resource_manager.hpp"
-#include <thread>
 #include "time/core_time.hpp"
 #include "math/matrix_transformation.hpp"
-#include "rendering/light.hpp"
-#include "resources/texture_2d.hpp"
 #include "world/static_mesh.hpp"
 #include "world/transform.hpp"
 #include "rendering/render_passes/render_pass.hpp"
 
-#include <perf_region.hpp>
 
 #include "math/toolbox_typedef.hpp"
 #include "rendering/render_system.hpp"
 #include "resources/shader_source_binary.hpp"
 
 #include "vulkan_command_list.hpp"
+#include "resources/compute_shader.hpp"
 
 using namespace PC_CORE;
 
@@ -232,6 +232,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
+    PostProcess(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 
     primaryCommandList->EndRecordCommands();
@@ -428,6 +429,24 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->EndDebugLabel();
 
     primaryCommandList->EndRenderPass();
+}
+
+PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+{
+    primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
+
+    if (auto aces = m_AcesShader.lock().get())
+    {
+        primaryCommandList->BindProgram(aces);
+        primaryCommandList->BindDescriptorSet(aces, _renderingContext.toneMapDescritptorSet, 0, 1);
+
+        uint32_t groupX = ((uint32_t)_viewportInfo.size.x + 256 - 1) / 256;   // ceil(width / 256)
+        uint32_t groupY = ((uint32_t)_viewportInfo.size.y + 1 - 1) / 1;     // ceil(height / 1)
+        primaryCommandList->Dispatch(groupX, groupY, 1);
+    }
+
+
+    primaryCommandList->EndDebugLabel();
 }
 
 
@@ -819,7 +838,7 @@ void Renderer::CreateShaders()
             .colorAttachementCount = 1,
             .subPassIndex = 0
         };
-
+        
         m_ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
     }
 
@@ -866,12 +885,7 @@ void Renderer::CreateShaders()
                 ResourceManager::Get<ShaderSourceBinary>("cube_map_skybox_spv.frag")
             }
         };
-
-        const ShaderInfo shaderInfo =
-        {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
-            .shaderInfoData = shaderGraphicPointInfo,
-        };
+        
 
         const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
         {
@@ -886,6 +900,18 @@ void Renderer::CreateShaders()
 
         m_CubeMapShader = ResourceManager::Create<PC_CORE::GraphicShader>(
             "SkyboxShader", graphicShaderProgramCreateInfo);
+    }
+
+    {
+        PERF_REGION_SCOPED_NAMED("ToneMap Shader");
+
+        const ComputeShaderProgramCreateInfo computeShaderProgramCreateInfo =
+            {
+            .shaderComputeInfo = {},
+            .source = ResourceManager::Get<ShaderSourceBinary>("aces_spv.comp")
+            };
+        
+        m_AcesShader = ResourceManager::Create<PC_CORE::ComputeShader>("Aces", computeShaderProgramCreateInfo);
     }
 
     // Draw to final viewport

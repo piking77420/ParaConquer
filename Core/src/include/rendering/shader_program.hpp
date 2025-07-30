@@ -45,6 +45,11 @@ BEGIN_PCCORE
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
             ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageTypeFlag, std::weak_ptr<ShaderSourceBinary>>>& _sources);
 
+        PC_CORE_API ShaderProgram(const std::string& _shaderName,
+            ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source);
+
+        PC_CORE_API ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source);
+        
         PC_CORE_API ShaderProgram()
         {
             DYNAMIC_REFLECT_INIT

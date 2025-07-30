@@ -152,6 +152,8 @@ public:
 
     PC_CORE_API virtual void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset, size_t _firstInstance) = 0;
 
+    PC_CORE_API virtual void Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
+
     PC_CORE_API virtual void BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
 
     PC_CORE_API virtual void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;

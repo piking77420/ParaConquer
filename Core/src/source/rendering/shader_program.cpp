@@ -59,10 +59,20 @@ ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipeli
     }
 }
 
+ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+{
+    Resource::LinkDependencies(_source.lock().get(), this);
+}
+
+ShaderProgram::ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+{
+    Resource::LinkDependencies(_source.lock().get(), this);
+}
+
+
 std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> PC_CORE::ShaderProgram::SourceListToSourcePath(
     const SourceList& _sourceList)
 {
-
     PERF_REGION_SCOPED;
     
     std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> output;

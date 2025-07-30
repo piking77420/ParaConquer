@@ -1,0 +1,21 @@
+#version 450
+
+
+layout(set = 0, binding = 0, rgba8) uniform image2D image;
+
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+void main()
+{
+    uvec2 gid = gl_GlobalInvocationID.xy; // absolute pixel coordinate
+    ivec2 size = imageSize(image);
+
+    if (gid.x >= size.x || gid.y >= size.y)
+        return;
+
+    vec4 color = imageLoad(image, ivec2(gid));
+
+    color.rgb = vec3(1.0) - color.rgb;
+
+    imageStore(image, ivec2(gid), color);
+}

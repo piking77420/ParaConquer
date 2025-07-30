@@ -12,6 +12,8 @@ class Gbuffers
 {
 public:
 
+    ShaderProgramDescriptorSets* toneMapDescriptor = nullptr;
+
     PC_CORE_API std::shared_ptr<FrameBuffer> GetGbufferFrameBuffer() const;
 
     PC_CORE_API std::shared_ptr<FrameBuffer> GetForwardFrameBuffer() const;
@@ -55,6 +57,7 @@ private:
     Tbx::Vector2i m_size;
 
     ShaderProgramDescriptorSets* m_DescriptorSets = nullptr;
+
 
     PC_CORE_API void CreateGBuffers();
 };

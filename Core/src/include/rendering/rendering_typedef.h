@@ -41,6 +41,7 @@ BEGIN_PCCORE
         
         PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
         PC_CORE::ShaderProgramDescriptorSets* gbufferDescriptorSet;
+        PC_CORE::ShaderProgramDescriptorSets* toneMapDescritptorSet;
 
         Tbx::Vector2ui renderingContextSize;
 #ifdef WITH_EDITOR

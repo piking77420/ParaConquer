@@ -344,6 +344,11 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
     m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount), static_cast<uint32_t>(_instanceCount), static_cast<uint32_t>(_firstIndex), _vertexOffset, static_cast<uint32_t>(_firstInstance));
 }
 
+void Vulkan::VulkanCommandList::Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ)
+{
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].dispatch(1, 1, 1);
+}
+
 void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding,
                                                  uint32_t _bindingCount)
 {

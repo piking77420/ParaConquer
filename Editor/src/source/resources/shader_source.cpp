@@ -365,7 +365,8 @@ void ShaderSource::LoadFromFile(const std::string& _path)
         return;
     }
 
-    auto s = ResourceManager::Create<ShaderSourceBinary>(GetShaderBinarySprivName(), &sourceSpriv, m_ShaderType);
+    std::string sprivName = GetShaderBinarySprivName();
+    auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(sprivName), &sourceSpriv, m_ShaderType);
 
     Resource::LinkDependencies(this, s.get());
 }

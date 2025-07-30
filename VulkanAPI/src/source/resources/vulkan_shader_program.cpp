@@ -234,6 +234,7 @@ void Vulkan::VulkanShaderProgram::CreateComputePipeline(const VulkanShaderProgra
         PC_LOGERROR("Compute Pipeline shoulde have one shader stage");
         return;
     }
+    CreatePipelineLayout(d, _vulkanShaderProgramCreateContex);
     
     vk::ComputePipelineCreateInfo vkComputeCreateInfo;
     vkComputeCreateInfo.sType = vk::StructureType::eComputePipelineCreateInfo;
@@ -322,19 +323,8 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     ParseParsePipelineColorBlendState(&colorBlending, colorBlendAttachments.data(), colorBlendAttachments.size(), &_shaderGraphicPointInfo.blendInfo);
 
 
-    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
+    CreatePipelineLayout(device->GetDevice(), _vulkanShaderProgramCreateContex);
 
-    vk::PipelineLayoutCreateInfo  pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache->descriptorSetLayout.size()); // Optional
-    pipelineLayoutInfo.pSetLayouts = cache->descriptorSetLayout.data(); // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pushConstantRanges.size()); // Optional
-    pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
-
-    m_PipelineLayout = device->GetDevice().createPipelineLayout(pipelineLayoutInfo);
-
- 
-    
     vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{};
     graphicsPipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
     graphicsPipelineInfo.stageCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos.size());
@@ -365,6 +355,21 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     SET_VK_DEBUG_NAME(nameInfo);
 
     m_Pipeline = result.value;
+}
+
+void Vulkan::VulkanShaderProgram::CreatePipelineLayout(vk::Device _device, const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+{
+    auto cache = VulkanContext::GetContext().descritptorManager.GetDescriptorSets(m_DescriptorId);
+
+    vk::PipelineLayoutCreateInfo  pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache->descriptorSetLayout.size()); // Optional
+    pipelineLayoutInfo.pSetLayouts = cache->descriptorSetLayout.data(); // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pushConstantRanges.size()); // Optional
+    pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
+
+    m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);
+
 }
 
 void VulkanShaderProgram::CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule)

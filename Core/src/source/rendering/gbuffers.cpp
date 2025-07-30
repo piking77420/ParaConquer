@@ -3,6 +3,7 @@
 #include "app.hpp"
 #include "low_renderer/rhi.hpp"
 #include "resources/resource_manager.hpp"
+#include "resources/compute_shader.hpp"
 
 
 std::shared_ptr<PC_CORE::FrameBuffer> PC_CORE::Gbuffers::GetGbufferFrameBuffer() const
@@ -42,6 +43,12 @@ void PC_CORE::Gbuffers::HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr
         {
             std::shared_ptr<GraphicShader> deferredShader = App::instance->renderer.m_DeferedShader.lock();
             deferredShader->FreeDescriptorSet(&m_DescriptorSets);
+        }
+
+        if (toneMapDescriptor != nullptr)
+        {
+            std::shared_ptr<ComputeShader> aces = App::instance->renderer.m_AcesShader.lock();
+            aces->FreeDescriptorSet(&toneMapDescriptor);
         }
 
         CreateGBuffers();
@@ -149,8 +156,8 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     {
         std::shared_ptr<GraphicShader> deferredShader = App::instance->renderer.m_DeferedShader.lock();
 
-        std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
-        descriptorSets.resize(static_cast<uint8_t>(GbufferType::Depth));
+        std::vector<PC_CORE::ShaderProgramDescriptorWrite> descritproWrites;
+        descritproWrites.resize(static_cast<uint8_t>(GbufferType::Depth));
         std::array<InputAttachementDescriptor, static_cast<uint8_t>(GbufferType::Depth)> inputAttachements;
 
         for (size_t i = 0; i < static_cast<uint8_t>(GbufferType::Depth); i++)
@@ -160,7 +167,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             .image = m_Gbuffers[i].get(),
             },
 
-            descriptorSets[i] =
+            descritproWrites[i] =
             {
             .shaderProgramDescriptorType = ShaderProgramDescriptorType::InputAttachment,
             .bindingIndex = static_cast<uint32_t>(i),
@@ -168,11 +175,31 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             };
         }
         deferredShader->AllocDescriptorSet(&m_DescriptorSets, GBUFFER_SET);
-        m_DescriptorSets->WriteDescriptorSets(descriptorSets);
+        m_DescriptorSets->WriteDescriptorSets(descritproWrites);
     }
+    
+
+    {
+		std::vector<PC_CORE::ShaderProgramDescriptorWrite> descritproWrites;
+		descritproWrites.resize(1);
+
+		ImageDescriptor imageDescriptor
+		{
+			.texture = &m_Image
+		};
+
+		descritproWrites[0] =
+		{
+			.shaderProgramDescriptorType = ShaderProgramDescriptorType::InputAttachment,
+			.bindingIndex = 0,
+			.descriptor = imageDescriptor
+		};
+
+        // tonemap
+        App::instance->renderer.m_AcesShader.lock()->AllocDescriptorSet(&toneMapDescriptor, 0);
+        m_DescriptorSets->WriteDescriptorSets(descritproWrites);
     }
-    deferredShader->AllocDescriptorSet(&m_DescriptorSets, GBUFFER_SET);
-    m_DescriptorSets->WriteDescriptorSets(descriptorSets);
+ 
 }
 
 std::shared_ptr<PC_CORE::Texture2D> PC_CORE::Gbuffers::GetTexture(GbufferType type) const

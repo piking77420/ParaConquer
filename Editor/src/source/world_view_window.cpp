@@ -79,6 +79,7 @@ void WorldViewWindow::Render()
     renderingContext.finalImageFrameBuffer = m_FinalFrameBufferViewport;
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.gbufferDescriptorSet = m_Gbuffers.GetDescritptorSet();
+    renderingContext.toneMapDescritptorSet = m_Gbuffers.toneMapDescriptor;
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
     renderingContext.renderingContextFlag = m_RenderingContextFlag;
     

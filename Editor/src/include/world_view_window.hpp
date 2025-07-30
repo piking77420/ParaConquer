@@ -19,6 +19,8 @@ namespace PC_CORE
     class RhiTexture2D;
 }
 
+// TODO MAKE A VIEW CLASS
+
 BEGIN_EDITOR_PCCORE
     class WorldViewWindow : public EditorWindow
 {
