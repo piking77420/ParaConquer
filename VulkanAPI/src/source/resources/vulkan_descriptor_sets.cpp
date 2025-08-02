@@ -134,10 +134,15 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             switch (_shaderProgramDescriptorSet.at(i).shaderProgramDescriptorType)
             {
             case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
+            case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:;
                 descriptorWrites[descriptorWriteIndex].pBufferInfo = &descriptorBufferInfos[bufferDescriptorCount];
                 bufferDescriptorCount++;
                 break;
             case PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler:
+                descriptorWrites[descriptorWriteIndex].pImageInfo = &descriptorImageInfos[imageDescriptorCount];
+                imageDescriptorCount++;
+                break;
+            case PC_CORE::ShaderProgramDescriptorType::StorageImage:
                 descriptorWrites[descriptorWriteIndex].pImageInfo = &descriptorImageInfos[imageDescriptorCount];
                 imageDescriptorCount++;
                 break;

@@ -31,7 +31,7 @@ void PC_CORE::Gbuffers::HandleResize(Tbx::Vector2i _targetSize , std::shared_ptr
             .textureType = TextureType::Texture2D,
             .format = RHIFormat::R8G8B8A8_UNORM,
             .channel = Channel::DEFAULT,
-            .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
+            .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled | TextureUsage::Storage,
             .memoryVisibility = MemoryLocalisation::GPU_Only,
             .samples = 1,
             .GenerateMipMap = false,
@@ -181,7 +181,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     
 
     {
-        /*
+        
 		std::vector<PC_CORE::ShaderProgramDescriptorWrite> descritproWrites;
 		descritproWrites.resize(1);
 
@@ -193,14 +193,14 @@ void PC_CORE::Gbuffers::CreateGBuffers()
 
 		descritproWrites[0] =
 		{
-			.shaderProgramDescriptorType = ShaderProgramDescriptorType::InputAttachment,
+			.shaderProgramDescriptorType = ShaderProgramDescriptorType::StorageImage,
 			.bindingIndex = 0,
 			.descriptor = imageDescriptor
 		};
 
         // tonemap
         App::instance->renderer.m_AcesShader.lock()->AllocDescriptorSet(&toneMapDescriptor, 0);
-        m_DescriptorSets->WriteDescriptorSets(descritproWrites);*/
+        toneMapDescriptor->WriteDescriptorSets(descritproWrites);
     }
  
 }

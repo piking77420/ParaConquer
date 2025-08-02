@@ -1075,6 +1075,8 @@ vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(const PC_CORE::ShaderProgr
         return vk::DescriptorType::eCombinedImageSampler;
     case PC_CORE::ShaderProgramDescriptorType::SampledImage:
         return vk::DescriptorType::eSampledImage;
+    case PC_CORE::ShaderProgramDescriptorType::StorageImage:
+        return vk::DescriptorType::eStorageImage;
     case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
         return vk::DescriptorType::eUniformBuffer;
     case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:
