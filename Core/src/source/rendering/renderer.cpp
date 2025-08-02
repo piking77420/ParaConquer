@@ -433,7 +433,7 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
 
 PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
 {
-    primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
+    primaryCommandList->BeginDebugLabel("PostProcess Pass", POST_PROCESS);
 
     if (auto aces = m_AcesShader.lock().get())
     {
@@ -443,6 +443,25 @@ PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderi
         uint32_t groupX = ((uint32_t)_viewportInfo.size.x + 256 - 1) / 256;   // ceil(width / 256)
         uint32_t groupY = ((uint32_t)_viewportInfo.size.y + 1 - 1) / 1;     // ceil(height / 1)
         primaryCommandList->Dispatch(groupX, groupY, 1);
+
+        assert(_renderingContext.gbufferImage != nullptr);
+
+        const ImageMemoryBarrier gbufferImage =
+        {
+            .srcAccessMask = GpuAccessFlag::ColorAttachmentWrite,
+            .dstAccessMask = static_cast<GpuAccessFlag>(GpuAccessFlag::ShaderRead & GpuAccessFlag::ShaderWrite),
+
+            .currentState = ImageState::RenderTargetOptimal,
+            .newState = ImageState::General,
+
+            .texture = _renderingContext.gbufferImage->GetRhiTexture2D().get(),
+        };
+
+        primaryCommandList->Barrier(GpuPipelineStageFlagBits::ColorAttachmentOutput,
+            GpuPipelineStageFlagBits::ComputeShader,
+            nullptr, 0,
+            nullptr, 0,
+            &gbufferImage, 0);
     }
 
 
@@ -1024,10 +1043,11 @@ void Renderer::CreateDescriptorSets()
         .buffer = &gpuLightUniformBuffer,
     };
 
-    ImageSamperDescriptor skyboxCubeMapDescritptor
+    ImageSamplerDescriptor skyboxCubeMapDescritptor
     {
         .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
-        .texture = m_Cubemap.lock().get()
+        .texture = m_Cubemap.lock().get(),
+        .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;

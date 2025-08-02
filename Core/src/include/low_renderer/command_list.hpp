@@ -98,6 +98,11 @@ struct ImageMemoryBarrier
     // TODO
     GpuAccessFlag srcAccessMask;
     GpuAccessFlag dstAccessMask;
+
+    ImageState currentState;
+    ImageState newState;
+
+    RhiTexture* texture; 
 };
 
 enum struct FlushCommandMethod

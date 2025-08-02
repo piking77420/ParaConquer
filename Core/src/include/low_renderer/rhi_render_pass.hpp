@@ -18,6 +18,8 @@ struct RenderPassAttachementDescriptor
 
     PC_CORE::LoadOperation stencilLoad;
     PC_CORE::StoreOperation stencilStore;
+
+    // TO DO ADD IMAGE STATE 
 };
 
 struct SubPassDependcies

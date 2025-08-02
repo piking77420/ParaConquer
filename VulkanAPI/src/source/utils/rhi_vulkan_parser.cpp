@@ -768,71 +768,6 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
 }
 #pragma endregion Format
 
-/*
-vk::DescriptorType Vulkan::Utils::RHIDescriptorTypeToVulkan(PC_CORE::DescriptorType _descriptorType)
-{
-    vk::DescriptorType result = {};
-    switch (_descriptorType)
-    {
-    case PC_CORE::DescriptorType::SAMPLER:
-        result = vk::DescriptorType::eSampler;
-        break;
-    case PC_CORE::DescriptorType::COMBINED_IMAGE_SAMPLER:
-        result = vk::DescriptorType::eCombinedImageSampler;
-        break;
-    case PC_CORE::DescriptorType::SAMPLED_IMAGE:
-        result = vk::DescriptorType::eSampledImage;
-        break;
-    case PC_CORE::DescriptorType::STORAGE_IMAGE:
-        result = vk::DescriptorType::eStorageImage;
-        break;
-    case PC_CORE::DescriptorType::UNIFORM_TEXEL_BUFFER:
-        result = vk::DescriptorType::eUniformTexelBuffer;
-        break;
-    case PC_CORE::DescriptorType::STORAGE_TEXEL_BUFFER:
-        result = vk::DescriptorType::eStorageTexelBuffer;
-        break;
-    case PC_CORE::DescriptorType::UNIFORM_BUFFER:
-        result = vk::DescriptorType::eUniformBuffer;
-        break;
-    case PC_CORE::DescriptorType::STORAGE_BUFFER:
-        result = vk::DescriptorType::eStorageBuffer;
-        break;
-    case PC_CORE::DescriptorType::UNIFORM_BUFFER_DYNAMIC:
-        result = vk::DescriptorType::eUniformBufferDynamic;
-        break;
-    case PC_CORE::DescriptorType::STORAGE_BUFFER_DYNAMIC:
-        result = vk::DescriptorType::eStorageBufferDynamic;
-        break;
-    case PC_CORE::DescriptorType::INPUT_ATTACHMENT:
-        result = vk::DescriptorType::eInputAttachment;
-        break;
-    case PC_CORE::DescriptorType::INLINE_UNIFORM_BLOCK:
-        result = vk::DescriptorType::eInlineUniformBlock;
-        break;
-    case PC_CORE::DescriptorType::ACCELERATION_STRUCTURE_KHR:
-        result = vk::DescriptorType::eAccelerationStructureKHR;
-        break;
-    case PC_CORE::DescriptorType::ACCELERATION_STRUCTURE_NV:
-        result = vk::DescriptorType::eAccelerationStructureNV;
-        break;
-    case PC_CORE::DescriptorType::SAMPLE_WEIGHT_IMAGE_QCOM:
-        result = vk::DescriptorType::eSampleWeightImageQCOM;
-        break;
-    case PC_CORE::DescriptorType::BLOCK_MATCH_IMAGE_QCOM:
-        result = vk::DescriptorType::eBlockMatchImageQCOM;
-
-        break;
-    case PC_CORE::DescriptorType::MUTABLE_EXT:
-        result = vk::DescriptorType::eMutableEXT;
-        break;
-    case PC_CORE::DescriptorType::COUNT:
-        break;
-    }
-
-    return result;
-}*/
-
 
 vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
     PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
@@ -872,7 +807,7 @@ vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::TextureType _texture
     case PC_CORE::TextureType::Texture2D:
         return vk::ImageType::e2D;
         break;
-    case PC_CORE::TextureType::Array2D:
+    case PC_CORE::TextureType::TextureArray2D:
         return vk::ImageType::e3D; 
         break;
     case PC_CORE::TextureType::CubeMap:
@@ -893,7 +828,7 @@ vk::ImageViewType Vulkan::Utils::RHIImageToVkImageViewType(PC_CORE::TextureType 
     case PC_CORE::TextureType::Texture2D:
         return vk::ImageViewType::e2D;
         break;
-    case PC_CORE::TextureType::Array2D:
+    case PC_CORE::TextureType::TextureArray2D:
         return vk::ImageViewType::e2DArray;
         break;
     case PC_CORE::TextureType::CubeMap:
@@ -915,7 +850,7 @@ vk::ImageCreateFlags Vulkan::Utils::ImageCreateFlagFromTextureType(PC_CORE::Text
     {
     case PC_CORE::TextureType::Texture2D:
         break;
-    case PC_CORE::TextureType::Array2D:
+    case PC_CORE::TextureType::TextureArray2D:
         createFlag |= vk::ImageCreateFlagBits::e2DArrayCompatible;
         break;
     case PC_CORE::TextureType::CubeMap:
@@ -1520,4 +1455,79 @@ vk::ColorComponentFlags Vulkan::Utils::RhiColorComponent(PC_CORE::ColorComponent
     return f;
 }
 
+vk::ImageLayout Vulkan::Utils::RhiImageStateToVulkanImageLayout(PC_CORE::ImageState _imageState)
+{
+    switch (_imageState)
+    {
+    case PC_CORE::ImageState::Undefined:
+        return vk::ImageLayout::eUndefined;
 
+    case PC_CORE::ImageState::General:
+        return vk::ImageLayout::eGeneral;
+
+    case PC_CORE::ImageState::RenderTargetOptimal:
+        return vk::ImageLayout::eColorAttachmentOptimal;
+
+    case PC_CORE::ImageState::DepthStencilOptimal:
+        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+    case PC_CORE::ImageState::DepthStencilReadOptimal:
+        return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
+
+    case PC_CORE::ImageState::ShaderReadOptimal:
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+
+    case PC_CORE::ImageState::TransferSrcOptimal:
+        return vk::ImageLayout::eTransferSrcOptimal;
+
+    case PC_CORE::ImageState::TransferDstOptimal:
+        return vk::ImageLayout::eTransferSrcOptimal;
+
+    case PC_CORE::ImageState::Count:
+    default:
+        assert(false);
+    }
+
+    return {};
+}
+
+
+vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::TextureUsage usage)
+{
+    using namespace PC_CORE;
+
+    VkImageUsageFlags flags = 0;
+
+    if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
+        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+
+    if (((usage & TextureUsage::Depth) == TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == TextureUsage::Stencil))
+        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
+        flags |= VK_IMAGE_USAGE_STORAGE_BIT;
+
+    // Fallback/default
+    if (flags == 0)
+        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    return static_cast<vk::ImageUsageFlags>(flags);
+}
+
+vk::ImageAspectFlags Vulkan::Utils::RhiTextureUsageToImageAspectFlagFlags(PC_CORE::TextureUsage _textureUsage)
+{
+    using namespace PC_CORE;
+
+    vk::ImageAspectFlags flags = {};
+
+    if ((_textureUsage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+        flags |= vk::ImageAspectFlagBits::eColor;
+
+    if (((_textureUsage & TextureUsage::Depth) == TextureUsage::Depth) || ((_textureUsage & TextureUsage::Stencil) == TextureUsage::Stencil))
+        flags |= vk::ImageAspectFlagBits::eDepth;
+
+    return flags;
+}

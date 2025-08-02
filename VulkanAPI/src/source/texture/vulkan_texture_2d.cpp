@@ -9,8 +9,8 @@
 #include "buffer/vulkan_buffer.hpp"
 #include "low_renderer/rhi.hpp"
 
-Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo& _createTextureInfo) : m_VulkanTexture(_createTextureInfo)
+Vulkan::VulkanTexture2D::VulkanTexture2D(const PC_CORE::CreateImageInfo& _createTextureInfo) : PC_CORE::RhiTexture2D(_createTextureInfo),
+	m_VulkanTexture(_createTextureInfo)
 {
-	assert(_createTextureInfo.textureType == PC_CORE::TextureType::Texture2D
-		|| _createTextureInfo.textureType == PC_CORE::TextureType::Array2D);
+	assert(_createTextureInfo.textureType == PC_CORE::TextureType::Texture2D);
 }

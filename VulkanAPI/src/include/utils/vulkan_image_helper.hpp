@@ -16,7 +16,6 @@ namespace Vulkan
 
     VULKAN_API  VmaMemoryUsage GetTextureMemoryUsage(PC_CORE::MemoryLocalisation _textureMemoryUsage);
 
-    VULKAN_API  vk::ImageUsageFlags GetMemoryPropertyFlags(PC_CORE::TextureUsage _textureUsage);
 
     VULKAN_API vk::ImageAspectFlags GetImageAspectFlags(PC_CORE::TextureUsage _textureUsage);
 

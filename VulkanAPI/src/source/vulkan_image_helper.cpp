@@ -71,30 +71,7 @@ VmaMemoryUsage Vulkan::GetTextureMemoryUsage(PC_CORE::MemoryLocalisation texture
 }
 
 
-vk::ImageUsageFlags Vulkan::GetMemoryPropertyFlags(PC_CORE::TextureUsage usage)
-{
-    using namespace PC_CORE;
 
-    VkImageUsageFlags flags = 0;
-
-    if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
-        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-
-    if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
-        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-
-    if ( ((usage & TextureUsage::Depth) == TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == TextureUsage::Stencil) ) 
-        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-    if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
-        flags |= VK_IMAGE_USAGE_STORAGE_BIT;
-    
-    // Fallback/default
-    if (flags == 0)
-        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-
-    return static_cast<vk::ImageUsageFlags>(flags);
-}
 
 vk::ImageAspectFlags Vulkan::GetImageAspectFlags(PC_CORE::TextureUsage usage)
 {

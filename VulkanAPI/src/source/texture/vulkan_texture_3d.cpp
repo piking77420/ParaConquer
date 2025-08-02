@@ -2,7 +2,8 @@
 
 
 
-Vulkan::VulkanTexture3D::VulkanTexture3D(const PC_CORE::CreateImageInfo& _createInfo) : m_VulkanTexture(_createInfo)
+Vulkan::VulkanTexture3D::VulkanTexture3D(const PC_CORE::CreateImageInfo& _createInfo) : RhiTexture3D(_createInfo),
+m_VulkanTexture(_createInfo)
 {
     // TODO
     assert(_createInfo.textureType == PC_CORE::TextureType::CubeMap

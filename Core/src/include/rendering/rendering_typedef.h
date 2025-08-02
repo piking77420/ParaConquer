@@ -43,6 +43,8 @@ BEGIN_PCCORE
         PC_CORE::ShaderProgramDescriptorSets* gbufferDescriptorSet;
         PC_CORE::ShaderProgramDescriptorSets* toneMapDescritptorSet;
 
+        Texture2D* gbufferImage;
+
         Tbx::Vector2ui renderingContextSize;
 #ifdef WITH_EDITOR
         size_t renderingContextFlag;

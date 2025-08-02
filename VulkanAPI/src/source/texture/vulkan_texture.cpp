@@ -32,7 +32,7 @@ Vulkan::VulkanTexture::VulkanTexture(const PC_CORE::CreateImageInfo& _createText
 	const vk::ImageType imageType = Utils::RHIImageToVkImageType(_createTextureInfo.textureType);
 	const vk::ImageViewType imageViewType = Utils::RHIImageToVkImageViewType(_createTextureInfo.textureType);
 
-	vk::ImageUsageFlags textureUsage = GetMemoryPropertyFlags(_createTextureInfo.textureUsage);
+	vk::ImageUsageFlags textureUsage = Utils::GetImageUsageFlags(_createTextureInfo.textureUsage);
 	textureUsage = mipLevel > 1 ? textureUsage | vk::ImageUsageFlagBits::eTransferSrc : textureUsage;
 	textureUsage = _createTextureInfo.datas.size() != 0 ? (textureUsage | vk::ImageUsageFlagBits::eTransferDst) : textureUsage;
 		

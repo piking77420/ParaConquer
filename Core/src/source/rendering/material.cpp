@@ -52,10 +52,11 @@ void PC_CORE::Material::Build()
     }
 
 
-    ImageSamperDescriptor imageSamperDescriptor =
+    ImageSamplerDescriptor imageSamperDescriptor =
     {
         .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
-        .texture = albedo.lock().get()
+        .texture = albedo.lock().get(),
+        .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };
 
     

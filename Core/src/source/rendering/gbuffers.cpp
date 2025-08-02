@@ -165,6 +165,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
             inputAttachements[i] =
             {
             .image = m_Gbuffers[i].get(),
+            .imageState = PC_CORE::ImageState::ShaderReadOptimal
             },
 
             descritproWrites[i] =
@@ -183,9 +184,10 @@ void PC_CORE::Gbuffers::CreateGBuffers()
 		std::vector<PC_CORE::ShaderProgramDescriptorWrite> descritproWrites;
 		descritproWrites.resize(1);
 
-		ImageDescriptor imageDescriptor
-		{
-			.texture = &m_Image
+        ImageDescriptor imageDescriptor
+        {
+            .texture = &m_Image,
+            .imageState = ImageState::General
 		};
 
 		descritproWrites[0] =

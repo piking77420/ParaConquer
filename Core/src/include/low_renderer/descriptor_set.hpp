@@ -34,20 +34,23 @@ BEGIN_PCCORE
     struct ImageDescriptor
     {
         IGpuResource* texture;
+        ImageState imageState;
     };
 
-    struct ImageSamperDescriptor
+    struct ImageSamplerDescriptor
     {
         Sampler* sampler;
         IGpuResource* texture;
+        ImageState imageState;
     };
-  
+
     struct InputAttachementDescriptor
     {
         IGpuResource* image;
+        ImageState imageState;
     };
 
-    using Descriptor = std::variant<UniformBufferDescriptor, ImageSamperDescriptor, ImageDescriptor, InputAttachementDescriptor>;
+    using Descriptor = std::variant<UniformBufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor, ImageDescriptor>;
     struct ShaderProgramDescriptorWrite
     {
         ShaderProgramDescriptorType shaderProgramDescriptorType;

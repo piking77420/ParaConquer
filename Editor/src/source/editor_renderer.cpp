@@ -196,22 +196,25 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
       .buffer = &m_Editor->gameApp.renderer.cameraUniformBuffer,
   };
 
-    PC_CORE::ImageSamperDescriptor directionalTexture
+    PC_CORE::ImageSamplerDescriptor directionalTexture
     {
         .sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat").get(),
-        .texture = m_DirectionalLightTexture.lock().get()
+        .texture = m_DirectionalLightTexture.lock().get(),
+        .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };
 
-    PC_CORE::ImageSamperDescriptor spothLightTexture
+    PC_CORE::ImageSamplerDescriptor spothLightTexture
     {
         .sampler = directionalTexture.sampler,
-        .texture = m_SpotLightTexture.lock().get()
+        .texture = m_SpotLightTexture.lock().get(),
+        .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };
 
-    PC_CORE::ImageSamperDescriptor pointLightTexture
+    PC_CORE::ImageSamplerDescriptor pointLightTexture
     {
         .sampler = directionalTexture.sampler,
-        .texture = m_PointLightTexture.lock().get()
+        .texture = m_PointLightTexture.lock().get(),
+        .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =

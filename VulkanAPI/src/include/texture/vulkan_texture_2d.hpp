@@ -26,11 +26,12 @@ namespace Vulkan
             return m_VulkanTexture;
         }
         
+        // TODO MAKE CREATE TEXTURE2D AND TEXTURE3D CREATE INFO
         VulkanTexture2D(const PC_CORE::CreateImageInfo& _createTextureInfo);
     
         VulkanTexture2D() = default;
 
-        ~VulkanTexture2D() override = default;
+        virtual ~VulkanTexture2D() override = default;
 
 
     private:

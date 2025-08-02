@@ -80,6 +80,9 @@ void WorldViewWindow::Render()
     renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
     renderingContext.gbufferDescriptorSet = m_Gbuffers.GetDescritptorSet();
     renderingContext.toneMapDescritptorSet = m_Gbuffers.toneMapDescriptor;
+
+    renderingContext.gbufferImage = &m_Gbuffers.GetImage();
+
     renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
     renderingContext.renderingContextFlag = m_RenderingContextFlag;
     
@@ -143,10 +146,11 @@ void WorldViewWindow::UpdateViewPortDescriptorSet()
     
     std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
     
-    PC_CORE::ImageSamperDescriptor image_samper_descriptor =
+    PC_CORE::ImageSamplerDescriptor image_samper_descriptor =
     {
         .sampler = sampler.get(),
-        .texture = &m_Gbuffers.GetImage()
+        .texture = &m_Gbuffers.GetImage(),
+        .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };
 
     PC_CORE::ShaderProgramDescriptorWrite shaderProgramDescriptorWrite =

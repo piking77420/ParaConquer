@@ -505,7 +505,7 @@ BEGIN_PCCORE
         DepthStencil,
     };
 
-    enum class TextureUsage : uint32_t
+    enum class TextureUsage : uint8_t
     {
         None = 0,
         Sampled = 1 << 0, // Shader-readable (SRV)
@@ -513,6 +513,10 @@ BEGIN_PCCORE
         Depth = 1 << 2, // Depth attachment
         Stencil = 1 << 3, // Stencil attachment
         Storage = 1 << 4, // Shader-writable (UAV)
+
+        //vk::eMetadata for Virtual texturing TODO reasearch
+
+        All = Sampled | RenderTarget | Depth | Stencil | Storage,
     };
 
 
@@ -534,7 +538,7 @@ BEGIN_PCCORE
     // may in future rename as resoure state like D3D12
     enum class ImageState : uint8_t
     {
-        Common,
+        Undefined,
         General,
         RenderTargetOptimal,
         DepthStencilOptimal,
@@ -550,7 +554,7 @@ BEGIN_PCCORE
     enum class TextureType
     {
         Texture2D,
-        Array2D,
+        TextureArray2D,
         CubeMap,
         CubeMapArray,
         Count,

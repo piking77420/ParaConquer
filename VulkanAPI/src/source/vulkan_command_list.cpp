@@ -11,6 +11,7 @@
 #include "resources/vulkan_descriptor_sets.hpp"
 #include "resources/vulkan_shader_program.hpp"
 #include "vulkan_fence.hpp"
+#include <texture/vulkan_texture.hpp>
 
 
 
@@ -467,13 +468,34 @@ void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcSta
 		vkBufferBarrier[i].size = _buffermemoryBarrier[i].size;       
     }
 
+    // ImageMemoryBarrier
     std::vector<vk::ImageMemoryBarrier> vkImageBarrier;
     vkImageBarrier.resize(_imageMemoryBarrierCount);
-    assert(vkImageBarrier.size() == 0, "TODO");
-
+    
     for (size_t i = 0; i < _imageMemoryBarrierCount; i++)
     {
-        
+        PC_CORE::RhiTexture* texture = _imageMemoryBarrier[i].texture;
+        VulkanTexture* textureAndAlloc = reinterpret_cast<VulkanTexture*>(texture->GetNativeHandle());
+
+        vk::ImageMemoryBarrier& bar = vkImageBarrier[i];
+
+        bar.sType = vk::StructureType::eImageMemoryBarrier;
+        bar.pNext = nullptr;
+        bar.image = textureAndAlloc->textureAndAlloc[frameIndex].image;
+        bar.srcAccessMask = Vulkan::Utils::RhiAccessFlagToVulkan(_imageMemoryBarrier[i].srcAccessMask);
+        bar.dstAccessMask = Vulkan::Utils::RhiAccessFlagToVulkan(_imageMemoryBarrier[i].dstAccessMask);
+        bar.oldLayout = Vulkan::Utils::RhiImageStateToVulkanImageLayout(_imageMemoryBarrier[i].currentState);
+        bar.newLayout = Vulkan::Utils::RhiImageStateToVulkanImageLayout(_imageMemoryBarrier[i].newState);
+        bar.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        bar.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+
+        vk::ImageSubresourceRange& ImageSubresourceRange = bar.subresourceRange;
+        ImageSubresourceRange.aspectMask = Vulkan::Utils::RhiTextureUsageToImageAspectFlagFlags(texture->GetTextureUsage());
+        ImageSubresourceRange.baseArrayLayer = 0;
+        ImageSubresourceRange.layerCount = texture->GetLayerCount();
+        ImageSubresourceRange.baseMipLevel = 0;
+        ImageSubresourceRange.baseMipLevel = texture->GetMipLevelCount();
     }
 
     m_CommandBuffer[frameIndex].pipelineBarrier(srcStageFlag, dstStageFlag, {},
