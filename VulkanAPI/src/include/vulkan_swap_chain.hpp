@@ -58,12 +58,6 @@ namespace Vulkan
 
         vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities , uint32_t _width, uint32_t _height);
 
-
-        Vulkan::VulkanCommandList* GetVulkanCommandList()
-        {
-            return reinterpret_cast<Vulkan::VulkanCommandList*>(m_CommandList.get());
-        }
-
         void CreateImageViews();
         
         void CreateFrameBuffers();
