@@ -124,7 +124,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
         switch (gbufferType)
         {
         case GbufferType::Albedo:
-            texture_info.format = RHIFormat::R8G8B8A8_UNORM; // TODO GAMA CORRECTION 
+            texture_info.format = RHIFormat::R16G16B16A16_SFLOAT; // TODO GAMA CORRECTION 
             texture_info.channel = Channel::RGBA;
             break;
         case GbufferType::Normal:

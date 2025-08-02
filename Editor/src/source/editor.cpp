@@ -109,7 +109,7 @@ void Editor::CompileShader()
 
 	auto debugDrawVert = ResourceManager::Create<ShaderSource>("debug_draw.vert");
 	debugDrawVert->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.vert");
-
+		
 	auto debugDrawFrag = ResourceManager::Create<ShaderSource>("debug_draw.frag");
 	debugDrawFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/shaders/debug_draw/debug_draw.frag");
 
@@ -146,12 +146,12 @@ void Editor::CompileShader()
 	// Tone Map
 	{
 		auto toneMap = ResourceManager::Create<ShaderSource>("aces.comp",
-		EDITOR_RESOURCE_PATH "/shaders/post_process/aces.comp");
+		EDITOR_RESOURCE_PATH "/shaders/post_process/tone_mapping/aces.comp");
 	}
 
 	// deferred
 	{
-		auto ddeferredFrag = ResourceManager::Create<ShaderSource>("deferred.frag",
+		auto deferredFrag = ResourceManager::Create<ShaderSource>("deferred.frag",
 		EDITOR_RESOURCE_PATH "/shaders/deferred/deferred.frag");
 	}
 

@@ -15,6 +15,11 @@ class PC_CORE_API ComputeShader : public PC_CORE::ShaderProgram
 {
 public:
 
+    const LocalSize& GetLocalSize() const
+    {
+        return m_RhiShaderProgram->GetLocalSize();
+    }
+
     IMP_DYNAMIC_REFLECT()
 
     ComputeShader(const std::string& _shaderName, const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);

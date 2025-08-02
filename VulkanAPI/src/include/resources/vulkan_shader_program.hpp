@@ -78,7 +78,6 @@ namespace Vulkan
         
 
     protected:
-
         size_t m_DescriptorId = std::numeric_limits<size_t>::max();
 
         size_t m_DescriptorSetAllocCount = 0;
@@ -86,7 +85,7 @@ namespace Vulkan
         vk::PipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
-        
+
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
 
         VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources = true);

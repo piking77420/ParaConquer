@@ -185,12 +185,21 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     }
 
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)
-    {
         spvReflectCreateShaderModule(vulkanShaderProgramCreateContex.spvModuleSourceCode[i].size(), vulkanShaderProgramCreateContex.spvModuleSourceCode[i].data(), &vulkanShaderProgramCreateContex.modulesReflected[i]);
+    
+    for (auto& reflect : vulkanShaderProgramCreateContex.modulesReflected)
+    {
+        if (reflect.shader_stage & SpvReflectShaderStageFlagBits::SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT)
+        {
+            m_LocalSize =
+            {
+                reflect.entry_points[0].local_size.x,
+                reflect.entry_points[0].local_size.y,
+                reflect.entry_points[0].local_size.z
+            };
+        }
     }
 
-    
-    
     // Reflection Start
     if (_createDescriptorResources)
         ParseDescriptor(vulkanShaderProgramCreateContex);

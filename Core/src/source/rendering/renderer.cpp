@@ -440,8 +440,9 @@ PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderi
         primaryCommandList->BindProgram(aces);
         primaryCommandList->BindDescriptorSet(aces, _renderingContext.toneMapDescritptorSet, 0, 1);
 
-        const uint32_t localSizeX = 256;
-        uint32_t groupX = ((uint32_t)_viewportInfo.size.x + localSizeX - 1) / localSizeX;
+        const LocalSize& localSize = aces->GetLocalSize();
+
+        uint32_t groupX = ((uint32_t)_viewportInfo.size.x + localSize.x - 1) / localSize.x;
         uint32_t groupY = (uint32_t)_viewportInfo.size.y;
 
         primaryCommandList->Dispatch(groupX, groupY, 1);
@@ -527,7 +528,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::Albedo)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
