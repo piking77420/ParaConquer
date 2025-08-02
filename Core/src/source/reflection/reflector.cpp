@@ -5,6 +5,8 @@ using namespace PC_CORE;
 
 const ReflectedType& Reflector::GetTypeFromRTTI(size_t typeIdFromRtti)
 {
+    assert(m_RttiToTypeId.contains(typeIdFromRtti) && "Forgot to reflect your type ?");
+
     const TypeId id = m_RttiToTypeId.at(typeIdFromRtti);
 
     return m_RelfectionMap.at(id);

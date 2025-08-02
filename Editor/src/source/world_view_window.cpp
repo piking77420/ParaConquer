@@ -124,7 +124,7 @@ void WorldViewWindow::ResizeViewports()
             &m_FinalImage
         }
     };
-    
+        
     const PC_CORE::CreateFrameInfo create_frame_info =
         {
         .width = static_cast<uint32_t>(size.x),
@@ -150,7 +150,7 @@ void WorldViewWindow::UpdateViewPortDescriptorSet()
     {
         .sampler = sampler.get(),
         .texture = &m_Gbuffers.GetImage(),
-        .imageState = PC_CORE::ImageState::ShaderReadOptimal
+        .imageState = PC_CORE::ImageState::General
     };
 
     PC_CORE::ShaderProgramDescriptorWrite shaderProgramDescriptorWrite =

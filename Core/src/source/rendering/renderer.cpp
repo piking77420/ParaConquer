@@ -232,7 +232,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
-    //PostProcess(renderingContext, viewportInfo);
+    PostProcess(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 
     primaryCommandList->EndRecordCommands();
@@ -440,8 +440,10 @@ PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderi
         primaryCommandList->BindProgram(aces);
         primaryCommandList->BindDescriptorSet(aces, _renderingContext.toneMapDescritptorSet, 0, 1);
 
-        uint32_t groupX = ((uint32_t)_viewportInfo.size.x + 256 - 1) / 256;   // ceil(width / 256)
-        uint32_t groupY = ((uint32_t)_viewportInfo.size.y + 1 - 1) / 1;     // ceil(height / 1)
+        const uint32_t localSizeX = 256;
+        uint32_t groupX = ((uint32_t)_viewportInfo.size.x + localSizeX - 1) / localSizeX;
+        uint32_t groupY = (uint32_t)_viewportInfo.size.y;
+
         primaryCommandList->Dispatch(groupX, groupY, 1);
 
         assert(_renderingContext.gbufferImage != nullptr);
@@ -673,7 +675,7 @@ void Renderer::CreateRenderPasss()
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
             .currentImageState = ImageState::RenderTargetOptimal,
-            .finalImageState = ImageState::ShaderReadOptimal,
+            .finalImageState = ImageState::General,
         };
 
         RenderPassAttachementDescriptor depthAttachement =

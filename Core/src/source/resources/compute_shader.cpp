@@ -5,6 +5,8 @@
 PC_CORE::ComputeShader::ComputeShader(const std::string& _shaderName,
                                       const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) : PC_CORE::ShaderProgram(_shaderName, ShaderProgramPipelineType::COMPUTE, _computeShaderProgramCreateInfo.source)
 {
+    DYNAMIC_REFLECT_INIT
+
     const ShaderInfo shaderInfo =
     {
         .shaderProgramPipelineType = ShaderProgramPipelineType::COMPUTE,
@@ -26,6 +28,8 @@ PC_CORE::ComputeShader::ComputeShader(const std::string& _shaderName,
 PC_CORE::ComputeShader::ComputeShader(std::string&& _shaderName,
     const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) : PC_CORE::ShaderProgram(std::move(_shaderName), ShaderProgramPipelineType::COMPUTE, _computeShaderProgramCreateInfo.source)
 {
+    DYNAMIC_REFLECT_INIT
+
     const ShaderInfo shaderInfo =
  {
         .shaderProgramPipelineType = ShaderProgramPipelineType::COMPUTE,

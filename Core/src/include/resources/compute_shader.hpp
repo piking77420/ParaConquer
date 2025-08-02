@@ -29,4 +29,7 @@ public:
     ~ComputeShader() = default;
 };
 
+
+REFLECT(ComputeShader, PC_CORE::ShaderProgram);
+
 END_PCCORE

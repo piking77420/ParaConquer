@@ -347,7 +347,11 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
 
 void Vulkan::VulkanCommandList::Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ)
 {
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].dispatch(1, 1, 1);
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
+    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].dispatch(_groupCountX, _groupCountY, _groupCountZ);
 }
 
 void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding,
@@ -414,16 +418,6 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
     bufferBarrier.offset = 0;
     bufferBarrier.size = VK_WHOLE_SIZE;
 
-    
-    /*
-    m_CommandBuffer[frameIndex].pipelineBarrier(
-        vk::PipelineStageFlagBits::eTransfer,              // srcStage
-        Vulkan::Utils::RhiPipelineStageToVulkan(_dstBufferUsage),
-        {},
-        nullptr,
-        bufferBarrier,
-        nullptr
-    );*/
 }
 
 void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcStageMask, PC_CORE::GpuPipelineStageFlagBits dstStageMask, 
