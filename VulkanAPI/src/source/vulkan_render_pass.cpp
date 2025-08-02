@@ -407,60 +407,6 @@ vk::RenderPass Vulkan::VulkanRenderPass::GetVulkanRenderPass() const
     return m_RenderPass;
 }
 
-void Vulkan::VulkanRenderPass::ParseAttachmentLayout(const PC_CORE::RenderPassAttachementDescriptor& _attachment,
-                                                     vk::AttachmentDescription* _attachmentLayouts)
-{
-    bool doesReadValue = _attachment.load == PC_CORE::LoadOperation::Load;
-    bool doesWriteValue = _attachment.store == PC_CORE::StoreOperation::Store;
-    bool isInputOnly = (doesReadValue && !doesWriteValue);
-
-    switch (_attachment.attachmentType)
-    {
-    case PC_CORE::AttachmentType::Color:
-        if (isInputOnly)
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eColorAttachmentOptimal;  
-        }
-        else if (doesWriteValue)
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
-        }
-        else if (doesReadValue)
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
-        }
-        else
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eUndefined;
-        }
-        break;
-
-    case PC_CORE::AttachmentType::Depth:
-    case PC_CORE::AttachmentType::Stencil:
-    case PC_CORE::AttachmentType::DepthStencil:
-        if (isInputOnly)
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-        }
-        else if (doesWriteValue)
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-        }
-        else if (doesReadValue)
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-        }
-        else
-        {
-            _attachmentLayouts->finalLayout = vk::ImageLayout::eUndefined;
-        }
-        break;
-
-    default:
-        _attachmentLayouts->finalLayout = vk::ImageLayout::eUndefined;
-        break;
-    }
-}
 
 void Vulkan::VulkanRenderPass::ParseDependcies(const PC_CORE::SubPassDependcies& _subPassDependcies,
                                                vk::SubpassDependency* _vkdependency)
@@ -525,24 +471,15 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         vkAttachment.flags = {};
         vkAttachment.format = Utils::RHIFormatToVkFormat(attachment.format);
         vkAttachment.samples = Utils::RhiSampleCountToVuklan(attachment.sampleCount);
+
         vkAttachment.loadOp = Utils::RhiLoadOperationToVulkan(attachment.load);
         vkAttachment.storeOp = Utils::RhiStoreOperationToVulkan(attachment.store);
+
         vkAttachment.stencilLoadOp = Utils::RhiLoadOperationToVulkan(attachment.stencilLoad);
         vkAttachment.stencilStoreOp = Utils::RhiStoreOperationToVulkan(attachment.stencilStore);
 
-        if (attachment.load == PC_CORE::LoadOperation::Load)
-        {
-            vkAttachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
-            vkAttachment.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-
-        }
-        else
-        {
-            vkAttachment.initialLayout = vk::ImageLayout::eUndefined;
-            ParseAttachmentLayout(attachment, &vkAttachment);
-        }
-
-        
+        vkAttachment.initialLayout = Utils::RhiImageStateToVulkanImageLayout(attachment.currentImageState);
+        vkAttachment.finalLayout = Utils::RhiImageStateToVulkanImageLayout(attachment.finalImageState);
     }
 
     if (_hasdepth)
@@ -555,11 +492,13 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         depthDesc.stencilLoadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilLoad);
         depthDesc.stencilStoreOp =
             Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilStore);
-        depthDesc.initialLayout = _renderPassDescriptor.depthAttachment->load == PC_CORE::LoadOperation::Load ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined;
 
-        size_t depthIndex = vkAttachments.size() - 1;
+        depthDesc.initialLayout = Utils::RhiImageStateToVulkanImageLayout(_renderPassDescriptor.depthAttachment->currentImageState);
+        depthDesc.finalLayout = Utils::RhiImageStateToVulkanImageLayout(_renderPassDescriptor.depthAttachment->finalImageState);
+
+        const size_t depthIndex = vkAttachments.size() - 1;
         vkAttachments[depthIndex] = depthDesc;
-        ParseAttachmentLayout(*_renderPassDescriptor.depthAttachment, &vkAttachments[depthIndex]);
+
     }
 
     return vkAttachments;

@@ -181,6 +181,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
     
 
     {
+        /*
 		std::vector<PC_CORE::ShaderProgramDescriptorWrite> descritproWrites;
 		descritproWrites.resize(1);
 
@@ -199,7 +200,7 @@ void PC_CORE::Gbuffers::CreateGBuffers()
 
         // tonemap
         App::instance->renderer.m_AcesShader.lock()->AllocDescriptorSet(&toneMapDescriptor, 0);
-        m_DescriptorSets->WriteDescriptorSets(descritproWrites);
+        m_DescriptorSets->WriteDescriptorSets(descritproWrites);*/
     }
  
 }

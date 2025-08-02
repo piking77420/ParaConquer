@@ -19,7 +19,9 @@ struct RenderPassAttachementDescriptor
     PC_CORE::LoadOperation stencilLoad;
     PC_CORE::StoreOperation stencilStore;
 
-    // TO DO ADD IMAGE STATE 
+    ImageState currentImageState;
+    ImageState finalImageState;
+
 };
 
 struct SubPassDependcies
@@ -27,7 +29,7 @@ struct SubPassDependcies
     GpuPipelineStageFlagBits srcStageMask;
     GpuPipelineStageFlagBits dstStageMask;
   
-    GpuAccessFlag srcAccessMask;
+    GpuAccessFlag srcAccessMask;    
     GpuAccessFlag dstAccessMask;
   
 };

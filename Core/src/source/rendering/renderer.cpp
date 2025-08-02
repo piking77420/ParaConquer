@@ -232,7 +232,7 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 
     DefferdPass(renderingContext, viewportInfo);
     ForwardPass(renderingContext, viewportInfo);
-    PostProcess(renderingContext, viewportInfo);
+    //PostProcess(renderingContext, viewportInfo);
     FinalPass(renderingContext, viewportInfo);
 
     primaryCommandList->EndRecordCommands();
@@ -531,6 +531,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::Undefined,
+            .finalImageState = ImageState::RenderTargetOptimal,
         };
         attachements[static_cast<uint8_t>(GbufferType::Normal)] =
         {
@@ -541,6 +543,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::Undefined,
+            .finalImageState = ImageState::RenderTargetOptimal,
         };
         attachements[static_cast<uint8_t>(GbufferType::RoughnessMetallicAo)] =
         {
@@ -551,6 +555,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::Undefined,
+            .finalImageState = ImageState::RenderTargetOptimal,
         };
         attachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
         {
@@ -561,6 +567,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::Undefined,
+            .finalImageState = ImageState::RenderTargetOptimal,
         };
         RenderPassAttachementDescriptor depthAttachement =
         {
@@ -571,6 +579,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::Undefined,
+            .finalImageState = ImageState::DepthStencilOptimal,
         };
 
         // out image
@@ -583,6 +593,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::Undefined,
+            .finalImageState = ImageState::RenderTargetOptimal,
         };
 
         // Geometry subpass and deffered lighting
@@ -660,6 +672,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::RenderTargetOptimal,
+            .finalImageState = ImageState::ShaderReadOptimal,
         };
 
         RenderPassAttachementDescriptor depthAttachement =
@@ -671,6 +685,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
+            .currentImageState = ImageState::DepthStencilOptimal,
+            .finalImageState = ImageState::DepthStencilOptimal,
         };
 
         std::vector<SubPassDescription> subPassDescriptions;
