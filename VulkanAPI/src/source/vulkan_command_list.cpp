@@ -486,16 +486,18 @@ void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcSta
 
         vk::ImageSubresourceRange& ImageSubresourceRange = bar.subresourceRange;
         ImageSubresourceRange.aspectMask = Vulkan::Utils::RhiTextureUsageToImageAspectFlagFlags(texture->GetTextureUsage());
+
+        ImageSubresourceRange.baseMipLevel = 0;
+        ImageSubresourceRange.levelCount = texture->GetMipLevelCount();
+
         ImageSubresourceRange.baseArrayLayer = 0;
         ImageSubresourceRange.layerCount = texture->GetLayerCount();
-        ImageSubresourceRange.baseMipLevel = 0;
-        ImageSubresourceRange.baseMipLevel = texture->GetMipLevelCount();
     }
 
     m_CommandBuffer[frameIndex].pipelineBarrier(srcStageFlag, dstStageFlag, {},
         static_cast<uint32_t>(vkMemoryBarriers.size()), vkMemoryBarriers.data(),
         static_cast<uint32_t>(vkBufferBarrier.size()),vkBufferBarrier.data(),
-        0, nullptr);
+        static_cast<uint32_t>(vkImageBarrier.size()), vkImageBarrier.data());
 }
 
 void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandMethod, PC_CORE::GpuPipelineStageFlagBits _waitGpuPipelineStageFlag)

@@ -14,16 +14,13 @@ using namespace PC_EDITOR_CORE;
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
 {
-    
-    m_Editor->gameApp.renderer.m_DrawTextureScreenQuadShader.lock()->AllocDescriptorSet(&m_ViewPortDescriptorSet, 0);
-
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
 }
 
 WorldViewWindow::~WorldViewWindow()
 {
-    delete m_ViewPortDescriptorSet;
+    
 }
 
 
@@ -36,17 +33,28 @@ void WorldViewWindow::Update()
 
     if (resize)
     {
-        PC_CORE::Rhi::GetRhiContext()->WaitIdle();
-        ResizeViewports();
-        UpdateViewPortDescriptorSet();
-        camera.SetAspect(size.x / size.y);
+        Tbx::Vector2i sizeI = Tbx::Vector2i(static_cast<int>(size.x), static_cast<int>(size.y));
+        const float aspect = size.x / size.y;
+        camera.SetAspect(aspect);
+
+        if (!m_View)
+        {
+            m_View = m_Editor->gameApp.renderer.CreateView(sizeI);
+            m_View->SetCamera(&camera);
+        }
+        else
+        {
+            m_View->Resize(sizeI);
+        }
+
+        UpdateImguiViewPort();
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    
     uint32_t currentImage = PC_CORE::Rhi::GetFrameIndex();
 
-    ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0), ImVec2(1, 1));
+    m_View->Update();
+    //ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0), ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()
@@ -54,116 +62,26 @@ void WorldViewWindow::Render()
     PERF_REGION_SCOPED;
 
     EditorWindow::Render();
-    if (size == Tbx::Vector2f{0.f, 0.f})
+    if (size == Tbx::Vector2f{0.f, 0.f} || !m_View)
         return;
-    
-    
-    
-    PC_CORE::RenderingContext renderingContext;
-    renderingContext.lowLevelCamera =
-    {
-        .position = camera.position,
-        .front = static_cast<Tbx::Vector3f>(camera.front),
-        .up = static_cast<Tbx::Vector3f>(camera.up),
-        .aspect = camera.GetAspect(),
-        .fov = camera.GetFOV(),
-        .near = camera.GetNear(),
-        .far = camera.GetFar(),
-        .isOrthographic = camera.GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
-    };
-    renderingContext.time = PC_CORE::Time::GetTime();
-    renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
-    renderingContext.forwardFrameBuffer = m_Gbuffers.GetForwardFrameBuffer();
-    renderingContext.gbufferFrameBuffer = m_Gbuffers.GetGbufferFrameBuffer();
-
-    renderingContext.finalImageFrameBuffer = m_FinalFrameBufferViewport;
-    renderingContext.viewPortDescriptorSet = m_ViewPortDescriptorSet;
-    renderingContext.gbufferDescriptorSet = m_Gbuffers.GetDescritptorSet();
-    renderingContext.toneMapDescritptorSet = m_Gbuffers.toneMapDescriptor;
-
-    renderingContext.gbufferImage = &m_Gbuffers.GetImage();
-
-    renderingContext.renderingContextSize = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
-    renderingContext.renderingContextFlag = m_RenderingContextFlag;
-    
-   m_Editor->gameApp.renderer.DrawToRenderingContext(renderingContext);
+  
+    m_Editor->gameApp.renderer.Draw(*m_View.get());
 }
 
-
-void WorldViewWindow::ResizeViewports()
-{
-    
-    PC_CORE::CreateImageInfo create_texture =
-   {
-        .width =  static_cast<int32_t>(size.x),
-        .height = static_cast<int32_t>(size.y),
-        .depth = 1,
-        .layerCount = 1,
-        .mipsLevels = 1,
-        .textureType = PC_CORE::TextureType::Texture2D,
-        .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
-        .channel = PC_CORE::Channel::RGBA,
-        .textureUsage = PC_CORE::TextureUsage::RenderTarget | PC_CORE::TextureUsage::Sampled,
-        .memoryVisibility = PC_CORE::MemoryLocalisation::GPU_Only,
-        .samples = 1,
-        .GenerateMipMap = false,
-        .datas = {}
-    };
-
-   // assert(false && "TO DO Handle move constructor and other case");
-    m_FinalImage = PC_CORE::Texture2D(create_texture);
-    create_texture.samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
-    m_ResolvedTexture = PC_CORE::Texture2D(create_texture);
-    
-    std::vector<PC_CORE::FrameBufferAttachementDesriptor> attachments =
-    { 
-        {
-            &m_ResolvedTexture,
-        },
-        {
-            &m_FinalImage
-        }
-    };
-        
-    const PC_CORE::CreateFrameInfo create_frame_info =
-        {
-        .width = static_cast<uint32_t>(size.x),
-        .height = static_cast<uint32_t>(size.y),
-        .attachements = &attachments,
-        .renderPass = m_Editor->gameApp.renderer.renderPasses.drawToFinalViewPort.get()
-        };
-    m_FinalFrameBufferViewport = PC_CORE::Rhi::CreateFrameBuffer(create_frame_info);
-    
-    m_Gbuffers.HandleResize({ static_cast<int32_t>(size.x), static_cast<int32_t>(size.y) }, m_Editor->gameApp.renderer.renderPasses.forwardPass,
-        m_Editor->gameApp.renderer.renderPasses.defferedPass);
-}
-
-void WorldViewWindow::UpdateViewPortDescriptorSet()
+void WorldViewWindow::UpdateImguiViewPort()
 {   
-    
-    m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture( &m_FinalImage, imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    
-    std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
-    
-    PC_CORE::ImageSamplerDescriptor image_samper_descriptor =
-    {
-        .sampler = sampler.get(),
-        .texture = &m_Gbuffers.GetImage(),
-        .imageState = PC_CORE::ImageState::General
-    };
+    bool needFree = false;
+    for (auto& it : imguiDescriptorSet)
+        if (it != VK_NULL_HANDLE)
+        {
+            needFree = true;
+            break;
+        }
 
-    PC_CORE::ShaderProgramDescriptorWrite shaderProgramDescriptorWrite =
-    {
-        .shaderProgramDescriptorType = PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler,
-        .bindingIndex = 0,
-        .descriptor = image_samper_descriptor
-    };
+    
 
-    std::vector<PC_CORE::ShaderProgramDescriptorWrite> writes =
-    {
-        shaderProgramDescriptorWrite
-    };
+    if (needFree) {}
+        //m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
+    //m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_View->GetFinalImage(), imguiDescriptorSet.data(), imguiDescriptorSet.size());
 
-    m_ViewPortDescriptorSet->WriteDescriptorSets(writes);
 }

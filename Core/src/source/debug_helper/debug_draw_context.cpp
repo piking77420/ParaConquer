@@ -192,7 +192,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 
 	PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
 	{
-		.buffer = &m_Renderer->cameraUniformBuffer
+		.buffer = &m_Renderer->uniformBuffers.cameraUniformBuffer
 	};
 
 	PC_CORE::ShaderProgramDescriptorWrite descriptor =
@@ -292,7 +292,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 
 	PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
 	{
-		.buffer = &m_Renderer->cameraUniformBuffer
+		.buffer = &m_Renderer->uniformBuffers.cameraUniformBuffer
 	};
 
 	PC_CORE::ShaderProgramDescriptorWrite descriptor =

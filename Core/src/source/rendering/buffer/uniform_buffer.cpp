@@ -2,7 +2,7 @@
 
 #include "low_renderer/rhi.hpp"
 
-void PC_CORE::UniformBuffer::Update(void* _data, size_t _size)
+void PC_CORE::UniformBuffer::Update(const void* _data, size_t _size)
 {
 
     void* mappedData = nullptr;

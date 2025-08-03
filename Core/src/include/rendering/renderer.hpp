@@ -14,6 +14,7 @@
 #include "world/transform.hpp"
 #include "world/world.hpp"
 #include "resources/compute_shader.hpp"
+#include "view.hpp"
 
 BEGIN_PCCORE
     // TODO
@@ -32,9 +33,23 @@ struct RenderPasses
     std::shared_ptr<RhiRenderPass> drawToFinalViewPort;
 };
 
+struct UniformBuffers
+{
+    UniformBuffer cameraUniformBuffer;
+    UniformBuffer postProcessUniformBuffer;
+    UniformBuffer dynamicGpuLightUniformBuffer;
+};
+
+
+
 class Renderer
 {
 public:
+   
+    UniformBuffers uniformBuffers;
+
+    // Critical section
+    RenderingWorldData renderWorldData;
     
     std::shared_ptr<PC_CORE::CommandList> primaryCommandList;
 
@@ -54,9 +69,7 @@ public:
 
     RenderPasses renderPasses;
 
-    UniformBuffer cameraUniformBuffer;
-
-    SceneBufferGPU sceneBufferGPU;
+    std::weak_ptr<Texture3D> m_Cubemap;
 
     PC_CORE_API void GetRenderingData(const RenderingWorldData& _newRenderingData);
 
@@ -66,54 +79,40 @@ public:
     
     PC_CORE_API Renderer() = default;
 
-    PC_CORE_API ~Renderer() = default;
+    PC_CORE_API ~Renderer();
     
     PC_CORE_API void Init();
     
     PC_CORE_API void BeginFrame(Window* _window);
     
-    PC_CORE_API void DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext);
+    PC_CORE_API void Draw(const View& _view);
 
     PC_CORE_API void SwapBuffers(Window* _window);
 
-    PC_CORE_API void DrawTextureScreenQuad(const ShaderProgramDescriptorSets& _ShaderProgramDescriptorSets);
+    PC_CORE_API std::shared_ptr<View> CreateView(Tbx::Vector2i _defaultSize);
 
 private:    
     RhiContext* m_RhiContext;
 
-    std::shared_ptr<RhiFence> m_PendingResourceFence;
+    const View* m_CurrentView = nullptr;
+  
+    ShaderProgramDescriptorSets* skyboxCameraDescriptorSet;
 
-   
-    // Critical section
-    RenderingWorldData m_RenderWorldData;
-    
-    ShaderProgramDescriptorSets* m_ShaderProgramSceneDescriptorSet = nullptr;
-
-    struct DescriptorSetsSkybox
-    {
-        ShaderProgramDescriptorSets* cameraDescriptorSet = nullptr;
-        ShaderProgramDescriptorSets* cubeMapDescriptorSet = nullptr;
-    }descriptorSetsSkybox;
-
-    ShaderProgramDescriptorSets* m_GeometryBufferDescriptorSet = nullptr;
-
-    ShaderProgramDescriptorSets* m_DeferdDescriptorSet = nullptr;
-
-
-    std::weak_ptr<Texture3D> m_Cubemap;
+    ShaderProgramDescriptorSets* skyBoxCubeMapDescriptorSet;
 
     std::weak_ptr<Mesh> m_CubeMesh;
 
-    std::unique_ptr<GPUDynamicLightData> gpuDynamicLightData;
-
-    UniformBuffer gpuLightUniformBufferStaging;
-    UniformBuffer gpuLightUniformBuffer;
-
-    const RenderingContext* currentRenderingContext = nullptr;
-    
 #ifdef WITH_EDITOR
    std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
 #endif
+
+    std::vector<std::shared_ptr<View>> m_Views;
+
+    UniformBuffer gpuLightUniformBufferStaging;
+
+    GPUDynamicLightData m_GpuDynamicLightData;
+
+    PC_CORE_API void CreateBuffers();
     
     PC_CORE_API void CreateRenderPasss();
 
@@ -122,24 +121,24 @@ private:
     PC_CORE_API void CreateDescriptorSets();
 
     PC_CORE_API void CreateThirdPartyResources();
-    
-    PC_CORE_API void UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext);
-
-    PC_CORE_API void UpdateLightData(const RenderingContext& _context, CommandList* commandList);
-    
+        
     PC_CORE_API void DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader);
 
     PC_CORE_API void ClearRenderData();
 
+    PC_CORE_API void UpdateLightGPUData(CommandList* commandlist);
+
+    PC_CORE_API void UpdateGpuCameraData();
+
     PC_CORE_API void DrawSkyBox();
 
-    PC_CORE_API void ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
+    PC_CORE_API void ForwardPass(const ViewportInfo& _viewportInfo);
 
-    PC_CORE_API void DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
+    PC_CORE_API void DefferdPass(const ViewportInfo& _viewportInfo);
 
-    PC_CORE_API void PostProcess(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
+    PC_CORE_API void PostProcess(const ViewportInfo& _viewportInfo);
 
-    PC_CORE_API void FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo);
+    PC_CORE_API void FinalPass(const ViewportInfo& _viewportInfo);
 };
 
     

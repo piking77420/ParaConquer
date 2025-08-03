@@ -19,7 +19,7 @@ public:
         return m_RhiBuffer;
     }
 
-    void Update(void* _data, size_t _size);
+    void Update(const void* _data, size_t _size);
 
     explicit UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage);
 

@@ -26,7 +26,7 @@ BEGIN_PCCORE
     };
 
 
-    struct SceneBufferGPU
+    struct CameraGpu
     {
         Tbx::Matrix4x4f view;
         Tbx::Matrix4x4f proj;
@@ -44,6 +44,12 @@ BEGIN_PCCORE
     struct ALIGNAS_16 DrawObjectBufferGPU
     {
         Tbx::Matrix4x4f model;
+    };
+
+    struct ALIGNAS_16 PostProcessGpu
+    {
+        float gamma;
+        float exposure;
     };
 
 

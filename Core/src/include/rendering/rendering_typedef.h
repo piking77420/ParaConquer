@@ -39,16 +39,22 @@ BEGIN_PCCORE
         std::shared_ptr<FrameBuffer> forwardFrameBuffer;
         std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
         
-        PC_CORE::ShaderProgramDescriptorSets* viewPortDescriptorSet;
-        PC_CORE::ShaderProgramDescriptorSets* gbufferDescriptorSet;
+        PC_CORE::ShaderProgramDescriptorSets* geometryDescritproSet;
+        PC_CORE::ShaderProgramDescriptorSets* defferdLightingGbufferSet;
+        PC_CORE::ShaderProgramDescriptorSets* defferdLightingLightingCameraSet;
+        PC_CORE::ShaderProgramDescriptorSets* forwardDesritptorSet;
         PC_CORE::ShaderProgramDescriptorSets* toneMapDescritptorSet;
+        PC_CORE::ShaderProgramDescriptorSets* finalImageDescritptorSet;
 
-        Texture2D* gbufferImage;
+        Texture2D* hdrImage;
 
         Tbx::Vector2ui renderingContextSize;
 #ifdef WITH_EDITOR
         size_t renderingContextFlag;
 #endif
+
+        float gamma;
+        float exposure;
     };
 
     enum struct GbufferType : std::uint8_t
@@ -57,7 +63,6 @@ BEGIN_PCCORE
         Normal,
         RoughnessMetallicAo,
         WorldPosition,
-        Depth,
 
         Count
     };

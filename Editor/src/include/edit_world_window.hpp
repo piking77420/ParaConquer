@@ -11,11 +11,14 @@ public:
     void OnPlayButton() override
     {
         m_RenderingContextFlag &= ~PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+        m_View->SetRenderingContextFlag(m_RenderingContextFlag);
+
     }
     
     void OnResetScene() override
     {
         m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+        m_View->SetRenderingContextFlag(m_RenderingContextFlag);
     }
 
     explicit EditWorldWindow(Editor& _editor, const std::string& _name);

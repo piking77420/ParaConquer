@@ -3,11 +3,10 @@
 
 #include "editor_header.hpp"
 #include "editor_window.hpp"
+#include "rendering/view.hpp"
 #include "low_renderer/descriptor_set.hpp"
 #include "rendering/camera.hpp"
-#include "rendering/rendering_typedef.h"
 #include "resources/texture_2d.hpp"
-#include "rendering/rendering_typedef.h"
 
 #include <vulkan/vulkan.h>
 
@@ -38,20 +37,13 @@ public:
 protected:
     size_t m_RenderingContextFlag = 0;
 
+    std::shared_ptr<PC_CORE::View> m_View;
+
 private:
     void ResizeViewports();
 
-    void UpdateViewPortDescriptorSet();
+    void UpdateImguiViewPort();
 
-    PC_CORE::Gbuffers m_Gbuffers;
-    
-    PC_CORE::Texture2D m_FinalImage;
-    
-    PC_CORE::Texture2D m_ResolvedTexture;
-    
-    std::shared_ptr<PC_CORE::FrameBuffer> m_FinalFrameBufferViewport;
-    
-    PC_CORE::ShaderProgramDescriptorSets* m_ViewPortDescriptorSet = nullptr;
 
     std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> imguiDescriptorSet;
 

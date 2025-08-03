@@ -193,7 +193,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
 
     PC_CORE::UniformBufferDescriptor cameraBufferDescritptor
   {
-      .buffer = &m_Editor->gameApp.renderer.cameraUniformBuffer,
+      .buffer = &m_Editor->gameApp.renderer.uniformBuffers.cameraUniformBuffer,
   };
 
     PC_CORE::ImageSamplerDescriptor directionalTexture

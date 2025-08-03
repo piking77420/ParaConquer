@@ -29,8 +29,19 @@ void Renderer::GetRenderingData(const RenderingWorldData& _newRenderingData)
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
 
-    m_RenderWorldData.Clear();
-    m_RenderWorldData = _newRenderingData;
+    renderWorldData.Clear();
+    renderWorldData = _newRenderingData;
+}
+
+Renderer::~Renderer()
+{
+    for (auto& it : m_Views)
+    {
+        if (it.use_count() != 1)
+        {
+            PC_LOGERROR("There is still reference to a view")
+        }
+    }
 }
 
 void Renderer::Init()
@@ -52,6 +63,7 @@ void Renderer::Init()
    
     CreateRenderPasss();
     CreateShaders();
+    CreateBuffers();
     CreateThirdPartyResources();
     CreateDescriptorSets();
 #ifdef WITH_EDITOR
@@ -67,19 +79,29 @@ void Renderer::BeginFrame(Window* _window)
 	m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
 }
 
-void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* commandList)
+void Renderer::UpdateGpuCameraData()
+{
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& gpuCamera = m_CurrentView->GetCameraGpu();
+
+
+    uniformBuffers.cameraUniformBuffer.Update(&gpuCamera, sizeof(CameraGpu));
+}
+
+void Renderer::UpdateLightGPUData(CommandList* commandlist)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& gpuCamera = m_CurrentView->GetCameraGpu();
+
     int updateDirLight = 0;
     int spotLight = 0;
     int pointLightUpdate = 0;
 
-    for (size_t i = 0; i < m_RenderWorldData.lightData.size(); i++)
+    for (size_t i = 0; i < renderWorldData.lightData.size(); i++)
     {
-        LightData& lightData = m_RenderWorldData.lightData[i];
-
+        LightData& lightData = renderWorldData.lightData[i];
 
         switch (lightData.lightType)
         {
@@ -88,7 +110,7 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
             if (updateDirLight >= MAX_DIRLIGHT)
                 continue;
             {
-                DirectionalLightGPU& gpudirLightData = gpuDynamicLightData->directionalLights[updateDirLight];
+                DirectionalLightGPU& gpudirLightData = m_GpuDynamicLightData.directionalLights[updateDirLight];
                 gpudirLightData.color = lightData.data.directionalLight.color;
                 gpudirLightData.direction = lightData.data.directionalLight.direction;
                 gpudirLightData.intensity = lightData.data.directionalLight.intensity;
@@ -99,10 +121,10 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
             if (spotLight >= MAX_SPOTLIGHT)
                 continue;
             {
-            SpotLightGPU& spotLightGPU = gpuDynamicLightData->spothLights[spotLight];
-            spotLightGPU =
+                SpotLightGPU& spotLightGPU = m_GpuDynamicLightData.spothLights[spotLight];
+                spotLightGPU =
                 {
-                .position = static_cast<Tbx::Vector3f>(lightData.data.spotLight.position - _context.lowLevelCamera.position),
+                .position = static_cast<Tbx::Vector3f>(lightData.data.spotLight.position - rContextView.lowLevelCamera.position),
                 .intensity = lightData.data.spotLight.intensity,
                 .direction = lightData.data.spotLight.direction,
                 .cutoff = lightData.data.spotLight.cutoff,
@@ -117,17 +139,17 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
             if (pointLightUpdate >= MAX_POINTLIGHT)
                 continue;
 
-        {
-				const Tbx::Vector3f p3 = static_cast<Tbx::Vector3f>(lightData.data.pointLightData.position - _context.lowLevelCamera.position);
-				const Tbx::Vector4f p4 = sceneBufferGPU.view * Tbx::Vector4f(p3.x, p3.y, p3.z, 1.0);
-				const Tbx::Vector3f p3ViewSpace = Tbx::Vector3f(p4.x, p4.y, p4.z);
+            {
+                const Tbx::Vector3f p3 = static_cast<Tbx::Vector3f>(lightData.data.pointLightData.position - rContextView.lowLevelCamera.position);
+                const Tbx::Vector4f p4 = gpuCamera.view * Tbx::Vector4f(p3.x, p3.y, p3.z, 1.0);
+                const Tbx::Vector3f p3ViewSpace = Tbx::Vector3f(p4.x, p4.y, p4.z);
 
-				PointLightGPU& pointLightGpu = gpuDynamicLightData->pointLights[pointLightUpdate];
-				pointLightGpu.position = p3ViewSpace;
-				pointLightGpu.maxRange = std::sqrt(lightData.data.pointLightData.intensity);
-				pointLightGpu.intensity = lightData.data.pointLightData.intensity;
-				pointLightGpu.color = lightData.data.pointLightData.color;
-        }
+                PointLightGPU& pointLightGpu = m_GpuDynamicLightData.pointLights[pointLightUpdate];
+                pointLightGpu.position = p3ViewSpace;
+                pointLightGpu.maxRange = std::sqrt(lightData.data.pointLightData.intensity);
+                pointLightGpu.intensity = lightData.data.pointLightData.intensity;
+                pointLightGpu.color = lightData.data.pointLightData.color;
+            }
             pointLightUpdate++;
             break;
         case LightType::Area:
@@ -136,26 +158,27 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
             assert(false && "Not implemented light type");
         }
     }
-    gpuDynamicLightData->dirLightCount = updateDirLight;
-    gpuDynamicLightData->spothLightCount = spotLight;
-    gpuDynamicLightData->pointLightCount = pointLightUpdate;
+    m_GpuDynamicLightData.dirLightCount = updateDirLight;
+    m_GpuDynamicLightData.spothLightCount = spotLight;
+    m_GpuDynamicLightData.pointLightCount = pointLightUpdate;
 
 
     constexpr size_t size = sizeof(GPUDynamicLightData);
-    gpuLightUniformBufferStaging.Update(gpuDynamicLightData.get(), sizeof(GPUDynamicLightData));
+    gpuLightUniformBufferStaging.Update(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData));
 
-    commandList->CopyBuffer(*gpuLightUniformBufferStaging.GetRhiBuffer(),
-                               *gpuLightUniformBuffer.GetRhiBuffer(), 0, 0, sizeof(GPUDynamicLightData));
+    
+    commandlist->CopyBuffer(*gpuLightUniformBufferStaging.GetRhiBuffer(),
+                               *uniformBuffers.dynamicGpuLightUniformBuffer.GetRhiBuffer(), 0, 0, sizeof(GPUDynamicLightData));
 
     const BufferMemoryBarrier barrier =
     {
         .srcAccessMask = GpuAccessFlag::TransferWrite,
         .dstAccessMask = GpuAccessFlag::ShaderRead,
-        .buffer = gpuLightUniformBuffer.GetRhiBuffer().get(),
+        .buffer = uniformBuffers.dynamicGpuLightUniformBuffer.GetRhiBuffer().get(),
         .offset = 0,
         .size = sizeof(GPUDynamicLightData),
     };
-    commandList->Barrier(
+    commandlist->Barrier(
         GpuPipelineStageFlagBits::Transfer,
         GpuPipelineStageFlagBits::FragmentShader,
         nullptr, 0,
@@ -164,43 +187,15 @@ void Renderer::UpdateLightData(const RenderingContext& _context, CommandList* co
 }
 
 
-void Renderer::UpdateCameraUniformBuffer(const PC_CORE::RenderingContext& renderingContext)
+void Renderer::Draw(const View& _view)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
+    m_CurrentView = &_view;
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
 
-    currentRenderingContext = &renderingContext;
-    SceneBufferGPU& sceneBufferGpu = sceneBufferGPU;
-
-    sceneBufferGpu.time = PC_CORE::Time::GetTime();
-    sceneBufferGPU.deltatime = PC_CORE::Time::DeltaTime();
-
-    Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(Tbx::Vector3f::Zero(),
-                                                renderingContext.lowLevelCamera.front,
-                                                renderingContext.lowLevelCamera.up);
-    Tbx::Matrix4x4f projection = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov,
-                                                                        renderingContext.lowLevelCamera.aspect,
-                                                                        renderingContext.lowLevelCamera.near,
-                                                                        renderingContext.lowLevelCamera.far);
-    sceneBufferGPU.vp = projection * view;
-    sceneBufferGPU.view = view;
-    sceneBufferGPU.proj = projection;
-    sceneBufferGPU.viewInv = sceneBufferGPU.view.Invert();
-    sceneBufferGPU.projInv = sceneBufferGPU.proj.Invert();
-    sceneBufferGPU.vpInv = sceneBufferGPU.vp.Invert();
-    sceneBufferGPU.cameraNear = renderingContext.lowLevelCamera.near;
-    sceneBufferGPU.cameraFar = renderingContext.lowLevelCamera.far;
-    sceneBufferGPU.cameraPos = static_cast<Tbx::Vector3f>(renderingContext.lowLevelCamera.position);
-
-    cameraUniformBuffer.Update(&sceneBufferGPU, sizeof(sceneBufferGPU));
-}
-
-
-void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& renderingContext)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rendering);
+    UpdateGpuCameraData();
 
     Vulkan::VulkanCommandList* vkCommandList = reinterpret_cast<Vulkan::VulkanCommandList*>(primaryCommandList.get());
 
@@ -209,31 +204,26 @@ void Renderer::DrawToRenderingContext(const PC_CORE::RenderingContext& rendering
 #ifdef WITH_EDITOR
     m_DebugDrawContext->Prepare();
 #endif
-
-
-    UpdateLightData(renderingContext, primaryCommandList.get());
-    UpdateCameraUniformBuffer(renderingContext);
+    UpdateLightGPUData(primaryCommandList.get());
 
     const ViewportInfo viewportInfo =
     {
         .transform = {0, 0},
         .size = {
-            static_cast<float>(renderingContext.renderingContextSize.x),
-            static_cast<float>(renderingContext.renderingContextSize.y)
+            static_cast<float>(rContextView.renderingContextSize.x),
+            static_cast<float>(rContextView.renderingContextSize.y)
         },
         .minDepth = 0.0f,
         .maxDepth = 1.0f,
         .scissorsOff = {0, 0},
-        .scissorsextent = {renderingContext.renderingContextSize.x, renderingContext.renderingContextSize.y}
+        .scissorsextent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y}
     };
 
     primaryCommandList->SetViewPort(viewportInfo);
-
-
-    DefferdPass(renderingContext, viewportInfo);
-    ForwardPass(renderingContext, viewportInfo);
-    PostProcess(renderingContext, viewportInfo);
-    FinalPass(renderingContext, viewportInfo);
+    DefferdPass(viewportInfo);
+    ForwardPass(viewportInfo);
+    PostProcess(viewportInfo);
+    FinalPass(viewportInfo);
 
     primaryCommandList->EndRecordCommands();
     primaryCommandList->Flush(FlushCommandMethod::Sync
@@ -265,33 +255,44 @@ void Renderer::SwapBuffers(Window* _window)
     Rhi::NextFrame();
 }
 
+std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
+{
+    std::shared_ptr<View> view = std::make_unique<View>(this, _defaultSize);
+
+    m_Views.push_back(view);
+
+    return view;
+}
+
 
 void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
 
-    Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(currentRenderingContext->lowLevelCamera.position);
-    for (size_t i = 0; i < m_RenderWorldData.staticMeshData.size(); i++)
+    Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(rContextView.lowLevelCamera.position);
+
+    for (size_t i = 0; i < renderWorldData.staticMeshData.size(); i++)
     {
-        if (!m_RenderWorldData.staticMeshData[i].mesh->IsLoaded())
+        if (!renderWorldData.staticMeshData[i].mesh->IsLoaded())
             continue;
 
-        if (m_RenderWorldData.staticMeshData[i].materialType != type)
+        if (renderWorldData.staticMeshData[i].materialType != type)
             continue;
 
         Tbx::Matrix4x4f modelMatrixf[2];
         // Apply offset to the copy one
-        modelMatrixf[0] = m_RenderWorldData.staticMeshData[i].worldMatrix;
+        modelMatrixf[0] = renderWorldData.staticMeshData[i].worldMatrix;
         modelMatrixf[0][12] -= cameraOffset.x;
         modelMatrixf[0][13] -= cameraOffset.y;
         modelMatrixf[0][14] -= cameraOffset.z;
 
-        modelMatrixf[1] = m_RenderWorldData.staticMeshData[i].normalInvertMatrix;
+        modelMatrixf[1] = renderWorldData.staticMeshData[i].normalInvertMatrix;
 
 
-        const ShaderProgramDescriptorSets* materialDescriptor = m_RenderWorldData.staticMeshData[i].descriptorSet;
-        const Mesh* mesh = m_RenderWorldData.staticMeshData[i].mesh;
+        const ShaderProgramDescriptorSets* materialDescriptor = renderWorldData.staticMeshData[i].descriptorSet;
+        const Mesh* mesh = renderWorldData.staticMeshData[i].mesh;
 
         // Send Data
 
@@ -310,8 +311,8 @@ void Renderer::ClearRenderData()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    m_RenderWorldData.lightData.clear();
-    m_RenderWorldData.staticMeshData.clear();
+    renderWorldData.lightData.clear();
+    renderWorldData.staticMeshData.clear();
 }
 
 
@@ -323,9 +324,9 @@ void Renderer::DrawSkyBox()
     if (auto cube = m_CubeMesh.lock())
     {
         primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
-        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cameraDescriptorSet,
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), skyboxCameraDescriptorSet,
             SCENE_DESCRIPTOR_SET, 1);
-        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), descriptorSetsSkybox.cubeMapDescriptorSet,
+        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), skyBoxCubeMapDescriptorSet,
             ENVIRONEMENT_DESCRIPTOR_SET, 1);
         primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
         primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
@@ -334,17 +335,19 @@ void Renderer::DrawSkyBox()
 }
 
 
-void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
+
 
     const BeginRenderPassInfo beginRenderPassInfo =
     {
         .renderPass = renderPasses.forwardPass,
-        .frameBuffer = _renderingContext.forwardFrameBuffer,
+        .frameBuffer = rContextView.forwardFrameBuffer,
         .renderOffSet = {0, 0},
-        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
         .clearValueFlags = {},
         .clearColor = nullptr,
         .clearValueCount = 0,
@@ -359,40 +362,43 @@ void Renderer::ForwardPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
     primaryCommandList->SetViewPort(_viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), m_ShaderProgramSceneDescriptorSet,
+    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), rContextView.forwardDesritptorSet,
         SCENE_DESCRIPTOR_SET, 1);
 
     // draw all static mesh
     DrawStaticMesh(MaterialType::Transparent, m_ForwardShader.lock());
     DrawSkyBox();
 #ifdef WITH_EDITOR
-    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), _renderingContext);
+    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), rContextView);
     for (auto& it : UserCustomForwardPass)
-        it(*this, primaryCommandList.get(), *currentRenderingContext, &m_RenderWorldData);
+        it(*this, primaryCommandList.get(), rContextView, &renderWorldData);
 #endif
     primaryCommandList->EndRenderPass();
 
     primaryCommandList->EndDebugLabel();
 }
 
-void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
+
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
 
-    std::array<Tbx::Vector4f, static_cast<uint8_t>(GbufferType::Count)> clearValues2 = {
+    // + 1 for depth 
+    std::array<Tbx::Vector4f, static_cast<uint8_t>(GbufferType::Count) + 1> clearValues2 = {
         Tbx::Vector4f(0, 1, 0, 1.f),
     };
 
     const BeginRenderPassInfo beginRenderPassInfo =
     {
         .renderPass = renderPasses.defferedPass,
-        .frameBuffer = _renderingContext.gbufferFrameBuffer,
+        .frameBuffer = rContextView.gbufferFrameBuffer,
         .renderOffSet = {0, 0},
-        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
         .clearValueFlags = clearValueFlags,
         .clearColor = clearValues2.data(),
         .clearValueCount = clearValues2.size(),
@@ -407,7 +413,7 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
         primaryCommandList->BindProgram(sGeometry.get());
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-        primaryCommandList->BindDescriptorSet(sGeometry.get(), m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(sGeometry.get(), rContextView.geometryDescritproSet, SCENE_DESCRIPTOR_SET, 1);
         DrawStaticMesh(MaterialType::Opaque, sGeometry);
     }
     primaryCommandList->EndDebugLabel();
@@ -419,8 +425,8 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
     if (std::shared_ptr sDeferred = m_DeferedShader.lock())
     {
         primaryCommandList->BindProgram(sDeferred.get());
-        primaryCommandList->BindDescriptorSet(sDeferred.get(), m_DeferdDescriptorSet, SCENE_DESCRIPTOR_SET, 1);
-        primaryCommandList->BindDescriptorSet(sDeferred.get(), _renderingContext.gbufferDescriptorSet, GBUFFER_SET, 1);
+        primaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.defferdLightingLightingCameraSet, SCENE_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.defferdLightingGbufferSet, GBUFFER_SET, 1);
 
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
         primaryCommandList->Draw(4, 1, 0, 0);
@@ -431,23 +437,23 @@ void Renderer::DefferdPass(const PC_CORE::RenderingContext& _renderingContext, c
     primaryCommandList->EndRenderPass();
 }
 
-PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
 {
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
+
+
     primaryCommandList->BeginDebugLabel("PostProcess Pass", POST_PROCESS);
 
     if (auto aces = m_AcesShader.lock().get())
     {
         primaryCommandList->BindProgram(aces);
-        primaryCommandList->BindDescriptorSet(aces, _renderingContext.toneMapDescritptorSet, 0, 1);
+        primaryCommandList->BindDescriptorSet(aces, rContextView.toneMapDescritptorSet, 0, 1);
 
         const LocalSize& localSize = aces->GetLocalSize();
 
         uint32_t groupX = ((uint32_t)_viewportInfo.size.x + localSize.x - 1) / localSize.x;
         uint32_t groupY = (uint32_t)_viewportInfo.size.y;
 
-        primaryCommandList->Dispatch(groupX, groupY, 1);
-
-        assert(_renderingContext.gbufferImage != nullptr);
 
         const ImageMemoryBarrier gbufferImage =
         {
@@ -457,22 +463,25 @@ PC_CORE_API void Renderer::PostProcess(const PC_CORE::RenderingContext& _renderi
             .currentState = ImageState::RenderTargetOptimal,
             .newState = ImageState::General,
 
-            .texture = _renderingContext.gbufferImage->GetRhiTexture2D().get(),
+            .texture = rContextView.hdrImage->GetRhiTexture2D().get(),
         };
 
         primaryCommandList->Barrier(GpuPipelineStageFlagBits::ColorAttachmentOutput,
             GpuPipelineStageFlagBits::ComputeShader,
             nullptr, 0,
             nullptr, 0,
-            &gbufferImage, 0);
+            &gbufferImage, 1);
+
+        primaryCommandList->Dispatch(groupX, groupY, 1);
+
+        assert(rContextView.hdrImage != nullptr);
+
     }
-
-
     primaryCommandList->EndDebugLabel();
 }
 
 
-void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, const ViewportInfo& _viewportInfo)
+void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -482,12 +491,14 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
         Tbx::Vector4f(0, 0, 0, 0.f),
     };
 
+    const auto& rContextView = m_CurrentView->GetRenderingContext();
+
     const BeginRenderPassInfo drawToViewport =
     {
         .renderPass = renderPasses.drawToFinalViewPort,
-        .frameBuffer = _renderingContext.finalImageFrameBuffer,
+        .frameBuffer = rContextView.finalImageFrameBuffer,
         .renderOffSet = {0, 0},
-        .extent = {_renderingContext.renderingContextSize.x, _renderingContext.renderingContextSize.y},
+        .extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
         .clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor),
         .clearColor = clearValues2.data(),
         .clearValueCount = clearValues2.size(),
@@ -502,7 +513,7 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
     primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
     primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
-        _renderingContext.viewPortDescriptorSet, 0, 1);
+        rContextView.finalImageDescritptorSet, 0, 1);
     primaryCommandList->Draw(4, 1, 0, 0);
 
     primaryCommandList->EndRenderPass();
@@ -511,6 +522,7 @@ void Renderer::FinalPass(const PC_CORE::RenderingContext& _renderingContext, con
 
 
 #pragma region CreateRenderPasss
+
 
 void Renderer::CreateRenderPasss()
 {
@@ -521,9 +533,9 @@ void Renderer::CreateRenderPasss()
         PERF_REGION_SCOPED_NAMED("Create Defferd RenderPass");
 
         std::vector<RenderPassAttachementDescriptor> attachements;
-        // + 1 final image 
+        // + 1 lit image
         attachements.resize(
-            static_cast<std::vector<RenderPassAttachementDescriptor>::size_type>(GbufferType::Depth) + 1);
+            static_cast<std::vector<RenderPassAttachementDescriptor>::size_type>(GbufferType::Count) + 1);
 
         attachements[static_cast<uint8_t>(GbufferType::Albedo)] =
         {
@@ -590,7 +602,7 @@ void Renderer::CreateRenderPasss()
         attachements[attachements.size() - 1] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -669,14 +681,14 @@ void Renderer::CreateRenderPasss()
         colorAttachement[0] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
             .sampleCount = 1,
             .load = LoadOperation::Load,
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
             .currentImageState = ImageState::RenderTargetOptimal,
-            .finalImageState = ImageState::General,
+            .finalImageState = ImageState::RenderTargetOptimal,
         };
 
         RenderPassAttachementDescriptor depthAttachement =
@@ -1029,18 +1041,21 @@ void Renderer::CreateThirdPartyResources()
         m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);
     }
     {
-        gpuDynamicLightData = std::make_unique<GPUDynamicLightData>();
-
-        gpuLightUniformBufferStaging = UniformBuffer(&gpuDynamicLightData, sizeof(GPUDynamicLightData),
-                                                     PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
-        gpuLightUniformBuffer = UniformBuffer(&gpuDynamicLightData, sizeof(GPUDynamicLightData),
-                                              PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Dynamic);
-
-        cameraUniformBuffer = UniformBuffer(&sceneBufferGPU, sizeof(sceneBufferGPU),
-                                            PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
-
         m_CubeMesh = ResourceManager::Get<Mesh>("cube.obj");
     }
+}
+void Renderer::CreateBuffers()
+{
+    uniformBuffers.cameraUniformBuffer = UniformBuffer(sizeof(CameraGpu),
+        PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
+    uniformBuffers.postProcessUniformBuffer = UniformBuffer(&uniformBuffers.postProcessUniformBuffer, sizeof(PostProcessGpu),
+        PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
+
+    gpuLightUniformBufferStaging = UniformBuffer(&uniformBuffers.postProcessUniformBuffer, sizeof(m_GpuDynamicLightData),
+        PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
+
+    uniformBuffers.dynamicGpuLightUniformBuffer = UniformBuffer(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData),
+        PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Dynamic);
 }
 #pragma endregion CreateThirdPartyResources
 
@@ -1052,14 +1067,10 @@ void Renderer::CreateDescriptorSets()
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     /////////////////////////////////////////////////
-    UniformBufferDescriptor cameraBufferDescritptor
+   
+    const UniformBufferDescriptor lightData
     {
-        .buffer = &cameraUniformBuffer,
-    };
-
-    UniformBufferDescriptor lightData
-    {
-        .buffer = &gpuLightUniformBuffer,
+        .buffer = &uniformBuffers.cameraUniformBuffer,
     };
 
     ImageSamplerDescriptor skyboxCubeMapDescritptor
@@ -1072,66 +1083,6 @@ void Renderer::CreateDescriptorSets()
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
 
     {
-        PERF_REGION_SCOPED_NAMED("Create Geometry Shader DescriptorSet");
-        descriptorSets =
-        {
-            {
-                ShaderProgramDescriptorType::UniformBuffer,
-                CAMERA_BINDING,
-                cameraBufferDescritptor,
-            }
-        };
-        m_GeometryBufferShader.lock()->AllocDescriptorSet(&m_GeometryBufferDescriptorSet, SCENE_DESCRIPTOR_SET);
-        m_GeometryBufferDescriptorSet->WriteDescriptorSets(descriptorSets);
-    }
-
-    {
-        PERF_REGION_SCOPED_NAMED("Create Deferred Shader DescriptorSet");
-        descriptorSets =
-        {
-            {
-                ShaderProgramDescriptorType::UniformBuffer,
-                CAMERA_BINDING,
-                cameraBufferDescritptor,
-            },
-            {
-                ShaderProgramDescriptorType::UniformBuffer,
-                LIGHTDATA_BINDING,
-                lightData,
-            }
-        };
-        m_DeferedShader.lock()->AllocDescriptorSet(&m_DeferdDescriptorSet, SCENE_DESCRIPTOR_SET);
-        m_DeferdDescriptorSet->WriteDescriptorSets(descriptorSets);
-    }
-
-    {
-        PERF_REGION_SCOPED_NAMED("Create Forward Shader DescriptorSet");
-
-        descriptorSets =
-        {
-            {
-                ShaderProgramDescriptorType::UniformBuffer,
-                CAMERA_BINDING,
-                cameraBufferDescritptor,
-            },
-            {
-                ShaderProgramDescriptorType::UniformBuffer,
-                LIGHTDATA_BINDING,
-                lightData,
-            },
-            {
-                ShaderProgramDescriptorType::CombinedImageSampler,
-                FORWARD_SKYBOX_CUBEMAP,
-                skyboxCubeMapDescritptor,
-            }
-        };
-
-        m_ForwardShader.lock()->AllocDescriptorSet(&m_ShaderProgramSceneDescriptorSet, SCENE_DESCRIPTOR_SET);
-        m_ShaderProgramSceneDescriptorSet->WriteDescriptorSets(descriptorSets);
-    }
-
-
-    {
         PERF_REGION_SCOPED_NAMED("Skybox Shader DescriptorSets");
 
         descriptorSets =
@@ -1139,11 +1090,11 @@ void Renderer::CreateDescriptorSets()
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 CAMERA_BINDING,
-                cameraBufferDescritptor,
+                lightData,
             },
         };
-        m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cameraDescriptorSet, SCENE_DESCRIPTOR_SET);
-        descriptorSetsSkybox.cameraDescriptorSet->WriteDescriptorSets(descriptorSets);
+        m_CubeMapShader.lock()->AllocDescriptorSet(&skyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
+        skyboxCameraDescriptorSet->WriteDescriptorSets(descriptorSets);
 
         descriptorSets =
         {
@@ -1153,9 +1104,9 @@ void Renderer::CreateDescriptorSets()
                 skyboxCubeMapDescritptor,
             }
         };
-        m_CubeMapShader.lock()->AllocDescriptorSet(&descriptorSetsSkybox.cubeMapDescriptorSet,
+        m_CubeMapShader.lock()->AllocDescriptorSet(&skyBoxCubeMapDescriptorSet,
                                                    ENVIRONEMENT_DESCRIPTOR_SET);
-        descriptorSetsSkybox.cubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);
+        skyBoxCubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);
     }
 }
 #pragma endregion CreateDescriptorSets
