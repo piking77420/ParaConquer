@@ -53,6 +53,17 @@ void Texture2D::LoadFromFile(const std::string& _path)
     }
     m_Size = { width, height };
 
+    RHIFormat format = RHIFormat::UNDEFINED;
+    switch (m_TextureChannel)
+    {
+    case PC_CORE::Channel::RGB:
+    case PC_CORE::Channel::RGBA:
+        format = RHIFormat::R8G8B8A8_UNORM;
+        break;
+    default:
+        assert("false");
+        break;
+    }
 
     const CreateImageInfo createTextureInfo =
     {
@@ -62,8 +73,8 @@ void Texture2D::LoadFromFile(const std::string& _path)
         .layerCount = 1,
         .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
         .textureType = TextureType::Texture2D,
-        .format = RHIFormat::R8G8B8A8_SRGB,
-        .channel = Channel::RGBA,
+        .format = format,
+        .channel = m_TextureChannel,
         .textureUsage = TextureUsage::Sampled,
         .memoryVisibility = MemoryLocalisation::GPU_Only,
         .samples = 1,

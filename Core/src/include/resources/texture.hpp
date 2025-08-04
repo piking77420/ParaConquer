@@ -33,7 +33,7 @@ protected:
 
 	TextureType m_TextureType = TextureType::Count;
 
-	int m_TextureChannel = -1;
+	Channel m_TextureChannel;
 };
 
 

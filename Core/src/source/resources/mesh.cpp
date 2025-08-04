@@ -84,6 +84,7 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
     std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
     for (const auto& shape : shapes) {
+        int i = 0;
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex{};
 
@@ -114,5 +115,6 @@ void Mesh::LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std:
 
           
         }
+        i++;
     }        
 }

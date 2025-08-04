@@ -473,7 +473,7 @@ BEGIN_PCCORE
 
     enum class Channel
     {
-        DEFAULT = 0, // only used for desired_channels
+        DEFAULT = 0,
 
         GREY = 1,
         ALPHA = 2,

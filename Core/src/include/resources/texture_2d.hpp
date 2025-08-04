@@ -38,6 +38,10 @@ public:
         return m_Size;
     }
 
+    RHIFormat GetFormat()
+    {
+        return m_Texture2D ? GetFormat() : RHIFormat::UNDEFINED;
+    }
     
     PC_CORE_API Texture2D();
 
