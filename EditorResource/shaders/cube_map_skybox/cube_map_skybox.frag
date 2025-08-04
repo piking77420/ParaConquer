@@ -11,7 +11,7 @@ const float gamma = 2.2;
 
 void main()
 {
-    vec3 color = pow(texture(cubeMap, TexCoords).rgb, vec3(gamma));
+    vec3 color = pow(texture(cubeMap, TexCoords).rgb, vec3(gamma)); // linear space to SRGB space
 
     outColor = vec4(color, 1);
 }

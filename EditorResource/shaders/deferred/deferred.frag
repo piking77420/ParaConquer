@@ -33,6 +33,8 @@ void main()
     vec3 Lo = vec3(0);
     
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
+    albedo = vec3(1,0,0);
+    
     vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
     vec3 viewSpacePos = subpassLoad(inputWorldPosition).rgb;
 
@@ -40,10 +42,11 @@ void main()
     vec3 V = normalize(viewSpacePos);
     float NoV = abs(dot(N, V)) + 1e-5;
     
-    float roughness = roughnessMettalicAo.x * roughnessMettalicAo.x;
+    //float roughness = roughnessMettalicAo.x * roughnessMettalicAo.x;
     float metallic = roughnessMettalicAo.y;
-    roughness = 0;
-     metallic = 0.9;
+    float roughness = 1;
+    float percupetualRoughness = roughness * roughness;
+     metallic = 0;
     // iterate over each light
     
     // for each dirlight
@@ -85,8 +88,10 @@ void main()
         vec3 radiance = pointLight.color * attenuation * pointLight.intensity;
 
         vec3 diffuseColor = (1.0 - metallic) * albedo.rgb; 
-        Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, roughness) * radiance * NoL;
+        //Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, roughness) * radiance * NoL;
+        Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, percupetualRoughness);
     }
     //outColor = vec4(lightSceneData.pointLights[0].color * lightSceneData.pointLights[0].intensity, 1);
+    
     outColor = vec4(Lo, 1);
 }
