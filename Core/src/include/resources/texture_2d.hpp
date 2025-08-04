@@ -25,6 +25,11 @@ public:
         return m_Texture2D;
     }
 
+    const std::shared_ptr<RhiTexture2D> GetRhiTexture2D() const
+    {
+        return m_Texture2D;
+    }
+
     PC_CORE_API void LoadFromFile(const std::string& _path) override;
     
     PC_CORE_API IMP_DYNAMIC_REFLECT()

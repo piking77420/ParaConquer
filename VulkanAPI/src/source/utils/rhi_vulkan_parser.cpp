@@ -123,12 +123,12 @@ vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
         return vk::Format::eR8G8B8A8Unorm;
 
     case PC_CORE::RHIFormat::R8G8B8A8_SNORM:
-        return vk::Format::eUndefined;
+        return vk::Format::eR8G8B8A8Snorm;
 
     case PC_CORE::RHIFormat::R8G8B8A8_USCALED:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_SSCALED:
+    case PC_CORE::RHIFormat::R8G8B8A8_SSCALED:  
         return vk::Format::eUndefined;
 
     case PC_CORE::RHIFormat::R8G8B8A8_UINT:

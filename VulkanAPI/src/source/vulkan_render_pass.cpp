@@ -253,7 +253,7 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint3
     colorAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
     colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eStore;
     colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
-    colorAttachment.finalLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    colorAttachment.finalLayout = vk::ImageLayout::eGeneral;
 
     vk::AttachmentDescription colorAttachmentResolve{};
     colorAttachmentResolve.format = Utils::RHIFormatToVkFormat(colorFormat);

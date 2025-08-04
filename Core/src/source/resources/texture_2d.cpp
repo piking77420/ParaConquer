@@ -54,6 +54,8 @@ void Texture2D::LoadFromFile(const std::string& _path)
     m_Size = { width, height };
 
     RHIFormat format = RHIFormat::UNDEFINED;
+    m_TextureChannel = Channel::RGBA;
+
     switch (m_TextureChannel)
     {
     case PC_CORE::Channel::RGB:

@@ -37,7 +37,10 @@ vec2 Encode(vec3 n)
 
 void main()
 {
-    outColor = texture(u_AlbedoTexture, inTexCoord);
+    float gamma = 2.2; 
+    
+    vec3 diffuse = pow(texture(u_AlbedoTexture, inTexCoord).rgb, vec3(gamma)); // linear space to SRGB space
+    outColor = vec4(diffuse, 1);
 
     outNormal = Encode(inNormal);
    

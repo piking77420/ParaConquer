@@ -82,6 +82,6 @@ void WorldViewWindow::UpdateImguiViewPort()
 
     if (needFree) 
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_View->GetFinalImage(), imguiDescriptorSet.data(), imguiDescriptorSet.size());
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_View->finalImage, imguiDescriptorSet.data(), imguiDescriptorSet.size());
 
 }

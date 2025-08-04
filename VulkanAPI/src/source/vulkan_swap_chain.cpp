@@ -270,6 +270,7 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     auto& flushedCommands = VulkanContext::GetContext().flushedCommands;
     // Graphic Work
     {
+        
         for (size_t i = 0; i < flushedCommands.size(); i++)
         {
             vk::Semaphore waitSemaphore;

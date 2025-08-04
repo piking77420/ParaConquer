@@ -9,7 +9,7 @@ using namespace PC_CORE;
 
 void View::SetRenderingContextFlag(size_t _flag)
 {
-	m_RenderingContext.renderingContextFlag = _flag;
+	renderingContext.renderingContextFlag = _flag;
 }
 
 void View::SetCamera(PC_CORE::Camera* _camera)
@@ -23,31 +23,31 @@ void View::Update()
 	PERF_REGION_COLOR(PerfRegion::Rendering);
 	UpdateRenderingContext();
 
-	m_CameraGpu.time = m_RenderingContext.time;
-	m_CameraGpu.deltatime = m_RenderingContext.deltaTime;
+	cameraGpu.time = renderingContext.time;
+	cameraGpu.deltatime = renderingContext.deltaTime;
 
 	const Tbx::Matrix4x4f view = Tbx::LookAtRH<float>(Tbx::Vector3f::Zero(),
-		m_RenderingContext.lowLevelCamera.front,
-		m_RenderingContext.lowLevelCamera.up);
+		renderingContext.lowLevelCamera.front,
+		renderingContext.lowLevelCamera.up);
 
-	const Tbx::Matrix4x4f projection = Tbx::PerspectiveMatrixFlipYAxis<float>(m_RenderingContext.lowLevelCamera.fov,
-		m_RenderingContext.lowLevelCamera.aspect,
-		m_RenderingContext.lowLevelCamera.near,
-		m_RenderingContext.lowLevelCamera.far);
+	const Tbx::Matrix4x4f projection = Tbx::PerspectiveMatrixFlipYAxis<float>(renderingContext.lowLevelCamera.fov,
+		renderingContext.lowLevelCamera.aspect,
+		renderingContext.lowLevelCamera.near,
+		renderingContext.lowLevelCamera.far);
 
-	m_CameraGpu.vp = projection * view;
-	m_CameraGpu.view = view;
-	m_CameraGpu.proj = projection;
-	m_CameraGpu.viewInv = m_CameraGpu.view.Invert();
-	m_CameraGpu.projInv = m_CameraGpu.proj.Invert();
-	m_CameraGpu.vpInv = m_CameraGpu.vp.Invert();
-	m_CameraGpu.cameraNear = m_RenderingContext.lowLevelCamera.near;
-	m_CameraGpu.cameraFar = m_RenderingContext.lowLevelCamera.far;
-	m_CameraGpu.cameraPos = static_cast<Tbx::Vector3f>(m_RenderingContext.lowLevelCamera.position);
+	cameraGpu.vp = projection * view;
+	cameraGpu.view = view;
+	cameraGpu.proj = projection;
+	cameraGpu.viewInv = cameraGpu.view.Invert();
+	cameraGpu.projInv = cameraGpu.proj.Invert();
+	cameraGpu.vpInv = cameraGpu.vp.Invert();
+	cameraGpu.cameraNear = renderingContext.lowLevelCamera.near;
+	cameraGpu.cameraFar = renderingContext.lowLevelCamera.far;
+	cameraGpu.cameraPos = static_cast<Tbx::Vector3f>(renderingContext.lowLevelCamera.position);
 
 
-	m_PostProcessGpu.gamma = 2.2;
-	m_PostProcessGpu.exposure = 1;
+	postProcessGpu.gamma = 2.2;
+	postProcessGpu.exposure = 1;
 }
 
 
@@ -71,7 +71,7 @@ void View::UpdateRenderingContext()
 		return;
 
 	// Camera
-	m_RenderingContext.lowLevelCamera =
+	renderingContext.lowLevelCamera =
 	{
 		.position = m_Camera->position,
 		.front = static_cast<Tbx::Vector3f>(m_Camera->front),
@@ -82,24 +82,24 @@ void View::UpdateRenderingContext()
 		.far = m_Camera->GetFar(),
 		.isOrthographic = m_Camera->GetProjectionType() == PC_CORE::ProjectionType::ORTHOGRAPHIC,
 	};
-	m_RenderingContext.time = PC_CORE::Time::GetTime();
-	m_RenderingContext.deltaTime = PC_CORE::Time::DeltaTime();
+	renderingContext.time = PC_CORE::Time::GetTime();
+	renderingContext.deltaTime = PC_CORE::Time::DeltaTime();
 
 	// Frame Buffer
-	m_RenderingContext.forwardFrameBuffer = m_FrameBuffers.forwardFrameBuffer;
-	m_RenderingContext.gbufferFrameBuffer = m_FrameBuffers.gbufferFrameBuffer;
-	m_RenderingContext.finalImageFrameBuffer = m_FrameBuffers.finalImageFrameBuffer;
+	renderingContext.forwardFrameBuffer = m_FrameBuffers.forwardFrameBuffer;
+	renderingContext.gbufferFrameBuffer = m_FrameBuffers.gbufferFrameBuffer;
+	renderingContext.finalImageFrameBuffer = m_FrameBuffers.finalImageFrameBuffer;
 
 	// Descriptor
-	m_RenderingContext.geometryDescritproSet = m_DescriptorSets.geometryPass;
-	m_RenderingContext.defferdLightingGbufferSet = m_DescriptorSets.defferedPassGbuffers;
-	m_RenderingContext.defferdLightingLightingCameraSet = m_DescriptorSets.defferedPassCameraLight;
-	m_RenderingContext.forwardDesritptorSet = m_DescriptorSets.forwardDescriptor;
-	m_RenderingContext.toneMapDescritptorSet = m_DescriptorSets.toneMap;
-	m_RenderingContext.finalImageDescritptorSet = m_DescriptorSets.finalViewPort;
+	renderingContext.geometryDescritproSet = m_DescriptorSets.geometryPass;
+	renderingContext.defferdLightingGbufferSet = m_DescriptorSets.defferedPassGbuffers;
+	renderingContext.defferdLightingLightingCameraSet = m_DescriptorSets.defferedPassCameraLight;
+	renderingContext.forwardDesritptorSet = m_DescriptorSets.forwardDescriptor;
+	renderingContext.toneMapDescritptorSet = m_DescriptorSets.toneMap;
+	renderingContext.finalImageDescritptorSet = m_DescriptorSets.finalViewPort;
 
-	m_RenderingContext.hdrImage = &m_ForwardTexture.color;
-	m_RenderingContext.renderingContextSize = { static_cast<uint32_t>(m_CurrentSize.x), static_cast<uint32_t>(m_CurrentSize.y) };
+	renderingContext.hdrImage = &forwardTexture.color;
+	renderingContext.renderingContextSize = { static_cast<uint32_t>(m_CurrentSize.x), static_cast<uint32_t>(m_CurrentSize.y) };
 }
 
 void View::CreateImages()
@@ -107,7 +107,7 @@ void View::CreateImages()
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Rendering);
 
-	m_Gbuffers.CreateGBuffers(m_CurrentSize);
+	gbuffers.CreateGBuffers(m_CurrentSize);
 
 	// Forward
 	{
@@ -128,14 +128,15 @@ void View::CreateImages()
 			 .datas = {}
 		};
 
-		m_ForwardTexture.color = Texture2D(createInfo);
+		forwardTexture.color = Texture2D(createInfo);
 
 		createInfo.format = RHIFormat::D32_SFLOAT;
 		createInfo.channel = Channel::GREY;
 		createInfo.textureUsage = PC_CORE::TextureUsage::Depth;
 
-		m_ForwardTexture.depth = Texture2D(createInfo);
+		forwardTexture.depth = Texture2D(createInfo);
 	}
+
 
 	// Final Image
 	{
@@ -156,9 +157,10 @@ void View::CreateImages()
 			 .datas = {}
 		};
 
-		  m_FinalImage = PC_CORE::Texture2D(createInfo);
+		  finalImage = PC_CORE::Texture2D(createInfo);
 		  createInfo.samples = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
-		  m_ResolvedImages = PC_CORE::Texture2D(createInfo);
+		  createInfo.textureUsage = PC_CORE::TextureUsage::RenderTarget | PC_CORE::TextureUsage::Sampled;
+		  resolvedImages = PC_CORE::Texture2D(createInfo);
 
 	}
 }
@@ -186,13 +188,13 @@ void View::CreateFrameBuffers()
 
 		size_t i = 0;
 		for (; i < (size_t)GbufferType::Count; i++)
-			attechementDescriptor[i].texture = &m_Gbuffers.gbuffers[i];
+			attechementDescriptor[i].texture = &gbuffers.gbuffers[i];
 
 
-		attechementDescriptor[i++].texture = &m_ForwardTexture.color;
-		attechementDescriptor[i++].texture = &m_ForwardTexture.depth;
+		attechementDescriptor[i++].texture = &forwardTexture.color;
+		attechementDescriptor[i++].texture = &forwardTexture.depth;
 
-		assert(&m_ForwardTexture.depth == attechementDescriptor[attechementDescriptor.size() - 1].texture &&
+		assert(&forwardTexture.depth == attechementDescriptor[attechementDescriptor.size() - 1].texture &&
 			"Backend expect thaht depth is the last attachement");
 
 		createFrameBufferInfo.attachements = &attechementDescriptor;
@@ -206,8 +208,8 @@ void View::CreateFrameBuffers()
 	{
 		std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
 		attechementDescriptor.resize(2); // color + depth;
-		attechementDescriptor[0].texture = &m_ForwardTexture.color;
-		attechementDescriptor[1].texture = &m_ForwardTexture.depth;
+		attechementDescriptor[0].texture = &forwardTexture.color;
+		attechementDescriptor[1].texture = &forwardTexture.depth;
 
 
 		createFrameBufferInfo.attachements = &attechementDescriptor;
@@ -216,13 +218,15 @@ void View::CreateFrameBuffers()
 		m_FrameBuffers.forwardFrameBuffer = Rhi::CreateFrameBuffer(createFrameBufferInfo);
 	}
 
+	
+
 	// Final Image
 	{
 		std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
 		attechementDescriptor.resize(2); // color + depth;
 
-		attechementDescriptor[0].texture = &m_ResolvedImages;
-		attechementDescriptor[1].texture = &m_FinalImage;
+		attechementDescriptor[0].texture = &resolvedImages;
+		attechementDescriptor[1].texture = &finalImage;
 
 		createFrameBufferInfo.attachements = &attechementDescriptor;
 		createFrameBufferInfo.renderPass = m_Renderer->renderPasses.drawToFinalViewPort.get();
@@ -292,7 +296,7 @@ void View::CreateDescritproSets()
 		{
 			inputAttachements[i] =
 			{
-			.image = &m_Gbuffers.gbuffers[i],
+			.image = &gbuffers.gbuffers[i],
 			.imageState = PC_CORE::ImageState::ShaderReadOptimal
 			},
 
@@ -374,11 +378,12 @@ void View::CreateDescritproSets()
 
 		std::shared_ptr<ComputeShader> m_ToneMapp = m_Renderer->m_AcesShader.lock();
 
-		struct ImageDescriptor litImageDescritptor
+		struct ImageDescriptor hdrImage
 		{
-			.texture = &m_ForwardTexture.color,
+			.texture = &forwardTexture.color,
 			.imageState = ImageState::General,
 		};
+
 	
 		descriptorWrites.resize(1);
 		descriptorWrites =
@@ -387,8 +392,8 @@ void View::CreateDescritproSets()
 			{
 				ShaderProgramDescriptorType::StorageImage,
 				0,
-				litImageDescritptor,
-			}
+				hdrImage,
+			},
 		};
 
 		if (m_DescriptorSets.toneMap != nullptr)
@@ -405,7 +410,7 @@ void View::CreateDescritproSets()
 		const ImageSamplerDescriptor finalImageDescrotproSet
 		{
 			.sampler = sampler.get(),
-			.texture = &m_ForwardTexture.color,
+			.texture = &forwardTexture.color,
 			.imageState = PC_CORE::ImageState::General
 		};
 

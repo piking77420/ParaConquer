@@ -65,6 +65,14 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image i
         sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
         destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
     }
+    else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+    {
+        barrier.srcAccessMask = {};
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+        destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+    }
     else
     {
         throw std::invalid_argument("unsupported layout transition!");

@@ -9,9 +9,29 @@ BEGIN_PCCORE
 
 class Renderer;
 
+struct ForwardTexture
+{
+	Texture2D color;
+	Texture2D depth;
+};
+
+
 class PC_CORE_API View
 {
 public:
+	PostProcessGpu postProcessGpu;
+
+	CameraGpu cameraGpu;
+
+	RenderingContext renderingContext;
+
+	Gbuffers gbuffers;
+
+	ForwardTexture forwardTexture;
+
+	Texture2D finalImage;
+
+	Texture2D resolvedImages;
 
 	void SetRenderingContextFlag(size_t _flag);
 
@@ -21,26 +41,7 @@ public:
 
 	void Update();
 
-	const RenderingContext& GetRenderingContext() const
-	{
-		return m_RenderingContext;
-	}
-
-	const CameraGpu& GetCameraGpu() const
-	{
-		return m_CameraGpu;
-	}
-
-	const PostProcessGpu& GetPostProcessGpu() const
-	{
-		return m_PostProcessGpu;
-	}
-
-	Texture2D& GetFinalImage()
-	{
-		return m_FinalImage;
-	}
-
+	
 	DEFAULT_COPY_MOVE_OPERATIONS(View)
 
 	View(Renderer* _renderer, Tbx::Vector2i _viewPortSize);
@@ -50,12 +51,7 @@ public:
 	~View() = default;
 
 private:
-	struct ForwardTexture
-	{
-		Texture2D color;
-		Texture2D depth;
-	};
-
+	
 	struct DescriptorSets
 	{
 		ShaderProgramDescriptorSets* geometryPass = nullptr;
@@ -76,26 +72,11 @@ private:
 		std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
 	};
 
-
 	Renderer* m_Renderer;
 
 	PC_CORE::Camera* m_Camera;
 
-	RenderingContext m_RenderingContext;
-
 	Tbx::Vector2i m_CurrentSize;
-
-	CameraGpu m_CameraGpu;
-
-	PostProcessGpu m_PostProcessGpu;
-
-	Gbuffers m_Gbuffers;
-
-	ForwardTexture m_ForwardTexture;
-
-	Texture2D m_FinalImage;
-
-	Texture2D m_ResolvedImages;
 
 	FrameBuffers m_FrameBuffers;
 

@@ -16,7 +16,8 @@ PC_CORE::Texture3D::Texture3D(const std::string& _name, const std::array<std::st
 
     for (size_t i = 0; i < 6; i++)
         datas[i] = FileLoader::LoadFile(_maps[i].c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
-    
+    m_TextureChannel = Channel::RGBA;
+
     // TO DO HANDLE MIPMAP
     const CreateImageInfo createTextureInfo =
     {
@@ -26,8 +27,8 @@ PC_CORE::Texture3D::Texture3D(const std::string& _name, const std::array<std::st
         .layerCount = static_cast<uint32_t>(_maps.size()),
         .mipsLevels = 1,
         .textureType = TextureType::CubeMap,
-        .format = RHIFormat::R8G8B8A8_SRGB,
-        .channel = Channel::RGBA,
+        .format = RHIFormat::R8G8B8A8_UNORM,
+        .channel = m_TextureChannel,
         .textureUsage = TextureUsage::Sampled,
         .memoryVisibility = MemoryLocalisation::GPU_Only,
         .samples = 1,

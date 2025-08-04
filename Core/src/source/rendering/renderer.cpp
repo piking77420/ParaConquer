@@ -81,8 +81,8 @@ void Renderer::BeginFrame(Window* _window)
 
 void Renderer::UpdateGpuCameraData()
 {
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
-    const auto& gpuCamera = m_CurrentView->GetCameraGpu();
+    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& gpuCamera = m_CurrentView->cameraGpu;
 
 
     uniformBuffers.cameraUniformBuffer.Update(&gpuCamera, sizeof(CameraGpu));
@@ -92,8 +92,8 @@ void Renderer::UpdateLightGPUData(CommandList* commandlist)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
-    const auto& gpuCamera = m_CurrentView->GetCameraGpu();
+    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& gpuCamera = m_CurrentView->cameraGpu;
 
     int updateDirLight = 0;
     int spotLight = 0;
@@ -193,7 +193,7 @@ void Renderer::Draw(const View& _view)
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     m_CurrentView = &_view;
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& rContextView = m_CurrentView->renderingContext;
 
     UpdateGpuCameraData();
 
@@ -269,7 +269,7 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& rContextView = m_CurrentView->renderingContext;
 
     Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(rContextView.lowLevelCamera.position);
 
@@ -339,7 +339,7 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& rContextView = m_CurrentView->renderingContext;
 
 
     const BeginRenderPassInfo beginRenderPassInfo =
@@ -383,7 +383,7 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& rContextView = m_CurrentView->renderingContext;
 
     ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
         ClearValueFlags::ClearValueDepth);
@@ -439,7 +439,7 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
 
 PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
 {
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& rContextView = m_CurrentView->renderingContext;
 
 
     primaryCommandList->BeginDebugLabel("PostProcess Pass", POST_PROCESS);
@@ -491,7 +491,7 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
         Tbx::Vector4f(0, 0, 0, 0.f),
     };
 
-    const auto& rContextView = m_CurrentView->GetRenderingContext();
+    const auto& rContextView = m_CurrentView->renderingContext;
 
     const BeginRenderPassInfo drawToViewport =
     {
