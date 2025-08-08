@@ -33,38 +33,22 @@ void main()
     vec3 Lo = vec3(0);
     
     vec3 albedo = subpassLoad(inputAlbedo).rgb;
-    albedo = vec3(1,0,0);
+    albedo = vec3(1,1,1);
     
     vec3 roughnessMettalicAo = subpassLoad(inputRoughnessMettalicAo).rgb;
     vec3 viewSpacePos = subpassLoad(inputWorldPosition).rgb;
 
     vec3 N = Decode(subpassLoad(inputNormal).rg);
-    vec3 V = normalize(viewSpacePos);
+    vec3 V = -normalize(viewSpacePos);
     float NoV = abs(dot(N, V)) + 1e-5;
     
     //float roughness = roughnessMettalicAo.x * roughnessMettalicAo.x;
     float metallic = roughnessMettalicAo.y;
-    float roughness = 1;
-    float percupetualRoughness = roughness * roughness;
-     metallic = 0;
-    // iterate over each light
-    
-    // for each dirlight
-    /*
-    for(int i = 0; i < lightSceneData.dirLightCount; i++)
-    {
-        DirectionalData dirlight = lightSceneData.dirlights[i];
-        vec3 L = normalize(dirlight.direction);
-        vec3 H = normalize(V + L);
-        float NoL = max(dot(N, L), 0.0);
-        float NoH = max(dot(N, H), 0.0);
-        float LoH = max(dot(L, H), 0.0);
 
-        vec3 material = BRDF(albedo, NoV, NoL, NoH, LoH, roughness, metallic);
-        vec3 radiance = dirlight.color * dirlight.intensity;
-    }*/
-    // for each spothlight
-    // TODO
+    float percupetualRoughness = 0.3;
+    float roughness = percupetualRoughness * percupetualRoughness;
+     metallic = 0.1;
+    // iterate over each light
     
     // for each pointLight
     for(int i = 0; i < lightSceneData.pointLightCount; i++)
@@ -82,14 +66,13 @@ void main()
         float NoL = max(dot(N, L), 0.0);
         float NoH = max(dot(N, H), 0.0);
         float LoH = max(dot(L, H), 0.0);
-       
+
         
         float attenuation = GetSquareFalloffAttenuation(fragmentViewPosToLight, 1.0F / pointLight.maxRange);
         vec3 radiance = pointLight.color * attenuation * pointLight.intensity;
 
         vec3 diffuseColor = (1.0 - metallic) * albedo.rgb; 
-        //Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, roughness) * radiance * NoL;
-        Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, percupetualRoughness);
+        Lo += BRDF(diffuseColor, NoV, NoL, NoH, LoH, roughness) * radiance;
     }
     //outColor = vec4(lightSceneData.pointLights[0].color * lightSceneData.pointLights[0].intensity, 1);
     
