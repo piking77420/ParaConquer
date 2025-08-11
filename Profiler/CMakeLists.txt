@@ -12,8 +12,8 @@ if(MSVC)
 
 endif()
 
-file(GLOB_RECURSE SOURCE_FILES src/source/*.c src/source/*.cpp)
-file(GLOB_RECURSE HEADER_FILES src/include/*.h src/include/*.hpp src/inline/*.inl)
+file(GLOB_RECURSE SOURCE_FILES Src/Source/*.c Src/Source/*.cpp)
+file(GLOB_RECURSE HEADER_FILES Src/Include/*.h Src/Include/*.hpp Src/Inline/*.inl)
 
 if (PROFILING)
 
@@ -24,12 +24,12 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TRACY_CLIENT_SRC} ${HEADER_
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE TRACY_EXPORTS)
 target_compile_definitions(${PROJECT_NAME} PRIVATE PROFILER_EXPORTS)
-target_include_directories(${PROJECT_NAME} PUBLIC src/include)
-target_include_directories(${PROJECT_NAME} PUBLIC src/inline)
+target_include_directories(${PROJECT_NAME} PUBLIC Src/Include)
+target_include_directories(${PROJECT_NAME} PUBLIC Src/Inline)
 target_include_directories(${PROJECT_NAME} PUBLIC ${TRACY_PUBLIC_DIR})
 
 else()
 add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE src/include)
-target_include_directories(${PROJECT_NAME} INTERFACE src/inline)
+target_include_directories(${PROJECT_NAME} INTERFACE Src/Include)
+target_include_directories(${PROJECT_NAME} INTERFACE Src/Inline)
 endif()

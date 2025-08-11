@@ -15,12 +15,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-file(GLOB_RECURSE SOURCE_FILES src/source/*.c src/source/*.cpp)
-file(GLOB_RECURSE HEADER_FILES src/include/*.h src/include/*.hpp src/inline/*.inl 
-src/externals/include/*.h src/externals/include/*.hpp src/externals/include/*.inl)
+file(GLOB_RECURSE SOURCE_FILES Src/source/*.c Src/source/*.cpp)
+file(GLOB_RECURSE HEADER_FILES Src/Include/*.h Src/Include/*.hpp Src/Inline/*.inl 
+Src/Externals/Include/*.h Src/Externals/Include/*.hpp Src/Externals/Include/*.inl)
 
-include_directories(src/include)
-include_directories(src/externals/include)
+include_directories(Src/Include)
+include_directories(Src/Externals/Include)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 

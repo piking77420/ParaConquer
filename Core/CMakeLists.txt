@@ -13,14 +13,17 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(LIB_FOLDER_DEBUG ${CMAKE_SOURCE_DIR}/Src/Externals/Lib/Debug)
+set(LIB_FOLDER_RELEASE ${CMAKE_SOURCE_DIR}/Src/Externals/Lib/Release)
+
 # Collect source and header files
-file(GLOB_RECURSE SOURCE_FILES src/source/*.c src/source/*.cpp src/externals/source/*.c src/externals/source/*.cpp)
-file(GLOB_RECURSE HEADER_FILES src/include/*.h src/include/*.hpp src/inline/*.inl)
+file(GLOB_RECURSE SOURCE_FILES Src/Source/*.c Src/Source/*.cpp Src/externals/Source/*.c Src/externals/Source/*.cpp)
+file(GLOB_RECURSE HEADER_FILES Src/Include/*.h Src/Include/*.hpp Src/Inline/*.inl)
 
 
 #link dir
-link_directories(src/externals/lib)
-include_directories(src/externals/include/Imgui)
+link_directories(Src/Externals/lib)
+include_directories(Src/Externals/include/Imgui)
 
 
 # Create the Core shared library
@@ -30,9 +33,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_API)
 
 
 # Include directories for Core
-target_include_directories(${PROJECT_NAME} PUBLIC src/include)
-target_include_directories(${PROJECT_NAME} PUBLIC src/inline)
-target_include_directories(${PROJECT_NAME} PUBLIC SYSTEM src/externals/include)
+target_include_directories(${PROJECT_NAME} PUBLIC Src/include)
+target_include_directories(${PROJECT_NAME} PUBLIC Src/Inline)
+target_include_directories(${PROJECT_NAME} PUBLIC SYSTEM Src/Externals/Include)
 
 
 # Add directory where MotionCore.lib is located
@@ -44,8 +47,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE MotionCore)
 # Link VulkanAPI.lib to Core
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanAPI)
 
-# Link glfw3.lib to Core
-target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_FILE}glfw3.lib)
+target_link_directories(${PROJECT_NAME} PRIVATE
+  "$<$<CONFIG:Debug>:${LIB_FOLDER_DEBUG}>"
+  "$<$<CONFIG:Release>:${LIB_FOLDER_RELEASE}>"
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw3)
 
 # Link Profiler.lib/Interface to Core 
 target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)

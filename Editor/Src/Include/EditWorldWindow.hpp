@@ -1,0 +1,58 @@
+﻿#pragma once
+
+#include "EditorHeader.hpp"
+#include "WorldViewWindow.hpp"
+#include "Io/LowPassFilter.hpp"
+
+BEGIN_EDITOR_PCCORE
+    class EditWorldWindow : public WorldViewWindow
+{
+public:
+    void OnPlayButton() override
+    {
+        m_RenderingContextFlag &= ~PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+        m_View->SetRenderingContextFlag(m_RenderingContextFlag);
+
+    }
+    
+    void OnResetScene() override
+    {
+        m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+        m_View->SetRenderingContextFlag(m_RenderingContextFlag);
+    }
+
+    explicit EditWorldWindow(Editor& _editor, const std::string& _name);
+    
+    ~EditWorldWindow() override = default;
+    
+    void Update() override;
+
+protected:
+    void MoveCameraUpDate();
+    
+    PC_CORE::LowPassFilter<Tbx::Vector2f, 6> deltass;
+
+    float m_BaseCameraSpeed = 5.f;
+
+    float m_CameraSpeedValue = m_BaseCameraSpeed;
+    
+    float pitch = 0.0f;
+    
+    float yaw = 90.f;
+
+    float cameraSensitivity = 100.f;
+
+    Tbx::Vector3d m_CameraSpeed = Tbx::Vector3d::Zero();
+
+    float smoothTime = 0.3f;
+
+    void RotateCamera(float _deltatime);
+
+    void CameratMovment(float _deltatime);
+
+    void CameraChangeSpeed(float _deltatime);
+
+    void HideCursor();
+};
+
+END_EDITOR_PCCORE

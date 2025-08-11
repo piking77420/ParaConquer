@@ -1,0 +1,550 @@
+﻿#pragma once
+#include "CoreHeader.hpp"
+#include <cassert>
+#include <type_traits>
+
+#include <functional> // For std::function
+#include <iostream>
+#include <optional>
+
+#include "PerfRegion.hpp"
+#include "CompiletimeKey.hpp"
+#include "Log.hpp"
+#include "Math/ToolboxTypedef.hpp"
+#include "Reflection/ReflectionTypedef.hpp"
+
+
+
+BEGIN_PCCORE
+
+
+
+class Reflector
+{
+public:
+	Reflector() = delete;
+
+	~Reflector() = delete;
+
+	template<typename T>
+	static const ReflectedType& GetType();
+
+	PC_CORE_API static const ReflectedType& GetTypeFromRTTI(size_t typeIdFromRtti);
+
+	template<typename T>
+	static bool IsTypeIdIs(TypeId typeId);
+
+	template<typename Base>
+	static bool IsBaseOf(const ReflectedType& type);
+
+	template <typename T>
+	CONSTEVAL static TypeId GetTypeKey()
+	{
+		return COMPILE_TIME_TYPE_KEY(T);
+	}
+	
+	PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
+
+	template<typename Holder, typename MemberType, MemberEnumFlag enumFlag = NONE_MEMBER_ENUM_FLAG>
+	static uint8_t ReflectMember(size_t _offset, const char* _memberName);
+
+	template<typename Holder, typename BaseClass = void>
+	static uint8_t ReflectType();
+
+	template <typename T>
+	static std::vector<const ReflectedType*> GetAllTypesFrom();
+
+	template <typename T>
+	static bool isTrivialType();
+
+	static bool isTrivialType(TypeId _id);
+
+	PC_CORE_API static bool ContaintTypeFromTypeID(TypeId typeId);
+
+	template <typename T, typename F>
+	static bool GetPtrToTypeField(T* _object,const std::string& _fieldName, F** _outPtrToField);
+
+	template <typename T, typename F>
+	static bool GetPtrToTypeField(const T& _object, const std::string& _fieldName, const F** _outPtrToField);
+
+	PC_CORE_API static bool GetPtrToTypeField(TypeId _id, void* _object,const std::string& _fieldName,  void** _outPtrToField);
+
+	PC_CORE_API static bool GetPtrToTypeField(TypeId _id , const void* _object,const std::string& _fieldName, const void** _outPtrToField);
+
+	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_MapReflectFunction;
+
+	PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_UnordoredMapReflectFunction;
+
+
+private:
+
+	constexpr PC_CORE_API  static std::string GetCorrectNameFromTypeId(const std::string& _name)
+	{
+		// Remove the nameSpace
+		const size_t firstIndex = _name.find_first_of("::", 0);
+		std::string out;
+
+		if (firstIndex != std::numeric_limits<size_t>::max())
+		{
+			for (size_t i = firstIndex + 2; i < _name.size(); i++)
+				out.push_back(_name[i]);
+		}
+		else
+		{
+			const size_t secondIndex = _name.find_first_of(" ", 0);
+			if (firstIndex != std::numeric_limits<size_t>::max())
+			{
+				for (size_t i = secondIndex; i < _name.size(); i++)
+					out.push_back(_name[i]);
+			}
+			else
+			{
+				return _name;
+			}
+		}
+
+		return out;
+	}
+
+	PC_CORE_API static inline std::unordered_map<TypeId, ReflectedType> m_RelfectionMap;
+
+	PC_CORE_API static inline std::unordered_map<size_t, TypeId> m_RttiToTypeId;
+
+
+	template <typename  T>
+	static void AddType();
+
+	template <typename T>
+	static bool ContaintType();
+
+
+	template <typename T>
+	static void ReflectedCreateFunc(void* _class)
+	{
+		new (_class) T();
+	}
+
+	template <typename T>
+	static void ReflectedDeleteFunc(void* _class)
+	{
+		static_cast<T*>(_class)->~T();
+	}
+
+
+	template <typename T>
+	static uintmax_t ProcessMetaData(TypeMetaData* typeMetaData)
+	{
+		uintmax_t flags = TypeFlagBits::NONE;
+
+	
+
+		if constexpr (std::is_class_v<T>)
+		{
+			flags |= TypeFlagBits::COMPOSITE;
+		}
+		if constexpr (is_weak_ptr_v<T>)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::WeakPtr;
+			WeakPtr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.weakPtr;
+
+			TypeId ptrType = GetTypeKey<typename T::element_type>();
+			if (!m_RelfectionMap.contains(ptrType))
+			{
+				PC_LOGERROR("Try to reflect ptr without reflect the type before");
+			}
+			ptrtype.type = ptrType;
+
+		}
+		if constexpr (is_shared_ptr_v<T>)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::SharedPtr;
+			SharedPtr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.sharedPtr;
+
+			TypeId ptrType = GetTypeKey<typename T::element_type>();
+			if (!m_RelfectionMap.contains(ptrType))
+			{
+				PC_LOGERROR("Try to reflect ptr without reflect the type before");
+			}
+			ptrtype.type = ptrType;
+
+		}
+
+		if constexpr (is_std_array_v<T>)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Array;
+			Array& arrayType = typeMetaData->typeNatureMetaData.metaDataType.array;
+			arrayType.type = GetTypeKey<typename T::value_type>();
+			arrayType.size  = std::tuple_size_v<T>;
+		}
+
+
+		if constexpr (std::is_array_v<T>)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Array;
+			Array& arrayType = typeMetaData->typeNatureMetaData.metaDataType.array;
+
+			ReflectType<std::remove_extent_t<T>>();
+			arrayType.type = GetTypeKey<std::remove_extent_t<T>>();
+			// Determine the size of the array
+			constexpr std::size_t arraySize = std::extent_v<T>;
+			arrayType.size = arraySize;
+		}
+		if constexpr (is_vector_v<T>)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Vector;
+			Vector& vectorType = typeMetaData->typeNatureMetaData.metaDataType.vector;
+			ReflectType<typename std::remove_extent<typename T::value_type>::type>();
+
+			vectorType.type = GetTypeKey<typename std::remove_extent<typename T::value_type>::type>();
+
+		}
+		if constexpr (std::is_same_v<std::string, T> || std::is_same_v<std::wstring, T>)
+		{
+			bool constexpr isw = std::is_same_v<std::wstring, T>;
+
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::String;
+			RelfectedString& relfectedString = typeMetaData->typeNatureMetaData.metaDataType.relfectedString;
+			relfectedString.type = isw ? GetTypeKey<wchar_t>() : GetTypeKey<char>();
+		}
+		
+
+		if constexpr (is_unordered_map<T>::value || is_map<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::UnordoredMap;
+			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.mapReflected;
+			rm.key = GetTypeKey<typename T::key_type>();
+			rm.value = GetTypeKey<typename T::mapped_type>();
+
+			using MapPair = std::pair<typename T::key_type, typename T::mapped_type>;
+			rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
+			using MapIterator = typename T::iterator;
+			using MapConstIterator = typename T::const_iterator;
+
+			using ReseverMapFunction = void (T::*)(size_t);
+			using InsertMapFunction = typename T::mapped_type& (T::*)(const typename T::key_type&);
+			using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename T::key_type, typename T::mapped_type>* (MapConstIterator::*)() const;
+			using IncrementMapIterator = MapIterator & (MapIterator::*)();
+
+
+			ReseverMapFunction reserverFunctionMapType = &T::reserve;
+			InsertMapFunction insertFunctionMapType = static_cast<InsertMapFunction>(&T::operator[]);
+			UnorderedMapUnrefConstIteratorFunc unref = &MapConstIterator::operator->;
+			IncrementMapIterator increment = &MapIterator::operator++;
+
+
+			ReflectMapFunction reflectMapFunction =
+			{
+				.reserveFunction = *reinterpret_cast<uint64_t*>(&reserverFunctionMapType),
+				.insertFunction = *reinterpret_cast<uint64_t*>(&insertFunctionMapType),
+				.unrefFunc = *reinterpret_cast<uint64_t*>(&unref),
+				.incrementFunc = *reinterpret_cast<uint64_t*>(&insertFunctionMapType),
+			};
+
+			m_UnordoredMapReflectFunction.insert({ GetTypeKey<T>(), reflectMapFunction });
+		}
+
+		if constexpr (is_sparse_set<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::SparseSet;
+			auto& sparsetReflected = typeMetaData->typeNatureMetaData.metaDataType.reflectedSparset;
+			
+			// unsure that those type are reflected as well
+			ReflectType<std::vector<typename T::DenseType>>();
+			sparsetReflected.denseVector = GetTypeKey<std::vector<typename T::DenseType>>();
+
+			ReflectType<std::vector<typename T::SparseType>>();
+			sparsetReflected.spareVector = GetTypeKey<std::vector<typename T::SparseType>>();
+
+			// HARDOCODED TO FIND A BETTER WAY
+			sparsetReflected.spareVectorOffset = sizeof(std::vector<typename T::DenseType>);
+			sparsetReflected.denseVectorOffSet = 0;
+
+		}
+		
+
+		if constexpr (is_bit_set<T>::value)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::BitSet;
+		}
+
+
+		if constexpr (!std::is_abstract_v<T>)
+		{
+			typeMetaData->createFunc = &ReflectedCreateFunc<T>;
+			typeMetaData->deleteFunc = &ReflectedDeleteFunc<T>;
+		}
+		
+		if constexpr (std::is_invocable_v<std::hash<T>, const T&>)
+		{
+			typeMetaData->hashFun = (HashFunc)&HashFunction<T>;
+		}
+		else
+		{
+			typeMetaData->hashFun = nullptr;
+		}
+
+		return flags;
+	}
+};
+
+template <typename T>
+const ReflectedType& Reflector::GetType()
+{
+	constexpr TypeId tid = GetTypeKey<T>();
+	if (!m_RelfectionMap.contains(tid))
+		AddType<T>();
+
+	return m_RelfectionMap.at(tid);
+}
+
+template <typename T>
+bool Reflector::IsTypeIdIs(TypeId typeId)
+{
+	constexpr TypeId tid = GetTypeKey<T>();
+	return typeId == tid;
+}
+
+template <typename Base>
+bool Reflector::IsBaseOf(const ReflectedType& type)
+{
+	const ReflectedType* currentType = &type;
+	const ReflectedType& baseType = GetType<Base>();
+
+	if (type == baseType)
+		return false;
+
+	while (currentType->metaData.baseClass != NullTypeId)
+	{
+		if (currentType->metaData.baseClass == baseType.typeId)
+			return true;
+
+		currentType = &GetType(currentType->metaData.baseClass);
+	}
+
+	return false;
+}
+
+
+template <typename Holder, typename MemberType, MemberEnumFlag memberEnumFlag>
+uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
+{
+	PERF_REGION_SCOPED;
+	
+	std::unordered_map<uint32_t, ReflectedType>& memberMap = m_RelfectionMap;
+
+	if (!ContaintType<Holder>())
+	{
+		PC_LOGERROR("ReflectMember Holder member not found")
+			return 0;
+	}
+
+	if (!ContaintType<MemberType>())
+	{
+		AddType<MemberType>();
+	}
+	constexpr uint32_t holderKey = GetTypeKey<Holder>();
+	for (const auto& member : memberMap.at(holderKey).metaData.members)
+	{
+		// is there aldready a member name as
+		if (member.membersName == _memberName)
+			return 0;
+
+	}
+
+	// Add to sub member
+	const Members members =
+	{
+	.typeKey = GetTypeKey<MemberType>(),
+	.membersName = _memberName,
+	.offset = _offset,
+	.memberFlag = memberEnumFlag
+	};
+
+
+	memberMap.at(holderKey).metaData.members.push_back(members);
+	return 0;
+}
+
+template <typename Holder, typename BaseClass>
+uint8_t Reflector::ReflectType()
+{
+	PERF_REGION_SCOPED;
+	
+	constexpr uint32_t KeyHolder = GetTypeKey<Holder>();
+
+	if (ContaintType<Holder>())
+	{
+		return 0;
+	}
+
+
+	AddType<Holder>();
+
+	// Add base class to current class and all hieritance
+	if constexpr (!std::is_same_v<void, BaseClass> || std::is_base_of_v<BaseClass, Holder>)
+	{
+		if (!ContaintType<BaseClass>())
+		{
+			AddType<BaseClass>();
+		}
+
+		auto it = m_RelfectionMap.find(KeyHolder);
+		const ReflectedType& baseType = Reflector::GetType<BaseClass>();
+
+		if (it != m_RelfectionMap.end())
+		{
+			it->second.metaData.baseClass = baseType.typeId;
+
+			it->second.metaData.members.insert(
+				it->second.metaData.members.end(),
+				baseType.metaData.members.begin(),
+				baseType.metaData.members.end()
+			);
+		}
+
+	}
+
+	return 0;
+}
+
+
+template <typename T>
+std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
+{
+	PERF_REGION_SCOPED;
+	
+	constexpr uint32_t hashCode = GetTypeKey<T>();
+	std::vector<const ReflectedType*> types;
+
+	for (auto& type : m_RelfectionMap)
+	{
+		if (IsBaseOf<T>(type.second))
+		{
+			types.push_back(&type.second);
+		}
+	}
+
+	return types;
+}
+
+template <typename T>
+bool Reflector::isTrivialType()
+{
+	return isTrivialType(GetTypeKey<T>());
+}
+
+template <typename T, typename F>
+bool Reflector::GetPtrToTypeField(T* _object, const std::string& _fieldName, F** _outPtrToField)
+{
+	return GetPtrToTypeField(GetTypeKey<T>(), _object, _fieldName, reinterpret_cast<void**>(_outPtrToField));
+}
+
+template <typename T, typename F>
+bool Reflector::GetPtrToTypeField(const T& _object, const std::string& _fieldName, const F** _outPtrToField)
+{
+	return GetPtrToTypeField(GetTypeKey<T>(), &_object, _fieldName, reinterpret_cast<void**>(_outPtrToField));
+}
+
+
+template <typename T>
+void Reflector::AddType()
+{
+	PERF_REGION_SCOPED;
+	
+	if (!ContaintType<T>())
+	{
+		// Create New Node in map
+		std::string name = GetCorrectNameFromTypeId(typeid(T).name());
+
+		TypeId typeId = GetTypeKey<T>();
+
+		ReflectedType type{};
+		type.typeId = typeId;
+		type.typeFlags = {};
+		type.name = name;
+		type.size = sizeof(T);
+		type.alignment = alignof(T);
+		type.metaData = {};
+		type.rttiTypeId = typeid(T).hash_code();
+		
+
+		type.typeFlags = ProcessMetaData<T>(&type.metaData);
+		m_RttiToTypeId.insert({ type.rttiTypeId, typeId });
+		m_RelfectionMap.insert({ typeId,type });
+	}
+}
+
+
+template <typename T>
+bool Reflector::ContaintType()
+{
+	return ContaintTypeFromTypeID(GetTypeKey<T>());
+}
+
+//https://isocpp.org/files/papers/P3384R0.html
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
+#define NEW_VAR(name) CONCAT(name, __COUNTER__)
+
+#define MAKE_REFLECTABLE \
+	friend class PC_CORE::Reflector; \
+
+
+#define REFLECT(CurrentType, ...) \
+static inline uint8_t CONCAT(reflectInfo,__COUNTER__) = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
+
+
+
+#define REFLECT_MEMBER(CurrentType, memberName, ...) \
+static inline uint8_t CurrentType##_##memberName##_reflected = \
+PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName), ##__VA_ARGS__>( \
+PC_CORE::offset_of(&CurrentType::memberName), #memberName);
+
+class DynamicReflectable
+{
+public:
+
+	DEFAULT_COPY_MOVE_OPERATIONS(DynamicReflectable)
+	
+	PC_CORE_API virtual void QueryType() = 0;
+
+	const ReflectedType& GetType() const
+	{
+#ifdef _DEBUG
+		if (m_Type == nullptr)
+		{
+			PC_LOGERROR("Missing m_Type did you forget to call DYNAMIC_REFLECT_INIT or implement IMP_DYNAMIC_REFLECT")
+		}
+#endif
+		
+		return *m_Type;
+	}
+
+	const TypeId GetTypeKey() const
+	{
+		return m_Type->typeId;
+	}
+
+	DynamicReflectable() = default;
+
+	virtual ~DynamicReflectable() = default;
+protected:
+	const ReflectedType* m_Type = nullptr;
+};
+
+#define IMP_DYNAMIC_REFLECT() \
+void QueryType() override \
+{\
+	m_Type = &Reflector::GetTypeFromRTTI(typeid(*this).hash_code());\
+}\
+
+
+
+#define DYNAMIC_REFLECT_INIT \
+QueryType();\
+
+
+
+END_PCCORE
+
+
