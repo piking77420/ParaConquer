@@ -554,4 +554,4 @@ Out/
 
 !assets/meshs/**
 !Logo/**
-
+!Core/src/Externals/Lib/**
