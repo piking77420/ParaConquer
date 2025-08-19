@@ -1,7 +1,11 @@
 ﻿#include "Resources/ShaderSource.hpp"
 
-#include <Fstream>
-#include <Iostream>
+/*include <Windows.h>     
+#include <dxc/dxcapi.h>  
+*/#
+
+#include <fstream>
+#include <iostream>
 #include <PerfRegion.hpp>
 
 #include "Io/InOut.h"
@@ -10,45 +14,81 @@
 #include "Resources/ResourceManager.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
 
-#include <Filesystem>
+#include <filesystem>
 #include <Rendering/RenderingTypedef.h>
 
+
+
+
 using namespace PC_CORE;
+//using Microsoft::WRL::ComPtr;
 
-constexpr int GLSL_VERSION = 450;
 constexpr const char* INCLUDE_PATH = EDITOR_RESOURCE_PATH"/Shaders/Include/";
-
-class Includer : public shaderc::CompileOptions::IncluderInterface
-{
+constexpr int GLSL_VERSION = 450;
+/*
+class MyIncluder : public IDxcIncludeHandler {
 public:
-    shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type type,
-        const char* requesting_source, size_t include_depth) override
-    {
-        std::string full_path = std::string(INCLUDE_PATH) + requested_source;
-        std::ifstream file(full_path);
-        if (!file.is_open()) return nullptr;
+    class CustomIncludeHandler : public IDxcIncludeHandler {
+    public:
+        CustomIncludeHandler(const std::unordered_map<std::wstring, std::wstring>& files)
+            : m_files(files) {
+        }
 
-        std::string content((std::istreambuf_iterator<char>(file)),
-                             std::istreambuf_iterator<char>());
+        // IDxcIncludeHandler
+        HRESULT STDMETHODCALLTYPE LoadSource(
+            _In_ LPCWSTR pFilename,
+            _COM_Outptr_ IDxcBlob** ppIncludeSource
+        ) override {
+            auto it = m_files.find(pFilename);
+            if (it == m_files.end()) {
+                return E_FAIL; // fichier non trouvé
+            }
 
-        auto* result = new shaderc_include_result;
-        result->source_name = strdup(requested_source);
-        result->source_name_length = strlen(result->source_name);
-        result->content = strdup(content.c_str());
-        result->content_length = content.size();
-        result->user_data = nullptr;
-        return result;
-    }
-    void ReleaseInclude(shaderc_include_result* data) override
-    {
-        free((void*)data->source_name);
-        free((void*)data->content);
-        delete data;
-    }
-    ~Includer() override = default;
+            const std::wstring& source = it->second;
+            ComPtr<IDxcBlobEncoding> blob;
+            HRESULT hr = m_library->CreateBlobWithEncodingFromPinned(
+                source.c_str(),
+                static_cast<UINT32>(source.size() * sizeof(wchar_t)),
+                CP_UTF16,
+                &blob
+            );
+            if (FAILED(hr)) return hr;
+
+            *ppIncludeSource = blob.Detach();
+            return S_OK;
+        }
+
+        // Setter pour la librairie DXC nécessaire pour CreateBlobWithEncodingFromPinned
+        void SetLibrary(IDxcLibrary* library) {
+            m_library = library;
+        }
+
+        // IUnknown
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override {
+            if (!ppvObject) return E_POINTER;
+            if (riid == __uuidof(IDxcIncludeHandler) || riid == IID_IUnknown) {
+                *ppvObject = static_cast<IDxcIncludeHandler*>(this);
+                AddRef();
+                return S_OK;
+            }
+            *ppvObject = nullptr;
+            return E_NOINTERFACE;
+        }
+
+        ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
+        ULONG STDMETHODCALLTYPE Release() override {
+            ULONG ref = --m_ref;
+            if (ref == 0) delete this;
+            return ref;
+        }
+
+    private:
+        std::unordered_map<std::wstring, std::wstring> m_files;
+        ComPtr<IDxcLibrary> m_library;
+        ULONG m_ref = 1;
+    };
 };
-
-
+*/
 void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _optimise)
 {
     PERF_REGION_SCOPED;
@@ -56,22 +96,14 @@ void ShaderSource::InitShadersCompiler(PC_CORE::GraphicAPI graphicApi, bool _opt
     
     PC_LOG("Init ShadersCompiler")
     
-    shaderCompiler = new ShaderCompiler();
-    shaderCompiler->options.SetIncluder(std::make_unique<Includer>());
     
-    if (_optimise) shaderCompiler->options.SetOptimizationLevel(shaderc_optimization_level_size);
-
     switch (graphicApi)
     {
     case GraphicAPI::None:
         break;
     case GraphicAPI::Vulkan:
-        shaderCompiler->options.SetForcedVersionProfile(GLSL_VERSION, shaderc_profile_core);
-        shaderCompiler->options.SetSourceLanguage(shaderc_source_language_glsl);
-        AddPreProcessorDefVulkan();
         break;
-    case GraphicAPI::Dx3D12:
-        shaderCompiler->options.SetSourceLanguage(shaderc_source_language_hlsl);
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -85,9 +117,6 @@ void ShaderSource::DestroyShadersCompiler()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
     PC_LOG("Destroy Shaders Compiler")
-
-    delete shaderCompiler;
-    shaderCompiler = nullptr;
 }
 
 
@@ -97,7 +126,7 @@ void ShaderSource::AddPreProcessorDefVulkan()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
 
-
+    /*
     shaderc::CompileOptions& options = shaderCompiler->options;
     //lIGHT
 
@@ -136,132 +165,9 @@ void ShaderSource::AddPreProcessorDefVulkan()
     options.AddMacroDefinition("G_ALBEDO", std::to_string(G_ALBEDO));
     options.AddMacroDefinition("G_NORMAL", std::to_string(G_NORMAL));
     options.AddMacroDefinition("G_ROUGNESS_METALLIC_AO", std::to_string(G_ROUGNESS_METALLIC_AO));
-    options.AddMacroDefinition("G_WORLD_POSITION", std::to_string(G_WORLD_POSITION));
+    options.AddMacroDefinition("G_WORLD_POSITION", std::to_string(G_WORLD_POSITION));*/
 
 }
-
-
-
-bool ShaderSource::PreprocessShader(const std::string& source_name,
-                              shaderc_shader_kind kind,
-                              const char* source, std::string* outCode) {
-    // Like -DMY_DEFINE=1
-
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Resource);
-
-    shaderc::PreprocessedSourceCompilationResult result =
-        shaderCompiler->compiler.PreprocessGlsl(source, kind, source_name.c_str(), shaderCompiler->options);
-
-    if (result.GetCompilationStatus() != shaderc_compilation_status_success)
-    {
-        PC_LOGERROR("Failed to preprocess shader: {}", result.GetErrorMessage());
-        return false;
-    }
-
-    *outCode = {result.cbegin(), result.cend()};
-    return true;
-}
-
-
-bool ShaderSource::CompileFileToAssembly(const std::string& source_name,
-                                  shaderc_shader_kind kind,
-                                  const std::string& source, std::string* outCode, 
-                                  bool optimize = false) {
-    
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Resource);
-
-    shaderc::AssemblyCompilationResult result = shaderCompiler->compiler.CompileGlslToSpvAssembly(
-        source, kind, source_name.c_str(), shaderCompiler->options);
-
-    if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-        PC_LOGERROR("{}", result.GetErrorMessage());
-        return false;
-    }
-
-    *outCode = {result.cbegin(), result.cend()};
-}
-
-
-bool ShaderSource::CompileFile(const std::string& source_name,
-                            shaderc_shader_kind kind,
-                            const std::string& source, std::vector<uint32_t>* _outCode,
-                            bool optimize)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Resource);
-    // Like -DMY_DEFINE=1
-
-    shaderc::SpvCompilationResult module =
-        shaderCompiler->compiler.CompileGlslToSpv(source, kind, source_name.c_str(), shaderCompiler->options);
-
-    if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-        PC_LOGERROR("{}", module.GetErrorMessage());
-        return false;
-    }
-
-    *_outCode = {module.cbegin(), module.cend()};
-    return true;
-}
-
-
-static shaderc_shader_kind GetGlangShaderStage(ShaderStageTypeFlag _shaderType)
-{
-    switch (_shaderType)
-    {
-    case ShaderStageTypeFlag::Vertex:
-        return shaderc_glsl_vertex_shader;
-        break;
-    case ShaderStageTypeFlag::TessControl:
-        return shaderc_tess_control_shader;
-        break;
-    case ShaderStageTypeFlag::Tessevaluation:
-        return shaderc_tess_evaluation_shader;
-        break;
-    case ShaderStageTypeFlag::Geometry:
-        return shaderc_geometry_shader;
-        break;
-    case ShaderStageTypeFlag::Fragment:
-        return shaderc_fragment_shader;
-        break;
-    case ShaderStageTypeFlag::Compute:
-        return shaderc_compute_shader;
-        break;
-    case ShaderStageTypeFlag::Raygen:
-        return shaderc_raygen_shader;
-        break;
-    case ShaderStageTypeFlag::Intersect:
-        return shaderc_intersection_shader;
-        break;
-    case ShaderStageTypeFlag::Anyhit:
-        return shaderc_anyhit_shader;
-        break;
-    case ShaderStageTypeFlag::Closesthit:
-        return shaderc_closesthit_shader;
-        break;
-    case ShaderStageTypeFlag::Miss:
-        return shaderc_miss_shader;
-        break;
-    case ShaderStageTypeFlag::Callable:
-        return shaderc_callable_shader;
-        break;
-    case ShaderStageTypeFlag::Task:
-        return shaderc_task_shader;
-        break;
-    case ShaderStageTypeFlag::Mesh:
-        return shaderc_mesh_shader;
-        break;
-    case ShaderStageTypeFlag::Count:
-    default:
-        throw std::invalid_argument("Invalid shader stage");
-
-    }
-
-    throw std::invalid_argument("Invalid shader stage");
-}
-
-
 
 ShaderSource::ShaderSource() : Resource()
 {
@@ -318,7 +224,7 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
-
+    /*
     // Load shader File to memory 
     std::vector<char> RawSourceCode = GetShaderSourceFile();
 
@@ -334,7 +240,7 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
         return false;
     }
 
-   *_buffer = std::move(spriv);
+   *_buffer = std::move(spriv);*/
     return true;
 }
 

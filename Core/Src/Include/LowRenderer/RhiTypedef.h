@@ -21,7 +21,9 @@ BEGIN_PCCORE
     {
         None,
         Vulkan,
-        Dx3D12,
+#ifdef _WIN32
+        D3d12,
+#endif
         Count
     };
 

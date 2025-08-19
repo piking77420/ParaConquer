@@ -89,7 +89,7 @@ std::shared_ptr<RhiShaderProgram> Rhi::CreateRhiShaderProgram(const ProgramShade
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanShaderProgram>(_programShaderCreateInfo);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::None:
     case GraphicAPI::Count:
@@ -108,7 +108,7 @@ std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCr
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanCommandList>(_commandListCreateInfo);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::None:
     case GraphicAPI::Count:
@@ -129,7 +129,7 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanRenderPass>(_colorFormat, _depthFormat);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -152,7 +152,7 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanRenderPass>(_colorFormat);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -174,7 +174,7 @@ PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFor
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanRenderPass>(_colorFormat, sampleCount);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -196,7 +196,7 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(const RenderPassDescriptor&
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanRenderPass>(_renderPassDescriptor);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -219,7 +219,7 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanFrameBuffer>(_createFrameInfo);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -236,7 +236,7 @@ std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32
     {
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanIndexBuffer>(_data, _sizeInByte, _format,_visibility, _usage);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::None:
     case GraphicAPI::Count:
@@ -255,7 +255,7 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint
     {
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanVertexBuffer>(_data, _sizeInByte,_visibility, _usage);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::None:
     case GraphicAPI::Count:
@@ -275,7 +275,7 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(uint32_t _sizeInByte, M
         break;
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanVertexBuffer>(_sizeInByte, _visibility, _usage);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -295,7 +295,7 @@ std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, ui
         break;
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanUniformBuffer>(_data, _sizeInByte, _visibility, _usage);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -317,7 +317,7 @@ std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInf
         break;
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanTexture2D>(_createImageInfo);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -338,7 +338,7 @@ std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const PC_CORE::CreateImageInf
         break;
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanTexture3D>(_createImageInfo3D);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -358,7 +358,7 @@ std::shared_ptr<RhiSampler> Rhi::CreateSampler(const PC_CORE::SamplerCreateInfo&
         break;
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanSampler>(_samplerCreateInfo);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
@@ -377,7 +377,7 @@ PC_CORE_API std::shared_ptr<RhiFence> Rhi::CreateFence(const RhiFenceCreateInfo&
         break;
     case GraphicAPI::Vulkan:
         return std::make_shared<Vulkan::VulkanFence>(_rhiFenceCreateInfo);
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
     case GraphicAPI::Count:
         assert(false);
         break;
@@ -425,7 +425,7 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
     case GraphicAPI::Vulkan:
         VulkanInitialize(renderContextCreateInfo);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         DX12Initialize(renderContextCreateInfo);
         break;
     case GraphicAPI::Count:

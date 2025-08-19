@@ -24,12 +24,19 @@ include_directories(Src/Externals/Include)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
+find_package(D3D12 REQUIRED)
+find_package(Vulkan REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${DXC_INCLUDE_DIRS})
 
-find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
-target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan Vulkan::shaderc_combined)
+##DXC depencies
+if(WIN32)
+target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler.lib)
+else()
+find_package(Vulkan REQUIRED COMPONENTS Vulkan_dxc_LIBRARY)
+target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan dxc_lib)
 
-
-
+endif()
 
 #Copy Core DLL
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <Array>
-#include <Set>
+#include <array>
+#include <set>
 
 
 #include "Log.hpp"
@@ -108,10 +108,6 @@ private:
     REFLECT_MEMBER(Resource, m_ParentsResource)
     REFLECT_MEMBER(Resource, m_ChildsResource)
 };
-
-
-
-
 
 template<class T>
 concept ResourceDerived = std::is_base_of_v<Resource, T>;

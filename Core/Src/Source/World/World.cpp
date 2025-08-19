@@ -7,7 +7,6 @@
 
 using namespace PC_CORE;
 
-
 World::World()
 {
     if (m_World != nullptr)

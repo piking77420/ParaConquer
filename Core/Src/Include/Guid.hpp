@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Array>
-#include <Cstdint>
-#include <Format>
-#include <String>
+#include <array>
+#include <cstdint>
+#include <format>
+#include <string>
 
 #include "CoreHeader.hpp"
 #include "Reflection/Reflector.hpp"

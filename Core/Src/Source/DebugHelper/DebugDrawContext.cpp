@@ -389,8 +389,8 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 {
 	m_Instance = this;
 
-	CreatePrimitiveShaders();
-	CreateRayShaders();
+	//CreatePrimitiveShaders();
+	//CreateRayShaders();
 
 	// Init primitive
 	size_t primitiveIndex = static_cast<size_t>(PrimitiveType::Sphere);

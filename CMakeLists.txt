@@ -4,16 +4,13 @@ option(PROFILING "Build profiling dependencies" OFF)
 option(BUILD_TEST "Build UnitTest" OFF)
 
 add_compile_definitions(WITH_EDITOR=1)
+set(CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+  )
 
 
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
-
-
-#if(MSVC)
- #   add_compile_options(/Zc:__cplusplus)
-#endif()
-
-
 
 #external first
 if (PROFILING)
@@ -29,6 +26,11 @@ endif()
 add_subdirectory(Profiler)
 add_subdirectory(MotionCore/MotionCore)
 add_subdirectory(VulkanAPI)
+
+if (WIN32)
+add_subdirectory(D3d12API)
+endif()
+
 add_subdirectory(Core)
 
 

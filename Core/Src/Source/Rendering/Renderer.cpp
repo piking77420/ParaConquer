@@ -62,10 +62,10 @@ void Renderer::Init()
 
    
     CreateRenderPasss();
-    CreateShaders();
+    //CreateShaders();
     CreateBuffers();
     CreateThirdPartyResources();
-    CreateDescriptorSets();
+    //CreateDescriptorSets();
 #ifdef WITH_EDITOR
     m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 #endif
@@ -315,67 +315,71 @@ void Renderer::ClearRenderData()
     renderWorldData.staticMeshData.clear();
 }
 
-
-void Renderer::DrawSkyBox()
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rendering);
-
-    if (auto cube = m_CubeMesh.lock())
-    {
-        primaryCommandList->BindProgram(m_CubeMapShader.lock().get());
-        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), skyboxCameraDescriptorSet,
-            SCENE_DESCRIPTOR_SET, 1);
-        primaryCommandList->BindDescriptorSet(m_CubeMapShader.lock().get(), skyBoxCubeMapDescriptorSet,
-            ENVIRONEMENT_DESCRIPTOR_SET, 1);
-        primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
-        primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
-        primaryCommandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
-    }
-}
-
-
 void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 {
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rendering);
-    const auto& rContextView = m_CurrentView->renderingContext;
+	PERF_REGION_SCOPED;
+	PERF_REGION_COLOR(PerfRegion::Rendering);
+	const auto& rContextView = m_CurrentView->renderingContext;
 
 
-    const BeginRenderPassInfo beginRenderPassInfo =
-    {
-        .renderPass = renderPasses.forwardPass,
-        .frameBuffer = rContextView.forwardFrameBuffer,
-        .renderOffSet = {0, 0},
-        .extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
-        .clearValueFlags = {},
-        .clearColor = nullptr,
-        .clearValueCount = 0,
-        .clearDepth = 1.f
-    };
+	const BeginRenderPassInfo beginRenderPassInfo =
+	{
+		.renderPass = renderPasses.forwardPass,
+		.frameBuffer = rContextView.forwardFrameBuffer,
+		.renderOffSet = {0, 0},
+		.extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
+		.clearValueFlags = {},
+		.clearColor = nullptr,
+		.clearValueCount = 0,
+		.clearDepth = 1.f
+	};
 
+	auto forwardShader = m_ForwardShader.lock();
+	auto skyboxShader = m_SkyBoxShader.lock();
+	auto cube = m_CubeMesh.lock();
+    bool needForwardPass = forwardShader || skyboxShader;
 
-    primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
-    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+	if (needForwardPass)
+	{
+		primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
+		primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+	}
 
-    primaryCommandList->BindProgram(m_ForwardShader.lock().get());
-    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+	if (forwardShader)
+	{
+		primaryCommandList->BindProgram(forwardShader.get());
+		primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-    primaryCommandList->SetViewPort(_viewportInfo);
-    primaryCommandList->BindDescriptorSet(m_ForwardShader.lock().get(), rContextView.forwardDesritptorSet,
-        SCENE_DESCRIPTOR_SET, 1);
+		primaryCommandList->SetViewPort(_viewportInfo);
+		primaryCommandList->BindDescriptorSet(forwardShader.get(), rContextView.forwardDesritptorSet,
+			SCENE_DESCRIPTOR_SET, 1);
 
-    // draw all static mesh
-    DrawStaticMesh(MaterialType::Transparent, m_ForwardShader.lock());
-    DrawSkyBox();
+		// draw all static mesh
+		DrawStaticMesh(MaterialType::Transparent, forwardShader);
+	}
+
+	if (skyboxShader && cube)
+	{
+		primaryCommandList->BindProgram(skyboxShader.get());
+		primaryCommandList->BindDescriptorSet(skyboxShader.get(), skyboxCameraDescriptorSet,
+			SCENE_DESCRIPTOR_SET, 1);
+		primaryCommandList->BindDescriptorSet(skyboxShader.get(), skyBoxCubeMapDescriptorSet,
+			ENVIRONEMENT_DESCRIPTOR_SET, 1);
+		primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
+		primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
+		primaryCommandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+	}
 #ifdef WITH_EDITOR
-    m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), rContextView);
-    for (auto& it : UserCustomForwardPass)
-        it(*this, primaryCommandList.get(), rContextView, &renderWorldData);
+	m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), rContextView);
+	for (auto& it : UserCustomForwardPass)
+		it(*this, primaryCommandList.get(), rContextView, &renderWorldData);
 #endif
-    primaryCommandList->EndRenderPass();
 
-    primaryCommandList->EndDebugLabel();
+	if (needForwardPass)
+	{
+		primaryCommandList->EndRenderPass();
+		primaryCommandList->EndDebugLabel();
+	}
 }
 
 void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
@@ -405,36 +409,43 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
         .clearDepth = 1.f
     };
 
-    primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
-    primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+    std::shared_ptr sGeometry = m_GeometryBufferShader.lock();
+    std::shared_ptr sDeferred = m_DeferedShader.lock();
 
-    if (std::shared_ptr sGeometry = m_GeometryBufferShader.lock())
+    if (sGeometry && sDeferred)
+    {
+        primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+        primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
+    }
+
+    if (sGeometry)
     {
         primaryCommandList->BindProgram(sGeometry.get());
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
-
         primaryCommandList->BindDescriptorSet(sGeometry.get(), rContextView.geometryDescritproSet, SCENE_DESCRIPTOR_SET, 1);
         DrawStaticMesh(MaterialType::Opaque, sGeometry);
+
+        primaryCommandList->EndDebugLabel();
     }
-    primaryCommandList->EndDebugLabel();
 
-    primaryCommandList->NextSubPass();
-
-    primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
-
-    if (std::shared_ptr sDeferred = m_DeferedShader.lock())
+    if (sDeferred)
     {
+        primaryCommandList->NextSubPass();
+
+        primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
         primaryCommandList->BindProgram(sDeferred.get());
         primaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.defferdLightingLightingCameraSet, SCENE_DESCRIPTOR_SET, 1);
         primaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.defferdLightingGbufferSet, GBUFFER_SET, 1);
 
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
         primaryCommandList->Draw(4, 1, 0, 0);
+        primaryCommandList->EndDebugLabel();
     }
 
-    primaryCommandList->EndDebugLabel();
-
-    primaryCommandList->EndRenderPass();
+    if (sGeometry && sDeferred)
+    {
+        primaryCommandList->EndRenderPass();
+    }
 }
 
 PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
@@ -506,18 +517,20 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
         .clearStencil = 0.f
     };
 
+    if (auto drawToViewPort = m_DrawTextureScreenQuadShader.lock())
+    {
+        primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
+        primaryCommandList->BeginRenderPass(drawToViewport);
+        primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
+        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
-    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
-    primaryCommandList->BeginRenderPass(drawToViewport);
-    primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
-    primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
+            rContextView.finalImageDescritptorSet, 0, 1);
+        primaryCommandList->Draw(4, 1, 0, 0);
 
-    primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
-        rContextView.finalImageDescritptorSet, 0, 1);
-    primaryCommandList->Draw(4, 1, 0, 0);
-
-    primaryCommandList->EndRenderPass();
-    primaryCommandList->EndDebugLabel();
+        primaryCommandList->EndRenderPass();
+        primaryCommandList->EndDebugLabel();
+    }
 }
 
 
@@ -948,7 +961,7 @@ void Renderer::CreateShaders()
         };
 
 
-        m_CubeMapShader = ResourceManager::Create<PC_CORE::GraphicShader>(
+        m_SkyBoxShader = ResourceManager::Create<PC_CORE::GraphicShader>(
             "SkyboxShader", graphicShaderProgramCreateInfo);
     }
 
@@ -1093,7 +1106,7 @@ void Renderer::CreateDescriptorSets()
                 lightData,
             },
         };
-        m_CubeMapShader.lock()->AllocDescriptorSet(&skyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
+        m_SkyBoxShader.lock()->AllocDescriptorSet(&skyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
         skyboxCameraDescriptorSet->WriteDescriptorSets(descriptorSets);
 
         descriptorSets =
@@ -1104,7 +1117,7 @@ void Renderer::CreateDescriptorSets()
                 skyboxCubeMapDescritptor,
             }
         };
-        m_CubeMapShader.lock()->AllocDescriptorSet(&skyBoxCubeMapDescriptorSet,
+        m_SkyBoxShader.lock()->AllocDescriptorSet(&skyBoxCubeMapDescriptorSet,
                                                    ENVIRONEMENT_DESCRIPTOR_SET);
         skyBoxCubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);
     }

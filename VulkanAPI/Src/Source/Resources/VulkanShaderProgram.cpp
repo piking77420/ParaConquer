@@ -1,7 +1,9 @@
-﻿#include <spriv_reflect/spirv_reflect.h>
-#include "Resources/VulkanShaderProgram.hpp"
+﻿#include "Resources/VulkanShaderProgram.hpp"
 
-#include <Map>
+
+#include "spriv_reflect/spirv_reflect.h"
+
+#include <map>
 
 #include "Resources/VulkanDescriptorSets.hpp"
 #include "Utils/RhiVulkanParser.hpp"
@@ -11,10 +13,6 @@
 #include "Io/InOut.h"
 
 using namespace Vulkan;
-
-
-
-
 
 VulkanShaderProgram::~VulkanShaderProgram()
 {

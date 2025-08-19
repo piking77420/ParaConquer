@@ -23,7 +23,7 @@ file(GLOB_RECURSE HEADER_FILES Src/Include/*.h Src/Include/*.hpp Src/Inline/*.in
 
 #link dir
 link_directories(Src/Externals/lib)
-include_directories(Src/Externals/include/Imgui)
+include_directories(Src/Externals/Include/Imgui)
 
 
 # Create the Core shared library
@@ -33,7 +33,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_API)
 
 
 # Include directories for Core
-target_include_directories(${PROJECT_NAME} PUBLIC Src/include)
+target_include_directories(${PROJECT_NAME} PUBLIC Src/Include)
 target_include_directories(${PROJECT_NAME} PUBLIC Src/Inline)
 target_include_directories(${PROJECT_NAME} PUBLIC SYSTEM Src/Externals/Include)
 
@@ -46,6 +46,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE MotionCore)
 
 # Link VulkanAPI.lib to Core
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanAPI)
+
+# Link D3D12.lib to Core
+if (WIN32)
+target_link_libraries(${PROJECT_NAME} PRIVATE D3d12API)
+endif()
 
 target_link_directories(${PROJECT_NAME} PRIVATE
   "$<$<CONFIG:Debug>:${LIB_FOLDER_DEBUG}>"
@@ -67,10 +72,14 @@ endif()
 
 
 # share the header
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/MotionCore/MotionCore/src/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/MotionCore/MotionCore/src/inline )
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/MotionCore/MotionCore/Src/Include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/MotionCore/MotionCore/Src/Inline )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/VulkanAPI/src/include)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/VulkanAPI/src/inline)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/VulkanAPI/Src/Include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/VulkanAPI/Src/Inline)
 
 
+if (WIN32)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/D3d12API/Src/Include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/D3d12API/Src/Inline)
+endif()

@@ -26,6 +26,7 @@ WorldViewWindow::~WorldViewWindow()
 
 void WorldViewWindow::Update()
 {
+    
     EditorWindow::Update();
 
     if (size == Tbx::Vector2f{0.f, 0.f})
@@ -54,7 +55,7 @@ void WorldViewWindow::Update()
     uint32_t currentImage = PC_CORE::Rhi::GetFrameIndex();
 
     m_View->Update();
-    ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0), ImVec2(1, 1));
+    //ImGui::Image( reinterpret_cast<ImTextureID>(imguiDescriptorSet[currentImage]), ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0), ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()
@@ -79,9 +80,9 @@ void WorldViewWindow::UpdateImguiViewPort()
         }
 
     
-
+    
     if (needFree) 
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_View->finalImage, imguiDescriptorSet.data(), imguiDescriptorSet.size());
-
+    
 }

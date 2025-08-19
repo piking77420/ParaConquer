@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-#include <Functional>
-#include <Map>
+#include <functional>
+#include <map>
+#include <memory>
 
 
 #include "CoreHeader.hpp"
@@ -11,12 +12,9 @@
 
 BEGIN_PCCORE
 
-
-
 template <typename ResourceDerived>
 using ResourceHandle = std::shared_ptr<ResourceDerived>;
 
-// TODO AVOID STATIC VARIABLE
 class ResourceManager
 {
 public:

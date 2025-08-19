@@ -8,7 +8,7 @@
 #include "Rendering/Camera.hpp"
 #include "Resources/Texture2d.hpp"
 
-#include <Vulkan/Vulkan.h>
+#include <vulkan/vulkan.h>
 
 #include "Rendering/Gbuffers.hpp"
 

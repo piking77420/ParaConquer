@@ -59,7 +59,7 @@ public:
 
     ResourceRef<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
-    ResourceRef<PC_CORE::GraphicShader> m_CubeMapShader;
+    ResourceRef<PC_CORE::GraphicShader> m_SkyBoxShader;
 
     ResourceRef<PC_CORE::GraphicShader> m_GeometryBufferShader;
 
@@ -129,8 +129,6 @@ private:
     PC_CORE_API void UpdateLightGPUData(CommandList* commandlist);
 
     PC_CORE_API void UpdateGpuCameraData();
-
-    PC_CORE_API void DrawSkyBox();
 
     PC_CORE_API void ForwardPass(const ViewportInfo& _viewportInfo);
 

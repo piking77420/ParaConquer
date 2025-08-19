@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <Shaderc/Shaderc.hpp>
-
 #include "Resources/Resource.hpp"
 #include "LowRenderer/RhiTypedef.h"
 #include "Rendering/ShaderProgram.hpp"
@@ -40,31 +38,10 @@ private:
 
     std::string m_PathToSource;
 
-    struct ShaderCompiler   
-    {
-        shaderc::Compiler compiler;
-        shaderc::CompileOptions options;
-    };
-
-    static inline ShaderCompiler* shaderCompiler = nullptr;
     
     std::vector<char> GetShaderSourceFile();
     
     std::string GetShaderBinarySprivName();
-
-   bool PreprocessShader(const std::string& source_name,
-                              shaderc_shader_kind kind,
-                              const char* source, std::string* outCode);
-
-    bool CompileFileToAssembly(const std::string& source_name, shaderc_shader_kind kind,
-                                      const std::string& source,  std::string* outCode,
-                                      bool optimize);
-
-    bool CompileFile(const std::string& source_name,
-                            shaderc_shader_kind kind,
-                            const std::string& source, std::vector<uint32_t>* _outCode,
-                            bool optimize = false);
-
 
     static void AddPreProcessorDefVulkan();
 };

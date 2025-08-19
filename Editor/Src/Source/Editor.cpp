@@ -4,7 +4,6 @@
 
 
 #include <PerfRegion.hpp>
-#include <glslang/Include/glslang_c_interface.h>
 #include <Imgui/imgui_internal.h>
 
 
@@ -86,8 +85,7 @@ void Editor::CompileShader()
 	PERF_REGION_COLOR(PerfRegion::Editor);
 
 	PC_LOG("CompileShader...")
-	std::filesystem::create_directory(SHADER_CACHE_PATH);
-	
+	/*
 	auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vert");
 	forwardVert->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/Forward/forward.vert");
 
@@ -147,7 +145,7 @@ void Editor::CompileShader()
 		auto deferredFrag = ResourceManager::Create<ShaderSource>("Deferred.frag",
 		EDITOR_RESOURCE_PATH "/Shaders/Deferred/Deferred.frag");
 	}
-
+	*/
 }
 
 void Editor::LookForEditorInit()
@@ -375,6 +373,7 @@ void Editor::InitTestScene()
 	PERF_REGION_COLOR(PerfRegion::Editor);
 	PC_LOG("InitTestScene...")
 
+		/*
 	std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");
 	std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("EmerauldBlockMaterial.mat");
 
@@ -410,7 +409,7 @@ void Editor::InitTestScene()
 	t->scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
 	PointLight& p = level.GetComponent<PointLight>(pointLight);
-	p.intensity = 5.f;
+	p.intensity = 5.f;*/
 }
 
 void Editor::DestroyTestScene()

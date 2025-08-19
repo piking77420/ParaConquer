@@ -59,7 +59,7 @@ void View::Resize(Tbx::Vector2i _viewPortSize)
 
 	CreateImages();
 	CreateFrameBuffers();
-	CreateDescritproSets();
+	//CreateDescritproSets();
 }
 
 void View::UpdateRenderingContext()

@@ -10,7 +10,7 @@ PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_edi
     m_SpotLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("SpotLightSprite", EDITOR_RESOURCE_PATH "/Icons/SpotLight.png");
     m_PointLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("PointLightSprite", EDITOR_RESOURCE_PATH "/Icons/PointLight.png");
 
-    InitResources();
+    //InitResources();
    
 }
 

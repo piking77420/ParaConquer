@@ -56,7 +56,7 @@ void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
     case GraphicAPI::Vulkan:
         VulkanInitialize(_glfwWindowPtr);
         break;
-    case GraphicAPI::Dx3D12:
+    case GraphicAPI::D3d12:
         break;
     case GraphicAPI::Count:
         break;
