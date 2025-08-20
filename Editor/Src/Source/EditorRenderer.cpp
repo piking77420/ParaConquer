@@ -10,8 +10,7 @@ PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_edi
     m_SpotLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("SpotLightSprite", EDITOR_RESOURCE_PATH "/Icons/SpotLight.png");
     m_PointLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>("PointLightSprite", EDITOR_RESOURCE_PATH "/Icons/PointLight.png");
 
-    //InitResources();
-   
+    InitResources();
 }
 
 void PC_EDITOR_CORE::EditorRenderer::PushCustomCommand()
@@ -85,7 +84,7 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
         for (size_t i = 0; i < m_DirectionalLightIndices.size(); i++)
         {
              const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(-static_cast<Tbx::Vector3<float>>(_renderingContext.lowLevelCamera.position), Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
-             _commandList->PushConstant(p.get(), "PushConstants", &invertView, sizeof(invertView));
+             _commandList->PushConstant(p.get(), "pushConstants", &invertView, sizeof(invertView));
              _commandList->Draw(4, 1, 0, 0);
         }
 
@@ -97,7 +96,7 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
             Tbx::Vector3f pointPos = static_cast<Tbx::Vector3f>(spothlight.position - _renderingContext.lowLevelCamera.position);
             
             const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(pointPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
-            _commandList->PushConstant(p.get(), "PushConstants", &invertView, sizeof(invertView));
+            _commandList->PushConstant(p.get(), "pushConstants", &invertView, sizeof(invertView));
             _commandList->Draw(4, 1, 0, 0);
         }
 
@@ -109,7 +108,8 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
             Tbx::Vector3f pointPos = static_cast<Tbx::Vector3f>(pointLight.position - _renderingContext.lowLevelCamera.position);
             
             const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(pointPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).Invert();
-            _commandList->PushConstant(p.get(), "PushConstants", &invertView, sizeof(invertView));
+
+            _commandList->PushConstant(p.get(), "pushConstants", &invertView, sizeof(invertView));
             _commandList->Draw(4, 1, 0, 0);
         }
         
@@ -162,11 +162,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         {
         {
             PC_CORE::ShaderStageTypeFlag::Vertex,
-            PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSpriteSpv.vert"),
+            PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.vs.hlsl.binary"),
         },
         {
-            PC_CORE::ShaderStageTypeFlag::Fragment,
-                PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSpriteSpv.frag")
+            PC_CORE::ShaderStageTypeFlag::Pixel,
+                PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.ps.hlsl.binary")
         }
         };
    
@@ -180,7 +180,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         };
     
     
-    m_DrawSpriteShader = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>("sprite_shader", graphicShaderProgramCreateInfo);
+    m_DrawSpriteShader = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>("SpriteShader", graphicShaderProgramCreateInfo);
 
     auto lockedShader = m_DrawSpriteShader.lock();
     if (lockedShader == nullptr)

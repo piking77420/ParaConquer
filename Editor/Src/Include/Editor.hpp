@@ -12,6 +12,7 @@
 #include "Io/ImguiContext.h"
 #include "Physics/RigidBody.hpp"
 #include "World/Transform.hpp"
+#include "ShaderCompiler.hpp"
 #include "Reflection/Reflector.hpp"
 
 BEGIN_EDITOR_PCCORE
@@ -39,6 +40,7 @@ struct ProjectData
 struct EditorData
 {
     ProjectData projectData;
+    PC_CORE::GraphicAPI graphicApi;
 };
 
 using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ResourceRef<PC_CORE::Resource>>;
@@ -70,15 +72,15 @@ public:
     void EditorCommandUpdate();
 
     void UpdateEditor();
-    
-    PC_CORE::App gameApp;
 
-    EditorData editorData;
+    static inline Editor* instance = nullptr;
     
+    EditorData editorData;
+
     DockSpace dockSpace;
     
     EditableSelectedObj selectedObject;
-
+    
     PC_CORE::IMGUIContext IMGUIContext;
 
     std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
@@ -87,11 +89,10 @@ public:
     
     std::vector<std::unique_ptr<EditorCommand>> editorCommands;
 
+    ShaderCompiler shaderCompiler;
+
+    PC_CORE::App gameApp;
 private:
-    void InitThridPartLib(PC_CORE::GraphicAPI graphicApi);
-
-    void UnInitThridPartLib();
-
     void CompileShader();
 
     void LookForEditorInit();

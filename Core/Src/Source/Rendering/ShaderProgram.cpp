@@ -14,15 +14,14 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 
     auto p = GetParentResource();
 
-    std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> sources;
+    std::vector<ShaderModule> sources;
 
-    
     for (auto& code : p)
     {
         std::shared_ptr<ShaderSourceBinary> shaderSourceBinary;
         if (ResourceManager::TryGetAs<PC_CORE::ShaderSourceBinary>(code, &shaderSourceBinary))
         {
-            sources.emplace_back(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetPath());
+            sources.emplace_back(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetCode());
         }
     }
 
@@ -70,19 +69,19 @@ ShaderProgram::ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineTyp
 }
 
 
-std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> PC_CORE::ShaderProgram::SourceListToSourcePath(
+std::vector<ShaderModule> PC_CORE::ShaderProgram::SourceListToShaderModules(
     const SourceList& _sourceList)
 {
     PERF_REGION_SCOPED;
     
-    std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>> output;
+    std::vector<ShaderModule> output;
     output.reserve(_sourceList.size());
 
     for (size_t i = 0; i < _sourceList.size(); i++)
     {
         if (auto s = _sourceList[i].second.lock())
         {
-            output.emplace_back(_sourceList[i].first, s->GetPath());
+            output.emplace_back(_sourceList[i].first, s->GetCode());
         }
     }
 

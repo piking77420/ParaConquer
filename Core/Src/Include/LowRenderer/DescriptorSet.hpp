@@ -59,6 +59,7 @@ BEGIN_PCCORE
         Descriptor descriptor;
     };
 
+    // TODO REMOVE THIS AND USE BIDNNLESS
     struct ShaderProgramDescriptorSets : public RhiResource
     {
         PC_CORE_API virtual void WriteDescriptorSets(

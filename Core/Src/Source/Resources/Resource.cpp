@@ -14,8 +14,8 @@ void Resource::LoadFromFile(const std::string& _path)
 	PERF_REGION_COLOR(PerfRegion::Resource);
 
 	std::filesystem::path pathFileName = std::filesystem::path(_path).filename();
-	name = pathFileName.generic_string();
-	extension = pathFileName.extension().generic_string();
+	name = pathFileName.generic_string();	
+	extension = GetFullExtension(_path);
 }
 
 void Resource::LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild)
@@ -103,6 +103,16 @@ Resource::Resource(const std::string& _name) : name(_name) , m_Guid(Guid::New())
 Resource::Resource(std::string&& _name) : name(std::move(_name)) , m_Guid(Guid::New())
 {
 	
+}
+
+std::string Resource::GetFullExtension(const std::string& _path)
+{
+	std::string filename = std::filesystem::path(_path).filename().string();
+	size_t firstDot = filename.find('.'); // first dot in filename
+	if (firstDot != std::string::npos) {
+		return filename.substr(firstDot); // from first dot to end
+	}
+	return ""; // no extension
 }
 
 

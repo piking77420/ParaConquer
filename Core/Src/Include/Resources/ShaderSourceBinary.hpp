@@ -9,11 +9,6 @@ class PC_CORE_API ShaderSourceBinary : public PC_CORE::Resource
 {
 public:
 
-    const std::string& GetPath()
-    {
-        return m_Path;
-    }
-
     ShaderStageTypeFlag GetShaderStageType() const
     {
         return m_ShaderStageType;
@@ -28,21 +23,22 @@ public:
 
     void OnParentReload(const Guid& _parentGuid) override;
 
-    void WriteSprivToFile(const std::vector<uint32_t>* _sprivCode);
+    void WriteSprivToFile(const std::vector<uint32_t>* _sprivCode, GraphicAPI _api);
 
-    ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType);
+    std::vector<char> GetCode() const;
+
+    ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType, GraphicAPI _api);
     
-    ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType);
+    ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType, GraphicAPI _api);
     
     ~ShaderSourceBinary() override = default;
 
 private:
-    std::string m_Path;
-
     ShaderStageTypeFlag m_ShaderStageType;
 
+    std::string m_Path;
+
     REFLECT(ShaderSourceBinary, PC_CORE::Resource);
-    REFLECT_MEMBER(ShaderSourceBinary, m_Path);
 
 };
 

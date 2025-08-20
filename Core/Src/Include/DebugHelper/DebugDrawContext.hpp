@@ -61,7 +61,7 @@ private:
 	{
 		Sphere,
 		Box,	
-		Capusle,
+		Capsule,
 		WireSphere,
 		WireBox,
 		WireCapsule,
@@ -71,9 +71,10 @@ private:
 	struct PrimitiveData
 	{
 		std::vector<Tbx::Matrix4x4f> matrixBuffer;
-		PC_CORE::ResourceRef<PC_CORE::Mesh> mesh;
+		VertexBuffer primitiveBuffer;
+		IndexBuffer primitiveIndexBuffer;
 		size_t primitiveCount;
-		PC_CORE::VertexBuffer primitiveVertexBuffer;
+		PC_CORE::VertexBuffer instanceBuffer;
 	};
 
 	struct RayCastPrimitiveData
@@ -103,6 +104,8 @@ private:
 	void CreateRayShaders();
 	
 	bool NeedToRender();
+
+	void GenerateBasePrimitve(PrimitiveType _primitiveType, VertexBuffer* _vertexBuffer, IndexBuffer* _indexBuffer);
 
 	static void PushBoxGizmo(PrimitiveType _primitiveType,
 		Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));

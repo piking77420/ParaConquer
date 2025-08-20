@@ -20,7 +20,6 @@ BEGIN_PCCORE
 
 class ResourceManager;
 
-
 class Resource : public ISeriazable
 {
 public:
@@ -101,6 +100,8 @@ private:
     std::vector<Guid> m_ChildsResource;
 
     std::atomic<bool> m_IsLoaded;
+
+    static std::string GetFullExtension(const std::string& _path);
     
     REFLECT(Resource)
     REFLECT_MEMBER(Resource, name)

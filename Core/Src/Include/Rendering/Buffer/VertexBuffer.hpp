@@ -17,7 +17,7 @@ public:
         return m_RhiBuffer;
     }
     
-    size_t GetCount() const
+    size_t GetVertexCount() const
     {
         return m_Count;
     }
@@ -33,7 +33,11 @@ public:
 
     PC_CORE_API VertexBuffer(Vertex* _vertices, size_t _count, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
 
-    PC_CORE_API VertexBuffer(size_t _sizeInBytes, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+    PC_CORE_API VertexBuffer(const void* _data, size_t _vertexCout, size_t _verticiesSize, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+
+    PC_CORE_API VertexBuffer(size_t _vertexCout, size_t _verticiesSize, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+
+    PC_CORE_API VertexBuffer(size_t _size, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
     
     PC_CORE_API VertexBuffer() = default;
 

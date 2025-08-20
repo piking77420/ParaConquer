@@ -113,11 +113,13 @@ struct ShaderInfo
     std::string shaderName;
 };
 
+using ShaderModule = std::pair<ShaderStageTypeFlag, std::vector<char>>;
+
 struct ProgramShaderCreateInfo
 {
     ShaderInfo shaderInfo;
     RhiRenderPass* renderPass; // is optional TODO check raytracing pipeline use it 
-    std::vector<std::pair<ShaderStageTypeFlag, std::string>> shaderSources;
+    std::vector<ShaderModule> shaderModule;
     uint32_t attachementCount;
     uint32_t subPassIndex;
 };
@@ -139,7 +141,7 @@ public:
         
     PC_CORE_API virtual void FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets) = 0;
 
-    PC_CORE_API virtual void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _sources) = 0;
+    PC_CORE_API virtual void HotReload(const std::vector<PC_CORE::ShaderModule>& _modules) = 0;
 
     PC_CORE_API RhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo);
 

@@ -71,7 +71,7 @@ BEGIN_PCCORE
 
         ShaderProgramPipelineType m_ShaderProgramPipelineType;
 
-        static std::vector<std::pair<ShaderStageTypeFlag, std::string>> SourceListToSourcePath(const SourceList& _sourceList);
+        static std::vector<ShaderModule> SourceListToShaderModules(const SourceList& _sourceList);
     
         REFLECT(ShaderProgram, Resource);
 

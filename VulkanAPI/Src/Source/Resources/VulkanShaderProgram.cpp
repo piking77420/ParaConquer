@@ -10,7 +10,6 @@
 #include "VulkanContext.hpp"
 #include "VulkanDescritptorManager.hpp"
 #include "VulkanRenderPass.hpp"
-#include "Io/InOut.h"
 
 using namespace Vulkan;
 
@@ -105,7 +104,10 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
 #endif
 
     if (!m_PushConstantMap.contains(_pushConstantKey))
+    {
+        PC_LOGERROR("There is no PushConstant name as {}, in {}",_pushConstantKey, m_ProgramShaderCreateInfo.shaderInfo.shaderName)
         return;
+    }
 
     const PushConstantField& pushConstatnField = m_PushConstantMap.at(_pushConstantKey);
 
@@ -123,7 +125,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo.shaderSources);
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(m_ProgramShaderCreateInfo.shaderModule);
 
         
     switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
@@ -156,7 +158,7 @@ VulkanShaderProgram::VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo&
 }
 
 
-VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources)
+VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<PC_CORE::ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -172,13 +174,13 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 
     for (size_t i = 0; i < shaderStageCount; i++)
     {
-        const std::pair<PC_CORE::ShaderStageTypeFlag, std::string>& shaderSource = _programShaderCreateInfo[i];
+        const PC_CORE::ShaderModule& shaderSource = _programShaderCreateInfo[i];
         const char* format = nullptr;
          if (!GetFormatFromValue(PC_CORE::ShaderSourceFormat, shaderSource.first, &format))
          {
              PC_LOGERROR("Failed to parse shader source for shader ");
          }
-        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = PC_CORE::InOut::ReadFile(shaderSource.second);
+         vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = shaderSource.second;
 
     }
 
@@ -558,6 +560,8 @@ void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCrea
         for (size_t j = 0; j < pushConstantCount; j++)
         {
             SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContex.modulesReflected[j].push_constant_blocks;
+            if (!spvReflectBlockVariablePushConstant)
+                continue;
 
             vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
             pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
@@ -568,7 +572,7 @@ void Vulkan::VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCrea
     }
 }
 
-void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _sources)
+void Vulkan::VulkanShaderProgram::HotReload(const std::vector<PC_CORE::ShaderModule>& _modules)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -591,7 +595,7 @@ void Vulkan::VulkanShaderProgram::HotReload(const std::vector<std::pair<PC_CORE:
     }
     m_PushConstantMap.clear();
 
-    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(_sources, false);
+    VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex = CreateShaderProgramCreateContext(_modules, false);
     switch (m_ProgramShaderCreateInfo.shaderInfo.shaderProgramPipelineType)
     {
     case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:

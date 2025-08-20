@@ -11,6 +11,7 @@
 constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
 
 
+
 #define ALIGNAS_16 alignas(16)
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
@@ -26,6 +27,9 @@ BEGIN_PCCORE
 #endif
         Count
     };
+
+    constexpr const char* ShaderCacheVulkanFolder = "SPRIV/";
+    constexpr const char* ShaderCacheD3d12Folder = "DXIL/";
 
 
     struct CameraGpu
@@ -423,10 +427,10 @@ BEGIN_PCCORE
     enum class ShaderStageTypeFlag : size_t
     {
         Vertex,
-        TessControl,
-        Tessevaluation,
+        Hull,
+        Domain,
         Geometry,
-        Fragment,
+        Pixel,
         Compute,
         Raygen,
         Intersect,
@@ -785,7 +789,7 @@ inline T* SafeCastReinterpreCast(U* ptr)
 #define LIGHTDATA_BINDING 1
 #define FORWARD_SKYBOX_CUBEMAP 2
 // MATERIAL_DESCRIPTOR_SET
-#define ALBEDO_BINDING 2
+#define ALBEDO_BINDING 0
 
 // ENVIRONEMENT_DESCRIPTOR_SET
 #define SKYBOX_BINDING 0

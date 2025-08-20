@@ -59,7 +59,7 @@ void View::Resize(Tbx::Vector2i _viewPortSize)
 
 	CreateImages();
 	CreateFrameBuffers();
-	//CreateDescritproSets();
+	CreateDescritproSets();
 }
 
 void View::UpdateRenderingContext()
@@ -321,12 +321,7 @@ void View::CreateDescritproSets()
 		{
 			{
 				ShaderProgramDescriptorType::UniformBuffer,
-				CAMERA_BINDING,
-				cameraBufferDescritptor,
-			},
-			{
-				ShaderProgramDescriptorType::UniformBuffer,
-				LIGHTDATA_BINDING,
+				0,
 				lightData,
 			}
 		};
@@ -339,6 +334,7 @@ void View::CreateDescritproSets()
 	}
 
 	{
+		/*
 		PERF_REGION_SCOPED_NAMED("Create Forward Shader DescriptorSet");
 		std::shared_ptr<GraphicShader> m_ForwardShader = m_Renderer->m_ForwardShader.lock();
 
@@ -369,10 +365,10 @@ void View::CreateDescritproSets()
 			m_ForwardShader->FreeDescriptorSet(&m_DescriptorSets.forwardDescriptor);
 
 		m_ForwardShader->AllocDescriptorSet(&m_DescriptorSets.forwardDescriptor, SCENE_DESCRIPTOR_SET);
-		m_DescriptorSets.forwardDescriptor->WriteDescriptorSets(descriptorWrites);
+		m_DescriptorSets.forwardDescriptor->WriteDescriptorSets(descriptorWrites);*/
 	}
 
-
+	
 	{
 		PERF_REGION_SCOPED_NAMED("Create ToneMap DescriptorSet");
 
@@ -402,7 +398,7 @@ void View::CreateDescritproSets()
 		m_ToneMapp->AllocDescriptorSet(&m_DescriptorSets.toneMap, 0);
 		m_DescriptorSets.toneMap->WriteDescriptorSets(descriptorWrites);
 	}
-
+	
 	{
 		PERF_REGION_SCOPED_NAMED("FinalViewPort DescriptorSet");
 		std::shared_ptr<GraphicShader> drawToFinalImage = m_Renderer->m_DrawTextureScreenQuadShader.lock();

@@ -761,6 +761,8 @@ namespace PerfRegion
 
     constexpr Color::ColorType Editor = Color::Cyan;
 
+    constexpr Color::ColorType EditorResource = Color::MediumAquamarine;
+
 
 }
 

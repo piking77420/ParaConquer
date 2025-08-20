@@ -535,7 +535,7 @@ protected:
 #define IMP_DYNAMIC_REFLECT() \
 void QueryType() override \
 {\
-	m_Type = &Reflector::GetTypeFromRTTI(typeid(*this).hash_code());\
+	m_Type = &PC_CORE::Reflector::GetTypeFromRTTI(typeid(*this).hash_code());\
 }\
 
 

@@ -61,11 +61,12 @@ void Renderer::Init()
     swapChainPassCommandList = Rhi::CreateCommandList(commandListCreateInfo);
 
    
+    InitCubeBuffers();
     CreateRenderPasss();
-    //CreateShaders();
+    CreateShaders();
     CreateBuffers();
     CreateThirdPartyResources();
-    //CreateDescriptorSets();
+    CreateDescriptorSets();
 #ifdef WITH_EDITOR
     m_DebugDrawContext = std::make_unique<DebugDrawContext>(this);
 #endif
@@ -257,7 +258,7 @@ void Renderer::SwapBuffers(Window* _window)
 
 std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
 {
-    std::shared_ptr<View> view = std::make_unique<View>(this, _defaultSize);
+    std::shared_ptr<View> view = std::make_shared<View>(this, _defaultSize);
 
     m_Views.push_back(view);
 
@@ -298,7 +299,7 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
 
         primaryCommandList->BindDescriptorSet(shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
 
-        primaryCommandList->PushConstant(shader.get(), "PushConstants", &modelMatrixf,
+        primaryCommandList->PushConstant(shader.get(), "pushConstant", &modelMatrixf,
             sizeof(Tbx::Matrix4x4f) * 2);
         primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
         primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
@@ -336,16 +337,14 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 
 	auto forwardShader = m_ForwardShader.lock();
 	auto skyboxShader = m_SkyBoxShader.lock();
-	auto cube = m_CubeMesh.lock();
     bool needForwardPass = forwardShader || skyboxShader;
 
-	if (needForwardPass)
-	{
-		primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
-		primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-	}
+	
+	primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
+	primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+	
 
-	if (forwardShader)
+	if (forwardShader && false)
 	{
 		primaryCommandList->BindProgram(forwardShader.get());
 		primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
@@ -358,16 +357,17 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 		DrawStaticMesh(MaterialType::Transparent, forwardShader);
 	}
 
-	if (skyboxShader && cube)
+	if (skyboxShader)
 	{
+        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+
 		primaryCommandList->BindProgram(skyboxShader.get());
 		primaryCommandList->BindDescriptorSet(skyboxShader.get(), skyboxCameraDescriptorSet,
 			SCENE_DESCRIPTOR_SET, 1);
 		primaryCommandList->BindDescriptorSet(skyboxShader.get(), skyBoxCubeMapDescriptorSet,
 			ENVIRONEMENT_DESCRIPTOR_SET, 1);
-		primaryCommandList->BindVertexBuffer(*cube->vertexBuffer.GetRhiBuffer(), 0, 1);
-		primaryCommandList->BindIndexBuffer(*cube->indexBuffer.GetRhiBuffer(), 0);
-		primaryCommandList->DrawIndexed(cube->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+		primaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer.GetRhiBuffer(), 0, 1);
+        primaryCommandList->Draw(m_CubeVertexBuffer.GetVertexCount(), 1, 0, 0);
 	}
 #ifdef WITH_EDITOR
 	m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), rContextView);
@@ -375,11 +375,10 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 		it(*this, primaryCommandList.get(), rContextView, &renderWorldData);
 #endif
 
-	if (needForwardPass)
-	{
-		primaryCommandList->EndRenderPass();
-		primaryCommandList->EndDebugLabel();
-	}
+
+    primaryCommandList->EndRenderPass();
+	primaryCommandList->EndDebugLabel();
+	
 }
 
 void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
@@ -412,25 +411,21 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
     std::shared_ptr sGeometry = m_GeometryBufferShader.lock();
     std::shared_ptr sDeferred = m_DeferedShader.lock();
 
-    if (sGeometry && sDeferred)
-    {
-        primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-        primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
-    }
-
+ 
+	primaryCommandList->BeginRenderPass(beginRenderPassInfo);
+	primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
     if (sGeometry)
     {
         primaryCommandList->BindProgram(sGeometry.get());
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
         primaryCommandList->BindDescriptorSet(sGeometry.get(), rContextView.geometryDescritproSet, SCENE_DESCRIPTOR_SET, 1);
         DrawStaticMesh(MaterialType::Opaque, sGeometry);
-
-        primaryCommandList->EndDebugLabel();
     }
+    primaryCommandList->EndDebugLabel();
+    primaryCommandList->NextSubPass();
 
     if (sDeferred)
     {
-        primaryCommandList->NextSubPass();
 
         primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
         primaryCommandList->BindProgram(sDeferred.get());
@@ -442,10 +437,7 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
         primaryCommandList->EndDebugLabel();
     }
 
-    if (sGeometry && sDeferred)
-    {
-        primaryCommandList->EndRenderPass();
-    }
+    primaryCommandList->EndRenderPass();
 }
 
 PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
@@ -516,21 +508,20 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
         .clearDepth = 0.f,
         .clearStencil = 0.f
     };
-
+    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
+    primaryCommandList->BeginRenderPass(drawToViewport);
     if (auto drawToViewPort = m_DrawTextureScreenQuadShader.lock())
     {
-        primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
-        primaryCommandList->BeginRenderPass(drawToViewport);
+       
         primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
         primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
             rContextView.finalImageDescritptorSet, 0, 1);
         primaryCommandList->Draw(4, 1, 0, 0);
-
-        primaryCommandList->EndRenderPass();
-        primaryCommandList->EndDebugLabel();
     }
+    primaryCommandList->EndRenderPass();
+    primaryCommandList->EndDebugLabel();
 }
 
 
@@ -765,7 +756,7 @@ void Renderer::CreateShaders()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-
+    
     {
         PERF_REGION_SCOPED_NAMED("Geometry Shader");
         constexpr RasterizerInfo rasterizerInfo =
@@ -792,11 +783,11 @@ void Renderer::CreateShaders()
         {
             {
                 ShaderStageTypeFlag::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("GeometrySpv.vert"),
+                ResourceManager::Get<ShaderSourceBinary>("Geometry.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Fragment,
-                ResourceManager::Get<ShaderSourceBinary>("GeometrySpv.frag")
+                ShaderStageTypeFlag::Pixel,
+                ResourceManager::Get<ShaderSourceBinary>("Geometry.ps.hlsl.binary")
             }
         };
 
@@ -839,11 +830,11 @@ void Renderer::CreateShaders()
         {
             {
                 ShaderStageTypeFlag::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("DrawTextureScreenQuadSpv.vert"),
+                ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Fragment,
-                ResourceManager::Get<ShaderSourceBinary>("DeferredSpv.frag")
+                ShaderStageTypeFlag::Pixel,
+                ResourceManager::Get<ShaderSourceBinary>("Deferred.ps.hlsl.binary")
             }
         };
 
@@ -885,11 +876,11 @@ void Renderer::CreateShaders()
         {
             {
                 ShaderStageTypeFlag::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("forwardSpv.vert"),
+                ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Fragment,
-                ResourceManager::Get<ShaderSourceBinary>("forwardSpv.frag")
+                ShaderStageTypeFlag::Pixel,
+                ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")
             }
         };
 
@@ -917,13 +908,21 @@ void Renderer::CreateShaders()
             .multiSampleRasterization = 1
         };
 
-        VertexAttributeDescription vertexAttributeDescription =
+        const VertexAttributeDescription vertexAttributeDescription =
         {
             .binding = 0,
             .location = 0,
             .format = RHIFormat::R32G32B32_SFLOAT,
             .offset = 0
         };
+
+        const VertexInputBindingDescrition vertexInputBindingDescrition =
+        {
+            .binding = 0,
+            .stride = sizeof(Tbx::Vector3f),
+            .vertexInputRate = VertexInputRate::VERTEX,
+        };
+
 
         const ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
@@ -933,22 +932,22 @@ void Renderer::CreateShaders()
                 .depthCompareOp = CompareOp::LESS_OR_EQUAL,
                 .enableDepthTest = true
             },
-            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
-            .vertexAttributeDescriptions = {Vertex::GetAttributeDescriptions(0)},
+            .vertexInputBindingDescritions = {vertexInputBindingDescrition},
+            .vertexAttributeDescriptions = {vertexAttributeDescription},
         };
 
         const SourceList source =
         {
             {
                 ShaderStageTypeFlag::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("CubeMapSkyboxSpv.vert")
+                ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")
             },
             {
-                ShaderStageTypeFlag::Fragment,
-                ResourceManager::Get<ShaderSourceBinary>("CubeMapSkyboxSpv.frag")
+                ShaderStageTypeFlag::Pixel,
+                ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")
             }
         };
-        
+
 
         const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
         {
@@ -969,14 +968,14 @@ void Renderer::CreateShaders()
         PERF_REGION_SCOPED_NAMED("ToneMap Shader");
 
         const ComputeShaderProgramCreateInfo computeShaderProgramCreateInfo =
-            {
-            .shaderComputeInfo = {},
-            .source = ResourceManager::Get<ShaderSourceBinary>("AcesSpv.comp")
+        {
+        .shaderComputeInfo = {},
+        .source = ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")
             };
         
         m_AcesShader = ResourceManager::Create<PC_CORE::ComputeShader>("Aces", computeShaderProgramCreateInfo);
     }
-
+    
     // Draw to final viewport
     {
         PERF_REGION_SCOPED_NAMED("CreateDrawToFinalViewport Programm");
@@ -1007,11 +1006,11 @@ void Renderer::CreateShaders()
         {
             {
                 ShaderStageTypeFlag::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("DrawTextureScreenQuadSpv.vert"),
+                ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Fragment,
-                ResourceManager::Get<ShaderSourceBinary>("DrawTextureScreenQuadSpv.frag")
+                ShaderStageTypeFlag::Pixel,
+                ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")
             }
         };
 
@@ -1053,9 +1052,6 @@ void Renderer::CreateThirdPartyResources()
         };
         m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);
     }
-    {
-        m_CubeMesh = ResourceManager::Get<Mesh>("Cube.obj");
-    }
 }
 void Renderer::CreateBuffers()
 {
@@ -1078,8 +1074,6 @@ void Renderer::CreateDescriptorSets()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-
-    /////////////////////////////////////////////////
    
     const UniformBufferDescriptor lightData
     {
@@ -1123,3 +1117,59 @@ void Renderer::CreateDescriptorSets()
     }
 }
 #pragma endregion CreateDescriptorSets
+
+void Renderer::InitCubeBuffers()
+{
+    constexpr std::array<Tbx::Vector3f, 36> vertices = 
+    {
+        // Bottom face 
+        Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f, -0.5f,  0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f, -0.5f,  0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f,  0.5f},
+
+        // Top face 
+        Tbx::Vector3f{-0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f, 0.5f,  0.5f},
+        Tbx::Vector3f{ 0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f,  0.5f},
+        Tbx::Vector3f{ 0.5f, 0.5f,  0.5f},
+
+        // Front face 
+        Tbx::Vector3f{-0.5f, -0.5f, 0.5f},
+        Tbx::Vector3f{ 0.5f, -0.5f, 0.5f},
+        Tbx::Vector3f{ 0.5f,  0.5f, 0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f, 0.5f},
+        Tbx::Vector3f{ 0.5f,  0.5f, 0.5f},
+        Tbx::Vector3f{-0.5f,  0.5f, 0.5f},
+
+        // Back face 
+        Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f,  0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f,  0.5f, -0.5f},
+        Tbx::Vector3f{ 0.5f,  0.5f, -0.5f},
+
+        // Left face 
+        Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f,  0.5f,  0.5f},
+        Tbx::Vector3f{-0.5f,  0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f,  0.5f},
+        Tbx::Vector3f{-0.5f,  0.5f,  0.5f},
+
+        // Right face 
+        Tbx::Vector3f{0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{0.5f,  0.5f, -0.5f},
+        Tbx::Vector3f{0.5f,  0.5f,  0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{0.5f,  0.5f,  0.5f},
+        Tbx::Vector3f{0.5f, -0.5f,  0.5f},
+    };
+
+    m_CubeVertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(Tbx::Vector3f), MemoryLocalisation::GPU_Only, MemoryUsage::Static);
+}

@@ -18,7 +18,6 @@ static constexpr bool CreateBasicsResource = true;
 void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
-    std::filesystem::create_directory(SHADER_CACHE_PATH);
 
     auto s = ResourceManager::Create<Mesh>("RoundedCube.obj", "Assets/Meshs/Obj/RoundedCube.obj");
 

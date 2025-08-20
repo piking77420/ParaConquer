@@ -17,7 +17,7 @@ PC_CORE::GraphicShader::GraphicShader(const std::string& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
-        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList),
+        .shaderModule = SourceListToShaderModules(_graphicShaderProgramCreateInfo.sourceList),
         .attachementCount = _graphicShaderProgramCreateInfo.colorAttachementCount,
         .subPassIndex = _graphicShaderProgramCreateInfo.subPassIndex,
     };
@@ -39,7 +39,7 @@ PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
-        .shaderSources = SourceListToSourcePath(_graphicShaderProgramCreateInfo.sourceList),
+        .shaderModule = SourceListToShaderModules(_graphicShaderProgramCreateInfo.sourceList),
         .attachementCount = _graphicShaderProgramCreateInfo.colorAttachementCount,
         .subPassIndex = _graphicShaderProgramCreateInfo.subPassIndex,
 

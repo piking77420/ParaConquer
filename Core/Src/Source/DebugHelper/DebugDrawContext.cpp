@@ -1,4 +1,4 @@
-#include "DebugHelper/DebugDrawContext.hpp"
+﻿#include "DebugHelper/DebugDrawContext.hpp"
 
 
 #include "Rendering/Renderer.hpp"
@@ -6,6 +6,20 @@
 #include "Resources/ShaderSourceBinary.hpp"
 
 #define GIZMO_PASS {1.f, 0.0f, 1.f, 0.5f}
+
+#pragma region GeneratePrimitive
+// Thanks to Chat GPT hehe
+void GenerateCapsule(std::vector<Tbx::Vector3f>* _verticies, std::vector<uint32_t>* _indicies)
+{
+	
+}
+
+void GenerateWireCapsule(std::vector<Tbx::Vector3f>* _vertices, std::vector<uint32_t>* _indices)
+{
+	
+}
+
+#pragma endregion GeneratePrimitive
 
 void PC_CORE::DebugDrawContext::DrawRay(Tbx::Vector3d _p1, Tbx::Vector3d _dir, float _distance, Tbx::Vector3f _color)
 {
@@ -56,7 +70,7 @@ void PC_CORE::DebugDrawContext::DrawCapsule(Tbx::Vector3d _p1, Tbx::Vector3d eul
 	if (m_Instance == nullptr)
 		return;
 
-	PushCapsuleGizmo(PrimitiveType::Capusle, _p1, euler, _radius, _height, _color);
+	PushCapsuleGizmo(PrimitiveType::Capsule, _p1, euler, _radius, _height, _color);
 }
 
 void PC_CORE::DebugDrawContext::DrawWireCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color)
@@ -83,7 +97,7 @@ void PC_CORE::DebugDrawContext::Prepare()
 		assert(updateDataSize < GIZMO_BUFFER_SIZE && "updateDataSize should be less than GIZMO_BUFFER_SIZE");
 		updateDataSize = std::clamp(updateDataSize, (size_t)0, GIZMO_BUFFER_SIZE);
 
-		m_PrimitiveData[i].primitiveVertexBuffer.Update(m_PrimitiveData[i].matrixBuffer.data(),
+		m_PrimitiveData[i].instanceBuffer.Update(m_PrimitiveData[i].matrixBuffer.data(),
 			updateDataSize);
 
 		m_PrimitiveData[i].primitiveCount = std::clamp(m_PrimitiveData[i].matrixBuffer.size(), (size_t)0, MAX_GIZMO_PRIMITIVE);
@@ -108,44 +122,59 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	constexpr PC_CORE::RasterizerInfo rasterizerInfo =
 	{
 		.polygonMode = PC_CORE::PolygonMode::Fill,
-		.cullModeFlag = PC_CORE::CullModeFlagBit::Back,
+		.cullModeFlag = PC_CORE::CullModeFlagBit::None,
 		.frontFace = PC_CORE::FrontFace::CounterClockwise
 	};
 
-	PC_CORE::VertexInputBindingDescrition vertexBindingDescrition =
+	PC_CORE::VertexInputBindingDescrition primitiveInputBindingDescrition =
+	{
+		.binding = 0,
+		.stride = sizeof(Tbx::Vector3f),
+		.vertexInputRate = PC_CORE::VertexInputRate::VERTEX
+	};
+
+	PC_CORE::VertexInputBindingDescrition primitiveInstanceInputBindingDescrition =
 	{
 		.binding = 1,
 		.stride = sizeof(Tbx::Matrix4x4f),
 		.vertexInputRate = PC_CORE::VertexInputRate::INSTANCE
 	};
 
-	auto attributeDescription = PC_CORE::Vertex::GetAttributeDescriptions(0);
+	std::vector<PC_CORE::VertexAttributeDescription> attributeDescription;
+
+	attributeDescription.push_back(
+		{
+		   .binding = 0,
+		   .location = 0,
+		   .format = RHIFormat::R32G32B32_SFLOAT,
+		   .offset = 0
+		});
 
 	attributeDescription.push_back(
 		{
 			.binding = 1,
-			.location = 3,
+			.location = 1,
 			.format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
 			.offset = 0
 		});
 	attributeDescription.push_back(
 		{
 			.binding = 1,
-			.location = 4,
+			.location = 2,
 			.format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
 			.offset = sizeof(Tbx::Vector4f),
 		});
 	attributeDescription.push_back(
 		{
 			.binding = 1,
-			.location = 5,
+			.location = 3,
 			.format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
 			.offset = sizeof(Tbx::Vector4f) * 2,
 		});
 	attributeDescription.push_back(
 		{
 			.binding = 1,
-			.location = 6,
+			.location = 4,
 			.format = PC_CORE::RHIFormat::R32G32B32A32_SFLOAT,
 			.offset = sizeof(Tbx::Vector4f) * 3,
 		});
@@ -158,7 +187,11 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 			.depthCompareOp = CompareOp::LESS,
 			.enableDepthTest = true
 			},
-		.vertexInputBindingDescritions = {PC_CORE::Vertex::GetBindingDescrition(0), vertexBindingDescrition},
+		.vertexInputBindingDescritions =
+		{
+			primitiveInputBindingDescrition,
+			primitiveInstanceInputBindingDescrition
+		},
 		.vertexAttributeDescriptions = attributeDescription,
 	};
 
@@ -167,11 +200,11 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	{
 		{
 			PC_CORE::ShaderStageTypeFlag::Vertex,
-			ResourceManager::Get<ShaderSourceBinary>("DebugDrawSpv.vert")
+			ResourceManager::Get<ShaderSourceBinary>("DebugDraw.vs.hlsl.binary")
 		},
 		{
-			PC_CORE::ShaderStageTypeFlag::Fragment,
-			ResourceManager::Get<ShaderSourceBinary>("DebugDrawSpv.frag")
+			PC_CORE::ShaderStageTypeFlag::Pixel,
+			ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
 		}
 	};
 
@@ -267,12 +300,12 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 	{
 		{
 			PC_CORE::ShaderStageTypeFlag::Vertex,
-			ResourceManager::Get<ShaderSourceBinary>("DebugDrawRaySpv.vert")
+			ResourceManager::Get<ShaderSourceBinary>("DebugDrawRay.vs.hlsl.binary")
 
 		},
 		{
-			PC_CORE::ShaderStageTypeFlag::Fragment,
-			ResourceManager::Get<ShaderSourceBinary>("DebugDrawSpv.frag")
+			PC_CORE::ShaderStageTypeFlag::Pixel,
+			ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
 
 		}
 	};
@@ -346,20 +379,20 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(PC_CORE::CommandList* _comman
 
 			if (i >= static_cast<size_t>((PrimitiveType::WireSphere)))
 			{
-				_commandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyLineStrip);
+				_commandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyLineList);
 				_commandList->SetLineWidth(1.f);
 				needReset = true;
 			}
 
-			if (auto s = m_PrimitiveData[i].mesh.lock())
-			{
-				_commandList->BindDescriptorSet(sh.get(), m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET, 1);
-				_commandList->BindVertexBuffer(*s->vertexBuffer.GetRhiBuffer(), 0, 1);
-				_commandList->BindIndexBuffer(*s->indexBuffer.GetRhiBuffer(), 0);
-				_commandList->BindVertexBuffer(*m_PrimitiveData[i].primitiveVertexBuffer.GetRhiBuffer(), 1, 1);
 
-				_commandList->DrawIndexed(s->indexBuffer.GetIndexCount(), m_PrimitiveData[i].primitiveCount, 0, 0, 0);
-			}
+
+			_commandList->BindDescriptorSet(sh.get(), m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET, 1);
+			_commandList->BindVertexBuffer(*m_PrimitiveData[i].primitiveBuffer.GetRhiBuffer(), 0, 1);
+			_commandList->BindVertexBuffer(*m_PrimitiveData[i].instanceBuffer.GetRhiBuffer(), 1, 1);
+
+			_commandList->BindIndexBuffer(*m_PrimitiveData[i].primitiveIndexBuffer.GetRhiBuffer(), 0);
+
+			_commandList->DrawIndexed(m_PrimitiveData[i].primitiveIndexBuffer.GetIndexCount(), m_PrimitiveData[i].primitiveCount, 0, 0, 0);
 		}
 	}
 
@@ -389,31 +422,17 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 {
 	m_Instance = this;
 
-	//CreatePrimitiveShaders();
-	//CreateRayShaders();
+	CreatePrimitiveShaders();
+	CreateRayShaders();
 
-	// Init primitive
-	size_t primitiveIndex = static_cast<size_t>(PrimitiveType::Sphere);
-	m_PrimitiveData[primitiveIndex].mesh = ResourceManager::Get<Mesh>("Sphere.obj");
-
-	primitiveIndex = static_cast<size_t>(PrimitiveType::Box);
-	m_PrimitiveData[primitiveIndex].mesh = ResourceManager::Get<Mesh>("Cube.obj");
-
-	primitiveIndex = static_cast<size_t>(PrimitiveType::Capusle);
-	m_PrimitiveData[primitiveIndex].mesh = ResourceManager::Get<Mesh>("Capsule.obj");
-
-	primitiveIndex = static_cast<size_t>(PrimitiveType::WireSphere);
-	m_PrimitiveData[primitiveIndex].mesh = ResourceManager::Get<Mesh>("Sphere.obj");
-
-	primitiveIndex = static_cast<size_t>(PrimitiveType::WireBox);
-	m_PrimitiveData[primitiveIndex].mesh = ResourceManager::Get<Mesh>("Cube.obj");
-
-	primitiveIndex = static_cast<size_t>(PrimitiveType::WireCapsule);
-	m_PrimitiveData[primitiveIndex].mesh = ResourceManager::Get<Mesh>("Capsule.obj");
+	for (size_t i = 0; i < (size_t)PrimitiveType::Count; i++)
+	{
+		GenerateBasePrimitve((PrimitiveType)i, &m_PrimitiveData[i].primitiveBuffer, &m_PrimitiveData[i].primitiveIndexBuffer);
+	}
 
 
 	for (size_t i = 0; i < m_PrimitiveData.size(); i++)
-		m_PrimitiveData[i].primitiveVertexBuffer = PC_CORE::VertexBuffer(
+		m_PrimitiveData[i].instanceBuffer = PC_CORE::VertexBuffer(
 			GIZMO_BUFFER_SIZE, PC_CORE::MemoryLocalisation::CPU_Only, PC_CORE::MemoryUsage::Dynamic);
 
 
@@ -478,4 +497,191 @@ void PC_CORE::DebugDrawContext::PushCapsuleGizmo(PrimitiveType _primitiveType, T
 	);
 
 	m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(m);
+}
+
+
+void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveType, VertexBuffer* _vertexBuffer,
+	IndexBuffer* _indexBuffer)
+{
+	std::vector<Tbx::Vector3f> vertices;
+	std::vector<uint32_t> indices;
+
+	switch (_primitiveType)
+	{
+	case PC_CORE::DebugDrawContext::PrimitiveType::Sphere:
+	{
+		for (size_t lat = 0; lat <= 16; ++lat)
+		{
+			float theta = lat * M_PI / 16;  // Latitude angle (from 0 to PI)
+			float sinTheta = sin(theta);
+			float cosTheta = cos(theta);
+
+			for (size_t lon = 0; lon <= 32; ++lon) {
+				float phi = lon * 2 * M_PI / 32;  // Longitude angle (from 0 to 2PI)
+				float sinPhi = sin(phi);
+				float cosPhi = cos(phi);
+
+				Tbx::Vector3f vertex;
+				vertex.x = cosPhi * sinTheta;
+				vertex.y = cosTheta;
+				vertex.z = sinPhi * sinTheta;
+				vertices.push_back(vertex);
+			}
+		}
+
+		// Define indices
+		for (uint32_t lat = 0; lat < 16; ++lat)
+		{
+			for (uint32_t lon = 0; lon < 32; ++lon) {
+				uint32_t first = lat * (32 + 1) + lon;
+				uint32_t second = first + 32 + 1;
+
+				// Triangle 1: first, second, first+1
+				indices.push_back(first);
+				indices.push_back(second);
+				indices.push_back(first + 1);
+
+				// Triangle 2: second, second+1, first+1
+				indices.push_back(second);
+				indices.push_back(second + 1);
+				indices.push_back(first + 1);
+			}
+		}
+
+	}
+
+	break;
+	case PC_CORE::DebugDrawContext::PrimitiveType::Box:
+		vertices =
+		{
+		   Tbx::Vector3f{-0.5f, -0.5f, -0.5f}, // 0
+		   Tbx::Vector3f{ 0.5f, -0.5f, -0.5f}, // 1
+		   Tbx::Vector3f{ 0.5f,  0.5f, -0.5f}, // 2
+		   Tbx::Vector3f{-0.5f,  0.5f, -0.5f}, // 3
+		   Tbx::Vector3f{-0.5f, -0.5f,  0.5f}, // 4
+		   Tbx::Vector3f{ 0.5f, -0.5f,  0.5f}, // 5
+		   Tbx::Vector3f{ 0.5f,  0.5f,  0.5f}, // 6
+			Tbx::Vector3f{-0.5f,  0.5f,  0.5f}  // 7
+		};
+
+		indices =
+		{
+			// Bottom face
+			0, 1, 2,
+			0, 2, 3,
+			// Top face
+			4, 5, 6,
+			4, 6, 7,
+			// Front face
+			0, 1, 5,
+			0, 5, 4,
+			// Back face
+			2, 3, 7,
+			2, 7, 6,
+			// Left face
+			0, 4, 7,
+			0, 7, 3,
+			// Right face
+			1, 2, 6,
+			1, 6, 5
+		};
+
+		break;
+	case PC_CORE::DebugDrawContext::PrimitiveType::Capsule:
+		GenerateCapsule(&vertices, &indices);
+		break;
+	case PC_CORE::DebugDrawContext::PrimitiveType::WireSphere:
+	{
+		constexpr size_t segments = 24;
+		vertices.resize(segments * 6);
+
+		for (size_t i = 0; i < segments; i++)
+		{
+			float theta0 = i * 2.0f * M_PI / segments;
+			float theta1 = (i + 1) * 2.0f * M_PI / segments;
+			const size_t offset = i * 6;
+
+			// Circle XY
+			vertices[offset + 0] = Tbx::Vector3f{ std::cos(theta0), std::sin(theta0), 0.0f };
+			vertices[offset + 1] = Tbx::Vector3f{ std::cos(theta1), std::sin(theta1), 0.0f };
+
+			// Circle XZ
+			vertices[offset + 2] = Tbx::Vector3f{ std::cos(theta0), 0.0f, std::sin(theta0) };
+			vertices[offset + 3] = Tbx::Vector3f{ std::cos(theta1), 0.0f, std::sin(theta1) };
+
+			// Circle YZ
+			vertices[offset + 4] = Tbx::Vector3f{ 0.0f, std::cos(theta0), std::sin(theta0) };
+			vertices[offset + 5] = Tbx::Vector3f{ 0.0f, std::cos(theta1), std::sin(theta1) };
+		}
+
+		// Generate indices for LineList
+		for (size_t i = 0; i < segments; ++i)
+		{
+			size_t baseIndex = i * 6;
+
+			// For XY Circle
+			indices.push_back(baseIndex + 0);
+			indices.push_back(baseIndex + 1);
+
+			// For XZ Circle
+			indices.push_back(baseIndex + 2);
+			indices.push_back(baseIndex + 3);
+
+			// For YZ Circle
+			indices.push_back(baseIndex + 4);
+			indices.push_back(baseIndex + 5);
+		}
+
+		// To connect the last segment to the first segment to close the circles
+		for (int circleOffset = 0; circleOffset < 6; circleOffset += 2)
+		{
+			size_t lastIndex = (segments - 1) * 6 + circleOffset;
+			size_t firstIndex = circleOffset;
+			indices.push_back(lastIndex);
+			indices.push_back(firstIndex);
+		}
+	}
+	break;
+	case PC_CORE::DebugDrawContext::PrimitiveType::WireBox:
+		vertices =
+		{
+		 Tbx::Vector3f{-0.5f, -0.5f, -0.5f}, // 0
+		 Tbx::Vector3f{0.5f, -0.5f, -0.5f},  // 1
+		 Tbx::Vector3f{0.5f, 0.5f, -0.5f},   // 2
+		 Tbx::Vector3f{-0.5f, 0.5f, -0.5f},  // 3
+		 Tbx::Vector3f{-0.5f, -0.5f, 0.5f},  // 4
+		 Tbx::Vector3f{0.5f, -0.5f, 0.5f},   // 5
+		 Tbx::Vector3f{0.5f, 0.5f, 0.5f},    // 6
+		 Tbx::Vector3f{-0.5f, 0.5f, 0.5f}    // 7
+		};
+		indices =
+		{
+			 0, 1,   // Edge 1
+			 1, 2,   // Edge 2
+			 2, 3,   // Edge 3
+			 3, 0,   // Edge 4
+			 4, 5,   // Edge 5
+			 5, 6,   // Edge 6
+			 6, 7,   // Edge 7
+			 7, 4,   // Edge 8
+			 0, 4,   // Edge 9
+			 1, 5,   // Edge 10
+			 2, 6,   // Edge 11
+			 3, 7    // Edge 12
+		};
+		break;
+	case PC_CORE::DebugDrawContext::PrimitiveType::WireCapsule:
+		GenerateWireCapsule(&vertices, &indices);
+		break;
+	case PC_CORE::DebugDrawContext::PrimitiveType::Count:
+	default:
+		assert(false);
+		break;
+	}
+
+	if (!vertices.empty() && !indices.empty())
+	{
+		*_vertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(Tbx::Vector3f), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+		*_indexBuffer = IndexBuffer(indices.data(), indices.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+	}
 }

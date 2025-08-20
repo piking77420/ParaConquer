@@ -55,28 +55,20 @@ Editor::Editor()
 {
 	PROFILER_NOOP;
 
+	if (instance != nullptr)
+	{
+		PC_LOGERROR("Editor instance is not nullptr");
+		exit(-1);
+	}
+	instance = this;
+
+	editorData.graphicApi = PC_CORE::GraphicAPI::Vulkan;
+
 }
 
 Editor::~Editor()
 {
-}
-
-void Editor::InitThridPartLib(PC_CORE::GraphicAPI graphicApi)
-{
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Editor);
-
-	PC_LOG("InitThridPartLib...")
-	ShaderSource::InitShadersCompiler(graphicApi, false);
-
-}
-
-void Editor::UnInitThridPartLib()
-{
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Editor);
-
-	ShaderSource::DestroyShadersCompiler();
+	instance = nullptr;
 }
 
 void Editor::CompileShader()
@@ -85,67 +77,60 @@ void Editor::CompileShader()
 	PERF_REGION_COLOR(PerfRegion::Editor);
 
 	PC_LOG("CompileShader...")
-	/*
-	auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vert");
-	forwardVert->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/Forward/forward.vert");
 
-	auto forwardFrag = ResourceManager::Create<ShaderSource>("Forward.frag");
-	forwardFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/Forward/forward.frag");
+	auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.vs.hlsl");
 
-	auto screenQuadVert = ResourceManager::Create<ShaderSource>("DrawTextureScreenQuad.vert");
-	screenQuadVert->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/DrawTextureScreenQuad.vert");
-
-	auto screenQuadFrag = ResourceManager::Create<ShaderSource>("DrawTextureScreenQuad.frag");
-	screenQuadFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/DrawTextureScreenQuad.frag");
-
-	auto debugDrawVert = ResourceManager::Create<ShaderSource>("DebugDraw.vert");
-	debugDrawVert->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDraw.vert");
-		
-	auto debugDrawFrag = ResourceManager::Create<ShaderSource>("DebugDraw.frag");
-	debugDrawFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDraw.frag");
-
-	auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("DebugDrawRay.vert");
-	debugDrawRayVert->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDrawRay.vert");
-
-	// skybox
-	{
-		auto skyboxVert = ResourceManager::Create<ShaderSource>("CubeMapSkybox.vert");
-		skyboxVert->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/CubeMapSkybox/CubeMapSkybox.vert");
-
-		auto skyboxFrag = ResourceManager::Create<ShaderSource>("CubeMapSkybox.frag");
-		skyboxFrag->LoadFromFile(EDITOR_RESOURCE_PATH "/Shaders/CubeMapSkybox/CubeMapSkybox.frag");
-	}
-
+	auto forwardFrag = ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.ps.hlsl");
 	// sprite
 	{
-		auto spriteVert = ResourceManager::Create<ShaderSource>("DrawSprite.vert",
-			EDITOR_RESOURCE_PATH "/Shaders/DrawSprite/DrawSprite.vert");
-
-		auto spriteFrag = ResourceManager::Create<ShaderSource>("DrawSprite.frag",
-			EDITOR_RESOURCE_PATH "/Shaders/DrawSprite/DrawSprite.frag");
+		auto spriteVert = ResourceManager::Create<ShaderSource>("DrawSprite.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DrawSprite/DrawSprite.vs.hlsl");
+		auto spriteFrag = ResourceManager::Create<ShaderSource>("DrawSprite.ps.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DrawSprite/DrawSprite.ps.hlsl");
 	}
 
 	// geometry buffer
 	{
-		auto geometryVert = ResourceManager::Create<ShaderSource>("Geometry.vert",
-		EDITOR_RESOURCE_PATH "/shaders/Geometry/Geometry.vert");
-		
-		auto geometryFrag = ResourceManager::Create<ShaderSource>("Geometry.frag",
-		EDITOR_RESOURCE_PATH "/shaders/Geometry/Geometry.frag");
-	}
+		auto geometryVert = ResourceManager::Create<ShaderSource>("Geometry.vs.hlsl",
+			EDITOR_RESOURCE_PATH "/shaders/Geometry/Geometry.vs.hlsl");
 
-	// Tone Map
-	{
-		auto toneMap = ResourceManager::Create<ShaderSource>("Aces.comp",
-		EDITOR_RESOURCE_PATH "/Shaders/PostProcess/ToneMapping/Aces.comp");
+		auto geometryFrag = ResourceManager::Create<ShaderSource>("Geometry.ps.hlsl",
+			EDITOR_RESOURCE_PATH "/shaders/Geometry/Geometry.ps.hlsl");
 	}
 
 	// deferred
 	{
-		auto deferredFrag = ResourceManager::Create<ShaderSource>("Deferred.frag",
-		EDITOR_RESOURCE_PATH "/Shaders/Deferred/Deferred.frag");
+		auto deferredFrag = ResourceManager::Create<ShaderSource>("Deferred.ps.hlsl",
+			EDITOR_RESOURCE_PATH "/Shaders/Deferred/Deferred.ps.hlsl");
 	}
-	*/
+
+	{ // DebugDraw
+		auto debugDrawVert = ResourceManager::Create<ShaderSource>("DebugDraw.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDraw.vs.hlsl");
+
+		auto debugDrawFrag = ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDraw.ps.hlsl");
+
+		auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("DebugDrawRay.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDrawRay.vs.hlsl");
+	}
+	// Tone Map
+	{
+		auto toneMap = ResourceManager::Create<ShaderSource>("Aces.comp.hlsl",
+			EDITOR_RESOURCE_PATH "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
+	}
+
+	{
+		auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuad.vs.hlsl",
+			EDITOR_RESOURCE_PATH "/Shaders/DrawQuad.vs.hlsl");
+
+		auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
+			EDITOR_RESOURCE_PATH "/Shaders/SampleSingleTexture.ps.hlsl");
+	}
+
+	// skybox
+	{
+		auto skyboxVert = ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
+			EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.vs.hlsl");
+
+		auto skyboxFrag = ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
+			EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.ps.hlsl");
+	}
 }
 
 void Editor::LookForEditorInit()
@@ -153,7 +138,7 @@ void Editor::LookForEditorInit()
 	/*
 	namespace fs = std::filesystem;
 
-	// Look for editor Init or create one 
+	// Look for editor Init or create one
 
 	const std::filesystem::path workingDir = std::filesystem::current_path();
 	const std::string editorDataInitFile = workingDir.generic_string() + "/" + ParaConquerEditorInitFile;
@@ -188,7 +173,7 @@ void Editor::LookForEditorInit()
 		// to do import basic files
 		BasicOpenFile();
 	}*/
-	
+
 }
 
 void Editor::BasicOpenFile()
@@ -238,28 +223,27 @@ void Editor::Init()
 {
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Editor);
-	
+
 	const AppCreateInfo appCreateInfo =
 	{
 		.appName = "Para Conquer Editor",
 		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
 		.enableGpuDebug = true,
-		.graphicAPI = GraphicAPI::Vulkan
+		.graphicAPI = editorData.graphicApi
 	};
-	
-	InitThridPartLib(appCreateInfo.graphicAPI);
+
 	CompileShader();
 	gameApp.Init(appCreateInfo);
-	
+
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
-	
-	
+
+
 	gameApp.renderer.swapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 		IMGUIContext.Render(cmd);
 		cmd->EndDebugLabel();
 		});
-	
+
 
 	// TO AVOID USING A SYSTEM TO GET ENTIES SYGNATURE 
 	// TO DO FIND A WAY TO ITERATE OVER A BIT SET OF 100000000 QUICKLY
@@ -281,8 +265,6 @@ void Editor::Destroy()
 	IMGUIContext.Destroy();
 
 	gameApp.Destroy();
-
-	UnInitThridPartLib();
 }
 void Editor::UpdateEditor()
 {
@@ -311,17 +293,17 @@ void Editor::UpdateEditor()
 		if (ImGui::BeginMenu("Rendering"))
 		{
 			auto l = [&](std::shared_ptr<Resource> _shader)
-			{
-				if (ImGui::MenuItem(_shader->name.c_str()))
 				{
-					Rhi::GetRhiContext()->WaitIdle();
-					_shader->Reload();
-					// reload shader
-				}
-			};
-			  
-			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<PC_CORE::ShaderSource>(), l);
-			
+					if (ImGui::MenuItem(_shader->name.c_str()))
+					{
+						Rhi::GetRhiContext()->WaitIdle();
+						_shader->Reload();
+						// reload shader
+					}
+				};
+
+			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<ShaderSource>(), l);
+
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -352,7 +334,7 @@ void Editor::UpdateEditor()
 		for (auto& sub : editorSubSystems)
 			sub->Render();
 	}
-	
+
 }
 
 
@@ -367,14 +349,14 @@ void Editor::RewindCommand()
 }
 
 void Editor::InitTestScene()
-{	
-	
+{
+
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Editor);
 	PC_LOG("InitTestScene...")
 
-		/*
-	std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");
+
+		std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");
 	std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("EmerauldBlockMaterial.mat");
 
 	m1->albedo = ResourceManager::Get<Texture2D>("DiamondBlock.jpg");
@@ -385,7 +367,7 @@ void Editor::InitTestScene()
 	m2->Build();
 
 	auto& level = World::GetWorld()->level;
-	
+
 
 
 	EntityId sphere = level.CreateEntity("Sphere");
@@ -395,7 +377,7 @@ void Editor::InitTestScene()
 	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
 	t->scale = Tbx::Vector3d(2.0f, 2.0f, 2.0f);
 
-	
+
 	StaticMesh* mesh2 = &level.GetComponent<StaticMesh>(sphere);
 	mesh2->mesh = ResourceManager::Get<Mesh>("Sphere.obj");
 	mesh2->material = m2;
@@ -409,7 +391,7 @@ void Editor::InitTestScene()
 	t->scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
 	PointLight& p = level.GetComponent<PointLight>(pointLight);
-	p.intensity = 5.f;*/
+	p.intensity = 5.f;
 }
 
 void Editor::DestroyTestScene()
@@ -432,7 +414,7 @@ void Editor::Run(bool* _appShouldClose)
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Editor);
 
-		
+
 		gameApp.coreIo.PoolEvent();
 		gameApp.window.PoolEvents();
 		PC_CORE::Time::UpdateTime();
@@ -449,7 +431,7 @@ void Editor::Run(bool* _appShouldClose)
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
 
-		
+
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();
@@ -461,14 +443,14 @@ void Editor::InitEditor()
 	PERF_REGION_COLOR(PerfRegion::Editor);
 	PC_LOG("InitEditorWindow...")
 
-	editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+		editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
 	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
 	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
 	editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
 	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
 
 	PC_LOG("InitEditorSystem")
-	m_EditorRenderer = EditorRenderer(*this);
+		m_EditorRenderer = EditorRenderer(*this);
 	m_EditorRenderer.PushCustomCommand();
 }
 

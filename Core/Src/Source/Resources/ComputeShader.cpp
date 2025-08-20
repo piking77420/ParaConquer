@@ -17,7 +17,7 @@ PC_CORE::ComputeShader::ComputeShader(const std::string& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderSources = {{ShaderStageTypeFlag::Closesthit, _computeShaderProgramCreateInfo.source.lock()->GetPath()}},
+        .shaderModule = {{ShaderStageTypeFlag::Closesthit, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };
@@ -41,7 +41,7 @@ PC_CORE::ComputeShader::ComputeShader(std::string&& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderSources = {{ShaderStageTypeFlag::Compute, _computeShaderProgramCreateInfo.source.lock()->GetPath()}},
+        .shaderModule = {{ShaderStageTypeFlag::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };

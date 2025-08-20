@@ -100,8 +100,8 @@ private:
 
     ShaderProgramDescriptorSets* skyBoxCubeMapDescriptorSet;
 
-    std::weak_ptr<Mesh> m_CubeMesh;
-
+    VertexBuffer m_CubeVertexBuffer;
+   
 #ifdef WITH_EDITOR
    std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
 #endif
@@ -111,6 +111,8 @@ private:
     UniformBuffer gpuLightUniformBufferStaging;
 
     GPUDynamicLightData m_GpuDynamicLightData;
+
+    void InitCubeBuffers();
 
     PC_CORE_API void CreateBuffers();
     

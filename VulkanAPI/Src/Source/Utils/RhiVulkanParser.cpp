@@ -991,13 +991,13 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType
     {
     case PC_CORE::ShaderStageTypeFlag::Vertex:
         return vk::ShaderStageFlagBits::eVertex;
-    case PC_CORE::ShaderStageTypeFlag::TessControl:
+    case PC_CORE::ShaderStageTypeFlag::Hull:
         return vk::ShaderStageFlagBits::eTessellationControl;
-    case PC_CORE::ShaderStageTypeFlag::Tessevaluation:
+    case PC_CORE::ShaderStageTypeFlag::Domain:
         return vk::ShaderStageFlagBits::eTessellationEvaluation;
     case PC_CORE::ShaderStageTypeFlag::Geometry:
         return vk::ShaderStageFlagBits::eGeometry;
-    case PC_CORE::ShaderStageTypeFlag::Fragment:
+    case PC_CORE::ShaderStageTypeFlag::Pixel:
         return vk::ShaderStageFlagBits::eFragment;
     case PC_CORE::ShaderStageTypeFlag::Compute:
         return vk::ShaderStageFlagBits::eCompute;

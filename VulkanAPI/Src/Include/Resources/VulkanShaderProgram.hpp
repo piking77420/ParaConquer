@@ -88,7 +88,7 @@ namespace Vulkan
 
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
 
-        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _programShaderCreateInfo, bool _createDescriptorResources = true);
+        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(const std::vector<PC_CORE::ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources = true);
         
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex, const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
 
@@ -123,7 +123,7 @@ namespace Vulkan
 
 #pragma endregion ParseRegion 
       
-        void HotReload(const std::vector<std::pair<PC_CORE::ShaderStageTypeFlag, std::string>>& _sources) override;
+        void HotReload(const std::vector<PC_CORE::ShaderModule>& _modules) override;
 
     };
 }

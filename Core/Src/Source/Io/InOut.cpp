@@ -1,56 +1,86 @@
 ﻿#include "Io/inOut.h"
 
-#include <iostream>
 
-#include <Fstream>
-#include <Utility>
+#include <fstream>
+#include <utility>
 
-void PC_CORE::InOut::PrintOut(const std::string& _string)
+#include "Log.hpp"
+
+bool PC_CORE::InOut::ReadFile(const std::filesystem::path& _path, std::vector<char>* _data)
 {
-    std::cout << _string;
-}
+	if (_path.empty())
+	{
+		PC_LOGERROR("Path is empty");
+		return false;
+	}
 
-void PC_CORE::InOut::PrintOut(const std::wstring& _string)
-{
-    std::wcout << _string;
-}
+	const std::filesystem::path parent = _path.parent_path();
+	if (!std::filesystem::exists(parent))
+	{
+		PC_LOGERROR("ParentPath Path doesn't exist : {}", parent.generic_string());
+	}
 
-void PC_CORE::InOut::PrintOut(std::string&& _string)
-{
-    std::cout << _string;
-}
+	const std::string sPath = _path.generic_string();
+	std::ifstream file(sPath, std::ios::ate | std::ios::binary);
 
-std::vector<char> PC_CORE::InOut::ReadFile(const std::string& _filename)
-{
-	// Open file in binary mode at the end of the file to get the file size easily
-	std::ifstream file(_filename, std::ios::ate | std::ios::binary);
-
-	// Check if the file was opened successfully
 	if (!file.is_open())
 	{
-		throw std::runtime_error("Failed to open file: " + _filename);
+		PC_LOGERROR("Failed to open file: {}", sPath);
+		return false;
 	}
 
-	// Get the size of the file
 	size_t fileSize = static_cast<size_t>(file.tellg());
 
-
-	// Create a buffer of the appropriate size + 1 for '\0'
 	std::vector<char> buffer(fileSize);
-
-	// Move to the beginning of the file
 	file.seekg(0);
 
-
-	// Read the file data into the buffer
 	if (!file.read(reinterpret_cast<char*>(buffer.data()), fileSize))
 	{
-		throw std::runtime_error("Failed to read file: " + _filename);
+		PC_LOGERROR("Failed to read file: {}", sPath);
+		return false;
 	}
 
-
-	// Close the file
 	file.close();
-	return buffer;
+
+	*_data = buffer;
+	return true;
+}
+
+PC_CORE_API bool PC_CORE::InOut::WriteFile(const std::filesystem::path& _path, const void* _data, size_t _size, bool _createDirectories)
+{
+
+	if (_path.empty())
+	{
+		PC_LOGERROR("Path is empty");
+		return false;
+	}
+	const auto s = _path.generic_string();
+	const std::filesystem::path parent = _path.parent_path();
+
+	if (_createDirectories)
+	{
+		std::filesystem::create_directories(parent);
+	}
+	else
+	{
+		if (!std::filesystem::exists(parent))
+		{
+			
+			PC_LOGERROR("Parent Path doesn't exist {}", s);
+			return false;
+		}
+	}
+
+	std::fstream f(s, std::ios::binary | std::ios::out | std::ios::trunc);
+
+	if (!f.is_open())
+	{
+		PC_LOGERROR("File is not open {}", s);
+		return false;
+	}
+	f.write(reinterpret_cast<const char*>(_data), _size);
+	f.close();
+
+	return true;
 }
 

@@ -1,22 +1,21 @@
 ﻿#pragma once
 
-#include <String>
-#include <Vector>
+#include <vector>
+#include <filesystem>
 
 #include "CoreHeader.hpp"
+
 
 BEGIN_PCCORE
 
 class InOut
 {
 public:
-    PC_CORE_API static void PrintOut(const std::string& _string);
 
-    PC_CORE_API static void PrintOut(const std::wstring& _string);
+    PC_CORE_API static bool ReadFile(const std::filesystem::path& _path, std::vector<char>* _data);
 
-    PC_CORE_API static void PrintOut(std::string&& _string);
+    PC_CORE_API static bool WriteFile(const std::filesystem::path& _path, const void* _data, size_t _size, bool _createDirectories = false);
 
-    PC_CORE_API static std::vector<char> ReadFile(const std::string& _filename);
 private:
     
 };

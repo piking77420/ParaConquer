@@ -1,0 +1,29 @@
+#pragma once
+
+#include <mutex>
+#include <vector>
+
+#include "EditorHeader.hpp"
+#include "LowRenderer/RhiTypedef.h"
+
+BEGIN_EDITOR_PCCORE
+
+class ShaderCompiler
+{
+public:
+
+	std::mutex lock;
+
+	std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::string& _filename);
+
+	std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _filename);
+
+	ShaderCompiler();
+
+	~ShaderCompiler();
+
+private:
+
+};
+
+END_EDITOR_PCCORE

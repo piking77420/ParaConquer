@@ -32,11 +32,11 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
 
-        IndexBuffer(uint8_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
+        IndexBuffer(const uint8_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
 
-        IndexBuffer(uint16_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
+        IndexBuffer(const uint16_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
 
-        IndexBuffer(uint32_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
+        IndexBuffer(const uint32_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
 
         IndexBuffer() = default;
 

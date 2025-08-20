@@ -46,13 +46,13 @@ static inline  std::array<std::string, static_cast<size_t>(TextureFormat::Count)
 enum struct ShaderStageType : uint8_t
 {
     Vertex,
-    TessControl,
-    Tessevaluation,
+    Hull,           
+    Domain,         
     Geometry,
-    Fragment,
+    Pixel,          
     Compute,
     Raygen,
-    Intersect,
+    Intersection,
     Anyhit,
     Closesthit,
     Miss,
@@ -64,22 +64,23 @@ enum struct ShaderStageType : uint8_t
 };
 
 
-const std::array<std::string, static_cast<size_t>(ShaderStageType::Count)> ShaderSourceFormat =
+
+static inline const std::array<std::string, static_cast<size_t>(ShaderStageType::Count)> ShaderSourceFormat =
 {
-    ".vert",
-    ".tessc",
-    ".tessv",
-    ".geom",
-    ".frag",
-    ".comp",
-    ".raygen",
-    ".intersect",
-    ".anyhit",
-    ".closesthit",
-    ".miss",
-    ".callable",
-    ".task"
-    ".mesh",
+    ".vs.hlsl",
+    ".hs.hlsl",
+    ".ds.hlsl",
+    ".gs.hlsl",
+    ".ps.hlsl",
+    ".cs.hlsl",
+    ".rgen.hlsl",
+    ".rint.hlsl",
+    ".ahit.hlsl",
+    ".chit.hlsl",
+    ".miss.hlsl",
+    ".call.hlsl",
+    ".task.hlsl"
+    ".mesh.hlsl",
 };
 
 template <size_t Size>

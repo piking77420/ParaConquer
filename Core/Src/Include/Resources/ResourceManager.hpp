@@ -102,7 +102,7 @@ std::shared_ptr<ResourceDerived> ResourceManager::Get(const std::string& _name)
         auto r = m_ResourcesMap.at(it->second);
         assert(r->GetGuid() == it->second);
         assert(r->name ==  _name);
-
+        assert(std::dynamic_pointer_cast<ResourceDerived>(r) != nullptr);
         
         return std::reinterpret_pointer_cast<ResourceDerived>(r);
     }
