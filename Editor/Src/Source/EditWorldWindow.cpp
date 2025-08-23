@@ -21,6 +21,10 @@ void PC_EDITOR_CORE::EditWorldWindow::Update()
     PERF_REGION_SCOPED;
 
     WorldViewWindow::Update();
+
+    if(resize)
+        deltass.Reset();
+
     if(ImGui::IsWindowFocused())
         MoveCameraUpDate();
      
@@ -36,9 +40,9 @@ void PC_EDITOR_CORE::EditWorldWindow::MoveCameraUpDate()
     }
 
     HideCursor();
-    RotateCamera(deltatime);
-    CameratMovment(deltatime);
     CameraChangeSpeed(deltatime);
+    CameratMovment(deltatime);
+    RotateCamera(deltatime);
 
 }
 
@@ -59,9 +63,9 @@ void EditWorldWindow::RotateCamera(float _deltatime)
 
     constexpr float MaxPitch = 89.f;
 
-    if (pitch > MaxPitch)
+    if (pitch >= MaxPitch)
         pitch = MaxPitch;
-    if (pitch < -MaxPitch)
+    if (pitch <= -MaxPitch)
         pitch = -MaxPitch;
 
     camera.front = camera.front.Normalize();
