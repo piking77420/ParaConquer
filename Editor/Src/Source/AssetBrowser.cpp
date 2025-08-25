@@ -19,9 +19,9 @@ AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWi
     constexpr const char* projectBaseAssetPath = "assets";
     m_BasePath = std::filesystem::path(projectBaseAssetPath);
     m_CurrenPath = m_BasePath;
+    instance = this;
 
     ReloadOldAssets();
-    m_fileWatcher.LauchWatcher(projectBaseAssetPath);
 
     for (size_t i = 0; i < m_AssetBrowserTexture.size(); i++)
     {
@@ -39,6 +39,27 @@ AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWi
 
         m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_AssetBrowserTexture[i].texure, &m_AssetBrowserTexture[i].descritproSet, 1);
     }
+
+    const FileWatcherEvents fileWatcherEvents =
+    {
+        std::bind(&AssetBrowser::OnFileModify, this, std::placeholders::_1),
+		nullptr,
+		nullptr,
+		nullptr
+    };
+
+    const FileWatcherCreateInfo fileWatcherCreateInfo =
+    {
+        .watcherName = "ShaderWatcher",
+        .watchRoot = EDITOR_RESOURCE_PATH"/Shaders",
+        .expectFormat =
+        {
+            L".hlsl"
+        },
+        .fileWatcherEvents = fileWatcherEvents,
+    };
+
+    m_FileWatcherShaders.LauchWatcher(fileWatcherCreateInfo);
 }
 
 void AssetBrowser::ReloadOldAssets()
@@ -94,6 +115,10 @@ void PC_EDITOR_CORE::AssetBrowser::Update()
     }
 }
 
+void AssetBrowser::TriggerReload(const std::filesystem::path& _path)
+{
+
+}
 
 
 void AssetBrowser::CreateAsset() const
@@ -239,4 +264,10 @@ void AssetBrowser::OnFileSelectedClick()
     }
     
     m_SelectedItem = fileName;
+}
+
+void AssetBrowser::OnFileModify(const FileModifyEventData& _fileModifyName)
+{
+    std::lock_guard _(lock);
+
 }
