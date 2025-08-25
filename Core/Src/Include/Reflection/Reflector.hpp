@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include <filesystem>
 #include <functional> // For std::function
 #include <iostream>
 #include <optional>
@@ -265,6 +266,11 @@ private:
 		if constexpr (is_bit_set<T>::value)
 		{
 			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::BitSet;
+		}
+
+		if constexpr (std::is_same_v<T, std::filesystem::path>)
+		{
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::FileSystem;
 		}
 
 

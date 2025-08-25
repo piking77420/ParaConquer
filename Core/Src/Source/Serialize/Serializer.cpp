@@ -773,12 +773,12 @@ void Serializer::Derializing(uint8_t* _objetPtr, const std::string&_fileToSerial
 {
     json j;
     std::ifstream f(_fileToSerialize);
-
+    if (f.is_open())
     {
         PERF_REGION_SCOPED_NAMED("Parse JSON");
         j = json::parse(f);
+        f.close();
     }
-    f.close();
 
     
     const ReflectedType& type = Reflector::GetType(_typeKey);

@@ -119,6 +119,17 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
 
 void PC_EDITOR_CORE::EditorRenderer::InitResources()
 {
+    const PC_CORE::SamplerCreateInfo info =
+    {
+    .SamplerName = "SpriteSampler",
+    .magFilter = PC_CORE::Filter::LINEAR,
+    .minFilter = PC_CORE::Filter::LINEAR,
+    .u = PC_CORE::SamplerAddressMode::REPEAT,
+    .v = PC_CORE::SamplerAddressMode::REPEAT,
+    .w = PC_CORE::SamplerAddressMode::REPEAT
+    };
+
+    m_SpriteSampler = PC_CORE::Sampler(info);
 
     const PC_CORE::RasterizerInfo rasterizerInfo =
         {
@@ -198,7 +209,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
 
     PC_CORE::ImageSamplerDescriptor directionalTexture
     {
-        .sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat").get(),
+        .sampler = &m_SpriteSampler,
         .texture = m_DirectionalLightTexture.lock().get(),
         .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };

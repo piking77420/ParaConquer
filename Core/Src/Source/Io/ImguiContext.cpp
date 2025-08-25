@@ -141,12 +141,11 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void IMGUIContext::CreateImguiVulkanTexture(Texture2D* _texture, VkDescriptorSet* _descriptors, size_t _descriptorsCount)
+void IMGUIContext::CreateImguiVulkanTexture(const RhiTexture2D* _texture, const RhiSampler* _sampler, VkDescriptorSet* _descriptors, size_t _descriptorsCount)
 {
-    const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetRhiTexture2D()->GetNativeHandle());
+    const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetNativeHandle());
 
-    std::shared_ptr<Sampler> sampler = ResourceManager::Get<Sampler>("LinearRepeat");
-    const VkSampler* vkSamplers = static_cast<const VkSampler*>(sampler->GetRhiHandle()->GetNativeHandle());
+    const VkSampler* vkSamplers = static_cast<const VkSampler*>(_sampler->GetNativeHandle());
     
     if (vkSamplers == nullptr)
     {

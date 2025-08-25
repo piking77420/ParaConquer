@@ -13,6 +13,11 @@ public:
         return m_Sampler;
     }
 
+    std::shared_ptr<RhiSampler> GetRhiSampler() const
+    {
+        return m_Sampler;
+    }
+
     IMP_DYNAMIC_REFLECT()
     
     explicit Sampler(const SamplerCreateInfo& _samplerCreateInfo);

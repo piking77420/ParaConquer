@@ -1,51 +1,28 @@
 ﻿#include "AssetBrowser.hpp"
 
-#include <Imgui/imgui_impl_vulkan.h>
-#include "Editor.hpp"
-#include "EditorFormat.hpp"
-#include "LowRenderer/Rhi.hpp"
-#include "Resources/VulkanSampler.hpp"
-#include "World/World.hpp"
+#include "Serialize/Serializer.h"
 
-
-#include <Fstream>
-#include <ImguiHelper.h>
+#include <fstream>
 
 using namespace PC_EDITOR_CORE;
 
-
-AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
+void AssetBrowser::SetPath(const std::filesystem::path& _rootPath)
 {
-    constexpr const char* projectBaseAssetPath = "assets";
-    m_BasePath = std::filesystem::path(projectBaseAssetPath);
-    m_CurrenPath = m_BasePath;
-    instance = this;
+    m_FileWatcherShaders.Stop();
+    m_BasePath = std::filesystem::path(_rootPath);
+ 
+    std::lock_guard _(lock);
 
-    ReloadOldAssets();
+    // recusrive init
+    IsDirectoryHasBeenAdded(m_BasePath);
 
-    for (size_t i = 0; i < m_AssetBrowserTexture.size(); i++)
-    {
-        const AssetsBrowserTexturesType assetsBrowserTexturesType = static_cast<AssetsBrowserTexturesType>(i);
-        switch (assetsBrowserTexturesType)
-        {
-        case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Folder:
-            m_AssetBrowserTexture[i].texure = PC_CORE::Texture2D("folder.png", EDITOR_RESOURCE_PATH "/icons/folder.png");
-            break;
-        case PC_EDITOR_CORE::AssetBrowser::AssetsBrowserTexturesType::Cout:
-        default:
-            assert(false);
-            break;
-        }
-
-        m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_AssetBrowserTexture[i].texure, &m_AssetBrowserTexture[i].descritproSet, 1);
-    }
 
     const FileWatcherEvents fileWatcherEvents =
     {
         std::bind(&AssetBrowser::OnFileModify, this, std::placeholders::_1),
-		nullptr,
-		nullptr,
-		nullptr
+        nullptr,
+        nullptr,
+        nullptr
     };
 
     const FileWatcherCreateInfo fileWatcherCreateInfo =
@@ -59,158 +36,106 @@ AssetBrowser::AssetBrowser(Editor& _editor, const std::string& _name) : EditorWi
         .fileWatcherEvents = fileWatcherEvents,
     };
 
+
     m_FileWatcherShaders.LauchWatcher(fileWatcherCreateInfo);
 }
 
-void AssetBrowser::ReloadOldAssets()
+bool AssetBrowser::Exist(const PC_CORE::Guid& _guid) const
 {
-    // TO DOES THIS TO FILE SYSTEM WATCHER
-    // READ project resource files
-    // read each sub file in project dir 
-    // if name match in project resource files
-    // Add to project with old guid else load resoirce
+    return m_Assets.contains(_guid);
+}
+
+bool AssetBrowser::Exist(const std::filesystem::path& _path) const
+{
+    return m_PathToAssetsGuid.contains(_path);
+}
+
+const Asset& AssetBrowser::CreateAsset(const std::filesystem::path& _path)
+{
+    return CreateAsset(_path, PC_CORE::Guid::New());
+}
+
+const Asset& AssetBrowser::CreateAsset(const std::filesystem::path& _path, const PC_CORE::Guid& guid)
+{
+    m_PathToAssetsGuid[_path] = guid;
+    m_Assets[guid] = Asset(_path, guid);
+
+    return m_Assets[guid];
+}
+
+bool AssetBrowser::Delete(const std::filesystem::path& _path)
+{
+    if (!Exist(_path))
+    {
+        PC_LOGERROR("There is no asset name as with path {}", _path.generic_string());
+        return false;
+    }
+
+    const PC_CORE::Guid id = m_PathToAssetsGuid[_path];
+    m_PathToAssetsGuid.erase(_path);
+
+    assert(m_Assets.contains(id) && "This should be always valid");
+    m_Assets.erase(id);
+    return true;
+}
+
+const Asset* AssetBrowser::GetAsset(const std::filesystem::path& _path) const
+{
+    if (!Exist(_path))
+    {
+        PC_LOGERROR("There is no asset with path {}", _path.generic_string());
+        return nullptr;
+    }
+
+    return &m_Assets.at(m_PathToAssetsGuid.at(_path));
+}
+
+const Asset* AssetBrowser::GetAsset(const PC_CORE::Guid& _guid) const
+{
+    if (!Exist(_guid))
+    {
+        PC_LOGERROR("There is no asset name as with Guid {}", (std::string)_guid);
+        return nullptr;
+    }
+
+    return &m_Assets.at(_guid);
+}
+
+Asset* AssetBrowser::GetAsset(const std::filesystem::path& _path)
+{
+    if (!Exist(_path))
+    {
+        PC_LOGERROR("There is no asset with path{}", _path.generic_string());
+        return nullptr;
+    }
+
+    return &m_Assets.at(m_PathToAssetsGuid.at(_path));
+}
+
+Asset* AssetBrowser::GetAsset(const PC_CORE::Guid& _guid)
+{
+    if (!Exist(_guid))
+    {
+        PC_LOGERROR("There is no asset name as with Guid {}", (std::string)_guid);
+        return nullptr;
+    }
+
+    return &m_Assets[_guid];
+}
+
+
+AssetBrowser::AssetBrowser()
+{
+    assert(m_Instance == nullptr);
+    m_Instance = this;
+    AssetBrowserData* data = this;
+    PC_CORE::Serializer::DeSerialize<AssetBrowserData>(data, "AssetBrowset.data");
 }
 
 AssetBrowser::~AssetBrowser()
 {
-    for (size_t i = 0; i < m_AssetBrowserTexture.size(); i++)
-    {
-        m_Editor->IMGUIContext.DestroyVulkanTexture(&m_AssetBrowserTexture[i].descritproSet, 1);
-    }
-}
-
-
-void AssetBrowser::Render()
-{
-    EditorWindow::Render();
-}
-
-void PC_EDITOR_CORE::AssetBrowser::Update()
-{
-    PERF_REGION_SCOPED;
-    EditorWindow::Update();
-
-    if (!IsCursorInsideWindow() || ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-    {
-        //m_SelectedItem = "";
-    }
-
-    if (IsCursorInsideWindow() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-        ImGui::OpenPopup("CreateAsset", 0);
-
-    if (ImGui::BeginPopup("CreateAsset"))
-    {
-        CreateAsset();
-        ImGui::EndPopup();
-    }
-
-    RenderDirectories();
-
-    if (!m_HasSelectedObject && 
-        ImGui::IsWindowFocused() && IsCursorInsideWindow() 
-        && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-    {
-        m_Editor->selectedObject = std::monostate();
-        m_HasSelectedObject = false;
-    }
-}
-
-void AssetBrowser::TriggerReload(const std::filesystem::path& _path)
-{
-
-}
-
-
-void AssetBrowser::CreateAsset() const
-{
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-            ImGui::OpenPopup("createAssets");
-
-    
-    if (ImGui::BeginPopup("createAssets"))
-    {
-        ImGui::SeparatorText("Assets");
-
-        if (ImGui::Selectable("Level"))
-        {
-            auto s = GetUniqueFileName(m_CurrenPath, "Level", std::string(PC_Level));
-            CreateFile((m_CurrenPath / s).string());
-        }
-
-        ImGui::EndPopup();
-    }
-    
-}
-
-void AssetBrowser::RenderDirectories()
-{
-    PERF_REGION_SCOPED;
-
-    float columnSpacing = 100;
-    float padding = 16.f;
-    float thumbailSize = 64;
-    float cellsize = thumbailSize + padding;
-
-    float panelwidht = ImGui::GetContentRegionAvail().x;
-    int colomnCount = (int)(panelwidht / cellsize);
-    if (colomnCount < 1)
-        colomnCount = 1;
-    
-    if (m_CurrenPath == m_BasePath)
-    {
-
-    }
-    else if (ImGui::ArrowButton("Reverse", ImGuiDir_Left) && m_BasePath.string() != m_CurrenPath.string())
-    {
-        m_CurrenPath = m_CurrenPath.parent_path();
-    }
-
-    ImGui::Columns(colomnCount, 0, false);
-
-    for (auto& entry : std::filesystem::directory_iterator(m_CurrenPath))
-    {
-        const auto& path = entry.path();
-        auto relative = path.relative_path();
-        std::string name = relative.filename().string();
-        
-        if (entry.is_directory())
-        {
-           
-            const AssetsBrowserTextures& icon = m_AssetBrowserTexture[(int)AssetsBrowserTexturesType::Folder];
-
-            ImGui::Image((ImTextureID)icon.descritproSet, { thumbailSize, thumbailSize }, { 0, 0 }, { 1, 1 });
-            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                m_HasSelectedObject = true;
-                m_CurrenPath = entry;
-            }   
-            ImGui::Text(name.c_str());
-        }
-        else
-        {
-            if (ImGui::Button(name.c_str(), { thumbailSize,thumbailSize }))
-            {
-                if (m_SelectedItem == entry)
-                {
-                    m_HasSelectedObject = true;
-                    OnFileSelectedClick();
-                }
-                
-                if (m_SelectedItem.empty())
-                {
-                    m_SelectedItem = entry;
-                    PC_LOG("File selected: {}", name);
-                }
-                    
-            }
-        }
-
-
-
-        ImGui::NextColumn();
-    }
-
-    ImGui::Columns(1);
+    const AssetBrowserData& data = *this;
+    PC_CORE::Serializer::Serialize<AssetBrowserData>(data, "AssetBrowset.data");
 }
 
 void AssetBrowser::CreateFile(const std::string& _filename) const
@@ -243,31 +168,34 @@ std::string AssetBrowser::GetUniqueFileName(const std::filesystem::path& directo
     return fileName;
 }
 
-void AssetBrowser::OnFileSelectedClick()
-{
-    
-    if (m_SelectedItem.empty())
-    {
-        PC_LOGERROR("m_SelectedItem is empty")
-        return;
-    }
-
-    
-    std::string fileName = m_SelectedItem.string();
-    PC_LOG("File clicked: {}", fileName);
-
-    std::string fileFormat = m_SelectedItem.extension().string();
-
-    if (fileFormat == PC_Level)
-    {
-        PC_LOG("Load level selected: {}", fileName);    
-    }
-    
-    m_SelectedItem = fileName;
-}
-
 void AssetBrowser::OnFileModify(const FileModifyEventData& _fileModifyName)
 {
-    std::lock_guard _(lock);
 
 }
+
+void AssetBrowser::IsDirectoryHasBeenAdded(const std::filesystem::path& _path)
+{
+    for (auto& entry : std::filesystem::directory_iterator(_path))
+    {
+        if (entry.is_directory())
+        {
+            IsDirectoryHasBeenAdded(entry);
+        }
+        else
+        {
+            if (!m_PathToAssetsGuid.contains(entry))
+            {
+                CreateAsset(entry);
+            }
+            else
+            {
+                Asset* asset = GetAsset(entry);
+                asset->UpdateIfPathChanged(entry.path());
+            }
+        }
+
+
+    }
+
+}
+

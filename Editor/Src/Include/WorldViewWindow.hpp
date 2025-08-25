@@ -7,6 +7,7 @@
 #include "LowRenderer/DescriptorSet.hpp"
 #include "Rendering/Camera.hpp"
 #include "Resources/Texture2d.hpp"
+#include "Rendering/Sampler.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -44,6 +45,7 @@ private:
 
     void UpdateImguiViewPort();
 
+    PC_CORE::Sampler m_ViewPortSampler;
 
     std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> imguiDescriptorSet;
 

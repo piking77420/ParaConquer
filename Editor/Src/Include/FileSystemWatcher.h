@@ -64,15 +64,14 @@ struct FileWatcherCreateInfo
 class FileSystemWatcher
 {
 public:
-	std::mutex resourceChangeMutex;
+	void Stop();
+
+	void LauchWatcher(const FileWatcherCreateInfo& _fileWatcherCreateInfo);
 
 	FileSystemWatcher() = default;
 
 	~FileSystemWatcher();
 
-	void LauchWatcher(const FileWatcherCreateInfo& _fileWatcherCreateInfo);
-
-	bool ResourceDirty(std::filesystem::path* _outItemFile);
 
 private:
 

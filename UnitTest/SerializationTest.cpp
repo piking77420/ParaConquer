@@ -341,3 +341,13 @@ TEST(Serialization, ISeriazable)
     
 }
 
+REFLECT(std::filesystem::path)
+
+TEST(TestReflection, FileSystemPath)
+{
+    auto s = std::filesystem::current_path();
+    Serializer::Serialize(s, "FileSytem.test");
+    std::filesystem::path s2;
+    Serializer::DeSerialize(&s, "FileSytem.test");
+    EXPECT_TRUE(s == s2);
+}

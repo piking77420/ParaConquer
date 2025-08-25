@@ -13,6 +13,7 @@
 #include "Physics/RigidBody.hpp"
 #include "World/Transform.hpp"
 #include "ShaderCompiler.hpp"
+#include "AssetBrowser.hpp"
 #include "Reflection/Reflector.hpp"
 
 BEGIN_EDITOR_PCCORE
@@ -103,6 +104,7 @@ private:
     
     EditorRenderer m_EditorRenderer;
 
+    AssetBrowser m_AssetBrowser;
 
 };
 

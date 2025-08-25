@@ -60,6 +60,7 @@ enum struct TypeNatureMetaDataEnum
     BitSet,
     Set,
     SparseSet,
+    FileSystem,
 };
 
 struct ReflectedBitSet
@@ -245,7 +246,6 @@ struct is_sparse_set : std::false_type {};
 
 template <typename T>
 struct is_sparse_set<SpareSet<T>> : std::true_type {};
-
 
 
 template <typename T>

@@ -18,7 +18,7 @@ static constexpr bool CreateBasicsResource = true;
 void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
-
+    /*
     auto s = ResourceManager::Create<Mesh>("RoundedCube.obj", "Assets/Meshs/Obj/RoundedCube.obj");
 
     auto mesh1 = ResourceManager::Create<Mesh>("Suad.obj", "Assets/Meshs/Obj/Quad.obj");
@@ -38,7 +38,7 @@ void ResourceManager::InitPath()
     auto texture1 = ResourceManager::Create<Texture2D>("DiamondBlock.jpg", "Assets/textures/DiamondBlock.jpg");
 
     auto texture2 = ResourceManager::Create<Texture2D>("EmerauldBlock.png","Assets/textures/EmerauldBlock.png");
-
+  
     
     const SamplerCreateInfo info =
         {
@@ -49,7 +49,7 @@ void ResourceManager::InitPath()
         .v = SamplerAddressMode::REPEAT,
         .w = SamplerAddressMode::REPEAT
         };
-    ResourceManager::Create<PC_CORE::Sampler>(info);
+    ResourceManager::Create<PC_CORE::Sampler>(info);*/
 
     SamplerCreateInfo ClampToEdgeInfo =
     {
@@ -60,7 +60,7 @@ void ResourceManager::InitPath()
         .v = SamplerAddressMode::CLAMP_TO_EDGE,
         .w = SamplerAddressMode::CLAMP_TO_EDGE
         };
-    ResourceManager::Create<PC_CORE::Sampler>(ClampToEdgeInfo);
+    ResourceManager::Create<PC_CORE::Sampler>(ClampToEdgeInfo);  
 }
 
 void ResourceManager::Destroy()

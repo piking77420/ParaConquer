@@ -241,9 +241,6 @@ void View::CreateDescritproSets()
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Rendering);
 
-	std::shared_ptr<PC_CORE::Sampler> sampler = PC_CORE::ResourceManager::Get<PC_CORE::Sampler>("LinearRepeat");
-
-
 	const UniformBufferDescriptor cameraBufferDescritptor
 	{
 		.buffer = &m_Renderer->uniformBuffers.cameraUniformBuffer,
@@ -256,7 +253,7 @@ void View::CreateDescritproSets()
 
 	const ImageSamplerDescriptor skyboxCubeMapDescritptor
 	{
-		.sampler = sampler.get(),
+		.sampler = &m_Renderer->linearReapeat,
 		.texture = m_Renderer->m_Cubemap.lock().get(),
 		.imageState = PC_CORE::ImageState::ShaderReadOptimal
 	};
@@ -405,7 +402,7 @@ void View::CreateDescritproSets()
 
 		const ImageSamplerDescriptor finalImageDescrotproSet
 		{
-			.sampler = sampler.get(),
+			.sampler = &m_Renderer->linearReapeat,
 			.texture = &forwardTexture.color,
 			.imageState = PC_CORE::ImageState::General
 		};

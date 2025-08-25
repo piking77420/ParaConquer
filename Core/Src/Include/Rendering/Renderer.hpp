@@ -69,6 +69,8 @@ public:
 
     RenderPasses renderPasses;
 
+    Sampler linearReapeat;
+
     std::weak_ptr<Texture3D> m_Cubemap;
 
     PC_CORE_API void GetRenderingData(const RenderingWorldData& _newRenderingData);
@@ -101,7 +103,10 @@ private:
     ShaderProgramDescriptorSets* skyBoxCubeMapDescriptorSet;
 
     VertexBuffer m_CubeVertexBuffer;
+
+    Sampler m_SkyBoxSampler;
    
+
 #ifdef WITH_EDITOR
    std::unique_ptr<DebugDrawContext> m_DebugDrawContext;
 #endif

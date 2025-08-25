@@ -28,7 +28,7 @@ public:
 	PC_CORE_API void Render(CommandList* _commandBuffer);
 
 	// TO HANDLE NOT ONLY FRAME INFLIGHT TEXTURE
-	PC_CORE_API void CreateImguiVulkanTexture(Texture2D* _texture, VkDescriptorSet* _descriptors, size_t _descriptorsCount);
+	PC_CORE_API void CreateImguiVulkanTexture(const RhiTexture2D* _texture, const RhiSampler* _sampler, VkDescriptorSet* _descriptors, size_t _descriptorsCount);
 
 	PC_CORE_API void DestroyVulkanTexture(VkDescriptorSet* _descriptors, size_t _descriptorsCount);
 

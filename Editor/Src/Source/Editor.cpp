@@ -10,7 +10,8 @@
 #include "Editor.hpp"
 #include "Resources/ResourceManager.hpp"
 
-#include "AssetBrowser.hpp"
+
+#include "AssetBrowserWindow.hpp"
 #include "EditWorldWindow.hpp"
 #include "Hierachy.hpp"
 #include "Inspector.hpp"
@@ -233,10 +234,10 @@ void Editor::Init()
 	};
 
 	CompileShader();
+	m_AssetBrowser.SetPath("Assets");
+
 	gameApp.Init(appCreateInfo);
-
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
-
 
 	gameApp.renderer.swapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd) {
 		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
@@ -350,7 +351,7 @@ void Editor::RewindCommand()
 
 void Editor::InitTestScene()
 {
-
+	/*
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Editor);
 	PC_LOG("InitTestScene...")
@@ -391,7 +392,7 @@ void Editor::InitTestScene()
 	t->scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
 	PointLight& p = level.GetComponent<PointLight>(pointLight);
-	p.intensity = 5.f;
+	p.intensity = 5.f;*/
 }
 
 void Editor::DestroyTestScene()
@@ -447,7 +448,7 @@ void Editor::InitEditor()
 	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
 	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
 	editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
-	editorWindows.push_back(std::make_unique<AssetBrowser>(*this, "AssetBrowser"));
+	editorWindows.push_back(std::make_unique<AssetBrowserWindow>(*this, "AssetBrowser"));
 
 	PC_LOG("InitEditorSystem")
 		m_EditorRenderer = EditorRenderer(*this);

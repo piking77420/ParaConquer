@@ -60,6 +60,30 @@ void Renderer::Init()
     primaryCommandList = Rhi::CreateCommandList(commandListCreateInfo);
     swapChainPassCommandList = Rhi::CreateCommandList(commandListCreateInfo);
 
+    const PC_CORE::SamplerCreateInfo info =
+    {
+    .SamplerName = "LinearReapeat",
+    .magFilter = PC_CORE::Filter::LINEAR,
+    .minFilter = PC_CORE::Filter::LINEAR,
+    .u = PC_CORE::SamplerAddressMode::REPEAT,
+    .v = PC_CORE::SamplerAddressMode::REPEAT,
+    .w = PC_CORE::SamplerAddressMode::REPEAT
+    };
+
+    linearReapeat = PC_CORE::Sampler(info);
+
+    const PC_CORE::SamplerCreateInfo skyBoxSampler =
+    {
+        .SamplerName = "SkyBoxSampler",
+        .magFilter = Filter::LINEAR,
+        .minFilter = Filter::LINEAR,
+        .u = SamplerAddressMode::CLAMP_TO_EDGE,
+        .v = SamplerAddressMode::CLAMP_TO_EDGE,
+        .w = SamplerAddressMode::CLAMP_TO_EDGE
+    };
+
+    m_SkyBoxSampler = PC_CORE::Sampler(skyBoxSampler);
+
    
     InitCubeBuffers();
     CreateRenderPasss();
@@ -1082,7 +1106,7 @@ void Renderer::CreateDescriptorSets()
 
     ImageSamplerDescriptor skyboxCubeMapDescritptor
     {
-        .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
+        .sampler = &m_SkyBoxSampler,
         .texture = m_Cubemap.lock().get(),
         .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };

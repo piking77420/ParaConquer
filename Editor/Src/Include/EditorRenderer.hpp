@@ -43,6 +43,8 @@ private:
     std::vector<size_t> m_DirectionalLightIndices;
     std::vector<size_t> m_SpotLightIndices;
     std::vector<size_t> m_PointLightIndices;
+
+    PC_CORE::Sampler m_SpriteSampler;
     
     void DrawLightGizmo(PC_CORE::Renderer& _renderer, PC_CORE::CommandList* _commandList,
         const PC_CORE::RenderingContext& _renderingContext, const PC_CORE::RenderingWorldData* _renderingWorldData);

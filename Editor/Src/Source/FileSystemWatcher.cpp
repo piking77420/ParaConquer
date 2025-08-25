@@ -63,13 +63,16 @@ void FileSystemWatcher::LauchWatcher(const FileWatcherCreateInfo& _fileWatcherCr
 
 FileSystemWatcher::~FileSystemWatcher()
 {
+	Stop();
+}
+void FileSystemWatcher::Stop()
+{
 	if (m_Worker.watch)
 	{
 		m_Worker.watch = false;
 		CancelIoEx(m_Worker.fileHandle, reinterpret_cast<OVERLAPPED*>(&m_Worker.asyncObj[0]));
 		m_Worker.thread.join();
 	}
-
 }
 void FileSystemWatcher::WorkerMainLoop()
 {

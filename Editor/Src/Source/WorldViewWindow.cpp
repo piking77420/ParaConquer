@@ -16,6 +16,18 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
 {
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
+
+	const PC_CORE::SamplerCreateInfo info =
+	{
+	.SamplerName = "ViewPortImageSampler",
+	.magFilter = PC_CORE::Filter::LINEAR,
+	.minFilter = PC_CORE::Filter::LINEAR,
+	.u = PC_CORE::SamplerAddressMode::REPEAT,
+	.v = PC_CORE::SamplerAddressMode::REPEAT,
+	.w = PC_CORE::SamplerAddressMode::REPEAT
+	};
+
+    m_ViewPortSampler = PC_CORE::Sampler(info);
 }
 
 WorldViewWindow::~WorldViewWindow()
@@ -79,10 +91,10 @@ void WorldViewWindow::UpdateImguiViewPort()
             break;
         }
 
-    
+ 
     
     if (needFree) 
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_View->finalImage, imguiDescriptorSet.data(), imguiDescriptorSet.size());
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_View->finalImage.GetRhiTexture2D().get(), m_ViewPortSampler.GetRhiSampler().get(), imguiDescriptorSet.data(), imguiDescriptorSet.size());
     
 }
