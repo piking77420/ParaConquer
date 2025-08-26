@@ -15,7 +15,7 @@ BEGIN_PCCORE
 
         ~FileLoader() = delete;
 
-        static uint8_t* LoadFile(char const* _filename, int* _x, int* _y, Channel* _comp, Channel _channel);
+        static uint8_t* LoadImage(char const* _filename, int* _x, int* _y, Channel* _comp, Channel _channel);
 
         static void FreeData(uint8_t* _file);
     };

@@ -16,7 +16,7 @@ public:
 	
 	IMP_DYNAMIC_REFLECT()
 
-		PC_CORE_API    explicit Texture()
+	PC_CORE_API explicit Texture()
 	{
 		DYNAMIC_REFLECT_INIT;
 	}

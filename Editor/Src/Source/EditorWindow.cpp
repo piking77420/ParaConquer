@@ -14,6 +14,7 @@ EditorWindow::EditorWindow(Editor& _editor, const std::string& _name) : m_Editor
 void EditorWindow::Begin()
 {
     ImGui::Begin(name.c_str(), &isOpen, windowFlags);
+
     GetInfo();
 }
 

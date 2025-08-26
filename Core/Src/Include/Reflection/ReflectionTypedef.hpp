@@ -60,7 +60,7 @@ enum struct TypeNatureMetaDataEnum
     BitSet,
     Set,
     SparseSet,
-    FileSystem,
+    FileSystemPath,
 };
 
 struct ReflectedBitSet

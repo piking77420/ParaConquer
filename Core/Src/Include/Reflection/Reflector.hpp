@@ -270,7 +270,7 @@ private:
 
 		if constexpr (std::is_same_v<T, std::filesystem::path>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::FileSystem;
+			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::FileSystemPath;
 		}
 
 

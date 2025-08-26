@@ -78,10 +78,37 @@ ShaderSource::ShaderSource(const std::string& _name) : Resource(_name)
     
 }
 
-ShaderSource::ShaderSource(const std::string& _name, const std::string& _path) : Resource(_name)
+ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path) : Resource(_name)
 {
     DYNAMIC_REFLECT_INIT
-    ShaderSource::LoadFromFile(_path);
+
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Resource);
+
+    uint32_t formatIndex = -1;
+
+    if (!IsFormatValid(ShaderSourceFormat, GetFullExtension(_path.generic_string()), &formatIndex))
+    {
+        PC_LOGERROR("Shader invalid format")
+    }
+
+    m_ShaderType = static_cast<ShaderStageTypeFlag>(formatIndex);
+    m_PathToSource = _path;
+
+
+    PC_LOG("Compiling {} ", name);
+
+    std::vector<uint32_t> sourceSpriv;
+    if (!GetCompiledShaderSource(&sourceSpriv))
+    {
+        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
+        return;
+    }
+
+    std::string binaryName = GetShaderBinaryPath();
+    auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType, Editor::instance->editorData.graphicApi);
+
+    Resource::LinkDependencies(this, s.get());
 }
 
 void ShaderSource::Reload()
@@ -116,39 +143,6 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 
    *_buffer = std::move(code);
     return true;
-}
-
-void ShaderSource::LoadFromFile(const std::string& _path)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Resource);
-
-    Resource::LoadFromFile(_path);
-    uint32_t formatIndex = -1;
-
-    if (!IsFormatValid(ShaderSourceFormat, extension, &formatIndex))
-    {
-        PC_LOGERROR("Shader invalid format")
-    }
-
-    extension = ShaderSourceFormat[formatIndex];
-    m_ShaderType = static_cast<ShaderStageTypeFlag>(formatIndex);
-    m_PathToSource = _path;
-
-
-    PC_LOG("Try Compiling {} ", name);
-
-    std::vector<uint32_t> sourceSpriv;
-    if (!GetCompiledShaderSource(&sourceSpriv))
-    {
-        PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
-        return;
-    }
-
-    std::string binaryName = GetShaderBinaryPath();
-    auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType, Editor::instance->editorData.graphicApi);
-
-    Resource::LinkDependencies(this, s.get());
 }
 
 std::string ShaderSource::GetShaderBinaryPath()

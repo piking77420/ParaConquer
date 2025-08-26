@@ -15,15 +15,13 @@ public:
     
     bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
 
-    PC_CORE_API void LoadFromFile(const std::string& _path) override;
-
     IMP_DYNAMIC_REFLECT()
 
     explicit ShaderSource();
 
     explicit ShaderSource(const std::string& _name);
 
-    explicit ShaderSource(const std::string& _name, const std::string& _path);
+    explicit ShaderSource(const std::string& _name, const std::filesystem::path& path);
     
     ~ShaderSource() override = default;
 
@@ -31,7 +29,7 @@ private:
     
     PC_CORE::ShaderStageTypeFlag m_ShaderType;
 
-    std::string m_PathToSource;
+    std::filesystem::path m_PathToSource;
 
     std::string GetShaderBinaryPath();
 

@@ -11,9 +11,12 @@
 
 #include "Singleton.hpp"
 #include "Rendering/Sampler.hpp"
+#include "Math/ToolboxHeaderfile.hpp"
 
 BEGIN_EDITOR_PCCORE
 
+
+constexpr Tbx::Vector2f MIN_MAX_FILE_SPACING = Tbx::Vector2f(1.f, 1000.f);
 
 class AssetBrowserWindow : public EditorWindow
 {
@@ -28,24 +31,36 @@ public:
 
     ~AssetBrowserWindow() override;
 private:
-    struct AssetsBrowserIcons
+
+    struct AssetsBrowserIcon
     {
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(AssetsBrowserIcon)
+
+        DEFAULT_COPY_MOVE_OPERATIONS(AssetsBrowserIcon)
+
         VkDescriptorSet descritproSet;
         PC_CORE::Texture2D texure;
     };
 
-    std::mutex lock;
+    struct AssetBrowserOption
+    {
+        float spacing = 50.f;
+        float padding = 16.f;
+    }m_AssetBrowserOption{};
 
     PC_CORE::Sampler m_ImageSampler;
 
-    AssetsBrowserIcons m_FolderIcons;
+    AssetsBrowserIcon m_FolderIcon;
 
-    AssetsBrowserIcons m_TextureIcons;
-
+    AssetsBrowserIcon m_NullIcon;
 
     std::filesystem::path m_CurrenPath;
 
     std::filesystem::path m_SelectedItem;
+
+    std::unordered_map<std::string, AssetsBrowserIcon> m_FormatIconMap;
+
+    std::unordered_map<std::filesystem::path, std::string> m_PathStringCache;
 
     bool m_HasSelectedObject = false;
 
@@ -59,7 +74,7 @@ private:
 
     void OnFileSelectedClick();
 
-    const AssetsBrowserIcons& GetIcon();
+    void CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path);
 };
 
 END_EDITOR_PCCORE

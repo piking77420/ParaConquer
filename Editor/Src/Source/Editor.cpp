@@ -27,7 +27,7 @@
 #include "Resources/ShaderSource.hpp"
 #include "World/StaticMesh.hpp"
 #include "Serialize/Serializer.h"
-
+/*
 #include <Windows.h>      // For common windows data types and function headers
 #define STRICT_TYPED_ITEMIDS
 #include <Objbase.h>      // For COM headers
@@ -44,7 +44,7 @@
 
 #include "Serialize/Iseriazable.h"
 #include <Random> // pour std::mt19937 et std::uniform_real_distribution
-
+*/
 #include "Rendering/RenderSystem.hpp"
 
 using namespace PC_EDITOR_CORE;
@@ -112,7 +112,7 @@ void Editor::CompileShader()
 	}
 	// Tone Map
 	{
-		auto toneMap = ResourceManager::Create<ShaderSource>("Aces.comp.hlsl",
+		auto toneMap = ResourceManager::Create<ShaderSource>("Aces.cs.hlsl",
 			EDITOR_RESOURCE_PATH "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
 	}
 
@@ -179,6 +179,7 @@ void Editor::LookForEditorInit()
 
 void Editor::BasicOpenFile()
 {
+	/*
 	std::wstring fileToOpen;
 	HRESULT hr = CoInitialize(NULL);
 	if (SUCCEEDED(hr))
@@ -216,7 +217,7 @@ void Editor::BasicOpenFile()
 			pFileOpen->Release();
 		}
 		CoUninitialize();
-	}
+	}*/
 }
 
 
@@ -274,6 +275,8 @@ void Editor::UpdateEditor()
 	//ImGui::ShowDemoWindow(&open);
 
 	dockSpace.BeginDockSpace();
+	ImGui::PushFont(editorData.editorFont.normal); // push normal font
+
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -324,6 +327,7 @@ void Editor::UpdateEditor()
 		sub->Update();
 
 	EditorCommandUpdate();
+	ImGui::PopFont();
 	dockSpace.EndDockSpace();
 
 	{
@@ -442,17 +446,43 @@ void Editor::InitEditor()
 {
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Editor);
-	PC_LOG("InitEditorWindow...")
-
+	{
+		PC_LOG("InitEditorWindow...")
 		editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
-	editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
-	editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
-	editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
-	editorWindows.push_back(std::make_unique<AssetBrowserWindow>(*this, "AssetBrowser"));
+		editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
+		editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
+		editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
+		editorWindows.push_back(std::make_unique<AssetBrowserWindow>(*this, "AssetBrowser"));
+	}
+	
 
-	PC_LOG("InitEditorSystem")
+	{
+		PC_LOG("InitEditorSystem")
 		m_EditorRenderer = EditorRenderer(*this);
-	m_EditorRenderer.PushCustomCommand();
+		m_EditorRenderer.PushCustomCommand();
+	}
+
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		PC_LOG("Load Font")
+		auto l = [&](EditorFont* _f, const char* _fontPath)
+		{
+			_f->tiny = io.Fonts->AddFontFromFileTTF(_fontPath, 11.f);
+			_f->small = io.Fonts->AddFontFromFileTTF(_fontPath, 13.f);
+			_f->normal = io.Fonts->AddFontFromFileTTF(_fontPath, 15.f);
+			_f->big = io.Fonts->AddFontFromFileTTF(_fontPath, 16.f);
+			_f->veryBig = io.Fonts->AddFontFromFileTTF(_fontPath, 21.f);
+		};
+
+		l(&editorData.editorFont, EDITOR_RESOURCE_PATH"/Font/Verdana.ttf");
+		l(&editorData.editorFontItalic, EDITOR_RESOURCE_PATH"/Font/Verdana-Italic.ttf");
+
+		unsigned char* tex_pixels = nullptr;
+		int tex_w = 0, tex_h = 0;
+		io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
+		io.FontDefault = editorData.editorFont.big;
+	}
 }
 
 void Editor::EditorCommandUpdate()

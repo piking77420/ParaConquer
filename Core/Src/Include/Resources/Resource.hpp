@@ -23,13 +23,10 @@ class ResourceManager;
 class Resource : public ISeriazable
 {
 public:
+    static PC_CORE_API void LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild);
 
     std::string name;
-    
-    std::string extension;
-
-    PC_CORE_API virtual void LoadFromFile(const std::string& _path);
-    
+        
     PC_CORE_API void QueryType() override = 0;
 
     // Reload base on modificated parent ?
@@ -42,8 +39,6 @@ public:
     {
         PC_LOG("Reload {}", name)
     }
-
-    static PC_CORE_API void LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild);
 
     // Reload 
     PC_CORE_API void BroadCastReload();
@@ -91,6 +86,9 @@ protected:
     {
         return m_ChildsResource;
     }
+    
+protected:
+    PC_CORE_API static std::string GetFullExtension(const std::string& _path);
 
 private:
     friend ResourceManager; // Only the ResourceManager is friend, he in charge of loading resource after all 
@@ -101,7 +99,6 @@ private:
 
     std::atomic<bool> m_IsLoaded;
 
-    static std::string GetFullExtension(const std::string& _path);
     
     REFLECT(Resource)
     REFLECT_MEMBER(Resource, name)

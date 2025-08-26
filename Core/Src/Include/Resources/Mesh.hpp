@@ -20,7 +20,7 @@ public:
 
     ModelFormat meshFormat;
 
-    PC_CORE_API void LoadFromFile(const std::string& _path) override;
+    void LoadFromFile(const std::string& _path);
 
     PC_CORE_API IMP_DYNAMIC_REFLECT()
 

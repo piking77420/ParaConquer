@@ -8,7 +8,7 @@
 
 #include "EditorHeader.hpp"
 
-#include "Resources/ResourceManager.hpp";
+#include "Resources/ResourceManager.hpp"
 
 constexpr size_t MAX_SYS_PATH = 1024;
 constexpr size_t SYSTEM_FILE_NOTIFCATION_BUFFER_SIZE = 1024;

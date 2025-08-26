@@ -11,14 +11,14 @@ BEGIN_EDITOR_PCCORE
 struct AssetBrowserData
 {
     std::unordered_map<PC_CORE::Guid, Asset> m_Assets;
-    std::unordered_map<std::filesystem::path, PC_CORE::Guid> m_PathToAssetsGuid;
+    std::unordered_map<std::filesystem::path, PC_CORE::Guid> m_PathToAssetsGuid; 
+
 
     REFLECT(AssetBrowserData)
     REFLECT_MEMBER(AssetBrowserData, m_Assets)
     REFLECT_MEMBER(AssetBrowserData, m_PathToAssetsGuid)
 
 };
-
 
 class AssetBrowser : private AssetBrowserData
 {

@@ -183,7 +183,7 @@ void AssetBrowser::IsDirectoryHasBeenAdded(const std::filesystem::path& _path)
         }
         else
         {
-            if (!m_PathToAssetsGuid.contains(entry))
+            if (!m_PathToAssetsGuid.contains(entry.path()))
             {
                 CreateAsset(entry);
             }

@@ -37,7 +37,7 @@ void Mesh::LoadFromFile(const std::string& _path)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
-
+    /*
     Resource::LoadFromFile(_path);
     uint32_t formatIndex = -1;
 
@@ -62,7 +62,7 @@ void Mesh::LoadFromFile(const std::string& _path)
     extension = ModelSourceFormat.at(formatIndex);
     vertexBuffer = VertexBuffer(verticies.data(), verticies.size(), PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Static);
     indexBuffer = IndexBuffer(indicies.data(), indicies.size(),PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Static);
-    
+    */
 }
 
 

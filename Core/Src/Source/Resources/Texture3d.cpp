@@ -15,7 +15,7 @@ PC_CORE::Texture3D::Texture3D(const std::string& _name, const std::array<std::st
     int height{};
 
     for (size_t i = 0; i < 6; i++)
-        datas[i] = FileLoader::LoadFile(_maps[i].c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
+        datas[i] = FileLoader::LoadImage(_maps[i].c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
     m_TextureChannel = Channel::RGBA;
 
     // TO DO HANDLE MIPMAP

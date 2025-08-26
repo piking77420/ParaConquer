@@ -145,7 +145,7 @@ void Inspector::ShowEntity(PC_CORE::EntityId _id)
         PC_CORE::Component* component = reinterpret_cast<PC_CORE::Component*>(&arr->Get(_id));
 
         const char* componentName = m_ComponentReflected[i]->name.c_str();
-        ImGui::Text(componentName);
+        ImGui::TextUnformatted(componentName);
         ImGui::Spacing();
 
         ImGui::PushID(static_cast<int>(componentTypeId));

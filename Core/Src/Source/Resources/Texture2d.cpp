@@ -21,7 +21,7 @@ Texture2D::Texture2D(const std::string& _name, const std::string& _path) : Textu
 {
     DYNAMIC_REFLECT_INIT
     
-    LoadFromFile(_path);
+    LoadTextureFromPath(_path);
 }
 
 Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo) : m_Size(_createTextureInfo.width, _createTextureInfo.height)
@@ -38,14 +38,12 @@ Texture2D::~Texture2D()
 {
 }
 
-void Texture2D::LoadFromFile(const std::string& _path)
+void Texture2D::LoadTextureFromPath(const std::string& _path)
 {
-    Resource::LoadFromFile(_path);
-
     int width;
     int height;
 
-    uint8_t* pixels = FileLoader::LoadFile(_path.c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
+    uint8_t* pixels = FileLoader::LoadImage(_path.c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
     if (!pixels)
     {
         PC_LOGERROR("failed to load texture image!");

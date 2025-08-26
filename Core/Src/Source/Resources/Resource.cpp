@@ -8,15 +8,7 @@
 using namespace PC_CORE;
 
 #include <Filesystem>
-void Resource::LoadFromFile(const std::string& _path)
-{
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Resource);
 
-	std::filesystem::path pathFileName = std::filesystem::path(_path).filename();
-	name = pathFileName.generic_string();	
-	extension = GetFullExtension(_path);
-}
 
 void Resource::LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild)
 {
@@ -57,7 +49,6 @@ Resource& Resource::operator=(const Resource& _other) noexcept
 {
 	ISeriazable::operator=(_other);
 	name = _other.name;
-	extension = _other.extension;
 	m_Guid = Guid::New();
 	m_ChildsResource = _other.m_ChildsResource;
 	m_ParentsResource = _other.m_ParentsResource;
@@ -69,7 +60,6 @@ Resource& Resource::operator=(Resource&& _other) noexcept
 {
 	ISeriazable::operator=(_other);
 	name = std::move(_other.name);
-	extension = std::move(_other.extension);
 	m_Guid = Guid::New();
 	m_ChildsResource = std::move(_other.m_ChildsResource);
 	m_ParentsResource = std::move(_other.m_ParentsResource);
@@ -79,7 +69,7 @@ Resource& Resource::operator=(Resource&& _other) noexcept
 
 
 Resource::Resource(const Resource& _other) noexcept : ISeriazable(_other), 
-name(_other.name), extension(_other.extension),
+name(_other.name),
 m_Guid(Guid::New()), m_ChildsResource(_other.m_ChildsResource), m_ParentsResource(_other.m_ParentsResource)
 {
 	
@@ -89,7 +79,6 @@ Resource::Resource(Resource&& _other) noexcept
 {
 	ISeriazable::operator=(_other);
 	name = std::move(_other.name);
-	extension = std::move(_other.extension);
 	m_Guid = _other.m_Guid;
 	m_ChildsResource = std::move(_other.m_ChildsResource);
 	m_ParentsResource = std::move(_other.m_ParentsResource);

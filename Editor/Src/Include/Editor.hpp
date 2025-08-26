@@ -18,6 +18,16 @@
 
 BEGIN_EDITOR_PCCORE
 
+struct EditorFont
+{
+	ImFont* tiny;
+	ImFont* small;
+	ImFont* normal;
+	ImFont* big;
+	ImFont* veryBig;
+};
+
+
 enum struct EditorInitData : uint8_t 
 {
     PROJECT_ABSOLUTE_PATH,
@@ -40,6 +50,9 @@ struct ProjectData
 
 struct EditorData
 {
+    EditorFont editorFont;
+    EditorFont editorFontItalic;
+
     ProjectData projectData;
     PC_CORE::GraphicAPI graphicApi;
 };

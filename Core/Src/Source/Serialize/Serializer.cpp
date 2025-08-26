@@ -346,6 +346,14 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
             
             return;
         }
+    case TypeNatureMetaDataEnum::FileSystemPath:
+        {
+        const std::filesystem::path& reflectedSparSet = *reinterpret_cast<const std::filesystem::path*>(objetPtr);
+        const auto s = reflectedSparSet.generic_string();
+
+        _jsonFile[CONTAINER_SIZE] = s.size();
+        _jsonFile["string"] = s.c_str();
+        }
     case TypeNatureMetaDataEnum::None:
     default:
         break;
@@ -740,6 +748,20 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
             
             return;
         }
+
+    case TypeNatureMetaDataEnum::FileSystemPath:
+    {
+        const std::filesystem::path& reflectedSparSet = *reinterpret_cast<const std::filesystem::path*>(objetPtr);
+        std::string s;
+        s.resize(_jsonFile[CONTAINER_SIZE]);
+        std::string_view v = _jsonFile["string"];
+
+        memcpy(s.data(), v.data(), s.size());
+
+        std::filesystem::path* p = reinterpret_cast<std::filesystem::path*>(objetPtr);
+        *p = std::filesystem::path(std::move(s));
+       
+    }
     case TypeNatureMetaDataEnum::None:
     default:
         break;
@@ -769,12 +791,20 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 }
 
 
-void Serializer::Derializing(uint8_t* _objetPtr, const std::string&_fileToSerialize, TypeId _typeKey)
+void Serializer::Derializing(uint8_t* _objetPtr, const std::string& _fileToSerialize, TypeId _typeKey)
 {
+    PERF_REGION_SCOPED;
+
     json j;
     std::ifstream f(_fileToSerialize);
-    if (f.is_open())
+    if (!f.is_open())
     {
+        f.close();
+        return;
+    }
+
+    {
+
         PERF_REGION_SCOPED_NAMED("Parse JSON");
         j = json::parse(f);
         f.close();
