@@ -6,6 +6,16 @@
 #include <Vulkan/Vulkan.hpp>
 
 
+struct ImguiImage
+{
+	DEFAULT_CONSTRUCTOR_DESTRUCTOR(ImguiImage)
+
+		DEFAULT_COPY_MOVE_OPERATIONS(ImguiImage)
+
+		VkDescriptorSet descritproSet;
+	PC_CORE::Texture2D texure;
+};
+
 BEGIN_PCCORE
 
 #define IMGUI_RENDER_DEBUG_COLOR {0,1,0,1}

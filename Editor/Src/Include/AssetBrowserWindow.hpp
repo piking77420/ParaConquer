@@ -8,6 +8,7 @@
 #include "Resources/Resource.hpp"
 #include "FileSystemWatcher.h"
 #include "Resources/Texture2d.hpp"
+#include "Io/ImguiContext.h"
 
 #include "Singleton.hpp"
 #include "Rendering/Sampler.hpp"
@@ -32,33 +33,22 @@ public:
     ~AssetBrowserWindow() override;
 private:
 
-    struct AssetsBrowserIcon
-    {
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(AssetsBrowserIcon)
-
-        DEFAULT_COPY_MOVE_OPERATIONS(AssetsBrowserIcon)
-
-        VkDescriptorSet descritproSet;
-        PC_CORE::Texture2D texure;
-    };
-
     struct AssetBrowserOption
     {
         float spacing = 50.f;
         float padding = 16.f;
     }m_AssetBrowserOption{};
 
-    PC_CORE::Sampler m_ImageSampler;
 
-    AssetsBrowserIcon m_FolderIcon;
+    ImguiImage m_FolderIcon;
 
-    AssetsBrowserIcon m_NullIcon;
+    ImguiImage m_NullIcon;
 
     std::filesystem::path m_CurrenPath;
 
     std::filesystem::path m_SelectedItem;
 
-    std::unordered_map<std::string, AssetsBrowserIcon> m_FormatIconMap;
+    std::unordered_map<std::string, ImguiImage> m_FormatIconMap;
 
     std::unordered_map<std::filesystem::path, std::string> m_PathStringCache;
 

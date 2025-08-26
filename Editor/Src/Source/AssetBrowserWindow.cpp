@@ -19,24 +19,14 @@ AssetBrowserWindow::AssetBrowserWindow(Editor& _editor, const std::string& _name
 	m_CurrenPath = AssetBrowser::GetInstance().GetBasePath();
 	windowFlags |= ImGuiWindowFlags_MenuBar;
 
-	const PC_CORE::SamplerCreateInfo info =
-	{
-	.SamplerName = "ImguiImageSampler",
-	.magFilter = PC_CORE::Filter::LINEAR,
-	.minFilter = PC_CORE::Filter::LINEAR,
-	.u = PC_CORE::SamplerAddressMode::REPEAT,
-	.v = PC_CORE::SamplerAddressMode::REPEAT,
-	.w = PC_CORE::SamplerAddressMode::REPEAT
-	};
-
-	m_ImageSampler = PC_CORE::Sampler(info);
+	const PC_CORE::Sampler& s = m_Editor->editorData.nearestSampler;
 
 	m_FolderIcon.texure = PC_CORE::Texture2D("Folder.png", EDITOR_RESOURCE_PATH "/Icons/Folder.png");
-	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.GetRhiTexture2D().get(), m_ImageSampler.GetRhiSampler().get(), &m_FolderIcon.descritproSet, 1);
+	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.GetRhiTexture2D().get(),s.GetRhiSampler().get(), &m_FolderIcon.descritproSet, 1);
 
 
 	m_NullIcon.texure = PC_CORE::Texture2D("Null.png", EDITOR_RESOURCE_PATH "/Icons/Null.png");
-	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.GetRhiTexture2D().get(), m_ImageSampler.GetRhiSampler().get(), &m_NullIcon.descritproSet, 1);
+	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.GetRhiTexture2D().get(),s.GetRhiSampler().get(), &m_NullIcon.descritproSet, 1);
 
 	CreateAssetsBrowserIcon(".png", EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
 	CreateAssetsBrowserIcon(".jpg", EDITOR_RESOURCE_PATH "/Icons/JpgIcon.png");
@@ -97,7 +87,9 @@ void PC_EDITOR_CORE::AssetBrowserWindow::Update()
 		ImGui::EndPopup();
 	}
 
+	ImGui::PushFont(m_Editor->editorData.editorFont.veryBig);
 	ImGui::Text(m_CurrenPath.generic_string().c_str());
+	ImGui::PopFont();
 	RenderDirectories();
 
 	if (!m_HasSelectedObject &&
@@ -135,6 +127,8 @@ void AssetBrowserWindow::CreateAsset() const
 void AssetBrowserWindow::RenderDirectories()
 {
 	PERF_REGION_SCOPED;
+	ImGui::PushFont(m_Editor->editorData.editorFont.normal);
+
 
 	const float columnSpacing = m_AssetBrowserOption.spacing;
 	const float padding = m_AssetBrowserOption.padding;
@@ -176,7 +170,7 @@ void AssetBrowserWindow::RenderDirectories()
 
 		if (entry.is_directory())
 		{
-			const AssetsBrowserIcon& icon = m_FolderIcon;
+			const ImguiImage& icon = m_FolderIcon;
 
 			ImGui::Image((ImTextureID)icon.descritproSet, { thumbnailSize, thumbnailSize }, { 0, 0 }, { 1, 1 });
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -218,6 +212,7 @@ void AssetBrowserWindow::RenderDirectories()
 	}
 
 	ImGui::Columns(1);
+	ImGui::PopFont();
 }
 
 void AssetBrowserWindow::CreateFile(const std::string& _filename) const
@@ -275,9 +270,12 @@ void AssetBrowserWindow::OnFileSelectedClick()
 
 void AssetBrowserWindow::CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path)
 {
-	AssetsBrowserIcon newIcon;
+	ImguiImage newIcon;
 	newIcon.texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());
-	m_Editor->IMGUIContext.CreateImguiVulkanTexture(newIcon.texure.GetRhiTexture2D().get(), m_ImageSampler.GetRhiSampler().get(), &newIcon.descritproSet, 1);
+	m_Editor->IMGUIContext.CreateImguiVulkanTexture(
+		newIcon.texure.GetRhiTexture2D().get(), 
+		m_Editor->editorData.nearestSampler.GetRhiSampler().get(), 
+		&newIcon.descritproSet, 1);
 
 	m_FormatIconMap[std::string(_format)] = std::move(newIcon);
 }

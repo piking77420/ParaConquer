@@ -27,7 +27,6 @@ struct EditorFont
 	ImFont* veryBig;
 };
 
-
 enum struct EditorInitData : uint8_t 
 {
     PROJECT_ABSOLUTE_PATH,
@@ -52,6 +51,7 @@ struct EditorData
 {
     EditorFont editorFont;
     EditorFont editorFontItalic;
+    PC_CORE::Sampler nearestSampler;
 
     ProjectData projectData;
     PC_CORE::GraphicAPI graphicApi;
@@ -88,24 +88,25 @@ public:
     void UpdateEditor();
 
     static inline Editor* instance = nullptr;
-    
-    EditorData editorData;
 
+    ShaderCompiler shaderCompiler;
+
+    PC_CORE::App gameApp;
+
+    PC_CORE::IMGUIContext IMGUIContext;
+    
     DockSpace dockSpace;
     
-    EditableSelectedObj selectedObject;
-    
-    PC_CORE::IMGUIContext IMGUIContext;
-
     std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
 
     std::vector<std::unique_ptr<EditorWindow>> editorWindows;
     
     std::vector<std::unique_ptr<EditorCommand>> editorCommands;
 
-    ShaderCompiler shaderCompiler;
+    EditableSelectedObj selectedObject;
 
-    PC_CORE::App gameApp;
+    EditorData editorData;
+
 private:
     void CompileShader();
 

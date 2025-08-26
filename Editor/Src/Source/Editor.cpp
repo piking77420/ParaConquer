@@ -440,12 +440,33 @@ void Editor::Run(bool* _appShouldClose)
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();
+	// to do move this 
+	editorData.nearestSampler.~Sampler();
 }
 
 void Editor::InitEditor()
 {
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Editor);
+
+	{
+		PC_LOG("Init Editor NearestSampler...")
+
+		const PC_CORE::SamplerCreateInfo info =
+		{
+		.SamplerName = "ImguiImageSampler",
+		.magFilter = PC_CORE::Filter::LINEAR,
+		.minFilter = PC_CORE::Filter::LINEAR,
+		.u = PC_CORE::SamplerAddressMode::REPEAT,
+		.v = PC_CORE::SamplerAddressMode::REPEAT,
+		.w = PC_CORE::SamplerAddressMode::REPEAT
+		};
+
+		editorData.nearestSampler = PC_CORE::Sampler(info);
+
+	}
+
+
 	{
 		PC_LOG("InitEditorWindow...")
 		editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
