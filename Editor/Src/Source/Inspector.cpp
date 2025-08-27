@@ -219,23 +219,35 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
         HandleShowAble(_memberPtr, type, _member);
         return;
     }
-    
-    if (type.metaData.typeNatureMetaData.metaDataTypeEnum == PC_CORE::TypeNatureMetaDataEnum::WeakPtr 
-        && PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(type.metaData.typeNatureMetaData.metaDataType.weakPtr.type)))
-    {
-        // only for little
-        uint64_t ptr = (uint64_t)(*reinterpret_cast<uint64_t*>(_memberPtr));
-        ImGui::Text("Address %lld", ptr);
-        HandlePtr(_memberPtr, type, _member);
-    }
-    if (typeFlag & PC_CORE::TypeFlagBits::COMPOSITE)
-    {
-        for (auto& member : type.metaData.members)
+
+    std::visit([&](auto&& arg) 
         {
-            ShowMember(_memberPtr + member.offset, member);
-        }
-    }
-    
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, PC_CORE::ReflectedWeakPtr>)
+            {
+                const PC_CORE::ReflectedWeakPtr& wkPtr = std::get<PC_CORE::ReflectedWeakPtr>(type.metaData.data);
+
+                if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(wkPtr.type)))
+                {
+                    // only for little
+                    uint64_t ptr = (uint64_t)(*reinterpret_cast<uint64_t*>(_memberPtr));
+                    ImGui::Text("Address %lld", ptr);
+                    HandlePtr(_memberPtr, type, _member);
+                    return;
+                }
+            }
+
+            if (typeFlag & PC_CORE::TypeFlagBits::COMPOSITE)
+            {
+                for (auto& member : type.metaData.members)
+                {
+                    ShowMember(_memberPtr + member.offset, member);
+                }
+            }
+
+        }, 
+        type.metaData.data);
+
 }
 
 bool Inspector::IsShowable(PC_CORE::TypeId type_id)
@@ -244,7 +256,7 @@ bool Inspector::IsShowable(PC_CORE::TypeId type_id)
         m_SpecialType.begin(), m_SpecialType.end(), 
         [type_id](const PC_CORE::ReflectedType* reflectedType)
         {
-            return reflectedType->typeId == type_id; // Assuming GetTypeId() returns TypeId
+            return reflectedType->typeId == type_id; 
         });
 
     return it != m_SpecialType.end();
@@ -424,7 +436,7 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
         }
 
         // remove the type of the pointer
-        PC_CORE::ResourceManager::ForEach(type.metaData.typeNatureMetaData.metaDataType.weakPtr.type, l);
+        PC_CORE::ResourceManager::ForEach(std::get<PC_CORE::ReflectedWeakPtr>(type.metaData.data).type, l);
 
         ImGui::End();
 

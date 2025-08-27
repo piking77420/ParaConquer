@@ -1,9 +1,11 @@
-﻿    #pragma once
+﻿#pragma once
 #include "CoreHeader.hpp"
-#include <Vector>
-#include <String>
-#include <Map>
-#include <Bitset>
+#include <variant>
+#include <vector>
+#include <string>
+#include <map>
+#include <bitset>
+#include <magic_enum/magic_enum.hpp>
 
 #include "DataStructure/SpareSet.hpp"
 
@@ -25,17 +27,13 @@ enum TypeFlagBits
   COMPOSITE  = 1 << 0,  // Composite of trivial type
 };
 
-
-
-
 enum MemberEnumFlag
 {
     NONE_MEMBER_ENUM_FLAG,
-    SERIALIZE,
-    COLOR,
-    HIDE_INSPECTOR,
+    SERIALIZE = 1 < 0,
+    COLOR = 1 < 2,
+    HIDE_INSPECTOR = 1 < 3,
 };
-
 
 struct Members
 {
@@ -45,49 +43,32 @@ struct Members
     uintmax_t memberFlag = 0;
 };
 
-
-
-enum struct TypeNatureMetaDataEnum
-{
-    None,
-    WeakPtr,
-    SharedPtr,
-    String,
-    Array,
-    Vector,
-    Map,
-    UnordoredMap,
-    BitSet,
-    Set,
-    SparseSet,
-    FileSystemPath,
-};
-
 struct ReflectedBitSet
 {
+    size_t count;
 };
 
-struct WeakPtr
+struct ReflectedWeakPtr
 {
     TypeId type;
 };
-struct SharedPtr
+struct ReflectedSharedPtr
 {
     TypeId type;
 };
 
-struct Array
+struct ReflectedString
+{
+    TypeId subType;
+};
+
+struct ReflectedArray
 {
     TypeId type;
     size_t size;
 };
 
-struct RelfectedString
-{
-    TypeId type;
-};
-
-struct Vector
+struct ReflectedVector
 {
     TypeId type;
 };
@@ -106,14 +87,12 @@ struct ReflectMapFunction
     uint64_t incrementFunc;
 };
 
-
-
 struct Set
 {
     TypeId type;
 };
 
-struct ReflectedSparset
+struct ReflectedSparseSet
 {
     TypeId denseVector;
     uint32_t denseVectorOffSet;
@@ -121,28 +100,44 @@ struct ReflectedSparset
     uint32_t spareVectorOffset;
 };
 
-struct TypeNatureMetaData
+struct ReflectedFileSystemPath
 {
-    TypeNatureMetaDataEnum metaDataTypeEnum = TypeNatureMetaDataEnum::None;
-    union TypeNatureMetaUnion
-    {
-        WeakPtr weakPtr;
-        SharedPtr sharedPtr;
-        RelfectedString relfectedString;
-        Array array;
-        Vector vector;
-        ReflectedMap mapReflected;
-        ReflectedBitSet bitSet;
-        ReflectedSparset reflectedSparset;
+    TypeId type;
+};
 
-    }metaDataType;
+struct EnumMember
+{
+    std::string name;
+    uint8_t value; // may replace to handle float uint16 etc
+};
+
+struct ReflectedEnum
+{
+    std::string name;
+    std::vector<EnumMember> members;
 };
 
 
 struct TypeMetaData
 {
-    TypeNatureMetaData typeNatureMetaData;
+    std::variant<
+        std::monostate,
+        ReflectedWeakPtr,
+        ReflectedSharedPtr,
+        ReflectedArray,
+        ReflectedVector,
+        ReflectedString,      
+        ReflectedMap,
+        ReflectedBitSet,
+        ReflectedSparseSet,  
+        ReflectedFileSystemPath,
+        ReflectedEnum> 
+        data;
     std::vector<Members> members;
+
+    DEFAULT_COPY_MOVE_OPERATIONS(TypeMetaData)
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(TypeMetaData)
+
 
     // Dont Support MultiHirietence
     // TODO Support MultiHirietence exemple handle interface

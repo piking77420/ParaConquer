@@ -64,3 +64,46 @@ TEST(TestReflection, DynamicReflectable)
     EXPECT_TRUE(testSerialaZable.GetTypeKey() == Reflector::GetTypeKey<TestDynamicReflectable>());
     EXPECT_TRUE(derivedTestSeriaZable.GetTypeKey() == Reflector::GetTypeKey<DerivedTestDynamicReflectable>()); 
 }
+
+enum EnumTest0 : uint8_t
+{
+    E0 = 0,
+    E2 = 2,
+    E3 = 3,
+};
+
+REFLECT(EnumTest0);
+
+
+TEST(TestReflection, EnumReflectionU8)
+{
+    const auto& t = PC_CORE::Reflector::GetEnum<EnumTest0>();
+    
+    EXPECT_EQ("EnumTest0", t.name);
+
+    for (size_t i = 0; i < t.members.size(); i++)
+    {
+        const auto& m = t.members[i];
+
+        switch (i)
+        {
+        case 0:
+            EXPECT_EQ(m.value, 0);
+            EXPECT_EQ(m.name, "E0");
+
+            break;
+        case 1:
+            EXPECT_EQ(m.value, 2);
+            EXPECT_EQ(m.name, "E2");
+            break;
+        case 2:
+            EXPECT_EQ(m.value, 3);
+            EXPECT_EQ(m.name, "E3");
+            break;
+        default:
+            break;
+        }
+
+    }
+
+}

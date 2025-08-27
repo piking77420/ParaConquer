@@ -10,6 +10,14 @@
 using namespace PC_CORE;
 
 
+enum TestEnum : uint8_t
+{
+    Red,
+    Green,
+    Blue,
+};
+REFLECT(TestEnum)
+
 struct SerializaStruct
 {
     float x;
@@ -23,6 +31,8 @@ struct SerializaStruct
     float array[4];
 
     Tbx::Quaternionf q;
+
+    TestEnum testEnum;
     
     REFLECT(SerializaStruct)
     REFLECT_MEMBER(SerializaStruct, x);
@@ -33,6 +43,9 @@ struct SerializaStruct
     REFLECT_MEMBER(SerializaStruct, array);
     REFLECT_MEMBER(SerializaStruct, q);
 
+    REFLECT_MEMBER(SerializaStruct, testEnum);
+
+
 };
 const SerializaStruct s =
     {
@@ -41,7 +54,8 @@ const SerializaStruct s =
     .z = std::numeric_limits<uint64_t>::max(),
     .w = {123.f, 0.24531684f, 1200.0f, 0356.f},
     .array = {1656948.f, 0.21366354f, static_cast<float>(M_PI), static_cast<float>(-M_PI)},
-    .q = Tbx::Quaternionf::Identity() 
+    .q = Tbx::Quaternionf::Identity(),
+    .testEnum = TestEnum::Blue
     };
 
 
@@ -66,6 +80,8 @@ TEST(Serialization, BasicSerialization)
     }
 
     EXPECT_EQ(s.q , s2.q);
+    EXPECT_EQ(s.testEnum, s2.testEnum);
+
 }
 
 
@@ -348,6 +364,6 @@ TEST(TestReflection, FileSystemPath)
     auto s = std::filesystem::current_path();
     Serializer::Serialize(s, "FileSytem.test");
     std::filesystem::path s2;
-    Serializer::DeSerialize(&s, "FileSytem.test");
+    Serializer::DeSerialize(&s2, "FileSytem.test");
     EXPECT_TRUE(s == s2);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EditorHeader.hpp"
-#include "Resource/Model.hpp"
+#include "Resources/Model.hpp"
 
 BEGIN_EDITOR_PCCORE
 
@@ -13,7 +13,7 @@ public:
 
 	ModelBuilder() = default;
 
-	~ModelBuilder() = default
+	~ModelBuilder() = default;
 private:
 
 };

@@ -14,11 +14,7 @@
 #include "Math/ToolboxTypedef.hpp"
 #include "Reflection/ReflectionTypedef.hpp"
 
-
-
 BEGIN_PCCORE
-
-
 
 class Reflector
 {
@@ -29,6 +25,9 @@ public:
 
 	template<typename T>
 	static const ReflectedType& GetType();
+
+	template<typename T>
+	static const ReflectedEnum& GetEnum();
 
 	PC_CORE_API static const ReflectedType& GetTypeFromRTTI(size_t typeIdFromRtti);
 
@@ -79,28 +78,27 @@ public:
 
 private:
 
-	constexpr PC_CORE_API  static std::string GetCorrectNameFromTypeId(const std::string& _name)
+	constexpr PC_CORE_API static std::string GetCorrectNameFromTypeId(const std::string& _name)
 	{
-		// Remove the nameSpace
-		const size_t firstIndex = _name.find_first_of("::", 0);
+		// Search for "::" to remove namespace
+		size_t firstIndex = _name.find("::");
 		std::string out;
 
-		if (firstIndex != std::numeric_limits<size_t>::max())
+		if (firstIndex != std::string::npos)
 		{
-			for (size_t i = firstIndex + 2; i < _name.size(); i++)
-				out.push_back(_name[i]);
+			out = _name.substr(firstIndex + 2);
 		}
 		else
 		{
-			const size_t secondIndex = _name.find_first_of(" ", 0);
-			if (firstIndex != std::numeric_limits<size_t>::max())
+			// Search for " " to remove "enum ", "class ", etc.
+			size_t secondIndex = _name.find(' ');
+			if (secondIndex != std::string::npos)
 			{
-				for (size_t i = secondIndex; i < _name.size(); i++)
-					out.push_back(_name[i]);
+				out = _name.substr(secondIndex + 1);
 			}
 			else
 			{
-				return _name;
+				return _name; // No namespace or keyword
 			}
 		}
 
@@ -143,76 +141,57 @@ private:
 		{
 			flags |= TypeFlagBits::COMPOSITE;
 		}
+#pragma region ReflectPtr
 		if constexpr (is_weak_ptr_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::WeakPtr;
-			WeakPtr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.weakPtr;
-
-			TypeId ptrType = GetTypeKey<typename T::element_type>();
-			if (!m_RelfectionMap.contains(ptrType))
-			{
+			ReflectedWeakPtr ptrtype{ GetTypeKey<typename T::element_type>() };
+			if (!m_RelfectionMap.contains(ptrtype.type))
 				PC_LOGERROR("Try to reflect ptr without reflect the type before");
-			}
-			ptrtype.type = ptrType;
-
+			typeMetaData->data = ptrtype;
 		}
 		if constexpr (is_shared_ptr_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::SharedPtr;
-			SharedPtr& ptrtype = typeMetaData->typeNatureMetaData.metaDataType.sharedPtr;
-
-			TypeId ptrType = GetTypeKey<typename T::element_type>();
-			if (!m_RelfectionMap.contains(ptrType))
-			{
+			ReflectedSharedPtr ptrtype{ GetTypeKey<typename T::element_type>() };
+			if (!m_RelfectionMap.contains(ptrtype.type))
 				PC_LOGERROR("Try to reflect ptr without reflect the type before");
-			}
-			ptrtype.type = ptrType;
-
+			typeMetaData->data = ptrtype;
 		}
+#pragma endregion ReflectPtr
+
+#pragma region ReflectArray
 
 		if constexpr (is_std_array_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Array;
-			Array& arrayType = typeMetaData->typeNatureMetaData.metaDataType.array;
-			arrayType.type = GetTypeKey<typename T::value_type>();
-			arrayType.size  = std::tuple_size_v<T>;
+			ReflectedArray array{ GetTypeKey<typename T::value_type>(), std::tuple_size_v<T> };
+			typeMetaData->data = array;
 		}
-
-
 		if constexpr (std::is_array_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Array;
-			Array& arrayType = typeMetaData->typeNatureMetaData.metaDataType.array;
-
-			ReflectType<std::remove_extent_t<T>>();
-			arrayType.type = GetTypeKey<std::remove_extent_t<T>>();
-			// Determine the size of the array
-			constexpr std::size_t arraySize = std::extent_v<T>;
-			arrayType.size = arraySize;
+			ReflectType<std::remove_extent_t<T>>(); 
+			ReflectedArray array{ GetTypeKey<std::remove_extent_t<T>>(), std::extent_v<T> };
+			typeMetaData->data = array;
 		}
+#pragma endregion ReflectArray
+
 		if constexpr (is_vector_v<T>)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::Vector;
-			Vector& vectorType = typeMetaData->typeNatureMetaData.metaDataType.vector;
+			ReflectedVector v{ GetTypeKey<typename std::remove_extent<typename T::value_type>::type>() };
 			ReflectType<typename std::remove_extent<typename T::value_type>::type>();
-
-			vectorType.type = GetTypeKey<typename std::remove_extent<typename T::value_type>::type>();
-
+			typeMetaData->data = v;
 		}
+
 		if constexpr (std::is_same_v<std::string, T> || std::is_same_v<std::wstring, T>)
 		{
 			bool constexpr isw = std::is_same_v<std::wstring, T>;
+			ReflectedString rs{ isw ? GetTypeKey<wchar_t>() : GetTypeKey<char>() };
 
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::String;
-			RelfectedString& relfectedString = typeMetaData->typeNatureMetaData.metaDataType.relfectedString;
-			relfectedString.type = isw ? GetTypeKey<wchar_t>() : GetTypeKey<char>();
+			typeMetaData->data = rs;
 		}
-		
+
 
 		if constexpr (is_unordered_map<T>::value || is_map<T>::value)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::UnordoredMap;
-			ReflectedMap& rm = typeMetaData->typeNatureMetaData.metaDataType.mapReflected;
+			ReflectedMap rm;
 			rm.key = GetTypeKey<typename T::key_type>();
 			rm.value = GetTypeKey<typename T::mapped_type>();
 
@@ -241,13 +220,13 @@ private:
 				.incrementFunc = *reinterpret_cast<uint64_t*>(&insertFunctionMapType),
 			};
 
+			typeMetaData->data = rm;
 			m_UnordoredMapReflectFunction.insert({ GetTypeKey<T>(), reflectMapFunction });
 		}
 
 		if constexpr (is_sparse_set<T>::value)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::SparseSet;
-			auto& sparsetReflected = typeMetaData->typeNatureMetaData.metaDataType.reflectedSparset;
+			ReflectedSparseSet sparsetReflected;
 			
 			// unsure that those type are reflected as well
 			ReflectType<std::vector<typename T::DenseType>>();
@@ -260,19 +239,15 @@ private:
 			sparsetReflected.spareVectorOffset = sizeof(std::vector<typename T::DenseType>);
 			sparsetReflected.denseVectorOffSet = 0;
 
+			typeMetaData->data = sparsetReflected;
 		}
 		
 
 		if constexpr (is_bit_set<T>::value)
 		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::BitSet;
+			//typeMetaData->typeNatureMetaData = ReflectedBitSet(T::size); // TODO
+			typeMetaData->data = ReflectedBitSet();
 		}
-
-		if constexpr (std::is_same_v<T, std::filesystem::path>)
-		{
-			typeMetaData->typeNatureMetaData.metaDataTypeEnum = TypeNatureMetaDataEnum::FileSystemPath;
-		}
-
 
 		if constexpr (!std::is_abstract_v<T>)
 		{
@@ -289,6 +264,26 @@ private:
 			typeMetaData->hashFun = nullptr;
 		}
 
+		if constexpr (std::is_same_v<T, std::filesystem::path>)
+		{
+			typeMetaData->data = ReflectedFileSystemPath(GetTypeKey<T>());
+		}
+
+		if constexpr (std::is_enum_v<T>)
+		{
+			ReflectedEnum reflectedEnum;
+
+			// Iterate all enum values using magic_enum
+			for (auto e : magic_enum::enum_values<T>()) {
+				reflectedEnum.members.emplace_back(EnumMember{
+					std::string(magic_enum::enum_name(e)),
+					static_cast<uint8_t>(e)
+					});
+			}
+			reflectedEnum.name = GetCorrectNameFromTypeId(typeid(T).name());
+			typeMetaData->data = std::move(reflectedEnum);
+		}
+
 		return flags;
 	}
 };
@@ -301,6 +296,18 @@ const ReflectedType& Reflector::GetType()
 		AddType<T>();
 
 	return m_RelfectionMap.at(tid);
+}
+
+template<typename T>
+static const ReflectedEnum& Reflector::GetEnum()
+{
+	static_assert(std::is_enum_v<T>);
+	
+	auto it = m_RelfectionMap.find(GetTypeKey<T>());
+	if (it == m_RelfectionMap.end())
+		AddType<T>();
+
+	return std::get<ReflectedEnum>(m_RelfectionMap.at(GetTypeKey<T>()).metaData.data);
 }
 
 template <typename T>
@@ -375,7 +382,7 @@ template <typename Holder, typename BaseClass>
 uint8_t Reflector::ReflectType()
 {
 	PERF_REGION_SCOPED;
-	
+
 	constexpr uint32_t KeyHolder = GetTypeKey<Holder>();
 
 	if (ContaintType<Holder>())
@@ -412,7 +419,6 @@ uint8_t Reflector::ReflectType()
 
 	return 0;
 }
-
 
 template <typename T>
 std::vector<const ReflectedType*> Reflector::GetAllTypesFrom()
