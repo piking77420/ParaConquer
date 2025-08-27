@@ -35,21 +35,17 @@ target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler.lib)
 else()
 find_package(Vulkan REQUIRED COMPONENTS Vulkan_dxc_LIBRARY)
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan dxc_lib)
-
 endif()
 
-#Copy Core DLL
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-    $<TARGET_FILE:Core> 
-    $<TARGET_FILE_DIR:Editor>)
 
-if (PROFILING)
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-    $<TARGET_FILE:Profiler> 
-    $<TARGET_FILE_DIR:Editor>)
-
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND_EXPAND_LISTS
+        COMMENT "Copying runtime DLLs to UnitTest output directory"
+    )
 endif()
 
 
@@ -63,7 +59,11 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE EDITOR_RESOURCE_PATH_W=L"${REL_PATH_FROM_TARGET}${EDITOR_RESOURCE_FOLDER_NAME}"
 )
 
+##  link Core
 target_link_libraries(${PROJECT_NAME} PUBLIC Core)
+
+## link Assimp
+target_link_libraries(${PROJECT_NAME} PUBLIC assimp)
 
 #target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)
 

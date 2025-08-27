@@ -4,3 +4,6 @@
 [submodule "tracy"]
 	path = tracy
 	url = https://github.com/piking77420/tracy.git
+[submodule "assimp"]
+	path = assimp
+	url = https://github.com/assimp/assimp.git

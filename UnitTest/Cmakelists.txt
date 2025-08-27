@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.26)
 
 project(UnitTest VERSION 0.1.0 LANGUAGES C CXX)
 
@@ -24,22 +24,21 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest_main)
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-        $<TARGET_FILE:Core> 
-        $<TARGET_FILE_DIR:UnitTest>
-    COMMENT "Copying Core.dll to UnitTest output directory"
-)
-
+## link Assimp
+target_link_libraries(${PROJECT_NAME} PUBLIC assimp)
 target_link_libraries(UnitTest PUBLIC Core)
-
 if (PROFILING)
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-    $<TARGET_FILE:Profiler> 
-    $<TARGET_FILE_DIR:UnitTest>)
-
 target_link_libraries(UnitTest PUBLIC Profiler)
+endif()
+
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND_EXPAND_LISTS
+        COMMENT "Copying runtime DLLs to UnitTest output directory"
+    )
 endif()
 
 

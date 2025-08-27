@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
+set(BUILD_SHARED_LIBS OFF)
 project(D3d12API VERSION 0.1.0 LANGUAGES C CXX)
 
 if(MSVC)

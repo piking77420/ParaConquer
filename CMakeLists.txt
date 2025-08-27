@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.26)
 
-option(PROFILING "Build profiling dependencies" OFF)
-option(BUILD_TEST "Build UnitTest" OFF)
+option(PROFILING "Build profiling dependencies" ON)
+option(BUILD_TEST "Build UnitTest" ON)
+
+
+## Force Assimp to not build Unit test
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE)
 
 add_compile_definitions(WITH_EDITOR=1)
 set(CMAKE_MODULE_PATH
@@ -12,25 +16,28 @@ set(CMAKE_MODULE_PATH
 
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
 
-#external first
-if (PROFILING)
+## Third Party
+add_subdirectory(assimp)
 
+## tracy-profiler
+if (PROFILING)
 #tracy-backend
 add_subdirectory(tracy)
 add_compile_definitions(PROFILING)
 add_compile_definitions(TRACY_ENABLE)
-
 endif()
-
-## tracy-profiler
 add_subdirectory(Profiler)
-add_subdirectory(MotionCore/MotionCore)
-add_subdirectory(VulkanAPI)
 
+# End of Third Party
+
+## static 
+add_subdirectory(VulkanAPI)
 if (WIN32)
 add_subdirectory(D3d12API)
 endif()
+add_subdirectory(MotionCore/MotionCore)
 
+## dynamic
 add_subdirectory(Core)
 
 
