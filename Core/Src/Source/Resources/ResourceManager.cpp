@@ -21,7 +21,7 @@ void ResourceManager::InitPath()
     /*
     auto s = ResourceManager::Create<Mesh>("RoundedCube.obj", "Assets/Meshs/Obj/RoundedCube.obj");
 
-    auto mesh1 = ResourceManager::Create<Mesh>("Suad.obj", "Assets/Meshs/Obj/Quad.obj");
+    auto mesh1 = ResourceManager::Create<Mesh>("Quad.obj", "Assets/Meshs/Obj/Quad.obj");
 
     auto mesh2 = ResourceManager::Create<Mesh>("Sphere.obj", "Assets/Meshs/Obj/Sphere.obj");
 
@@ -50,17 +50,6 @@ void ResourceManager::InitPath()
         .w = SamplerAddressMode::REPEAT
         };
     ResourceManager::Create<PC_CORE::Sampler>(info);*/
-
-    SamplerCreateInfo ClampToEdgeInfo =
-    {
-        .SamplerName = "ClampToEdge",
-        .magFilter = Filter::NEAREST,
-        .minFilter = Filter::NEAREST,
-        .u = SamplerAddressMode::CLAMP_TO_EDGE,
-        .v = SamplerAddressMode::CLAMP_TO_EDGE,
-        .w = SamplerAddressMode::CLAMP_TO_EDGE
-        };
-    ResourceManager::Create<PC_CORE::Sampler>(ClampToEdgeInfo);  
 }
 
 void ResourceManager::Destroy()

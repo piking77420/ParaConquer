@@ -10,6 +10,12 @@ using namespace PC_CORE;
 Texture2D::Texture2D()
 {
     DYNAMIC_REFLECT_INIT
+
+    if (!m_TexturePath.empty())
+    {
+        LoadTextureFromPath(m_TexturePath.generic_string());
+    }
+
 }
 
 Texture2D::Texture2D(const std::string& _name) : Texture(_name)

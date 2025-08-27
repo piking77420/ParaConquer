@@ -121,7 +121,6 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
 {
     Rhi& rhi = GetInstance();
 
-
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::None:

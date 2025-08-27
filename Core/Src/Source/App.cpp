@@ -30,7 +30,6 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
         };
     
     rhi = Rhi(createInfo);
-    ResourceManager::InitPath();
     renderer.Init();
     Time::Init();
 }

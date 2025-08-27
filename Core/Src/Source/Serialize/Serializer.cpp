@@ -380,7 +380,7 @@ void SerializeType(json& _jsonFile ,const uint8_t* objetPtr, TypeId _typeKey)
 
 
 
-void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, const std::string& _fileToSerialize, TypeId _typeKey)
+void PC_CORE::Serializer::Serializing(const uint8_t* objetPtr, TypeId _typeKey, const std::string& _fileToSerialize)
 {
     std::ofstream myfile(_fileToSerialize);
 
@@ -791,7 +791,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 }
 
 
-void Serializer::Derializing(uint8_t* _objetPtr, const std::string& _fileToSerialize, TypeId _typeKey)
+void Serializer::Derializing(uint8_t* _objetPtr, TypeId _typeKey, const std::string& _fileToSerialize)
 {
     PERF_REGION_SCOPED;
 

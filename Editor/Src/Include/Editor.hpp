@@ -27,20 +27,6 @@ struct EditorFont
 	ImFont* veryBig;
 };
 
-enum struct EditorInitData : uint8_t 
-{
-    PROJECT_ABSOLUTE_PATH,
-    COUNT
-};
-
-constexpr std::array<const char*, (uint8_t)(EditorInitData::COUNT)> EditorInitDataKeys =
-{
-    "PROJECT_ABSOLUTE_PATH"
-};
-
-constexpr const char* ParaConquerProjectFileFormat = ".Prproject";
-constexpr const char* ParaConquerEditorInitFile = "editor.ini";
-
 struct ProjectData
 {
     std::string projectName;
@@ -55,6 +41,8 @@ struct EditorData
 
     ProjectData projectData;
     PC_CORE::GraphicAPI graphicApi;
+
+    REFLECT(EditorData);
 };
 
 using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ResourceRef<PC_CORE::Resource>>;

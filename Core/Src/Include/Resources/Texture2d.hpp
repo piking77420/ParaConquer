@@ -68,9 +68,12 @@ private:
 
     void LoadTextureFromPath(const std::string& _path);
 
+    REFLECT(Texture2D, Resource)
+    REFLECT_MEMBER(Texture2D, m_TexturePath)
+    REFLECT_MEMBER(Texture2D, m_Size)
 };
 
-REFLECT(Texture2D, Resource)
+
 
 
 END_PCCORE

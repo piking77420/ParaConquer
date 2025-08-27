@@ -435,8 +435,6 @@ void Editor::Run(bool* _appShouldClose)
 		UpdateEditor();
 		gameApp.renderer.SwapBuffers(&gameApp.window);
 		PERF_FRAME_MARK;
-
-
 	}
 
 	Rhi::GetRhiContext()->WaitIdle();

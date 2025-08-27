@@ -40,7 +40,6 @@ public:
     template<class ResourceDerived>
     static bool Exist(const std::string& _name);
 
-    
     PC_CORE_API static bool Exist(const Guid& _guid);
 
     template<class ResourceDerived>
@@ -65,6 +64,9 @@ private:
     PC_CORE_API static void DeserializeResource();
 
     REFLECT(ResourceManager);
+    REFLECT_MEMBER(ResourceManager, m_ResourcesMap);
+    REFLECT_MEMBER(ResourceManager, m_NameToGuid);
+
     REFLECT(std::shared_ptr<Resource>)
 };
 
