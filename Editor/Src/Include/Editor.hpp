@@ -13,7 +13,6 @@
 #include "Physics/RigidBody.hpp"
 #include "World/Transform.hpp"
 #include "ShaderCompiler.hpp"
-#include "AssetBrowser.hpp"
 #include "EditorFiles.hpp"
 #include "Reflection/Reflector.hpp"
 
@@ -119,8 +118,6 @@ private:
     void ReloadShaders();
     
     EditorRenderer m_EditorRenderer;
-
-    AssetBrowser m_AssetBrowser;
 };
 
 template <EditorCommandDerived T, typename ... Args>

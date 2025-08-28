@@ -181,7 +181,7 @@ void Editor::Init()
 	};
 
 	CompileShader();
-	m_AssetBrowser.SetPath(editorData.projectPath);
+	PC_CORE::ResourceManager::Instance().SetPath(editorData.projectPath);
 
 	gameApp.Init(appCreateInfo);
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
@@ -417,7 +417,7 @@ void Editor::InitEditor()
 		editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
 		editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
 		editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
-		editorWindows.push_back(std::make_unique<AssetBrowserWindow>(*this, "AssetBrowser"));
+		editorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
 	}
 	
 

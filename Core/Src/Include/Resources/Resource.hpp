@@ -20,7 +20,7 @@ BEGIN_PCCORE
 
 class ResourceManager;
 
-class Resource : public ISeriazable
+class Resource : public DynamicReflectable
 {
 public:
     static PC_CORE_API void LinkDependencies(Resource* _resourceParent,  Resource* _resourceChild);

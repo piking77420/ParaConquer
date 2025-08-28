@@ -1,4 +1,4 @@
-#include "AssetBrowserWindow.hpp"
+#include "ResourceBrowserWindow.hpp"
 
 #include <Imgui/imgui_impl_vulkan.h>
 #include "Editor.hpp"
@@ -14,9 +14,9 @@
 using namespace PC_EDITOR_CORE;
 
 
-AssetBrowserWindow::AssetBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
+ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-	m_CurrenPath = AssetBrowser::GetInstance().GetBasePath();
+	m_CurrenPath = PC_CORE::ResourceManager::Instance().GetPath();
 	windowFlags |= ImGuiWindowFlags_MenuBar;
 
 	const PC_CORE::Sampler& s = m_Editor->editorData.nearestSampler;
@@ -39,7 +39,7 @@ AssetBrowserWindow::AssetBrowserWindow(Editor& _editor, const std::string& _name
 
 }
 
-AssetBrowserWindow::~AssetBrowserWindow()
+ResourceBrowserWindow::~ResourceBrowserWindow()
 {
 	m_Editor->IMGUIContext.DestroyVulkanTexture(&m_FolderIcon.descritproSet, 1);
 	m_Editor->IMGUIContext.DestroyVulkanTexture(&m_NullIcon.descritproSet, 1);
@@ -50,16 +50,16 @@ AssetBrowserWindow::~AssetBrowserWindow()
 }
 
 
-void AssetBrowserWindow::Render()
+void ResourceBrowserWindow::Render()
 {
 	EditorWindow::Render();
 }
 
-void PC_EDITOR_CORE::AssetBrowserWindow::Update()
+void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 {
 	PERF_REGION_SCOPED;
 	EditorWindow::Update();
-
+	/*
 	// lock
 	std::lock_guard _(AssetBrowser::GetInstance().lock);
 
@@ -101,20 +101,41 @@ void PC_EDITOR_CORE::AssetBrowserWindow::Update()
 	{
 		m_Editor->selectedObject = std::monostate();
 		m_HasSelectedObject = false;
-	}
+	}*/
 }
 
-void AssetBrowserWindow::CreateAsset() const
+void ResourceBrowserWindow::CreateAsset() const
 {
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		ImGui::OpenPopup("createAssets");
 
 
-	if (ImGui::BeginPopup("createAssets"))
+	if (ImGui::BeginPopup("CreateAssets"))
 	{
 		ImGui::SeparatorText("Assets");
 
 		//if (ImGui::Selectable("Textures"))
+
+		ImGui::BeginPopup("Textures");
+		if (ImGui::Selectable("Texture2D"))
+		{
+			const PC_CORE::SamplerCreateInfo info =
+			{
+			.SamplerName = "LinearRepeat",
+			.magFilter = PC_CORE::Filter::LINEAR,
+			.minFilter = PC_CORE::Filter::LINEAR,
+			.u = PC_CORE::SamplerAddressMode::REPEAT,
+			.v = PC_CORE::SamplerAddressMode::REPEAT,
+			.w = PC_CORE::SamplerAddressMode::REPEAT
+			};
+
+			//PC_CORE::Sampler newTexture(GetUniqueFileName(m_CurrenPath, "Texture2D", ".presource"));
+			
+		}
+
+
+
+		ImGui::EndPopup();
 
 		if (ImGui::Selectable("Level"))
 		{
@@ -127,7 +148,7 @@ void AssetBrowserWindow::CreateAsset() const
 
 }
 
-void AssetBrowserWindow::RenderDirectories()
+void ResourceBrowserWindow::RenderDirectories()
 {
 	PERF_REGION_SCOPED;
 	ImGui::PushFont(m_Editor->editorData.editorFont.normal);
@@ -144,11 +165,11 @@ void AssetBrowserWindow::RenderDirectories()
 	if (colomnCount < 1)
 		colomnCount = 1;
 
-	if (m_CurrenPath == AssetBrowser::GetInstance().GetBasePath())
+	if (m_CurrenPath == PC_CORE::ResourceManager::Instance().GetPath())
 	{
 
 	}
-	else if (ImGui::ArrowButton("Reverse", ImGuiDir_Left) && AssetBrowser::GetInstance().GetBasePath().string() != m_CurrenPath.string())
+	else if (ImGui::ArrowButton("Reverse", ImGuiDir_Left) && PC_CORE::ResourceManager::Instance().GetPath().string() != m_CurrenPath.string())
 	{
 		m_CurrenPath = m_CurrenPath.parent_path();
 	}
@@ -218,7 +239,7 @@ void AssetBrowserWindow::RenderDirectories()
 	ImGui::PopFont();
 }
 
-void AssetBrowserWindow::CreateFile(const std::string& _filename) const
+void ResourceBrowserWindow::CreateFile(const std::string& _filename) const
 {
 	std::ofstream file(_filename);
 
@@ -234,7 +255,7 @@ void AssetBrowserWindow::CreateFile(const std::string& _filename) const
 }
 
 
-std::string AssetBrowserWindow::GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const
+std::string ResourceBrowserWindow::GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const
 {
 	std::string fileName = baseName + extension;
 	int counter = 1;
@@ -248,7 +269,7 @@ std::string AssetBrowserWindow::GetUniqueFileName(const std::filesystem::path& d
 	return fileName;
 }
 
-void AssetBrowserWindow::OnFileSelectedClick()
+void ResourceBrowserWindow::OnFileSelectedClick()
 {
 /*
 	if (m_SelectedItem.empty())
@@ -271,7 +292,7 @@ void AssetBrowserWindow::OnFileSelectedClick()
 	m_SelectedItem = fileName;*/
 }
 
-void AssetBrowserWindow::CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path)
+void ResourceBrowserWindow::CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path)
 {
 	ImguiImage newIcon;
 	newIcon.texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());

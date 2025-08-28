@@ -4,7 +4,6 @@
 
 #include "EditorHeader.hpp"
 #include "EditorWindow.hpp"
-#include "Asset.hpp"
 #include "Resources/Resource.hpp"
 #include "FileSystemWatcher.h"
 #include "Resources/Texture2d.hpp"
@@ -19,7 +18,7 @@ BEGIN_EDITOR_PCCORE
 
 constexpr Tbx::Vector2f MIN_MAX_FILE_SPACING = Tbx::Vector2f(1.f, 1000.f);
 
-class AssetBrowserWindow : public EditorWindow
+class ResourceBrowserWindow : public EditorWindow
 {
 public:
     void Render() override;
@@ -28,9 +27,9 @@ public:
 
     void TriggerReload(const std::filesystem::path& _path);
 
-    AssetBrowserWindow(Editor& _editor, const std::string& _name);
+    ResourceBrowserWindow(Editor& _editor, const std::string& _name);
 
-    ~AssetBrowserWindow() override;
+    ~ResourceBrowserWindow() override;
 private:
 
     struct AssetBrowserOption

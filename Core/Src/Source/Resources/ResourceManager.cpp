@@ -70,6 +70,10 @@ void ResourceManager::Destroy()
     Instance().m_NameToGuid.clear();
 }
 
+void ResourceManager::SetPath(const std::filesystem::path&)
+{
+    m_BasePath = m_BasePath;
+}
 
 const std::string& ResourceManager::GetName(const Guid& _guid)
 {

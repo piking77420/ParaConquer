@@ -6,6 +6,7 @@
 #include "Resources/ResourceManager.hpp"
 #include "Serialize/Serializer.h"
 #include "DataStructure/SpareSet.hpp"
+#include "Math/ToolboxTypedef.hpp"
 
 using namespace PC_CORE;
 

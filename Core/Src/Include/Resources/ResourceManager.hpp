@@ -23,8 +23,18 @@ public:
 
     static void Destroy();
 
+    void SetPath(const std::filesystem::path& _path);
+
+    const std::filesystem::path& GetPath()
+    {
+        return m_BasePath;
+    }
+
     template<class ResourceDerived, typename... Arg>
     static std::shared_ptr<ResourceDerived>  Create(Arg... args);
+
+    template<class ResourceDerived, typename... Arg>
+    static std::shared_ptr<ResourceDerived>  CreateFromPath(Arg... args);
     
     template<class ResourceDerived>
     static std::shared_ptr<ResourceDerived> Get(const std::string& _name);
@@ -59,6 +69,8 @@ private:
 
     std::unordered_map<std::string, Guid> m_NameToGuid;
 
+    std::filesystem::path m_BasePath;
+
     static void SerializeResource();
 
     static void DeserializeResource();
@@ -66,6 +78,7 @@ private:
     REFLECT(ResourceManager);
     REFLECT_MEMBER(ResourceManager, m_ResourcesMap);
     REFLECT_MEMBER(ResourceManager, m_NameToGuid);
+    REFLECT_MEMBER(ResourceManager, m_PathToGuid);
 
     REFLECT(std::shared_ptr<Resource>)
 };

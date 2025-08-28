@@ -47,7 +47,7 @@ const std::atomic<bool>& Resource::IsLoaded() const
 
 Resource& Resource::operator=(const Resource& _other) noexcept
 {
-	ISeriazable::operator=(_other);
+	DynamicReflectable::operator=(_other);
 	name = _other.name;
 	m_Guid = Guid::New();
 	m_ChildsResource = _other.m_ChildsResource;
@@ -58,7 +58,7 @@ Resource& Resource::operator=(const Resource& _other) noexcept
 
 Resource& Resource::operator=(Resource&& _other) noexcept
 {
-	ISeriazable::operator=(_other);
+	DynamicReflectable::operator=(_other);
 	name = std::move(_other.name);
 	m_Guid = Guid::New();
 	m_ChildsResource = std::move(_other.m_ChildsResource);
@@ -68,7 +68,7 @@ Resource& Resource::operator=(Resource&& _other) noexcept
 }
 
 
-Resource::Resource(const Resource& _other) noexcept : ISeriazable(_other), 
+Resource::Resource(const Resource& _other) noexcept : DynamicReflectable(_other),
 name(_other.name),
 m_Guid(Guid::New()), m_ChildsResource(_other.m_ChildsResource), m_ParentsResource(_other.m_ParentsResource)
 {
@@ -77,7 +77,7 @@ m_Guid(Guid::New()), m_ChildsResource(_other.m_ChildsResource), m_ParentsResourc
 
 Resource::Resource(Resource&& _other) noexcept
 {
-	ISeriazable::operator=(_other);
+	DynamicReflectable::operator=(_other);
 	name = std::move(_other.name);
 	m_Guid = _other.m_Guid;
 	m_ChildsResource = std::move(_other.m_ChildsResource);
