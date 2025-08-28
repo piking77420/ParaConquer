@@ -6,6 +6,7 @@
 #include <String>
 
 #include "CoreHeader.hpp"
+#include "Reflection/Reflector.hpp"
 #include "Math/ToolboxTypedef.hpp"
 
 constexpr const char* SHADER_CACHE_PATH = "ShaderCache/";
@@ -27,6 +28,8 @@ BEGIN_PCCORE
 #endif
         Count
     };
+
+    REFLECT(GraphicAPI);
 
     constexpr const char* ShaderCacheVulkanFolder = "SPRIV/";
     constexpr const char* ShaderCacheD3d12Folder = "DXIL/";

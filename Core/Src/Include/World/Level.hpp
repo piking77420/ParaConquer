@@ -18,22 +18,22 @@ public:
 
     IMP_DYNAMIC_REFLECT()
 
-    FORCEINLINE EntityId CreateEntity()
+    PC_FORCE_INLINE EntityId CreateEntity()
     {
         return m_EntityManager.CreateEntity();
     }
     
-    FORCEINLINE EntityId CreateEntity(std::string&& name)
+    PC_FORCE_INLINE EntityId CreateEntity(std::string&& name)
     {
         return m_EntityManager.CreateEntity(name);
     }
 
-    FORCEINLINE EntityId CreateEntity(const std::string& name)
+    PC_FORCE_INLINE EntityId CreateEntity(const std::string& name)
     {
         return m_EntityManager.CreateEntity(name);
     }
 
-    FORCEINLINE void RemoveEntity(EntityId _entityId)
+    PC_FORCE_INLINE void RemoveEntity(EntityId _entityId)
     {
         Signature* entitySignature = m_EntityManager.GetSignature(_entityId);
         m_SystemManagers.EntityDestroyed(_entityId, *entitySignature);

@@ -11,7 +11,6 @@
 #include "PerfRegion.hpp"
 #include "CompiletimeKey.hpp"
 #include "Log.hpp"
-#include "Math/ToolboxTypedef.hpp"
 #include "Reflection/ReflectionTypedef.hpp"
 
 BEGIN_PCCORE
@@ -38,7 +37,7 @@ public:
 	static bool IsBaseOf(const ReflectedType& type);
 
 	template <typename T>
-	CONSTEVAL static TypeId GetTypeKey()
+	constexpr  static TypeId GetTypeKey()
 	{
 		return COMPILE_TIME_TYPE_KEY(T);
 	}
@@ -146,7 +145,10 @@ private:
 		{
 			ReflectedWeakPtr ptrtype{ GetTypeKey<typename T::element_type>() };
 			if (!m_RelfectionMap.contains(ptrtype.type))
+			{
+				
 				PC_LOGERROR("Try to reflect ptr without reflect the type before");
+			}
 			typeMetaData->data = ptrtype;
 		}
 		if constexpr (is_shared_ptr_v<T>)
@@ -299,7 +301,7 @@ const ReflectedType& Reflector::GetType()
 }
 
 template<typename T>
-static const ReflectedEnum& Reflector::GetEnum()
+const ReflectedEnum& Reflector::GetEnum()
 {
 	static_assert(std::is_enum_v<T>);
 	

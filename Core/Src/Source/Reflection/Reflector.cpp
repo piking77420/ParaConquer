@@ -1,5 +1,6 @@
 ﻿#include "reflection/reflector.hpp"
 
+#include "Math/ToolboxTypedef.hpp"
 
 using namespace PC_CORE;
 

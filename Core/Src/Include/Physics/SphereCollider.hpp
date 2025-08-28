@@ -20,12 +20,13 @@ struct SphereCollider : public Component
     float radius = 2.f;
 
     Tbx::Vector3f center;
+    
+    REFLECT(SphereCollider, Component)
+    REFLECT_MEMBER(SphereCollider, center)
+    REFLECT_MEMBER(SphereCollider, drawAABB)
+    REFLECT_MEMBER(SphereCollider, draw)
+    REFLECT_MEMBER(SphereCollider, radius)
 };
 
-REFLECT(SphereCollider,Component)
-REFLECT_MEMBER(SphereCollider, center)
-REFLECT_MEMBER(SphereCollider, drawAABB)
-REFLECT_MEMBER(SphereCollider, draw)
-REFLECT_MEMBER(SphereCollider, radius)
 
 END_PCCORE

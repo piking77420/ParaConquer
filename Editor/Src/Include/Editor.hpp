@@ -14,6 +14,7 @@
 #include "World/Transform.hpp"
 #include "ShaderCompiler.hpp"
 #include "AssetBrowser.hpp"
+#include "EditorFiles.hpp"
 #include "Reflection/Reflector.hpp"
 
 BEGIN_EDITOR_PCCORE
@@ -30,7 +31,17 @@ struct EditorFont
 struct ProjectData
 {
     std::string projectName;
-    std::filesystem::path projectPath;
+    PC_CORE::GraphicAPI graphicApi;
+    
+    ProjectData(ProjectFile& projectFile)
+    {
+        projectName = std::move(projectFile.name);
+        graphicApi = projectFile.graphicApi;
+    }
+
+    DEFAULT_CONSTRUCTOR_DESTRUCTOR(ProjectData)
+
+    DEFAULT_COPY_MOVE_OPERATIONS(ProjectData);
 };
 
 struct EditorData
@@ -40,9 +51,7 @@ struct EditorData
     PC_CORE::Sampler nearestSampler;
 
     ProjectData projectData;
-    PC_CORE::GraphicAPI graphicApi;
-
-    REFLECT(EditorData);
+    std::filesystem::path projectPath;
 };
 
 using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ResourceRef<PC_CORE::Resource>>;
@@ -96,6 +105,11 @@ public:
     EditorData editorData;
 
 private:
+
+    void LoadFromInitFiles();
+
+    void SaveInitFiles();
+    
     void CompileShader();
 
     void LookForEditorInit();
@@ -107,7 +121,6 @@ private:
     EditorRenderer m_EditorRenderer;
 
     AssetBrowser m_AssetBrowser;
-
 };
 
 template <EditorCommandDerived T, typename ... Args>

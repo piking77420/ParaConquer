@@ -2,7 +2,7 @@
 
 #include <Imgui/imgui_impl_vulkan.h>
 #include "Editor.hpp"
-#include "EditorFormat.hpp"
+#include "EditorFiles.hpp"
 #include "LowRenderer/Rhi.hpp"
 #include "Resources/VulkanSampler.hpp"
 #include "World/World.hpp"
@@ -115,8 +115,8 @@ void AssetBrowserWindow::CreateAsset() const
 
 		if (ImGui::Selectable("Level"))
 		{
-			auto s = GetUniqueFileName(m_CurrenPath, "Level", std::string(PC_Level));
-			CreateFile((m_CurrenPath / s).string());
+			//auto s = GetUniqueFileName(m_CurrenPath, "Level", std::string(PC_Level));
+			//CreateFile((m_CurrenPath / s).string());
 		}
 
 		ImGui::EndPopup();
@@ -247,7 +247,7 @@ std::string AssetBrowserWindow::GetUniqueFileName(const std::filesystem::path& d
 
 void AssetBrowserWindow::OnFileSelectedClick()
 {
-
+/*
 	if (m_SelectedItem.empty())
 	{
 		PC_LOGERROR("m_SelectedItem is empty")
@@ -265,7 +265,7 @@ void AssetBrowserWindow::OnFileSelectedClick()
 		PC_LOG("Load level selected: {}", fileName);
 	}
 
-	m_SelectedItem = fileName;
+	m_SelectedItem = fileName;*/
 }
 
 void AssetBrowserWindow::CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path)

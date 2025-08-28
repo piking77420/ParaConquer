@@ -2,6 +2,7 @@
 
 #include "CoreHeader.hpp"
 #include "EcsFront.h"
+#include "Math/ToolboxTypedef.hpp"
 
 
 

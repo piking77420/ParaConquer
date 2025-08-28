@@ -810,6 +810,7 @@ void Serializer::Derializing(uint8_t* _objetPtr, TypeId _typeKey, const std::str
 	if (!f.is_open())
 	{
 		f.close();
+		PC_LOGERROR("Failed to open file {}", _fileToSerialize);
 		return;
 	}
 

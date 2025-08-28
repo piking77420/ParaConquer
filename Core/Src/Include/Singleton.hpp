@@ -36,7 +36,7 @@ BEGIN_PCCORE
  *        cleaned up at destruction time.
  */
 template <class _class_>
-class PC_CORE_API Singleton
+class Singleton
 {
 public:
     

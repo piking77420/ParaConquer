@@ -19,6 +19,10 @@
 #include "WorldViewWindow.hpp"
 #include "Time/CoreTime.hpp"
 #include <Resources/ResourceManager.hpp>
+
+#include "EditorFiles.hpp"
+#include "ProjectMaker.hpp"
+#include "SystemDialogue.hpp"
 #include "Rendering/Light.hpp"
 #include "Io/CoreIo.hpp"
 #include "Io/ImguiContext.h"
@@ -27,24 +31,6 @@
 #include "Resources/ShaderSource.hpp"
 #include "World/StaticMesh.hpp"
 #include "Serialize/Serializer.h"
-/*
-#include <Windows.h>      // For common windows data types and function headers
-#define STRICT_TYPED_ITEMIDS
-#include <Objbase.h>      // For COM headers
-#include <Shobjidl.h>     // for IFileDialogEvents and IFileDialogControlEvents
-#include <Shlwapi.h>
-#include <Knownfolders.h> // for KnownFolder APIs/datatypes/function headers
-#include <Propvarutil.h>  // for PROPVAR-related functions
-#include <Propkey.h>      // for the Property key APIs/datatypes
-#include <Propidl.h>      // for the Property System APIs
-#include <Strsafe.h>      // for StringCchPrintfW
-#include <Shtypes.h>      // for COMDLG_FILTERSPEC
-#include <New>
-#include <Shobjidl.h>  // For IFileDialogEvents
-
-#include "Serialize/Iseriazable.h"
-#include <Random> // pour std::mt19937 et std::uniform_real_distribution
-*/
 #include "Rendering/RenderSystem.hpp"
 
 using namespace PC_EDITOR_CORE;
@@ -62,14 +48,59 @@ Editor::Editor()
 		exit(-1);
 	}
 	instance = this;
-
-	editorData.graphicApi = PC_CORE::GraphicAPI::Vulkan;
-
+	editorData.projectData.graphicApi = GraphicAPI::Vulkan;
 }
 
 Editor::~Editor()
 {
+	SaveInitFiles();
 	instance = nullptr;
+}
+
+void Editor::LoadFromInitFiles()
+{
+	ProjectFile projectFile;
+	EditorIniFile editorIniFile;
+	if (std::filesystem::exists(EditorIniFileName)) // if editor.ini exist
+	{
+		Serializer::DeSerialize(&editorIniFile, std::string(EditorIniFileName)); // copy it 
+
+		if (std::filesystem::exists(editorIniFile.projectPath)) // if editor.ini is valid
+		{
+			Serializer::DeSerialize(&projectFile, editorIniFile.projectPath + "/" + std::string(ProjectFileName)); // copy project 
+		}
+		else
+		{
+			const std::wstring sw = std::wstring(editorIniFile.projectPath.begin(), editorIniFile.projectPath.end());
+			projectFile = ProjectMaker::CreateBaseProject(sw.c_str());
+		}
+	}
+	else
+	{
+		const std::wstring s = SystemDialogue::Instance().SeletecFolder(L"Select your project folder");
+		assert(!s.empty() && "Something went wrong");
+
+		if (!std::filesystem::exists(s + std::wstring(ProjectFileName.begin(), ProjectFileName.end())))
+		{
+			projectFile = ProjectMaker::CreateBaseProject(s.c_str());
+		}
+		
+		editorIniFile.projectPath = std::string(s.begin(), s.end());	
+	}
+
+	editorData.projectPath = editorIniFile.projectPath;
+	editorData.projectData = ProjectData(projectFile);
+}
+
+void Editor::SaveInitFiles()
+{
+	if (editorData.projectPath.empty())
+		return;
+
+	EditorIniFile editorIniFile;
+	editorIniFile.projectPath = editorData.projectPath.generic_string();
+	
+	Serializer::Serialize<EditorIniFile>(editorIniFile, std::string(EditorIniFileName));
 }
 
 void Editor::CompileShader()
@@ -91,10 +122,10 @@ void Editor::CompileShader()
 	// geometry buffer
 	{
 		auto geometryVert = ResourceManager::Create<ShaderSource>("Geometry.vs.hlsl",
-			EDITOR_RESOURCE_PATH "/shaders/Geometry/Geometry.vs.hlsl");
+			EDITOR_RESOURCE_PATH "/Shaders/Geometry/Geometry.vs.hlsl");
 
 		auto geometryFrag = ResourceManager::Create<ShaderSource>("Geometry.ps.hlsl",
-			EDITOR_RESOURCE_PATH "/shaders/Geometry/Geometry.ps.hlsl");
+			EDITOR_RESOURCE_PATH "/Shaders/Geometry/Geometry.ps.hlsl");
 	}
 
 	// deferred
@@ -134,104 +165,19 @@ void Editor::CompileShader()
 	}
 }
 
-void Editor::LookForEditorInit()
-{
-	/*
-	namespace fs = std::filesystem;
-
-	// Look for editor Init or create one
-
-	const std::filesystem::path workingDir = std::filesystem::current_path();
-	const std::string editorDataInitFile = workingDir.generic_string() + "/" + ParaConquerEditorInitFile;
-	const std::filesystem::path editorDataInitFilePath(editorDataInitFile);
-
-	if (!fs::exists(editorDataInitFilePath))
-	{
-		std::ofstream createFile(editorDataInitFile);
-
-		if (!createFile.is_open())
-		{
-			// error should be able to create file
-			exit(1);
-		}
-		createFile.close();
-	}
-
-	try
-	{
-		json j = json::parse(editorDataInitFile);
-
-		const std::string projectPath = j[EditorInitDataKeys[(uint8_t)EditorInitData::PROJECT_ABSOLUTE_PATH]];
-
-		if (projectPath.empty() || !fs::exists(std::filesystem::path(projectPath)))
-		{
-			BasicOpenFile();
-		}
-	}
-	catch (...)
-	{
-		// select A project folder
-		// to do import basic files
-		BasicOpenFile();
-	}*/
-
-}
-
-void Editor::BasicOpenFile()
-{
-	/*
-	std::wstring fileToOpen;
-	HRESULT hr = CoInitialize(NULL);
-	if (SUCCEEDED(hr))
-	{
-		IFileOpenDialog* pFileOpen = NULL;
-
-		// Create the FileOpenDialog object.
-		hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
-			IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
-
-		if (SUCCEEDED(hr))
-		{
-			// Show the Open dialog box.
-			hr = pFileOpen->Show(NULL);
-
-			// Get the file name from the dialog box.
-			if (SUCCEEDED(hr))
-			{
-				IShellItem* pItem;
-				hr = pFileOpen->GetResult(&pItem);
-				if (SUCCEEDED(hr))
-				{
-					PWSTR pszFilePath = NULL;
-					hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-
-					if (SUCCEEDED(hr))
-					{
-						// Display the file path in a message box
-						MessageBoxW(NULL, pszFilePath, L"Selected File", MB_OK);
-						CoTaskMemFree(pszFilePath);
-					}
-					pItem->Release();
-				}
-			}
-			pFileOpen->Release();
-		}
-		CoUninitialize();
-	}*/
-}
-
-
 void Editor::Init()
 {
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Editor);
 
+	LoadFromInitFiles();
+	
 	const AppCreateInfo appCreateInfo =
 	{
 		.appName = "Para Conquer Editor",
 		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
 		.enableGpuDebug = true,
-		.graphicAPI = editorData.graphicApi
+		.graphicAPI = editorData.projectData.graphicApi
 	};
 
 	CompileShader();

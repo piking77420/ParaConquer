@@ -16,12 +16,12 @@ BEGIN_PCCORE
 template <typename ResourceDerived>
 using ResourceHandle = std::shared_ptr<ResourceDerived>;
 
-class ResourceManager : public Singleton<ResourceManager>
+class PC_CORE_API ResourceManager : public Singleton<ResourceManager>
 {
 public:
-    PC_CORE_API static void InitPath();
+    static void InitPath();
 
-    PC_CORE_API static void Destroy();
+    static void Destroy();
 
     template<class ResourceDerived, typename... Arg>
     static std::shared_ptr<ResourceDerived>  Create(Arg... args);
@@ -35,12 +35,12 @@ public:
     template<class ResourceDerived>
     static bool TryGetAs(const Guid& _guid, std::shared_ptr<ResourceDerived>* _outPtr);
 
-    PC_CORE_API static const std::string& GetName(const Guid& _guid); 
+    static const std::string& GetName(const Guid& _guid); 
     
     template<class ResourceDerived>
     static bool Exist(const std::string& _name);
 
-    PC_CORE_API static bool Exist(const Guid& _guid);
+    static bool Exist(const Guid& _guid);
 
     template<class ResourceDerived>
     static std::shared_ptr<ResourceDerived> Get();
@@ -51,7 +51,7 @@ public:
     template <class ResourceDerived>
     static void ForEach(const std::function<void(ResourceDerived*)>& _lamba);
     
-    PC_CORE_API static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
+    static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
 
 private:
@@ -59,9 +59,9 @@ private:
 
     std::unordered_map<std::string, Guid> m_NameToGuid;
 
-    PC_CORE_API static void SerializeResource();
+    static void SerializeResource();
 
-    PC_CORE_API static void DeserializeResource();
+    static void DeserializeResource();
 
     REFLECT(ResourceManager);
     REFLECT_MEMBER(ResourceManager, m_ResourcesMap);

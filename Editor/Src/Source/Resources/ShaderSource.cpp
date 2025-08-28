@@ -108,7 +108,7 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
     std::string binaryName = GetShaderBinaryPath();
     if (!PC_CORE::ResourceManager::Exist<ShaderSourceBinary>(binaryName))
     {
-        auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType, Editor::instance->editorData.graphicApi);
+        auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType, Editor::instance->editorData.projectData.graphicApi);
         Resource::LinkDependencies(this, s.get());
     }
 
@@ -138,7 +138,7 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
     
     assert(Editor::instance != nullptr);
     Editor::instance->shaderCompiler.lock.lock();
-    std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(Editor::instance->editorData.graphicApi ,m_PathToSource);
+    std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(Editor::instance->editorData.projectData.graphicApi ,m_PathToSource);
     Editor::instance->shaderCompiler.lock.unlock();
 
     if (code.empty())
