@@ -64,8 +64,6 @@ private:
 
     FileSystemWatcher m_FileWatcherShaders;
 
-
-   
     void CreateFile(const std::string& _filename) const;
     
     std::string GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const;

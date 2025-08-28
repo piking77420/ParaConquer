@@ -8,7 +8,7 @@
 #include "Resources/ResourceManager.hpp"
 #include "Time/CoreTime.hpp"
 #include "Math/MatrixTransformation.hpp"
-#include "World/StaticMesh.hpp"
+#include "World/StaticMeshComponent.hpp"
 #include "World/Transform.hpp"
 #include "Rendering/RenderPasses/RenderPass.hpp"
 
@@ -381,7 +381,7 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 		DrawStaticMesh(MaterialType::Transparent, forwardShader);
 	}
 
-	if (skyboxShader)
+	if (skyboxShader && false)
 	{
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
@@ -1064,6 +1064,7 @@ void Renderer::CreateThirdPartyResources()
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Create Cube Map");
         std::array<std::string, 6> maps
         {
@@ -1074,7 +1075,7 @@ void Renderer::CreateThirdPartyResources()
             "Assets/Textures/Skybox/Front.jpg",
             "Assets/Textures/Skybox/Back.jpg",
         };
-        m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);
+        m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);*/
     }
 }
 void Renderer::CreateBuffers()
@@ -1103,13 +1104,13 @@ void Renderer::CreateDescriptorSets()
     {
         .buffer = &uniformBuffers.cameraUniformBuffer,
     };
-
+    /*
     ImageSamplerDescriptor skyboxCubeMapDescritptor
     {
         .sampler = &m_SkyBoxSampler,
         .texture = m_Cubemap.lock().get(),
         .imageState = PC_CORE::ImageState::ShaderReadOptimal
-    };
+    };*/
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
 
@@ -1126,7 +1127,7 @@ void Renderer::CreateDescriptorSets()
         };
         m_SkyBoxShader.lock()->AllocDescriptorSet(&skyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
         skyboxCameraDescriptorSet->WriteDescriptorSets(descriptorSets);
-
+        /*
         descriptorSets =
         {
             {
@@ -1137,7 +1138,7 @@ void Renderer::CreateDescriptorSets()
         };
         m_SkyBoxShader.lock()->AllocDescriptorSet(&skyBoxCubeMapDescriptorSet,
                                                    ENVIRONEMENT_DESCRIPTOR_SET);
-        skyBoxCubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);
+        skyBoxCubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);*/
     }
 }
 #pragma endregion CreateDescriptorSets

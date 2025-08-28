@@ -1,19 +1,17 @@
 #pragma once
 
 #include "EditorHeader.hpp"
-#include "Resources/Model.hpp"
+#include "Resources/StaticMesh.hpp"
 
 BEGIN_EDITOR_PCCORE
 
-class ModelBuilder
+class MeshBuilder	
 {
 public:
 
-	
+	MeshBuilder() = default;
 
-	ModelBuilder() = default;
-
-	~ModelBuilder() = default;
+	~MeshBuilder() = default;
 private:
 
 };

@@ -2,7 +2,6 @@
 #include <DebugHelper/DebugDrawContext.hpp>
 
 #include "Rendering/Light.hpp"
-#include "World/StaticMesh.hpp"
 #include "World/Transform.hpp"
 
 using namespace PC_CORE;

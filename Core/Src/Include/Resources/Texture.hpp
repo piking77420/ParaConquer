@@ -8,11 +8,6 @@ BEGIN_PCCORE
 class Texture : public Resource, public IGpuResource
 {
 public:
-
-	TextureType GetType() const
-	{
-		return m_TextureType;
-	}
 	
 	IMP_DYNAMIC_REFLECT()
 
@@ -29,11 +24,14 @@ public:
 
 	~Texture() = default;
 protected:
-	REFLECT(Texture, Resource)
-
-	TextureType m_TextureType = TextureType::Count;
-
 	Channel m_TextureChannel;
+
+	std::filesystem::path m_FileSource;
+
+	REFLECT(Texture, Resource)
+	REFLECT_MEMBER(Texture, m_TextureChannel)
+	REFLECT_MEMBER(Texture, m_FileSource)
+
 };
 
 

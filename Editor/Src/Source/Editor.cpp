@@ -29,7 +29,7 @@
 #include "Physics/RigidBody.hpp"
 #include "Rendering/Material.hpp"
 #include "Resources/ShaderSource.hpp"
-#include "World/StaticMesh.hpp"
+#include "World/StaticMeshComponent.hpp"
 #include "Serialize/Serializer.h"
 #include "Rendering/RenderSystem.hpp"
 
@@ -174,14 +174,14 @@ void Editor::Init()
 	
 	const AppCreateInfo appCreateInfo =
 	{
-		.appName = "Para Conquer Editor",
+		.appName = editorData.projectData.projectName,
 		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
 		.enableGpuDebug = true,
 		.graphicAPI = editorData.projectData.graphicApi
 	};
 
 	CompileShader();
-	m_AssetBrowser.SetPath("Assets");
+	m_AssetBrowser.SetPath(editorData.projectPath);
 
 	gameApp.Init(appCreateInfo);
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());

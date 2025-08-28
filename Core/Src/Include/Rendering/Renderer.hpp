@@ -10,7 +10,7 @@
 #include "LowRenderer/RhiUniformBuffer.hpp"
 #include "Resources/GraphicShader.hpp"
 #include "Resources/Texture3d.hpp"
-#include "World/StaticMesh.hpp"
+#include "World/StaticMeshComponent.hpp"
 #include "World/Transform.hpp"
 #include "World/World.hpp"
 #include "Resources/ComputeShader.hpp"

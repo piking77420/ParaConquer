@@ -2,7 +2,7 @@
 
 #include "Rendering/Light.hpp"
 #include "World/Level.hpp"
-#include "World/StaticMesh.hpp"
+#include "World/StaticMeshComponent.hpp"
 #include "World/Transform.hpp"
 #include "World/World.hpp"
 
@@ -14,7 +14,7 @@ PC_CORE::RendererSystem::RendererSystem(PC_CORE::RenderingWorldData* _renderingW
     Level& l = World::GetWorld()->level;
     
     m_StaticMeshSignature.set(l.GetComponentTypeBit<Transform>(), true);
-    m_StaticMeshSignature.set(l.GetComponentTypeBit<StaticMesh>(), true);
+    m_StaticMeshSignature.set(l.GetComponentTypeBit<StaticMeshComponent>(), true);
     AddSignature(m_StaticMeshSignature);
 
     m_DirLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
@@ -47,7 +47,7 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 
     for (auto& ent : staticMeshes)
     {
-        const StaticMesh& staticMesh = _level.GetComponent<StaticMesh>(ent);
+        const StaticMeshComponent& staticMesh = _level.GetComponent<StaticMeshComponent>(ent);
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
         std::shared_ptr<Mesh> mesh = staticMesh.mesh.lock();

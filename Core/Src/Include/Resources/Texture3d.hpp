@@ -29,7 +29,11 @@ public:
 protected:
     std::shared_ptr<RhiTexture3D> m_RhiTexture3D;
 
+    std::vector<std::filesystem::path> m_FileSources;
+
     REFLECT(Texture3D, Texture)
+    REFLECT_MEMBER(Texture3D, m_FileSources)
+
     
 };
 

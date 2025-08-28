@@ -6,15 +6,15 @@
 #include "Rendering/Material.hpp"
 
 BEGIN_PCCORE
-struct StaticMesh : public Component
+struct StaticMeshComponent : public Component
 {
     ResourceRef<Mesh> mesh;
 
 
     ResourceRef<Material> material;
 };
-REFLECT(StaticMesh, Component)
-REFLECT_MEMBER(StaticMesh, mesh)
-REFLECT_MEMBER(StaticMesh, material)
+REFLECT(StaticMeshComponent, Component)
+REFLECT_MEMBER(StaticMeshComponent, mesh)
+REFLECT_MEMBER(StaticMeshComponent, material)
 
 END_PCCORE

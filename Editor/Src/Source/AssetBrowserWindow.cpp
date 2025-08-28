@@ -88,7 +88,10 @@ void PC_EDITOR_CORE::AssetBrowserWindow::Update()
 	}
 
 	ImGui::PushFont(m_Editor->editorData.editorFont.veryBig);
-	ImGui::Text(m_CurrenPath.generic_string().c_str());
+
+	// TODO may cook it 
+	const std::filesystem::path relativePath = std::filesystem::relative(m_CurrenPath, AssetBrowser::GetInstance().GetBasePath());
+	ImGui::Text(relativePath.generic_string().c_str());
 	ImGui::PopFont();
 	RenderDirectories();
 

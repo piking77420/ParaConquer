@@ -1,0 +1,1 @@
+﻿#include "World/StaticMeshComponent.hpp"
