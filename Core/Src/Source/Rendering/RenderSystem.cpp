@@ -50,7 +50,7 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         const StaticMeshComponent& staticMesh = _level.GetComponent<StaticMeshComponent>(ent);
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
-        std::shared_ptr<Mesh> mesh = staticMesh.mesh.lock();
+        std::shared_ptr<StaticMesh> mesh = staticMesh.staticMesh.lock();
         std::shared_ptr<Material> material = staticMesh.material.lock();
 
         if (!mesh || !material)
@@ -59,16 +59,16 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 
         const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.position, static_cast<Tbx::Quaterniond>(transform.rotation.quaternion),
             transform.scale);
-        const StaticMeshData staticMeshData =
+        const StaticMeshComponentData staticMeshData =
         {
         .materialType = material->materialType,
         .descriptorSet = material->GetDescriptorSet(),
-        .mesh = mesh.get(),
-        .worldMatrix = m ,
+        .staticMesh = mesh.get(),
+        .worldMatrix = m,
         .normalInvertMatrix = m.Invert().Transpose(),
         };
 
-        m_RenderingDataPtr->staticMeshData.push_back(staticMeshData);
+        m_RenderingDataPtr->staticMeshComponentData.push_back(staticMeshData);
     }
         
    

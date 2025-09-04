@@ -760,7 +760,30 @@ BEGIN_PCCORE
     ENUM_FLAGS(GpuAccessFlag)
    
 
-  
+    enum class VertexInputRate
+    {
+        VERTEX = 0,
+        INSTANCE = 1,
+
+        COUNT
+    };
+
+
+
+    struct VertexInputBindingDescrition
+    {
+        uint32_t binding = 0;
+        uint32_t stride = 0;
+        VertexInputRate vertexInputRate = VertexInputRate::VERTEX;
+    };
+
+    struct VertexAttributeDescription
+    {
+        uint32_t binding = 0;
+        uint32_t location = 0;
+        RHIFormat format = RHIFormat::UNDEFINED;
+        uint32_t offset = 0;
+    };
 
 
 END_PCCORE

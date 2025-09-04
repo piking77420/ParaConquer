@@ -18,11 +18,6 @@ void PC_CORE::VertexBuffer::Update(void* _data, size_t _size) const
     m_RhiBuffer->UnmapData();
 }
 
-PC_CORE::VertexBuffer::VertexBuffer(Vertex* _vertices, size_t _count, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage)
-{
-	m_RhiBuffer = Rhi::CreateVertexBuffer(_vertices, _count * sizeof(Vertex), _localisation, _usage);
-}
-
 PC_CORE::VertexBuffer::VertexBuffer(const void* _data, size_t _vertexCount, size_t _vertexSize,
 	PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage)
 	: m_Count(_vertexCount)

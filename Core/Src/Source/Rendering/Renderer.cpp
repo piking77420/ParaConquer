@@ -298,26 +298,26 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
 
     Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(rContextView.lowLevelCamera.position);
 
-    for (size_t i = 0; i < renderWorldData.staticMeshData.size(); i++)
+    for (size_t i = 0; i < renderWorldData.staticMeshComponentData.size(); i++)
     {
-        if (!renderWorldData.staticMeshData[i].mesh->IsLoaded())
+        if (!renderWorldData.staticMeshComponentData[i].staticMesh->IsLoaded())
             continue;
 
-        if (renderWorldData.staticMeshData[i].materialType != type)
+        if (renderWorldData.staticMeshComponentData[i].materialType != type)
             continue;
 
         Tbx::Matrix4x4f modelMatrixf[2];
         // Apply offset to the copy one
-        modelMatrixf[0] = renderWorldData.staticMeshData[i].worldMatrix;
+        modelMatrixf[0] = renderWorldData.staticMeshComponentData[i].worldMatrix;
         modelMatrixf[0][12] -= cameraOffset.x;
         modelMatrixf[0][13] -= cameraOffset.y;
         modelMatrixf[0][14] -= cameraOffset.z;
 
-        modelMatrixf[1] = renderWorldData.staticMeshData[i].normalInvertMatrix;
+        modelMatrixf[1] = renderWorldData.staticMeshComponentData[i].normalInvertMatrix;
 
 
-        const ShaderProgramDescriptorSets* materialDescriptor = renderWorldData.staticMeshData[i].descriptorSet;
-        const Mesh* mesh = renderWorldData.staticMeshData[i].mesh;
+        const ShaderProgramDescriptorSets* materialDescriptor = renderWorldData.staticMeshComponentData[i].descriptorSet;
+        const StaticMesh* mesh = renderWorldData.staticMeshComponentData[i].staticMesh;
 
         // Send Data
 
@@ -337,7 +337,7 @@ void Renderer::ClearRenderData()
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     renderWorldData.lightData.clear();
-    renderWorldData.staticMeshData.clear();
+    renderWorldData.staticMeshComponentData.clear();
 }
 
 void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
@@ -799,8 +799,11 @@ void Renderer::CreateShaders()
                 .depthCompareOp = CompareOp::LESS,
                 .enableDepthTest = true
             },
-            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
-            .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
+            .vertexInputBindingDescritions = 
+            {
+                StaticMeshVertex::GetVertexBindingDescription(0)
+            },
+            .vertexAttributeDescriptions = StaticMeshVertex::GetAttributeDescriptions(0),
         };
 
         const SourceList sources =
@@ -892,8 +895,8 @@ void Renderer::CreateShaders()
                 .depthCompareOp = CompareOp::LESS,
                 .enableDepthTest = true
             },
-            .vertexInputBindingDescritions = {Vertex::GetBindingDescrition(0)},
-            .vertexAttributeDescriptions = Vertex::GetAttributeDescriptions(0),
+            .vertexInputBindingDescritions = {StaticMeshVertex::GetVertexBindingDescription(0)},
+            .vertexAttributeDescriptions = StaticMeshVertex::GetAttributeDescriptions(0),
         };
 
         const SourceList sources =

@@ -11,31 +11,12 @@
 #include "Rendering/Buffer/VertexBuffer.hpp"
 
 BEGIN_PCCORE
- class Mesh : public Resource
+class Mesh 
 {
 public:
-    VertexBuffer vertexBuffer;
-
-    IndexBuffer indexBuffer;
-
-    ModelFormat meshFormat;
-
-    void LoadFromFile(const std::string& _path);
-
-    PC_CORE_API IMP_DYNAMIC_REFLECT()
-
-    PC_CORE_API Mesh(const std::string& _name);
-
-    PC_CORE_API Mesh(const std::string& _name, const std::string& _path);
-
-    PC_CORE_API Mesh();
-    
-    PC_CORE_API ~Mesh() override;
+ 
 
 private:
-    MotionCore::Aabb<double> m_Aabb;
-        
-    void LoadObj(const std::string& path, std::vector<Vertex>& _vertices, std::vector<uint32_t>& _indices);
 };
 REFLECT(Mesh, Resource)
 

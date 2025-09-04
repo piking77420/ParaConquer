@@ -78,7 +78,6 @@ private:
     REFLECT(ResourceManager);
     REFLECT_MEMBER(ResourceManager, m_ResourcesMap);
     REFLECT_MEMBER(ResourceManager, m_NameToGuid);
-    REFLECT_MEMBER(ResourceManager, m_PathToGuid);
 
     REFLECT(std::shared_ptr<Resource>)
 };

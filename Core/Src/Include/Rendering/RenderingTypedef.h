@@ -4,7 +4,7 @@
 #include "Material.hpp"
 #include "LowRenderer/FrameBuffer.hpp"
 #include "LowRenderer/DescriptorSet.hpp"
-#include "Resources/Mesh.hpp"
+#include "Resources/StaticMesh.hpp"
 
 BEGIN_PCCORE
     struct LowLevelCamera
@@ -68,11 +68,11 @@ BEGIN_PCCORE
     };
     
 
-    struct StaticMeshData
+    struct StaticMeshComponentData
     {
         PC_CORE::MaterialType materialType;
         const PC_CORE::ShaderProgramDescriptorSets* descriptorSet;
-        const PC_CORE::Mesh* mesh;
+        const PC_CORE::StaticMesh* staticMesh;
 
         Tbx::Matrix4x4d worldMatrix;
         // TO DO PASS IT TO MAT3
@@ -135,11 +135,11 @@ BEGIN_PCCORE
 
         void Clear()
         {
-            staticMeshData.clear();
+            staticMeshComponentData.clear();
             lightData.clear();
         }
 
-        std::vector<StaticMeshData> staticMeshData;
+        std::vector<StaticMeshComponentData> staticMeshComponentData;
         std::vector<LightData> lightData;
     };
 
