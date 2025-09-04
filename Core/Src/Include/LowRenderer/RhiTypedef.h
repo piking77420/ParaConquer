@@ -28,6 +28,14 @@ BEGIN_PCCORE
         Count
     };
 
+enum struct RhiExtension
+{
+    RayTracing,
+    MeshShader,
+    Count
+};
+
+
     constexpr const char* ShaderCacheVulkanFolder = "SPRIV/";
     constexpr const char* ShaderCacheD3d12Folder = "DXIL/";
 

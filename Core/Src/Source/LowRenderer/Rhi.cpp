@@ -403,10 +403,10 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
         .gpuDebug = _createInfo.gpuDebug
         };
     
-    PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
+    const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
         {
             {
-                SWAPCHAIN_EXT, //MESH_SHADER_EXT, ACCELERATION_EXT ,RAY_TRACING_EXT , DEFFERED_HOST_OP
+                /*RhiExtension::MeshShader,*/RhiExtension::RayTracing,
             },
         
         };

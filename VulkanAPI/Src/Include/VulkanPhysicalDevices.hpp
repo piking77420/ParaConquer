@@ -42,7 +42,7 @@ namespace Vulkan
 
         VULKAN_API SwapChainSupportDetails GetSwapChainSupportDetails() const;
         
-        VULKAN_API explicit VulkanPhysicalDevices(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable);
+        VULKAN_API explicit VulkanPhysicalDevices(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable);
 
         VULKAN_API VulkanPhysicalDevices() = default;
 
@@ -57,19 +57,19 @@ namespace Vulkan
 
         VulkanPhysicalDevice* GetSelectedPhysicalDevice();
 
-        VULKAN_API void Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable);
+        VULKAN_API void Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable);
 
-        VULKAN_API int32_t GetDeviceScore(const vk::PhysicalDevice& _physicalDevice, const std::vector<std::string>& _requestExtensions, size_t _deviceIndex);
+        VULKAN_API int32_t GetDeviceScore(const vk::PhysicalDevice& _physicalDevice, const std::set<std::string>& _requestExtensions, size_t _deviceIndex);
 
-        VULKAN_API void LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices, const std::vector<std::string>& _requestExtensions);
+        VULKAN_API void LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices, const std::set<std::string>& _requestExtensions);
 
         VULKAN_API void GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
-                                            const vk::PhysicalDeviceProperties& _physicalDeviceProperties);
+                                            const vk::PhysicalDeviceProperties& _physicalDeviceProperties, size_t* _score);
 
         VULKAN_API void GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
-                                          const vk::PhysicalDeviceFeatures& _physicalDeviceProperties);
+                                          const vk::PhysicalDeviceFeatures& _physicalDeviceProperties, size_t* _score);
 
-        VULKAN_API std::vector<std::string> GetVulkanRequestExtensions(const std::vector<std::string>& _requestExtensions);
+        VULKAN_API std::set<std::string> GetVulkanRequestExtensions(const std::vector <PC_CORE::RhiExtension>& _requestExtensions);
 
         VULKAN_API static bool CheckDeviceExtensionSupport(
             const std::vector<vk::ExtensionProperties>& availableExtensions,
