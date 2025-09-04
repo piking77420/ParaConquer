@@ -1,3 +1,4 @@
+[[vk::image_format("rgba16f")]]
 RWTexture2D<float4> hdrImage : register(u0);
 
 // ACES RRT + ODT fit function
