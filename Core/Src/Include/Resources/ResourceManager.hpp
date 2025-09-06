@@ -23,13 +23,6 @@ public:
 
     static void Destroy();
 
-    void SetPath(const std::filesystem::path& _path);
-
-    const std::filesystem::path& GetPath()
-    {
-        return m_BasePath;
-    }
-
     template<class ResourceDerived, typename... Arg>
     static std::shared_ptr<ResourceDerived>  Create(Arg... args);
 

@@ -406,8 +406,8 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
     const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
         {
             {
-                RhiExtension::RayTracing,
-                RhiExtension::MeshShader
+               // RhiExtension::RayTracing,
+                //RhiExtension::MeshShader
             },
         
         };

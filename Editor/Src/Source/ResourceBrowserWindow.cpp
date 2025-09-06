@@ -16,7 +16,9 @@ using namespace PC_EDITOR_CORE;
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-	m_CurrenPath = PC_CORE::ResourceManager::Instance().GetPath();
+	m_BasePathRelative = std::filesystem::relative(std::filesystem::current_path(), m_Editor->editorData.projectPath);
+	m_CurrenPath = m_Editor->editorData.projectPath;
+
 	windowFlags |= ImGuiWindowFlags_MenuBar;
 
 	const PC_CORE::Sampler& s = m_Editor->editorData.nearestSampler;
@@ -59,9 +61,7 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 {
 	PERF_REGION_SCOPED;
 	EditorWindow::Update();
-	/*
-	// lock
-	std::lock_guard _(AssetBrowser::GetInstance().lock);
+	
 
 	if (ImGui::BeginMenuBar())
 	{
@@ -90,8 +90,7 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 	ImGui::PushFont(m_Editor->editorData.editorFont.veryBig);
 
 	// TODO may cook it 
-	const std::filesystem::path relativePath = std::filesystem::relative(m_CurrenPath, AssetBrowser::GetInstance().GetBasePath());
-	ImGui::Text(relativePath.generic_string().c_str());
+	ImGui::Text(m_BasePathRelative.generic_string().c_str());
 	ImGui::PopFont();
 	RenderDirectories();
 
@@ -101,7 +100,7 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 	{
 		m_Editor->selectedObject = std::monostate();
 		m_HasSelectedObject = false;
-	}*/
+	}
 }
 
 void ResourceBrowserWindow::CreateAsset() const
@@ -165,11 +164,11 @@ void ResourceBrowserWindow::RenderDirectories()
 	if (colomnCount < 1)
 		colomnCount = 1;
 
-	if (m_CurrenPath == PC_CORE::ResourceManager::Instance().GetPath())
+	if (m_CurrenPath == m_Editor->editorData.projectPath)
 	{
 
 	}
-	else if (ImGui::ArrowButton("Reverse", ImGuiDir_Left) && PC_CORE::ResourceManager::Instance().GetPath().string() != m_CurrenPath.string())
+	else if (ImGui::ArrowButton("Reverse", ImGuiDir_Left) && m_Editor->editorData.projectPath.string() != m_CurrenPath.string())
 	{
 		m_CurrenPath = m_CurrenPath.parent_path();
 	}

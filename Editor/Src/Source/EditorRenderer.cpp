@@ -172,11 +172,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     PC_CORE::SourceList sourceList =
         {
         {
-            PC_CORE::ShaderStageTypeFlag::Vertex,
+            PC_CORE::ShaderStageType::Vertex,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.vs.hlsl.binary"),
         },
         {
-            PC_CORE::ShaderStageTypeFlag::Pixel,
+            PC_CORE::ShaderStageType::Pixel,
                 PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.ps.hlsl.binary")
         }
         };

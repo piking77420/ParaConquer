@@ -27,7 +27,7 @@ public:
 
 private:
     
-    PC_CORE::ShaderStageTypeFlag m_ShaderType;
+    PC_CORE::ShaderStageType m_ShaderType;
 
     std::filesystem::path m_PathToSource;
 

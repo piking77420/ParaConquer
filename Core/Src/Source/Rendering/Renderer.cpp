@@ -809,11 +809,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageTypeFlag::Vertex,
+                ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("Geometry.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Pixel,
+                ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("Geometry.ps.hlsl.binary")
             }
         };
@@ -856,11 +856,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageTypeFlag::Vertex,
+                ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Pixel,
+                ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("Deferred.ps.hlsl.binary")
             }
         };
@@ -902,11 +902,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageTypeFlag::Vertex,
+                ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Pixel,
+                ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")
             }
         };
@@ -966,11 +966,11 @@ void Renderer::CreateShaders()
         const SourceList source =
         {
             {
-                ShaderStageTypeFlag::Vertex,
+                ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")
             },
             {
-                ShaderStageTypeFlag::Pixel,
+                ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")
             }
         };
@@ -1032,11 +1032,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageTypeFlag::Vertex,
+                ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary"),
             },
             {
-                ShaderStageTypeFlag::Pixel,
+                ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")
             }
         };

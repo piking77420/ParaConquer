@@ -69,13 +69,13 @@ std::vector<char> PC_CORE::ShaderSourceBinary::GetCode() const
 }
 
 
-PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType, GraphicAPI _api) : Resource(_name), m_ShaderStageType(_shaderStageType)
+PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType, GraphicAPI _api) : Resource(_name), m_ShaderStageType(_shaderStageType)
 {
     DYNAMIC_REFLECT_INIT
     WriteSprivToFile(_sprivCode, _api);
 }
 
-PC_CORE::ShaderSourceBinary::ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageTypeFlag _shaderStageType, GraphicAPI _api) : Resource(std::move(_name)), m_ShaderStageType(_shaderStageType)
+PC_CORE::ShaderSourceBinary::ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType, GraphicAPI _api) : Resource(std::move(_name)), m_ShaderStageType(_shaderStageType)
 {
     DYNAMIC_REFLECT_INIT
 

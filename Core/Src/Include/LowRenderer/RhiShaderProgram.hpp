@@ -113,7 +113,7 @@ struct ShaderInfo
     std::string shaderName;
 };
 
-using ShaderModule = std::pair<ShaderStageTypeFlag, std::vector<char>>;
+using ShaderModule = std::pair<ShaderStageType, std::vector<char>>;
 
 struct ProgramShaderCreateInfo
 {

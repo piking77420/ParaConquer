@@ -42,7 +42,7 @@ void ShaderProgram::FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgr
 }
 
 ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType,
-    const std::vector<std::pair<ShaderStageTypeFlag, std::weak_ptr<ShaderSourceBinary>>>& _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+    const std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>& _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     PERF_REGION_SCOPED;
     

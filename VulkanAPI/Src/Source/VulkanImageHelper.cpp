@@ -79,11 +79,11 @@ vk::ImageAspectFlags Vulkan::GetImageAspectFlags(PC_CORE::TextureUsage usage)
 
     vk::ImageAspectFlags flags = {};
 
-    if ((usage & TextureUsage::Depth) == TextureUsage::Depth)
+    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth)
     {
         flags |= vk::ImageAspectFlagBits::eDepth;
     }
-    else if ((usage & TextureUsage::Stencil) == TextureUsage::Stencil)
+    else if ((usage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil)
     {
         flags |= vk::ImageAspectFlagBits::eStencil;
     }
@@ -100,22 +100,22 @@ vk::ImageLayout Vulkan::GetImageLayout(PC_CORE::TextureUsage usage)
 {
     using namespace PC_CORE;
 
-    if ((usage & TextureUsage::Depth) == TextureUsage::Depth && (usage & TextureUsage::Stencil) == TextureUsage::Stencil)
+    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth && (usage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil)
         return vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-    if ((usage & TextureUsage::Depth) == TextureUsage::Depth)
+    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth)
         return vk::ImageLayout::eDepthAttachmentOptimal;
 
-    if ((usage & TextureUsage::Depth) == TextureUsage::Stencil)
+    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Stencil)
         return vk::ImageLayout::eStencilAttachmentOptimal;
 
-    if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+    if ((usage & TextureUsage::RenderTarget) == (uint8_t)TextureUsage::RenderTarget)
         return vk::ImageLayout::eColorAttachmentOptimal;
 
-    if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
+    if ((usage & TextureUsage::Storage) == (uint8_t)TextureUsage::Storage)
         return vk::ImageLayout::eGeneral;
 
-    if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
+    if ((usage & TextureUsage::Sampled) == (uint8_t)TextureUsage::Sampled)
         return vk::ImageLayout::eShaderReadOnlyOptimal;
     
     // Fallback default

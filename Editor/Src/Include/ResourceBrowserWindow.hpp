@@ -43,6 +43,8 @@ private:
 
     ImguiImage m_NullIcon;
 
+    std::filesystem::path m_BasePathRelative;
+
     std::filesystem::path m_CurrenPath;
 
     std::filesystem::path m_SelectedItem;

@@ -11,7 +11,7 @@
 #include "Resources/ResourceManager.hpp"
 
 
-#include "AssetBrowserWindow.hpp"
+#include "ResourceBrowserWindow.hpp"
 #include "EditWorldWindow.hpp"
 #include "Hierachy.hpp"
 #include "Inspector.hpp"
@@ -181,8 +181,6 @@ void Editor::Init()
 	};
 
 	CompileShader();
-	PC_CORE::ResourceManager::Instance().SetPath(editorData.projectPath);
-
 	gameApp.Init(appCreateInfo);
 	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
 

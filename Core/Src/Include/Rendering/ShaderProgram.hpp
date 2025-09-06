@@ -15,7 +15,7 @@
 
 BEGIN_PCCORE
 
-    using SourceList = std::vector<std::pair<ShaderStageTypeFlag, std::weak_ptr<ShaderSourceBinary>>>;
+    using SourceList = std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>;
 
     // MAKE COMPUTE RAY AND GRAPHIC PROGRAMM
     // TO DO MAY SEPARATE RESOURCE AND GPU RESOURCE
@@ -43,7 +43,7 @@ BEGIN_PCCORE
         IMP_DYNAMIC_REFLECT()
     
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
-            ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageTypeFlag, std::weak_ptr<ShaderSourceBinary>>>& _sources);
+            ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>& _sources);
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
             ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source);

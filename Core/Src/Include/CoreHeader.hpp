@@ -37,6 +37,7 @@ type& operator=(type&& other) noexcept = default;
     inline std::underlying_type_t<enumName>& operator|=(std::underlying_type_t<enumName>& lhs, const enumName rhs) { return lhs = lhs | rhs; } \
     inline enumName& operator&=(enumName& lhs, const enumName rhs) { return lhs = static_cast<enumName>(lhs & rhs); } \
     inline enumName& operator|=(enumName& lhs, const enumName rhs) { return lhs = static_cast<enumName>(lhs | rhs); } \
+
                                                                                                                                                                                                                             
 
 #define DEFAULT_CONSTRUCTOR_DESTRUCTOR(type) \

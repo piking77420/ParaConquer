@@ -199,11 +199,11 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	const SourceList source =
 	{
 		{
-			PC_CORE::ShaderStageTypeFlag::Vertex,
+			PC_CORE::ShaderStageType::Vertex,
 			ResourceManager::Get<ShaderSourceBinary>("DebugDraw.vs.hlsl.binary")
 		},
 		{
-			PC_CORE::ShaderStageTypeFlag::Pixel,
+			PC_CORE::ShaderStageType::Pixel,
 			ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
 		}
 	};
@@ -299,12 +299,12 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 	const SourceList source =
 	{
 		{
-			PC_CORE::ShaderStageTypeFlag::Vertex,
+			PC_CORE::ShaderStageType::Vertex,
 			ResourceManager::Get<ShaderSourceBinary>("DebugDrawRay.vs.hlsl.binary")
 
 		},
 		{
-			PC_CORE::ShaderStageTypeFlag::Pixel,
+			PC_CORE::ShaderStageType::Pixel,
 			ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
 
 		}

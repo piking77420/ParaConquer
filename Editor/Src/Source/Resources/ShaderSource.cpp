@@ -92,7 +92,7 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
         PC_LOGERROR("Shader invalid format")
     }
 
-    m_ShaderType = static_cast<ShaderStageTypeFlag>(formatIndex);
+    m_ShaderType = static_cast<ShaderStageType>(formatIndex);
     m_PathToSource = _path;
 
 

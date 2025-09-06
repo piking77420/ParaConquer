@@ -984,45 +984,6 @@ vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _poly
     throw std::runtime_error("Unknown PolygonMode");
 }
 
-
-vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageTypeFlag _shaderStage)
-{
-    switch (_shaderStage)
-    {
-    case PC_CORE::ShaderStageTypeFlag::Vertex:
-        return vk::ShaderStageFlagBits::eVertex;
-    case PC_CORE::ShaderStageTypeFlag::Hull:
-        return vk::ShaderStageFlagBits::eTessellationControl;
-    case PC_CORE::ShaderStageTypeFlag::Domain:
-        return vk::ShaderStageFlagBits::eTessellationEvaluation;
-    case PC_CORE::ShaderStageTypeFlag::Geometry:
-        return vk::ShaderStageFlagBits::eGeometry;
-    case PC_CORE::ShaderStageTypeFlag::Pixel:
-        return vk::ShaderStageFlagBits::eFragment;
-    case PC_CORE::ShaderStageTypeFlag::Compute:
-        return vk::ShaderStageFlagBits::eCompute;
-    case PC_CORE::ShaderStageTypeFlag::Raygen:
-        return vk::ShaderStageFlagBits::eRaygenNV;
-    case PC_CORE::ShaderStageTypeFlag::Intersect:
-        return vk::ShaderStageFlagBits::eIntersectionNV;
-    case PC_CORE::ShaderStageTypeFlag::Anyhit:
-        return vk::ShaderStageFlagBits::eAnyHitNV;
-    case PC_CORE::ShaderStageTypeFlag::Closesthit:
-        return vk::ShaderStageFlagBits::eClosestHitNV;
-    case PC_CORE::ShaderStageTypeFlag::Miss:
-        return vk::ShaderStageFlagBits::eMissNV;
-    case PC_CORE::ShaderStageTypeFlag::Callable:
-        return vk::ShaderStageFlagBits::eCallableNV;
-    case PC_CORE::ShaderStageTypeFlag::Task:
-        return vk::ShaderStageFlagBits::eTaskNV;
-    case PC_CORE::ShaderStageTypeFlag::Mesh:
-        return vk::ShaderStageFlagBits::eMeshNV;
-    case PC_CORE::ShaderStageTypeFlag::Count:
-    default:
-        throw std::runtime_error("Unknown ShaderStageType");
-    }
-}
-
 vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
 {
     vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
@@ -1047,6 +1008,48 @@ vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::CullModeFlagBit _cullMod
     
     return cullModeFlags;
 }
+
+vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStageType)
+{
+    switch (_shaderStageType)
+    {
+    case PC_CORE::ShaderStageType::Vertex:
+        return vk::ShaderStageFlagBits::eVertex;
+    case PC_CORE::ShaderStageType::Hull:
+        return vk::ShaderStageFlagBits::eTessellationControl;
+    case PC_CORE::ShaderStageType::Domain:
+        return vk::ShaderStageFlagBits::eTessellationEvaluation;
+    case PC_CORE::ShaderStageType::Geometry:
+        return vk::ShaderStageFlagBits::eGeometry;
+    case PC_CORE::ShaderStageType::Pixel:
+        return vk::ShaderStageFlagBits::eFragment;
+    case PC_CORE::ShaderStageType::Compute:
+        return vk::ShaderStageFlagBits::eCompute;
+    case PC_CORE::ShaderStageType::Raygen:
+        return vk::ShaderStageFlagBits::eRaygenKHR;
+    case PC_CORE::ShaderStageType::Intersection:
+        return vk::ShaderStageFlagBits::eIntersectionKHR;
+    case PC_CORE::ShaderStageType::Anyhit:
+        return vk::ShaderStageFlagBits::eAnyHitKHR;
+    case PC_CORE::ShaderStageType::Closesthit:
+        return vk::ShaderStageFlagBits::eClosestHitKHR;
+    case PC_CORE::ShaderStageType::Miss:
+        return vk::ShaderStageFlagBits::eMissKHR;
+    case PC_CORE::ShaderStageType::Callable:
+        return vk::ShaderStageFlagBits::eCallableKHR;
+    case PC_CORE::ShaderStageType::Task:
+        return vk::ShaderStageFlagBits::eTaskEXT;
+    case PC_CORE::ShaderStageType::Mesh:
+        return vk::ShaderStageFlagBits::eMeshEXT;
+    case PC_CORE::ShaderStageType::Count:
+    default:
+        assert(false);
+        break;
+    }
+
+    return {};
+}
+
 
 
 vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
@@ -1500,16 +1503,16 @@ vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::TextureUsage usag
 
     VkImageUsageFlags flags = 0;
 
-    if ((usage & TextureUsage::Sampled) == TextureUsage::Sampled)
+    if ((usage & TextureUsage::Sampled) == (uint8_t)TextureUsage::Sampled)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    if ((usage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+    if ((usage & TextureUsage::RenderTarget) == (uint8_t)TextureUsage::RenderTarget)
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 
-    if (((usage & TextureUsage::Depth) == TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == TextureUsage::Stencil))
+    if (((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil))
         flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    if ((usage & TextureUsage::Storage) == TextureUsage::Storage)
+    if ((usage & TextureUsage::Storage) == (uint8_t)TextureUsage::Storage)
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
     // Fallback/default
@@ -1525,10 +1528,10 @@ vk::ImageAspectFlags Vulkan::Utils::RhiTextureUsageToImageAspectFlagFlags(PC_COR
 
     vk::ImageAspectFlags flags = {};
 
-    if ((_textureUsage & TextureUsage::RenderTarget) == TextureUsage::RenderTarget)
+    if ((_textureUsage & TextureUsage::RenderTarget) == (uint8_t)TextureUsage::RenderTarget)
         flags |= vk::ImageAspectFlagBits::eColor;
 
-    if (((_textureUsage & TextureUsage::Depth) == TextureUsage::Depth) || ((_textureUsage & TextureUsage::Stencil) == TextureUsage::Stencil))
+    if (((_textureUsage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth) || ((_textureUsage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil))
         flags |= vk::ImageAspectFlagBits::eDepth;
 
     return flags;

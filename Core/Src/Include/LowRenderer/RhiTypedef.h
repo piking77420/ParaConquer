@@ -23,9 +23,7 @@ enum class GraphicAPI
 {
 	None,
 	Vulkan,
-#ifdef _WIN32
 	D3d12,
-#endif
 	Count
 };
 REFLECT(GraphicAPI);
@@ -40,10 +38,6 @@ enum struct RhiExtension
 	Count
 };
 REFLECT(RhiExtension);
-
-constexpr const char* ShaderCacheVulkanFolder = "SPRIV/";
-constexpr const char* ShaderCacheD3d12Folder = "DXIL/";
-
 
 struct CameraGpu
 {
@@ -437,31 +431,7 @@ enum class RHIFormat
 
 #pragma endregion
 
-enum class ShaderStageTypeFlag : size_t
-{
-	Vertex,
-	Hull,
-	Domain,
-	Geometry,
-	Pixel,
-	Compute,
-	Raygen,
-	Intersect,
-	Anyhit,
-	Closesthit,
-	Miss,
-	Callable,
-	Task,
-	Mesh,
-
-	Count
-};
-
-ENUM_FLAGS(ShaderStageTypeFlag)
-
-
-
-enum struct MemoryUsage
+enum struct MemoryUsage : uint8_t
 {
 	Static, // Not modified over its lifetime
 	Mutable, // Occasionally modified (e.g., once per frame)
@@ -470,7 +440,9 @@ enum struct MemoryUsage
 	Count // Total enum values
 };
 
-enum struct MemoryLocalisation
+REFLECT(MemoryUsage)
+
+enum struct MemoryLocalisation : uint8_t
 {
 	GPU_Only, // Device-local
 	CPU_Only, // Host Only
@@ -479,18 +451,20 @@ enum struct MemoryLocalisation
 
 	Count // Total enum values
 };
+REFLECT(MemoryLocalisation)
 
-
-enum class IndexFormat : int
+enum class IndexFormat : uint8_t
 {
 	Uiunt8 = 1,
 	Uint16 = 2,
 	Uint32 = 4
 };
+REFLECT(IndexFormat)
+static_assert(static_cast<uint8_t>(IndexFormat::Uint32) == 4, "Size of Uint32");
 
 #pragma region Image
 
-enum class Channel
+enum class Channel : uint8_t
 {
 	DEFAULT = 0,
 
@@ -499,8 +473,9 @@ enum class Channel
 	RGB = 3,
 	RGBA = 4
 };
+REFLECT(Channel)
 
-enum class ComponentSwizzle
+enum class ComponentSwizzle : uint8_t
 {
 	COMPONENT_SWIZZLE_IDENTITY = 0,
 	COMPONENT_SWIZZLE_ZERO = 1,
@@ -509,8 +484,9 @@ enum class ComponentSwizzle
 	COMPONENT_SWIZZLE_G = 4,
 	COMPONENT_SWIZZLE_B = 5,
 	COMPONENT_SWIZZLE_A = 6,
-	COMPONENT_SWIZZLE_MAX_ENUM = 0x7FFFFFFF
+	COMPONENT_SWIZZLE_MAX_ENUM = std::numeric_limits<uint8_t>::max()
 };
+REFLECT(ComponentSwizzle)
 
 struct ComponentMapping
 {
@@ -519,7 +495,7 @@ struct ComponentMapping
 	ComponentSwizzle b;
 	ComponentSwizzle a;
 };
-
+REFLECT(ComponentMapping)
 
 enum class AttachmentType
 {
@@ -529,6 +505,7 @@ enum class AttachmentType
 	Stencil,
 	DepthStencil,
 };
+REFLECT(AttachmentType)
 
 enum class TextureUsage : uint8_t
 {
@@ -543,22 +520,9 @@ enum class TextureUsage : uint8_t
 
 	All = Sampled | RenderTarget | Depth | Stencil | Storage,
 };
+ENUM_FLAGS(TextureUsage)
+REFLECT(TextureUsage)
 
-
-inline TextureUsage operator|(TextureUsage a, TextureUsage b)
-{
-	return static_cast<TextureUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
-}
-
-inline TextureUsage operator&(TextureUsage a, TextureUsage b)
-{
-	return static_cast<TextureUsage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
-}
-
-inline bool HasUsage(TextureUsage usage, TextureUsage flag)
-{
-	return (static_cast<uint32_t>(usage) & static_cast<uint32_t>(flag)) != 0;
-}
 
 // may in future rename as resoure state like D3D12
 enum class ImageState : uint8_t
@@ -584,7 +548,7 @@ enum class TextureType
 	CubeMapArray,
 	Count,
 };
-
+REFLECT(TextureType)
 
 struct CreateImageInfo
 {
@@ -605,6 +569,7 @@ struct CreateImageInfo
 	bool GenerateMipMap = false;
 	std::vector<void*> datas;
 };
+REFLECT(CreateImageInfo)
 
 
 enum class Filter
@@ -614,12 +579,13 @@ enum class Filter
 	CUBIC_IMG,
 	CUBIC_EXT
 };
-
+REFLECT(Filter)
 enum class SamplerMipmapMode
 {
 	NEAREST = 0,
 	LINEAR = 1,
 };
+REFLECT(SamplerMipmapMode)
 
 enum class SamplerAddressMode
 {
@@ -629,6 +595,8 @@ enum class SamplerAddressMode
 	CLAMP_TO_BORDER = 3,
 	MIRROR_CLAMP_TO_EDGE = 4,
 };
+REFLECT(SamplerAddressMode)
+
 
 enum class CompareOp
 {
@@ -641,6 +609,7 @@ enum class CompareOp
 	GREATER_OR_EQUAL = 6,
 	ALWAYS = 7,
 };
+REFLECT(CompareOp)
 
 enum class BorderColor
 {
@@ -653,6 +622,7 @@ enum class BorderColor
 	FLOAT_CUSTOM_EXT = 1000287003,
 	INT_CUSTOM_EXT
 };
+REFLECT(BorderColor)
 
 
 #pragma endregion
@@ -670,12 +640,15 @@ enum struct LoadOperation
 	Clear,
 	DontCare,
 };
+REFLECT(LoadOperation)
 
 enum struct StoreOperation
 {
 	Store,
 	DontCare,
 };
+REFLECT(StoreOperation)
+
 
 enum class ShaderProgramPipelineType
 {
@@ -685,6 +658,8 @@ enum class ShaderProgramPipelineType
 
 	COUT
 };
+REFLECT(ShaderProgramPipelineType)
+
 
 enum class GpuPipelineStageFlagBits : uint64_t
 {
@@ -769,32 +744,28 @@ enum class GpuAccessFlag : uint64_t
 
 ENUM_FLAGS(GpuAccessFlag)
 
+enum class VertexInputRate
+{
+	VERTEX = 0,
+	INSTANCE = 1,
 
+	COUNT
+};
 
-    enum class VertexInputRate
-    {
-        VERTEX = 0,
-        INSTANCE = 1,
+struct VertexInputBindingDescrition
+{
+	uint32_t binding = 0;
+	uint32_t stride = 0;
+	VertexInputRate vertexInputRate = VertexInputRate::VERTEX;
+};
 
-        COUNT
-    };
-
-
-
-    struct VertexInputBindingDescrition
-    {
-        uint32_t binding = 0;
-        uint32_t stride = 0;
-        VertexInputRate vertexInputRate = VertexInputRate::VERTEX;
-    };
-
-    struct VertexAttributeDescription
-    {
-        uint32_t binding = 0;
-        uint32_t location = 0;
-        RHIFormat format = RHIFormat::UNDEFINED;
-        uint32_t offset = 0;
-    };
+struct VertexAttributeDescription
+{
+	uint32_t binding = 0;
+	uint32_t location = 0;
+	RHIFormat format = RHIFormat::UNDEFINED;
+	uint32_t offset = 0;
+};
 
 
 END_PCCORE
@@ -814,7 +785,7 @@ inline T* SafeCastReinterpreCast(U* ptr)
 #endif // DEBUG
 }
 
-
+//TODO do bindles descritpro
 // DescriptorSet
 #define SCENE_DESCRIPTOR_SET 0
 #define MATERIAL_DESCRIPTOR_SET 1

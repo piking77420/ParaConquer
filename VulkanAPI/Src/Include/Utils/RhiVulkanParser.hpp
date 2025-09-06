@@ -41,9 +41,9 @@ namespace Vulkan
         
         vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode);
     
-        vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::ShaderStageTypeFlag _shaderStage);
-
         vk::CullModeFlags RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit);
+
+        vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::ShaderStageType _shaderStageType);
         
         vk::IndexType RhiToIndexType(PC_CORE::IndexFormat _format);
 
