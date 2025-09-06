@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
-option(PROFILING "Build profiling dependencies" ON)
-option(BUILD_TEST "Build UnitTest" ON)
+option(PROFILING "Build profiling dependencies" OFF)
+option(BUILD_TEST "Build UnitTest" OFF)
 
 
 ## Force Assimp to not build Unit test
