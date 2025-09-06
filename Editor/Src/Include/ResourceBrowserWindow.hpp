@@ -36,6 +36,8 @@ private:
     {
         float spacing = 50.f;
         float padding = 16.f;
+        float thumbnailSize = 48.f;
+        
     }m_AssetBrowserOption{};
 
 
@@ -49,7 +51,7 @@ private:
 
     std::filesystem::path m_SelectedItem;
 
-    std::unordered_map<std::string, ImguiImage> m_FormatIconMap;
+    std::unordered_map<PC_CORE::TypeId, ImguiImage> m_TypeIconMap;
 
     std::unordered_map<std::filesystem::path, std::string> m_PathStringCache;
 
@@ -65,7 +67,9 @@ private:
 
     void OnFileSelectedClick();
 
-    void CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path);
+    void CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const std::filesystem::path& _path);
+
+    PC_CORE::TypeId TypeIdFromPath(const std::filesystem::path& _path);
 };
 
 END_EDITOR_PCCORE

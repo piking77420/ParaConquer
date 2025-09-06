@@ -9,8 +9,8 @@
 
 #include "DataStructure/SpareSet.hpp"
 
-    BEGIN_PCCORE
-        using TypeId = uint32_t; 
+BEGIN_PCCORE
+using TypeId = uint32_t; 
 static constexpr TypeId NullTypeId = 0;
 using TypeFlag = uintmax_t;
 

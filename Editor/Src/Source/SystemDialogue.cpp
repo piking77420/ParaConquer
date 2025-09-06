@@ -16,57 +16,68 @@
 #include <New>
 #include <Shobjidl.h>  // For IFileDialogEvents
 
-std::wstring GetFile(const wchar_t* _caption, DWORD _options)
+std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _options)
 {
+    std::wstring path;
     IFileOpenDialog* pFileOpen = NULL;
     HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
                                       IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
-    std::wstring path;
 
-    while (path.empty())
-    {
-        if (SUCCEEDED(hr))
-        {
-            DWORD dwOptions;
-            if (SUCCEEDED(pFileOpen->GetOptions(&dwOptions)))
-            {
-                pFileOpen->SetOptions(dwOptions | _options);
-            }
-        
-            hr = pFileOpen->Show(NULL);
-            if (SUCCEEDED(hr))
-            {
-                IShellItem* pItem;
-                hr = pFileOpen->GetResult(&pItem);
-                if (SUCCEEDED(hr))
-                {
-                    PWSTR pszFilePath = NULL;
-                    hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-                    if (SUCCEEDED(hr))
-                    {
-                        //MessageBoxW(NULL, pszFilePath, _caption, MB_OK);
-                        path = pszFilePath;
-                        CoTaskMemFree(pszFilePath);
-                    }
-                    pItem->Release();
-                }
-            }
-            pFileOpen->Release();
-        }
-    }
+
+	if (SUCCEEDED(hr))
+	{
+		DWORD dwOptions;
+		if (SUCCEEDED(pFileOpen->GetOptions(&dwOptions)))
+		{
+			pFileOpen->SetOptions(dwOptions | _options);
+		}
+
+		if (_basePath != nullptr)
+		{
+			IShellItem* pFolder = nullptr;
+			hr = SHCreateItemFromParsingName(_basePath, NULL, IID_PPV_ARGS(&pFolder));
+			if (SUCCEEDED(hr))
+			{
+				// Set the initial folder
+				pFileOpen->SetFolder(pFolder);
+				pFolder->Release();
+			}
+		}
+
+		hr = pFileOpen->Show(NULL);
+		if (SUCCEEDED(hr))
+		{
+			IShellItem* pItem;
+			hr = pFileOpen->GetResult(&pItem);
+			if (SUCCEEDED(hr))
+			{
+				PWSTR pszFilePath = NULL;
+				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+				if (SUCCEEDED(hr))
+				{
+					//MessageBoxW(NULL, pszFilePath, _caption, MB_OK);
+					path = pszFilePath;
+					CoTaskMemFree(pszFilePath);
+				}
+				pItem->Release();
+			}
+		}
+	}
     
+    pFileOpen->Release();
+
     return path;
 }
 
 
 std::wstring SystemDialogue::SeletecFolder(const wchar_t* _caption)
 {
-    return GetFile(_caption, FOS_PICKFOLDERS);
+    return GetFile(_caption, nullptr, FOS_PICKFOLDERS);
 }
 
-std::wstring SystemDialogue::SeletecFile(const wchar_t* _caption)
+std::wstring SystemDialogue::SeletecFile(const wchar_t* _caption, const wchar_t* _basePath)
 {
-    return GetFile(_caption, 0);
+    return GetFile(_caption, _basePath, 0);
 }
 
 SystemDialogue::SystemDialogue()

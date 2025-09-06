@@ -31,14 +31,6 @@ using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename Unordo
 //
 
 
-#define CONTAINER_SIZE "size"
-#define RESOURCE_PTR_TYPE "resourceType"
-#define KEY "key"
-#define VALUE "value"
-#define DATA "data"
-
-#define SPARSE_SET_DENSE "dense"
-#define SPARSE_SET_SPARSE "sparse"
 
 #pragma region Serialization
 void TypeToString(json& outj, TypeId id, const uint8_t* objetPtr)
@@ -165,7 +157,7 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 					assert(rsInterfaceDummie->GetType().typeId != Reflector::GetTypeKey<Resource>());
 					try
 					{
-						_jsonFile[RESOURCE_PTR_TYPE] = rsInterfaceDummie->GetType().typeId;
+						_jsonFile[Serializer::RESOURCE_TYPE] = rsInterfaceDummie->GetType().typeId;
 					}
 					catch (...)
 					{
@@ -180,14 +172,14 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 					const ReflectedType& underLineType = Reflector::GetType(arr.type);
 					try
 					{
-						_jsonFile[CONTAINER_SIZE] = arr.size;
+						_jsonFile[Serializer::CONTAINER_SIZE] = arr.size;
 
 						if (Reflector::isTrivialType(underLineType.typeId))
 						{
 							std::vector<uint8_t> data;
 							data.resize(arr.size * underLineType.size);
 							std::memcpy(data.data(), objetPtr, data.size());
-							_jsonFile[DATA] = json::binary(data);
+							_jsonFile[Serializer::DATA] = json::binary(data);
 						}
 						else
 						{
@@ -214,7 +206,7 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 
 					try
 					{
-						_jsonFile[CONTAINER_SIZE] = typeCount;
+						_jsonFile[Serializer::CONTAINER_SIZE] = typeCount;
 					}
 					catch (...)
 					{
@@ -224,7 +216,7 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 					if (Reflector::isTrivialType(underLineType.typeId))
 					{
 
-						_jsonFile[DATA] = json::binary(*ver);
+						_jsonFile[Serializer::DATA] = json::binary(*ver);
 
 					}
 					else
@@ -244,13 +236,13 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 						if (rs.subType == Reflector::GetTypeKey<char>())
 						{
 							const std::string* s = reinterpret_cast<const std::string*>(objetPtr);
-							_jsonFile[CONTAINER_SIZE] = s->size();
+							_jsonFile[Serializer::CONTAINER_SIZE] = s->size();
 							_jsonFile["string"] = s->c_str();
 						}
 						else if (rs.subType == Reflector::GetTypeKey<wchar_t>())
 						{
 							const std::wstring* s = reinterpret_cast<const std::wstring*>(objetPtr);
-							_jsonFile[CONTAINER_SIZE] = s->size();
+							_jsonFile[Serializer::CONTAINER_SIZE] = s->size();
 							_jsonFile["string"] = s->c_str();
 						}
 						else
@@ -278,7 +270,7 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 					const size_t mapSize = map->size();
 					try
 					{
-						_jsonFile[CONTAINER_SIZE] = mapSize;
+						_jsonFile[Serializer::CONTAINER_SIZE] = mapSize;
 					}
 					catch (...)
 					{
@@ -302,8 +294,8 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 							const uint8_t* keyPtr = reinterpret_cast<const uint8_t*>(pair);
 							const uint8_t* valuePtr = keyPtr + reflectedMap.offsetBetweenKeyAndValueInPair;
 
-							SerializeType(_jsonFile[indexs][KEY], keyPtr, keyType.typeId);
-							SerializeType(_jsonFile[indexs][VALUE], valuePtr, valueType.typeId);
+							SerializeType(_jsonFile[indexs][Serializer::KEY], keyPtr, keyType.typeId);
+							SerializeType(_jsonFile[indexs][Serializer::VALUE], valuePtr, valueType.typeId);
 						}
 						catch (...)
 						{
@@ -316,19 +308,19 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 				}
 				else if constexpr (std::is_same_v<T, ReflectedBitSet>)
 				{
-					_jsonFile[CONTAINER_SIZE] = type.size;
+					_jsonFile[Serializer::CONTAINER_SIZE] = type.size;
 					std::vector<uint8_t> data(type.size);
 					std::memcpy(data.data(), objetPtr, data.size());
-					_jsonFile[DATA] = json::binary(data);
+					_jsonFile[Serializer::DATA] = json::binary(data);
 				}
 				else if constexpr (std::is_same_v<T, ReflectedSparseSet>)
 				{
 					const ReflectedSparseSet& reflectedSparSet = std::get<ReflectedSparseSet>(type.metaData.data);
 
 					// dense vector
-					SerializeType(_jsonFile[SPARSE_SET_DENSE], objetPtr + reflectedSparSet.denseVectorOffSet, reflectedSparSet.denseVector);
+					SerializeType(_jsonFile[Serializer::SPARSE_SET_DENSE], objetPtr + reflectedSparSet.denseVectorOffSet, reflectedSparSet.denseVector);
 					// spares vector
-					SerializeType(_jsonFile[SPARSE_SET_SPARSE], objetPtr + reflectedSparSet.spareVectorOffset, reflectedSparSet.spareVector);
+					SerializeType(_jsonFile[Serializer::SPARSE_SET_SPARSE], objetPtr + reflectedSparSet.spareVectorOffset, reflectedSparSet.spareVector);
 
 				}
 				else if constexpr (std::is_same_v<T, ReflectedFileSystemPath>)
@@ -336,7 +328,7 @@ void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey)
 					const std::filesystem::path& reflectedSparSet = *reinterpret_cast<const std::filesystem::path*>(objetPtr);
 					const auto s = reflectedSparSet.generic_string();
 
-					_jsonFile[CONTAINER_SIZE] = s.size();
+					_jsonFile[Serializer::CONTAINER_SIZE] = s.size();
 					_jsonFile["string"] = s.c_str();
 				}
 				else if constexpr (std::is_same_v<T, ReflectedEnum>)
@@ -553,7 +545,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
 					try
 					{
-						TypeId pointedTypeId = _jsonFile[RESOURCE_PTR_TYPE];
+						TypeId pointedTypeId = _jsonFile[Serializer::RESOURCE_TYPE];
 						auto& pointedTypeInFile = Reflector::GetType(pointedTypeId);
 
 						if (pointedTypeId == Reflector::GetTypeKey<Resource>() || Reflector::IsBaseOf<Resource>(pointedTypeInFile))
@@ -588,8 +580,8 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
 					try
 					{
-						size_t s = _jsonFile[CONTAINER_SIZE];
-						if (_jsonFile[CONTAINER_SIZE] != arr.size)
+						size_t s = _jsonFile[Serializer::CONTAINER_SIZE];
+						if (_jsonFile[Serializer::CONTAINER_SIZE] != arr.size)
 						{
 							PC_LOGERROR("array size missmacht")
 								return;
@@ -625,11 +617,11 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
 						if (Reflector::isTrivialType(underLineType.typeId))
 						{
-							*ver = _jsonFile[DATA]["bytes"].get<std::vector<uint8_t>>();
+							*ver = _jsonFile[Serializer::DATA]["bytes"].get<std::vector<uint8_t>>();
 						}
 						else
 						{
-							const size_t size = _jsonFile[CONTAINER_SIZE];
+							const size_t size = _jsonFile[Serializer::CONTAINER_SIZE];
 							ver->resize(size * underLineType.size);
 							for (size_t i = 0; i < size; i++)
 							{
@@ -651,7 +643,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 						if (rs.subType == Reflector::GetTypeKey<char>())
 						{
 							std::string* s = reinterpret_cast<std::string*>(objetPtr);
-							s->resize(_jsonFile[CONTAINER_SIZE]);
+							s->resize(_jsonFile[Serializer::CONTAINER_SIZE]);
 							std::string_view v = _jsonFile["string"];
 
 							memcpy(s->data(), v.data(), s->size());
@@ -659,7 +651,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 						else if (rs.subType == Reflector::GetTypeKey<wchar_t>())
 						{
 							std::wstring* s = reinterpret_cast<std::wstring*>(objetPtr);
-							s->resize(_jsonFile[CONTAINER_SIZE]);
+							s->resize(_jsonFile[Serializer::CONTAINER_SIZE]);
 							*s = _jsonFile["string"].template get<typename std::wstring>();
 						}
 						else
@@ -690,7 +682,7 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
 					try
 					{
-						const size_t size = _jsonFile[CONTAINER_SIZE];
+						const size_t size = _jsonFile[Serializer::CONTAINER_SIZE];
 
 						std::string indexs;
 						for (size_t i = 0; i < size; i++)
@@ -699,10 +691,10 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 
 							try
 							{
-								DeserializeType(_jsonFile[indexs][KEY], keyBuffer.get(), keyType.typeId);
+								DeserializeType(_jsonFile[indexs][Serializer::KEY], keyBuffer.get(), keyType.typeId);
 								auto* ref = &(map.*inserFunc)(*keyBuffer.get());
 
-								DeserializeType(_jsonFile[indexs][VALUE], ref, valueType.typeId);
+								DeserializeType(_jsonFile[indexs][Serializer::VALUE], ref, valueType.typeId);
 							}
 							catch (...)
 							{
@@ -718,8 +710,8 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 				}
 				else if constexpr (std::is_same_v<T, ReflectedBitSet>)
 				{
-					const size_t s = _jsonFile[CONTAINER_SIZE];
-					if (_jsonFile[CONTAINER_SIZE] != type.size)
+					const size_t s = _jsonFile[Serializer::CONTAINER_SIZE];
+					if (_jsonFile[Serializer::CONTAINER_SIZE] != type.size)
 					{
 						PC_LOGERROR("bitset size missmacht")
 					}
@@ -733,16 +725,16 @@ void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey)
 					const ReflectedSparseSet& reflectedSparSet = std::get<ReflectedSparseSet>(type.metaData.data);
 
 					// dense vector
-					DeserializeType(_jsonFile[SPARSE_SET_DENSE], objetPtr + reflectedSparSet.denseVectorOffSet, reflectedSparSet.denseVector);
+					DeserializeType(_jsonFile[Serializer::SPARSE_SET_DENSE], objetPtr + reflectedSparSet.denseVectorOffSet, reflectedSparSet.denseVector);
 
 					// spares vector
-					DeserializeType(_jsonFile[SPARSE_SET_SPARSE], objetPtr + reflectedSparSet.spareVectorOffset, reflectedSparSet.spareVector);
+					DeserializeType(_jsonFile[Serializer::SPARSE_SET_SPARSE], objetPtr + reflectedSparSet.spareVectorOffset, reflectedSparSet.spareVector);
 				}
 				else if constexpr (std::is_same_v<T, ReflectedFileSystemPath>)
 				{
 					const std::filesystem::path& reflectedSparSet = *reinterpret_cast<const std::filesystem::path*>(objetPtr);
 					std::string s;
-					s.resize(_jsonFile[CONTAINER_SIZE]);
+					s.resize(_jsonFile[Serializer::CONTAINER_SIZE]);
 					std::string_view v = _jsonFile["string"];
 
 					memcpy(s.data(), v.data(), s.size());

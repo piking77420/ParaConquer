@@ -77,15 +77,20 @@ void Editor::LoadFromInitFiles()
 	}
 	else
 	{
-		const std::wstring s = SystemDialogue::Instance().SeletecFolder(L"Select your project folder");
-		assert(!s.empty() && "Something went wrong");
-
-		if (!std::filesystem::exists(s + std::wstring(ProjectFileName.begin(), ProjectFileName.end())))
+		std::wstring projectInit;
+		while (projectInit.empty())
 		{
-			projectFile = ProjectMaker::CreateBaseProject(s.c_str());
+			projectInit = SystemDialogue::Instance().SeletecFolder(L"Select your project folder");
+		}
+
+		assert(!projectInit.empty() && "Something went wrong");
+
+		if (!std::filesystem::exists(projectInit + std::wstring(ProjectFileName.begin(), ProjectFileName.end())))
+		{
+			projectFile = ProjectMaker::CreateBaseProject(projectInit.c_str());
 		}
 		
-		editorIniFile.projectPath = std::string(s.begin(), s.end());	
+		editorIniFile.projectPath = std::string(projectInit.begin(), projectInit.end());
 	}
 
 	editorData.projectPath = editorIniFile.projectPath;

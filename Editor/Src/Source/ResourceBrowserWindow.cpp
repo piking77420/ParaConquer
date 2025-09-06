@@ -6,6 +6,7 @@
 #include "LowRenderer/Rhi.hpp"
 #include "Resources/VulkanSampler.hpp"
 #include "World/World.hpp"
+#include "SystemDialogue.hpp"
 
 
 #include <Fstream>
@@ -30,14 +31,8 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 	m_NullIcon.texure = PC_CORE::Texture2D("Null.png", EDITOR_RESOURCE_PATH "/Icons/Null.png");
 	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.GetRhiTexture2D().get(),s.GetRhiSampler().get(), &m_NullIcon.descritproSet, 1);
 
-	CreateAssetsBrowserIcon(".png", EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
-	CreateAssetsBrowserIcon(".jpg", EDITOR_RESOURCE_PATH "/Icons/JpgIcon.png");
-	CreateAssetsBrowserIcon(".png", EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
-	CreateAssetsBrowserIcon(".dds", EDITOR_RESOURCE_PATH "/Icons/DdsIcon.png");
-
-	CreateAssetsBrowserIcon(".gltg", EDITOR_RESOURCE_PATH "/Icons/GltfIcon.png");
-	CreateAssetsBrowserIcon(".obj", EDITOR_RESOURCE_PATH "/Icons/ObjIcon.png");
-	CreateAssetsBrowserIcon(".fbx", EDITOR_RESOURCE_PATH "/Icons/FbxIncon.png");
+	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>(), EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
+	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>(), EDITOR_RESOURCE_PATH "/Icons/3DModel.png");
 
 }
 
@@ -46,7 +41,7 @@ ResourceBrowserWindow::~ResourceBrowserWindow()
 	m_Editor->IMGUIContext.DestroyVulkanTexture(&m_FolderIcon.descritproSet, 1);
 	m_Editor->IMGUIContext.DestroyVulkanTexture(&m_NullIcon.descritproSet, 1);
 
-	for (auto& it : m_FormatIconMap)
+	for (auto& it : m_TypeIconMap)
 		m_Editor->IMGUIContext.DestroyVulkanTexture(&it.second.descritproSet, 1);
 
 }
@@ -72,35 +67,45 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 
 			ImGui::DragFloat("Spacing", &m_AssetBrowserOption.spacing, 1.0f, MIN_MAX_FILE_SPACING.x, MIN_MAX_FILE_SPACING.y, "%.1f px");
 			ImGui::DragFloat("Padding", &m_AssetBrowserOption.padding, 1.0f, 10.0f, 40.0f, "%.1f px");
+			ImGui::DragFloat("ThumbnailSize", &m_AssetBrowserOption.thumbnailSize, 1.0f, 10.0f, 100.0f, "%.1f px");
 
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::Button("Import"))
+		{
+			const std::wstring& assetPath = m_Editor->editorData.projectPath;
+			const std::wstring s = SystemDialogue::Instance().SeletecFile(L"Select your project imported source", assetPath.c_str());
+
+			// TODO make importer
+
+		}
+
 		ImGui::EndMenuBar();
 	}
 
-	if (IsCursorInsideWindow() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-		ImGui::OpenPopup("CreateAsset", 0);
-
-	if (ImGui::BeginPopup("CreateAsset"))
-	{
-		CreateAsset();
-		ImGui::EndPopup();
-	}
+	
+	m_HasSelectedObject = false;
 
 	ImGui::PushFont(m_Editor->editorData.editorFont.veryBig);
-
-	// TODO may cook it 
 	ImGui::Text(m_BasePathRelative.generic_string().c_str());
 	ImGui::PopFont();
 	RenderDirectories();
 
-	if (!m_HasSelectedObject &&
-		ImGui::IsWindowFocused() && IsCursorInsideWindow()
-		&& ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	if (ImGui::IsWindowFocused() && IsCursorInsideWindow())
 	{
-		m_Editor->selectedObject = std::monostate();
-		m_HasSelectedObject = false;
+
+		if (!m_HasSelectedObject && ImGui::IsMouseDown(ImGuiMouseButton_Right))
+		{
+			CreateAsset();
+		}
+
+		if (!m_HasSelectedObject && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			m_Editor->selectedObject = std::monostate();
+		}
 	}
+
 }
 
 void ResourceBrowserWindow::CreateAsset() const
@@ -155,7 +160,7 @@ void ResourceBrowserWindow::RenderDirectories()
 
 	const float columnSpacing = m_AssetBrowserOption.spacing;
 	const float padding = m_AssetBrowserOption.padding;
-	const float thumbnailSize = 64.0f;
+	const float thumbnailSize = m_AssetBrowserOption.thumbnailSize;
 
 	float cellSize = thumbnailSize + padding * 2.0f + columnSpacing;
 
@@ -198,40 +203,51 @@ void ResourceBrowserWindow::RenderDirectories()
 			ImGui::Image((ImTextureID)icon.descritproSet, { thumbnailSize, thumbnailSize }, { 0, 0 }, { 1, 1 });
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				m_HasSelectedObject = true;
 				m_CurrenPath = entry;
 			}
+
+			ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
+			ImGui::TextWrapped(name.c_str());
+			ImGui::PopTextWrapPos();
+			ImGui::NextColumn();
 		}
-		else if (pathname.has_extension())
+		else if (pathname.has_extension() && pathname.extension() == AssetsFormat)
 		{
-			auto it = m_FormatIconMap.find(pathname.extension().generic_string());
+			auto type = TypeIdFromPath(path); // TODO MAKE A THREAD THAT HANDLE THIS 
 
-			auto& icon = it == m_FormatIconMap.end() ? m_NullIcon : it->second;
-
-			if (ImGui::ImageButton(name.c_str(), (ImTextureID)icon.descritproSet, { thumbnailSize,thumbnailSize }))
+			if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::ContaintTypeFromTypeID(type))
 			{
-				if (m_SelectedItem == entry)
-				{
-					m_HasSelectedObject = true;
-					OnFileSelectedClick();
-				}
+				auto it = m_TypeIconMap.find(type);
 
-				if (m_SelectedItem.empty())
-				{
-					m_SelectedItem = entry;
-					PC_LOG("File selected: {}", name);
-				}
+				auto& icon = it == m_TypeIconMap.end() ? m_NullIcon : it->second;
 
+				if (ImGui::ImageButton(name.c_str(), (ImTextureID)icon.descritproSet, { thumbnailSize,thumbnailSize }))
+				{
+					if (m_SelectedItem == entry)
+					{
+						OnFileSelectedClick();
+					}
+
+					if (m_SelectedItem.empty())
+					{
+						m_SelectedItem = entry;
+						PC_LOG("File selected: {}", name);
+					}
+
+					ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
+					ImGui::TextWrapped(name.c_str());
+					ImGui::PopTextWrapPos();
+					ImGui::NextColumn();
+
+				}
 			}
 
+			
+
 		}
 
 
-		ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
-		ImGui::TextWrapped(name.c_str());
-		ImGui::PopTextWrapPos();
-
-		ImGui::NextColumn();
+		
 	}
 
 	ImGui::Columns(1);
@@ -291,7 +307,7 @@ void ResourceBrowserWindow::OnFileSelectedClick()
 	m_SelectedItem = fileName;*/
 }
 
-void ResourceBrowserWindow::CreateAssetsBrowserIcon(const char* _format, const std::filesystem::path& _path)
+void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const std::filesystem::path& _path)
 {
 	ImguiImage newIcon;
 	newIcon.texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());
@@ -300,5 +316,32 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(const char* _format, const s
 		m_Editor->editorData.nearestSampler.GetRhiSampler().get(), 
 		&newIcon.descritproSet, 1);
 
-	m_FormatIconMap[std::string(_format)] = std::move(newIcon);
+	m_TypeIconMap[_id] = std::move(newIcon);
+}
+
+PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromPath(const std::filesystem::path& _path)
+{
+	PERF_REGION_SCOPED;
+
+	json j;
+	std::ifstream f(_path);
+
+	if (!f.is_open())
+	{
+		f.close();
+		PC_LOGERROR("Failed to open file {}", _path.generic_string());
+		return PC_CORE::NullTypeId;
+	}
+
+	{
+
+		j = json::parse(f);
+		f.close();
+		if (!j.contains(PC_CORE::Serializer::RESOURCE_TYPE))
+		{
+			return PC_CORE::NullTypeId;
+		}
+	}
+
+	return j[PC_CORE::Serializer::RESOURCE_TYPE];
 }

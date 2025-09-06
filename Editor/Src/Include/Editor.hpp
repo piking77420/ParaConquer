@@ -51,6 +51,7 @@ struct EditorData
 
     ProjectData projectData;
     std::filesystem::path projectPath;
+    
 };
 
 using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ResourceRef<PC_CORE::Resource>>;

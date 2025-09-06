@@ -7,6 +7,8 @@
 
 BEGIN_EDITOR_PCCORE
 
+constexpr const char* AssetsFormat = ".assets";
+
 constexpr std::string_view EditorIniFileName = "PcEditor.ini";
 
 struct EditorIniFile

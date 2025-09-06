@@ -14,11 +14,18 @@ using json = nlohmann::json;
 
 BEGIN_PCCORE
 
-
-
 class Serializer
 {
 public:
+	static constexpr const char* CONTAINER_SIZE = "size";
+	static constexpr const char* RESOURCE_TYPE = "resourceType";
+	static constexpr const char* KEY = "key";
+	static constexpr const char* VALUE = "value";
+	static constexpr const char* DATA = "data";
+
+	static constexpr const char* SPARSE_SET_DENSE = "dense";
+	static constexpr const char* SPARSE_SET_SPARSE = "sparse";
+
     
     template<typename T>
     static void Serialize(const T& _object, const std::string& _fileToSerialize);
