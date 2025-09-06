@@ -6,21 +6,12 @@
 #include "CoreHeader.hpp"
 #include "RhiTypedef.h"
 
-#define SWAPCHAIN_EXT "SWAPCHAIN_EXT"
-#define MESH_SHADER_EXT "MESH_SHADER"
-#define ACCELERATION_EXT "ACCELERATION"
-#define RAY_TRACING_EXT "RAYTRAYCING"
-#define DEFFERED_HOST_OP "DEFFERED_HOST_OP"
-
-
-
-
 BEGIN_PCCORE
     constexpr int32_t NULL_PHYSICAL_DEVICE = -1;
 
     struct PhysicalDevicesCreateInfo
     {
-        std::vector<std::string> requestExtensions;
+        std::vector<RhiExtension> requestExtensions;
     };
 
     struct PhysicalDevice
@@ -39,6 +30,10 @@ BEGIN_PCCORE
 
         virtual uint32_t GetMaxUsableSampleCount() const = 0;
 
+        constexpr bool DoesSupportExtension(RhiExtension _queryExtSupport)
+        {
+            return true; //  TODO
+        }
     };
 
     class PhysicalDevices

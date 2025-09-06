@@ -19,7 +19,7 @@ VulkanContext::VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCrea
 {
     PERF_REGION_SCOPED;
     
-    std::vector<std::string> extensionToEnable;
+    std::set<std::string> extensionToEnable;
     
     
     renderInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate, rhiContextCreateInfo.WindowHandle);

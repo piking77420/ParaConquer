@@ -14,8 +14,8 @@ BEGIN_PCCORE
     struct RhiContextCreateInfo
     {
         GLFWwindow* WindowHandle = nullptr;
-        RenderInstanceCreateInfo* instanceCreate;
-        PhysicalDevicesCreateInfo* physicalDevicesCreateInfo;
+        const RenderInstanceCreateInfo* instanceCreate;
+        const PhysicalDevicesCreateInfo* physicalDevicesCreateInfo;
     };
 
 

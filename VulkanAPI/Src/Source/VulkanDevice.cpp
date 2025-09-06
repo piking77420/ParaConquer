@@ -7,7 +7,7 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
     return m_Device;
 }
 
-Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable, 
+Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::set<std::string>& _extensionToEnable,
     vk::Queue* _graphicQueue)
 {
     PERF_REGION_SCOPED;

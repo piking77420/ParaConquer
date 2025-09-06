@@ -52,7 +52,7 @@ Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSuppo
 }
 
 Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
-    const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable)
+    const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable)
     : PhysicalDevices(_physicalDevicesCreateInfo)
 {
     PERF_REGION_SCOPED;
@@ -77,7 +77,7 @@ Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::UpdateSwapChainSu
 }
 
 void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk::PhysicalDevice>& _physicalDevices,
-                                                           const std::vector<std::string>& _requestExtensions)
+                                                           const std::set<std::string>& _requestExtensions)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -111,48 +111,61 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
     VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
     const Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext.GetSurface(), GetSelectedPhysicalDevice()->physicalDevice);
     m_SwapChainSupportDetails = swapChainSupportDetails;
+
 }
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
-                                                        const vk::PhysicalDeviceProperties& _physicalDeviceProperties)
+                                                        const vk::PhysicalDeviceProperties& _physicalDeviceProperties, size_t* _score)
 {
     _physicalDevice->name = _physicalDeviceProperties.deviceName.data();
     _physicalDevice->driverVersion = _physicalDeviceProperties.driverVersion;
+
+    const vk::PhysicalDeviceLimits& limits = _physicalDeviceProperties.limits;
+    // TODO
+
 }
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
-                                                      const vk::PhysicalDeviceFeatures& _physicalDeviceProperties)
+                                                      const vk::PhysicalDeviceFeatures& _physicalDeviceProperties, size_t* _score)
 {
        
 }
 
-std::vector<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
-    const std::vector<std::string>& _requestExtensions)
+std::set<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
+    const std::vector <PC_CORE::RhiExtension>& _requestExtensions)
 {
-    std::vector<std::string> out;
-    out.resize(_requestExtensions.size());
+    using namespace PC_CORE;
+
+    std::set<std::string> out;
 
     for (size_t i = 0; i < _requestExtensions.size(); i++)
     {
-        if (_requestExtensions[i] == SWAPCHAIN_EXT)
-            out[i] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+        const RhiExtension rhiExt = static_cast<RhiExtension>(_requestExtensions[i]);
+        switch (rhiExt)
+        {
+        case RhiExtension::RayTracing:
+			out.emplace(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+			out.emplace(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+			out.emplace(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+			out.emplace(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+			out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+            out.emplace(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+            out.emplace(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+            break;
+        case RhiExtension::MeshShader:
+            out.emplace(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+            out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+            out.emplace(VK_EXT_MESH_SHADER_EXTENSION_NAME);
 
-        if (_requestExtensions[i] == MESH_SHADER_EXT)
-            out[i] = VK_EXT_MESH_SHADER_EXTENSION_NAME;
-
-        if (_requestExtensions[i] == ACCELERATION_EXT)
-            out[i] = VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME;
-
-        if (_requestExtensions[i] == RAY_TRACING_EXT)
-            out[i] = VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME;
-
-        if (_requestExtensions[i] == DEFFERED_HOST_OP)
-            out[i] = VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME;
+            break;
+        default:
+            break;
+        }
     }
 
 #ifdef PROFILING
-    out.push_back(VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME);
-    out.push_back(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
+    out.emplace(VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME);
+    out.emplace(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME);
 #endif // PROFILING
 
 
@@ -212,7 +225,7 @@ Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysical
     return reinterpret_cast<Vulkan::VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
 }
 
-void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::vector<std::string>* _extensionToEnable)
+void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable)
 {
     PC_CORE::RhiContext& RhiContext = PC_CORE::RhiContext::GetContext();
     std::shared_ptr instanceInterface(std::reinterpret_pointer_cast<VulkanInstance>(RhiContext.renderInstance));
@@ -228,13 +241,14 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
     VK_CHECK_CALL(vulkanInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
 
     // Get Extension as vulkna ext
-    std::vector<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
+    std::set<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
         _physicalDevicesCreateInfo.requestExtensions);
 
     // basic extension
-    requestVulkanExtensions.emplace_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
-    requestVulkanExtensions.emplace_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
-    requestVulkanExtensions.emplace_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+    requestVulkanExtensions.emplace(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    requestVulkanExtensions.emplace(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    requestVulkanExtensions.emplace(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+    requestVulkanExtensions.emplace(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
     // Look for base device
     m_PhysicalDevices.resize(vkPhysicalDevices.size());
     for (size_t i = 0; i < vkPhysicalDevices.size(); i++)
@@ -249,14 +263,14 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
 }
 
 int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& _physicalDevice,
-                                                      const std::vector<std::string>& _requestExtensions,
+    const std::set<std::string>& _requestExtensions,
                                                       size_t _deviceIndex)
 {
 
     VulkanPhysicalDevice* myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
     myPhysicalDevice->physicalDevice = _physicalDevice;
     
-    int32_t score = 0;
+    size_t score = 0;
 
     uint32_t extensionCount;
     VK_CALL(myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr));
@@ -267,7 +281,7 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
 
     if (!CheckDeviceExtensionSupport(availableExtensions, requiredExtensions))
     {
-        score = std::numeric_limits<int32_t>::min();
+        score = std::numeric_limits<size_t>::min();
         PC_LOGERROR("Unsuported extension!")
         
         for (const auto& extension : requiredExtensions)
@@ -293,10 +307,10 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     deviceProperties.sType = vk::StructureType::ePhysicalDeviceProperties2;
     myPhysicalDevice->physicalDevice.getProperties2(&deviceProperties);
     
-    GetDeviceProperties(myPhysicalDevice, deviceProperties.properties);
-    GetDeviceFeatures(myPhysicalDevice, deviceFeatures2.features);
+    GetDeviceProperties(myPhysicalDevice, deviceProperties.properties, &score);
+    GetDeviceFeatures(myPhysicalDevice, deviceFeatures2.features, &score);
     // Evaluate score based on VkPhysicalDeviceFeatures
-    size_t nbrOfBool = sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::PhysicalDeviceFeatures::samplerAnisotropy);
+    size_t nbrOfBool = sizeof(vk::PhysicalDeviceFeatures) / sizeof(vk::Bool32);
 
     static_assert(
         offsetof(vk::PhysicalDeviceFeatures, robustBufferAccess) == 0, "Robust buffer access should be the same");

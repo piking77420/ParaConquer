@@ -13,7 +13,7 @@ namespace Vulkan
 
         vk::Device GetDevice() const;
         
-        VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::vector<std::string>& _extensionToEnable, vk::Queue* _graphicQueue);
+        VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::set<std::string>& _extensionToEnable, vk::Queue* _graphicQueue);
 
         VulkanDevice() = default;
 
