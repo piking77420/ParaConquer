@@ -151,9 +151,13 @@ std::set<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
 			out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
             out.emplace(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
             out.emplace(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+            break;
+        case RhiExtension::MeshShader:
+            out.emplace(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+            out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+            out.emplace(VK_EXT_MESH_SHADER_EXTENSION_NAME);
 
             break;
-        case RhiExtension::MeshShader: // out[i] = VK_EXT_MESH_SHADER_EXTENSION_NAME;
         default:
             break;
         }
