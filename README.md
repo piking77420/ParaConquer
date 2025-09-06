@@ -22,8 +22,8 @@ Think of it as a “personal car for a mechanic” build, maintain, and fine-tun
 
 python BuildProject.py [OPTIONS]
 
-| Option          | Description                                                                        | Default |
-|-----------------|------------------------------------------------------------------------------------|
-| `--simd`        | SIMD instruction set to use. Options: `SSE2`, `AVX`, `AVX2`, `NEON`, `SVE`, `NONE` | `AUTO`  |
-| `--profiling`   | Enable or disable Tracy profiling. Options: `ON` / `OFF`                           | `OFF`   |
-| `--built_test`  | Enable or disable building unit tests. Options: `ON` / `OFF`                       | `OFF`   |
+| Option         | Description                                                                                  | Default |
+|----------------|----------------------------------------------------------------------------------------------|---------|
+| `--simd`       | SIMD instruction set to use. Options: `AUTO`, `SSE2`, `AVX`, `AVX2`, `NEON`, `SVE`, `NONE`   | `NONE`  |
+| `--profiling`  | Enable or disable Tracy profiling. Options: `ON` / `OFF`                                     | `OFF`   |
+| `--built_test` | Enable or disable building unit tests. Options: `ON` / `OFF`                                 | `OFF`   |
