@@ -48,15 +48,6 @@ struct ReflectedBitSet
     size_t count;
 };
 
-struct ReflectedWeakPtr
-{
-    TypeId type;
-};
-struct ReflectedSharedPtr
-{
-    TypeId type;
-};
-
 struct ReflectedString
 {
     TypeId subType;
@@ -122,8 +113,6 @@ struct TypeMetaData
 {
     std::variant<
         std::monostate,
-        ReflectedWeakPtr,
-        ReflectedSharedPtr,
         ReflectedArray,
         ReflectedVector,
         ReflectedString,      
@@ -199,24 +188,6 @@ struct is_std_array<std::array<T, N>> : std::true_type {};
 
 template<typename T>
 inline constexpr bool is_std_array_v = is_std_array<std::decay_t<T>>::value;
-
-template <typename>
-struct is_weak_ptr : std::false_type {};
-
-template <typename U>
-struct is_weak_ptr<std::weak_ptr<U>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_weak_ptr_v = is_weak_ptr<T>::value;
-
-template <typename>
-struct is_shared_ptr : std::false_type {};
-
-template <typename U>
-struct is_shared_ptr<std::shared_ptr<U>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool is_shared_ptr_v = is_shared_ptr<T>::value;
 
 template <typename>
 struct is_map : std::false_type {};

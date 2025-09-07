@@ -100,7 +100,7 @@ private:
     std::atomic<bool> m_IsLoaded;
 
     
-    REFLECT(Resource)
+    REFLECT(Resource, DynamicReflectable)
     REFLECT_MEMBER(Resource, name)
     REFLECT_MEMBER(Resource, m_Guid)
     REFLECT_MEMBER(Resource, m_ParentsResource)

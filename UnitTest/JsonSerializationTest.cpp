@@ -4,7 +4,7 @@
 #include "Reflection/Reflector.hpp"
 #include "Resources/Resource.hpp"
 #include "Resources/ResourceManager.hpp"
-#include "Serialize/Serializer.h"
+#include "Serialize/JsonSerializer.hpp"
 #include "DataStructure/SpareSet.hpp"
 #include "Math/ToolboxTypedef.hpp"
 
@@ -48,7 +48,7 @@ struct SerializaStruct
 
 
 };
-const SerializaStruct s =
+const SerializaStruct serializaStruct1 =
     {
     .x = 1.214f,
     .y = 'd',
@@ -62,29 +62,31 @@ const SerializaStruct s =
 
 TEST(Serialization, BasicSerialization)
 {
-    Serializer::Serialize(s, "BasicSerialization.test");
-    SerializaStruct s2;
-    Serializer::DeSerialize(&s2, "BasicSerialization.test");
 
-    EXPECT_FLOAT_EQ(s.x , s2.x);
-    EXPECT_EQ(s.y , s2.y);
-    EXPECT_EQ(s.z , s2.z);
+    JsonSerializer s;
 
-    for (size_t i = 0 ; i < 4 ; i++)
+    s.Serialize<SerializaStruct>(serializaStruct1, "BasicSerialization.test");
+    SerializaStruct serializaStruct2;
+    s.DeSerialize<SerializaStruct>(&serializaStruct2, "BasicSerialization.test");
+
+    EXPECT_FLOAT_EQ(serializaStruct1.x, serializaStruct2.x);
+    EXPECT_EQ(serializaStruct1.y, serializaStruct2.y);
+    EXPECT_EQ(serializaStruct1.z, serializaStruct2.z);
+
+    for (size_t i = 0; i < 4; i++)
     {
-        EXPECT_FLOAT_EQ(s.w[i] , s2.w[i]);
-    }
-    
-    for (size_t i = 0 ; i < 4 ; i++)
-    {
-        EXPECT_FLOAT_EQ(s.array[i] , s2.array[i]);
+        EXPECT_FLOAT_EQ(serializaStruct1.w[i], serializaStruct2.w[i]);
     }
 
-    EXPECT_EQ(s.q , s2.q);
-    EXPECT_EQ(s.testEnum, s2.testEnum);
+    for (size_t i = 0; i < 4; i++)
+    {
+        EXPECT_FLOAT_EQ(serializaStruct1.array[i], serializaStruct2.array[i]);
+    }
+
+    EXPECT_EQ(serializaStruct1.q, serializaStruct2.q);
+    EXPECT_EQ(serializaStruct1.testEnum, serializaStruct2.testEnum);
 
 }
-
 
 struct DataTest
 {
@@ -142,11 +144,12 @@ TEST(Serialization, SerializationRes)
     ResourceManager::Create<SerializedResource>("SerializedResource", dataTest);
 
     ResourceRef<SerializedResource> rRef = ResourceManager::Get<SerializedResource>("SerializedResource");
-    Serializer::Serialize(*rRef.lock().get(), "SerializedResource.test");
+    JsonSerializer s;
+    s.Serialize<SerializedResource>(*rRef.lock().get(), "SerializedResource.test");
 
     
     SerializedResource deserializedResource;
-    Serializer::DeSerialize(&deserializedResource, "SerializedResource.test");
+    s.DeSerialize<SerializedResource>(&deserializedResource, "SerializedResource.test");
 
 
     std::shared_ptr<SerializedResource> d = rRef.lock();
@@ -164,16 +167,18 @@ REFLECT(std::vector<Tbx::Vector3f>)
 
 TEST(Serialization, VectorTrivial)
 {
+    JsonSerializer s;
+
     std::vector<Tbx::Vector3f> m_vertexPositions;
 
     m_vertexPositions.emplace_back(1.f, 2.f, 3.f);
     m_vertexPositions.emplace_back(4.f, 5.f, 6.f);
     m_vertexPositions.emplace_back(7.f, 8.f, 9.f);
     
-    Serializer::Serialize(m_vertexPositions, "SerializedResourceVector.test");
+    s.Serialize<std::vector<Tbx::Vector3f>>(m_vertexPositions, "SerializedResourceVector.test");
 
     std::vector<Tbx::Vector3f> vec;
-    Serializer::DeSerialize(&vec, "SerializedResourceVector.test");
+    s.DeSerialize<std::vector<Tbx::Vector3f>>(&vec, "SerializedResourceVector.test");
     EXPECT_EQ(vec.size(), m_vertexPositions.size());
 
     for (size_t i = 0 ; i < vec.size() ; i++)
@@ -189,6 +194,8 @@ REFLECT(std::vector<SerializedResource>)
 
 TEST(Serialization, VectorNotTrivial)
 {
+    JsonSerializer s;
+
     std::vector<SerializedResource> resourceVector;
 
     static_assert(!std::is_trivially_constructible_v<SerializedResource>, "SerializedResource shouldn't be trivially_constructible");
@@ -217,10 +224,10 @@ TEST(Serialization, VectorNotTrivial)
     resourceVector.push_back(SerializedResource("2",d2));
     resourceVector.push_back(SerializedResource("3",d3));
 
-    Serializer::Serialize(resourceVector, "SerializedResourceVector.test");
+    s.Serialize<std::vector<SerializedResource>>(resourceVector, "SerializedResourceVector.test");
 
     std::vector<SerializedResource> deserializedResource;
-    Serializer::DeSerialize(&deserializedResource, "SerializedResourceVector.test");
+    s.DeSerialize<std::vector<SerializedResource>>(&deserializedResource, "SerializedResourceVector.test");
 
     EXPECT_EQ(resourceVector.size(), deserializedResource.size());
 
@@ -244,6 +251,8 @@ REFLECT(std::unordered_map<uint32_t, DataTest >)
 
 TEST(Serialization, MapTrivial)
 {
+    JsonSerializer s;
+
     std::unordered_map<uint32_t, DataTest > map;
 
     std::pair<uint32_t, DataTest > d;
@@ -272,10 +281,10 @@ TEST(Serialization, MapTrivial)
         .z = 156151+6
     };
 
-    Serializer::Serialize(map, "SerializedResourceUnordoredMap.test");
+    s.Serialize<std::unordered_map<uint32_t, DataTest >>(map, "SerializedResourceUnordoredMap.test");
 
     std::unordered_map<uint32_t, DataTest > map2;
-    Serializer::DeSerialize(&map2, "SerializedResourceUnordoredMap.test");
+    s.DeSerialize<std::unordered_map<uint32_t, DataTest >>(&map2, "SerializedResourceUnordoredMap.test");
 
     EXPECT_EQ(map.size(), map2.size());
 
@@ -295,6 +304,8 @@ REFLECT(std::bitset<100>);
 
 TEST(Serialization, BiteSet)
 {
+    JsonSerializer s;
+
     std::bitset<100> bitset;
 
     for (size_t i = 0; i < bitset.size(); i++)
@@ -302,10 +313,10 @@ TEST(Serialization, BiteSet)
         bitset.set(i, i % 2);
     }
 
-    Serializer::Serialize(bitset, "SerializedResourceBitSet.test");
+    s.Serialize<std::bitset<100>>(bitset, "SerializedResourceBitSet.test");
 
     std::bitset<100> bitset2;
-    Serializer::DeSerialize(&bitset2, "SerializedResourceBitSet.test");
+    s.DeSerialize<std::bitset<100>>(&bitset2, "SerializedResourceBitSet.test");
 
     EXPECT_EQ(bitset,  bitset2);
 }
@@ -315,14 +326,15 @@ REFLECT(SpareSet<DataTest>);
 
 TEST(Serialization, SpareSet)
 {
-    
+    JsonSerializer s;
+
     SpareSet<DataTest> spareSet;
     spareSet.Add(5, DataTest(1,2,3));
     spareSet.Add(3, DataTest(4,5,6));
     spareSet.Add(0, DataTest(7,8,9));
-    Serializer::Serialize(spareSet, "SpareSet.test");
+    s.Serialize<SpareSet<DataTest>>(spareSet, "SpareSet.test");
     SpareSet<DataTest> spareSet2;
-    Serializer::DeSerialize(&spareSet2, "SpareSet.test");
+    s.DeSerialize<SpareSet<DataTest>>(&spareSet2, "SpareSet.test");
 
 
     EXPECT_EQ(spareSet2[5],spareSet[5]);
@@ -362,9 +374,56 @@ REFLECT(std::filesystem::path)
 
 TEST(TestReflection, FileSystemPath)
 {
-    auto s = std::filesystem::current_path();
-    Serializer::Serialize(s, "FileSytem.test");
-    std::filesystem::path s2;
-    Serializer::DeSerialize(&s2, "FileSytem.test");
-    EXPECT_TRUE(s == s2);
+    JsonSerializer s;
+
+    auto path = std::filesystem::current_path();
+    s.Serialize<std::filesystem::path>(path, "FileSytem.test");
+    std::filesystem::path path2;
+    s.DeSerialize<std::filesystem::path>(&path2, "FileSytem.test");
+    EXPECT_TRUE(path == path2);
+}
+
+struct Header
+{
+    std::string name;
+    PC_CORE::Guid guid;
+
+    REFLECT(Header);
+    REFLECT_MEMBER(Header, name);
+    REFLECT_MEMBER(Header, guid);
+
+};
+
+TEST(Serialization, MutlipleObjectSerializationRes)
+{
+    JsonSerializer s;
+
+    Header h1{ "header", Guid::New() };
+    SerializaStruct data1 = serializaStruct1;
+
+    s.Serialize<Header, SerializaStruct>(h1, data1, "MutlipleObjectSerializationRes.test");
+    Header h2;
+    SerializaStruct data2;
+    s.DeSerialize<Header, SerializaStruct>(&h2, &data2, "MutlipleObjectSerializationRes.test");
+
+
+    EXPECT_TRUE(h1.name == h2.name);
+    EXPECT_TRUE(h1.guid == h2.guid);
+    EXPECT_FLOAT_EQ(data1.x, data2.x);
+    EXPECT_EQ(data1.y, data2.y);
+    EXPECT_EQ(data1.z, data2.z);
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        EXPECT_FLOAT_EQ(data1.w[i], data2.w[i]);
+    }
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        EXPECT_FLOAT_EQ(data1.array[i], data2.array[i]);
+    }
+
+    EXPECT_EQ(data1.q, data2.q);
+    EXPECT_EQ(data1.testEnum, data2.testEnum);
+
 }

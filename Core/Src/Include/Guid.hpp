@@ -9,7 +9,7 @@
 #include "Reflection/Reflector.hpp"
 
 BEGIN_PCCORE
-
+// TODO std format
 class PC_CORE_API Guid
 { 
 public:

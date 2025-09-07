@@ -16,6 +16,13 @@
 using namespace PC_EDITOR_CORE;
 
 
+std::string timeToString(std::time_t t) {
+	std::ostringstream oss;
+	oss << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S");
+	return oss.str();
+}
+
+
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
 	m_BasePathRelative = std::filesystem::relative(std::filesystem::current_path(), m_Editor->editorData.projectPath);
@@ -26,11 +33,11 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 	const PC_CORE::Sampler& s = m_Editor->editorData.nearestSampler;
 
 	m_FolderIcon.texure = PC_CORE::Texture2D("Folder.png", EDITOR_RESOURCE_PATH "/Icons/Folder.png");
-	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.GetRhiTexture2D().get(),s.GetRhiSampler().get(), &m_FolderIcon.descritproSet, 1);
+	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.GetRhiTexture2D().get(), s.GetRhiSampler().get(), &m_FolderIcon.descritproSet, 1);
 
 
 	m_NullIcon.texure = PC_CORE::Texture2D("Null.png", EDITOR_RESOURCE_PATH "/Icons/Null.png");
-	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.GetRhiTexture2D().get(),s.GetRhiSampler().get(), &m_NullIcon.descritproSet, 1);
+	m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.GetRhiTexture2D().get(), s.GetRhiSampler().get(), &m_NullIcon.descritproSet, 1);
 
 	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>(), EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
 	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>(), EDITOR_RESOURCE_PATH "/Icons/3DModel.png");
@@ -38,6 +45,16 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 	const auto asserR = GetAssetRegisterPath();
 	if (!asserR.empty())
 		PC_CORE::Serializer::DeSerialize(&m_AssetRegistery, GetAssetRegisterPath());
+
+	for (auto& it : m_AssetRegistery.pathToType)
+	{
+		if (std::filesystem::exists(it.first))
+		{
+			const auto lastTime = GetLastTimeModifyFile(it.first);
+			if (it.second.lastTimeModified != lastTime)
+				it.second.lastTimeModified = lastTime;
+		}
+	}
 
 }
 
@@ -327,30 +344,33 @@ PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromPath(const std::filesystem::pat
 		PC_LOGERROR("Failed to open file {}", _path.generic_string());
 		return PC_CORE::NullTypeId;
 	}
+	j = json::parse(f);
+	f.close();
 
-	const auto& r = PC_CORE::Reflector::GetType<std::shared_ptr<PC_CORE::Resource>>();
+	PC_CORE::TypeId id = PC_CORE::NullTypeId;
+
+	if (j.contains("m_TypeId")) 
 	{
-
-		j = json::parse(f);
-		f.close();
-		if (!j.contains(r.name) && 
-			!j[r.name].contains(PC_CORE::Serializer::RESOURCE_TYPE))
-		{
-			return PC_CORE::NullTypeId;
-		}
+		id = j["m_TypeId"];
 	}
-
-	const PC_CORE::TypeId id = j[r.name][PC_CORE::Serializer::RESOURCE_TYPE];
+	else
+	{
+		return false;
+	}
 	assert(PC_CORE::Reflector::Containt(id) && "This type id is unknow"); 
 
 	const auto it = m_AssetRegistery.pathToType.find(_path);
 	if (it == m_AssetRegistery.pathToType.end())
 	{
 		PC_CORE::Guid g;
-		PC_CORE::Serializer::DeserializeType(j[r.name][PC_CORE::Serializer::GUID_KEY]["m_Guid"],
+		PC_CORE::Serializer::DeserializeType(j["m_Guid"],
 			reinterpret_cast<uint8_t*>(&g), PC_CORE::Reflector::GetTypeKey<PC_CORE::Guid>());
 
-		m_AssetRegistery.pathToType.emplace(_path, AssetFile(id, g, GetLastTimeModifyFile(_path)));
+		const auto& af = AssetFile(id, g, GetLastTimeModifyFile(_path));
+		const auto& t = PC_CORE::Reflector::GetType(af.typeId);
+		PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name, timeToString(af.lastTimeModified));
+
+		m_AssetRegistery.pathToType.emplace(_path, af);
 	}
 
 	return id;
@@ -378,11 +398,15 @@ void ResourceBrowserWindow::OnImportButton()
 	if (std::shared_ptr<PC_CORE::Resource> rhandle = r.lock())
 	{
 		const std::filesystem::path& pathToSerialzie = std::filesystem::path(p.parent_path().generic_string() + "/" + rhandle->name + AssetsFormat);
-
-		PC_CORE::Serializer::Serialize(rhandle, pathToSerialzie.generic_string());
+		PC_CORE::Serializer::Serialize(rhandle.get()->GetTypeKey(), &*rhandle.get(), pathToSerialzie.generic_string());
 		
 		const auto it = m_AssetRegistery.pathToType.find(pathToSerialzie);
 		if (it == m_AssetRegistery.pathToType.end())
-			m_AssetRegistery.pathToType.emplace(p, AssetFile(rhandle));
+		{
+			const auto& af = AssetFile(*rhandle.get());
+			const auto& t = PC_CORE::Reflector::GetType(af.typeId);
+			PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name, timeToString(af.lastTimeModified));
+			m_AssetRegistery.pathToType.emplace(p, std::move(af));
+		}
 	}
 }

@@ -52,8 +52,8 @@ private:
 
         DEFAULT_COPY_MOVE_OPERATIONS(AssetFile);
 
-        explicit AssetFile(const std::shared_ptr<PC_CORE::Resource>& _r) :
-            typeId(_r->GetType().typeId), assetGuid(_r->GetGuid()),
+        explicit AssetFile(const PC_CORE::Resource& _r) :
+            typeId(_r.GetType().typeId), assetGuid(_r.GetGuid()),
             lastTimeModified(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()))
         {
 

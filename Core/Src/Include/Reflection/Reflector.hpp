@@ -140,26 +140,6 @@ private:
 		{
 			flags |= TypeFlagBits::COMPOSITE;
 		}
-#pragma region ReflectPtr
-		if constexpr (is_weak_ptr_v<T>)
-		{
-			ReflectedWeakPtr ptrtype{ GetTypeKey<typename T::element_type>() };
-			if (!m_RelfectionMap.contains(ptrtype.type))
-			{
-				
-				PC_LOGERROR("Try to reflect ptr without reflect the type before");
-			}
-			typeMetaData->data = ptrtype;
-		}
-		if constexpr (is_shared_ptr_v<T>)
-		{
-			ReflectedSharedPtr ptrtype{ GetTypeKey<typename T::element_type>() };
-			auto& t = GetType(ptrtype.type);
-			if (!m_RelfectionMap.contains(ptrtype.type))
-				PC_LOGERROR("Try to reflect ptr without reflect the type before");
-			typeMetaData->data = ptrtype;
-		}
-#pragma endregion ReflectPtr
 
 #pragma region ReflectArray
 
@@ -526,31 +506,34 @@ public:
 	const ReflectedType& GetType() const
 	{
 #ifdef _DEBUG
-		if (m_Type == nullptr)
+		if (m_TypeId == PC_CORE::NullTypeId)
 		{
 			PC_LOGERROR("Missing m_Type did you forget to call DYNAMIC_REFLECT_INIT or implement IMP_DYNAMIC_REFLECT")
 		}
 #endif
 		
-		return *m_Type;
+		return Reflector::GetType(m_TypeId);
 	}
 
 	const TypeId GetTypeKey() const
 	{
-		return m_Type->typeId;
+		return m_TypeId;
 	}
 
 	DynamicReflectable() = default;
 
 	virtual ~DynamicReflectable() = default;
 protected:
-	const ReflectedType* m_Type = nullptr;
+	uint32_t m_TypeId = PC_CORE::NullTypeId;
+
+	REFLECT(DynamicReflectable)
+	REFLECT_MEMBER(DynamicReflectable, m_TypeId);
 };
 
 #define IMP_DYNAMIC_REFLECT() \
 void QueryType() override \
 {\
-	m_Type = &PC_CORE::Reflector::GetTypeFromRTTI(typeid(*this).hash_code());\
+	m_TypeId = PC_CORE::Reflector::GetTypeFromRTTI(typeid(*this).hash_code()).typeId;\
 }\
 
 

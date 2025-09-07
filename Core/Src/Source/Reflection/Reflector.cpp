@@ -13,8 +13,7 @@ const ReflectedType& Reflector::GetTypeFromRTTI(size_t typeIdFromRtti)
     return m_RelfectionMap.at(id);
 }
 
-
-    const ReflectedType& Reflector::GetType(uint32_t _hash)
+const ReflectedType& Reflector::GetType(uint32_t _hash)
 {
     return m_RelfectionMap.at(_hash);
 }
