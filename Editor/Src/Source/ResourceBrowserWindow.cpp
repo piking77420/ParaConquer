@@ -12,6 +12,7 @@
 
 #include <Fstream>
 #include <ImguiHelper.h>
+#include <Serialize/JsonSerializer.hpp>
 
 using namespace PC_EDITOR_CORE;
 
@@ -43,8 +44,9 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>(), EDITOR_RESOURCE_PATH "/Icons/3DModel.png");
 
 	const auto asserR = GetAssetRegisterPath();
+	/*
 	if (!asserR.empty())
-		PC_CORE::Serializer::DeSerialize(&m_AssetRegistery, GetAssetRegisterPath());
+		PC_CORE::Serializer::DeSerialize(&m_AssetRegistery, GetAssetRegisterPath());*/
 
 	for (auto& it : m_AssetRegistery.pathToType)
 	{
@@ -68,7 +70,7 @@ ResourceBrowserWindow::~ResourceBrowserWindow()
 
 	const auto asserR = GetAssetRegisterPath();
 	assert(!asserR.empty());
-	PC_CORE::Serializer::Serialize(m_AssetRegistery, asserR);
+	//PC_CORE::Serializer::Serialize(m_AssetRegistery, asserR);
 }
 
 
@@ -362,6 +364,7 @@ PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromPath(const std::filesystem::pat
 	const auto it = m_AssetRegistery.pathToType.find(_path);
 	if (it == m_AssetRegistery.pathToType.end())
 	{
+		/*
 		PC_CORE::Guid g;
 		PC_CORE::Serializer::DeserializeType(j["m_Guid"],
 			reinterpret_cast<uint8_t*>(&g), PC_CORE::Reflector::GetTypeKey<PC_CORE::Guid>());
@@ -370,7 +373,7 @@ PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromPath(const std::filesystem::pat
 		const auto& t = PC_CORE::Reflector::GetType(af.typeId);
 		PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name, timeToString(af.lastTimeModified));
 
-		m_AssetRegistery.pathToType.emplace(_path, af);
+		m_AssetRegistery.pathToType.emplace(_path, af);*/
 	}
 
 	return id;
@@ -389,6 +392,7 @@ void ResourceBrowserWindow::OnImportButton()
 	if (!std::filesystem::exists(p))
 		return;
 
+	/*
 	PC_CORE::TypeId id = PC_CORE::NullTypeId;
 	PC_CORE::ResourceRef<PC_CORE::Resource> r;
 
@@ -408,5 +412,5 @@ void ResourceBrowserWindow::OnImportButton()
 			PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name, timeToString(af.lastTimeModified));
 			m_AssetRegistery.pathToType.emplace(p, std::move(af));
 		}
-	}
+	}*/
 }

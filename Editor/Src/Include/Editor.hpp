@@ -15,6 +15,7 @@
 #include "ShaderCompiler.hpp"
 #include "EditorFiles.hpp"
 #include "Reflection/Reflector.hpp"
+#include "ObjectPtr.hpp"
 
 BEGIN_EDITOR_PCCORE
 
@@ -54,7 +55,7 @@ struct EditorData
     
 };
 
-using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ResourceRef<PC_CORE::Resource>>;
+using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ObjectPtr<PC_CORE::Resource>>;
 
 class Editor
 {

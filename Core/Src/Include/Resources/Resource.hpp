@@ -110,11 +110,4 @@ private:
 template<class T>
 concept ResourceDerived = std::is_base_of_v<Resource, T>;
 
-template <typename ResourceDerived>
-using ResourceRef = std::weak_ptr<ResourceDerived>;
-
-
-
-
-
 END_PCCORE

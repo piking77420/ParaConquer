@@ -7,9 +7,9 @@
 BEGIN_PCCORE
 struct StaticMeshComponent : public Component
 {
-    ResourceRef<StaticMesh> staticMesh;
+    WeakObjectPtr<StaticMesh> staticMesh;
 
-    ResourceRef<Material> material;
+    WeakObjectPtr<Material> material;
 };
 REFLECT(StaticMeshComponent, Component)
 REFLECT_MEMBER(StaticMeshComponent, staticMesh)

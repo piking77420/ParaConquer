@@ -4,12 +4,12 @@
 #include "MaterialInstance.hpp"
 #include "LowRenderer/DescriptorSet.hpp"
 #include "Resources/Texture2d.hpp"
+#include "ObjectPtr.hpp"
+#include "ShaderProgram.hpp"
 
 BEGIN_PCCORE
 
-class ShaderProgram;
-
-    enum class MaterialType
+enum class MaterialType
 {
     Opaque,
     Transparent,
@@ -41,13 +41,13 @@ class Material : public Resource
 public:
     MaterialType materialType = MaterialType::Opaque;
 
-    ResourceRef<Texture2D> albedo;
+    WeakObjectPtr<Texture2D> albedo;
 
-    ResourceRef<Texture2D> metallic;
+    WeakObjectPtr<Texture2D> metallic;
 
-    ResourceRef<Texture2D> roughess;
+    WeakObjectPtr<Texture2D> roughess;
 
-    ResourceRef<Texture2D> normal;
+    WeakObjectPtr<Texture2D> normal;
 
 
     std::shared_ptr<MaterialInstance> CreateMaterialInstance();
@@ -70,7 +70,7 @@ public:
 private:
     ShaderProgramDescriptorSets* m_PShaderProgramDescriptorSets = nullptr;
 
-    ResourceRef<ShaderProgram> m_ShaderProgram;
+    WeakObjectPtr<ShaderProgram> m_ShaderProgram;
 
     std::vector<std::shared_ptr<MaterialInstance>> m_MaterialInstances;
 };

@@ -143,9 +143,9 @@ TEST(Serialization, SerializationRes)
     
     ResourceManager::Create<SerializedResource>("SerializedResource", dataTest);
 
-    ResourceRef<SerializedResource> rRef = ResourceManager::Get<SerializedResource>("SerializedResource");
+    WeakObjectPtr<SerializedResource> rRef = ResourceManager::Get<SerializedResource>("SerializedResource");
     JsonSerializer s;
-    s.Serialize<SerializedResource>(*rRef.lock().get(), "SerializedResource.test");
+    s.Serialize<SerializedResource>(*rRef.Lock().get(), "SerializedResource.test");
 
     
     SerializedResource deserializedResource;

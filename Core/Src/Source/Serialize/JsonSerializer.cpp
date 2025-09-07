@@ -184,6 +184,7 @@ void JsonSerializer::CloseForRead(const std::string& _fileToSerialize)
 {
 	PERF_REGION_SCOPED
 	m_Instream.close();
+	m_Instream = {};
 }
 
 void JsonSerializer::OpenFileForWrite(const std::string& _fileToSerialize)
@@ -209,6 +210,7 @@ void JsonSerializer::CloseForWrite(const std::string& _fileToSerialize)
 	}
 
 	m_OutStream.close();
+	m_OutStream = {};
 }
 
 

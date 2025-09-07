@@ -107,3 +107,15 @@ TEST(TestReflection, EnumReflectionU8)
     }
 
 }
+
+class TestPtr : public std::shared_ptr<Resource>
+{
+public:
+};
+
+TEST(TestReflection, TestPtrAlias)
+{
+    static_assert(!std::is_same_v<TestPtr, std::shared_ptr<Resource>>);
+    static_assert(COMPILE_TIME_TYPE_KEY(TestPtr) != COMPILE_TIME_TYPE_KEY(std::shared_ptr<Resource>));
+
+}

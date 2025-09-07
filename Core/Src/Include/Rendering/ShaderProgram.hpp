@@ -3,7 +3,6 @@
 #include <array>
 #include <vector>
 #include <string>
-#include <vulkan/vulkan_core.h>
 
 #include "CoreHeader.hpp"
 #include "LowRenderer/DescriptorSet.hpp"

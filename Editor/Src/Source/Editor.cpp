@@ -32,6 +32,7 @@
 #include "World/StaticMeshComponent.hpp"
 #include "Serialize/Serializer.h"
 #include "Rendering/RenderSystem.hpp"
+#include "Serialize/JsonSerializer.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -63,11 +64,13 @@ void Editor::LoadFromInitFiles()
 	EditorIniFile editorIniFile;
 	if (std::filesystem::exists(EditorIniFileName)) // if editor.ini exist
 	{
-		Serializer::DeSerialize(&editorIniFile, std::string(EditorIniFileName)); // copy it 
-
+	
+		JsonSerializer s;
+		s.DeSerialize<EditorIniFile>(&editorIniFile, std::string(EditorIniFileName)); // copy it 
+		
 		if (std::filesystem::exists(editorIniFile.projectPath)) // if editor.ini is valid
 		{
-			Serializer::DeSerialize(&projectFile, editorIniFile.projectPath + "/" + std::string(ProjectFileName)); // copy project 
+			s.DeSerialize<ProjectFile>(&projectFile, editorIniFile.projectPath + "/" + std::string(ProjectFileName)); // copy project 
 		}
 		else
 		{
@@ -105,7 +108,9 @@ void Editor::SaveInitFiles()
 	EditorIniFile editorIniFile;
 	editorIniFile.projectPath = editorData.projectPath.generic_string();
 	
-	Serializer::Serialize<EditorIniFile>(editorIniFile, std::string(EditorIniFileName));
+	JsonSerializer s;
+
+	s.Serialize<EditorIniFile>(editorIniFile, std::string(EditorIniFileName));
 }
 
 void Editor::CompileShader()

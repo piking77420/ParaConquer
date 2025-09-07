@@ -6,6 +6,7 @@
 #include "EditorFiles.hpp"
 #include "LowRenderer/RhiTypedef.h"
 #include "Serialize/Serializer.h"
+#include "Serialize/JsonSerializer.hpp"
 
 PC_EDITOR_CORE::ProjectFile PC_EDITOR_CORE::ProjectMaker::CreateBaseProject(const wchar_t* _path)
 {
@@ -19,7 +20,10 @@ PC_EDITOR_CORE::ProjectFile PC_EDITOR_CORE::ProjectMaker::CreateBaseProject(cons
         .graphicApi = PC_CORE::GraphicAPI::Vulkan
         };
 
-    PC_CORE::Serializer::Serialize(projectFile, (path / ProjectFileName).generic_string());
+
+    PC_CORE::JsonSerializer s;
+
+    s.Serialize<PC_EDITOR_CORE::ProjectFile>(projectFile, (path / ProjectFileName).generic_string());
 
     return std::move(projectFile);
 }

@@ -55,17 +55,17 @@ public:
 
     std::shared_ptr<PC_CORE::CommandList> swapChainPassCommandList;
 
-    ResourceRef<PC_CORE::GraphicShader> m_ForwardShader;
+    WeakObjectPtr<PC_CORE::GraphicShader> m_ForwardShader;
 
-    ResourceRef<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
+    WeakObjectPtr<PC_CORE::GraphicShader> m_DrawTextureScreenQuadShader;
 
-    ResourceRef<PC_CORE::GraphicShader> m_SkyBoxShader;
+    WeakObjectPtr<PC_CORE::GraphicShader> m_SkyBoxShader;
 
-    ResourceRef<PC_CORE::GraphicShader> m_GeometryBufferShader;
+    WeakObjectPtr<PC_CORE::GraphicShader> m_GeometryBufferShader;
 
-    ResourceRef<PC_CORE::GraphicShader> m_DeferedShader;
+    WeakObjectPtr<PC_CORE::GraphicShader> m_DeferedShader;
 
-    ResourceRef<PC_CORE::ComputeShader> m_AcesShader;
+    WeakObjectPtr<PC_CORE::ComputeShader> m_AcesShader;
 
     RenderPasses renderPasses;
 

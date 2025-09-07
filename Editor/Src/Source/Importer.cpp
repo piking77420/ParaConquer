@@ -12,7 +12,7 @@
 #include "Resources/ResourceManager.hpp"
 
 
-bool PC_EDITOR_CORE::Importer::Import(const std::filesystem::path& _path, PC_CORE::TypeId* _outId, PC_CORE::ResourceRef<PC_CORE::Resource>* _outResource) const
+bool PC_EDITOR_CORE::Importer::Import(const std::filesystem::path& _path, PC_CORE::TypeId* _outId, PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
 {
     std::string vformat = _path.filename().extension().generic_string();
 

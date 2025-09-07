@@ -111,7 +111,7 @@ void Inspector::Show()
         ShowEntity(std::get<PC_CORE::EntityId>(m_Editor->selectedObject));
     }
 
-    if (std::holds_alternative<PC_CORE::ResourceRef<PC_CORE::Resource>>(m_Editor->selectedObject))
+    if (std::holds_alternative<PC_CORE::ObjectPtr<PC_CORE::Resource>>(m_Editor->selectedObject))
     {
         // TODO
     }
@@ -222,6 +222,7 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
 
     std::visit([&](auto&& arg) 
         {
+            /*
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, PC_CORE::ReflectedWeakPtr>)
             {
@@ -235,7 +236,7 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
                     HandlePtr(_memberPtr, type, _member);
                     return;
                 }
-            }
+            }*/
 
             if (typeFlag & PC_CORE::TypeFlagBits::COMPOSITE)
             {
@@ -384,6 +385,7 @@ void Inspector::HandleShowAble(uint8_t* ptr, const PC_CORE::ReflectedType& type,
 
 void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, const PC_CORE::Members& _typeAsMember)
 {
+    /*
     static bool showSelectResourceMenue = false;
     static std::string currentSelectedMember;
 
@@ -440,5 +442,5 @@ void Inspector::HandlePtr(uint8_t* ptr, const PC_CORE::ReflectedType& type, cons
 
         ImGui::End();
 
-    }
+    }*/
 }

@@ -18,7 +18,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 
     for (auto& code : p)
     {
-        std::shared_ptr<ShaderSourceBinary> shaderSourceBinary;
+        ObjectPtr<ShaderSourceBinary> shaderSourceBinary;
         if (ResourceManager::TryGetAs<PC_CORE::ShaderSourceBinary>(code, &shaderSourceBinary))
         {
             sources.emplace_back(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetCode());

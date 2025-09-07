@@ -18,38 +18,7 @@ static constexpr bool CreateBasicsResource = true;
 void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
-    /*
-    auto s = ResourceManager::Create<Mesh>("RoundedCube.obj", "Assets/Meshs/Obj/RoundedCube.obj");
-
-    auto mesh1 = ResourceManager::Create<Mesh>("Quad.obj", "Assets/Meshs/Obj/Quad.obj");
-
-    auto mesh2 = ResourceManager::Create<Mesh>("Sphere.obj", "Assets/Meshs/Obj/Sphere.obj");
-
-    auto mesh3 = ResourceManager::Create<Mesh>("Capsule.obj", "Assets/Meshs/Obj/Capsule.obj");
-
-    auto mesh4 = ResourceManager::Create<Mesh>("VikingRoom.obj", "Assets/Meshs/Obj/VikingRoom.obj");
-
-    auto mesh5 = ResourceManager::Create<Mesh>("Cube.obj", "Assets/Meshs/Obj/Cube.obj");
-
-    auto mesh6 = ResourceManager::Create<Mesh>("Untitled.obj", "Assets/Meshs/Obj/Untitled.obj");
-
-    auto mesh7 = ResourceManager::Create<Mesh>("Suzanne.obj", "Assets/Meshs/Obj/Suzanne.obj");
-
-    auto texture1 = ResourceManager::Create<Texture2D>("DiamondBlock.jpg", "Assets/textures/DiamondBlock.jpg");
-
-    auto texture2 = ResourceManager::Create<Texture2D>("EmerauldBlock.png","Assets/textures/EmerauldBlock.png");
-  
     
-    const SamplerCreateInfo info =
-        {
-        .SamplerName = "LinearRepeat",
-        .magFilter = Filter::LINEAR,
-        .minFilter = Filter::LINEAR,
-        .u = SamplerAddressMode::REPEAT,
-        .v = SamplerAddressMode::REPEAT,
-        .w = SamplerAddressMode::REPEAT
-        };
-    ResourceManager::Create<PC_CORE::Sampler>(info);*/
 }
 
 void ResourceManager::Destroy()

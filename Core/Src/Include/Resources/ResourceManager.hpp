@@ -3,7 +3,7 @@
 #include <functional>
 #include <map>
 #include <memory>
-
+#include "ObjectPtr.hpp"
 
 #include "CoreHeader.hpp"
 #include "Singleton.hpp"
@@ -13,9 +13,6 @@
 
 BEGIN_PCCORE
 
-template <typename ResourceDerived>
-using ResourceHandle = std::shared_ptr<ResourceDerived>;
-
 class PC_CORE_API ResourceManager : public Singleton<ResourceManager>
 {
 public:
@@ -24,64 +21,58 @@ public:
     static void Destroy();
 
     template<class ResourceDerived, typename... Arg>
-    static std::shared_ptr<ResourceDerived>  Create(Arg... args);
+    static ObjectPtr<ResourceDerived>  Create(Arg... args);
 
     template<class ResourceDerived>
-    static std::shared_ptr<ResourceDerived> Add(ResourceDerived* _resourceDerived);
-    
-    template<class ResourceDerived>
-    static std::shared_ptr<ResourceDerived> Get(const std::string& _name);
+    static ObjectPtr<ResourceDerived> Add(ResourceDerived* _resourceDerived);
 
     template<class ResourceDerived>
-    static std::shared_ptr<ResourceDerived> Get(const Guid& _guid);
+    static ObjectPtr<ResourceDerived> Get(const std::string& _name);
 
     template<class ResourceDerived>
-    static bool TryGetAs(const Guid& _guid, std::shared_ptr<ResourceDerived>* _outPtr);
+    static ObjectPtr<ResourceDerived> Get(const Guid& _guid);
 
-    static const std::string& GetName(const Guid& _guid); 
-    
+    template<class ResourceDerived>
+    static bool TryGetAs(const Guid& _guid, ObjectPtr<ResourceDerived>* _outPtr);
+
+    static const std::string& GetName(const Guid& _guid);
+
     static bool Exist(const std::string& _name);
 
     static bool Exist(const Guid& _guid);
 
     template<class ResourceDerived>
-    static std::shared_ptr<ResourceDerived> Get();
-    
+    static ObjectPtr<ResourceDerived> Get();
+
     template<class ResourceDerived>
     static bool Delete(const std::string& _name);
 
     template <class ResourceDerived>
     static void ForEach(const std::function<void(ResourceDerived*)>& _lamba);
-    
+
     static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
 
 private:
-    std::unordered_map<Guid, std::shared_ptr<Resource>> m_ResourcesMap;
+    std::unordered_map<Guid, ObjectPtr<Resource>> m_ResourcesMap;
 
     std::unordered_map<std::string, Guid> m_NameToGuid;
 
-    std::filesystem::path m_BasePath;
-
     REFLECT(ResourceManager);
-    REFLECT_MEMBER(ResourceManager, m_ResourcesMap);
-    REFLECT_MEMBER(ResourceManager, m_NameToGuid);
 
-    REFLECT(Resource)
-    REFLECT(std::shared_ptr<Resource>)
 };
 
 
 
 template<class ResourceDerived, typename... Arg>
-std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
+ObjectPtr<ResourceDerived> ResourceManager::Create(Arg... args)
 {
 
-    std::shared_ptr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
+    ObjectPtr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
     newR->m_IsLoaded = true;
-    
+
     auto& resourcesMap = Instance().m_ResourcesMap;
-    resourcesMap.insert({newR->GetGuid(), newR});
+    resourcesMap.insert({ newR->GetGuid(), newR });
     auto& nameToGuid = Instance().m_NameToGuid;
 
     assert(!nameToGuid.contains(newR->name) && "There is a resource with the same name already");
@@ -92,26 +83,26 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 }
 
 template <class ResourceDerived>
-std::shared_ptr<ResourceDerived> ResourceManager::Get(const std::string& _name)
+ObjectPtr<ResourceDerived> ResourceManager::Get(const std::string& _name)
 {
     auto it = Instance().m_NameToGuid.find(_name);
     if (it != Instance().m_NameToGuid.end())
     {
         auto r = Instance().m_ResourcesMap.at(it->second);
         assert(r->GetGuid() == it->second);
-        assert(r->name ==  _name);
+        assert(r->name == _name);
         assert(std::dynamic_pointer_cast<ResourceDerived>(r) != nullptr);
-        
+
         return std::reinterpret_pointer_cast<ResourceDerived>(r);
     }
 
     PC_LOGERROR("There is no resource with this name " + _name);
-    
-   return nullptr;
+
+    return nullptr;
 }
 
 template <class ResourceDerived>
-std::shared_ptr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
+ObjectPtr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
 {
     assert(Instance().m_ResourcesMap.contains(_guid));
 
@@ -120,13 +111,13 @@ std::shared_ptr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
 }
 
 template<class ResourceDerived>
-inline bool ResourceManager::TryGetAs(const Guid& _guid, std::shared_ptr<ResourceDerived>* _outPtr)
+inline bool ResourceManager::TryGetAs(const Guid& _guid, ObjectPtr<ResourceDerived>* _outPtr)
 {
     auto it = Instance().m_ResourcesMap.find(_guid);
     if (it == Instance().m_ResourcesMap.end())
     {
         PC_LOGERROR("Cant find resource")
-        return false;
+            return false;
     }
 
     if (it->second->GetType().typeId != Reflector::GetTypeKey<ResourceDerived>())
@@ -139,7 +130,7 @@ inline bool ResourceManager::TryGetAs(const Guid& _guid, std::shared_ptr<Resourc
 
 
 template <class ResourceDerived>
-std::shared_ptr<ResourceDerived> ResourceManager::Get()
+ObjectPtr<ResourceDerived> ResourceManager::Get()
 {
     for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); it++)
     {

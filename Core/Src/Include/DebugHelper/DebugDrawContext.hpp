@@ -10,6 +10,7 @@
 #include "Resources/GraphicShader.hpp"
 #include "Resources/Mesh.hpp"
 #include "Scripting/ScriptingLua.hpp"
+#include "ObjectPtr.hpp"
 
 BEGIN_PCCORE
 
@@ -91,12 +92,12 @@ private:
 
 	RayCastPrimitiveData m_RayPrimitiveData;
 	
-	PC_CORE::ResourceRef<PC_CORE::GraphicShader> m_ShaderProgram;
-	
 	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSets;
 
-	PC_CORE::ResourceRef<PC_CORE::GraphicShader> m_ShaderProgramRay;
+	PC_CORE::WeakObjectPtr<PC_CORE::GraphicShader> m_ShaderProgram;
 	
+	PC_CORE::WeakObjectPtr<PC_CORE::GraphicShader> m_ShaderProgramRay;
+
 	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsRay;
 
 	void CreatePrimitiveShaders();
