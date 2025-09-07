@@ -31,8 +31,6 @@ public:
     PC_CORE_API virtual ~GraphicShader() override = default;
 
 private:
-
-    
     REFLECT(GraphicShader, PC_CORE::ShaderProgram);
 };
 

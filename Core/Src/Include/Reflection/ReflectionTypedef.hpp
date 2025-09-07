@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "CoreHeader.hpp"
+
 #include <variant>
 #include <vector>
 #include <string>
@@ -7,6 +7,7 @@
 #include <bitset>
 #include <magic_enum/magic_enum.hpp>
 
+#include "CoreHeader.hpp"
 #include "DataStructure/SpareSet.hpp"
 
 BEGIN_PCCORE
@@ -41,6 +42,16 @@ struct Members
     std::string membersName;
     size_t offset = 0;
     uintmax_t memberFlag = 0;
+};
+
+struct ReflectedObjPtr
+{
+    TypeId typeId;
+};
+
+struct ReflectedWeakObjPtr
+{
+    TypeId typeId;
 };
 
 struct ReflectedBitSet
@@ -113,6 +124,8 @@ struct TypeMetaData
 {
     std::variant<
         std::monostate,
+        ReflectedObjPtr,
+        ReflectedWeakObjPtr,
         ReflectedArray,
         ReflectedVector,
         ReflectedString,      
@@ -176,6 +189,7 @@ struct is_vector : std::false_type {};
 
 template<typename T>
 struct is_vector<std::vector<T>> : std::true_type {};
+
 
 template<typename T>
 inline constexpr bool is_vector_v = is_vector<std::decay_t<T>>::value;

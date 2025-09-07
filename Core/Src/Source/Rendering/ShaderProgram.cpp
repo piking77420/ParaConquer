@@ -42,28 +42,28 @@ void ShaderProgram::FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgr
 }
 
 ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType,
-    const std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>& _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+    const std::vector<std::pair<ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>& _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     PERF_REGION_SCOPED;
-    
+
     DYNAMIC_REFLECT_INIT
 
-    // TODO lOOK if foreach shadersource binary if suitable for pipelyne type
+        // TODO lOOK if foreach shadersource binary if suitable for pipelyne type
 
-    // if suitable
-    
-    for (const auto& source : _sources)
-    {
-        Resource::LinkDependencies(source.second.lock().get(), this);
-    }
+        // if suitable
+
+        for (const auto& source : _sources)
+        {
+            Resource::LinkDependencies(source.second.lock().get(), this);
+        }
 }
 
-ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+ShaderProgram::ShaderProgram(const std::string& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const WeakObjectPtr<ShaderSourceBinary>& _source) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     Resource::LinkDependencies(_source.lock().get(), this);
 }
 
-ShaderProgram::ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
+ShaderProgram::ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const WeakObjectPtr<ShaderSourceBinary>& _source) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     Resource::LinkDependencies(_source.lock().get(), this);
 }

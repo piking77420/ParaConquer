@@ -8,10 +8,9 @@
 
 BEGIN_PCCORE
 
-class ISeriazable : public DynamicReflectable
+class ISeriazable 
 {
 public:
-   PC_CORE_API void QueryType() override = 0;
 
    /*
    PC_CORE_API void Seriliaze(const fs::path& _path) const 
@@ -36,11 +35,6 @@ public:
       //Serializer::DeSerialize(m_Type->typeId, this, _path);
    }*/
    
-   DEFAULT_COPY_MOVE_OPERATIONS(ISeriazable)
-   
-   PC_CORE_API ISeriazable() = default  ;
-
-   PC_CORE_API virtual ~ISeriazable() = default;
 
 protected:
    

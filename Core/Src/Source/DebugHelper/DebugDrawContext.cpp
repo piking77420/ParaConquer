@@ -221,7 +221,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 	m_ShaderProgram = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
 		"DebugGizmoShader", graphicShaderProgramCreateInfo);
 
-	m_ShaderProgram.lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET);
+	m_ShaderProgram.Lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET);
 
 	PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
 	{
@@ -321,7 +321,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 
 	m_ShaderProgramRay = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
 		"DebugGizmoShaderRay", graphicShaderProgramCreateInfo);
-	m_ShaderProgramRay.lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsRay, SCENE_DESCRIPTOR_SET);
+	m_ShaderProgramRay.Lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsRay, SCENE_DESCRIPTOR_SET);
 
 	PC_CORE::UniformBufferDescriptor uniformBufferDescriptor
 	{

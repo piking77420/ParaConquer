@@ -8,13 +8,6 @@
 
 using namespace PC_CORE;
 
-EntityManager::EntityManager()
-{
-	PERF_REGION_SCOPED;
-	DYNAMIC_REFLECT_INIT;
-}
-
-
 EntityId EntityManager::CreateEntity()
 {
 	PERF_REGION_SCOPED;
@@ -147,7 +140,7 @@ Signature* EntityManager::GetSignature(EntityId entity)
 {
 	PERF_REGION_SCOPED;
 
-	assert(entity < MAX_ENTITIES ,"Entity out of range.");
+	assert(entity < MAX_ENTITIES && "Entity out of range.");
 
 	if (!m_EntityEnableFlags.test(entity))
 	{
@@ -169,7 +162,7 @@ const Signature* EntityManager::GetSignature(EntityId entity) const
 {
 	PERF_REGION_SCOPED;
 
-	assert(entity < MAX_ENTITIES, "Entity out of range.");
+	assert(entity < MAX_ENTITIES && "Entity out of range.");
 
 	if (!m_EntityEnableFlags.test(entity))
 	{

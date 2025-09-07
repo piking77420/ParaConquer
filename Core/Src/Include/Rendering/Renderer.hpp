@@ -71,7 +71,7 @@ public:
 
     Sampler linearReapeat;
 
-    std::weak_ptr<Texture3D> m_Cubemap;
+    WeakObjectPtr<Texture3D> m_Cubemap;
 
     PC_CORE_API void GetRenderingData(const RenderingWorldData& _newRenderingData);
 
@@ -129,7 +129,7 @@ private:
 
     PC_CORE_API void CreateThirdPartyResources();
         
-    PC_CORE_API void DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader);
+    PC_CORE_API void DrawStaticMesh(MaterialType type, const ObjectPtr<PC_CORE::GraphicShader>& _shader);
 
     PC_CORE_API void ClearRenderData();
 

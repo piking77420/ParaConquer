@@ -230,8 +230,6 @@ void JsonSerializer::SerializeMember(const PC_CORE::Members& member, const uint8
 
 void JsonSerializer::SerializeType(const uint8_t* objetPtr, PC_CORE::TypeId _typeKey)
 {
-	PERF_REGION_SCOPED
-
 	const ReflectedType& type = Reflector::GetType(_typeKey);
 	PERF_REGION_SCOPED_NAME_DYNAMIC(("SerializeType : " + type.name).c_str());
 

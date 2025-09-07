@@ -290,7 +290,7 @@ std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
 }
 
 
-void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::GraphicShader> shader)
+void Renderer::DrawStaticMesh(MaterialType type, const ObjectPtr<PC_CORE::GraphicShader>& _shader)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -321,9 +321,9 @@ void Renderer::DrawStaticMesh(MaterialType type, std::shared_ptr<PC_CORE::Graphi
 
         // Send Data
 
-        primaryCommandList->BindDescriptorSet(shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        primaryCommandList->BindDescriptorSet(_shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
 
-        primaryCommandList->PushConstant(shader.get(), "pushConstant", &modelMatrixf,
+        primaryCommandList->PushConstant(_shader.get(), "pushConstant", &modelMatrixf,
             sizeof(Tbx::Matrix4x4f) * 2);
         primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
         primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
@@ -359,8 +359,8 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 		.clearDepth = 1.f
 	};
 
-	auto forwardShader = m_ForwardShader.lock();
-	auto skyboxShader = m_SkyBoxShader.lock();
+	auto forwardShader = m_ForwardShader.Lock();
+	auto skyboxShader = m_SkyBoxShader.Lock();
     bool needForwardPass = forwardShader || skyboxShader;
 
 	
@@ -432,8 +432,8 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
         .clearDepth = 1.f
     };
 
-    std::shared_ptr sGeometry = m_GeometryBufferShader.lock();
-    std::shared_ptr sDeferred = m_DeferedShader.lock();
+    ObjectPtr sGeometry = m_GeometryBufferShader.lock();
+    ObjectPtr sDeferred = m_DeferedShader.lock();
 
  
 	primaryCommandList->BeginRenderPass(beginRenderPassInfo);
@@ -534,13 +534,13 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
     };
     primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
     primaryCommandList->BeginRenderPass(drawToViewport);
-    if (auto drawToViewPort = m_DrawTextureScreenQuadShader.lock())
+    if (auto drawToViewPort = m_DrawTextureScreenQuadShader.Lock())
     {
        
-        primaryCommandList->BindProgram(m_DrawTextureScreenQuadShader.lock().get());
+        primaryCommandList->BindProgram(drawToViewPort.get());
         primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
-        primaryCommandList->BindDescriptorSet(m_DrawTextureScreenQuadShader.lock().get(),
+        primaryCommandList->BindDescriptorSet(drawToViewPort.get(),
             rContextView.finalImageDescritptorSet, 0, 1);
         primaryCommandList->Draw(4, 1, 0, 0);
     }

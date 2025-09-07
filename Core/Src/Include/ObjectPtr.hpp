@@ -1,21 +1,21 @@
 #pragma once
 
 #include <memory>
-
-#include "Reflection/Reflector.hpp"
+#include "Reflection/DynamicReflectable.hpp"
 
 BEGIN_PCCORE
-
-template<class T>
-concept DynamicReflectableDerived = std::is_base_of_v<DynamicReflectable, T>;
 
 template<DynamicReflectableDerived T>
 class ObjectPtr final : public std::shared_ptr<T>
 {
 public:
     using Base = std::shared_ptr<T>;
+    using Obj = T;
 
-
+    explicit operator bool() const noexcept
+    {
+        return Base::operator bool();
+    }
 
     ObjectPtr() = default;
 
@@ -50,7 +50,7 @@ class WeakObjectPtr final : public std::weak_ptr<T>
 {
 public:
     using Base = std::weak_ptr<T>;
-
+    using Obj = T;
 
     ObjectPtr<T> Lock() const
     {
@@ -60,6 +60,11 @@ public:
     bool IsValid() const { return !Base::expired(); }
 
     size_t UseCount() const { return Base::use_count(); }
+
+    explicit operator bool() const noexcept
+    {
+        return Base::operator bool();
+    }
 
     WeakObjectPtr() = default;
 
@@ -100,7 +105,5 @@ public:
 private:
 
 };
-
-
 
 END_PCCORE

@@ -3,6 +3,7 @@
 #include <Set>
 
 #include "EcsHeader.h"
+#include "Reflection/DynamicReflectable.hpp"
 
 BEGIN_PCCORE
 

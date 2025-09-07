@@ -10,20 +10,17 @@
 #include "CoreHeader.hpp"
 #include "EcsHeader.h"
 #include "EcsSystem.h"
-#include "Serialize/Iseriazable.h"
 
 
 BEGIN_PCCORE
-    class EntityManager : public ISeriazable
+    class EntityManager
     {
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(EntityManager)
 
-        IMP_DYNAMIC_REFLECT();
+        PC_CORE_API EntityManager() = default;
 
-        PC_CORE_API EntityManager();
-
-        PC_CORE_API ~EntityManager() override = default;
+        PC_CORE_API ~EntityManager() = default;
 
         PC_CORE_API EntityId CreateEntity();
 

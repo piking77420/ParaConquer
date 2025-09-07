@@ -5,6 +5,8 @@
 #include <string>
 
 #include "CoreHeader.hpp"
+#include "Objectptr.hpp"
+#include "Reflection/Reflector.hpp"
 #include "LowRenderer/DescriptorSet.hpp"
 #include "LowRenderer/RhiTypedef.h"
 #include "LowRenderer/RhiRenderPass.hpp"
@@ -14,7 +16,7 @@
 
 BEGIN_PCCORE
 
-    using SourceList = std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>;
+    using SourceList = std::vector<std::pair<ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>;
 
     // MAKE COMPUTE RAY AND GRAPHIC PROGRAMM
     // TO DO MAY SEPARATE RESOURCE AND GPU RESOURCE
@@ -42,12 +44,12 @@ BEGIN_PCCORE
         IMP_DYNAMIC_REFLECT()
     
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
-            ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageType, std::weak_ptr<ShaderSourceBinary>>>& _sources);
+            ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>& _sources);
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
-            ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source);
+            ShaderProgramPipelineType _shaderProgramPipelineType, const WeakObjectPtr<ShaderSourceBinary>& _source);
 
-        PC_CORE_API ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const std::weak_ptr<ShaderSourceBinary>& _source);
+        PC_CORE_API ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const WeakObjectPtr<ShaderSourceBinary>& _source);
         
         PC_CORE_API ShaderProgram()
         {

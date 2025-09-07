@@ -6,7 +6,7 @@
 #include "Ecs/SystemManager.hpp"
 
 BEGIN_PCCORE
-    class Level : public ISeriazable
+    class Level 
 {
 public:
 
@@ -14,9 +14,7 @@ public:
 
     PC_CORE_API Level();
 
-    PC_CORE_API ~Level() override = default;
-
-    IMP_DYNAMIC_REFLECT()
+    PC_CORE_API ~Level() = default;
 
     PC_FORCE_INLINE EntityId CreateEntity()
     {

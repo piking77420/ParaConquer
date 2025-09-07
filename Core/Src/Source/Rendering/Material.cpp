@@ -33,14 +33,14 @@ PC_CORE::Material::Material(const std::string& _name) : Resource(_name)
     
     
     if (!m_ShaderProgram.expired())
-        m_ShaderProgram.lock()->AllocDescriptorSet(&m_PShaderProgramDescriptorSets, MATERIAL_DESCRIPTOR_SET);
+        m_ShaderProgram.Lock()->AllocDescriptorSet(&m_PShaderProgramDescriptorSets, MATERIAL_DESCRIPTOR_SET);
 }
 
 PC_CORE::Material::~Material()
 {
    
     if (!m_ShaderProgram.expired())
-        m_ShaderProgram.lock()->FreeDescriptorSet(&m_PShaderProgramDescriptorSets);
+        m_ShaderProgram.Lock()->FreeDescriptorSet(&m_PShaderProgramDescriptorSets);
 }
 
 void PC_CORE::Material::Build()
@@ -50,11 +50,11 @@ void PC_CORE::Material::Build()
         PC_LOGERROR("albedo texture expired");
         return;
     }
-
+    
 
     ImageSamplerDescriptor imageSamperDescriptor =
     {
-        .sampler = ResourceManager::Get<Sampler>("LinearRepeat").get(),
+        .sampler = ResourceManager::Get<Sampler>(std::string("LinearRepeat")).get(),
         .texture = albedo.lock().get(),
         .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };

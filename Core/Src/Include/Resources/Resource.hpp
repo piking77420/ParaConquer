@@ -9,11 +9,9 @@
 
 
 #include "Guid.hpp"
-#include "Reflection/ReflectionTypedef.hpp"
-#include "Reflection/Reflector.hpp"
 #include "Serialize/Iseriazable.h"
 #include "ResourceFormat.hpp"
-
+#include "Reflection/DynamicReflectable.hpp"
 
 
 BEGIN_PCCORE

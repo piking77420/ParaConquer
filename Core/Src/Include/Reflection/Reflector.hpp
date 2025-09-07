@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "CoreHeader.hpp"
 #include <cassert>
 #include <type_traits>
 
@@ -8,12 +7,41 @@
 #include <iostream>
 #include <optional>
 
-#include "PerfRegion.hpp"
-#include "CompiletimeKey.hpp"
-#include "Log.hpp"
+
+#include "CoreHeader.hpp"
 #include "Reflection/ReflectionTypedef.hpp"
+#include "CompiletimeKey.hpp"
+#include "PerfRegion.hpp"
+#include "Log.hpp"
 
 BEGIN_PCCORE
+
+// TODO find a nother way than foward declare
+// bet solution so far
+class DynamicReflectable;
+template<class T>
+concept DynamicReflectableDerived = std::is_base_of_v<DynamicReflectable, T>;
+template<DynamicReflectableDerived T>
+class ObjectPtr;
+template<DynamicReflectableDerived T>
+class WeakObjectPtr;
+
+template<typename T>
+struct is_object_ptr : std::false_type {};
+
+template<typename U>
+struct is_object_ptr<ObjectPtr<U>> : std::true_type {};
+
+template<typename T>
+struct is_weak_object_ptr : std::false_type {};
+
+template<typename U>
+struct is_weak_object_ptr<WeakObjectPtr<U>> : std::true_type {};
+
+template<typename T>
+struct is_object_or_weak_ptr
+	: std::bool_constant<is_object_ptr<T>::value || is_weak_object_ptr<T>::value> {
+};
 
 class Reflector
 {
@@ -139,6 +167,19 @@ private:
 		if constexpr (std::is_class_v<T>)
 		{
 			flags |= TypeFlagBits::COMPOSITE;
+		}
+
+		
+		if constexpr (is_object_ptr<T>::value)
+		{
+			ReflectedObjPtr objPtr{GetTypeKey<typename T::Obj>()  };
+			typeMetaData->data = objPtr;
+		}
+
+		if constexpr (is_weak_object_ptr<T>::value)
+		{
+			ReflectedWeakObjPtr objPtr{ GetTypeKey<typename T::Obj>()};
+			typeMetaData->data = objPtr;
 		}
 
 #pragma region ReflectArray
@@ -481,67 +522,13 @@ bool Reflector::ContaintType()
 #define CONCAT(x, y) CONCAT_IMPL(x, y)
 #define NEW_VAR(name) CONCAT(name, __COUNTER__)
 
-#define MAKE_REFLECTABLE \
-	friend class PC_CORE::Reflector; \
-
-
 #define REFLECT(CurrentType, ...) \
 static inline uint8_t CONCAT(reflectInfo,__COUNTER__) = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();\
-
-
 
 #define REFLECT_MEMBER(CurrentType, memberName, ...) \
 static inline uint8_t CurrentType##_##memberName##_reflected = \
 PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName), ##__VA_ARGS__>( \
 PC_CORE::offset_of(&CurrentType::memberName), #memberName);
-
-class DynamicReflectable
-{
-public:
-
-	DEFAULT_COPY_MOVE_OPERATIONS(DynamicReflectable)
-	
-	PC_CORE_API virtual void QueryType() = 0;
-
-	const ReflectedType& GetType() const
-	{
-#ifdef _DEBUG
-		if (m_TypeId == PC_CORE::NullTypeId)
-		{
-			PC_LOGERROR("Missing m_Type did you forget to call DYNAMIC_REFLECT_INIT or implement IMP_DYNAMIC_REFLECT")
-		}
-#endif
-		
-		return Reflector::GetType(m_TypeId);
-	}
-
-	const TypeId GetTypeKey() const
-	{
-		return m_TypeId;
-	}
-
-	DynamicReflectable() = default;
-
-	virtual ~DynamicReflectable() = default;
-protected:
-	uint32_t m_TypeId = PC_CORE::NullTypeId;
-
-	REFLECT(DynamicReflectable)
-	REFLECT_MEMBER(DynamicReflectable, m_TypeId);
-};
-
-#define IMP_DYNAMIC_REFLECT() \
-void QueryType() override \
-{\
-	m_TypeId = PC_CORE::Reflector::GetTypeFromRTTI(typeid(*this).hash_code()).typeId;\
-}\
-
-
-
-#define DYNAMIC_REFLECT_INIT \
-QueryType();\
-
-
 
 END_PCCORE
 

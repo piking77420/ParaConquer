@@ -3,6 +3,7 @@
 #include "Ecs/EcsFront.h"
 #include "Resources/StaticMesh.hpp"
 #include "Rendering/Material.hpp"
+#include "Objectptr.hpp"
 
 BEGIN_PCCORE
 struct StaticMeshComponent : public Component
