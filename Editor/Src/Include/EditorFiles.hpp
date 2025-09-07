@@ -8,6 +8,8 @@
 BEGIN_EDITOR_PCCORE
 
 constexpr const char* AssetsFormat = ".assets";
+constexpr const char* AssetsRegisteryFileName = "AssetRegistry.json";
+
 
 constexpr std::string_view EditorIniFileName = "PcEditor.ini";
 

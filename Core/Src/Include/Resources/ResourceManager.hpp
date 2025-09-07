@@ -26,8 +26,8 @@ public:
     template<class ResourceDerived, typename... Arg>
     static std::shared_ptr<ResourceDerived>  Create(Arg... args);
 
-    template<class ResourceDerived, typename... Arg>
-    static std::shared_ptr<ResourceDerived>  CreateFromPath(Arg... args);
+    template<class ResourceDerived>
+    static std::shared_ptr<ResourceDerived> Add(ResourceDerived* _resourceDerived);
     
     template<class ResourceDerived>
     static std::shared_ptr<ResourceDerived> Get(const std::string& _name);
@@ -40,7 +40,6 @@ public:
 
     static const std::string& GetName(const Guid& _guid); 
     
-    template<class ResourceDerived>
     static bool Exist(const std::string& _name);
 
     static bool Exist(const Guid& _guid);
@@ -64,14 +63,11 @@ private:
 
     std::filesystem::path m_BasePath;
 
-    static void SerializeResource();
-
-    static void DeserializeResource();
-
     REFLECT(ResourceManager);
     REFLECT_MEMBER(ResourceManager, m_ResourcesMap);
     REFLECT_MEMBER(ResourceManager, m_NameToGuid);
 
+    REFLECT(Resource)
     REFLECT(std::shared_ptr<Resource>)
 };
 
@@ -94,8 +90,6 @@ std::shared_ptr<ResourceDerived> ResourceManager::Create(Arg... args)
 
     return std::reinterpret_pointer_cast<ResourceDerived>(newR);
 }
-
-
 
 template <class ResourceDerived>
 std::shared_ptr<ResourceDerived> ResourceManager::Get(const std::string& _name)
@@ -143,11 +137,6 @@ inline bool ResourceManager::TryGetAs(const Guid& _guid, std::shared_ptr<Resourc
     return true;
 }
 
-template <class ResourceDerived>
-bool ResourceManager::Exist(const std::string& _name)
-{
-    return Instance().m_NameToGuid.contains(_name);
-}
 
 template <class ResourceDerived>
 std::shared_ptr<ResourceDerived> ResourceManager::Get()

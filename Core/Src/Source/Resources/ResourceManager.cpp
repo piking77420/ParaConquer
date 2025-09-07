@@ -54,8 +54,6 @@ void ResourceManager::InitPath()
 
 void ResourceManager::Destroy()
 {
-    SerializeResource();
-
     for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); it++)
     {
 
@@ -74,7 +72,12 @@ const std::string& ResourceManager::GetName(const Guid& _guid)
 {
     return Instance().m_ResourcesMap.at(_guid)->name;
 }
-    
+
+bool ResourceManager::Exist(const std::string& _name)
+{
+    return Instance().m_NameToGuid.contains(_name);
+}
+
 bool ResourceManager::Exist(const Guid& _guid)
 {
     return Instance().m_ResourcesMap.contains(_guid);
@@ -82,7 +85,7 @@ bool ResourceManager::Exist(const Guid& _guid)
 
 void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
 {
-    if (!Reflector::ContaintTypeFromTypeID(typeID))
+    if (!Reflector::Containt(typeID))
         return;
         
     for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); it++)
@@ -93,11 +96,6 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
         _lamba(it->second);
     }
     
-}
-
-void ResourceManager::SerializeResource()
-{
-  
 }
 
 

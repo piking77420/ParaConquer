@@ -7,6 +7,7 @@
 #include "Resources/VulkanSampler.hpp"
 #include "World/World.hpp"
 #include "SystemDialogue.hpp"
+#include "Serialize/Serializer.h"
 
 
 #include <Fstream>
@@ -34,6 +35,10 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>(), EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
 	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>(), EDITOR_RESOURCE_PATH "/Icons/3DModel.png");
 
+	const auto asserR = GetAssetRegisterPath();
+	if (!asserR.empty())
+		PC_CORE::Serializer::DeSerialize(&m_AssetRegistery, GetAssetRegisterPath());
+
 }
 
 ResourceBrowserWindow::~ResourceBrowserWindow()
@@ -44,6 +49,9 @@ ResourceBrowserWindow::~ResourceBrowserWindow()
 	for (auto& it : m_TypeIconMap)
 		m_Editor->IMGUIContext.DestroyVulkanTexture(&it.second.descritproSet, 1);
 
+	const auto asserR = GetAssetRegisterPath();
+	assert(!asserR.empty());
+	PC_CORE::Serializer::Serialize(m_AssetRegistery, asserR);
 }
 
 
@@ -74,11 +82,7 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 
 		if (ImGui::Button("Import"))
 		{
-			const std::wstring& assetPath = m_Editor->editorData.projectPath;
-			const std::wstring s = SystemDialogue::Instance().SeletecFile(L"Select your project imported source", assetPath.c_str());
-
-			// TODO make importer
-
+			OnImportButton();
 		}
 
 		ImGui::EndMenuBar();
@@ -105,6 +109,24 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 			m_Editor->selectedObject = std::monostate();
 		}
 	}
+
+}
+
+std::string ResourceBrowserWindow::GetAssetRegisterPath() const
+{
+	const auto p = m_Editor->editorData.projectPath.empty() ? 
+		std::string() : m_Editor->editorData.projectPath.generic_string() + "/" + AssetsRegisteryFileName;
+
+	return p;
+}
+
+std::time_t ResourceBrowserWindow::GetLastTimeModifyFile(const std::filesystem::path& _p) const
+{
+	auto ftime = std::filesystem::last_write_time(_p);
+
+	auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(ftime);
+
+	return std::chrono::system_clock::to_time_t(sctp);
 
 }
 
@@ -185,12 +207,7 @@ void ResourceBrowserWindow::RenderDirectories()
 		const auto& path = entry.path();
 		std::filesystem::path pathname = path.filename();
 
-		if (!m_PathStringCache.contains(path))
-		{
-			m_PathStringCache[path] = pathname.generic_string();
-		}
-
-		const std::string& name = m_PathStringCache[path];
+		const std::string& name = pathname.generic_string();
 
 		// Compute Text Size
 		ImVec2 textSize = ImGui::CalcTextSize(name.c_str());
@@ -213,19 +230,21 @@ void ResourceBrowserWindow::RenderDirectories()
 		}
 		else if (pathname.has_extension() && pathname.extension() == AssetsFormat)
 		{
-			auto type = TypeIdFromPath(path); // TODO MAKE A THREAD THAT HANDLE THIS 
 
-			if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::ContaintTypeFromTypeID(type))
+			const PC_CORE::TypeId type = m_AssetRegistery.pathToType.find(path) == m_AssetRegistery.pathToType.end()
+				? TypeIdFromPath(path) : m_AssetRegistery.pathToType.at(path).typeId;
+			
+
+			if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::Containt(type))
 			{
 				auto it = m_TypeIconMap.find(type);
-
 				auto& icon = it == m_TypeIconMap.end() ? m_NullIcon : it->second;
 
 				if (ImGui::ImageButton(name.c_str(), (ImTextureID)icon.descritproSet, { thumbnailSize,thumbnailSize }))
 				{
 					if (m_SelectedItem == entry)
 					{
-						OnFileSelectedClick();
+						// File clicked
 					}
 
 					if (m_SelectedItem.empty())
@@ -233,17 +252,12 @@ void ResourceBrowserWindow::RenderDirectories()
 						m_SelectedItem = entry;
 						PC_LOG("File selected: {}", name);
 					}
-
-					ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
-					ImGui::TextWrapped(name.c_str());
-					ImGui::PopTextWrapPos();
-					ImGui::NextColumn();
-
 				}
+				ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
+				ImGui::TextWrapped(name.c_str());
+				ImGui::PopTextWrapPos();
+				ImGui::NextColumn();
 			}
-
-			
-
 		}
 
 
@@ -272,6 +286,7 @@ void ResourceBrowserWindow::CreateFile(const std::string& _filename) const
 
 std::string ResourceBrowserWindow::GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const
 {
+	PERF_REGION_SCOPED;
 	std::string fileName = baseName + extension;
 	int counter = 1;
 
@@ -284,31 +299,11 @@ std::string ResourceBrowserWindow::GetUniqueFileName(const std::filesystem::path
 	return fileName;
 }
 
-void ResourceBrowserWindow::OnFileSelectedClick()
-{
-/*
-	if (m_SelectedItem.empty())
-	{
-		PC_LOGERROR("m_SelectedItem is empty")
-			return;
-	}
-
-
-	std::string fileName = m_SelectedItem.string();
-	PC_LOG("File clicked: {}", fileName);
-
-	std::string fileFormat = m_SelectedItem.extension().string();
-
-	if (fileFormat == PC_Level)
-	{
-		PC_LOG("Load level selected: {}", fileName);
-	}
-
-	m_SelectedItem = fileName;*/
-}
 
 void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const std::filesystem::path& _path)
 {
+	PERF_REGION_SCOPED;
+
 	ImguiImage newIcon;
 	newIcon.texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());
 	m_Editor->IMGUIContext.CreateImguiVulkanTexture(
@@ -333,15 +328,61 @@ PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromPath(const std::filesystem::pat
 		return PC_CORE::NullTypeId;
 	}
 
+	const auto& r = PC_CORE::Reflector::GetType<std::shared_ptr<PC_CORE::Resource>>();
 	{
 
 		j = json::parse(f);
 		f.close();
-		if (!j.contains(PC_CORE::Serializer::RESOURCE_TYPE))
+		if (!j.contains(r.name) && 
+			!j[r.name].contains(PC_CORE::Serializer::RESOURCE_TYPE))
 		{
 			return PC_CORE::NullTypeId;
 		}
 	}
 
-	return j[PC_CORE::Serializer::RESOURCE_TYPE];
+	const PC_CORE::TypeId id = j[r.name][PC_CORE::Serializer::RESOURCE_TYPE];
+	assert(PC_CORE::Reflector::Containt(id) && "This type id is unknow"); 
+
+	const auto it = m_AssetRegistery.pathToType.find(_path);
+	if (it == m_AssetRegistery.pathToType.end())
+	{
+		PC_CORE::Guid g;
+		PC_CORE::Serializer::DeserializeType(j[r.name][PC_CORE::Serializer::GUID_KEY]["m_Guid"],
+			reinterpret_cast<uint8_t*>(&g), PC_CORE::Reflector::GetTypeKey<PC_CORE::Guid>());
+
+		m_AssetRegistery.pathToType.emplace(_path, AssetFile(id, g, GetLastTimeModifyFile(_path)));
+	}
+
+	return id;
+}
+
+void ResourceBrowserWindow::OnImportButton()
+{
+	const std::wstring& assetPath = m_Editor->editorData.projectPath;
+	const std::wstring s = SystemDialogue::Instance().SeletecFile(L"Select your project imported source", assetPath.c_str());
+
+	if (s.empty())
+		return;
+
+	const std::filesystem::path p(s);
+
+	if (!std::filesystem::exists(p))
+		return;
+
+	PC_CORE::TypeId id = PC_CORE::NullTypeId;
+	PC_CORE::ResourceRef<PC_CORE::Resource> r;
+
+	if (!m_Importer.Import(p, &id, &r) || id == PC_CORE::NullTypeId)
+		return;
+
+	if (std::shared_ptr<PC_CORE::Resource> rhandle = r.lock())
+	{
+		const std::filesystem::path& pathToSerialzie = std::filesystem::path(p.parent_path().generic_string() + "/" + rhandle->name + AssetsFormat);
+
+		PC_CORE::Serializer::Serialize(rhandle, pathToSerialzie.generic_string());
+		
+		const auto it = m_AssetRegistery.pathToType.find(pathToSerialzie);
+		if (it == m_AssetRegistery.pathToType.end())
+			m_AssetRegistery.pathToType.emplace(p, AssetFile(rhandle));
+	}
 }

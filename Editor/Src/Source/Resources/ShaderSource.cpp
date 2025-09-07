@@ -106,7 +106,7 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
     }
 
     std::string binaryName = GetShaderBinaryPath();
-    if (!PC_CORE::ResourceManager::Exist<ShaderSourceBinary>(binaryName))
+    if (!PC_CORE::ResourceManager::Exist(binaryName))
     {
         auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType, Editor::instance->editorData.projectData.graphicApi);
         Resource::LinkDependencies(this, s.get());

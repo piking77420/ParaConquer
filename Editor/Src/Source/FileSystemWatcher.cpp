@@ -134,7 +134,7 @@ void FileSystemWatcher::RecordFileModifycation(void* _notifyPtr, const wchar_t* 
 
 	const FILE_NOTIFY_INFORMATION* pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(_notifyPtr);
 	const std::string file = std::string(_filePath, _filePath + _fileNameLenght);
-
+	/*
 	switch (pNotify->Action)
 	{
 	case FILE_ACTION_MODIFIED:
@@ -173,7 +173,7 @@ void FileSystemWatcher::RecordFileModifycation(void* _notifyPtr, const wchar_t* 
 		break;
 	default:
 		assert(false);
-	}
+	}*/
 
 	m_Worker.filePendingActions[std::wstring(_filePath)].push_back(pNotify->Action);
 }

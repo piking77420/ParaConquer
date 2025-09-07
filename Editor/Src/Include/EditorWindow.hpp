@@ -3,12 +3,15 @@
 #include <String>
 
 #include "EditorHeader.hpp"
+#include "Importer.hpp"
 #include <Math/ToolboxTypedef.hpp>
 #include <Imgui/Imgui.h>
+
 
 namespace PC_EDITOR_CORE
 {
     class Editor;
+
 }
 
 BEGIN_EDITOR_PCCORE
@@ -57,6 +60,8 @@ public:
 
 protected:
     Editor* m_Editor = nullptr;
+
+    Importer m_Importer;
     
 };
 

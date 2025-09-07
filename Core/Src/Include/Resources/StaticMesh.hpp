@@ -55,6 +55,11 @@ struct StaticMeshVertex
 
 
 	REFLECT(StaticMeshVertex)
+	REFLECT_MEMBER(StaticMeshVertex, position)
+	REFLECT_MEMBER(StaticMeshVertex, normal)
+	REFLECT_MEMBER(StaticMeshVertex, uv)
+	REFLECT_MEMBER(StaticMeshVertex, tangent)
+
 };
 
 struct StaticMeshCreateInfo
@@ -99,7 +104,7 @@ public:
 		DYNAMIC_REFLECT_INIT
 	}
 
-	~StaticMesh() override  = default;
+	virtual ~StaticMesh() override  = default;
 
 private:
 	std::vector<StaticMeshVertex> m_Verticies;

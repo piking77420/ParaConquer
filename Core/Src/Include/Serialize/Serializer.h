@@ -14,7 +14,7 @@ using json = nlohmann::json;
 
 BEGIN_PCCORE
 
-class Serializer
+class PC_CORE_API Serializer
 {
 public:
 	static constexpr const char* CONTAINER_SIZE = "size";
@@ -22,6 +22,8 @@ public:
 	static constexpr const char* KEY = "key";
 	static constexpr const char* VALUE = "value";
 	static constexpr const char* DATA = "data";
+    static constexpr const char* GUID_KEY = "Guid";
+
 
 	static constexpr const char* SPARSE_SET_DENSE = "dense";
 	static constexpr const char* SPARSE_SET_SPARSE = "sparse";
@@ -42,12 +44,18 @@ public:
     {
         Derializing(static_cast<uint8_t*>(_object), _id, _file);
     }
-    
+    static void SerializeMember(json& _jsonFile, const Members& member, const uint8_t* objetPtr);
+
+    static void SerializeType(json& _jsonFile, const uint8_t* objetPtr, TypeId _typeKey);
+
+    static void DeSerializeMember(const json& _jsonFile, const Members& member, uint8_t* objetPtr);
+
+    static void DeserializeType(const json& _jsonFile, uint8_t* objetPtr, TypeId _typeKey);
     
 private:    
-    PC_CORE_API static void Serializing(const uint8_t* objetPtr, TypeId _typeKey, const std::string& _fileToSerialize);
+    static void Serializing(const uint8_t* objetPtr, TypeId _typeKey, const std::string& _fileToSerialize);
 
-    PC_CORE_API static void Derializing(uint8_t* objetPtr, TypeId _typeKey, const std::string& _fileToSerialize);
+    static void Derializing(uint8_t* objetPtr, TypeId _typeKey, const std::string& _fileToSerialize);
 
 };
 

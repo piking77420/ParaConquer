@@ -1,6 +1,4 @@
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+
 #include <vector>
 #include <string>
 
@@ -10,6 +8,7 @@ using namespace PC_EDITOR_CORE;
 
 PC_CORE::StaticMesh ModelBuilder::CreateStaticMesh(const std::filesystem::path& _pathToFile)
 {
+    /*
     Assimp::Importer importer;
 
     // Load the model with common processing flags
@@ -65,5 +64,6 @@ PC_CORE::StaticMesh ModelBuilder::CreateStaticMesh(const std::filesystem::path& 
         .indicies = std::move(indices)
     };
 
-	return PC_CORE::StaticMesh(std::move(staticMeshCreateInfo));
+	return PC_CORE::StaticMesh(std::move(staticMeshCreateInfo));*/
+    return {};
 }

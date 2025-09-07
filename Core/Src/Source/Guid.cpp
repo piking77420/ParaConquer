@@ -22,6 +22,11 @@ Guid Guid::FromString(const char* str)
 	return g;
 }
 
+Guid Guid::FromString(const std::string& _str)
+{
+	return FromString(_str.c_str());
+}
+
 
 bool Guid::operator==(const Guid& other) const
 {

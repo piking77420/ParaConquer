@@ -28,6 +28,8 @@ public:
     
     static Guid FromString(const char* str);
 
+    static Guid FromString(const std::string& _str);
+
     [[nodiscard]]
     bool operator==(const Guid& other) const;
     

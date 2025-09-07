@@ -26,4 +26,4 @@ python BuildProject.py [OPTIONS]
 |----------------|----------------------------------------------------------------------------------------------|---------|
 | `--simd`       | SIMD instruction set to use. Options: `AUTO`, `SSE2`, `AVX`, `AVX2`, `NEON`, `SVE`, `NONE`   | `NONE`  |
 | `--profiling`  | Enable or disable Tracy profiling. Options: `ON` / `OFF`                                     | `OFF`   |
-| `--built_test` | Enable or disable building unit tests. Options: `ON` / `OFF`                                 | `OFF`   |
+| `--build_test` | Enable or disable building unit tests. Options: `ON` / `OFF`                                 | `OFF`   |

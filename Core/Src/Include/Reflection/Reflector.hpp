@@ -58,7 +58,7 @@ public:
 
 	static bool isTrivialType(TypeId _id);
 
-	PC_CORE_API static bool ContaintTypeFromTypeID(TypeId typeId);
+	PC_CORE_API static bool Containt(TypeId typeId);
 
 	template <typename T, typename F>
 	static bool GetPtrToTypeField(T* _object,const std::string& _fieldName, F** _outPtrToField);
@@ -154,6 +154,7 @@ private:
 		if constexpr (is_shared_ptr_v<T>)
 		{
 			ReflectedSharedPtr ptrtype{ GetTypeKey<typename T::element_type>() };
+			auto& t = GetType(ptrtype.type);
 			if (!m_RelfectionMap.contains(ptrtype.type))
 				PC_LOGERROR("Try to reflect ptr without reflect the type before");
 			typeMetaData->data = ptrtype;
@@ -492,7 +493,7 @@ void Reflector::AddType()
 template <typename T>
 bool Reflector::ContaintType()
 {
-	return ContaintTypeFromTypeID(GetTypeKey<T>());
+	return Containt(GetTypeKey<T>());
 }
 
 //https://isocpp.org/files/papers/P3384R0.html
