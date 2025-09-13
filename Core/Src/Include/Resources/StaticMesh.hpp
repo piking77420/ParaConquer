@@ -67,6 +67,7 @@ struct StaticMeshCreateInfo
 	std::string name;
 	std::vector<StaticMeshVertex> verticies;
 	std::vector<uint32_t> indicies;
+	bool hallowCpuAcces;
 };
 
 class PC_CORE_API StaticMesh : public Resource
@@ -75,6 +76,10 @@ public:
 	VertexBuffer vertexBuffer;
 
 	IndexBuffer indexBuffer;
+
+	void AfterSerialize() const override;
+
+	void AfterDeSerialize() override ;
 
 	const std::vector<StaticMeshVertex>& GetVerticies() const
 	{
@@ -99,20 +104,18 @@ public:
 
 	StaticMesh(StaticMeshCreateInfo&& _staticMeshCreateInfo);
 
-	StaticMesh() 
-	{
-		DYNAMIC_REFLECT_INIT
-	}
+	StaticMesh();
 
 	virtual ~StaticMesh() override  = default;
 
 private:
+	bool m_HallowCpuAcces = false;
+
 	std::vector<StaticMeshVertex> m_Verticies;
 
 	std::vector<uint32_t> m_Indicies;
 
 	MotionCore::Aabb<double> m_Aabb;
-
 
 	REFLECT(StaticMesh, Resource)
 	REFLECT_MEMBER(StaticMesh, m_Verticies)

@@ -23,7 +23,7 @@ bool Reflector::isTrivialType(TypeId _id)
     return !(GetType(_id).typeFlags & TypeFlagBits::COMPOSITE);
 }
 
-bool Reflector::Containt(TypeId typeId)
+bool Reflector::Exist(TypeId typeId)
 {
     return m_RelfectionMap.contains(typeId);
 }

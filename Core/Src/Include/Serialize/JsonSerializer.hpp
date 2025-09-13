@@ -34,6 +34,10 @@ private:
     static constexpr const char* SPARSE_SET_DENSE = "dense";
     static constexpr const char* SPARSE_SET_SPARSE = "sparse";
 
+    static constexpr const char* RESOURCE_OBJECT = "Object";
+    static constexpr const char* OBJECT_TYPE = "ObjectType";
+
+
     json m_MainJson;
 
     std::vector<json*> m_JsonStack;
@@ -60,11 +64,11 @@ private:
 
     void DeserializeType(uint8_t* objetPtr, TypeId _typeKey) override;
 
-    void OpenFileForRead(const std::string& _fileToSerialize) override;
+    bool OpenFileForRead(const std::string& _fileToSerialize) override;
 
     void CloseForRead(const std::string& _fileToSerialize) override;
 
-    void OpenFileForWrite(const std::string& _fileToSerialize) override;
+    bool OpenFileForWrite(const std::string& _fileToSerialize) override;
 
     void CloseForWrite(const std::string& _fileToSerialize) override;
 

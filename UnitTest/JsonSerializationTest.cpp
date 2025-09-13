@@ -344,32 +344,6 @@ TEST(Serialization, SpareSet)
     
 }
 
-
-class TestISerizableClass : public ISeriazable
-{
-public:
-  
-    
-    ~TestISerizableClass() override = default;
-
-    TestISerizableClass()
-    {
-        DYNAMIC_REFLECT_INIT
-    }
-
-    IMP_DYNAMIC_REFLECT()
-
-private:
-    REFLECT(TestISerizableClass)
-    
-};
-
-
-TEST(Serialization, ISeriazable)
-{
-    
-}
-
 REFLECT(std::filesystem::path)
 
 TEST(TestReflection, FileSystemPath)

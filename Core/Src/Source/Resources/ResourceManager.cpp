@@ -54,7 +54,7 @@ bool ResourceManager::Exist(const Guid& _guid)
 
 void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
 {
-    if (!Reflector::Containt(typeID))
+    if (!Reflector::Exist(typeID))
         return;
         
     for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); it++)

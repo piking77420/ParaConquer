@@ -12,6 +12,7 @@
 #include "Serialize/Iseriazable.h"
 #include "ResourceFormat.hpp"
 #include "Reflection/DynamicReflectable.hpp"
+#include "Serialize/Serializer.h"
 
 
 BEGIN_PCCORE
@@ -37,6 +38,10 @@ public:
     {
         PC_LOG("Reload {}", name)
     }
+
+    PC_CORE_API virtual void AfterSerialize() const {};
+
+    PC_CORE_API virtual void AfterDeSerialize() {};
 
     // Reload 
     PC_CORE_API void BroadCastReload();
@@ -70,7 +75,7 @@ public:
     PC_CORE_API Resource(std::string&& _name);
 
     PC_CORE_API virtual ~Resource() = default;
-    
+
 protected:
 
     Guid m_Guid;
@@ -104,8 +109,5 @@ private:
     REFLECT_MEMBER(Resource, m_ParentsResource)
     REFLECT_MEMBER(Resource, m_ChildsResource)
 };
-
-template<class T>
-concept ResourceDerived = std::is_base_of_v<Resource, T>;
 
 END_PCCORE

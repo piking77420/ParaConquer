@@ -7,7 +7,7 @@
 #include "Rendering/RenderingTypedef.h"
 
 BEGIN_PCCORE
-    class World
+class World
 {
 public:
 

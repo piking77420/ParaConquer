@@ -17,13 +17,13 @@
 BEGIN_PCCORE
 
 // TODO find a nother way than foward declare
-// bet solution so far
-class DynamicReflectable;
+// best solution so far
+class Resource;
 template<class T>
-concept DynamicReflectableDerived = std::is_base_of_v<DynamicReflectable, T>;
-template<DynamicReflectableDerived T>
+concept ResourceDerived = std::is_base_of_v<Resource, T>;
+template<ResourceDerived T>
 class ObjectPtr;
-template<DynamicReflectableDerived T>
+template<ResourceDerived T>
 class WeakObjectPtr;
 
 template<typename T>
@@ -86,7 +86,7 @@ public:
 
 	static bool isTrivialType(TypeId _id);
 
-	PC_CORE_API static bool Containt(TypeId typeId);
+	PC_CORE_API static bool Exist(TypeId typeId);
 
 	template <typename T, typename F>
 	static bool GetPtrToTypeField(T* _object,const std::string& _fieldName, F** _outPtrToField);
@@ -158,11 +158,10 @@ private:
 
 
 	template <typename T>
-	static uintmax_t ProcessMetaData(TypeMetaData* typeMetaData)
+	static uintmax_t ProcessMetaData(ReflectedType* reflectedType)
 	{
 		uintmax_t flags = TypeFlagBits::NONE;
-
-	
+		TypeMetaData* typeMetaData = &reflectedType->metaData;
 
 		if constexpr (std::is_class_v<T>)
 		{
@@ -308,6 +307,9 @@ private:
 			typeMetaData->data = std::move(reflectedEnum);
 		}
 
+		if constexpr (std::is_polymorphic_v<T>)
+			typeMetaData->isPolymorphic = true;
+
 		return flags;
 	}
 };
@@ -379,8 +381,8 @@ uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
 	{
 		AddType<MemberType>();
 	}
-	constexpr uint32_t holderKey = GetTypeKey<Holder>();
-	for (const auto& member : memberMap.at(holderKey).metaData.members)
+	const auto& currentType = GetType<Holder>();
+	for (const auto& member : currentType.metaData.members)
 	{
 		// is there aldready a member name as
 		if (member.membersName == _memberName)
@@ -388,17 +390,21 @@ uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
 
 	}
 
+	const bool shouldPatchVtable = currentType.metaData.baseClass == NullTypeId && currentType.metaData.isPolymorphic;
+
+	const size_t offset = _offset + (shouldPatchVtable ? sizeof(uintptr_t) : 0);
+
 	// Add to sub member
 	const Members members =
 	{
 	.typeKey = GetTypeKey<MemberType>(),
 	.membersName = _memberName,
-	.offset = _offset,
+	.offset = offset,
 	.memberFlag = memberEnumFlag
 	};
 
 
-	memberMap.at(holderKey).metaData.members.push_back(members);
+	memberMap.at(currentType.typeId).metaData.members.push_back(members);
 	return 0;
 }
 
@@ -504,7 +510,7 @@ void Reflector::AddType()
 		type.rttiTypeId = typeid(T).hash_code();
 		
 
-		type.typeFlags = ProcessMetaData<T>(&type.metaData);
+		type.typeFlags = ProcessMetaData<T>(&type);
 		m_RttiToTypeId.insert({ type.rttiTypeId, typeId });
 		m_RelfectionMap.insert({ typeId,type });
 	}
@@ -514,7 +520,7 @@ void Reflector::AddType()
 template <typename T>
 bool Reflector::ContaintType()
 {
-	return Containt(GetTypeKey<T>());
+	return Exist(GetTypeKey<T>());
 }
 
 //https://isocpp.org/files/papers/P3384R0.html

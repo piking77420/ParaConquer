@@ -52,6 +52,7 @@ private:
 
         DEFAULT_COPY_MOVE_OPERATIONS(AssetFile);
 
+
         explicit AssetFile(const PC_CORE::Resource& _r) :
             typeId(_r.GetType().typeId), assetGuid(_r.GetGuid()),
             lastTimeModified(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()))
@@ -75,6 +76,16 @@ private:
         REFLECT_MEMBER(AssetFile, assetGuid);
         REFLECT_MEMBER(AssetFile, lastTimeModified);
     };
+
+    struct AssetHeader
+    {
+        PC_CORE::TypeId typeId;
+        PC_CORE::Guid assetGuid;
+        REFLECT(AssetHeader);
+        REFLECT_MEMBER(AssetHeader, typeId);
+        REFLECT_MEMBER(AssetHeader, assetGuid);
+    };
+
 
     struct AssetRegistery
     {
@@ -112,7 +123,7 @@ private:
 
     void CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const std::filesystem::path& _path);
 
-    PC_CORE::TypeId TypeIdFromPath(const std::filesystem::path& _path);
+    PC_CORE::TypeId TypeIdFromFile(const std::filesystem::path& _path);
 
     //Import 
     void OnImportButton();

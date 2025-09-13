@@ -119,3 +119,89 @@ TEST(TestReflection, TestPtrAlias)
     static_assert(COMPILE_TIME_TYPE_KEY(TestPtr) != COMPILE_TIME_TYPE_KEY(std::shared_ptr<Resource>));
 
 }
+
+
+class A 
+{ 
+public:
+    A() = default;
+
+    virtual ~A() = default;
+
+
+
+    int valueai;
+    float valueaf;
+
+    REFLECT(A)
+    REFLECT_MEMBER(A, valueai);
+    REFLECT_MEMBER(A, valueaf);
+};
+
+class B : public A
+{
+public:
+    B() = default;
+
+    ~B() override = default;
+
+
+    int valuebi;
+    float valuebf;
+    REFLECT(B, A);
+    REFLECT_MEMBER(B, valuebi);
+    REFLECT_MEMBER(B, valuebf);
+};
+
+class C : public B
+{
+public:
+    C() = default;
+
+    ~C() override = default;
+
+
+    int valueci;
+    float valuecf;
+
+    REFLECT(C, B);
+    REFLECT_MEMBER(C, valueci);
+    REFLECT_MEMBER(C, valuecf);
+};
+
+TEST(TestReflection, Polymorphism)
+{
+    // There is a vtable
+
+    { // A
+        auto& atyper = Reflector::GetType<A>();
+        EXPECT_TRUE(std::is_polymorphic<A>::value);
+
+        EXPECT_EQ(atyper.GetMemberByName("valueai")->offset, 8);
+
+        EXPECT_EQ(atyper.GetMemberByName("valueaf")->offset, 12);
+    }
+  
+    { // B
+        auto& btyper = Reflector::GetType<B>();
+        EXPECT_TRUE(std::is_polymorphic<B>::value);
+
+        EXPECT_EQ(btyper.GetMemberByName("valuebi")->offset, 16);
+
+        EXPECT_EQ(btyper.GetMemberByName("valuebf")->offset, 20);
+    }
+    
+    { // C
+        auto& ctyper = Reflector::GetType<C>();
+        EXPECT_TRUE(std::is_polymorphic<C>::value);
+
+
+        EXPECT_EQ(ctyper.GetMemberByName("valueci")->offset, 24);
+
+        EXPECT_EQ(ctyper.GetMemberByName("valuecf")->offset, 28);
+
+    }
+
+
+
+}

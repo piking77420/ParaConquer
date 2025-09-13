@@ -61,8 +61,15 @@ type() = default; \
 
 BEGIN_PCCORE
 
+template <typename T, typename = void>
+struct is_polymorphic_custom : std::false_type {};
+
+template <typename T>
+struct is_polymorphic_custom<T, std::void_t<decltype(dynamic_cast<const volatile void*>(std::declval<T*>()))>> : std::true_type {};
+
+// DO BOT USE IT out side Reflector
 template <typename T, typename M>
-  static constexpr size_t offset_of(M T::*member) {
+  static constexpr size_t offset_of(M T::*member) { 
     return reinterpret_cast<size_t>(&(reinterpret_cast<T const volatile*>(0)->*member));
 }
 END_PCCORE

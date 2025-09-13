@@ -144,6 +144,7 @@ struct TypeMetaData
     // Dont Support MultiHirietence
     // TODO Support MultiHirietence exemple handle interface
     TypeId baseClass = NullTypeId;
+    bool isPolymorphic = false;
     
     CreateFunc createFunc = nullptr;
     DeleteFunc deleteFunc = nullptr;
@@ -180,7 +181,6 @@ struct ReflectedType
 
         return it == metaData.members.end() ? nullptr : &(*it);
     }
-
 
 };
 

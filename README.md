@@ -17,6 +17,8 @@ Think of it as a “personal car for a mechanic” build, maintain, and fine-tun
 - **Assimp** (Model Loading)
 - **ImGui** (GUI)
 - **DXC** (HLSL -> SPRIV)
+- **STB image**
+
 
 ### How to build
 
@@ -28,8 +30,9 @@ python BuildProject.py [OPTIONS]
 | `--profiling`  | Enable or disable Tracy profiling. Options: `ON` / `OFF`                                     | `OFF`   |
 | `--build_test` | Enable or disable building unit tests. Options: `ON` / `OFF`                                 | `OFF`   |
 
-### TODO
+### TODO List
 
 - **DeferredDestroy Vulkan Resource**
+- **Vulkan Bindless Descriptors**
 - **Material Variant**(HLSL only)
--
+

@@ -59,7 +59,7 @@ private:
     std::unordered_map<std::string, Guid> m_NameToGuid;
 
     REFLECT(ResourceManager);
-
+    REFLECT(PC_CORE::ObjectPtr<PC_CORE::Resource>);
 };
 
 

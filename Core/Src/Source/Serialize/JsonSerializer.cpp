@@ -5,6 +5,13 @@
 #include <unordered_map>
 #include <variant>
 
+#include "Reflection/Reflector.hpp"
+
+#include "Resources/Resource.hpp"
+#include "ObjectPtr.hpp"
+#include "Resources/ResourceManager.hpp"
+#include "Resources/StaticMesh.hpp"
+
 using namespace PC_CORE;
 
 
@@ -160,7 +167,7 @@ void JsonSerializer::DeSerializing(uint8_t* _objetPtr, TypeId _typeKey)
 	assert(m_JsonStack.empty());
 }
 
-void JsonSerializer::OpenFileForRead(const std::string& _fileToSerialize)
+bool JsonSerializer::OpenFileForRead(const std::string& _fileToSerialize)
 {
 	PERF_REGION_SCOPED
 	m_MainJson = {};
@@ -171,13 +178,22 @@ void JsonSerializer::OpenFileForRead(const std::string& _fileToSerialize)
 	{
 		m_Instream.close();
 		PC_LOGERROR("Failed to open file {}", _fileToSerialize);
-		return;
+		return false;
 	}
 
 	{
 		PERF_REGION_SCOPED_NAMED("Parse JSON");
-		m_MainJson = json::parse(m_Instream);
+		try
+		{
+			m_MainJson = json::parse(m_Instream);
+		}
+		catch (const std::exception&)
+		{
+			return false;
+		}
 	}
+
+	return true;
 }
 
 void JsonSerializer::CloseForRead(const std::string& _fileToSerialize)
@@ -187,7 +203,7 @@ void JsonSerializer::CloseForRead(const std::string& _fileToSerialize)
 	m_Instream = {};
 }
 
-void JsonSerializer::OpenFileForWrite(const std::string& _fileToSerialize)
+bool JsonSerializer::OpenFileForWrite(const std::string& _fileToSerialize)
 {
 	PERF_REGION_SCOPED;
 	m_MainJson = {};
@@ -197,7 +213,7 @@ void JsonSerializer::OpenFileForWrite(const std::string& _fileToSerialize)
 	if (!m_OutStream.is_open())
 	{
 		PC_LOG("Failed to open file {}", _fileToSerialize);
-		return;
+		return false;
 	}
 }
 
@@ -238,8 +254,41 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, PC_CORE::TypeId _typ
 		std::visit([&](auto&& arg)
 			{
 				using T = std::decay_t<decltype(arg)>;
-				
-				if constexpr (std::is_same_v<T, ReflectedArray>)
+
+
+				if constexpr (std::is_same_v<T, ReflectedObjPtr>)
+				{
+					const ReflectedObjPtr& reflectedObjPtr = std::get<ReflectedObjPtr>(type.metaData.data);
+					const ObjectPtr<Resource>& objectPtrR = reinterpret_cast<const ObjectPtr<Resource>&>(*objetPtr);
+
+					if (objectPtrR)
+					{
+						m_JsonStack.push_back(&GetLastJson()[RESOURCE_OBJECT]);
+
+						GetLastJson()[OBJECT_TYPE] = objectPtrR->GetTypeKey();
+						SerializeType(reinterpret_cast<const uint8_t*>(objectPtrR.get()), objectPtrR->GetTypeKey());
+						objectPtrR->AfterSerialize();
+
+						m_JsonStack.pop_back();
+					}
+
+
+				}
+				else if constexpr (std::is_same_v<T, ReflectedWeakObjPtr>)
+				{
+					const WeakObjectPtr<Resource>& wobjectPtrR = reinterpret_cast<const WeakObjectPtr<Resource>&>(*objetPtr);
+
+					if (wobjectPtrR.IsValid())
+					{
+						const Guid& guid = reinterpret_cast<const Guid&>(wobjectPtrR.Lock().get()->GetGuid());
+						m_JsonStack.push_back(&GetLastJson()[GUID_KEY]);
+						SerializeType(reinterpret_cast<const uint8_t*>(&guid), Reflector::GetTypeKey<PC_CORE::Guid>());
+						m_JsonStack.pop_back();
+					}
+
+
+				}
+				else if constexpr (std::is_same_v<T, ReflectedArray>)
 				{
 					const ReflectedArray& arr = std::get<ReflectedArray>(type.metaData.data);
 					const ReflectedType& underLineType = Reflector::GetType(arr.type);
@@ -480,8 +529,62 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, PC_CORE::TypeId _typeKey
 		std::visit([&](auto&& arg)
 			{
 				using T = std::decay_t<decltype(arg)>;
-				
-				if constexpr (std::is_same_v<T, ReflectedArray>)
+
+				if constexpr (std::is_same_v<T, ReflectedObjPtr>)
+				{
+					const ReflectedObjPtr& reflectedObjPtr = std::get<ReflectedObjPtr>(type.metaData.data);
+					ObjectPtr<Resource>& objectPtrR = reinterpret_cast<ObjectPtr<Resource>&>(*objetPtr);
+					if (GetLastJson().contains(RESOURCE_OBJECT))
+					{
+						m_JsonStack.push_back(&GetLastJson()[RESOURCE_OBJECT]);
+
+						const TypeId id = GetLastJson()[OBJECT_TYPE].get<TypeId>();
+
+						if (Reflector::Exist(id))
+						{
+							const ReflectedType& t = Reflector::GetType(id);
+							const DeleteFunc deleteFunc = t.metaData.deleteFunc;
+
+							// Scary Ptr and Vtable manipaluation
+							uint8_t* reconstructObject = new uint8_t[t.size];
+							objectPtrR = std::reinterpret_pointer_cast<PC_CORE::Resource>(std::shared_ptr<uint8_t[]>(reconstructObject, [deleteFunc](uint8_t* rDelted)
+								{
+									deleteFunc(rDelted);
+								}));
+
+
+							DeserializeType(reinterpret_cast<uint8_t*>(reconstructObject), id);
+							auto test = objectPtrR->GetTypeKey();
+							auto tkeyTrue = Reflector::GetTypeKey<StaticMesh>();
+							assert(test == tkeyTrue);
+							assert(dynamic_cast<Resource*>(objectPtrR.get()) != nullptr);
+
+							objectPtrR->AfterDeSerialize();
+						}
+						else
+						{
+							PC_LOGERROR("Faile to Serialize ReflectedObjPtr")
+						}
+
+						m_JsonStack.pop_back();
+					}
+				}
+				else if constexpr (std::is_same_v<T, ReflectedWeakObjPtr>)
+				{
+					WeakObjectPtr<Resource>& wobjectPtrR = reinterpret_cast<WeakObjectPtr<Resource>&>(*objetPtr);
+					if (GetLastJson().contains(GUID_KEY))
+					{
+						Guid guid;
+						m_JsonStack.push_back(&GetLastJson()[GUID_KEY]);
+						DeserializeType(reinterpret_cast<uint8_t*>(&guid), Reflector::GetTypeKey<PC_CORE::Guid>());
+						m_JsonStack.pop_back();
+						if (ResourceManager::Exist(guid))
+						{
+							wobjectPtrR = WeakObjectPtr<Resource>(ResourceManager::Get<Resource>(guid));
+						}
+					}
+				}
+				else if constexpr (std::is_same_v<T, ReflectedArray>)
 				{
 					const ReflectedArray& arr = std::get<ReflectedArray>(type.metaData.data);
 					const ReflectedType& underLineType = Reflector::GetType(arr.type);
@@ -699,10 +802,10 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, PC_CORE::TypeId _typeKey
 			if (member.memberFlag & MemberEnumFlag::SERIALIZE)
 				continue;
 
-
 			uint8_t* ptr = objetPtr + member.offset;
 			DeSerializeMember(member, ptr);
 		}
+
 	}
 	else
 	{

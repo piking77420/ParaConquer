@@ -1,11 +1,11 @@
 #pragma once
 
 #include <memory>
-#include "Reflection/DynamicReflectable.hpp"
+#include "Resources/Resource.hpp"
 
 BEGIN_PCCORE
 
-template<DynamicReflectableDerived T>
+template<ResourceDerived T>
 class ObjectPtr final : public std::shared_ptr<T>
 {
 public:
@@ -27,25 +27,25 @@ public:
 
     ObjectPtr(const std::shared_ptr<T>& ptr) : Base(ptr) {}
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     ObjectPtr(const std::shared_ptr<U>& ptr) : Base(ptr) {}
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     ObjectPtr(std::shared_ptr<U>&& ptr) : Base(std::move(ptr)) {}
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     ObjectPtr& operator=(const std::shared_ptr<U>& ptr) { Base::operator=(ptr); return *this; }
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     ObjectPtr& operator=(std::shared_ptr<U>&& ptr) { Base::operator=(std::move(ptr)); return *this; }
 
 };
 
-template<DynamicReflectableDerived T>
+template<ResourceDerived T>
 class WeakObjectPtr final : public std::weak_ptr<T>
 {
 public:
@@ -74,33 +74,47 @@ public:
 
     WeakObjectPtr(const WeakObjectPtr& _weak) : Base(_weak) {}
 
-    template<DynamicReflectableDerived U>
+
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     WeakObjectPtr(const std::weak_ptr<U>& ptr) : Base(ptr) {}
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     WeakObjectPtr(std::weak_ptr<U>&& ptr) : Base(std::move(ptr)) {}
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     WeakObjectPtr& operator=(const std::weak_ptr<U>& ptr) { Base::operator=(ptr); return *this; }
 
-    template<DynamicReflectableDerived U>
+    template<ResourceDerived U>
         requires std::is_base_of_v<T, U>
     WeakObjectPtr& operator=(std::weak_ptr<U>&& ptr) { Base::operator=(std::move(ptr)); return *this; }
 
-    WeakObjectPtr operator=(const ObjectPtr<T>& _objectPtr) 
+    WeakObjectPtr& operator=(const ObjectPtr<T>& _objectPtr) 
     {
         Base::operator=(_objectPtr); 
         return *this;                
     }
 
-    WeakObjectPtr operator=(ObjectPtr<T>&& _objectPtr) 
+    WeakObjectPtr& operator=(ObjectPtr<T>&& _objectPtr) 
     {
         Base::operator=(std::move(_objectPtr));
         return *this;
     }
+
+    WeakObjectPtr& operator=(WeakObjectPtr<T>&& _wobjectPtr)
+    {
+        Base::operator=(std::move(_wobjectPtr));
+        return *this;
+    }
+
+    WeakObjectPtr& operator=(const WeakObjectPtr<T>& _wobjectPtr)
+    {
+        Base::operator=(_wobjectPtr);
+        return *this;
+    }
+
 
 private:
 

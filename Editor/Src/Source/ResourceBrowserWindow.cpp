@@ -7,7 +7,7 @@
 #include "Resources/VulkanSampler.hpp"
 #include "World/World.hpp"
 #include "SystemDialogue.hpp"
-#include "Serialize/Serializer.h"
+#include "Serialize/JsonSerializer.hpp"
 
 
 #include <Fstream>
@@ -251,10 +251,10 @@ void ResourceBrowserWindow::RenderDirectories()
 		{
 
 			const PC_CORE::TypeId type = m_AssetRegistery.pathToType.find(path) == m_AssetRegistery.pathToType.end()
-				? TypeIdFromPath(path) : m_AssetRegistery.pathToType.at(path).typeId;
+				? TypeIdFromFile(path) : m_AssetRegistery.pathToType.at(path).typeId;
 			
 
-			if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::Containt(type))
+			if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::Exist(type))
 			{
 				auto it = m_TypeIconMap.find(type);
 				auto& icon = it == m_TypeIconMap.end() ? m_NullIcon : it->second;
@@ -333,50 +333,32 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const s
 	m_TypeIconMap[_id] = std::move(newIcon);
 }
 
-PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromPath(const std::filesystem::path& _path)
+PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromFile(const std::filesystem::path& _path)
 {
 	PERF_REGION_SCOPED;
 
-	json j;
-	std::ifstream f(_path);
+	PC_CORE::JsonSerializer jSerializer;
 
-	if (!f.is_open())
+	AssetHeader assetHeader;
+	PC_CORE::Serializer::DeserializeEntry deserializeEntryHeader
 	{
-		f.close();
-		PC_LOGERROR("Failed to open file {}", _path.generic_string());
+		PC_CORE::Reflector::GetTypeKey<AssetHeader>(),
+		&assetHeader
+	};
+	
+	if (!jSerializer.DeSerializeEntries(_path.generic_string(), deserializeEntryHeader))
 		return PC_CORE::NullTypeId;
-	}
-	j = json::parse(f);
-	f.close();
 
-	PC_CORE::TypeId id = PC_CORE::NullTypeId;
+	
+	assert(PC_CORE::Reflector::Exist(assetHeader.typeId));
 
-	if (j.contains("m_TypeId")) 
-	{
-		id = j["m_TypeId"];
-	}
-	else
-	{
-		return false;
-	}
-	assert(PC_CORE::Reflector::Containt(id) && "This type id is unknow"); 
+	const auto& af = AssetFile(assetHeader.typeId, assetHeader.assetGuid, GetLastTimeModifyFile(_path));
+	const auto& t = PC_CORE::Reflector::GetType(assetHeader.typeId);
+	PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name, timeToString(af.lastTimeModified));
 
-	const auto it = m_AssetRegistery.pathToType.find(_path);
-	if (it == m_AssetRegistery.pathToType.end())
-	{
-		/*
-		PC_CORE::Guid g;
-		PC_CORE::Serializer::DeserializeType(j["m_Guid"],
-			reinterpret_cast<uint8_t*>(&g), PC_CORE::Reflector::GetTypeKey<PC_CORE::Guid>());
-
-		const auto& af = AssetFile(id, g, GetLastTimeModifyFile(_path));
-		const auto& t = PC_CORE::Reflector::GetType(af.typeId);
-		PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name, timeToString(af.lastTimeModified));
-
-		m_AssetRegistery.pathToType.emplace(_path, af);*/
-	}
-
-	return id;
+	m_AssetRegistery.pathToType.emplace(_path, af);
+	
+	return assetHeader.typeId;
 }
 
 void ResourceBrowserWindow::OnImportButton()
@@ -392,25 +374,39 @@ void ResourceBrowserWindow::OnImportButton()
 	if (!std::filesystem::exists(p))
 		return;
 
-	/*
+	
 	PC_CORE::TypeId id = PC_CORE::NullTypeId;
-	PC_CORE::ResourceRef<PC_CORE::Resource> r;
+	PC_CORE::ObjectPtr<PC_CORE::Resource> r;
 
 	if (!m_Importer.Import(p, &id, &r) || id == PC_CORE::NullTypeId)
 		return;
 
-	if (std::shared_ptr<PC_CORE::Resource> rhandle = r.lock())
+	if (r)
 	{
-		const std::filesystem::path& pathToSerialzie = std::filesystem::path(p.parent_path().generic_string() + "/" + rhandle->name + AssetsFormat);
-		PC_CORE::Serializer::Serialize(rhandle.get()->GetTypeKey(), &*rhandle.get(), pathToSerialzie.generic_string());
-		
+		PC_CORE::JsonSerializer jSerializer;
+
+		// May made a ResourceMetadata class for  per exemple verticies
+		const std::filesystem::path& pathToSerialzie = std::filesystem::path(p.parent_path().generic_string() + "/" + r->name + AssetsFormat);
+
+		AssetHeader assetHeader;
+		assetHeader.typeId = r->GetTypeKey();
+		assetHeader.assetGuid = r->GetGuid();
+
+		const PC_CORE::Serializer::SerializeEntry header{ PC_CORE::Reflector::GetTypeKey<AssetHeader>(),
+				&assetHeader };
+				
+		const PC_CORE::Serializer::SerializeEntry asset{ PC_CORE::Reflector::GetTypeKey<PC_CORE::ObjectPtr<PC_CORE::Resource>>(),
+			&r };
+
+		jSerializer.SerializeEntries(pathToSerialzie.generic_string(), header, asset);
+
 		const auto it = m_AssetRegistery.pathToType.find(pathToSerialzie);
 		if (it == m_AssetRegistery.pathToType.end())
 		{
-			const auto& af = AssetFile(*rhandle.get());
+			const auto& af = AssetFile(*r.get());
 			const auto& t = PC_CORE::Reflector::GetType(af.typeId);
 			PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name, timeToString(af.lastTimeModified));
 			m_AssetRegistery.pathToType.emplace(p, std::move(af));
 		}
-	}*/
+	}
 }
