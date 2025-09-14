@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.hpp"
+#include "CompactBuffer.hpp"
 
 BEGIN_PCCORE
 
@@ -62,13 +63,12 @@ struct StaticMeshVertex
 
 };
 
+
+
 struct StaticMeshRenderData
 {
 	std::vector<StaticMeshVertex> vertices;  
 	std::vector<uint32_t> indices;
-	REFLECT(StaticMeshRenderData)
-	REFLECT_MEMBER(StaticMeshRenderData, vertices)
-	REFLECT_MEMBER(StaticMeshRenderData, indices)
 };
 
 

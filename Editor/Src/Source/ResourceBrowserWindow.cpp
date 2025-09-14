@@ -23,11 +23,21 @@ std::string timeToString(std::time_t t) {
 	return oss.str();
 }
 
+std::wstring normalizePath(const std::wstring& path) {
+	std::wstring result = path;
+	for (auto& ch : result) {
+		if (ch == L'/') ch = L'\\';
+	}
+	return result;
+}
+
+
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-	m_BasePathRelative = std::filesystem::relative(std::filesystem::current_path(), m_Editor->editorData.projectPath);
-	m_CurrenPath = m_Editor->editorData.projectPath;
+	m_BasePathRelative = std::filesystem::relative(std::filesystem::current_path(), std::wstring(m_Editor->editorData.projectPath));
+
+	m_CurrenPath = normalizePath(std::wstring(m_Editor->editorData.projectPath));
 
 	windowFlags |= ImGuiWindowFlags_MenuBar;
 
@@ -383,8 +393,7 @@ void ResourceBrowserWindow::OnImportButton()
 	if (!std::filesystem::exists(p))
 		return;
 
-	const auto& pathToSerialzie = std::filesystem::path(
-	p.parent_path().generic_string() + "/" + p.filename().generic_string() + AssetsFormat);
+	const auto pathToSerialize = p.parent_path() / (p.filename().stem().string() + AssetsFormat);
 
 	
 	PC_CORE::TypeId id = PC_CORE::NullTypeId;
@@ -392,7 +401,7 @@ void ResourceBrowserWindow::OnImportButton()
 	PC_CORE::JsonSerializer jSerializer;
 
 	// Create The end asset file
-	jSerializer.OpenFile(pathToSerialzie.generic_string(), PC_CORE::Serializer::SerializeOperation::Serialize);
+	jSerializer.OpenFile(pathToSerialize.generic_string(), PC_CORE::Serializer::SerializeOperation::Serialize);
 	if (!jSerializer.IsOpen())
 		return;
 
@@ -412,14 +421,14 @@ void ResourceBrowserWindow::OnImportButton()
 	jSerializer.Serialize(assetHeader, r);
 
 	// Cache file 
-	const auto it = m_AssetRegistery.pathToType.find(pathToSerialzie);
+	const auto it = m_AssetRegistery.pathToType.find(pathToSerialize);
 	if (it == m_AssetRegistery.pathToType.end())
 	{
 		const auto& af = AssetFile(*r.get());
 		const auto& t = PC_CORE::Reflector::GetType(af.typeId);
 		PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name,
 		               timeToString(af.lastTimeModified));
-		m_AssetRegistery.pathToType.emplace(p, af);
+		m_AssetRegistery.pathToType.emplace(pathToSerialize, af);
 	}
 
 	// Close file

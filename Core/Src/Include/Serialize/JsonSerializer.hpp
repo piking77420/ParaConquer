@@ -19,6 +19,11 @@ public:
 
     void CloseFile() override;
 
+    void SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer) override;
+
+    void DeSerializeCompactBuffer(const char* _key, CompactBuffer* _compactBuffer) override;
+
+
     DEFAULT_COPY_MOVE_OPERATIONS(JsonSerializer)
 
 	explicit JsonSerializer() = default;

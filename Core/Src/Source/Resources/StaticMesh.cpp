@@ -16,15 +16,27 @@ void StaticMesh::AfterDeSerialize(Serializer* serializer)
 {
 	PC_LOG("AfterDeSerialize Static Mesh")
 	
-	StaticMeshRenderData renderData;
-	serializer->DeSerialize(&renderData);
-	if (renderData.indices.empty() || renderData.vertices.empty())
+	PC_CORE::CompactBuffer verticiesBuffer;
+	PC_CORE::CompactBuffer indiciesBuffer;
+
+	serializer->DeSerializeCompactBuffer("StaticMeshRenderData Vertex", &verticiesBuffer);
+	serializer->DeSerializeCompactBuffer("StaticMeshRenderData Indicies", &indiciesBuffer);
+
+
+	if (verticiesBuffer.GetCompressedDataSize() != 0 && indiciesBuffer.GetCompressedDataSize() != 0)
 	{
-		vertexBuffer = VertexBuffer( renderData.vertices.data(),  renderData.vertices.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
-		indexBuffer = IndexBuffer(renderData.indices.data(), renderData.indices.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+		std::vector<StaticMeshVertex> verticiesRaw = verticiesBuffer.ExtractData<StaticMeshVertex>();
+		std::vector<uint32_t> indiciesRaw = indiciesBuffer.ExtractData<uint32_t>();
+
+		vertexBuffer = VertexBuffer(verticiesRaw.data(), verticiesRaw.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
+		indexBuffer = IndexBuffer(indiciesRaw.data(), indiciesRaw.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
 
 		if (m_HallowCpuAcces)
-			m_RenderData = std::move(renderData);
+		{
+
+			m_RenderData.vertices = std::move(verticiesRaw);
+			m_RenderData.indices = std::move(indiciesRaw);
+		}
 	}
 	
 

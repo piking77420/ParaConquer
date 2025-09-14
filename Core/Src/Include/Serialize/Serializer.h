@@ -3,6 +3,7 @@
 
 #include "CoreHeader.hpp"
 #include "Reflection/Reflector.hpp"
+#include "CompactBuffer.hpp"
 
 // unordoredMap Function
 using UnordoredByteMap = std::unordered_map<uint8_t, uint8_t>;
@@ -142,6 +143,9 @@ public:
             PC_CORE::Reflector::GetTypeKey<T>()), ...);
     }
 
+    virtual void SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer) = 0;
+
+    virtual void DeSerializeCompactBuffer(const char* _key, CompactBuffer* _compactBuffer) = 0;
 
     virtual bool IsOpen() const = 0;
 

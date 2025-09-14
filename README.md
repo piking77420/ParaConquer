@@ -18,7 +18,7 @@ Think of it as a “personal car for a mechanic” build, maintain, and fine-tun
 - **ImGui** (GUI)
 - **DXC** (HLSL -> SPRIV)
 - **STB image**
-
+- **LZAV**
 
 ### How to build
 

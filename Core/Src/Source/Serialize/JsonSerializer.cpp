@@ -814,7 +814,6 @@ void JsonSerializer::OpenFile(const std::string& _path, SerializeOperation _oper
 		{
 			PC_LOG("Failed to open file {}", m_CurrentFilePath);
 		}
-
 	}
 	break;
 	case SerializeOperation::DeSerialize:
@@ -876,5 +875,19 @@ void JsonSerializer::CloseFile()
 	}
 
 	Serializer::CloseFile();
+}
+
+void JsonSerializer::SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer)
+{
+	m_JsonStack.push_back(&m_MainJson[_key]);
+	SerializeType(reinterpret_cast<const uint8_t*>(&_compactBuffer), PC_CORE::Reflector::GetTypeKey<CompactBuffer>());
+	m_JsonStack.pop_back();
+}
+
+void JsonSerializer::DeSerializeCompactBuffer(const char* _key, CompactBuffer* _compactBuffer)
+{
+	m_JsonStack.push_back(&m_MainJson[_key]);
+	DeserializeType(reinterpret_cast<uint8_t*>(_compactBuffer), PC_CORE::Reflector::GetTypeKey<CompactBuffer>());
+	m_JsonStack.pop_back();
 }
 

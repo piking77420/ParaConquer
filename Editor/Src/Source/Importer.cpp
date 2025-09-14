@@ -7,6 +7,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <lzav.h>
+
 #include "Resources/FileLoader.hpp"
 
 #include "Serialize/Serializer.h"
@@ -157,13 +159,21 @@ bool PC_EDITOR_CORE::Importer::ImportStaticMesh(const std::filesystem::path& _pa
         const PC_CORE::StaticMeshCreateInfo staticMeshCreateInfo =
         {
             .name = std::move(name),
-            .staticMeshRenderData = {vertices, indices},
+            .staticMeshRenderData = {std::move(vertices), std::move(indices)},
             .hallowCpuAcces = false
         };
     
     *_outId = PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>();
     *_outResource = PC_CORE::ObjectPtr(new PC_CORE::StaticMesh(staticMeshCreateInfo));
 
-    _serializer->Serialize(staticMeshCreateInfo.staticMeshRenderData);
+
+    PC_CORE::CompactBuffer verticies;
+    verticies.CompressData(staticMeshCreateInfo.staticMeshRenderData.vertices.data(), sizeof(PC_CORE::StaticMeshVertex) * staticMeshCreateInfo.staticMeshRenderData.vertices.size());
+    PC_CORE::CompactBuffer indicies;
+    verticies.CompressData(staticMeshCreateInfo.staticMeshRenderData.indices.data(), sizeof(staticMeshCreateInfo.staticMeshRenderData.indices[0]) * staticMeshCreateInfo.staticMeshRenderData.indices.size());
+
+
+    _serializer->SerializeCompactBuffer("StaticMeshRenderData Vertex", verticies);
+    _serializer->SerializeCompactBuffer("StaticMeshRenderData Indicies", indicies);
 }
 
