@@ -90,6 +90,7 @@ private:
     struct AssetRegistery
     {
         std::unordered_map<std::filesystem::path, AssetFile> pathToType;
+
         REFLECT(AssetRegistery);
         REFLECT_MEMBER(AssetRegistery, pathToType);
 
@@ -123,7 +124,7 @@ private:
 
     void CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const std::filesystem::path& _path);
 
-    PC_CORE::TypeId TypeIdFromFile(const std::filesystem::path& _path);
+    bool AssetFromFile(const std::filesystem::path& _path);
 
     //Import 
     void OnImportButton();

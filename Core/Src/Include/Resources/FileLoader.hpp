@@ -8,7 +8,7 @@
 BEGIN_PCCORE
    
 
-    class FileLoader
+    class PC_CORE_API FileLoader
     {
     public:
         FileLoader() = delete;

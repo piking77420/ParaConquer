@@ -11,6 +11,15 @@
 
 
 BEGIN_PCCORE
+
+struct Texture2DMetaData
+{
+    std::vector<uint8_t> data;
+
+    REFLECT(Texture2DMetaData)
+    REFLECT_MEMBER(Texture2DMetaData, data)
+};
+
 class Texture2D final : public Texture
 {
 public:
@@ -18,6 +27,10 @@ public:
     PC_CORE_API IMP_DYNAMIC_REFLECT()
     
     DEFAULT_COPY_MOVE_OPERATIONS(Texture2D)
+
+    PC_CORE_API void AfterSerialize(Serializer* serializer) const override;
+
+    PC_CORE_API void AfterDeSerialize(Serializer* serializer) override;
         
     PC_CORE_API RHIFormat GetRHIFormat() const;
 
@@ -60,17 +73,18 @@ private:
 
     std::shared_ptr<RhiTexture2D> m_Texture2D;
     
-    RHIFormat m_Format;
+    RHIFormat m_Format{ RHIFormat::UNDEFINED };
 
-    Tbx::Vector2i m_Size;
-
-    std::filesystem::path m_TexturePath;
+    Tbx::Vector2i m_Size{};
 
     void LoadTextureFromPath(const std::string& _path);
+    Texture2DMetaData m_Texture2DMetaData;
 
     REFLECT(Texture2D, Resource)
-    REFLECT_MEMBER(Texture2D, m_TexturePath)
     REFLECT_MEMBER(Texture2D, m_Size)
+    REFLECT_MEMBER(Texture2D, m_Format)
+    REFLECT_MEMBER(Texture2D, m_Texture2DMetaData)
+
 };
 
 

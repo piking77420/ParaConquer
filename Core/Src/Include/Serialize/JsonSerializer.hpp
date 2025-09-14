@@ -12,11 +12,21 @@ BEGIN_PCCORE
 class PC_CORE_API JsonSerializer final : public PC_CORE::Serializer
 {
 public:
+    bool IsOpen() const override;
+public:
+
+    void OpenFile(const std::string& _path, SerializeOperation _operation) override;
+
+    void CloseFile() override;
+
     DEFAULT_COPY_MOVE_OPERATIONS(JsonSerializer)
 
 	explicit JsonSerializer() = default;
-
-	~JsonSerializer() override = default;
+    
+	~JsonSerializer() override
+	{
+        assert(m_SerializeOperation == SerializeOperation::None && "Did you forgot to call CloseFile");
+	};
 
 private:
     static constexpr const char* CONTAINER_SIZE = "size";
@@ -64,14 +74,7 @@ private:
 
     void DeserializeType(uint8_t* objetPtr, TypeId _typeKey) override;
 
-    bool OpenFileForRead(const std::string& _fileToSerialize) override;
-
-    void CloseForRead(const std::string& _fileToSerialize) override;
-
-    bool OpenFileForWrite(const std::string& _fileToSerialize) override;
-
-    void CloseForWrite(const std::string& _fileToSerialize) override;
-
+   
 };
 
 END_PCCORE

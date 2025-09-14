@@ -62,13 +62,25 @@ struct StaticMeshVertex
 
 };
 
+struct StaticMeshRenderData
+{
+	std::vector<StaticMeshVertex> vertices;  
+	std::vector<uint32_t> indices;
+	REFLECT(StaticMeshRenderData)
+	REFLECT_MEMBER(StaticMeshRenderData, vertices)
+	REFLECT_MEMBER(StaticMeshRenderData, indices)
+};
+
+
 struct StaticMeshCreateInfo
 {
 	std::string name;
-	std::vector<StaticMeshVertex> verticies;
-	std::vector<uint32_t> indicies;
+	PC_CORE::StaticMeshRenderData staticMeshRenderData;
 	bool hallowCpuAcces;
 };
+
+
+
 
 class PC_CORE_API StaticMesh : public Resource
 {
@@ -77,23 +89,18 @@ public:
 
 	IndexBuffer indexBuffer;
 
-	void AfterSerialize() const override;
+	void AfterSerialize(Serializer* serializer) const override;
 
-	void AfterDeSerialize() override ;
-
-	const std::vector<StaticMeshVertex>& GetVerticies() const
-	{
-		return m_Verticies;
-	}
-
-	const std::vector<uint32_t>& GetIndicies() const
-	{
-		return m_Indicies;
-	}
+	void AfterDeSerialize(Serializer* serializer) override ;
 
 	const MotionCore::Aabb<double>& GetAABB() const
 	{
 		return m_Aabb;
+	}
+
+	bool GetAlloWCpuAcces() const
+	{
+		return m_HallowCpuAcces;
 	}
 
 	IMP_DYNAMIC_REFLECT()
@@ -101,25 +108,20 @@ public:
 	DEFAULT_COPY_MOVE_OPERATIONS(StaticMesh)
 
 	StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo);
-
-	StaticMesh(StaticMeshCreateInfo&& _staticMeshCreateInfo);
-
+	
 	StaticMesh();
 
 	virtual ~StaticMesh() override  = default;
 
 private:
 	bool m_HallowCpuAcces = false;
-
-	std::vector<StaticMeshVertex> m_Verticies;
-
-	std::vector<uint32_t> m_Indicies;
-
+	
 	MotionCore::Aabb<double> m_Aabb;
 
+	StaticMeshRenderData m_RenderData;
+
 	REFLECT(StaticMesh, Resource)
-	REFLECT_MEMBER(StaticMesh, m_Verticies)
-	REFLECT_MEMBER(StaticMesh, m_Indicies)
+	REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)
 	REFLECT_MEMBER(StaticMesh, m_Aabb)
 };
 

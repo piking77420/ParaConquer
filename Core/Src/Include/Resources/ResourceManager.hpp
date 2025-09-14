@@ -20,11 +20,11 @@ public:
 
     static void Destroy();
 
+    template<class ResourceDerived>
+    [[nodiscard]] static bool Add(const ObjectPtr<ResourceDerived>& _object);
+
     template<class ResourceDerived, typename... Arg>
     static ObjectPtr<ResourceDerived>  Create(Arg... args);
-
-    template<class ResourceDerived>
-    static ObjectPtr<ResourceDerived> Add(ResourceDerived* _resourceDerived);
 
     template<class ResourceDerived>
     static ObjectPtr<ResourceDerived> Get(const std::string& _name);
@@ -67,20 +67,39 @@ private:
 template<class ResourceDerived, typename... Arg>
 ObjectPtr<ResourceDerived> ResourceManager::Create(Arg... args)
 {
-
     ObjectPtr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(args)...);
     newR->m_IsLoaded = true;
 
-    auto& resourcesMap = Instance().m_ResourcesMap;
-    resourcesMap.insert({ newR->GetGuid(), newR });
-    auto& nameToGuid = Instance().m_NameToGuid;
-
-    assert(!nameToGuid.contains(newR->name) && "There is a resource with the same name already");
-
-    nameToGuid.insert({ newR->name, newR->GetGuid() });
+    if (!Add(newR))
+        return nullptr;
 
     return std::reinterpret_pointer_cast<ResourceDerived>(newR);
 }
+
+template<class ResourceDerived>
+bool ResourceManager::Add(const ObjectPtr<ResourceDerived>& _object)
+{
+    auto& resourcesMap = Instance().m_ResourcesMap;
+    auto& nameToGuid = Instance().m_NameToGuid;
+
+    const bool guidExist = resourcesMap.contains(_object->GetGuid());
+    if (guidExist)
+    {
+        PC_LOGERROR("There is already a resource with this guid {}", static_cast<std::string>(_object->GetGuid()));
+        return false;
+    }
+    const bool nameExist = nameToGuid.contains(_object->name);
+    if (nameExist)
+    {
+        PC_LOGERROR("There is already a resource with this name {}", _object->name);
+        return false;
+    }
+    resourcesMap.insert({ _object->GetGuid(), _object });
+    nameToGuid.insert({ _object->name, _object->GetGuid() });
+
+    return true;
+}
+
 
 template <class ResourceDerived>
 ObjectPtr<ResourceDerived> ResourceManager::Get(const std::string& _name)
@@ -134,8 +153,7 @@ ObjectPtr<ResourceDerived> ResourceManager::Get()
 {
     for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); it++)
     {
-        if (dynamic_cast<ResourceDerived*>(it->second))
-            return it->second;
+        return std::dynamic_pointer_cast<ResourceDerived>(it->second);
     }
     PC_LOGERROR("There is no resource as this type");
 

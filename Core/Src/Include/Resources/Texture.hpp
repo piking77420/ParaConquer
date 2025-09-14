@@ -5,6 +5,9 @@
 #include "Rendering/GpuResource.hpp"
 
 BEGIN_PCCORE
+
+
+
 class Texture : public Resource, public IGpuResource
 {
 public:
@@ -24,13 +27,10 @@ public:
 
 	~Texture() = default;
 protected:
-	Channel m_TextureChannel;
-
-	std::filesystem::path m_FileSource;
+	Channel m_TextureChannel = Channel::DEFAULT;
 
 	REFLECT(Texture, Resource)
 	REFLECT_MEMBER(Texture, m_TextureChannel)
-	REFLECT_MEMBER(Texture, m_FileSource)
 
 };
 

@@ -44,10 +44,14 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 	CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>(), EDITOR_RESOURCE_PATH "/Icons/3DModel.png");
 
 	const auto asserR = GetAssetRegisterPath();
-	/*
 	if (!asserR.empty())
-		PC_CORE::Serializer::DeSerialize(&m_AssetRegistery, GetAssetRegisterPath());*/
-
+	{
+		PC_CORE::JsonSerializer s;
+		s.OpenFile(asserR, PC_CORE::Serializer::SerializeOperation::DeSerialize);
+		s.DeSerialize<AssetRegistery>(&m_AssetRegistery);
+		s.CloseFile();
+	}
+	
 	for (auto& it : m_AssetRegistery.pathToType)
 	{
 		if (std::filesystem::exists(it.first))
@@ -69,8 +73,13 @@ ResourceBrowserWindow::~ResourceBrowserWindow()
 		m_Editor->IMGUIContext.DestroyVulkanTexture(&it.second.descritproSet, 1);
 
 	const auto asserR = GetAssetRegisterPath();
-	assert(!asserR.empty());
-	//PC_CORE::Serializer::Serialize(m_AssetRegistery, asserR);
+	if (!asserR.empty())
+	{
+		PC_CORE::JsonSerializer s;
+		s.OpenFile(asserR, PC_CORE::Serializer::SerializeOperation::Serialize);
+		s.Serialize<AssetRegistery>(m_AssetRegistery);
+		s.CloseFile();
+	}
 }
 
 
@@ -131,23 +140,7 @@ void PC_EDITOR_CORE::ResourceBrowserWindow::Update()
 
 }
 
-std::string ResourceBrowserWindow::GetAssetRegisterPath() const
-{
-	const auto p = m_Editor->editorData.projectPath.empty() ? 
-		std::string() : m_Editor->editorData.projectPath.generic_string() + "/" + AssetsRegisteryFileName;
 
-	return p;
-}
-
-std::time_t ResourceBrowserWindow::GetLastTimeModifyFile(const std::filesystem::path& _p) const
-{
-	auto ftime = std::filesystem::last_write_time(_p);
-
-	auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(ftime);
-
-	return std::chrono::system_clock::to_time_t(sctp);
-
-}
 
 void ResourceBrowserWindow::CreateAsset() const
 {
@@ -191,6 +184,55 @@ void ResourceBrowserWindow::CreateAsset() const
 		ImGui::EndPopup();
 	}
 
+}
+bool ResourceBrowserWindow::AssetFromFile(const std::filesystem::path& _path)
+{
+	PERF_REGION_SCOPED;
+
+	PC_CORE::JsonSerializer jSerializer;
+	jSerializer.OpenFile(_path.generic_string(), PC_CORE::Serializer::SerializeOperation::DeSerialize);
+
+	if (!jSerializer.IsOpen())
+		return false;
+	
+	AssetHeader assetHeader;
+	PC_CORE::ObjectPtr<PC_CORE::Resource> robjPtr;
+
+	PC_CORE::Serializer::DeserializeEntry deserializeEntryHeader
+	{
+		PC_CORE::Reflector::GetTypeKey<AssetHeader>(),
+		&assetHeader
+	};
+	PC_CORE::Serializer::DeserializeEntry deserializeObjPtr
+	{
+		PC_CORE::Reflector::GetTypeKey<PC_CORE::ObjectPtr<PC_CORE::Resource>>(),
+		&robjPtr
+	};
+
+	jSerializer.DeSerializeEntries(deserializeEntryHeader, deserializeObjPtr);
+
+	const bool typeExist = PC_CORE::Reflector::Exist(assetHeader.typeId);
+	assert(typeExist);
+	if (!typeExist)
+	{
+		PC_LOGERROR("Failed to extrute assets from file {}, invalid typeid {}", _path.generic_string(), assetHeader.typeId);
+		return false;
+	}
+
+	const auto& af = AssetFile(assetHeader.typeId, assetHeader.assetGuid, GetLastTimeModifyFile(_path));
+	const auto& t = PC_CORE::Reflector::GetType(assetHeader.typeId);
+
+	PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name, timeToString(af.lastTimeModified));
+
+	if (!PC_CORE::ResourceManager::Add(robjPtr))
+	{
+		jSerializer.CloseFile();
+		return false;
+	}
+
+	jSerializer.CloseFile();
+	m_AssetRegistery.pathToType.emplace(_path, af);
+	return true;
 }
 
 void ResourceBrowserWindow::RenderDirectories()
@@ -249,10 +291,22 @@ void ResourceBrowserWindow::RenderDirectories()
 		}
 		else if (pathname.has_extension() && pathname.extension() == AssetsFormat)
 		{
-
-			const PC_CORE::TypeId type = m_AssetRegistery.pathToType.find(path) == m_AssetRegistery.pathToType.end()
-				? TypeIdFromFile(path) : m_AssetRegistery.pathToType.at(path).typeId;
-			
+			// if this asset is cached
+			auto iterator = m_AssetRegistery.pathToType.find(path);
+			PC_CORE::TypeId type = PC_CORE::NullTypeId;
+			// Not cached 
+			if (iterator == m_AssetRegistery.pathToType.end())
+			{
+				if (AssetFromFile(path))
+				{
+					const auto& iterator2 = m_AssetRegistery.pathToType.at(path);
+					type = iterator2.typeId;
+				}
+			}
+			else
+			{
+				type = iterator->second.typeId;
+			}
 
 			if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::Exist(type))
 			{
@@ -277,30 +331,14 @@ void ResourceBrowserWindow::RenderDirectories()
 				ImGui::PopTextWrapPos();
 				ImGui::NextColumn();
 			}
-		}
-
-
-		
+			
+		}	
 	}
 
 	ImGui::Columns(1);
 	ImGui::PopFont();
 }
 
-void ResourceBrowserWindow::CreateFile(const std::string& _filename) const
-{
-	std::ofstream file(_filename);
-
-	if (file.is_open())
-	{
-		file.close();
-		PC_LOG("File created: {}", _filename);
-	}
-	else
-	{
-		PC_LOG("Failed to created: {}", _filename);
-	}
-}
 
 
 std::string ResourceBrowserWindow::GetUniqueFileName(const std::filesystem::path& directory, const std::string& baseName, const std::string& extension) const
@@ -333,34 +371,6 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const s
 	m_TypeIconMap[_id] = std::move(newIcon);
 }
 
-PC_CORE::TypeId ResourceBrowserWindow::TypeIdFromFile(const std::filesystem::path& _path)
-{
-	PERF_REGION_SCOPED;
-
-	PC_CORE::JsonSerializer jSerializer;
-
-	AssetHeader assetHeader;
-	PC_CORE::Serializer::DeserializeEntry deserializeEntryHeader
-	{
-		PC_CORE::Reflector::GetTypeKey<AssetHeader>(),
-		&assetHeader
-	};
-	
-	if (!jSerializer.DeSerializeEntries(_path.generic_string(), deserializeEntryHeader))
-		return PC_CORE::NullTypeId;
-
-	
-	assert(PC_CORE::Reflector::Exist(assetHeader.typeId));
-
-	const auto& af = AssetFile(assetHeader.typeId, assetHeader.assetGuid, GetLastTimeModifyFile(_path));
-	const auto& t = PC_CORE::Reflector::GetType(assetHeader.typeId);
-	PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name, timeToString(af.lastTimeModified));
-
-	m_AssetRegistery.pathToType.emplace(_path, af);
-	
-	return assetHeader.typeId;
-}
-
 void ResourceBrowserWindow::OnImportButton()
 {
 	const std::wstring& assetPath = m_Editor->editorData.projectPath;
@@ -368,45 +378,84 @@ void ResourceBrowserWindow::OnImportButton()
 
 	if (s.empty())
 		return;
-
+	
 	const std::filesystem::path p(s);
-
 	if (!std::filesystem::exists(p))
 		return;
+
+	const auto& pathToSerialzie = std::filesystem::path(
+	p.parent_path().generic_string() + "/" + p.filename().generic_string() + AssetsFormat);
 
 	
 	PC_CORE::TypeId id = PC_CORE::NullTypeId;
 	PC_CORE::ObjectPtr<PC_CORE::Resource> r;
+	PC_CORE::JsonSerializer jSerializer;
 
-	if (!m_Importer.Import(p, &id, &r) || id == PC_CORE::NullTypeId)
+	// Create The end asset file
+	jSerializer.OpenFile(pathToSerialzie.generic_string(), PC_CORE::Serializer::SerializeOperation::Serialize);
+	if (!jSerializer.IsOpen())
 		return;
 
-	if (r)
+	// Try to decode imported file
+	// Pass json in order to give render data
+	if (!m_Importer.Import(p, &jSerializer, &id, &r) || id == PC_CORE::NullTypeId)
 	{
-		PC_CORE::JsonSerializer jSerializer;
-
-		// May made a ResourceMetadata class for  per exemple verticies
-		const std::filesystem::path& pathToSerialzie = std::filesystem::path(p.parent_path().generic_string() + "/" + r->name + AssetsFormat);
-
-		AssetHeader assetHeader;
-		assetHeader.typeId = r->GetTypeKey();
-		assetHeader.assetGuid = r->GetGuid();
-
-		const PC_CORE::Serializer::SerializeEntry header{ PC_CORE::Reflector::GetTypeKey<AssetHeader>(),
-				&assetHeader };
-				
-		const PC_CORE::Serializer::SerializeEntry asset{ PC_CORE::Reflector::GetTypeKey<PC_CORE::ObjectPtr<PC_CORE::Resource>>(),
-			&r };
-
-		jSerializer.SerializeEntries(pathToSerialzie.generic_string(), header, asset);
-
-		const auto it = m_AssetRegistery.pathToType.find(pathToSerialzie);
-		if (it == m_AssetRegistery.pathToType.end())
-		{
-			const auto& af = AssetFile(*r.get());
-			const auto& t = PC_CORE::Reflector::GetType(af.typeId);
-			PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name, timeToString(af.lastTimeModified));
-			m_AssetRegistery.pathToType.emplace(p, std::move(af));
-		}
+		jSerializer.CloseFile();
+		return;
 	}
+	
+	// Serialize in the file
+	AssetHeader assetHeader;
+	assetHeader.typeId = r->GetTypeKey();
+	assetHeader.assetGuid = r->GetGuid();
+	
+	jSerializer.Serialize(assetHeader, r);
+
+	// Cache file 
+	const auto it = m_AssetRegistery.pathToType.find(pathToSerialzie);
+	if (it == m_AssetRegistery.pathToType.end())
+	{
+		const auto& af = AssetFile(*r.get());
+		const auto& t = PC_CORE::Reflector::GetType(af.typeId);
+		PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name,
+		               timeToString(af.lastTimeModified));
+		m_AssetRegistery.pathToType.emplace(p, af);
+	}
+
+	// Close file
+	jSerializer.CloseFile();
+}
+
+void ResourceBrowserWindow::CreateFile(const std::string& _filename) const
+{
+	std::ofstream file(_filename);
+
+	if (file.is_open())
+	{
+		file.close();
+		PC_LOG("File created: {}", _filename);
+	}
+	else
+	{
+		PC_LOG("Failed to created: {}", _filename);
+	}
+}
+
+
+std::string ResourceBrowserWindow::GetAssetRegisterPath() const
+{
+	const auto p = m_Editor->editorData.projectPath.empty() ?
+		std::string() : m_Editor->editorData.projectPath.generic_string() + "/" + AssetsRegisteryFileName;
+
+	return p;
+}
+
+std::time_t ResourceBrowserWindow::GetLastTimeModifyFile(const std::filesystem::path& _p) const
+{
+	auto ftime = std::filesystem::last_write_time(_p);
+
+	auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(ftime);
+
+	return std::chrono::system_clock::to_time_t(sctp);
+
 }

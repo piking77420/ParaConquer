@@ -4,50 +4,53 @@
 
 using namespace PC_CORE;
 
-void StaticMesh::AfterSerialize() const
+void StaticMesh::AfterSerialize(Serializer* serializer) const
 {
 	PC_LOG("AfterSerialize Static Mesh")
 
+
+	
 }
 
-void StaticMesh::AfterDeSerialize()
+void StaticMesh::AfterDeSerialize(Serializer* serializer)
 {
 	PC_LOG("AfterDeSerialize Static Mesh")
-
-		if (!m_Verticies.empty() && !m_Indicies.empty())
-		{
-			vertexBuffer = VertexBuffer(m_Verticies.data(), m_Verticies.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
-			indexBuffer = IndexBuffer(m_Indicies.data(), m_Indicies.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
-		}
 	
+	StaticMeshRenderData renderData;
+	serializer->DeSerialize(&renderData);
+	if (renderData.indices.empty() || renderData.vertices.empty())
+	{
+		vertexBuffer = VertexBuffer( renderData.vertices.data(),  renderData.vertices.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
+		indexBuffer = IndexBuffer(renderData.indices.data(), renderData.indices.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+
+		if (m_HallowCpuAcces)
+			m_RenderData = std::move(renderData);
+	}
+	
+
 }
 
 StaticMesh::StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo) : Resource(_staticMeshCreateInfo.name),
-m_HallowCpuAcces(_staticMeshCreateInfo.hallowCpuAcces),
-m_Verticies(_staticMeshCreateInfo.verticies), 
-m_Indicies(_staticMeshCreateInfo.indicies),
-vertexBuffer(m_Verticies.data(), m_Verticies.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
-indexBuffer(m_Indicies.data(), m_Indicies.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static)
+m_HallowCpuAcces(_staticMeshCreateInfo.hallowCpuAcces)
+
 {
 	DYNAMIC_REFLECT_INIT
 	// TODO 
 	// Compute AABB from verticies
 	// set name
-	
+
+	const std::vector<StaticMeshVertex>& vertices = _staticMeshCreateInfo.staticMeshRenderData.vertices;
+	const std::vector<uint32_t>& indicies = _staticMeshCreateInfo.staticMeshRenderData.indices;
+
+	vertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
+	indexBuffer = IndexBuffer(indicies.data(), indicies.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+
+	if (m_HallowCpuAcces)
+	{
+		m_RenderData = _staticMeshCreateInfo.staticMeshRenderData;
+	}
 }
 
-StaticMesh::StaticMesh(StaticMeshCreateInfo&& _staticMeshCreateInfo) : Resource(std::move(_staticMeshCreateInfo.name)),
-m_HallowCpuAcces(_staticMeshCreateInfo.hallowCpuAcces),
-m_Verticies(std::move(_staticMeshCreateInfo.verticies)), 
-m_Indicies(std::move(_staticMeshCreateInfo.indicies)),
-vertexBuffer(m_Verticies.data(), m_Verticies.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
-indexBuffer(m_Indicies.data(), m_Indicies.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static)
-{
-	DYNAMIC_REFLECT_INIT
-	// TODO 
-	// Compute AABB from verticies
-	// set name
-}
 
 StaticMesh::StaticMesh() : Resource()
 {

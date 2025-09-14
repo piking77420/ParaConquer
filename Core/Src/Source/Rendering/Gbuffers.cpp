@@ -25,7 +25,7 @@ void PC_CORE::Gbuffers::CreateGBuffers(Tbx::Vector2i _size)
             .layerCount = 1,
             .mipsLevels = 1,
             .textureType = TextureType::Texture2D,
-            .format = RHIFormat::COUNT,
+            .format = RHIFormat::UNDEFINED,
             .channel = Channel::DEFAULT,
             .textureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
             .memoryVisibility = MemoryLocalisation::GPU_Only,

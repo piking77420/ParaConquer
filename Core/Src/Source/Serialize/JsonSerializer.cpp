@@ -14,7 +14,6 @@
 
 using namespace PC_CORE;
 
-
 void JsonSerializer::SerializeTrivial(PC_CORE::TypeId id, const uint8_t* objetPtr)
 {
 	if (Reflector::IsTypeIdIs<bool>(id))
@@ -28,6 +27,31 @@ void JsonSerializer::SerializeTrivial(PC_CORE::TypeId id, const uint8_t* objetPt
 		GetLastJson() = *b;
 
 	}
+	else if (Reflector::IsTypeIdIs<int8_t>(id))
+	{
+		const int8_t* b = reinterpret_cast<const int8_t*>(objetPtr);
+		GetLastJson() = *b;
+	}
+	else if (Reflector::IsTypeIdIs<int16_t>(id))
+	{
+		const int16_t* b = reinterpret_cast<const int16_t*>(objetPtr);
+		GetLastJson() = *b;
+	}
+	else if (Reflector::IsTypeIdIs<int32_t>(id))
+	{
+		const int32_t* b = reinterpret_cast<const int32_t*>(objetPtr);
+		GetLastJson() = *b;
+	}
+	else if (Reflector::IsTypeIdIs<int64_t>(id))
+	{
+		const int64_t* b = reinterpret_cast<const int64_t*>(objetPtr);
+		GetLastJson() = *b;
+	}
+	else if (Reflector::IsTypeIdIs<int>(id))
+	{
+		const int* b = reinterpret_cast<const int*>(objetPtr);
+		GetLastJson() = *b;
+	}
 	else if (Reflector::IsTypeIdIs<uint8_t>(id))
 	{
 		const uint8_t* b = reinterpret_cast<const uint8_t*>(objetPtr);
@@ -36,11 +60,6 @@ void JsonSerializer::SerializeTrivial(PC_CORE::TypeId id, const uint8_t* objetPt
 	else if (Reflector::IsTypeIdIs<uint16_t>(id))
 	{
 		const uint16_t* b = reinterpret_cast<const uint16_t*>(objetPtr);
-		GetLastJson() = *b;
-	}
-	else if (Reflector::IsTypeIdIs<int>(id))
-	{
-		const int* b = reinterpret_cast<const int*>(objetPtr);
 		GetLastJson() = *b;
 	}
 	else if (Reflector::IsTypeIdIs<uint32_t>(id))
@@ -74,159 +93,129 @@ void JsonSerializer::DeSerializeTrivial(PC_CORE::TypeId id, uint8_t* objetPtr)
 {
 	PERF_REGION_SCOPED
 
-	if (Reflector::IsTypeIdIs<bool>(id))
-	{
-		bool* b = reinterpret_cast<bool*>(objetPtr);
-		std::string get = GetLastJson().template get<std::string>();
+		if (Reflector::IsTypeIdIs<bool>(id))
+		{
+			bool* b = reinterpret_cast<bool*>(objetPtr);
+			std::string get = GetLastJson().template get<std::string>();
 
-		if (strcmp("true", get.c_str()) == 0) *b = true;
-		else if (strcmp("false", get.c_str()) == 0) *b = false;
-		else assert(false);;
+			if (strcmp("true", get.c_str()) == 0) *b = true;
+			else if (strcmp("false", get.c_str()) == 0) *b = false;
+			else assert(false);;
 
-	}
-	else if (Reflector::IsTypeIdIs<char>(id))
-	{
-		char* b = reinterpret_cast<char*>(objetPtr);
-		char get = GetLastJson().template get<char>();
+		}
+		else if (Reflector::IsTypeIdIs<char>(id))
+		{
+			char* b = reinterpret_cast<char*>(objetPtr);
+			char get = GetLastJson().template get<char>();
 
-		*b = get;
-	}
-	else if (Reflector::IsTypeIdIs<uint8_t>(id))
-	{
-		uint8_t* b = reinterpret_cast<uint8_t*>(objetPtr);
-		uint8_t get = GetLastJson().template get<uint8_t>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<int8_t>(id))
+		{
+			int8_t* b = reinterpret_cast<int8_t*>(objetPtr);
+			int8_t get = GetLastJson().template get<int8_t>();
 
-		*b = get;
-	}
-	else if (Reflector::IsTypeIdIs<uint16_t>(id))
-	{
-		uint16_t* b = reinterpret_cast<uint16_t*>(objetPtr);
-		uint16_t get = GetLastJson().template get<uint16_t>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<int16_t>(id))
+		{
+			int16_t* b = reinterpret_cast<int16_t*>(objetPtr);
+			int16_t get = GetLastJson().template get<int16_t>();
 
-		*b = get;
-	}
-	else if (Reflector::IsTypeIdIs<int>(id))
-	{
-		int* b = reinterpret_cast<int*>(objetPtr);
-		int get = GetLastJson().template get<int>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<int32_t>(id))
+		{
+			int32_t* b = reinterpret_cast<int32_t*>(objetPtr);
+			int32_t get = GetLastJson().template get<int32_t>();
 
-		*b = get;
-	}
-	else if (Reflector::IsTypeIdIs<uint32_t>(id))
-	{
-		uint32_t* b = reinterpret_cast<uint32_t*>(objetPtr);
-		uint32_t get = GetLastJson().template get<uint32_t>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<int64_t>(id))
+		{
+			int64_t* b = reinterpret_cast<int64_t*>(objetPtr);
+			int64_t get = GetLastJson().template get<int64_t>();
 
-		*b = get;
-	}
-	else if (Reflector::IsTypeIdIs<uint64_t>(id))
-	{
-		uint64_t* b = reinterpret_cast<uint64_t*>(objetPtr);
-		uint64_t get = GetLastJson().template get<uint64_t>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<uint8_t>(id))
+		{
+			uint8_t* b = reinterpret_cast<uint8_t*>(objetPtr);
+			uint8_t get = GetLastJson().template get<uint8_t>();
 
-		*b = get;
-	}
-	else if (Reflector::IsTypeIdIs<float>(id))
-	{
-		float* f = reinterpret_cast<float*>(objetPtr);
-		float get = GetLastJson().template get<float>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<uint16_t>(id))
+		{
+			uint16_t* b = reinterpret_cast<uint16_t*>(objetPtr);
+			uint16_t get = GetLastJson().template get<uint16_t>();
 
-		*f = get;
-	}
-	else if (Reflector::IsTypeIdIs<double>(id))
-	{
-		double* f = reinterpret_cast<double*>(objetPtr);
-		double get = GetLastJson().template get<double>();
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<uint32_t>(id))
+		{
+			uint32_t* b = reinterpret_cast<uint32_t*>(objetPtr);
+			uint32_t get = GetLastJson().template get<uint32_t>();
 
-		*f = get;
-	}
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<uint64_t>(id))
+		{
+			uint64_t* b = reinterpret_cast<uint64_t*>(objetPtr);
+			uint64_t get = GetLastJson().template get<uint64_t>();
+
+			*b = get;
+		}
+		else if (Reflector::IsTypeIdIs<float>(id))
+		{
+			float* f = reinterpret_cast<float*>(objetPtr);
+			float get = GetLastJson().template get<float>();
+
+			*f = get;
+		}
+		else if (Reflector::IsTypeIdIs<double>(id))
+		{
+			double* f = reinterpret_cast<double*>(objetPtr);
+			double get = GetLastJson().template get<double>();
+
+			*f = get;
+		}
 }
 
 void JsonSerializer::Serializing(const uint8_t* objetPtr, TypeId _typeKey)
 {
 	PERF_REGION_SCOPED
-	const ReflectedType& type = Reflector::GetType(_typeKey);
+		const ReflectedType& type = Reflector::GetType(_typeKey);
 	//Entry
 	m_JsonStack.push_back(&m_MainJson[type.name]);
 	SerializeType(objetPtr, _typeKey);
 	m_JsonStack.pop_back();
-
-	assert(m_JsonStack.empty());
 }
 
 void JsonSerializer::DeSerializing(uint8_t* _objetPtr, TypeId _typeKey)
 {
 	PERF_REGION_SCOPED
 
-	const ReflectedType& type = Reflector::GetType(_typeKey);
+		const ReflectedType& type = Reflector::GetType(_typeKey);
 	//Entry
 	m_JsonStack.push_back(&m_MainJson[type.name]);
 	DeserializeType(_objetPtr, _typeKey);
 	m_JsonStack.pop_back();
-
-	assert(m_JsonStack.empty());
 }
 
-bool JsonSerializer::OpenFileForRead(const std::string& _fileToSerialize)
+
+bool JsonSerializer::IsOpen() const
 {
-	PERF_REGION_SCOPED
-	m_MainJson = {};
-
-	m_Instream = std::ifstream(_fileToSerialize);
-
-	if (!m_Instream.is_open())
+	switch (m_SerializeOperation)
 	{
-		m_Instream.close();
-		PC_LOGERROR("Failed to open file {}", _fileToSerialize);
-		return false;
+	case SerializeOperation::Serialize:
+		return m_OutStream.is_open();
+	case SerializeOperation::DeSerialize:
+		return m_Instream.is_open();;
+	default:;
 	}
 
-	{
-		PERF_REGION_SCOPED_NAMED("Parse JSON");
-		try
-		{
-			m_MainJson = json::parse(m_Instream);
-		}
-		catch (const std::exception&)
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-void JsonSerializer::CloseForRead(const std::string& _fileToSerialize)
-{
-	PERF_REGION_SCOPED
-	m_Instream.close();
-	m_Instream = {};
-}
-
-bool JsonSerializer::OpenFileForWrite(const std::string& _fileToSerialize)
-{
-	PERF_REGION_SCOPED;
-	m_MainJson = {};
-
-	m_OutStream = std::ofstream(_fileToSerialize);
-
-	if (!m_OutStream.is_open())
-	{
-		PC_LOG("Failed to open file {}", _fileToSerialize);
-		return false;
-	}
-}
-
-void JsonSerializer::CloseForWrite(const std::string& _fileToSerialize)
-{
-	PERF_REGION_SCOPED;
-	{
-		PERF_REGION_SCOPED_NAMED("Dump JSON");
-		m_OutStream << std::setw(4) << m_MainJson.dump(4);
-	}
-
-	m_OutStream.close();
-	m_OutStream = {};
+	return false;
 }
 
 
@@ -235,8 +224,8 @@ void JsonSerializer::SerializeMember(const PC_CORE::Members& member, const uint8
 {
 	PERF_REGION_SCOPED
 
-	if (member.memberFlag & MemberEnumFlag::SERIALIZE)
-		return;
+		if (member.memberFlag & MemberEnumFlag::SERIALIZE)
+			return;
 
 	auto& type = PC_CORE::Reflector::GetType(member.typeKey);
 	m_JsonStack.push_back(&GetLastJson()[type.name][member.membersName]);
@@ -267,7 +256,7 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, PC_CORE::TypeId _typ
 
 						GetLastJson()[OBJECT_TYPE] = objectPtrR->GetTypeKey();
 						SerializeType(reinterpret_cast<const uint8_t*>(objectPtrR.get()), objectPtrR->GetTypeKey());
-						objectPtrR->AfterSerialize();
+						objectPtrR->AfterSerialize(this);
 
 						m_JsonStack.pop_back();
 					}
@@ -554,12 +543,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, PC_CORE::TypeId _typeKey
 
 
 							DeserializeType(reinterpret_cast<uint8_t*>(reconstructObject), id);
-							auto test = objectPtrR->GetTypeKey();
-							auto tkeyTrue = Reflector::GetTypeKey<StaticMesh>();
-							assert(test == tkeyTrue);
-							assert(dynamic_cast<Resource*>(objectPtrR.get()) != nullptr);
-
-							objectPtrR->AfterDeSerialize();
+							objectPtrR->AfterDeSerialize(this);
 						}
 						else
 						{
@@ -811,5 +795,86 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, PC_CORE::TypeId _typeKey
 	{
 		DeSerializeTrivial(_typeKey, objetPtr);
 	}
+}
+
+void JsonSerializer::OpenFile(const std::string& _path, SerializeOperation _operation)
+{
+	Serializer::OpenFile(_path, _operation);
+
+	switch (m_SerializeOperation)
+	{
+	case SerializeOperation::Serialize:
+	{
+		PERF_REGION_SCOPED;
+		m_MainJson = {};
+
+		m_OutStream = std::ofstream(m_CurrentFilePath);
+
+		if (!m_OutStream.is_open())
+		{
+			PC_LOG("Failed to open file {}", m_CurrentFilePath);
+		}
+
+	}
+	break;
+	case SerializeOperation::DeSerialize:
+	{
+		m_MainJson = {};
+
+		m_Instream = std::ifstream(m_CurrentFilePath);
+
+		if (!m_Instream.is_open())
+		{
+			m_Instream.close();
+			PC_LOGERROR("Failed to open file {}", m_CurrentFilePath);
+		}
+
+		{
+			PERF_REGION_SCOPED_NAMED("Parse JSON");
+			try
+			{
+				m_MainJson = json::parse(m_Instream);
+			}
+			catch (const std::exception&)
+			{
+			}
+		}
+	}
+	break;
+	default:;
+	}
+}
+
+void JsonSerializer::CloseFile()
+{
+	PERF_REGION_SCOPED;
+
+	assert(m_JsonStack.empty());
+	
+	switch (m_SerializeOperation)
+	{
+	case SerializeOperation::Serialize:
+	{
+		{
+			PERF_REGION_SCOPED_NAMED("Dump JSON");
+			m_OutStream << std::setw(4) << m_MainJson.dump(4);
+		}
+
+		m_OutStream.close();
+		m_OutStream = {};
+	}
+	break;
+	case SerializeOperation::DeSerialize:
+	{
+		PERF_REGION_SCOPED
+		m_MainJson = {};
+		m_Instream.close();
+		m_Instream = {};
+	}
+	break;
+	default:;
+	}
+
+	Serializer::CloseFile();
 }
 

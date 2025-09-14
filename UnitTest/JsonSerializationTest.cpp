@@ -64,11 +64,19 @@ TEST(Serialization, BasicSerialization)
 {
 
     JsonSerializer s;
-
-    s.Serialize<SerializaStruct>(serializaStruct1, "BasicSerialization.test");
+    {
+        s.OpenFile("BasicSerialization.test", Serializer::SerializeOperation::Serialize);
+        s.Serialize<SerializaStruct>(serializaStruct1);
+        s.CloseFile();
+    }
+    
     SerializaStruct serializaStruct2;
-    s.DeSerialize<SerializaStruct>(&serializaStruct2, "BasicSerialization.test");
-
+    {
+        s.OpenFile("BasicSerialization.test", Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<SerializaStruct>(&serializaStruct2);
+        s.CloseFile();
+    }
+    
     EXPECT_FLOAT_EQ(serializaStruct1.x, serializaStruct2.x);
     EXPECT_EQ(serializaStruct1.y, serializaStruct2.y);
     EXPECT_EQ(serializaStruct1.z, serializaStruct2.z);
@@ -119,8 +127,9 @@ public:
         DYNAMIC_REFLECT_INIT;
     }
 
-    IMP_DYNAMIC_REFLECT();
+    IMP_DYNAMIC_REFLECT()
     
+    ~SerializedResource() override = default;
     
     DataTest m_DataTest;
 
@@ -143,14 +152,22 @@ TEST(Serialization, SerializationRes)
     
     ResourceManager::Create<SerializedResource>("SerializedResource", dataTest);
 
-    WeakObjectPtr<SerializedResource> rRef = ResourceManager::Get<SerializedResource>("SerializedResource");
+    WeakObjectPtr<SerializedResource> rRef = ResourceManager::Get<SerializedResource>();
     JsonSerializer s;
-    s.Serialize<SerializedResource>(*rRef.Lock().get(), "SerializedResource.test");
-
+    {
+        s.OpenFile("SerializedResource", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<SerializedResource>(*rRef.Lock().get());
+        s.CloseFile();
+    }
     
-    SerializedResource deserializedResource;
-    s.DeSerialize<SerializedResource>(&deserializedResource, "SerializedResource.test");
 
+    SerializedResource deserializedResource;
+    {
+        s.OpenFile("SerializedResource", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<SerializedResource>(&deserializedResource);
+        s.CloseFile();
+    }
+    
 
     std::shared_ptr<SerializedResource> d = rRef.lock();
     EXPECT_TRUE(d->name == deserializedResource.name);
@@ -171,15 +188,24 @@ TEST(Serialization, VectorTrivial)
 
     std::vector<Tbx::Vector3f> m_vertexPositions;
 
-    m_vertexPositions.emplace_back(1.f, 2.f, 3.f);
-    m_vertexPositions.emplace_back(4.f, 5.f, 6.f);
-    m_vertexPositions.emplace_back(7.f, 8.f, 9.f);
-    
-    s.Serialize<std::vector<Tbx::Vector3f>>(m_vertexPositions, "SerializedResourceVector.test");
+    {
+        s.OpenFile("SerializedResourceVector.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        m_vertexPositions.emplace_back(1.f, 2.f, 3.f);
+        m_vertexPositions.emplace_back(4.f, 5.f, 6.f);
+        m_vertexPositions.emplace_back(7.f, 8.f, 9.f);
 
+        s.Serialize<std::vector<Tbx::Vector3f>>(m_vertexPositions);
+        s.CloseFile();
+    }
     std::vector<Tbx::Vector3f> vec;
-    s.DeSerialize<std::vector<Tbx::Vector3f>>(&vec, "SerializedResourceVector.test");
+    {
+        s.OpenFile("SerializedResourceVector.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<std::vector<Tbx::Vector3f>>(&vec);
+        s.CloseFile();
+    }
+
     EXPECT_EQ(vec.size(), m_vertexPositions.size());
+
 
     for (size_t i = 0 ; i < vec.size() ; i++)
     {
@@ -194,7 +220,6 @@ REFLECT(std::vector<SerializedResource>)
 
 TEST(Serialization, VectorNotTrivial)
 {
-    JsonSerializer s;
 
     std::vector<SerializedResource> resourceVector;
 
@@ -224,10 +249,19 @@ TEST(Serialization, VectorNotTrivial)
     resourceVector.push_back(SerializedResource("2",d2));
     resourceVector.push_back(SerializedResource("3",d3));
 
-    s.Serialize<std::vector<SerializedResource>>(resourceVector, "SerializedResourceVector.test");
+    JsonSerializer s;
+    {
+        s.OpenFile("SerializedResourceVector.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<std::vector<SerializedResource>>(resourceVector);
+        s.CloseFile();
+    }
 
     std::vector<SerializedResource> deserializedResource;
-    s.DeSerialize<std::vector<SerializedResource>>(&deserializedResource, "SerializedResourceVector.test");
+    {
+        s.OpenFile("SerializedResourceVector.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<std::vector<SerializedResource>>(&deserializedResource);
+        s.CloseFile();
+    }
 
     EXPECT_EQ(resourceVector.size(), deserializedResource.size());
 
@@ -251,7 +285,6 @@ REFLECT(std::unordered_map<uint32_t, DataTest >)
 
 TEST(Serialization, MapTrivial)
 {
-    JsonSerializer s;
 
     std::unordered_map<uint32_t, DataTest > map;
 
@@ -280,12 +313,20 @@ TEST(Serialization, MapTrivial)
         .y = 45.f,
         .z = 156151+6
     };
-
-    s.Serialize<std::unordered_map<uint32_t, DataTest >>(map, "SerializedResourceUnordoredMap.test");
+    JsonSerializer s;
+    {
+        s.OpenFile("SerializedResourceUnordoredMap.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<std::unordered_map<uint32_t, DataTest >>(map);
+        s.CloseFile();
+    }
 
     std::unordered_map<uint32_t, DataTest > map2;
-    s.DeSerialize<std::unordered_map<uint32_t, DataTest >>(&map2, "SerializedResourceUnordoredMap.test");
-
+    {
+        s.OpenFile("SerializedResourceUnordoredMap.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<std::unordered_map<uint32_t, DataTest >>(&map2);
+        s.CloseFile();
+    }
+    
     EXPECT_EQ(map.size(), map2.size());
 
     for (size_t i = 0; i < map2.size(); i++)
@@ -312,11 +353,18 @@ TEST(Serialization, BiteSet)
     {
         bitset.set(i, i % 2);
     }
-
-    s.Serialize<std::bitset<100>>(bitset, "SerializedResourceBitSet.test");
-
+    {
+        s.OpenFile("SerializedResourceBitSet.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<std::bitset<100>>(bitset);
+        s.CloseFile();
+    }
     std::bitset<100> bitset2;
-    s.DeSerialize<std::bitset<100>>(&bitset2, "SerializedResourceBitSet.test");
+
+    {
+        s.OpenFile("SerializedResourceBitSet.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<std::bitset<100>>(&bitset2);
+        s.CloseFile();
+    }
 
     EXPECT_EQ(bitset,  bitset2);
 }
@@ -326,16 +374,28 @@ REFLECT(SpareSet<DataTest>);
 
 TEST(Serialization, SpareSet)
 {
-    JsonSerializer s;
 
     SpareSet<DataTest> spareSet;
     spareSet.Add(5, DataTest(1,2,3));
     spareSet.Add(3, DataTest(4,5,6));
     spareSet.Add(0, DataTest(7,8,9));
-    s.Serialize<SpareSet<DataTest>>(spareSet, "SpareSet.test");
-    SpareSet<DataTest> spareSet2;
-    s.DeSerialize<SpareSet<DataTest>>(&spareSet2, "SpareSet.test");
 
+    JsonSerializer s;
+    
+
+    {
+        s.OpenFile("SpareSet.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<SpareSet<DataTest>>(spareSet);
+        s.CloseFile();
+    }
+    SpareSet<DataTest> spareSet2;
+
+    {
+        s.OpenFile("SpareSet.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<SpareSet<DataTest>>(&spareSet2);
+        s.CloseFile();
+    }
+  
 
     EXPECT_EQ(spareSet2[5],spareSet[5]);
     EXPECT_EQ(spareSet2[3], spareSet[3]);
@@ -348,12 +408,21 @@ REFLECT(std::filesystem::path)
 
 TEST(TestReflection, FileSystemPath)
 {
-    JsonSerializer s;
-
     auto path = std::filesystem::current_path();
-    s.Serialize<std::filesystem::path>(path, "FileSytem.test");
+
+    JsonSerializer s;
+    {
+        s.OpenFile("FileSytem.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<std::filesystem::path>(path);
+        s.CloseFile();
+    }
     std::filesystem::path path2;
-    s.DeSerialize<std::filesystem::path>(&path2, "FileSytem.test");
+
+    {
+        s.OpenFile("FileSytem.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<std::filesystem::path>(&path2);
+        s.CloseFile();
+    }
     EXPECT_TRUE(path == path2);
 }
 
@@ -370,16 +439,23 @@ struct Header
 
 TEST(Serialization, MutlipleObjectSerializationRes)
 {
-    JsonSerializer s;
-
     Header h1{ "header", Guid::New() };
     SerializaStruct data1 = serializaStruct1;
 
-    s.Serialize<Header, SerializaStruct>(h1, data1, "MutlipleObjectSerializationRes.test");
+
+    JsonSerializer s;
+    {
+        s.OpenFile("MutlipleObjectSerializationRes.test", PC_CORE::Serializer::SerializeOperation::Serialize);
+        s.Serialize<Header, SerializaStruct>(h1, data1);
+        s.CloseFile();
+    }
     Header h2;
     SerializaStruct data2;
-    s.DeSerialize<Header, SerializaStruct>(&h2, &data2, "MutlipleObjectSerializationRes.test");
-
+    {
+        s.OpenFile("MutlipleObjectSerializationRes.test", PC_CORE::Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<Header, SerializaStruct>(&h2, &data2);
+        s.CloseFile();
+    }
 
     EXPECT_TRUE(h1.name == h2.name);
     EXPECT_TRUE(h1.guid == h2.guid);

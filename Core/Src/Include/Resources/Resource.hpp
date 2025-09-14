@@ -39,9 +39,9 @@ public:
         PC_LOG("Reload {}", name)
     }
 
-    PC_CORE_API virtual void AfterSerialize() const {};
+    PC_CORE_API virtual void AfterSerialize(Serializer* serializer) const {};
 
-    PC_CORE_API virtual void AfterDeSerialize() {};
+    PC_CORE_API virtual void AfterDeSerialize(Serializer* serializer) {};
 
     // Reload 
     PC_CORE_API void BroadCastReload();

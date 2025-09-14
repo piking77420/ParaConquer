@@ -11,11 +11,6 @@ Texture2D::Texture2D()
 {
     DYNAMIC_REFLECT_INIT
 
-    if (!m_TexturePath.empty())
-    {
-        LoadTextureFromPath(m_TexturePath.generic_string());
-    }
-
 }
 
 Texture2D::Texture2D(const std::string& _name) : Texture(_name)
@@ -44,6 +39,44 @@ Texture2D::~Texture2D()
 {
 }
 
+void Texture2D::AfterSerialize(Serializer* serializer) const
+{
+    
+}
+
+void Texture2D::AfterDeSerialize(Serializer* serializer)
+{
+    serializer->DeSerializeStream(m_Texture2DMetaData);
+
+
+    if (!m_Texture2DMetaData.data.empty() && m_Format != RHIFormat::UNDEFINED
+        && m_Size != Tbx::Vector2i::Zero() && m_TextureChannel != Channel::DEFAULT)
+    {
+        PC_LOG("Create Texture");
+
+        const CreateImageInfo createTextureInfo =
+        {
+            .width = m_Size.x,
+            .height = m_Size.y,
+            .depth = 1,
+            .layerCount = 1,
+            .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Size.x, m_Size.y)))) + 1,
+            .textureType = TextureType::Texture2D,
+            .format = m_Format,
+            .channel = m_TextureChannel,
+            .textureUsage = TextureUsage::Sampled,
+            .memoryVisibility = MemoryLocalisation::GPU_Only,
+            .samples = 1,
+            .GenerateMipMap = true,
+            .datas = {reinterpret_cast<void*>(m_Texture2DMetaData.data.data())}
+        };
+
+        m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);
+        m_Texture2DMetaData.data.clear();
+    }
+
+}
+
 void Texture2D::LoadTextureFromPath(const std::string& _path)
 {
     int width;
@@ -56,7 +89,7 @@ void Texture2D::LoadTextureFromPath(const std::string& _path)
         throw std::runtime_error("failed to load texture image!");
     }
     m_Size = { width, height };
-
+    
     RHIFormat format = RHIFormat::UNDEFINED;
     m_TextureChannel = Channel::RGBA;
 

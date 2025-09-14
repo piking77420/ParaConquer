@@ -66,17 +66,22 @@ void Editor::LoadFromInitFiles()
 	{
 	
 		JsonSerializer s;
-		s.DeSerialize<EditorIniFile>(&editorIniFile, std::string(EditorIniFileName)); // copy it 
+		s.OpenFile(std::string(EditorIniFileName), PC_CORE::Serializer::SerializeOperation::DeSerialize);
+		s.DeSerialize<EditorIniFile>(&editorIniFile); // copy it 
 		
 		if (std::filesystem::exists(editorIniFile.projectPath)) // if editor.ini is valid
 		{
-			s.DeSerialize<ProjectFile>(&projectFile, editorIniFile.projectPath + "/" + std::string(ProjectFileName)); // copy project 
+			JsonSerializer s2;
+			s2.OpenFile(editorIniFile.projectPath + "/" + std::string(ProjectFileName), PC_CORE::Serializer::SerializeOperation::DeSerialize);;
+			s2.DeSerialize<ProjectFile>(&projectFile); // copy project
+			s2.CloseFile();
 		}
 		else
 		{
 			const std::wstring sw = std::wstring(editorIniFile.projectPath.begin(), editorIniFile.projectPath.end());
 			projectFile = ProjectMaker::CreateBaseProject(sw.c_str());
 		}
+		s.CloseFile();
 	}
 	else
 	{
@@ -109,8 +114,9 @@ void Editor::SaveInitFiles()
 	editorIniFile.projectPath = editorData.projectPath.generic_string();
 	
 	JsonSerializer s;
-
-	s.Serialize<EditorIniFile>(editorIniFile, std::string(EditorIniFileName));
+	s.OpenFile(std::string(EditorIniFileName), Serializer::SerializeOperation::Serialize);
+	s.Serialize<EditorIniFile>(editorIniFile);
+	s.CloseFile();
 }
 
 void Editor::CompileShader()

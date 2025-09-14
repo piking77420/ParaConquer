@@ -23,6 +23,13 @@ class PC_CORE_API Serializer
 {
 public:
 
+    enum class SerializeOperation : uint8_t
+    {
+        None = 0,
+        Serialize = 1,
+        DeSerialize = 2  
+    };
+
     struct SerializeEntry
     {
         TypeId id = NullTypeId;
@@ -53,73 +60,105 @@ public:
         ~DeserializeEntry() = default;
     };
 
+
+    virtual void OpenFile(const std::string& _path, SerializeOperation _operation)
+    {
+        assert(_operation != SerializeOperation::None && "Invalid Enum");
+        assert(m_SerializeOperation == SerializeOperation::None && "Did you forget to call CloseFile");
+        assert(m_CurrentFilePath == "" && "Did you forget to call CloseFile");
+
+        m_SerializeOperation = _operation;
+        m_CurrentFilePath = _path;
+    }
+
+    virtual void CloseFile()
+    {
+        assert(m_SerializeOperation != SerializeOperation::None && "Did you forget to call OpenFile");
+        assert(m_CurrentFilePath != "" && "Did you forget to call OpenFile");
+
+        m_CurrentFilePath = "";
+        m_SerializeOperation = SerializeOperation::None;
+    }
+    
     template<typename... T>
-    bool Serialize(const T&... _object, const std::string& _fileToSerialize)
+    void Serialize(const T&... _object)
     {
         PERF_REGION_SCOPED;
 
         static_assert((... && !std::is_pointer_v<std::remove_reference_t<T>>),
             "you shouldn't serialize a raw ptr");
 
-        if (!OpenFileForWrite(_fileToSerialize))
-            return false;
-
         (Serializing(reinterpret_cast<const uint8_t*>(&std::as_const(_object)),
             COMPILE_TIME_TYPE_KEY(std::remove_cv_t<std::remove_reference_t<T>>)), ...);
-
-        CloseForWrite(_fileToSerialize);
-
-        return true;
+        
     }
 
     template<typename... T>
-    bool DeSerialize(T*... _object, const std::string& _file)
+    void DeSerialize(T*... _object)
     {
         PERF_REGION_SCOPED;
 
         static_assert((... && !std::is_pointer_v<T>),
-            "You should deSerialize only to a value type, not a pointer-to-pointer");
-
-        if (!OpenFileForRead(_file))
-            return false;
+            "You should deserialize only to value types, not pointer-to-pointer");
 
         (DeSerializing(reinterpret_cast<uint8_t*>(_object), COMPILE_TIME_TYPE_KEY(T)), ...);
-
-        CloseForRead(_file);
-
-        return true;
     }
 
     template<typename... SerializeEntry>
-    bool SerializeEntries(const std::string& _file, const SerializeEntry&... _entries)
+    void SerializeEntries(const SerializeEntry&... _entries)
     {
         PERF_REGION_SCOPED;
-
-        if (!OpenFileForWrite(_file))
-            return false;
-
         (Serializing(reinterpret_cast<const uint8_t* const>(_entries.object), _entries.id), ...);
-        CloseForWrite(_file);
-
-        return true;
     }
 
     template<typename... DeserializeEntry>
-    bool DeSerializeEntries(const std::string& _file, DeserializeEntry&... _entries)
+    void DeSerializeEntries(DeserializeEntry&... _entries)
     {
         PERF_REGION_SCOPED;
-     
-        if (!OpenFileForRead(_file))
-            return false;
-
         (DeSerializing(reinterpret_cast<uint8_t*>(_entries.object), _entries.id), ...);
-        CloseForRead(_file);
-
-        return true;
     }
 
-    Serializer() = default;
+    template<typename... T>
+    void SerializeStream(const T&... _object)
+    {
+        PERF_REGION_SCOPED;
 
+        static_assert((... && !std::is_pointer_v<std::remove_reference_t<T>>),
+            "you shouldn't serialize a raw ptr");
+
+        (SerializeType(reinterpret_cast<const uint8_t*>(std::addressof(_object)),
+            PC_CORE::Reflector::GetTypeKey<T>()), ...);
+    }
+
+    template<typename... T>
+    void DeSerializeStream(T&... _object)
+    {
+        PERF_REGION_SCOPED;
+
+        static_assert((... && !std::is_pointer_v<std::remove_reference_t<T>>),
+            "You shouldn't deserialize a raw ptr");
+
+        (DeserializeType(reinterpret_cast<uint8_t*>(std::addressof(_object)),
+            PC_CORE::Reflector::GetTypeKey<T>()), ...);
+    }
+
+
+    virtual bool IsOpen() const = 0;
+
+    SerializeOperation GetCurrentOperation() const
+    {
+        return m_SerializeOperation;
+    }
+    
+    const std::string& GetCurrentFilePath() const
+    {
+        return m_CurrentFilePath;
+    }
+    
+    DEFAULT_COPY_MOVE_OPERATIONS(Serializer)
+
+    Serializer() = default;
+    
     virtual ~Serializer() = default;
 
 protected:
@@ -140,18 +179,13 @@ protected:
 
     virtual void DeSerializeTrivial(PC_CORE::TypeId id, uint8_t* objetPtr) = 0;
 
-    virtual bool OpenFileForRead(const std::string& _fileToSerialize) = 0;
-
-    virtual void CloseForRead(const std::string& _fileToSerialize) = 0;
-
-    virtual bool OpenFileForWrite(const std::string& _fileToSerialize) = 0;
-
-    virtual void CloseForWrite(const std::string& _fileToSerialize) = 0;
-
-
     std::ifstream m_Instream;
 
     std::ofstream m_OutStream;
+
+    SerializeOperation m_SerializeOperation = SerializeOperation::None;
+
+    std::string m_CurrentFilePath;
 };
 
 
