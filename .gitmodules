@@ -1,9 +1,34 @@
-[submodule "MotionCore"]
-	path = MotionCore
-	url = https://github.com/piking77420/MotionCore
-[submodule "tracy"]
-	path = tracy
-	url = https://github.com/piking77420/tracy.git
-[submodule "assimp"]
-	path = assimp
+[submodule "Engine/Source/ThirdParty/assimp"]
+	path = Engine/Source/ThirdParty/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "Engine/Source/ThirdParty/tracy"]
+	path = Engine/Source/ThirdParty/tracy
+	url = https://github.com/piking77420/tracy.git
+[submodule "Engine/Source/ThirdParty/DirectXShaderCompiler"]
+	path = Engine/Source/ThirdParty/DirectXShaderCompiler
+	url = https://github.com/microsoft/DirectXShaderCompiler.git
+[submodule "Engine/Source/ThirdParty/imgui-node-editor"]
+	path = Engine/Source/ThirdParty/imgui-node-editor
+	url = https://github.com/thedmd/imgui-node-editor.git
+[submodule "Engine/Source/ThirdParty/glfw"]
+	path = Engine/Source/ThirdParty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Engine/Source/ThirdParty/json"]
+	path = Engine/Source/ThirdParty/json
+	url = https://github.com/nlohmann/json.git
+[submodule "Engine/Source/ThirdParty/magic_enum"]
+	path = Engine/Source/ThirdParty/magic_enum
+	url = https://github.com/Neargye/magic_enum.git
+[submodule "Engine/Source/ThirdParty/MotionCore"]
+	path = Engine/Source/ThirdParty/MotionCore
+	url = https://github.com/piking77420/MotionCore.git
+[submodule "Engine/Source/ThirdParty/SPIRV-Reflect"]
+	path = Engine/Source/ThirdParty/SPIRV-Reflect
+	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+
+[submodule "Engine/Source/ThirdParty/imgui"]
+	path = Engine/Source/ThirdParty/imgui
+	url = https://github.com/piking77420/imgui
+[submodule "Engine/Source/ThirdParty/lzav"]
+	path = Engine/Source/ThirdParty/lzav
+	url = https://github.com/avaneev/lzav.git

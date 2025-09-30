@@ -1,49 +1,66 @@
 cmake_minimum_required(VERSION 3.26)
 
+#  Options 
 option(PROFILING "Build profiling dependencies" OFF)
 option(BUILD_TEST "Build UnitTest" OFF)
 
-
-## Force Assimp to not build Unit test
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE)
-
+# Compile Definitions
 add_compile_definitions(WITH_EDITOR=1)
-set(CMAKE_MODULE_PATH
-  ${CMAKE_MODULE_PATH}
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-  )
 
+# Variable
+set(EDITOR_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Source/Editor")
+set(RUNTIME_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Source/Runtime")
+set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Source/ThirdParty")
+set(PLUGINS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Source/Plugins")
 
+# Solution
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
 
-## Third Party
-add_subdirectory(assimp)
+## Assimp 
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE) ## Force Assimp to not build Unit test
+add_subdirectory(${THIRD_PARTY_DIR}/assimp)
 
-## tracy-profiler
-if (PROFILING)
-#tracy-backend
-add_subdirectory(tracy)
-add_compile_definitions(PROFILING)
-add_compile_definitions(TRACY_ENABLE)
-endif()
-add_subdirectory(Profiler)
+## Tracy
+add_subdirectory(${THIRD_PARTY_DIR}/tracy)
 
-# End of Third Party
+## GLFW
+set(GLFW_INSTALL ON CACHE BOOL "Enable GLFW install" FORCE)
+add_subdirectory(${THIRD_PARTY_DIR}/glfw)
 
-## static 
-add_subdirectory(VulkanAPI)
+## SPRIV-REFLECT
+set(SPIRV_REFLECT_STATIC_LIB TRUE)
+add_subdirectory(${THIRD_PARTY_DIR}/SPIRV-Reflect)
+
+## Json
+add_subdirectory(${THIRD_PARTY_DIR}/json)
+
+## Magic Enum
+add_subdirectory(${THIRD_PARTY_DIR}/magic_enum)
+
+add_subdirectory(${RUNTIME_SOURCE_DIR}/CoreDependencies)
+add_subdirectory(${RUNTIME_SOURCE_DIR}/Core)
+
+## MotionCore
+add_subdirectory(${THIRD_PARTY_DIR}/MotionCore/MotionCore)
+set(MATH_INCLUDE_PATH ${THIRD_PARTY_DIR}/MotionCore/MotionCore/Include  ${THIRD_PARTY_DIR}/MotionCore/MotionCore/Inline)
+
+## Profiler 
+add_subdirectory(${PLUGINS_DIR}/Profiler)
+
+## Imgui 
+add_subdirectory(${PLUGINS_DIR}/Imgui)
+
+## D3D12 API
 if (WIN32)
-add_subdirectory(D3d12API)
+add_subdirectory(${RUNTIME_SOURCE_DIR}/D3d12API)
 endif()
-add_subdirectory(MotionCore/MotionCore)
 
-## dynamic
-add_subdirectory(Core)
+## VULKAN API
+add_subdirectory(${RUNTIME_SOURCE_DIR}/VulkanAPI)
 
+# Editor
+add_subdirectory(${EDITOR_SOURCE_DIR})
 
-#unit Test
 if(BUILD_TEST)
-add_subdirectory(UnitTest)
+add_subdirectory(${RUNTIME_SOURCE_DIR}/UnitTest)
 endif()
-
-add_subdirectory(Editor)
