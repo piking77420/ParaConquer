@@ -1,6 +1,6 @@
 ﻿#include "VulkanRenderPass.hpp"
 
-#include "Utils/RhiVulkanParser.hpp"
+#include "Utils/RhiToVulkan.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanSwapChain.hpp"
 
@@ -10,16 +10,17 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    std::shared_ptr<Vulkan::VulkanDevice> device =
-        std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(VulkanContext::GetContext().rhiDevice);
+    std::shared_ptr<VulkanDevice> device =
+        std::reinterpret_pointer_cast<VulkanDevice>(VulkanContext::GetContext().rhiDevice);
 
-    assert(_renderPassDescriptor.attachement.size() < MAX_COLOR_ATTACHMENTS &&
+    assert(_renderPassDescriptor.attachement.size() < MaxColorAttachments &&
         "MAX_COLOR_ATTACHMENTS has been reached");
 
     bool hasDepthAttachment = _renderPassDescriptor.depthAttachment != nullptr;
 
     // ---------------- Attachment Descriptions ----------------
-    std::vector<vk::AttachmentDescription> vkAttachments = ParseAttahchementDescription(_renderPassDescriptor, hasDepthAttachment);
+    std::vector<vk::AttachmentDescription> vkAttachments = ParseAttahchementDescription(
+        _renderPassDescriptor, hasDepthAttachment);
 
     // ---------------- Attachment References ----------------
     std::vector<vk::AttachmentReference> colorAttachmentReferences;
@@ -35,12 +36,13 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     for (const auto& subpass : _renderPassDescriptor.subPasses)
     {
         const size_t colorAttachementCount = subpass.colorAttachementDescriptorIndicies.
-            size();
+                                                     size();
 
         const size_t inputAttachementCount = subpass.inputAttachementDescriptorIndicies.
-            size();
+                                                     size();
 
-        const size_t preserved = _renderPassDescriptor.attachement.size() - colorAttachementCount - inputAttachementCount;
+        const size_t preserved = _renderPassDescriptor.attachement.size() - colorAttachementCount -
+            inputAttachementCount;
 
         colorAttachementRefsCount += colorAttachementCount;
         inputAttachementRefsCount += inputAttachementCount;
@@ -60,7 +62,7 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     {
         const auto& subpass = _renderPassDescriptor.subPasses[i];
 
-        assert(subpass.useDepth ? (hasDepthAttachment) : true  &&
+        assert(subpass.useDepth ? (hasDepthAttachment) : true &&
             "Subpass uses depth but no depth attachment provided");
 
         std::set<uint32_t> usedIndices(subpass.colorAttachementDescriptorIndicies.begin(),
@@ -72,14 +74,15 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
         for (uint32_t att = 0; att < static_cast<uint32_t>(_renderPassDescriptor.attachement.size()); ++att)
             if (!usedIndices.contains(att))
                 subpassPreserved[preservedIndex++] = att;
-            
+
         for (uint32_t j = 0; j < subpass.colorAttachementDescriptorIndicies.size(); ++j)
         {
             const uint32_t attachmentIndex = subpass.colorAttachementDescriptorIndicies[j];
             PC_CORE::AttachmentType _attachmentType = _renderPassDescriptor.attachement[attachmentIndex].attachmentType;
 
-            colorAttachmentReferences[colorIndex].attachment = attachmentIndex;   
-            colorAttachmentReferences[colorIndex].layout = GetImageLayoutSubPass(_renderPassDescriptor.attachement[attachmentIndex].attachmentType);
+            colorAttachmentReferences[colorIndex].attachment = attachmentIndex;
+            colorAttachmentReferences[colorIndex].layout = GetImageLayoutSubPass(
+                _renderPassDescriptor.attachement[attachmentIndex].attachmentType);
             colorIndex++;
         }
 
@@ -126,23 +129,24 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
             vkSubpass.colorAttachmentCount = colorAttCount;
             vkSubpass.pColorAttachments = &colorAttachmentReferences[colorAttachementOffset];
         }
-      
+
         vkSubpass.inputAttachmentCount = 0;
         if (inputAttachementOffset < inputAttachementReferences.size())
         {
             vkSubpass.inputAttachmentCount = inputAttCount;
             vkSubpass.pInputAttachments = &inputAttachementReferences[inputAttachementOffset];
         }
-       
+
         vkSubpass.pDepthStencilAttachment = subPass.useDepth ? &depthAttachmentRef : nullptr;
 
         vkSubpass.preserveAttachmentCount = 0;
         if (preserveAttachementOffset < subpassPreserved.size())
         {
-            vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(_renderPassDescriptor.attachement.size()) - colorAttCount - inputAttCount;
+            vkSubpass.preserveAttachmentCount = static_cast<uint32_t>(_renderPassDescriptor.attachement.size()) -
+                colorAttCount - inputAttCount;
             vkSubpass.pPreserveAttachments = &subpassPreserved[preserveAttachementOffset];
         }
-      
+
         preserveAttachementOffset += vkSubpass.preserveAttachmentCount;
         colorAttachementOffset += subPass.colorAttachementDescriptorIndicies.size();
         preserveAttachementOffset += vkSubpass.preserveAttachmentCount;
@@ -177,15 +181,15 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(const PC_CORE::RenderPassDescriptor& 
     m_RenderPass = device->GetDevice().createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat,
-                                           PC_CORE::RHIFormat depthFormat) : PC_CORE::RhiRenderPass(
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RhiFormat colorFormat,
+                                           PC_CORE::RhiFormat depthFormat) : RhiRenderPass(
     colorFormat, depthFormat)
 {
-    std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);
 
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = static_cast<VkFormat>(Utils::RHIFormatToVkFormat(colorFormat));
+    colorAttachment.format = static_cast<VkFormat>(Utils::RhiFormatToVkFormat(colorFormat));
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -195,7 +199,7 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat,
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = static_cast<VkFormat>(Utils::RHIFormatToVkFormat(depthFormat));
+    depthAttachment.format = static_cast<VkFormat>(Utils::RhiFormatToVkFormat(depthFormat));
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -240,13 +244,13 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat,
     m_RenderPass = device->GetDevice().createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint32_t _sampleCount)
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RhiFormat colorFormat, uint32_t _sampleCount)
 {
-    std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);
 
     vk::AttachmentDescription colorAttachment{};
-    colorAttachment.format = Utils::RHIFormatToVkFormat(colorFormat);
+    colorAttachment.format = Utils::RhiFormatToVkFormat(colorFormat);
     colorAttachment.samples = Utils::RhiSampleCountToVuklan(_sampleCount);
     colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
     colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
@@ -256,7 +260,7 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint3
     colorAttachment.finalLayout = vk::ImageLayout::eGeneral;
 
     vk::AttachmentDescription colorAttachmentResolve{};
-    colorAttachmentResolve.format = Utils::RHIFormatToVkFormat(colorFormat);
+    colorAttachmentResolve.format = Utils::RhiFormatToVkFormat(colorFormat);
     colorAttachmentResolve.samples = vk::SampleCountFlagBits::e1;
     colorAttachmentResolve.loadOp = vk::AttachmentLoadOp::eClear;
     colorAttachmentResolve.storeOp = vk::AttachmentStoreOp::eStore;
@@ -301,13 +305,13 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat, uint3
     m_RenderPass = device->GetDevice().createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat)
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RhiFormat colorFormat)
 {
-    std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);
 
     vk::AttachmentDescription colorAttachment{};
-    colorAttachment.format = Utils::RHIFormatToVkFormat(colorFormat);
+    colorAttachment.format = Utils::RhiFormatToVkFormat(colorFormat);
     colorAttachment.samples = vk::SampleCountFlagBits::e1;
     colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
     colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
@@ -349,7 +353,7 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::RHIFormat colorFormat)
 
 Vulkan::VulkanRenderPass::VulkanRenderPass(vk::Format format)
 {
-    std::shared_ptr<Vulkan::VulkanDevice> device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(
+    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(
         VulkanContext::GetContext().rhiDevice);
 
     vk::AttachmentDescription colorAttachment{};
@@ -438,7 +442,8 @@ vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPass(PC_CORE::Attachm
     return {};
 }
 
-vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttachement(PC_CORE::AttachmentType _attachmentType)
+vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttachement(
+    PC_CORE::AttachmentType _attachmentType)
 {
     switch (_attachmentType)
     {
@@ -458,7 +463,8 @@ vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttacheme
     return {};
 }
 
-std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahchementDescription(const PC_CORE::RenderPassDescriptor& _renderPassDescriptor, bool _hasdepth)
+std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahchementDescription(
+    const PC_CORE::RenderPassDescriptor& _renderPassDescriptor, bool _hasdepth)
 {
     std::vector<vk::AttachmentDescription> vkAttachments(
         _renderPassDescriptor.attachement.size() + static_cast<size_t>(_hasdepth));
@@ -469,7 +475,7 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         vk::AttachmentDescription& vkAttachment = vkAttachments[i];
 
         vkAttachment.flags = {};
-        vkAttachment.format = Utils::RHIFormatToVkFormat(attachment.format);
+        vkAttachment.format = Utils::RhiFormatToVkFormat(attachment.format);
         vkAttachment.samples = Utils::RhiSampleCountToVuklan(attachment.sampleCount);
 
         vkAttachment.loadOp = Utils::RhiLoadOperationToVulkan(attachment.load);
@@ -485,7 +491,7 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
     if (_hasdepth)
     {
         vk::AttachmentDescription depthDesc{};
-        depthDesc.format = Utils::RHIFormatToVkFormat(_renderPassDescriptor.depthAttachment->format);
+        depthDesc.format = Utils::RhiFormatToVkFormat(_renderPassDescriptor.depthAttachment->format);
         depthDesc.samples = Utils::RhiSampleCountToVuklan(_renderPassDescriptor.depthAttachment->sampleCount);
         depthDesc.loadOp = Utils::RhiLoadOperationToVulkan(_renderPassDescriptor.depthAttachment->load);
         depthDesc.storeOp = Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->store);
@@ -493,14 +499,14 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
         depthDesc.stencilStoreOp =
             Utils::RhiStoreOperationToVulkan(_renderPassDescriptor.depthAttachment->stencilStore);
 
-        depthDesc.initialLayout = Utils::RhiImageStateToVulkanImageLayout(_renderPassDescriptor.depthAttachment->currentImageState);
-        depthDesc.finalLayout = Utils::RhiImageStateToVulkanImageLayout(_renderPassDescriptor.depthAttachment->finalImageState);
+        depthDesc.initialLayout = Utils::RhiImageStateToVulkanImageLayout(
+            _renderPassDescriptor.depthAttachment->currentImageState);
+        depthDesc.finalLayout = Utils::RhiImageStateToVulkanImageLayout(
+            _renderPassDescriptor.depthAttachment->finalImageState);
 
         const size_t depthIndex = vkAttachments.size() - 1;
         vkAttachments[depthIndex] = depthDesc;
-
     }
 
     return vkAttachments;
 }
-

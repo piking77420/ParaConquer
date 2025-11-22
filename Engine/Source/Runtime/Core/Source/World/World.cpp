@@ -13,7 +13,7 @@ World::World()
         PC_LOGERROR("World already initialized");
         throw std::runtime_error("World already initialized");
     }
-    
+
     m_World = this;
 }
 

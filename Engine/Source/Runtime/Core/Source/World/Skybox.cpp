@@ -20,7 +20,7 @@ void Skybox::Load(std::array<std::string, 6>& _maps)
         texture->Load(_maps);
 
     }*/
-    
+
     //App::instance->renderer.skyboxRender.CreateSkyboxBackend(*this);
 }
 

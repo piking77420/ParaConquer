@@ -6,53 +6,52 @@
 
 BEGIN_EDITOR_PCCORE
     class EditWorldWindow : public WorldViewWindow
-{
-public:
-    void OnPlayButton() override
     {
-        m_RenderingContextFlag &= ~PC_CORE::RenderingContextFlag::DebugDrawGeometry;
-        m_View->SetRenderingContextFlag(m_RenderingContextFlag);
+    public:
+        void OnPlayButton() override
+        {
+            m_RenderingContextFlag &= ~PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+            m_View->SetRenderingContextFlag(m_RenderingContextFlag);
+        }
 
-    }
-    
-    void OnResetScene() override
-    {
-        m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
-        m_View->SetRenderingContextFlag(m_RenderingContextFlag);
-    }
+        void OnResetScene() override
+        {
+            m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+            m_View->SetRenderingContextFlag(m_RenderingContextFlag);
+        }
 
-    explicit EditWorldWindow(Editor& _editor, const std::string& _name);
-    
-    ~EditWorldWindow() override = default;
-    
-    void Update() override;
+        explicit EditWorldWindow(Editor& _editor, const std::string& _name);
 
-protected:
-    void MoveCameraUpDate();
-    
-    PC_CORE::LowPassFilter<Tbx::Vector2f, 6> deltass;
+        ~EditWorldWindow() override = default;
 
-    float m_BaseCameraSpeed = 5.f;
+        void Update() override;
 
-    float m_CameraSpeedValue = m_BaseCameraSpeed;
-    
-    float pitch = 0.0f;
-    
-    float yaw = 90.f;
+    protected:
+        void MoveCameraUpDate();
 
-    float cameraSensitivity = 100.f;
+        PC_CORE::LowPassFilter<Tbx::Vector2f, 6> deltass;
 
-    Tbx::Vector3d m_CameraSpeed = Tbx::Vector3d::Zero();
+        float m_BaseCameraSpeed = 5.f;
 
-    float smoothTime = 0.3f;
+        float m_CameraSpeedValue = m_BaseCameraSpeed;
 
-    void RotateCamera(float _deltatime);
+        float pitch = 0.0f;
 
-    void CameratMovment(float _deltatime);
+        float yaw = 90.f;
 
-    void CameraChangeSpeed(float _deltatime);
+        float cameraSensitivity = 100.f;
 
-    void HideCursor();
-};
+        Tbx::Vector3d m_CameraSpeed = Tbx::Vector3d::Zero();
+
+        float smoothTime = 0.3f;
+
+        void RotateCamera(float _deltatime);
+
+        void CameratMovment(float _deltatime);
+
+        void CameraChangeSpeed(float _deltatime);
+
+        void HideCursor();
+    };
 
 END_EDITOR_PCCORE

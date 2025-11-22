@@ -29,7 +29,6 @@ Rhi::Rhi(Rhi&& other) noexcept
     other.m_GraphicsApi = GraphicAPI::None;
 
     m_Instance = this;
-
 }
 
 Rhi& Rhi::operator=(Rhi&& other) noexcept
@@ -49,7 +48,7 @@ Rhi& Rhi::operator=(Rhi&& other) noexcept
 Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_createInfo.GraphicsAPI)
 {
     PERF_REGION_SCOPED;
-    
+
     PC_LOG("Rhi Initialize")
     if (m_Instance != nullptr)
     {
@@ -57,7 +56,7 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_
         return;
     }
     m_Instance = this;
-   
+
     Init(_createInfo);
 }
 
@@ -66,7 +65,7 @@ Rhi::~Rhi()
     if (m_Instance != nullptr && m_RhiContext != nullptr)
     {
         PC_LOG("Rhi Deinitialized");
-        
+
         delete m_RhiContext;
         m_RhiContext = nullptr;
 
@@ -82,7 +81,7 @@ Rhi& Rhi::GetInstance()
 std::shared_ptr<RhiShaderProgram> Rhi::CreateRhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo)
 {
     Rhi& rhi = GetInstance();
-    
+
     switch (rhi.m_GraphicsApi)
     {
         break;
@@ -95,11 +94,10 @@ std::shared_ptr<RhiShaderProgram> Rhi::CreateRhiShaderProgram(const ProgramShade
     case GraphicAPI::Count:
         break;
     }
-    
 }
 
 
-std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
+std::shared_ptr<CommandList> Rhi::CreateCommandList(const CommandListCreateInfo& _commandListCreateInfo)
 {
     Rhi& rhi = GetInstance();
 
@@ -114,10 +112,9 @@ std::shared_ptr<CommandList> Rhi::CreateCommandList(const PC_CORE::CommandListCr
     case GraphicAPI::Count:
         throw std::runtime_error("Invalid GraphicAPI");
     }
-
 }
 
-std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat, PC_CORE::RHIFormat _depthFormat)
+std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(RhiFormat _colorFormat, RhiFormat _depthFormat)
 {
     Rhi& rhi = GetInstance();
 
@@ -133,13 +130,13 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
     case GraphicAPI::Count:
         break;
     default:
-    assert(false);
+        assert(false);
     }
 
     return nullptr;
 }
 
-std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat)
+std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(RhiFormat _colorFormat)
 {
     Rhi& rhi = GetInstance();
 
@@ -155,13 +152,13 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFo
         break;
     case GraphicAPI::Count:
         break;
-    default: 
+    default:
         assert(false);
     }
     return nullptr;
 }
 
-PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(PC_CORE::RHIFormat _colorFormat, uint32_t sampleCount)
+PC_CORE_API std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount)
 {
     Rhi& rhi = GetInstance();
 
@@ -199,7 +196,7 @@ std::shared_ptr<RhiRenderPass> Rhi::CreateRenderPass(const RenderPassDescriptor&
         break;
     case GraphicAPI::Count:
         break;
-    default: 
+    default:
         assert(false);
     }
 
@@ -226,15 +223,16 @@ std::shared_ptr<FrameBuffer> Rhi::CreateFrameBuffer(const CreateFrameInfo& _crea
     }
 }
 
-std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format, MemoryLocalisation _visibility,
-    MemoryUsage _usage)
+std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32_t _sizeInByte, IndexFormat _format,
+                                                       MemoryLocalisation _visibility,
+                                                       MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::Vulkan:
-        return std::make_shared<Vulkan::VulkanIndexBuffer>(_data, _sizeInByte, _format,_visibility, _usage);
+        return std::make_shared<Vulkan::VulkanIndexBuffer>(_data, _sizeInByte, _format, _visibility, _usage);
     case GraphicAPI::D3d12:
         break;
     case GraphicAPI::None:
@@ -246,14 +244,15 @@ std::shared_ptr<RhiIndexBuffer> Rhi::CreateIndexBuffer(const void* _data, uint32
     return nullptr;
 }
 
-std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage)
+std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint32_t _sizeInByte,
+                                                         MemoryLocalisation _visibility, MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::Vulkan:
-        return std::make_shared<Vulkan::VulkanVertexBuffer>(_data, _sizeInByte,_visibility, _usage);
+        return std::make_shared<Vulkan::VulkanVertexBuffer>(_data, _sizeInByte, _visibility, _usage);
     case GraphicAPI::D3d12:
         break;
     case GraphicAPI::None:
@@ -264,7 +263,7 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(const void* _data, uint
 }
 
 std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(uint32_t _sizeInByte, MemoryLocalisation _visibility,
-    MemoryUsage _usage)
+                                                         MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
@@ -278,13 +277,14 @@ std::shared_ptr<RhiVertexBuffer> Rhi::CreateVertexBuffer(uint32_t _sizeInByte, M
         break;
     case GraphicAPI::Count:
         break;
-    default: 
+    default:
         assert(false);
     }
     return nullptr;
 }
 
-std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage)
+std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, uint32_t _sizeInByte,
+                                                           MemoryLocalisation _visibility, MemoryUsage _usage)
 {
     Rhi& rhi = GetInstance();
 
@@ -298,18 +298,18 @@ std::shared_ptr<RhiUniformBuffer> Rhi::CreateUniformBuffer(const void* _data, ui
         break;
     case GraphicAPI::Count:
         break;
-    default: 
+    default:
         assert(false);
     }
 }
 
 
-std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInfo& _createImageInfo)
+std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const CreateImageInfo& _createImageInfo)
 {
     Rhi& rhi = GetInstance();
 
-    static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture2D>,"");
-    
+    static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture2D>, "");
+
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::None:
@@ -320,17 +320,17 @@ std::shared_ptr<RhiTexture2D> Rhi::CreateTexture2D(const PC_CORE::CreateImageInf
         break;
     case GraphicAPI::Count:
         break;
-    default: 
+    default:
         assert(false);
     }
 }
 
-std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const PC_CORE::CreateImageInfo& _createImageInfo3D)
+std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const CreateImageInfo& _createImageInfo3D)
 {
     Rhi& rhi = GetInstance();
 
-    static_assert(std::is_base_of_v<RhiTexture3D, Vulkan::VulkanTexture3D>,"");
-    
+    static_assert(std::is_base_of_v<RhiTexture3D, Vulkan::VulkanTexture3D>, "");
+
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::None:
@@ -345,12 +345,12 @@ std::shared_ptr<RhiTexture3D> Rhi::CreateTexture3D(const PC_CORE::CreateImageInf
     }
 }
 
-std::shared_ptr<RhiSampler> Rhi::CreateSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo)
+std::shared_ptr<RhiSampler> Rhi::CreateSampler(const SamplerCreateInfo& _samplerCreateInfo)
 {
     Rhi& rhi = GetInstance();
 
-    static_assert(std::is_base_of_v<RhiSampler, Vulkan::VulkanSampler>,"");
-    
+    static_assert(std::is_base_of_v<RhiSampler, Vulkan::VulkanSampler>, "");
+
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::None:
@@ -369,7 +369,7 @@ PC_CORE_API std::shared_ptr<RhiFence> Rhi::CreateFence(const RhiFenceCreateInfo&
 {
     Rhi& rhi = GetInstance();
 
-        
+
     switch (rhi.m_GraphicsApi)
     {
     case GraphicAPI::None:
@@ -380,7 +380,7 @@ PC_CORE_API std::shared_ptr<RhiFence> Rhi::CreateFence(const RhiFenceCreateInfo&
     case GraphicAPI::Count:
         assert(false);
         break;
-    default:;
+    default: ;
     }
 }
 
@@ -392,34 +392,34 @@ RhiContext* Rhi::GetRhiContext()
 
 void Rhi::NextFrame()
 {
-    m_Instance->m_CurrentFrame = (m_Instance->m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    m_Instance->m_CurrentFrame = (m_Instance->m_CurrentFrame + 1) % MaxFramesInFlight;
 }
 
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {
     RenderInstanceCreateInfo renderInstanceCreateInfo =
-        {
+    {
         .appName = _createInfo.appName,
         .gpuDebug = _createInfo.gpuDebug
-        };
-    
+    };
+
     const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
+    {
         {
-            {
-               // RhiExtension::RayTracing,
-                //RhiExtension::MeshShader
-            },
-        
-        };
+            // RhiExtension::RayTracing,
+            //RhiExtension::MeshShader
+        },
+
+    };
 
     const RhiContextCreateInfo renderContextCreateInfo =
-        {
+    {
         _createInfo.window->GetHandle(),
         &renderInstanceCreateInfo,
         &physicalDevicesCreateInfo
-        };
+    };
 
-    
+
     switch (m_GraphicsApi)
     {
     case GraphicAPI::Vulkan:

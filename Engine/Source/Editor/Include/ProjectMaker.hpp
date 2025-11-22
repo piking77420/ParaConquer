@@ -4,18 +4,14 @@
 #include "EditorHeader.hpp"
 
 BEGIN_EDITOR_PCCORE
+    class ProjectMaker
+    {
+    public:
+        ProjectMaker() = default;
 
-class ProjectMaker
-{
-public:
-    ProjectMaker() = default;
+        ~ProjectMaker() = default;
 
-    ~ProjectMaker() = default;
-
-    static ProjectFile CreateBaseProject(const wchar_t* _path);
-    
-private:
-    
-};
+        static ProjectFile CreateBaseProject(const wchar_t* _path);
+    };
 
 END_EDITOR_PCCORE

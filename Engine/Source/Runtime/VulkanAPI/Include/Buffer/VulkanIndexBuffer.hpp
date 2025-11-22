@@ -5,33 +5,30 @@
 
 namespace Vulkan
 {
-
-class VulkanIndexBuffer : public PC_CORE::RhiIndexBuffer
-{
-public:
-    const void* GetNativeHandle() const override
+    class VulkanIndexBuffer : public PC_CORE::RhiIndexBuffer
     {
-        return &m_VulkanBuffer;
-    }
+    public:
+        const void* GetNativeHandle() const override
+        {
+            return &m_VulkanBuffer;
+        }
 
-    void* GetNativeHandle() override
-    {
-        return &m_VulkanBuffer;
-    }
-    
-    void MapData(void** _ptr) override;
-        
-    void UnmapData() override;
+        void* GetNativeHandle() override
+        {
+            return &m_VulkanBuffer;
+        }
 
-    VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format, PC_CORE::MemoryLocalisation _visibility,
-                      PC_CORE::MemoryUsage _usage);
+        void MapData(void** _ptr) override;
 
-    ~VulkanIndexBuffer() override = default;
-    
-private:
-    VulkanBuffer m_VulkanBuffer;
+        void UnmapData() override;
 
-   
-};
-    
+        VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format,
+                          PC_CORE::MemoryLocalisation _visibility,
+                          PC_CORE::MemoryUsage _usage);
+
+        ~VulkanIndexBuffer() override = default;
+
+    private:
+        VulkanBuffer m_VulkanBuffer;
+    };
 }

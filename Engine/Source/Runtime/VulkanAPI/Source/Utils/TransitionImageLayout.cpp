@@ -2,7 +2,8 @@
 
 
 void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image image, vk::Format format,
-    vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _levelCount)
+                                   vk::ImageLayout oldLayout, vk::ImageLayout newLayout,
+                                   vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _levelCount)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -42,7 +43,8 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image i
     else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
     {
         barrier.srcAccessMask = {};
-        barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead |
+            vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
         sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
         destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
@@ -57,7 +59,7 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image i
     }
     else if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eDepthAttachmentOptimal)
     {
-        barrier.srcAccessMask = {}; 
+        barrier.srcAccessMask = {};
         barrier.dstAccessMask =
             vk::AccessFlagBits::eDepthStencilAttachmentRead |
             vk::AccessFlagBits::eDepthStencilAttachmentWrite;

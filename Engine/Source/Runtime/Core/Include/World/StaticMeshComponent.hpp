@@ -6,14 +6,15 @@
 #include "Objectptr.hpp"
 
 BEGIN_PCCORE
-struct StaticMeshComponent : public Component
-{
-    WeakObjectPtr<StaticMesh> staticMesh;
+    struct StaticMeshComponent : Component
+    {
+        WeakObjectPtr<StaticMesh> staticMesh;
 
-    WeakObjectPtr<Material> material;
-};
-REFLECT(StaticMeshComponent, Component)
-REFLECT_MEMBER(StaticMeshComponent, staticMesh)
-REFLECT_MEMBER(StaticMeshComponent, material)
+        WeakObjectPtr<Material> material;
+    };
+
+    REFLECT(StaticMeshComponent, Component)
+    REFLECT_MEMBER(StaticMeshComponent, staticMesh)
+    REFLECT_MEMBER(StaticMeshComponent, material)
 
 END_PCCORE

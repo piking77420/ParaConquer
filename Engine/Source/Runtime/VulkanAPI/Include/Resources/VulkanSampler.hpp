@@ -13,12 +13,12 @@ namespace Vulkan
         {
             return &m_Sampler;
         }
-        
+
         void* GetNativeHandle() override
         {
             return &m_Sampler;
         }
-        
+
         VulkanSampler(VulkanSampler&& _other) noexcept
             : RhiSampler(std::move(_other)), m_Sampler(_other.m_Sampler)
         {
@@ -29,7 +29,7 @@ namespace Vulkan
         {
             if (this != &_other)
             {
-                PC_CORE::RhiSampler::operator=(std::move(_other));
+                RhiSampler::operator=(std::move(_other));
 
                 m_Sampler = _other.m_Sampler;
                 _other.m_Sampler = nullptr;

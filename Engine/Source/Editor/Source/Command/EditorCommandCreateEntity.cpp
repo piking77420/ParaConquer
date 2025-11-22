@@ -5,12 +5,12 @@
 
 PC_EDITOR_CORE::EditorCommandCreateEntity::EditorCommandCreateEntity(Editor& _editor) : EditorCommand(_editor)
 {
-    m_EntityID = m_Editor.gameApp.world.level.CreateEntity();
+    m_EntityID = m_Editor.gameApp.World.level.CreateEntity();
 }
 
 PC_EDITOR_CORE::EditorCommandCreateEntity::~EditorCommandCreateEntity()
 {
     if (m_EntityID == PC_CORE::INVALID_ENTITY_ID)
         return;
-    m_Editor.gameApp.world.level.RemoveEntity(m_EntityID);
+    m_Editor.gameApp.World.level.RemoveEntity(m_EntityID);
 }

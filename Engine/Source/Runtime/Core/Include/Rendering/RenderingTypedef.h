@@ -9,48 +9,48 @@
 BEGIN_PCCORE
     struct LowLevelCamera
     {
-        Tbx::Vector3d position;
-        Tbx::Vector3f front;
-        Tbx::Vector3f up;
+        Tbx::Vector3d Position;
+        Tbx::Vector3f Front;
+        Tbx::Vector3f Up;
 
-        float aspect; 
-        float fov;
-        float near;
-        float far;
-        bool isOrthographic;
+        float Aspect;
+        float Fov;
+        float Near;
+        float Far;
+        bool IsOrthographic;
     };
 
 #ifdef WITH_EDITOR
     enum RenderingContextFlag
     {
-        DebugDrawGeometry = 1 << 0  
+        DebugDrawGeometry = 1 << 0
     };
-    
+
 
 #endif
 
     struct RenderingContext
     {
-        LowLevelCamera lowLevelCamera;
-        float deltaTime;
-        float time;
-        
-        std::shared_ptr<FrameBuffer> gbufferFrameBuffer;
-        std::shared_ptr<FrameBuffer> forwardFrameBuffer;
-        std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
-        
-        PC_CORE::ShaderProgramDescriptorSets* geometryDescritproSet;
-        PC_CORE::ShaderProgramDescriptorSets* defferdLightingGbufferSet;
-        PC_CORE::ShaderProgramDescriptorSets* defferdLightingLightingCameraSet;
-        PC_CORE::ShaderProgramDescriptorSets* forwardDesritptorSet;
-        PC_CORE::ShaderProgramDescriptorSets* toneMapDescritptorSet;
-        PC_CORE::ShaderProgramDescriptorSets* finalImageDescritptorSet;
+        LowLevelCamera LowLevelCamera;
+        float DeltaTime;
+        float Time;
 
-        Texture2D* hdrImage;
+        std::shared_ptr<FrameBuffer> GbufferFrameBuffer;
+        std::shared_ptr<FrameBuffer> ForwardFrameBuffer;
+        std::shared_ptr<FrameBuffer> FinalImageFrameBuffer;
 
-        Tbx::Vector2ui renderingContextSize;
+        ShaderProgramDescriptorSets* GeometryDescritproSet;
+        ShaderProgramDescriptorSets* DefferdLightingGbufferSet;
+        ShaderProgramDescriptorSets* DefferdLightingLightingCameraSet;
+        ShaderProgramDescriptorSets* ForwardDesritptorSet;
+        ShaderProgramDescriptorSets* ToneMapDescritptorSet;
+        ShaderProgramDescriptorSets* FinalImageDescritptorSet;
+
+        Texture2D* HdrImage;
+
+        Tbx::Vector2ui RenderingContextSize;
 #ifdef WITH_EDITOR
-        size_t renderingContextFlag;
+        size_t RenderingContextFlag;
 #endif
 
         float gamma;
@@ -66,18 +66,17 @@ BEGIN_PCCORE
 
         Count
     };
-    
+
 
     struct StaticMeshComponentData
     {
-        PC_CORE::MaterialType materialType;
-        const PC_CORE::ShaderProgramDescriptorSets* descriptorSet;
-        const PC_CORE::StaticMesh* staticMesh;
+        MaterialType MaterialType;
+        const ShaderProgramDescriptorSets* DescriptorSet;
+        const StaticMesh* StaticMesh;
 
-        Tbx::Matrix4x4d worldMatrix;
+        Tbx::Matrix4x4d WorldMatrix;
         // TO DO PASS IT TO MAT3
-        Tbx::Matrix4x4d normalInvertMatrix;
-
+        Tbx::Matrix4x4d NormalInvertMatrix;
     };
 
 
@@ -92,39 +91,40 @@ BEGIN_PCCORE
 
     struct DirectionalLightData
     {
-        Tbx::Vector3f color;
-        float intensity;
-        Tbx::Vector3f direction;
+        Tbx::Vector3f Color;
+        float Intensity;
+        Tbx::Vector3f Direction;
     };
 
     struct SpotLightData
     {
-        Tbx::Vector3f color;
-        float intensity;
-        Tbx::Vector3f direction;
-        float cutoff;
-        Tbx::Vector3d position;
-        float outerCutOff;
+        Tbx::Vector3f Color;
+        float Intensity;
+        Tbx::Vector3f Direction;
+        float Cutoff;
+        Tbx::Vector3d Position;
+        float OuterCutOff;
     };
 
     struct PointLightData
     {
-        Tbx::Vector3f color;
-        float intensity;
-        Tbx::Vector3d position;
+        Tbx::Vector3f Color;
+        float Intensity;
+        Tbx::Vector3d Position;
     };
 
-    
+
     // World Data
     struct LightData
     {
-        LightType lightType;
+        LightType LightType;
+
         union Data
         {
-            DirectionalLightData directionalLight;
-            SpotLightData spotLight;
-            PointLightData pointLightData;
-        }data;
+            DirectionalLightData DirectionalLight;
+            SpotLightData SpotLight;
+            PointLightData PointLightData;
+        } Data;
     };
 
     struct RenderingWorldData
@@ -135,12 +135,12 @@ BEGIN_PCCORE
 
         void Clear()
         {
-            staticMeshComponentData.clear();
-            lightData.clear();
+            StaticMeshComponentData.clear();
+            LightData.clear();
         }
 
-        std::vector<StaticMeshComponentData> staticMeshComponentData;
-        std::vector<LightData> lightData;
+        std::vector<StaticMeshComponentData> StaticMeshComponentData;
+        std::vector<LightData> LightData;
     };
 
 
@@ -148,43 +148,43 @@ BEGIN_PCCORE
 #define MAX_POINTLIGHT 10
 #define MAX_SPOTLIGHT 10
 
-    struct ALIGNAS_16 DirectionalLightGPU
+    struct ALIGNAS_16 DirectionalLightGpu
     {
-        Tbx::Vector3f direction;
-        float intensity;
-        Tbx::Vector3f color;
-        float _pad;
+        Tbx::Vector3f Direction;
+        float Intensity;
+        Tbx::Vector3f Color;
+        float Pad;
     };
 
-    struct ALIGNAS_16 SpotLightGPU
+    struct ALIGNAS_16 SpotLightGpu
     {
-        Tbx::Vector3f position;
-        float intensity;
-        Tbx::Vector3f direction;
-        float cutoff;
-        Tbx::Vector3f color;
-        float outerCutOff;
-        float maxRange;
-        float _pad[3];
+        Tbx::Vector3f Position;
+        float Intensity;
+        Tbx::Vector3f Direction;
+        float Cutoff;
+        Tbx::Vector3f Color;
+        float OuterCutOff;
+        float MaxRange;
+        float Pad[3];
     };
 
-    struct ALIGNAS_16 PointLightGPU
+    struct ALIGNAS_16 PointLightGpu
     {
-        Tbx::Vector3f position;
-        float maxRange;
-        Tbx::Vector3f color;
-        float intensity;
+        Tbx::Vector3f Position;
+        float MaxRange;
+        Tbx::Vector3f Color;
+        float Intensity;
     };
 
-    struct ALIGNAS_16 GPUDynamicLightData   
+    struct ALIGNAS_16 GPUDynamicLightData
     {
-        DirectionalLightGPU directionalLights[MAX_DIRLIGHT];
-        SpotLightGPU spothLights[MAX_SPOTLIGHT];
-        PointLightGPU pointLights[MAX_POINTLIGHT];
-        int dirLightCount;
-        int spothLightCount;
-        int pointLightCount;    
-        int _pad;
+        DirectionalLightGpu DirectionalLights[MAX_DIRLIGHT];
+        SpotLightGpu SpothLights[MAX_SPOTLIGHT];
+        PointLightGpu PointLights[MAX_POINTLIGHT];
+        int DirLightCount;
+        int SpothLightCount;
+        int PointLightCount;
+        int Pad;
     };
 
 END_PCCORE

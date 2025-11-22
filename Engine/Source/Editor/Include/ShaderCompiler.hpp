@@ -7,23 +7,18 @@
 #include "LowRenderer/RhiTypedef.h"
 
 BEGIN_EDITOR_PCCORE
+    class ShaderCompiler
+    {
+    public:
+        std::mutex lock;
 
-class ShaderCompiler
-{
-public:
+        std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::string& _filename);
 
-	std::mutex lock;
+        std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _filename);
 
-	std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::string& _filename);
+        ShaderCompiler();
 
-	std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _filename);
-
-	ShaderCompiler();
-
-	~ShaderCompiler();
-
-private:
-
-};
+        ~ShaderCompiler();
+    };
 
 END_EDITOR_PCCORE

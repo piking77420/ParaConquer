@@ -6,7 +6,7 @@
 #include "VulkanPhysicalDevices.hpp"
 #include "Glfw/Glfw3.h"
 #include "LowRenderer/Rhi.hpp"
-#include <Utils/RhiVulkanParser.hpp>
+#include <Utils/RhiToVulkan.hpp>
 
 
 void* Vulkan::VulkanSwapChain::GetFrameBuffer()
@@ -14,7 +14,7 @@ void* Vulkan::VulkanSwapChain::GetFrameBuffer()
     return m_Framebuffers.at(m_SwapChainImageIndex);
 }
 
-Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height): SwapChain(_widht, _height)
+Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height) : SwapChain(_widht, _height)
 {
     PERF_REGION_SCOPED;
     CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
@@ -33,7 +33,6 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 }
 
 
-
 void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
     VulkanContext& context = VulkanContext::GetContext();
@@ -41,15 +40,15 @@ void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice);
     const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
-    std::array<vk::Fence, 1> inflightFence = { context.syncObjects[frameIndex].inFlightFence };
+    std::array<vk::Fence, 1> inflightFence = {context.syncObjects[frameIndex].inFlightFence};
 
     vk::Semaphore imageAvaibleSemaphore = context.syncObjects[frameIndex].imageAvailableSemaphore;
 
-	VK_CALL(vulkanDevice->GetDevice().waitForFences(inflightFence.size(), inflightFence.data(), VK_TRUE, UINT64_MAX));
+    VK_CALL(vulkanDevice->GetDevice().waitForFences(inflightFence.size(), inflightFence.data(), VK_TRUE, UINT64_MAX));
 
-	uint32_t nextImageIndex = 0;
-	vk::Result result = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX,imageAvaibleSemaphore, 
-        VK_NULL_HANDLE, &nextImageIndex);
+    uint32_t nextImageIndex = 0;
+    vk::Result result = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX, imageAvaibleSemaphore,
+                                                                      VK_NULL_HANDLE, &nextImageIndex);
 
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
@@ -175,7 +174,7 @@ void Vulkan::VulkanSwapChain::CleanUpSwapChain()
 
     for (const auto& frameBuffer : m_Framebuffers)
         device->GetDevice().destroyFramebuffer(frameBuffer);
-    
+
     for (const auto& swapChainImageView : m_SwapChainImageViews)
         device->GetDevice().destroyImageView(swapChainImageView);
 
@@ -187,11 +186,11 @@ void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
     m_SwapChainWidth = _width;
     m_SwapChainHeight = _height;
 
-    VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
+    auto& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
 
-    const Vulkan::SwapChainSupportDetails swapChainSupportDetails = std::reinterpret_pointer_cast<
+    const SwapChainSupportDetails swapChainSupportDetails = std::reinterpret_pointer_cast<
         VulkanPhysicalDevices>(vulkanContext.physicalDevices)->UpdateSwapChainSupport(vulkanContext.GetSurface());
-    
+
     const auto& queueFamilyIndices = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)
         ->GetQueuesFamilies();
 
@@ -261,7 +260,7 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
 
     vk::Semaphore imageAvailableSemaphore = context.syncObjects[frameIndex].imageAvailableSemaphore;
 
-    
+
     vk::Queue mainQueu = VulkanContext::GetContext().mainQueue;
 
     vk::SubmitInfo submitInfo{};
@@ -270,7 +269,6 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     auto& flushedCommands = VulkanContext::GetContext().flushedCommands;
     // Graphic Work
     {
-        
         for (size_t i = 0; i < flushedCommands.size(); i++)
         {
             vk::Semaphore waitSemaphore;
@@ -284,7 +282,7 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
             else
             {
                 waitSemaphore = flushedCommands[i - 1].semaphore;
-                waitStage = Vulkan::Utils::RhiPipelineStageToVulkan(flushedCommands[i - 1].waitStages);
+                waitStage = Utils::RhiPipelineStageToVulkan(flushedCommands[i - 1].waitStages);
             }
 
             submitInfo.waitSemaphoreCount = 1;
@@ -303,15 +301,16 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
             VK_CALL(mainQueu.submit(1, &submitInfo, fence));
         }
     }
-  
+
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
     presentInfo.waitSemaphoreCount = static_cast<uint32_t>(1);
-    
-    presentInfo.pWaitSemaphores = flushedCommands.size() != 0 ? 
-        &flushedCommands[flushedCommands.size() - 1].semaphore : nullptr;
 
-    vk::SwapchainKHR swapChains[] = { m_SwapChain };
+    presentInfo.pWaitSemaphores = flushedCommands.size() != 0
+                                      ? &flushedCommands[flushedCommands.size() - 1].semaphore
+                                      : nullptr;
+
+    vk::SwapchainKHR swapChains[] = {m_SwapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &m_SwapChainImageIndex;
@@ -349,8 +348,8 @@ void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHan
 
 void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
-    VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
-    
+    auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
+
     std::shared_ptr<VulkanRenderPass> renderPass = reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass);
 
     vk::RenderPassBeginInfo renderPassInfo{};
@@ -360,19 +359,19 @@ void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _co
     renderPassInfo.renderArea.offset = vk::Offset2D{0, 0};
     renderPassInfo.renderArea.extent = vk::Extent2D{m_SwapChainWidth, m_SwapChainHeight};
 
-    vk::ClearValue clearColor  = {};
-    clearColor.color.setFloat32({ 
-        0, 0, 0, 0});
-    
+    vk::ClearValue clearColor = {};
+    clearColor.color.setFloat32({
+        0, 0, 0, 0
+    });
+
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
     vcommandList->GetVkHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
-    
 }
-        
+
 void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
-    VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
+    auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
     vcommandList->GetVkHandle().endRenderPass();
 }

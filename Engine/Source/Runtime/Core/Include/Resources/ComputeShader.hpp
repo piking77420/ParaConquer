@@ -3,38 +3,37 @@
 #include "Rendering/ShaderProgram.hpp"
 
 BEGIN_PCCORE
-
-struct ComputeShaderProgramCreateInfo
-{
-    ShaderComputeInfo shaderComputeInfo;
-    std::weak_ptr<ShaderSourceBinary> source;
-};
-
-
-class PC_CORE_API ComputeShader : public PC_CORE::ShaderProgram
-{
-public:
-
-    const LocalSize& GetLocalSize() const
+    struct ComputeShaderProgramCreateInfo
     {
-        return m_RhiShaderProgram->GetLocalSize();
-    }
+        ShaderComputeInfo shaderComputeInfo;
+        std::weak_ptr<ShaderSourceBinary> source;
+    };
 
-    IMP_DYNAMIC_REFLECT()
 
-    ComputeShader(const std::string& _shaderName, const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
-
-    ComputeShader(std::string&& _shaderName, const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
-
-    ComputeShader()
+    class PC_CORE_API ComputeShader : public ShaderProgram
     {
-        DYNAMIC_REFLECT_INIT
-    }
+    public:
+        const LocalSize& GetLocalSize() const
+        {
+            return m_RhiShaderProgram->GetLocalSize();
+        }
 
-    ~ComputeShader() = default;
-};
+        IMP_DYNAMIC_REFLECT()
+
+        ComputeShader(const std::string& _shaderName,
+                      const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
+
+        ComputeShader(std::string&& _shaderName, const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
+
+        ComputeShader()
+        {
+            DYNAMIC_REFLECT_INIT
+        }
+
+        ~ComputeShader() override = default;
+    };
 
 
-REFLECT(ComputeShader, PC_CORE::ShaderProgram);
+    REFLECT(ComputeShader, PC_CORE::ShaderProgram);
 
 END_PCCORE

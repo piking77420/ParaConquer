@@ -170,7 +170,7 @@ TEST(Serialization, SerializationRes)
     
 
     std::shared_ptr<SerializedResource> d = rRef.lock();
-    EXPECT_TRUE(d->name == deserializedResource.name);
+    EXPECT_TRUE(d->Name == deserializedResource.Name);
     EXPECT_TRUE(d->GetGuid() == deserializedResource.GetGuid());
     EXPECT_TRUE(d->GetGuid() == deserializedResource.GetGuid());
     
@@ -267,7 +267,7 @@ TEST(Serialization, VectorNotTrivial)
 
     for (size_t i = 0 ; i < deserializedResource.size() ; i++)
     {
-        EXPECT_TRUE(resourceVector[i].name == deserializedResource[i].name);
+        EXPECT_TRUE(resourceVector[i].Name == deserializedResource[i].Name);
         EXPECT_TRUE(resourceVector[i].GetGuid() == deserializedResource[i].GetGuid());
     
         EXPECT_EQ(resourceVector[i].m_DataTest.x, deserializedResource[i].m_DataTest.x);

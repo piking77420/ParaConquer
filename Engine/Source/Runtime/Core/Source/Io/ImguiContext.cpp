@@ -36,7 +36,7 @@ static void CheckError(VkResult err)
         abort();
 }
 
-void IMGUIContext::Init(void* _glfwWindowPtr, PC_CORE::GraphicAPI _graphicApi)
+void IMGUIContext::Init(void* _glfwWindowPtr, GraphicAPI _graphicApi)
 {
     PERF_REGION_SCOPED;
     IMGUI_CHECKVERSION();
@@ -85,12 +85,12 @@ void IMGUIContext::Destroy()
 
 void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
 {
-    GLFWwindow* windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
+    auto windowPtr = static_cast<GLFWwindow*>(_glfwWindowPtr);
     constexpr bool installCallBack = true;
     ImGui_ImplGlfw_InitForVulkan(windowPtr, installCallBack);
 
     RhiContext* context = Rhi::GetRhiContext();
-    Vulkan::VulkanContext* vkcontext = reinterpret_cast<Vulkan::VulkanContext*>(Rhi::GetRhiContext());
+    auto vkcontext = reinterpret_cast<Vulkan::VulkanContext*>(Rhi::GetRhiContext());
 
     VkDescriptorPoolSize pool_sizes[] =
     {
@@ -121,38 +121,41 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
     vk::RenderPass renderPass = std::reinterpret_pointer_cast<Vulkan::VulkanRenderPass>(
         swapChain->GetSwapChainRenderPass())->GetVulkanRenderPass();
 
-	ImGui_ImplVulkan_InitInfo init_info{};
-	init_info.Instance = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(vkcontext->renderInstance)->GetVulkanInstance();
-	init_info.PhysicalDevice = std::reinterpret_pointer_cast<Vulkan::VulkanPhysicalDevices>(vkcontext->physicalDevices)->GetVulkanDevice();
-	init_info.Device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(vkcontext->rhiDevice)->GetDevice();
-	init_info.QueueFamily = 0;
-	init_info.Queue = vkcontext->mainQueue;
-	init_info.PipelineCache = VK_NULL_HANDLE;
-	init_info.DescriptorPool = descriptorPool;
-	init_info.MinImageCount = static_cast<uint32_t>(swapChain->GetNbrOfImage());
-	init_info.ImageCount = static_cast<uint32_t>(swapChain->GetNbrOfImage());
-	init_info.Allocator = VK_NULL_HANDLE;
-	init_info.PipelineInfoMain.RenderPass = renderPass;
-	init_info.PipelineInfoMain.Subpass = 0;
-	init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    ImGui_ImplVulkan_InitInfo init_info{};
+    init_info.Instance = std::reinterpret_pointer_cast<Vulkan::VulkanInstance>(vkcontext->renderInstance)->
+        GetVulkanInstance();
+    init_info.PhysicalDevice = std::reinterpret_pointer_cast<Vulkan::VulkanPhysicalDevices>(vkcontext->physicalDevices)
+        ->GetVulkanDevice();
+    init_info.Device = std::reinterpret_pointer_cast<Vulkan::VulkanDevice>(vkcontext->rhiDevice)->GetDevice();
+    init_info.QueueFamily = 0;
+    init_info.Queue = vkcontext->mainQueue;
+    init_info.PipelineCache = VK_NULL_HANDLE;
+    init_info.DescriptorPool = descriptorPool;
+    init_info.MinImageCount = static_cast<uint32_t>(swapChain->GetNbrOfImage());
+    init_info.ImageCount = static_cast<uint32_t>(swapChain->GetNbrOfImage());
+    init_info.Allocator = VK_NULL_HANDLE;
+    init_info.PipelineInfoMain.RenderPass = renderPass;
+    init_info.PipelineInfoMain.Subpass = 0;
+    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.CheckVkResultFn = CheckError;
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void IMGUIContext::CreateImguiVulkanTexture(const RhiTexture2D* _texture, const RhiSampler* _sampler, VkDescriptorSet* _descriptors, size_t _descriptorsCount)
+void IMGUIContext::CreateImguiVulkanTexture(const RhiTexture2D* _texture, const RhiSampler* _sampler,
+                                            VkDescriptorSet* _descriptors, size_t _descriptorsCount)
 {
-    const std::vector<Vulkan::TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetNativeHandle());
+    auto textureAndAlloc = static_cast<const std::vector<Vulkan::TextureAndAlloc>*>(_texture->GetNativeHandle());
 
-    const VkSampler* vkSamplers = static_cast<const VkSampler*>(_sampler->GetNativeHandle());
-    
+    auto vkSamplers = static_cast<const VkSampler*>(_sampler->GetNativeHandle());
+
     if (vkSamplers == nullptr)
     {
         PC_LOGERROR("Vulkan sampler is null");
         return;
     }
     for (int i = 0; i < textureAndAlloc->size(); i++)
-        _descriptors[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, textureAndAlloc->at(i).imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    
+        _descriptors[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, textureAndAlloc->at(i).imageView,
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void IMGUIContext::DestroyVulkanTexture(VkDescriptorSet* _descriptors, size_t _descriptorsCount)

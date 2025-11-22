@@ -1,7 +1,6 @@
 ﻿#include "Resources/ShaderSource.hpp"
 
 
-
 #include <fstream>
 #include <iostream>
 #include <PerfRegion.hpp>
@@ -64,7 +63,6 @@ void ShaderSource::AddPreProcessorDefVulkan()
     options.AddMacroDefinition("G_NORMAL", std::to_string(G_NORMAL));
     options.AddMacroDefinition("G_ROUGNESS_METALLIC_AO", std::to_string(G_ROUGNESS_METALLIC_AO));
     options.AddMacroDefinition("G_WORLD_POSITION", std::to_string(G_WORLD_POSITION));*/
-
 }
 
 ShaderSource::ShaderSource() : Resource()
@@ -75,7 +73,6 @@ ShaderSource::ShaderSource() : Resource()
 ShaderSource::ShaderSource(const std::string& _name) : Resource(_name)
 {
     DYNAMIC_REFLECT_INIT
-    
 }
 
 ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path) : Resource(_name)
@@ -96,7 +93,7 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
     m_PathToSource = _path;
 
 
-    PC_LOG("Compiling {} ", name);
+    PC_LOG("Compiling {} ", Name);
 
     std::vector<uint32_t> sourceSpriv;
     if (!GetCompiledShaderSource(&sourceSpriv))
@@ -106,18 +103,18 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
     }
 
     std::string binaryName = GetShaderBinaryPath();
-    if (!PC_CORE::ResourceManager::Exist(binaryName))
+    if (!ResourceManager::Exist(binaryName))
     {
-        auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType, Editor::instance->editorData.projectData.graphicApi);
-        Resource::LinkDependencies(this, s.get());
+        auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType,
+                                                             Editor::instance->editorData.projectData.graphicApi);
+        LinkDependencies(this, s.get());
     }
-
 }
 
 void ShaderSource::Reload()
 {
     Resource::Reload();
-    
+
     std::vector<uint32_t> sourceSpriv;
     if (!GetCompiledShaderSource(&sourceSpriv))
     {
@@ -125,26 +122,26 @@ void ShaderSource::Reload()
         return;
     }
     auto s = ResourceManager::Get<ShaderSourceBinary>(GetShaderBinaryPath());
-    s->WriteSprivToFile(&sourceSpriv, Rhi::GetInstance().GetGraphicsAPI());
+    s->WriteSprivToFile(&sourceSpriv, Rhi::GetInstance().GetGraphicsApi());
     BroadCastReload();
 }
-
 
 
 bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
-    
+
     assert(Editor::instance != nullptr);
     Editor::instance->shaderCompiler.lock.lock();
-    std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(Editor::instance->editorData.projectData.graphicApi ,m_PathToSource);
+    std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(
+        Editor::instance->editorData.projectData.graphicApi, m_PathToSource);
     Editor::instance->shaderCompiler.lock.unlock();
 
     if (code.empty())
         return false;
 
-   *_buffer = std::move(code);
+    *_buffer = std::move(code);
     return true;
 }
 
@@ -153,8 +150,5 @@ std::string ShaderSource::GetShaderBinaryPath()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
 
-    return std::filesystem::path(name).filename().generic_string() + ".binary";
+    return std::filesystem::path(Name).filename().generic_string() + ".binary";
 }
-
-
-

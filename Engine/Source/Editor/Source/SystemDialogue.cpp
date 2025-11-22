@@ -19,51 +19,51 @@
 std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _options)
 {
     std::wstring path;
-    IFileOpenDialog* pFileOpen = NULL;
-    HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
-                                      IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+    IFileOpenDialog* pFileOpen = nullptr;
+    HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
+                                  IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 
 
-	if (SUCCEEDED(hr))
-	{
-		DWORD dwOptions;
-		if (SUCCEEDED(pFileOpen->GetOptions(&dwOptions)))
-		{
-			pFileOpen->SetOptions(dwOptions | _options);
-		}
+    if (SUCCEEDED(hr))
+    {
+        DWORD dwOptions;
+        if (SUCCEEDED(pFileOpen->GetOptions(&dwOptions)))
+        {
+            pFileOpen->SetOptions(dwOptions | _options);
+        }
 
-		if (_basePath != nullptr)
-		{
-			IShellItem* pFolder = nullptr;
-			hr = SHCreateItemFromParsingName(_basePath, NULL, IID_PPV_ARGS(&pFolder));
-			if (SUCCEEDED(hr))
-			{
-				// Set the initial folder
-				pFileOpen->SetFolder(pFolder);
-				pFolder->Release();
-			}
-		}
+        if (_basePath != nullptr)
+        {
+            IShellItem* pFolder = nullptr;
+            hr = SHCreateItemFromParsingName(_basePath, nullptr, IID_PPV_ARGS(&pFolder));
+            if (SUCCEEDED(hr))
+            {
+                // Set the initial folder
+                pFileOpen->SetFolder(pFolder);
+                pFolder->Release();
+            }
+        }
 
-		hr = pFileOpen->Show(NULL);
-		if (SUCCEEDED(hr))
-		{
-			IShellItem* pItem;
-			hr = pFileOpen->GetResult(&pItem);
-			if (SUCCEEDED(hr))
-			{
-				PWSTR pszFilePath = NULL;
-				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-				if (SUCCEEDED(hr))
-				{
-					//MessageBoxW(NULL, pszFilePath, _caption, MB_OK);
-					path = pszFilePath;
-					CoTaskMemFree(pszFilePath);
-				}
-				pItem->Release();
-			}
-		}
-	}
-    
+        hr = pFileOpen->Show(nullptr);
+        if (SUCCEEDED(hr))
+        {
+            IShellItem* pItem;
+            hr = pFileOpen->GetResult(&pItem);
+            if (SUCCEEDED(hr))
+            {
+                PWSTR pszFilePath = nullptr;
+                hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+                if (SUCCEEDED(hr))
+                {
+                    //MessageBoxW(NULL, pszFilePath, _caption, MB_OK);
+                    path = pszFilePath;
+                    CoTaskMemFree(pszFilePath);
+                }
+                pItem->Release();
+            }
+        }
+    }
+
     pFileOpen->Release();
 
     return path;
@@ -82,8 +82,8 @@ std::wstring SystemDialogue::SeletecFile(const wchar_t* _caption, const wchar_t*
 
 SystemDialogue::SystemDialogue()
 {
-    const HRESULT hr = CoInitialize(NULL);
-    assert( hr == S_OK && "Faile to CoInitialize");
+    const HRESULT hr = CoInitialize(nullptr);
+    assert(hr == S_OK && "Faile to CoInitialize");
 }
 
 SystemDialogue::~SystemDialogue()

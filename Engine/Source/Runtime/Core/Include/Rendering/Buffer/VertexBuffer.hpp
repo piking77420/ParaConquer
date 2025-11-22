@@ -7,43 +7,44 @@
 #include "LowRenderer/Vertex.hpp"
 
 BEGIN_PCCORE
-
-class VertexBuffer final : public GpuBuffer
-{
-public:
-
-    std::shared_ptr<RhiResource> GetRhiHandle() const override
+    class VertexBuffer final : public GpuBuffer
     {
-        return m_RhiBuffer;
-    }
-    
-    size_t GetVertexCount() const
-    {
-        return m_Count;
-    }
+    public:
+        std::shared_ptr<RhiResource> GetRhiHandle() const override
+        {
+            return m_RhiBuffer;
+        }
 
-    std::shared_ptr<RhiVertexBuffer> GetRhiBuffer() const
-    {
-        return m_RhiBuffer;     
-    }
+        size_t GetVertexCount() const
+        {
+            return m_Count;
+        }
 
-    PC_CORE_API void Update(void* _data, size_t _size) const;
-    
-    DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
+        std::shared_ptr<RhiVertexBuffer> GetRhiBuffer() const
+        {
+            return m_RhiBuffer;
+        }
 
-    PC_CORE_API VertexBuffer(const void* _data, size_t _vertexCout, size_t _verticiesSize, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+        PC_CORE_API void Update(void* _data, size_t _size) const;
 
-    PC_CORE_API VertexBuffer(size_t _vertexCout, size_t _verticiesSize, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
+        DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
 
-    PC_CORE_API VertexBuffer(size_t _size, PC_CORE::MemoryLocalisation _localisation, MemoryUsage _usage);
-    
-    PC_CORE_API VertexBuffer() = default;
+        PC_CORE_API VertexBuffer(const void* _data, size_t _vertexCout, size_t _verticiesSize,
+                                 MemoryLocalisation _localisation, MemoryUsage _usage);
 
-    PC_CORE_API ~VertexBuffer() override = default;
-private:
-    size_t m_Count = 0;
+        PC_CORE_API VertexBuffer(size_t _vertexCout, size_t _verticiesSize, MemoryLocalisation _localisation,
+                                 MemoryUsage _usage);
 
-    std::shared_ptr<RhiVertexBuffer> m_RhiBuffer;
-};
+        PC_CORE_API VertexBuffer(size_t _size, MemoryLocalisation _localisation, MemoryUsage _usage);
+
+        PC_CORE_API VertexBuffer() = default;
+
+        PC_CORE_API ~VertexBuffer() override = default;
+
+    private:
+        size_t m_Count = 0;
+
+        std::shared_ptr<RhiVertexBuffer> m_RhiBuffer;
+    };
 
 END_PCCORE

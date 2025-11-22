@@ -1,20 +1,22 @@
 ﻿#include "Resources/VulkanSampler.hpp"
 
-#include "Utils/RhiVulkanParser.hpp"
+#include "Utils/RhiToVulkan.hpp"
 #include "VulkanDevice.hpp"
 #include "LowRenderer/Rhi.hpp"
 
-Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) : RhiSampler(_samplerCreateInfo)
+Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerCreateInfo) : RhiSampler(
+    _samplerCreateInfo)
 {
-    const float maxAnisotopie = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxSamplerAnisotropy();
-    
+    const float maxAnisotopie = PC_CORE::Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().
+                                                               GetMaxSamplerAnisotropy();
+
     vk::SamplerCreateInfo samplerInfo{};
     samplerInfo.sType = vk::StructureType::eSamplerCreateInfo;
-    samplerInfo.magFilter = Utils::RHIToVulkanFilter(magFilter);
-    samplerInfo.minFilter = Utils::RHIToVulkanFilter(minFilter);
-    samplerInfo.addressModeU = Utils::RHIToVulkanSamplerAddressMode(samU);
-    samplerInfo.addressModeV = Utils::RHIToVulkanSamplerAddressMode(samV);
-    samplerInfo.addressModeW = Utils::RHIToVulkanSamplerAddressMode(samW);
+    samplerInfo.magFilter = Utils::RhiToVulkanFilter(magFilter);
+    samplerInfo.minFilter = Utils::RhiToVulkanFilter(minFilter);
+    samplerInfo.addressModeU = Utils::RhiToVulkanSamplerAddressMode(samU);
+    samplerInfo.addressModeV = Utils::RhiToVulkanSamplerAddressMode(samV);
+    samplerInfo.addressModeW = Utils::RhiToVulkanSamplerAddressMode(samW);
     if (maxAnisotopie > 0.f)
     {
         samplerInfo.anisotropyEnable = VK_TRUE;
@@ -35,14 +37,16 @@ Vulkan::VulkanSampler::VulkanSampler(const PC_CORE::SamplerCreateInfo& _samplerC
     samplerInfo.maxLod = static_cast<float>(16);
     samplerInfo.mipLodBias = 0.0f;
 
-    vk::Device device =  std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->
+        GetDevice();
 
     m_Sampler = device.createSampler(samplerInfo);
 }
 
 Vulkan::VulkanSampler::~VulkanSampler()
 {
-    vk::Device device =  std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->GetDevice();
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(PC_CORE::Rhi::GetRhiContext()->rhiDevice)->
+        GetDevice();
     device.destroySampler(m_Sampler);
 }
 

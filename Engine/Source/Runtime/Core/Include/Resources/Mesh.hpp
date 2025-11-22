@@ -11,13 +11,10 @@
 #include "Rendering/Buffer/VertexBuffer.hpp"
 
 BEGIN_PCCORE
-class Mesh 
-{
-public:
- 
+    class Mesh
+    {
+    };
 
-private:
-};
-REFLECT(Mesh, Resource)
+    REFLECT(Mesh, Resource)
 
 END_PCCORE

@@ -7,7 +7,7 @@
 BEGIN_PCCORE
     class RhiBuffer;
 
-    class IndexBuffer final : public PC_CORE::GpuBuffer
+    class IndexBuffer final : public GpuBuffer
     {
     public:
         std::shared_ptr<RhiResource> GetRhiHandle() const override
@@ -32,11 +32,14 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
 
-        IndexBuffer(const uint8_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
+        IndexBuffer(const uint8_t* _indicies, size_t _count, MemoryLocalisation _memoryLocalisation,
+                    MemoryUsage _memoryUsageFlag);
 
-        IndexBuffer(const uint16_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
+        IndexBuffer(const uint16_t* _indicies, size_t _count, MemoryLocalisation _memoryLocalisation,
+                    MemoryUsage _memoryUsageFlag);
 
-        IndexBuffer(const uint32_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
+        IndexBuffer(const uint32_t* _indicies, size_t _count, MemoryLocalisation _memoryLocalisation,
+                    MemoryUsage _memoryUsageFlag);
 
         IndexBuffer() = default;
 
@@ -44,7 +47,6 @@ BEGIN_PCCORE
 
     private:
         std::shared_ptr<RhiIndexBuffer> m_RhiBuffer;
-
     };
 
 END_PCCORE

@@ -17,7 +17,7 @@ BEGIN_PCCORE
     struct PhysicalDevice
     {
         std::string name;
-        
+
         uint32_t driverVersion;
 
         DEFAULT_COPY_MOVE_OPERATIONS(PhysicalDevice)

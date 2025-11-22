@@ -7,35 +7,33 @@
 
 
 BEGIN_EDITOR_PCCORE
+    class ShaderSource : public PC_CORE::Resource
+    {
+    public:
+        void Reload() override;
 
-class ShaderSource : public PC_CORE::Resource
-{
-public:
-    void Reload() override;
-    
-    bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
+        bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
 
-    IMP_DYNAMIC_REFLECT()
+        IMP_DYNAMIC_REFLECT()
 
-    explicit ShaderSource();
+        explicit ShaderSource();
 
-    explicit ShaderSource(const std::string& _name);
+        explicit ShaderSource(const std::string& _name);
 
-    explicit ShaderSource(const std::string& _name, const std::filesystem::path& path);
-    
-    ~ShaderSource() override = default;
+        explicit ShaderSource(const std::string& _name, const std::filesystem::path& path);
 
-private:
-    
-    PC_CORE::ShaderStageType m_ShaderType;
+        ~ShaderSource() override = default;
 
-    std::filesystem::path m_PathToSource;
+    private:
+        PC_CORE::ShaderStageType m_ShaderType;
 
-    std::string GetShaderBinaryPath();
+        std::filesystem::path m_PathToSource;
 
-    static void AddPreProcessorDefVulkan();
-};
+        std::string GetShaderBinaryPath();
 
-REFLECT(ShaderSource)
+        static void AddPreProcessorDefVulkan();
+    };
+
+    REFLECT(ShaderSource)
 
 END_PCCORE

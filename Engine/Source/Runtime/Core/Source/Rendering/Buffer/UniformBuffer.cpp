@@ -4,7 +4,6 @@
 
 void PC_CORE::UniformBuffer::Update(const void* _data, size_t _size)
 {
-
     void* mappedData = nullptr;
     m_RhiBuffer->MapData(&mappedData);
 
@@ -18,7 +17,8 @@ void PC_CORE::UniformBuffer::Update(const void* _data, size_t _size)
     m_RhiBuffer->UnmapData();
 }
 
-PC_CORE::UniformBuffer::UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage)
+PC_CORE::UniformBuffer::UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation,
+                                      MemoryUsage _usage)
 {
     m_RhiBuffer = Rhi::CreateUniformBuffer(_data, _size, _memoryLocalisation, _usage);
 }

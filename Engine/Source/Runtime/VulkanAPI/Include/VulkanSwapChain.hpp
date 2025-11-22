@@ -14,7 +14,7 @@ namespace Vulkan
         VULKAN_API void* GetFrameBuffer() override;
 
         VULKAN_API explicit VulkanSwapChain(uint32_t _widht, uint32_t _height);
-        
+
         VULKAN_API explicit VulkanSwapChain() = default;
 
         VULKAN_API ~VulkanSwapChain() override;
@@ -24,49 +24,48 @@ namespace Vulkan
         VULKAN_API void GetSwapChainImageIndex(PC_CORE::Window* windowHandle) override;
 
         VULKAN_API void Present(PC_CORE::Window* _window) override;
-        
+
         VULKAN_API void HandleRecreateSwapChain(PC_CORE::Window* windowHandle) override;
 
         VULKAN_API void BeginSwapChainRenderPass(PC_CORE::CommandList* _commandList) override;
-        
+
         VULKAN_API void EndSwapChainRenderPass(PC_CORE::CommandList* _commandList) override;
+
     private:
-         struct SyncObject
-         {
-             vk::Semaphore imageAvailableSemaphore;
-             vk::Semaphore renderFinishedSemaphore;
-             vk::Fence inFlightFence;
-         };
+        struct SyncObject
+        {
+            vk::Semaphore imageAvailableSemaphore;
+            vk::Semaphore renderFinishedSemaphore;
+            vk::Fence inFlightFence;
+        };
 
         std::vector<vk::Framebuffer> m_Framebuffers;
-        
+
         vk::SwapchainKHR m_SwapChain = VK_NULL_HANDLE;
 
         std::vector<vk::Image> m_SwapChainImage;
 
         std::vector<vk::ImageView> m_SwapChainImageViews;
-        
+
         vk::Extent2D m_Extent2D;
-        
+
         vk::SurfaceFormatKHR m_SurfaceFormat;
 
         const vk::Queue* m_PresentQueue;
-        
+
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 
         vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 
-        vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities , uint32_t _width, uint32_t _height);
+        vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t _width,
+                                      uint32_t _height);
 
         void CreateImageViews();
-        
+
         void CreateFrameBuffers();
 
         void CleanUpSwapChain();
 
         void CreateSwapChain(uint32_t _width, uint32_t _height);
     };
-
-
 }
-

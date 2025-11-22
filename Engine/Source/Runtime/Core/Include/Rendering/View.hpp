@@ -6,91 +6,89 @@
 #include "Buffer/UniformBuffer.hpp"
 
 BEGIN_PCCORE
+    class Renderer;
 
-class Renderer;
-
-struct ForwardTexture
-{
-	Texture2D color;
-	Texture2D depth;
-};
+    struct ForwardTexture
+    {
+        Texture2D color;
+        Texture2D depth;
+    };
 
 
-class PC_CORE_API View
-{
-public:
-	PostProcessGpu postProcessGpu;
+    class PC_CORE_API View
+    {
+    public:
+        PostProcessGpu PostProcessGpu;
 
-	CameraGpu cameraGpu;
+        CameraGpu CameraGpu;
 
-	RenderingContext renderingContext;
+        RenderingContext RenderingContext;
 
-	Gbuffers gbuffers;
+        Gbuffers Gbuffers;
 
-	ForwardTexture forwardTexture;
+        ForwardTexture ForwardTexture;
 
-	Texture2D finalImage;
+        Texture2D FinalImage;
 
-	Texture2D resolvedImages;
+        Texture2D ResolvedImages;
 
-	void SetRenderingContextFlag(size_t _flag);
+        void SetRenderingContextFlag(size_t _flag);
 
-	void SetCamera(PC_CORE::Camera* _camera);
+        void SetCamera(Camera* _camera);
 
-	void Resize(Tbx::Vector2i _viewPortSize);
+        void Resize(Tbx::Vector2i _viewPortSize);
 
-	void Update();
+        void Update();
 
-	
-	DEFAULT_COPY_MOVE_OPERATIONS(View)
 
-	View(Renderer* _renderer, Tbx::Vector2i _viewPortSize);
+        DEFAULT_COPY_MOVE_OPERATIONS(View)
 
-	View() = default;
+        View(Renderer* _renderer, Tbx::Vector2i _viewPortSize);
 
-	~View() = default;
+        View() = default;
 
-private:
-	
-	struct DescriptorSets
-	{
-		ShaderProgramDescriptorSets* geometryPass = nullptr;
+        ~View() = default;
 
-		ShaderProgramDescriptorSets* defferedPassGbuffers = nullptr;
-		ShaderProgramDescriptorSets* defferedPassCameraLight = nullptr;
+    private:
+        struct DescriptorSets
+        {
+            ShaderProgramDescriptorSets* GeometryPass = nullptr;
 
-		ShaderProgramDescriptorSets* forwardDescriptor = nullptr;
+            ShaderProgramDescriptorSets* DefferedPassGbuffers = nullptr;
+            ShaderProgramDescriptorSets* DefferedPassCameraLight = nullptr;
 
-		ShaderProgramDescriptorSets* toneMap = nullptr;
-		ShaderProgramDescriptorSets* finalViewPort = nullptr;
-	};
+            ShaderProgramDescriptorSets* ForwardDescriptor = nullptr;
 
-	struct FrameBuffers
-	{
-		std::shared_ptr<FrameBuffer> gbufferFrameBuffer;
-		std::shared_ptr<FrameBuffer> forwardFrameBuffer;
-		std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
-	};
+            ShaderProgramDescriptorSets* ToneMap = nullptr;
+            ShaderProgramDescriptorSets* FinalViewPort = nullptr;
+        };
 
-	Renderer* m_Renderer;
+        struct FrameBuffers
+        {
+            std::shared_ptr<FrameBuffer> GbufferFrameBuffer;
+            std::shared_ptr<FrameBuffer> ForwardFrameBuffer;
+            std::shared_ptr<FrameBuffer> FinalImageFrameBuffer;
+        };
 
-	PC_CORE::Camera* m_Camera;
+        Renderer* m_Renderer;
 
-	Tbx::Vector2i m_CurrentSize;
+        Camera* m_Camera;
 
-	FrameBuffers m_FrameBuffers;
+        Tbx::Vector2i m_CurrentSize;
 
-	DescriptorSets m_DescriptorSets;
+        FrameBuffers m_FrameBuffers;
 
-	void UpdateRenderingContext();
+        DescriptorSets m_DescriptorSets;
 
-	void CreateImages();
+        void UpdateRenderingContext();
 
-	void CreateFrameBuffers();
+        void CreateImages();
 
-	void CreateDescritproSets();
+        void CreateFrameBuffers();
 
-};
-REFLECT(View);
+        void CreateDescritproSets();
+    };
+
+    REFLECT(View);
 
 END_PCCORE

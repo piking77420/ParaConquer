@@ -1,8 +1,11 @@
 ﻿#include "Utils/VulkanImageHelper.hpp"
 
-void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t height, uint32_t depth, uint32_t arrayLayers, uint32_t _mimpLevel,
-                         vk::SampleCountFlagBits _sampleCount, vk::ImageType _imageType, vk::Format format, vk::ImageTiling tiling,
-                         vk::ImageUsageFlags usage, vk::ImageCreateFlags createFlag, VmaMemoryUsage imageMemory, VkImage* _outImage, VmaAllocation* _outAllocation)
+void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t height, uint32_t depth, uint32_t arrayLayers,
+                         uint32_t _mimpLevel,
+                         vk::SampleCountFlagBits _sampleCount, vk::ImageType _imageType, vk::Format format,
+                         vk::ImageTiling tiling,
+                         vk::ImageUsageFlags usage, vk::ImageCreateFlags createFlag, VmaMemoryUsage imageMemory,
+                         VkImage* _outImage, VmaAllocation* _outAllocation)
 {
     vk::ImageCreateInfo imageInfo{};
     imageInfo.sType = vk::StructureType::eImageCreateInfo;
@@ -20,19 +23,21 @@ void Vulkan::CreateImage(VmaAllocator allocatore, uint32_t width, uint32_t heigh
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
     imageInfo.samples = _sampleCount;
     imageInfo.flags = createFlag;
-        
+
     VmaAllocationCreateInfo allocationInfo = {};
     allocationInfo.usage = imageMemory;
-    
-   
-    vmaCreateImage(allocatore, reinterpret_cast<VkImageCreateInfo*>(&imageInfo), &allocationInfo, _outImage, _outAllocation, nullptr);
+
+
+    vmaCreateImage(allocatore, reinterpret_cast<VkImageCreateInfo*>(&imageInfo), &allocationInfo, _outImage,
+                   _outAllocation, nullptr);
 }
 
 vk::ImageView Vulkan::CreateImageView(vk::Device _device, vk::Image _image, vk::ImageViewType _imageType,
-                                      vk::Format _format, vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _mipLevels)
+                                      vk::Format _format, vk::ImageAspectFlags imageAspect, uint32_t _layerCount,
+                                      uint32_t _mipLevels)
 {
     vk::ImageViewCreateInfo imageInfo{};
-    imageInfo.sType  = vk::StructureType::eImageViewCreateInfo;
+    imageInfo.sType = vk::StructureType::eImageViewCreateInfo;
     imageInfo.image = _image;
     imageInfo.viewType = _imageType;
     imageInfo.format = _format;
@@ -55,13 +60,13 @@ VmaMemoryUsage Vulkan::GetTextureMemoryUsage(PC_CORE::MemoryLocalisation texture
 
     switch (textureUsage)
     {
-    case MemoryLocalisation::GPU_Only:
+    case MemoryLocalisation::GpuOnly:
         return VMA_MEMORY_USAGE_GPU_ONLY;
 
-    case MemoryLocalisation::CPU_To_GPU:
+    case MemoryLocalisation::CpuToGpu:
         return VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    case MemoryLocalisation::GPU_To_CPU:
+    case MemoryLocalisation::GpuToCpu:
         return VMA_MEMORY_USAGE_GPU_TO_CPU;
 
     default:
@@ -71,27 +76,25 @@ VmaMemoryUsage Vulkan::GetTextureMemoryUsage(PC_CORE::MemoryLocalisation texture
 }
 
 
-
-
 vk::ImageAspectFlags Vulkan::GetImageAspectFlags(PC_CORE::TextureUsage usage)
 {
     using namespace PC_CORE;
 
     vk::ImageAspectFlags flags = {};
 
-    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth)
+    if ((usage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth))
     {
         flags |= vk::ImageAspectFlagBits::eDepth;
     }
-    else if ((usage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil)
+    else if ((usage & TextureUsage::Stencil) == static_cast<uint8_t>(TextureUsage::Stencil))
     {
         flags |= vk::ImageAspectFlagBits::eStencil;
     }
-    else 
+    else
     {
         flags |= vk::ImageAspectFlagBits::eColor;
     }
- 
+
 
     return flags;
 }
@@ -100,127 +103,131 @@ vk::ImageLayout Vulkan::GetImageLayout(PC_CORE::TextureUsage usage)
 {
     using namespace PC_CORE;
 
-    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth && (usage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil)
+    if ((usage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth) && (usage & TextureUsage::Stencil) ==
+        static_cast<uint8_t>(TextureUsage::Stencil))
         return vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
-    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth)
+    if ((usage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth))
         return vk::ImageLayout::eDepthAttachmentOptimal;
 
-    if ((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Stencil)
+    if ((usage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Stencil))
         return vk::ImageLayout::eStencilAttachmentOptimal;
 
-    if ((usage & TextureUsage::RenderTarget) == (uint8_t)TextureUsage::RenderTarget)
+    if ((usage & TextureUsage::RenderTarget) == static_cast<uint8_t>(TextureUsage::RenderTarget))
         return vk::ImageLayout::eColorAttachmentOptimal;
 
-    if ((usage & TextureUsage::Storage) == (uint8_t)TextureUsage::Storage)
+    if ((usage & TextureUsage::Storage) == static_cast<uint8_t>(TextureUsage::Storage))
         return vk::ImageLayout::eGeneral;
 
-    if ((usage & TextureUsage::Sampled) == (uint8_t)TextureUsage::Sampled)
+    if ((usage & TextureUsage::Sampled) == static_cast<uint8_t>(TextureUsage::Sampled))
         return vk::ImageLayout::eShaderReadOnlyOptimal;
-    
+
     // Fallback default
     return vk::ImageLayout::eUndefined;
 }
 
 void Vulkan::GenerateMipMap(vk::CommandBuffer _commandBuffer, vk::Image image,
-                           int32_t imageWidth, int32_t imageHeight, vk::Format format,  uint32_t _mipLevel, vk::ImageAspectFlags aspectFlag)
+                            int32_t imageWidth, int32_t imageHeight, vk::Format format, uint32_t _mipLevel,
+                            vk::ImageAspectFlags aspectFlag)
 {
     //VkFormatProperties formatProperties;
-     //vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
+    //vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
 
-     //if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
-       //  throw std::runtime_error("texture image format does not support linear blitting!");
-     //}
+    //if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+    //  throw std::runtime_error("texture image format does not support linear blitting!");
+    //}
 
-     vk::ImageMemoryBarrier barrier{};
-     barrier.sType = vk::StructureType::eImageMemoryBarrier;
-     barrier.image = image;
-     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-     barrier.subresourceRange.aspectMask = aspectFlag;
-     barrier.subresourceRange.baseArrayLayer = 0;
-     barrier.subresourceRange.layerCount = 1;
-     barrier.subresourceRange.levelCount = 1;
+    vk::ImageMemoryBarrier barrier{};
+    barrier.sType = vk::StructureType::eImageMemoryBarrier;
+    barrier.image = image;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.subresourceRange.aspectMask = aspectFlag;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.levelCount = 1;
 
-     int32_t mipWidth = imageWidth;
-     int32_t mipHeight = imageHeight;
+    int32_t mipWidth = imageWidth;
+    int32_t mipHeight = imageHeight;
 
-     for (uint32_t i = 1; i < _mipLevel; i++) 
-     {
-         barrier.subresourceRange.baseMipLevel = i - 1;
-         barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-         barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
-         barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-         barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+    for (uint32_t i = 1; i < _mipLevel; i++)
+    {
+        barrier.subresourceRange.baseMipLevel = i - 1;
+        barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+        barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
 
-         vk::DependencyFlags depencyFlag{};
-         _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, depencyFlag,
-             0, nullptr,
-             0, nullptr,
-             1, &barrier);
-      
-         vk::ImageBlit blit{};
-         blit.srcOffsets[0] = vk::Offset3D({ 0, 0, 0});
-         blit.srcOffsets[1] = vk::Offset3D({ mipWidth, mipHeight, 1 }) ;
-         blit.srcSubresource.aspectMask = aspectFlag;
-         blit.srcSubresource.mipLevel = i - 1;
-         blit.srcSubresource.baseArrayLayer = 0;
-         blit.srcSubresource.layerCount = 1;
-         blit.dstOffsets[0] = vk::Offset3D{ 0, 0, 0 };
-         blit.dstOffsets[1] = vk::Offset3D{ mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-         blit.dstSubresource.aspectMask = aspectFlag;
-         blit.dstSubresource.mipLevel = i;
-         blit.dstSubresource.baseArrayLayer = 0;
-         blit.dstSubresource.layerCount = 1;
+        vk::DependencyFlags depencyFlag{};
+        _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+                                       depencyFlag,
+                                       0, nullptr,
+                                       0, nullptr,
+                                       1, &barrier);
 
-         _commandBuffer.blitImage(
-             image, vk::ImageLayout::eTransferSrcOptimal,
-             image, vk::ImageLayout::eTransferDstOptimal,
-             1, &blit,
-             vk::Filter::eLinear);
+        vk::ImageBlit blit{};
+        blit.srcOffsets[0] = vk::Offset3D({0, 0, 0});
+        blit.srcOffsets[1] = vk::Offset3D({mipWidth, mipHeight, 1});
+        blit.srcSubresource.aspectMask = aspectFlag;
+        blit.srcSubresource.mipLevel = i - 1;
+        blit.srcSubresource.baseArrayLayer = 0;
+        blit.srcSubresource.layerCount = 1;
+        blit.dstOffsets[0] = vk::Offset3D{0, 0, 0};
+        blit.dstOffsets[1] = vk::Offset3D{mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1};
+        blit.dstSubresource.aspectMask = aspectFlag;
+        blit.dstSubresource.mipLevel = i;
+        blit.dstSubresource.baseArrayLayer = 0;
+        blit.dstSubresource.layerCount = 1;
 
-         barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
-         barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-         barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-         barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        _commandBuffer.blitImage(
+            image, vk::ImageLayout::eTransferSrcOptimal,
+            image, vk::ImageLayout::eTransferDstOptimal,
+            1, &blit,
+            vk::Filter::eLinear);
 
-         vk::DependencyFlags innerLoopDepencyFlag{};
-         _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, innerLoopDepencyFlag,
-             0, nullptr,
-             0, nullptr,
-             1, &barrier);
+        barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
+        barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
 
-         if (mipWidth > 1) mipWidth /= 2;
-         if (mipHeight > 1) mipHeight /= 2;
-     }
+        vk::DependencyFlags innerLoopDepencyFlag{};
+        _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader,
+                                       innerLoopDepencyFlag,
+                                       0, nullptr,
+                                       0, nullptr,
+                                       1, &barrier);
 
-     barrier.subresourceRange.baseMipLevel = _mipLevel - 1;
-     barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-     barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-     barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-     barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        if (mipWidth > 1) mipWidth /= 2;
+        if (mipHeight > 1) mipHeight /= 2;
+    }
 
-     vk::DependencyFlags depencyFlag{};
-     _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, depencyFlag,
-         0, nullptr,
-         0, nullptr,
-         1, &barrier);
- 
+    barrier.subresourceRange.baseMipLevel = _mipLevel - 1;
+    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+    vk::DependencyFlags depencyFlag{};
+    _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader,
+                                   depencyFlag,
+                                   0, nullptr,
+                                   0, nullptr,
+                                   1, &barrier);
 }
 
 int Vulkan::GetMultiplayer(PC_CORE::Channel _channel)
 {
     switch (_channel)
     {
-    case PC_CORE::Channel::DEFAULT:
+    case PC_CORE::Channel::Default:
         return 1;
-    case PC_CORE::Channel::GREY:
+    case PC_CORE::Channel::Grey:
         return 1;
-    case PC_CORE::Channel::ALPHA:
+    case PC_CORE::Channel::Alpha:
         return 1;
-    case PC_CORE::Channel::RGB:
+    case PC_CORE::Channel::Rgb:
         return 3;
-    case PC_CORE::Channel::RGBA:
+    case PC_CORE::Channel::Rgba:
         return 4;
     default:
         return 0; // or throw an exception if it's an invalid enum

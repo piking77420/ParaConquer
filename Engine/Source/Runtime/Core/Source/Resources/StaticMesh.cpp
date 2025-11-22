@@ -4,67 +4,65 @@
 
 using namespace PC_CORE;
 
-void StaticMesh::AfterSerialize(Serializer* serializer) const
+void StaticMesh::AfterSerialize(Serializer* _serializer) const
 {
-	PC_LOG("AfterSerialize Static Mesh")
-
-
-	
+    PC_LOG("AfterSerialize Static Mesh")
 }
 
-void StaticMesh::AfterDeSerialize(Serializer* serializer)
+void StaticMesh::AfterDeSerialize(Serializer* _serializer)
 {
-	PC_LOG("AfterDeSerialize Static Mesh")
-	
-	PC_CORE::CompactBuffer verticiesBuffer;
-	PC_CORE::CompactBuffer indiciesBuffer;
+    PC_LOG("AfterDeSerialize Static Mesh")
 
-	serializer->DeSerializeCompactBuffer("StaticMeshRenderData Vertex", &verticiesBuffer);
-	serializer->DeSerializeCompactBuffer("StaticMeshRenderData Indicies", &indiciesBuffer);
+    CompactBuffer verticiesBuffer;
+    CompactBuffer indiciesBuffer;
+
+    _serializer->DeSerializeCompactBuffer("StaticMeshRenderData Vertex", &verticiesBuffer);
+    _serializer->DeSerializeCompactBuffer("StaticMeshRenderData Indicies", &indiciesBuffer);
 
 
-	if (verticiesBuffer.GetCompressedDataSize() != 0 && indiciesBuffer.GetCompressedDataSize() != 0)
-	{
-		std::vector<StaticMeshVertex> verticiesRaw = verticiesBuffer.ExtractData<StaticMeshVertex>();
-		std::vector<uint32_t> indiciesRaw = indiciesBuffer.ExtractData<uint32_t>();
+    if (verticiesBuffer.GetCompressedDataSize() != 0 && indiciesBuffer.GetCompressedDataSize() != 0)
+    {
+        std::vector<StaticMeshVertex> verticiesRaw = verticiesBuffer.ExtractData<StaticMeshVertex>();
+        std::vector<uint32_t> indiciesRaw = indiciesBuffer.ExtractData<uint32_t>();
 
-		vertexBuffer = VertexBuffer(verticiesRaw.data(), verticiesRaw.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
-		indexBuffer = IndexBuffer(indiciesRaw.data(), indiciesRaw.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+        VBuffer = VertexBuffer(verticiesRaw.data(), verticiesRaw.size(), sizeof(StaticMeshVertex),
+                                    MemoryLocalisation::GpuOnly, MemoryUsage::Static),
+            IBuffer = IndexBuffer(indiciesRaw.data(), indiciesRaw.size(), MemoryLocalisation::GpuOnly,
+                                      MemoryUsage::Static);
 
-		if (m_HallowCpuAcces)
-		{
-
-			m_RenderData.vertices = std::move(verticiesRaw);
-			m_RenderData.indices = std::move(indiciesRaw);
-		}
-	}
-	
-
+        if (m_HallowCpuAcces)
+        {
+            m_RenderData.Vertices = std::move(verticiesRaw);
+            m_RenderData.Indices = std::move(indiciesRaw);
+        }
+    }
 }
 
-StaticMesh::StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo) : Resource(_staticMeshCreateInfo.name),
-m_HallowCpuAcces(_staticMeshCreateInfo.hallowCpuAcces)
+StaticMesh::StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo) : Resource(_staticMeshCreateInfo.Name),
+                                                                            m_HallowCpuAcces(
+                                                                                _staticMeshCreateInfo.HallowCpuAcces)
 
 {
-	DYNAMIC_REFLECT_INIT
-	// TODO 
-	// Compute AABB from verticies
-	// set name
+    DYNAMIC_REFLECT_INIT
+    // TODO 
+    // Compute AABB from verticies
+    // set name
 
-	const std::vector<StaticMeshVertex>& vertices = _staticMeshCreateInfo.staticMeshRenderData.vertices;
-	const std::vector<uint32_t>& indicies = _staticMeshCreateInfo.staticMeshRenderData.indices;
+    const std::vector<StaticMeshVertex>& vertices = _staticMeshCreateInfo.StaticMeshRenderData.Vertices;
+    const std::vector<uint32_t>& indicies = _staticMeshCreateInfo.StaticMeshRenderData.Indices;
 
-	vertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(StaticMeshVertex), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static),
-	indexBuffer = IndexBuffer(indicies.data(), indicies.size(), PC_CORE::MemoryLocalisation::GPU_Only, PC_CORE::MemoryUsage::Static);
+    VBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(StaticMeshVertex),
+                                MemoryLocalisation::GpuOnly, MemoryUsage::Static),
+    IBuffer = IndexBuffer(indicies.data(), indicies.size(), MemoryLocalisation::GpuOnly, MemoryUsage::Static);
 
-	if (m_HallowCpuAcces)
-	{
-		m_RenderData = _staticMeshCreateInfo.staticMeshRenderData;
-	}
+    if (m_HallowCpuAcces)
+    {
+        m_RenderData = _staticMeshCreateInfo.StaticMeshRenderData;
+    }
 }
 
 
 StaticMesh::StaticMesh() : Resource()
 {
-	DYNAMIC_REFLECT_INIT
+    DYNAMIC_REFLECT_INIT
 }

@@ -29,8 +29,8 @@ void Renderer::GetRenderingData(const RenderingWorldData& _newRenderingData)
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
 
-    renderWorldData.Clear();
-    renderWorldData = _newRenderingData;
+    RenderWorldData.Clear();
+    RenderWorldData = _newRenderingData;
 }
 
 Renderer::~Renderer()
@@ -51,40 +51,40 @@ void Renderer::Init()
 
     m_RhiContext = Rhi::GetRhiContext();
 
-    PC_CORE::CommandListCreateInfo commandListCreateInfo =
+    CommandListCreateInfo commandListCreateInfo =
     {
-       .commandPoolFamily = PC_CORE::CommandPoolFamily::Graphics,
-       .commandBufferType = CommandBufferType::Primary,
+        .CommandPoolFamily = CommandPoolFamily::Graphics,
+        .CommandBufferType = CommandBufferType::Primary,
     };
 
-    primaryCommandList = Rhi::CreateCommandList(commandListCreateInfo);
-    swapChainPassCommandList = Rhi::CreateCommandList(commandListCreateInfo);
+    PrimaryCommandList = Rhi::CreateCommandList(commandListCreateInfo);
+    SwapChainPassCommandList = Rhi::CreateCommandList(commandListCreateInfo);
 
-    const PC_CORE::SamplerCreateInfo info =
+    const SamplerCreateInfo info =
     {
-    .SamplerName = "LinearReapeat",
-    .magFilter = PC_CORE::Filter::LINEAR,
-    .minFilter = PC_CORE::Filter::LINEAR,
-    .u = PC_CORE::SamplerAddressMode::REPEAT,
-    .v = PC_CORE::SamplerAddressMode::REPEAT,
-    .w = PC_CORE::SamplerAddressMode::REPEAT
+        .SamplerName = "LinearReapeat",
+        .magFilter = Filter::Linear,
+        .minFilter = Filter::Linear,
+        .u = SamplerAddressMode::Repeat,
+        .v = SamplerAddressMode::Repeat,
+        .w = SamplerAddressMode::Repeat
     };
 
-    linearReapeat = PC_CORE::Sampler(info);
+    LinearReapeat = Sampler(info);
 
-    const PC_CORE::SamplerCreateInfo skyBoxSampler =
+    const SamplerCreateInfo skyBoxSampler =
     {
         .SamplerName = "SkyBoxSampler",
-        .magFilter = Filter::LINEAR,
-        .minFilter = Filter::LINEAR,
-        .u = SamplerAddressMode::CLAMP_TO_EDGE,
-        .v = SamplerAddressMode::CLAMP_TO_EDGE,
-        .w = SamplerAddressMode::CLAMP_TO_EDGE
+        .magFilter = Filter::Linear,
+        .minFilter = Filter::Linear,
+        .u = SamplerAddressMode::ClampToEdge,
+        .v = SamplerAddressMode::ClampToEdge,
+        .w = SamplerAddressMode::ClampToEdge
     };
 
-    m_SkyBoxSampler = PC_CORE::Sampler(skyBoxSampler);
+    m_SkyBoxSampler = Sampler(skyBoxSampler);
 
-   
+
     InitCubeBuffers();
     CreateRenderPasss();
     CreateShaders();
@@ -101,44 +101,44 @@ void Renderer::BeginFrame(Window* _window)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-	m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+    m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
 }
 
 void Renderer::UpdateGpuCameraData()
 {
-    const auto& rContextView = m_CurrentView->renderingContext;
-    const auto& gpuCamera = m_CurrentView->cameraGpu;
+    const auto& rContextView = m_CurrentView->RenderingContext;
+    const auto& gpuCamera = m_CurrentView->CameraGpu;
 
 
-    uniformBuffers.cameraUniformBuffer.Update(&gpuCamera, sizeof(CameraGpu));
+    UniformBuffers.CameraUniformBuffer.Update(&gpuCamera, sizeof(CameraGpu));
 }
 
-void Renderer::UpdateLightGPUData(CommandList* commandlist)
+void Renderer::UpdateLightGpuData(CommandList* _commandlist)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    const auto& rContextView = m_CurrentView->renderingContext;
-    const auto& gpuCamera = m_CurrentView->cameraGpu;
+    const auto& rContextView = m_CurrentView->RenderingContext;
+    const auto& gpuCamera = m_CurrentView->CameraGpu;
 
     int updateDirLight = 0;
     int spotLight = 0;
     int pointLightUpdate = 0;
 
-    for (size_t i = 0; i < renderWorldData.lightData.size(); i++)
+    for (size_t i = 0; i < RenderWorldData.LightData.size(); i++)
     {
-        LightData& lightData = renderWorldData.lightData[i];
+        LightData& lightData = RenderWorldData.LightData[i];
 
-        switch (lightData.lightType)
+        switch (lightData.LightType)
         {
         case LightType::Directional:
 
             if (updateDirLight >= MAX_DIRLIGHT)
                 continue;
             {
-                DirectionalLightGPU& gpudirLightData = m_GpuDynamicLightData.directionalLights[updateDirLight];
-                gpudirLightData.color = lightData.data.directionalLight.color;
-                gpudirLightData.direction = lightData.data.directionalLight.direction;
-                gpudirLightData.intensity = lightData.data.directionalLight.intensity;
+                DirectionalLightGpu& gpudirLightData = m_GpuDynamicLightData.DirectionalLights[updateDirLight];
+                gpudirLightData.Color = lightData.Data.DirectionalLight.Color;
+                gpudirLightData.Direction = lightData.Data.DirectionalLight.Direction;
+                gpudirLightData.Intensity = lightData.Data.DirectionalLight.Intensity;
             }
             updateDirLight++;
             break;
@@ -146,16 +146,17 @@ void Renderer::UpdateLightGPUData(CommandList* commandlist)
             if (spotLight >= MAX_SPOTLIGHT)
                 continue;
             {
-                SpotLightGPU& spotLightGPU = m_GpuDynamicLightData.spothLights[spotLight];
+                SpotLightGpu& spotLightGPU = m_GpuDynamicLightData.SpothLights[spotLight];
                 spotLightGPU =
                 {
-                .position = static_cast<Tbx::Vector3f>(lightData.data.spotLight.position - rContextView.lowLevelCamera.position),
-                .intensity = lightData.data.spotLight.intensity,
-                .direction = lightData.data.spotLight.direction,
-                .cutoff = lightData.data.spotLight.cutoff,
-                .color = lightData.data.spotLight.color,
-                .outerCutOff = lightData.data.spotLight.outerCutOff,
-                .maxRange = std::sqrt(lightData.data.spotLight.intensity)
+                    .Position = static_cast<Tbx::Vector3f>(lightData.Data.SpotLight.Position - rContextView.
+                        LowLevelCamera.Position),
+                    .Intensity = lightData.Data.SpotLight.Intensity,
+                    .Direction = lightData.Data.SpotLight.Direction,
+                    .Cutoff = lightData.Data.SpotLight.Cutoff,
+                    .Color = lightData.Data.SpotLight.Color,
+                    .OuterCutOff = lightData.Data.SpotLight.OuterCutOff,
+                    .MaxRange = std::sqrt(lightData.Data.SpotLight.Intensity)
                 };
             }
             spotLight++;
@@ -165,15 +166,16 @@ void Renderer::UpdateLightGPUData(CommandList* commandlist)
                 continue;
 
             {
-                const Tbx::Vector3f p3 = static_cast<Tbx::Vector3f>(lightData.data.pointLightData.position - rContextView.lowLevelCamera.position);
-                const Tbx::Vector4f p4 = gpuCamera.view * Tbx::Vector4f(p3.x, p3.y, p3.z, 1.0);
-                const Tbx::Vector3f p3ViewSpace = Tbx::Vector3f(p4.x, p4.y, p4.z);
+                const auto p3 = static_cast<Tbx::Vector3f>(lightData.Data.PointLightData.Position - rContextView.
+                    LowLevelCamera.Position);
+                const Tbx::Vector4f p4 = gpuCamera.View * Tbx::Vector4f(p3.x, p3.y, p3.z, 1.0);
+                const auto p3ViewSpace = Tbx::Vector3f(p4.x, p4.y, p4.z);
 
-                PointLightGPU& pointLightGpu = m_GpuDynamicLightData.pointLights[pointLightUpdate];
-                pointLightGpu.position = p3ViewSpace;
-                pointLightGpu.maxRange = std::sqrt(lightData.data.pointLightData.intensity);
-                pointLightGpu.intensity = lightData.data.pointLightData.intensity;
-                pointLightGpu.color = lightData.data.pointLightData.color;
+                PointLightGpu& pointLightGpu = m_GpuDynamicLightData.PointLights[pointLightUpdate];
+                pointLightGpu.Position = p3ViewSpace;
+                pointLightGpu.MaxRange = std::sqrt(lightData.Data.PointLightData.Intensity);
+                pointLightGpu.Intensity = lightData.Data.PointLightData.Intensity;
+                pointLightGpu.Color = lightData.Data.PointLightData.Color;
             }
             pointLightUpdate++;
             break;
@@ -183,27 +185,28 @@ void Renderer::UpdateLightGPUData(CommandList* commandlist)
             assert(false && "Not implemented light type");
         }
     }
-    m_GpuDynamicLightData.dirLightCount = updateDirLight;
-    m_GpuDynamicLightData.spothLightCount = spotLight;
-    m_GpuDynamicLightData.pointLightCount = pointLightUpdate;
+    m_GpuDynamicLightData.DirLightCount = updateDirLight;
+    m_GpuDynamicLightData.SpothLightCount = spotLight;
+    m_GpuDynamicLightData.PointLightCount = pointLightUpdate;
 
 
     constexpr size_t size = sizeof(GPUDynamicLightData);
-    gpuLightUniformBufferStaging.Update(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData));
+    m_GpuLightUniformBufferStaging.Update(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData));
 
-    
-    commandlist->CopyBuffer(*gpuLightUniformBufferStaging.GetRhiBuffer(),
-                               *uniformBuffers.dynamicGpuLightUniformBuffer.GetRhiBuffer(), 0, 0, sizeof(GPUDynamicLightData));
+
+    _commandlist->CopyBuffer(*m_GpuLightUniformBufferStaging.GetRhiBuffer(),
+                            *UniformBuffers.DynamicGpuLightUniformBuffer.GetRhiBuffer(), 0, 0,
+                            sizeof(GPUDynamicLightData));
 
     const BufferMemoryBarrier barrier =
     {
-        .srcAccessMask = GpuAccessFlag::TransferWrite,
-        .dstAccessMask = GpuAccessFlag::ShaderRead,
-        .buffer = uniformBuffers.dynamicGpuLightUniformBuffer.GetRhiBuffer().get(),
-        .offset = 0,
-        .size = sizeof(GPUDynamicLightData),
+        .SrcAccessMask = GpuAccessFlag::TransferWrite,
+        .DstAccessMask = GpuAccessFlag::ShaderRead,
+        .Buffer = UniformBuffers.DynamicGpuLightUniformBuffer.GetRhiBuffer().get(),
+        .Offset = 0,
+        .Size = sizeof(GPUDynamicLightData),
     };
-    commandlist->Barrier(
+    _commandlist->Barrier(
         GpuPipelineStageFlagBits::Transfer,
         GpuPipelineStageFlagBits::FragmentShader,
         nullptr, 0,
@@ -216,44 +219,42 @@ void Renderer::Draw(const View& _view)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
+    
 
     m_CurrentView = &_view;
-    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& rContextView = m_CurrentView->RenderingContext;
 
     UpdateGpuCameraData();
-
-    Vulkan::VulkanCommandList* vkCommandList = reinterpret_cast<Vulkan::VulkanCommandList*>(primaryCommandList.get());
-
-    primaryCommandList->Reset();
-    primaryCommandList->BeginRecordCommands();
+    
+    PrimaryCommandList->Reset();
+    PrimaryCommandList->BeginRecordCommands();
 #ifdef WITH_EDITOR
     m_DebugDrawContext->Prepare();
 #endif
-    UpdateLightGPUData(primaryCommandList.get());
+    UpdateLightGpuData(PrimaryCommandList.get());
 
     const ViewportInfo viewportInfo =
     {
-        .transform = {0, 0},
-        .size = {
-            static_cast<float>(rContextView.renderingContextSize.x),
-            static_cast<float>(rContextView.renderingContextSize.y)
+        .Transform = {0, 0},
+        .Size = {
+            static_cast<float>(rContextView.RenderingContextSize.x),
+            static_cast<float>(rContextView.RenderingContextSize.y)
         },
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f,
-        .scissorsOff = {0, 0},
-        .scissorsextent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y}
+        .MinDepth = 0.0f,
+        .MaxDepth = 1.0f,
+        .ScissorsOff = {0, 0},
+        .Scissorsextent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y}
     };
 
-    primaryCommandList->SetViewPort(viewportInfo);
+    PrimaryCommandList->SetViewPort(viewportInfo);
     DefferdPass(viewportInfo);
     ForwardPass(viewportInfo);
     PostProcess(viewportInfo);
     FinalPass(viewportInfo);
 
-    primaryCommandList->EndRecordCommands();
-    primaryCommandList->Flush(FlushCommandMethod::Sync
-        , GpuPipelineStageFlagBits::ColorAttachmentOutput); // flush
-
+    PrimaryCommandList->EndRecordCommands();
+    PrimaryCommandList->Flush(FlushCommandMethod::Sync
+                              , GpuPipelineStageFlagBits::ColorAttachmentOutput); // flush
 }
 
 
@@ -261,19 +262,19 @@ void Renderer::SwapBuffers(Window* _window)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    std::shared_ptr<PC_CORE::SwapChain> swapChain = RhiContext::GetContext().swapChain;
+    std::shared_ptr<SwapChain> swapChain = RhiContext::GetContext().swapChain;
 
 
-    swapChainPassCommandList->Reset();
-    swapChainPassCommandList->BeginRecordCommands();
+    SwapChainPassCommandList->Reset();
+    SwapChainPassCommandList->BeginRecordCommands();
 
-    swapChain->BeginSwapChainRenderPass(swapChainPassCommandList.get());
-    swapChainPassCommandList->ExecuteExternalCommand();
-    swapChain->EndSwapChainRenderPass(swapChainPassCommandList.get());
+    swapChain->BeginSwapChainRenderPass(SwapChainPassCommandList.get());
+    SwapChainPassCommandList->ExecuteExternalCommand();
+    swapChain->EndSwapChainRenderPass(SwapChainPassCommandList.get());
 
-    swapChainPassCommandList->EndRecordCommands();
-    swapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStageFlagBits::ColorAttachmentOutput);
-  
+    SwapChainPassCommandList->EndRecordCommands();
+    SwapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStageFlagBits::ColorAttachmentOutput);
+
 
     ClearRenderData();
     m_RhiContext->swapChain->Present(_window);
@@ -282,7 +283,7 @@ void Renderer::SwapBuffers(Window* _window)
 
 std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
 {
-    std::shared_ptr<View> view = std::make_shared<View>(this, _defaultSize);
+    auto view = std::make_shared<View>(this, _defaultSize);
 
     m_Views.push_back(view);
 
@@ -290,41 +291,42 @@ std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
 }
 
 
-void Renderer::DrawStaticMesh(MaterialType type, const ObjectPtr<PC_CORE::GraphicShader>& _shader)
+void Renderer::DrawStaticMesh(MaterialType _type, const ObjectPtr<GraphicShader>& _shader)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& rContextView = m_CurrentView->RenderingContext;
 
-    Tbx::Vector3d cameraOffset = static_cast<Tbx::Vector3d>(rContextView.lowLevelCamera.position);
+    auto cameraOffset = rContextView.LowLevelCamera.Position;
 
-    for (size_t i = 0; i < renderWorldData.staticMeshComponentData.size(); i++)
+    for (size_t i = 0; i < RenderWorldData.StaticMeshComponentData.size(); i++)
     {
-        if (renderWorldData.staticMeshComponentData[i].materialType != type)
+        if (RenderWorldData.StaticMeshComponentData[i].MaterialType != _type)
             continue;
 
         Tbx::Matrix4x4f modelMatrixf[2];
         // Apply offset to the copy one
-        modelMatrixf[0] = renderWorldData.staticMeshComponentData[i].worldMatrix;
+        modelMatrixf[0] = RenderWorldData.StaticMeshComponentData[i].WorldMatrix;
         modelMatrixf[0][12] -= cameraOffset.x;
         modelMatrixf[0][13] -= cameraOffset.y;
         modelMatrixf[0][14] -= cameraOffset.z;
 
-        modelMatrixf[1] = renderWorldData.staticMeshComponentData[i].normalInvertMatrix;
+        modelMatrixf[1] = RenderWorldData.StaticMeshComponentData[i].NormalInvertMatrix;
 
 
-        const ShaderProgramDescriptorSets* materialDescriptor = renderWorldData.staticMeshComponentData[i].descriptorSet;
-        const StaticMesh* mesh = renderWorldData.staticMeshComponentData[i].staticMesh;
+        const ShaderProgramDescriptorSets* materialDescriptor = RenderWorldData.StaticMeshComponentData[i].
+            DescriptorSet;
+        const StaticMesh* mesh = RenderWorldData.StaticMeshComponentData[i].StaticMesh;
 
         // Send Data
 
-        primaryCommandList->BindDescriptorSet(_shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindDescriptorSet(_shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
 
-        primaryCommandList->PushConstant(_shader.get(), "pushConstant", &modelMatrixf,
-            sizeof(Tbx::Matrix4x4f) * 2);
-        primaryCommandList->BindVertexBuffer(*mesh->vertexBuffer.GetRhiBuffer(), 0, 1);
-        primaryCommandList->BindIndexBuffer(*mesh->indexBuffer.GetRhiBuffer(), 0);
-        primaryCommandList->DrawIndexed(mesh->indexBuffer.GetIndexCount(), 1, 0, 0, 0);
+        PrimaryCommandList->PushConstant(_shader.get(), "pushConstant", &modelMatrixf,
+                                         sizeof(Tbx::Matrix4x4f) * 2);
+        PrimaryCommandList->BindVertexBuffer(*mesh->VBuffer.GetRhiBuffer(), 0, 1);
+        PrimaryCommandList->BindIndexBuffer(*mesh->IBuffer.GetRhiBuffer(), 0);
+        PrimaryCommandList->DrawIndexed(mesh->IBuffer.GetIndexCount(), 1, 0, 0, 0);
     }
 }
 
@@ -333,73 +335,72 @@ void Renderer::ClearRenderData()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    renderWorldData.lightData.clear();
-    renderWorldData.staticMeshComponentData.clear();
+    RenderWorldData.LightData.clear();
+    RenderWorldData.StaticMeshComponentData.clear();
 }
 
 void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 {
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Rendering);
-	const auto& rContextView = m_CurrentView->renderingContext;
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+    const auto& rContextView = m_CurrentView->RenderingContext;
 
 
-	const BeginRenderPassInfo beginRenderPassInfo =
-	{
-		.renderPass = renderPasses.forwardPass,
-		.frameBuffer = rContextView.forwardFrameBuffer,
-		.renderOffSet = {0, 0},
-		.extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
-		.clearValueFlags = {},
-		.clearColor = nullptr,
-		.clearValueCount = 0,
-		.clearDepth = 1.f
-	};
+    const BeginRenderPassInfo beginRenderPassInfo =
+    {
+        .RenderPass = RenderPasses.ForwardPass,
+        .FrameBuffer = rContextView.ForwardFrameBuffer,
+        .RenderOffSet = {0, 0},
+        .Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
+        .ClearValueFlags = {},
+        .ClearColor = nullptr,
+        .ClearValueCount = 0,
+        .ClearDepth = 1.f
+    };
 
-	auto forwardShader = m_ForwardShader.Lock();
-	auto skyboxShader = m_SkyBoxShader.Lock();
+    auto forwardShader = ForwardShader.Lock();
+    auto skyboxShader = SkyBoxShader.Lock();
     bool needForwardPass = forwardShader || skyboxShader;
 
-	
-	primaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
-	primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-	
 
-	if (forwardShader && false)
-	{
-		primaryCommandList->BindProgram(forwardShader.get());
-		primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+    PrimaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
+    PrimaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
-		primaryCommandList->SetViewPort(_viewportInfo);
-		primaryCommandList->BindDescriptorSet(forwardShader.get(), rContextView.forwardDesritptorSet,
-			SCENE_DESCRIPTOR_SET, 1);
 
-		// draw all static mesh
-		DrawStaticMesh(MaterialType::Transparent, forwardShader);
-	}
+    if (forwardShader && false)
+    {
+        PrimaryCommandList->BindProgram(forwardShader.get());
+        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-	if (skyboxShader && false)
-	{
-        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+        PrimaryCommandList->SetViewPort(_viewportInfo);
+        PrimaryCommandList->BindDescriptorSet(forwardShader.get(), rContextView.ForwardDesritptorSet,
+                                              SCENE_DESCRIPTOR_SET, 1);
 
-		primaryCommandList->BindProgram(skyboxShader.get());
-		primaryCommandList->BindDescriptorSet(skyboxShader.get(), skyboxCameraDescriptorSet,
-			SCENE_DESCRIPTOR_SET, 1);
-		primaryCommandList->BindDescriptorSet(skyboxShader.get(), skyBoxCubeMapDescriptorSet,
-			ENVIRONEMENT_DESCRIPTOR_SET, 1);
-		primaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer.GetRhiBuffer(), 0, 1);
-        primaryCommandList->Draw(m_CubeVertexBuffer.GetVertexCount(), 1, 0, 0);
-	}
+        // draw all static mesh
+        DrawStaticMesh(MaterialType::Transparent, forwardShader);
+    }
+
+    if (skyboxShader && false)
+    {
+        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+
+        PrimaryCommandList->BindProgram(skyboxShader.get());
+        PrimaryCommandList->BindDescriptorSet(skyboxShader.get(), m_SkyboxCameraDescriptorSet,
+                                              SCENE_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindDescriptorSet(skyboxShader.get(), m_SkyBoxCubeMapDescriptorSet,
+                                              ENVIRONEMENT_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer.GetRhiBuffer(), 0, 1);
+        PrimaryCommandList->Draw(m_CubeVertexBuffer.GetVertexCount(), 1, 0, 0);
+    }
 #ifdef WITH_EDITOR
-	m_DebugDrawContext->DrawDebugPrimitive(primaryCommandList.get(), rContextView);
-	for (auto& it : UserCustomForwardPass)
-		it(*this, primaryCommandList.get(), rContextView, &renderWorldData);
+    m_DebugDrawContext->DrawDebugPrimitive(PrimaryCommandList.get(), rContextView);
+    for (auto& it : UserCustomForwardPass)
+        it(*this, PrimaryCommandList.get(), rContextView, &RenderWorldData);
 #endif
 
 
-    primaryCommandList->EndRenderPass();
-	primaryCommandList->EndDebugLabel();
-	
+    PrimaryCommandList->EndRenderPass();
+    PrimaryCommandList->EndDebugLabel();
 }
 
 void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
@@ -407,10 +408,10 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& rContextView = m_CurrentView->RenderingContext;
 
-    ClearValueFlags clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor |
-        ClearValueFlags::ClearValueDepth);
+    auto clearValueFlags = static_cast<ClearValueFlags>(ClearValueColor |
+        ClearValueDepth);
 
     // + 1 for depth 
     std::array<Tbx::Vector4f, static_cast<uint8_t>(GbufferType::Count) + 1> clearValues2 = {
@@ -419,89 +420,89 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
 
     const BeginRenderPassInfo beginRenderPassInfo =
     {
-        .renderPass = renderPasses.defferedPass,
-        .frameBuffer = rContextView.gbufferFrameBuffer,
-        .renderOffSet = {0, 0},
-        .extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
-        .clearValueFlags = clearValueFlags,
-        .clearColor = clearValues2.data(),
-        .clearValueCount = clearValues2.size(),
-        .clearDepth = 1.f
+        .RenderPass = RenderPasses.DefferedPass,
+        .FrameBuffer = rContextView.GbufferFrameBuffer,
+        .RenderOffSet = {0, 0},
+        .Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
+        .ClearValueFlags = clearValueFlags,
+        .ClearColor = clearValues2.data(),
+        .ClearValueCount = clearValues2.size(),
+        .ClearDepth = 1.f
     };
 
-    ObjectPtr sGeometry = m_GeometryBufferShader.lock();
-    ObjectPtr sDeferred = m_DeferedShader.lock();
+    ObjectPtr sGeometry = GeometryBufferShader.lock();
+    ObjectPtr sDeferred = DeferedShader.lock();
 
- 
-	primaryCommandList->BeginRenderPass(beginRenderPassInfo);
-	primaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
+
+    PrimaryCommandList->BeginRenderPass(beginRenderPassInfo);
+    PrimaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
     if (sGeometry)
     {
-        primaryCommandList->BindProgram(sGeometry.get());
-        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
-        primaryCommandList->BindDescriptorSet(sGeometry.get(), rContextView.geometryDescritproSet, SCENE_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindProgram(sGeometry.get());
+        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+        PrimaryCommandList->BindDescriptorSet(sGeometry.get(), rContextView.GeometryDescritproSet, SCENE_DESCRIPTOR_SET,
+                                              1);
         DrawStaticMesh(MaterialType::Opaque, sGeometry);
     }
-    primaryCommandList->EndDebugLabel();
-    primaryCommandList->NextSubPass();
+    PrimaryCommandList->EndDebugLabel();
+    PrimaryCommandList->NextSubPass();
 
     if (sDeferred)
     {
+        PrimaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
+        PrimaryCommandList->BindProgram(sDeferred.get());
+        PrimaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.DefferdLightingLightingCameraSet,
+                                              SCENE_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.DefferdLightingGbufferSet, GBUFFER_SET, 1);
 
-        primaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
-        primaryCommandList->BindProgram(sDeferred.get());
-        primaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.defferdLightingLightingCameraSet, SCENE_DESCRIPTOR_SET, 1);
-        primaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.defferdLightingGbufferSet, GBUFFER_SET, 1);
-
-        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
-        primaryCommandList->Draw(4, 1, 0, 0);
-        primaryCommandList->EndDebugLabel();
+        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        PrimaryCommandList->Draw(4, 1, 0, 0);
+        PrimaryCommandList->EndDebugLabel();
     }
 
-    primaryCommandList->EndRenderPass();
+    PrimaryCommandList->EndRenderPass();
 }
 
 PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
 {
-    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& rContextView = m_CurrentView->RenderingContext;
 
 
-    primaryCommandList->BeginDebugLabel("PostProcess Pass", POST_PROCESS);
+    PrimaryCommandList->BeginDebugLabel("PostProcess Pass", POST_PROCESS);
 
-    if (auto aces = m_AcesShader.lock().get())
+    if (auto aces = AcesShader.lock().get())
     {
-        primaryCommandList->BindProgram(aces);
-        primaryCommandList->BindDescriptorSet(aces, rContextView.toneMapDescritptorSet, 0, 1);
+        PrimaryCommandList->BindProgram(aces);
+        PrimaryCommandList->BindDescriptorSet(aces, rContextView.ToneMapDescritptorSet, 0, 1);
 
         const LocalSize& localSize = aces->GetLocalSize();
 
-        uint32_t groupX = ((uint32_t)_viewportInfo.size.x + localSize.x - 1) / localSize.x;
-        uint32_t groupY = (uint32_t)_viewportInfo.size.y;
+        uint32_t groupX = (static_cast<uint32_t>(_viewportInfo.Size.x) + localSize.x - 1) / localSize.x;
+        uint32_t groupY = static_cast<uint32_t>(_viewportInfo.Size.y);
 
 
         const ImageMemoryBarrier gbufferImage =
         {
-            .srcAccessMask = GpuAccessFlag::ColorAttachmentWrite,
-            .dstAccessMask = static_cast<GpuAccessFlag>(GpuAccessFlag::ShaderRead & GpuAccessFlag::ShaderWrite),
+            .SrcAccessMask = GpuAccessFlag::ColorAttachmentWrite,
+            .DstAccessMask = static_cast<GpuAccessFlag>(GpuAccessFlag::ShaderRead & GpuAccessFlag::ShaderWrite),
 
-            .currentState = ImageState::RenderTargetOptimal,
-            .newState = ImageState::General,
+            .CurrentState = ImageState::RenderTargetOptimal,
+            .NewState = ImageState::General,
 
-            .texture = rContextView.hdrImage->GetRhiTexture2D().get(),
+            .Texture = rContextView.HdrImage->GetRhiTexture2D().get(),
         };
 
-        primaryCommandList->Barrier(GpuPipelineStageFlagBits::ColorAttachmentOutput,
-            GpuPipelineStageFlagBits::ComputeShader,
-            nullptr, 0,
-            nullptr, 0,
-            &gbufferImage, 1);
+        PrimaryCommandList->Barrier(GpuPipelineStageFlagBits::ColorAttachmentOutput,
+                                    GpuPipelineStageFlagBits::ComputeShader,
+                                    nullptr, 0,
+                                    nullptr, 0,
+                                    &gbufferImage, 1);
 
-        primaryCommandList->Dispatch(groupX, groupY, 1);
+        PrimaryCommandList->Dispatch(groupX, groupY, 1);
 
-        assert(rContextView.hdrImage != nullptr);
-
+        assert(rContextView.HdrImage != nullptr);
     }
-    primaryCommandList->EndDebugLabel();
+    PrimaryCommandList->EndDebugLabel();
 }
 
 
@@ -515,33 +516,33 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
         Tbx::Vector4f(0, 0, 0, 0.f),
     };
 
-    const auto& rContextView = m_CurrentView->renderingContext;
+    const auto& rContextView = m_CurrentView->RenderingContext;
 
     const BeginRenderPassInfo drawToViewport =
     {
-        .renderPass = renderPasses.drawToFinalViewPort,
-        .frameBuffer = rContextView.finalImageFrameBuffer,
-        .renderOffSet = {0, 0},
-        .extent = {rContextView.renderingContextSize.x, rContextView.renderingContextSize.y},
-        .clearValueFlags = static_cast<ClearValueFlags>(ClearValueFlags::ClearValueColor),
-        .clearColor = clearValues2.data(),
-        .clearValueCount = clearValues2.size(),
-        .clearDepth = 0.f,
-        .clearStencil = 0.f
+        .RenderPass = RenderPasses.DrawToFinalViewPort,
+        .FrameBuffer = rContextView.FinalImageFrameBuffer,
+        .RenderOffSet = {0, 0},
+        .Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
+        .ClearValueFlags = (ClearValueColor),
+        .ClearColor = clearValues2.data(),
+        .ClearValueCount = clearValues2.size(),
+        .ClearDepth = 0.f,
+        .ClearStencil = 0.f
     };
-    primaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
-    primaryCommandList->BeginRenderPass(drawToViewport);
-    if (auto drawToViewPort = m_DrawTextureScreenQuadShader.Lock())
+    PrimaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
+    PrimaryCommandList->BeginRenderPass(drawToViewport);
+    if (auto drawToViewPort = DrawTextureScreenQuadShader.Lock())
     {
-        primaryCommandList->BindProgram(drawToViewPort.get());
-        primaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        PrimaryCommandList->BindProgram(drawToViewPort.get());
+        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
-        primaryCommandList->BindDescriptorSet(drawToViewPort.get(),
-            rContextView.finalImageDescritptorSet, 0, 1);
-        primaryCommandList->Draw(4, 1, 0, 0);
+        PrimaryCommandList->BindDescriptorSet(drawToViewPort.get(),
+                                              rContextView.FinalImageDescritptorSet, 0, 1);
+        PrimaryCommandList->Draw(4, 1, 0, 0);
     }
-    primaryCommandList->EndRenderPass();
-    primaryCommandList->EndDebugLabel();
+    PrimaryCommandList->EndRenderPass();
+    PrimaryCommandList->EndDebugLabel();
 }
 
 
@@ -564,7 +565,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::Albedo)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
+            .format = RhiFormat::R16G16B16A16Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -576,7 +577,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::Normal)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R16G16_SNORM,
+            .format = RhiFormat::R16G16Snorm,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -588,7 +589,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::RoughnessMetallicAo)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+            .format = RhiFormat::R8G8B8A8Unorm,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -600,7 +601,7 @@ void Renderer::CreateRenderPasss()
         attachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
+            .format = RhiFormat::R16G16B16A16Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -612,7 +613,7 @@ void Renderer::CreateRenderPasss()
         RenderPassAttachementDescriptor depthAttachement =
         {
             .attachmentType = AttachmentType::Depth,
-            .format = PC_CORE::RHIFormat::D32_SFLOAT,
+            .format = RhiFormat::D32Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -626,7 +627,7 @@ void Renderer::CreateRenderPasss()
         attachements[attachements.size() - 1] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
+            .format = RhiFormat::R16G16B16A16Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
@@ -642,7 +643,7 @@ void Renderer::CreateRenderPasss()
 
         subPassDescriptions[0] =
         {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+            .shaderProgramPipelineType = ShaderProgramPipelineType::Graphic,
             .colorAttachementDescriptorIndicies = {
                 static_cast<size_t>(GbufferType::Albedo),
                 static_cast<size_t>(GbufferType::Normal),
@@ -663,7 +664,7 @@ void Renderer::CreateRenderPasss()
         };
         subPassDescriptions[1] =
         {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+            .shaderProgramPipelineType = ShaderProgramPipelineType::Graphic,
             .colorAttachementDescriptorIndicies =
             {
                 attachements.size() - 1
@@ -685,14 +686,14 @@ void Renderer::CreateRenderPasss()
             },
             .useDepth = false,
         };
-        PC_CORE::RenderPassDescriptor renderPassDescriptor =
+        RenderPassDescriptor renderPassDescriptor =
         {
             .attachement = attachements,
             .depthAttachment = &depthAttachement,
             .subPasses = subPassDescriptions
         };
 
-        renderPasses.defferedPass = Rhi::CreateRenderPass(renderPassDescriptor);
+        RenderPasses.DefferedPass = Rhi::CreateRenderPass(renderPassDescriptor);
     }
 
     // Forward
@@ -705,7 +706,7 @@ void Renderer::CreateRenderPasss()
         colorAttachement[0] =
         {
             .attachmentType = AttachmentType::Color,
-            .format = PC_CORE::RHIFormat::R16G16B16A16_SFLOAT,
+            .format = RhiFormat::R16G16B16A16Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Load,
             .store = StoreOperation::Store,
@@ -718,7 +719,7 @@ void Renderer::CreateRenderPasss()
         RenderPassAttachementDescriptor depthAttachement =
         {
             .attachmentType = AttachmentType::Depth,
-            .format = PC_CORE::RHIFormat::D32_SFLOAT,
+            .format = RhiFormat::D32Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Load,
             .store = StoreOperation::Store,
@@ -733,7 +734,7 @@ void Renderer::CreateRenderPasss()
 
         subPassDescriptions[0] =
         {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+            .shaderProgramPipelineType = ShaderProgramPipelineType::Graphic,
             .colorAttachementDescriptorIndicies = {0},
             .inputAttachementDescriptorIndicies = {},
             .subPassDependcies =
@@ -748,20 +749,20 @@ void Renderer::CreateRenderPasss()
             .useDepth = true,
         };
 
-        PC_CORE::RenderPassDescriptor renderPassDescriptor =
+        RenderPassDescriptor renderPassDescriptor =
         {
             .attachement = colorAttachement,
             .depthAttachment = &depthAttachement,
             .subPasses = subPassDescriptions
         };
 
-        renderPasses.forwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
+        RenderPasses.ForwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
     }
 
     // Draw To Final Viewport
     {
         PERF_REGION_SCOPED_NAMED("Create Draw To Final Viewport");
-        renderPasses.drawToFinalViewPort = Rhi::CreateRenderPass(PC_CORE::RHIFormat::R8G8B8A8_UNORM,
+        RenderPasses.DrawToFinalViewPort = Rhi::CreateRenderPass(RhiFormat::R8G8B8A8Unorm,
                                                                  Rhi::GetRhiContext()->physicalDevices->
                                                                  GetPhysicalDevice().GetMaxUsableSampleCount());
     }
@@ -776,7 +777,7 @@ void Renderer::CreateShaders()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    
+
     {
         PERF_REGION_SCOPED_NAMED("Geometry Shader");
         constexpr RasterizerInfo rasterizerInfo =
@@ -792,10 +793,10 @@ void Renderer::CreateShaders()
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
             {
-                .depthCompareOp = CompareOp::LESS,
+                .depthCompareOp = CompareOp::Less,
                 .enableDepthTest = true
             },
-            .vertexInputBindingDescritions = 
+            .vertexInputBindingDescritions =
             {
                 StaticMeshVertex::GetVertexBindingDescription(0)
             },
@@ -818,13 +819,13 @@ void Renderer::CreateShaders()
         {
             .shaderGraphicPointInfo = shaderGraphicPointInfo,
             .sourceList = sources,
-            .renderPass = renderPasses.defferedPass.get(),
+            .renderPass = RenderPasses.DefferedPass.get(),
             // COUNT because we avoid depth but there is still final image 
             .colorAttachementCount = 4,
             .subPassIndex = 0,
         };
 
-        m_GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
+        GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
     }
 
     {
@@ -842,7 +843,7 @@ void Renderer::CreateShaders()
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
             {
-                .depthCompareOp = CompareOp::NEVER,
+                .depthCompareOp = CompareOp::Never,
                 .enableDepthTest = true
             },
             .vertexInputBindingDescritions = {},
@@ -865,12 +866,12 @@ void Renderer::CreateShaders()
         {
             .shaderGraphicPointInfo = shaderGraphicPointInfo,
             .sourceList = sources,
-            .renderPass = renderPasses.defferedPass.get(),
+            .renderPass = RenderPasses.DefferedPass.get(),
             .colorAttachementCount = 1,
             .subPassIndex = 1,
         };
 
-        m_DeferedShader = ResourceManager::Create<GraphicShader>("Deferred", graphicShaderProgramCreateInfo);
+        DeferedShader = ResourceManager::Create<GraphicShader>("Deferred", graphicShaderProgramCreateInfo);
     }
 
     {
@@ -888,7 +889,7 @@ void Renderer::CreateShaders()
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
             {
-                .depthCompareOp = CompareOp::LESS,
+                .depthCompareOp = CompareOp::Less,
                 .enableDepthTest = true
             },
             .vertexInputBindingDescritions = {StaticMeshVertex::GetVertexBindingDescription(0)},
@@ -911,19 +912,19 @@ void Renderer::CreateShaders()
         {
             .shaderGraphicPointInfo = shaderGraphicPointInfo,
             .sourceList = sources,
-            .renderPass = renderPasses.forwardPass.get(),
+            .renderPass = RenderPasses.ForwardPass.get(),
             .colorAttachementCount = 1,
             .subPassIndex = 0
         };
-        
-        m_ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
+
+        ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
     }
 
     // SkyBox Shader
     {
         PERF_REGION_SCOPED_NAMED("SkyBox Shader");
 
-        const RasterizerInfo rasterizerInfo =
+        constexpr RasterizerInfo rasterizerInfo =
         {
             .polygonMode = PolygonMode::Fill,
             .cullModeFlag = CullModeFlagBit::None,
@@ -931,19 +932,19 @@ void Renderer::CreateShaders()
             .multiSampleRasterization = 1
         };
 
-        const VertexAttributeDescription vertexAttributeDescription =
+        constexpr VertexAttributeDescription vertexAttributeDescription =
         {
-            .binding = 0,
-            .location = 0,
-            .format = RHIFormat::R32G32B32_SFLOAT,
-            .offset = 0
+            .Binding = 0,
+            .Location = 0,
+            .Format = RhiFormat::R32G32B32Sfloat,
+            .Offset = 0
         };
 
-        const VertexInputBindingDescrition vertexInputBindingDescrition =
+        constexpr VertexInputBindingDescrition vertexInputBindingDescrition =
         {
-            .binding = 0,
-            .stride = sizeof(Tbx::Vector3f),
-            .vertexInputRate = VertexInputRate::VERTEX,
+            .Binding = 0,
+            .Stride = sizeof(Tbx::Vector3f),
+            .VertexInputRate = VertexInputRate::Vertex,
         };
 
 
@@ -952,7 +953,7 @@ void Renderer::CreateShaders()
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
             {
-                .depthCompareOp = CompareOp::LESS_OR_EQUAL,
+                .depthCompareOp = CompareOp::LessOrEqual,
                 .enableDepthTest = true
             },
             .vertexInputBindingDescritions = {vertexInputBindingDescrition},
@@ -976,14 +977,14 @@ void Renderer::CreateShaders()
         {
             .shaderGraphicPointInfo = shaderGraphicPointInfo,
             .sourceList = source,
-            .renderPass = renderPasses.forwardPass.get(),
+            .renderPass = RenderPasses.ForwardPass.get(),
             .colorAttachementCount = 1,
             .subPassIndex = 0
 
         };
 
 
-        m_SkyBoxShader = ResourceManager::Create<PC_CORE::GraphicShader>(
+        SkyBoxShader = ResourceManager::Create<GraphicShader>(
             "SkyboxShader", graphicShaderProgramCreateInfo);
     }
 
@@ -992,13 +993,13 @@ void Renderer::CreateShaders()
 
         const ComputeShaderProgramCreateInfo computeShaderProgramCreateInfo =
         {
-        .shaderComputeInfo = {},
-        .source = ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")
-            };
-        
-        m_AcesShader = ResourceManager::Create<PC_CORE::ComputeShader>("Aces", computeShaderProgramCreateInfo);
+            .shaderComputeInfo = {},
+            .source = ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")
+        };
+
+        AcesShader = ResourceManager::Create<ComputeShader>("Aces", computeShaderProgramCreateInfo);
     }
-    
+
     // Draw to final viewport
     {
         PERF_REGION_SCOPED_NAMED("CreateDrawToFinalViewport Programm");
@@ -1018,7 +1019,7 @@ void Renderer::CreateShaders()
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
             {
-                .depthCompareOp = CompareOp::LESS,
+                .depthCompareOp = CompareOp::Less,
                 .enableDepthTest = true
             },
             .vertexInputBindingDescritions = {},
@@ -1041,13 +1042,13 @@ void Renderer::CreateShaders()
         {
             .shaderGraphicPointInfo = shaderGraphicPointInfo,
             .sourceList = sources,
-            .renderPass = renderPasses.drawToFinalViewPort.get(),
+            .renderPass = RenderPasses.DrawToFinalViewPort.get(),
             .colorAttachementCount = 1,
 
         };
 
 
-        m_DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>(
+        DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>(
             "DrawQuadShader", graphicShaderProgramCreateInfo);
     }
 }
@@ -1077,18 +1078,21 @@ void Renderer::CreateThirdPartyResources()
         m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);*/
     }
 }
+
 void Renderer::CreateBuffers()
 {
-    uniformBuffers.cameraUniformBuffer = UniformBuffer(sizeof(CameraGpu),
-        PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
-    uniformBuffers.postProcessUniformBuffer = UniformBuffer(&uniformBuffers.postProcessUniformBuffer, sizeof(PostProcessGpu),
-        PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
+    UniformBuffers.CameraUniformBuffer = UniformBuffer(sizeof(CameraGpu),
+                                                       MemoryLocalisation::CpuToGpu, MemoryUsage::Dynamic);
+    UniformBuffers.PostProcessUniformBuffer = UniformBuffer(&UniformBuffers.PostProcessUniformBuffer,
+                                                            sizeof(PostProcessGpu),
+                                                            MemoryLocalisation::CpuToGpu, MemoryUsage::Dynamic);
 
-    gpuLightUniformBufferStaging = UniformBuffer(&uniformBuffers.postProcessUniformBuffer, sizeof(m_GpuDynamicLightData),
-        PC_CORE::MemoryLocalisation::CPU_To_GPU, MemoryUsage::Dynamic);
+    m_GpuLightUniformBufferStaging = UniformBuffer(&UniformBuffers.PostProcessUniformBuffer,
+                                                 sizeof(m_GpuDynamicLightData),
+                                                 MemoryLocalisation::CpuToGpu, MemoryUsage::Dynamic);
 
-    uniformBuffers.dynamicGpuLightUniformBuffer = UniformBuffer(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData),
-        PC_CORE::MemoryLocalisation::GPU_Only, MemoryUsage::Dynamic);
+    UniformBuffers.DynamicGpuLightUniformBuffer = UniformBuffer(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData),
+                                                                MemoryLocalisation::GpuOnly, MemoryUsage::Dynamic);
 }
 #pragma endregion CreateThirdPartyResources
 
@@ -1098,10 +1102,10 @@ void Renderer::CreateDescriptorSets()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-   
+
     const UniformBufferDescriptor lightData
     {
-        .buffer = &uniformBuffers.cameraUniformBuffer,
+        .buffer = &UniformBuffers.CameraUniformBuffer,
     };
     /*
     ImageSamplerDescriptor skyboxCubeMapDescritptor
@@ -1111,7 +1115,7 @@ void Renderer::CreateDescriptorSets()
         .imageState = PC_CORE::ImageState::ShaderReadOptimal
     };*/
 
-    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets;
+    std::vector<ShaderProgramDescriptorWrite> descriptorSets;
 
     {
         PERF_REGION_SCOPED_NAMED("Skybox Shader DescriptorSets");
@@ -1124,8 +1128,8 @@ void Renderer::CreateDescriptorSets()
                 lightData,
             },
         };
-        m_SkyBoxShader.lock()->AllocDescriptorSet(&skyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
-        skyboxCameraDescriptorSet->WriteDescriptorSets(descriptorSets);
+        SkyBoxShader.lock()->AllocDescriptorSet(&m_SkyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
+        m_SkyboxCameraDescriptorSet->WriteDescriptorSets(descriptorSets);
         /*
         descriptorSets =
         {
@@ -1144,56 +1148,57 @@ void Renderer::CreateDescriptorSets()
 
 void Renderer::InitCubeBuffers()
 {
-    constexpr std::array<Tbx::Vector3f, 36> vertices = 
+    constexpr std::array<Tbx::Vector3f, 36> vertices =
     {
         // Bottom face 
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f, -0.5f,  0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, 0.5f},
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f, -0.5f,  0.5f},
-        Tbx::Vector3f{-0.5f, -0.5f,  0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, 0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f, 0.5f},
 
         // Top face 
         Tbx::Vector3f{-0.5f, 0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f, 0.5f,  0.5f},
-        Tbx::Vector3f{ 0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, 0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, -0.5f},
         Tbx::Vector3f{-0.5f, 0.5f, -0.5f},
-        Tbx::Vector3f{-0.5f, 0.5f,  0.5f},
-        Tbx::Vector3f{ 0.5f, 0.5f,  0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, 0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, 0.5f},
 
         // Front face 
         Tbx::Vector3f{-0.5f, -0.5f, 0.5f},
-        Tbx::Vector3f{ 0.5f, -0.5f, 0.5f},
-        Tbx::Vector3f{ 0.5f,  0.5f, 0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, 0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, 0.5f},
         Tbx::Vector3f{-0.5f, -0.5f, 0.5f},
-        Tbx::Vector3f{ 0.5f,  0.5f, 0.5f},
-        Tbx::Vector3f{-0.5f,  0.5f, 0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, 0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, 0.5f},
 
         // Back face 
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f,  0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f, -0.5f, -0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, -0.5f},
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{-0.5f,  0.5f, -0.5f},
-        Tbx::Vector3f{ 0.5f,  0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, -0.5f},
 
         // Left face 
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{-0.5f,  0.5f,  0.5f},
-        Tbx::Vector3f{-0.5f,  0.5f, -0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, 0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, -0.5f},
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{-0.5f, -0.5f,  0.5f},
-        Tbx::Vector3f{-0.5f,  0.5f,  0.5f},
+        Tbx::Vector3f{-0.5f, -0.5f, 0.5f},
+        Tbx::Vector3f{-0.5f, 0.5f, 0.5f},
 
         // Right face 
         Tbx::Vector3f{0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{0.5f,  0.5f, -0.5f},
-        Tbx::Vector3f{0.5f,  0.5f,  0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, -0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, 0.5f},
         Tbx::Vector3f{0.5f, -0.5f, -0.5f},
-        Tbx::Vector3f{0.5f,  0.5f,  0.5f},
-        Tbx::Vector3f{0.5f, -0.5f,  0.5f},
+        Tbx::Vector3f{0.5f, 0.5f, 0.5f},
+        Tbx::Vector3f{0.5f, -0.5f, 0.5f},
     };
 
-    m_CubeVertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(Tbx::Vector3f), MemoryLocalisation::GPU_Only, MemoryUsage::Static);
+    m_CubeVertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(Tbx::Vector3f),
+                                      MemoryLocalisation::GpuOnly, MemoryUsage::Static);
 }

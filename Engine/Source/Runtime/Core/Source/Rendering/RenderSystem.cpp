@@ -6,13 +6,13 @@
 #include "World/Transform.hpp"
 #include "World/World.hpp"
 
-PC_CORE::RendererSystem::RendererSystem(PC_CORE::RenderingWorldData* _renderingWorldData)
+PC_CORE::RendererSystem::RendererSystem(RenderingWorldData* _renderingWorldData)
 {
     DYNAMIC_REFLECT_INIT
 
     PERF_REGION_SCOPED;
     Level& l = World::GetWorld()->level;
-    
+
     m_StaticMeshSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_StaticMeshSignature.set(l.GetComponentTypeBit<StaticMeshComponent>(), true);
     AddSignature(m_StaticMeshSignature);
@@ -57,21 +57,20 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
             return;
 
 
-        const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.position, static_cast<Tbx::Quaterniond>(transform.rotation.quaternion),
-            transform.scale);
+        const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.Position,
+                                                      static_cast<Tbx::Quaterniond>(transform.Rotation.Quaternion),
+                                                      transform.Scale);
         const StaticMeshComponentData staticMeshData =
         {
-        .materialType = material->materialType,
-        .descriptorSet = material->GetDescriptorSet(),
-        .staticMesh = mesh.get(),
-        .worldMatrix = m,
-        .normalInvertMatrix = m.Invert().Transpose(),
+            .MaterialType = material->MaterialType,
+            .DescriptorSet = material->GetDescriptorSet(),
+            .StaticMesh = mesh.get(),
+            .WorldMatrix = m,
+            .NormalInvertMatrix = m.Invert().Transpose(),
         };
 
-        m_RenderingDataPtr->staticMeshComponentData.push_back(staticMeshData);
+        m_RenderingDataPtr->StaticMeshComponentData.push_back(staticMeshData);
     }
-        
-   
 }
 
 void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
@@ -83,15 +82,15 @@ void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
         LightData lightData;
-        lightData.lightType = LightType::Directional;
-        lightData.data.directionalLight  =
+        lightData.LightType = LightType::Directional;
+        lightData.Data.DirectionalLight =
         {
-        .color = dirLight.color,
-        .intensity = dirLight.intensity,
-        .direction = Tbx::Quaternionf::ToEulerAngles(transform.rotation.quaternion.Normalize())
+            .Color = dirLight.color,
+            .Intensity = dirLight.intensity,
+            .Direction = Tbx::Quaternionf::ToEulerAngles(transform.Rotation.Quaternion.Normalize())
         };
 
-        m_RenderingDataPtr->lightData.push_back(lightData);
+        m_RenderingDataPtr->LightData.push_back(lightData);
     }
 
     std::set<EntityId>& pointLights = *GetEntitySet(m_PointLightSignature);
@@ -102,15 +101,14 @@ void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
         LightData lightData;
-        lightData.lightType = LightType::Point;
-        lightData.data.pointLightData  =
+        lightData.LightType = LightType::Point;
+        lightData.Data.PointLightData =
         {
-          .color = pointLight.color,
-          .intensity = pointLight.intensity,
-          .position = transform.position,
-            };
+            .Color = pointLight.color,
+            .Intensity = pointLight.intensity,
+            .Position = transform.Position,
+        };
 
-        m_RenderingDataPtr->lightData.push_back(lightData);
+        m_RenderingDataPtr->LightData.push_back(lightData);
     }
 }
-

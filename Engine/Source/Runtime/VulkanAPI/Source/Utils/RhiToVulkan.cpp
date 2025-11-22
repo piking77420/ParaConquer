@@ -1,405 +1,405 @@
-﻿#include "Utils/RhiVulkanParser.hpp"
+﻿#include "Utils/RhiToVulkan.hpp"
 
 #pragma region Format
-vk::Format Vulkan::Utils::RHIFormatToVkFormat(PC_CORE::RHIFormat rhiFormat)
+vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
 {
     vk::Format format = {};
     // TODO MAKE ALL FORMAT
 
-    switch (rhiFormat)
+    switch (_rhiFormat)
     {
-    case PC_CORE::RHIFormat::UNDEFINED:
+    case PC_CORE::RhiFormat::Undefined:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R4G4_UNORM_PACK8:
+    case PC_CORE::RhiFormat::R4G4UnormPack8:
         return vk::Format::eR4G4UnormPack8;
 
-    case PC_CORE::RHIFormat::R4G4B4A4_UNORM_PACK16:
+    case PC_CORE::RhiFormat::R4G4B4A4UnormPack16:
         return vk::Format::eR4G4UnormPack8;
 
-    case PC_CORE::RHIFormat::B4G4R4A4_UNORM_PACK16:
+    case PC_CORE::RhiFormat::B4G4R4A4UnormPack16:
         return vk::Format::eB4G4R4A4UnormPack16;
 
-    case PC_CORE::RHIFormat::R5G6B5_UNORM_PACK16:
+    case PC_CORE::RhiFormat::R5G6B5UnormPack16:
         return vk::Format::eR5G6B5UnormPack16;
 
-    case PC_CORE::RHIFormat::B5G6R5_UNORM_PACK16:
+    case PC_CORE::RhiFormat::B5G6R5UnormPack16:
         return vk::Format::eB5G6R5UnormPack16;
 
-    case PC_CORE::RHIFormat::R5G5B5A1_UNORM_PACK16:
+    case PC_CORE::RhiFormat::R5G5B5A1UnormPack16:
         return vk::Format::eR5G5B5A1UnormPack16;
 
-    case PC_CORE::RHIFormat::B5G5R5A1_UNORM_PACK16:
+    case PC_CORE::RhiFormat::B5G5R5A1UnormPack16:
         return vk::Format::eB5G5R5A1UnormPack16;
 
-    case PC_CORE::RHIFormat::A1R5G5B5_UNORM_PACK16:
+    case PC_CORE::RhiFormat::A1R5G5B5UnormPack16:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8_UNORM:
+    case PC_CORE::RhiFormat::R8Unorm:
         return vk::Format::eR8Unorm;
 
-    case PC_CORE::RHIFormat::R8_SNORM:
+    case PC_CORE::RhiFormat::R8Snorm:
         return vk::Format::eR8Snorm;
 
-    case PC_CORE::RHIFormat::R8_USCALED:
+    case PC_CORE::RhiFormat::R8Uscaled:
         return vk::Format::eR8Uscaled;
 
-    case PC_CORE::RHIFormat::R8_SSCALED:
+    case PC_CORE::RhiFormat::R8Sscaled:
         return vk::Format::eR8Sscaled;
 
-    case PC_CORE::RHIFormat::R8_UINT:
+    case PC_CORE::RhiFormat::R8Uint:
         return vk::Format::eR8Uint;
 
-    case PC_CORE::RHIFormat::R8_SINT:
+    case PC_CORE::RhiFormat::R8Sint:
         return vk::Format::eR8Sint;
 
-    case PC_CORE::RHIFormat::R8_SRGB:
+    case PC_CORE::RhiFormat::R8Srgb:
         return vk::Format::eR8Srgb;
 
-    case PC_CORE::RHIFormat::R8G8_UNORM:
+    case PC_CORE::RhiFormat::R8G8Unorm:
         return vk::Format::eR8G8Unorm;
 
-    case PC_CORE::RHIFormat::R8G8_SNORM:
+    case PC_CORE::RhiFormat::R8G8Snorm:
         return vk::Format::eR8G8Snorm;
 
-    case PC_CORE::RHIFormat::R8G8_USCALED:
+    case PC_CORE::RhiFormat::R8G8Uscaled:
         return vk::Format::eR8G8Uscaled;
 
-    case PC_CORE::RHIFormat::R8G8_SSCALED:
+    case PC_CORE::RhiFormat::R8G8Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8_UINT:
+    case PC_CORE::RhiFormat::R8G8Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8_SINT:
+    case PC_CORE::RhiFormat::R8G8Sint:
         return vk::Format::eR8G8Sint;
 
-    case PC_CORE::RHIFormat::R8G8_SRGB:
+    case PC_CORE::RhiFormat::R8G8Srgb:
         return vk::Format::eR8G8Srgb;
 
-    case PC_CORE::RHIFormat::R8G8B8_UNORM:
+    case PC_CORE::RhiFormat::R8G8B8Unorm:
         return vk::Format::eR8G8B8Unorm;
 
-    case PC_CORE::RHIFormat::R8G8B8_SNORM:
+    case PC_CORE::RhiFormat::R8G8B8Snorm:
         return vk::Format::eR8G8B8Snorm;
 
-    case PC_CORE::RHIFormat::R8G8B8_USCALED:
+    case PC_CORE::RhiFormat::R8G8B8Uscaled:
         return vk::Format::eR8G8B8Uscaled;
 
-    case PC_CORE::RHIFormat::R8G8B8_SSCALED:
+    case PC_CORE::RhiFormat::R8G8B8Sscaled:
         return vk::Format::eR8G8B8Sscaled;
 
-    case PC_CORE::RHIFormat::R8G8B8_UINT:
+    case PC_CORE::RhiFormat::R8G8B8Uint:
         return vk::Format::eR8G8B8Uint;
 
-    case PC_CORE::RHIFormat::R8G8B8_SINT:
+    case PC_CORE::RhiFormat::R8G8B8Sint:
         return vk::Format::eR8G8B8Sint;
 
-    case PC_CORE::RHIFormat::R8G8B8_SRGB:
+    case PC_CORE::RhiFormat::R8G8B8Srgb:
         return vk::Format::eR8G8B8Srgb;
 
-    case PC_CORE::RHIFormat::B8G8R8_UNORM:
+    case PC_CORE::RhiFormat::B8G8R8Unorm:
         return vk::Format::eB8G8R8Unorm;
 
-    case PC_CORE::RHIFormat::B8G8R8_SNORM:
+    case PC_CORE::RhiFormat::B8G8R8Snorm:
         return vk::Format::eB8G8R8A8Snorm;
 
-    case PC_CORE::RHIFormat::B8G8R8_USCALED:
+    case PC_CORE::RhiFormat::B8G8R8Uscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8_SSCALED:
+    case PC_CORE::RhiFormat::B8G8R8Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8_UINT:
+    case PC_CORE::RhiFormat::B8G8R8Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8_SINT:
+    case PC_CORE::RhiFormat::B8G8R8Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8_SRGB:
+    case PC_CORE::RhiFormat::B8G8R8Srgb:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_UNORM:
+    case PC_CORE::RhiFormat::R8G8B8A8Unorm:
         return vk::Format::eR8G8B8A8Unorm;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_SNORM:
+    case PC_CORE::RhiFormat::R8G8B8A8Snorm:
         return vk::Format::eR8G8B8A8Snorm;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_USCALED:
+    case PC_CORE::RhiFormat::R8G8B8A8Uscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_SSCALED:
+    case PC_CORE::RhiFormat::R8G8B8A8Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_UINT:
+    case PC_CORE::RhiFormat::R8G8B8A8Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_SINT:
+    case PC_CORE::RhiFormat::R8G8B8A8Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R8G8B8A8_SRGB:
+    case PC_CORE::RhiFormat::R8G8B8A8Srgb:
         return vk::Format::eR8G8B8A8Srgb;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_UNORM:
+    case PC_CORE::RhiFormat::B8G8R8A8Unorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_SNORM:
+    case PC_CORE::RhiFormat::B8G8R8A8Snorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_USCALED:
+    case PC_CORE::RhiFormat::B8G8R8A8Uscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_SSCALED:
+    case PC_CORE::RhiFormat::B8G8R8A8Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_UINT:
+    case PC_CORE::RhiFormat::B8G8R8A8Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_SINT:
+    case PC_CORE::RhiFormat::B8G8R8A8Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B8G8R8A8_SRGB:
+    case PC_CORE::RhiFormat::B8G8R8A8Srgb:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_UNORM_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8UnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_SNORM_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8SnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_USCALED_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8UscaledPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_SSCALED_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8SscaledPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_UINT_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8UintPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_SINT_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8SintPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A8B8G8R8_SRGB_PACK32:
+    case PC_CORE::RhiFormat::A8B8G8R8SrgbPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2R10G10B10_UNORM_PACK32:
+    case PC_CORE::RhiFormat::A2R10G10B10UnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2R10G10B10_SNORM_PACK32:
+    case PC_CORE::RhiFormat::A2R10G10B10SnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2R10G10B10_USCALED_PACK32:
+    case PC_CORE::RhiFormat::A2R10G10B10UscaledPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2R10G10B10_SSCALED_PACK32:
+    case PC_CORE::RhiFormat::A2R10G10B10SscaledPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2R10G10B10_UINT_PACK32:
+    case PC_CORE::RhiFormat::A2R10G10B10UintPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2R10G10B10_SINT_PACK32:
+    case PC_CORE::RhiFormat::A2R10G10B10SintPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2B10G10R10_UNORM_PACK32:
+    case PC_CORE::RhiFormat::A2B10G10R10UnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2B10G10R10_SNORM_PACK32:
+    case PC_CORE::RhiFormat::A2B10G10R10SnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2B10G10R10_USCALED_PACK32:
+    case PC_CORE::RhiFormat::A2B10G10R10UscaledPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2B10G10R10_SSCALED_PACK32:
+    case PC_CORE::RhiFormat::A2B10G10R10SscaledPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2B10G10R10_UINT_PACK32:
+    case PC_CORE::RhiFormat::A2B10G10R10UintPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::A2B10G10R10_SINT_PACK32:
+    case PC_CORE::RhiFormat::A2B10G10R10SintPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_UNORM:
+    case PC_CORE::RhiFormat::R16Unorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_SNORM:
+    case PC_CORE::RhiFormat::R16Snorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_USCALED:
+    case PC_CORE::RhiFormat::R16Uscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_SSCALED:
+    case PC_CORE::RhiFormat::R16Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_UINT:
+    case PC_CORE::RhiFormat::R16Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_SINT:
+    case PC_CORE::RhiFormat::R16Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16_SFLOAT:
+    case PC_CORE::RhiFormat::R16Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16_UNORM:
+    case PC_CORE::RhiFormat::R16G16Unorm:
         return vk::Format::eR16G16Unorm;
 
-    case PC_CORE::RHIFormat::R16G16_SNORM:
+    case PC_CORE::RhiFormat::R16G16Snorm:
         return vk::Format::eR16G16Snorm;
 
-    case PC_CORE::RHIFormat::R16G16_USCALED:
+    case PC_CORE::RhiFormat::R16G16Uscaled:
         return vk::Format::eR16G16Uscaled;
 
-    case PC_CORE::RHIFormat::R16G16_SSCALED:
+    case PC_CORE::RhiFormat::R16G16Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16_UINT:
+    case PC_CORE::RhiFormat::R16G16Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16_SINT:
+    case PC_CORE::RhiFormat::R16G16Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16_SFLOAT:
+    case PC_CORE::RhiFormat::R16G16Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_UNORM:
+    case PC_CORE::RhiFormat::R16G16B16Unorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_SNORM:
+    case PC_CORE::RhiFormat::R16G16B16Snorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_USCALED:
+    case PC_CORE::RhiFormat::R16G16B16Uscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_SSCALED:
+    case PC_CORE::RhiFormat::R16G16B16Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_UINT:
+    case PC_CORE::RhiFormat::R16G16B16Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_SINT:
+    case PC_CORE::RhiFormat::R16G16B16Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16_SFLOAT:
+    case PC_CORE::RhiFormat::R16G16B16Sfloat:
         return vk::Format::eR16G16B16Sfloat;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_UNORM:
+    case PC_CORE::RhiFormat::R16G16B16A16Unorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_SNORM:
+    case PC_CORE::RhiFormat::R16G16B16A16Snorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_USCALED:
+    case PC_CORE::RhiFormat::R16G16B16A16Uscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_SSCALED:
+    case PC_CORE::RhiFormat::R16G16B16A16Sscaled:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_UINT:
+    case PC_CORE::RhiFormat::R16G16B16A16Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_SINT:
+    case PC_CORE::RhiFormat::R16G16B16A16Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R16G16B16A16_SFLOAT:
+    case PC_CORE::RhiFormat::R16G16B16A16Sfloat:
         return vk::Format::eR16G16B16A16Sfloat;
 
-    case PC_CORE::RHIFormat::R32_UINT:
+    case PC_CORE::RhiFormat::R32Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32_SINT:
+    case PC_CORE::RhiFormat::R32Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32_SFLOAT:
+    case PC_CORE::RhiFormat::R32Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32G32_UINT:
+    case PC_CORE::RhiFormat::R32G32Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32G32_SINT:
+    case PC_CORE::RhiFormat::R32G32Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32G32_SFLOAT:
+    case PC_CORE::RhiFormat::R32G32Sfloat:
         return vk::Format::eR32G32Sfloat;
 
-    case PC_CORE::RHIFormat::R32G32B32_UINT:
+    case PC_CORE::RhiFormat::R32G32B32Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32G32B32_SINT:
+    case PC_CORE::RhiFormat::R32G32B32Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32G32B32_SFLOAT:
+    case PC_CORE::RhiFormat::R32G32B32Sfloat:
         return vk::Format::eR32G32B32Sfloat;
 
-    case PC_CORE::RHIFormat::R32G32B32A32_UINT:
+    case PC_CORE::RhiFormat::R32G32B32A32Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R32G32B32A32_SINT:
+    case PC_CORE::RhiFormat::R32G32B32A32Sint:
         return vk::Format::eR32G32B32A32Sint;
 
-    case PC_CORE::RHIFormat::R32G32B32A32_SFLOAT:
+    case PC_CORE::RhiFormat::R32G32B32A32Sfloat:
         return vk::Format::eR32G32B32A32Sfloat;
 
-    case PC_CORE::RHIFormat::R64_UINT:
+    case PC_CORE::RhiFormat::R64Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64_SINT:
+    case PC_CORE::RhiFormat::R64Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64_SFLOAT:
+    case PC_CORE::RhiFormat::R64Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64_UINT:
+    case PC_CORE::RhiFormat::R64G64Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64_SINT:
+    case PC_CORE::RhiFormat::R64G64Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64_SFLOAT:
+    case PC_CORE::RhiFormat::R64G64Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64B64_UINT:
+    case PC_CORE::RhiFormat::R64G64B64Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64B64_SINT:
+    case PC_CORE::RhiFormat::R64G64B64Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64B64_SFLOAT:
+    case PC_CORE::RhiFormat::R64G64B64Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64B64A64_UINT:
+    case PC_CORE::RhiFormat::R64G64B64A64Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64B64A64_SINT:
+    case PC_CORE::RhiFormat::R64G64B64A64Sint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::R64G64B64A64_SFLOAT:
+    case PC_CORE::RhiFormat::R64G64B64A64Sfloat:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::B10G11R11_UFLOAT_PACK32:
+    case PC_CORE::RhiFormat::B10G11R11UfloatPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::E5B9G9R9_UFLOAT_PACK32:
+    case PC_CORE::RhiFormat::E5B9G9R9UfloatPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::D16_UNORM:
+    case PC_CORE::RhiFormat::D16Unorm:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::X8_D24_UNORM_PACK32:
+    case PC_CORE::RhiFormat::X8D24UnormPack32:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::D32_SFLOAT:
+    case PC_CORE::RhiFormat::D32Sfloat:
         return vk::Format::eD32Sfloat;
 
-    case PC_CORE::RHIFormat::S8_UINT:
+    case PC_CORE::RhiFormat::S8Uint:
         return vk::Format::eS8Uint;
 
-    case PC_CORE::RHIFormat::D16_UNORM_S8_UINT:
+    case PC_CORE::RhiFormat::D16UnormS8Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::D24_UNORM_S8_UINT:
+    case PC_CORE::RhiFormat::D24UnormS8Uint:
         return vk::Format::eUndefined;
 
-    case PC_CORE::RHIFormat::D32_SFLOAT_S8_UINT:
-        return vk::Format::eD32SfloatS8Uint;    
+    case PC_CORE::RhiFormat::D32SfloatS8Uint:
+        return vk::Format::eD32SfloatS8Uint;
 
     default:
         break;
@@ -417,11 +417,11 @@ vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
 {
     switch (_shaderProgramPipelineType)
     {
-    case PC_CORE::ShaderProgramPipelineType::POINT_GRAPHICS:
+    case PC_CORE::ShaderProgramPipelineType::Graphic:
         return vk::PipelineBindPoint::eGraphics;
-    case PC_CORE::ShaderProgramPipelineType::COMPUTE:
+    case PC_CORE::ShaderProgramPipelineType::Compute:
         return vk::PipelineBindPoint::eCompute;
-    case PC_CORE::ShaderProgramPipelineType::RAYTRACING:
+    case PC_CORE::ShaderProgramPipelineType::RayTracing:
         return vk::PipelineBindPoint::eRayTracingKHR;
     }
     return vk::PipelineBindPoint::eGraphics;
@@ -432,18 +432,18 @@ vk::VertexInputRate Vulkan::Utils::RhiInputRateToVkInputRate(PC_CORE::VertexInpu
 {
     switch (_vertexInputRate)
     {
-    case PC_CORE::VertexInputRate::VERTEX:
+    case PC_CORE::VertexInputRate::Vertex:
         return vk::VertexInputRate::eVertex;
-    case PC_CORE::VertexInputRate::INSTANCE:
+    case PC_CORE::VertexInputRate::Instance:
         return vk::VertexInputRate::eInstance;
-    case PC_CORE::VertexInputRate::COUNT:
+    case PC_CORE::VertexInputRate::Count:
         throw std::invalid_argument("VertexInputRate::COUNT VertexInputRate");
     default: ;
         throw std::invalid_argument("Invalid VertexInputRate");
     }
 }
 
-vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::TextureType _textureType)
+vk::ImageType Vulkan::Utils::RhiImageToVkImageType(PC_CORE::TextureType _textureType)
 {
     switch (_textureType)
     {
@@ -451,7 +451,7 @@ vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::TextureType _texture
         return vk::ImageType::e2D;
         break;
     case PC_CORE::TextureType::TextureArray2D:
-        return vk::ImageType::e3D; 
+        return vk::ImageType::e3D;
         break;
     case PC_CORE::TextureType::CubeMap:
         return vk::ImageType::e2D;
@@ -464,7 +464,7 @@ vk::ImageType Vulkan::Utils::RHIImageToVkImageType(PC_CORE::TextureType _texture
     return {};
 }
 
-vk::ImageViewType Vulkan::Utils::RHIImageToVkImageViewType(PC_CORE::TextureType _textureType)
+vk::ImageViewType Vulkan::Utils::RhiImageToVkImageViewType(PC_CORE::TextureType _textureType)
 {
     switch (_textureType)
     {
@@ -479,10 +479,9 @@ vk::ImageViewType Vulkan::Utils::RHIImageToVkImageViewType(PC_CORE::TextureType 
         break;
     case PC_CORE::TextureType::Count:
         break;
-    default: 
+    default:
         assert(false);
     }
-
 }
 
 vk::ImageCreateFlags Vulkan::Utils::ImageCreateFlagFromTextureType(PC_CORE::TextureType _textureType)
@@ -509,31 +508,26 @@ vk::ImageCreateFlags Vulkan::Utils::ImageCreateFlagFromTextureType(PC_CORE::Text
 }
 
 
-
-vk::Filter Vulkan::Utils::RHIToVulkanFilter(PC_CORE::Filter _filter)
+vk::Filter Vulkan::Utils::RhiToVulkanFilter(PC_CORE::Filter _filter)
 {
     switch (_filter)
     {
-    case PC_CORE::Filter::NEAREST:
+    case PC_CORE::Filter::Nearest:
         return vk::Filter::eNearest;
-    case PC_CORE::Filter::LINEAR:
-        return vk::Filter::eLinear;
-    case PC_CORE::Filter::CUBIC_IMG:
-        return vk::Filter::eLinear;
-    case PC_CORE::Filter::CUBIC_EXT:
+    case PC_CORE::Filter::Linear:
         return vk::Filter::eLinear;
     }
 
     throw std::runtime_error("Unknown Filter");
 }
 
-vk::SamplerMipmapMode Vulkan::Utils::RHIToSamplerMipmapMode(PC_CORE::SamplerMipmapMode _mipmapMode)
+vk::SamplerMipmapMode Vulkan::Utils::RhiToSamplerMipmapMode(PC_CORE::SamplerMipmapMode _mipmapMode)
 {
     switch (_mipmapMode)
     {
-    case PC_CORE::SamplerMipmapMode::NEAREST:
+    case PC_CORE::SamplerMipmapMode::Nearest:
         return vk::SamplerMipmapMode::eNearest;
-    case PC_CORE::SamplerMipmapMode::LINEAR:
+    case PC_CORE::SamplerMipmapMode::Linear:
         return vk::SamplerMipmapMode::eLinear;
     }
 
@@ -541,69 +535,69 @@ vk::SamplerMipmapMode Vulkan::Utils::RHIToSamplerMipmapMode(PC_CORE::SamplerMipm
     throw std::runtime_error("Unknown SamplerMipmapMode");
 }
 
-vk::SamplerAddressMode Vulkan::Utils::RHIToVulkanSamplerAddressMode(PC_CORE::SamplerAddressMode _samplerAddressMode)
+vk::SamplerAddressMode Vulkan::Utils::RhiToVulkanSamplerAddressMode(PC_CORE::SamplerAddressMode _samplerAddressMode)
 {
     switch (_samplerAddressMode)
     {
-    case PC_CORE::SamplerAddressMode::REPEAT:
+    case PC_CORE::SamplerAddressMode::Repeat:
         return vk::SamplerAddressMode::eRepeat;
-    case PC_CORE::SamplerAddressMode::MIRRORED_REPEAT:
+    case PC_CORE::SamplerAddressMode::MirroredRepeat:
         return vk::SamplerAddressMode::eMirroredRepeat;
-    case PC_CORE::SamplerAddressMode::CLAMP_TO_EDGE:
+    case PC_CORE::SamplerAddressMode::ClampToEdge:
         return vk::SamplerAddressMode::eClampToEdge;
-    case PC_CORE::SamplerAddressMode::CLAMP_TO_BORDER:
+    case PC_CORE::SamplerAddressMode::ClampToBorder:
         return vk::SamplerAddressMode::eClampToBorder;
-    case PC_CORE::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE:
+    case PC_CORE::SamplerAddressMode::MirrorClampToEdge:
         return vk::SamplerAddressMode::eMirrorClampToEdge;
     }
 
     throw std::runtime_error("Unknown SamplerAddressMode");
 }
 
-vk::CompareOp Vulkan::Utils::RHIToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
+vk::CompareOp Vulkan::Utils::RhiToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
 {
     switch (_compareOp)
     {
-    case PC_CORE::CompareOp::NEVER:
+    case PC_CORE::CompareOp::Never:
         return vk::CompareOp::eNever;
-    case PC_CORE::CompareOp::LESS:
+    case PC_CORE::CompareOp::Less:
         return vk::CompareOp::eLess;
-    case PC_CORE::CompareOp::EQUAL:
+    case PC_CORE::CompareOp::Equal:
         return vk::CompareOp::eEqual;
-    case PC_CORE::CompareOp::LESS_OR_EQUAL:
+    case PC_CORE::CompareOp::LessOrEqual:
         return vk::CompareOp::eLessOrEqual;
-    case PC_CORE::CompareOp::GREATER:
+    case PC_CORE::CompareOp::Greater:
         return vk::CompareOp::eGreater;
-    case PC_CORE::CompareOp::NOT_EQUAL:
+    case PC_CORE::CompareOp::NotEqual:
         return vk::CompareOp::eNotEqual;
-    case PC_CORE::CompareOp::GREATER_OR_EQUAL:
+    case PC_CORE::CompareOp::GreaterOrEqual:
         return vk::CompareOp::eGreaterOrEqual;
-    case PC_CORE::CompareOp::ALWAYS:
+    case PC_CORE::CompareOp::Always:
         return vk::CompareOp::eAlways;
     }
 
     throw std::runtime_error("Unknown CompareOp");
 }
 
-vk::BorderColor Vulkan::Utils::RHIToBorderColor(PC_CORE::BorderColor _borderColor)
+vk::BorderColor Vulkan::Utils::RhiToBorderColor(PC_CORE::BorderColor _borderColor)
 {
     switch (_borderColor)
     {
-    case PC_CORE::BorderColor::FLOAT_TRANSPARENT_BLACK:
+    case PC_CORE::BorderColor::FloatTransparentBlack:
         return vk::BorderColor::eFloatTransparentBlack;
-    case PC_CORE::BorderColor::INT_TRANSPARENT_BLACK:
+    case PC_CORE::BorderColor::IntTransparentBlack:
         return vk::BorderColor::eIntTransparentBlack;
-    case PC_CORE::BorderColor::FLOAT_OPAQUE_BLACK:
+    case PC_CORE::BorderColor::FloatOpaqueBlack:
         return vk::BorderColor::eFloatOpaqueBlack;
-    case PC_CORE::BorderColor::INT_OPAQUE_BLACK:
+    case PC_CORE::BorderColor::IntOpaqueBlack:
         return vk::BorderColor::eIntOpaqueBlack;
-    case PC_CORE::BorderColor::FLOAT_OPAQUE_WHITE:
+    case PC_CORE::BorderColor::FloatOpaqueWhite:
         return vk::BorderColor::eFloatOpaqueWhite;
-    case PC_CORE::BorderColor::INT_OPAQUE_WHITE:
+    case PC_CORE::BorderColor::IntOpaqueWhite:
         return vk::BorderColor::eIntOpaqueWhite;
-    case PC_CORE::BorderColor::FLOAT_CUSTOM_EXT:
+    case PC_CORE::BorderColor::FloatCustomExt:
         return vk::BorderColor::eFloatCustomEXT;
-    case PC_CORE::BorderColor::INT_CUSTOM_EXT:
+    case PC_CORE::BorderColor::IntCustomExt:
         return vk::BorderColor::eIntCustomEXT;
     }
 
@@ -648,7 +642,7 @@ vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::CullModeFlagBit _cullMod
         break;
     default: ;
     }
-    
+
     return cullModeFlags;
 }
 
@@ -694,7 +688,6 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType
 }
 
 
-
 vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
 {
     switch (_format)
@@ -709,7 +702,8 @@ vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
     }
 }
 
-vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
+vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(
+    const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
 {
     vk::DescriptorType::eInputAttachment;
 
@@ -782,7 +776,7 @@ vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::PrimitiveTopo
         return vk::PrimitiveTopology::eLineStripWithAdjacency;
     case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleListWithAdjacency:
         return vk::PrimitiveTopology::eTriangleListWithAdjacency;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency: 
+    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency:
         return vk::PrimitiveTopology::eTriangleStripWithAdjacency;
     case PC_CORE::PrimitiveTopology::PrimitiveTopologyPathList:
         // Not directly supported in Vulkan; return something or assert
@@ -796,7 +790,7 @@ vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::PrimitiveTopo
 vk::AttachmentLoadOp Vulkan::Utils::RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation)
 {
     switch (_loadOperation)
-         {
+    {
     case PC_CORE::LoadOperation::Load:
         return vk::AttachmentLoadOp::eLoad;
     case PC_CORE::LoadOperation::Clear:
@@ -975,13 +969,13 @@ VmaMemoryUsage Vulkan::Utils::RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation
 {
     switch (_memoryVisibility)
     {
-    case PC_CORE::MemoryLocalisation::GPU_Only:
+    case PC_CORE::MemoryLocalisation::GpuOnly:
         return VMA_MEMORY_USAGE_GPU_ONLY;
-    case PC_CORE::MemoryLocalisation::CPU_Only:
+    case PC_CORE::MemoryLocalisation::CpuOnly:
         return VMA_MEMORY_USAGE_CPU_ONLY;
-    case PC_CORE::MemoryLocalisation::CPU_To_GPU:
+    case PC_CORE::MemoryLocalisation::CpuToGpu:
         return VMA_MEMORY_USAGE_CPU_TO_GPU;
-    case PC_CORE::MemoryLocalisation::GPU_To_CPU:
+    case PC_CORE::MemoryLocalisation::GpuToCpu:
         return VMA_MEMORY_USAGE_GPU_TO_CPU;
     case PC_CORE::MemoryLocalisation::Count:
     default:
@@ -992,7 +986,7 @@ VmaMemoryUsage Vulkan::Utils::RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation
 
 vk::BlendFactor Vulkan::Utils::RhiBlendFactorToVulkan(PC_CORE::BlendFactor _blendFactor)
 {
-    vk::BlendFactor blendFactor = vk::BlendFactor::eZero;
+    auto blendFactor = vk::BlendFactor::eZero;
     switch (_blendFactor)
     {
     case PC_CORE::BlendFactor::Zero:
@@ -1058,21 +1052,21 @@ vk::BlendFactor Vulkan::Utils::RhiBlendFactorToVulkan(PC_CORE::BlendFactor _blen
 
 vk::BlendOp Vulkan::Utils::RhiBlendOpToVulkan(PC_CORE::BlendOp _blendOp)
 {
-    vk::BlendOp blendOp = vk::BlendOp::eAdd;
+    auto blendOp = vk::BlendOp::eAdd;
     switch (_blendOp)
     {
     case PC_CORE::BlendOp::Add:
         break;
-    case PC_CORE::BlendOp::eSubtract:
+    case PC_CORE::BlendOp::Subtract:
         blendOp = vk::BlendOp::eSubtract;
         break;
-    case PC_CORE::BlendOp::eReverseSubtract:
+    case PC_CORE::BlendOp::ReverseSubtract:
         blendOp = vk::BlendOp::eReverseSubtract;
         break;
-    case PC_CORE::BlendOp::eMin:
+    case PC_CORE::BlendOp::Min:
         blendOp = vk::BlendOp::eMin;
         break;
-    case PC_CORE::BlendOp::eMax:
+    case PC_CORE::BlendOp::Max:
         blendOp = vk::BlendOp::eMax;
         break;
     default: assert(false);
@@ -1084,19 +1078,19 @@ vk::BlendOp Vulkan::Utils::RhiBlendOpToVulkan(PC_CORE::BlendOp _blendOp)
 vk::ColorComponentFlags Vulkan::Utils::RhiColorComponent(PC_CORE::ColorComponent _colorComponent)
 {
     vk::ColorComponentFlags f = {};
-    if (_colorComponent & PC_CORE::ColorComponent_R)
+    if (_colorComponent & PC_CORE::ColorComponentR)
     {
         f |= vk::ColorComponentFlagBits::eR;
     }
-    if (_colorComponent & PC_CORE::ColorComponent_G)
+    if (_colorComponent & PC_CORE::ColorComponentG)
     {
         f |= vk::ColorComponentFlagBits::eG;
     }
-    if (_colorComponent & PC_CORE::ColorComponent_B)
+    if (_colorComponent & PC_CORE::ColorComponentB)
     {
         f |= vk::ColorComponentFlagBits::eB;
     }
-    if (_colorComponent & PC_CORE::ColorComponent_A)
+    if (_colorComponent & PC_CORE::ColorComponentA)
     {
         f |= vk::ColorComponentFlagBits::eA;
     }
@@ -1146,16 +1140,17 @@ vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::TextureUsage usag
 
     VkImageUsageFlags flags = 0;
 
-    if ((usage & TextureUsage::Sampled) == (uint8_t)TextureUsage::Sampled)
+    if ((usage & TextureUsage::Sampled) == static_cast<uint8_t>(TextureUsage::Sampled))
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    if ((usage & TextureUsage::RenderTarget) == (uint8_t)TextureUsage::RenderTarget)
+    if ((usage & TextureUsage::RenderTarget) == static_cast<uint8_t>(TextureUsage::RenderTarget))
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 
-    if (((usage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth) || ((usage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil))
+    if (((usage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth)) || ((usage & TextureUsage::Stencil)
+        == static_cast<uint8_t>(TextureUsage::Stencil)))
         flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    if ((usage & TextureUsage::Storage) == (uint8_t)TextureUsage::Storage)
+    if ((usage & TextureUsage::Storage) == static_cast<uint8_t>(TextureUsage::Storage))
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
     // Fallback/default
@@ -1171,10 +1166,11 @@ vk::ImageAspectFlags Vulkan::Utils::RhiTextureUsageToImageAspectFlagFlags(PC_COR
 
     vk::ImageAspectFlags flags = {};
 
-    if ((_textureUsage & TextureUsage::RenderTarget) == (uint8_t)TextureUsage::RenderTarget)
+    if ((_textureUsage & TextureUsage::RenderTarget) == static_cast<uint8_t>(TextureUsage::RenderTarget))
         flags |= vk::ImageAspectFlagBits::eColor;
 
-    if (((_textureUsage & TextureUsage::Depth) == (uint8_t)TextureUsage::Depth) || ((_textureUsage & TextureUsage::Stencil) == (uint8_t)TextureUsage::Stencil))
+    if (((_textureUsage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth)) || ((_textureUsage &
+        TextureUsage::Stencil) == static_cast<uint8_t>(TextureUsage::Stencil)))
         flags |= vk::ImageAspectFlagBits::eDepth;
 
     return flags;

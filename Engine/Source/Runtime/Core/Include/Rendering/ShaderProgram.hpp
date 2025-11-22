@@ -15,16 +15,14 @@
 #include "Resources/ShaderSourceBinary.hpp"
 
 BEGIN_PCCORE
-
     using SourceList = std::vector<std::pair<ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>;
 
     // MAKE COMPUTE RAY AND GRAPHIC PROGRAMM
     // TO DO MAY SEPARATE RESOURCE AND GPU RESOURCE
-    class ShaderProgram : public Resource , public IGpuResource
+    class ShaderProgram : public Resource, public IGpuResource
     {
     public:
-
-        PC_CORE_API virtual std::shared_ptr<RhiResource> GetRhiHandle() const
+        PC_CORE_API std::shared_ptr<RhiResource> GetRhiHandle() const override
         {
             return m_RhiShaderProgram;
         }
@@ -34,7 +32,7 @@ BEGIN_PCCORE
         ShaderProgramPipelineType GetPipelineType() const
         {
             return m_ShaderProgramPipelineType;
-        } 
+        }
 
         // TODO ABSTRACT THIS 
         PC_CORE_API void AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets, size_t set);
@@ -42,29 +40,33 @@ BEGIN_PCCORE
         PC_CORE_API void FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets);
 
         IMP_DYNAMIC_REFLECT()
-    
-        PC_CORE_API ShaderProgram(const std::string& _shaderName,
-            ShaderProgramPipelineType _shaderProgramPipelineType, const std::vector<std::pair<ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>& _sources);
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
-            ShaderProgramPipelineType _shaderProgramPipelineType, const WeakObjectPtr<ShaderSourceBinary>& _source);
+                                  ShaderProgramPipelineType _shaderProgramPipelineType,
+                                  const std::vector<std::pair<ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>&
+                                  _sources);
 
-        PC_CORE_API ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType, const WeakObjectPtr<ShaderSourceBinary>& _source);
-        
+        PC_CORE_API ShaderProgram(const std::string& _shaderName,
+                                  ShaderProgramPipelineType _shaderProgramPipelineType,
+                                  const WeakObjectPtr<ShaderSourceBinary>& _source);
+
+        PC_CORE_API ShaderProgram(std::string&& _shaderName, ShaderProgramPipelineType _shaderProgramPipelineType,
+                                  const WeakObjectPtr<ShaderSourceBinary>& _source);
+
         PC_CORE_API ShaderProgram()
         {
             DYNAMIC_REFLECT_INIT
         }
 
-        PC_CORE_API virtual ~ShaderProgram() override
+        PC_CORE_API ~ShaderProgram() override
         {
             if (m_RhiShaderProgram.use_count() > 1)
             {
-                PC_LOGERROR("There is still a reference to the m_RhiShaderProgram, {}", name)
+                PC_LOGERROR("There is still a reference to the m_RhiShaderProgram, {}", Name)
             }
 
 
-            PC_LOG("Destroy ShaderProgram, {}", name);
+            PC_LOG("Destroy ShaderProgram, {}", Name);
         }
 
     protected:
@@ -73,10 +75,8 @@ BEGIN_PCCORE
         ShaderProgramPipelineType m_ShaderProgramPipelineType;
 
         static std::vector<ShaderModule> SourceListToShaderModules(const SourceList& _sourceList);
-    
-        REFLECT(ShaderProgram, Resource);
 
-    
+        REFLECT(ShaderProgram, Resource);
     };
 
 END_PCCORE

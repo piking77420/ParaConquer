@@ -1,4 +1,4 @@
-﻿#include <thread> 
+﻿#include <thread>
 #include <Chrono>
 #include <Iostream>
 
@@ -38,451 +38,465 @@ using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
 
-
 Editor::Editor()
 {
-	PROFILER_NOOP;
+    PROFILER_NOOP;
 
-	if (instance != nullptr)
-	{
-		PC_LOGERROR("Editor instance is not nullptr");
-		exit(-1);
-	}
-	instance = this;
-	editorData.projectData.graphicApi = GraphicAPI::Vulkan;
+    if (instance != nullptr)
+    {
+        PC_LOGERROR("Editor instance is not nullptr");
+        exit(-1);
+    }
+    instance = this;
+    editorData.projectData.graphicApi = GraphicAPI::Vulkan;
 }
 
 Editor::~Editor()
 {
-	SaveInitFiles();
-	instance = nullptr;
+    SaveInitFiles();
+    instance = nullptr;
 }
 
 void Editor::LoadFromInitFiles()
 {
-	ProjectFile projectFile;
-	EditorIniFile editorIniFile;
-	if (std::filesystem::exists(EditorIniFileName)) // if editor.ini exist
-	{
-	
-		JsonSerializer s;
-		s.OpenFile(std::string(EditorIniFileName), PC_CORE::Serializer::SerializeOperation::DeSerialize);
-		s.DeSerialize<EditorIniFile>(&editorIniFile); // copy it 
-		
-		if (std::filesystem::exists(editorIniFile.projectPath)) // if editor.ini is valid
-		{
-			JsonSerializer s2;
-			s2.OpenFile(editorIniFile.projectPath + "/" + std::string(ProjectFileName), PC_CORE::Serializer::SerializeOperation::DeSerialize);;
-			s2.DeSerialize<ProjectFile>(&projectFile); // copy project
-			s2.CloseFile();
-		}
-		else
-		{
-			const std::wstring sw = std::wstring(editorIniFile.projectPath.begin(), editorIniFile.projectPath.end());
-			projectFile = ProjectMaker::CreateBaseProject(sw.c_str());
-		}
-		s.CloseFile();
-	}
-	else
-	{
-		std::wstring projectInit;
-		while (projectInit.empty())
-		{
-			projectInit = SystemDialogue::Instance().SeletecFolder(L"Select your project folder");
-		}
+    ProjectFile projectFile;
+    EditorIniFile editorIniFile;
+    if (std::filesystem::exists(EditorIniFileName)) // if editor.ini exist
+    {
+        JsonSerializer s;
+        s.OpenFile(std::string(EditorIniFileName), Serializer::SerializeOperation::DeSerialize);
+        s.DeSerialize<EditorIniFile>(&editorIniFile); // copy it 
 
-		assert(!projectInit.empty() && "Something went wrong");
+        if (std::filesystem::exists(editorIniFile.projectPath)) // if editor.ini is valid
+        {
+            JsonSerializer s2;
+            s2.OpenFile(editorIniFile.projectPath + "/" + std::string(ProjectFileName),
+                        Serializer::SerializeOperation::DeSerialize);
+            s2.DeSerialize<ProjectFile>(&projectFile); // copy project
+            s2.CloseFile();
+        }
+        else
+        {
+            const auto sw = std::wstring(editorIniFile.projectPath.begin(), editorIniFile.projectPath.end());
+            projectFile = ProjectMaker::CreateBaseProject(sw.c_str());
+        }
+        s.CloseFile();
+    }
+    else
+    {
+        std::wstring projectInit;
+        while (projectInit.empty())
+        {
+            projectInit = SystemDialogue::Instance().SeletecFolder(L"Select your project folder");
+        }
 
-		if (!std::filesystem::exists(projectInit + std::wstring(ProjectFileName.begin(), ProjectFileName.end())))
-		{
-			projectFile = ProjectMaker::CreateBaseProject(projectInit.c_str());
-		}
-		
-		editorIniFile.projectPath = std::string(projectInit.begin(), projectInit.end());
-	}
+        assert(!projectInit.empty() && "Something went wrong");
 
-	editorData.projectPath = editorIniFile.projectPath;
-	editorData.projectData = ProjectData(projectFile);
+        if (!std::filesystem::exists(projectInit + std::wstring(ProjectFileName.begin(), ProjectFileName.end())))
+        {
+            projectFile = ProjectMaker::CreateBaseProject(projectInit.c_str());
+        }
+
+        editorIniFile.projectPath = std::string(projectInit.begin(), projectInit.end());
+    }
+
+    editorData.projectPath = editorIniFile.projectPath;
+    editorData.projectData = ProjectData(projectFile);
 }
 
 void Editor::SaveInitFiles()
 {
-	if (editorData.projectPath.empty())
-		return;
+    if (editorData.projectPath.empty())
+        return;
 
-	EditorIniFile editorIniFile;
-	editorIniFile.projectPath = editorData.projectPath.generic_string();
-	
-	JsonSerializer s;
-	s.OpenFile(std::string(EditorIniFileName), Serializer::SerializeOperation::Serialize);
-	s.Serialize<EditorIniFile>(editorIniFile);
-	s.CloseFile();
+    EditorIniFile editorIniFile;
+    editorIniFile.projectPath = editorData.projectPath.generic_string();
+
+    JsonSerializer s;
+    s.OpenFile(std::string(EditorIniFileName), Serializer::SerializeOperation::Serialize);
+    s.Serialize<EditorIniFile>(editorIniFile);
+    s.CloseFile();
 }
 
 void Editor::CompileShader()
 {
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Editor);
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
 
-	PC_LOG("CompileShader...")
+    PC_LOG("CompileShader...")
 
-	auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.vs.hlsl");
+    auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
+                                                             EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.vs.hlsl");
 
-	auto forwardFrag = ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.ps.hlsl");
-	// sprite
-	{
-		auto spriteVert = ResourceManager::Create<ShaderSource>("DrawSprite.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DrawSprite/DrawSprite.vs.hlsl");
-		auto spriteFrag = ResourceManager::Create<ShaderSource>("DrawSprite.ps.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DrawSprite/DrawSprite.ps.hlsl");
-	}
+    auto forwardFrag = ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
+                                                             EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.ps.hlsl");
+    // sprite
+    {
+        auto spriteVert = ResourceManager::Create<ShaderSource>("DrawSprite.vs.hlsl",
+                                                                EDITOR_RESOURCE_PATH
+                                                                "/Shaders/DrawSprite/DrawSprite.vs.hlsl");
+        auto spriteFrag = ResourceManager::Create<ShaderSource>("DrawSprite.ps.hlsl",
+                                                                EDITOR_RESOURCE_PATH
+                                                                "/Shaders/DrawSprite/DrawSprite.ps.hlsl");
+    }
 
-	// geometry buffer
-	{
-		auto geometryVert = ResourceManager::Create<ShaderSource>("Geometry.vs.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/Geometry/Geometry.vs.hlsl");
+    // geometry buffer
+    {
+        auto geometryVert = ResourceManager::Create<ShaderSource>("Geometry.vs.hlsl",
+                                                                  EDITOR_RESOURCE_PATH
+                                                                  "/Shaders/Geometry/Geometry.vs.hlsl");
 
-		auto geometryFrag = ResourceManager::Create<ShaderSource>("Geometry.ps.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/Geometry/Geometry.ps.hlsl");
-	}
+        auto geometryFrag = ResourceManager::Create<ShaderSource>("Geometry.ps.hlsl",
+                                                                  EDITOR_RESOURCE_PATH
+                                                                  "/Shaders/Geometry/Geometry.ps.hlsl");
+    }
 
-	// deferred
-	{
-		auto deferredFrag = ResourceManager::Create<ShaderSource>("Deferred.ps.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/Deferred/Deferred.ps.hlsl");
-	}
+    // deferred
+    {
+        auto deferredFrag = ResourceManager::Create<ShaderSource>("Deferred.ps.hlsl",
+                                                                  EDITOR_RESOURCE_PATH
+                                                                  "/Shaders/Deferred/Deferred.ps.hlsl");
+    }
 
-	{ // DebugDraw
-		auto debugDrawVert = ResourceManager::Create<ShaderSource>("DebugDraw.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDraw.vs.hlsl");
+    {
+        // DebugDraw
+        auto debugDrawVert = ResourceManager::Create<ShaderSource>("DebugDraw.vs.hlsl",
+                                                                   EDITOR_RESOURCE_PATH
+                                                                   "/Shaders/DebugDraw/DebugDraw.vs.hlsl");
 
-		auto debugDrawFrag = ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDraw.ps.hlsl");
+        auto debugDrawFrag = ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl",
+                                                                   EDITOR_RESOURCE_PATH
+                                                                   "/Shaders/DebugDraw/DebugDraw.ps.hlsl");
 
-		auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("DebugDrawRay.vs.hlsl", EDITOR_RESOURCE_PATH "/Shaders/DebugDraw/DebugDrawRay.vs.hlsl");
-	}
-	// Tone Map
-	{
-		auto toneMap = ResourceManager::Create<ShaderSource>("Aces.cs.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
-	}
+        auto debugDrawRayVert = ResourceManager::Create<ShaderSource>("DebugDrawRay.vs.hlsl",
+                                                                      EDITOR_RESOURCE_PATH
+                                                                      "/Shaders/DebugDraw/DebugDrawRay.vs.hlsl");
+    }
+    // Tone Map
+    {
+        auto toneMap = ResourceManager::Create<ShaderSource>("Aces.cs.hlsl",
+                                                             EDITOR_RESOURCE_PATH
+                                                             "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
+    }
 
-	{
-		auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuad.vs.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/DrawQuad.vs.hlsl");
+    {
+        auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuad.vs.hlsl",
+                                                                    EDITOR_RESOURCE_PATH "/Shaders/DrawQuad.vs.hlsl");
 
-		auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/SampleSingleTexture.ps.hlsl");
-	}
+        auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
+                                                                         EDITOR_RESOURCE_PATH
+                                                                         "/Shaders/SampleSingleTexture.ps.hlsl");
+    }
 
-	// skybox
-	{
-		auto skyboxVert = ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.vs.hlsl");
+    // skybox
+    {
+        auto skyboxVert = ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
+                                                                EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.vs.hlsl");
 
-		auto skyboxFrag = ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
-			EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.ps.hlsl");
-	}
+        auto skyboxFrag = ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
+                                                                EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.ps.hlsl");
+    }
 }
 
 void Editor::Init()
 {
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Editor);
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
 
-	LoadFromInitFiles();
-	
-	const AppCreateInfo appCreateInfo =
-	{
-		.appName = editorData.projectData.projectName,
-		.appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
-		.enableGpuDebug = true,
-		.graphicAPI = editorData.projectData.graphicApi
-	};
+    LoadFromInitFiles();
 
-	CompileShader();
-	gameApp.Init(appCreateInfo);
-	IMGUIContext.Init(gameApp.window.GetHandle(), Rhi::GetInstance().GetGraphicsAPI());
+    const AppCreateInfo appCreateInfo =
+    {
+        .appName = editorData.projectData.projectName,
+        .appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
+        .enableGpuDebug = true,
+        .graphicAPI = editorData.projectData.graphicApi
+    };
 
-	gameApp.renderer.swapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd) {
-		cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
-		IMGUIContext.Render(cmd);
-		cmd->EndDebugLabel();
-		});
+    CompileShader();
+    gameApp.Init(appCreateInfo);
+    IMGUIContext.Init(gameApp.MainWindow.GetHandle(), Rhi::GetInstance().GetGraphicsApi());
 
-
-	// TO AVOID USING A SYSTEM TO GET ENTIES SYGNATURE 
-	// TO DO FIND A WAY TO ITERATE OVER A BIT SET OF 100000000 QUICKLY
-	//https://en.wikipedia.org/wiki/Van_Emde_Boas_tree
-	World::GetWorld()->level.RegisterSystem<PC_CORE::RendererSystem>(&gameApp.renderingWorldData);
+    gameApp.Renderer.SwapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd)
+    {
+        cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
+        IMGUIContext.Render(cmd);
+        cmd->EndDebugLabel();
+    });
 
 
-	// create sampler 
-	const PC_CORE::SamplerCreateInfo samplerInfo =
-	{
-	.SamplerName = "LinearRepeat",
-	.magFilter = PC_CORE::Filter::LINEAR,
-	.minFilter = PC_CORE::Filter::LINEAR,
-	.u = PC_CORE::SamplerAddressMode::REPEAT,
-	.v = PC_CORE::SamplerAddressMode::REPEAT,
-	.w = PC_CORE::SamplerAddressMode::REPEAT
-	};
-
-	ResourceManager::Create<Sampler>(samplerInfo);
+    // TO AVOID USING A SYSTEM TO GET ENTIES SYGNATURE 
+    // TO DO FIND A WAY TO ITERATE OVER A BIT SET OF 100000000 QUICKLY
+    //https://en.wikipedia.org/wiki/Van_Emde_Boas_tree
+    World::GetWorld()->level.RegisterSystem<RendererSystem>(&gameApp.RenderingWorldData);
 
 
-	InitTestScene();
-	InitEditor();
+    // create sampler 
+    const SamplerCreateInfo samplerInfo =
+    {
+        .SamplerName = "LinearRepeat",
+        .magFilter = Filter::Linear,
+        .minFilter = Filter::Linear,
+        .u = SamplerAddressMode::Repeat,
+        .v = SamplerAddressMode::Repeat,
+        .w = SamplerAddressMode::Repeat
+    };
+
+    ResourceManager::Create<Sampler>(samplerInfo);
+
+
+    InitTestScene();
+    InitEditor();
 }
 
 void Editor::Destroy()
 {
-	PERF_REGION_SCOPED;
+    PERF_REGION_SCOPED;
 
-	// editor window need core
-	for (auto& i : editorWindows)
-		i.reset();
+    // editor window need core
+    for (auto& i : editorWindows)
+        i.reset();
 
-	IMGUIContext.Destroy();
+    IMGUIContext.Destroy();
 
-	gameApp.Destroy();
+    gameApp.Destroy();
 }
+
 void Editor::UpdateEditor()
 {
-	PERF_REGION_SCOPED;
-	//static bool open = true;
-	//ImGui::ShowDemoWindow(&open);
+    PERF_REGION_SCOPED;
+    //static bool open = true;
+    //ImGui::ShowDemoWindow(&open);
 
-	dockSpace.BeginDockSpace();
-	ImGui::PushFont(editorData.editorFont.normal); // push normal font
+    dockSpace.BeginDockSpace();
+    ImGui::PushFont(editorData.editorFont.normal); // push normal font
 
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
-		{
-			if (ImGui::MenuItem("SaveScene"))
-			{
-				Level& l = World::GetWorld()->level;
-				//Serializer::Serialize(l,"TestScene.map");
-			}
-			if (ImGui::MenuItem("LoadScene"))
-			{
-				Level& l = World::GetWorld()->level;
-				//Serializer::DeSerialize(&l,"TestScene.map");
-			}
-			ImGui::EndMenu();
-		}
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("SaveScene"))
+            {
+                Level& l = World::GetWorld()->level;
+                //Serializer::Serialize(l,"TestScene.map");
+            }
+            if (ImGui::MenuItem("LoadScene"))
+            {
+                Level& l = World::GetWorld()->level;
+                //Serializer::DeSerialize(&l,"TestScene.map");
+            }
+            ImGui::EndMenu();
+        }
 
-		if (ImGui::BeginMenu("Rendering"))
-		{
-			auto l = [&](std::shared_ptr<Resource> _shader)
-				{
-					if (ImGui::MenuItem(_shader->name.c_str()))
-					{
-						Rhi::GetRhiContext()->WaitIdle();
-						_shader->Reload();
-						// reload shader
-					}
-				};
+        if (ImGui::BeginMenu("Rendering"))
+        {
+            auto l = [&](std::shared_ptr<Resource> _shader)
+            {
+                if (ImGui::MenuItem(_shader->Name.c_str()))
+                {
+                    Rhi::GetRhiContext()->WaitIdle();
+                    _shader->Reload();
+                    // reload shader
+                }
+            };
 
-			PC_CORE::ResourceManager::ForEach(PC_CORE::Reflector::GetTypeKey<ShaderSource>(), l);
+            ResourceManager::ForEach(Reflector::GetTypeKey<ShaderSource>(), l);
 
-			ImGui::EndMenu();
-		}
-		ImGui::EndMenuBar();
-	}
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
 
-	{
-		PERF_REGION_SCOPED_NAMED("Update Windows");
-		for (auto& editorWindow : editorWindows)
-		{
-			editorWindow->Begin();
-			editorWindow->Update();
-			editorWindow->End();
-		}
-	}
+    {
+        PERF_REGION_SCOPED_NAMED("Update Windows");
+        for (auto& editorWindow : editorWindows)
+        {
+            editorWindow->Begin();
+            editorWindow->Update();
+            editorWindow->End();
+        }
+    }
 
-	for (auto& sub : editorSubSystems)
-		sub->Update();
+    for (auto& sub : editorSubSystems)
+        sub->Update();
 
-	EditorCommandUpdate();
-	ImGui::PopFont();
-	dockSpace.EndDockSpace();
+    EditorCommandUpdate();
+    ImGui::PopFont();
+    dockSpace.EndDockSpace();
 
-	{
-		PERF_REGION_SCOPED_NAMED("Editor Render");
-		m_EditorRenderer.DrawSelectedEntity();
+    {
+        PERF_REGION_SCOPED_NAMED("Editor Render");
+        m_EditorRenderer.DrawSelectedEntity();
 
-		for (auto& editorWindow : editorWindows)
-			editorWindow->Render();
-		for (auto& sub : editorSubSystems)
-			sub->Render();
-	}
-
+        for (auto& editorWindow : editorWindows)
+            editorWindow->Render();
+        for (auto& sub : editorSubSystems)
+            sub->Render();
+    }
 }
 
 void Editor::RewindCommand()
 {
-	if (editorCommands.empty())
-		return;
+    if (editorCommands.empty())
+        return;
 
-	editorCommands.pop_back();
+    editorCommands.pop_back();
 }
 
 void Editor::InitTestScene()
 {
-	
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Editor);
-	PC_LOG("InitTestScene...")
-	auto& level = World::GetWorld()->level;
-	
-/*
-	std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");
-	std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("EmerauldBlockMaterial.mat");
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
+    PC_LOG("InitTestScene...")
+    auto& level = World::GetWorld()->level;
 
-	m1->albedo = ResourceManager::Create<Texture2D>("DiamondBlock.jpg", "C:/Data/Isart/Projet/C++/ParaConquerGame/Assets/Textures/DiamondBlock.jpg");
-	m1->Build();
+    /*
+        std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");
+        std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("EmerauldBlockMaterial.mat");
+    
+        m1->albedo = ResourceManager::Create<Texture2D>("DiamondBlock.jpg", "C:/Data/Isart/Projet/C++/ParaConquerGame/Assets/Textures/DiamondBlock.jpg");
+        m1->Build();
+    
+    
+        m2->albedo = ResourceManager::Create<Texture2D>("EmerauldBlock.png", "C:/Data/Isart/Projet/C++/ParaConquerGame/Assets/Textures/EmerauldBlock.png");
+        m2->Build();
+    
+    
+    
+    
+        EntityId sphere = level.CreateEntity("Sphere");
+        level.AddComponent<Transform>(sphere);
+        level.AddComponent<StaticMeshComponent>(sphere);
+        Transform* t = &level.GetComponent<Transform>(sphere);
+        t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+        t->scale = Tbx::Vector3d(2.0f, 2.0f, 2.0f);
+    
+    
+        StaticMeshComponent* mesh2 = &level.GetComponent<StaticMeshComponent>(sphere);
+        mesh2->staticMesh = ResourceManager::Get<StaticMesh>("Sphere.obj");
+        mesh2->material = m2;
+        */
 
+    EntityId pointLight = level.CreateEntity("PointLight");
+    level.AddComponent<Transform>(pointLight);
+    level.AddComponent<PointLight>(pointLight);
+    Transform* t = &level.GetComponent<Transform>(pointLight);
+    t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
+    t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
-	m2->albedo = ResourceManager::Create<Texture2D>("EmerauldBlock.png", "C:/Data/Isart/Projet/C++/ParaConquerGame/Assets/Textures/EmerauldBlock.png");
-	m2->Build();
-
-
-
-
-	EntityId sphere = level.CreateEntity("Sphere");
-	level.AddComponent<Transform>(sphere);
-	level.AddComponent<StaticMeshComponent>(sphere);
-	Transform* t = &level.GetComponent<Transform>(sphere);
-	t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-	t->scale = Tbx::Vector3d(2.0f, 2.0f, 2.0f);
-
-
-	StaticMeshComponent* mesh2 = &level.GetComponent<StaticMeshComponent>(sphere);
-	mesh2->staticMesh = ResourceManager::Get<StaticMesh>("Sphere.obj");
-	mesh2->material = m2;
-	*/
-
-	EntityId pointLight = level.CreateEntity("PointLight");
-	level.AddComponent<Transform>(pointLight);
-	level.AddComponent<PointLight>(pointLight);
-	Transform* t = &level.GetComponent<Transform>(pointLight);
-	t->position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
-	t->scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-
-	PointLight& p = level.GetComponent<PointLight>(pointLight);
-	p.intensity = 5.f;
+    PointLight& p = level.GetComponent<PointLight>(pointLight);
+    p.intensity = 5.f;
 }
 
 void Editor::DestroyTestScene()
 {
+    if (std::holds_alternative<EntityId>(selectedObject))
+        selectedObject = std::monostate();
 
 
-	if (std::holds_alternative<EntityId>(selectedObject))
-		selectedObject = std::monostate();
-
-
-	//ResourceManager::Delete<Material>("material1");
-	//ResourceManager::Delete<Material>("material2");
+    //ResourceManager::Delete<Material>("material1");
+    //ResourceManager::Delete<Material>("material2");
 }
 
 void Editor::Run(bool* _appShouldClose)
 {
-	// begin game thread
-	while (!gameApp.window.ShouldClose())
-	{
-		PERF_REGION_SCOPED;
-		PERF_REGION_COLOR(PerfRegion::Editor);
+    // begin game thread
+    while (!gameApp.MainWindow.ShouldClose())
+    {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::Editor);
 
 
-		gameApp.coreIo.PoolEvent();
-		gameApp.window.PoolEvents();
-		PC_CORE::Time::UpdateTime();
+        gameApp.CoreIo.PoolEvent();
+        gameApp.MainWindow.PoolEvents();
+        Time::UpdateTime();
 
 
-		IMGUIContext.NewFrame();
-		gameApp.WorldTick(PC_CORE::Time::DeltaTime());
-		gameApp.renderer.GetRenderingData(gameApp.renderingWorldData);
+        IMGUIContext.NewFrame();
+        gameApp.WorldTick(Time::DeltaTime());
+        gameApp.Renderer.GetRenderingData(gameApp.RenderingWorldData);
 
-		// end game thread
-		// begin render thread
-		gameApp.renderer.BeginFrame(&gameApp.window);
-		UpdateEditor();
-		gameApp.renderer.SwapBuffers(&gameApp.window);
-		PERF_FRAME_MARK;
-	}
+        // end game thread
+        // begin render thread
+        gameApp.Renderer.BeginFrame(&gameApp.MainWindow);
+        UpdateEditor();
+        gameApp.Renderer.SwapBuffers(&gameApp.MainWindow);
+        PERF_FRAME_MARK;
+    }
 
-	Rhi::GetRhiContext()->WaitIdle();
-	// to do move this 
-	editorData.nearestSampler.~Sampler();
+    Rhi::GetRhiContext()->WaitIdle();
+    // to do move this 
+    editorData.nearestSampler.~Sampler();
 }
 
 void Editor::InitEditor()
 {
-	PERF_REGION_SCOPED;
-	PERF_REGION_COLOR(PerfRegion::Editor);
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
 
-	{
-		PC_LOG("Init Editor NearestSampler...")
+    {
+        PC_LOG("Init Editor NearestSampler...")
 
-		const PC_CORE::SamplerCreateInfo info =
-		{
-		.SamplerName = "ImguiImageSampler",
-		.magFilter = PC_CORE::Filter::LINEAR,
-		.minFilter = PC_CORE::Filter::LINEAR,
-		.u = PC_CORE::SamplerAddressMode::REPEAT,
-		.v = PC_CORE::SamplerAddressMode::REPEAT,
-		.w = PC_CORE::SamplerAddressMode::REPEAT
-		};
+        const SamplerCreateInfo info =
+        {
+            .SamplerName = "ImguiImageSampler",
+            .magFilter = Filter::Linear,
+            .minFilter = Filter::Linear,
+            .u = SamplerAddressMode::Repeat,
+            .v = SamplerAddressMode::Repeat,
+            .w = SamplerAddressMode::Repeat
+        };
 
-		editorData.nearestSampler = PC_CORE::Sampler(info);
+        editorData.nearestSampler = Sampler(info);
+    }
 
-	}
+
+    {
+        PC_LOG("InitEditorWindow...")
+        editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+        editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
+        editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
+        editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
+        editorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
+    }
 
 
-	{
-		PC_LOG("InitEditorWindow...")
-		editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
-		editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
-		editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
-		editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
-		editorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
-	}
-	
+    {
+        PC_LOG("InitEditorSystem")
+        m_EditorRenderer = EditorRenderer(*this);
+        m_EditorRenderer.PushCustomCommand();
+    }
 
-	{
-		PC_LOG("InitEditorSystem")
-		m_EditorRenderer = EditorRenderer(*this);
-		m_EditorRenderer.PushCustomCommand();
-	}
+    {
+        ImGuiIO& io = ImGui::GetIO();
 
-	{
-		ImGuiIO& io = ImGui::GetIO();
+        PC_LOG("Load Font")
+        auto l = [&](EditorFont* _f, const char* _fontPath)
+        {
+            _f->tiny = io.Fonts->AddFontFromFileTTF(_fontPath, 11.f);
+            _f->small = io.Fonts->AddFontFromFileTTF(_fontPath, 13.f);
+            _f->normal = io.Fonts->AddFontFromFileTTF(_fontPath, 15.f);
+            _f->big = io.Fonts->AddFontFromFileTTF(_fontPath, 16.f);
+            _f->veryBig = io.Fonts->AddFontFromFileTTF(_fontPath, 21.f);
+        };
 
-		PC_LOG("Load Font")
-		auto l = [&](EditorFont* _f, const char* _fontPath)
-		{
-			_f->tiny = io.Fonts->AddFontFromFileTTF(_fontPath, 11.f);
-			_f->small = io.Fonts->AddFontFromFileTTF(_fontPath, 13.f);
-			_f->normal = io.Fonts->AddFontFromFileTTF(_fontPath, 15.f);
-			_f->big = io.Fonts->AddFontFromFileTTF(_fontPath, 16.f);
-			_f->veryBig = io.Fonts->AddFontFromFileTTF(_fontPath, 21.f);
-		};
+        l(&editorData.editorFont, EDITOR_RESOURCE_PATH"/Font/Verdana.ttf");
+        l(&editorData.editorFontItalic, EDITOR_RESOURCE_PATH"/Font/Verdana-Italic.ttf");
 
-		l(&editorData.editorFont, EDITOR_RESOURCE_PATH"/Font/Verdana.ttf");
-		l(&editorData.editorFontItalic, EDITOR_RESOURCE_PATH"/Font/Verdana-Italic.ttf");
-
-		unsigned char* tex_pixels = nullptr;
-		int tex_w = 0, tex_h = 0;
-		io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
-		io.FontDefault = editorData.editorFont.big;
-	}
+        unsigned char* tex_pixels = nullptr;
+        int tex_w = 0, tex_h = 0;
+        io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
+        io.FontDefault = editorData.editorFont.big;
+    }
 }
 
 void Editor::EditorCommandUpdate()
 {
-	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
-	{
-		PERF_REGION_SCOPED;
-		PERF_REGION_COLOR(PerfRegion::Editor);
+    if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_Z))
+    {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::Editor);
 
-		RewindCommand();
-	}
+        RewindCommand();
+    }
 }

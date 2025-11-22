@@ -1,4 +1,3 @@
-
 #include <Iostream>
 #include "Editor.hpp"
 
@@ -7,9 +6,8 @@
 
 int main(int argc, char* argv[])
 {
-
 #if WAIT_DEBUG_GPU_INJECTION
-std::getchar();
+    std::getchar();
 #endif
 
     bool appShounldClose = false;
@@ -22,7 +20,6 @@ std::getchar();
         editor.Destroy();
     }
 
-  
 
     return 0;
 }

@@ -1,6 +1,6 @@
 ﻿#include "Resources/VulkanDescriptorSets.hpp"
 
-#include "Utils/RhiVulkanParser.hpp"
+#include "Utils/RhiToVulkan.hpp"
 #include "VulkanDevice.hpp"
 #include "Buffer/VulkanBuffer.hpp"
 
@@ -10,7 +10,8 @@
 #include "Resources/VulkanSampler.hpp"
 #include "Texture/VulkanTexture.hpp"
 
-void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& _shaderProgramDescriptorSet)
+void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(
+    const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& _shaderProgramDescriptorSet)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -40,8 +41,8 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     }
 
     // Double the size per frame in flight
-    imageDescriptorCount = imageDescriptorCount * MAX_FRAMES_IN_FLIGHT;
-    bufferDescriptorCount = bufferDescriptorCount * MAX_FRAMES_IN_FLIGHT;
+    imageDescriptorCount = imageDescriptorCount * MaxFramesInFlight;
+    bufferDescriptorCount = bufferDescriptorCount * MaxFramesInFlight;
 
     std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos(bufferDescriptorCount);
     std::vector<vk::DescriptorImageInfo> descriptorImageInfos(imageDescriptorCount);
@@ -49,7 +50,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
     // Reset counters
     bufferDescriptorCount = 0;
     imageDescriptorCount = 0;
-    
+
     for (size_t f = 0; f < m_DescriptorSets.size(); f++)
     {
         for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
@@ -58,10 +59,14 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
 
             if (std::holds_alternative<PC_CORE::UniformBufferDescriptor>(des))
             {
-                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = &std::get<PC_CORE::UniformBufferDescriptor>(des);
+                const PC_CORE::UniformBufferDescriptor* uniformBufferDescriptor = &std::get<
+                    PC_CORE::UniformBufferDescriptor>(des);
 
-                const VulkanBuffer* buffer = static_cast<const VulkanBuffer*>(uniformBufferDescriptor->buffer->GetRhiHandle()->GetNativeHandle());
-                assert(buffer->bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsported resource dynamic size in function of thier memory usage");
+                auto buffer = static_cast<const VulkanBuffer*>(uniformBufferDescriptor->buffer->GetRhiHandle()->
+                    GetNativeHandle());
+                assert(
+                    buffer->bufferAndAlloc.size() == MaxFramesInFlight &&
+                    "Unsported resource dynamic size in function of thier memory usage");
 
                 descriptorBufferInfos[bufferDescriptorCount].buffer = buffer->bufferAndAlloc.at(f).buffer;
                 descriptorBufferInfos[bufferDescriptorCount].offset = 0;
@@ -71,12 +76,16 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
 
             if (std::holds_alternative<PC_CORE::ImageSamplerDescriptor>(des))
             {
-                const PC_CORE::ImageSamplerDescriptor* imageSamplerDescriptor = &std::get<PC_CORE::ImageSamplerDescriptor>(des);
+                const PC_CORE::ImageSamplerDescriptor* imageSamplerDescriptor = &std::get<
+                    PC_CORE::ImageSamplerDescriptor>(des);
 
-                const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture->GetRhiHandle()->GetNativeHandle());
-                const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(imageSamplerDescriptor->sampler->GetRhiHandle()->GetNativeHandle());
+                auto textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageSamplerDescriptor->texture
+                    ->GetRhiHandle()->GetNativeHandle());
+                auto samplerHandle = static_cast<const vk::Sampler*>(imageSamplerDescriptor->sampler->GetRhiHandle()->
+                    GetNativeHandle());
 
-                descriptorImageInfos[imageDescriptorCount].imageLayout = Vulkan::Utils::RhiImageStateToVulkanImageLayout(imageSamplerDescriptor->imageState);
+                descriptorImageInfos[imageDescriptorCount].imageLayout = Utils::RhiImageStateToVulkanImageLayout(
+                    imageSamplerDescriptor->imageState);
                 descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
                 descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
                 imageDescriptorCount++;
@@ -86,32 +95,38 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             {
                 const PC_CORE::ImageDescriptor* imageDescriptor = &std::get<PC_CORE::ImageDescriptor>(des);
 
-                const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageDescriptor->texture->GetRhiHandle()->GetNativeHandle());
+                auto textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(imageDescriptor->texture->
+                    GetRhiHandle()->GetNativeHandle());
 
-                descriptorImageInfos[imageDescriptorCount].imageLayout = Vulkan::Utils::RhiImageStateToVulkanImageLayout(imageDescriptor->imageState);
+                descriptorImageInfos[imageDescriptorCount].imageLayout = Utils::RhiImageStateToVulkanImageLayout(
+                    imageDescriptor->imageState);
                 descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
                 imageDescriptorCount++;
             }
 
             if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
             {
-                const PC_CORE::InputAttachementDescriptor* inputAttachementDescriptor = &std::get<PC_CORE::InputAttachementDescriptor>(des);
-                const std::vector<TextureAndAlloc>* textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(inputAttachementDescriptor->image->GetRhiHandle()->GetNativeHandle());
-                const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(inputAttachementDescriptor->image->GetRhiHandle()->GetNativeHandle());
+                const PC_CORE::InputAttachementDescriptor* inputAttachementDescriptor = &std::get<
+                    PC_CORE::InputAttachementDescriptor>(des);
+                auto textureAndAlloc = static_cast<const std::vector<TextureAndAlloc>*>(inputAttachementDescriptor->
+                    image->GetRhiHandle()->GetNativeHandle());
+                auto samplerHandle = static_cast<const vk::Sampler*>(inputAttachementDescriptor->image->GetRhiHandle()->
+                    GetNativeHandle());
 
-                descriptorImageInfos[imageDescriptorCount].imageLayout = Vulkan::Utils::RhiImageStateToVulkanImageLayout(inputAttachementDescriptor->imageState);
+                descriptorImageInfos[imageDescriptorCount].imageLayout = Utils::RhiImageStateToVulkanImageLayout(
+                    inputAttachementDescriptor->imageState);
                 descriptorImageInfos[imageDescriptorCount].imageView = textureAndAlloc->at(f).imageView;
                 descriptorImageInfos[imageDescriptorCount].sampler = *samplerHandle;
                 imageDescriptorCount++;
             }
         }
     }
-    
+
     // Reset counters before descriptor writes
-  
+
 
     std::vector<vk::WriteDescriptorSet> descriptorWrites(_shaderProgramDescriptorSet.size() * m_DescriptorSets.size());
-    
+
 
     size_t descriptorWriteOffset = 0;
     bufferDescriptorCount = 0;
@@ -119,8 +134,6 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
 
     for (size_t f = 0; f < m_DescriptorSets.size(); f++)
     {
-        
-        
         for (size_t i = 0; i < _shaderProgramDescriptorSet.size(); i++)
         {
             size_t descriptorWriteIndex = i + descriptorWriteOffset;
@@ -134,7 +147,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             switch (_shaderProgramDescriptorSet.at(i).shaderProgramDescriptorType)
             {
             case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
-            case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:;
+            case PC_CORE::ShaderProgramDescriptorType::StorageBuffer: ;
                 descriptorWrites[descriptorWriteIndex].pBufferInfo = &descriptorBufferInfos[bufferDescriptorCount];
                 bufferDescriptorCount++;
                 break;
@@ -154,8 +167,7 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
                 assert(false && "Unsupported shader program descriptor type");
             }
         }
-        descriptorWriteOffset += _shaderProgramDescriptorSet.size();    
-        
+        descriptorWriteOffset += _shaderProgramDescriptorSet.size();
     }
     size_t descritproWriteCount = _shaderProgramDescriptorSet.size();
     size_t descritionWriteOffset = 0;
@@ -168,12 +180,14 @@ void Vulkan::VulkanDescriptorSets::WriteDescriptorSets(const std::vector<PC_CORE
             descriptorWrites[descritionWriteOffset].dstSet = m_DescriptorSets[i];
             descritionWriteOffset++;
         }
-        device.updateDescriptorSets(static_cast<uint32_t>(descritproWriteCount), descriptorWrites.data() + descritproWriteCount * i, 0, nullptr);
+        device.updateDescriptorSets(static_cast<uint32_t>(descritproWriteCount),
+                                    descriptorWrites.data() + descritproWriteCount * i, 0, nullptr);
     }
-    
 }
 
-Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(vk::DescriptorPool _descitptorPool, vk::DescriptorSetAllocateInfo _vkDescriptorSetAllocateInfo) : m_DescitptorPool(_descitptorPool)
+Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(vk::DescriptorPool _descitptorPool,
+                                                   vk::DescriptorSetAllocateInfo _vkDescriptorSetAllocateInfo) :
+    m_DescitptorPool(_descitptorPool)
 {
     vk::Device d = GET_VK_DEVICE->GetDevice();
 
@@ -188,7 +202,7 @@ Vulkan::VulkanDescriptorSets::~VulkanDescriptorSets()
 
     vk::Device d = GET_VK_DEVICE->GetDevice();
 
-    d.freeDescriptorSets(m_DescitptorPool, static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT), m_DescriptorSets.data());
+    d.freeDescriptorSets(m_DescitptorPool, MaxFramesInFlight, m_DescriptorSets.data());
 }
 
 const void* Vulkan::VulkanDescriptorSets::GetNativeHandle() const

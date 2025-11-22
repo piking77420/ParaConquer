@@ -2,5 +2,4 @@
 
 PC_CORE::Level::Level()
 {
-    
 }

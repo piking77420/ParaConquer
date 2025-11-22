@@ -8,7 +8,7 @@
 #include "VulkanDevice.hpp"
 
 namespace Vulkan
-{    
+{
     struct SyncObject
     {
         vk::Semaphore imageAvailableSemaphore;
@@ -30,11 +30,10 @@ namespace Vulkan
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-        
-        std::array<SyncObject, MAX_FRAMES_IN_FLIGHT> syncObjects;
+        std::array<SyncObject, MaxFramesInFlight> syncObjects;
 
         vk::Queue mainQueue;
-                
+
         vk::CommandPool commandPool = VK_NULL_HANDLE;
 
         vk::CommandPool transferCommandPool = VK_NULL_HANDLE;
@@ -51,21 +50,23 @@ namespace Vulkan
 
         VULKAN_API ~VulkanContext() override;
 
-        static inline VulkanContext& GetContext()
+        static VulkanContext& GetContext()
         {
             return *reinterpret_cast<VulkanContext*>(m_CurrentContext);
         }
 
-        VULKAN_API const vk::SurfaceKHR& GetSurface() const { return std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->surface; }
+        VULKAN_API const vk::SurfaceKHR& GetSurface() const
+        {
+            return std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->surface;
+        }
 
         VULKAN_API static std::shared_ptr<VulkanDevice> GetDevice();
 
         VULKAN_API static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
-    
-    private:
 
+    private:
         VULKAN_API void CreateMemoryAllocator();
-        
+
         VULKAN_API void CreateCommandPools();
 
         VULKAN_API void WaitIdleInstance() override;
@@ -73,22 +74,17 @@ namespace Vulkan
         VULKAN_API void CreateSyncObjects();
 
         VULKAN_API void DestroySyncObjects();
-
     };
 
 
 #define GET_VK_INSTANCE \
-    std::reinterpret_pointer_cast<VulkanInstance>(VulkanContext::GetContext().renderInstance) \
-
+    std::reinterpret_pointer_cast<VulkanInstance>(VulkanContext::GetContext().renderInstance)
 #define GET_VK_DEVICE \
-    std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice) \
-
+    std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice)
 #ifdef  DEBUG_GPU_ON
 #define SET_VK_DEBUG_NAME(debugInfo)\
-    GET_VK_INSTANCE->SetDebugName(GET_VK_DEVICE->GetDevice(), &debugInfo)\
-
+    GET_VK_INSTANCE->SetDebugName(GET_VK_DEVICE->GetDevice(), &debugInfo)
 #else
-    #define SET_VK_DEBUG_NAME(x)
+#define SET_VK_DEBUG_NAME(x)
 #endif
 }
-

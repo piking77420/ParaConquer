@@ -7,7 +7,7 @@ vk::CommandBuffer Vulkan::Utils::BeginSingleTimeCommand(const SingleCommandBegin
     allocateInfo.commandPool = _singleCommandBeginInfo.commandPool;
     allocateInfo.level = vk::CommandBufferLevel::ePrimary;
     allocateInfo.commandBufferCount = 1;
-    
+
     vk::CommandBuffer commandBuffer = _singleCommandBeginInfo.device.allocateCommandBuffers(allocateInfo)[0];
 
     vk::CommandBufferBeginInfo beginInfo;
@@ -20,21 +20,19 @@ vk::CommandBuffer Vulkan::Utils::BeginSingleTimeCommand(const SingleCommandBegin
 }
 
 
-
 void Vulkan::Utils::EndSingleTimeCommand(vk::CommandBuffer _commandBuffer,
-    const SingleCommandBeginInfo& _singleCommandBeginInfo, vk::Fence _fence)
+                                         const SingleCommandBeginInfo& _singleCommandBeginInfo, vk::Fence _fence)
 {
     _commandBuffer.end();
 
     vk::SubmitInfo submitInfo;
     submitInfo.pCommandBuffers = &_commandBuffer;
     submitInfo.commandBufferCount = 1;
-    
+
     VK_CALL(_singleCommandBeginInfo.queue.submit(1, &submitInfo, _fence));
-    
+
     VK_CALL(_singleCommandBeginInfo.device.waitForFences(1, &_fence, vk::True, UINT64_MAX));
     VK_CALL(_singleCommandBeginInfo.device.resetFences(1, &_fence));
 
     _singleCommandBeginInfo.device.freeCommandBuffers(_singleCommandBeginInfo.commandPool, 1, &_commandBuffer);
 }
-

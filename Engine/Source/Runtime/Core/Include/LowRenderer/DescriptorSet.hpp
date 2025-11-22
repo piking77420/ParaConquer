@@ -12,19 +12,19 @@
 BEGIN_PCCORE
     enum class ShaderProgramDescriptorType
     {
-	    Sampler,
-	    CombinedImageSampler,
-	    SampledImage,
-	    StorageImage,
-	    UniformBuffer,
-	    StorageBuffer,
-	    InputAttachment,
-	    InlineUniformBlock,
-	    AccelerationStructure,
-	    Count,
+        Sampler,
+        CombinedImageSampler,
+        SampledImage,
+        StorageImage,
+        UniformBuffer,
+        StorageBuffer,
+        InputAttachment,
+        InlineUniformBlock,
+        AccelerationStructure,
+        Count,
     };
 
-// TODO REFATOR with a variant
+    // TODO REFATOR with a variant
 
     struct UniformBufferDescriptor
     {
@@ -50,7 +50,9 @@ BEGIN_PCCORE
         ImageState imageState;
     };
 
-    using Descriptor = std::variant<UniformBufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor, ImageDescriptor>;
+    using Descriptor = std::variant<UniformBufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor,
+                                    ImageDescriptor>;
+
     struct ShaderProgramDescriptorWrite
     {
         ShaderProgramDescriptorType shaderProgramDescriptorType;
@@ -60,16 +62,14 @@ BEGIN_PCCORE
     };
 
     // TODO REMOVE THIS AND USE BIDNNLESS
-    struct ShaderProgramDescriptorSets : public RhiResource
+    struct ShaderProgramDescriptorSets : RhiResource
     {
         PC_CORE_API virtual void WriteDescriptorSets(
-            const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) = 0;
+            const std::vector<ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) = 0;
 
         PC_CORE_API ShaderProgramDescriptorSets() = default;
 
-        PC_CORE_API virtual ~ShaderProgramDescriptorSets() = default;
-
-    private:
+        PC_CORE_API ~ShaderProgramDescriptorSets() override = default;
     };
 
 END_PCCORE

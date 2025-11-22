@@ -98,4 +98,3 @@ REFLECT_MEMBER(Quaterniond, imaginary);
 REFLECT_MEMBER(Quaterniond, real);
 
 #pragma endregion
-

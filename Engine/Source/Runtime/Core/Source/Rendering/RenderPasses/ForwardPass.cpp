@@ -4,7 +4,4 @@
 
 PC_CORE::ForwardPass::ForwardPass()
 {
-
 }
-
-

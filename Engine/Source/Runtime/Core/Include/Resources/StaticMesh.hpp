@@ -3,126 +3,123 @@
 #include "CompactBuffer.hpp"
 
 BEGIN_PCCORE
+    struct StaticMeshVertex
+    {
+        Tbx::Vector3f Position;
+        Tbx::Vector3f Normal;
+        Tbx::Vector2f Uv;
+        Tbx::Vector3f Tangent;
 
-struct StaticMeshVertex
-{
-	Tbx::Vector3f position;
-	Tbx::Vector3f normal;
-	Tbx::Vector2f uv;
-	Tbx::Vector3f tangent;
+        static constexpr VertexInputBindingDescrition GetVertexBindingDescription(uint32_t _binding);
 
-	static constexpr PC_CORE::VertexInputBindingDescrition GetVertexBindingDescription(uint32_t _binding)
-	{
-		return
-		{
-			.binding = _binding,
-			.stride = sizeof(StaticMeshVertex),
-			.vertexInputRate = VertexInputRate::VERTEX
-		};
-	}
-
-	static constexpr std::vector<PC_CORE::VertexAttributeDescription> GetAttributeDescriptions(uint32_t _binding)
-	{
-		return
-		{
-			{
-				.binding = _binding,
-				.location = 0,
-				.format = RHIFormat::R32G32B32_SFLOAT,
-				.offset = offsetof(StaticMeshVertex, position)
-			},
-			{
-				.binding = _binding,
-				.location = 1,
-				.format = RHIFormat::R32G32B32_SFLOAT,
-				.offset = offsetof(StaticMeshVertex, normal)
-			},
-			{
-				.binding = _binding,
-				.location = 2,
-				.format = RHIFormat::R32G32_SFLOAT,
-				.offset = offsetof(StaticMeshVertex, uv)
-			},
-			{
-				.binding = _binding,
-				.location = 3,
-				.format = RHIFormat::R32G32B32_SFLOAT,
-				.offset = offsetof(StaticMeshVertex, tangent)
-			}
+        static constexpr std::vector<VertexAttributeDescription> GetAttributeDescriptions(uint32_t _binding)
+        {
+            return
+            {
+                {
+                    .Binding = _binding,
+                    .Location = 0,
+                    .Format = RhiFormat::R32G32B32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Position)
+                },
+                {
+                    .Binding = _binding,
+                    .Location = 1,
+                    .Format = RhiFormat::R32G32B32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Normal)
+                },
+                {
+                    .Binding = _binding,
+                    .Location = 2,
+                    .Format = RhiFormat::R32G32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Uv)
+                },
+                {
+                    .Binding = _binding,
+                    .Location = 3,
+                    .Format = RhiFormat::R32G32B32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Tangent)
+                }
 
 
-		};
-	}
+            };
+        }
 
 
-	REFLECT(StaticMeshVertex)
-	REFLECT_MEMBER(StaticMeshVertex, position)
-	REFLECT_MEMBER(StaticMeshVertex, normal)
-	REFLECT_MEMBER(StaticMeshVertex, uv)
-	REFLECT_MEMBER(StaticMeshVertex, tangent)
+        REFLECT(StaticMeshVertex)
+        REFLECT_MEMBER(StaticMeshVertex, Position)
+        REFLECT_MEMBER(StaticMeshVertex, Normal)
+        REFLECT_MEMBER(StaticMeshVertex, Uv)
+        REFLECT_MEMBER(StaticMeshVertex, Tangent)
+    };
 
-};
-
-
-
-struct StaticMeshRenderData
-{
-	std::vector<StaticMeshVertex> vertices;  
-	std::vector<uint32_t> indices;
-};
-
-
-struct StaticMeshCreateInfo
-{
-	std::string name;
-	PC_CORE::StaticMeshRenderData staticMeshRenderData;
-	bool hallowCpuAcces;
-};
+    constexpr VertexInputBindingDescrition StaticMeshVertex::GetVertexBindingDescription(const uint32_t _binding)
+    {
+        return
+        {
+            .Binding = _binding,
+            .Stride = sizeof(StaticMeshVertex),
+            .VertexInputRate = VertexInputRate::Vertex
+        };
+    }
 
 
+    struct StaticMeshRenderData
+    {
+        std::vector<StaticMeshVertex> Vertices;
+        std::vector<uint32_t> Indices;
+    };
 
 
-class PC_CORE_API StaticMesh : public Resource
-{
-public:
-	VertexBuffer vertexBuffer;
+    struct StaticMeshCreateInfo
+    {
+        std::string Name;
+        StaticMeshRenderData StaticMeshRenderData;
+        bool HallowCpuAcces;
+    };
 
-	IndexBuffer indexBuffer;
 
-	void AfterSerialize(Serializer* serializer) const override;
+    class PC_CORE_API StaticMesh : public Resource
+    {
+    public:
+        VertexBuffer VBuffer;
 
-	void AfterDeSerialize(Serializer* serializer) override ;
+        IndexBuffer IBuffer;
 
-	const MotionCore::Aabb<double>& GetAABB() const
-	{
-		return m_Aabb;
-	}
+        void AfterSerialize(Serializer* _serializer) const override;
 
-	bool GetAlloWCpuAcces() const
-	{
-		return m_HallowCpuAcces;
-	}
+        void AfterDeSerialize(Serializer* _serializer) override;
 
-	IMP_DYNAMIC_REFLECT()
+        const MotionCore::Aabb<double>& GetAabb() const
+        {
+            return m_Aabb;
+        }
 
-	DEFAULT_COPY_MOVE_OPERATIONS(StaticMesh)
+        bool GetAlloWCpuAcces() const
+        {
+            return m_HallowCpuAcces;
+        }
 
-	StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo);
-	
-	StaticMesh();
+        IMP_DYNAMIC_REFLECT()
 
-	virtual ~StaticMesh() override  = default;
+        DEFAULT_COPY_MOVE_OPERATIONS(StaticMesh)
 
-private:
-	bool m_HallowCpuAcces = false;
-	
-	MotionCore::Aabb<double> m_Aabb;
+        explicit StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo);
 
-	StaticMeshRenderData m_RenderData;
+        StaticMesh();
 
-	REFLECT(StaticMesh, Resource)
-	REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)
-	REFLECT_MEMBER(StaticMesh, m_Aabb)
-};
+        ~StaticMesh() override = default;
+
+    private:
+        bool m_HallowCpuAcces = false;
+
+        MotionCore::Aabb<double> m_Aabb;
+
+        StaticMeshRenderData m_RenderData;
+
+        REFLECT(StaticMesh, Resource)
+        REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)
+        REFLECT_MEMBER(StaticMesh, m_Aabb)
+    };
 
 END_PCCORE

@@ -12,49 +12,45 @@
 
 
 BEGIN_PCCORE
+    struct AppCreateInfo
+    {
+        std::string appName;
+        std::string appLogoPath;
 
+        bool enableGpuDebug;
+        GraphicAPI graphicAPI;
+    };
 
+    class App
+    {
+    public:
+        static constexpr auto AppName = "ParaConquer";
 
-struct AppCreateInfo
-{
-	std::string appName;
-	std::string appLogoPath;
-	
-	bool enableGpuDebug;
-	GraphicAPI graphicAPI;
+        CoreIo CoreIo;
 
-};
+        Window MainWindow;
 
-class App
-{
-public:
-	static constexpr const char* appName = "ParaConquer";
+        Rhi RenderHarwareInteface;
 
-	CoreIo coreIo;
+        RenderingWorldData RenderingWorldData;
 
-	Window window;
+        Renderer Renderer;
 
-	Rhi rhi;
+        World World;
 
-	RenderingWorldData renderingWorldData;
+        PC_CORE_API void Init(const AppCreateInfo& _appCreateInfo);
 
-	Renderer renderer;
-		
-	World world;
-		
-	PC_CORE_API void Init(const AppCreateInfo& _appCreateInfo);
+        PC_CORE_API void Destroy();
 
-	PC_CORE_API void Destroy();
-	
-	PC_CORE_API App();
+        PC_CORE_API App();
 
-	PC_CORE_API ~App() = default;
+        PC_CORE_API ~App() = default;
 
-	PC_CORE_API void Run();
-	
-	PC_CORE_API void WorldTick(double _tick);
-	
-	PC_CORE_API static inline App* instance = nullptr;
-};
+        PC_CORE_API void Run();
+
+        PC_CORE_API void WorldTick(double _tick);
+
+        PC_CORE_API static inline App* Instance = nullptr;
+    };
 
 END_PCCORE

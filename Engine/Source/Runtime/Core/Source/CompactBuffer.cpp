@@ -47,7 +47,8 @@ size_t CompactBuffer::Decompress(const void* const _ptrSrc, void* const _ptrDst,
 
     if (l < 0)
     {
-        switch (l) {
+        switch (l)
+        {
         case lzav::enum_wrapper::LZAV_E_PARAMS:
             PC_LOGERROR("lzav_decompress incorrect param");
             break;
@@ -59,7 +60,7 @@ size_t CompactBuffer::Decompress(const void* const _ptrSrc, void* const _ptrDst,
             break;
         }
 
-        return static_cast<size_t>(0);
+        return 0;
     }
 
     return static_cast<size_t>(l);
@@ -79,4 +80,3 @@ std::vector<uint8_t> CompactBuffer::ExtractData()
     buffer.resize(l);
     return buffer;
 }
-

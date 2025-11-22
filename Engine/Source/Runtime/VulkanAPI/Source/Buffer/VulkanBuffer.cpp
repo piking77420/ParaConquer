@@ -2,15 +2,15 @@
 
 #include "LowRenderer/Rhi.hpp"
 #include "Utils/HelperFunctions.hpp"
-#include "Utils/RhiVulkanParser.hpp"
+#include "Utils/RhiToVulkan.hpp"
 #include "Utils/VulkanBufferHelper.hpp"
 
 void Vulkan::VulkanBuffer::MapData(void** _mapData)
 {
     auto& context = VulkanContext::GetContext();
 
-    vk::Result r = static_cast<vk::Result>(vmaMapMemory(context.allocator,
-                                                        bufferAndAlloc[PC_CORE::Rhi::GetFrameIndex()].alloc, _mapData));
+    auto r = static_cast<vk::Result>(vmaMapMemory(context.allocator,
+                                                  bufferAndAlloc[PC_CORE::Rhi::GetFrameIndex()].alloc, _mapData));
     VK_CALL(r);
 
     if (r != vk::Result::eSuccess)
@@ -19,25 +19,27 @@ void Vulkan::VulkanBuffer::MapData(void** _mapData)
 
 void Vulkan::VulkanBuffer::UnMapData()
 {
-
     auto& context = VulkanContext::GetContext();
     vmaUnmapMemory(context.allocator, bufferAndAlloc[PC_CORE::Rhi::GetFrameIndex()].alloc);
 }
 
-Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage)
+Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage,
+                                   PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage)
 {
-   if (_sizeInByte <= 0)
-   {
-       PC_LOGERROR("Trying to create a Vulkan buffer with zero size");
-       return;
-   }
+    if (_sizeInByte <= 0)
+    {
+        PC_LOGERROR("Trying to create a Vulkan buffer with zero size");
+        return;
+    }
 
-   PERF_REGION_SCOPED;
-   PERF_REGION_COLOR(PerfRegion::Rhi);
-    
-    bufferAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);
-    assert(bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
-    
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    bufferAndAlloc.resize(MaxFramesInFlight);
+    assert(
+        bufferAndAlloc.size() == MaxFramesInFlight &&
+        "Unsuported resource dynamci size depender of thier memeory usage");
+
     CreateInternalBuffer(_data, _sizeInByte, bufferUsage, Utils::RhiMemoryUsageToVulkan(_visibility));
 
     // TODO TAKE ACOUT OF MEMMROY USAGE
@@ -57,17 +59,19 @@ Vulkan::VulkanBuffer::VulkanBuffer(const void* _data, uint32_t _sizeInByte, vk::
 }
 
 Vulkan::VulkanBuffer::VulkanBuffer(uint32_t _sizeInByte, vk::BufferUsageFlags bufferUsage,
-    PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage)
+                                   PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage memoryUsage)
 {
     if (_sizeInByte <= 0)
     {
         PC_LOGERROR("Trying to create a Vulkan buffer with zero size");
         return;
     }
-    
-    bufferAndAlloc.resize(MAX_FRAMES_IN_FLIGHT);
-    assert(bufferAndAlloc.size() == MAX_FRAMES_IN_FLIGHT && "Unsuported resource dynamci size depender of thier memeory usage");
-    
+
+    bufferAndAlloc.resize(MaxFramesInFlight);
+    assert(
+        bufferAndAlloc.size() == MaxFramesInFlight &&
+        "Unsuported resource dynamci size depender of thier memeory usage");
+
     CreateInternalBuffer(nullptr, _sizeInByte, bufferUsage, Utils::RhiMemoryUsageToVulkan(_visibility));
 }
 
@@ -79,13 +83,14 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
             return;
         auto& context = VulkanContext::GetContext();
 
-        Utils::DestroyBuffer(context.GetDevice()->GetDevice(), context.allocator, alloc.buffer,alloc.alloc);
+        Utils::DestroyBuffer(context.GetDevice()->GetDevice(), context.allocator, alloc.buffer, alloc.alloc);
         alloc.buffer = VK_NULL_HANDLE;
         alloc.alloc = VK_NULL_HANDLE;
     }
 }
 
-void Vulkan::VulkanBuffer::CreateInternalBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage)
+void Vulkan::VulkanBuffer::CreateInternalBuffer(const void* _data, uint32_t _size, vk::BufferUsageFlags bufferUsage,
+                                                VmaMemoryUsage memoryUsage)
 {
     vk::BufferUsageFlags clientFlag = bufferUsage;
 
@@ -118,7 +123,7 @@ void Vulkan::VulkanBuffer::CreateInternalBuffer(const void* _data, uint32_t _siz
     default:
         assert(false && "Invalid memory usage");
     }
-    
+
     auto& context = VulkanContext::GetContext();
     for (size_t i = 0; i < bufferAndAlloc.size(); i++)
         Utils::CreateBuffer(context.allocator, _size, clientFlag, memoryUsage
@@ -129,8 +134,6 @@ void Vulkan::VulkanBuffer::CreateInternalBuffer(const void* _data, uint32_t _siz
 }
 
 
-
-
 void Vulkan::VulkanBuffer::SendDataToGPUMemory(const void* _data, uint32_t _size)
 {
     if (_data == nullptr || _size == 0)
@@ -138,16 +141,17 @@ void Vulkan::VulkanBuffer::SendDataToGPUMemory(const void* _data, uint32_t _size
 
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    
+
     auto& context = VulkanContext::GetContext();
-    
+
     std::vector<BufferAndAlloc> stagingBufferAndAlloc;
     stagingBufferAndAlloc.resize(bufferAndAlloc.size());
-    
+
     for (size_t i = 0; i < stagingBufferAndAlloc.size(); i++)
     {
         Utils::CreateBuffer(context.allocator, _size, vk::BufferUsageFlagBits::eTransferSrc,
-                    VMA_MEMORY_USAGE_CPU_TO_GPU, reinterpret_cast<VkBuffer*>(&stagingBufferAndAlloc[i].buffer), &stagingBufferAndAlloc[i].alloc);
+                            VMA_MEMORY_USAGE_CPU_TO_GPU, reinterpret_cast<VkBuffer*>(&stagingBufferAndAlloc[i].buffer),
+                            &stagingBufferAndAlloc[i].alloc);
     }
 
     // TODO done not use fence here
@@ -159,7 +163,7 @@ void Vulkan::VulkanBuffer::SendDataToGPUMemory(const void* _data, uint32_t _size
         .queue = context.mainQueue
     };
 
-    std::unique_ptr<void* []> mappedData = std::make_unique<void* []>(stagingBufferAndAlloc.size());
+    auto mappedData = std::make_unique<void*[]>(stagingBufferAndAlloc.size());
 
     vk::BufferCopy copyRegion = {};
     copyRegion.srcOffset = 0;

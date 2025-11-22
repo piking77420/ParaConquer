@@ -12,25 +12,25 @@
 
 using namespace PC_CORE;
 
- 
+
 void App::Init(const AppCreateInfo& _appCreateInfo)
 {
     PERF_REGION_SCOPED;
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window(_appCreateInfo.appName.data());
-    window.SetIcon(_appCreateInfo.appLogoPath.data());
+    MainWindow = Window(_appCreateInfo.appName.data());
+    MainWindow.SetIcon(_appCreateInfo.appLogoPath.data());
 
     const RenderHardwareInterfaceCreateInfo createInfo =
-        {
+    {
         .GraphicsAPI = GraphicAPI::Vulkan,
-        .window = &window,
+        .window = &MainWindow,
         .appName = _appCreateInfo.appName.data(),
         .gpuDebug = _appCreateInfo.enableGpuDebug
-        };
-    
-    rhi = Rhi(createInfo);
-    renderer.Init();
+    };
+
+    RenderHarwareInteface = Rhi(createInfo);
+    Renderer.Init();
     Time::Init();
 }
 
@@ -39,19 +39,22 @@ void App::Destroy()
     ResourceManager::Destroy();
     PC_LOG("App Destroy")
 }
-    
+
 App::App()
 {
-    instance = this;
+    Instance = this;
 }
 
+
+void App::Run()
+{
+}
 
 void App::WorldTick(double _tick)
 {
     PERF_REGION_SCOPED;
 
-    world.Begin();
-    world.Update(_tick);
-    world.RenderingTick(_tick);
+    World.Begin();
+    World.Update(_tick);
+    World.RenderingTick(_tick);
 }
-

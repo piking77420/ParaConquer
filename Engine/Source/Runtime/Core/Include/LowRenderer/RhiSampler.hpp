@@ -8,7 +8,7 @@ BEGIN_PCCORE
     struct SamplerCreateInfo
     {
         std::string SamplerName;
-    
+
         Filter magFilter;
         Filter minFilter;
 
@@ -17,24 +17,23 @@ BEGIN_PCCORE
         SamplerAddressMode w;
     };
 
-class RhiSampler : public RhiResource
-{
-public:
-    Filter magFilter;
-    Filter minFilter;
+    class RhiSampler : public RhiResource
+    {
+    public:
+        Filter magFilter;
+        Filter minFilter;
 
-    SamplerAddressMode samU;
-    SamplerAddressMode samV;
-    SamplerAddressMode samW;
+        SamplerAddressMode samU;
+        SamplerAddressMode samV;
+        SamplerAddressMode samW;
 
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiSampler)
+        DEFAULT_COPY_MOVE_OPERATIONS(RhiSampler)
 
-    RhiSampler(const SamplerCreateInfo& _samplerCreateInfo);
-    
-    RhiSampler() = default;
-    
-    ~RhiSampler() override = default;
-    
-};
+        RhiSampler(const SamplerCreateInfo& _samplerCreateInfo);
+
+        RhiSampler() = default;
+
+        ~RhiSampler() override = default;
+    };
 
 END_PCCORE

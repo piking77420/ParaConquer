@@ -7,8 +7,9 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
     return m_Device;
 }
 
-Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices, const std::set<std::string>& _extensionToEnable,
-    vk::Queue* _graphicQueue)
+Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices,
+                                   const std::set<std::string>& _extensionToEnable,
+                                   vk::Queue* _graphicQueue)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -16,19 +17,20 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     vk::PhysicalDevice vkPhysicalDevice = _vulkanPhysicalDevices->GetVulkanDevice();
 
     constexpr uint32_t QueuIndex = 0;
-    constexpr uint32_t QueueCount= 3;
+    constexpr uint32_t QueueCount = 3;
 
-    std::vector<Vulkan::QueueFamilyIndices> queueFamilies = _vulkanPhysicalDevices->GetQueuesFamilies();
-    
-    if (!(queueFamilies[QueuIndex].familyProperties.queueFlags & vk::QueueFlagBits::eCompute && queueFamilies[QueuIndex].familyProperties.queueFlags & vk::QueueFlagBits::eCompute
-        && queueFamilies[QueuIndex].familyProperties.queueFlags & vk::QueueFlagBits::eTransfer)
-        )
+    std::vector<QueueFamilyIndices> queueFamilies = _vulkanPhysicalDevices->GetQueuesFamilies();
+
+    if (!(queueFamilies[QueuIndex].familyProperties.queueFlags & vk::QueueFlagBits::eCompute && queueFamilies[QueuIndex]
+            .familyProperties.queueFlags & vk::QueueFlagBits::eCompute
+            && queueFamilies[QueuIndex].familyProperties.queueFlags & vk::QueueFlagBits::eTransfer)
+    )
     {
         throw std::runtime_error("Vulkan device does not support compute or transferrion");
     }
-    
+
     std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo = {};
-    std::array<float, QueueCount> queuePriority  = {1.f, 1.f, 1.f};
+    std::array<float, QueueCount> queuePriority = {1.f, 1.f, 1.f};
 
     queueCreateInfo.resize(1);
     for (uint32_t i = 0; i < 1; i++)
@@ -41,10 +43,11 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
 
 
     vk::PhysicalDeviceFeatures deviceFeatures = vkPhysicalDevice.getFeatures();
-    
+
     std::vector<const char*> enabledExtensionNames;
     enabledExtensionNames.reserve(_extensionToEnable.size());
-    for (const auto& extension : _extensionToEnable) {
+    for (const auto& extension : _extensionToEnable)
+    {
         enabledExtensionNames.emplace_back(extension.c_str());
     }
 
@@ -92,11 +95,11 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     {
         deviceCreateInfo.enabledLayerCount = 0;
     }
-    
+
 #endif
     m_Device = vkPhysicalDevice.createDevice(deviceCreateInfo, nullptr);
     GetExtensionFunctions();
-    
+
     if (_graphicQueue != nullptr)
         *_graphicQueue = m_Device.getQueue(QueuIndex, 0);
 
@@ -118,14 +121,13 @@ Vulkan::VulkanDevice::~VulkanDevice()
 
 void Vulkan::VulkanDevice::GetExtensionFunctions()
 {
-
 #ifdef  PROFILING
     m_Qpreset = reinterpret_cast<PFN_vkResetQueryPoolEXT>(
         vkGetDeviceProcAddr(m_Device, "vkResetQueryPoolEXT")
-        );
+    );
     m_Gct = reinterpret_cast<PFN_vkGetCalibratedTimestampsEXT>(
         vkGetDeviceProcAddr(m_Device, "vkGetCalibratedTimestampsEXT")
-        );
+    );
 
     if (m_Gct == nullptr || m_Qpreset == nullptr)
     {

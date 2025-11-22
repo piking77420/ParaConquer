@@ -4,16 +4,15 @@
 #include "Ecs/EcsHeader.h"
 
 BEGIN_EDITOR_PCCORE
-class EditorCommandCreateEntity : public EditorCommand
-{
-public:
-    EditorCommandCreateEntity(Editor& _editor);
+    class EditorCommandCreateEntity : public EditorCommand
+    {
+    public:
+        EditorCommandCreateEntity(Editor& _editor);
 
-    ~EditorCommandCreateEntity() override;
+        ~EditorCommandCreateEntity() override;
 
-
-private:
-    PC_CORE::EntityId m_EntityID = PC_CORE::INVALID_ENTITY_ID;
-};
+    private:
+        PC_CORE::EntityId m_EntityID = PC_CORE::INVALID_ENTITY_ID;
+    };
 
 END_EDITOR_PCCORE

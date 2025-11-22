@@ -18,117 +18,114 @@
 #include "ObjectPtr.hpp"
 
 BEGIN_EDITOR_PCCORE
-
-struct EditorFont
-{
-	ImFont* tiny;
-	ImFont* small;
-	ImFont* normal;
-	ImFont* big;
-	ImFont* veryBig;
-};
-
-struct ProjectData
-{
-    std::string projectName;
-    PC_CORE::GraphicAPI graphicApi;
-    
-    ProjectData(ProjectFile& projectFile)
+    struct EditorFont
     {
-        projectName = std::move(projectFile.name);
-        graphicApi = projectFile.graphicApi;
+        ImFont* tiny;
+        ImFont* small;
+        ImFont* normal;
+        ImFont* big;
+        ImFont* veryBig;
+    };
+
+    struct ProjectData
+    {
+        std::string projectName;
+        PC_CORE::GraphicAPI graphicApi;
+
+        ProjectData(ProjectFile& projectFile)
+        {
+            projectName = std::move(projectFile.name);
+            graphicApi = projectFile.graphicApi;
+        }
+
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(ProjectData)
+
+        DEFAULT_COPY_MOVE_OPERATIONS(ProjectData);
+    };
+
+    struct EditorData
+    {
+        EditorFont editorFont;
+        EditorFont editorFontItalic;
+        PC_CORE::Sampler nearestSampler;
+
+        ProjectData projectData;
+        std::filesystem::path projectPath;
+    };
+
+    using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ObjectPtr<PC_CORE::Resource>>;
+
+    class Editor
+    {
+    public:
+        void Init();
+
+        void Destroy();
+
+        Editor();
+
+        ~Editor();
+
+        template <EditorCommandDerived T, typename... Args>
+        void PushCommand(Args&&... args);
+
+        void RewindCommand();
+
+        void InitTestScene();
+
+        void DestroyTestScene();
+
+        void Run(bool* _appShouldClose);
+
+        void InitEditor();
+
+        void EditorCommandUpdate();
+
+        void UpdateEditor();
+
+        static inline Editor* instance = nullptr;
+
+        ShaderCompiler shaderCompiler;
+
+        PC_CORE::App gameApp;
+
+        PC_CORE::IMGUIContext IMGUIContext;
+
+        DockSpace dockSpace;
+
+        std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
+
+        std::vector<std::unique_ptr<EditorWindow>> editorWindows;
+
+        std::vector<std::unique_ptr<EditorCommand>> editorCommands;
+
+        EditableSelectedObj selectedObject;
+
+        EditorData editorData;
+
+    private:
+        void LoadFromInitFiles();
+
+        void SaveInitFiles();
+
+        void CompileShader();
+
+        void LookForEditorInit();
+
+        void BasicOpenFile();
+
+        void ReloadShaders();
+
+        EditorRenderer m_EditorRenderer;
+    };
+
+    template <EditorCommandDerived T, typename... Args>
+    void Editor::PushCommand(Args&&... args)
+    {
+        editorCommands.emplace_back(
+            std::make_unique<T>(*this, std::forward<Args>(args)...)
+        );
     }
-
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(ProjectData)
-
-    DEFAULT_COPY_MOVE_OPERATIONS(ProjectData);
-};
-
-struct EditorData
-{
-    EditorFont editorFont;
-    EditorFont editorFontItalic;
-    PC_CORE::Sampler nearestSampler;
-
-    ProjectData projectData;
-    std::filesystem::path projectPath;
-    
-};
-
-using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ObjectPtr<PC_CORE::Resource>>;
-
-class Editor
-{
-public:
-    void Init();
-    
-    void Destroy();
-
-    Editor();
-
-    ~Editor();
-
-    template <EditorCommandDerived T, typename ...Args>
-    void PushCommand(Args&&... args);
-
-    void RewindCommand();
-    
-    void InitTestScene();
-    
-    void DestroyTestScene();
-    
-    void Run(bool* _appShouldClose);
-
-    void InitEditor();
-
-    void EditorCommandUpdate();
-
-    void UpdateEditor();
-
-    static inline Editor* instance = nullptr;
-
-    ShaderCompiler shaderCompiler;
-
-    PC_CORE::App gameApp;
-
-    PC_CORE::IMGUIContext IMGUIContext;
-    
-    DockSpace dockSpace;
-    
-    std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
-
-    std::vector<std::unique_ptr<EditorWindow>> editorWindows;
-    
-    std::vector<std::unique_ptr<EditorCommand>> editorCommands;
-
-    EditableSelectedObj selectedObject;
-
-    EditorData editorData;
-
-private:
-
-    void LoadFromInitFiles();
-
-    void SaveInitFiles();
-    
-    void CompileShader();
-
-    void LookForEditorInit();
-
-    void BasicOpenFile();
-
-    void ReloadShaders();
-    
-    EditorRenderer m_EditorRenderer;
-};
-
-template <EditorCommandDerived T, typename ... Args>
-void Editor::PushCommand(Args&&... args)
-{
-    editorCommands.emplace_back(
-           std::make_unique<T>(*this, std::forward<Args>(args)...)
-   );
-}
 
 
 END_EDITOR_PCCORE

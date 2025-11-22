@@ -4,6 +4,3 @@
 
 #include "CoreHeader.hpp"
 #include "RhiTypedef.h"
-
-
-

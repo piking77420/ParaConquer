@@ -1,16 +1,17 @@
 ﻿#include "Utils/VulkanBufferHelper.hpp"
 
-#include "Utils/RhiVulkanParser.hpp"
+#include "Utils/RhiToVulkan.hpp"
 
 using namespace Vulkan::Utils;
 
 
-void Vulkan::Utils::CreateBuffer(VmaAllocator allocator, size_t size, vk::BufferUsageFlags _bufferUsageFlagBits, VmaMemoryUsage _memoryUsage,
-                          VkBuffer* _outBuffer, VmaAllocation* _outAllocation)
+void Vulkan::Utils::CreateBuffer(VmaAllocator allocator, size_t size, vk::BufferUsageFlags _bufferUsageFlagBits,
+                                 VmaMemoryUsage _memoryUsage,
+                                 VkBuffer* _outBuffer, VmaAllocation* _outAllocation)
 {
     vk::BufferCreateInfo bufferCreate{};
     bufferCreate.sType = vk::StructureType::eBufferCreateInfo;
-    bufferCreate.size = static_cast<VkDeviceSize>(size);
+    bufferCreate.size = size;
     bufferCreate.usage = _bufferUsageFlagBits;
     bufferCreate.sharingMode = vk::SharingMode::eExclusive;
 
@@ -26,5 +27,5 @@ void Vulkan::Utils::CreateBuffer(VmaAllocator allocator, size_t size, vk::Buffer
 
 void Vulkan::Utils::DestroyBuffer(vk::Device device, VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation)
 {
-    vmaDestroyBuffer(  allocator, buffer, allocation);
+    vmaDestroyBuffer(allocator, buffer, allocation);
 }

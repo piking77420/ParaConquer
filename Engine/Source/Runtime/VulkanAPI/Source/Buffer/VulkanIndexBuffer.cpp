@@ -15,10 +15,11 @@ void Vulkan::VulkanIndexBuffer::UnmapData()
     m_VulkanBuffer.UnMapData();
 }
 
-Vulkan::VulkanIndexBuffer::VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format, PC_CORE::MemoryLocalisation _visibility,
-                                             PC_CORE::MemoryUsage _usage)  : m_VulkanBuffer(_data, _sizeInByte, vk::BufferUsageFlagBits::eIndexBuffer , _visibility, _usage)
+Vulkan::VulkanIndexBuffer::VulkanIndexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::IndexFormat _format,
+                                             PC_CORE::MemoryLocalisation _visibility,
+                                             PC_CORE::MemoryUsage _usage) : m_VulkanBuffer(
+    _data, _sizeInByte, vk::BufferUsageFlagBits::eIndexBuffer, _visibility, _usage)
 {
     m_IndexFormat = _format;
     m_IndexCount = _sizeInByte / static_cast<int>(_format);
 }
-

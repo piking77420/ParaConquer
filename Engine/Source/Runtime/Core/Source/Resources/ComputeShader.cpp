@@ -3,17 +3,18 @@
 #include "LowRenderer/Rhi.hpp"
 
 PC_CORE::ComputeShader::ComputeShader(const std::string& _shaderName,
-                                      const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) : PC_CORE::ShaderProgram(_shaderName, ShaderProgramPipelineType::COMPUTE, _computeShaderProgramCreateInfo.source)
+                                      const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
+    ShaderProgram(_shaderName, ShaderProgramPipelineType::Compute, _computeShaderProgramCreateInfo.source)
 {
     DYNAMIC_REFLECT_INIT
 
     const ShaderInfo shaderInfo =
     {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::COMPUTE,
+        .shaderProgramPipelineType = ShaderProgramPipelineType::Compute,
         .shaderInfoData = _computeShaderProgramCreateInfo.shaderComputeInfo,
     };
 
-    const PC_CORE::ProgramShaderCreateInfo programShaderCreateInfo =
+    const ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
@@ -26,18 +27,19 @@ PC_CORE::ComputeShader::ComputeShader(const std::string& _shaderName,
 }
 
 PC_CORE::ComputeShader::ComputeShader(std::string&& _shaderName,
-    const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) : PC_CORE::ShaderProgram(std::move(_shaderName), ShaderProgramPipelineType::COMPUTE, _computeShaderProgramCreateInfo.source)
+                                      const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
+    ShaderProgram(std::move(_shaderName), ShaderProgramPipelineType::Compute, _computeShaderProgramCreateInfo.source)
 {
     DYNAMIC_REFLECT_INIT
 
     const ShaderInfo shaderInfo =
- {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::COMPUTE,
+    {
+        .shaderProgramPipelineType = ShaderProgramPipelineType::Compute,
         .shaderInfoData = _computeShaderProgramCreateInfo.shaderComputeInfo,
-        .shaderName = name
+        .shaderName = Name
     };
 
-    const PC_CORE::ProgramShaderCreateInfo programShaderCreateInfo =
+    const ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,

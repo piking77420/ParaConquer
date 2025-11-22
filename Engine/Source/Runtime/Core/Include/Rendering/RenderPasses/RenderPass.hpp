@@ -5,23 +5,20 @@
 #include "Rendering/Renderer.hpp"
 
 BEGIN_PCCORE
-
-class RenderPass : public IGpuResource
-{
-public:
-
-    PC_CORE_API virtual std::shared_ptr<RhiResource> GetRhiHandle() const
+    class RenderPass : public IGpuResource
     {
-        return m_RhiRenderPass;
-    }
+    public:
+        PC_CORE_API std::shared_ptr<RhiResource> GetRhiHandle() const override
+        {
+            return m_RhiRenderPass;
+        }
 
-    PC_CORE_API RenderPass();
-    
-    PC_CORE_API virtual ~RenderPass() = default;
-        
-    
-protected:
-    std::shared_ptr<RhiRenderPass> m_RhiRenderPass;
-};
+        PC_CORE_API RenderPass();
+
+        PC_CORE_API ~RenderPass() override = default;
+
+    protected:
+        std::shared_ptr<RhiRenderPass> m_RhiRenderPass;
+    };
 
 END_PCCORE

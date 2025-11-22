@@ -23,32 +23,31 @@ namespace PC_CORE
 
 BEGIN_EDITOR_PCCORE
     class WorldViewWindow : public EditorWindow
-{
-public:
-    PC_CORE::Camera camera;
-    
-    explicit WorldViewWindow(Editor& _editor, const std::string& _name);
+    {
+    public:
+        PC_CORE::Camera camera;
 
-    ~WorldViewWindow() override;
-    
-    void Update() override;
-    
-    void Render() override;
+        explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 
-protected:
-    size_t m_RenderingContextFlag = 0;
+        ~WorldViewWindow() override;
 
-    std::shared_ptr<PC_CORE::View> m_View;
+        void Update() override;
 
-private:
-    void ResizeViewports();
+        void Render() override;
 
-    void UpdateImguiViewPort();
+    protected:
+        size_t m_RenderingContextFlag = 0;
 
-    PC_CORE::Sampler m_ViewPortSampler;
+        std::shared_ptr<PC_CORE::View> m_View;
 
-    std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> imguiDescriptorSet;
+    private:
+        void ResizeViewports();
 
-};
+        void UpdateImguiViewPort();
+
+        PC_CORE::Sampler m_ViewPortSampler;
+
+        std::array<VkDescriptorSet, MaxFramesInFlight> imguiDescriptorSet;
+    };
 
 END_EDITOR_PCCORE

@@ -16,8 +16,10 @@ void Vulkan::VulkanUniformBuffer::UnmapData()
     m_VulkanBuffer.UnMapData();
 }
 
-Vulkan::VulkanUniformBuffer::VulkanUniformBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility,
-    PC_CORE::MemoryUsage _usage) : RhiUniformBuffer(_sizeInByte, _visibility, _usage),  m_VulkanBuffer(_data, _sizeInByte, vk::BufferUsageFlagBits::eUniformBuffer, _visibility, _usage)
+Vulkan::VulkanUniformBuffer::VulkanUniformBuffer(const void* _data, uint32_t _sizeInByte,
+                                                 PC_CORE::MemoryLocalisation _visibility,
+                                                 PC_CORE::MemoryUsage _usage) :
+    RhiUniformBuffer(_sizeInByte, _visibility, _usage),
+    m_VulkanBuffer(_data, _sizeInByte, vk::BufferUsageFlagBits::eUniformBuffer, _visibility, _usage)
 {
-    
 }

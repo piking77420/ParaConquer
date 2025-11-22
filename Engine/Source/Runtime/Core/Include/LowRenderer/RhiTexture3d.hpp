@@ -6,17 +6,16 @@
 #include "RhiTexture.hpp"
 
 BEGIN_PCCORE
+    class PC_CORE_API RhiTexture3D : public RhiTexture
+    {
+    public:
+        RhiTexture3D(const CreateImageInfo& _createImageInfo) : RhiTexture(_createImageInfo)
+        {
+        }
 
+        RhiTexture3D() = default;
 
+        ~RhiTexture3D() override = default;
+    };
 
-class PC_CORE_API RhiTexture3D : public RhiTexture
-{
-public:
-
-    RhiTexture3D(const PC_CORE::CreateImageInfo& _createImageInfo) : RhiTexture(_createImageInfo) {}
-
-    RhiTexture3D() = default;
-
-    virtual ~RhiTexture3D() = default;
-};
 END_PCCORE

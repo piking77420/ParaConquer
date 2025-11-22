@@ -5,28 +5,26 @@
 #include "Reflection/Reflector.hpp"
 
 BEGIN_PCCORE
+    struct SphereCollider : Component
+    {
+        uint32_t body_Id = -1;
 
-struct SphereCollider : public Component
-{
+        bool draw = false;
 
-    uint32_t body_Id = -1;
+        bool drawAABB = false;
 
-    bool draw = false;  
+        bool isTrigger = false;
 
-    bool drawAABB = false;
+        float radius = 2.f;
 
-    bool isTrigger = false;
-    
-    float radius = 2.f;
+        Tbx::Vector3f center;
 
-    Tbx::Vector3f center;
-    
-    REFLECT(SphereCollider, Component)
-    REFLECT_MEMBER(SphereCollider, center)
-    REFLECT_MEMBER(SphereCollider, drawAABB)
-    REFLECT_MEMBER(SphereCollider, draw)
-    REFLECT_MEMBER(SphereCollider, radius)
-};
+        REFLECT(SphereCollider, Component)
+        REFLECT_MEMBER(SphereCollider, center)
+        REFLECT_MEMBER(SphereCollider, drawAABB)
+        REFLECT_MEMBER(SphereCollider, draw)
+        REFLECT_MEMBER(SphereCollider, radius)
+    };
 
 
 END_PCCORE

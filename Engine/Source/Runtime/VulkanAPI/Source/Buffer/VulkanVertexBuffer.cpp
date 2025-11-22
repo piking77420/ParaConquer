@@ -16,17 +16,17 @@ void Vulkan::VulkanVertexBuffer::UnmapData()
     m_VulkanBuffer.UnMapData();
 }
 
-Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage _usage) :
-RhiVertexBuffer(_sizeInByte,_visibility,  _usage) , m_VulkanBuffer(_data, _sizeInByte, vk::BufferUsageFlagBits::eVertexBuffer, _visibility, _usage)
+Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(const void* _data, uint32_t _sizeInByte,
+                                               PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage _usage) :
+    RhiVertexBuffer(_sizeInByte, _visibility, _usage),
+    m_VulkanBuffer(_data, _sizeInByte, vk::BufferUsageFlagBits::eVertexBuffer, _visibility, _usage)
 {
-  
-    
 }
 
 Vulkan::VulkanVertexBuffer::VulkanVertexBuffer(uint32_t _sizeInByte, PC_CORE::MemoryLocalisation _visibility,
-    PC_CORE::MemoryUsage _usage) : 
-RhiVertexBuffer(_sizeInByte,_visibility,  _usage) , m_VulkanBuffer(nullptr, _sizeInByte, vk::BufferUsageFlagBits::eVertexBuffer, _visibility, _usage)
+                                               PC_CORE::MemoryUsage _usage) :
+    RhiVertexBuffer(_sizeInByte, _visibility, _usage),
+    m_VulkanBuffer(nullptr, _sizeInByte, vk::BufferUsageFlagBits::eVertexBuffer, _visibility, _usage)
 
 {
-    
 }

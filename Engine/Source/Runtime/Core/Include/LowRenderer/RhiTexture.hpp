@@ -4,47 +4,46 @@
 #include "LowRenderer/RhiResource.hpp"
 
 BEGIN_PCCORE
-
-class RhiTexture : public PC_CORE::RhiResource
-{
-public:
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiTexture)
-
-
-    uint32_t GetMipLevelCount() const
+    class RhiTexture : public RhiResource
     {
-        return m_MipLevelCount;
-    }
+    public:
+        DEFAULT_COPY_MOVE_OPERATIONS(RhiTexture)
 
-    uint32_t GetLayerCount() const
-    {
-        return m_LayerCount;
-    }
 
-    TextureUsage GetTextureUsage() const
-    {
-        return m_TextureUsage;
-    }
+        uint32_t GetMipLevelCount() const
+        {
+            return m_MipLevelCount;
+        }
 
-    RHIFormat GetFormat() const
-    {
-        return m_RhiFormat;
-    }
+        uint32_t GetLayerCount() const
+        {
+            return m_LayerCount;
+        }
 
-    RhiTexture(const PC_CORE::CreateImageInfo& _createImageInfo);
+        TextureUsage GetTextureUsage() const
+        {
+            return m_TextureUsage;
+        }
 
-    RhiTexture() = default;
+        RhiFormat GetFormat() const
+        {
+            return m_RhiFormat;
+        }
 
-    virtual ~RhiTexture() = default;
+        RhiTexture(const CreateImageInfo& _createImageInfo);
 
-protected:
-    uint32_t              m_MipLevelCount = 1;
+        RhiTexture() = default;
 
-    uint32_t              m_LayerCount = 1;
+        ~RhiTexture() override = default;
 
-    TextureUsage m_TextureUsage = TextureUsage::All;
+    protected:
+        uint32_t m_MipLevelCount = 1;
 
-    RHIFormat m_RhiFormat;
-};
+        uint32_t m_LayerCount = 1;
+
+        TextureUsage m_TextureUsage = TextureUsage::All;
+
+        RhiFormat m_RhiFormat;
+    };
 
 END_PCCORE

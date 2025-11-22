@@ -10,17 +10,16 @@ SceneButton::SceneButton(Editor& _editor, const std::string& _name) : EditorWind
     windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar;
 
     auto l = [&](ImguiImage* _image, const std::filesystem::path& _path)
-        {
-            _image->texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());
-            m_Editor->IMGUIContext.CreateImguiVulkanTexture(_image->texure.GetRhiTexture2D().get(), 
-                m_Editor->editorData.nearestSampler.GetRhiSampler().get(), 
-                &_image->descritproSet, 1);
-        };
+    {
+        _image->texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());
+        m_Editor->IMGUIContext.CreateImguiVulkanTexture(_image->texure.GetRhiTexture2D().get(),
+                                                        m_Editor->editorData.nearestSampler.GetRhiSampler().get(),
+                                                        &_image->descritproSet, 1);
+    };
 
     l(&m_PlayImage, EDITOR_RESOURCE_PATH "/Icons/Play.png");
     l(&m_PauseImage, EDITOR_RESOURCE_PATH "/Icons/Pause.png");
     l(&m_ResetImage, EDITOR_RESOURCE_PATH "/Icons/Reset.png");
-
 }
 
 SceneButton::~SceneButton()
@@ -38,16 +37,16 @@ void SceneButton::Update()
 
 void SceneButton::OnEdit()
 {
-    const int ButtonSize = 48;
+    constexpr int ButtonSize = 48;
 
-    PC_CORE::World& world = m_Editor->gameApp.world;
+    PC_CORE::World& world = m_Editor->gameApp.World;
 
     const ImguiImage& button = world.run ? m_ResetImage : m_PlayImage;
-    
+
     ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f);
     {
         ImGui::PushID("B1");
-        if (ImGui::ImageButton(button.texure.name.c_str(), (ImTextureID)button.descritproSet, { ButtonSize, ButtonSize }))
+        if (ImGui::ImageButton(button.texure.Name.c_str(), button.descritproSet, {ButtonSize, ButtonSize}))
         {
             if (!world.run)
             {
@@ -63,7 +62,7 @@ void SceneButton::OnEdit()
                     it->OnResetScene();
             }
         }
-      ImGui::PopID();
+        ImGui::PopID();
     }
     ImGui::SameLine();
 
@@ -73,14 +72,12 @@ void SceneButton::OnEdit()
             const ImguiImage buttonName2 = m_PauseImage;
 
             ImGui::PushID("B2");
-            if (ImGui::ImageButton(buttonName2.texure.name.c_str(), (ImTextureID)buttonName2.descritproSet, { ButtonSize, ButtonSize }))
+            if (ImGui::ImageButton(buttonName2.texure.Name.c_str(), buttonName2.descritproSet,
+                                   {ButtonSize, ButtonSize}))
             {
                 world.run = !world.run;
             }
             ImGui::PopID();
         }
-
     }
-   
-
 }

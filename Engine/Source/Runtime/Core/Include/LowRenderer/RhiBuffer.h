@@ -3,58 +3,55 @@
 #include "RhiResource.hpp"
 
 BEGIN_PCCORE
-
-class RhiBuffer : public RhiResource
-{
-public:
-
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiBuffer)
-    
-    PC_CORE_API RhiBuffer() = default;
-
-    PC_CORE_API RhiBuffer(size_t _sizeInByte,
-        PC_CORE::MemoryLocalisation _visibility, PC_CORE::MemoryUsage _usage) : m_MemoryUsage(_usage) , m_MemoryVisibility(_visibility),  m_SizeInByte(_sizeInByte)
+    class RhiBuffer : public RhiResource
     {
-        
-    }
+    public:
+        DEFAULT_COPY_MOVE_OPERATIONS(RhiBuffer)
 
-    PC_CORE_API virtual ~RhiBuffer() = default;
+        PC_CORE_API RhiBuffer() = default;
 
-    virtual void MapData(void** _ptr)
-    {
-        assert(
-            m_MemoryVisibility == MemoryLocalisation::CPU_To_GPU ||
-            m_MemoryVisibility == MemoryLocalisation::CPU_Only
-        );
+        PC_CORE_API RhiBuffer(size_t _sizeInByte,
+                              MemoryLocalisation _visibility, MemoryUsage _usage) : m_MemoryUsage(_usage),
+            m_MemoryVisibility(_visibility), m_SizeInByte(_sizeInByte)
+        {
+        }
 
-    }
-    virtual void UnmapData()
-    {
-        
-    }
+        PC_CORE_API ~RhiBuffer() override = default;
 
-    
-    PC_CORE::MemoryUsage GetMemoryUsage() const
-    {
-        return m_MemoryUsage;
-    }
-    
-    PC_CORE::MemoryLocalisation GetMemoryVisibility() const
-    {
-        return m_MemoryVisibility;
-    }
+        virtual void MapData(void** _ptr)
+        {
+            assert(
+                m_MemoryVisibility == MemoryLocalisation::CpuToGpu ||
+                m_MemoryVisibility == MemoryLocalisation::CpuOnly
+            );
+        }
 
-    size_t GetSize() const
-    {
-        return m_SizeInByte;
-    }
+        virtual void UnmapData()
+        {
+        }
 
-private:
-    PC_CORE::MemoryUsage m_MemoryUsage = PC_CORE::MemoryUsage::Count;
 
-    PC_CORE::MemoryLocalisation m_MemoryVisibility = PC_CORE::MemoryLocalisation::Count;
+        MemoryUsage GetMemoryUsage() const
+        {
+            return m_MemoryUsage;
+        }
 
-    size_t m_SizeInByte = 0;
-};
+        MemoryLocalisation GetMemoryVisibility() const
+        {
+            return m_MemoryVisibility;
+        }
+
+        size_t GetSize() const
+        {
+            return m_SizeInByte;
+        }
+
+    private:
+        MemoryUsage m_MemoryUsage = MemoryUsage::Count;
+
+        MemoryLocalisation m_MemoryVisibility = MemoryLocalisation::Count;
+
+        size_t m_SizeInByte = 0;
+    };
 
 END_PCCORE

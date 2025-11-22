@@ -4,46 +4,48 @@
 #include "Ecs/EcsSystem.h"
 
 BEGIN_PCCORE
+    class Level;
 
-class Level;
+    class RendererSystem : public EcsSystem
+    {
+    public:
+        DEFAULT_COPY_MOVE_OPERATIONS(RendererSystem)
 
-class RendererSystem : public EcsSystem
-{
+        IMP_DYNAMIC_REFLECT();
 
-public:
+        PC_CORE_API void Begin() override
+        {
+        };
 
-    DEFAULT_COPY_MOVE_OPERATIONS(RendererSystem)
-       
-    IMP_DYNAMIC_REFLECT();
+        PC_CORE_API void Tick(double deltaTime) override
+        {
+        };
 
-    PC_CORE_API void Begin() override {};
+        PC_CORE_API void RenderingTick(double deltatime) override;
 
-    PC_CORE_API void Tick(double deltaTime) override {};
+        PC_CORE_API RendererSystem() = default;
 
-    PC_CORE_API void RenderingTick(double deltatime) override;
+        PC_CORE_API RendererSystem(RenderingWorldData* _renderingWorldData);
 
-    PC_CORE_API RendererSystem() = default;
+        PC_CORE_API ~RendererSystem() override = default;
 
-    PC_CORE_API RendererSystem(PC_CORE::RenderingWorldData* _renderingWorldData);
+    private:
+        RenderingWorldData* m_RenderingDataPtr = nullptr;
 
-    PC_CORE_API ~RendererSystem() override = default;
-private:
-    PC_CORE::RenderingWorldData* m_RenderingDataPtr = nullptr;
+        Signature m_StaticMeshSignature;
 
-    Signature m_StaticMeshSignature;
+        Signature m_DirLightSignature;
 
-    Signature m_DirLightSignature;
+        Signature m_PointLightSignature;
 
-    Signature m_PointLightSignature;
-    
-    void PopulateStaticMeshes(const Level& _level);
+        void PopulateStaticMeshes(const Level& _level);
 
-    void PopulateLight(const Level& _level);
+        void PopulateLight(const Level& _level);
 
-    
-    REFLECT(RendererSystem)
-    REFLECT_MEMBER(RendererSystem, m_StaticMeshSignature);
-    REFLECT_MEMBER(RendererSystem, m_DirLightSignature);
-};
+
+        REFLECT(RendererSystem)
+        REFLECT_MEMBER(RendererSystem, m_StaticMeshSignature);
+        REFLECT_MEMBER(RendererSystem, m_DirLightSignature);
+    };
 
 END_PCCORE

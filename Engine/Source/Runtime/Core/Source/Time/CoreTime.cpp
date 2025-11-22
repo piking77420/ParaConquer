@@ -14,7 +14,6 @@ double PC_CORE::Time::DeltaTime()
 
 void PC_CORE::Time::UpdateTime()
 {
-    
     const double currentFrame = glfwGetTime();
     deltaTime = currentFrame - currentTime;
     currentTime = currentFrame;
