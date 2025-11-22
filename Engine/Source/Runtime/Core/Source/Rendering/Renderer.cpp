@@ -19,6 +19,7 @@
 
 #include "VulkanCommandList.hpp"
 #include "Resources/ComputeShader.hpp"
+#include "Rendering/Sampler.hpp"
 
 using namespace PC_CORE;
 
@@ -44,12 +45,12 @@ Renderer::~Renderer()
     }
 }
 
-void Renderer::Init()
+void Renderer::Init(Rhi& _Rhi)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    m_RhiContext = Rhi::GetRhiContext();
+    m_Rhi = &_Rhi;
 
     CommandListCreateInfo commandListCreateInfo =
     {
@@ -57,12 +58,13 @@ void Renderer::Init()
         .CommandBufferType = CommandBufferType::Primary,
     };
 
-    PrimaryCommandList = Rhi::CreateCommandList(commandListCreateInfo);
-    SwapChainPassCommandList = Rhi::CreateCommandList(commandListCreateInfo);
+    PrimaryCommandList.reset(m_Rhi->CreateCommandList("PrimaryCommandList", commandListCreateInfo));
+    PrimaryCommandList->Build();
+    SwapChainPassCommandList.reset(m_Rhi->CreateCommandList("SwapChainPassCommandList", commandListCreateInfo));
+    SwapChainPassCommandList->Build();
 
     const SamplerCreateInfo info =
     {
-        .SamplerName = "LinearReapeat",
         .magFilter = Filter::Linear,
         .minFilter = Filter::Linear,
         .u = SamplerAddressMode::Repeat,
@@ -70,11 +72,11 @@ void Renderer::Init()
         .w = SamplerAddressMode::Repeat
     };
 
-    LinearReapeat = Sampler(info);
+    LinearReapeat = Sampler(*m_Rhi, "LinearReapeat", info);
+    LinearReapeat->Build();
 
     const SamplerCreateInfo skyBoxSampler =
     {
-        .SamplerName = "SkyBoxSampler",
         .magFilter = Filter::Linear,
         .minFilter = Filter::Linear,
         .u = SamplerAddressMode::ClampToEdge,
@@ -82,7 +84,8 @@ void Renderer::Init()
         .w = SamplerAddressMode::ClampToEdge
     };
 
-    m_SkyBoxSampler = Sampler(skyBoxSampler);
+    m_SkyBoxSampler = Sampler(*m_Rhi, "SkyBoxSampler", skyBoxSampler);
+    m_SkyBoxSampler->Build();
 
 
     InitCubeBuffers();
@@ -101,7 +104,7 @@ void Renderer::BeginFrame(Window* _window)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    m_RhiContext->swapChain->GetSwapChainImageIndex(_window);
+    m_Rhi->GetRhiContext().rhiSwapChain->GetSwapChainImageIndex(_window);
 }
 
 void Renderer::UpdateGpuCameraData()
@@ -109,8 +112,13 @@ void Renderer::UpdateGpuCameraData()
     const auto& rContextView = m_CurrentView->RenderingContext;
     const auto& gpuCamera = m_CurrentView->CameraGpu;
 
+    if (char* ptr = UniformBuffers.CameraUniformBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
+    {
+        std::memcpy(ptr, &gpuCamera, sizeof(CameraGpu));
 
-    UniformBuffers.CameraUniformBuffer.Update(&gpuCamera, sizeof(CameraGpu));
+        UniformBuffers.CameraUniformBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+    }
+
 }
 
 void Renderer::UpdateLightGpuData(CommandList* _commandlist)
@@ -191,27 +199,11 @@ void Renderer::UpdateLightGpuData(CommandList* _commandlist)
 
 
     constexpr size_t size = sizeof(GPUDynamicLightData);
-    m_GpuLightUniformBufferStaging.Update(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData));
-
-
-    _commandlist->CopyBuffer(*m_GpuLightUniformBufferStaging.GetRhiBuffer(),
-                            *UniformBuffers.DynamicGpuLightUniformBuffer.GetRhiBuffer(), 0, 0,
-                            sizeof(GPUDynamicLightData));
-
-    const BufferMemoryBarrier barrier =
+    if (char* ptr = UniformBuffers.LightBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
     {
-        .SrcAccessMask = GpuAccessFlag::TransferWrite,
-        .DstAccessMask = GpuAccessFlag::ShaderRead,
-        .Buffer = UniformBuffers.DynamicGpuLightUniformBuffer.GetRhiBuffer().get(),
-        .Offset = 0,
-        .Size = sizeof(GPUDynamicLightData),
-    };
-    _commandlist->Barrier(
-        GpuPipelineStageFlagBits::Transfer,
-        GpuPipelineStageFlagBits::FragmentShader,
-        nullptr, 0,
-        &barrier, 1,
-        nullptr, 0);
+        std::memcpy(ptr, &m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData));
+        UniformBuffers.LightBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+    }
 }
 
 
@@ -233,19 +225,7 @@ void Renderer::Draw(const View& _view)
 #endif
     UpdateLightGpuData(PrimaryCommandList.get());
 
-    const ViewportInfo viewportInfo =
-    {
-        .Transform = {0, 0},
-        .Size = {
-            static_cast<float>(rContextView.RenderingContextSize.x),
-            static_cast<float>(rContextView.RenderingContextSize.y)
-        },
-        .MinDepth = 0.0f,
-        .MaxDepth = 1.0f,
-        .ScissorsOff = {0, 0},
-        .Scissorsextent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y}
-    };
-
+    const ViewportInfo viewportInfo(rContextView.RenderingContextSize);
     PrimaryCommandList->SetViewPort(viewportInfo);
     DefferdPass(viewportInfo);
     ForwardPass(viewportInfo);
@@ -254,7 +234,7 @@ void Renderer::Draw(const View& _view)
 
     PrimaryCommandList->EndRecordCommands();
     PrimaryCommandList->Flush(FlushCommandMethod::Sync
-                              , GpuPipelineStageFlagBits::ColorAttachmentOutput); // flush
+                              , GpuPipelineStage::ColorAttachmentOutput); // flush
 }
 
 
@@ -262,23 +242,24 @@ void Renderer::SwapBuffers(Window* _window)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    std::shared_ptr<SwapChain> swapChain = RhiContext::GetContext().swapChain;
+    std::shared_ptr<RhiSwapChain> rhiSwapChain = m_Rhi->GetRhiContext().rhiSwapChain;
 
+    // THIS FUNCTION SHOULDE BE IN RHI
 
     SwapChainPassCommandList->Reset();
     SwapChainPassCommandList->BeginRecordCommands();
 
-    swapChain->BeginSwapChainRenderPass(SwapChainPassCommandList.get());
+    rhiSwapChain->BeginSwapChainRenderPass(SwapChainPassCommandList.get());
     SwapChainPassCommandList->ExecuteExternalCommand();
-    swapChain->EndSwapChainRenderPass(SwapChainPassCommandList.get());
+    rhiSwapChain->EndSwapChainRenderPass(SwapChainPassCommandList.get());
 
     SwapChainPassCommandList->EndRecordCommands();
-    SwapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStageFlagBits::ColorAttachmentOutput);
+    SwapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStage::ColorAttachmentOutput);
 
 
     ClearRenderData();
-    m_RhiContext->swapChain->Present(_window);
-    Rhi::NextFrame();
+    rhiSwapChain->Present(_window);
+    m_Rhi->Rhi::NextFrame();
 }
 
 std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
@@ -290,8 +271,12 @@ std::shared_ptr<View> Renderer::CreateView(Tbx::Vector2i _defaultSize)
     return view;
 }
 
+Rhi& Renderer::GetRhi()
+{
+    return *m_Rhi;
+}
 
-void Renderer::DrawStaticMesh(MaterialType _type, const ObjectPtr<GraphicShader>& _shader)
+void Renderer::DrawStaticMesh(MaterialType _type, RhiShaderProgram& _shader)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -320,12 +305,12 @@ void Renderer::DrawStaticMesh(MaterialType _type, const ObjectPtr<GraphicShader>
 
         // Send Data
 
-        PrimaryCommandList->BindDescriptorSet(_shader.get(), materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindDescriptorSet(_shader, materialDescriptor, MATERIAL_DESCRIPTOR_SET, 1);
 
-        PrimaryCommandList->PushConstant(_shader.get(), "pushConstant", &modelMatrixf,
+        PrimaryCommandList->PushConstant(_shader, "pushConstant", &modelMatrixf,
                                          sizeof(Tbx::Matrix4x4f) * 2);
-        PrimaryCommandList->BindVertexBuffer(*mesh->VBuffer.GetRhiBuffer(), 0, 1);
-        PrimaryCommandList->BindIndexBuffer(*mesh->IBuffer.GetRhiBuffer(), 0);
+        PrimaryCommandList->BindVertexBuffer(*mesh->VBuffer.Get(), 0, 1);
+        PrimaryCommandList->BindIndexBuffer(*mesh->IBuffer.Get(), mesh->IBuffer.GetIndexFormat(), 0);
         PrimaryCommandList->DrawIndexed(mesh->IBuffer.GetIndexCount(), 1, 0, 0, 0);
     }
 }
@@ -358,39 +343,36 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
         .ClearDepth = 1.f
     };
 
-    auto forwardShader = ForwardShader.Lock();
-    auto skyboxShader = SkyBoxShader.Lock();
-    bool needForwardPass = forwardShader || skyboxShader;
-
 
     PrimaryCommandList->BeginDebugLabel("Forward Pass", FORWARD_DEBUG_COLOR);
     PrimaryCommandList->BeginRenderPass(beginRenderPassInfo);
 
 
-    if (forwardShader && false)
+    if (ForwardShader && false)
     {
-        PrimaryCommandList->BindProgram(forwardShader.get());
-        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+        PrimaryCommandList->BindProgram(*ForwardShader.get());
+        PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
 
         PrimaryCommandList->SetViewPort(_viewportInfo);
-        PrimaryCommandList->BindDescriptorSet(forwardShader.get(), rContextView.ForwardDesritptorSet,
+        PrimaryCommandList->BindDescriptorSet(*ForwardShader.get(), rContextView.ForwardDesritptorSet,
                                               SCENE_DESCRIPTOR_SET, 1);
 
         // draw all static mesh
-        DrawStaticMesh(MaterialType::Transparent, forwardShader);
+        DrawStaticMesh(MaterialType::Transparent, *ForwardShader.get());
     }
 
-    if (skyboxShader && false)
+    if (SkyBoxShader && false)
     {
-        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+        RhiShaderProgram& skyBoxShader = *SkyBoxShader;
+        PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
 
-        PrimaryCommandList->BindProgram(skyboxShader.get());
-        PrimaryCommandList->BindDescriptorSet(skyboxShader.get(), m_SkyboxCameraDescriptorSet,
-                                              SCENE_DESCRIPTOR_SET, 1);
-        PrimaryCommandList->BindDescriptorSet(skyboxShader.get(), m_SkyBoxCubeMapDescriptorSet,
-                                              ENVIRONEMENT_DESCRIPTOR_SET, 1);
-        PrimaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer.GetRhiBuffer(), 0, 1);
-        PrimaryCommandList->Draw(m_CubeVertexBuffer.GetVertexCount(), 1, 0, 0);
+        PrimaryCommandList->BindProgram(skyBoxShader);
+        PrimaryCommandList->BindDescriptorSet(skyBoxShader, m_SkyboxCameraDescriptorSet,
+            SCENE_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindDescriptorSet(skyBoxShader, m_SkyBoxCubeMapDescriptorSet,
+            ENVIRONEMENT_DESCRIPTOR_SET, 1);
+        PrimaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer.Get(), 0, 1);
+        PrimaryCommandList->Draw(m_CubeVertexBuffer.GetVerticiesCount(), 1, 0, 0);
     }
 #ifdef WITH_EDITOR
     m_DebugDrawContext->DrawDebugPrimitive(PrimaryCommandList.get(), rContextView);
@@ -407,6 +389,8 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
+
+    return; // TO DO HANDLE INPUT ATTACHEMNT
 
     const auto& rContextView = m_CurrentView->RenderingContext;
 
@@ -430,32 +414,30 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
         .ClearDepth = 1.f
     };
 
-    ObjectPtr sGeometry = GeometryBufferShader.lock();
-    ObjectPtr sDeferred = DeferedShader.lock();
 
 
+    RhiShaderProgram& sGeometry = *GeometryBufferShader;
     PrimaryCommandList->BeginRenderPass(beginRenderPassInfo);
-    PrimaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
-    if (sGeometry)
     {
-        PrimaryCommandList->BindProgram(sGeometry.get());
-        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
-        PrimaryCommandList->BindDescriptorSet(sGeometry.get(), rContextView.GeometryDescritproSet, SCENE_DESCRIPTOR_SET,
-                                              1);
-        DrawStaticMesh(MaterialType::Opaque, sGeometry);
-    }
-    PrimaryCommandList->EndDebugLabel();
-    PrimaryCommandList->NextSubPass();
+        PrimaryCommandList->BeginDebugLabel("Gbuffer Pass", GEOMETRY_PASS_COLOR);
 
-    if (sDeferred)
+        PrimaryCommandList->BindProgram(sGeometry);
+        PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
+        PrimaryCommandList->BindDescriptorSet(sGeometry, rContextView.GeometryDescritproSet, SCENE_DESCRIPTOR_SET, 1);
+        DrawStaticMesh(MaterialType::Opaque, sGeometry);
+        PrimaryCommandList->EndDebugLabel();
+    }
+        
+    RhiShaderProgram& sDeferred = *DeferedShader;
+    PrimaryCommandList->NextSubPass();
     {
         PrimaryCommandList->BeginDebugLabel("DeferredPass", DEFERD_PASS_COLOR);
-        PrimaryCommandList->BindProgram(sDeferred.get());
-        PrimaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.DefferdLightingLightingCameraSet,
+        PrimaryCommandList->BindProgram(sDeferred);
+        PrimaryCommandList->BindDescriptorSet(sDeferred, rContextView.DefferdLightingLightingCameraSet,
                                               SCENE_DESCRIPTOR_SET, 1);
-        PrimaryCommandList->BindDescriptorSet(sDeferred.get(), rContextView.DefferdLightingGbufferSet, GBUFFER_SET, 1);
+        PrimaryCommandList->BindDescriptorSet(sDeferred, rContextView.DefferdLightingGbufferSet, GBUFFER_SET, 1);
 
-        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
         PrimaryCommandList->Draw(4, 1, 0, 0);
         PrimaryCommandList->EndDebugLabel();
     }
@@ -465,6 +447,7 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
 
 PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
 {
+    /*
     const auto& rContextView = m_CurrentView->RenderingContext;
 
 
@@ -481,15 +464,12 @@ PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
         uint32_t groupY = static_cast<uint32_t>(_viewportInfo.Size.y);
 
 
-        const ImageMemoryBarrier gbufferImage =
+        const ImageBarrier gbufferImage =
         {
-            .SrcAccessMask = GpuAccessFlag::ColorAttachmentWrite,
-            .DstAccessMask = static_cast<GpuAccessFlag>(GpuAccessFlag::ShaderRead & GpuAccessFlag::ShaderWrite),
+            .CurrentState = RhiResourceState::RenderTarget,
+            .NewState = RhiResourceState::ComputeWrite,
 
-            .CurrentState = ImageState::RenderTargetOptimal,
-            .NewState = ImageState::General,
-
-            .Texture = rContextView.HdrImage->GetRhiTexture2D().get(),
+            .Texture = rContextView.HdrImage->Get(),
         };
 
         PrimaryCommandList->Barrier(GpuPipelineStageFlagBits::ColorAttachmentOutput,
@@ -500,9 +480,24 @@ PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
 
         PrimaryCommandList->Dispatch(groupX, groupY, 1);
 
+        const ImageBarrier gbufferImage2 =
+        {
+            .CurrentState = RhiResourceState::ComputeWrite,
+            .NewState = RhiResourceState::ShaderRead,
+
+            .Texture = rContextView.HdrImage->Get(),
+        };
+
+        PrimaryCommandList->Barrier(
+            GpuPipelineStageFlagBits::ComputeShader,
+            GpuPipelineStageFlagBits::ColorAttachmentOutput,
+            nullptr, 0,
+            nullptr, 0,
+            &gbufferImage2, 1);
+
         assert(rContextView.HdrImage != nullptr);
     }
-    PrimaryCommandList->EndDebugLabel();
+    PrimaryCommandList->EndDebugLabel();*/
 }
 
 
@@ -532,12 +527,12 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
     };
     PrimaryCommandList->BeginDebugLabel("Final Pass", FINAL_RENDER_PASS_DEBUG_COLOR);
     PrimaryCommandList->BeginRenderPass(drawToViewport);
-    if (auto drawToViewPort = DrawTextureScreenQuadShader.Lock())
+    if (DrawTextureScreenQuadShader)
     {
-        PrimaryCommandList->BindProgram(drawToViewPort.get());
-        PrimaryCommandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        PrimaryCommandList->BindProgram(*DrawTextureScreenQuadShader);
+        PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
-        PrimaryCommandList->BindDescriptorSet(drawToViewPort.get(),
+        PrimaryCommandList->BindDescriptorSet(*DrawTextureScreenQuadShader,
                                               rContextView.FinalImageDescritptorSet, 0, 1);
         PrimaryCommandList->Draw(4, 1, 0, 0);
     }
@@ -555,6 +550,7 @@ void Renderer::CreateRenderPasss()
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Create Defferd RenderPass");
 
         std::vector<RenderPassAttachementDescriptor> attachements;
@@ -571,8 +567,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::Undefined,
-            .finalImageState = ImageState::RenderTargetOptimal,
+            .currentImageState = RhiResourceState::Undefined,
+            .finalImageState = RhiResourceState::RenderTarget,
         };
         attachements[static_cast<uint8_t>(GbufferType::Normal)] =
         {
@@ -583,8 +579,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::Undefined,
-            .finalImageState = ImageState::RenderTargetOptimal,
+            .currentImageState = RhiResourceState::Undefined,
+            .finalImageState = RhiResourceState::RenderTarget,
         };
         attachements[static_cast<uint8_t>(GbufferType::RoughnessMetallicAo)] =
         {
@@ -595,8 +591,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::Undefined,
-            .finalImageState = ImageState::RenderTargetOptimal,
+            .currentImageState = RhiResourceState::Undefined,
+            .finalImageState = RhiResourceState::RenderTarget,
         };
         attachements[static_cast<uint8_t>(GbufferType::WorldPosition)] =
         {
@@ -607,20 +603,20 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::Undefined,
-            .finalImageState = ImageState::RenderTargetOptimal,
+            .currentImageState = RhiResourceState::Undefined,
+            .finalImageState = RhiResourceState::RenderTarget,
         };
         RenderPassAttachementDescriptor depthAttachement =
         {
             .attachmentType = AttachmentType::Depth,
-            .format = RhiFormat::D32Sfloat,
+            .format = RhiFormat::D24UnormS8Uint,
             .sampleCount = 1,
             .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::Undefined,
-            .finalImageState = ImageState::DepthStencilOptimal,
+            .currentImageState = RhiResourceState::Undefined,
+            .finalImageState = RhiResourceState::DepthStencilWrite,
         };
 
         // out image
@@ -633,8 +629,8 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::Undefined,
-            .finalImageState = ImageState::RenderTargetOptimal,
+            .currentImageState = RhiResourceState::Undefined,
+            .finalImageState = RhiResourceState::RenderTarget,
         };
 
         // Geometry subpass and deffered lighting
@@ -643,7 +639,7 @@ void Renderer::CreateRenderPasss()
 
         subPassDescriptions[0] =
         {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::Graphic,
+            .type = PipelineType::Graphic,
             .colorAttachementDescriptorIndicies = {
                 static_cast<size_t>(GbufferType::Albedo),
                 static_cast<size_t>(GbufferType::Normal),
@@ -651,20 +647,21 @@ void Renderer::CreateRenderPasss()
                 static_cast<size_t>(GbufferType::WorldPosition)
             },
             .inputAttachementDescriptorIndicies = {},
-            .subPassDependcies =
+            .subPassTransition =
             {
-                .srcStageMask = GpuPipelineStageFlagBits::ColorAttachmentOutput |
-                GpuPipelineStageFlagBits::EarlyFragmentTests,
-                .dstStageMask = GpuPipelineStageFlagBits::FragmentShader,
-                .srcAccessMask = {},
-                .dstAccessMask = GpuAccessFlag::ShaderRead
-
+                .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
+                .DstStageFlag = GpuPipelineStage::FragmentShader,
+                .ImageStateTransition =
+                    {
+                        .OldState = RhiResourceState::RenderTarget,
+                        .NewState = RhiResourceState::ShaderRead
+                    }
             },
             .useDepth = true,
         };
         subPassDescriptions[1] =
         {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::Graphic,
+            .type = PipelineType::Graphic,
             .colorAttachementDescriptorIndicies =
             {
                 attachements.size() - 1
@@ -675,14 +672,15 @@ void Renderer::CreateRenderPasss()
                 static_cast<size_t>(GbufferType::RoughnessMetallicAo),
                 static_cast<size_t>(GbufferType::WorldPosition)
             },
-            .subPassDependcies =
+            .subPassTransition =
             {
-                .srcStageMask =
-                GpuPipelineStageFlagBits::ColorAttachmentOutput,
-                .dstStageMask =
-                GpuPipelineStageFlagBits::FragmentShader,
-                .srcAccessMask = {},
-                .dstAccessMask = GpuAccessFlag::ShaderRead
+                .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
+                .DstStageFlag = GpuPipelineStage::FragmentShader,
+                .ImageStateTransition =
+                    {
+                        .OldState = RhiResourceState::RenderTarget,
+                        .NewState = RhiResourceState::ShaderRead
+                    }
             },
             .useDepth = false,
         };
@@ -693,7 +691,7 @@ void Renderer::CreateRenderPasss()
             .subPasses = subPassDescriptions
         };
 
-        RenderPasses.DefferedPass = Rhi::CreateRenderPass(renderPassDescriptor);
+        RenderPasses.DefferedPass.reset(Rhi::CreateRenderPass("DefferedRenderPass", renderPassDescriptor));*/
     }
 
     // Forward
@@ -712,21 +710,21 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::RenderTargetOptimal,
-            .finalImageState = ImageState::RenderTargetOptimal,
+            .currentImageState = RhiResourceState::RenderTarget,
+            .finalImageState = RhiResourceState::ShaderRead,
         };
 
         RenderPassAttachementDescriptor depthAttachement =
         {
             .attachmentType = AttachmentType::Depth,
-            .format = RhiFormat::D32Sfloat,
+            .format = RhiFormat::D24UnormS8Uint,
             .sampleCount = 1,
             .load = LoadOperation::Load,
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = ImageState::DepthStencilOptimal,
-            .finalImageState = ImageState::DepthStencilOptimal,
+            .currentImageState = RhiResourceState::DepthStencilWrite,
+            .finalImageState = RhiResourceState::DepthStencilWrite,
         };
 
         std::vector<SubPassDescription> subPassDescriptions;
@@ -734,17 +732,18 @@ void Renderer::CreateRenderPasss()
 
         subPassDescriptions[0] =
         {
-            .shaderProgramPipelineType = ShaderProgramPipelineType::Graphic,
+            .type = RhiShaderProgram::PipelineType::Graphic,
             .colorAttachementDescriptorIndicies = {0},
             .inputAttachementDescriptorIndicies = {},
-            .subPassDependcies =
+            .subPassTransition =
             {
-                .srcStageMask = GpuPipelineStageFlagBits::ColorAttachmentOutput |
-                GpuPipelineStageFlagBits::EarlyFragmentTests,
-                .dstStageMask = GpuPipelineStageFlagBits::FragmentShader,
-                .srcAccessMask = {},
-                // you can set this to ColorAttachmentWrite or DepthStencilAttachmentWrite if needed
-                .dstAccessMask = GpuAccessFlag::ShaderRead
+                .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
+                .DstStageFlag = GpuPipelineStage::FragmentShader,
+                .ImageStateTransition = 
+                {
+                        .OldState = RhiResourceState::RenderTarget,
+                        .NewState = RhiResourceState::ShaderRead
+                }
             },
             .useDepth = true,
         };
@@ -756,15 +755,15 @@ void Renderer::CreateRenderPasss()
             .subPasses = subPassDescriptions
         };
 
-        RenderPasses.ForwardPass = Rhi::CreateRenderPass(renderPassDescriptor);
+        RenderPasses.ForwardPass.reset(m_Rhi->CreateRenderPass("ForwardPass", renderPassDescriptor));
     }
 
     // Draw To Final Viewport
     {
         PERF_REGION_SCOPED_NAMED("Create Draw To Final Viewport");
-        RenderPasses.DrawToFinalViewPort = Rhi::CreateRenderPass(RhiFormat::R8G8B8A8Unorm,
-                                                                 Rhi::GetRhiContext()->physicalDevices->
-                                                                 GetPhysicalDevice().GetMaxUsableSampleCount());
+        RenderPasses.DrawToFinalViewPort.reset(m_Rhi->CreateRenderPass("DrawToFinalViewPort", RhiFormat::R8G8B8A8Unorm,
+                                                                 m_Rhi->GetRhiContext().rhiPhysicalDevices->
+                                                                 GetPhysicalDevice().GetMaxUsableSampleCount()));
     }
 }
 
@@ -779,6 +778,7 @@ void Renderer::CreateShaders()
 
 
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Geometry Shader");
         constexpr RasterizerInfo rasterizerInfo =
         {
@@ -826,9 +826,12 @@ void Renderer::CreateShaders()
         };
 
         GeometryBufferShader = ResourceManager::Create<GraphicShader>("Geometry", graphicShaderProgramCreateInfo);
+        GeometryBufferShader.Lock()->Get()->Build();
+        */
     }
 
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Defferd Shader");
         constexpr RasterizerInfo rasterizerInfo =
         {
@@ -872,19 +875,22 @@ void Renderer::CreateShaders()
         };
 
         DeferedShader = ResourceManager::Create<GraphicShader>("Deferred", graphicShaderProgramCreateInfo);
+        DeferedShader.Lock()->Get()->Build();
+        */
     }
 
     {
         PERF_REGION_SCOPED_NAMED("Forward Shader");
-        constexpr RasterizerInfo rasterizerInfo =
+        /*
+        constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
         {
-            .polygonMode = PolygonMode::Fill,
-            .cullModeFlag = CullModeFlagBit::Back,
-            .frontFace = FrontFace::CounterClockwise
+            .polygonMode = RhiShaderProgram::PolygonMode::Fill,
+            .cullModeFlag = RhiShaderProgram::CullModeFlagBit::Back,
+            .frontFace = RhiShaderProgram::FrontFace::CounterClockwise
         };
 
 
-        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
@@ -896,17 +902,19 @@ void Renderer::CreateShaders()
             .vertexAttributeDescriptions = StaticMeshVertex::GetAttributeDescriptions(0),
         };
 
-        const SourceList sources =
+        const std::ve sources =
         {
             {
-                ShaderStageType::Vertex,
+                RhiShaderProgram::ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary"),
             },
             {
-                ShaderStageType::Pixel,
+                RhiShaderProgram::ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")
             }
         };
+
+
 
         const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
         {
@@ -917,18 +925,19 @@ void Renderer::CreateShaders()
             .subPassIndex = 0
         };
 
-        ForwardShader = ResourceManager::Create<GraphicShader>("ForwardShader", graphicShaderProgramCreateInfo);
+        ForwardShader = m_Rhi->CreateRhiShaderProgram("ForwardShader", );
+        ForwardShader.Lock()->Get()->Build();*/
     }
 
     // SkyBox Shader
     {
         PERF_REGION_SCOPED_NAMED("SkyBox Shader");
-
-        constexpr RasterizerInfo rasterizerInfo =
+        /*
+        constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
         {
-            .polygonMode = PolygonMode::Fill,
-            .cullModeFlag = CullModeFlagBit::None,
-            .frontFace = FrontFace::CounterClockwise,
+            .polygonMode = RhiShaderProgram::PolygonMode::Fill,
+            .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
+            .frontFace = RhiShaderProgram::FrontFace::CounterClockwise,
             .multiSampleRasterization = 1
         };
 
@@ -948,7 +957,7 @@ void Renderer::CreateShaders()
         };
 
 
-        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
@@ -963,11 +972,11 @@ void Renderer::CreateShaders()
         const SourceList source =
         {
             {
-                ShaderStageType::Vertex,
+                RhiShaderProgram::ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")
             },
             {
-                ShaderStageType::Pixel,
+                RhiShaderProgram::ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")
             }
         };
@@ -986,11 +995,13 @@ void Renderer::CreateShaders()
 
         SkyBoxShader = ResourceManager::Create<GraphicShader>(
             "SkyboxShader", graphicShaderProgramCreateInfo);
+        
+        SkyBoxShader.Lock()->Get()->Build();*/
     }
 
     {
         PERF_REGION_SCOPED_NAMED("ToneMap Shader");
-
+        /*
         const ComputeShaderProgramCreateInfo computeShaderProgramCreateInfo =
         {
             .shaderComputeInfo = {},
@@ -998,23 +1009,24 @@ void Renderer::CreateShaders()
         };
 
         AcesShader = ResourceManager::Create<ComputeShader>("Aces", computeShaderProgramCreateInfo);
+        AcesShader.Lock()->Get()->Build();*/
     }
 
     // Draw to final viewport
     {
         PERF_REGION_SCOPED_NAMED("CreateDrawToFinalViewport Programm");
-
-        const RasterizerInfo rasterizerInfo =
+        /*
+        const RhiShaderProgram::RasterizerInfo rasterizerInfo =
         {
-            .polygonMode = PolygonMode::Fill,
-            .cullModeFlag = CullModeFlagBit::None,
-            .frontFace = FrontFace::CounterClockwise,
-            .multiSampleRasterization = Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().
+            .polygonMode = RhiShaderProgram::PolygonMode::Fill,
+            .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
+            .frontFace = RhiShaderProgram::FrontFace::CounterClockwise,
+            .multiSampleRasterization = m_Rhi->GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().
                                                               GetMaxUsableSampleCount()
         };
 
 
-        const ShaderGraphicPointInfo shaderGraphicPointInfo =
+        const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
         {
             .rasterizerInfo = rasterizerInfo,
             .dephInfo =
@@ -1029,11 +1041,11 @@ void Renderer::CreateShaders()
         const SourceList sources =
         {
             {
-                ShaderStageType::Vertex,
+                RhiShaderProgram::ShaderStageType::Vertex,
                 ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary"),
             },
             {
-                ShaderStageType::Pixel,
+                RhiShaderProgram::ShaderStageType::Pixel,
                 ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")
             }
         };
@@ -1050,6 +1062,8 @@ void Renderer::CreateShaders()
 
         DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>(
             "DrawQuadShader", graphicShaderProgramCreateInfo);
+        DrawTextureScreenQuadShader.Lock()->Get()->Build();
+        */
     }
 }
 
@@ -1063,36 +1077,34 @@ void Renderer::CreateThirdPartyResources()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    {
-        /*
-        PERF_REGION_SCOPED_NAMED("Create Cube Map");
-        std::array<std::string, 6> maps
-        {
-            "Assets/Textures/Skybox/Right.jpg",
-            "Assets/Textures/Skybox/Left.jpg",
-            "Assets/Textures/Skybox/Top.jpg",
-            "Assets/Textures/Skybox/Bottom.jpg",
-            "Assets/Textures/Skybox/Front.jpg",
-            "Assets/Textures/Skybox/Back.jpg",
-        };
-        m_Cubemap = ResourceManager::Create<Texture3D>("BasicCubemap", maps);*/
-    }
+  
 }
 
 void Renderer::CreateBuffers()
 {
-    UniformBuffers.CameraUniformBuffer = UniformBuffer(sizeof(CameraGpu),
-                                                       MemoryLocalisation::CpuToGpu, MemoryUsage::Dynamic);
-    UniformBuffers.PostProcessUniformBuffer = UniformBuffer(&UniformBuffers.PostProcessUniformBuffer,
-                                                            sizeof(PostProcessGpu),
-                                                            MemoryLocalisation::CpuToGpu, MemoryUsage::Dynamic);
+    {
 
-    m_GpuLightUniformBufferStaging = UniformBuffer(&UniformBuffers.PostProcessUniformBuffer,
-                                                 sizeof(m_GpuDynamicLightData),
-                                                 MemoryLocalisation::CpuToGpu, MemoryUsage::Dynamic);
+        PERF_REGION_SCOPED_NAMED("Create Cube Map");
+        std::array<std::string, 6> maps
+        {
+            "D:/ParaConquerGame/Assets/Textures/Skybox/Right.jpg",
+            "D:/ParaConquerGame/Assets/Textures/Skybox/Left.jpg",
+            "D:/ParaConquerGame/Assets/Textures/Skybox/Top.jpg",
+            "D:/ParaConquerGame/Assets/Textures/Skybox/Bottom.jpg",
+            "D:/ParaConquerGame/Assets/Textures/Skybox/Front.jpg",
+            "D:/ParaConquerGame/Assets/Textures/Skybox/Back.jpg",
+        };
+        Cubemap = ResourceManager::Create<Texture3D>(*m_Rhi, "BasicCubemap", maps);
+    }
 
-    UniformBuffers.DynamicGpuLightUniformBuffer = UniformBuffer(&m_GpuDynamicLightData, sizeof(m_GpuDynamicLightData),
-                                                                MemoryLocalisation::GpuOnly, MemoryUsage::Dynamic);
+    UniformBuffers.CameraUniformBuffer = UniformBuffer(*m_Rhi, "CameraUniformBuffer", sizeof(CameraGpu), RhiResource::MemoryUsage::Dynamic);
+    UniformBuffers.CameraUniformBuffer->Build();
+    
+    UniformBuffers.PostProcessUniformBuffer = UniformBuffer(*m_Rhi, "PostProcessUniformBuffer", sizeof(PostProcessGpu), RhiResource::MemoryUsage::Dynamic);
+    UniformBuffers.PostProcessUniformBuffer->Build();
+
+    UniformBuffers.LightBuffer = UniformBuffer(*m_Rhi, "DynamicGpuLightUniformBuffer", sizeof(m_GpuDynamicLightData), RhiResource::MemoryUsage::Dynamic);
+    UniformBuffers.LightBuffer->Build();
 }
 #pragma endregion CreateThirdPartyResources
 
@@ -1103,23 +1115,23 @@ void Renderer::CreateDescriptorSets()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    const UniformBufferDescriptor lightData
+    const BufferDescriptor lightData
     {
-        .buffer = &UniformBuffers.CameraUniformBuffer,
+        .buffer = UniformBuffers.CameraUniformBuffer.Get(),
     };
     /*
     ImageSamplerDescriptor skyboxCubeMapDescritptor
     {
         .sampler = &m_SkyBoxSampler,
         .texture = m_Cubemap.lock().get(),
-        .imageState = PC_CORE::ImageState::ShaderReadOptimal
+        .resourceState = PC_CORE::ImageState::ShaderReadOptimal
     };*/
 
     std::vector<ShaderProgramDescriptorWrite> descriptorSets;
 
     {
         PERF_REGION_SCOPED_NAMED("Skybox Shader DescriptorSets");
-
+        /*
         descriptorSets =
         {
             {
@@ -1128,9 +1140,9 @@ void Renderer::CreateDescriptorSets()
                 lightData,
             },
         };
-        SkyBoxShader.lock()->AllocDescriptorSet(&m_SkyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
-        m_SkyboxCameraDescriptorSet->WriteDescriptorSets(descriptorSets);
-        /*
+        SkyBoxShader.lock()->CreateDescriptorBinding(&m_SkyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
+        m_SkyboxCameraDescriptorSet->SetBindings(descriptorSets);
+     
         descriptorSets =
         {
             {
@@ -1139,9 +1151,9 @@ void Renderer::CreateDescriptorSets()
                 skyboxCubeMapDescritptor,
             }
         };
-        m_SkyBoxShader.lock()->AllocDescriptorSet(&skyBoxCubeMapDescriptorSet,
+        m_SkyBoxShader.lock()->CreateDescriptorBinding(&skyBoxCubeMapDescriptorSet,
                                                    ENVIRONEMENT_DESCRIPTOR_SET);
-        skyBoxCubeMapDescriptorSet->WriteDescriptorSets(descriptorSets);*/
+        skyBoxCubeMapDescriptorSet->SetBindings(descriptorSets);*/
     }
 }
 #pragma endregion CreateDescriptorSets
@@ -1199,6 +1211,12 @@ void Renderer::InitCubeBuffers()
         Tbx::Vector3f{0.5f, -0.5f, 0.5f},
     };
 
-    m_CubeVertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(Tbx::Vector3f),
-                                      MemoryLocalisation::GpuOnly, MemoryUsage::Static);
+    m_CubeVertexBuffer = VertexBuffer(*m_Rhi,"CubeVertexBuffer", vertices.size(), sizeof(Tbx::Vector3f), RhiBuffer::MemoryUsage::Static);
+    m_CubeVertexBuffer->Build();
+    
+
+    m_Rhi->PushResourceUpdate([&](CommandList* list)
+    {
+            m_CubeVertexBuffer->UploadData(list, vertices.data(), vertices.size());
+    }) ;
 }

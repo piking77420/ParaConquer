@@ -17,39 +17,32 @@ BEGIN_PCCORE
         const RenderInstanceCreateInfo* instanceCreate;
         const PhysicalDevicesCreateInfo* physicalDevicesCreateInfo;
     };
-
+    
+    class Rhi;
 
     class RhiContext
     {
     public:
         std::shared_ptr<RenderInstance> renderInstance;
 
-        std::shared_ptr<PhysicalDevices> physicalDevices;
+        std::shared_ptr<PhysicalDevices> rhiPhysicalDevices;
 
         std::shared_ptr<RhiDevice> rhiDevice;
 
-        std::shared_ptr<SwapChain> swapChain;
+        std::shared_ptr<RhiSwapChain> rhiSwapChain;
 
-        static RhiContext& GetContext()
-        {
-            return *m_CurrentContext;
-        }
-
-        PC_CORE_API RhiContext(const RhiContextCreateInfo& rhiContextCreateInfo);
+        PC_CORE_API RhiContext(Rhi& _Rhi, const RhiContextCreateInfo& rhiContextCreateInfo);
 
         PC_CORE_API RhiContext() = delete;
 
         PC_CORE_API virtual ~RhiContext() = default;
 
-        PC_CORE_API static void WaitIdle();
+        PC_CORE_API void WaitIdle();
 
     protected:
-        static inline RhiContext* m_CurrentContext = nullptr;
-
         PC_CORE_API virtual void WaitIdleInstance() = 0;
 
-
-        std::vector<std::function<void(CommandList*)>> m_PendingResourceFuncion;
+        Rhi& m_Rhi;
     };
 
 END_PCCORE

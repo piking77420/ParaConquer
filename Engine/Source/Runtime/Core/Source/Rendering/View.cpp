@@ -55,7 +55,7 @@ void View::Resize(Tbx::Vector2i _viewPortSize)
 {
     PC_LOG_VERBOSE("Resize View");
     m_CurrentSize = _viewPortSize;
-    Rhi::GetRhiContext()->WaitIdle();
+    m_Renderer->GetRhi().GetRhiContext().WaitIdle(); // this func should be remove when deferred destroy will be implemented
 
     CreateImages();
     CreateFrameBuffers();
@@ -91,12 +91,12 @@ void View::UpdateRenderingContext()
     RenderingContext.FinalImageFrameBuffer = m_FrameBuffers.FinalImageFrameBuffer;
 
     // Descriptor
-    RenderingContext.GeometryDescritproSet = m_DescriptorSets.GeometryPass;
-    RenderingContext.DefferdLightingGbufferSet = m_DescriptorSets.DefferedPassGbuffers;
-    RenderingContext.DefferdLightingLightingCameraSet = m_DescriptorSets.DefferedPassCameraLight;
-    RenderingContext.ForwardDesritptorSet = m_DescriptorSets.ForwardDescriptor;
-    RenderingContext.ToneMapDescritptorSet = m_DescriptorSets.ToneMap;
-    RenderingContext.FinalImageDescritptorSet = m_DescriptorSets.FinalViewPort;
+    RenderingContext.GeometryDescritproSet = m_DescriptorSets.GeometryPass.get();
+    RenderingContext.DefferdLightingGbufferSet = m_DescriptorSets.DefferedPassGbuffers.get();
+    RenderingContext.DefferdLightingLightingCameraSet = m_DescriptorSets.DefferedPassCameraLight.get();
+    RenderingContext.ForwardDesritptorSet = m_DescriptorSets.ForwardDescriptor.get();
+    RenderingContext.ToneMapDescritptorSet = m_DescriptorSets.ToneMap.get();
+    RenderingContext.FinalImageDescritptorSet = m_DescriptorSets.FinalViewPort.get();
 
     RenderingContext.HdrImage = &ForwardTexture.color;
     RenderingContext.RenderingContextSize = {
@@ -109,60 +109,59 @@ void View::CreateImages()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    Gbuffers.CreateGBuffers(m_CurrentSize);
+    Rhi& Rhi = m_Renderer->GetRhi();
+
+    Gbuffers.CreateGBuffers(Rhi, m_CurrentSize);
 
     // Forward
     {
-        CreateImageInfo createInfo =
+        RhiTexture::RhiTextureDesciptor createInfo =
         {
-            .Width = m_CurrentSize.x,
-            .Height = m_CurrentSize.y,
+            .Width = static_cast<uint32_t>(m_CurrentSize.x),
+            .Height = static_cast<uint32_t>(m_CurrentSize.y),
             .Depth = 1,
+            .Level = 1,
             .LayerCount = 1,
-            .MipsLevels = 1,
-            .TextureType = TextureType::Texture2D,
-            .Format = RhiFormat::R16G16B16A16Sfloat,
-            .Channel = Channel::Rgba,
-            .TextureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled | TextureUsage::Storage,
-            .MemoryVisibility = MemoryLocalisation::GpuOnly,
             .Samples = 1,
-            .GenerateMipMap = false,
-            .Datas = {}
+            .TextureType = RhiTexture::Type::Texture2D,
+            .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget | RhiTexture::Sampled | RhiTexture::Storage),
+            .RhiFormat = RhiFormat::R16G16B16A16Sfloat,
         };
 
-        ForwardTexture.color = Texture2D(createInfo);
+        ForwardTexture.color = Texture2D(Rhi, "View Forward Texture", createInfo, RhiResource::MemoryUsage::Dynamic);
+        ForwardTexture.color->Build();
 
-        createInfo.Format = RhiFormat::D32Sfloat;
-        createInfo.Channel = Channel::Grey;
-        createInfo.TextureUsage = TextureUsage::Depth;
+        createInfo.RhiFormat = RhiFormat::D24UnormS8Uint;
+        createInfo.TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget);
 
-        ForwardTexture.depth = Texture2D(createInfo);
+        ForwardTexture.depth = Texture2D(Rhi, "View DepthTexture", createInfo, RhiResource::MemoryUsage::Dynamic);
+        ForwardTexture.depth->Build();
+
     }
 
 
     // Final Image
     {
-        CreateImageInfo createInfo =
+        RhiTexture::RhiTextureDesciptor createInfo =
         {
-            .Width = m_CurrentSize.x,
-            .Height = m_CurrentSize.y,
+            .Width = static_cast<uint32_t>(m_CurrentSize.x),
+            .Height = static_cast<uint32_t>(m_CurrentSize.y),
             .Depth = 1,
+            .Level = 1,
             .LayerCount = 1,
-            .MipsLevels = 1,
-            .TextureType = TextureType::Texture2D,
-            .Format = RhiFormat::R8G8B8A8Unorm,
-            .Channel = Channel::Rgba,
-            .TextureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
-            .MemoryVisibility = MemoryLocalisation::GpuOnly,
             .Samples = 1,
-            .GenerateMipMap = false,
-            .Datas = {}
+            .TextureType = RhiTexture::Type::Texture2D,
+            .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget | RhiTexture::Sampled),
+            .RhiFormat = RhiFormat::R8G8B8A8Unorm,
         };
 
-        FinalImage = Texture2D(createInfo);
-        createInfo.Samples = Rhi::GetRhiContext()->physicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
-        createInfo.TextureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled;
-        ResolvedImages = Texture2D(createInfo);
+        FinalImage = Texture2D(Rhi, "View Final Image", createInfo, RhiResource::MemoryUsage::Dynamic);
+        FinalImage->Build();
+
+        createInfo.Samples = Rhi.GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
+        ResolvedImages = Texture2D(Rhi, "View ResolvedImages", createInfo, RhiResource::MemoryUsage::Dynamic);
+        ResolvedImages->Build();
+
     }
 }
 
@@ -171,10 +170,13 @@ void View::CreateFrameBuffers()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
+    Rhi& Rhi = m_Renderer->GetRhi();
+
+
     CreateFrameInfo createFrameBufferInfo =
     {
-        .width = static_cast<uint32_t>(m_CurrentSize.x),
-        .height = static_cast<uint32_t>(m_CurrentSize.y),
+        .Width = static_cast<uint32_t>(m_CurrentSize.x),
+        .Height = static_cast<uint32_t>(m_CurrentSize.y),
     };
 
 
@@ -189,34 +191,34 @@ void View::CreateFrameBuffers()
 
         size_t i = 0;
         for (; i < static_cast<size_t>(GbufferType::Count); i++)
-            attechementDescriptor[i].texture = &Gbuffers.gbuffers[i];
+            attechementDescriptor[i].RhiTexture = Gbuffers.gbuffers[i].Get();
 
 
-        attechementDescriptor[i++].texture = &ForwardTexture.color;
-        attechementDescriptor[i++].texture = &ForwardTexture.depth;
+        attechementDescriptor[i++].RhiTexture = ForwardTexture.color.Get();
+        attechementDescriptor[i++].RhiTexture = ForwardTexture.depth.Get();
 
-        assert(&ForwardTexture.depth == attechementDescriptor[attechementDescriptor.size() - 1].texture &&
+        assert(ForwardTexture.depth.Get() == attechementDescriptor[attechementDescriptor.size() - 1].RhiTexture &&
             "Backend expect thaht depth is the last attachement");
 
-        createFrameBufferInfo.attachements = &attechementDescriptor;
-        createFrameBufferInfo.renderPass = m_Renderer->RenderPasses.DefferedPass.get();
+        createFrameBufferInfo.Attachements = &attechementDescriptor;
+        createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.DefferedPass.get();
 
-
-        m_FrameBuffers.GbufferFrameBuffer = Rhi::CreateFrameBuffer(createFrameBufferInfo);
+        // HANDLE INPUT ATTACHEMENT
+        //m_FrameBuffers.GbufferFrameBuffer.reset(Rhi::CreateFrameBuffer("Gbuffer FrameBuffer", createFrameBufferInfo));
     }
 
     // Forward FrameBuffer
     {
         std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
         attechementDescriptor.resize(2); // color + depth;
-        attechementDescriptor[0].texture = &ForwardTexture.color;
-        attechementDescriptor[1].texture = &ForwardTexture.depth;
+        attechementDescriptor[0].RhiTexture = ForwardTexture.color.Get();
+        attechementDescriptor[1].RhiTexture = ForwardTexture.depth.Get();
 
 
-        createFrameBufferInfo.attachements = &attechementDescriptor;
-        createFrameBufferInfo.renderPass = m_Renderer->RenderPasses.ForwardPass.get();
+        createFrameBufferInfo.Attachements = &attechementDescriptor;
+        createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.ForwardPass.get();
 
-        m_FrameBuffers.ForwardFrameBuffer = Rhi::CreateFrameBuffer(createFrameBufferInfo);
+        m_FrameBuffers.ForwardFrameBuffer.reset(Rhi.CreateFrameBuffer("Forward FrameBuffer",createFrameBufferInfo)) ;
     }
 
 
@@ -225,13 +227,13 @@ void View::CreateFrameBuffers()
         std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
         attechementDescriptor.resize(2); // color + depth;
 
-        attechementDescriptor[0].texture = &ResolvedImages;
-        attechementDescriptor[1].texture = &FinalImage;
+        attechementDescriptor[0].RhiTexture = ResolvedImages.Get();
+        attechementDescriptor[1].RhiTexture = FinalImage.Get();
 
-        createFrameBufferInfo.attachements = &attechementDescriptor;
-        createFrameBufferInfo.renderPass = m_Renderer->RenderPasses.DrawToFinalViewPort.get();
+        createFrameBufferInfo.Attachements = &attechementDescriptor;
+        createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.DrawToFinalViewPort.get();
 
-        m_FrameBuffers.FinalImageFrameBuffer = Rhi::CreateFrameBuffer(createFrameBufferInfo);
+        m_FrameBuffers.FinalImageFrameBuffer.reset(Rhi.CreateFrameBuffer("Final Image FrameBuffer", createFrameBufferInfo));
     }
 }
 
@@ -240,27 +242,28 @@ void View::CreateDescritproSets()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-    const UniformBufferDescriptor cameraBufferDescritptor
+    const BufferDescriptor cameraBufferDescritptor
     {
-        .buffer = &m_Renderer->UniformBuffers.CameraUniformBuffer,
+        .buffer = m_Renderer->UniformBuffers.CameraUniformBuffer.Get(),
     };
 
-    const UniformBufferDescriptor lightData
+    const BufferDescriptor lightData
     {
-        .buffer = &m_Renderer->UniformBuffers.DynamicGpuLightUniformBuffer,
+        .buffer = m_Renderer->UniformBuffers.LightBuffer.Get(),
     };
 
     const ImageSamplerDescriptor skyboxCubeMapDescritptor
     {
-        .sampler = &m_Renderer->LinearReapeat,
-        .texture = m_Renderer->Cubemap.lock().get(),
-        .imageState = ImageState::ShaderReadOptimal
+        .sampler = m_Renderer->LinearReapeat.Get(),
+        .texture = m_Renderer->Cubemap.Lock()->Get(),
+        .resourceState = RhiResourceState::ShaderRead
     };
 
     std::vector<ShaderProgramDescriptorWrite> descriptorWrites;
 
 
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Create geometryPass DescriptorSets");
         std::shared_ptr<GraphicShader> geometryShaderPass = m_Renderer->GeometryBufferShader.lock();
         descriptorWrites =
@@ -275,12 +278,13 @@ void View::CreateDescritproSets()
         if (m_DescriptorSets.GeometryPass != nullptr)
             geometryShaderPass->FreeDescriptorSet(&m_DescriptorSets.GeometryPass);
 
-        geometryShaderPass->AllocDescriptorSet(&m_DescriptorSets.GeometryPass, SCENE_DESCRIPTOR_SET);
-        m_DescriptorSets.GeometryPass->WriteDescriptorSets(descriptorWrites);
+        geometryShaderPass->CreateDescriptorBinding(&m_DescriptorSets.GeometryPass, SCENE_DESCRIPTOR_SET);
+        m_DescriptorSets.GeometryPass->SetBindings(descriptorWrites);*/
     }
 
     // Defferd Lighting Descritptors
     {
+        /*
         PERF_REGION_SCOPED_NAMED("Create Defferd DescriptorSets");
         // Gbuffers
         std::shared_ptr<GraphicShader> deferredShader = m_Renderer->DeferedShader.lock();
@@ -292,8 +296,8 @@ void View::CreateDescritproSets()
         {
             inputAttachements[i] =
                 {
-                    .image = &Gbuffers.gbuffers[i],
-                    .imageState = ImageState::ShaderReadOptimal
+                    .image = Gbuffers.gbuffers[i].Get(),
+                    .resourceState = RhiResourceState::ShaderRead
                 },
 
                 descriptorWrites[i] =
@@ -307,8 +311,8 @@ void View::CreateDescritproSets()
         if (m_DescriptorSets.DefferedPassGbuffers != nullptr)
             deferredShader->FreeDescriptorSet(&m_DescriptorSets.DefferedPassGbuffers);
 
-        deferredShader->AllocDescriptorSet(&m_DescriptorSets.DefferedPassGbuffers, GBUFFER_SET);
-        m_DescriptorSets.DefferedPassGbuffers->WriteDescriptorSets(descriptorWrites);
+        deferredShader->CreateDescriptorBinding(&m_DescriptorSets.DefferedPassGbuffers, GBUFFER_SET);
+        m_DescriptorSets.DefferedPassGbuffers->SetBindings(descriptorWrites);
 
 
         descriptorWrites.resize(2);
@@ -325,16 +329,14 @@ void View::CreateDescritproSets()
         if (m_DescriptorSets.DefferedPassCameraLight != nullptr)
             deferredShader->FreeDescriptorSet(&m_DescriptorSets.DefferedPassCameraLight);
 
-        deferredShader->AllocDescriptorSet(&m_DescriptorSets.DefferedPassCameraLight, SCENE_DESCRIPTOR_SET);
-        m_DescriptorSets.DefferedPassCameraLight->WriteDescriptorSets(descriptorWrites);
+        deferredShader->CreateDescriptorBinding(&m_DescriptorSets.DefferedPassCameraLight, SCENE_DESCRIPTOR_SET);
+        m_DescriptorSets.DefferedPassCameraLight->SetBindings(descriptorWrites);*/
     }
 
     {
-        /*
+        
         PERF_REGION_SCOPED_NAMED("Create Forward Shader DescriptorSet");
-        std::shared_ptr<GraphicShader> m_ForwardShader = m_Renderer->m_ForwardShader.lock();
-
-        descriptorWrites.resize(3);
+        RhiShaderProgram* forwardShader = m_Renderer->ForwardShader.get();
 
         descriptorWrites =
         {
@@ -343,7 +345,7 @@ void View::CreateDescritproSets()
                 ShaderProgramDescriptorType::UniformBuffer,
                 CAMERA_BINDING,
                 cameraBufferDescritptor,
-            },
+            }/*,
             {
                 ShaderProgramDescriptorType::UniformBuffer,
                 LIGHTDATA_BINDING,
@@ -353,27 +355,24 @@ void View::CreateDescritproSets()
                 ShaderProgramDescriptorType::CombinedImageSampler,
                 FORWARD_SKYBOX_CUBEMAP,
                 skyboxCubeMapDescritptor,
-            }
+            }*/
         };
 
 
-        if (m_DescriptorSets.forwardDescriptor != nullptr)
-            m_ForwardShader->FreeDescriptorSet(&m_DescriptorSets.forwardDescriptor);
-
-        m_ForwardShader->AllocDescriptorSet(&m_DescriptorSets.forwardDescriptor, SCENE_DESCRIPTOR_SET);
-        m_DescriptorSets.forwardDescriptor->WriteDescriptorSets(descriptorWrites);*/
+        m_DescriptorSets.ForwardDescriptor.reset(forwardShader->CreateDescriptorBinding("View Forward Descriptor"));
+        m_DescriptorSets.ForwardDescriptor->SetBindings(descriptorWrites, SCENE_DESCRIPTOR_SET).Build();
     }
 
 
     {
         PERF_REGION_SCOPED_NAMED("Create ToneMap DescriptorSet");
 
-        std::shared_ptr<ComputeShader> m_ToneMapp = m_Renderer->AcesShader.lock();
+        RhiShaderProgram* ToneMappShader = m_Renderer->AcesShader.get();
 
         struct ImageDescriptor hdrImage
         {
-            .texture = &ForwardTexture.color,
-            .imageState = ImageState::General,
+            .texture = ForwardTexture.color.Get(),
+            .resourceState = RhiResourceState::ComputeWrite,
         };
 
 
@@ -388,22 +387,19 @@ void View::CreateDescritproSets()
             },
         };
 
-        if (m_DescriptorSets.ToneMap != nullptr)
-            m_ToneMapp->FreeDescriptorSet(&m_DescriptorSets.ToneMap);
-
-        m_ToneMapp->AllocDescriptorSet(&m_DescriptorSets.ToneMap, 0);
-        m_DescriptorSets.ToneMap->WriteDescriptorSets(descriptorWrites);
+        m_DescriptorSets.ToneMap.reset(ToneMappShader->CreateDescriptorBinding("Tome map view binging"));
+        m_DescriptorSets.ToneMap->SetBindings(descriptorWrites, 0);
     }
 
     {
         PERF_REGION_SCOPED_NAMED("FinalViewPort DescriptorSet");
-        std::shared_ptr<GraphicShader> drawToFinalImage = m_Renderer->DrawTextureScreenQuadShader.lock();
+        RhiShaderProgram* drawToFinalImage = m_Renderer->DrawTextureScreenQuadShader.get();
 
         const ImageSamplerDescriptor finalImageDescrotproSet
         {
-            .sampler = &m_Renderer->LinearReapeat,
-            .texture = &ForwardTexture.color,
-            .imageState = ImageState::General
+            .sampler = m_Renderer->LinearReapeat.Get(),
+            .texture = ForwardTexture.color.Get(),
+            .resourceState = RhiResourceState::ShaderRead
         };
 
         descriptorWrites.resize(1);
@@ -417,11 +413,8 @@ void View::CreateDescritproSets()
             }
         };
 
-        if (m_DescriptorSets.FinalViewPort != nullptr)
-            drawToFinalImage->FreeDescriptorSet(&m_DescriptorSets.FinalViewPort);
-
-        drawToFinalImage->AllocDescriptorSet(&m_DescriptorSets.FinalViewPort, 0);
-        m_DescriptorSets.FinalViewPort->WriteDescriptorSets(descriptorWrites);
+        m_DescriptorSets.FinalViewPort.reset(drawToFinalImage->CreateDescriptorBinding("drawToFinalImage View Binding"));
+        m_DescriptorSets.FinalViewPort->SetBindings(descriptorWrites, 0).Build();
     }
 }
 

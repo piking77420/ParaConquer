@@ -8,19 +8,14 @@ BEGIN_PCCORE
     class PC_CORE_API Sampler : public Resource, public IGpuResource
     {
     public:
-        std::shared_ptr<RhiResource> GetRhiHandle() const override
-        {
-            return m_Sampler;
-        }
-
-        std::shared_ptr<RhiSampler> GetRhiSampler() const
-        {
-            return m_Sampler;
-        }
+    
+        DEFAULT_COPY_MOVE_OPERATIONS(Sampler);
 
         IMP_DYNAMIC_REFLECT()
 
-        explicit Sampler(const SamplerCreateInfo& _samplerCreateInfo);
+        explicit Sampler(Rhi& _rhi, const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo);
+
+        explicit Sampler(Rhi& _rhi, std::string&& _name, const SamplerCreateInfo& _samplerCreateInfo);
 
         explicit Sampler()
         {
@@ -28,11 +23,21 @@ BEGIN_PCCORE
         }
 
         ~Sampler() override = default;
+    
+        RhiSampler* const Get() const
+        {
+            return m_RhiSampler.get();
+        }
+            
+        RhiSampler* const operator->() const
+        {
+            return m_RhiSampler.get();
+        }
 
     private:
-        std::shared_ptr<RhiSampler> m_Sampler;
-
         REFLECT(Sampler);
+    
+        std::unique_ptr<RhiSampler> m_RhiSampler;
     };
 
 END_PCCORE

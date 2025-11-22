@@ -1,27 +1,66 @@
-﻿#include "PerfRegion.hpp"
+﻿#include "VulkanCommandList.hpp"
 
-#include "VulkanCommandList.hpp"
+#include "PerfRegion.hpp"
 
-#include "Utils/RhiToVulkan.hpp"
+#include "LowRenderer/Rhi.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanFrameBuffer.hpp"
 #include "VulkanRenderPass.hpp"
-#include "Buffer/VulkanBuffer.hpp"
-#include "LowRenderer/Rhi.hpp"
-#include "Resources/VulkanDescriptorSets.hpp"
 #include "Resources/VulkanShaderProgram.hpp"
+#include "Resources/VulkanDescriptorSets.hpp"
 #include "VulkanFence.hpp"
-#include <Texture/VulkanTexture.hpp>
+#include "VulkanBuffer.hpp"
+#include "VulkanTexture.hpp"
 
+#include "Utils/RhiToVulkan.hpp"
 
-Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
-    : CommandList(_commandListCreateInfo)
+Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
+    : CommandList(_Rhi,  _name, _commandListCreateInfo)
+{
+
+}
+
+Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi, std::string&& _name, const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
+    : CommandList(_Rhi, std::move(_name), _commandListCreateInfo)
+{
+
+}
+
+Vulkan::VulkanCommandList::~VulkanCommandList()
+{
+    vk::Device device = GET_VK_DEVICE;
+
+    for (auto& s : m_Semaphore)
+    {
+        if (s != VK_NULL_HANDLE)
+            device.destroySemaphore(s);
+    }
+
+#ifdef PROFILING
+    tracy::DestroyVkContext(tracyContext);
+    tracyContext = nullptr;
+#endif
+}
+
+const void* Vulkan::VulkanCommandList::GetFrameNativeHandle(size_t _frameIndex) const
+{
+    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
+    return &m_CommandBuffer[frameIndex];
+}
+
+void* Vulkan::VulkanCommandList::GetFrameNativeHandle(size_t _frameIndex)
+{
+    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
+    return &m_CommandBuffer[frameIndex];
+}
+
+bool Vulkan::VulkanCommandList::Build() 
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    VulkanContext& vulkanContext = VulkanContext::GetContext();
-    vk::Device device = GET_VK_DEVICE->GetDevice();
+    VulkanContext& vulkanContext = GET_VK_CONTEXT;
+    vk::Device device = GET_VK_DEVICE;
 
     vk::CommandPool commandPool = VK_NULL_HANDLE;
 
@@ -34,30 +73,38 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
         break;
     case PC_CORE::CommandPoolFamily::Count:
         break;
-    default: ;
+    default:;
     }
-
-    m_CommandBufferType = _commandListCreateInfo.CommandBufferType;
 
     if (commandPool == VK_NULL_HANDLE)
     {
         // TO DO GET CALL FOR LOGGING
-        return;
+        return false;
     }
 
     vk::CommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     commandBufferAllocateInfo.commandPool = commandPool;
     commandBufferAllocateInfo.level = m_CommandBufferType == PC_CORE::CommandBufferType::Primary
-                                          ? vk::CommandBufferLevel::ePrimary
-                                          : vk::CommandBufferLevel::eSecondary;
+        ? vk::CommandBufferLevel::ePrimary
+        : vk::CommandBufferLevel::eSecondary;
 
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_CommandBuffer.size());
 
     std::vector<vk::CommandBuffer> vec = device.allocateCommandBuffers(commandBufferAllocateInfo);
 
     for (uint32_t i = 0; i < m_CommandBuffer.size(); i++)
+    {
         m_CommandBuffer[i] = vec[i];
+
+        vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
+        nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+        nameInfoImageView.pNext = nullptr;
+        nameInfoImageView.objectType = vk::ObjectType::eCommandBuffer;
+        nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkCommandBuffer>(m_CommandBuffer[i]));
+        nameInfoImageView.pObjectName = GetName().data();
+        SET_VK_DEBUG_NAME(nameInfoImageView);
+    }
 
     vk::SemaphoreCreateInfo sCreateInfo;
     sCreateInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
@@ -71,24 +118,13 @@ Vulkan::VulkanCommandList::VulkanCommandList(const PC_CORE::CommandListCreateInf
     VulkanDevice& vulkanDevice = *GET_VK_DEVICE.get();
 
     tracyContext = tracy::CreateVkContext(physDv, device,
-                                          vulkanDevice.GetPFN_vkResetQueryPoolEXT(),
-                                          instance.GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(),
-                                          vulkanDevice.GetPFN_vkGetCalibratedTimestampsEXT());
+        vulkanDevice.GetPFN_vkResetQueryPoolEXT(),
+        instance.GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(),
+        vulkanDevice.GetPFN_vkGetCalibratedTimestampsEXT());
 
 #endif
-}
 
-Vulkan::VulkanCommandList::~VulkanCommandList()
-{
-    vk::Device device = GET_VK_DEVICE->GetDevice();
-
-    for (auto& s : m_Semaphore)
-        device.destroySemaphore(s);
-
-#ifdef PROFILING
-    tracy::DestroyVkContext(tracyContext);
-    tracyContext = nullptr;
-#endif
+    return true;
 }
 
 void Vulkan::VulkanCommandList::Reset()
@@ -96,7 +132,7 @@ void Vulkan::VulkanCommandList::Reset()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].reset();
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].reset();
 }
 
 void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count)
@@ -108,15 +144,16 @@ void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count
     assert(this != _other);
     assert(m_CommandBufferType == PC_CORE::CommandBufferType::Primary);
 
-    auto commandBuffers = reinterpret_cast<vk::CommandBuffer*>(_malloca(sizeof(vk::CommandBuffer) * _count));
+    vk::CommandBuffer* commandBuffers = reinterpret_cast<vk::CommandBuffer*>(_malloca(sizeof(vk::CommandBuffer) * _count));
 
     for (size_t i = 0; i < _count; i++)
     {
         auto otherVk = reinterpret_cast<VulkanCommandList*>(_other);
-        commandBuffers[i] = otherVk->m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()];
+        commandBuffers[i] = otherVk->m_CommandBuffer[m_Rhi.GetFrameIndex()];
     }
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].executeCommands(_count, commandBuffers);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].executeCommands(static_cast<uint32_t>(_count), commandBuffers);
+    _freea(commandBuffers);
 }
 
 void Vulkan::VulkanCommandList::BeginRecordCommands()
@@ -124,7 +161,7 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
     vk::CommandBufferInheritanceInfo inheritanceInfo;
     if (m_CommandBufferType == PC_CORE::CommandBufferType::Secondary)
@@ -155,7 +192,7 @@ void Vulkan::VulkanCommandList::EndRecordCommands()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].end();
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].end();
 }
 
 void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo)
@@ -223,24 +260,24 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearCount);
     renderPassInfo.pClearValues = clearValues.data();
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanCommandList::NextSubPass()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].nextSubpass(vk::SubpassContents::eInline);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].nextSubpass(vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanCommandList::EndRenderPass()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].endRenderPass();
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
 }
 
-void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::ShaderProgram* _shaderProgram,
+void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
                                                   const PC_CORE::ShaderProgramDescriptorSets*
                                                   _shaderProgramDescriptorSets, size_t _firstSet,
                                                   size_t _descriptorSetCount)
@@ -248,41 +285,39 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::ShaderProgram* 
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    const size_t currentFrame = PC_CORE::Rhi::GetFrameIndex();
+    const size_t currentFrame = m_Rhi.GetFrameIndex();
 
-    auto shaderProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram->GetRhiHandle().get());
-
-    auto vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSets*>(_shaderProgramDescriptorSets);
-    const std::array<vk::DescriptorSet, MaxFramesInFlight>& descriptorHandles = *static_cast<const std::array<
-        vk::DescriptorSet, MaxFramesInFlight>*>(vulkanDescriptorSets->GetNativeHandle());
-
-    vk::DescriptorSet currentDescriptorSet = descriptorHandles[currentFrame];
-
-    m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram->GetPipelineBindPoint(),
-                                                     shaderProgram->GetPipelineLayout(),
-                                                     static_cast<uint32_t>(_firstSet), _descriptorSetCount,
-                                                     &currentDescriptorSet,
+    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
+    const VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSets*>(_shaderProgramDescriptorSets);
+    const vk::DescriptorSet& descriptorHandles = *static_cast<const vk::DescriptorSet*>(vulkanDescriptorSets->GetFrameNativeHandle(currentFrame));
+    
+    m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),
+                                                     shaderProgram.GetPipelineLayout(),
+                                                     static_cast<uint32_t>(_firstSet), 
+                                                     static_cast<uint32_t>(_descriptorSetCount),
+                                                     &descriptorHandles,
                                                      0, nullptr);
 }
 
-void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::ShaderProgram* _shaderProgramm)
+void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    auto vshadeProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgramm->GetRhiHandle().get());
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].bindPipeline(vshadeProgram->GetPipelineBindPoint(),
-                                                                vshadeProgram->GetPipeline());
+    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
+    
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
+                                                                vshadeProgram.GetPipeline());
 }
 
-void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::ShaderProgram* _shaderProgram,
+void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
                                              const std::string& _pushConstantKey, const void* _data, const size_t _size)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    auto vshadeProgram = reinterpret_cast<const VulkanShaderProgram*>(_shaderProgram->GetRhiHandle().get());
+    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
 
-    vshadeProgram->PushConstant(GetVkHandle(), _pushConstantKey, _data, _size);
+    vshadeProgram.PushConstant(GetVkHandle(), _pushConstantKey, _data, _size);
 }
 
 void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPort)
@@ -296,22 +331,22 @@ void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPo
     viewport.height = static_cast<float>(_viewPort.Size.y);
     viewport.minDepth = _viewPort.MinDepth;
     viewport.maxDepth = _viewPort.MaxDepth;
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setViewport(0, 1, &viewport);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].setViewport(0, 1, &viewport);
 
     vk::Rect2D scissor{};
     scissor.offset = vk::Offset2D{_viewPort.ScissorsOff.x, _viewPort.ScissorsOff.y};
-    scissor.extent = vk::Extent2D{_viewPort.Scissorsextent.x, _viewPort.Scissorsextent.y};
+    scissor.extent = vk::Extent2D{_viewPort.ScissorsExtent.x, _viewPort.ScissorsExtent.y};
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setScissor(0, 1, &scissor);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].setScissor(0, 1, &scissor);
 }
 
-void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
+void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     vk::PrimitiveTopology topology = Utils::RhiPrimitiveTopology(_primitiveTopology);
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setPrimitiveTopology(topology);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].setPrimitiveTopology(topology);
 }
 
 void Vulkan::VulkanCommandList::SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount)
@@ -328,7 +363,7 @@ void Vulkan::VulkanCommandList::SetBlendEquation(uint32_t _firstAttachement, uin
         .alphaBlendOp = vk::BlendOp::eAdd,
         };
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setColorBlendEquationEXT(_firstAttachement, _attachementCount, &blendEq);*/
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].setColorBlendEquationEXT(_firstAttachement, _attachementCount, &blendEq);*/
 }
 
 void Vulkan::VulkanCommandList::SetLineWidth(float _widht)
@@ -336,7 +371,7 @@ void Vulkan::VulkanCommandList::SetLineWidth(float _widht)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].setLineWidth(_widht);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].setLineWidth(_widht);
 }
 
 void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex,
@@ -345,7 +380,7 @@ void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCo
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].draw(_vertexCount, _instanceCount, _firstVertex, _firstInstance);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].draw(_vertexCount, _instanceCount, _firstVertex, _firstInstance);
 }
 
 void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex,
@@ -354,7 +389,7 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount),
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount),
                                                                static_cast<uint32_t>(_instanceCount),
                                                                static_cast<uint32_t>(_firstIndex), _vertexOffset,
                                                                static_cast<uint32_t>(_firstInstance));
@@ -366,34 +401,36 @@ void Vulkan::VulkanCommandList::Dispatch(uint32_t _groupCountX, uint32_t _groupC
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
 
-    m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()].dispatch(_groupCountX, _groupCountY, _groupCountZ);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].dispatch(_groupCountX, _groupCountY, _groupCountZ);
 }
 
-void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding,
+void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiBuffer& _vertexBuffer, uint32_t _firstBinding,
                                                  uint32_t _bindingCount)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    const size_t frameIndex = m_Rhi.GetFrameIndex();
 
-    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
-
-    auto bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_vertexBuffer.GetNativeHandle());
+    const VulkanBuffer* vulkanBuffer = reinterpret_cast<const VulkanBuffer*>(&_vertexBuffer);
+    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetFrameNativeHandle(frameIndex));
 
     vk::DeviceSize offsets[] = {0};
-    m_CommandBuffer[frameIndex].bindVertexBuffers(_firstBinding, _bindingCount, &bufferAndAllocs->at(frameIndex).buffer,
+    m_CommandBuffer[frameIndex].bindVertexBuffers(_firstBinding, _bindingCount, &bufferAndAllocs->buffer,
                                                   offsets);
 }
 
-void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset)
+void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiBuffer& _indexBuffer, PC_CORE::RhiBuffer::IndexFormat _format, size_t _offset)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
-    auto bufferAndAllocs = static_cast<const std::vector<BufferAndAlloc>*>(_indexBuffer.GetNativeHandle());
-    const vk::IndexType indexType = Utils::RhiToIndexType(_indexBuffer.GetIndexFormat());
+    const size_t frameIndex = m_Rhi.GetFrameIndex();
+    const VulkanBuffer* vulkanBuffer = reinterpret_cast<const VulkanBuffer*>(&_indexBuffer);
+    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetFrameNativeHandle(frameIndex));
 
-    m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs->at(frameIndex).buffer, static_cast<uint32_t>(_offset),
+    const vk::IndexType indexType = Utils::RhiToIndexType(_format);
+
+    m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs->buffer, static_cast<uint32_t>(_offset),
                                                 indexType);
 }
 
@@ -402,22 +439,17 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    
+    assert(_src.GetMemoryUsage() == PC_CORE::RhiResource::MemoryUsage::Dynamic && _src.GetMemoryUsage() == _dst.GetMemoryUsage()
+        && "This function only work for dynamic for now");
+    
+    const size_t frameIndex = m_Rhi.GetFrameIndex();
 
-    assert(
-        _src.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::CpuToGpu ||
-        _src.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::CpuOnly
-    );
+    const BufferAndAlloc* bufferAndAllocSrc = static_cast<const BufferAndAlloc*>(_src.GetFrameNativeHandle(frameIndex));
+    const BufferAndAlloc* bufferAndAllocDst = static_cast<const BufferAndAlloc*>(_dst.GetFrameNativeHandle(frameIndex));
 
-    assert(_dst.GetMemoryVisibility() == PC_CORE::MemoryLocalisation::GpuOnly);
-
-
-    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
-
-    auto bufferAndAllocSrc = reinterpret_cast<const std::vector<BufferAndAlloc>*>(_src.GetNativeHandle());
-    auto bufferAndAllocDst = reinterpret_cast<const std::vector<BufferAndAlloc>*>(_dst.GetNativeHandle());
-
-    vk::Buffer bufferSrc = bufferAndAllocSrc->at(frameIndex).buffer;
-    vk::Buffer bufferDst = bufferAndAllocDst->at(frameIndex).buffer;
+    vk::Buffer bufferSrc = bufferAndAllocSrc->buffer;
+    vk::Buffer bufferDst = bufferAndAllocDst->buffer;
 
     vk::BufferCopy bufferCopy = {};
     bufferCopy.dstOffset = static_cast<uint32_t>(_dstoffset);
@@ -426,34 +458,18 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
 
 
     m_CommandBuffer[frameIndex].copyBuffer(bufferSrc, bufferDst, 1, &bufferCopy);
-
-    vk::BufferMemoryBarrier bufferBarrier{};
-    bufferBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-    bufferBarrier.dstAccessMask = vk::AccessFlagBits::eShaderRead; // or eShaderWrite if the shader writes to it
-    bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    bufferBarrier.buffer = bufferDst;
-    bufferBarrier.offset = 0;
-    bufferBarrier.size = VK_WHOLE_SIZE;
 }
 
-void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcStageMask,
-                                        PC_CORE::GpuPipelineStageFlagBits dstStageMask,
-                                        const PC_CORE::MemoryBarrier* _memoryBarrier, size_t _memoryBarrierCount,
-                                        const PC_CORE::BufferMemoryBarrier* _buffermemoryBarrier,
-                                        size_t _bufferMemoryBarrierCount,
-                                        const PC_CORE::ImageMemoryBarrier* _imageMemoryBarrier,
-                                        size_t _imageMemoryBarrierCount)
+VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _srcStageMask, PC_CORE::GpuPipelineStage _DstStageMask,
+    const std::span<PC_CORE::ImageStateTransition>& _ImageStateTransition,
+    const std::span<PC_CORE::BufferStateTransition>& _BufferStateTransition)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    const vk::PipelineStageFlags srcStageFlag = Utils::RhiPipelineStageToVulkan(_srcStageMask);
+    const vk::PipelineStageFlags dstStageFlag = Utils::RhiPipelineStageToVulkan(_DstStageMask);
 
-    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
-
-    const vk::PipelineStageFlags srcStageFlag = Utils::RhiPipelineStageToVulkan(srcStageMask);
-    const vk::PipelineStageFlags dstStageFlag = Utils::RhiPipelineStageToVulkan(dstStageMask);
-
-    // Memory Barrier
+    /*// Memory Barrier
     std::vector<vk::MemoryBarrier> vkMemoryBarriers;
     vkMemoryBarriers.resize(_memoryBarrierCount);
     for (size_t i = 0; i < _memoryBarrierCount; i++)
@@ -462,74 +478,80 @@ void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStageFlagBits srcSta
         vkMemoryBarriers[i].pNext = nullptr;
         vkMemoryBarriers[i].srcAccessMask = Utils::RhiAccessFlagToVulkan(_memoryBarrier[i].SrcAccessMask);
         vkMemoryBarriers[i].dstAccessMask = Utils::RhiAccessFlagToVulkan(_memoryBarrier[i].DstAccessMask);
-    }
+    }*/
     // BufferMemoryBarrier
-    std::vector<vk::BufferMemoryBarrier> vkBufferBarrier;
-    vkBufferBarrier.resize(_bufferMemoryBarrierCount);
 
-    for (size_t i = 0; i < _bufferMemoryBarrierCount; i++)
+
+    const size_t frameIndex = m_Rhi.GetFrameIndex();
+
+    m_VkImageBarrier.clear();
+    m_VkBufferBarrier.clear();
+
+    m_VkImageBarrier.resize(_ImageStateTransition.size());
+    for (size_t i = 0; i < _ImageStateTransition.size(); i++)
     {
-        auto vkBuffer = static_cast<VulkanBuffer*>(_buffermemoryBarrier[i].Buffer->GetNativeHandle());
+        PC_CORE::RhiTexture* texture = _ImageStateTransition[i].Texture;
 
-        vkBufferBarrier[i].sType = vk::StructureType::eBufferMemoryBarrier;
-        vkBufferBarrier[i].pNext = nullptr;
-        vkBufferBarrier[i].srcAccessMask = Utils::RhiAccessFlagToVulkan(_buffermemoryBarrier[i].SrcAccessMask);
-        vkBufferBarrier[i].dstAccessMask = Utils::RhiAccessFlagToVulkan(_buffermemoryBarrier[i].DstAccessMask);
-        vkBufferBarrier[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        vkBufferBarrier[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        vkBufferBarrier[i].buffer = vkBuffer->bufferAndAlloc[frameIndex].buffer;
-        vkBufferBarrier[i].offset = _buffermemoryBarrier[i].Offset;
-        vkBufferBarrier[i].size = _buffermemoryBarrier[i].Size;
-    }
+        const VulkanTexture* vulkanTexture = static_cast<VulkanTexture*>(texture);
+        const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(vulkanTexture->GetFrameNativeHandle(frameIndex));
 
-    // ImageMemoryBarrier
-    std::vector<vk::ImageMemoryBarrier> vkImageBarrier;
-    vkImageBarrier.resize(_imageMemoryBarrierCount);
-
-    for (size_t i = 0; i < _imageMemoryBarrierCount; i++)
-    {
-        PC_CORE::RhiTexture* texture = _imageMemoryBarrier[i].Texture;
-        auto textureAndAlloc = reinterpret_cast<VulkanTexture*>(texture->GetNativeHandle());
-
-        vk::ImageMemoryBarrier& bar = vkImageBarrier[i];
+        vk::ImageMemoryBarrier& bar = m_VkImageBarrier[i];
 
         bar.sType = vk::StructureType::eImageMemoryBarrier;
         bar.pNext = nullptr;
-        bar.image = textureAndAlloc->textureAndAlloc[frameIndex].image;
-        bar.srcAccessMask = Utils::RhiAccessFlagToVulkan(_imageMemoryBarrier[i].SrcAccessMask);
-        bar.dstAccessMask = Utils::RhiAccessFlagToVulkan(_imageMemoryBarrier[i].DstAccessMask);
-        bar.oldLayout = Utils::RhiImageStateToVulkanImageLayout(_imageMemoryBarrier[i].CurrentState);
-        bar.newLayout = Utils::RhiImageStateToVulkanImageLayout(_imageMemoryBarrier[i].NewState);
+        bar.image = textureAndAlloc->Image;
+        bar.srcAccessMask = Utils::RhiResourceStateToAccesFlag(_ImageStateTransition[i].OldState);
+        bar.dstAccessMask = Utils::RhiResourceStateToAccesFlag(_ImageStateTransition[i].NewState);
+        bar.oldLayout = Utils::RhiResourceStateToVulkanImageLayout(_ImageStateTransition[i].OldState);
+        bar.newLayout = Utils::RhiResourceStateToVulkanImageLayout(_ImageStateTransition[i].NewState);
         bar.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         bar.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
 
         vk::ImageSubresourceRange& ImageSubresourceRange = bar.subresourceRange;
-        ImageSubresourceRange.aspectMask = Utils::RhiTextureUsageToImageAspectFlagFlags(texture->GetTextureUsage());
+        ImageSubresourceRange.aspectMask = vulkanTexture->VkImageAspectFlags;
 
-        ImageSubresourceRange.baseMipLevel = 0;
-        ImageSubresourceRange.levelCount = texture->GetMipLevelCount();
+        ImageSubresourceRange.baseMipLevel = _ImageStateTransition[i].FirstMipLevel;
+        ImageSubresourceRange.levelCount = _ImageStateTransition[i].MipLevelsCount;
 
-        ImageSubresourceRange.baseArrayLayer = 0;
-        ImageSubresourceRange.layerCount = texture->GetLayerCount();
+        ImageSubresourceRange.baseArrayLayer = _ImageStateTransition[i].FirstArraySlice;
+        ImageSubresourceRange.layerCount = _ImageStateTransition[i].ArraySliceCount;
     }
 
-    m_CommandBuffer[frameIndex].pipelineBarrier(srcStageFlag, dstStageFlag, {},
-                                                static_cast<uint32_t>(vkMemoryBarriers.size()), vkMemoryBarriers.data(),
-                                                static_cast<uint32_t>(vkBufferBarrier.size()), vkBufferBarrier.data(),
-                                                static_cast<uint32_t>(vkImageBarrier.size()), vkImageBarrier.data());
+    m_VkBufferBarrier.resize(_BufferStateTransition.size());
+
+    for (size_t i = 0; i < _BufferStateTransition.size(); i++)
+    {
+        const BufferAndAlloc* bufferAndAlloc = static_cast<const BufferAndAlloc*>(_BufferStateTransition[i].Buffer->GetFrameNativeHandle(frameIndex));
+
+        m_VkBufferBarrier[i].sType = vk::StructureType::eBufferMemoryBarrier;
+        m_VkBufferBarrier[i].pNext = nullptr;
+        m_VkBufferBarrier[i].srcAccessMask = Utils::RhiResourceStateToAccesFlag(_BufferStateTransition[i].OldState);
+        m_VkBufferBarrier[i].dstAccessMask = Utils::RhiResourceStateToAccesFlag(_BufferStateTransition[i].NewState);
+        m_VkBufferBarrier[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        m_VkBufferBarrier[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        m_VkBufferBarrier[i].buffer = bufferAndAlloc->buffer;
+        m_VkBufferBarrier[i].offset = _BufferStateTransition[i].Offset;
+        m_VkBufferBarrier[i].size = _BufferStateTransition[i].Size;
+    }
+    
+    m_CommandBuffer[frameIndex].pipelineBarrier(srcStageFlag, dstStageFlag , {},
+        0, nullptr,
+        static_cast<uint32_t>(m_VkBufferBarrier.size()), m_VkBufferBarrier.data(),
+        static_cast<uint32_t>(m_VkImageBarrier.size()), m_VkImageBarrier.data());
 }
 
+
 void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandMethod,
-                                      PC_CORE::GpuPipelineStageFlagBits _waitGpuPipelineStageFlag)
+                                      PC_CORE::GpuPipelineStage _waitGpuPipelineStageFlag)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     assert(_flushCommandMethod == PC_CORE::FlushCommandMethod::Sync);
 
-    VulkanContext& vkContext = VulkanContext::GetContext();
-    const size_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+    VulkanContext& vkContext = GET_VK_CONTEXT;
+    const size_t frameIndex = m_Rhi.GetFrameIndex();
 
     switch (m_CommandPoolFamily)
     {
@@ -546,11 +568,32 @@ void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandM
     }
 }
 
-vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle() const
+
+void Vulkan::VulkanCommandList::Flush(PC_CORE::RhiFence& _fence)
 {
-    return m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()];
+    const size_t frameIndex = m_Rhi.GetFrameIndex();
+    vk::CommandBuffer cmb = m_CommandBuffer[frameIndex];
+
+    vk::Fence vkfence = *static_cast<vk::Fence*>(static_cast<VulkanFence&>(_fence).GetFrameNativeHandle(frameIndex));
+  
+    vk::SubmitInfo submitInfo;
+    submitInfo.pCommandBuffers = &cmb;
+    submitInfo.commandBufferCount = 1;
+    
+    VulkanContext& vkContext = GET_VK_CONTEXT;
+
+
+    VK_CALL(vkContext.mainQueue.submit(1, &submitInfo, vkfence));
+
+    auto device = vkContext.GetDevice()->GetDevice();
+    VK_CALL(device.waitForFences(1, &vkfence, vk::True, UINT64_MAX));
+    VK_CALL(device.resetFences(1, &vkfence));
 }
 
+vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle() const
+{
+    return m_CommandBuffer[m_Rhi.GetFrameIndex()];
+}
 
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)
 {
@@ -561,8 +604,8 @@ void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const s
 
     std::memcpy(&markerInfo.color[0], _color.data(), sizeof(float) * _color.size());
     static auto begindDebugLabelPtrFunc = std::reinterpret_pointer_cast<VulkanInstance>(
-        PC_CORE::Rhi::GetRhiContext()->renderInstance)->GetPFN_vkCmdBeginDebugUtilsLabelEXT();
-    begindDebugLabelPtrFunc(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()], &markerInfo);
+        m_Rhi.GetRhiContext().renderInstance)->GetPFN_vkCmdBeginDebugUtilsLabelEXT();
+    begindDebugLabelPtrFunc(m_CommandBuffer[m_Rhi.GetFrameIndex()], &markerInfo);
 #endif
 }
 
@@ -570,7 +613,7 @@ void Vulkan::VulkanCommandList::EndDebugLabel()
 {
 #ifdef  DEBUG_GPU_ON
     static auto endDebugLabelPtrFunc = std::reinterpret_pointer_cast<VulkanInstance>(
-        PC_CORE::Rhi::GetRhiContext()->renderInstance)->GetPFN_vkCmdEndDebugUtilsLabelEXT();
-    endDebugLabelPtrFunc(m_CommandBuffer[PC_CORE::Rhi::GetFrameIndex()]);
+        m_Rhi.GetRhiContext().renderInstance)->GetPFN_vkCmdEndDebugUtilsLabelEXT();
+    endDebugLabelPtrFunc(m_CommandBuffer[m_Rhi.GetFrameIndex()]);
 #endif
 }

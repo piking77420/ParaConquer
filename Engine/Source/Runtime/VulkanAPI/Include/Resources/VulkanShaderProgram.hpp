@@ -31,8 +31,44 @@ namespace Vulkan
 
     class VULKAN_API VulkanShaderProgram : public PC_CORE::RhiShaderProgram
     {
+    public:
+        
+        VulkanShaderProgram(PC_CORE::Rhi& _Rhi, const std::string& _programName);
+
+        ~VulkanShaderProgram() override;
+        
+        bool Build() override;
+        
+        const void* GetFrameNativeHandle(size_t _frameIndex) const override
+        {
+            return &m_Pipeline;
+        }
+
+        void* GetFrameNativeHandle(size_t _frameIndex) override
+        {
+            return &m_Pipeline;
+        }
+        
+        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(const std::string& Name) override;
+
+        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string&& Name) override;
+
+        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string_view Name) override;
+
+        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(const char* Name) override;
+
+        void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data,
+                          size_t _size) const;
+        
+        vk::PipelineBindPoint GetPipelineBindPoint() const;
+
+        vk::Pipeline GetPipeline() const;
+
+        vk::PipelineLayout GetPipelineLayout() const;
+    
+
     protected:
-        static constexpr std::array<vk::DynamicState, 10> dynamicStateArray =
+        static constexpr std::array<vk::DynamicState, 10> DynamicStateArray =
         {
             vk::DynamicState::eViewport,
             vk::DynamicState::eScissor,
@@ -45,42 +81,8 @@ namespace Vulkan
             vk::DynamicState::ePrimitiveTopology,
             vk::DynamicState::eBlendConstants,
         };
-
-    public:
-        void AllocDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets,
-                                size_t set) override;
-
-        void FreeDescriptorSet(PC_CORE::ShaderProgramDescriptorSets** shaderProgramDescriptorSets) override;
-
-        void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data,
-                          size_t _size) const;
-
-        VulkanShaderProgram(const PC_CORE::ProgramShaderCreateInfo& _programShaderCreateInfo);
-
-        VulkanShaderProgram() = default;
-
-        ~VulkanShaderProgram() override;
-
-        vk::PipelineBindPoint GetPipelineBindPoint() const;
-
-        vk::Pipeline GetPipeline() const;
-
-        vk::PipelineLayout GetPipelineLayout() const;
-
-        const void* GetNativeHandle() const override
-        {
-            return &m_Pipeline;
-        }
-
-        void* GetNativeHandle() override
-        {
-            return &m_Pipeline;
-        }
-
-    protected:
+        
         size_t m_DescriptorId = std::numeric_limits<size_t>::max();
-
-        size_t m_DescriptorSetAllocCount = 0;
 
         vk::PipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 
@@ -88,40 +90,37 @@ namespace Vulkan
 
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
 
-        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(
-            const std::vector<PC_CORE::ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources = true);
+        bool CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 
-        void CreatePipeLinePointGraphicsPipeline(
-            const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex,
-            const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInf);
+        VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(
+            const std::vector<ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources = true);
+
+        void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
+
+        void CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 
         void CreatePipelineLayout(vk::Device _device,
                                   const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
-
-        void CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex,
-                                   const PC_CORE::ShaderComputeInfo& _shaderComputeInfo);
 
         void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion
         void ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);
 
-        void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo,
-                             const PC_CORE::RasterizerInfo& _rasterizerInfo);
+        void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo);
 
         void ParsePipelineColorAttachementBlendState(
             vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
-            const PC_CORE::BlendInfo* _blendInfo);
+            const BlendState* _blendInfo);
 
         void ParsePipelineDepthStencilAttachmentState(
             vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
-            const PC_CORE::DephStencilInfo& _dephInfo);
+            const DephStencilInfo& _dephInfo);
 
-        void ParseParsePipelineColorBlendState(
-            vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo,
+        void ParseParsePipelineColorBlendState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo,
             const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
             size_t _PipelineColorBlendAttachmentSize,
-            const PC_CORE::BlendInfo* _blendInfo);
+            const BlendState* _blendInfo);
 
         vk::VertexInputBindingDescription ParseVertexInputBindingDescription(
             const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition);
@@ -129,15 +128,13 @@ namespace Vulkan
         vk::VertexInputAttributeDescription ParseVertexInputAttributeDescription(
             const PC_CORE::VertexAttributeDescription& _vertexAttributeDescription);
 
-        vk::PipelineVertexInputStateCreateInfo ParseVertexInputState(
-            const PC_CORE::ShaderGraphicPointInfo& _shaderGraphicPointInfo,
-            std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
+        vk::PipelineVertexInputStateCreateInfo ParseVertexInputState( std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
             , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions);
 
-        void ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
+        static void ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 
 #pragma endregion ParseRegion
 
-        void HotReload(const std::vector<PC_CORE::ShaderModule>& _modules) override;
+        void HotReload(const std::vector<ShaderModule>& _modules) override;
     };
 }

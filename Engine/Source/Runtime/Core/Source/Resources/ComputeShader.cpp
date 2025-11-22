@@ -2,51 +2,50 @@
 
 #include "LowRenderer/Rhi.hpp"
 
-PC_CORE::ComputeShader::ComputeShader(const std::string& _shaderName,
+PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, const std::string& _shaderName,
                                       const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
-    ShaderProgram(_shaderName, ShaderProgramPipelineType::Compute, _computeShaderProgramCreateInfo.source)
+    ShaderProgram(_shaderName, RhiShaderProgram::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
 {
     DYNAMIC_REFLECT_INIT
 
-    const ShaderInfo shaderInfo =
+    const RhiShaderProgram::ShaderInfo shaderInfo =
     {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::Compute,
+        .type = RhiShaderProgram::PipelineType::Compute,
         .shaderInfoData = _computeShaderProgramCreateInfo.shaderComputeInfo,
     };
 
-    const ProgramShaderCreateInfo programShaderCreateInfo =
+    const RhiShaderProgram::ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderModule = {{ShaderStageType::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
+        .shaderModule = {{RhiShaderProgram::ShaderStageType::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };
 
-    m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
+    m_RhiShaderProgram.reset(rhi.CreateRhiShaderProgram(Name, programShaderCreateInfo));
 }
 
-PC_CORE::ComputeShader::ComputeShader(std::string&& _shaderName,
-                                      const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
-    ShaderProgram(std::move(_shaderName), ShaderProgramPipelineType::Compute, _computeShaderProgramCreateInfo.source)
+PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, std::string&& _shaderName,
+    const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
+    ShaderProgram(std::move(_shaderName), RhiShaderProgram::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
 {
     DYNAMIC_REFLECT_INIT
 
-    const ShaderInfo shaderInfo =
+        const RhiShaderProgram::ShaderInfo shaderInfo =
     {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::Compute,
+        .type = RhiShaderProgram::PipelineType::Compute,
         .shaderInfoData = _computeShaderProgramCreateInfo.shaderComputeInfo,
-        .shaderName = Name
     };
 
-    const ProgramShaderCreateInfo programShaderCreateInfo =
+    const RhiShaderProgram::ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderModule = {{ShaderStageType::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
+        .shaderModule = {{RhiShaderProgram::ShaderStageType::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };
 
-    m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
+    m_RhiShaderProgram.reset(rhi.CreateRhiShaderProgram(Name, programShaderCreateInfo));
 }

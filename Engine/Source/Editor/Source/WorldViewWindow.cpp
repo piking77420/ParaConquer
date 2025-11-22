@@ -19,7 +19,6 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
 
     const PC_CORE::SamplerCreateInfo info =
     {
-        .SamplerName = "ViewPortImageSampler",
         .magFilter = PC_CORE::Filter::Linear,
         .minFilter = PC_CORE::Filter::Linear,
         .u = PC_CORE::SamplerAddressMode::Repeat,
@@ -27,7 +26,8 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
         .w = PC_CORE::SamplerAddressMode::Repeat
     };
 
-    m_ViewPortSampler = PC_CORE::Sampler(info);
+    m_ViewPortSampler = PC_CORE::Sampler(m_Editor->gameApp.RenderHarwareInteface,"ViewPortImageSampler", info);
+    m_ViewPortSampler->Build();
 }
 
 WorldViewWindow::~WorldViewWindow()
@@ -62,7 +62,7 @@ void WorldViewWindow::Update()
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    uint32_t currentImage = PC_CORE::Rhi::GetFrameIndex();
+    uint32_t currentImage = m_Editor->gameApp.RenderHarwareInteface.GetFrameIndex();
 
     m_View->Update();
     ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
@@ -82,6 +82,7 @@ void WorldViewWindow::Render()
 
 void WorldViewWindow::UpdateImguiViewPort()
 {
+    
     bool needFree = false;
     for (auto& it : imguiDescriptorSet)
         if (it != VK_NULL_HANDLE)
@@ -93,7 +94,7 @@ void WorldViewWindow::UpdateImguiViewPort()
 
     if (needFree)
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_View->FinalImage.GetRhiTexture2D().get(),
-                                                    m_ViewPortSampler.GetRhiSampler().get(), imguiDescriptorSet.data(),
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_View->FinalImage.Get(),
+                                                    m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
                                                     imguiDescriptorSet.size());
 }

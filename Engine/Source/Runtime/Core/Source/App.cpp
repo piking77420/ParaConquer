@@ -30,7 +30,7 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     };
 
     RenderHarwareInteface = Rhi(createInfo);
-    Renderer.Init();
+    Renderer.Init(RenderHarwareInteface);
     Time::Init();
 }
 

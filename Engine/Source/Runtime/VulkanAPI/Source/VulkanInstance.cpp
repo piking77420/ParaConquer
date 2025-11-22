@@ -213,9 +213,10 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
 
 #ifdef  DEBUG_GPU_ON
 
-void Vulkan::VulkanInstance::SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNameInfo)
+void Vulkan::VulkanInstance::SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* _pNameInfo) const
 {
-    m_DebugName(_device, reinterpret_cast<const VkDebugUtilsObjectNameInfoEXT*>(pNameInfo));
+    if (m_DebugName != nullptr)
+        m_DebugName(_device, reinterpret_cast<const VkDebugUtilsObjectNameInfoEXT*>(_pNameInfo));
 }
 #endif
 
@@ -229,8 +230,7 @@ void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
     vk::Win32SurfaceCreateInfoKHR win32SurfaceCreate{};
     win32SurfaceCreate.sType = vk::StructureType::eWin32SurfaceCreateInfoKHR;
 
-    auto window = _window;
-    win32SurfaceCreate.hwnd = glfwGetWin32Window(const_cast<GLFWwindow*>(window));
+    win32SurfaceCreate.hwnd = glfwGetWin32Window(const_cast<GLFWwindow*>(_window));
     win32SurfaceCreate.hinstance = GetModuleHandle(nullptr);
 
     // Create the surface

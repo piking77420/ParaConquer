@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "Resource.hpp"
-#include "LowRenderer/RhiTypedef.h"
+#include "LowRenderer/RhiShaderProgram.hpp"
 
 BEGIN_PCCORE
     class PC_CORE_API ShaderSourceBinary : public Resource
     {
     public:
-        ShaderStageType GetShaderStageType() const
+        PC_CORE::RhiShaderProgram::ShaderStageType GetShaderStageType() const
         {
             return m_ShaderStageType;
         }
@@ -26,15 +26,15 @@ BEGIN_PCCORE
         std::vector<char> GetCode() const;
 
         ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
-                           ShaderStageType _shaderStageType, GraphicAPI _api);
+            RhiShaderProgram::ShaderStageType _shaderStageType, GraphicAPI _api);
 
         ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
-                           ShaderStageType _shaderStageType, GraphicAPI _api);
+            RhiShaderProgram::ShaderStageType _shaderStageType, GraphicAPI _api);
 
         ~ShaderSourceBinary() override = default;
 
     private:
-        ShaderStageType m_ShaderStageType;
+        RhiShaderProgram::ShaderStageType m_ShaderStageType;
 
         std::string m_Path;
 

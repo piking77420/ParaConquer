@@ -84,12 +84,12 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
 
     uint32_t formatIndex = -1;
 
-    if (!IsFormatValid(ShaderSourceFormat, GetFullExtension(_path.generic_string()), &formatIndex))
+    if (!PC_CORE::IsFormatValid(PC_CORE::RhiShaderProgram::ShaderSourceFormat, GetFullExtension(_path.generic_string()), &formatIndex))
     {
         PC_LOGERROR("Shader invalid format")
     }
 
-    m_ShaderType = static_cast<ShaderStageType>(formatIndex);
+    m_ShaderType = static_cast<PC_CORE::RhiShaderProgram::ShaderStageType>(formatIndex);
     m_PathToSource = _path;
 
 
@@ -122,7 +122,8 @@ void ShaderSource::Reload()
         return;
     }
     auto s = ResourceManager::Get<ShaderSourceBinary>(GetShaderBinaryPath());
-    s->WriteSprivToFile(&sourceSpriv, Rhi::GetInstance().GetGraphicsApi());
+
+    s->WriteSprivToFile(&sourceSpriv, App::Instance->RenderHarwareInteface.GetGraphicsApi());
     BroadCastReload();
 }
 

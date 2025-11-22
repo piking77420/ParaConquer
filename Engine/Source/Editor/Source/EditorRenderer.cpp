@@ -3,28 +3,62 @@
 #include "Editor.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "DebugHelper/DebugDrawContext.hpp"
+#include "Resources/FileLoader.hpp"
+#include "LowRenderer/RhiShaderProgram.hpp"
 
 PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_editor)
 {
-    m_DirectionalLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(
-        "DirectionalLightSprite", EDITOR_RESOURCE_PATH "/Icons/DirlightIcon.png");
-    m_SpotLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(
-        "SpotLightSprite", EDITOR_RESOURCE_PATH "/Icons/SpotLight.png");
-    m_PointLightTexture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(
-        "PointLightSprite", EDITOR_RESOURCE_PATH "/Icons/PointLight.png");
+    using namespace PC_CORE;
+    /*
+    Image imageDirlightIcon(EDITOR_RESOURCE_PATH "/Icons/DirlightIcon.png", RhiChannel::Rgba);
+    Image imageSpotLight(EDITOR_RESOURCE_PATH "/Icons/SpotLight.png", RhiChannel::Rgba);
+    Image imagePointLight(EDITOR_RESOURCE_PATH "/Icons/PointLight.png", RhiChannel::Rgba);
 
-    InitResources();
+    auto createTextureFromImage = [&](const std::string& name, std::weak_ptr<PC_CORE::Texture2D>& texture, const Image& image)
+        {
+            const RhiTexture::RhiTextureDesciptor desc =
+            {
+            .Width = image.GetWidht(),
+            .Height = image.GetHeight(),
+            .Depth = 1,
+            .Level = static_cast<uint32_t>(std::floor(std::log2(std::max(image.GetWidht(), image.GetHeight())))) + 1,
+            .LayerCount = 1,
+            .Samples = 1,
+            .TextureType = RhiTexture::Type::Texture2D,
+            .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst | RhiTexture::TextureUsageFlag::TransferSrc),
+            .RhiFormat = RhiFormat::R8G8B8A8Unorm,
+            .AllowCpuAcces = false
+            };
+
+            texture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(m_Editor->gameApp.RenderHarwareInteface, name, desc, RhiResource::MemoryUsage::Static);
+
+            texture.lock()->Get()->Build();
+            
+            _editor.gameApp.RenderHarwareInteface.PushResourceUpdate([&](CommandList* list)
+                {
+                    texture.lock()->Get()->UploadData2D(list, image.GetData(), image.GetWidht(), image.GetHeight(), image.GetChannel());
+                    texture.lock()->Get()->GenerateMipMap(list);
+                });
+        };
+
+    createTextureFromImage("DirectionalLightSprite", m_DirectionalLightTexture, imageDirlightIcon);
+    createTextureFromImage("SpotLightSprite", m_SpotLightTexture, imageSpotLight);
+    createTextureFromImage("PointLightSprite", m_PointLightTexture, imagePointLight);
+
+
+    InitResources();*/
 }
 
 void PC_EDITOR_CORE::EditorRenderer::PushCustomCommand()
 {
+    /*
     m_Editor->gameApp.Renderer.UserCustomForwardPass.emplace_back(
         [this]<typename T0, typename T1, typename T2, typename T3>(T0&& PH1, T1&& PH2, T2&& PH3, T3&& PH4)
         {
             DrawLightGizmo(std::forward<T0>(PH1), std::forward<T1>(PH2),
                            std::forward<T2>(PH3), std::forward<T3>(PH4));
         }
-    );
+    );*/
 }
 
 void PC_EDITOR_CORE::EditorRenderer::DrawSelectedEntity()
@@ -50,17 +84,19 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
                                                     const PC_CORE::RenderingContext& _renderingContext,
                                                     const PC_CORE::RenderingWorldData* _renderingWorldData)
 {
+    /*
     PERF_REGION_SCOPED;
 
     m_DirectionalLightIndices.clear();
     m_SpotLightIndices.clear();
     m_PointLightIndices.clear();
 
-    if (auto p = m_DrawSpriteShader.lock())
+    _commandList->BeginDebugLabel("DrawLightGizmo", {1.f,1.f,1.f,1.f});
+
     {
-        _commandList->BindProgram(p.get());
-        _commandList->SetPrimitiveTopology(PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
-        _commandList->BindDescriptorSet(p.get(), m_CameraSet, SCENE_DESCRIPTOR_SET, 1);
+        _commandList->BindProgram(*m_DrawSpriteShader);
+        _commandList->SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        _commandList->BindDescriptorSet(*m_DrawSpriteShader, m_CameraSet.get(), SCENE_DESCRIPTOR_SET, 1);
 
         // Dir light
         const auto cameraPos = static_cast<Tbx::Vector3f>(_renderingContext.LowLevelCamera.Position);
@@ -85,18 +121,18 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
         }
 
         if (!m_DirectionalLightIndices.empty())
-            _commandList->BindDescriptorSet(p.get(), m_DirectionalDescriptorSet, SPRITE_SET, 1);
+            _commandList->BindDescriptorSet(*m_DrawSpriteShader, m_DirectionalDescriptorSet.get(), SPRITE_SET, 1);
         for (size_t i = 0; i < m_DirectionalLightIndices.size(); i++)
         {
             const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(
                 -static_cast<Tbx::Vector3<float>>(_renderingContext.LowLevelCamera.Position), Tbx::Vector3f::Zero(),
                 Tbx::Vector3f::UnitY()).Invert();
-            _commandList->PushConstant(p.get(), "pushConstants", &invertView, sizeof(invertView));
+            _commandList->PushConstant(*m_DrawSpriteShader, "pushConstants", &invertView, sizeof(invertView));
             _commandList->Draw(4, 1, 0, 0);
         }
 
         if (!m_SpotLightIndices.empty())
-            _commandList->BindDescriptorSet(p.get(), m_SpotLightDescriptorSet, SPRITE_SET, 1);
+            _commandList->BindDescriptorSet(*m_DrawSpriteShader, m_SpotLightDescriptorSet.get(), SPRITE_SET, 1);
         for (size_t i = 0; i < m_SpotLightIndices.size(); i++)
         {
             auto& spothlight = _renderingWorldData->LightData.at(m_SpotLightIndices[i]).Data.SpotLight;
@@ -104,12 +140,12 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
 
             const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(pointPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).
                 Invert();
-            _commandList->PushConstant(p.get(), "pushConstants", &invertView, sizeof(invertView));
+            _commandList->PushConstant(*m_DrawSpriteShader, "pushConstants", &invertView, sizeof(invertView));
             _commandList->Draw(4, 1, 0, 0);
         }
 
         if (!m_PointLightIndices.empty())
-            _commandList->BindDescriptorSet(p.get(), m_PointLightDescriptorSet, SPRITE_SET, 1);
+            _commandList->BindDescriptorSet(*m_DrawSpriteShader, m_PointLightDescriptorSet.get(), SPRITE_SET, 1);
         for (size_t i = 0; i < m_PointLightIndices.size(); i++)
         {
             auto& pointLight = _renderingWorldData->LightData.at(m_PointLightIndices[i]).Data.PointLightData;
@@ -118,17 +154,19 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
             const Tbx::Matrix4x4f invertView = Tbx::LookAtRH(pointPos, Tbx::Vector3f::Zero(), Tbx::Vector3f::UnitY()).
                 Invert();
 
-            _commandList->PushConstant(p.get(), "pushConstants", &invertView, sizeof(invertView));
+            _commandList->PushConstant(*m_DrawSpriteShader, "pushConstants", &invertView, sizeof(invertView));
             _commandList->Draw(4, 1, 0, 0);
         }
     }
+
+    _commandList->EndDebugLabel();*/
 }
 
 void PC_EDITOR_CORE::EditorRenderer::InitResources()
 {
+    /*
     const PC_CORE::SamplerCreateInfo info =
     {
-        .SamplerName = "SpriteSampler",
         .magFilter = PC_CORE::Filter::Linear,
         .minFilter = PC_CORE::Filter::Linear,
         .u = PC_CORE::SamplerAddressMode::Repeat,
@@ -136,23 +174,24 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         .w = PC_CORE::SamplerAddressMode::Repeat
     };
 
-    m_SpriteSampler = PC_CORE::Sampler(info);
+    m_SpriteSampler = PC_CORE::Sampler(m_Editor->gameApp.RenderHarwareInteface, "SpriteSampler", info);
+    m_SpriteSampler->Build();
 
-    constexpr PC_CORE::RasterizerInfo rasterizerInfo =
+    constexpr PC_CORE::RhiShaderProgram::RasterizerInfo rasterizerInfo =
     {
-        .polygonMode = PC_CORE::PolygonMode::Fill,
-        .cullModeFlag = PC_CORE::CullModeFlagBit::None,
-        .frontFace = PC_CORE::FrontFace::CounterClockwise,
+        .polygonMode = PC_CORE::RhiShaderProgram::PolygonMode::Fill,
+        .cullModeFlag = PC_CORE::RhiShaderProgram::CullModeFlagBit::None,
+        .frontFace = PC_CORE::RhiShaderProgram::FrontFace::CounterClockwise,
         .multiSampleRasterization = 1
     };
 
-    constexpr PC_CORE::DephStencilInfo dephStencilInfo =
+    constexpr PC_CORE::RhiShaderProgram::DephStencilInfo dephStencilInfo =
     {
         .depthCompareOp = PC_CORE::CompareOp::Less,
         .enableDepthTest = true
     };
 
-    constexpr PC_CORE::BlendInfo blendInfo = {
+    constexpr PC_CORE::RhiShaderProgram::BlendState blendInfo = {
         .enabled = true,
         .srcColorBlendFactor = PC_CORE::BlendFactor::SrcAlpha,
         .dstColorBlendFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
@@ -167,7 +206,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
             PC_CORE::ColorComponent::ColorComponentB |
             PC_CORE::ColorComponent::ColorComponentA)
     };
-    PC_CORE::ShaderGraphicPointInfo shaderGraphicPointInfo =
+    PC_CORE::RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
         .dephInfo = dephStencilInfo,
@@ -176,64 +215,71 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         .vertexAttributeDescriptions = {}
     };
 
-    PC_CORE::SourceList sourceList =
+    std::vector<PC_CORE::RhiShaderProgram::ShaderModule> sourceList =
     {
         {
-            PC_CORE::ShaderStageType::Vertex,
-            PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.vs.hlsl.binary"),
+            PC_CORE::RhiShaderProgram::ShaderStageType::Vertex,
+            PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.vs.hlsl.binary")->GetCode(),
         },
         {
-            PC_CORE::ShaderStageType::Pixel,
-            PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.ps.hlsl.binary")
+            PC_CORE::RhiShaderProgram::ShaderStageType::Pixel,
+            PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.ps.hlsl.binary")->GetCode()
         }
     };
 
-    PC_CORE::GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
+    PC_CORE::RhiShaderProgram::ShaderInfo shaderInfo =
     {
-        .shaderGraphicPointInfo = shaderGraphicPointInfo,
-        .sourceList = sourceList,
+        .type = PC_CORE::RhiShaderProgram::PipelineType::Graphic,
+        .shaderInfoData = shaderGraphicPointInfo
+    };
+
+    PC_CORE::RhiShaderProgram::ProgramShaderCreateInfo graphicShaderProgramCreateInfo =
+    {
+        .shaderInfo = shaderInfo,
         .renderPass = m_Editor->gameApp.Renderer.RenderPasses.ForwardPass.get(),
-        .colorAttachementCount = 1,
+        .shaderModule = sourceList,
+        .attachementCount = 1,
         .subPassIndex = 0
     };
 
 
     m_DrawSpriteShader = PC_CORE::ResourceManager::Create<PC_CORE::GraphicShader>(
         "SpriteShader", graphicShaderProgramCreateInfo);
+    m_DrawSpriteShader.lock()->Get()->Build();
 
     auto lockedShader = m_DrawSpriteShader.lock();
     if (lockedShader == nullptr)
         return;
 
-    lockedShader->AllocDescriptorSet(&m_CameraSet, SCENE_DESCRIPTOR_SET);
-    lockedShader->AllocDescriptorSet(&m_DirectionalDescriptorSet, SPRITE_SET);
-    lockedShader->AllocDescriptorSet(&m_SpotLightDescriptorSet, SPRITE_SET);
-    lockedShader->AllocDescriptorSet(&m_PointLightDescriptorSet, SPRITE_SET);
+    m_CameraSet.reset(lockedShader->Get()->CreateDescriptorBinding());
+    m_DirectionalDescriptorSet.reset(lockedShader->Get()->CreateDescriptorBinding());
+    m_SpotLightDescriptorSet.reset(lockedShader->Get()->CreateDescriptorBinding());
+    m_PointLightDescriptorSet.reset(lockedShader->Get()->CreateDescriptorBinding());
 
-    PC_CORE::UniformBufferDescriptor cameraBufferDescritptor
+    PC_CORE::BufferDescriptor cameraBufferDescritptor
     {
-        .buffer = &m_Editor->gameApp.Renderer.UniformBuffers.CameraUniformBuffer,
+        .buffer = m_Editor->gameApp.Renderer.UniformBuffers.CameraUniformBuffer.Get(),
     };
 
     PC_CORE::ImageSamplerDescriptor directionalTexture
     {
-        .sampler = &m_SpriteSampler,
-        .texture = m_DirectionalLightTexture.lock().get(),
-        .imageState = PC_CORE::ImageState::ShaderReadOptimal
+        .sampler = m_SpriteSampler.Get(),
+        .texture = m_DirectionalLightTexture.lock()->Get(),
+        .resourceState = RhiResourceState::ShaderRead
     };
 
     PC_CORE::ImageSamplerDescriptor spothLightTexture
     {
         .sampler = directionalTexture.sampler,
-        .texture = m_SpotLightTexture.lock().get(),
-        .imageState = PC_CORE::ImageState::ShaderReadOptimal
+        .texture = m_SpotLightTexture.lock()->Get(),
+        .resourceState = RhiResourceState::ShaderRead
     };
 
     PC_CORE::ImageSamplerDescriptor pointLightTexture
     {
         .sampler = directionalTexture.sampler,
-        .texture = m_PointLightTexture.lock().get(),
-        .imageState = PC_CORE::ImageState::ShaderReadOptimal
+        .texture = m_PointLightTexture.lock()->Get(),
+        .resourceState = RhiResourceState::ShaderRead
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
@@ -245,7 +291,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         }
     };
 
-    m_CameraSet->WriteDescriptorSets(descriptorSets);
+    m_CameraSet->SetBindings(descriptorSets, SCENE_DESCRIPTOR_SET).Build();
 
     descriptorSets =
     {
@@ -255,11 +301,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
             directionalTexture,
         }
     };
-    m_DirectionalDescriptorSet->WriteDescriptorSets(descriptorSets);
+    m_DirectionalDescriptorSet->SetBindings(descriptorSets, SPRITE_SET).Build();
 
     descriptorSets[0].descriptor = spothLightTexture;
-    m_SpotLightDescriptorSet->WriteDescriptorSets(descriptorSets);
+    m_SpotLightDescriptorSet->SetBindings(descriptorSets, SPRITE_SET).Build();
 
     descriptorSets[0].descriptor = pointLightTexture;
-    m_PointLightDescriptorSet->WriteDescriptorSets(descriptorSets);
+    m_PointLightDescriptorSet->SetBindings(descriptorSets, SPRITE_SET).Build();*/
 }

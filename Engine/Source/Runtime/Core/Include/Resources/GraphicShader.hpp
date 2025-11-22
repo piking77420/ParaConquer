@@ -3,9 +3,10 @@
 #include "Rendering/ShaderProgram.hpp"
 
 BEGIN_PCCORE
+
     struct GraphicShaderProgramCreateInfo
     {
-        ShaderGraphicPointInfo shaderGraphicPointInfo;
+        RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo;
         SourceList sourceList;
         RhiRenderPass* renderPass;
         uint32_t colorAttachementCount;
@@ -17,10 +18,10 @@ BEGIN_PCCORE
     public:
         IMP_DYNAMIC_REFLECT();
 
-        PC_CORE_API GraphicShader(const std::string& _shaderName,
+        PC_CORE_API GraphicShader(Rhi& rhi, const std::string& _shaderName,
                                   const GraphicShaderProgramCreateInfo& _graphicShaderProgramCreateInfo);
 
-        PC_CORE_API GraphicShader(std::string&& _shaderName,
+        PC_CORE_API GraphicShader(Rhi& rhi, std::string&& _shaderName,
                                   const GraphicShaderProgramCreateInfo& _graphicShaderProgramCreateInfo);
 
         PC_CORE_API GraphicShader()
@@ -30,8 +31,19 @@ BEGIN_PCCORE
 
         PC_CORE_API ~GraphicShader() override = default;
 
+        RhiShaderProgram* const Get() const
+        {
+            return m_RhiShaderProgram.get();
+        }
+
+        RhiShaderProgram* const operator->() const
+        {
+            return m_RhiShaderProgram.operator->();
+        }
+
+
     private:
         REFLECT(GraphicShader, PC_CORE::ShaderProgram);
     };
-
+    
 END_PCCORE

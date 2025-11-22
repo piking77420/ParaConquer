@@ -34,6 +34,8 @@ BEGIN_PCCORE
 
         RenderingWorldData RenderingWorldData;
 
+        std::shared_ptr<RhiSwapChain> mainSwapChain;
+
         Renderer Renderer;
 
         World World;

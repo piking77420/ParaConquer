@@ -59,6 +59,22 @@ BEGIN_PCCORE
             Base::operator=(std::move(ptr));
             return *this;
         }
+
+        T* Get()
+        {
+            return this->get();
+        }
+
+        const T* Get() const
+        {
+            return this->get();
+        }
+
+        T* const operator->() const
+        {
+            return Base::operator->();
+        }
+
     };
 
     template <ResourceDerived T>
@@ -76,11 +92,6 @@ BEGIN_PCCORE
         bool IsValid() const { return !Base::expired(); }
 
         size_t UseCount() const { return Base::use_count(); }
-
-        explicit operator bool() const noexcept
-        {
-            return Base::operator bool();
-        }
 
         WeakObjectPtr() = default;
 
@@ -148,6 +159,7 @@ BEGIN_PCCORE
             Base::operator=(_wobjectPtr);
             return *this;
         }
+        
     };
 
 END_PCCORE

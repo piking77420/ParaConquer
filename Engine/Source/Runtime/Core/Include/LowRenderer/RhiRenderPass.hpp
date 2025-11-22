@@ -1,11 +1,42 @@
 ﻿#pragma once
 
-#include <Vector>
+#include <vector>
 
-#include "RhiTypedef.h"
-#include "RhiResource.hpp"
+#include "RhiTexture.hpp"
+#include "RhiBuffer.h"
+#include "RhiShaderProgram.hpp"
 
 BEGIN_PCCORE
+
+    struct ImageStateTransition
+    {
+        RhiTexture* Texture = nullptr;
+
+        RhiResourceState OldState = RhiResourceState::Undefined;
+        RhiResourceState NewState = RhiResourceState::Undefined;
+
+        uint32_t FirstMipLevel = 0;
+        uint32_t MipLevelsCount = 0;
+        uint32_t FirstArraySlice = 0;   
+        uint32_t ArraySliceCount = 0;
+
+        bool updateState = false;
+    };
+
+    struct BufferStateTransition
+    {
+        RhiTexture* Texture = nullptr;
+        RhiBuffer* Buffer = nullptr;
+
+        RhiResourceState OldState = RhiResourceState::Undefined;
+        RhiResourceState NewState = RhiResourceState::Undefined;
+
+        uint32_t Offset = 0;
+        uint32_t Size = 0;
+
+        bool updateState = false;
+    };
+
     struct RenderPassAttachementDescriptor
     {
         AttachmentType attachmentType;
@@ -18,27 +49,27 @@ BEGIN_PCCORE
         LoadOperation stencilLoad;
         StoreOperation stencilStore;
 
-        ImageState currentImageState;
-        ImageState finalImageState;
+        RhiResourceState currentImageState;
+        RhiResourceState finalImageState;
     };
 
-    struct SubPassDependcies
+    struct SubPassTransition
     {
-        GpuPipelineStageFlagBits srcStageMask;
-        GpuPipelineStageFlagBits dstStageMask;
-
-        GpuAccessFlag srcAccessMask;
-        GpuAccessFlag dstAccessMask;
+        GpuPipelineStage SrcStageFlag;
+        GpuPipelineStage DstStageFlag;
+        ImageStateTransition ImageStateTransition;
     };
+
 
 
     struct SubPassDescription
     {
-        ShaderProgramPipelineType shaderProgramPipelineType;
+        RhiShaderProgram::PipelineType type;
         std::vector<size_t> colorAttachementDescriptorIndicies;
         std::vector<size_t> inputAttachementDescriptorIndicies;
 
-        SubPassDependcies subPassDependcies;
+        SubPassTransition subPassTransition;
+
         bool useDepth;
     };
 
@@ -52,25 +83,27 @@ BEGIN_PCCORE
 
     // this class represent a pass within is frame buffer attemechement
     // collection of pass for a same frame buffer
-    class RhiRenderPass : public RhiResource
+    class RhiRenderPass : public PC_CORE::RhiObject
     {
     public:
-        PC_CORE_API RhiRenderPass(RhiFormat colorFormat, RhiFormat depthFormat)
-        {
-        }
-
         PC_CORE_API RhiRenderPass() = default;
 
-        PC_CORE_API RhiRenderPass(const RenderPassDescriptor& _attachementDescriptors)
+        PC_CORE_API explicit RhiRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, const RenderPassDescriptor& _attachementDescriptors)
+            : RhiObject(_Rhi, _name)
         {
         }
+        
+        PC_CORE_API RhiRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name)
+            : RhiObject(_Rhi, _name)
+        {
+        }
+        
+        PC_CORE_API ~RhiRenderPass() = default;
 
-        PC_CORE_API ~RhiRenderPass() override = default;
+    protected:        
+        RhiShaderProgram::PipelineType m_ShaderProgramPipelineType = RhiShaderProgram::PipelineType::Count;
 
-    protected:
-        ShaderProgramPipelineType m_ShaderProgramPipelineType;
-
-        uint32_t AttachementCount;
+        uint32_t AttachementCount = 0;
 
         bool m_HasDepth = false;
 

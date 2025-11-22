@@ -4,6 +4,7 @@
 #include "Rendering/Renderer.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
+#include "LowRenderer/Rhi.hpp"
 
 #define GIZMO_PASS {1.f, 0.0f, 1.f, 0.5f}
 
@@ -103,50 +104,49 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList,
     _commandList->BeginDebugLabel("Gizmo Pass", GIZMO_PASS);
     bool needReset = false;
 
-    if (auto sh = m_ShaderProgram.lock())
+   
+    _commandList->BindProgram(*m_ShaderProgram.get());
+
+    for (size_t i = 0; i < m_PrimitiveData.size(); i++)
     {
-        _commandList->BindProgram(sh.get());
+        if (m_PrimitiveData[i].primitiveCount == 0)
+            continue;
 
-        for (size_t i = 0; i < m_PrimitiveData.size(); i++)
+        if (i >= static_cast<size_t>((PrimitiveType::WireSphere)))
         {
-            if (m_PrimitiveData[i].primitiveCount == 0)
-                continue;
-
-            if (i >= static_cast<size_t>((PrimitiveType::WireSphere)))
-            {
-                _commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyLineList);
-                _commandList->SetLineWidth(1.f);
-                needReset = true;
-            }
-
-
-            _commandList->BindDescriptorSet(sh.get(), m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET, 1);
-            _commandList->BindVertexBuffer(*m_PrimitiveData[i].primitiveBuffer.GetRhiBuffer(), 0, 1);
-            _commandList->BindVertexBuffer(*m_PrimitiveData[i].instanceBuffer.GetRhiBuffer(), 1, 1);
-
-            _commandList->BindIndexBuffer(*m_PrimitiveData[i].primitiveIndexBuffer.GetRhiBuffer(), 0);
-
-            _commandList->DrawIndexed(m_PrimitiveData[i].primitiveIndexBuffer.GetIndexCount(),
-                                      m_PrimitiveData[i].primitiveCount, 0, 0, 0);
+            _commandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+            _commandList->SetLineWidth(1.f);
+            needReset = true;
         }
+
+
+        _commandList->BindDescriptorSet(*m_ShaderProgram.get(), m_ShaderProgramDescriptorSets.get(), SCENE_DESCRIPTOR_SET, 1);
+        _commandList->BindVertexBuffer(*m_PrimitiveData[i].primitiveBuffer.Get(), 0, 1);
+        _commandList->BindVertexBuffer(*m_PrimitiveData[i].instanceBuffer.Get(), 1, 1);
+
+        _commandList->BindIndexBuffer(*m_PrimitiveData[i].primitiveIndexBuffer.Get(), m_PrimitiveData[i].primitiveIndexBuffer.GetIndexFormat(), 0);
+
+        _commandList->DrawIndexed(m_PrimitiveData[i].primitiveIndexBuffer.GetIndexCount(),
+                                    m_PrimitiveData[i].primitiveCount, 0, 0, 0);
     }
+    
 
     // Ray
     if (m_RayPrimitiveData.rayCount != 0)
-        if (auto sray = m_ShaderProgramRay.lock())
-        {
-            needReset = true;
-
-            _commandList->BindProgram(sray.get());
-            _commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyLineList);
-            _commandList->SetLineWidth(1.f);
-            _commandList->BindDescriptorSet(sray.get(), m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET, 1);
-            _commandList->BindVertexBuffer(*m_RayPrimitiveData.vertexBuffer.GetRhiBuffer(), 0, 1);
-            _commandList->Draw(2, static_cast<uint32_t>(m_RayPrimitiveData.rayCount), 0, 0);
-        }
+    {
+        needReset = true;
+        _commandList->BindProgram(*m_ShaderProgramRay.get());
+        _commandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+        _commandList->SetLineWidth(1.f);
+        _commandList->BindDescriptorSet(*m_ShaderProgramRay.get(), m_ShaderProgramDescriptorSets.get(), SCENE_DESCRIPTOR_SET, 1);
+        _commandList->BindVertexBuffer(*m_RayPrimitiveData.vertexBuffer.Get(), 0, 1);
+        _commandList->Draw(2, static_cast<uint32_t>(m_RayPrimitiveData.rayCount), 0, 0);
+    }
+       
+        
 
     if (needReset)
-        _commandList->SetPrimitiveTopology(PrimitiveTopology::PrimitiveTopologyTriangleList);
+        _commandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
 
     _commandList->EndDebugLabel();
 }
@@ -155,28 +155,34 @@ void PC_CORE::DebugDrawContext::Prepare()
 {
     for (int i = 0; i < m_PrimitiveData.size(); i++)
     {
+        
         size_t updateDataSize = m_PrimitiveData[i].matrixBuffer.size() * sizeof(Tbx::Matrix4x4f);
         assert(updateDataSize < GIZMO_BUFFER_SIZE && "updateDataSize should be less than GIZMO_BUFFER_SIZE");
         updateDataSize = std::clamp(updateDataSize, static_cast<size_t>(0), GIZMO_BUFFER_SIZE);
 
-        m_PrimitiveData[i].instanceBuffer.Update(m_PrimitiveData[i].matrixBuffer.data(),
-                                                 updateDataSize);
-
+        if (char* ptr = m_PrimitiveData[i].instanceBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
+        {
+            std::memcpy(ptr, m_PrimitiveData[i].matrixBuffer.data(), updateDataSize);
+            m_PrimitiveData[i].instanceBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+        }
         m_PrimitiveData[i].primitiveCount = std::clamp(m_PrimitiveData[i].matrixBuffer.size(), static_cast<size_t>(0),
                                                        MAX_GIZMO_PRIMITIVE);
         m_PrimitiveData[i].matrixBuffer.clear();
     }
 
     {
+        
         size_t updateRaySize = m_RayPrimitiveData.rayBuffer.size() * sizeof(RayDataPerInstance);
 
         assert(updateRaySize < RAY_BUFFER_SIZE && "updateRaySize should be less than RAY_BUFFER_SIZE");
         updateRaySize = std::clamp(updateRaySize, static_cast<size_t>(0), RAY_BUFFER_SIZE);
-
-        m_RayPrimitiveData.vertexBuffer.Update(m_RayPrimitiveData.rayBuffer.data(), updateRaySize);
+        if (char* ptr = m_RayPrimitiveData.vertexBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
+        {
+            std::memcpy(ptr, m_RayPrimitiveData.rayBuffer.data(), updateRaySize);
+            m_RayPrimitiveData.vertexBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+        }
         m_RayPrimitiveData.rayCount = std::clamp(m_RayPrimitiveData.rayBuffer.size(), static_cast<size_t>(0),
                                                  MAX_RAY_COUNT);
-
         m_RayPrimitiveData.rayBuffer.clear();
     }
 }
@@ -197,21 +203,22 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 
 
     for (size_t i = 0; i < m_PrimitiveData.size(); i++)
-        m_PrimitiveData[i].instanceBuffer = VertexBuffer(
-            GIZMO_BUFFER_SIZE, MemoryLocalisation::CpuOnly, MemoryUsage::Dynamic);
-
-
-    m_RayPrimitiveData.vertexBuffer = VertexBuffer(
-        RAY_BUFFER_SIZE, MemoryLocalisation::CpuOnly, MemoryUsage::Dynamic);
+    {
+        m_PrimitiveData[i].instanceBuffer = VertexBuffer(_renderer->GetRhi(), "Buffer " + PrimitiveTypeToString(static_cast<PrimitiveType>(i)),GIZMO_BUFFER_SIZE, PC_CORE::RhiResource::MemoryUsage::Dynamic);
+        m_PrimitiveData[i].instanceBuffer->Build();
+    }
+    m_RayPrimitiveData.vertexBuffer = VertexBuffer(_renderer->GetRhi(), "Buffer Ray", RAY_BUFFER_SIZE, PC_CORE::RhiResource::MemoryUsage::Dynamic);
+    m_RayPrimitiveData.vertexBuffer->Build();
 }
 
 void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 {
-    constexpr RasterizerInfo rasterizerInfo =
+    
+    constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
     {
-        .polygonMode = PolygonMode::Fill,
-        .cullModeFlag = CullModeFlagBit::None,
-        .frontFace = FrontFace::CounterClockwise
+        .polygonMode = RhiShaderProgram::PolygonMode::Fill,
+        .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
+        .frontFace = RhiShaderProgram::FrontFace::CounterClockwise
     };
 
     VertexInputBindingDescrition primitiveInputBindingDescrition =
@@ -267,7 +274,22 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
             .Offset = sizeof(Tbx::Vector4f) * 3,
         });
 
-    const ShaderGraphicPointInfo shaderGraphicPointInfo =
+    
+
+    /*
+    std::vector<RhiShaderProgram::ShaderModule> shaderModule =
+    {
+        {
+            RhiShaderProgram::ShaderStageType::Vertex,
+            ResourceManager::Get<ShaderSourceBinary>("DebugDraw.vs.hlsl.binary")->GetCode()
+        },
+        {
+            RhiShaderProgram::ShaderStageType::Pixel,
+            ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()
+        }
+    };
+
+    const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
         .dephInfo =
@@ -283,18 +305,19 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
         .vertexAttributeDescriptions = attributeDescription,
     };
 
-
-    const SourceList source =
+    RhiShaderProgram::ShaderInfo shaderInfo
     {
-        {
-            ShaderStageType::Vertex,
-            ResourceManager::Get<ShaderSourceBinary>("DebugDraw.vs.hlsl.binary")
-        },
-        {
-            ShaderStageType::Pixel,
-            ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
-        }
+        .type = RhiShaderProgram::PipelineType::Graphic,
+        .shaderInfoData = shaderGraphicPointInfo
     };
+
+    RhiShaderProgram::ProgramShaderCreateInfo shaderCreateInfo =
+    {
+        .shaderInfo = shaderInfo,
+        .renderPass = m_Renderer->RenderPasses.ForwardPass.get(),
+        .colorAttachementCount = 1,
+        .subPassIndex = 0,
+    }
 
     const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
     {
@@ -306,19 +329,20 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
     };
 
 
-    m_ShaderProgram = ResourceManager::Create<GraphicShader>(
-        "DebugGizmoShader", graphicShaderProgramCreateInfo);
+    m_ShaderProgram = m_Renderer->GetRhi().CreateRhiShaderProgram("DebugGizmoShader", )
+    m_ShaderProgram->Get()->Build();;*/
 
-    m_ShaderProgram.Lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSets, SCENE_DESCRIPTOR_SET);
+    // Binding
+    m_ShaderProgramDescriptorSets.reset(m_ShaderProgram->CreateDescriptorBinding("DebugGizmoShader Bindings"));
 
-    UniformBufferDescriptor uniformBufferDescriptor
+    BufferDescriptor uniformBufferDescriptor
     {
-        .buffer = &m_Renderer->UniformBuffers.CameraUniformBuffer
+        .buffer = m_Renderer->UniformBuffers.CameraUniformBuffer.Get()
     };
 
     ShaderProgramDescriptorWrite descriptor =
     {
-        .shaderProgramDescriptorType = ShaderProgramDescriptorType::UniformBuffer,
+        .type = ShaderProgramDescriptorType::UniformBuffer,
         .bindingIndex = CAMERA_BINDING,
         .descriptor = uniformBufferDescriptor,
     };
@@ -327,16 +351,17 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
     {
         descriptor
     };
-    m_ShaderProgramDescriptorSets->WriteDescriptorSets(descriptorWrites);
+    m_ShaderProgramDescriptorSets->SetBindings(descriptorWrites, SCENE_DESCRIPTOR_SET).Build();
 }
 
 void PC_CORE::DebugDrawContext::CreateRayShaders()
 {
-    constexpr RasterizerInfo rasterizerInfo =
+    /*
+    constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
     {
-        .polygonMode = PolygonMode::Line,
-        .cullModeFlag = CullModeFlagBit::None,
-        .frontFace = FrontFace::CounterClockwise
+        .polygonMode = RhiShaderProgram::PolygonMode::Line,
+        .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
+        .frontFace = RhiShaderProgram::FrontFace::CounterClockwise
     };
 
     VertexInputBindingDescrition vertexBindingDescrition =
@@ -371,7 +396,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
             .Offset = sizeof(Tbx::Vector4f) * 2,
         });
 
-    const ShaderGraphicPointInfo shaderGraphicPointInfo =
+    const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
         .dephInfo =
@@ -382,17 +407,17 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
         .vertexInputBindingDescritions = {vertexBindingDescrition},
         .vertexAttributeDescriptions = attributeDescription,
     };
-
+   
 
     const SourceList source =
     {
         {
-            ShaderStageType::Vertex,
+            RhiShaderProgram::ShaderStageType::Vertex,
             ResourceManager::Get<ShaderSourceBinary>("DebugDrawRay.vs.hlsl.binary")
 
         },
         {
-            ShaderStageType::Pixel,
+            RhiShaderProgram::ShaderStageType::Pixel,
             ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
 
         }
@@ -409,16 +434,19 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 
     m_ShaderProgramRay = ResourceManager::Create<GraphicShader>(
         "DebugGizmoShaderRay", graphicShaderProgramCreateInfo);
-    m_ShaderProgramRay.Lock()->AllocDescriptorSet(&m_ShaderProgramDescriptorSetsRay, SCENE_DESCRIPTOR_SET);
+    m_ShaderProgramRay->Get()->Build();
 
-    UniformBufferDescriptor uniformBufferDescriptor
+    */ 
+    // Binding
+    m_ShaderProgramDescriptorSetsRay.reset(m_ShaderProgramRay->CreateDescriptorBinding("DebugDrawGizmo Ray Binding "));
+    BufferDescriptor uniformBufferDescriptor
     {
-        .buffer = &m_Renderer->UniformBuffers.CameraUniformBuffer
+        .buffer = m_Renderer->UniformBuffers.CameraUniformBuffer.Get()
     };
 
     ShaderProgramDescriptorWrite descriptor =
     {
-        .shaderProgramDescriptorType = ShaderProgramDescriptorType::UniformBuffer,
+        .type = ShaderProgramDescriptorType::UniformBuffer,
         .bindingIndex = CAMERA_BINDING,
         .descriptor = uniformBufferDescriptor,
     };
@@ -427,7 +455,8 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
     {
         descriptor
     };
-    m_ShaderProgramDescriptorSetsRay->WriteDescriptorSets(descriptorWrites);
+
+    m_ShaderProgramDescriptorSetsRay->SetBindings(descriptorWrites, SCENE_DESCRIPTOR_SET).Build();
 }
 
 bool PC_CORE::DebugDrawContext::NeedToRender()
@@ -458,14 +487,14 @@ void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveTyp
             for (size_t lat = 0; lat <= 16; ++lat)
             {
                 float theta = lat * M_PI / 16; // Latitude angle (from 0 to PI)
-                float sinTheta = sin(theta);
-                float cosTheta = cos(theta);
+                float sinTheta = std::sin(theta);
+                float cosTheta = std::cos(theta);
 
                 for (size_t lon = 0; lon <= 32; ++lon)
                 {
                     float phi = lon * 2 * M_PI / 32; // Longitude angle (from 0 to 2PI)
-                    float sinPhi = sin(phi);
-                    float cosPhi = cos(phi);
+                    float sinPhi = std::sin(phi);
+                    float cosPhi = std::cos(phi);
 
                     Tbx::Vector3f vertex;
                     vertex.x = cosPhi * sinTheta;
@@ -624,13 +653,13 @@ void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveTyp
         assert(false);
         break;
     }
-
+/*
     if (!vertices.empty() && !indices.empty())
     {
         *_vertexBuffer = VertexBuffer(vertices.data(), vertices.size(), sizeof(Tbx::Vector3f),
                                       MemoryLocalisation::GpuOnly, MemoryUsage::Static);
         *_indexBuffer = IndexBuffer(indices.data(), indices.size(), MemoryLocalisation::GpuOnly, MemoryUsage::Static);
-    }
+    }*/
 }
 
 void PC_CORE::DebugDrawContext::PushBoxGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler,
@@ -692,4 +721,26 @@ void PC_CORE::DebugDrawContext::PushCapsuleGizmo(PrimitiveType _primitiveType, c
     );
 
     m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(m);
+}
+
+std::string PC_CORE::DebugDrawContext::PrimitiveTypeToString(PrimitiveType _primitiveType)
+{
+    switch (_primitiveType)
+    {
+    case PrimitiveType::Sphere:
+        return "Sphere";
+    case PrimitiveType::Box:
+        return "Box";
+    case PrimitiveType::Capsule:
+        return "Capsule";
+    case PrimitiveType::WireSphere:
+        return "WireSphere";
+    case PrimitiveType::WireBox:
+        return "WireBox";
+    case PrimitiveType::WireCapsule:
+        return "WireCapsule";
+    case PrimitiveType::Count:
+        break;
+    }
+    return "";
 }

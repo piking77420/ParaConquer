@@ -4,41 +4,48 @@
 #include "Resources/FileLoader.hpp"
 
 
-PC_CORE::Texture3D::Texture3D(const std::string& _name, const std::array<std::string, 6>& _maps) : Texture(_name)
+PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const std::array<std::string, 6>& _maps)
+    : Texture(_name)
 {
     DYNAMIC_REFLECT_INIT
 
-    std::vector<void*> datas;
+        std::vector<void*> datas;
     datas.resize(6);
 
     int width{};
     int height{};
 
+    RhiChannel channel;
     for (size_t i = 0; i < 6; i++)
-        datas[i] = FileLoader::LoadImage(_maps[i].c_str(), &width, &height, &m_TextureChannel, Channel::Rgba);
-    m_TextureChannel = Channel::Rgba;
+        datas[i] = FileLoader::LoadImage(_maps[i].c_str(), &width, &height, &channel, RhiChannel::Rgba);
 
-    // TO DO HANDLE MIPMAP
-    const CreateImageInfo createTextureInfo =
+    const RhiTexture::RhiTextureDesciptor desc =
     {
-        .Width = width,
-        .Height = height,
+        .Width = static_cast<uint32_t>(width),
+        .Height = static_cast<uint32_t>(height),
         .Depth = 1,
+        .Level = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
         .LayerCount = static_cast<uint32_t>(_maps.size()),
-        .MipsLevels = 1,
-        .TextureType = TextureType::CubeMap,
-        .Format = RhiFormat::R8G8B8A8Unorm,
-        .Channel = m_TextureChannel,
-        .TextureUsage = TextureUsage::Sampled,
-        .MemoryVisibility = MemoryLocalisation::GpuOnly,
         .Samples = 1,
-        .GenerateMipMap = true,
-        .Datas = datas
+        .TextureType = RhiTexture::Type::CubeMap,
+        .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst),
+        .RhiFormat = RhiFormat::R8G8B8A8Unorm,
+        .AllowCpuAcces = false
     };
 
-    m_RhiTexture3D = Rhi::CreateTexture3D(createTextureInfo);
+    m_RhiTexture.reset(rhi.CreateTexture(_name, desc, RhiResource::MemoryUsage::Static));
+    m_RhiTexture->Build();
 
+    rhi.PushResourceUpdate(
+        [&](CommandList* list)
+        {
+            m_RhiTexture->UploadDataLayer(list, datas, width, height, desc.LayerCount, channel);
 
-    for (size_t i = 0; i < 6; i++)
-        FileLoader::FreeData(static_cast<uint8_t*>(datas[i]));
+            for (size_t i = 0; i < 6; i++)
+                FileLoader::FreeData(static_cast<uint8_t*>(datas[i]));
+        }
+    );
+
 }
+
+   

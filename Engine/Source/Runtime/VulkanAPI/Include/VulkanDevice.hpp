@@ -40,5 +40,6 @@ namespace Vulkan
 
         PFN_vkGetCalibratedTimestampsEXT m_Gct = nullptr;
 #endif
+        
     };
 }

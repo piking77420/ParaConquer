@@ -1,12 +1,19 @@
 ﻿#pragma once
 
-#include <Set>
+#include <set>
 
 #include "VulkanHeader.h"
 #include "LowRenderer/PhysicalDevices.hpp"
 
+namespace PC_CORE
+{
+    class RhiContext;
+}
+
 namespace Vulkan
 {
+    class VulkanContext;
+
     struct SwapChainSupportDetails
     {
         vk::SurfaceCapabilitiesKHR capabilities;
@@ -37,19 +44,17 @@ namespace Vulkan
 
         VULKAN_API const std::vector<QueueFamilyIndices>& GetQueuesFamilies();
 
-        VULKAN_API SwapChainSupportDetails GetSwapChainSupportDetails() const;
-
-        VULKAN_API explicit VulkanPhysicalDevices(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo,
+        VULKAN_API explicit VulkanPhysicalDevices(vk::Instance _VkInstance, vk::SurfaceKHR _Surface,
+                                                  const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo,
                                                   std::set<std::string>* _extensionToEnable);
-
-        VULKAN_API VulkanPhysicalDevices() = default;
 
         VULKAN_API ~VulkanPhysicalDevices() override;
 
-        VULKAN_API SwapChainSupportDetails UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr);
+        VULKAN_API SwapChainSupportDetails GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr);
+
 
     private:
-        SwapChainSupportDetails m_SwapChainSupportDetails;
+        vk::Instance m_VkInstance;
 
         std::vector<QueueFamilyIndices> m_QueuesFamiliesProperty;
 
@@ -78,9 +83,7 @@ namespace Vulkan
             const std::vector<vk::ExtensionProperties>& availableExtensions,
             const std::set<std::string>& requiredExtensions);
 
-        VULKAN_API void QueryQueueFamilies();
+        VULKAN_API void QueryQueueFamilies(vk::SurfaceKHR surface);
 
-        VULKAN_API SwapChainSupportDetails QuerySwapChainSupport(const vk::SurfaceKHR& _surfaceKhr,
-                                                                 vk::PhysicalDevice _physicalDevices);
     };
 }

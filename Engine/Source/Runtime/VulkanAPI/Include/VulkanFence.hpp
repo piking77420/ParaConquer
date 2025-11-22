@@ -8,13 +8,14 @@ namespace Vulkan
     class VulkanFence final : public PC_CORE::RhiFence
     {
     public:
-        VULKAN_API const void* GetNativeHandle() const override
+        bool Build() override;
+
+        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override
         {
             return &m_Fences;
         }
 
-
-        VULKAN_API void* GetNativeHandle() override
+        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override
         {
             return &m_Fences;
         }
@@ -25,17 +26,16 @@ namespace Vulkan
 
         VULKAN_API vk::Fence GetVkFence(uint32_t _frameIndex) const;
 
-        VULKAN_API VulkanFence(const PC_CORE::RhiFenceCreateInfo& rhiFenceCreateInfo);
+        VULKAN_API VulkanFence(PC_CORE::Rhi& _Rhi, const std::string& name, const PC_CORE::RhiFenceCreateInfo& rhiFenceCreateInfo);
 
-        VULKAN_API VulkanFence()
-        {
-            for (size_t i = 0; i < m_Fences.size(); i++)
-                m_Fences[i] = VK_NULL_HANDLE;
-        }
+        VULKAN_API VulkanFence(PC_CORE::Rhi& _Rhi, std::string&& name, const PC_CORE::RhiFenceCreateInfo& rhiFenceCreateInfo);
 
         ~VulkanFence() override;
 
     private:
-        std::array<vk::Fence, MaxFramesInFlight> m_Fences;
+        std::array<vk::Fence, MaxFramesInFlight> m_Fences
+        {
+            VK_NULL_HANDLE
+        };
     };
 }

@@ -1,14 +1,10 @@
 ﻿#pragma once
 
-#include "CoreHeader.hpp"
-#include "RhiTypedef.h"
-#include "RhiResource.hpp"
+#include "RhiObject.hpp"
 
 BEGIN_PCCORE
     struct SamplerCreateInfo
     {
-        std::string SamplerName;
-
         Filter magFilter;
         Filter minFilter;
 
@@ -17,23 +13,18 @@ BEGIN_PCCORE
         SamplerAddressMode w;
     };
 
-    class RhiSampler : public RhiResource
+    class RhiSampler : public RhiObject
     {
     public:
-        Filter magFilter;
-        Filter minFilter;
-
-        SamplerAddressMode samU;
-        SamplerAddressMode samV;
-        SamplerAddressMode samW;
 
         DEFAULT_COPY_MOVE_OPERATIONS(RhiSampler)
 
-        RhiSampler(const SamplerCreateInfo& _samplerCreateInfo);
-
-        RhiSampler() = default;
+        explicit RhiSampler(Rhi& _Rhi, const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo);
 
         ~RhiSampler() override = default;
+        
+    protected:
+        SamplerCreateInfo m_SamplerCreateInfo{};
     };
 
 END_PCCORE

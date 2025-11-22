@@ -3,9 +3,10 @@
 #include "Rendering/ShaderProgram.hpp"
 
 BEGIN_PCCORE
+
     struct ComputeShaderProgramCreateInfo
     {
-        ShaderComputeInfo shaderComputeInfo;
+        RhiShaderProgram::ShaderComputeInfo shaderComputeInfo;
         std::weak_ptr<ShaderSourceBinary> source;
     };
 
@@ -13,17 +14,17 @@ BEGIN_PCCORE
     class PC_CORE_API ComputeShader : public ShaderProgram
     {
     public:
-        const LocalSize& GetLocalSize() const
+        const RhiShaderProgram::LocalSize& GetLocalSize() const
         {
             return m_RhiShaderProgram->GetLocalSize();
         }
 
         IMP_DYNAMIC_REFLECT()
 
-        ComputeShader(const std::string& _shaderName,
+        ComputeShader(Rhi& rhi, const std::string& _shaderName,
                       const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
 
-        ComputeShader(std::string&& _shaderName, const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
+        ComputeShader(Rhi& rhi, std::string&& _shaderName, const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo);
 
         ComputeShader()
         {
@@ -31,6 +32,17 @@ BEGIN_PCCORE
         }
 
         ~ComputeShader() override = default;
+
+        RhiShaderProgram* const Get() const
+        {
+            return m_RhiShaderProgram.get();
+        }
+
+        RhiShaderProgram* const operator->() const
+        {
+            return m_RhiShaderProgram.operator->();
+        }
+
     };
 
 

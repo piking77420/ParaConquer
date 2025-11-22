@@ -215,7 +215,7 @@ void Editor::Init()
 
     CompileShader();
     gameApp.Init(appCreateInfo);
-    IMGUIContext.Init(gameApp.MainWindow.GetHandle(), Rhi::GetInstance().GetGraphicsApi());
+    IMGUIContext.Init(gameApp.RenderHarwareInteface, gameApp.MainWindow.GetHandle());
 
     gameApp.Renderer.SwapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd)
     {
@@ -234,7 +234,6 @@ void Editor::Init()
     // create sampler 
     const SamplerCreateInfo samplerInfo =
     {
-        .SamplerName = "LinearRepeat",
         .magFilter = Filter::Linear,
         .minFilter = Filter::Linear,
         .u = SamplerAddressMode::Repeat,
@@ -242,7 +241,7 @@ void Editor::Init()
         .w = SamplerAddressMode::Repeat
     };
 
-    ResourceManager::Create<Sampler>(samplerInfo);
+    ResourceManager::Create<Sampler>(gameApp.RenderHarwareInteface, "LinearRepeat", samplerInfo);
 
 
     InitTestScene();
@@ -294,7 +293,7 @@ void Editor::UpdateEditor()
             {
                 if (ImGui::MenuItem(_shader->Name.c_str()))
                 {
-                    Rhi::GetRhiContext()->WaitIdle();
+                   gameApp.RenderHarwareInteface.GetRhiContext().WaitIdle();
                     _shader->Reload();
                     // reload shader
                 }
@@ -418,13 +417,14 @@ void Editor::Run(bool* _appShouldClose)
 
         // end game thread
         // begin render thread
+        gameApp.RenderHarwareInteface.ProcessResourceUpdate();
         gameApp.Renderer.BeginFrame(&gameApp.MainWindow);
         UpdateEditor();
         gameApp.Renderer.SwapBuffers(&gameApp.MainWindow);
         PERF_FRAME_MARK;
     }
 
-    Rhi::GetRhiContext()->WaitIdle();
+    gameApp.RenderHarwareInteface.GetRhiContext().WaitIdle();
     // to do move this 
     editorData.nearestSampler.~Sampler();
 }
@@ -439,7 +439,6 @@ void Editor::InitEditor()
 
         const SamplerCreateInfo info =
         {
-            .SamplerName = "ImguiImageSampler",
             .magFilter = Filter::Linear,
             .minFilter = Filter::Linear,
             .u = SamplerAddressMode::Repeat,
@@ -447,7 +446,8 @@ void Editor::InitEditor()
             .w = SamplerAddressMode::Repeat
         };
 
-        editorData.nearestSampler = Sampler(info);
+        editorData.nearestSampler = Sampler(gameApp.RenderHarwareInteface, "ImguiImageSampler", info);
+        editorData.nearestSampler->Build();
     }
 
 

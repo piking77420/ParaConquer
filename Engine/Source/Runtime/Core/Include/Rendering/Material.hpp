@@ -57,17 +57,15 @@ BEGIN_PCCORE
 
         PC_CORE_API ~Material() override;
 
-        PC_CORE_API void Build();
-
         const ShaderProgramDescriptorSets* GetDescriptorSet() const
         {
-            return m_PShaderProgramDescriptorSets;
+            return m_PShaderProgramDescriptorSets.get();
         }
 
     private:
-        ShaderProgramDescriptorSets* m_PShaderProgramDescriptorSets = nullptr;
+        std::unique_ptr<ShaderProgramDescriptorSets> m_PShaderProgramDescriptorSets = nullptr;
 
-        WeakObjectPtr<ShaderProgram> m_ShaderProgram;
+        RhiShaderProgram* m_ShaderProgram{ nullptr };
 
         std::vector<std::shared_ptr<MaterialInstance>> m_MaterialInstances;
     };

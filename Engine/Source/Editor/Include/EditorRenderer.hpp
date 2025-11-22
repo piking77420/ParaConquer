@@ -13,6 +13,8 @@ BEGIN_EDITOR_PCCORE
     class EditorRenderer
     {
     public:
+        DEFAULT_COPY_MOVE_OPERATIONS(EditorRenderer)
+        
         EditorRenderer(Editor& _editor);
 
         EditorRenderer() = default;
@@ -26,7 +28,7 @@ BEGIN_EDITOR_PCCORE
     private:
         Editor* m_Editor = nullptr;
 
-        std::weak_ptr<PC_CORE::GraphicShader> m_DrawSpriteShader;
+        std::unique_ptr<PC_CORE::RhiShaderProgram> m_DrawSpriteShader;
 
         std::weak_ptr<PC_CORE::Texture2D> m_DirectionalLightTexture;
 
@@ -34,13 +36,13 @@ BEGIN_EDITOR_PCCORE
 
         std::weak_ptr<PC_CORE::Texture2D> m_PointLightTexture;
 
-        PC_CORE::ShaderProgramDescriptorSets* m_CameraSet = nullptr;
+        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_CameraSet = nullptr;
 
-        PC_CORE::ShaderProgramDescriptorSets* m_DirectionalDescriptorSet = nullptr;
+        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_DirectionalDescriptorSet = nullptr;
 
-        PC_CORE::ShaderProgramDescriptorSets* m_SpotLightDescriptorSet = nullptr;
+        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_SpotLightDescriptorSet = nullptr;
 
-        PC_CORE::ShaderProgramDescriptorSets* m_PointLightDescriptorSet = nullptr;
+        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_PointLightDescriptorSet = nullptr;
 
         std::vector<size_t> m_DirectionalLightIndices;
         std::vector<size_t> m_SpotLightIndices;

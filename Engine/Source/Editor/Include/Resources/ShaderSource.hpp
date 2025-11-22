@@ -25,7 +25,7 @@ BEGIN_EDITOR_PCCORE
         ~ShaderSource() override = default;
 
     private:
-        PC_CORE::ShaderStageType m_ShaderType;
+        PC_CORE::RhiShaderProgram::ShaderStageType m_ShaderType;
 
         std::filesystem::path m_PathToSource;
 

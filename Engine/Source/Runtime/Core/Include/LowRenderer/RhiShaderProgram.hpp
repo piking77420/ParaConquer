@@ -1,15 +1,70 @@
 ﻿#pragma once
 
-#include <Array>
+#include <array>
 
-#include "DescriptorSet.hpp"
-#include "RhiRenderPass.hpp"
-#include "RhiTypedef.h"
+#include "RhiResource.hpp"
 #include "Vertex.hpp"
 
 BEGIN_PCCORE
-#pragma region Shader
 
+class RhiRenderPass;
+class ShaderProgramDescriptorSets;
+
+
+
+class RhiShaderProgram : public RhiObject
+{
+public:
+    enum class PipelineType
+    {
+        None,
+        Graphic,
+        Compute,
+        RayTracing,
+        MeshShader,
+
+        Count
+    };
+
+    enum struct ShaderStageType : uint8_t
+    {
+        Vertex,
+        Hull,
+        Domain,
+        Geometry,
+        Pixel,
+        Compute,
+        Raygen,
+        Intersection,
+        Anyhit,
+        Closesthit,
+        Miss,
+        Callable,
+        Task,
+        Mesh,
+
+        Count
+    };
+
+    using ShaderModule = std::pair<ShaderStageType, std::vector<char>>;
+
+    static constexpr const std::array<std::string_view, static_cast<size_t>(ShaderStageType::Count)> ShaderSourceFormat =
+    {
+        ".vs.hlsl",
+        ".hs.hlsl",
+        ".ds.hlsl",
+        ".gs.hlsl",
+        ".ps.hlsl",
+        ".cs.hlsl",
+        ".rgen.hlsl",
+        ".rint.hlsl",
+        ".ahit.hlsl",
+        ".chit.hlsl",
+        ".miss.hlsl",
+        ".call.hlsl",
+        ".task.hlsl",
+        ".mesh.hlsl",
+    };
 
     enum class PolygonMode
     {
@@ -36,14 +91,14 @@ BEGIN_PCCORE
         Count
     };
 
-    enum class CullModeFlagBit
+    enum CullModeFlagBits
     {
-        None,
-        Front,
-        Back,
-        FrontAndBack,
-        Count
+        CullFront = 1 << 1,
+        CullBack = 1 << 2,
+        CullFrontAndBack = 1 << 3,
     };
+
+    using CullModeFlag = uint32_t;
 
     enum class FrontFace
     {
@@ -51,20 +106,13 @@ BEGIN_PCCORE
         Clockwise
     };
 
-    struct RasterizerInfo
-    {
-        PolygonMode polygonMode = PolygonMode::Fill;
-        CullModeFlagBit cullModeFlag = CullModeFlagBit::Back;
-        FrontFace frontFace = FrontFace::CounterClockwise;
-        uint32_t multiSampleRasterization = 1;
-    };
-
-    struct BlendInfo
+    struct BlendState
     {
         bool enabled = false;
         BlendFactor srcColorBlendFactor = BlendFactor::One;
         BlendFactor dstColorBlendFactor = BlendFactor::Zero;
         BlendOp colorBlendOp = BlendOp::Add;
+
         BlendFactor srcAlphaBlendFactor = BlendFactor::One;
         BlendFactor dstAlphaBlendFactor = BlendFactor::Zero;
         BlendOp alphaBlendOp = BlendOp::Add;
@@ -74,8 +122,9 @@ BEGIN_PCCORE
 
     struct DephStencilInfo
     {
-        CompareOp depthCompareOp = CompareOp::Less;
         bool enableDepthTest = false;
+        bool enableDepthWrite = false;
+        CompareOp depthCompareOp = CompareOp::Less;
     };
 
     struct LocalSize
@@ -85,76 +134,146 @@ BEGIN_PCCORE
         uint32_t z;
     };
 
-    struct ShaderGraphicPointInfo
+protected:
+
+    struct GraphicPipelineData
     {
-        RasterizerInfo rasterizerInfo;
-        DephStencilInfo dephInfo;
-        BlendInfo blendInfo;
+        PolygonMode PolygonMode{ PolygonMode::Fill };
+        CullModeFlag CullMode{ 0u };
+        uint32_t Sample{ 1u };
+        FrontFace FrontFace{ FrontFace::CounterClockwise };
+        DephStencilInfo DephStencilInfo;
+        BlendState BlendState;
+        PrimitiveTopology PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
+
+        RhiRenderPass* RenderPass{ nullptr };
+        uint32_t attachementCount{ 0u };
+        uint32_t subPassIndex{ 0u };
 
         std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
         std::vector<VertexAttributeDescription> vertexAttributeDescriptions;
     };
 
-    struct ShaderRayTracingInfo
+    struct ComputePipelineData
     {
+        LocalSize LocalSize{};
     };
 
-    struct ShaderComputeInfo
+public:
+    PC_CORE_API RhiShaderProgram(Rhi& _Rhi, const std::string& _programName);
+
+    PC_CORE_API ~RhiShaderProgram() override = default;
+
+    // Setter 
+
+    PC_CORE_API RhiShaderProgram& SetPipelineType(PipelineType _Type);
+
+    PC_CORE_API RhiShaderProgram& SetPolygonMode(PolygonMode _PolygonMode)
     {
-    };
+        std::get<GraphicPipelineData>(m_PipelineData).PolygonMode = _PolygonMode;
+        return *this;
+    }
 
-
-    using ShaderInfoData = std::variant<ShaderGraphicPointInfo, ShaderComputeInfo, ShaderRayTracingInfo>;
-
-
-    struct ShaderInfo
+    PC_CORE_API RhiShaderProgram& SetCullMode(CullModeFlag _CullMode)
     {
-        ShaderProgramPipelineType shaderProgramPipelineType;
-        ShaderInfoData shaderInfoData;
-        std::string shaderName;
-    };
+        std::get<GraphicPipelineData>(m_PipelineData).CullMode = _CullMode;
+        return *this;
+    }
 
-    using ShaderModule = std::pair<ShaderStageType, std::vector<char>>;
-
-    struct ProgramShaderCreateInfo
+    PC_CORE_API RhiShaderProgram& SetSample(uint32_t _Sample)
     {
-        ShaderInfo shaderInfo;
-        RhiRenderPass* renderPass; // is optional TODO check raytracing pipeline use it 
-        std::vector<ShaderModule> shaderModule;
-        uint32_t attachementCount;
-        uint32_t subPassIndex;
-    };
+        std::get<GraphicPipelineData>(m_PipelineData).Sample = _Sample;
+        return *this;
+    }
 
-
-#pragma endregion Shader
-
-    class RhiShaderProgram : public RhiResource
+    PC_CORE_API RhiShaderProgram& SetFrontFace(FrontFace _FrontFace)
     {
-    public:
-        const LocalSize& GetLocalSize() const
-        {
-            return m_LocalSize;
-        }
+        std::get<GraphicPipelineData>(m_PipelineData).FrontFace = _FrontFace;
+        return *this;
+    }
 
-        PC_CORE_API virtual void AllocDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets,
-                                                    size_t set) = 0;
+    PC_CORE_API RhiShaderProgram& SetDepthTest(bool _DepthTest)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.enableDepthTest = _DepthTest;
+        return *this;
+    }
 
-        PC_CORE_API virtual void FreeDescriptorSet(ShaderProgramDescriptorSets** _shaderProgramDescriptorSets) = 0;
+    PC_CORE_API RhiShaderProgram& SetDepthWrite(bool _DepthWrite)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.enableDepthWrite = _DepthWrite;
+        return *this;
+    }
 
-        PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
+    PC_CORE_API RhiShaderProgram& SetDepthCompareOp(CompareOp _CompareOp)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.depthCompareOp = _CompareOp;
+        return *this;
+    }
 
-        PC_CORE_API RhiShaderProgram(const ProgramShaderCreateInfo& _programShaderCreateInfo);
+    PC_CORE_API RhiShaderProgram& SetBlendState(BlendState _BlendInfo)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).BlendState = _BlendInfo;
+        return *this;
+    }
 
-        PC_CORE_API RhiShaderProgram() = default;
+    PC_CORE_API RhiShaderProgram& SetRenderPass(RhiRenderPass& _RhiRenderPass)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).RenderPass = &_RhiRenderPass;
+        return *this;
+    }
 
-        PC_CORE_API ~RhiShaderProgram() override = default;
+    PC_CORE_API RhiShaderProgram& SetAttachementCount(uint32_t _AttachementCount)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).attachementCount = _AttachementCount;
+        return *this;
+    }
 
-    protected:
-        ProgramShaderCreateInfo m_ProgramShaderCreateInfo;
+    PC_CORE_API RhiShaderProgram& SetSubPassIndex(uint32_t _SubPassIndex)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).subPassIndex = _SubPassIndex;
+        return *this;
+    }
 
-        LocalSize m_LocalSize;
-    };
+    PC_CORE_API RhiShaderProgram& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).vertexInputBindingDescritions = _VertexInputBindingDescritions;
+        return *this;
+    }
 
-    REFLECT(RhiShaderProgram, RhiResource);
+    PC_CORE_API RhiShaderProgram& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
+    {
+        std::get<GraphicPipelineData>(m_PipelineData).vertexAttributeDescriptions = _VertexAttributeDescriptions;
+        return *this;
+    }
+
+    PC_CORE_API RhiShaderProgram& SetShaderModules(const std::vector<ShaderModule>& _ShaderModules);
+
+
+    // Getter
+
+    PC_CORE_API const LocalSize& GetLocalSize() const
+    {
+        return std::get<ComputePipelineData>(m_PipelineData).LocalSize;
+    }
+
+    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(const std::string& Name) = 0;
+
+    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string&& Name) = 0;
+
+    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string_view Name) = 0;
+
+    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(const char* Name) = 0;
+
+    PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
+
+protected:
+    PipelineType m_Type{PipelineType::None};
+
+    std::optional<std::vector<ShaderModule>> m_Modules;
+
+    std::variant<std::monostate, GraphicPipelineData, ComputePipelineData> m_PipelineData;
+};
+
+REFLECT(RhiShaderProgram, RhiResource);
 
 END_PCCORE

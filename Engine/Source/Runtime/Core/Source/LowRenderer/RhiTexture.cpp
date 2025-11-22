@@ -1,10 +1,27 @@
 ﻿#include "LowRenderer/RhiTexture.hpp"
 
-
-PC_CORE::RhiTexture::RhiTexture(const CreateImageInfo& _createImageInfo) : m_MipLevelCount(_createImageInfo.MipsLevels),
-                                                                           m_TextureUsage(
-                                                                               _createImageInfo.TextureUsage),
-                                                                           m_RhiFormat(_createImageInfo.Format)
+PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, const std::string& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage)
+    : RhiResource(_Rhi, _name, _memoryUsage)
+    , m_RhiTextureDesciptor(_rhiTextureDesciptor)
 {
-    assert(_createImageInfo.TextureType != PC_CORE::TextureType::TextureArray2D && "Unsure correct Layers");
+}
+
+PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, std::string&& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage)
+    : RhiResource(_Rhi, std::move(_name), _memoryUsage)
+    , m_RhiTextureDesciptor(std::move(_rhiTextureDesciptor))
+{
+}
+
+bool PC_CORE::RhiTexture::IsDepthFormat(RhiFormat _format)
+{
+    if (_format == PC_CORE::RhiFormat::D32Sfloat ||
+        _format == PC_CORE::RhiFormat::D24UnormS8Uint ||
+        _format == PC_CORE::RhiFormat::D16UnormS8Uint ||
+        _format == PC_CORE::RhiFormat::D32SfloatS8Uint)
+    {
+        
+        return true;
+    }
+
+    return false;
 }

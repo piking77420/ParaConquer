@@ -1,7 +1,5 @@
 ﻿#include "VulkanPhysicalDevices.hpp"
 
-#include <set>
-
 #include "Log.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanInstance.hpp"
@@ -46,18 +44,14 @@ const std::vector<Vulkan::QueueFamilyIndices>& Vulkan::VulkanPhysicalDevices::Ge
     return m_QueuesFamiliesProperty;
 }
 
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSupportDetails() const
-{
-    return m_SwapChainSupportDetails;
-}
-
-Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
+Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(vk::Instance _VkInstance, vk::SurfaceKHR _Surface,
     const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable)
     : PhysicalDevices(_physicalDevicesCreateInfo)
+    , m_VkInstance(_VkInstance)
 {
     PERF_REGION_SCOPED;
     Initialize(_physicalDevicesCreateInfo, _extensionToEnable);
-    QueryQueueFamilies();
+    QueryQueueFamilies(_Surface);
 }
 
 Vulkan::VulkanPhysicalDevices::~VulkanPhysicalDevices()
@@ -66,8 +60,10 @@ Vulkan::VulkanPhysicalDevices::~VulkanPhysicalDevices()
         delete device;
 }
 
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr)
+Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr)
 {
+    SwapChainSupportDetails m_SwapChainSupportDetails;
+
     vk::PhysicalDevice device = GetSelectedPhysicalDevice()->physicalDevice;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surfaceKhr,
@@ -109,11 +105,6 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
         throw std::runtime_error("failed to find suitable GPU!");
     }
     m_PhysicalDeviceIndex = deviceBestScoreIndex;
-
-    auto& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
-    const SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(
-        vulkanContext.GetSurface(), GetSelectedPhysicalDevice()->physicalDevice);
-    m_SwapChainSupportDetails = swapChainSupportDetails;
 }
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
@@ -188,7 +179,7 @@ bool Vulkan::VulkanPhysicalDevices::CheckDeviceExtensionSupport(
     return remainingExtensions.empty();
 }
 
-void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies()
+void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies(vk::SurfaceKHR _Surface)
 {
     vk::PhysicalDevice currentDevice = GetSelectedPhysicalDevice()->physicalDevice;
 
@@ -200,29 +191,13 @@ void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies()
     currentDevice.getQueueFamilyProperties(&queueFamilyCount, queueFamilyPropertieses.data());
     m_QueuesFamiliesProperty.resize(queueFamilyPropertieses.size());
 
-    vk::SurfaceKHR surfaceKhr = VulkanContext::GetContext().GetSurface();
-
     for (size_t i = 0; i < queueFamilyPropertieses.size(); i++)
     {
         m_QueuesFamiliesProperty[i].familyProperties = queueFamilyPropertieses[i];
         m_QueuesFamiliesProperty[i].supportPresent = currentDevice.getSurfaceSupportKHR(
-            static_cast<uint32_t>(i), surfaceKhr);
+            static_cast<uint32_t>(i), _Surface);
     }
 }
-
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::QuerySwapChainSupport(const vk::SurfaceKHR& _surfaceKhr,
-    vk::PhysicalDevice _physicalDevices)
-{
-    SwapChainSupportDetails details;
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevices, _surfaceKhr,
-                                              reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&details.capabilities));
-
-    details.formats = _physicalDevices.getSurfaceFormatsKHR(_surfaceKhr);
-    details.presentModes = _physicalDevices.getSurfacePresentModesKHR(_surfaceKhr);
-    return details;
-}
-
 
 Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysicalDevice()
 {
@@ -232,18 +207,14 @@ Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysical
 void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo,
                                                std::set<std::string>* _extensionToEnable)
 {
-    PC_CORE::RhiContext& RhiContext = PC_CORE::RhiContext::GetContext();
-    std::shared_ptr instanceInterface(std::reinterpret_pointer_cast<VulkanInstance>(RhiContext.renderInstance));
-    vk::Instance vulkanInstance = instanceInterface->Get();
-
     // Get Vulkan Device NBR
     uint32_t physicalDeviceCount = 0;
-    VK_CHECK_CALL(vulkanInstance.enumeratePhysicalDevices(&physicalDeviceCount, nullptr));
+    VK_CHECK_CALL(m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, nullptr));
 
     // Get Vulkan Device
     std::vector<vk::PhysicalDevice> vkPhysicalDevices;
     vkPhysicalDevices.resize(physicalDeviceCount);
-    VK_CHECK_CALL(vulkanInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
+    VK_CHECK_CALL(m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
 
     // Get Extension as vulkna ext
     std::set<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
@@ -291,16 +262,6 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
 
         for (const auto& extension : requiredExtensions)
         PC_LOGERROR("Extension requiered: {} ", extension);
-    }
-
-    auto vulkanContext = &VulkanContext::GetContext();
-    SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(
-        vulkanContext->GetSurface(), myPhysicalDevice->physicalDevice);
-
-    if (swapChainSupportDetails.formats.empty() || swapChainSupportDetails.presentModes.empty())
-    {
-        score = std::numeric_limits<int32_t>::min();
-        PC_LOGERROR("Unsuported surface!")
     }
 
     vk::PhysicalDeviceFeatures2 deviceFeatures2 = {};

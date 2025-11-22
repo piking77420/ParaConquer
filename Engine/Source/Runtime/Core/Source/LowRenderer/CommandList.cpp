@@ -1,18 +1,20 @@
 ﻿#include "LowRenderer/CommandList.hpp"
 
+PC_CORE::CommandList::CommandList(Rhi& _Rhi, const std::string& _name, const CommandListCreateInfo& _commandListCreateInfo)
+    : RhiObject(_Rhi, _name)
+    , m_CommandPoolFamily(_commandListCreateInfo.CommandPoolFamily)
+    , m_CommandBufferType(_commandListCreateInfo.CommandBufferType)
+{
+}
 
-PC_CORE_API PC_CORE::CommandList::CommandList(const CommandListCreateInfo& _commandListCreateInfo) :
-    m_CommandPoolFamily(_commandListCreateInfo.CommandPoolFamily)
+PC_CORE::CommandList::CommandList(Rhi& _Rhi, std::string&& _name, const CommandListCreateInfo& _commandListCreateInfo)
+    : RhiObject(_Rhi, std::move(_name))
+    , m_CommandPoolFamily(_commandListCreateInfo.CommandPoolFamily)
+    , m_CommandBufferType(_commandListCreateInfo.CommandBufferType)
 {
 }
 
 void PC_CORE::CommandList::BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo)
-{
-}
-
-void PC_CORE::CommandList::Barrier(GpuPipelineStageFlagBits _srcStageMask, GpuPipelineStageFlagBits _dstStageMask,
-    const MemoryBarrier* _memoryBarrier, size_t _memoryBarrierCount, const BufferMemoryBarrier* _bufferMemoryBarrier,
-    size_t _bufferMemoryBarrierCount, const ImageMemoryBarrier* _imageMemoryBarrier, size_t _imageMemoryBarrierCount)
 {
 }
 

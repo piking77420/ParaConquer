@@ -2,13 +2,13 @@
 
 #include "LowRenderer/Rhi.hpp"
 
-PC_CORE::RhiContext::RhiContext(const RhiContextCreateInfo& rhiContextCreateInfo)
+PC_CORE::RhiContext::RhiContext(Rhi& _Rhi, const RhiContextCreateInfo& rhiContextCreateInfo)
+    : m_Rhi(_Rhi)
 {
-    m_CurrentContext = this;
 };
 
 
 void PC_CORE::RhiContext::WaitIdle()
 {
-    m_CurrentContext->WaitIdleInstance();
+    WaitIdleInstance();
 }

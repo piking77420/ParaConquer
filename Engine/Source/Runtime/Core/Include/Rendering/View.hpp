@@ -52,33 +52,33 @@ BEGIN_PCCORE
     private:
         struct DescriptorSets
         {
-            ShaderProgramDescriptorSets* GeometryPass = nullptr;
+            std::unique_ptr<ShaderProgramDescriptorSets> GeometryPass = nullptr;
 
-            ShaderProgramDescriptorSets* DefferedPassGbuffers = nullptr;
-            ShaderProgramDescriptorSets* DefferedPassCameraLight = nullptr;
+            std::unique_ptr<ShaderProgramDescriptorSets> DefferedPassGbuffers = nullptr;
+            std::unique_ptr<ShaderProgramDescriptorSets> DefferedPassCameraLight = nullptr;
 
-            ShaderProgramDescriptorSets* ForwardDescriptor = nullptr;
+            std::unique_ptr<ShaderProgramDescriptorSets> ForwardDescriptor = nullptr;
 
-            ShaderProgramDescriptorSets* ToneMap = nullptr;
-            ShaderProgramDescriptorSets* FinalViewPort = nullptr;
+            std::unique_ptr<ShaderProgramDescriptorSets> ToneMap = nullptr;
+            std::unique_ptr<ShaderProgramDescriptorSets> FinalViewPort = nullptr;
         };
 
         struct FrameBuffers
         {
-            std::shared_ptr<FrameBuffer> GbufferFrameBuffer;
-            std::shared_ptr<FrameBuffer> ForwardFrameBuffer;
-            std::shared_ptr<FrameBuffer> FinalImageFrameBuffer;
+            std::shared_ptr<RhiFrameBuffer> GbufferFrameBuffer;
+            std::shared_ptr<RhiFrameBuffer> ForwardFrameBuffer;
+            std::shared_ptr<RhiFrameBuffer> FinalImageFrameBuffer;
         };
 
-        Renderer* m_Renderer;
+        Renderer* m_Renderer = nullptr;
 
-        Camera* m_Camera;
+        Camera* m_Camera = nullptr;
 
-        Tbx::Vector2i m_CurrentSize;
+        Tbx::Vector2i m_CurrentSize{};
 
-        FrameBuffers m_FrameBuffers;
+        FrameBuffers m_FrameBuffers{};
 
-        DescriptorSets m_DescriptorSets;
+        DescriptorSets m_DescriptorSets{};
 
         void UpdateRenderingContext();
 

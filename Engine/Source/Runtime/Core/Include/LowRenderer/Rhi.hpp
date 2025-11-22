@@ -6,109 +6,102 @@
 #include "CoreHeader.hpp"
 #include "RhiTypedef.h"
 
-#include "CommandList.hpp"
 #include "Io/Window.hpp"
 #include "RhiContext.hpp"
 
-#include "RhiIndexBuffer.hpp"
-#include "RhiShaderProgram.hpp"
-#include "RhiTexture3d.hpp"
-#include "RhiUniformBuffer.hpp"
-#include "RhiVertexBuffer.hpp"
-
-#include "RhiTexure2d.hpp"
-#
-
 BEGIN_PCCORE
-    struct RenderHardwareInterfaceCreateInfo
+struct RenderHardwareInterfaceCreateInfo
+{
+    GraphicAPI GraphicsAPI;
+    Window* window;
+    const char* appName;
+    bool gpuDebug;
+};
+
+class CommandList;
+class RhiShaderProgram;
+class RhiTexture;
+class RhiBuffer;
+class RhiSwapChain;
+
+class Rhi
+{
+public:
+    PC_CORE_API Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo);
+
+    PC_CORE_API Rhi() = default;
+
+    PC_CORE_API ~Rhi();
+
+    Rhi(const Rhi& other) noexcept = default; Rhi(Rhi&& other) noexcept = default; Rhi& operator=(const Rhi& other) noexcept = default; Rhi& operator=(Rhi&& other) noexcept = default;;
+
+    GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
+
+    PC_CORE_API RhiSwapChain* CreateRhiSwapChain();
+
+    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(const std::string& _programName, const RhiShaderProgram::ProgramShaderCreateInfo& _programShaderCreateInfo);
+
+    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(std::string&& _programName, const RhiShaderProgram::ProgramShaderCreateInfo& _programShaderCreateInfo);
+
+    PC_CORE_API CommandList* CreateCommandList(const std::string& name,const CommandListCreateInfo& _commandListCreateInfo);
+
+    PC_CORE_API CommandList* CreateCommandList(std::string&& _name, const CommandListCreateInfo& _commandListCreateInfo);
+
+    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, 
+        RhiFormat _colorFormat, RhiFormat _depthFormat);
+
+    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, RhiFormat _colorFormat);
+
+    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, RhiFormat _colorFormat, uint32_t sampleCount);
+
+    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, const RenderPassDescriptor& _renderPassDescriptor);
+
+    PC_CORE_API RhiFrameBuffer* CreateFrameBuffer(const std::string& _name, const CreateFrameInfo& _createFrameInfo);
+
+    PC_CORE_API RhiBuffer* CreateBuffer(const std::string& _name, const RhiBuffer::RhiBufferDescriptor& _rhiBufferDescriptor, RhiResource::MemoryUsage _memoryUsage);
+        
+    PC_CORE_API RhiTexture* CreateTexture(const std::string& _name, const RhiTexture::RhiTextureDesciptor& _rhiTextureDesciptor, RhiResource::MemoryUsage _memoryUsage);
+
+    PC_CORE_API RhiTexture* CreateTexture(std::string&& _name, const RhiTexture::RhiTextureDesciptor& _rhiTextureDesciptor, RhiResource::MemoryUsage _memoryUsage);
+
+    PC_CORE_API RhiSampler* CreateSampler(const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo);
+
+    PC_CORE_API RhiFence* CreateFence(const std::string& _name, const RhiFenceCreateInfo& _rhiFenceCreateInfo);
+
+    PC_CORE_API RhiContext& GetRhiContext();
+
+    PC_CORE_API const RhiContext& GetRhiContext() const;
+
+    PC_CORE_API void NextFrame();
+
+    PC_CORE_API uint32_t GetFrameIndex() noexcept
     {
-        GraphicAPI GraphicsAPI;
-        Window* window;
-        const char* appName;
-        bool gpuDebug;
-    };
+        return m_CurrentFrame;
+    }
 
-    class Rhi
-    {
-    public:
-        PC_CORE_API Rhi(Rhi&& other) noexcept;
+    PC_CORE_API void PushResourceUpdate(const std::function<void(CommandList*)>& _resourceUpdates);
+        
+    PC_CORE_API void ProcessResourceUpdate();
 
-        PC_CORE_API Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo);
+private:
+    GraphicAPI m_GraphicsApi{};
 
-        PC_CORE_API Rhi() = default;
+    uint32_t m_CurrentFrame = 0;
 
-        PC_CORE_API ~Rhi();
+    std::unique_ptr<RhiContext> m_RhiContext = nullptr;
 
-        GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
+    std::vector<std::function<void(CommandList*)>> m_ResourceUpdateStack;
 
-        PC_CORE_API Rhi& operator=(Rhi&& other) noexcept;
+    std::unique_ptr<CommandList> m_ResourceUpdateCommandList;
 
-        PC_CORE_API static Rhi& GetInstance();
+    std::unique_ptr<RhiFence> m_ResourceUpdateFence;
 
-        PC_CORE_API static std::shared_ptr<RhiShaderProgram> CreateRhiShaderProgram(
-            const ProgramShaderCreateInfo& _programShaderCreateInfo);
+    void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
-        PC_CORE_API static std::shared_ptr<CommandList> CreateCommandList(
-            const CommandListCreateInfo& _commandListCreateInfo);
+    void VulkanInitialize(const RhiContextCreateInfo& _createInfo);
 
-        PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(
-            RhiFormat _colorFormat, RhiFormat _depthFormat);
-
-        PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(RhiFormat _colorFormat);
-
-        PC_CORE_API static std::shared_ptr<RhiRenderPass>
-        CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount);
-
-        PC_CORE_API static std::shared_ptr<RhiRenderPass> CreateRenderPass(
-            const RenderPassDescriptor& _renderPassDescriptor);
-
-        PC_CORE_API static std::shared_ptr<FrameBuffer> CreateFrameBuffer(const CreateFrameInfo& _createFrameInfo);
-
-        PC_CORE_API static std::shared_ptr<RhiIndexBuffer> CreateIndexBuffer(
-            const void* _data, uint32_t _sizeInByte, IndexFormat _format, MemoryLocalisation _visibility,
-            MemoryUsage _usage);
-
-        PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(
-            const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage);
-
-        PC_CORE_API static std::shared_ptr<RhiVertexBuffer> CreateVertexBuffer(
-            uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage);
-
-        PC_CORE_API static std::shared_ptr<RhiUniformBuffer> CreateUniformBuffer(
-            const void* _data, uint32_t _sizeInByte, MemoryLocalisation _visibility, MemoryUsage _usage);
-
-        PC_CORE_API static std::shared_ptr<RhiTexture2D> CreateTexture2D(const CreateImageInfo& _createImageInfo);
-
-        PC_CORE_API static std::shared_ptr<RhiTexture3D> CreateTexture3D(const CreateImageInfo& _createImageInfo3D);
-
-        PC_CORE_API static std::shared_ptr<RhiSampler> CreateSampler(const SamplerCreateInfo& _samplerCreateInfo);
-
-        PC_CORE_API static std::shared_ptr<RhiFence> CreateFence(const RhiFenceCreateInfo& _rhiFenceCreateInfo);
-
-        PC_CORE_API static RhiContext* GetRhiContext();
-
-        PC_CORE_API static void NextFrame();
-
-        PC_CORE_API static uint32_t GetFrameIndex() noexcept
-        {
-            return (m_Instance) ? m_Instance->m_CurrentFrame : 0;
-        }
-
-    private:
-        PC_CORE_API static inline Rhi* m_Instance = nullptr;
-
-        GraphicAPI m_GraphicsApi;
-
-        RhiContext* m_RhiContext = nullptr;
-
-        uint32_t m_CurrentFrame = 0;
-
-        void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
-
-        void VulkanInitialize(const RhiContextCreateInfo& _createInfo);
-
-        void DX12Initialize(const RhiContextCreateInfo& _createInfo);
-    };
+    void DX12Initialize(const RhiContextCreateInfo& _createInfo);
+};
 
 
 END_PCCORE

@@ -6,57 +6,52 @@
 #include "Resources/ComputeShader.hpp"
 
 
-PC_CORE::Gbuffers::Gbuffers(Tbx::Vector2i _size)
+PC_CORE::Gbuffers::Gbuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size)
 {
-    CreateGBuffers(_size);
+    CreateGBuffers(_Rhi, _size);
 }
 
-void PC_CORE::Gbuffers::CreateGBuffers(Tbx::Vector2i _size)
+void PC_CORE::Gbuffers::CreateGBuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size)
 {
     GbufferType gbufferType = {};
     for (auto& frameInFlight : gbuffers)
     {
-        CreateImageInfo texture_info =
+        RhiTexture::RhiTextureDesciptor rhiTextureDesciptor = 
         {
-            .Width = _size.x,
-            .Height = _size.y,
-            .Depth = 1,
-            .LayerCount = 1,
-            .MipsLevels = 1,
-            .TextureType = TextureType::Texture2D,
-            .Format = RhiFormat::Undefined,
-            .Channel = Channel::Default,
-            .TextureUsage = TextureUsage::RenderTarget | TextureUsage::Sampled,
-            .MemoryVisibility = MemoryLocalisation::GpuOnly,
-            .Samples = 1,
-            .GenerateMipMap = false,
-            .Datas = {},
+        .Width = static_cast<uint32_t>(_size.x),
+        .Height = static_cast<uint32_t>(_size.y),
+        .Depth = 1,
+        .Level = 1,
+        .LayerCount = 1,
+        .Samples = 1,
+        .TextureType = RhiTexture::Type::Texture2D,
+        .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget | RhiTexture::Sampled),
+        .RhiFormat = RhiFormat::Undefined,
+        .AllowCpuAcces = false  
         };
 
         switch (gbufferType)
         {
         case GbufferType::Albedo:
-            texture_info.Format = RhiFormat::R16G16B16A16Sfloat;
-            texture_info.Channel = Channel::Rgba;
+            rhiTextureDesciptor.RhiFormat = RhiFormat::R16G16B16A16Sfloat;
             break;
         case GbufferType::Normal:
-            texture_info.Format = RhiFormat::R16G16Snorm;
-            texture_info.Channel = Channel::Rgb;
+            rhiTextureDesciptor.RhiFormat = RhiFormat::R16G16Snorm;
             break;
         case GbufferType::RoughnessMetallicAo:
-            texture_info.Format = RhiFormat::R8G8B8A8Unorm;
-            texture_info.Channel = Channel::Rgba;
+            rhiTextureDesciptor.RhiFormat = RhiFormat::R8G8B8A8Unorm;
             break;
         case GbufferType::WorldPosition:
-            texture_info.Format = RhiFormat::R16G16B16A16Sfloat;
-            texture_info.Channel = Channel::Rgba;
+            rhiTextureDesciptor.RhiFormat = RhiFormat::R16G16B16A16Sfloat;
             break;
         case GbufferType::Count:
         default:
             assert(false);
         }
 
-        frameInFlight = Texture2D(texture_info);
+        frameInFlight = Texture2D(_Rhi, "Gbuffer" + GbufferTypeToString(gbufferType), rhiTextureDesciptor, RhiResource::MemoryUsage::Dynamic);
+        frameInFlight->Build();
+
         gbufferType = static_cast<GbufferType>((static_cast<int>(gbufferType) + 1) % static_cast<uint8_t>(
             GbufferType::Count));
     }

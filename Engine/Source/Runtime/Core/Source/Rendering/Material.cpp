@@ -16,57 +16,48 @@ PC_CORE::Material::Material()
 }
 
 
-PC_CORE::Material::Material(const std::string& _name) : Resource(_name)
+PC_CORE::Material::Material(const std::string& _name) 
+    : Resource(_name)
 {
     DYNAMIC_REFLECT_INIT
 
     switch (MaterialType)
     {
     case MaterialType::Opaque:
-        m_ShaderProgram = App::Instance->Renderer.GeometryBufferShader;
+        m_ShaderProgram = App::Instance->Renderer.GeometryBufferShader.get();
         break;
     case MaterialType::Transparent:
-        m_ShaderProgram = App::Instance->Renderer.ForwardShader;
+        m_ShaderProgram = App::Instance->Renderer.ForwardShader.get();
         break;
     default: ;
     }
 
+    if (m_ShaderProgram && Albedo.Lock())
+    {
+        m_PShaderProgramDescriptorSets.reset(m_ShaderProgram->CreateDescriptorBinding(std::format("Material Binding {}", Name)));
 
-    if (!m_ShaderProgram.expired())
-        m_ShaderProgram.Lock()->AllocDescriptorSet(&m_PShaderProgramDescriptorSets, MATERIAL_DESCRIPTOR_SET);
+        ImageSamplerDescriptor imageSamperDescriptor =
+        {
+            .sampler = ResourceManager::Get<Sampler>(std::string("LinearRepeat"))->Get(),
+            .texture = Albedo.Lock()->Get(),
+            .resourceState = RhiResourceState::ShaderRead
+        };
+
+        std::vector<ShaderProgramDescriptorWrite> descriptorSets =
+        {
+            {
+                ShaderProgramDescriptorType::CombinedImageSampler,
+                ALBEDO_BINDING,
+                imageSamperDescriptor,
+            },
+        };
+
+        m_PShaderProgramDescriptorSets->SetBindings(descriptorSets, MATERIAL_DESCRIPTOR_SET);
+        m_PShaderProgramDescriptorSets->Build();
+    }
 }
 
 PC_CORE::Material::~Material()
 {
-    if (!m_ShaderProgram.expired())
-        m_ShaderProgram.Lock()->FreeDescriptorSet(&m_PShaderProgramDescriptorSets);
-}
 
-void PC_CORE::Material::Build()
-{
-    if (Albedo.expired())
-    {
-        PC_LOGERROR("albedo texture expired");
-        return;
-    }
-
-
-    ImageSamplerDescriptor imageSamperDescriptor =
-    {
-        .sampler = ResourceManager::Get<Sampler>(std::string("LinearRepeat")).get(),
-        .texture = Albedo.lock().get(),
-        .imageState = ImageState::ShaderReadOptimal
-    };
-
-
-    std::vector<ShaderProgramDescriptorWrite> descriptorSets =
-    {
-        {
-            ShaderProgramDescriptorType::CombinedImageSampler,
-            ALBEDO_BINDING,
-            imageSamperDescriptor,
-        },
-    };
-
-    m_PShaderProgramDescriptorSets->WriteDescriptorSets(descriptorSets);
 }

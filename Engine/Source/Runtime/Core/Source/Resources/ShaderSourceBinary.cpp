@@ -65,7 +65,7 @@ std::vector<char> PC_CORE::ShaderSourceBinary::GetCode() const
 
 
 PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
-                                                ShaderStageType _shaderStageType, GraphicAPI _api) : Resource(_name),
+            RhiShaderProgram::ShaderStageType _shaderStageType, GraphicAPI _api) : Resource(_name),
     m_ShaderStageType(_shaderStageType)
 {
     DYNAMIC_REFLECT_INIT
@@ -73,8 +73,7 @@ PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const 
 }
 
 PC_CORE::ShaderSourceBinary::ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
-                                                ShaderStageType _shaderStageType,
-                                                GraphicAPI _api) : Resource(std::move(_name)),
+    RhiShaderProgram::ShaderStageType _shaderStageType, GraphicAPI _api) : Resource(std::move(_name)),
                                                                    m_ShaderStageType(_shaderStageType)
 {
     DYNAMIC_REFLECT_INIT

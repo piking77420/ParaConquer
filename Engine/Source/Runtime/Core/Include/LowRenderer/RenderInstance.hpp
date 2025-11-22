@@ -1,10 +1,12 @@
 ﻿#pragma once
 
 #include "CoreHeader.hpp"
-
 #include "RhiTypedef.h"
 
 BEGIN_PCCORE
+
+    class RhiDevice;
+
     struct RenderInstanceCreateInfo
     {
         const char* appName;

@@ -2,74 +2,105 @@
 
 #include <Vector>
 
-#include "CoreHeader.hpp"
-
-#include "Rendering/GpuResource.hpp"
-
-#include "RhiSampler.hpp"
-#include "Rendering/Sampler.hpp"
+#include "RhiResource.hpp"
 
 BEGIN_PCCORE
-    enum class ShaderProgramDescriptorType
+
+class RhiTexture;
+class RhiSampler;
+class RhiBuffer;
+
+enum class ShaderProgramDescriptorType
+{
+    Sampler,
+    CombinedImageSampler,
+    SampledImage,
+    StorageImage,
+    UniformBuffer,
+    StorageBuffer,
+    InputAttachment,
+    InlineUniformBlock,
+    AccelerationStructure,
+    Count,
+};
+
+struct BufferDescriptor
+{
+    RhiBuffer* buffer;
+};
+
+struct ImageDescriptor
+{
+    RhiTexture* texture;
+    RhiResourceState resourceState;
+};
+
+struct ImageSamplerDescriptor
+{
+    RhiSampler* sampler;
+    RhiTexture* texture;
+    RhiResourceState resourceState;
+};
+
+struct InputAttachementDescriptor
+{
+    RhiTexture* image;
+    RhiResourceState resourceState;
+};
+
+using Descriptor = std::variant<BufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor,
+                                ImageDescriptor>;
+
+struct ShaderProgramDescriptorWrite
+{
+    ShaderProgramDescriptorType type;
+    uint32_t bindingIndex;
+    Descriptor descriptor;
+};
+
+
+class ShaderProgramDescriptorSets : public RhiObject
+{
+public:
+    PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi, const std::string& _name);
+
+    PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi, std::string&& _name);
+
+    PC_CORE_API ~ShaderProgramDescriptorSets() override;
+
+    PC_CORE_API void SetBindings(std::initializer_list<ShaderProgramDescriptorWrite> values)
     {
-        Sampler,
-        CombinedImageSampler,
-        SampledImage,
-        StorageImage,
-        UniformBuffer,
-        StorageBuffer,
-        InputAttachment,
-        InlineUniformBlock,
-        AccelerationStructure,
-        Count,
-    };
+        m_Bindings = std::move(values);
+    }
 
-    // TODO REFATOR with a variant
-
-    struct UniformBufferDescriptor
+    PC_CORE_API void SetBindings(const std::initializer_list<ShaderProgramDescriptorWrite>& values)
     {
-        IGpuResource* buffer;
-    };
+        m_Bindings = values;
+    }
 
-    struct ImageDescriptor
+    PC_CORE_API ShaderProgramDescriptorSets& SetBindings(const std::vector<ShaderProgramDescriptorWrite>& values , size_t _Set)
     {
-        IGpuResource* texture;
-        ImageState imageState;
-    };
+        m_Bindings = values;
+        m_Set = _Set;
 
-    struct ImageSamplerDescriptor
+        return *this;
+    }
+
+    size_t GetSet()
     {
-        Sampler* sampler;
-        IGpuResource* texture;
-        ImageState imageState;
-    };
+        return m_Set;
+    }
 
-    struct InputAttachementDescriptor
+protected:
+    const std::vector<ShaderProgramDescriptorWrite>& GetBinding() const
     {
-        IGpuResource* image;
-        ImageState imageState;
-    };
+        return m_Bindings;
+    }
 
-    using Descriptor = std::variant<UniformBufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor,
-                                    ImageDescriptor>;
+private:
+    std::vector<ShaderProgramDescriptorWrite> m_Bindings;
 
-    struct ShaderProgramDescriptorWrite
-    {
-        ShaderProgramDescriptorType shaderProgramDescriptorType;
-        uint32_t bindingIndex;
-
-        Descriptor descriptor;
-    };
-
-    // TODO REMOVE THIS AND USE BIDNNLESS
-    struct ShaderProgramDescriptorSets : RhiResource
-    {
-        PC_CORE_API virtual void WriteDescriptorSets(
-            const std::vector<ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) = 0;
-
-        PC_CORE_API ShaderProgramDescriptorSets() = default;
-
-        PC_CORE_API ~ShaderProgramDescriptorSets() override = default;
-    };
+    size_t m_Set = std::numeric_limits<size_t>::max();
+};
 
 END_PCCORE

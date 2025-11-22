@@ -14,4 +14,5 @@ namespace Vulkan::Utils
 
     void EndSingleTimeCommand(vk::CommandBuffer _commandBuffer, const SingleCommandBeginInfo& _singleCommandBeginInfo,
                               vk::Fence _fence);
+    
 }

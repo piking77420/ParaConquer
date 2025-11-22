@@ -2,28 +2,14 @@
 
 #include "LowRenderer/Rhi.hpp"
 
-void PC_CORE::UniformBuffer::Update(const void* _data, size_t _size)
+PC_CORE::UniformBuffer::UniformBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _size, PC_CORE::RhiResource::MemoryUsage _memoryUsage)
 {
-    void* mappedData = nullptr;
-    m_RhiBuffer->MapData(&mappedData);
-
-    if (mappedData == nullptr)
-    {
-        PC_LOGERROR("Failed to map uniform buffer data");
-        return;
-    }
-    std::memcpy(mappedData, _data, _size);
-
-    m_RhiBuffer->UnmapData();
-}
-
-PC_CORE::UniformBuffer::UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation,
-                                      MemoryUsage _usage)
-{
-    m_RhiBuffer = Rhi::CreateUniformBuffer(_data, _size, _memoryLocalisation, _usage);
-}
-
-PC_CORE::UniformBuffer::UniformBuffer(size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage)
-{
-    m_RhiBuffer = Rhi::CreateUniformBuffer(nullptr, _size, _memoryLocalisation, _usage);
+    
+    const RhiBuffer::RhiBufferDescriptor rhiBufferDescriptor = RhiBuffer::RhiBufferDescriptor
+     {
+         .SizeInByte = static_cast<uint32_t>(_size),
+         .Usage = static_cast<RhiBuffer::BufferUsage>(RhiBuffer::BufferUsage::Uniform),
+     };
+    
+    m_RhiBuffer.reset(rhi.CreateBuffer(_name, rhiBufferDescriptor, _memoryUsage));
 }

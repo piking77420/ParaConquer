@@ -9,6 +9,8 @@
 
 namespace Vulkan
 {
+    class VulkanContext;
+
     struct DescriptorInfo
     {
         vk::DescriptorType type;
@@ -21,7 +23,7 @@ namespace Vulkan
     using SetBindingMap = std::map<uint32_t, BindingMap>;
 
 
-    struct CacheDescriptorSets
+    struct CacheDescriptor
     {
         size_t id;
         std::vector<vk::DescriptorSetLayout> descriptorSetLayout;
@@ -104,26 +106,32 @@ namespace Vulkan
 
     constexpr uint32_t MAX_ALLOC_DESCRIPTOR_SET = 100 * MaxFramesInFlight;
 
+    // TODO FIX THIS SHIT
     class VulkanDescritptorManager
     {
     public:
+
+        explicit VulkanDescritptorManager(VulkanContext& _Context);
+
         size_t GetDescriptorId(const std::vector<SpvReflectShaderModule>& _modules);
 
         void ClearCaches();
 
-        CacheDescriptorSets* GetDescriptorSets(size_t setID) const;
+        CacheDescriptor* GetDescriptorSets(size_t setID) const;
 
     private:
         bool FindInCache(const std::vector<SpvReflectShaderModule>& _modules, SetBindingMap* _outSetBindingMap,
-                         std::shared_ptr<CacheDescriptorSets>* cache) const;
+                         std::shared_ptr<CacheDescriptor>* cache) const;
+
+        VulkanContext& m_Context;
 
         size_t m_IdCounter = 0;
 
         std::stack<size_t> idStack;
 
-        std::unordered_map<SetBindingMap, std::shared_ptr<CacheDescriptorSets>, SetBindingMapHasher,
+        std::unordered_map<SetBindingMap, std::shared_ptr<CacheDescriptor>, SetBindingMapHasher,
                            SetBindingMapEqual> descriptorLayoutCache;
 
-        std::unordered_map<size_t, CacheDescriptorSets*> m_DescriptorSets;
+        std::unordered_map<size_t, CacheDescriptor*> m_DescriptorSets;
     };
 }

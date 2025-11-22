@@ -1,5 +1,8 @@
 ﻿#pragma once
+
 #include "VulkanHeader.h"
+#include "LowRenderer/RhiResource.hpp"
+#include "LowRenderer/RhiRenderPass.hpp"
 
 namespace Vulkan
 {
@@ -8,4 +11,7 @@ namespace Vulkan
                                uint32_t _layerCount, uint32_t _levelCount);
 
     bool HasStencilComponent(vk::Format _format);
+
+
+    vk::ImageMemoryBarrier ImageBarrierFromResourceState(const PC_CORE::ImageStateTransition& _ImageStateTransition, size_t _FrameIndex);
 }

@@ -1,5 +1,7 @@
 ﻿#include "Utils/RhiToVulkan.hpp"
 
+#include <Vulkan/vk_enum_string_helper.h>
+
 #pragma region Format
 vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
 {
@@ -393,10 +395,10 @@ vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
         return vk::Format::eS8Uint;
 
     case PC_CORE::RhiFormat::D16UnormS8Uint:
-        return vk::Format::eUndefined;
+        return vk::Format::eD16UnormS8Uint;
 
     case PC_CORE::RhiFormat::D24UnormS8Uint:
-        return vk::Format::eUndefined;
+        return vk::Format::eD24UnormS8Uint;
 
     case PC_CORE::RhiFormat::D32SfloatS8Uint:
         return vk::Format::eD32SfloatS8Uint;
@@ -413,18 +415,23 @@ vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
 
 
 vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
-    PC_CORE::ShaderProgramPipelineType _shaderProgramPipelineType)
+    PC_CORE::RhiShaderProgram::PipelineType _shaderProgramPipelineType)
 {
     switch (_shaderProgramPipelineType)
     {
-    case PC_CORE::ShaderProgramPipelineType::Graphic:
+    case PC_CORE::RhiShaderProgram::PipelineType::Graphic:
         return vk::PipelineBindPoint::eGraphics;
-    case PC_CORE::ShaderProgramPipelineType::Compute:
+    case PC_CORE::RhiShaderProgram::PipelineType::Compute:
         return vk::PipelineBindPoint::eCompute;
-    case PC_CORE::ShaderProgramPipelineType::RayTracing:
+    case PC_CORE::RhiShaderProgram::PipelineType::RayTracing:
         return vk::PipelineBindPoint::eRayTracingKHR;
+    case PC_CORE::RhiShaderProgram::PipelineType::MeshShader:
+        return vk::PipelineBindPoint::eCompute;
+    case PC_CORE::RhiShaderProgram::PipelineType::Count:
+        return {};
     }
-    return vk::PipelineBindPoint::eGraphics;
+    
+    return {};
 }
 
 
@@ -443,63 +450,64 @@ vk::VertexInputRate Vulkan::Utils::RhiInputRateToVkInputRate(PC_CORE::VertexInpu
     }
 }
 
-vk::ImageType Vulkan::Utils::RhiImageToVkImageType(PC_CORE::TextureType _textureType)
+vk::ImageType Vulkan::Utils::RhiImageToVkImageType(PC_CORE::RhiTexture::Type _textureType)
 {
     switch (_textureType)
     {
-    case PC_CORE::TextureType::Texture2D:
+    case PC_CORE::RhiTexture::Type::Texture2D:
         return vk::ImageType::e2D;
         break;
-    case PC_CORE::TextureType::TextureArray2D:
+    case PC_CORE::RhiTexture::Type::TextureArray2D:
         return vk::ImageType::e3D;
         break;
-    case PC_CORE::TextureType::CubeMap:
+    case PC_CORE::RhiTexture::Type::CubeMap:
         return vk::ImageType::e2D;
-    case PC_CORE::TextureType::CubeMapArray:
+    case PC_CORE::RhiTexture::Type::CubeMapArray:
         return vk::ImageType::e3D;
-    case PC_CORE::TextureType::Count:
+    case PC_CORE::RhiTexture::Type::Count:
     default: assert(false);
     }
 
     return {};
 }
 
-vk::ImageViewType Vulkan::Utils::RhiImageToVkImageViewType(PC_CORE::TextureType _textureType)
+vk::ImageViewType Vulkan::Utils::RhiImageToVkImageViewType(PC_CORE::RhiTexture::Type _textureType)
 {
     switch (_textureType)
     {
-    case PC_CORE::TextureType::Texture2D:
+    case PC_CORE::RhiTexture::Type::Texture2D:
         return vk::ImageViewType::e2D;
         break;
-    case PC_CORE::TextureType::TextureArray2D:
+    case PC_CORE::RhiTexture::Type::TextureArray2D:
         return vk::ImageViewType::e2DArray;
         break;
-    case PC_CORE::TextureType::CubeMap:
+    case PC_CORE::RhiTexture::Type::CubeMap:
         return vk::ImageViewType::eCube;
         break;
-    case PC_CORE::TextureType::Count:
+    case PC_CORE::RhiTexture::Type::Count:
         break;
     default:
         assert(false);
     }
+    return {};
 }
 
-vk::ImageCreateFlags Vulkan::Utils::ImageCreateFlagFromTextureType(PC_CORE::TextureType _textureType)
+vk::ImageCreateFlags Vulkan::Utils::ImageCreateFlagFromTextureType(PC_CORE::RhiTexture::Type _textureType)
 {
     vk::ImageCreateFlags createFlag = {};
 
     switch (_textureType)
     {
-    case PC_CORE::TextureType::Texture2D:
+    case PC_CORE::RhiTexture::Type::Texture2D:
         break;
-    case PC_CORE::TextureType::TextureArray2D:
+    case PC_CORE::RhiTexture::Type::TextureArray2D:
         createFlag |= vk::ImageCreateFlagBits::e2DArrayCompatible;
         break;
-    case PC_CORE::TextureType::CubeMap:
-    case PC_CORE::TextureType::CubeMapArray:
+    case PC_CORE::RhiTexture::Type::CubeMap:
+    case PC_CORE::RhiTexture::Type::CubeMapArray:
         createFlag |= vk::ImageCreateFlagBits::eCubeCompatible;
         break;
-    case PC_CORE::TextureType::Count:
+    case PC_CORE::RhiTexture::Type::Count:
         break;
     default: ;
     }
@@ -604,81 +612,72 @@ vk::BorderColor Vulkan::Utils::RhiToBorderColor(PC_CORE::BorderColor _borderColo
     throw std::runtime_error("Unknown BorderColor");
 }
 
-vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::PolygonMode _polygonMode)
+vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::RhiShaderProgram::PolygonMode _polygonMode)
 {
     switch (_polygonMode)
     {
-    case PC_CORE::PolygonMode::Fill:
+    case PC_CORE::RhiShaderProgram::PolygonMode::Fill:
         return vk::PolygonMode::eFill;
-    case PC_CORE::PolygonMode::Line:
+    case PC_CORE::RhiShaderProgram::PolygonMode::Line:
         return vk::PolygonMode::eLine;
-    case PC_CORE::PolygonMode::Point:
+    case PC_CORE::RhiShaderProgram::PolygonMode::Point:
         return vk::PolygonMode::ePoint;
-    case PC_CORE::PolygonMode::FillRectangleNV:
+    case PC_CORE::RhiShaderProgram::PolygonMode::FillRectangleNV:
         return vk::PolygonMode::eFillRectangleNV;
     }
 
     throw std::runtime_error("Unknown PolygonMode");
 }
 
-vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::CullModeFlagBit _cullModeFlagBit)
+vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::RhiShaderProgram::CullModeFlag _cullModeFlagBit)
 {
+    using Cull = PC_CORE::RhiShaderProgram::CullModeFlagBits;
+
     vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
 
-    switch (_cullModeFlagBit)
-    {
-    case PC_CORE::CullModeFlagBit::None:
-        break;
-    case PC_CORE::CullModeFlagBit::Front:
+    if (_cullModeFlagBit & Cull::CullFront)
         cullModeFlags |= vk::CullModeFlagBits::eFront;
-        break;
-    case PC_CORE::CullModeFlagBit::Back:
+    else if (_cullModeFlagBit & Cull::CullFront)
         cullModeFlags |= vk::CullModeFlagBits::eBack;
-        break;
-    case PC_CORE::CullModeFlagBit::FrontAndBack:
+    else if (_cullModeFlagBit & Cull::CullFront)
         cullModeFlags |= vk::CullModeFlagBits::eFrontAndBack;
-        break;
-    case PC_CORE::CullModeFlagBit::Count:
-        break;
-    default: ;
-    }
 
     return cullModeFlags;
 }
 
-vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType _shaderStageType)
+vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::RhiShaderProgram::ShaderStageType _shaderStageType)
 {
     switch (_shaderStageType)
     {
-    case PC_CORE::ShaderStageType::Vertex:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Vertex:
         return vk::ShaderStageFlagBits::eVertex;
-    case PC_CORE::ShaderStageType::Hull:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Hull:
         return vk::ShaderStageFlagBits::eTessellationControl;
-    case PC_CORE::ShaderStageType::Domain:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Domain:
         return vk::ShaderStageFlagBits::eTessellationEvaluation;
-    case PC_CORE::ShaderStageType::Geometry:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Geometry:
         return vk::ShaderStageFlagBits::eGeometry;
-    case PC_CORE::ShaderStageType::Pixel:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Pixel:
         return vk::ShaderStageFlagBits::eFragment;
-    case PC_CORE::ShaderStageType::Compute:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Compute:
         return vk::ShaderStageFlagBits::eCompute;
-    case PC_CORE::ShaderStageType::Raygen:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Raygen:
         return vk::ShaderStageFlagBits::eRaygenKHR;
-    case PC_CORE::ShaderStageType::Intersection:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Intersection:
         return vk::ShaderStageFlagBits::eIntersectionKHR;
-    case PC_CORE::ShaderStageType::Anyhit:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Anyhit:
         return vk::ShaderStageFlagBits::eAnyHitKHR;
-    case PC_CORE::ShaderStageType::Closesthit:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Closesthit:
         return vk::ShaderStageFlagBits::eClosestHitKHR;
-    case PC_CORE::ShaderStageType::Miss:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Miss:
         return vk::ShaderStageFlagBits::eMissKHR;
-    case PC_CORE::ShaderStageType::Callable:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Callable:
         return vk::ShaderStageFlagBits::eCallableKHR;
-    case PC_CORE::ShaderStageType::Task:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Task:
         return vk::ShaderStageFlagBits::eTaskEXT;
-    case PC_CORE::ShaderStageType::Mesh:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Mesh:
         return vk::ShaderStageFlagBits::eMeshEXT;
-    case PC_CORE::ShaderStageType::Count:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::Count:
     default:
         assert(false);
         break;
@@ -688,15 +687,15 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::ShaderStageType
 }
 
 
-vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::IndexFormat _format)
+vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _format)
 {
     switch (_format)
     {
-    case PC_CORE::IndexFormat::Uiunt8:
+    case PC_CORE::RhiBuffer::IndexFormat::Uiunt8:
         return vk::IndexType::eUint8;
-    case PC_CORE::IndexFormat::Uint16:
+    case PC_CORE::RhiBuffer::IndexFormat::Uint16:
         return vk::IndexType::eUint16;
-    case PC_CORE::IndexFormat::Uint32:
+    case PC_CORE::RhiBuffer::IndexFormat::Uint32:
         return vk::IndexType::eUint32;
     default: throw std::runtime_error("Unknown IndexType");
     }
@@ -733,7 +732,7 @@ vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(
     }
 }
 
-vk::SampleCountFlagBits Vulkan::Utils::RhiSampleCountToVuklan(uint32_t _sampleCount)
+vk::SampleCountFlagBits Vulkan::Utils::RhSampleCountToVulkan(uint32_t _sampleCount)
 {
     switch (_sampleCount)
     {
@@ -754,34 +753,34 @@ vk::SampleCountFlagBits Vulkan::Utils::RhiSampleCountToVuklan(uint32_t _sampleCo
     }
 }
 
-vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::PrimitiveTopology _primitiveTopology)
+vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology)
 {
     switch (_primitiveTopology)
     {
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyPointList:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyPointList:
         return vk::PrimitiveTopology::ePointList;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineList:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList:
         return vk::PrimitiveTopology::eLineList;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineStrip:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineStrip:
         return vk::PrimitiveTopology::eLineStrip;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleList:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList:
         return vk::PrimitiveTopology::eTriangleList;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStrip:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStrip:
         return vk::PrimitiveTopology::eTriangleStrip;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangle_FAN:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangle_FAN:
         return vk::PrimitiveTopology::eTriangleFan;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineListWithAdjacency:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineListWithAdjacency:
         return vk::PrimitiveTopology::eLineListWithAdjacency;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyLineStripWithAdjacency:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineStripWithAdjacency:
         return vk::PrimitiveTopology::eLineStripWithAdjacency;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleListWithAdjacency:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleListWithAdjacency:
         return vk::PrimitiveTopology::eTriangleListWithAdjacency;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency:
         return vk::PrimitiveTopology::eTriangleStripWithAdjacency;
-    case PC_CORE::PrimitiveTopology::PrimitiveTopologyPathList:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyPathList:
         // Not directly supported in Vulkan; return something or assert
         throw std::runtime_error("PrimitiveTopologyPathList is not supported in Vulkan.");
-    case PC_CORE::PrimitiveTopology::Count:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::Count:
     default:
         throw std::runtime_error("Invalid or unsupported primitive topology.");
     }
@@ -815,11 +814,11 @@ vk::AttachmentStoreOp Vulkan::Utils::RhiStoreOperationToVulkan(PC_CORE::StoreOpe
     }
 }
 
-vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::GpuPipelineStageFlagBits stageFlags)
+vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::GpuPipelineStage stageFlags)
 {
     vk::PipelineStageFlags vkFlags = {};
 
-    using StageBit = PC_CORE::GpuPipelineStageFlagBits;
+    using StageBit = PC_CORE::GpuPipelineStage;
 
     if (stageFlags & StageBit::TopOfPipe)
         vkFlags |= vk::PipelineStageFlagBits::eTopOfPipe;
@@ -831,7 +830,7 @@ vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::GpuPipel
         vkFlags |= vk::PipelineStageFlagBits::eVertexShader;
     if (stageFlags & StageBit::TessellationControlShader)
         vkFlags |= vk::PipelineStageFlagBits::eTessellationControlShader;
-    if (stageFlags & StageBit::TessellationEvaluationShader)
+    if (stageFlags & StageBit::TessellationEvalShader)
         vkFlags |= vk::PipelineStageFlagBits::eTessellationEvaluationShader;
     if (stageFlags & StageBit::GeometryShader)
         vkFlags |= vk::PipelineStageFlagBits::eGeometryShader;
@@ -856,132 +855,26 @@ vk::PipelineStageFlags Vulkan::Utils::RhiPipelineStageToVulkan(PC_CORE::GpuPipel
     if (stageFlags & StageBit::AllCommands)
         vkFlags |= vk::PipelineStageFlagBits::eAllCommands;
 
-    if (stageFlags & StageBit::TransformFeedbackEXT)
+    if (stageFlags & StageBit::TransformFeedback)
         vkFlags |= vk::PipelineStageFlagBits::eTransformFeedbackEXT;
-    if (stageFlags & StageBit::ConditionalRenderingEXT)
+    if (stageFlags & StageBit::ConditionalRendering)
         vkFlags |= vk::PipelineStageFlagBits::eConditionalRenderingEXT;
-    if (stageFlags & StageBit::AccelerationStructureBuildKHR)
+    if (stageFlags & StageBit::AccelerationStructureBuild)
         vkFlags |= vk::PipelineStageFlagBits::eAccelerationStructureBuildKHR;
-    if (stageFlags & StageBit::AccelerationStructureBuildNV)
-        vkFlags |= vk::PipelineStageFlagBits::eAccelerationStructureBuildNV;
-    if (stageFlags & StageBit::RayTracingShaderKHR)
+    if (stageFlags & StageBit::RayTracingShader)
         vkFlags |= vk::PipelineStageFlagBits::eRayTracingShaderKHR;
-    if (stageFlags & StageBit::RayTracingShaderNV)
-        vkFlags |= vk::PipelineStageFlagBits::eRayTracingShaderNV;
-    if (stageFlags & StageBit::FragmentDensityProcessEXT)
+    if (stageFlags & StageBit::FragmentDensityProcess)
         vkFlags |= vk::PipelineStageFlagBits::eFragmentDensityProcessEXT;
-    if (stageFlags & StageBit::FragmentShadingRateAttachmentKHR)
+    if (stageFlags & StageBit::FragmentShadingRate)
         vkFlags |= vk::PipelineStageFlagBits::eFragmentShadingRateAttachmentKHR;
-    if (stageFlags & StageBit::ShadingRateImageNV)
-        vkFlags |= vk::PipelineStageFlagBits::eShadingRateImageNV;
-    if (stageFlags & StageBit::CommandPreprocessNV)
-        vkFlags |= vk::PipelineStageFlagBits::eCommandPreprocessNV;
-    if (stageFlags & StageBit::CommandPreprocessEXT)
+    if (stageFlags & StageBit::CommandPreprocess)
         vkFlags |= vk::PipelineStageFlagBits::eCommandPreprocessEXT;
-    if (stageFlags & StageBit::TaskShaderEXT)
+    if (stageFlags & StageBit::TaskShader)
         vkFlags |= vk::PipelineStageFlagBits::eTaskShaderEXT;
-    if (stageFlags & StageBit::TaskShaderNV)
-        vkFlags |= vk::PipelineStageFlagBits::eTaskShaderNV;
-    if (stageFlags & StageBit::MeshShaderEXT)
+    if (stageFlags & StageBit::MeshShader)
         vkFlags |= vk::PipelineStageFlagBits::eMeshShaderEXT;
-    if (stageFlags & StageBit::MeshShaderNV)
-        vkFlags |= vk::PipelineStageFlagBits::eMeshShaderNV;
 
     return vkFlags;
-}
-
-vk::AccessFlags Vulkan::Utils::RhiAccessFlagToVulkan(PC_CORE::GpuAccessFlag accessFlags)
-{
-    vk::AccessFlags vkFlags{};
-    if ((accessFlags & PC_CORE::GpuAccessFlag::IndirectCommandRead))
-        vkFlags |= vk::AccessFlagBits::eIndirectCommandRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::IndexRead))
-        vkFlags |= vk::AccessFlagBits::eIndexRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::VertexAttributeRead))
-        vkFlags |= vk::AccessFlagBits::eVertexAttributeRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::UniformRead))
-        vkFlags |= vk::AccessFlagBits::eUniformRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::InputAttachmentRead))
-        vkFlags |= vk::AccessFlagBits::eInputAttachmentRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ShaderRead))
-        vkFlags |= vk::AccessFlagBits::eShaderRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ShaderWrite))
-        vkFlags |= vk::AccessFlagBits::eShaderWrite;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ColorAttachmentRead))
-        vkFlags |= vk::AccessFlagBits::eColorAttachmentRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ColorAttachmentWrite))
-        vkFlags |= vk::AccessFlagBits::eColorAttachmentWrite;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::DepthStencilAttachmentRead))
-        vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::DepthStencilAttachmentWrite))
-        vkFlags |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::TransferRead))
-        vkFlags |= vk::AccessFlagBits::eTransferRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::TransferWrite))
-        vkFlags |= vk::AccessFlagBits::eTransferWrite;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::HostRead))
-        vkFlags |= vk::AccessFlagBits::eHostRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::HostWrite))
-        vkFlags |= vk::AccessFlagBits::eHostWrite;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::MemoryRead))
-        vkFlags |= vk::AccessFlagBits::eMemoryRead;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::MemoryWrite))
-        vkFlags |= vk::AccessFlagBits::eMemoryWrite;
-
-    // Extensions
-    if ((accessFlags & PC_CORE::GpuAccessFlag::TransformFeedbackWriteEXT))
-        vkFlags |= vk::AccessFlagBits::eTransformFeedbackWriteEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::TransformFeedbackCounterReadEXT))
-        vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterReadEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::TransformFeedbackCounterWriteEXT))
-        vkFlags |= vk::AccessFlagBits::eTransformFeedbackCounterWriteEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ConditionalRenderingReadEXT))
-        vkFlags |= vk::AccessFlagBits::eConditionalRenderingReadEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ColorAttachmentReadNoncoherentEXT))
-        vkFlags |= vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureReadKHR))
-        vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadKHR;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureReadNV))
-        vkFlags |= vk::AccessFlagBits::eAccelerationStructureReadNV;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureWriteKHR))
-        vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteKHR;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::AccelerationStructureWriteNV))
-        vkFlags |= vk::AccessFlagBits::eAccelerationStructureWriteNV;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::FragmentDensityMapReadEXT))
-        vkFlags |= vk::AccessFlagBits::eFragmentDensityMapReadEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::FragmentShadingRateAttachmentReadKHR))
-        vkFlags |= vk::AccessFlagBits::eFragmentShadingRateAttachmentReadKHR;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::ShadingRateImageReadNV))
-        vkFlags |= vk::AccessFlagBits::eShadingRateImageReadNV;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessReadNV))
-        vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadNV;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessReadEXT))
-        vkFlags |= vk::AccessFlagBits::eCommandPreprocessReadEXT;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessWriteNV))
-        vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteNV;
-    if ((accessFlags & PC_CORE::GpuAccessFlag::CommandPreprocessWriteEXT))
-        vkFlags |= vk::AccessFlagBits::eCommandPreprocessWriteEXT;
-
-    return vkFlags;
-}
-
-VmaMemoryUsage Vulkan::Utils::RhiMemoryUsageToVulkan(PC_CORE::MemoryLocalisation _memoryVisibility)
-{
-    switch (_memoryVisibility)
-    {
-    case PC_CORE::MemoryLocalisation::GpuOnly:
-        return VMA_MEMORY_USAGE_GPU_ONLY;
-    case PC_CORE::MemoryLocalisation::CpuOnly:
-        return VMA_MEMORY_USAGE_CPU_ONLY;
-    case PC_CORE::MemoryLocalisation::CpuToGpu:
-        return VMA_MEMORY_USAGE_CPU_TO_GPU;
-    case PC_CORE::MemoryLocalisation::GpuToCpu:
-        return VMA_MEMORY_USAGE_GPU_TO_CPU;
-    case PC_CORE::MemoryLocalisation::Count:
-    default:
-        assert(false);
-    }
-    return VMA_MEMORY_USAGE_MAX_ENUM;
 }
 
 vk::BlendFactor Vulkan::Utils::RhiBlendFactorToVulkan(PC_CORE::BlendFactor _blendFactor)
@@ -1097,81 +990,231 @@ vk::ColorComponentFlags Vulkan::Utils::RhiColorComponent(PC_CORE::ColorComponent
     return f;
 }
 
-vk::ImageLayout Vulkan::Utils::RhiImageStateToVulkanImageLayout(PC_CORE::ImageState _imageState)
-{
-    switch (_imageState)
-    {
-    case PC_CORE::ImageState::Undefined:
-        return vk::ImageLayout::eUndefined;
-
-    case PC_CORE::ImageState::General:
-        return vk::ImageLayout::eGeneral;
-
-    case PC_CORE::ImageState::RenderTargetOptimal:
-        return vk::ImageLayout::eColorAttachmentOptimal;
-
-    case PC_CORE::ImageState::DepthStencilOptimal:
-        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-    case PC_CORE::ImageState::DepthStencilReadOptimal:
-        return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
-
-    case PC_CORE::ImageState::ShaderReadOptimal:
-        return vk::ImageLayout::eShaderReadOnlyOptimal;
-
-    case PC_CORE::ImageState::TransferSrcOptimal:
-        return vk::ImageLayout::eTransferSrcOptimal;
-
-    case PC_CORE::ImageState::TransferDstOptimal:
-        return vk::ImageLayout::eTransferSrcOptimal;
-
-    case PC_CORE::ImageState::Count:
-    default:
-        assert(false);
-    }
-
-    return {};
-}
 
 
-vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::TextureUsage usage)
+vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::TextureUsageFlag _usage, vk::ImageAspectFlags aspectFlag)
 {
     using namespace PC_CORE;
-
     VkImageUsageFlags flags = 0;
 
-    if ((usage & TextureUsage::Sampled) == static_cast<uint8_t>(TextureUsage::Sampled))
+
+    if (aspectFlag & vk::ImageAspectFlagBits::eDepth && aspectFlag & vk::ImageAspectFlagBits::eStencil)
+    {
+        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        return static_cast<vk::ImageUsageFlags>(flags);
+    }
+
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::Sampled)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    if ((usage & TextureUsage::RenderTarget) == static_cast<uint8_t>(TextureUsage::RenderTarget))
-        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::RenderTarget)
+        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    if (((usage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth)) || ((usage & TextureUsage::Stencil)
-        == static_cast<uint8_t>(TextureUsage::Stencil)))
-        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-    if ((usage & TextureUsage::Storage) == static_cast<uint8_t>(TextureUsage::Storage))
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::Storage)
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
-    // Fallback/default
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::TransferSrc)
+        flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::TransferDst)
+        flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    // Fallback default
     if (flags == 0)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-
+    
+ 
     return static_cast<vk::ImageUsageFlags>(flags);
 }
 
-vk::ImageAspectFlags Vulkan::Utils::RhiTextureUsageToImageAspectFlagFlags(PC_CORE::TextureUsage _textureUsage)
+vk::ImageAspectFlags Vulkan::Utils::RhiTextureFormatToImageAspectFlagFlags(PC_CORE::RhiFormat _format)
 {
     using namespace PC_CORE;
+    
+    
+    switch (_format)
+    {
+    // Color
+    case PC_CORE::RhiFormat::R8G8B8A8Unorm:
+    case PC_CORE::RhiFormat::R8G8B8A8Snorm:
+    case PC_CORE::RhiFormat::B8G8R8A8Snorm:
+    case PC_CORE::RhiFormat::R16G16B16A16Sfloat:
+    case PC_CORE::RhiFormat::R32Sfloat:
+    case PC_CORE::RhiFormat::R16G16Snorm:
+        return vk::ImageAspectFlagBits::eColor;
+        // Depth and STENCIL
+    case PC_CORE::RhiFormat::D32Sfloat:
+    case PC_CORE::RhiFormat::S8Uint:
+    case PC_CORE::RhiFormat::D16UnormS8Uint:
+    case PC_CORE::RhiFormat::D24UnormS8Uint:
+    case PC_CORE::RhiFormat::D32SfloatS8Uint:
+        return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+    }
 
-    vk::ImageAspectFlags flags = {};
+    
+    assert(false && "Unsupported texture usage From Format");
+    return {};
+}
 
-    if ((_textureUsage & TextureUsage::RenderTarget) == static_cast<uint8_t>(TextureUsage::RenderTarget))
-        flags |= vk::ImageAspectFlagBits::eColor;
+vk::ImageType Vulkan::Utils::RhiTextureTypeToVulkanImageType(PC_CORE::RhiTexture::Type _textureType)
+{
+    switch (_textureType) 
+    {
+    case PC_CORE::RhiTexture::Type::Count:
+    case PC_CORE::RhiTexture::Type::None:
+        return {};
+    case PC_CORE::RhiTexture::Type::Texture1D:
+        return vk::ImageType::e1D;
+    case PC_CORE::RhiTexture::Type::Texture2D:
+        return vk::ImageType::e2D;
+    case PC_CORE::RhiTexture::Type::TextureArray2D:
+        return vk::ImageType::e2D;
+    case PC_CORE::RhiTexture::Type::CubeMap:
+        return vk::ImageType::e3D;
+    case PC_CORE::RhiTexture::Type::CubeMapArray:
+         return vk::ImageType::e3D;;
+    }
+    
+    PC_LOGERROR("Invalid texture type");
+    return {};
+}
 
-    if (((_textureUsage & TextureUsage::Depth) == static_cast<uint8_t>(TextureUsage::Depth)) || ((_textureUsage &
-        TextureUsage::Stencil) == static_cast<uint8_t>(TextureUsage::Stencil)))
-        flags |= vk::ImageAspectFlagBits::eDepth;
+vk::BufferUsageFlags Vulkan::Utils::RhiBufferUsageToVulkan(PC_CORE::RhiBuffer::BufferUsage _bufferUsage)
+{
+    vk::BufferUsageFlags flags{};
 
-    return flags;
+    using U = PC_CORE::RhiBuffer::BufferUsage;
+
+    if (_bufferUsage & U::Uniform)        flags |= vk::BufferUsageFlagBits::eUniformBuffer;
+    if (_bufferUsage & U::Vertex)         flags |= vk::BufferUsageFlagBits::eVertexBuffer;
+    if (_bufferUsage & U::Index)          flags |= vk::BufferUsageFlagBits::eIndexBuffer;
+    if (_bufferUsage & U::ShaderStorage)  flags |= vk::BufferUsageFlagBits::eStorageBuffer;
+    if (_bufferUsage & U::TransferSrc)    flags |= vk::BufferUsageFlagBits::eTransferSrc;
+    if (_bufferUsage & U::TransferDst)    flags |= vk::BufferUsageFlagBits::eTransferDst;
+
+    return flags; 
+}
+
+vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceState _rhiResourceState)
+{
+    switch (_rhiResourceState)
+    {
+    case RhiResourceState::Undefined:
+        return vk::ImageLayout::eUndefined;
+
+    // Copy 
+    case RhiResourceState::CopySrc:
+        return vk::ImageLayout::eTransferSrcOptimal;
+    case RhiResourceState::CopyDst:
+        return vk::ImageLayout::eTransferDstOptimal;
+    // Shader
+    case RhiResourceState::ShaderRead:
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+    case RhiResourceState::RenderTarget:
+        return vk::ImageLayout::eColorAttachmentOptimal;
+    case RhiResourceState::DepthStencilWrite:
+        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case RhiResourceState::DepthStencilRead:
+        return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
+
+    // Compute
+    case RhiResourceState::ComputeRead:
+        return vk::ImageLayout::eReadOnlyOptimal;
+    case RhiResourceState::ComputeWrite:
+        return vk::ImageLayout::eGeneral;
+
+    // Present 
+    case RhiResourceState::Present:
+        return vk::ImageLayout::ePresentSrcKHR;
+    default:
+        assert(false);
+        break;
+    }
+
+    return vk::ImageLayout::eUndefined;
+}
+
+RhiResourceState Vulkan::Utils::VulkanImageLayoutToResourceState(vk::ImageLayout layout)
+{
+    switch (layout)
+    {
+    case vk::ImageLayout::eUndefined:
+        return RhiResourceState::Undefined;
+    case vk::ImageLayout::eGeneral:
+        return RhiResourceState::ComputeReadWrite;
+    case vk::ImageLayout::eColorAttachmentOptimal:
+        return RhiResourceState::RenderTarget;
+    case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
+        return RhiResourceState::RenderTarget;
+    case vk::ImageLayout::eShaderReadOnlyOptimal:
+        return RhiResourceState::ShaderRead;
+    case vk::ImageLayout::eTransferSrcOptimal:
+        return RhiResourceState::CopySrc;
+    case vk::ImageLayout::eTransferDstOptimal:
+        return RhiResourceState::CopyDst;
+    case vk::ImageLayout::ePreinitialized:
+        break;
+    case vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal:
+        return RhiResourceState::DepthStencilRead;
+    case vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal:
+        return RhiResourceState::DepthStencilRead;;
+    //case vk::ImageLayout::eDepthAttachmentOptimal:
+    //case vk::ImageLayout::eDepthReadOnlyOptimal:
+    //case vk::ImageLayout::eStencilAttachmentOptimal:
+    //case vk::ImageLayout::eStencilReadOnlyOptimal:
+      //  break;
+    case vk::ImageLayout::eReadOnlyOptimal:
+        return RhiResourceState::ComputeRead;
+    case vk::ImageLayout::eAttachmentOptimal:
+        return RhiResourceState::RenderTarget;
+    case vk::ImageLayout::ePresentSrcKHR:
+        return RhiResourceState::Present;
+    default:
+        break;
+    }
+
+    PC_LOG("Unsupported VulkanImageLayoutToResourceState layout {}", string_VkImageLayout(static_cast<VkImageLayout>(layout)));
+    return RhiResourceState::Undefined;
+}
+
+vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _RhiResourceState)
+{
+    switch (_RhiResourceState)
+    {
+    case PC_CORE::RhiResource::State::Undefined:
+        return {};
+    case PC_CORE::RhiResource::State::CopySrc:
+        return vk::AccessFlagBits::eTransferRead;
+    case PC_CORE::RhiResource::State::CopyDst:
+        return vk::AccessFlagBits::eTransferWrite;
+    case PC_CORE::RhiResource::State::VertexBuffer:
+        return vk::AccessFlagBits::eVertexAttributeRead;
+    case PC_CORE::RhiResource::State::IndexBuffer:
+        return vk::AccessFlagBits::eIndexRead;
+    case PC_CORE::RhiResource::State::UniformBuffer:
+        return vk::AccessFlagBits::eUniformRead;
+    case PC_CORE::RhiResource::State::ShaderRead:
+        return vk::AccessFlagBits::eShaderRead;
+    case PC_CORE::RhiResource::State::RenderTarget:
+        return vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead;
+    case PC_CORE::RhiResource::State::DepthStencilWrite:
+        return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+    case PC_CORE::RhiResource::State::DepthStencilRead:
+        return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+    case PC_CORE::RhiResource::State::ComputeRead:
+        return vk::AccessFlagBits::eShaderRead;
+    case PC_CORE::RhiResource::State::ComputeWrite:
+        return vk::AccessFlagBits::eShaderWrite;
+    case PC_CORE::RhiResource::State::ComputeReadWrite:
+        return vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+    case PC_CORE::RhiResource::State::Present:
+    default:
+        break;
+    }
+
+    assert(false && "Unsuported");
+
+    PC_LOGERROR("Unsuported RhiResourceStateToAccesFlag")
+
+    return {};
 }

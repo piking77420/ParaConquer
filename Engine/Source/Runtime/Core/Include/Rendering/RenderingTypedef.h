@@ -2,7 +2,7 @@
 
 #include "CoreHeader.hpp"
 #include "Material.hpp"
-#include "LowRenderer/FrameBuffer.hpp"
+#include "LowRenderer/RhiFrameBuffer.hpp"
 #include "LowRenderer/DescriptorSet.hpp"
 #include "Resources/StaticMesh.hpp"
 
@@ -35,9 +35,9 @@ BEGIN_PCCORE
         float DeltaTime;
         float Time;
 
-        std::shared_ptr<FrameBuffer> GbufferFrameBuffer;
-        std::shared_ptr<FrameBuffer> ForwardFrameBuffer;
-        std::shared_ptr<FrameBuffer> FinalImageFrameBuffer;
+        std::shared_ptr<RhiFrameBuffer> GbufferFrameBuffer;
+        std::shared_ptr<RhiFrameBuffer> ForwardFrameBuffer;
+        std::shared_ptr<RhiFrameBuffer> FinalImageFrameBuffer;
 
         ShaderProgramDescriptorSets* GeometryDescritproSet;
         ShaderProgramDescriptorSets* DefferdLightingGbufferSet;
@@ -66,6 +66,24 @@ BEGIN_PCCORE
 
         Count
     };
+
+    inline std::string GbufferTypeToString(GbufferType _gbufferType)
+    {
+        switch (_gbufferType) 
+        {
+        case GbufferType::Albedo:
+            return "Albedo";
+        case GbufferType::Normal:
+            return "Normal";
+        case GbufferType::RoughnessMetallicAo:
+            return "RoughnessMetallicAo";
+        case GbufferType::WorldPosition:
+            return "WorldPosition";
+        case GbufferType::Count:
+            return "";
+        }
+        return "";
+    }
 
 
     struct StaticMeshComponentData

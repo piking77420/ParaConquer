@@ -23,7 +23,7 @@ BEGIN_PCCORE
     public:
         static PC_CORE_API void LinkDependencies(Resource* _resourceParent, Resource* _resourceChild);
 
-        std::string Name;
+        std::string Name; // TODO PROTECT IT 
 
         PC_CORE_API void QueryType() override = 0;
 

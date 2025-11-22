@@ -3,7 +3,7 @@
 #include <Memory>
 
 #include "RenderingTypedef.h"
-#include "LowRenderer/FrameBuffer.hpp"
+#include "LowRenderer/RhiFrameBuffer.hpp"
 #include "Resources/Texture2d.hpp"
 
 BEGIN_PCCORE
@@ -16,10 +16,10 @@ BEGIN_PCCORE
 
         PC_CORE_API const Texture2D& GetTexture(GbufferType type) const;
 
-        PC_CORE_API void CreateGBuffers(Tbx::Vector2i _size);
+        PC_CORE_API void CreateGBuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size);
 
         // Create also Textures
-        PC_CORE_API Gbuffers(Tbx::Vector2i _size);
+        PC_CORE_API Gbuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size);
 
         PC_CORE_API Gbuffers() = default;
 

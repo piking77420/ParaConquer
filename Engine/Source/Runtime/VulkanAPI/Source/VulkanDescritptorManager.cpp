@@ -3,7 +3,13 @@
 #include <map>
 
 #include "VulkanContext.hpp"
+#include "Resources/VulkanDescriptorSets.hpp"
 
+Vulkan::VulkanDescritptorManager::VulkanDescritptorManager(VulkanContext& _Context)
+    : m_Context(_Context)
+{
+
+}
 
 size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvReflectShaderModule>& _modules)
 {
@@ -11,7 +17,7 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     SetBindingMap bindingMap;
-    std::shared_ptr<CacheDescriptorSets> cache = nullptr;
+    std::shared_ptr<CacheDescriptor> cache = nullptr;
     if (FindInCache(_modules, &bindingMap, &cache))
     {
         return cache->id;
@@ -19,6 +25,8 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
 
     std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
     std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
+
+    vk::Device vkDevice = m_Context.GetDevice()->GetDevice();
 
     // Compute Unique Set
     for (auto& moduleIndex : _modules)
@@ -78,7 +86,7 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
     for (const auto& it : layoutsMap)
         maxSet = std::max(maxSet, it.first);
 
-    auto cacheDescriptor = std::make_shared<CacheDescriptorSets>();
+    auto cacheDescriptor = std::make_shared<CacheDescriptor>();
     cacheDescriptor->descriptorSetLayout.clear();
     cacheDescriptor->descriptorSetLayout.resize(maxSet + 1, VK_NULL_HANDLE);
 
@@ -90,7 +98,7 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
         descriptorSetLayoutCreateInfo.pBindings = it.second.data();
 
         cacheDescriptor->descriptorSetLayout[it.first] =
-            GET_VK_DEVICE->GetDevice().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+            vkDevice.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
     }
 
     // Descriptor Pool
@@ -114,7 +122,7 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
     descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
     descriptorPoolCreateInfo.maxSets = MAX_ALLOC_DESCRIPTOR_SET;
 
-    cacheDescriptor->descriptorPool = GET_VK_DEVICE->GetDevice().createDescriptorPool(descriptorPoolCreateInfo);
+    cacheDescriptor->descriptorPool = vkDevice.createDescriptorPool(descriptorPoolCreateInfo);
 
 
     descriptorLayoutCache.emplace(bindingMap, cacheDescriptor);
@@ -124,28 +132,29 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
     return cacheDescriptor->id;
 }
 
+
 void Vulkan::VulkanDescritptorManager::ClearCaches()
 {
     m_DescriptorSets.clear();
 
-    vk::Device d = GET_VK_DEVICE->GetDevice();
+    vk::Device vkDevice = m_Context.GetDevice()->GetDevice();
     for (auto it : descriptorLayoutCache)
     {
         for (auto it : it.second->descriptorSetLayout)
-            d.destroyDescriptorSetLayout(it);
+            vkDevice.destroyDescriptorSetLayout(it);
 
-        d.destroyDescriptorPool(it.second->descriptorPool);
+        vkDevice.destroyDescriptorPool(it.second->descriptorPool);
     }
 }
 
-Vulkan::CacheDescriptorSets* Vulkan::VulkanDescritptorManager::GetDescriptorSets(size_t setID) const
+Vulkan::CacheDescriptor* Vulkan::VulkanDescritptorManager::GetDescriptorSets(size_t setID) const
 {
     return m_DescriptorSets.at(setID);
 }
 
 bool Vulkan::VulkanDescritptorManager::FindInCache(const std::vector<SpvReflectShaderModule>& _modules,
                                                    SetBindingMap* _outSetBindingMap,
-                                                   std::shared_ptr<CacheDescriptorSets>* cache) const
+                                                   std::shared_ptr<CacheDescriptor>* cache) const
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);

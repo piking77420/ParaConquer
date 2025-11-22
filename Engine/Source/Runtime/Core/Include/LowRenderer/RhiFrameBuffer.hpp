@@ -3,33 +3,32 @@
 #include "CoreHeader.hpp"
 
 #include "RhiRenderPass.hpp"
-#include "Math/Matrix3x3.hpp"
 #include "Math/ToolboxTypedef.hpp"
 #include "Resources/Texture2d.hpp"
 
 BEGIN_PCCORE
     struct FrameBufferAttachementDesriptor
     {
-        Texture2D* texture;
+        RhiTexture* RhiTexture;
     };
 
     struct CreateFrameInfo
     {
-        uint32_t width;
-        uint32_t height;
+        uint32_t Width;
+        uint32_t Height;
 
-        std::vector<FrameBufferAttachementDesriptor>* attachements;
-        RhiRenderPass* renderPass;
+        std::vector<FrameBufferAttachementDesriptor>* Attachements;
+        RhiRenderPass* RenderPass;
     };
 
-    class FrameBuffer : public RhiResource
+    class RhiFrameBuffer : public RhiObject
     {
     public:
-        PC_CORE_API FrameBuffer(const CreateFrameInfo& _createFrameInfo);
+        PC_CORE_API RhiFrameBuffer(Rhi& _Rhi, const std::string& _name, uint32_t _width, uint32_t m_height);
 
-        PC_CORE_API FrameBuffer() = default;
+        PC_CORE_API RhiFrameBuffer(Rhi& _Rhi, std::string&& _name, uint32_t _width, uint32_t m_height);
 
-        PC_CORE_API ~FrameBuffer() override = default;
+        PC_CORE_API ~RhiFrameBuffer() override = default;
 
         PC_CORE_API uint32_t GetWidth() const
         {

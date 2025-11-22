@@ -3,20 +3,20 @@
 #include <Vector>
 
 #include "CoreHeader.hpp"
-#include "FrameBuffer.hpp"
+#include "RhiFrameBuffer.hpp"
 #include "RhiRenderPass.hpp"
 #include "CommandList.hpp"
 #include "Io/Window.hpp"
 
 BEGIN_PCCORE
-    class SwapChain
+    class RhiSwapChain : public RhiObject
     {
     public:
-        PC_CORE_API SwapChain(uint32_t _widht, uint32_t _height);
+        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi, const std::string& _Name, uint32_t _Widht, uint32_t _Height);
 
-        PC_CORE_API SwapChain() = default;
+        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi, std::string&& _Name, uint32_t _Widht, uint32_t _Height);
 
-        PC_CORE_API virtual ~SwapChain() = default;
+        PC_CORE_API virtual ~RhiSwapChain() = default;
 
         PC_CORE_API std::shared_ptr<RhiRenderPass> GetSwapChainRenderPass() const;
 
@@ -56,7 +56,7 @@ BEGIN_PCCORE
 
         uint32_t m_SwapChainHeight = 0;
 
-        uint8_t m_SwapChainImageCount = 0;
+        uint32_t m_SwapChainImageCount = 0;
     };
 
 END_PCCORE

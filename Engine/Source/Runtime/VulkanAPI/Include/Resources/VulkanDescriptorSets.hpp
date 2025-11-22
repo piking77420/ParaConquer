@@ -1,29 +1,49 @@
 ﻿#pragma once
 
 #include "VulkanHeader.h"
-#include "VulkanShaderProgram.hpp"
+#include "LowRenderer/DescriptorSet.hpp"
+
+namespace PC_CORE
+{
+    class Rhi;
+}
 
 namespace Vulkan
 {
-    struct VulkanDescriptorSets : PC_CORE::ShaderProgramDescriptorSets
+    class VulkanDescritptorManager;
+    struct CacheDescriptor;
+     
+
+    class VulkanDescriptorSets : public PC_CORE::ShaderProgramDescriptorSets
     {
-        VULKAN_API const void* GetNativeHandle() const override;
+    public:
+        VULKAN_API bool Build() override;
+        
+        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
 
-        VULKAN_API void* GetNativeHandle() override;
+        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
 
-        VULKAN_API void WriteDescriptorSets(
-            const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& shaderProgramDescriptorSet) override;
+        VULKAN_API VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const std::string& _Name, const CacheDescriptor& _Cache);
 
-        VULKAN_API VulkanDescriptorSets(vk::DescriptorPool _descitptorPool,
-                                        vk::DescriptorSetAllocateInfo _vkDescriptorSetAllocateInfo);
-
-        VULKAN_API VulkanDescriptorSets() = default;
+        VULKAN_API VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, std::string&& _Name, const CacheDescriptor& _Cache);
 
         VULKAN_API ~VulkanDescriptorSets() override;
 
     private:
+        const CacheDescriptor& m_Cache;
+
         std::array<vk::DescriptorSet, MaxFramesInFlight> m_DescriptorSets;
 
-        vk::DescriptorPool m_DescitptorPool = VK_NULL_HANDLE;
+        void CreateDescriptors();
+
+        void UpdateDesciptors();
+
+        void FillDescriptorInfo(std::span<vk::DescriptorImageInfo>& imageInfo, std::span<vk::DescriptorBufferInfo>& bufferInfo, size_t& imageIndex, size_t& bufferIndex);
+
+        void FillDescritptorWrite(std::span<vk::WriteDescriptorSet>& _WriteDescriptorSetSpan,
+                                  const std::span<vk::DescriptorImageInfo>& imageInfo,
+                                  const std::span<vk::DescriptorBufferInfo>& bufferInfo, 
+                                  size_t& imageIndex,
+                                  size_t& bufferIndex);
     };
 }

@@ -8,9 +8,9 @@ BEGIN_PCCORE
     class RenderPass : public IGpuResource
     {
     public:
-        PC_CORE_API std::shared_ptr<RhiResource> GetRhiHandle() const override
+        PC_CORE_API RhiObject* const GetRhiHandle() const
         {
-            return m_RhiRenderPass;
+            return m_RhiRenderPass.get();
         }
 
         PC_CORE_API RenderPass();

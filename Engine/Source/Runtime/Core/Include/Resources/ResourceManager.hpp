@@ -23,7 +23,7 @@ BEGIN_PCCORE
         [[nodiscard]] static bool Add(const ObjectPtr<ResourceDerived>& _object);
 
         template <class ResourceDerived, typename... Arg>
-        static ObjectPtr<ResourceDerived> Create(Arg... _args);
+        static ObjectPtr<ResourceDerived> Create(Arg&& ... _args);
 
         template <class ResourceDerived>
         static ObjectPtr<ResourceDerived> Get(const std::string& _name);
@@ -62,7 +62,7 @@ BEGIN_PCCORE
 
 
     template <class ResourceDerived, typename... Arg>
-    ObjectPtr<ResourceDerived> ResourceManager::Create(Arg... _args)
+    ObjectPtr<ResourceDerived> ResourceManager::Create(Arg&&... _args)
     {
         ObjectPtr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(_args)...);
 

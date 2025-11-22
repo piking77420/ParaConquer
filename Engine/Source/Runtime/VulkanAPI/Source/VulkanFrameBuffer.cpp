@@ -2,31 +2,36 @@
 
 #include "VulkanContext.hpp"
 #include "VulkanRenderPass.hpp"
+#include "VulkanTexture.hpp"
 #include "LowRenderer/Rhi.hpp"
-#include "Texture/VulkanTexture2d.hpp"
 
-Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _createFrameInfo)
-    : FrameBuffer(_createFrameInfo)
+bool Vulkan::VulkanFrameBuffer::Build()
+{
+    assert(false); // TODO
+    return false;
+}
+
+Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::CreateFrameInfo& _createFrameInfo)
+    : RhiFrameBuffer(_Rhi, _name, _createFrameInfo.Width, _createFrameInfo.Height)
 {
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-        VulkanContext::GetContext().rhiDevice);
+        GET_VK_CONTEXT.rhiDevice);
 
-    auto renderPass = reinterpret_cast<const VulkanRenderPass*>(_createFrameInfo.renderPass);
+    auto renderPass = reinterpret_cast<const VulkanRenderPass*>(_createFrameInfo.RenderPass);
 
     int frame = 0;
     for (auto& framebuffer : m_FrameBuffers)
     {
         std::vector<vk::ImageView> image_views;
-        image_views.reserve(_createFrameInfo.attachements->size());
+        image_views.reserve(_createFrameInfo.Attachements->size());
 
 
-        for (auto& attachement : *_createFrameInfo.attachements)
+        for (auto& attachement : *_createFrameInfo.Attachements)
         {
-            const VulkanTexture& texture = *reinterpret_cast<const VulkanTexture*>(attachement.texture->GetRhiHandle()->
-                GetNativeHandle());
-            assert(texture.textureAndAlloc[frame].imageView != VK_NULL_HANDLE);
+            const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(attachement.RhiTexture->
+                GetFrameNativeHandle(frame));
 
-            image_views.emplace_back(texture.textureAndAlloc[frame].imageView);
+            image_views.emplace_back(textureAndAlloc->ImageView);
         }
 
         vk::FramebufferCreateInfo framebufferCreateInfo{};
@@ -35,8 +40,8 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
         framebufferCreateInfo.renderPass = renderPass->GetVulkanRenderPass();
         framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(image_views.size());
         framebufferCreateInfo.pAttachments = image_views.data();
-        framebufferCreateInfo.width = _createFrameInfo.width;
-        framebufferCreateInfo.height = _createFrameInfo.height;
+        framebufferCreateInfo.width = _createFrameInfo.Width;
+        framebufferCreateInfo.height = _createFrameInfo.Height;
         framebufferCreateInfo.layers = 1;
         framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferCreateInfo);
 
@@ -45,11 +50,14 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _cr
 }
 
 
-Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uint32_t widht,
-                                             uint32_t height) : m_FrameBuffers(_vkFramebuffer)
+Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name, vk::Framebuffer _vkFramebuffer, const uint32_t _widht,
+                                             const uint32_t _height) 
+    : RhiFrameBuffer(_Rhi, _name, _widht, _height)
 {
-    m_Width = widht;
-    m_Height = height;
+    for (auto& framebuffer : m_FrameBuffers)
+    {
+        framebuffer = _vkFramebuffer;
+    }
 }
 
 Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
@@ -60,7 +68,7 @@ Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
             continue;
 
         std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-            VulkanContext::GetContext().rhiDevice);
+            GET_VK_CONTEXT.rhiDevice);
         vulkanDevice->GetDevice().destroyFramebuffer(framebuffer);
         framebuffer = VK_NULL_HANDLE;
     }
@@ -68,5 +76,5 @@ Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
 
 vk::Framebuffer Vulkan::VulkanFrameBuffer::GetFramebuffer() const
 {
-    return m_FrameBuffers[PC_CORE::Rhi::GetFrameIndex()];
+    return m_FrameBuffers[m_Rhi.GetFrameIndex()];
 }

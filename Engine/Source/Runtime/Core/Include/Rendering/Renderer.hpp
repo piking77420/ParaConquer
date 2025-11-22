@@ -2,12 +2,9 @@
 #include "Light.hpp"
 #include "RenderingTypedef.h"
 #include "DebugHelper/DebugDrawContext.hpp"
-#include "LowRenderer/RhiVertexBuffer.hpp"
 #include "LowRenderer/CommandList.hpp"
-#include "LowRenderer/RhiIndexBuffer.hpp"
 #include "LowRenderer/RhiContext.hpp"
 #include "LowRenderer/RhiShaderProgram.hpp"
-#include "LowRenderer/RhiUniformBuffer.hpp"
 #include "Resources/GraphicShader.hpp"
 #include "Resources/Texture3d.hpp"
 #include "World/StaticMeshComponent.hpp"
@@ -15,6 +12,7 @@
 #include "World/World.hpp"
 #include "Resources/ComputeShader.hpp"
 #include "View.hpp"
+#include "Sampler.hpp"
 
 BEGIN_PCCORE
     // TODO
@@ -37,7 +35,7 @@ BEGIN_PCCORE
     {
         UniformBuffer CameraUniformBuffer;
         UniformBuffer PostProcessUniformBuffer;
-        UniformBuffer DynamicGpuLightUniformBuffer;
+        UniformBuffer LightBuffer;
     };
 
 
@@ -49,21 +47,21 @@ BEGIN_PCCORE
         // Critical section
         RenderingWorldData RenderWorldData;
 
-        std::shared_ptr<CommandList> PrimaryCommandList;
+        std::unique_ptr<CommandList> PrimaryCommandList;
 
-        std::shared_ptr<CommandList> SwapChainPassCommandList;
+        std::unique_ptr<CommandList> SwapChainPassCommandList;
 
-        WeakObjectPtr<GraphicShader> ForwardShader;
+        std::unique_ptr<RhiShaderProgram> ForwardShader;
 
-        WeakObjectPtr<GraphicShader> DrawTextureScreenQuadShader;
+        std::unique_ptr<RhiShaderProgram> DrawTextureScreenQuadShader;
 
-        WeakObjectPtr<GraphicShader> SkyBoxShader;
+        std::unique_ptr<RhiShaderProgram> SkyBoxShader;
 
-        WeakObjectPtr<GraphicShader> GeometryBufferShader;
+        std::unique_ptr<RhiShaderProgram> GeometryBufferShader;
 
-        WeakObjectPtr<GraphicShader> DeferedShader;
+        std::unique_ptr<RhiShaderProgram> DeferedShader;
 
-        WeakObjectPtr<ComputeShader> AcesShader;
+        std::unique_ptr<RhiShaderProgram> AcesShader;
 
         RenderPasses RenderPasses;
 
@@ -82,7 +80,7 @@ BEGIN_PCCORE
 
         PC_CORE_API ~Renderer();
 
-        PC_CORE_API void Init();
+        PC_CORE_API void Init(Rhi& _Rhi);
 
         PC_CORE_API void BeginFrame(Window* _window);
 
@@ -92,8 +90,10 @@ BEGIN_PCCORE
 
         PC_CORE_API std::shared_ptr<View> CreateView(Tbx::Vector2i _defaultSize);
 
+        PC_CORE_API Rhi& GetRhi(); 
+
     private:
-        RhiContext* m_RhiContext;
+        Rhi* m_Rhi{nullptr};
 
         const View* m_CurrentView = nullptr;
 
@@ -111,8 +111,6 @@ BEGIN_PCCORE
 
         std::vector<std::shared_ptr<View>> m_Views;
 
-        UniformBuffer m_GpuLightUniformBufferStaging;
-
         GPUDynamicLightData m_GpuDynamicLightData;
 
         void InitCubeBuffers();
@@ -127,7 +125,7 @@ BEGIN_PCCORE
 
         PC_CORE_API void CreateThirdPartyResources();
 
-        PC_CORE_API void DrawStaticMesh(MaterialType _type, const ObjectPtr<GraphicShader>& _shader);
+        PC_CORE_API void DrawStaticMesh(MaterialType _type, RhiShaderProgram& _shader);
 
         PC_CORE_API void ClearRenderData();
 

@@ -254,50 +254,205 @@ BEGIN_PCCORE
 
     REFLECT(RhiFormat)
 
-    enum struct MemoryUsage : uint8_t
+#pragma region GetBytePerPixel
+    static inline uint32_t GetBytePerPixel(RhiFormat RhiFormat)
     {
-        Static, // Not modified over its lifetime
-        Mutable, // Occasionally modified (e.g., once per frame)
-        Dynamic, // Frequently modified (e.g., multiple times per frame)
+        switch (RhiFormat)
+        {
+        case PC_CORE::RhiFormat::Undefined:
+            return 0;
+        case PC_CORE::RhiFormat::R4G4UnormPack8:
+            return 0;
+        case PC_CORE::RhiFormat::R4G4B4A4UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::B4G4R4A4UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::R5G6B5UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::B5G6R5UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::R5G5B5A1UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::B5G5R5A1UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::A1R5G5B5UnormPack16:
+            return 0;
+        case PC_CORE::RhiFormat::R8Unorm:
+        case PC_CORE::RhiFormat::R8Snorm:
+        case PC_CORE::RhiFormat::R8Uscaled:
+        case PC_CORE::RhiFormat::R8Sscaled:
+        case PC_CORE::RhiFormat::R8Uint:
+        case PC_CORE::RhiFormat::R8Sint:
+        case PC_CORE::RhiFormat::R8Srgb:
+            return 1;
+        case PC_CORE::RhiFormat::R8G8Unorm:
+        case PC_CORE::RhiFormat::R8G8Snorm:
+        case PC_CORE::RhiFormat::R8G8Uscaled:
+        case PC_CORE::RhiFormat::R8G8Sscaled:
+        case PC_CORE::RhiFormat::R8G8Uint:
+        case PC_CORE::RhiFormat::R8G8Sint:
+        case PC_CORE::RhiFormat::R8G8Srgb:
+            return 2;
+        case PC_CORE::RhiFormat::R8G8B8Unorm:
+        case PC_CORE::RhiFormat::R8G8B8Snorm:
+        case PC_CORE::RhiFormat::R8G8B8Uscaled:
+        case PC_CORE::RhiFormat::R8G8B8Sscaled:
+        case PC_CORE::RhiFormat::R8G8B8Uint:
+        case PC_CORE::RhiFormat::R8G8B8Sint:
+        case PC_CORE::RhiFormat::R8G8B8Srgb:
+        case PC_CORE::RhiFormat::B8G8R8Unorm:
+        case PC_CORE::RhiFormat::B8G8R8Snorm:
+        case PC_CORE::RhiFormat::B8G8R8Uscaled:
+        case PC_CORE::RhiFormat::B8G8R8Sscaled:
+        case PC_CORE::RhiFormat::B8G8R8Uint:
+        case PC_CORE::RhiFormat::B8G8R8Sint:
+        case PC_CORE::RhiFormat::B8G8R8Srgb:
+            return 3;
+        case PC_CORE::RhiFormat::R8G8B8A8Unorm:
+        case PC_CORE::RhiFormat::R8G8B8A8Snorm:
+        case PC_CORE::RhiFormat::R8G8B8A8Uscaled:
+        case PC_CORE::RhiFormat::R8G8B8A8Sscaled:
+        case PC_CORE::RhiFormat::R8G8B8A8Uint:
+        case PC_CORE::RhiFormat::R8G8B8A8Sint:
+        case PC_CORE::RhiFormat::R8G8B8A8Srgb:
+        case PC_CORE::RhiFormat::B8G8R8A8Unorm:
+        case PC_CORE::RhiFormat::B8G8R8A8Snorm:
+        case PC_CORE::RhiFormat::B8G8R8A8Uscaled:
+        case PC_CORE::RhiFormat::B8G8R8A8Sscaled:
+        case PC_CORE::RhiFormat::B8G8R8A8Uint:
+        case PC_CORE::RhiFormat::B8G8R8A8Sint:
+        case PC_CORE::RhiFormat::B8G8R8A8Srgb:
+            return 4;
+        case PC_CORE::RhiFormat::A8B8G8R8SnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A8B8G8R8UnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A8B8G8R8UscaledPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A8B8G8R8SscaledPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A8B8G8R8UintPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A8B8G8R8SintPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A8B8G8R8SrgbPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2R10G10B10UnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2R10G10B10SnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2R10G10B10UscaledPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2R10G10B10SscaledPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2R10G10B10UintPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2R10G10B10SintPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2B10G10R10UnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2B10G10R10SnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2B10G10R10UscaledPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2B10G10R10SscaledPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2B10G10R10UintPack32:
+            return 0;
+        case PC_CORE::RhiFormat::A2B10G10R10SintPack32:
+            return 0;
+        case PC_CORE::RhiFormat::R16Unorm:
+        case PC_CORE::RhiFormat::R16Snorm:
+        case PC_CORE::RhiFormat::R16Uscaled:
+        case PC_CORE::RhiFormat::R16Sscaled:
+        case PC_CORE::RhiFormat::R16Uint:
+        case PC_CORE::RhiFormat::R16Sint:
+        case PC_CORE::RhiFormat::R16Sfloat:
+            return 2;
+        case PC_CORE::RhiFormat::R16G16Unorm:
+        case PC_CORE::RhiFormat::R16G16Snorm:
+        case PC_CORE::RhiFormat::R16G16Uscaled:
+        case PC_CORE::RhiFormat::R16G16Sscaled:
+        case PC_CORE::RhiFormat::R16G16Uint:
+        case PC_CORE::RhiFormat::R16G16Sint:
+        case PC_CORE::RhiFormat::R16G16Sfloat:
+            return 4;
+        case PC_CORE::RhiFormat::R16G16B16Unorm:
+        case PC_CORE::RhiFormat::R16G16B16Snorm:
+        case PC_CORE::RhiFormat::R16G16B16Uscaled:
+        case PC_CORE::RhiFormat::R16G16B16Sscaled:
+        case PC_CORE::RhiFormat::R16G16B16Uint:
+        case PC_CORE::RhiFormat::R16G16B16Sint:
+        case PC_CORE::RhiFormat::R16G16B16Sfloat:
+            return 6;
+        case PC_CORE::RhiFormat::R16G16B16A16Unorm:
+            return 0;
+        case PC_CORE::RhiFormat::R16G16B16A16Snorm:
+        case PC_CORE::RhiFormat::R16G16B16A16Uscaled:
+        case PC_CORE::RhiFormat::R16G16B16A16Sscaled:
+        case PC_CORE::RhiFormat::R16G16B16A16Uint:
+        case PC_CORE::RhiFormat::R16G16B16A16Sint:
+        case PC_CORE::RhiFormat::R16G16B16A16Sfloat:
+            return 8;
+        case PC_CORE::RhiFormat::R32Uint:
+        case PC_CORE::RhiFormat::R32Sint:
+        case PC_CORE::RhiFormat::R32Sfloat:
+            return 4;
+        case PC_CORE::RhiFormat::R32G32Uint:
+        case PC_CORE::RhiFormat::R32G32Sint:
+        case PC_CORE::RhiFormat::R32G32Sfloat:
+            return 8;
+        case PC_CORE::RhiFormat::R32G32B32Uint:
+        case PC_CORE::RhiFormat::R32G32B32Sint:
+        case PC_CORE::RhiFormat::R32G32B32Sfloat:
+            return 12;
+        case PC_CORE::RhiFormat::R32G32B32A32Uint:
+        case PC_CORE::RhiFormat::R32G32B32A32Sint:
+        case PC_CORE::RhiFormat::R32G32B32A32Sfloat:
+            return 16;
+        case PC_CORE::RhiFormat::R64Uint:
+            return 0;
+        case PC_CORE::RhiFormat::R64Sint:
+        case PC_CORE::RhiFormat::R64Sfloat:
+            return 8;
+        case PC_CORE::RhiFormat::R64G64Uint:
+        case PC_CORE::RhiFormat::R64G64Sint:
+        case PC_CORE::RhiFormat::R64G64Sfloat:
+            return 16;
+        case PC_CORE::RhiFormat::R64G64B64Uint:
+        case PC_CORE::RhiFormat::R64G64B64Sint:
+        case PC_CORE::RhiFormat::R64G64B64Sfloat:
+            return 24;
+        case PC_CORE::RhiFormat::R64G64B64A64Uint:
+        case PC_CORE::RhiFormat::R64G64B64A64Sint:
+        case PC_CORE::RhiFormat::R64G64B64A64Sfloat:
+            return 32;
+        case PC_CORE::RhiFormat::B10G11R11UfloatPack32:
+            return 0;
+        case PC_CORE::RhiFormat::E5B9G9R9UfloatPack32:
+            return 0;
+        case PC_CORE::RhiFormat::D16Unorm:
+            return 4;
+        case PC_CORE::RhiFormat::X8D24UnormPack32:
+            return 0;
+        case PC_CORE::RhiFormat::D32Sfloat:
+            return 8;
+        case PC_CORE::RhiFormat::S8Uint:
+            return 1;
+        case PC_CORE::RhiFormat::D16UnormS8Uint:
+            return 4;
+        case PC_CORE::RhiFormat::D24UnormS8Uint:
+            return 4;
+        case PC_CORE::RhiFormat::D32SfloatS8Uint:
+            return 8;
+        default:
+            return static_cast<uint32_t>(-1);
+        }
 
-        Count // Total enum values
-    };
+        return static_cast<uint32_t>(-1);
+    }
+#pragma endregion GetBytePerPixel
 
-    REFLECT(MemoryUsage)
-
-    enum struct MemoryLocalisation : uint8_t
-    {
-        GpuOnly, // Device-local
-        CpuOnly, // Host Only
-        CpuToGpu, // Host-visible (upload)
-        GpuToCpu, // Host-readable (readback)
-
-        Count // Total enum values
-    };
-
-    REFLECT(MemoryLocalisation)
-
-    enum class IndexFormat : uint8_t
-    {
-        Uiunt8 = 1,
-        Uint16 = 2,
-        Uint32 = 4
-    };
-
-    REFLECT(IndexFormat)
-    static_assert(static_cast<uint8_t>(IndexFormat::Uint32) == 4, "Size of Uint32");
-
-    enum class Channel : uint8_t
-    {
-        Default = 0,
-
-        Grey = 1,
-        Alpha = 2,
-        Rgb = 3,
-        Rgba = 4
-    };
-
-    REFLECT(Channel)
 
     enum class ComponentSwizzle : uint8_t
     {
@@ -334,73 +489,16 @@ BEGIN_PCCORE
 
     REFLECT(AttachmentType)
 
-    enum class TextureUsage : uint8_t
-    {
-        None = 0,
-        Sampled = 1 << 0, // Shader-readable (SRV)
-        RenderTarget = 1 << 1, // Color attachment (ex: RGBA render target)
-        Depth = 1 << 2, // Depth attachment
-        Stencil = 1 << 3, // Stencil attachment
-        Storage = 1 << 4, // Shader-writable (UAV)
-        
-        All = Sampled | RenderTarget | Depth | Stencil | Storage,
-    };
+    enum class RhiChannel : uint8_t
+        {
+            Default = 0,
 
-    ENUM_FLAGS(TextureUsage)
-    REFLECT(TextureUsage)
-
-
-    // may in future rename as resoure state like D3D12
-    enum class ImageState : uint8_t
-    {
-        Undefined,
-        General,
-        RenderTargetOptimal,
-        DepthStencilOptimal,
-        DepthStencilReadOptimal,
-        ShaderReadOptimal,
-        TransferSrcOptimal,
-        TransferDstOptimal,
-
-        Count,
-    };
-
-    static_assert(static_cast<uint8_t>(ImageState::Count) < 255, "Out of bound enum");
-
-    enum class TextureType
-    {
-        Texture2D,
-        TextureArray2D,
-        CubeMap,
-        CubeMapArray,
-        Count,
-    };
-
-    REFLECT(TextureType)
-
-    struct CreateImageInfo
-    {
-        int32_t Width;
-        int32_t Height;
-        int32_t Depth;
-        uint32_t LayerCount;
-        uint32_t MipsLevels;
-
-        TextureType TextureType;
-        RhiFormat Format;
-        Channel Channel;
-
-        TextureUsage TextureUsage;
-        MemoryLocalisation MemoryVisibility;
-
-        uint32_t Samples;
-        bool GenerateMipMap = false;
-        bool AllowCpuAcces = false;
-        std::vector<void*> Datas;
-    };
-
-    REFLECT(CreateImageInfo)
-
+            Grey = 1,
+            Alpha = 2,
+            Rgb = 3,
+            Rgba = 4
+        };
+    REFLECT(RhiChannel)
 
     enum class Filter
     {
@@ -476,101 +574,52 @@ BEGIN_PCCORE
     REFLECT(StoreOperation)
 
 
-    enum class ShaderProgramPipelineType
-    {
-        Graphic,
-        Compute,
-        RayTracing,
-        MeshShader,
-
-        Count
-    };
-
-    REFLECT(ShaderProgramPipelineType)
-
-
-    enum class GpuPipelineStageFlagBits : uint64_t
+     enum class GpuPipelineStage : uint64_t
     {
         None = 0,
+
+        // Core pipeline stages
         TopOfPipe = 1ULL << 0,
         DrawIndirect = 1ULL << 1,
         VertexInput = 1ULL << 2,
+
         VertexShader = 1ULL << 3,
         TessellationControlShader = 1ULL << 4,
-        TessellationEvaluationShader = 1ULL << 5,
+        TessellationEvalShader = 1ULL << 5,
         GeometryShader = 1ULL << 6,
         FragmentShader = 1ULL << 7,
+
         EarlyFragmentTests = 1ULL << 8,
         LateFragmentTests = 1ULL << 9,
         ColorAttachmentOutput = 1ULL << 10,
+
         ComputeShader = 1ULL << 11,
         Transfer = 1ULL << 12,
         BottomOfPipe = 1ULL << 13,
         Host = 1ULL << 14,
+
+        // Aggregate stages
         AllGraphics = 1ULL << 15,
         AllCommands = 1ULL << 16,
-        NoneKHR = 1ULL << 17,
-        TransformFeedbackEXT = 1ULL << 18,
-        ConditionalRenderingEXT = 1ULL << 19,
-        AccelerationStructureBuildKHR = 1ULL << 20,
-        AccelerationStructureBuildNV = 1ULL << 21,
-        RayTracingShaderKHR = 1ULL << 22,
-        RayTracingShaderNV = 1ULL << 23,
-        FragmentDensityProcessEXT = 1ULL << 24,
-        FragmentShadingRateAttachmentKHR = 1ULL << 25,
-        ShadingRateImageNV = 1ULL << 26,
-        CommandPreprocessNV = 1ULL << 27,
-        CommandPreprocessEXT = 1ULL << 28,
-        TaskShaderEXT = 1ULL << 29,
-        TaskShaderNV = 1ULL << 30,
-        MeshShaderEXT = 1ULL << 31,
-        MeshShaderNV = 1ULL << 32
+
+     
+        TransformFeedback = 1ULL << 17,
+        ConditionalRendering = 1ULL << 18,
+
+        AccelerationStructureBuild = 1ULL << 19,
+        RayTracingShader = 1ULL << 20,
+
+        FragmentDensityProcess = 1ULL << 21,
+        FragmentShadingRate = 1ULL << 22,
+
+        CommandPreprocess = 1ULL << 23,
+
+        TaskShader = 1ULL << 24,
+        MeshShader = 1ULL << 25,
     };
 
-    ENUM_FLAGS(GpuPipelineStageFlagBits)
+    ENUM_FLAGS(GpuPipelineStage)
 
-    //----------------------------------------
-
-    enum class GpuAccessFlag : uint64_t
-    {
-        None = 0,
-        IndirectCommandRead = 1ULL << 0,
-        IndexRead = 1ULL << 1,
-        VertexAttributeRead = 1ULL << 2,
-        UniformRead = 1ULL << 3,
-        InputAttachmentRead = 1ULL << 4,
-        ShaderRead = 1ULL << 5,
-        ShaderWrite = 1ULL << 6,
-        ColorAttachmentRead = 1ULL << 7,
-        ColorAttachmentWrite = 1ULL << 8,
-        DepthStencilAttachmentRead = 1ULL << 9,
-        DepthStencilAttachmentWrite = 1ULL << 10,
-        TransferRead = 1ULL << 11,
-        TransferWrite = 1ULL << 12,
-        HostRead = 1ULL << 13,
-        HostWrite = 1ULL << 14,
-        MemoryRead = 1ULL << 15,
-        MemoryWrite = 1ULL << 16,
-        NoneKhr = 1ULL << 17,
-        TransformFeedbackWriteEXT = 1ULL << 18,
-        TransformFeedbackCounterReadEXT = 1ULL << 19,
-        TransformFeedbackCounterWriteEXT = 1ULL << 20,
-        ConditionalRenderingReadEXT = 1ULL << 21,
-        ColorAttachmentReadNoncoherentEXT = 1ULL << 22,
-        AccelerationStructureReadKHR = 1ULL << 23,
-        AccelerationStructureReadNV = 1ULL << 24,
-        AccelerationStructureWriteKHR = 1ULL << 25,
-        AccelerationStructureWriteNV = 1ULL << 26,
-        FragmentDensityMapReadEXT = 1ULL << 27,
-        FragmentShadingRateAttachmentReadKHR = 1ULL << 28,
-        ShadingRateImageReadNV = 1ULL << 29,
-        CommandPreprocessReadNV = 1ULL << 30,
-        CommandPreprocessReadEXT = 1ULL << 31,
-        CommandPreprocessWriteNV = 1ULL << 32,
-        CommandPreprocessWriteEXT = 1ULL << 33
-    };
-
-    ENUM_FLAGS(GpuAccessFlag)
 
     enum class VertexInputRate
     {
@@ -594,6 +643,8 @@ BEGIN_PCCORE
         RhiFormat Format = RhiFormat::Undefined;
         uint32_t Offset = 0;
     };
+
+    
 
 
 END_PCCORE

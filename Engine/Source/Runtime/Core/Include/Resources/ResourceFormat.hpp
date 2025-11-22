@@ -18,7 +18,7 @@ BEGIN_PCCORE
         Count
     };
 
-    static inline std::array<std::string, static_cast<size_t>(ModelFormat::Count)> ModelSourceFormat
+    static constexpr std::array<std::string_view, static_cast<size_t>(ModelFormat::Count)> ModelSourceFormat
     {
         ".obj",
         ".gltf",
@@ -33,7 +33,8 @@ BEGIN_PCCORE
         Count
     };
 
-    static inline std::array<std::string, static_cast<size_t>(TextureFormat::Count)> TextureFormat
+    static constexpr std::array<std::string_view,
+        static_cast<size_t>(TextureFormat::Count)> TextureFormat
     {
         ".png",
         ".jpg",
@@ -41,51 +42,13 @@ BEGIN_PCCORE
     };
 
 
-    enum struct ShaderStageType : uint8_t
-    {
-        Vertex,
-        Hull,
-        Domain,
-        Geometry,
-        Pixel,
-        Compute,
-        Raygen,
-        Intersection,
-        Anyhit,
-        Closesthit,
-        Miss,
-        Callable,
-        Task,
-        Mesh,
-
-        Count
-    };
-
-
-    static inline const std::array<std::string, static_cast<size_t>(ShaderStageType::Count)> ShaderSourceFormat =
-    {
-        ".vs.hlsl",
-        ".hs.hlsl",
-        ".ds.hlsl",
-        ".gs.hlsl",
-        ".ps.hlsl",
-        ".cs.hlsl",
-        ".rgen.hlsl",
-        ".rint.hlsl",
-        ".ahit.hlsl",
-        ".chit.hlsl",
-        ".miss.hlsl",
-        ".call.hlsl",
-        ".task.hlsl"
-        ".mesh.hlsl",
-    };
 
     template <size_t Size>
-    inline static bool IsFormatValid(const std::array<std::string, Size>& _format, const std::string& _fileFormat,
+    inline static bool IsFormatValid(const std::array<std::string_view, Size>& _format, const std::string& _fileFormat,
                                      uint32_t* _formatIndex)
     {
         for (size_t i = 0; i < _format.size(); i++)
-        {
+        { 
             if (_format[i] == _fileFormat)
             {
                 *_formatIndex = static_cast<uint32_t>(i);
@@ -99,7 +62,7 @@ BEGIN_PCCORE
 
 
     template <typename T, size_t Size>
-    inline static bool GetFormatFromValue(const std::array<std::string, Size>& _format, T value,
+    inline static bool GetFormatFromValue(const std::array<std::string_view, Size>& _format, T value,
                                           const char** _formatOut)
     {
         for (size_t i = 0; i < _format.size(); i++)
@@ -108,7 +71,7 @@ BEGIN_PCCORE
 
             if (value == v)
             {
-                *_formatOut = _format[i].c_str();
+                *_formatOut = _format[i].data();
                 return true;
             }
         }

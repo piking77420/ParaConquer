@@ -2,10 +2,8 @@
 
 #include "LowRenderer/Rhi.hpp"
 
-PC_CORE::RhiSampler::RhiSampler(const SamplerCreateInfo& _samplerCreateInfo) : magFilter(_samplerCreateInfo.magFilter)
-                                                                               , minFilter(_samplerCreateInfo.minFilter),
-                                                                               samU(_samplerCreateInfo.u),
-                                                                               samV(_samplerCreateInfo.v),
-                                                                               samW(_samplerCreateInfo.w)
+PC_CORE::RhiSampler::RhiSampler(Rhi& _Rhi, const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo)
+    : RhiObject(_Rhi, _name)
+    , m_SamplerCreateInfo(_samplerCreateInfo)
 {
 }

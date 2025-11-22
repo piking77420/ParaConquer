@@ -96,13 +96,13 @@ BEGIN_PCCORE
 
         RayCastPrimitiveData m_RayPrimitiveData;
 
-        ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSets;
+        std::unique_ptr<ShaderProgramDescriptorSets> m_ShaderProgramDescriptorSets;
 
-        WeakObjectPtr<GraphicShader> m_ShaderProgram;
+        std::unique_ptr<RhiShaderProgram> m_ShaderProgram;
 
-        WeakObjectPtr<GraphicShader> m_ShaderProgramRay;
+        std::unique_ptr<RhiShaderProgram> m_ShaderProgramRay;
 
-        ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsRay;
+        std::unique_ptr<ShaderProgramDescriptorSets> m_ShaderProgramDescriptorSetsRay;
 
         void CreatePrimitiveShaders();
 
@@ -121,6 +121,8 @@ BEGIN_PCCORE
 
         static void PushCapsuleGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler,
                                      float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        
+        static std::string PrimitiveTypeToString(PrimitiveType _primitiveType);
     };
 
 

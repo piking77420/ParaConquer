@@ -2,25 +2,21 @@
 
 #include "Utils/RhiToVulkan.hpp"
 #include "LowRenderer/Rhi.hpp"
+#include "LowRenderer/RhiBuffer.h"
+#include "LowRenderer/RhiBuffer.h"
 
 
-PC_CORE::IndexBuffer::IndexBuffer(const uint8_t* _indicies, size_t _count, MemoryLocalisation _memoryLocalisation,
-                                  MemoryUsage _memoryUsageFlag)
+PC_CORE::IndexBuffer::IndexBuffer(Rhi& rhi, const std::string& _name, size_t _indexCount,  RhiBuffer::IndexFormat _indexFormat,
+                                  PC_CORE::RhiResource::MemoryUsage _memoryUsage)
+      : m_RhiBufferFormat(_indexFormat)
+      , m_IndiciesCount(_indexCount)
 {
-    m_RhiBuffer = Rhi::CreateIndexBuffer(_indicies, sizeof(uint8_t) * _count, IndexFormat::Uiunt8,
-                                         MemoryLocalisation::GpuOnly, _memoryUsageFlag);
-}
-
-PC_CORE::IndexBuffer::IndexBuffer(const uint16_t* _indicies, size_t _count, MemoryLocalisation _memoryLocalisation,
-                                  MemoryUsage _memoryUsageFlag)
-{
-    m_RhiBuffer = Rhi::CreateIndexBuffer(_indicies, sizeof(uint8_t) * _count, IndexFormat::Uint16,
-                                         MemoryLocalisation::GpuOnly, _memoryUsageFlag);
-}
-
-PC_CORE::IndexBuffer::IndexBuffer(const uint32_t* _indicies, size_t _count, MemoryLocalisation _memoryLocalisation,
-                                  MemoryUsage _memoryUsageFlag)
-{
-    m_RhiBuffer = Rhi::CreateIndexBuffer(_indicies, sizeof(uint32_t) * _count, IndexFormat::Uint32,
-                                         MemoryLocalisation::GpuOnly, _memoryUsageFlag);
+   
+   const RhiBuffer::RhiBufferDescriptor rhiBufferDescriptor = RhiBuffer::RhiBufferDescriptor
+   {
+      .SizeInByte = static_cast<uint32_t>(_indexCount * static_cast<size_t>(_indexFormat)),
+      .Usage = static_cast<RhiBuffer::BufferUsage>(RhiBuffer::BufferUsage::Index | RhiBuffer::BufferUsage::TransferDst),
+   };
+   
+   m_RhiBuffer.reset(rhi.CreateBuffer(_name, rhiBufferDescriptor, _memoryUsage));
 }

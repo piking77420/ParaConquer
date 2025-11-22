@@ -14,6 +14,7 @@
 #include <Fstream>
 #include <ImguiHelper.h>
 #include <Serialize/JsonSerializer.hpp>
+#include "Resources/FileLoader.hpp"
 
 using namespace PC_EDITOR_CORE;
 
@@ -35,25 +36,53 @@ std::wstring normalizePath(const std::wstring& path)
     return result;
 }
 
+void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE::Texture2D& texture, const PC_CORE::Image& image)
+{
+    using namespace PC_CORE;
+
+    const RhiTexture::RhiTextureDesciptor desc =
+    {
+    .Width = image.GetWidht(),
+    .Height = image.GetHeight(),
+    .Depth = 1,
+    .Level = 1,
+    .LayerCount = 1,
+    .Samples = 1,
+    .TextureType = RhiTexture::Type::Texture2D,
+    .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst),
+    .RhiFormat = RhiFormat::R8G8B8A8Unorm,
+    .AllowCpuAcces = false
+    };
+
+    texture = PC_CORE::Texture2D(rhi, name, desc, RhiResource::MemoryUsage::Static);
+    texture->Build();
+
+    rhi.PushResourceUpdate([&](CommandList* list)
+        {
+            texture->UploadData2D(list, image.GetData(), image.GetWidht(), image.GetHeight(), image.GetChannel());
+        });
+}
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
+    using namespace PC_CORE;
+
     m_BasePathRelative = std::filesystem::relative(std::filesystem::current_path(),
                                                    std::wstring(m_Editor->editorData.projectPath));
-
     m_CurrenPath = normalizePath(std::wstring(m_Editor->editorData.projectPath));
-
     windowFlags |= ImGuiWindowFlags_MenuBar;
 
     const PC_CORE::Sampler& s = m_Editor->editorData.nearestSampler;
 
-    m_FolderIcon.texure = PC_CORE::Texture2D("Folder.png", EDITOR_RESOURCE_PATH "/Icons/Folder.png");
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.GetRhiTexture2D().get(),
-                                                    s.GetRhiSampler().get(), &m_FolderIcon.descritproSet, 1);
+    Image imageFolder(EDITOR_RESOURCE_PATH "/Icons/Folder.png", RhiChannel::Rgba);
+    Image imageNull(EDITOR_RESOURCE_PATH "/Icons/Null.png", RhiChannel::Rgba);
 
+    CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, "Folder.png", m_FolderIcon.texure, imageFolder);
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.Get(),
+        s.Get(), &m_FolderIcon.descritproSet, 1);
 
-    m_NullIcon.texure = PC_CORE::Texture2D("Null.png", EDITOR_RESOURCE_PATH "/Icons/Null.png");
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.GetRhiTexture2D().get(), s.GetRhiSampler().get(),
+    CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, "Null.png", m_NullIcon.texure, imageNull);
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.Get(), s.Get(),
                                                     &m_NullIcon.descritproSet, 1);
 
     CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>(),
@@ -89,6 +118,7 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 
 ResourceBrowserWindow::~ResourceBrowserWindow()
 {
+    
     m_Editor->IMGUIContext.DestroyVulkanTexture(&m_FolderIcon.descritproSet, 1);
     m_Editor->IMGUIContext.DestroyVulkanTexture(&m_NullIcon.descritproSet, 1);
 
@@ -178,6 +208,7 @@ void ResourceBrowserWindow::CreateAsset() const
         ImGui::BeginPopup("Textures");
         if (ImGui::Selectable("Texture2D"))
         {
+            /*
             const PC_CORE::SamplerCreateInfo info =
             {
                 .SamplerName = "LinearRepeat",
@@ -186,7 +217,7 @@ void ResourceBrowserWindow::CreateAsset() const
                 .u = PC_CORE::SamplerAddressMode::Repeat,
                 .v = PC_CORE::SamplerAddressMode::Repeat,
                 .w = PC_CORE::SamplerAddressMode::Repeat
-            };
+            };*/
 
             //PC_CORE::Sampler newTexture(GetUniqueFileName(m_CurrenPath, "Texture2D", ".presource"));
         }
@@ -331,6 +362,7 @@ void ResourceBrowserWindow::RenderDirectories()
 
             if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::Exist(type))
             {
+                
                 auto it = m_TypeIconMap.find(type);
                 auto& icon = it == m_TypeIconMap.end() ? m_NullIcon : it->second;
 
@@ -381,11 +413,16 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const s
 {
     PERF_REGION_SCOPED;
 
+    PC_CORE::Image image(_path.generic_string(), PC_CORE::RhiChannel::Rgba);
+
     ImguiImage newIcon;
-    newIcon.texure = PC_CORE::Texture2D(_path.filename().generic_string(), _path.generic_string());
+
+    CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, _path.filename().generic_string(), newIcon.texure, image);
+
+
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(
-        newIcon.texure.GetRhiTexture2D().get(),
-        m_Editor->editorData.nearestSampler.GetRhiSampler().get(),
+        newIcon.texure.Get(),
+        m_Editor->editorData.nearestSampler.Get(),
         &newIcon.descritproSet, 1);
 
     m_TypeIconMap[_id] = std::move(newIcon);
@@ -418,7 +455,7 @@ void ResourceBrowserWindow::OnImportButton()
 
     // Try to decode imported file
     // Pass json in order to give render data
-    if (!m_Importer.Import(p, &jSerializer, &id, &r) || id == PC_CORE::NullTypeId)
+    if (!m_Importer.Import(m_Editor->gameApp.RenderHarwareInteface, p, &jSerializer, &id, &r) || id == PC_CORE::NullTypeId)
     {
         jSerializer.CloseFile();
         return;

@@ -9,77 +9,59 @@
 #include <assimp/postprocess.h>
 
 #include "Resources/FileLoader.hpp"
-
-#include "Serialize/Serializer.h"
-
 #include "Resources/StaticMesh.hpp"
 #include "Resources/Texture2D.hpp"
 #include "Resources/ResourceManager.hpp"
+#include "LowRenderer/Rhi.hpp"
+#include "Serialize/Serializer.h"
 
 
-bool PC_EDITOR_CORE::Importer::Import(const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
+bool PC_EDITOR_CORE::Importer::Import(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
                                       PC_CORE::TypeId* _outId,
                                       PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
 {
     PERF_REGION_SCOPED
+   using namespace PC_CORE;
 
     std::string vformat = _path.filename().extension().generic_string();
 
     if (vformat == ".fbx" || vformat == ".gltf" || vformat == ".obj")
     {
-        return ImportMesh(_path, _serializer, _outId, _outResource);
+        return ImportMesh(_Rhi, _path, _serializer, _outId, _outResource);
     }
     if (vformat == ".png" || vformat == ".dds" || vformat == ".jpg")
     {
-        int width;
-        int height;
+        /*
+        Image image(_path.generic_string().c_str(), RhiChannel::Rgba); 
 
-        PC_CORE::Channel channel;
-        uint8_t* pixels = PC_CORE::FileLoader::LoadImage(_path.generic_string().c_str(), &width, &height, &channel,
-                                                         PC_CORE::Channel::Rgba);
-        if (!pixels)
+        const RhiTexture::RhiTextureDesciptor desc =
         {
-            PC_LOGERROR("failed to load texture image!");
-            return false;
-        }
-
-        auto format = PC_CORE::RhiFormat::Undefined;
-
-        switch (channel)
-        {
-        case PC_CORE::Channel::Rgb:
-        case PC_CORE::Channel::Rgba:
-            format = PC_CORE::RhiFormat::R8G8B8A8Unorm;
-            break;
-        default:
-            assert("false");
-            break;
-        }
-        const size_t totalSize = static_cast<size_t>(width) * static_cast<size_t>(height) * static_cast<size_t>(
-            channel);
-
-        const PC_CORE::CreateImageInfo createTextureInfo =
-        {
-            .Width = width,
-            .Height = height,
-            .Depth = 1,
-            .LayerCount = 1,
-            .MipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
-            .TextureType = PC_CORE::TextureType::Texture2D,
-            .Format = format,
-            .Channel = channel,
-            .TextureUsage = PC_CORE::TextureUsage::Sampled,
-            .MemoryVisibility = PC_CORE::MemoryLocalisation::GpuOnly,
-            .Samples = 1,
-            .GenerateMipMap = true,
-            .AllowCpuAcces = false,
-            .Datas = {reinterpret_cast<void*>(pixels)}
+        .Width = image.GetWidht(),
+        .Height = image.GetHeight(),
+        .Depth = 1,
+        .Level = static_cast<uint32_t>(std::floor(std::log2(std::max(image.GetWidht(), image.GetHeight())))) + 1,
+        .LayerCount = 1,
+        .Samples = 1,
+        .TextureType = RhiTexture::Type::Texture2D,
+        .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst),
+        .RhiFormat = RhiFormat::R8G8B8A8Unorm, // TODO IF SRGB ON IN METADATA LOAD IN SRGB
+        .AllowCpuAcces = false
         };
 
-        *_outResource = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(createTextureInfo);
-        *_outId = PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>();
+        PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(_Rhi, _path.filename().generic_string(), desc, RhiResource::MemoryUsage::Static);
+        texture->Get()->Build();
 
-        PC_CORE::FileLoader::FreeData(pixels);
+        _Rhi.PushResourceUpdate([&, image = std::move(image), texture](CommandList* _List)
+            {
+                texture->Get()->UploadData2D(_List, image.GetData(), image.GetWidht(), image.GetHeight(), image.GetChannel());
+                texture->Get()->GenerateMipMap(_List);
+            });
+     
+
+        *_outResource = texture;
+
+        *_outId = PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>();*/
+
         return true;
     }
     PC_LOGERROR("can't import this file format {}", vformat);
@@ -88,23 +70,23 @@ bool PC_EDITOR_CORE::Importer::Import(const std::filesystem::path& _path, PC_COR
     return false;
 }
 
-bool PC_EDITOR_CORE::Importer::ImportTexture(const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
+bool PC_EDITOR_CORE::Importer::ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
                                              PC_CORE::TypeId* _outId,
                                              PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
 {
     return false;
 }
 
-bool PC_EDITOR_CORE::Importer::ImportMesh(const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
+bool PC_EDITOR_CORE::Importer::ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
                                           PC_CORE::TypeId* _outId,
                                           PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
 {
     PERF_REGION_SCOPED
     // to do skeleton mehs
-    return ImportStaticMesh(_path, _serializer, _outId, _outResource);
+    return ImportStaticMesh(_Rhi, _path, _serializer, _outId, _outResource);
 }
 
-bool PC_EDITOR_CORE::Importer::ImportStaticMesh(const std::filesystem::path& _path,
+bool PC_EDITOR_CORE::Importer::ImportStaticMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path,
                                                 PC_CORE::Serializer* _serializer, PC_CORE::TypeId* _outId,
                                                 PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
 {

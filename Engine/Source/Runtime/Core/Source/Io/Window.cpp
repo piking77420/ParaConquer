@@ -143,8 +143,8 @@ void Window::SetIcon(const char* _iconPath)
     }
 
     int x, y;
-    auto channel = Channel::Default;
-    uint8_t* rawData = FileLoader::LoadImage(_iconPath, &x, &y, &channel, Channel::Default);
+    auto channel = RhiChannel::Default;
+    uint8_t* rawData = FileLoader::LoadImage(_iconPath, &x, &y, &channel, RhiChannel::Default);
 
     if (!rawData || x <= 0 || y <= 0)
     {
