@@ -11,6 +11,7 @@ add_library(CoreDependencies INTERFACE ${THIRD_PARTY_DIR}/lzav/lzav.h)
 
 if (PROFILING)
     target_compile_definitions(CoreDependencies INTERFACE TRACY_IMPORTS)
+    target_compile_definitions(CoreDependencies INTERFACE PROFILING=1)
 endif()
 
 target_link_libraries(CoreDependencies
