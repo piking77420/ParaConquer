@@ -124,7 +124,7 @@ void View::CreateImages()
             .LayerCount = 1,
             .Samples = 1,
             .TextureType = RhiTexture::Type::Texture2D,
-            .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget | RhiTexture::Sampled | RhiTexture::Storage),
+            .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget | RhiTexture::Sampled | RhiTexture::Storage),
             .RhiFormat = RhiFormat::R16G16B16A16Sfloat,
         };
 
@@ -132,7 +132,7 @@ void View::CreateImages()
         ForwardTexture.color->Build();
 
         createInfo.RhiFormat = RhiFormat::D24UnormS8Uint;
-        createInfo.TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget);
+        createInfo.TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget);
 
         ForwardTexture.depth = Texture2D(Rhi, "View DepthTexture", createInfo, RhiResource::MemoryUsage::Dynamic);
         ForwardTexture.depth->Build();
@@ -151,7 +151,7 @@ void View::CreateImages()
             .LayerCount = 1,
             .Samples = 1,
             .TextureType = RhiTexture::Type::Texture2D,
-            .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget | RhiTexture::Sampled),
+            .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget | RhiTexture::Sampled),
             .RhiFormat = RhiFormat::R8G8B8A8Unorm,
         };
 

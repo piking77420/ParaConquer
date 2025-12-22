@@ -59,7 +59,7 @@ struct ShaderProgramDescriptorWrite
 };
 
 
-class ShaderProgramDescriptorSets : public RhiObject
+class ShaderProgramDescriptorSets : public RhiObjectT<ShaderProgramDescriptorSets>
 {
 public:
     PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi, const std::string& _name);

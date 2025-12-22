@@ -49,7 +49,7 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
     .LayerCount = 1,
     .Samples = 1,
     .TextureType = RhiTexture::Type::Texture2D,
-    .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst),
+    .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst),
     .RhiFormat = RhiFormat::R8G8B8A8Unorm,
     .AllowCpuAcces = false
     };

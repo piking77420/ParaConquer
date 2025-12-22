@@ -12,7 +12,7 @@ class ShaderProgramDescriptorSets;
 
 
 
-class RhiShaderProgram : public RhiObject
+class RhiShaderProgram : public RhiObjectT<RhiShaderProgram>
 {
 public:
     enum class PipelineType
@@ -74,7 +74,7 @@ public:
         FillRectangleNV
     };
 
-    enum struct PrimitiveTopology
+    enum PrimitiveTopology
     {
         PrimitiveTopologyPointList = 0,
         PrimitiveTopologyLineList = 1,
@@ -93,6 +93,7 @@ public:
 
     enum CullModeFlagBits
     {
+        CullNone = 0,
         CullFront = 1 << 1,
         CullBack = 1 << 2,
         CullFrontAndBack = 1 << 3,
@@ -277,3 +278,5 @@ protected:
 REFLECT(RhiShaderProgram, RhiResource);
 
 END_PCCORE
+
+using RhiShader = PC_CORE::RhiShaderProgram;

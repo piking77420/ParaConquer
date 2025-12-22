@@ -881,52 +881,32 @@ void Renderer::CreateShaders()
 
     {
         PERF_REGION_SCOPED_NAMED("Forward Shader");
-        /*
-        constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
-        {
-            .polygonMode = RhiShaderProgram::PolygonMode::Fill,
-            .cullModeFlag = RhiShaderProgram::CullModeFlagBit::Back,
-            .frontFace = RhiShaderProgram::FrontFace::CounterClockwise
-        };
-
-
-        const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
-        {
-            .rasterizerInfo = rasterizerInfo,
-            .dephInfo =
-            {
-                .depthCompareOp = CompareOp::Less,
-                .enableDepthTest = true
-            },
-            .vertexInputBindingDescritions = {StaticMeshVertex::GetVertexBindingDescription(0)},
-            .vertexAttributeDescriptions = StaticMeshVertex::GetAttributeDescriptions(0),
-        };
-
-        const std::ve sources =
+        
+        const std::vector<RhiShaderProgram::ShaderModule> moldules =
         {
             {
                 RhiShaderProgram::ShaderStageType::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary"),
+                ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary")->GetCode(),
             },
             {
                 RhiShaderProgram::ShaderStageType::Pixel,
-                ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")
+                ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")->GetCode()
             }
         };
 
-
-
-        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
-        {
-            .shaderGraphicPointInfo = shaderGraphicPointInfo,
-            .sourceList = sources,
-            .renderPass = RenderPasses.ForwardPass.get(),
-            .colorAttachementCount = 1,
-            .subPassIndex = 0
-        };
-
-        ForwardShader = m_Rhi->CreateRhiShaderProgram("ForwardShader", );
-        ForwardShader.Lock()->Get()->Build();*/
+        ForwardShader.reset(m_Rhi->CreateRhiShaderProgram("ForwardShader"));
+        ForwardShader->SetShaderModules(moldules)
+            .SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+            .SetDepthTest(true)
+            .SetDepthWrite(true)
+            .SetCullMode(RhiShaderProgram::CullBack)
+            .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0)})
+            .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
+            .SetRenderPass(*RenderPasses.ForwardPass)
+            .SetAttachementCount(1) // shoulde be in renderpass
+            .SetSubPassIndex(0)
+            .Build();
+        
     }
 
     // SkyBox Shader

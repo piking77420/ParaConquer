@@ -25,7 +25,7 @@ void PC_CORE::Gbuffers::CreateGBuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size)
         .LayerCount = 1,
         .Samples = 1,
         .TextureType = RhiTexture::Type::Texture2D,
-        .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::RenderTarget | RhiTexture::Sampled),
+        .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget | RhiTexture::Sampled),
         .RhiFormat = RhiFormat::Undefined,
         .AllowCpuAcces = false  
         };

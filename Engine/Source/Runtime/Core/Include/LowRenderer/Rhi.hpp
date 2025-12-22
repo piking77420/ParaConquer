@@ -27,21 +27,21 @@ class RhiSwapChain;
 class Rhi
 {
 public:
-    PC_CORE_API Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo);
-
     PC_CORE_API Rhi() = default;
 
     PC_CORE_API ~Rhi();
 
-    Rhi(const Rhi& other) noexcept = default; Rhi(Rhi&& other) noexcept = default; Rhi& operator=(const Rhi& other) noexcept = default; Rhi& operator=(Rhi&& other) noexcept = default;;
+    DEFAULT_COPY_MOVE_OPERATIONS(Rhi)
+
+    void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
     GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
 
     PC_CORE_API RhiSwapChain* CreateRhiSwapChain();
 
-    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(const std::string& _programName, const RhiShaderProgram::ProgramShaderCreateInfo& _programShaderCreateInfo);
+    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(const std::string& _programName);
 
-    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(std::string&& _programName, const RhiShaderProgram::ProgramShaderCreateInfo& _programShaderCreateInfo);
+    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(std::string&& _programName);
 
     PC_CORE_API CommandList* CreateCommandList(const std::string& name,const CommandListCreateInfo& _commandListCreateInfo);
 
@@ -58,11 +58,13 @@ public:
 
     PC_CORE_API RhiFrameBuffer* CreateFrameBuffer(const std::string& _name, const CreateFrameInfo& _createFrameInfo);
 
-    PC_CORE_API RhiBuffer* CreateBuffer(const std::string& _name, const RhiBuffer::RhiBufferDescriptor& _rhiBufferDescriptor, RhiResource::MemoryUsage _memoryUsage);
-        
-    PC_CORE_API RhiTexture* CreateTexture(const std::string& _name, const RhiTexture::RhiTextureDesciptor& _rhiTextureDesciptor, RhiResource::MemoryUsage _memoryUsage);
+    PC_CORE_API RhiBuffer* CreateBuffer(const std::string& _name);
 
-    PC_CORE_API RhiTexture* CreateTexture(std::string&& _name, const RhiTexture::RhiTextureDesciptor& _rhiTextureDesciptor, RhiResource::MemoryUsage _memoryUsage);
+    PC_CORE_API RhiBuffer* CreateBuffer(std::string&& _name);
+
+    PC_CORE_API RhiTexture* CreateTexture(const std::string& _name);
+
+    PC_CORE_API RhiTexture* CreateTexture(std::string&& _name);
 
     PC_CORE_API RhiSampler* CreateSampler(const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo);
 
@@ -95,8 +97,6 @@ private:
     std::unique_ptr<CommandList> m_ResourceUpdateCommandList;
 
     std::unique_ptr<RhiFence> m_ResourceUpdateFence;
-
-    void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
     void VulkanInitialize(const RhiContextCreateInfo& _createInfo);
 

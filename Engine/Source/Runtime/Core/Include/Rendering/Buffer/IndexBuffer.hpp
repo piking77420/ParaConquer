@@ -18,8 +18,10 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
     
-        explicit IndexBuffer(Rhi& rhi, const std::string& _name, size_t _indexCount,  RhiBuffer::IndexFormat _indexFormat, PC_CORE::RhiResource::MemoryUsage _memoryUsage);
+        explicit IndexBuffer(Rhi& rhi, const std::string& _name, size_t _indexCount, RhiBuffer::IndexFormat _indexFormat);
     
+        explicit IndexBuffer(Rhi& rhi, std::string&& _name, size_t _indexCount, RhiBuffer::IndexFormat _indexFormat);
+
         IndexBuffer() = default;
 
         ~IndexBuffer() override = default;

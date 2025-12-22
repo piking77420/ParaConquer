@@ -4,6 +4,7 @@
 
 BEGIN_PCCORE
 
+/*
     struct ComputeShaderProgramCreateInfo
     {
         RhiShaderProgram::ShaderComputeInfo shaderComputeInfo;
@@ -45,7 +46,7 @@ BEGIN_PCCORE
 
     };
 
-
     REFLECT(ComputeShader, PC_CORE::ShaderProgram);
+    */
 
 END_PCCORE

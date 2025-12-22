@@ -8,7 +8,8 @@
 
 PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_editor)
 {
-    using namespace PC_CORE;
+ 
+
     /*
     Image imageDirlightIcon(EDITOR_RESOURCE_PATH "/Icons/DirlightIcon.png", RhiChannel::Rgba);
     Image imageSpotLight(EDITOR_RESOURCE_PATH "/Icons/SpotLight.png", RhiChannel::Rgba);
@@ -25,7 +26,7 @@ PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_edi
             .LayerCount = 1,
             .Samples = 1,
             .TextureType = RhiTexture::Type::Texture2D,
-            .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst | RhiTexture::TextureUsageFlag::TransferSrc),
+            .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst | RhiTexture::TextureUsageFlagBits::TransferSrc),
             .RhiFormat = RhiFormat::R8G8B8A8Unorm,
             .AllowCpuAcces = false
             };

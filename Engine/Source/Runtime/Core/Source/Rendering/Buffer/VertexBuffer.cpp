@@ -4,28 +4,20 @@
 
 
 
-PC_CORE::VertexBuffer::VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _vertexCount, size_t _verticiesSize, PC_CORE::RhiResource::MemoryUsage _memoryUsage)
+PC_CORE::VertexBuffer::VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _vertexCount, size_t _verticiesSize)
     : m_Count(_vertexCount)
     , m_VerticiesSize(_verticiesSize)
 {
-    const RhiBuffer::RhiBufferDescriptor rhiBufferDescriptor = RhiBuffer::RhiBufferDescriptor
-   {
-       .SizeInByte = static_cast<uint32_t>(m_Count * m_VerticiesSize),
-       .Usage = static_cast<RhiBuffer::BufferUsage>(RhiBuffer::BufferUsage::Vertex | RhiBuffer::BufferUsage::TransferDst),
-    };
-    
-    m_RhiBuffer.reset(rhi.CreateBuffer(_name, rhiBufferDescriptor, _memoryUsage));
+    m_RhiBuffer.reset(rhi.CreateBuffer(_name));
+    m_RhiBuffer
+        ->SetSize(m_Count * m_VerticiesSize)
+        .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::TransferDst);
 }
 
-PC_CORE::VertexBuffer::VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, const size_t _sizeInBytes,
-    PC_CORE::RhiResource::MemoryUsage _memoryUsage)
+PC_CORE::VertexBuffer::VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, const size_t _sizeInBytes)
 {
-    
-    const RhiBuffer::RhiBufferDescriptor rhiBufferDescriptor = RhiBuffer::RhiBufferDescriptor
-  {
-      .SizeInByte = static_cast<uint32_t>(_sizeInBytes),
-      .Usage = static_cast<RhiBuffer::BufferUsage>(RhiBuffer::BufferUsage::Vertex),
-   };
-    
-    m_RhiBuffer.reset(rhi.CreateBuffer(_name, rhiBufferDescriptor, _memoryUsage));
+    m_RhiBuffer.reset(rhi.CreateBuffer(_name));
+    m_RhiBuffer
+        ->SetSize(_sizeInBytes)
+        .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::TransferDst);
 }

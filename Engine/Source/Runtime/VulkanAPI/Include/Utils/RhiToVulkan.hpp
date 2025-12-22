@@ -68,7 +68,7 @@ namespace Vulkan::Utils
     
     vk::ImageType RhiTextureTypeToVulkanImageType(PC_CORE::RhiTexture::Type _textureType);
     
-    vk::BufferUsageFlags RhiBufferUsageToVulkan(PC_CORE::RhiBuffer::BufferUsage _bufferUsage);
+    vk::BufferUsageFlags RhiBufferUsageToVulkan(PC_CORE::RhiBuffer::BufferUsageFlag _bufferUsage);
 
     vk::ImageLayout RhiResourceStateToVulkanImageLayout(RhiResourceState _rhiResourceState);
 

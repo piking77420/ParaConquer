@@ -13,16 +13,16 @@ Texture2D::Texture2D()
 }
 
 
-Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::string& _name, const RhiTexture::RhiTextureDesciptor& _desciptor, RhiResource::MemoryUsage _usage)
+Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::string& _name)
     : Texture(_name)
 {
-    m_RhiTexture.reset(rhi.CreateTexture(Name, _desciptor, _usage));
+    m_RhiTexture.reset(rhi.CreateTexture(Name));
 }
 
-Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name, const RhiTexture::RhiTextureDesciptor& _desciptor, RhiResource::MemoryUsage _usage)
+Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name)
     : Texture(std::move(_name))
 {
-    m_RhiTexture.reset(rhi.CreateTexture(Name, _desciptor, _usage));
+    m_RhiTexture.reset(rhi.CreateTexture(Name));
 }
 
 void Texture2D::AfterSerialize(Serializer* _serializer) const

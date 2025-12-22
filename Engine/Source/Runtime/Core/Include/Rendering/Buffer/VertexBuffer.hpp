@@ -12,9 +12,9 @@ BEGIN_PCCORE
     
         DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
 
-        PC_CORE_API explicit VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _vertexCount, size_t _verticiesSize, PC_CORE::RhiResource::MemoryUsage _memoryUsage);
+        PC_CORE_API explicit VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _vertexCount, size_t _verticiesSize);
     
-        PC_CORE_API explicit VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _sizeInBytes, PC_CORE::RhiResource::MemoryUsage _memoryUsage);
+        PC_CORE_API explicit VertexBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _sizeInBytes);
     
         PC_CORE_API VertexBuffer() = default;
 

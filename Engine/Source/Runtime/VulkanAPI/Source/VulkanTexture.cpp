@@ -11,9 +11,9 @@
 #include "Utils/TransitionImageLayout.hpp"
 #include "Utils/VulkanImageHelper.hpp"
 
-static vk::ImageLayout GetDefaultImageLayout(PC_CORE::RhiTexture::TextureUsageFlag flag, vk::ImageAspectFlags aspect)
+static vk::ImageLayout GetDefaultImageLayout(PC_CORE::RhiTexture::TextureUsageFlagBits flag, vk::ImageAspectFlags aspect)
 {
-    using TexF = PC_CORE::RhiTexture::TextureUsageFlag;
+    using TexF = PC_CORE::RhiTexture::TextureUsageFlagBits;
     
     if (flag & TexF::Storage) // for compute shader
         return vk::ImageLayout::eGeneral;
@@ -42,10 +42,10 @@ static vk::ImageLayout GetDefaultImageLayout(PC_CORE::RhiTexture::TextureUsageFl
 
 
 static RhiResourceState GetAfterCreationImageLayout(
-    PC_CORE::RhiTexture::TextureUsageFlag flag,
+    PC_CORE::RhiTexture::TextureUsageFlagBits flag,
     vk::ImageAspectFlags aspect)
 {
-    using TexF = PC_CORE::RhiTexture::TextureUsageFlag;
+    using TexF = PC_CORE::RhiTexture::TextureUsageFlagBits;
 
     if (flag & TexF::TransferDst)
         return RhiResourceState::CopyDst;
@@ -88,14 +88,14 @@ void* Vulkan::VulkanTexture::GetFrameNativeHandle(size_t _frameIndex)
     return GetTextureAndAlloc(_frameIndex);
 }
 
-Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi, const std::string& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage)
-    : RhiTexture(_Rhi, _name, _rhiTextureDesciptor, _memoryUsage)
+Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi, const std::string& _name)
+    : RhiTexture(_Rhi, _name)
 {
 
 }
 
-Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi, std::string&& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage)
-    : RhiTexture(_Rhi, _name, _rhiTextureDesciptor, _memoryUsage)
+Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi, std::string&& _name)
+    : RhiTexture(_Rhi, _name)
 {
     
 }
@@ -105,7 +105,7 @@ bool Vulkan::VulkanTexture::Build()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
     
-    if (m_RhiTextureDesciptor.Width == 0 || m_RhiTextureDesciptor.Height == 0)
+    if (GetWidth ()== 0 || GetHeight ()== 0)
     {
         PC_LOGERROR("VulkanTexture::Create() m_Width = 0, m_Height = 0");
         return false;
@@ -124,24 +124,24 @@ bool Vulkan::VulkanTexture::Build()
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
     std::shared_ptr<VulkanInstance> instance = context.GetInstance();
 
-    VkImageAspectFlags = Utils::RhiTextureFormatToImageAspectFlagFlags(m_RhiTextureDesciptor.RhiFormat);
-    VkFormat = Utils::RhiFormatToVkFormat(m_RhiTextureDesciptor.RhiFormat);
+    VkImageAspectFlags = Utils::RhiTextureFormatToImageAspectFlagFlags(GetRhiFormat());
+    VkFormat = Utils::RhiFormatToVkFormat(GetRhiFormat());
     
     vk::ImageCreateInfo imageInfo{};
     imageInfo.sType = vk::StructureType::eImageCreateInfo;
-    imageInfo.imageType = Utils::RhiImageToVkImageType(m_RhiTextureDesciptor.TextureType);
-    imageInfo.extent.width = m_RhiTextureDesciptor.Width;
-    imageInfo.extent.height = m_RhiTextureDesciptor.Height;
-    imageInfo.extent.depth = m_RhiTextureDesciptor.Depth;
-    imageInfo.mipLevels = m_RhiTextureDesciptor.Level;
-    imageInfo.arrayLayers = m_RhiTextureDesciptor.LayerCount;
-    imageInfo.format = Utils::RhiFormatToVkFormat(m_RhiTextureDesciptor.RhiFormat);
+    imageInfo.imageType = Utils::RhiImageToVkImageType(GetTextureType());
+    imageInfo.extent.width = GetWidth();
+    imageInfo.extent.height = GetHeight();
+    imageInfo.extent.depth = GetDepth();
+    imageInfo.mipLevels = GetLevel();
+    imageInfo.arrayLayers = GetLayer();
+    imageInfo.format = Utils::RhiFormatToVkFormat(GetRhiFormat());
     imageInfo.tiling = vk::ImageTiling::eOptimal;
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
-    imageInfo.usage = Utils::GetImageUsageFlags(m_RhiTextureDesciptor.TextureUsage, VkImageAspectFlags);
-    imageInfo.samples = Utils::RhSampleCountToVulkan(m_RhiTextureDesciptor.Samples);
+    imageInfo.usage = Utils::GetImageUsageFlags(GetTextureUsage(), VkImageAspectFlags);
+    imageInfo.samples = Utils::RhSampleCountToVulkan(GetSamples());
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
-    imageInfo.flags = Utils::ImageCreateFlagFromTextureType(m_RhiTextureDesciptor.TextureType);
+    imageInfo.flags = Utils::ImageCreateFlagFromTextureType(GetTextureType());
  
     for (size_t i = 0; i < nbrOfObjectHandle; i++)
     {
@@ -166,13 +166,13 @@ bool Vulkan::VulkanTexture::Build()
         vk::ImageViewCreateInfo imageviewInfo{};
         imageviewInfo.sType = vk::StructureType::eImageViewCreateInfo;
         imageviewInfo.image = m_Handles[i].Image;
-        imageviewInfo.viewType = Utils::RhiImageToVkImageViewType(m_RhiTextureDesciptor.TextureType);
+        imageviewInfo.viewType = Utils::RhiImageToVkImageViewType(GetTextureType());
         imageviewInfo.format = imageInfo.format;
         imageviewInfo.subresourceRange.aspectMask = VkImageAspectFlags;
         imageviewInfo.subresourceRange.baseMipLevel = 0;
         imageviewInfo.subresourceRange.baseArrayLayer = 0;
-        imageviewInfo.subresourceRange.levelCount = m_RhiTextureDesciptor.Level;
-        imageviewInfo.subresourceRange.layerCount = m_RhiTextureDesciptor.LayerCount;
+        imageviewInfo.subresourceRange.levelCount = GetLevel();
+        imageviewInfo.subresourceRange.layerCount = GetLayer();
         
         VK_CALL(device.createImageView(&imageviewInfo, nullptr, &m_Handles[i].ImageView));
         
@@ -189,9 +189,9 @@ bool Vulkan::VulkanTexture::Build()
     return true;
 }
 
-void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, const void* _imageData, const uint32_t _imageWidht, const uint32_t _imageHeight, PC_CORE::RhiChannel _channel)
+void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, const void* _data, uint32_t _imageWidht, uint32_t _imageHeight)
 {
-    if (m_RhiTextureDesciptor.TextureType != Type::Texture2D)
+    if (GetTextureType() != Type::Texture2D)
     {
         PC_LOGERROR("UploadData2D should only be used for TextureType::Texture2D");
         return;
@@ -199,16 +199,16 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
     
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
-    const int multiplayer = PC_CORE::GetBytePerPixel(m_RhiTextureDesciptor.RhiFormat);
+    const int multiplayer = PC_CORE::GetBytePerPixel(GetRhiFormat());
     const size_t imageSize = static_cast<size_t>(_imageWidht * _imageHeight * multiplayer);
     
-    
+
     BufferAndAlloc stagingBuffer;
     VulkanBuffer::CreateStagingBufferForCopy(context, &stagingBuffer, imageSize);
 
     void* mappedData;
     vmaMapMemory(context.allocator, stagingBuffer.alloc, &mappedData);
-    std::memcpy(mappedData, _imageData, imageSize);
+    std::memcpy(mappedData, _data, imageSize);
     vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
 
     for (size_t i = 0; i < m_Handles.size(); i++)
@@ -226,8 +226,8 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
                 current,
                 vk::ImageLayout::eTransferDstOptimal,
                 VkImageAspectFlags,
-                m_RhiTextureDesciptor.LayerCount,
-                m_RhiTextureDesciptor.Level);
+                GetLayer(),
+                GetLevel());
         }
 
         vk::BufferImageCopy region{};
@@ -261,18 +261,17 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
             vk::ImageLayout::eTransferDstOptimal,
             current,
             VkImageAspectFlags,
-            m_RhiTextureDesciptor.LayerCount,
-            m_RhiTextureDesciptor.Level);
+            m_Layer,
+            m_Level);
     }
     
 }
 
-void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight,
-                                            uint32_t _layerCount, PC_CORE::RhiChannel _channel)
+void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount)
 {
-    if (m_RhiTextureDesciptor.TextureType != Type::TextureArray2D &&
-       m_RhiTextureDesciptor.TextureType != Type::CubeMap &&
-       m_RhiTextureDesciptor.TextureType != Type::CubeMapArray)
+    if (m_TextureType != Type::TextureArray2D &&
+        m_TextureType != Type::CubeMap &&
+        m_TextureType != Type::CubeMapArray)
     {
         PC_LOGERROR("UploadDataLayer should only be used for 2D array/cubemap types");
         return;
@@ -288,7 +287,7 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
 
-    const int bytesPerPixel = PC_CORE::GetBytePerPixel(m_RhiTextureDesciptor.RhiFormat);
+    const int bytesPerPixel = PC_CORE::GetBytePerPixel(m_RhiFormat);
     const uint32_t sliceSize = _imageWidht * _imageHeight * bytesPerPixel;
     const uint32_t totalSize = sliceSize * _layerCount;
 
@@ -319,8 +318,8 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
                                   current,
                                   vk::ImageLayout::eTransferDstOptimal,
                                   VkImageAspectFlags,
-                                  m_RhiTextureDesciptor.LayerCount, 
-                                  m_RhiTextureDesciptor.Level);
+                                  m_Layer, 
+                                  m_Level);
         }
 
         for (int i = 0; i < _layerCount; i++)
@@ -357,8 +356,8 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
             vk::ImageLayout::eTransferDstOptimal,
             current,
             VkImageAspectFlags,
-            m_RhiTextureDesciptor.LayerCount,
-            m_RhiTextureDesciptor.Level);
+            m_Layer,
+            m_Level);
     }
 }
 
@@ -380,10 +379,10 @@ void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
         Utils::GenerateMipMapFunc(cmb, 
                                   handle.Image, 
                                   vk::ImageLayout::eShaderReadOnlyOptimal,  // todo not harcoded
-                                  m_RhiTextureDesciptor.Width,
-                                  m_RhiTextureDesciptor.Height, 
-                                  Utils::RhiFormatToVkFormat(m_RhiTextureDesciptor.RhiFormat), 
-                                  m_RhiTextureDesciptor.Level, 
+                                  m_Width,
+                                  m_Height, 
+                                  Utils::RhiFormatToVkFormat(m_RhiFormat), 
+                                  m_Level, 
                                   VkImageAspectFlags);
     
         // image transition to eShaderReadOnlyOptimal in GenerateMipMapFunc
@@ -393,8 +392,8 @@ void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
                 vk::ImageLayout::eShaderReadOnlyOptimal,
                 current,
                 VkImageAspectFlags,
-                m_RhiTextureDesciptor.LayerCount,
-                m_RhiTextureDesciptor.Level);
+                m_Layer,
+                m_Level);
         
     }
 }

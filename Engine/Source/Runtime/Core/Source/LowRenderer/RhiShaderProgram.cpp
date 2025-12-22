@@ -3,7 +3,7 @@
 namespace PC_CORE
 {
 PC_CORE::RhiShaderProgram::RhiShaderProgram(Rhi& _Rhi, const std::string& _programName)
-    : RhiObject(_Rhi, _programName)
+    : RhiObjectT(_Rhi, _programName)
 {
 }
 
@@ -12,9 +12,9 @@ RhiShaderProgram& RhiShaderProgram::SetPipelineType(PipelineType _Type)
     m_Type = _Type;
     switch (m_Type)
     {
-        break;
     case PC_CORE::RhiShaderProgram::PipelineType::Graphic:
         m_PipelineData = GraphicPipelineData();
+        break;
     case PC_CORE::RhiShaderProgram::PipelineType::Compute:
         m_PipelineData = ComputePipelineData();
         break;

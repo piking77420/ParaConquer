@@ -12,12 +12,12 @@ namespace Vulkan
 
         VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override
         {
-            return m_RenderPass;
+            return &m_RenderPass;
         }
 
         VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override
         {
-            return m_RenderPass;
+            return &m_RenderPass;
         }
 
         VULKAN_API vk::RenderPass GetVulkanRenderPass() const;

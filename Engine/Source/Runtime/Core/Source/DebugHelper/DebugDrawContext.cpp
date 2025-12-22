@@ -136,7 +136,7 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList,
     {
         needReset = true;
         _commandList->BindProgram(*m_ShaderProgramRay.get());
-        _commandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+        _commandList->SetPrimitiveTopology(RhiShader::PrimitiveTopologyLineList);
         _commandList->SetLineWidth(1.f);
         _commandList->BindDescriptorSet(*m_ShaderProgramRay.get(), m_ShaderProgramDescriptorSets.get(), SCENE_DESCRIPTOR_SET, 1);
         _commandList->BindVertexBuffer(*m_RayPrimitiveData.vertexBuffer.Get(), 0, 1);
@@ -146,7 +146,7 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList,
         
 
     if (needReset)
-        _commandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
+        _commandList->SetPrimitiveTopology(RhiShader::PrimitiveTopologyTriangleList);
 
     _commandList->EndDebugLabel();
 }
@@ -213,14 +213,6 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 
 void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 {
-    
-    constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
-    {
-        .polygonMode = RhiShaderProgram::PolygonMode::Fill,
-        .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
-        .frontFace = RhiShaderProgram::FrontFace::CounterClockwise
-    };
-
     VertexInputBindingDescrition primitiveInputBindingDescrition =
     {
         .Binding = 0,
@@ -274,9 +266,6 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
             .Offset = sizeof(Tbx::Vector4f) * 3,
         });
 
-    
-
-    /*
     std::vector<RhiShaderProgram::ShaderModule> shaderModule =
     {
         {
@@ -289,48 +278,18 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
         }
     };
 
-    const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
-    {
-        .rasterizerInfo = rasterizerInfo,
-        .dephInfo =
-        {
-            .depthCompareOp = CompareOp::Less,
-            .enableDepthTest = true
-        },
-        .vertexInputBindingDescritions =
-        {
-            primitiveInputBindingDescrition,
-            primitiveInstanceInputBindingDescrition
-        },
-        .vertexAttributeDescriptions = attributeDescription,
-    };
-
-    RhiShaderProgram::ShaderInfo shaderInfo
-    {
-        .type = RhiShaderProgram::PipelineType::Graphic,
-        .shaderInfoData = shaderGraphicPointInfo
-    };
-
-    RhiShaderProgram::ProgramShaderCreateInfo shaderCreateInfo =
-    {
-        .shaderInfo = shaderInfo,
-        .renderPass = m_Renderer->RenderPasses.ForwardPass.get(),
-        .colorAttachementCount = 1,
-        .subPassIndex = 0,
-    }
-
-    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
-    {
-        .shaderGraphicPointInfo = shaderGraphicPointInfo,
-        .sourceList = source,
-        .renderPass = m_Renderer->RenderPasses.ForwardPass.get(),
-        .colorAttachementCount = 1,
-        .subPassIndex = 0,
-    };
-
-
-    m_ShaderProgram = m_Renderer->GetRhi().CreateRhiShaderProgram("DebugGizmoShader", )
-    m_ShaderProgram->Get()->Build();;*/
+    m_ShaderProgram.reset(m_Renderer->GetRhi().CreateRhiShaderProgram("DebugGizmoShader"));
+    m_ShaderProgram->SetShaderModules(shaderModule)
+        .SetPipelineType(RhiShader::PipelineType::Graphic)
+        .SetCullMode(RhiShader::CullNone)
+        .SetFrontFace(RhiShader::FrontFace::CounterClockwise)
+        .SetDepthTest(true)
+        .SetVertexInputBindingDescritions({ primitiveInputBindingDescrition })
+        .SetVertexAttributeDescriptions(attributeDescription)
+        .SetRenderPass(*m_Renderer->RenderPasses.ForwardPass)
+        .SetAttachementCount(1)
+        .SetSubPassIndex(0)
+        .Build();
 
     // Binding
     m_ShaderProgramDescriptorSets.reset(m_ShaderProgram->CreateDescriptorBinding("DebugGizmoShader Bindings"));
@@ -356,14 +315,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
 
 void PC_CORE::DebugDrawContext::CreateRayShaders()
 {
-    /*
-    constexpr RhiShaderProgram::RasterizerInfo rasterizerInfo =
-    {
-        .polygonMode = RhiShaderProgram::PolygonMode::Line,
-        .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
-        .frontFace = RhiShaderProgram::FrontFace::CounterClockwise
-    };
-
+    
     VertexInputBindingDescrition vertexBindingDescrition =
     {
         .Binding = 0,
@@ -396,47 +348,34 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
             .Offset = sizeof(Tbx::Vector4f) * 2,
         });
 
-    const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
-    {
-        .rasterizerInfo = rasterizerInfo,
-        .dephInfo =
-        {
-            .depthCompareOp = CompareOp::Less,
-            .enableDepthTest = true
-        },
-        .vertexInputBindingDescritions = {vertexBindingDescrition},
-        .vertexAttributeDescriptions = attributeDescription,
-    };
-   
-
-    const SourceList source =
+    const std::vector<RhiShader::ShaderModule> shaderModule =
     {
         {
             RhiShaderProgram::ShaderStageType::Vertex,
-            ResourceManager::Get<ShaderSourceBinary>("DebugDrawRay.vs.hlsl.binary")
+            ResourceManager::Get<ShaderSourceBinary>("DebugDrawRay.vs.hlsl.binary")->GetCode()
 
         },
         {
             RhiShaderProgram::ShaderStageType::Pixel,
-            ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")
+            ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()
 
         }
     };
 
-    const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
-    {
-        .shaderGraphicPointInfo = shaderGraphicPointInfo,
-        .sourceList = source,
-        .renderPass = m_Renderer->RenderPasses.ForwardPass.get(),
-        .colorAttachementCount = 1,
-        .subPassIndex = 0,
-    };
+    m_ShaderProgramRay.reset(m_Renderer->GetRhi().CreateRhiShaderProgram("DebugGizmoShaderRay"));
+    m_ShaderProgramRay->SetShaderModules(shaderModule)
+        .SetPipelineType(RhiShader::PipelineType::Graphic)
+        .SetPolygonMode(RhiShader::PolygonMode::Line)
+        .SetCullMode(RhiShader::CullNone)
+        .SetFrontFace(RhiShader::FrontFace::CounterClockwise)
+        .SetDepthTest(true)
+        .SetVertexInputBindingDescritions({ vertexBindingDescrition })
+        .SetVertexAttributeDescriptions(attributeDescription)
+        .SetRenderPass(*m_Renderer->RenderPasses.ForwardPass)
+        .SetAttachementCount(1)
+        .SetSubPassIndex(0)
+        .Build();
 
-    m_ShaderProgramRay = ResourceManager::Create<GraphicShader>(
-        "DebugGizmoShaderRay", graphicShaderProgramCreateInfo);
-    m_ShaderProgramRay->Get()->Build();
-
-    */ 
     // Binding
     m_ShaderProgramDescriptorSetsRay.reset(m_ShaderProgramRay->CreateDescriptorBinding("DebugDrawGizmo Ray Binding "));
     BufferDescriptor uniformBufferDescriptor

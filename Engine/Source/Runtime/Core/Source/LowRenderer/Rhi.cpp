@@ -17,13 +17,6 @@
 using namespace PC_CORE;
 
 
-Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _createInfo) : m_GraphicsApi(_createInfo.GraphicsAPI)
-{
-	PERF_REGION_SCOPED;
-	PC_LOG("Rhi Initialize")
-	Init(_createInfo);
-}
-
 Rhi::~Rhi()
 {
 
@@ -47,14 +40,14 @@ RhiSwapChain* Rhi::CreateRhiSwapChain()
 }
 
 
-RhiShaderProgram* Rhi::CreateRhiShaderProgram(const std::string& _programName, const RhiShaderProgram::ProgramShaderCreateInfo& _programShaderCreateInfo)
+RhiShaderProgram* Rhi::CreateRhiShaderProgram(const std::string& _programName)
 {
 
 	switch (m_GraphicsApi)
 	{
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanShaderProgram(*this, _programName, _programShaderCreateInfo);
+		return new Vulkan::VulkanShaderProgram(*this, _programName);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -66,13 +59,13 @@ RhiShaderProgram* Rhi::CreateRhiShaderProgram(const std::string& _programName, c
 	return nullptr;
 }
 
-RhiShaderProgram* Rhi::CreateRhiShaderProgram(std::string&& _programName, const RhiShaderProgram::ProgramShaderCreateInfo& _programShaderCreateInfo)
+RhiShaderProgram* Rhi::CreateRhiShaderProgram(std::string&& _programName)
 {
 	switch (m_GraphicsApi)
 	{
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanShaderProgram(*this, std::move(_programName), _programShaderCreateInfo);
+		return new Vulkan::VulkanShaderProgram(*this, std::move(_programName));
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -224,8 +217,7 @@ RhiFrameBuffer* Rhi::CreateFrameBuffer(const std::string& _name, const CreateFra
 	return nullptr;
 }
 
-RhiBuffer* Rhi::CreateBuffer(const std::string& _name, const RhiBuffer::RhiBufferDescriptor& _rhiBufferDescriptor,
-	RhiResource::MemoryUsage _memoryUsage)
+RhiBuffer* Rhi::CreateBuffer(const std::string& _name)
 {
 
 	static_assert(std::is_base_of_v<RhiBuffer, Vulkan::VulkanBuffer>, "");
@@ -235,7 +227,7 @@ RhiBuffer* Rhi::CreateBuffer(const std::string& _name, const RhiBuffer::RhiBuffe
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanBuffer(*this, _name, _rhiBufferDescriptor, _memoryUsage);
+		return new Vulkan::VulkanBuffer(*this, _name);
 	case GraphicAPI::D3d12:
 		break;
 	case GraphicAPI::Count:
@@ -247,7 +239,29 @@ RhiBuffer* Rhi::CreateBuffer(const std::string& _name, const RhiBuffer::RhiBuffe
 	return nullptr;
 }
 
-RhiTexture* Rhi::CreateTexture(const std::string& _name, const RhiTexture::RhiTextureDesciptor& _rhiTextureDesciptor, RhiResource::MemoryUsage _memoryUsage)
+RhiBuffer* Rhi::CreateBuffer(std::string&& _name)
+{
+
+	static_assert(std::is_base_of_v<RhiBuffer, Vulkan::VulkanBuffer>, "");
+
+	switch (m_GraphicsApi)
+	{
+	case GraphicAPI::None:
+		break;
+	case GraphicAPI::Vulkan:
+		return new Vulkan::VulkanBuffer(*this, std::move(_name));
+	case GraphicAPI::D3d12:
+		break;
+	case GraphicAPI::Count:
+		break;
+	default:
+		return nullptr;
+	}
+
+	return nullptr;
+}
+
+RhiTexture* Rhi::CreateTexture(const std::string& _name)
 {
 
 	static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture>, "");
@@ -257,7 +271,7 @@ RhiTexture* Rhi::CreateTexture(const std::string& _name, const RhiTexture::RhiTe
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanTexture(*this, _name, _rhiTextureDesciptor, _memoryUsage);
+		return new Vulkan::VulkanTexture(*this, _name);
 	case GraphicAPI::D3d12:
 		break;
 	case GraphicAPI::Count:
@@ -269,7 +283,7 @@ RhiTexture* Rhi::CreateTexture(const std::string& _name, const RhiTexture::RhiTe
 	return nullptr;
 }
 
-PC_CORE_API RhiTexture* Rhi::CreateTexture(std::string&& _name, const RhiTexture::RhiTextureDesciptor& _rhiTextureDesciptor, RhiResource::MemoryUsage _memoryUsage)
+PC_CORE_API RhiTexture* Rhi::CreateTexture(std::string&& _name)
 {
 
 	static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture>, "");
@@ -353,6 +367,9 @@ void Rhi::PushResourceUpdate(const std::function<void(CommandList*)>& _resourceU
 
 void Rhi::ProcessResourceUpdate()
 {
+	if (m_ResourceUpdateStack.empty())
+		return;
+
 	m_ResourceUpdateCommandList->BeginRecordCommands();
 	for (auto& RUpdate : m_ResourceUpdateStack)
 	{
@@ -366,6 +383,10 @@ void Rhi::ProcessResourceUpdate()
 
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {
+	PERF_REGION_SCOPED;
+	PC_LOG("Rhi Initialize");
+	m_GraphicsApi = _createInfo.GraphicsAPI;
+
 	RenderInstanceCreateInfo renderInstanceCreateInfo =
 	{
 		.appName = _createInfo.appName,

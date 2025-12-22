@@ -1,14 +1,12 @@
 ﻿#include "LowRenderer/RhiTexture.hpp"
 
-PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, const std::string& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage)
-    : RhiResource(_Rhi, _name, _memoryUsage)
-    , m_RhiTextureDesciptor(_rhiTextureDesciptor)
+PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, const std::string& _name)
+    : RhiResourceT(_Rhi, _name)
 {
 }
 
-PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, std::string&& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage)
-    : RhiResource(_Rhi, std::move(_name), _memoryUsage)
-    , m_RhiTextureDesciptor(std::move(_rhiTextureDesciptor))
+PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, std::string&& _name)
+    : RhiResourceT(_Rhi, std::move(_name))
 {
 }
 

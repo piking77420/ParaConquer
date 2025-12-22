@@ -103,7 +103,7 @@ BEGIN_PCCORE
     };
 
    
-    class CommandList : public RhiObject
+    class CommandList : public RhiObjectT<CommandList>
     {
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(CommandList)

@@ -29,7 +29,7 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
         .gpuDebug = _appCreateInfo.enableGpuDebug
     };
 
-    RenderHarwareInteface = Rhi(createInfo);
+    RenderHarwareInteface.Init(createInfo);
     Renderer.Init(RenderHarwareInteface);
     Time::Init();
 }

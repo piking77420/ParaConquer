@@ -24,9 +24,9 @@ namespace Vulkan
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanTexture)
 
-        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi, const std::string& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage);
+        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi, const std::string& _name);
         
-        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi, std::string&& _name, const RhiTextureDesciptor& _rhiTextureDesciptor, MemoryUsage _memoryUsage);
+        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi, std::string&& _name);
 
         VULKAN_API ~VulkanTexture() override;
         
@@ -36,9 +36,9 @@ namespace Vulkan
         
         VULKAN_API bool Build() override;
     
-        VULKAN_API void UploadData2D(PC_CORE::CommandList* commandList, const void* _imageData, uint32_t _imageWidht, uint32_t _imageHeight, PC_CORE::RhiChannel _channel) override;
+        VULKAN_API void UploadData2D(PC_CORE::CommandList* commandList, const void* _imageData, uint32_t _imageWidht, uint32_t _imageHeight) override;
     
-        VULKAN_API void UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount, PC_CORE::RhiChannel _channel) override;
+        VULKAN_API void UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount) override;
         
         VULKAN_API void GenerateMipMap(PC_CORE::CommandList* commandList) override;
         

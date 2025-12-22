@@ -23,9 +23,9 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(Texture2D)
         
-        PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, const std::string& _name, const RhiTexture::RhiTextureDesciptor& _desciptor, RhiResource::MemoryUsage _usage);
+        PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, const std::string& _name);
 
-        PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, std::string&& _name, const RhiTexture::RhiTextureDesciptor& _desciptor, RhiResource::MemoryUsage _usage);
+        PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, std::string&& _name);
 
         PC_CORE_API Texture2D();
 

@@ -43,7 +43,7 @@ bool PC_EDITOR_CORE::Importer::Import(PC_CORE::Rhi& _Rhi, const std::filesystem:
         .LayerCount = 1,
         .Samples = 1,
         .TextureType = RhiTexture::Type::Texture2D,
-        .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst),
+        .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst),
         .RhiFormat = RhiFormat::R8G8B8A8Unorm, // TODO IF SRGB ON IN METADATA LOAD IN SRGB
         .AllowCpuAcces = false
         };

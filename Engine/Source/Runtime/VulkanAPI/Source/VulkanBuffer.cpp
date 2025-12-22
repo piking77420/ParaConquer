@@ -8,8 +8,7 @@
 #include "Utils/VmaHelper.hpp"
 
 
-VmaAllocationCreateFlags VmaAllocationCreateFlagsFromBuffer(
-    const PC_CORE::RhiBuffer::RhiBufferDescriptor& _rhiBufferDescriptor, PC_CORE::RhiResource::MemoryUsage _memoryUsage)
+VmaAllocationCreateFlags VmaAllocationCreateFlagsFromBuffer(PC_CORE::RhiResource::MemoryUsage _memoryUsage)
 {
     VmaAllocationCreateFlags flag = 0;
     
@@ -22,8 +21,7 @@ VmaAllocationCreateFlags VmaAllocationCreateFlagsFromBuffer(
 }
 
 
-VmaAllocationCreateInfo VmaAllocationCreateInfoFromBuffer(
-    const PC_CORE::RhiBuffer::RhiBufferDescriptor& _rhiBufferDescriptor, PC_CORE::RhiResource::MemoryUsage _memoryUsage)
+VmaAllocationCreateInfo VmaAllocationCreateInfoFromBuffer(PC_CORE::RhiResource::MemoryUsage _memoryUsage)
 {
     using Musage = PC_CORE::RhiResource::MemoryUsage;
     
@@ -31,7 +29,7 @@ VmaAllocationCreateInfo VmaAllocationCreateInfoFromBuffer(
     
     VmaAllocationCreateInfo allocCI = 
     {
-        .flags = VmaAllocationCreateFlagsFromBuffer(_rhiBufferDescriptor, _memoryUsage),
+        .flags = VmaAllocationCreateFlagsFromBuffer(_memoryUsage),
         .usage = (_memoryUsage == PC_CORE::RhiResource::MemoryUsage::Dynamic) ? VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE : VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
         .requiredFlags = 0,
         .preferredFlags = 0,
@@ -46,15 +44,13 @@ VmaAllocationCreateInfo VmaAllocationCreateInfoFromBuffer(
 }
 
 
-Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name, const RhiBufferDescriptor& _rhiBufferDescriptor,
-                                   MemoryUsage _memoryUsage)
-    : RhiBuffer(_Rhi, _name, _rhiBufferDescriptor, _memoryUsage)
+Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name)
+    : RhiBuffer(_Rhi, _name)
 
 {
 }
-Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi, std::string&& _name, const RhiBufferDescriptor& _rhiBufferDescriptor,
-                                   MemoryUsage _memoryUsage)
-    : RhiBuffer(_Rhi, _name, _rhiBufferDescriptor, _memoryUsage)
+Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi, std::string&& _name)
+    : RhiBuffer(_Rhi, _name)
 {
 }
 
@@ -94,8 +90,8 @@ bool Vulkan::VulkanBuffer::Build()
 
     vk::BufferCreateInfo bufferCreate{};
     bufferCreate.sType = vk::StructureType::eBufferCreateInfo;
-    bufferCreate.size = m_RhiBufferDescriptor.SizeInByte;
-    bufferCreate.usage = Utils::RhiBufferUsageToVulkan(m_RhiBufferDescriptor.Usage);
+    bufferCreate.size = m_SizeInByte;
+    bufferCreate.usage = Utils::RhiBufferUsageToVulkan(m_Usage);
     bufferCreate.sharingMode = vk::SharingMode::eExclusive;
     
     if (m_MemoryUsage != RhiResource::MemoryUsage::Dynamic)
@@ -108,7 +104,7 @@ bool Vulkan::VulkanBuffer::Build()
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
     auto instance = context.GetInstance();
     
-    VmaAllocationCreateInfo aCreateInfo = VmaAllocationCreateInfoFromBuffer(m_RhiBufferDescriptor, m_MemoryUsage);
+    VmaAllocationCreateInfo aCreateInfo = VmaAllocationCreateInfoFromBuffer(m_MemoryUsage);
     
     VmaAllocationInfo VmaAllocationInfo;
     VmaAllocationInfo.pName = GetName().data();
@@ -138,7 +134,7 @@ bool Vulkan::VulkanBuffer::Build()
 void Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes)
 {
     assert(m_MemoryUsage != RhiResource::MemoryUsage::Dynamic && "You can only UploadData with static or streamable buffers");
-    assert(_sizeInBytes <= m_RhiBufferDescriptor.SizeInByte);
+    assert(_sizeInBytes <= m_SizeInByte);
 
     BufferAndAlloc stagingBuffer; // may store this in the class for only upload it when beign frame that allows uis to avoid calling waitdeviceIdle
     

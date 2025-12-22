@@ -406,7 +406,6 @@ vk::RenderPass Vulkan::VulkanRenderPass::GetVulkanRenderPass() const
     return m_RenderPass;
 }
 
-
 vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPass(PC_CORE::AttachmentType _attachmentType)
 {
     switch (_attachmentType)

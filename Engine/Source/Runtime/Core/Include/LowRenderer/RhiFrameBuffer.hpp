@@ -21,7 +21,7 @@ BEGIN_PCCORE
         RhiRenderPass* RenderPass;
     };
 
-    class RhiFrameBuffer : public RhiObject
+    class RhiFrameBuffer : public RhiObjectT<RhiFrameBuffer>
     {
     public:
         PC_CORE_API RhiFrameBuffer(Rhi& _Rhi, const std::string& _name, uint32_t _width, uint32_t m_height);

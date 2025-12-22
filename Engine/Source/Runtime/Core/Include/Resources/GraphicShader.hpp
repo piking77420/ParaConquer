@@ -3,7 +3,7 @@
 #include "Rendering/ShaderProgram.hpp"
 
 BEGIN_PCCORE
-
+/*
     struct GraphicShaderProgramCreateInfo
     {
         RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo;
@@ -45,5 +45,5 @@ BEGIN_PCCORE
     private:
         REFLECT(GraphicShader, PC_CORE::ShaderProgram);
     };
-    
+    */
 END_PCCORE

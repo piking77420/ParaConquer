@@ -81,20 +81,18 @@ BEGIN_PCCORE
         std::vector<SubPassDescription> subPasses;
     };
 
-    // this class represent a pass within is frame buffer attemechement
-    // collection of pass for a same frame buffer
-    class RhiRenderPass : public PC_CORE::RhiObject
+    class RhiRenderPass : public RhiObjectT<RhiRenderPass>
     {
     public:
         PC_CORE_API RhiRenderPass() = default;
 
         PC_CORE_API explicit RhiRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, const RenderPassDescriptor& _attachementDescriptors)
-            : RhiObject(_Rhi, _name)
+            : RhiObjectT(_Rhi, _name)
         {
         }
         
         PC_CORE_API RhiRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name)
-            : RhiObject(_Rhi, _name)
+            : RhiObjectT(_Rhi, _name)
         {
         }
         

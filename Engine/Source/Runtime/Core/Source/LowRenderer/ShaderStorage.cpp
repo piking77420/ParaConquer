@@ -9,7 +9,7 @@ PC_CORE::ShaderStorage::ShaderStorage(void* _data, size_t _size, MemoryUsageType
         {
         .data = _data,
         .dataSize = _size,
-        .usage = BufferUsage::ShaderStorageBuffer,
+        .usage = BufferUsageFlagBits::ShaderStorageBuffer,
         .memoryUsage = MemoryUsageType
         };
 

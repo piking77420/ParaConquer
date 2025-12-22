@@ -3,7 +3,7 @@
 #include "RhiObject.hpp"
 
 BEGIN_PCCORE
-    class RhiResource : public RhiObject
+    class RhiResource : public RhiObjectT<RhiResource>
     {
     public:
         enum struct MemoryUsage : uint8_t
@@ -46,21 +46,16 @@ BEGIN_PCCORE
         };
         REFLECT(MemoryUsage)
 
-        PC_CORE_API explicit RhiResource(Rhi& _Rhi, const std::string& _name, MemoryUsage memoryUsage);
+        PC_CORE_API explicit RhiResource(Rhi& _Rhi, const std::string& _name);
 
-        PC_CORE_API explicit RhiResource(Rhi& _Rhi, std::string&& _name, MemoryUsage memoryUsage);
+        PC_CORE_API explicit RhiResource(Rhi& _Rhi, std::string&& _name);
 
         PC_CORE_API virtual ~RhiResource() = default;
 
         DEFAULT_COPY_MOVE_OPERATIONS(RhiResource)
 
-        inline MemoryUsage GetMemoryUsage() const
-        {
-            return m_MemoryUsage;
-        }
-
-
     protected:
+        bool m_AllowCpuAcces = false;
     
         static uint32_t GetNbrOfHandle(MemoryUsage _memoryUsage)
         {
@@ -80,6 +75,60 @@ BEGIN_PCCORE
         }
         MemoryUsage m_MemoryUsage = MemoryUsage::None;
     };
+
+    template <typename T>
+    class RhiResourceT : public RhiResource
+    {
+    public:
+        DEFAULT_COPY_MOVE_OPERATIONS(RhiResourceT);
+
+        ~RhiResourceT() override = default;
+
+        explicit RhiResourceT(Rhi& _Rhi, const std::string& _name)
+            : RhiResource(_Rhi, _name)
+        {
+        }
+
+        explicit RhiResourceT(Rhi& _Rhi, std::string&& _name)
+            : RhiResource(_Rhi, std::move(_name))
+        {
+        }
+
+        // Setter
+
+        T& SetMemoryUsage(MemoryUsage _MemoryUsage)
+        {
+            m_MemoryUsage = _MemoryUsage;
+            return *this;
+        }
+
+        T& SetAllowCpuAcess(bool _AllowCpuAcess)
+        {
+            m_AllowCpuAcces = _AllowCpuAcess;
+            return *this;
+        }
+
+        // Getter
+        MemoryUsage GetMemoryUsage() const
+        {
+            return m_MemoryUsage;
+        }
+
+        bool GetAllowCpuAcces() const
+        {
+            return m_AllowCpuAcces;
+        }
+
+        size_t GetNbrOfInFlightResource() const
+        {
+            return GetNbrOfHandle(m_MemoryUsage);
+        }
+
+
+    private:
+
+    };
+
 
 END_PCCORE
 

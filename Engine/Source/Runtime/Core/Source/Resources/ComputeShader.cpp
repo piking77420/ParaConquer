@@ -2,6 +2,7 @@
 
 #include "LowRenderer/Rhi.hpp"
 
+/*
 PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, const std::string& _shaderName,
                                       const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
     ShaderProgram(_shaderName, RhiShaderProgram::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
@@ -49,3 +50,4 @@ PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, std::string&& _shaderName,
 
     m_RhiShaderProgram.reset(rhi.CreateRhiShaderProgram(Name, programShaderCreateInfo));
 }
+*/

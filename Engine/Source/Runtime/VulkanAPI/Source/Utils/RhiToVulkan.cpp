@@ -1004,25 +1004,21 @@ vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::Textu
         return static_cast<vk::ImageUsageFlags>(flags);
     }
 
-    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::Sampled)
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::RenderTarget)
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::RenderTarget)
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::Storage)
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::Storage)
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
-    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::TransferSrc)
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::TransferSrc)
         flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-    if (_usage & PC_CORE::RhiTexture::TextureUsageFlag::TransferDst)
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::TransferDst)
         flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    // Fallback default
-    if (flags == 0)
-        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-    
  
     return static_cast<vk::ImageUsageFlags>(flags);
 }
@@ -1079,11 +1075,11 @@ vk::ImageType Vulkan::Utils::RhiTextureTypeToVulkanImageType(PC_CORE::RhiTexture
     return {};
 }
 
-vk::BufferUsageFlags Vulkan::Utils::RhiBufferUsageToVulkan(PC_CORE::RhiBuffer::BufferUsage _bufferUsage)
+vk::BufferUsageFlags Vulkan::Utils::RhiBufferUsageToVulkan(PC_CORE::RhiBuffer::BufferUsageFlag _bufferUsage)
 {
     vk::BufferUsageFlags flags{};
 
-    using U = PC_CORE::RhiBuffer::BufferUsage;
+    using U = PC_CORE::RhiBuffer::BufferUsageFlagBits;
 
     if (_bufferUsage & U::Uniform)        flags |= vk::BufferUsageFlagBits::eUniformBuffer;
     if (_bufferUsage & U::Vertex)         flags |= vk::BufferUsageFlagBits::eVertexBuffer;

@@ -9,7 +9,7 @@ PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const
 {
     DYNAMIC_REFLECT_INIT
 
-        std::vector<void*> datas;
+    std::vector<void*> datas;
     datas.resize(6);
 
     int width{};
@@ -28,7 +28,7 @@ PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const
         .LayerCount = static_cast<uint32_t>(_maps.size()),
         .Samples = 1,
         .TextureType = RhiTexture::Type::CubeMap,
-        .TextureUsage = static_cast<RhiTexture::TextureUsageFlag>(RhiTexture::TextureUsageFlag::Sampled | RhiTexture::TextureUsageFlag::TransferDst),
+        .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst),
         .RhiFormat = RhiFormat::R8G8B8A8Unorm,
         .AllowCpuAcces = false
     };

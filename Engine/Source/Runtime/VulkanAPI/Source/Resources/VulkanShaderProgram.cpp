@@ -386,18 +386,17 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pInputAssemblyState = &inputAssembly;
     graphicsPipelineInfo.pViewportState = &viewportState;
     graphicsPipelineInfo.pRasterizationState = &rasterizer;
-
     if (Data.DephStencilInfo.enableDepthTest || Data.DephStencilInfo.enableDepthWrite)
         graphicsPipelineInfo.pDepthStencilState = &depthStencilState;
-
     graphicsPipelineInfo.pMultisampleState = &multisampling;
     graphicsPipelineInfo.pColorBlendState = &colorBlending;
-
     graphicsPipelineInfo.pDynamicState = &dynamicState;
     graphicsPipelineInfo.layout = m_PipelineLayout;
-    graphicsPipelineInfo.renderPass = reinterpret_cast<VulkanRenderPass*>(Data.RenderPass->GetFrameNativeHandle(0))->
-        GetVulkanRenderPass();
+
+    const VulkanRenderPass& VulkanRenderPassObject = *reinterpret_cast<VulkanRenderPass*>(Data.RenderPass);
+    graphicsPipelineInfo.renderPass = VulkanRenderPassObject.GetVulkanRenderPass();
     graphicsPipelineInfo.subpass = Data.subPassIndex;
+
 
     auto result = device.createGraphicsPipeline(nullptr, graphicsPipelineInfo);
 

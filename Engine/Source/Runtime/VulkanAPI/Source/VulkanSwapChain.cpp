@@ -250,7 +250,7 @@ const void* Vulkan::VulkanSwapChain::GetFrameNativeHandle(size_t _frameIndex) co
 
 void* Vulkan::VulkanSwapChain::GetFrameNativeHandle(size_t _frameIndex)
 {
-    return &m_SwapChain;// TODO
+    return &m_SwapChain;
 }
 
 bool Vulkan::VulkanSwapChain::Build()
