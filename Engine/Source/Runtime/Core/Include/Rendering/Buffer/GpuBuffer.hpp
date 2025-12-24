@@ -24,6 +24,15 @@ BEGIN_PCCORE
             return m_RhiBuffer.get();
         }
 
+        RhiBuffer& operator*()
+        {
+            return *m_RhiBuffer;
+        }
+
+        const RhiBuffer& operator*() const
+        {
+            return *m_RhiBuffer;
+        }
         
     protected:
         std::unique_ptr<RhiBuffer> m_RhiBuffer;

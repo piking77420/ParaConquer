@@ -2,8 +2,8 @@
 
 namespace PC_CORE
 {
-PC_CORE::RhiShaderProgram::RhiShaderProgram(Rhi& _Rhi, const std::string& _programName)
-    : RhiObjectT(_Rhi, _programName)
+PC_CORE::RhiShaderProgram::RhiShaderProgram(Rhi& _Rhi)
+    : RhiObjectT(_Rhi)
 {
 }
 

@@ -15,7 +15,7 @@ static vk::ImageLayout GetDefaultImageLayout(PC_CORE::RhiTexture::TextureUsageFl
 {
     using TexF = PC_CORE::RhiTexture::TextureUsageFlagBits;
     
-    if (flag & TexF::Storage) // for compute shader
+    if (flag & TexF::LoadAndStore) // for compute shader
         return vk::ImageLayout::eGeneral;
 
     if (flag & TexF::Sampled)
@@ -70,7 +70,7 @@ static RhiResourceState GetAfterCreationImageLayout(
         return RhiResourceState::ShaderRead;
     }
 
-    if (flag & TexF::Storage) // for compute shader
+    if (flag & TexF::LoadAndStore) // for compute shader
         return RhiResourceState::ComputeWrite; // eGeneral layout 
 
     assert(false && "Unsuported usage");
@@ -88,17 +88,12 @@ void* Vulkan::VulkanTexture::GetFrameNativeHandle(size_t _frameIndex)
     return GetTextureAndAlloc(_frameIndex);
 }
 
-Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi, const std::string& _name)
-    : RhiTexture(_Rhi, _name)
+Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi)
+    : RhiTexture(_Rhi)
 {
 
 }
 
-Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi, std::string&& _name)
-    : RhiTexture(_Rhi, _name)
-{
-    
-}
 
 bool Vulkan::VulkanTexture::Build()
 {
@@ -138,7 +133,7 @@ bool Vulkan::VulkanTexture::Build()
     imageInfo.format = Utils::RhiFormatToVkFormat(GetRhiFormat());
     imageInfo.tiling = vk::ImageTiling::eOptimal;
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
-    imageInfo.usage = Utils::GetImageUsageFlags(GetTextureUsage(), VkImageAspectFlags);
+    imageInfo.usage = Utils::GetImageUsageFlags(GetTextureUsage());
     imageInfo.samples = Utils::RhSampleCountToVulkan(GetSamples());
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
     imageInfo.flags = Utils::ImageCreateFlagFromTextureType(GetTextureType());

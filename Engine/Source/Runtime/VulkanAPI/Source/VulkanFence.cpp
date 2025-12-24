@@ -4,13 +4,8 @@
 #include "LowRenderer/Rhi.hpp"
 
 
-Vulkan::VulkanFence::VulkanFence(PC_CORE::Rhi& _Rhi, const std::string& name, const PC_CORE::RhiFenceCreateInfo& rhiFenceCreateInfo)
-    : RhiFence(_Rhi, name, rhiFenceCreateInfo)
-{
-}
-
-Vulkan::VulkanFence::VulkanFence(PC_CORE::Rhi& _Rhi, std::string&& name, const PC_CORE::RhiFenceCreateInfo& rhiFenceCreateInfo)
-    : RhiFence(_Rhi, name, rhiFenceCreateInfo)
+Vulkan::VulkanFence::VulkanFence(PC_CORE::Rhi& _Rhi)
+    : RhiFence(_Rhi)
 {
 }
 
@@ -36,7 +31,7 @@ bool Vulkan::VulkanFence::Build()
     {
         vk::FenceCreateInfo fenceInfo{};
         fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
-        fenceInfo.flags = m_RhiFenceCreateInfo.signaled
+        fenceInfo.flags = GetSignaled()
             ? vk::FenceCreateFlagBits::eSignaled
             : static_cast<vk::FenceCreateFlagBits>(0);
 
@@ -61,6 +56,7 @@ Vulkan::VulkanFence::~VulkanFence()
 
     for (auto& it : m_Fences)
     {
-        d.destroyFence(it);
+        if (it == VK_NULL_HANDLE)
+            d.destroyFence(it);
     }
 }

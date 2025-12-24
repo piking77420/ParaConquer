@@ -11,10 +11,11 @@ namespace PC_CORE
         : m_RhiBufferFormat(_indexFormat)
         , m_IndiciesCount(_indexCount)
     {
-        m_RhiBuffer.reset(rhi.CreateBuffer(_name));
+        m_RhiBuffer.reset(rhi.CreateBuffer());
+
         m_RhiBuffer
             ->SetSize(_indexCount * static_cast<size_t>(_indexFormat))
-            .SetUsage(RhiBuffer::BufferUsageFlagBits::Index | RhiBuffer::BufferUsageFlagBits::TransferDst);
+            .SetName(_name);
 
     }
 
@@ -22,10 +23,9 @@ namespace PC_CORE
         : m_RhiBufferFormat(_indexFormat)
         , m_IndiciesCount(_indexCount)
     {
-        m_RhiBuffer.reset(rhi.CreateBuffer(_name));
+        m_RhiBuffer.reset(rhi.CreateBuffer());
         m_RhiBuffer
             ->SetSize(_indexCount * static_cast<size_t>(_indexFormat))
-            .SetUsage(RhiBuffer::BufferUsageFlagBits::Index | RhiBuffer::BufferUsageFlagBits::TransferDst);
-
+            .SetName(std::forward<std::string>(_name));
     }
 }

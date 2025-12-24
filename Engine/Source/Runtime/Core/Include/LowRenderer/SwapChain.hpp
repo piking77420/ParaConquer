@@ -9,12 +9,10 @@
 #include "Io/Window.hpp"
 
 BEGIN_PCCORE
-    class RhiSwapChain : public RhiObject
+    class RhiSwapChain : public RhiObjectT<RhiSwapChain>
     {
     public:
-        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi, const std::string& _Name, uint32_t _Widht, uint32_t _Height);
-
-        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi, std::string&& _Name, uint32_t _Widht, uint32_t _Height);
+        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi, uint32_t _Widht, uint32_t _Height);
 
         PC_CORE_API virtual ~RhiSwapChain() = default;
 

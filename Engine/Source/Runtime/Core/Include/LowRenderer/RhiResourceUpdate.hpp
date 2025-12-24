@@ -1,25 +1,36 @@
 #pragma once
 
-#include "CoreHeader.hpp"
+#include <bitset>
+
+#include "RhiTypedef.h"
 
 namespace PC_CORE
 {
 	class CommandList;
 	class RhiTexture;
+	class RhiBuffer;
 }
 
-namespace PC_CORE::Rhi
+namespace PC_CORE::RHI
 {
 	class PC_CORE_API ResourceUpdate
 	{
 	public:
+		enum ResourceUpdateStatus
+		{
+			Failed,
+			Success,
+			Complet
+		};
+
 		ResourceUpdate();
 		virtual ~ResourceUpdate();
 
-		virtual void Record(CommandList& _CommandList);
+		
+		[[nodiscard]] virtual bool Record(CommandList& _CommandList) = 0;
 
 	private:
-
+		std::bitset<MaxFramesInFlight> m_FrameUpdateBitSet{};
 	};
 
 
@@ -63,5 +74,23 @@ namespace PC_CORE::Rhi
 	private:
 		RhiTexture& m_Texture;
 	};
+
+	class BufferUpload final : public ResourceUpdate
+	{
+	public:
+		explicit BufferUpload(RhiBuffer& _RhiBuffer)
+			: m_RhiBuffer(_RhiBuffer) {
+		}
+
+
+		~BufferUpload() override
+		{
+
+		}
+
+	private:
+		RhiBuffer& m_RhiBuffer;
+	};
+
 
 }

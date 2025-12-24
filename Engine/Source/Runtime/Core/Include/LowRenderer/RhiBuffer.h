@@ -46,9 +46,7 @@ BEGIN_PCCORE
     
         DEFAULT_COPY_MOVE_OPERATIONS(RhiBuffer)
 
-        PC_CORE_API RhiBuffer(Rhi& _Rhi, const std::string& _name);
-    
-        PC_CORE_API RhiBuffer(Rhi& _Rhi, std::string&& _name);
+        PC_CORE_API RhiBuffer(Rhi& _Rhi);
     
         PC_CORE_API ~RhiBuffer() override = default;
     

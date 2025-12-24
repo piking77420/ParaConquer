@@ -33,7 +33,7 @@ namespace Vulkan
     {
     public:
         
-        VulkanShaderProgram(PC_CORE::Rhi& _Rhi, const std::string& _programName);
+        VulkanShaderProgram(PC_CORE::Rhi& _Rhi);
 
         ~VulkanShaderProgram() override;
         
@@ -49,13 +49,7 @@ namespace Vulkan
             return &m_Pipeline;
         }
         
-        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(const std::string& Name) override;
-
-        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string&& Name) override;
-
-        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string_view Name) override;
-
-        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding(const char* Name) override;
+        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding() override;
 
         void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data,
                           size_t _size) const;

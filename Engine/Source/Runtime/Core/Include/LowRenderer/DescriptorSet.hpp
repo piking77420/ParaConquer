@@ -10,7 +10,8 @@ class RhiTexture;
 class RhiSampler;
 class RhiBuffer;
 
-enum class ShaderProgramDescriptorType
+
+enum class DescriptorType
 {
     Sampler,
     CombinedImageSampler,
@@ -49,38 +50,69 @@ struct InputAttachementDescriptor
 };
 
 using Descriptor = std::variant<BufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor,
-                                ImageDescriptor>;
+    ImageDescriptor>;
 
-struct ShaderProgramDescriptorWrite
+struct DescriptorWrite
 {
-    ShaderProgramDescriptorType type;
+    DescriptorType type;
     uint32_t bindingIndex;
     Descriptor descriptor;
 };
 
+template<typename T>
+concept DescriptorWriteType =
+std::same_as<std::remove_cvref_t<T>, DescriptorWrite>;
 
 class ShaderProgramDescriptorSets : public RhiObjectT<ShaderProgramDescriptorSets>
 {
 public:
-    PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi, const std::string& _name);
 
-    PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi, std::string&& _name);
+
+    PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi);
 
     PC_CORE_API ~ShaderProgramDescriptorSets() override;
 
-    PC_CORE_API void SetBindings(std::initializer_list<ShaderProgramDescriptorWrite> values)
+    PC_CORE_API void SetBindings(std::initializer_list<DescriptorWrite> values)
     {
         m_Bindings = std::move(values);
     }
 
-    PC_CORE_API void SetBindings(const std::initializer_list<ShaderProgramDescriptorWrite>& values)
+    PC_CORE_API void SetBindings(const std::initializer_list<DescriptorWrite>& values)
     {
         m_Bindings = values;
     }
 
-    PC_CORE_API ShaderProgramDescriptorSets& SetBindings(const std::vector<ShaderProgramDescriptorWrite>& values , size_t _Set)
+    PC_CORE_API ShaderProgramDescriptorSets& SetBindings(size_t _Set, const std::vector<DescriptorWrite>& values) noexcept
     {
         m_Bindings = values;
+        m_Set = _Set;
+
+        return *this;
+    }
+
+    PC_CORE_API ShaderProgramDescriptorSets& SetBindings(size_t _Set, std::vector<DescriptorWrite>&& values) noexcept
+    {
+        m_Bindings = std::move(values);
+        m_Set = _Set;
+
+        return *this;
+    }
+
+    template <DescriptorWriteType ...T>
+    ShaderProgramDescriptorSets& SetBindings(size_t _Set, T&&... _Binding) noexcept
+    {
+        m_Bindings.clear();
+        (m_Bindings.emplace_back(std::forward<T>(_Binding)), ...);
+        m_Set = _Set;
+
+        return *this;
+    }
+
+    template <DescriptorWriteType ...T>
+    ShaderProgramDescriptorSets& SetBindings(size_t _Set, const T&... _Binding) noexcept
+    {
+        m_Bindings.clear();
+        (m_Bindings.push_back(_Binding), ...);
         m_Set = _Set;
 
         return *this;
@@ -92,13 +124,13 @@ public:
     }
 
 protected:
-    const std::vector<ShaderProgramDescriptorWrite>& GetBinding() const
+    const std::vector<DescriptorWrite>& GetBinding() const
     {
         return m_Bindings;
     }
 
 private:
-    std::vector<ShaderProgramDescriptorWrite> m_Bindings;
+    std::vector<DescriptorWrite> m_Bindings;
 
     size_t m_Set = std::numeric_limits<size_t>::max();
 };

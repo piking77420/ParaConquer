@@ -14,9 +14,7 @@ namespace Vulkan
         tracy::VkCtx* tracyContext = nullptr;
 #endif
         
-        VULKAN_API explicit VulkanCommandList(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
-
-        VULKAN_API explicit VulkanCommandList(PC_CORE::Rhi& _Rhi, std::string&& _name, const PC_CORE::CommandListCreateInfo& _commandListCreateInfo);
+        VULKAN_API explicit VulkanCommandList(PC_CORE::Rhi& _Rhi);
 
         VULKAN_API ~VulkanCommandList() override;
 
@@ -82,7 +80,7 @@ namespace Vulkan
         VULKAN_API void Flush(PC_CORE::FlushCommandMethod _flushCommandMethod,
             PC_CORE::GpuPipelineStage _waitGpuPipelineStageFlag) override;
 
-        PC_CORE_API void Flush(PC_CORE::RhiFence& _fence) override;
+        VULKAN_API void Flush(PC_CORE::RhiFence& _fence) override;
 
         VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 

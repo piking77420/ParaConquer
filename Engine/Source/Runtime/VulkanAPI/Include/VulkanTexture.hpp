@@ -24,10 +24,8 @@ namespace Vulkan
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanTexture)
 
-        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi, const std::string& _name);
+        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi);
         
-        VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi, std::string&& _name);
-
         VULKAN_API ~VulkanTexture() override;
         
         VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;

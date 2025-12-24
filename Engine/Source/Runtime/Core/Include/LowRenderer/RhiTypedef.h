@@ -644,9 +644,6 @@ BEGIN_PCCORE
         uint32_t Offset = 0;
     };
 
-    
-
-
 END_PCCORE
 
 
@@ -696,7 +693,6 @@ T* SafeCastReinterpreCast(U* _ptr)
 #define G_WORLD_POSITION 3
 
 // PREPROCESSOR
-
 
 #if defined(_DEBUG) || defined(PROFILING)
 #define DEBUG_GPU_ON 1

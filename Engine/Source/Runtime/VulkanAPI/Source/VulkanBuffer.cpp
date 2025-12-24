@@ -44,16 +44,11 @@ VmaAllocationCreateInfo VmaAllocationCreateInfoFromBuffer(PC_CORE::RhiResource::
 }
 
 
-Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name)
-    : RhiBuffer(_Rhi, _name)
+Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi)
+    : RhiBuffer(_Rhi)
 
 {
 }
-Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi, std::string&& _name)
-    : RhiBuffer(_Rhi, _name)
-{
-}
-
 
 Vulkan::VulkanBuffer::~VulkanBuffer()
 {

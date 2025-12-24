@@ -2,134 +2,134 @@
 
 #include "RhiObject.hpp"
 
-BEGIN_PCCORE
-    class RhiResource : public RhiObjectT<RhiResource>
+namespace PC_CORE
+{
+
+class RhiResource : public RhiObjectT<RhiResource>
+{
+public:
+    enum struct MemoryUsage : uint8_t
     {
-    public:
-        enum struct MemoryUsage : uint8_t
-        {
-            None,
-            Static, // Not modified over its lifetime
-            Streamable, // Occasionally modified (e.g., once per frame)
-            Dynamic, // Frequently modified (e.g., multiple times per frame)
+        None,
+        Static, // Not modified over its lifetime
+        Streamable, // Occasionally modified (e.g., once per frame)
+        Dynamic, // Frequently modified (e.g., multiple times per frame)
 
-            Count // Total enum values
-        };
-        REFLECT(MemoryUsage)
-    
-        enum struct State
-        {
-            Undefined = 0,
-
-            // Transfer
-            CopySrc,
-            CopyDst,
-
-            // Buffer uses
-            VertexBuffer,
-            IndexBuffer,
-            UniformBuffer,
-
-            // Texture uses
-            ShaderRead,
-            RenderTarget, // TODO HANDLE READ WIRTE ONLY 
-            DepthStencilWrite,
-            DepthStencilRead,
-
-            // Compute
-            ComputeRead,
-            ComputeWrite,
-            ComputeReadWrite,
-
-            // Presentation
-            Present,
-        };
-        REFLECT(MemoryUsage)
-
-        PC_CORE_API explicit RhiResource(Rhi& _Rhi, const std::string& _name);
-
-        PC_CORE_API explicit RhiResource(Rhi& _Rhi, std::string&& _name);
-
-        PC_CORE_API virtual ~RhiResource() = default;
-
-        DEFAULT_COPY_MOVE_OPERATIONS(RhiResource)
-
-    protected:
-        bool m_AllowCpuAcces = false;
-    
-        static uint32_t GetNbrOfHandle(MemoryUsage _memoryUsage)
-        {
-            switch (_memoryUsage)
-            {
-            case MemoryUsage::None:
-            case MemoryUsage::Count:
-                return 0;
-            case MemoryUsage::Static:
-            case MemoryUsage::Streamable:
-                return 1;
-            case MemoryUsage::Dynamic:
-                return MaxFramesInFlight;
-            }
-                
-            return static_cast<uint32_t>(-1);
-        }
-        MemoryUsage m_MemoryUsage = MemoryUsage::None;
+        Count // Total enum values
     };
+    REFLECT(MemoryUsage)
 
-    template <typename T>
-    class RhiResourceT : public RhiResource
+    enum struct State
     {
-    public:
-        DEFAULT_COPY_MOVE_OPERATIONS(RhiResourceT);
+        Undefined = 0,
 
-        ~RhiResourceT() override = default;
+        // Transfer
+        CopySrc,
+        CopyDst,
 
-        explicit RhiResourceT(Rhi& _Rhi, const std::string& _name)
-            : RhiResource(_Rhi, _name)
-        {
-        }
+        // Buffer uses
+        VertexBuffer,
+        IndexBuffer,
+        UniformBuffer,
 
-        explicit RhiResourceT(Rhi& _Rhi, std::string&& _name)
-            : RhiResource(_Rhi, std::move(_name))
-        {
-        }
+        // Texture uses
+        ShaderRead,
+        RenderTarget,
+        DepthStencilWrite,
+        DepthStencilRead,
 
-        // Setter
+        // Compute
+        ComputeRead,
+        ComputeWrite,
+        ComputeReadWrite,
 
-        T& SetMemoryUsage(MemoryUsage _MemoryUsage)
-        {
-            m_MemoryUsage = _MemoryUsage;
-            return *this;
-        }
-
-        T& SetAllowCpuAcess(bool _AllowCpuAcess)
-        {
-            m_AllowCpuAcces = _AllowCpuAcess;
-            return *this;
-        }
-
-        // Getter
-        MemoryUsage GetMemoryUsage() const
-        {
-            return m_MemoryUsage;
-        }
-
-        bool GetAllowCpuAcces() const
-        {
-            return m_AllowCpuAcces;
-        }
-
-        size_t GetNbrOfInFlightResource() const
-        {
-            return GetNbrOfHandle(m_MemoryUsage);
-        }
-
-
-    private:
-
+        // Presentation
+        Present,
     };
+    REFLECT(MemoryUsage)
+
+    PC_CORE_API explicit RhiResource(Rhi& _Rhi);
+
+    PC_CORE_API virtual ~RhiResource() = default;
+
+    DEFAULT_COPY_MOVE_OPERATIONS(RhiResource)
+
+protected:
+    bool m_AllowCpuAcces = false;
+
+    static uint32_t GetNbrOfHandle(MemoryUsage _memoryUsage)
+    {
+        switch (_memoryUsage)
+        {
+        case MemoryUsage::None:
+        case MemoryUsage::Count:
+            assert(false);
+            return 0;
+        case MemoryUsage::Static:
+        case MemoryUsage::Streamable:
+            return 1;
+        case MemoryUsage::Dynamic:
+            return MaxFramesInFlight;
+        }
+
+        return static_cast<uint32_t>(-1);
+    }
+    MemoryUsage m_MemoryUsage = MemoryUsage::None;
+};
+
+template <typename T>
+class RhiResourceT : public RhiResource
+{
+public:
+    DEFAULT_COPY_MOVE_OPERATIONS(RhiResourceT);
+
+    ~RhiResourceT() override = default;
+
+    explicit RhiResourceT(Rhi& _Rhi)
+        : RhiResource(_Rhi)
+    {
+    }
+
+    // Setter
+
+    T& SetMemoryUsage(MemoryUsage _MemoryUsage)
+    {
+        static_assert(std::is_base_of_v<RhiResource, T>, "T must be an RhiResource");
+
+        m_MemoryUsage = _MemoryUsage;
+        return reinterpret_cast<T&>(*this);
+    }
+
+    T& SetAllowCpuAcess(bool _AllowCpuAcess)
+    {
+        static_assert(std::is_base_of_v<RhiResource, T>, "T must be an RhiResource");
+
+        m_AllowCpuAcces = _AllowCpuAcess;
+        return reinterpret_cast<T&>(*this);
+    }
+
+    // Getter
+    MemoryUsage GetMemoryUsage() const
+    {
+        return m_MemoryUsage;
+    }
+
+    bool GetAllowCpuAcces() const
+    {
+        return m_AllowCpuAcces;
+    }
+
+    size_t GetNbrOfInFlightResource() const
+    {
+        return GetNbrOfHandle(m_MemoryUsage);
+    }
 
 
-END_PCCORE
+private:
+
+};
+
+}
 
 using RhiResourceState = PC_CORE::RhiResource::State;
+using RhiMemoryUsage = PC_CORE::RhiResource::MemoryUsage;

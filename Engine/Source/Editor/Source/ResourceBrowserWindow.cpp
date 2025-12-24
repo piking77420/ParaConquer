@@ -40,26 +40,17 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
 {
     using namespace PC_CORE;
 
-    const RhiTexture::RhiTextureDesciptor desc =
-    {
-    .Width = image.GetWidht(),
-    .Height = image.GetHeight(),
-    .Depth = 1,
-    .Level = 1,
-    .LayerCount = 1,
-    .Samples = 1,
-    .TextureType = RhiTexture::Type::Texture2D,
-    .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst),
-    .RhiFormat = RhiFormat::R8G8B8A8Unorm,
-    .AllowCpuAcces = false
-    };
-
-    texture = PC_CORE::Texture2D(rhi, name, desc, RhiResource::MemoryUsage::Static);
-    texture->Build();
+    texture = PC_CORE::Texture2D(rhi, name);
+    texture
+        ->SetWidth(image.GetWidht())
+        .SetHeight(image.GetHeight())
+        .SetMemoryUsage(RhiResource::MemoryUsage::Static)
+        .SetTextureUsage(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst)
+        .Build();
 
     rhi.PushResourceUpdate([&](CommandList* list)
         {
-            texture->UploadData2D(list, image.GetData(), image.GetWidht(), image.GetHeight(), image.GetChannel());
+            texture->UploadData2D(list, image.GetData(), image.GetWidht(), image.GetHeight());
         });
 }
 

@@ -161,7 +161,7 @@ protected:
     };
 
 public:
-    PC_CORE_API RhiShaderProgram(Rhi& _Rhi, const std::string& _programName);
+    PC_CORE_API RhiShaderProgram(Rhi& _Rhi);
 
     PC_CORE_API ~RhiShaderProgram() override = default;
 
@@ -257,13 +257,7 @@ public:
         return std::get<ComputePipelineData>(m_PipelineData).LocalSize;
     }
 
-    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(const std::string& Name) = 0;
-
-    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string&& Name) = 0;
-
-    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(std::string_view Name) = 0;
-
-    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding(const char* Name) = 0;
+    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding() = 0;
 
     PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
 

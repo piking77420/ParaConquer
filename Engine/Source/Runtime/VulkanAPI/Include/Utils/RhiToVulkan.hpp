@@ -44,7 +44,7 @@ namespace Vulkan::Utils
 
     vk::IndexType RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _format);
 
-    vk::DescriptorType RhiToDescriptorType(const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType);
+    vk::DescriptorType RhiToDescriptorType(const PC_CORE::DescriptorType& descriptorType);
 
     vk::SampleCountFlagBits RhSampleCountToVulkan(uint32_t _sampleCount);
 
@@ -62,7 +62,7 @@ namespace Vulkan::Utils
 
     vk::ColorComponentFlags RhiColorComponent(PC_CORE::ColorComponent _colorComponent);
 
-    vk::ImageUsageFlags GetImageUsageFlags(PC_CORE::RhiTexture::TextureUsageFlag _usage, vk::ImageAspectFlags aspectFlag);
+    vk::ImageUsageFlags GetImageUsageFlags(PC_CORE::RhiTexture::TextureUsageFlag _usage);
 
     vk::ImageAspectFlags RhiTextureFormatToImageAspectFlagFlags(PC_CORE::RhiFormat _format);
     

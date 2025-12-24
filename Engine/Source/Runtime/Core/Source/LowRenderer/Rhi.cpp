@@ -40,14 +40,14 @@ RhiSwapChain* Rhi::CreateRhiSwapChain()
 }
 
 
-RhiShaderProgram* Rhi::CreateRhiShaderProgram(const std::string& _programName)
+RhiShaderProgram* Rhi::CreateRhiShaderProgram()
 {
 
 	switch (m_GraphicsApi)
 	{
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanShaderProgram(*this, _programName);
+		return new Vulkan::VulkanShaderProgram(*this);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -59,31 +59,13 @@ RhiShaderProgram* Rhi::CreateRhiShaderProgram(const std::string& _programName)
 	return nullptr;
 }
 
-RhiShaderProgram* Rhi::CreateRhiShaderProgram(std::string&& _programName)
-{
-	switch (m_GraphicsApi)
-	{
-		break;
-	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanShaderProgram(*this, std::move(_programName));
-		break;
-	case GraphicAPI::D3d12:
-		break;
-	case GraphicAPI::None:
-	case GraphicAPI::Count:
-		break;
-	}
-
-	return nullptr;
-}
-
-CommandList* Rhi::CreateCommandList(const std::string& _name, const CommandListCreateInfo& _commandListCreateInfo)
+CommandList* Rhi::CreateCommandList()
 {
 
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanCommandList(*this, _name, _commandListCreateInfo);
+		return new Vulkan::VulkanCommandList(*this);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -95,25 +77,7 @@ CommandList* Rhi::CreateCommandList(const std::string& _name, const CommandListC
 	return nullptr;
 }
 
-CommandList* Rhi::CreateCommandList(std::string&& _name, const CommandListCreateInfo& _commandListCreateInfo)
-{
-
-	switch (m_GraphicsApi)
-	{
-	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanCommandList(*this, std::move(_name), _commandListCreateInfo);
-		break;
-	case GraphicAPI::D3d12:
-		break;
-	case GraphicAPI::None:
-	case GraphicAPI::Count:
-		throw std::runtime_error("Invalid GraphicAPI");
-	}
-
-	return nullptr;
-}
-
-RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFormat _colorFormat, RhiFormat _depthFormat)
+RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, RhiFormat _depthFormat)
 {
 
 	switch (m_GraphicsApi)
@@ -121,7 +85,7 @@ RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFormat _colorF
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanRenderPass(*this, _name, _colorFormat, _depthFormat);
+		return new Vulkan::VulkanRenderPass(*this, _colorFormat, _depthFormat);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -134,16 +98,15 @@ RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFormat _colorF
 	return nullptr;
 }
 
-RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFormat _colorFormat)
+RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat)
 {
-
 
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanRenderPass(*this, _name, _colorFormat);
+		return new Vulkan::VulkanRenderPass(*this, _colorFormat);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -155,16 +118,14 @@ RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFormat _colorF
 	return nullptr;
 }
 
-PC_CORE_API RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFormat _colorFormat, uint32_t sampleCount)
+PC_CORE_API RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount)
 {
-
-
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanRenderPass(*this, _name, _colorFormat, sampleCount);
+		return new Vulkan::VulkanRenderPass(*this, _colorFormat, sampleCount);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -176,16 +137,14 @@ PC_CORE_API RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, RhiFo
 	return nullptr;
 }
 
-RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, const RenderPassDescriptor& _renderPassDescriptor)
+RhiRenderPass* Rhi::CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor)
 {
-
-
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanRenderPass(*this, _name, _renderPassDescriptor);
+		return new Vulkan::VulkanRenderPass(*this, _renderPassDescriptor);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -198,14 +157,14 @@ RhiRenderPass* Rhi::CreateRenderPass(const std::string& _name, const RenderPassD
 	return nullptr;
 }
 
-RhiFrameBuffer* Rhi::CreateFrameBuffer(const std::string& _name, const CreateFrameInfo& _createFrameInfo)
+RhiFrameBuffer* Rhi::CreateFrameBuffer()
 {
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanFrameBuffer(*this, _name, _createFrameInfo);
+		return new Vulkan::VulkanFrameBuffer(*this);
 		break;
 	case GraphicAPI::D3d12:
 		break;
@@ -217,9 +176,9 @@ RhiFrameBuffer* Rhi::CreateFrameBuffer(const std::string& _name, const CreateFra
 	return nullptr;
 }
 
-RhiBuffer* Rhi::CreateBuffer(const std::string& _name)
-{
 
+RhiBuffer* Rhi::CreateBuffer()
+{
 	static_assert(std::is_base_of_v<RhiBuffer, Vulkan::VulkanBuffer>, "");
 
 	switch (m_GraphicsApi)
@@ -227,7 +186,7 @@ RhiBuffer* Rhi::CreateBuffer(const std::string& _name)
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanBuffer(*this, _name);
+		return new Vulkan::VulkanBuffer(*this);
 	case GraphicAPI::D3d12:
 		break;
 	case GraphicAPI::Count:
@@ -239,31 +198,8 @@ RhiBuffer* Rhi::CreateBuffer(const std::string& _name)
 	return nullptr;
 }
 
-RhiBuffer* Rhi::CreateBuffer(std::string&& _name)
+RhiTexture* Rhi::CreateTexture()
 {
-
-	static_assert(std::is_base_of_v<RhiBuffer, Vulkan::VulkanBuffer>, "");
-
-	switch (m_GraphicsApi)
-	{
-	case GraphicAPI::None:
-		break;
-	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanBuffer(*this, std::move(_name));
-	case GraphicAPI::D3d12:
-		break;
-	case GraphicAPI::Count:
-		break;
-	default:
-		return nullptr;
-	}
-
-	return nullptr;
-}
-
-RhiTexture* Rhi::CreateTexture(const std::string& _name)
-{
-
 	static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture>, "");
 
 	switch (m_GraphicsApi)
@@ -271,7 +207,7 @@ RhiTexture* Rhi::CreateTexture(const std::string& _name)
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanTexture(*this, _name);
+		return new Vulkan::VulkanTexture(*this);
 	case GraphicAPI::D3d12:
 		break;
 	case GraphicAPI::Count:
@@ -283,29 +219,7 @@ RhiTexture* Rhi::CreateTexture(const std::string& _name)
 	return nullptr;
 }
 
-PC_CORE_API RhiTexture* Rhi::CreateTexture(std::string&& _name)
-{
-
-	static_assert(std::is_base_of_v<RhiTexture, Vulkan::VulkanTexture>, "");
-
-	switch (m_GraphicsApi)
-	{
-	case GraphicAPI::None:
-		break;
-	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanTexture(*this, std::move(_name), _rhiTextureDesciptor, _memoryUsage);
-	case GraphicAPI::D3d12:
-		break;
-	case GraphicAPI::Count:
-		break;
-	default:
-		return nullptr;
-	}
-
-	return nullptr;
-}
-
-RhiSampler* Rhi::CreateSampler(const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo)
+RhiSampler* Rhi::CreateSampler()
 {
 	static_assert(std::is_base_of_v<RhiSampler, Vulkan::VulkanSampler>, "");
 
@@ -314,7 +228,7 @@ RhiSampler* Rhi::CreateSampler(const std::string& _name, const SamplerCreateInfo
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanSampler(*this, _name, _samplerCreateInfo);
+		return new Vulkan::VulkanSampler(*this);
 	case GraphicAPI::D3d12:
 		break;
 	case GraphicAPI::Count:
@@ -325,14 +239,14 @@ RhiSampler* Rhi::CreateSampler(const std::string& _name, const SamplerCreateInfo
 	return nullptr;
 }
 
-PC_CORE_API RhiFence* Rhi::CreateFence(const std::string& _name, const RhiFenceCreateInfo& _rhiFenceCreateInfo)
+PC_CORE_API RhiFence* Rhi::CreateFence()
 {
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanFence(*this, _name, _rhiFenceCreateInfo);
+		return new Vulkan::VulkanFence(*this);
 	case GraphicAPI::D3d12:
 
 	case GraphicAPI::Count:
@@ -422,19 +336,20 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 	case GraphicAPI::None:
 		break;
 	}
-
-	CommandListCreateInfo commandListCreateInfo;
-	commandListCreateInfo.CommandPoolFamily = CommandPoolFamily::Graphics;
-	commandListCreateInfo.CommandBufferType = CommandBufferType::Primary;
-
-	m_ResourceUpdateCommandList.reset(Rhi::CreateCommandList("Resource Operation", commandListCreateInfo));
-	m_ResourceUpdateCommandList->Build();
-
-	RhiFenceCreateInfo fenceInfo;
-	fenceInfo.signaled = true;
-
-	m_ResourceUpdateFence.reset(Rhi::CreateFence("ResourceUpdateFence", fenceInfo));
-	m_ResourceUpdateFence->Build();
+	
+	// Create Resource Update Command List
+	m_ResourceUpdateCommandList.reset(Rhi::CreateCommandList());
+	m_ResourceUpdateCommandList
+		->SetBufferType(CommandList::BufferType::Primary)
+		.SetPoolFamilly(CommandList::PoolFamily::Graphics)
+		.SetName("Resource Operation")
+		.Build();
+	// Create Resource Update Fence
+	m_ResourceUpdateFence.reset(Rhi::CreateFence());
+	m_ResourceUpdateFence
+		->SetSignaled(true)
+		.SetName("ResourceUpdateFence")
+		.Build();
 }
 
 void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)

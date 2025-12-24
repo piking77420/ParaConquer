@@ -1,23 +1,25 @@
 #include "LowRenderer/RhiObject.hpp"
 
+#include "LowRenderer/Rhi.hpp"
+
 namespace PC_CORE
 {
+
+RhiObject::RhiObject(Rhi& _Rhi)
+	: m_Rhi(_Rhi)
+{
+	
+}
 
 RhiObject::~RhiObject()
 {
 
 }
 
-RhiObject::RhiObject(Rhi& _Rhi, const std::string& _name)
-	: m_Rhi(_Rhi)
-	, m_Name(_name)
+Rhi& RhiObject::GetRhi()
 {
+	return m_Rhi;
 }
 
-RhiObject::RhiObject(Rhi& _Rhi, std::string&& _name)
-	: m_Rhi(_Rhi)
-	, m_Name(std::move(_name))
-{
-}
 
 }

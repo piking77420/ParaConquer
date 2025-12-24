@@ -10,8 +10,8 @@ BEGIN_PCCORE
 
     struct ForwardTexture
     {
-        Texture2D color;
-        Texture2D depth;
+        std::unique_ptr<RhiTexture> color;
+        std::unique_ptr<RhiTexture> depth;
     };
 
 
@@ -28,9 +28,9 @@ BEGIN_PCCORE
 
         ForwardTexture ForwardTexture;
 
-        Texture2D FinalImage;
+        std::unique_ptr<RhiTexture> FinalImage;
 
-        Texture2D ResolvedImages;
+        std::unique_ptr<RhiTexture> ResolvedImages;
 
         void SetRenderingContextFlag(size_t _flag);
 

@@ -7,48 +7,85 @@
 #include "Resources/Texture2d.hpp"
 
 BEGIN_PCCORE
-    struct FrameBufferAttachementDesriptor
+
+class RhiFrameBuffer : public RhiObjectT<RhiFrameBuffer>
+{
+public:
+    PC_CORE_API RhiFrameBuffer(Rhi& _Rhi);
+
+    PC_CORE_API ~RhiFrameBuffer() override = default;
+
+    // Setter
+    RhiFrameBuffer& SetWidth(uint32_t _Widht)
     {
-        RhiTexture* RhiTexture;
-    };
+        return *this;
+    }
 
-    struct CreateFrameInfo
+    RhiFrameBuffer& SetHeight(uint32_t _Height)
     {
-        uint32_t Width;
-        uint32_t Height;
+        return *this;
+    }
 
-        std::vector<FrameBufferAttachementDesriptor>* Attachements;
-        RhiRenderPass* RenderPass;
-    };
-
-    class RhiFrameBuffer : public RhiObjectT<RhiFrameBuffer>
+    RhiFrameBuffer& SetAttachments(std::vector<RhiTexture*> _Attachements)
     {
-    public:
-        PC_CORE_API RhiFrameBuffer(Rhi& _Rhi, const std::string& _name, uint32_t _width, uint32_t m_height);
+        m_Attachments = std::move(_Attachements);
+        return *this;
+    }
 
-        PC_CORE_API RhiFrameBuffer(Rhi& _Rhi, std::string&& _name, uint32_t _width, uint32_t m_height);
+    template<typename... Attachments>
+    RhiFrameBuffer& SetAttachments(Attachments*... textures)
+    {
+        static_assert((std::is_same_v<Attachments, RhiTexture> && ...),
+            "All attachments must be RhiTexture*");
 
-        PC_CORE_API ~RhiFrameBuffer() override = default;
+        m_Attachments.clear();
+        (m_Attachments.emplace_back(textures), ...);
 
-        PC_CORE_API uint32_t GetWidth() const
-        {
-            return m_Width;
-        }
+        return *this;
+    }
 
-        PC_CORE_API uint32_t GetHeight() const
-        {
-            return m_Height;
-        }
+    RhiFrameBuffer& SetRenderPass(RhiRenderPass* _RhiRenderPass)
+    {
+        m_RenderPass = _RhiRenderPass;
+        return *this;
+    }
 
-        PC_CORE_API Tbx::Vector2ui Size() const
-        {
-            return {m_Width, m_Height};
-        }
+    // Getter
 
-    protected:
-        uint32_t m_Width;
+    PC_CORE_API uint32_t GetWidth() const
+    {
+        return m_Width;
+    }
 
-        uint32_t m_Height;
-    };
+    PC_CORE_API uint32_t GetHeight() const
+    {
+        return m_Height;
+    }
+
+    PC_CORE_API Tbx::Vector2ui Size() const
+    {
+        return {m_Width, m_Height};
+    }
+
+    PC_CORE_API const std::vector<RhiTexture*>& GetAttachements() const
+    {
+        return m_Attachments;
+    }
+
+    PC_CORE_API RhiRenderPass* GetRenderPass() const
+    {
+        return m_RenderPass;
+    }
+
+
+protected:
+    uint32_t m_Width;
+
+    uint32_t m_Height;
+
+    std::vector<RhiTexture*> m_Attachments;
+
+    RhiRenderPass* m_RenderPass{ nullptr };
+};
 
 END_PCCORE

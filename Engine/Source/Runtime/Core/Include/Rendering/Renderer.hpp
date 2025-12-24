@@ -33,9 +33,9 @@ BEGIN_PCCORE
 
     struct UniformBuffers
     {
-        UniformBuffer CameraUniformBuffer;
-        UniformBuffer PostProcessUniformBuffer;
-        UniformBuffer LightBuffer;
+        std::unique_ptr<RhiBuffer> Camera;
+        std::unique_ptr<RhiBuffer> PostProcess;
+        std::unique_ptr<RhiBuffer> LightBuffer;
     };
 
 
@@ -101,7 +101,9 @@ BEGIN_PCCORE
 
         ShaderProgramDescriptorSets* m_SkyBoxCubeMapDescriptorSet;
 
-        VertexBuffer m_CubeVertexBuffer;
+        std::unique_ptr<RhiBuffer> m_CubeVertexBuffer;
+
+        constexpr static size_t CubeVerticiesCount = 36;
 
         Sampler m_SkyBoxSampler;
 

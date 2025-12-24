@@ -1,12 +1,9 @@
 ﻿#include "LowRenderer/RhiTexture.hpp"
 
-PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, const std::string& _name)
-    : RhiResourceT(_Rhi, _name)
-{
-}
+#include "LowRenderer/Rhi.hpp"
 
-PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi, std::string&& _name)
-    : RhiResourceT(_Rhi, std::move(_name))
+PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi)
+    : RhiResourceT(_Rhi)
 {
 }
 

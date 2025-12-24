@@ -25,9 +25,7 @@ namespace Vulkan
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanBuffer)
         
-        explicit VulkanBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name);
-        
-        explicit VulkanBuffer(PC_CORE::Rhi& _Rhi, std::string&& _name);
+        explicit VulkanBuffer(PC_CORE::Rhi& _Rhi);
         
         ~VulkanBuffer() override;
 

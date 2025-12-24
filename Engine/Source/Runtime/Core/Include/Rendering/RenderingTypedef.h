@@ -46,7 +46,7 @@ BEGIN_PCCORE
         ShaderProgramDescriptorSets* ToneMapDescritptorSet;
         ShaderProgramDescriptorSets* FinalImageDescritptorSet;
 
-        Texture2D* HdrImage;
+        RhiTexture* HdrImage;
 
         Tbx::Vector2ui RenderingContextSize;
 #ifdef WITH_EDITOR

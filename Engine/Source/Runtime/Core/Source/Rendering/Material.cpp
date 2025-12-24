@@ -34,7 +34,7 @@ PC_CORE::Material::Material(const std::string& _name)
 
     if (m_ShaderProgram && Albedo.Lock())
     {
-        m_PShaderProgramDescriptorSets.reset(m_ShaderProgram->CreateDescriptorBinding(std::format("Material Binding {}", Name)));
+        m_PShaderProgramDescriptorSets.reset(m_ShaderProgram->CreateDescriptorBinding());
 
         ImageSamplerDescriptor imageSamperDescriptor =
         {
@@ -43,17 +43,19 @@ PC_CORE::Material::Material(const std::string& _name)
             .resourceState = RhiResourceState::ShaderRead
         };
 
-        std::vector<ShaderProgramDescriptorWrite> descriptorSets =
+        std::vector<DescriptorWrite> descriptorSets =
         {
             {
-                ShaderProgramDescriptorType::CombinedImageSampler,
+                DescriptorType::CombinedImageSampler,
                 ALBEDO_BINDING,
                 imageSamperDescriptor,
             },
         };
 
-        m_PShaderProgramDescriptorSets->SetBindings(descriptorSets, MATERIAL_DESCRIPTOR_SET);
-        m_PShaderProgramDescriptorSets->Build();
+        m_PShaderProgramDescriptorSets
+            ->SetBindings(MATERIAL_DESCRIPTOR_SET, descriptorSets)
+            .SetName(std::format("Material Binding {}", Name))
+            .Build();
     }
 }
 

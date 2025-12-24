@@ -14,14 +14,8 @@
 
 #include "Utils/RhiToVulkan.hpp"
 
-Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
-    : CommandList(_Rhi,  _name, _commandListCreateInfo)
-{
-
-}
-
-Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi, std::string&& _name, const PC_CORE::CommandListCreateInfo& _commandListCreateInfo)
-    : CommandList(_Rhi, std::move(_name), _commandListCreateInfo)
+Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi)
+    : CommandList(_Rhi)
 {
 
 }
@@ -64,28 +58,28 @@ bool Vulkan::VulkanCommandList::Build()
 
     vk::CommandPool commandPool = VK_NULL_HANDLE;
 
-    switch (m_CommandPoolFamily)
+    switch (m_PoolFamily)
     {
-    case PC_CORE::CommandPoolFamily::Graphics:
+    case PC_CORE::CommandList::PoolFamily::Graphics:
         commandPool = vulkanContext.commandPool;
         break;
-    case PC_CORE::CommandPoolFamily::Compute:
+    case PC_CORE::CommandList::PoolFamily::Compute:
         break;
-    case PC_CORE::CommandPoolFamily::Count:
+    case PC_CORE::CommandList::PoolFamily::Count:
         break;
     default:;
     }
 
     if (commandPool == VK_NULL_HANDLE)
     {
-        // TO DO GET CALL FOR LOGGING
+        PC_LOGERROR("Invalid PoolFamily");
         return false;
     }
 
     vk::CommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     commandBufferAllocateInfo.commandPool = commandPool;
-    commandBufferAllocateInfo.level = m_CommandBufferType == PC_CORE::CommandBufferType::Primary
+    commandBufferAllocateInfo.level = m_BufferType == PC_CORE::CommandList::BufferType::Primary
         ? vk::CommandBufferLevel::ePrimary
         : vk::CommandBufferLevel::eSecondary;
 
@@ -142,7 +136,7 @@ void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count
 
     assert(_count != 0);
     assert(this != _other);
-    assert(m_CommandBufferType == PC_CORE::CommandBufferType::Primary);
+    assert(m_BufferType == PC_CORE::CommandList::BufferType::Primary);
 
     vk::CommandBuffer* commandBuffers = reinterpret_cast<vk::CommandBuffer*>(_malloca(sizeof(vk::CommandBuffer) * _count));
 
@@ -164,7 +158,7 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
     vk::CommandBufferInheritanceInfo inheritanceInfo;
-    if (m_CommandBufferType == PC_CORE::CommandBufferType::Secondary)
+    if (m_BufferType == PC_CORE::CommandList::BufferType::Secondary)
     {
         inheritanceInfo.sType = vk::StructureType::eCommandBufferInheritanceInfo;
         inheritanceInfo.pNext = nullptr;
@@ -180,7 +174,7 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     vk::CommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
     commandBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits(); // Optional
-    commandBufferBeginInfo.pInheritanceInfo = m_CommandBufferType == PC_CORE::CommandBufferType::Secondary
+    commandBufferBeginInfo.pInheritanceInfo = m_BufferType == PC_CORE::CommandList::BufferType::Secondary
                                                   ? &inheritanceInfo
                                                   : nullptr; // Optional
 
@@ -553,15 +547,15 @@ void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandM
     VulkanContext& vkContext = GET_VK_CONTEXT;
     const size_t frameIndex = m_Rhi.GetFrameIndex();
 
-    switch (m_CommandPoolFamily)
+    switch (m_PoolFamily)
     {
-    case PC_CORE::CommandPoolFamily::Graphics:
+    case PC_CORE::CommandList::PoolFamily::Graphics:
         vkContext.flushedCommands.emplace_back(FlushCommand{
             m_CommandBuffer[frameIndex], m_Semaphore[frameIndex], _waitGpuPipelineStageFlag
         });
         break;
-    case PC_CORE::CommandPoolFamily::Compute: // not implemented yet
-    case PC_CORE::CommandPoolFamily::Count:
+    case PC_CORE::CommandList::PoolFamily::Compute: // not implemented yet
+    case PC_CORE::CommandList::PoolFamily::Count:
         assert(false);
         break;
     default: ;

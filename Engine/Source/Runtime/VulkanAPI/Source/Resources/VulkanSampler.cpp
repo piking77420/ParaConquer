@@ -4,8 +4,8 @@
 #include "VulkanDevice.hpp"
 #include "LowRenderer/Rhi.hpp"
 
-Vulkan::VulkanSampler::VulkanSampler(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::SamplerCreateInfo& _samplerCreateInfo)
-    : RhiSampler(_Rhi, _name, _samplerCreateInfo)
+Vulkan::VulkanSampler::VulkanSampler(PC_CORE::Rhi& _Rhi)
+    : RhiSampler(_Rhi)
 {
 
 }
@@ -25,11 +25,11 @@ bool Vulkan::VulkanSampler::Build()
 
     vk::SamplerCreateInfo samplerInfo{};
     samplerInfo.sType = vk::StructureType::eSamplerCreateInfo;
-    samplerInfo.magFilter = Utils::RhiToVulkanFilter(m_SamplerCreateInfo.magFilter);
-    samplerInfo.minFilter = Utils::RhiToVulkanFilter(m_SamplerCreateInfo.minFilter);
-    samplerInfo.addressModeU = Utils::RhiToVulkanSamplerAddressMode(m_SamplerCreateInfo.u);
-    samplerInfo.addressModeV = Utils::RhiToVulkanSamplerAddressMode(m_SamplerCreateInfo.v);
-    samplerInfo.addressModeW = Utils::RhiToVulkanSamplerAddressMode(m_SamplerCreateInfo.w);
+    samplerInfo.magFilter = Utils::RhiToVulkanFilter(m_MagFilter);
+    samplerInfo.minFilter = Utils::RhiToVulkanFilter(m_MinFilter);
+    samplerInfo.addressModeU = Utils::RhiToVulkanSamplerAddressMode(m_U);
+    samplerInfo.addressModeV = Utils::RhiToVulkanSamplerAddressMode(m_V);
+    samplerInfo.addressModeW = Utils::RhiToVulkanSamplerAddressMode(m_W);
     if (maxAnisotopie > 0.f)
     {
         samplerInfo.anisotropyEnable = VK_TRUE;
@@ -42,12 +42,11 @@ bool Vulkan::VulkanSampler::Build()
     }
     samplerInfo.borderColor = vk::BorderColor::eIntOpaqueBlack;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = vk::CompareOp::eAlways;
-    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+    samplerInfo.compareEnable = m_CompareEnable ? vk::True : vk::False;
+    samplerInfo.compareOp = Utils::RhiToVulkanCompareOp(m_CompareOp);
+    samplerInfo.mipmapMode = Utils::RhiToSamplerMipmapMode(m_MipmapMode);
     samplerInfo.minLod = 0.f;
-    // TODO NOT HARDCODED 
-    samplerInfo.maxLod = static_cast<float>(16);
+    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
     samplerInfo.mipLodBias = 0.0f;
 
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->

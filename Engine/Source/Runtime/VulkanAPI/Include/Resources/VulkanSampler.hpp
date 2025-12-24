@@ -9,24 +9,24 @@ namespace Vulkan
     class VulkanSampler : public PC_CORE::RhiSampler
     {
     public:
-        bool Build() override;
+        DEFAULT_COPY_MOVE_OPERATIONS(VulkanSampler)
 
-        const void* GetFrameNativeHandle(size_t _frameIndex) const override
+        VULKAN_API explicit VulkanSampler(PC_CORE::Rhi& _Rhi);
+
+        VULKAN_API ~VulkanSampler() override;
+
+        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override
         {
             return &m_Sampler;
         }
 
-        void* GetFrameNativeHandle(size_t _frameIndex) override
+        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override
         {
             return &m_Sampler;
         }
         
-        DEFAULT_COPY_MOVE_OPERATIONS(VulkanSampler)
-
-        explicit VulkanSampler(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::SamplerCreateInfo& _samplerCreateInfo);
-
-        ~VulkanSampler() override;
-
+        VULKAN_API bool Build() override;
+        
         vk::Sampler GetSampler() const;
 
     private:

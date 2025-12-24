@@ -17,17 +17,17 @@ namespace Vulkan
     class VulkanDescriptorSets : public PC_CORE::ShaderProgramDescriptorSets
     {
     public:
-        VULKAN_API bool Build() override;
-        
+
+        VULKAN_API VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const CacheDescriptor& _Cache);
+
+        VULKAN_API ~VulkanDescriptorSets() override;
+
         VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
 
         VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
 
-        VULKAN_API VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const std::string& _Name, const CacheDescriptor& _Cache);
+        VULKAN_API bool Build() override;
 
-        VULKAN_API VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, std::string&& _Name, const CacheDescriptor& _Cache);
-
-        VULKAN_API ~VulkanDescriptorSets() override;
 
     private:
         const CacheDescriptor& m_Cache;

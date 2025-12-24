@@ -22,15 +22,15 @@ namespace Vulkan
 
         VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
 
-        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::RenderPassDescriptor& _attachements);
+        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, const PC_CORE::RenderPassDescriptor& _attachements);
 
-        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, PC_CORE::RhiFormat colorFormat, PC_CORE::RhiFormat depthFormat);
+        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, PC_CORE::RhiFormat colorFormat, PC_CORE::RhiFormat depthFormat);
 
-        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, PC_CORE::RhiFormat colorFormat, uint32_t _sampleCount);
+        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, PC_CORE::RhiFormat colorFormat, uint32_t _sampleCount);
 
-        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, PC_CORE::RhiFormat colorFormat);
+        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, PC_CORE::RhiFormat colorFormat);
 
-        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, vk::Device device, const std::string& _name, vk::Format format);
+        VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, vk::Device device, vk::Format format);
 
         VULKAN_API ~VulkanRenderPass() override;
 

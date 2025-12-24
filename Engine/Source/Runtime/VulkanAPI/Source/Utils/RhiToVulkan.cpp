@@ -702,34 +702,34 @@ vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _for
 }
 
 vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(
-    const PC_CORE::ShaderProgramDescriptorType& shaderProgramDescriptorType)
+    const PC_CORE::DescriptorType& _DescriptorType)
 {
-    vk::DescriptorType::eInputAttachment;
-
-    switch (shaderProgramDescriptorType)
+    switch (_DescriptorType)
     {
-    case PC_CORE::ShaderProgramDescriptorType::Sampler:
+    case PC_CORE::DescriptorType::Sampler:
         return vk::DescriptorType::eSampler;
-    case PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler:
+    case PC_CORE::DescriptorType::CombinedImageSampler:
         return vk::DescriptorType::eCombinedImageSampler;
-    case PC_CORE::ShaderProgramDescriptorType::SampledImage:
+    case PC_CORE::DescriptorType::SampledImage:
         return vk::DescriptorType::eSampledImage;
-    case PC_CORE::ShaderProgramDescriptorType::StorageImage:
+    case PC_CORE::DescriptorType::StorageImage:
         return vk::DescriptorType::eStorageImage;
-    case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
+    case PC_CORE::DescriptorType::UniformBuffer:
         return vk::DescriptorType::eUniformBuffer;
-    case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:
+    case PC_CORE::DescriptorType::StorageBuffer:
         return vk::DescriptorType::eStorageBuffer;
-    case PC_CORE::ShaderProgramDescriptorType::InputAttachment:
+    case PC_CORE::DescriptorType::InputAttachment:
         return vk::DescriptorType::eInputAttachment;
-    case PC_CORE::ShaderProgramDescriptorType::InlineUniformBlock:
+    case PC_CORE::DescriptorType::InlineUniformBlock:
         return vk::DescriptorType::eInlineUniformBlock;
-    case PC_CORE::ShaderProgramDescriptorType::AccelerationStructure:
+    case PC_CORE::DescriptorType::AccelerationStructure:
         return vk::DescriptorType::eAccelerationStructureKHR;
-    case PC_CORE::ShaderProgramDescriptorType::Count:
+    case PC_CORE::DescriptorType::Count:
     default:
-        throw std::runtime_error("Unknown ShaderProgramDescriptorType");
+        throw std::runtime_error("Unknown DescriptorType");
     }
+
+    return {};
 }
 
 vk::SampleCountFlagBits Vulkan::Utils::RhSampleCountToVulkan(uint32_t _sampleCount)
@@ -992,17 +992,12 @@ vk::ColorComponentFlags Vulkan::Utils::RhiColorComponent(PC_CORE::ColorComponent
 
 
 
-vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::TextureUsageFlag _usage, vk::ImageAspectFlags aspectFlag)
+vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::TextureUsageFlag _usage)
 {
     using namespace PC_CORE;
     VkImageUsageFlags flags = 0;
 
-
-    if (aspectFlag & vk::ImageAspectFlagBits::eDepth && aspectFlag & vk::ImageAspectFlagBits::eStencil)
-    {
-        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        return static_cast<vk::ImageUsageFlags>(flags);
-    }
+    assert(_usage == 0);
 
     if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -1010,7 +1005,10 @@ vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::Textu
     if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::RenderTarget)
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::Storage)
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::DepthStencil)
+        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::LoadAndStore)
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
     if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::TransferSrc)
@@ -1019,6 +1017,8 @@ vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::Textu
     if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::TransferDst)
         flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
+    if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::InputAttachement)
+        flags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
  
     return static_cast<vk::ImageUsageFlags>(flags);
 }

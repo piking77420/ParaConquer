@@ -4,32 +4,43 @@
 
 
 BEGIN_PCCORE
-    struct RhiFenceCreateInfo
+
+class RhiFence : public RhiObjectT<RhiFence>
+{
+public:
+    DEFAULT_COPY_MOVE_OPERATIONS(RhiFence);
+
+    PC_CORE_API explicit RhiFence(Rhi& _Rhi);
+
+    PC_CORE_API RhiFence() = default;
+
+    PC_CORE_API ~RhiFence() override = default;
+
+    PC_CORE_API const void* GetFrameNativeHandle(size_t _frameIndex) const override = 0;
+
+    PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) = 0;
+
+    PC_CORE_API virtual void Reset() = 0;
+
+    PC_CORE_API virtual bool Build() = 0;
+        
+    // Setter 
+
+    RhiFence& SetSignaled(bool Signaled)
     {
-        bool signaled;
-    };
+        m_Signaled = Signaled;
+        return *this;
+    }
 
-    class RhiFence : public RhiObject
+    // Getter
+
+    bool GetSignaled() const
     {
-    public:
-        PC_CORE_API const void* GetFrameNativeHandle(size_t _frameIndex) const override = 0;
+        return m_Signaled;
+    }
 
-        PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) = 0;
-
-        PC_CORE_API virtual void Reset() = 0;
-
-        DEFAULT_COPY_MOVE_OPERATIONS(RhiFence);
-
-        PC_CORE_API explicit RhiFence(Rhi& _Rhi, const std::string& _name , const RhiFenceCreateInfo& _RhiFenceCreateInfo);
-
-        PC_CORE_API explicit RhiFence(Rhi& _Rhin, std::string&& _name, const RhiFenceCreateInfo& _RhiFenceCreateInfo);
-
-        PC_CORE_API RhiFence() = default;
-
-        PC_CORE_API ~RhiFence() override = default;
-
-    protected: 
-        RhiFenceCreateInfo m_RhiFenceCreateInfo{};
-    };
+protected: 
+    bool m_Signaled = false;
+};
 
 END_PCCORE

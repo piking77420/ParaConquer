@@ -28,11 +28,13 @@ public:
         None = 0,
         Sampled = 1 << 0, // Shader-readable (SRV)
         RenderTarget = 1 << 1, // Color attachment (ex: RGBA render target)
-        Storage = 1 << 4, // Shader-writable (UAV)
-        TransferSrc = 1 << 5,
-        TransferDst = 1 << 6,
+        LoadAndStore = 1 << 4, // Shader-writable (UAV)
+        DepthStencil = 1 << 5,
+        TransferSrc = 1 << 6,
+        TransferDst = 1 << 7,
+        InputAttachement,
         
-        All = Sampled | RenderTarget | Storage | TransferSrc |TransferDst,
+        All = Sampled | RenderTarget | LoadAndStore | TransferSrc |TransferDst,
     };
 
     using TextureUsageFlag = uint32_t;
@@ -41,9 +43,7 @@ public:
     
     DEFAULT_COPY_MOVE_OPERATIONS(RhiTexture)
     
-    PC_CORE_API RhiTexture(Rhi& _Rhi, const std::string& _name);
-
-    PC_CORE_API RhiTexture(Rhi& _Rhi, std::string&& _name);
+    PC_CORE_API RhiTexture(Rhi& _Rhi);
     
     PC_CORE_API ~RhiTexture() override = default;
     
@@ -73,13 +73,13 @@ public:
         return *this;
     }
 
-    RhiTexture& SetLevelCount(uint32_t _Level)
+    RhiTexture& SetLevel(uint32_t _Level)
     {
         m_Level = _Level;
         return *this;
     }
 
-    RhiTexture& SeLayerCount(uint32_t _Layer)
+    RhiTexture& SeLayer(uint32_t _Layer)
     {
         m_Layer = _Layer;
         return *this;
@@ -173,7 +173,7 @@ protected:
 
     uint32_t m_Height = 0;
 
-    uint32_t m_Depth = 0;
+    uint32_t m_Depth = 1;
 
     // MipLevel
     uint32_t m_Level = 1;
@@ -182,7 +182,7 @@ protected:
 
     uint32_t m_Samples = 1;
 
-    Type m_TextureType = Type::None;
+    Type m_TextureType = Type::Texture2D;
 
     TextureUsageFlag m_TextureUsage = TextureUsageFlagBits::None;
 

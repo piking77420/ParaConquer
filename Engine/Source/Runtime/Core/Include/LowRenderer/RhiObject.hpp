@@ -2,11 +2,13 @@
 
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include "CoreHeader.hpp"
 #include "RhiTypedef.h"
 
-BEGIN_PCCORE
+namespace PC_CORE
+{
 
 class Rhi;
 
@@ -16,15 +18,15 @@ public:
 
 	PC_CORE_API virtual ~RhiObject();
 
-	PC_CORE_API explicit RhiObject(Rhi& rhi, const std::string& _name);
-
-    PC_CORE_API explicit RhiObject(Rhi& rhi, std::string&& _name);
+	PC_CORE_API explicit RhiObject(Rhi& rhi);
 
 	PC_CORE_API virtual const void* GetFrameNativeHandle(size_t _frameIndex) const = 0;
 
 	PC_CORE_API virtual void* GetFrameNativeHandle(size_t _frameIndex) = 0;
 
 	PC_CORE_API virtual bool Build() = 0;
+
+	PC_CORE_API Rhi& GetRhi();
 
 protected:
 	Rhi& m_Rhi;
@@ -42,14 +44,8 @@ public:
 
 	DEFAULT_COPY_MOVE_OPERATIONS(RhiObjectT);
 
-	explicit RhiObjectT(Rhi& rhi, const std::string& _name)
-		: RhiObject(rhi, _name)
-	{
-
-	}
-
-	explicit RhiObjectT(Rhi& rhi, std::string&& _name)
-		: RhiObject(rhi, std::move(_name))
+	explicit RhiObjectT(Rhi& rhi)
+		: RhiObject(rhi)
 	{
 
 	}
@@ -61,28 +57,36 @@ public:
 	virtual bool Build() = 0;
 
 
-	auto& SetName(const char* _Name)
-	{	
+	T& SetName(const char* _Name)
+	{
+		static_assert(std::is_base_of_v<RhiObject, T>, "T must be an RhiObject");
+
 		m_Name = std::string(_Name);
-		return *this;
+		return reinterpret_cast<T&>(*this);
 	}
 
-	auto& SetName(std::string_view _Name)
+	T& SetName(std::string_view _Name)
 	{
+		static_assert(std::is_base_of_v<RhiObject, T>, "T must be an RhiObject");
+
 		m_Name.append(_Name);
-		return *this;
+		return reinterpret_cast<T&>(*this);
 	}
 
-	auto& SetName(const std::string& _Name)
+	T& SetName(const std::string& _Name)
 	{
+		static_assert(std::is_base_of_v<RhiObject, T>, "T must be an RhiObject");
+
 		m_Name = _Name;
-		return *this;
+		return reinterpret_cast<T&>(*this);
 	}
 
-	auto& SetName(std::string&& _Name)
+	T& SetName(std::string&& _Name)
 	{
+		static_assert(std::is_base_of_v<RhiObject, T>, "T must be an RhiObject");
+
 		m_Name = std::move(_Name);
-		return *this;
+		return reinterpret_cast<T&>(*this);
 	}
 
 	std::string_view GetName() const noexcept
@@ -94,6 +98,5 @@ private:
 
 };
 
-
-END_PCCORE
+}
 

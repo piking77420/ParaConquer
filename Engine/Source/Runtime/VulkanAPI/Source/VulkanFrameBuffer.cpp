@@ -5,32 +5,45 @@
 #include "VulkanTexture.hpp"
 #include "LowRenderer/Rhi.hpp"
 
-bool Vulkan::VulkanFrameBuffer::Build()
+Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(PC_CORE::Rhi& _Rhi)
+    : RhiFrameBuffer(_Rhi)
 {
-    assert(false); // TODO
-    return false;
 }
 
-Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::CreateFrameInfo& _createFrameInfo)
-    : RhiFrameBuffer(_Rhi, _name, _createFrameInfo.Width, _createFrameInfo.Height)
+Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
 {
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
         GET_VK_CONTEXT.rhiDevice);
 
-    auto renderPass = reinterpret_cast<const VulkanRenderPass*>(_createFrameInfo.RenderPass);
+    for (auto& framebuffer : m_FrameBuffers)
+    {
+        if (framebuffer == VK_NULL_HANDLE)
+            continue;
+
+        vulkanDevice->GetDevice().destroyFramebuffer(framebuffer);
+        framebuffer = VK_NULL_HANDLE;
+    }
+}
+
+
+bool Vulkan::VulkanFrameBuffer::Build()
+{
+
+    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
+        GET_VK_CONTEXT.rhiDevice);
+
+    auto renderPass = reinterpret_cast<const VulkanRenderPass*>(m_RenderPass);
 
     int frame = 0;
     for (auto& framebuffer : m_FrameBuffers)
     {
         std::vector<vk::ImageView> image_views;
-        image_views.reserve(_createFrameInfo.Attachements->size());
+        image_views.reserve(m_Attachments.size());
 
 
-        for (auto& attachement : *_createFrameInfo.Attachements)
+        for (auto& attachement : m_Attachments)
         {
-            const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(attachement.RhiTexture->
-                GetFrameNativeHandle(frame));
-
+            const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(attachement->GetFrameNativeHandle(frame));
             image_views.emplace_back(textureAndAlloc->ImageView);
         }
 
@@ -40,39 +53,25 @@ Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(PC_CORE::Rhi& _Rhi, const std::stri
         framebufferCreateInfo.renderPass = renderPass->GetVulkanRenderPass();
         framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(image_views.size());
         framebufferCreateInfo.pAttachments = image_views.data();
-        framebufferCreateInfo.width = _createFrameInfo.Width;
-        framebufferCreateInfo.height = _createFrameInfo.Height;
+        framebufferCreateInfo.width = m_Width;
+        framebufferCreateInfo.height = m_Height;
         framebufferCreateInfo.layers = 1;
         framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferCreateInfo);
 
+        vk::DebugUtilsObjectNameInfoEXT frameBufferDebugName;
+        frameBufferDebugName.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+        frameBufferDebugName.pNext = nullptr;
+        frameBufferDebugName.objectType = vk::ObjectType::eFramebuffer;
+        frameBufferDebugName.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkFramebuffer>(framebuffer));
+        frameBufferDebugName.pObjectName = GetName().data();
+        SET_VK_DEBUG_NAME(frameBufferDebugName);
+
         frame++;
     }
+
+    return true;
 }
 
-
-Vulkan::VulkanFrameBuffer::VulkanFrameBuffer(PC_CORE::Rhi& _Rhi, const std::string& _name, vk::Framebuffer _vkFramebuffer, const uint32_t _widht,
-                                             const uint32_t _height) 
-    : RhiFrameBuffer(_Rhi, _name, _widht, _height)
-{
-    for (auto& framebuffer : m_FrameBuffers)
-    {
-        framebuffer = _vkFramebuffer;
-    }
-}
-
-Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
-{
-    for (auto& framebuffer : m_FrameBuffers)
-    {
-        if (framebuffer == VK_NULL_HANDLE)
-            continue;
-
-        std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-            GET_VK_CONTEXT.rhiDevice);
-        vulkanDevice->GetDevice().destroyFramebuffer(framebuffer);
-        framebuffer = VK_NULL_HANDLE;
-    }
-}
 
 vk::Framebuffer Vulkan::VulkanFrameBuffer::GetFramebuffer() const
 {

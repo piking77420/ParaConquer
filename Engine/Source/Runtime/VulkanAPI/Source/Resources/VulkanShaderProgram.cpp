@@ -61,56 +61,14 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
     return m_PipelineLayout;
 }
 
-PC_CORE::ShaderProgramDescriptorSets* VulkanShaderProgram::CreateDescriptorBinding(const std::string& Name)
+PC_CORE::ShaderProgramDescriptorSets* VulkanShaderProgram::CreateDescriptorBinding()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const CacheDescriptor* cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
 
-    if (cache == nullptr)
-        return nullptr;
-
-    return new VulkanDescriptorSets(m_Rhi, Name, *cache);
-}
-
-PC_CORE::ShaderProgramDescriptorSets* VulkanShaderProgram::CreateDescriptorBinding(std::string&& Name)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
-
-    const CacheDescriptor* cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
-
-    if (cache == nullptr)
-        return nullptr;
-
-    return new VulkanDescriptorSets(m_Rhi, std::move(Name), *cache);
-}
-
-PC_CORE::ShaderProgramDescriptorSets* VulkanShaderProgram::CreateDescriptorBinding(std::string_view Name)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
-
-    const CacheDescriptor* cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
-
-    if (cache == nullptr)
-        return nullptr;
-
-    return new VulkanDescriptorSets(m_Rhi, Name.data(), *cache);
-}
-
-PC_CORE::ShaderProgramDescriptorSets* VulkanShaderProgram::CreateDescriptorBinding(const char* Name)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
-
-    const CacheDescriptor* cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
-
-    if (cache == nullptr)
-        return nullptr;
-
-    return new VulkanDescriptorSets(m_Rhi, Name, *cache);
+    return cache == nullptr ? nullptr : new VulkanDescriptorSets(m_Rhi, *cache);
 }
 
 void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey,
@@ -144,8 +102,8 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
                                  pushConstatnField.pushConstantOffSet, pushConstatnField.pushConstantSize, data);
 }
 
-VulkanShaderProgram::VulkanShaderProgram(PC_CORE::Rhi& _Rhi, const std::string& _programName) :
-    RhiShaderProgram(_Rhi, _programName)
+VulkanShaderProgram::VulkanShaderProgram(PC_CORE::Rhi& _Rhi) :
+    RhiShaderProgram(_Rhi)
 {
    
 }
@@ -169,6 +127,9 @@ bool VulkanShaderProgram::Build()
 
 bool Vulkan::VulkanShaderProgram::CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     switch (m_Type)
     {
     case PipelineType::Graphic:

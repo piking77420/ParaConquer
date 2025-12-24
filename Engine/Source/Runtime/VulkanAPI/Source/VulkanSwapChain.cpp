@@ -13,9 +13,9 @@ void* Vulkan::VulkanSwapChain::GetFrameBuffer()
     return m_Framebuffers.at(m_SwapChainImageIndex);
 }
 
-Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, const std::string& _Name, uint32_t _Widht, uint32_t _Height,
-     VulkanPhysicalDevices& vulkanPhysicalDevices, VulkanDevice& _VulkanDevice, vk::SurfaceKHR _Surface)
-    : RhiSwapChain(_Rhi, _Name, _Widht, _Height)
+Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht, 
+    uint32_t _Height, VulkanPhysicalDevices& vulkanPhysicalDevices, VulkanDevice& _VulkanDevice, vk::SurfaceKHR _Surface)
+    : RhiSwapChain(_Rhi, _Widht, _Height)
 {
     PERF_REGION_SCOPED;
     m_Surface = _Surface;
@@ -50,7 +50,11 @@ Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, const std::string& 
         }
     }
 
-    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_Rhi, _VulkanDevice.GetDevice(), "SwapChainRenderPass", m_SurfaceFormatKHR.format);
+    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_Rhi, _VulkanDevice.GetDevice(), m_SurfaceFormatKHR.format);
+    m_SwapChainRenderPass
+        ->SetName("SwapChainRenderPass")
+        .Build();
+
     CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
     CreateImageViews();
     CreateFrameBuffers();

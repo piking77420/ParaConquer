@@ -80,7 +80,8 @@ BEGIN_PCCORE
             VertexBuffer primitiveBuffer;
             IndexBuffer primitiveIndexBuffer;
             size_t primitiveCount;
-            VertexBuffer instanceBuffer;
+
+            std::unique_ptr<RhiBuffer> instanceBuffer;
         };
 
         struct RayCastPrimitiveData

@@ -231,18 +231,13 @@ void Editor::Init()
     World::GetWorld()->level.RegisterSystem<RendererSystem>(&gameApp.RenderingWorldData);
 
 
-    // create sampler 
-    const SamplerCreateInfo samplerInfo =
-    {
-        .magFilter = Filter::Linear,
-        .minFilter = Filter::Linear,
-        .u = SamplerAddressMode::Repeat,
-        .v = SamplerAddressMode::Repeat,
-        .w = SamplerAddressMode::Repeat
-    };
+    ObjectPtr sampler = ResourceManager::Create<Sampler>(gameApp.RenderHarwareInteface, "LinearRepeat");
 
-    ResourceManager::Create<Sampler>(gameApp.RenderHarwareInteface, "LinearRepeat", samplerInfo);
-
+    Sampler& s = *sampler;
+    s->SetMagFilter(Filter::Linear)
+        .SetMinFilter(Filter::Linear)
+        .Build();
+    
 
     InitTestScene();
     InitEditor();
@@ -437,17 +432,11 @@ void Editor::InitEditor()
     {
         PC_LOG("Init Editor NearestSampler...")
 
-        const SamplerCreateInfo info =
-        {
-            .magFilter = Filter::Linear,
-            .minFilter = Filter::Linear,
-            .u = SamplerAddressMode::Repeat,
-            .v = SamplerAddressMode::Repeat,
-            .w = SamplerAddressMode::Repeat
-        };
-
-        editorData.nearestSampler = Sampler(gameApp.RenderHarwareInteface, "ImguiImageSampler", info);
-        editorData.nearestSampler->Build();
+        editorData.nearestSampler = Sampler(gameApp.RenderHarwareInteface, "ImguiImageSampler");
+        editorData.nearestSampler
+            ->SetMagFilter(Filter::Linear)
+            .SetMinFilter(Filter::Linear)
+            .Build();
     }
 
 

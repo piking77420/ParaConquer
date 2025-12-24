@@ -18,11 +18,13 @@ struct RenderHardwareInterfaceCreateInfo
     bool gpuDebug;
 };
 
-class CommandList;
+class RhiSwapChain;
 class RhiShaderProgram;
+class CommandList;
 class RhiTexture;
 class RhiBuffer;
-class RhiSwapChain;
+class RhiSampler;
+class RhiFence;
 
 class Rhi
 {
@@ -39,36 +41,27 @@ public:
 
     PC_CORE_API RhiSwapChain* CreateRhiSwapChain();
 
-    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(const std::string& _programName);
+    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram();
 
-    PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram(std::string&& _programName);
+    PC_CORE_API CommandList* CreateCommandList();
 
-    PC_CORE_API CommandList* CreateCommandList(const std::string& name,const CommandListCreateInfo& _commandListCreateInfo);
+    PC_CORE_API RhiRenderPass* CreateRenderPass(RhiFormat _colorFormat, RhiFormat _depthFormat);
 
-    PC_CORE_API CommandList* CreateCommandList(std::string&& _name, const CommandListCreateInfo& _commandListCreateInfo);
+    PC_CORE_API RhiRenderPass* CreateRenderPass(RhiFormat _colorFormat);
 
-    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, 
-        RhiFormat _colorFormat, RhiFormat _depthFormat);
+    PC_CORE_API RhiRenderPass* CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount);
 
-    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, RhiFormat _colorFormat);
+    PC_CORE_API RhiRenderPass* CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor);
 
-    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, RhiFormat _colorFormat, uint32_t sampleCount);
+    PC_CORE_API RhiFrameBuffer* CreateFrameBuffer();
 
-    PC_CORE_API RhiRenderPass* CreateRenderPass(const std::string& _name, const RenderPassDescriptor& _renderPassDescriptor);
+    PC_CORE_API RhiBuffer* CreateBuffer();
 
-    PC_CORE_API RhiFrameBuffer* CreateFrameBuffer(const std::string& _name, const CreateFrameInfo& _createFrameInfo);
+    PC_CORE_API RhiTexture* CreateTexture();
 
-    PC_CORE_API RhiBuffer* CreateBuffer(const std::string& _name);
+    PC_CORE_API RhiSampler* CreateSampler();
 
-    PC_CORE_API RhiBuffer* CreateBuffer(std::string&& _name);
-
-    PC_CORE_API RhiTexture* CreateTexture(const std::string& _name);
-
-    PC_CORE_API RhiTexture* CreateTexture(std::string&& _name);
-
-    PC_CORE_API RhiSampler* CreateSampler(const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo);
-
-    PC_CORE_API RhiFence* CreateFence(const std::string& _name, const RhiFenceCreateInfo& _rhiFenceCreateInfo);
+    PC_CORE_API RhiFence* CreateFence();
 
     PC_CORE_API RhiContext& GetRhiContext();
 

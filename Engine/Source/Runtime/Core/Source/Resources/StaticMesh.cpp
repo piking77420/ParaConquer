@@ -59,6 +59,7 @@ StaticMesh::StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo)
 
     VBuffer = VertexBuffer(Name + "VertexBuffer" ,vertices.size(), sizeof(StaticMeshVertex), PC_CORE::RhiResource::MemoryUsage::Static);
     VBuffer->Build();
+                .SetUsage(RhiBuffer::BufferUsageFlagBits::Index | RhiBuffer::BufferUsageFlagBits::TransferDst);
 
     IBuffer = IndexBuffer(Name + "VertexBuffer" , indicies.size(), RhiBuffer::IndexFormat::Uint32 , PC_CORE::RhiResource::MemoryUsage::Static);
     IBuffer->Build();

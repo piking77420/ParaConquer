@@ -98,7 +98,7 @@ void View::UpdateRenderingContext()
     RenderingContext.ToneMapDescritptorSet = m_DescriptorSets.ToneMap.get();
     RenderingContext.FinalImageDescritptorSet = m_DescriptorSets.FinalViewPort.get();
 
-    RenderingContext.HdrImage = &ForwardTexture.color;
+    RenderingContext.HdrImage = ForwardTexture.color.get();
     RenderingContext.RenderingContextSize = {
         static_cast<uint32_t>(m_CurrentSize.x), static_cast<uint32_t>(m_CurrentSize.y)
     };
@@ -111,57 +111,49 @@ void View::CreateImages()
 
     Rhi& Rhi = m_Renderer->GetRhi();
 
+    const uint32_t Width = static_cast<uint32_t>(m_CurrentSize.x);
+    const uint32_t Height = static_cast<uint32_t>(m_CurrentSize.y);
+
     Gbuffers.CreateGBuffers(Rhi, m_CurrentSize);
 
     // Forward
     {
-        RhiTexture::RhiTextureDesciptor createInfo =
-        {
-            .Width = static_cast<uint32_t>(m_CurrentSize.x),
-            .Height = static_cast<uint32_t>(m_CurrentSize.y),
-            .Depth = 1,
-            .Level = 1,
-            .LayerCount = 1,
-            .Samples = 1,
-            .TextureType = RhiTexture::Type::Texture2D,
-            .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget | RhiTexture::Sampled | RhiTexture::Storage),
-            .RhiFormat = RhiFormat::R16G16B16A16Sfloat,
-        };
+        ForwardTexture.color
+            ->SetWidth(Width)
+            .SetHeight(Height)
+            .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled | RhiTexture::LoadAndStore)
+            .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
+            .SetName("View Forward Texture")
+            .Build();
 
-        ForwardTexture.color = Texture2D(Rhi, "View Forward Texture", createInfo, RhiResource::MemoryUsage::Dynamic);
-        ForwardTexture.color->Build();
-
-        createInfo.RhiFormat = RhiFormat::D24UnormS8Uint;
-        createInfo.TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget);
-
-        ForwardTexture.depth = Texture2D(Rhi, "View DepthTexture", createInfo, RhiResource::MemoryUsage::Dynamic);
-        ForwardTexture.depth->Build();
-
+        ForwardTexture.depth
+            ->SetWidth(Width)
+            .SetHeight(Height)
+            .SetTextureUsage(RhiTexture::DepthStencil)
+            .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+            .SetName("View Forward Texture")
+            .Build();
     }
 
 
     // Final Image
     {
-        RhiTexture::RhiTextureDesciptor createInfo =
-        {
-            .Width = static_cast<uint32_t>(m_CurrentSize.x),
-            .Height = static_cast<uint32_t>(m_CurrentSize.y),
-            .Depth = 1,
-            .Level = 1,
-            .LayerCount = 1,
-            .Samples = 1,
-            .TextureType = RhiTexture::Type::Texture2D,
-            .TextureUsage = static_cast<RhiTexture::TextureUsageFlagBits>(RhiTexture::RenderTarget | RhiTexture::Sampled),
-            .RhiFormat = RhiFormat::R8G8B8A8Unorm,
-        };
+        FinalImage
+            ->SetWidth(Width)
+            .SetHeight(Height)
+            .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled)
+            .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+            .SetName("View Forward Texture")
+            .Build();
 
-        FinalImage = Texture2D(Rhi, "View Final Image", createInfo, RhiResource::MemoryUsage::Dynamic);
-        FinalImage->Build();
-
-        createInfo.Samples = Rhi.GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount();
-        ResolvedImages = Texture2D(Rhi, "View ResolvedImages", createInfo, RhiResource::MemoryUsage::Dynamic);
-        ResolvedImages->Build();
-
+        ResolvedImages
+            ->SetWidth(Width)
+            .SetHeight(Height)
+            .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled)
+            .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+            .SetSamples(Rhi.GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount())
+            .SetName("View Forward Texture")
+            .Build();
     }
 }
 
@@ -171,17 +163,12 @@ void View::CreateFrameBuffers()
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     Rhi& Rhi = m_Renderer->GetRhi();
-
-
-    CreateFrameInfo createFrameBufferInfo =
-    {
-        .Width = static_cast<uint32_t>(m_CurrentSize.x),
-        .Height = static_cast<uint32_t>(m_CurrentSize.y),
-    };
-
+    const uint32_t Width = static_cast<uint32_t>(m_CurrentSize.x);
+    const uint32_t Height = static_cast<uint32_t>(m_CurrentSize.y);
 
     // Gbuffer FrameBuffer
     {
+        /*
         std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
 
         constexpr size_t DepthCount = 1;
@@ -204,36 +191,36 @@ void View::CreateFrameBuffers()
         createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.DefferedPass.get();
 
         // HANDLE INPUT ATTACHEMENT
-        //m_FrameBuffers.GbufferFrameBuffer.reset(Rhi::CreateFrameBuffer("Gbuffer FrameBuffer", createFrameBufferInfo));
+        //m_FrameBuffers.GbufferFrameBuffer.reset(Rhi::CreateFrameBuffer("Gbuffer FrameBuffer", createFrameBufferInfo));*/
     }
 
     // Forward FrameBuffer
     {
-        std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
-        attechementDescriptor.resize(2); // color + depth;
-        attechementDescriptor[0].RhiTexture = ForwardTexture.color.Get();
-        attechementDescriptor[1].RhiTexture = ForwardTexture.depth.Get();
 
-
-        createFrameBufferInfo.Attachements = &attechementDescriptor;
-        createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.ForwardPass.get();
-
-        m_FrameBuffers.ForwardFrameBuffer.reset(Rhi.CreateFrameBuffer("Forward FrameBuffer",createFrameBufferInfo)) ;
+        m_FrameBuffers.ForwardFrameBuffer.reset(Rhi.CreateFrameBuffer()) ;
+        m_FrameBuffers.ForwardFrameBuffer
+            ->SetWidth(Width)
+            .SetHeight(Height)
+            .SetAttachments(
+                ForwardTexture.color.get(),
+                ForwardTexture.depth.get())
+            .SetRenderPass(m_Renderer->RenderPasses.ForwardPass.get())
+            .SetName("ForwardFrameBuffer")
+            .Build();
     }
 
 
     // Final Image
     {
-        std::vector<FrameBufferAttachementDesriptor> attechementDescriptor;
-        attechementDescriptor.resize(2); // color + depth;
-
-        attechementDescriptor[0].RhiTexture = ResolvedImages.Get();
-        attechementDescriptor[1].RhiTexture = FinalImage.Get();
-
-        createFrameBufferInfo.Attachements = &attechementDescriptor;
-        createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.DrawToFinalViewPort.get();
-
-        m_FrameBuffers.FinalImageFrameBuffer.reset(Rhi.CreateFrameBuffer("Final Image FrameBuffer", createFrameBufferInfo));
+        m_FrameBuffers.FinalImageFrameBuffer
+            ->SetWidth(Width)
+            .SetHeight(Height)
+            .SetAttachments(
+                ResolvedImages.get(),
+                FinalImage.get())
+            .SetRenderPass(m_Renderer->RenderPasses.DrawToFinalViewPort.get())
+            .SetName("FinalImageFrameBuffer")
+            .Build();
     }
 }
 
@@ -244,12 +231,12 @@ void View::CreateDescritproSets()
 
     const BufferDescriptor cameraBufferDescritptor
     {
-        .buffer = m_Renderer->UniformBuffers.CameraUniformBuffer.Get(),
+        .buffer = m_Renderer->UniformBuffers.Camera.get(),
     };
 
     const BufferDescriptor lightData
     {
-        .buffer = m_Renderer->UniformBuffers.LightBuffer.Get(),
+        .buffer = m_Renderer->UniformBuffers.LightBuffer.get(),
     };
 
     const ImageSamplerDescriptor skyboxCubeMapDescritptor
@@ -259,7 +246,7 @@ void View::CreateDescritproSets()
         .resourceState = RhiResourceState::ShaderRead
     };
 
-    std::vector<ShaderProgramDescriptorWrite> descriptorWrites;
+    std::vector<DescriptorWrite> descriptorWrites;
 
 
     {
@@ -342,25 +329,28 @@ void View::CreateDescritproSets()
         {
 
             {
-                ShaderProgramDescriptorType::UniformBuffer,
+                DescriptorType::UniformBuffer,
                 CAMERA_BINDING,
                 cameraBufferDescritptor,
             }/*,
             {
-                ShaderProgramDescriptorType::UniformBuffer,
+                DescriptorType::UniformBuffer,
                 LIGHTDATA_BINDING,
                 lightData,
             },
             {
-                ShaderProgramDescriptorType::CombinedImageSampler,
+                DescriptorType::CombinedImageSampler,
                 FORWARD_SKYBOX_CUBEMAP,
                 skyboxCubeMapDescritptor,
             }*/
         };
 
 
-        m_DescriptorSets.ForwardDescriptor.reset(forwardShader->CreateDescriptorBinding("View Forward Descriptor"));
-        m_DescriptorSets.ForwardDescriptor->SetBindings(descriptorWrites, SCENE_DESCRIPTOR_SET).Build();
+        m_DescriptorSets.ForwardDescriptor.reset(forwardShader->CreateDescriptorBinding());
+        m_DescriptorSets.ForwardDescriptor
+            ->SetBindings(SCENE_DESCRIPTOR_SET, descriptorWrites)
+            .SetName("View Forward Descriptor")
+            .Build();
     }
 
 
@@ -371,7 +361,7 @@ void View::CreateDescritproSets()
 
         struct ImageDescriptor hdrImage
         {
-            .texture = ForwardTexture.color.Get(),
+            .texture = ForwardTexture.color.get(),
             .resourceState = RhiResourceState::ComputeWrite,
         };
 
@@ -381,14 +371,17 @@ void View::CreateDescritproSets()
         {
 
             {
-                ShaderProgramDescriptorType::StorageImage,
+                DescriptorType::StorageImage,
                 0,
                 hdrImage,
             },
         };
 
-        m_DescriptorSets.ToneMap.reset(ToneMappShader->CreateDescriptorBinding("Tome map view binging"));
-        m_DescriptorSets.ToneMap->SetBindings(descriptorWrites, 0);
+        m_DescriptorSets.ToneMap.reset(ToneMappShader->CreateDescriptorBinding());
+        m_DescriptorSets.ToneMap
+            ->SetBindings(0, descriptorWrites)
+            .SetName("Tome map view binging")
+            .Build();
     }
 
     {
@@ -398,7 +391,7 @@ void View::CreateDescritproSets()
         const ImageSamplerDescriptor finalImageDescrotproSet
         {
             .sampler = m_Renderer->LinearReapeat.Get(),
-            .texture = ForwardTexture.color.Get(),
+            .texture = ForwardTexture.color.get(),
             .resourceState = RhiResourceState::ShaderRead
         };
 
@@ -407,14 +400,17 @@ void View::CreateDescritproSets()
         {
 
             {
-                ShaderProgramDescriptorType::CombinedImageSampler,
+                DescriptorType::CombinedImageSampler,
                 0,
                 finalImageDescrotproSet,
             }
         };
 
-        m_DescriptorSets.FinalViewPort.reset(drawToFinalImage->CreateDescriptorBinding("drawToFinalImage View Binding"));
-        m_DescriptorSets.FinalViewPort->SetBindings(descriptorWrites, 0).Build();
+        m_DescriptorSets.FinalViewPort.reset(drawToFinalImage->CreateDescriptorBinding());
+        m_DescriptorSets.FinalViewPort
+            ->SetBindings(0, descriptorWrites)
+            .SetName("drawToFinalImage View Binding")
+            .Build();
     }
 }
 

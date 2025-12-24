@@ -38,7 +38,7 @@ BEGIN_EDITOR_PCCORE
     protected:
         size_t m_RenderingContextFlag = 0;
 
-        std::shared_ptr<PC_CORE::View> m_View;
+        std::shared_ptr<PC_CORE::View> m_View; // should be weak
 
     private:
         void ResizeViewports();

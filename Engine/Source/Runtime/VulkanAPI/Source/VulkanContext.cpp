@@ -43,7 +43,8 @@ VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreate
 
     const uint32_t uwidht = static_cast<uint32_t>(widht);
     const uint32_t uheight = static_cast<uint32_t>(height);
-    rhiSwapChain = std::make_shared<VulkanSwapChain>(m_Rhi, "MainSwapChain", uwidht, uheight, *vkPhysicalDevice, *vkDevice,  vkInstance->surface);
+    rhiSwapChain = std::make_shared<VulkanSwapChain>(m_Rhi, uwidht, uheight, *vkPhysicalDevice, *vkDevice,  vkInstance->surface);
+    rhiSwapChain->SetName("MainSwapChain");
 
     CreateMemoryAllocator();
     CreateCommandPools();

@@ -52,39 +52,37 @@ void Renderer::Init(Rhi& _Rhi)
 
     m_Rhi = &_Rhi;
 
-    CommandListCreateInfo commandListCreateInfo =
-    {
-        .CommandPoolFamily = CommandPoolFamily::Graphics,
-        .CommandBufferType = CommandBufferType::Primary,
-    };
+    PrimaryCommandList.reset(m_Rhi->CreateCommandList());
+    PrimaryCommandList
+        ->SetBufferType(CommandList::BufferType::Primary)
+        .SetPoolFamilly(CommandList::PoolFamily::Graphics)
+        .SetName("PrimaryCommandList")
+        .Build();
 
-    PrimaryCommandList.reset(m_Rhi->CreateCommandList("PrimaryCommandList", commandListCreateInfo));
-    PrimaryCommandList->Build();
-    SwapChainPassCommandList.reset(m_Rhi->CreateCommandList("SwapChainPassCommandList", commandListCreateInfo));
-    SwapChainPassCommandList->Build();
+    SwapChainPassCommandList.reset(m_Rhi->CreateCommandList());
+    SwapChainPassCommandList
+        ->SetBufferType(CommandList::BufferType::Primary)
+        .SetPoolFamilly(CommandList::PoolFamily::Graphics)
+        .SetName("SwapChainPassCommandList")
+        .Build();
 
-    const SamplerCreateInfo info =
-    {
-        .magFilter = Filter::Linear,
-        .minFilter = Filter::Linear,
-        .u = SamplerAddressMode::Repeat,
-        .v = SamplerAddressMode::Repeat,
-        .w = SamplerAddressMode::Repeat
-    };
+    LinearReapeat = Sampler(*m_Rhi, "LinearReapeat");
+    LinearReapeat
+        ->SetMagFilter(Filter::Linear)
+        .SetMinFilter(Filter::Linear)
+        .SetU(SamplerAddressMode::Repeat)
+        .SetV(SamplerAddressMode::Repeat)
+        .SetW(SamplerAddressMode::Repeat)
+        .Build();
 
-    LinearReapeat = Sampler(*m_Rhi, "LinearReapeat", info);
-    LinearReapeat->Build();
-
-    const SamplerCreateInfo skyBoxSampler =
-    {
-        .magFilter = Filter::Linear,
-        .minFilter = Filter::Linear,
-        .u = SamplerAddressMode::ClampToEdge,
-        .v = SamplerAddressMode::ClampToEdge,
-        .w = SamplerAddressMode::ClampToEdge
-    };
-
-    m_SkyBoxSampler = Sampler(*m_Rhi, "SkyBoxSampler", skyBoxSampler);
+    m_SkyBoxSampler = Sampler(*m_Rhi, "SkyBoxSampler");
+    m_SkyBoxSampler
+        ->SetMagFilter(Filter::Linear)
+        .SetMinFilter(Filter::Linear)
+        .SetU(SamplerAddressMode::ClampToEdge)
+        .SetV(SamplerAddressMode::ClampToEdge)
+        .SetW(SamplerAddressMode::ClampToEdge)
+        .Build();
     m_SkyBoxSampler->Build();
 
 
@@ -112,11 +110,11 @@ void Renderer::UpdateGpuCameraData()
     const auto& rContextView = m_CurrentView->RenderingContext;
     const auto& gpuCamera = m_CurrentView->CameraGpu;
 
-    if (char* ptr = UniformBuffers.CameraUniformBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
+    if (char* ptr = UniformBuffers.Camera->BeginFullDynamicBufferUpdateForCurrentFrame())
     {
         std::memcpy(ptr, &gpuCamera, sizeof(CameraGpu));
 
-        UniformBuffers.CameraUniformBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+        UniformBuffers.Camera->EndFullDynamicBufferUpdateForCurrentFrame();
     }
 
 }
@@ -371,8 +369,8 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
             SCENE_DESCRIPTOR_SET, 1);
         PrimaryCommandList->BindDescriptorSet(skyBoxShader, m_SkyBoxCubeMapDescriptorSet,
             ENVIRONEMENT_DESCRIPTOR_SET, 1);
-        PrimaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer.Get(), 0, 1);
-        PrimaryCommandList->Draw(m_CubeVertexBuffer.GetVerticiesCount(), 1, 0, 0);
+        PrimaryCommandList->BindVertexBuffer(*m_CubeVertexBuffer, 0, 1);
+        PrimaryCommandList->Draw(CubeVerticiesCount, 1, 0, 0);
     }
 #ifdef WITH_EDITOR
     m_DebugDrawContext->DrawDebugPrimitive(PrimaryCommandList.get(), rContextView);
@@ -755,15 +753,22 @@ void Renderer::CreateRenderPasss()
             .subPasses = subPassDescriptions
         };
 
-        RenderPasses.ForwardPass.reset(m_Rhi->CreateRenderPass("ForwardPass", renderPassDescriptor));
+        RenderPasses.ForwardPass.reset(m_Rhi->CreateRenderPass(renderPassDescriptor));
+        RenderPasses.ForwardPass
+            ->SetName("ForwardPass")
+            .Build();
     }
 
     // Draw To Final Viewport
     {
         PERF_REGION_SCOPED_NAMED("Create Draw To Final Viewport");
-        RenderPasses.DrawToFinalViewPort.reset(m_Rhi->CreateRenderPass("DrawToFinalViewPort", RhiFormat::R8G8B8A8Unorm,
+        RenderPasses.DrawToFinalViewPort.reset(m_Rhi->CreateRenderPass(RhiFormat::R8G8B8A8Unorm,
                                                                  m_Rhi->GetRhiContext().rhiPhysicalDevices->
                                                                  GetPhysicalDevice().GetMaxUsableSampleCount()));
+        RenderPasses.DrawToFinalViewPort
+            ->SetName("DrawToFinalViewPort")
+            .Build();
+
     }
 }
 
@@ -894,7 +899,7 @@ void Renderer::CreateShaders()
             }
         };
 
-        ForwardShader.reset(m_Rhi->CreateRhiShaderProgram("ForwardShader"));
+        ForwardShader.reset(m_Rhi->CreateRhiShaderProgram());
         ForwardShader->SetShaderModules(moldules)
             .SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
             .SetDepthTest(true)
@@ -905,6 +910,7 @@ void Renderer::CreateShaders()
             .SetRenderPass(*RenderPasses.ForwardPass)
             .SetAttachementCount(1) // shoulde be in renderpass
             .SetSubPassIndex(0)
+            .SetName("ForwardShader")
             .Build();
         
     }
@@ -1077,14 +1083,26 @@ void Renderer::CreateBuffers()
         Cubemap = ResourceManager::Create<Texture3D>(*m_Rhi, "BasicCubemap", maps);
     }
 
-    UniformBuffers.CameraUniformBuffer = UniformBuffer(*m_Rhi, "CameraUniformBuffer", sizeof(CameraGpu), RhiResource::MemoryUsage::Dynamic);
-    UniformBuffers.CameraUniformBuffer->Build();
-    
-    UniformBuffers.PostProcessUniformBuffer = UniformBuffer(*m_Rhi, "PostProcessUniformBuffer", sizeof(PostProcessGpu), RhiResource::MemoryUsage::Dynamic);
-    UniformBuffers.PostProcessUniformBuffer->Build();
+    UniformBuffers.Camera
+        ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
+        .SetSize(sizeof(CameraGpu))
+        .SetUsage(RhiBuffer::Uniform)
+        .SetName("CameraUniformBuffer")
+        .Build();
 
-    UniformBuffers.LightBuffer = UniformBuffer(*m_Rhi, "DynamicGpuLightUniformBuffer", sizeof(m_GpuDynamicLightData), RhiResource::MemoryUsage::Dynamic);
-    UniformBuffers.LightBuffer->Build();
+    UniformBuffers.PostProcess
+        ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
+        .SetSize(sizeof(PostProcessGpu))
+        .SetUsage(RhiBuffer::Uniform)
+        .SetName("PostProcessUniformBuffer")
+        .Build();
+
+    UniformBuffers.LightBuffer
+        ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
+        .SetSize(sizeof(m_GpuDynamicLightData))
+        .SetUsage(RhiBuffer::Uniform)
+        .SetName("DynamicGpuLightUniformBuffer")
+        .Build();
 }
 #pragma endregion CreateThirdPartyResources
 
@@ -1097,7 +1115,7 @@ void Renderer::CreateDescriptorSets()
 
     const BufferDescriptor lightData
     {
-        .buffer = UniformBuffers.CameraUniformBuffer.Get(),
+        .buffer = UniformBuffers.Camera.get(),
     };
     /*
     ImageSamplerDescriptor skyboxCubeMapDescritptor
@@ -1107,7 +1125,7 @@ void Renderer::CreateDescriptorSets()
         .resourceState = PC_CORE::ImageState::ShaderReadOptimal
     };*/
 
-    std::vector<ShaderProgramDescriptorWrite> descriptorSets;
+    std::vector<DescriptorWrite> descriptorSets;
 
     {
         PERF_REGION_SCOPED_NAMED("Skybox Shader DescriptorSets");
@@ -1140,7 +1158,7 @@ void Renderer::CreateDescriptorSets()
 
 void Renderer::InitCubeBuffers()
 {
-    constexpr std::array<Tbx::Vector3f, 36> vertices =
+    constexpr std::array<Tbx::Vector3f, CubeVerticiesCount> vertices =
     {
         // Bottom face 
         Tbx::Vector3f{-0.5f, -0.5f, -0.5f},
@@ -1191,9 +1209,12 @@ void Renderer::InitCubeBuffers()
         Tbx::Vector3f{0.5f, -0.5f, 0.5f},
     };
 
-    m_CubeVertexBuffer = VertexBuffer(*m_Rhi,"CubeVertexBuffer", vertices.size(), sizeof(Tbx::Vector3f), RhiBuffer::MemoryUsage::Static);
-    m_CubeVertexBuffer->Build();
-    
+    m_CubeVertexBuffer.reset(m_Rhi->CreateBuffer());
+    m_CubeVertexBuffer
+        ->SetMemoryUsage(RhiMemoryUsage::Static)
+        .SetSize(sizeof(sizeof(Tbx::Vector3f)) * vertices.size())
+        .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::TransferDst)
+        .Build();
 
     m_Rhi->PushResourceUpdate([&](CommandList* list)
     {

@@ -19,14 +19,6 @@ BEGIN_PCCORE
     class RhiShaderProgram;
 
 
-    enum class CommandPoolFamily
-    {
-        Graphics,
-        Compute,
-        Count
-    };
-
-
     enum ClearValueFlags : uint32_t
     {
         ClearValueNone = 0,
@@ -82,19 +74,6 @@ BEGIN_PCCORE
         
     };
 
-    enum struct CommandBufferType
-    {
-        Primary,
-        Secondary
-    };
-
-    struct CommandListCreateInfo
-    {
-        CommandPoolFamily CommandPoolFamily;
-        CommandBufferType CommandBufferType;
-    };
-
-
 
     enum struct FlushCommandMethod
     {
@@ -106,11 +85,22 @@ BEGIN_PCCORE
     class CommandList : public RhiObjectT<CommandList>
     {
     public:
+        enum struct PoolFamily
+        {
+            Graphics,
+            Compute,
+            Count
+        };
+
+        enum struct BufferType
+        {
+            Primary,
+            Secondary
+        };
+
         DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 
-        PC_CORE_API explicit CommandList(Rhi& _Rhi, const std::string& _name, const CommandListCreateInfo& _commandListCreateInfo);
-
-        PC_CORE_API explicit CommandList(Rhi& _Rhi, std::string&& _name, const CommandListCreateInfo& _commandListCreateInfo);
+        PC_CORE_API explicit CommandList(Rhi& _Rhi);
 
         PC_CORE_API virtual ~CommandList() = default;
 
@@ -178,10 +168,36 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void EndDebugLabel() = 0;
 
-    protected:
-        CommandPoolFamily m_CommandPoolFamily;
+        // Setter
 
-        CommandBufferType m_CommandBufferType;
+        CommandList& SetBufferType(BufferType _BufferType)
+        {
+            m_BufferType = _BufferType;
+            return *this;
+        }
+
+        CommandList& SetPoolFamilly(PoolFamily _PoolFamily)
+        {
+            m_PoolFamily = _PoolFamily;
+            return *this;
+        }
+
+        // Getter
+
+        BufferType GetBufferType() const
+        {
+            return m_BufferType;
+        }
+
+        PoolFamily GetPoolFamilly() const
+        {
+            return m_PoolFamily;
+        }
+
+    protected:
+        BufferType m_BufferType { BufferType::Primary };
+
+        PoolFamily m_PoolFamily { PoolFamily::Graphics };
 
         std::vector<std::function<void(CommandList*)>> m_FetchCommands;
     };

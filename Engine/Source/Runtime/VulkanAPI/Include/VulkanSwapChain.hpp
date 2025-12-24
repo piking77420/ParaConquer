@@ -20,7 +20,7 @@ namespace Vulkan
     public:
         VULKAN_API void* GetFrameBuffer() override;
 
-        VULKAN_API explicit VulkanSwapChain(PC_CORE::Rhi& _Rhi, const std::string& _Name, uint32_t _Widht, uint32_t _Height, 
+        VULKAN_API explicit VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht, uint32_t _Height, 
                                             VulkanPhysicalDevices& vulkanPhysicalDevices, VulkanDevice& _VulkanDevice,  vk::SurfaceKHR _Surface);
 
         VULKAN_API explicit VulkanSwapChain() = default;
@@ -39,11 +39,11 @@ namespace Vulkan
 
         VULKAN_API void EndSwapChainRenderPass(PC_CORE::CommandList* _commandList) override;
 
-        PC_CORE_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
+        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
 
-        PC_CORE_API void* GetFrameNativeHandle(size_t _frameIndex) override;
+        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
 
-        PC_CORE_API bool Build() override;
+        VULKAN_API bool Build() override;
 
     private:
         struct SyncObject

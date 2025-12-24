@@ -5,8 +5,8 @@
 #include "VulkanContext.hpp"
 #include "VulkanSwapChain.hpp"
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, const PC_CORE::RenderPassDescriptor& _renderPassDescriptor)
-    : RhiRenderPass(_Rhi, _name, _renderPassDescriptor)
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const PC_CORE::RenderPassDescriptor& _renderPassDescriptor)
+    : RhiRenderPass(_Rhi, _renderPassDescriptor)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -180,9 +180,9 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string
     m_RenderPass = GET_VK_DEVICE.createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, PC_CORE::RhiFormat colorFormat,
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi   , PC_CORE::RhiFormat colorFormat,
     PC_CORE::RhiFormat depthFormat)
-    : RhiRenderPass(_Rhi, _name)
+    : RhiRenderPass(_Rhi)
 {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = static_cast<VkFormat>(Utils::RhiFormatToVkFormat(colorFormat));
@@ -240,8 +240,8 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string
     m_RenderPass = GET_VK_DEVICE.createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, PC_CORE::RhiFormat colorFormat, uint32_t _sampleCount)
-    : RhiRenderPass(_Rhi, _name)
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, PC_CORE::RhiFormat colorFormat, uint32_t _sampleCount)
+    : RhiRenderPass(_Rhi)
 {
     vk::AttachmentDescription colorAttachment{};
     colorAttachment.format = Utils::RhiFormatToVkFormat(colorFormat);
@@ -299,8 +299,8 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string
     m_RenderPass = GET_VK_DEVICE.createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, PC_CORE::RhiFormat colorFormat)
-    : RhiRenderPass(_Rhi, _name)
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, PC_CORE::RhiFormat colorFormat)
+    : RhiRenderPass(_Rhi)
 {
     vk::AttachmentDescription colorAttachment{};
     colorAttachment.format = Utils::RhiFormatToVkFormat(colorFormat);
@@ -343,8 +343,8 @@ Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, const std::string
     m_RenderPass = GET_VK_DEVICE.createRenderPass(renderPassInfo);
 }
 
-Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, vk::Device device, const std::string& _name, vk::Format format)
-    : RhiRenderPass(_Rhi, _name)
+Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, vk::Device device, vk::Format format)
+    : RhiRenderPass(_Rhi)
 {
     vk::AttachmentDescription colorAttachment{};
     colorAttachment.format = format;
@@ -397,7 +397,7 @@ Vulkan::VulkanRenderPass::~VulkanRenderPass()
 
 bool Vulkan::VulkanRenderPass::Build()
 {
-    assert(false);
+    assert(false && "TODO");
     return false;
 }
 

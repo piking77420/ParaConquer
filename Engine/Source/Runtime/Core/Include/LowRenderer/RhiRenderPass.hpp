@@ -86,13 +86,13 @@ BEGIN_PCCORE
     public:
         PC_CORE_API RhiRenderPass() = default;
 
-        PC_CORE_API explicit RhiRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name, const RenderPassDescriptor& _attachementDescriptors)
-            : RhiObjectT(_Rhi, _name)
+        PC_CORE_API explicit RhiRenderPass(Rhi& _Rhi, const RenderPassDescriptor& _attachementDescriptors)
+            : RhiObjectT(_Rhi)
         {
         }
         
-        PC_CORE_API RhiRenderPass(PC_CORE::Rhi& _Rhi, const std::string& _name)
-            : RhiObjectT(_Rhi, _name)
+        PC_CORE_API RhiRenderPass(Rhi& _Rhi)
+            : RhiObjectT(_Rhi)
         {
         }
         

@@ -13,9 +13,9 @@ BEGIN_PCCORE
 
         IMP_DYNAMIC_REFLECT()
 
-        explicit Sampler(Rhi& _rhi, const std::string& _name, const SamplerCreateInfo& _samplerCreateInfo);
+        explicit Sampler(Rhi& _rhi, const std::string& _name);
 
-        explicit Sampler(Rhi& _rhi, std::string&& _name, const SamplerCreateInfo& _samplerCreateInfo);
+        explicit Sampler(Rhi& _rhi, std::string&& _name);
 
         explicit Sampler()
         {
@@ -33,6 +33,12 @@ BEGIN_PCCORE
         {
             return m_RhiSampler.get();
         }
+
+        RhiSampler& operator*() const
+        {
+            return *m_RhiSampler;
+        }
+
 
     private:
         REFLECT(Sampler);

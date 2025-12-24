@@ -16,13 +16,15 @@ Texture2D::Texture2D()
 Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::string& _name)
     : Texture(_name)
 {
-    m_RhiTexture.reset(rhi.CreateTexture(Name));
+    m_RhiTexture.reset(rhi.CreateTexture());
+    m_RhiTexture->SetName(Name);
 }
 
 Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name)
     : Texture(std::move(_name))
 {
-    m_RhiTexture.reset(rhi.CreateTexture(Name));
+    m_RhiTexture.reset(rhi.CreateTexture());
+    m_RhiTexture->SetName(Name);
 }
 
 void Texture2D::AfterSerialize(Serializer* _serializer) const

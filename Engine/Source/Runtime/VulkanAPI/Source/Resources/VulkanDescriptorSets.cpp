@@ -8,7 +8,7 @@
 #include "Resources/VulkanSampler.hpp"
 #include "Utils/RhiToVulkan.hpp"
 
-static inline void CountBufferAndImageDescriptor(const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& Bindings, 
+static inline void CountBufferAndImageDescriptor(const std::vector<PC_CORE::DescriptorWrite>& Bindings,
     size_t& ImageCount, size_t& BufferCount)
 {
     for (size_t i = 0; i < Bindings.size(); i++)
@@ -29,15 +29,8 @@ static inline void CountBufferAndImageDescriptor(const std::vector<PC_CORE::Shad
     }
 }
 
-Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const std::string& _Name, const CacheDescriptor& _Cache)
-    : ShaderProgramDescriptorSets(_Rhi, _Name)
-    , m_Cache(_Cache)
-{
-}
-
-
-Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, std::string&& _Name, const CacheDescriptor& _Cache)
-    : ShaderProgramDescriptorSets(_Rhi, std::move(_Name))
+Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const CacheDescriptor& _Cache)
+    : ShaderProgramDescriptorSets(_Rhi)
     , m_Cache(_Cache)
 {
 }
@@ -103,7 +96,7 @@ void Vulkan::VulkanDescriptorSets::UpdateDesciptors()
 
     vk::Device d = GET_VK_DEVICE;
 
-    const std::vector<PC_CORE::ShaderProgramDescriptorWrite>& Bindings = GetBinding();
+    const std::vector<PC_CORE::DescriptorWrite>& Bindings = GetBinding();
 
     size_t imageDescriptorCount = 0;
     size_t bufferDescriptorCount = 0;
@@ -245,24 +238,24 @@ void Vulkan::VulkanDescriptorSets::FillDescritptorWrite(std::span<vk::WriteDescr
 
             switch (CurrentBinding.type)
             {
-            case PC_CORE::ShaderProgramDescriptorType::UniformBuffer:
-            case PC_CORE::ShaderProgramDescriptorType::StorageBuffer:;
+            case PC_CORE::DescriptorType::UniformBuffer:
+            case PC_CORE::DescriptorType::StorageBuffer:;
                 _WriteDescriptorSetSpan[descriptorWriteIndex].pBufferInfo = &bufferInfo[bufferIndex++];
                 break;
-            case PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler:
+            case PC_CORE::DescriptorType::CombinedImageSampler:
                 _WriteDescriptorSetSpan[descriptorWriteIndex].pImageInfo = &imageInfo[imageIndex++];
                 break;
-            case PC_CORE::ShaderProgramDescriptorType::StorageImage:
+            case PC_CORE::DescriptorType::StorageImage:
                 _WriteDescriptorSetSpan[descriptorWriteIndex].pImageInfo = &imageInfo[imageIndex++];
                 break;
-            case PC_CORE::ShaderProgramDescriptorType::InputAttachment:
+            case PC_CORE::DescriptorType::InputAttachment:
                 _WriteDescriptorSetSpan[descriptorWriteIndex].pImageInfo = &imageInfo[imageIndex++];
                 break;
-            case PC_CORE::ShaderProgramDescriptorType::Sampler:
-            case PC_CORE::ShaderProgramDescriptorType::SampledImage:
-            case PC_CORE::ShaderProgramDescriptorType::InlineUniformBlock:
-            case PC_CORE::ShaderProgramDescriptorType::AccelerationStructure:
-            case PC_CORE::ShaderProgramDescriptorType::Count:
+            case PC_CORE::DescriptorType::Sampler:
+            case PC_CORE::DescriptorType::SampledImage:
+            case PC_CORE::DescriptorType::InlineUniformBlock:
+            case PC_CORE::DescriptorType::AccelerationStructure:
+            case PC_CORE::DescriptorType::Count:
             default:
                 assert(false && "Unsupported shader program descriptor type");
             }
