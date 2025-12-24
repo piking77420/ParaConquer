@@ -142,6 +142,14 @@ void Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
     std::memcpy(mappedData, _data, _sizeInBytes);
     vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
 
+    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
+    {
+        .device = GET_VK_DEVICE,
+        .commandPool = context.transferCommandPool,
+        .queue = context.mainQueue
+    };
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
     
     vk::BufferCopy copyRegion = {};
     copyRegion.srcOffset = 0;
@@ -151,11 +159,11 @@ void Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
     for (size_t i = 0; i < m_Handles.size(); i++)
     {
         auto& buffer = m_Handles[i];
-        GET_VK_COMMAND_BUFFER(_commandList, i);
 
-        cmb.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
+        commandBuffer.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
     }
 
+    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
     
     // Destroy the staging buffer no need it anymore
     FreeAlloc(context, stagingBuffer);

@@ -295,19 +295,26 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
     for (uint32_t i = 0; i < _layerCount; i++)
         std::memcpy(static_cast<uint8_t*>(mappedData) + (sliceSize * i), _imageDatas[i], sliceSize);
     vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
-    
-    
+
+    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
+    {
+        .device = device,
+        .commandPool = context.transferCommandPool,
+        .queue = context.mainQueue
+    };
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
+
     for (size_t i = 0; i < m_Handles.size(); i++)
     {
         TextureAndAlloc& handle = m_Handles[i];
-        GET_VK_COMMAND_BUFFER(commandList, i);
 
         const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
         if (handle.resourceState != RhiResourceState::CopyDst)
         {
 
-            TransitionImageLayout(cmb, 
+            TransitionImageLayout(commandBuffer,
                                   handle.Image, 
                                   VkFormat,
                                   current,
@@ -336,7 +343,7 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
                 1
             };
         
-            cmb.copyBufferToImage(
+            commandBuffer.copyBufferToImage(
                  stagingBuffer.buffer,
                  handle.Image,
                  vk::ImageLayout::eTransferDstOptimal,
@@ -345,7 +352,7 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
         }
 
         // back to normal
-        TransitionImageLayout(cmb,
+        TransitionImageLayout(commandBuffer,
             handle.Image,
             VkFormat,
             vk::ImageLayout::eTransferDstOptimal,
@@ -354,6 +361,8 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
             m_Layer,
             m_Level);
     }
+
+    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 }
 
 void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
@@ -364,14 +373,21 @@ void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
 
+    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
+    {
+        .device = device,
+        .commandPool = context.transferCommandPool,
+        .queue = context.mainQueue
+    };
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
 
     for (size_t i = 0; i < m_Handles.size(); i++)
     {
         TextureAndAlloc& handle = m_Handles[i];
-        GET_VK_COMMAND_BUFFER(commandList, i);
         const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
-        Utils::GenerateMipMapFunc(cmb, 
+        Utils::GenerateMipMapFunc(commandBuffer,
                                   handle.Image, 
                                   vk::ImageLayout::eShaderReadOnlyOptimal,  // todo not harcoded
                                   m_Width,
@@ -381,7 +397,7 @@ void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
                                   VkImageAspectFlags);
     
         // image transition to eShaderReadOnlyOptimal in GenerateMipMapFunc
-            TransitionImageLayout(cmb,
+            TransitionImageLayout(commandBuffer,
                 handle.Image,
                 VkFormat,
                 vk::ImageLayout::eShaderReadOnlyOptimal,
@@ -391,6 +407,8 @@ void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
                 m_Level);
         
     }
+
+    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
 }
 
 const Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc(size_t _frameIndex) const

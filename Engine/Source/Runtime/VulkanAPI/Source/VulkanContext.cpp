@@ -46,6 +46,12 @@ VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreate
     rhiSwapChain = std::make_shared<VulkanSwapChain>(m_Rhi, uwidht, uheight, *vkPhysicalDevice, *vkDevice,  vkInstance->surface);
     rhiSwapChain->SetName("MainSwapChain");
 
+    vk::FenceCreateInfo fenceInfo{};
+    fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
+    fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+    transferFence = GetDevice()->GetDevice().createFence(fenceInfo);
+
     CreateMemoryAllocator();
     CreateCommandPools();
     CreateSyncObjects();

@@ -74,9 +74,6 @@ public:
         return m_CurrentFrame;
     }
 
-    PC_CORE_API void PushResourceUpdate(const std::function<void(CommandList*)>& _resourceUpdates);
-        
-    PC_CORE_API void ProcessResourceUpdate();
 
 private:
     GraphicAPI m_GraphicsApi{};
@@ -86,8 +83,6 @@ private:
     std::unique_ptr<RhiContext> m_RhiContext = nullptr;
 
     std::vector<std::function<void(CommandList*)>> m_ResourceUpdateStack;
-
-    std::unique_ptr<CommandList> m_ResourceUpdateCommandList;
 
     std::unique_ptr<RhiFence> m_ResourceUpdateFence;
 

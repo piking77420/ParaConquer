@@ -274,27 +274,6 @@ void Rhi::NextFrame()
 	m_CurrentFrame = (m_CurrentFrame + 1) % MaxFramesInFlight;
 }
 
-void Rhi::PushResourceUpdate(const std::function<void(CommandList*)>& _resourceUpdates)
-{
-	m_ResourceUpdateStack.push_back(_resourceUpdates);
-}
-
-void Rhi::ProcessResourceUpdate()
-{
-	if (m_ResourceUpdateStack.empty())
-		return;
-
-	m_ResourceUpdateCommandList->BeginRecordCommands();
-	for (auto& RUpdate : m_ResourceUpdateStack)
-	{
-		RUpdate(m_ResourceUpdateCommandList.get());
-	}
-	m_ResourceUpdateCommandList->EndRecordCommands();
-	m_ResourceUpdateStack.clear();
-
-	m_ResourceUpdateCommandList->Flush(*m_ResourceUpdateFence.get());
-}
-
 void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 {
 	PERF_REGION_SCOPED;
@@ -336,14 +315,14 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 	case GraphicAPI::None:
 		break;
 	}
-	
+	/*
 	// Create Resource Update Command List
 	m_ResourceUpdateCommandList.reset(Rhi::CreateCommandList());
 	m_ResourceUpdateCommandList
 		->SetBufferType(CommandList::BufferType::Primary)
 		.SetPoolFamilly(CommandList::PoolFamily::Graphics)
 		.SetName("Resource Operation")
-		.Build();
+		.Build();*/
 	// Create Resource Update Fence
 	m_ResourceUpdateFence.reset(Rhi::CreateFence());
 	m_ResourceUpdateFence
