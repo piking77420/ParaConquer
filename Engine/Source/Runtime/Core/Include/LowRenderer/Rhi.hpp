@@ -51,7 +51,7 @@ public:
 
     PC_CORE_API RhiRenderPass* CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount);
 
-    PC_CORE_API RhiRenderPass* CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor);
+    PC_CORE_API RhiRenderPass* CreateRenderPass();
 
     PC_CORE_API RhiFrameBuffer* CreateFrameBuffer();
 

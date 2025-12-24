@@ -12,7 +12,6 @@
 
 constexpr auto ShaderCachePath = "ShaderCache/";
 constexpr int MaxFramesInFlight = 3;
-constexpr size_t MaxColorAttachments = 7;
 
 BEGIN_PCCORE
     enum class GraphicAPI

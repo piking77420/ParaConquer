@@ -137,14 +137,14 @@ PC_CORE_API RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, uint32_
 	return nullptr;
 }
 
-RhiRenderPass* Rhi::CreateRenderPass(const RenderPassDescriptor& _renderPassDescriptor)
+RhiRenderPass* Rhi::CreateRenderPass()
 {
 	switch (m_GraphicsApi)
 	{
 	case GraphicAPI::None:
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanRenderPass(*this, _renderPassDescriptor);
+		return new Vulkan::VulkanRenderPass(*this);
 		break;
 	case GraphicAPI::D3d12:
 		break;

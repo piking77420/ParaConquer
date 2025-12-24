@@ -632,7 +632,7 @@ void Renderer::CreateRenderPasss()
         };
 
         // Geometry subpass and deffered lighting
-        std::vector<SubPassDescription> subPassDescriptions;
+        std::vector<SubPass> subPassDescriptions;
         subPassDescriptions.resize(2);
 
         subPassDescriptions[0] =
@@ -644,7 +644,7 @@ void Renderer::CreateRenderPasss()
                 static_cast<size_t>(GbufferType::RoughnessMetallicAo),
                 static_cast<size_t>(GbufferType::WorldPosition)
             },
-            .inputAttachementDescriptorIndicies = {},
+            .inputAttachementIndicies = {},
             .subPassTransition =
             {
                 .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
@@ -664,7 +664,7 @@ void Renderer::CreateRenderPasss()
             {
                 attachements.size() - 1
             },
-            .inputAttachementDescriptorIndicies = {
+            .inputAttachementIndicies = {
                 static_cast<size_t>(GbufferType::Albedo),
                 static_cast<size_t>(GbufferType::Normal),
                 static_cast<size_t>(GbufferType::RoughnessMetallicAo),
@@ -725,14 +725,14 @@ void Renderer::CreateRenderPasss()
             .finalImageState = RhiResourceState::DepthStencilWrite,
         };
 
-        std::vector<SubPassDescription> subPassDescriptions;
+        std::vector<SubPass> subPassDescriptions;
         subPassDescriptions.resize(1);
 
         subPassDescriptions[0] =
         {
             .type = RhiShaderProgram::PipelineType::Graphic,
             .colorAttachementDescriptorIndicies = {0},
-            .inputAttachementDescriptorIndicies = {},
+            .inputAttachementIndicies = {},
             .subPassTransition =
             {
                 .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
@@ -746,16 +746,13 @@ void Renderer::CreateRenderPasss()
             .useDepth = true,
         };
 
-        RenderPassDescriptor renderPassDescriptor =
-        {
-            .attachement = colorAttachement,
-            .depthAttachment = &depthAttachement,
-            .subPasses = subPassDescriptions
-        };
+        RenderPasses.ForwardPass.reset(m_Rhi->CreateRenderPass());
 
-        RenderPasses.ForwardPass.reset(m_Rhi->CreateRenderPass(renderPassDescriptor));
         RenderPasses.ForwardPass
-            ->SetName("ForwardPass")
+            ->SetAttachement(colorAttachement)
+            .SetDepthStencilAttachement(depthAttachement)
+            .SetSubPass(subPassDescriptions)
+            .SetName("ForwardPass")
             .Build();
     }
 

@@ -39,7 +39,7 @@ BEGIN_PCCORE
 
     struct RenderPassAttachementDescriptor
     {
-        AttachmentType attachmentType;
+        AttachmentType attachmentType{ AttachmentType ::None};
         RhiFormat format;
         int sampleCount;
 
@@ -62,46 +62,68 @@ BEGIN_PCCORE
 
 
 
-    struct SubPassDescription
+    struct SubPass
     {
         RhiShaderProgram::PipelineType type;
         std::vector<size_t> colorAttachementDescriptorIndicies;
-        std::vector<size_t> inputAttachementDescriptorIndicies;
+        std::vector<size_t> inputAttachementIndicies;
 
         SubPassTransition subPassTransition;
 
         bool useDepth;
     };
 
-    struct RenderPassDescriptor
-    {
-        std::vector<RenderPassAttachementDescriptor> attachement;
-        RenderPassAttachementDescriptor* depthAttachment;
-
-        std::vector<SubPassDescription> subPasses;
-    };
-
     class RhiRenderPass : public RhiObjectT<RhiRenderPass>
     {
     public:
-        PC_CORE_API RhiRenderPass() = default;
+        PC_CORE_API explicit RhiRenderPass(Rhi& _Rhi);
 
-        PC_CORE_API explicit RhiRenderPass(Rhi& _Rhi, const RenderPassDescriptor& _attachementDescriptors)
-            : RhiObjectT(_Rhi)
-        {
-        }
-        
-        PC_CORE_API RhiRenderPass(Rhi& _Rhi)
-            : RhiObjectT(_Rhi)
-        {
-        }
-        
         PC_CORE_API ~RhiRenderPass() = default;
 
-    protected:        
-        RhiShaderProgram::PipelineType m_ShaderProgramPipelineType = RhiShaderProgram::PipelineType::Count;
+        // Setter
 
-        uint32_t AttachementCount = 0;
+        RhiRenderPass& SetAttachement(const std::vector<RenderPassAttachementDescriptor>& _RenderPassAttachementDescriptors)
+        {
+            m_Attachement = _RenderPassAttachementDescriptors;
+            return *this;
+        }
+
+        RhiRenderPass& SetDepthStencilAttachement(const RenderPassAttachementDescriptor& _RenderPassAttachementDescriptor)
+        {
+            m_DepthStencilAttachement = _RenderPassAttachementDescriptor;
+            return *this;
+        }
+
+        RhiRenderPass& SetSubPass(const std::vector<SubPass>& _SubPasses)
+        {
+            m_SubPasses = _SubPasses;
+            return *this;
+        }
+
+        // Getter
+
+        const std::vector<RenderPassAttachementDescriptor>& GetAttachement() const
+        {
+            return m_Attachement;
+        }
+
+        const RenderPassAttachementDescriptor& GeDepthStencilAttachement() const
+        {
+            return m_DepthStencilAttachement;
+        }
+
+        const std::vector<SubPass>& GetSubPass() const
+        {
+            return m_SubPasses;
+        }
+
+    protected:        
+
+        std::vector<RenderPassAttachementDescriptor> m_Attachement;
+
+        RenderPassAttachementDescriptor m_DepthStencilAttachement;
+
+        std::vector<SubPass> m_SubPasses;
 
         bool m_HasDepth = false;
 
