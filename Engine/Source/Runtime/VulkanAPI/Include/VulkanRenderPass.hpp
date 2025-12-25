@@ -42,9 +42,8 @@ namespace Vulkan
         void ParseSubPassTransition(const PC_CORE::SubPassTransition& _subPassDependcies,
                              vk::SubpassDependency* _vkdependency);
 
-        vk::ImageLayout GetImageLayoutSubPass(PC_CORE::AttachmentType _attachmentType);
 
-        vk::ImageLayout GetImageLayoutSubPassForInputAttachement(PC_CORE::AttachmentType _attachmentType);
+        vk::ImageLayout GetImageLayoutSubPassForInputAttachement(RhiResourceState resourceState);
 
         std::vector<vk::AttachmentDescription> ParseAttahchementDescription(bool _hasdepth);
     };

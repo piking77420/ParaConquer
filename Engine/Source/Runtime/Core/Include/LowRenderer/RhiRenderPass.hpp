@@ -39,7 +39,6 @@ BEGIN_PCCORE
 
     struct RenderPassAttachementDescriptor
     {
-        AttachmentType attachmentType{ AttachmentType ::None};
         RhiFormat format;
         int sampleCount;
 

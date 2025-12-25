@@ -27,13 +27,15 @@ PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const
     m_RhiTexture
         ->SetWidth(Width)
         .SetHeight(Height)
-        .SetLevel(std::floor(std::log2(std::max(Width, Height))) + 1)
+        .SetLayer(6)
+        .SetMemoryUsage(RhiMemoryUsage::Static)
         .SetTextureType(RhiTexture::Type::CubeMap)
         .SetTextureUsage(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst)
         .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
         .Build();
 
-    rhi.PushResourceUpdate(
+    m_RhiTexture->UploadDataLayer(nullptr, datas, width, height, m_RhiTexture->GetLayer());
+    /*rhi.PushResourceUpdate(
         [&](CommandList* list)
         {
             m_RhiTexture->UploadDataLayer(list, datas, width, height, m_RhiTexture->GetLayer());
@@ -41,7 +43,10 @@ PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const
             for (size_t i = 0; i < 6; i++)
                 FileLoader::FreeData(static_cast<uint8_t*>(datas[i]));
         }
-    );
+    );*/
+
+    for (size_t i = 0; i < 6; i++)
+        FileLoader::FreeData(static_cast<uint8_t*>(datas[i]));
 
 }
 

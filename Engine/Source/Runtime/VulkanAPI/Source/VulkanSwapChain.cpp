@@ -52,8 +52,8 @@ Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht,
 
     m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_Rhi, _VulkanDevice.GetDevice(), m_SurfaceFormatKHR.format);
     m_SwapChainRenderPass
-        ->SetName("SwapChainRenderPass")
-        .Build();
+        ->SetName("SwapChainRenderPass");
+       // .Build(); DO NOT CALL IT
 
     CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
     CreateImageViews();
@@ -200,14 +200,12 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 
 void Vulkan::VulkanSwapChain::CleanUpSwapChain()
 {
-    m_SwapChainRenderPass.reset();
-    m_SwapChainRenderPass = nullptr;
-
     for (const auto& frameBuffer : m_Framebuffers)
         m_Device.destroyFramebuffer(frameBuffer);
 
     for (const auto& swapChainImageView : m_SwapChainImageViews)
         m_Device.destroyImageView(swapChainImageView);
+
 
     m_Device.destroySwapchainKHR(m_SwapChain);
 }
@@ -267,18 +265,16 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
     VulkanContext& context = GET_VK_CONTEXT;
+    vk::Queue mainQueu = context.mainQueue;
+    auto& flushedCommands = context.flushedCommands;
 
     vk::Fence inFlightFence = context.syncObjects[frameIndex].inFlightFence;
-
     vk::Semaphore imageAvailableSemaphore = context.syncObjects[frameIndex].imageAvailableSemaphore;
-
-
-    vk::Queue mainQueu = GET_VK_CONTEXT.mainQueue;
+    vk::Semaphore renderFinishSemaphoreImage = context.syncObjects[frameIndex].renderFinishedSemaphore;
 
     vk::SubmitInfo submitInfo{};
     submitInfo.sType = vk::StructureType::eSubmitInfo;
 
-    auto& flushedCommands = GET_VK_CONTEXT.flushedCommands;
     // Graphic Work
     {
         for (size_t i = 0; i < flushedCommands.size(); i++)
@@ -304,8 +300,18 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &flushedCommands[i].cmd;
 
-            submitInfo.signalSemaphoreCount = 1;
-            submitInfo.pSignalSemaphores = &flushedCommands[i].semaphore;
+            if (i == (flushedCommands.size() - 1))
+            {
+                submitInfo.signalSemaphoreCount = 1;
+                submitInfo.pSignalSemaphores = &renderFinishSemaphoreImage;
+            }
+            else
+            {
+                submitInfo.signalSemaphoreCount = 1;
+                submitInfo.pSignalSemaphores = &flushedCommands[i].semaphore;
+            }
+
+            
 
             // Only attach the fence to the LAST submission
             vk::Fence fence = (i == flushedCommands.size() - 1) ? inFlightFence : VK_NULL_HANDLE;
@@ -316,11 +322,9 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
 
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(1);
 
-    presentInfo.pWaitSemaphores = flushedCommands.size() != 0
-                                      ? &flushedCommands[flushedCommands.size() - 1].semaphore
-                                      : nullptr;
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(1);
+    presentInfo.pWaitSemaphores = &renderFinishSemaphoreImage;
 
     vk::SwapchainKHR swapChains[] = {m_SwapChain};
     presentInfo.swapchainCount = 1;

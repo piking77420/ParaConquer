@@ -96,6 +96,11 @@ namespace Vulkan
         std::vector<vk::ImageMemoryBarrier> m_VkImageBarrier;
 
         std::vector<vk::BufferMemoryBarrier> m_VkBufferBarrier;
+
+#if DEBUG_GPU_ON
+        std::string m_SemaphoreDebugName;
+#endif
+
     };
 }
 

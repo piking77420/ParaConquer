@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "RhiTypedef.h"
 #include "LowRenderer/RhiResource.hpp"
+#include "RhiTypedef.h"
 
 BEGIN_PCCORE
 
@@ -63,7 +63,7 @@ public:
 
     RhiTexture& SetHeight(uint32_t _Height)
     {
-        m_Width = _Height;
+        m_Height = _Height;
         return *this;
     }
 
@@ -79,7 +79,7 @@ public:
         return *this;
     }
 
-    RhiTexture& SeLayer(uint32_t _Layer)
+    RhiTexture& SetLayer(uint32_t _Layer)
     {
         m_Layer = _Layer;
         return *this;

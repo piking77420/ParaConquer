@@ -46,12 +46,14 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
         .SetHeight(image.GetHeight())
         .SetMemoryUsage(RhiResource::MemoryUsage::Static)
         .SetTextureUsage(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst)
+        .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
         .Build();
 
-    rhi.PushResourceUpdate([&](CommandList* list)
+    texture->UploadData2D(nullptr, image.GetData(), image.GetWidht(), image.GetHeight());
+    /*rhi.PushResourceUpdate([&](CommandList* list)
         {
             texture->UploadData2D(list, image.GetData(), image.GetWidht(), image.GetHeight());
-        });
+        });*/
 }
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
@@ -63,17 +65,24 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
     m_CurrenPath = normalizePath(std::wstring(m_Editor->editorData.projectPath));
     windowFlags |= ImGuiWindowFlags_MenuBar;
 
-    const PC_CORE::Sampler& s = m_Editor->editorData.nearestSampler;
+    m_NearestSampler.reset(m_Editor->gameApp.RenderHarwareInteface.CreateSampler());
+    m_NearestSampler
+        ->SetMagFilter(Filter::Linear)
+        .SetMinFilter(Filter::Linear)
+        .SetName("ImguiImageSampler")
+        .Build();
+
+    const PC_CORE::RhiSampler& s = *m_NearestSampler;
 
     Image imageFolder(EDITOR_RESOURCE_PATH "/Icons/Folder.png", RhiChannel::Rgba);
     Image imageNull(EDITOR_RESOURCE_PATH "/Icons/Null.png", RhiChannel::Rgba);
 
     CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, "Folder.png", m_FolderIcon.texure, imageFolder);
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.Get(),
-        s.Get(), &m_FolderIcon.descritproSet, 1);
+        &s, &m_FolderIcon.descritproSet, 1);
 
     CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, "Null.png", m_NullIcon.texure, imageNull);
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.Get(), s.Get(),
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.Get(), &s,
                                                     &m_NullIcon.descritproSet, 1);
 
     CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>(),
@@ -413,7 +422,7 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const s
 
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(
         newIcon.texure.Get(),
-        m_Editor->editorData.nearestSampler.Get(),
+        m_NearestSampler.get(),
         &newIcon.descritproSet, 1);
 
     m_TypeIconMap[_id] = std::move(newIcon);

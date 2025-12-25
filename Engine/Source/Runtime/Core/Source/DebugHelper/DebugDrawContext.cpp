@@ -215,6 +215,7 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 
         i++;
     }
+    m_RayPrimitiveData.vertexBuffer = VertexBuffer(_renderer->GetRhi());
     m_RayPrimitiveData.vertexBuffer
         ->SetSize(RAY_BUFFER_SIZE)
         .SetMemoryUsage(RhiMemoryUsage::Dynamic)
@@ -296,7 +297,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
         .SetCullMode(RhiShader::CullNone)
         .SetFrontFace(RhiShader::FrontFace::CounterClockwise)
         .SetDepthTest(true)
-        .SetVertexInputBindingDescritions({ primitiveInputBindingDescrition })
+        .SetVertexInputBindingDescritions({ primitiveInputBindingDescrition, primitiveInstanceInputBindingDescrition })
         .SetVertexAttributeDescriptions(attributeDescription)
         .SetRenderPass(*m_Renderer->RenderPasses.ForwardPass)
         .SetAttachementCount(1)

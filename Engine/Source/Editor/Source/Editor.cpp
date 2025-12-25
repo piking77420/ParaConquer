@@ -412,7 +412,7 @@ void Editor::Run(bool* _appShouldClose)
 
         // end game thread
         // begin render thread
-        gameApp.RenderHarwareInteface.ProcessResourceUpdate();
+        //gameApp.RenderHarwareInteface.ProcessResourceUpdate();
         gameApp.Renderer.BeginFrame(&gameApp.MainWindow);
         UpdateEditor();
         gameApp.Renderer.SwapBuffers(&gameApp.MainWindow);

@@ -48,7 +48,7 @@ VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreate
 
     vk::FenceCreateInfo fenceInfo{};
     fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
-    fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+    fenceInfo.flags = {};
 
     transferFence = GetDevice()->GetDevice().createFence(fenceInfo);
 
@@ -94,7 +94,7 @@ std::shared_ptr<VulkanPhysicalDevices> VulkanContext::GetPhysicalDevices()
     return std::reinterpret_pointer_cast<VulkanPhysicalDevices>(rhiPhysicalDevices);
 }
 
-void VulkanContext::WaitIdleInstance()
+void VulkanContext::WaitIdleInstance()  
 {
     GetDevice()->GetDevice().waitIdle();
 }
@@ -139,6 +139,9 @@ void VulkanContext::CreateCommandPools()
     commandPoolCreateInfo.queueFamilyIndex = 0;
 
     commandPool = device->GetDevice().createCommandPool(commandPoolCreateInfo);
+
+    commandPoolCreateInfo.flags = {};
+    transferCommandPool = device->GetDevice().createCommandPool(commandPoolCreateInfo);
 }
 
 
@@ -155,7 +158,8 @@ void VulkanContext::CreateSyncObjects()
     for (size_t i = 0; i < syncObjects.size(); i++)
     {
         syncObjects[i].imageAvailableSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
-        //syncObjects[i].renderFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+        syncObjects[i].renderFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+
         //syncObjects[i].computeInFlightFence = vulkanDevice->GetDevice().createFence(fenceInfo);
         //syncObjects[i].computeFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
         syncObjects[i].inFlightFence = vulkanDevice->GetDevice().createFence(fenceInfo);
@@ -167,7 +171,7 @@ void VulkanContext::DestroySyncObjects()
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice);
     for (size_t i = 0; i < syncObjects.size(); i++)
     {
-        //vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].renderFinishedSemaphore);
+        vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].renderFinishedSemaphore);
         vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].imageAvailableSemaphore);
         vulkanDevice->GetDevice().destroyFence(syncObjects[i].inFlightFence);
         //vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].computeFinishedSemaphore);

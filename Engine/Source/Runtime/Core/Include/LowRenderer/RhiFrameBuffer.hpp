@@ -18,11 +18,13 @@ public:
     // Setter
     RhiFrameBuffer& SetWidth(uint32_t _Widht)
     {
+        m_Width = _Widht;
         return *this;
     }
 
     RhiFrameBuffer& SetHeight(uint32_t _Height)
     {
+        m_Height = _Height;
         return *this;
     }
 
@@ -79,9 +81,9 @@ public:
 
 
 protected:
-    uint32_t m_Width;
+    uint32_t m_Width{ 0 };
 
-    uint32_t m_Height;
+    uint32_t m_Height{ 0 };
 
     std::vector<RhiTexture*> m_Attachments;
 

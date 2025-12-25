@@ -103,8 +103,21 @@ bool Vulkan::VulkanCommandList::Build()
     vk::SemaphoreCreateInfo sCreateInfo;
     sCreateInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
 
+#if DEBUG_GPU_ON
+
+    m_SemaphoreDebugName = std::move(std::string(GetName()) + " Semaphore");
     for (auto& s : m_Semaphore)
+    {
         s = device.createSemaphore(sCreateInfo);
+        vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
+        nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+        nameInfoImageView.pNext = nullptr;
+        nameInfoImageView.objectType = vk::ObjectType::eSemaphore;
+        nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkSemaphore>(s));
+        nameInfoImageView.pObjectName = m_SemaphoreDebugName.c_str();
+        SET_VK_DEBUG_NAME(nameInfoImageView);
+    }
+#endif
 
 #ifdef PROFILING
     vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();

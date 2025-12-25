@@ -231,7 +231,7 @@ bool Vulkan::VulkanRenderPass::Build()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    bool hasDepthAttachment = m_DepthStencilAttachement.attachmentType != PC_CORE::AttachmentType::None;
+    bool hasDepthAttachment = m_DepthStencilAttachement.format != PC_CORE::RhiFormat::Undefined;
 
     // ---------------- Attachment Descriptions ----------------
     std::vector<vk::AttachmentDescription> vkAttachments = ParseAttahchementDescription(hasDepthAttachment);
@@ -292,11 +292,9 @@ bool Vulkan::VulkanRenderPass::Build()
         for (uint32_t j = 0; j < subpass.colorAttachementDescriptorIndicies.size(); ++j)
         {
             const uint32_t attachmentIndex = subpass.colorAttachementDescriptorIndicies[j];
-            PC_CORE::AttachmentType _attachmentType = m_Attachement[attachmentIndex].attachmentType;
 
             colorAttachmentReferences[colorIndex].attachment = attachmentIndex;
-            colorAttachmentReferences[colorIndex].layout = GetImageLayoutSubPass(
-                m_Attachement[attachmentIndex].attachmentType);
+            colorAttachmentReferences[colorIndex].layout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(m_Attachement[attachmentIndex].currentImageState);
             colorIndex++;
         }
 
@@ -304,8 +302,7 @@ bool Vulkan::VulkanRenderPass::Build()
         {
             const uint32_t attachmentIndex = subpass.inputAttachementIndicies[j];
             inputAttachementReferences[inputIndex].attachment = attachmentIndex;
-            inputAttachementReferences[inputIndex].layout = GetImageLayoutSubPassForInputAttachement(
-                m_Attachement[attachmentIndex].attachmentType);
+            inputAttachementReferences[inputIndex].layout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(m_Attachement[attachmentIndex].currentImageState);
             inputIndex++;
         }
     }
@@ -315,7 +312,7 @@ bool Vulkan::VulkanRenderPass::Build()
     if (hasDepthAttachment)
     {
         depthAttachmentRef.attachment = static_cast<uint32_t>(vkAttachments.size() - 1); // always put depth at the end
-        depthAttachmentRef.layout = GetImageLayoutSubPass(m_DepthStencilAttachement.attachmentType);
+        depthAttachmentRef.layout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(m_DepthStencilAttachement.currentImageState);
     }
 
     // ---------------- Subpasses ----------------
@@ -394,6 +391,15 @@ bool Vulkan::VulkanRenderPass::Build()
 
     m_RenderPass = GET_VK_DEVICE.createRenderPass(renderPassInfo);
 
+    vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
+    nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+    nameInfoImageView.pNext = nullptr;
+    nameInfoImageView.objectType = vk::ObjectType::eRenderPass;
+    nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkRenderPass>(m_RenderPass));
+    nameInfoImageView.pObjectName = GetName().data();
+
+    SET_VK_DEBUG_NAME(nameInfoImageView);
+
     return true;
 }
 
@@ -402,45 +408,13 @@ vk::RenderPass Vulkan::VulkanRenderPass::GetVulkanRenderPass() const
     return m_RenderPass;
 }
 
-vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPass(PC_CORE::AttachmentType _attachmentType)
+
+
+vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttachement(RhiResourceState resourceState)
 {
-    switch (_attachmentType)
-    {
-    case PC_CORE::AttachmentType::Color:
-        return vk::ImageLayout::eColorAttachmentOptimal;
-        break;
-    case PC_CORE::AttachmentType::Depth:
-    case PC_CORE::AttachmentType::Stencil:
-    case PC_CORE::AttachmentType::DepthStencil:
-        return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-        break;
-    case PC_CORE::AttachmentType::None:
-    default:
-        assert(false);
-    }
+    assert(resourceState == RhiResourceState::RenderTarget && "Only color render target are supported now as input attacheent");
 
-    return {};
-}
-
-vk::ImageLayout Vulkan::VulkanRenderPass::GetImageLayoutSubPassForInputAttachement(
-    PC_CORE::AttachmentType _attachmentType)
-{
-    switch (_attachmentType)
-    {
-    case PC_CORE::AttachmentType::Color:
-        return vk::ImageLayout::eShaderReadOnlyOptimal;
-        break;
-    case PC_CORE::AttachmentType::Depth:
-    case PC_CORE::AttachmentType::Stencil:
-    case PC_CORE::AttachmentType::DepthStencil:
-        return vk::ImageLayout::eDepthReadOnlyOptimal;
-        break;
-    case PC_CORE::AttachmentType::None:
-    default:
-        assert(false);
-    }
-
-    return {};
+    return vk::ImageLayout::eShaderReadOnlyOptimal;
 }
 
 std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahchementDescription(bool _hasdepth)

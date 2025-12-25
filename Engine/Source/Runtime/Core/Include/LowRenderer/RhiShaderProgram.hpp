@@ -181,7 +181,7 @@ public:
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetSample(uint32_t _Sample)
+    PC_CORE_API RhiShaderProgram& SetSamples(uint32_t _Sample)
     {
         std::get<GraphicPipelineData>(m_PipelineData).Sample = _Sample;
         return *this;

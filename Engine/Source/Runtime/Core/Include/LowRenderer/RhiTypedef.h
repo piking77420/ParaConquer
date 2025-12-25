@@ -477,17 +477,6 @@ BEGIN_PCCORE
 
     REFLECT(ComponentMapping)
 
-    enum class AttachmentType
-    {
-        None,
-        Color = 1,
-        Depth,
-        Stencil,
-        DepthStencil,
-    };
-
-    REFLECT(AttachmentType)
-
     enum class RhiChannel : uint8_t
         {
             Default = 0,

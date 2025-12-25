@@ -997,7 +997,7 @@ vk::ImageUsageFlags Vulkan::Utils::GetImageUsageFlags(PC_CORE::RhiTexture::Textu
     using namespace PC_CORE;
     VkImageUsageFlags flags = 0;
 
-    assert(_usage == 0);
+    assert(_usage != 0);
 
     if (_usage & PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled)
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;

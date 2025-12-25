@@ -100,7 +100,7 @@ bool Vulkan::VulkanTexture::Build()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
     
-    if (GetWidth ()== 0 || GetHeight ()== 0)
+    if (GetWidth() == 0 || GetHeight() == 0)
     {
         PC_LOGERROR("VulkanTexture::Create() m_Width = 0, m_Height = 0");
         return false;
@@ -180,7 +180,36 @@ bool Vulkan::VulkanTexture::Build()
         
         SET_VK_DEBUG_NAME(nameInfoImageView); 
     }
-    
+
+
+    if (m_TextureUsage & TextureUsageFlagBits::DepthStencil || m_TextureUsage & TextureUsageFlagBits::RenderTarget) // hardcoded
+    {
+        const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
+        {
+            .device = device,
+            .commandPool = context.transferCommandPool,
+            .queue = context.mainQueue
+        };
+
+        vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
+
+        for (size_t i = 0; i < m_Handles.size(); i++)
+        {
+            TextureAndAlloc& handle = m_Handles[i];
+            TransitionImageLayout(commandBuffer,
+                handle.Image,
+                VkFormat,
+                vk::ImageLayout::eUndefined,
+                m_TextureUsage & TextureUsageFlagBits::DepthStencil ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eColorAttachmentOptimal,
+                VkImageAspectFlags,
+                m_Layer,
+                m_Level);
+
+        }
+        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    }
+   
+
     return true;
 }
 
@@ -206,16 +235,25 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
     std::memcpy(mappedData, _data, imageSize);
     vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
 
+
+    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
+    {
+        .device = device,
+        .commandPool = context.transferCommandPool,
+        .queue = context.mainQueue
+    };
+
+    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
+
     for (size_t i = 0; i < m_Handles.size(); i++)
     {
         TextureAndAlloc& handle = m_Handles[i];
-        GET_VK_COMMAND_BUFFER(commandList, i);
 
         const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
         if (handle.resourceState != RhiResourceState::CopyDst)
         {
-            TransitionImageLayout(cmb,
+            TransitionImageLayout(commandBuffer,
                 handle.Image,
                 VkFormat,
                 current,
@@ -223,6 +261,19 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
                 VkImageAspectFlags,
                 GetLayer(),
                 GetLevel());
+
+            if (m_TextureUsage & TextureUsageFlagBits::RenderTarget)
+            {
+                handle.resourceState = RhiResourceState::RenderTarget;
+            }
+            if (m_TextureUsage & TextureUsageFlagBits::DepthStencil)
+            {
+                handle.resourceState = RhiResourceState::DepthStencilWrite;
+            }
+            if (m_TextureUsage & TextureUsageFlagBits::Sampled)
+            {
+                handle.resourceState = RhiResourceState::ShaderRead;
+            }
         }
 
         vk::BufferImageCopy region{};
@@ -242,7 +293,7 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
             1
         };
         
-        cmb.copyBufferToImage(
+        commandBuffer.copyBufferToImage(
              stagingBuffer.buffer,
              handle.Image,
              vk::ImageLayout::eTransferDstOptimal,
@@ -250,16 +301,18 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
          );    
 
         // back to normal
-        TransitionImageLayout(cmb,
+        TransitionImageLayout(commandBuffer,
             handle.Image,
             VkFormat,
             vk::ImageLayout::eTransferDstOptimal,
-            current,
+            Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState),
             VkImageAspectFlags,
             m_Layer,
             m_Level);
     }
-    
+
+    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    VulkanBuffer::FreeAlloc(context, stagingBuffer);
 }
 
 void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount)
@@ -322,6 +375,19 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
                                   VkImageAspectFlags,
                                   m_Layer, 
                                   m_Level);
+
+            if (m_TextureUsage & TextureUsageFlagBits::RenderTarget)
+            {
+                handle.resourceState = RhiResourceState::RenderTarget;
+            }
+            if (m_TextureUsage & TextureUsageFlagBits::DepthStencil)
+            {
+                handle.resourceState = RhiResourceState::DepthStencilWrite;
+            }
+            if (m_TextureUsage & TextureUsageFlagBits::Sampled)
+            {
+                handle.resourceState = RhiResourceState::ShaderRead;
+            }
         }
 
         for (int i = 0; i < _layerCount; i++)
@@ -356,13 +422,14 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
             handle.Image,
             VkFormat,
             vk::ImageLayout::eTransferDstOptimal,
-            current,
+            Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState),
             VkImageAspectFlags,
             m_Layer,
             m_Level);
     }
 
     EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    VulkanBuffer::FreeAlloc(context, stagingBuffer);
 }
 
 void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)

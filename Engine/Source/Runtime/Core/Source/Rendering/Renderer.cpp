@@ -74,7 +74,7 @@ void Renderer::Init(Rhi& _Rhi)
         .SetV(SamplerAddressMode::Repeat)
         .SetW(SamplerAddressMode::Repeat)
         .Build();
-
+        
     /*
     m_SkyBoxSampler = Sampler(*m_Rhi, "SkyBoxSampler");
     m_SkyBoxSampler
@@ -226,10 +226,10 @@ void Renderer::Draw(const View& _view)
 
     const ViewportInfo viewportInfo(rContextView.RenderingContextSize);
     PrimaryCommandList->SetViewPort(viewportInfo);
-    DefferdPass(viewportInfo);
+    //DefferdPass(viewportInfo);
     ForwardPass(viewportInfo);
-    PostProcess(viewportInfo);
-    FinalPass(viewportInfo);
+    //PostProcess(viewportInfo);
+    //FinalPass(viewportInfo);
 
     PrimaryCommandList->EndRecordCommands();
     PrimaryCommandList->Flush(FlushCommandMethod::Sync
@@ -253,9 +253,9 @@ void Renderer::SwapBuffers(Window* _window)
     rhiSwapChain->EndSwapChainRenderPass(SwapChainPassCommandList.get());
 
     SwapChainPassCommandList->EndRecordCommands();
+
+
     SwapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStage::ColorAttachmentOutput);
-
-
     ClearRenderData();
     rhiSwapChain->Present(_window);
     m_Rhi->Rhi::NextFrame();
@@ -702,7 +702,6 @@ void Renderer::CreateRenderPasss()
 
         colorAttachement[0] =
         {
-            .attachmentType = AttachmentType::Color,
             .format = RhiFormat::R16G16B16A16Sfloat,
             .sampleCount = 1,
             .load = LoadOperation::Load,
@@ -715,7 +714,6 @@ void Renderer::CreateRenderPasss()
 
         RenderPassAttachementDescriptor depthAttachement =
         {
-            .attachmentType = AttachmentType::Depth,
             .format = RhiFormat::D24UnormS8Uint,
             .sampleCount = 1,
             .load = LoadOperation::Load,
@@ -764,8 +762,8 @@ void Renderer::CreateRenderPasss()
                                                                  m_Rhi->GetRhiContext().rhiPhysicalDevices->
                                                                  GetPhysicalDevice().GetMaxUsableSampleCount()));
         RenderPasses.DrawToFinalViewPort
-            ->SetName("DrawToFinalViewPort")
-            .Build();
+            ->SetName("DrawToFinalViewPort");
+            //.Build(); // DO NOT CALL IT
 
     }
 }
@@ -985,69 +983,50 @@ void Renderer::CreateShaders()
 
     {
         PERF_REGION_SCOPED_NAMED("ToneMap Shader");
-        /*
-        const ComputeShaderProgramCreateInfo computeShaderProgramCreateInfo =
+        
+        const std::vector<RhiShaderProgram::ShaderModule> modules =
         {
-            .shaderComputeInfo = {},
-            .source = ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")
+            {
+                RhiShaderProgram::ShaderStageType::Compute,
+                ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")->GetCode()
+            }
         };
 
-        AcesShader = ResourceManager::Create<ComputeShader>("Aces", computeShaderProgramCreateInfo);
-        AcesShader.Lock()->Get()->Build();*/
+        AcesShader.reset(m_Rhi->CreateRhiShaderProgram());
+        AcesShader
+            ->SetPipelineType(RhiShaderProgram::PipelineType::Compute)
+            .SetShaderModules(modules)
+            .SetName("ToneMap Shader")
+            .Build();
     }
 
     // Draw to final viewport
     {
         PERF_REGION_SCOPED_NAMED("CreateDrawToFinalViewport Programm");
-        /*
-        const RhiShaderProgram::RasterizerInfo rasterizerInfo =
-        {
-            .polygonMode = RhiShaderProgram::PolygonMode::Fill,
-            .cullModeFlag = RhiShaderProgram::CullModeFlagBit::None,
-            .frontFace = RhiShaderProgram::FrontFace::CounterClockwise,
-            .multiSampleRasterization = m_Rhi->GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().
-                                                              GetMaxUsableSampleCount()
-        };
 
-
-        const RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
-        {
-            .rasterizerInfo = rasterizerInfo,
-            .dephInfo =
-            {
-                .depthCompareOp = CompareOp::Less,
-                .enableDepthTest = true
-            },
-            .vertexInputBindingDescritions = {},
-            .vertexAttributeDescriptions = {},
-        };
-
-        const SourceList sources =
+        const std::vector<RhiShaderProgram::ShaderModule> modules =
         {
             {
                 RhiShaderProgram::ShaderStageType::Vertex,
-                ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary"),
+                ResourceManager::Get<ShaderSourceBinary>("DrawQuad.vs.hlsl.binary")->GetCode(),
             },
             {
                 RhiShaderProgram::ShaderStageType::Pixel,
-                ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")
+                ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")->GetCode()
             }
         };
 
-        const GraphicShaderProgramCreateInfo graphicShaderProgramCreateInfo =
-        {
-            .shaderGraphicPointInfo = shaderGraphicPointInfo,
-            .sourceList = sources,
-            .renderPass = RenderPasses.DrawToFinalViewPort.get(),
-            .colorAttachementCount = 1,
-
-        };
-
-
-        DrawTextureScreenQuadShader = ResourceManager::Create<GraphicShader>(
-            "DrawQuadShader", graphicShaderProgramCreateInfo);
-        DrawTextureScreenQuadShader.Lock()->Get()->Build();
-        */
+        DrawTextureScreenQuadShader.reset(m_Rhi->CreateRhiShaderProgram());
+        DrawTextureScreenQuadShader
+            ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+            .SetSamples(m_Rhi->GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice()
+            .GetMaxUsableSampleCount())
+            .SetAttachementCount(1)
+            .SetSubPassIndex(0)
+            .SetRenderPass(*RenderPasses.DrawToFinalViewPort)
+            .SetShaderModules(modules)
+            .SetName("DrawQuadShader")
+            .Build();
     }
 }
 
@@ -1061,26 +1040,25 @@ void Renderer::CreateThirdPartyResources()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
-  
-}
-
-void Renderer::CreateBuffers()
-{
     {
 
         PERF_REGION_SCOPED_NAMED("Create Cube Map");
         std::array<std::string, 6> maps
         {
-            "D:/ParaConquerGame/Assets/Textures/Skybox/Right.jpg",
-            "D:/ParaConquerGame/Assets/Textures/Skybox/Left.jpg",
-            "D:/ParaConquerGame/Assets/Textures/Skybox/Top.jpg",
-            "D:/ParaConquerGame/Assets/Textures/Skybox/Bottom.jpg",
-            "D:/ParaConquerGame/Assets/Textures/Skybox/Front.jpg",
-            "D:/ParaConquerGame/Assets/Textures/Skybox/Back.jpg",
+            "C:/Data/ParaConquerGame/Assets/Textures/Skybox/Right.jpg",
+            "C:/Data/ParaConquerGame/Assets/Textures/Skybox/Left.jpg",
+            "C:/Data/ParaConquerGame/Assets/Textures/Skybox/Top.jpg",
+            "C:/Data/ParaConquerGame/Assets/Textures/Skybox/Bottom.jpg",
+            "C:/Data/ParaConquerGame/Assets/Textures/Skybox/Front.jpg",
+            "C:/Data/ParaConquerGame/Assets/Textures/Skybox/Back.jpg",
         };
         Cubemap = ResourceManager::Create<Texture3D>(*m_Rhi, "BasicCubemap", maps);
     }
+}
 
+void Renderer::CreateBuffers()
+{
+    UniformBuffers.Camera.reset(m_Rhi->CreateBuffer());
     UniformBuffers.Camera
         ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
         .SetSize(sizeof(CameraGpu))
@@ -1088,6 +1066,7 @@ void Renderer::CreateBuffers()
         .SetName("CameraUniformBuffer")
         .Build();
 
+    UniformBuffers.PostProcess.reset(m_Rhi->CreateBuffer());
     UniformBuffers.PostProcess
         ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
         .SetSize(sizeof(PostProcessGpu))
@@ -1095,6 +1074,7 @@ void Renderer::CreateBuffers()
         .SetName("PostProcessUniformBuffer")
         .Build();
 
+    UniformBuffers.LightBuffer.reset(m_Rhi->CreateBuffer());
     UniformBuffers.LightBuffer
         ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
         .SetSize(sizeof(m_GpuDynamicLightData))
@@ -1213,9 +1193,10 @@ void Renderer::InitCubeBuffers()
         .SetSize(sizeof(sizeof(Tbx::Vector3f)) * vertices.size())
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::TransferDst)
         .Build();
-
+    m_CubeVertexBuffer->UploadData(nullptr, vertices.data(), vertices.size());
+    /*
     m_Rhi->PushResourceUpdate([&](CommandList* list)
     {
             m_CubeVertexBuffer->UploadData(list, vertices.data(), vertices.size());
-    }) ;
+    }) ;*/
 }

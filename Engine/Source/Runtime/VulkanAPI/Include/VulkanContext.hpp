@@ -9,9 +9,12 @@
 
 namespace Vulkan
 {
+
+
     struct SyncObject
     {
         vk::Semaphore imageAvailableSemaphore;
+        vk::Semaphore renderFinishedSemaphore;
 
         //vk::Semaphore computeFinishedSemaphore;
         //vk::m_ResourceUpdateFence computeInFlightFence;

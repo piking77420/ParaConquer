@@ -118,38 +118,46 @@ void View::CreateImages()
 
     // Forward
     {
+        ForwardTexture.color.reset(Rhi.CreateTexture());
         ForwardTexture.color
             ->SetWidth(Width)
             .SetHeight(Height)
+            .SetMemoryUsage(RhiMemoryUsage::Dynamic)
             .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled | RhiTexture::LoadAndStore)
             .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
             .SetName("View Forward Texture")
             .Build();
 
+        ForwardTexture.depth.reset(Rhi.CreateTexture());
         ForwardTexture.depth
             ->SetWidth(Width)
             .SetHeight(Height)
+            .SetMemoryUsage(RhiMemoryUsage::Dynamic)
             .SetTextureUsage(RhiTexture::DepthStencil)
             .SetRhiFormat(RhiFormat::D24UnormS8Uint)
-            .SetName("View Forward Texture")
+            .SetName("View Forward Texture Depth")
             .Build();
     }
 
 
     // Final Image
     {
+        FinalImage.reset(Rhi.CreateTexture());
         FinalImage
             ->SetWidth(Width)
             .SetHeight(Height)
             .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled)
+            .SetMemoryUsage(RhiMemoryUsage::Dynamic)
             .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
             .SetName("View Forward Texture")
             .Build();
 
+        ResolvedImages.reset(Rhi.CreateTexture());
         ResolvedImages
             ->SetWidth(Width)
             .SetHeight(Height)
             .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled)
+            .SetMemoryUsage(RhiMemoryUsage::Dynamic)
             .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
             .SetSamples(Rhi.GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount())
             .SetName("View Forward Texture")
@@ -196,7 +204,6 @@ void View::CreateFrameBuffers()
 
     // Forward FrameBuffer
     {
-
         m_FrameBuffers.ForwardFrameBuffer.reset(Rhi.CreateFrameBuffer()) ;
         m_FrameBuffers.ForwardFrameBuffer
             ->SetWidth(Width)
@@ -212,6 +219,7 @@ void View::CreateFrameBuffers()
 
     // Final Image
     {
+        m_FrameBuffers.FinalImageFrameBuffer.reset(Rhi.CreateFrameBuffer());
         m_FrameBuffers.FinalImageFrameBuffer
             ->SetWidth(Width)
             .SetHeight(Height)

@@ -111,7 +111,7 @@ bool Vulkan::HasStencilComponent(vk::Format _format)
     return _format == vk::Format::eD32Sfloat || _format == vk::Format::eD24UnormS8Uint;
 }
 
-vk::ImageMemoryBarrier Vulkan::ImageBarrierFromResourceState(const PC_CORE::ImageStateTransition& _ImageStateTransition, size_t _FrameIndex)
+void Vulkan::TransitionImageLayout(vk::CommandBuffer commandBuffer, const PC_CORE::ImageStateTransition& _ImageStateTransition, size_t _FrameIndex)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -119,7 +119,7 @@ vk::ImageMemoryBarrier Vulkan::ImageBarrierFromResourceState(const PC_CORE::Imag
     assert(_ImageStateTransition.Texture != nullptr);
 
     VulkanTexture* vulkanTexture = reinterpret_cast<VulkanTexture*>(_ImageStateTransition.Texture);
-        
+
     vk::Image image = static_cast<Vulkan::TextureAndAlloc*>(vulkanTexture->GetFrameNativeHandle(_FrameIndex))->Image;
 
     vk::ImageMemoryBarrier barrier{};
@@ -134,14 +134,16 @@ vk::ImageMemoryBarrier Vulkan::ImageBarrierFromResourceState(const PC_CORE::Imag
     barrier.subresourceRange.levelCount = _ImageStateTransition.MipLevelsCount;
     barrier.subresourceRange.baseArrayLayer = _ImageStateTransition.FirstArraySlice;
     barrier.subresourceRange.layerCount = _ImageStateTransition.ArraySliceCount;
- 
+
 
     vk::PipelineStageFlags sourceStage;
     vk::PipelineStageFlags destinationStage;
 
     PopulateBarrier(&barrier, &sourceStage, &destinationStage);
 
-    return barrier;
+    commandBuffer.pipelineBarrier(sourceStage, destinationStage, {}, 0, nullptr,
+        0, nullptr,
+        1, &barrier);
 }
 
 
