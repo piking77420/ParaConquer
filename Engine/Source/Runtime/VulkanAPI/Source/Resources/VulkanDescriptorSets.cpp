@@ -73,7 +73,7 @@ void Vulkan::VulkanDescriptorSets::CreateDescriptors()
     descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MaxFramesInFlight);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
 
-    PC_LOG_VERBOSE("CreateDescritptor Set");
+    PC_LOG_VERBOSE("CreateDescritptor Set [{}]", GetName().data());
     d.allocateDescriptorSets(&descriptorSetAllocateInfo, m_DescriptorSets.data());
 
     for (const auto& descriptorSet : m_DescriptorSets)

@@ -60,7 +60,7 @@ Vulkan::VulkanPhysicalDevices::~VulkanPhysicalDevices()
         delete device;
 }
 
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr)
+Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr) const
 {
     SwapChainSupportDetails m_SwapChainSupportDetails;
 
@@ -199,9 +199,15 @@ void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies(vk::SurfaceKHR _Surface)
     }
 }
 
+const Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysicalDevice() const
+{
+    return reinterpret_cast<const VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
+}
+
 Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysicalDevice()
 {
     return reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
+
 }
 
 void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo,

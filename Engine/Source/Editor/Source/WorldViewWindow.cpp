@@ -35,7 +35,7 @@ void WorldViewWindow::Update()
 
     if (size == Tbx::Vector2f{0.f, 0.f})
         return;
-    /*
+    
     if (resize)
     {
         auto sizeI = Tbx::Vector2i(static_cast<int>(size.x), static_cast<int>(size.y));
@@ -60,7 +60,7 @@ void WorldViewWindow::Update()
 
     m_View->Update();
     ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
-                 ImVec2(1, 1));*/
+                 ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render()
@@ -85,10 +85,10 @@ void WorldViewWindow::UpdateImguiViewPort()
             break;
         }
 
-    /*
+    
     if (needFree)
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_View->FinalImage.get(),
                                                     m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
-                                                    imguiDescriptorSet.size());*/
+                                                    imguiDescriptorSet.size());
 }

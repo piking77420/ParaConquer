@@ -94,7 +94,7 @@ std::shared_ptr<VulkanPhysicalDevices> VulkanContext::GetPhysicalDevices()
     return std::reinterpret_pointer_cast<VulkanPhysicalDevices>(rhiPhysicalDevices);
 }
 
-void VulkanContext::WaitIdleInstance()  
+void VulkanContext::WaitIdle()  
 {
     GetDevice()->GetDevice().waitIdle();
 }

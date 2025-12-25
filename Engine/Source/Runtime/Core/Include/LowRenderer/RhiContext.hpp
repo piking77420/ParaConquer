@@ -37,10 +37,9 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual ~RhiContext() = default;
 
-        PC_CORE_API void WaitIdle();
+        PC_CORE_API virtual void WaitIdle() = 0;
 
     protected:
-        PC_CORE_API virtual void WaitIdleInstance() = 0;
 
         Rhi& m_Rhi;
     };

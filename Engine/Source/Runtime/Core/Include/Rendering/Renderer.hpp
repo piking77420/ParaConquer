@@ -49,8 +49,6 @@ BEGIN_PCCORE
 
         std::unique_ptr<CommandList> PrimaryCommandList;
 
-        std::unique_ptr<CommandList> SwapChainPassCommandList;
-
         std::unique_ptr<RhiShaderProgram> ForwardShader;
 
         std::unique_ptr<RhiShaderProgram> DrawTextureScreenQuadShader;

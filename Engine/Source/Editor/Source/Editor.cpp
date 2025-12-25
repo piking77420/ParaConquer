@@ -217,7 +217,7 @@ void Editor::Init()
     gameApp.Init(appCreateInfo);
     IMGUIContext.Init(gameApp.RenderHarwareInteface, gameApp.MainWindow.GetHandle());
 
-    gameApp.Renderer.SwapChainPassCommandList->RecordFetchCommand([&](CommandList* cmd)
+    gameApp.Renderer.PrimaryCommandList->RecordFetchCommand([&](CommandList* cmd)
     {
         cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
         IMGUIContext.Render(cmd);
@@ -399,7 +399,6 @@ void Editor::Run(bool* _appShouldClose)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Editor);
-
 
         gameApp.CoreIo.PoolEvent();
         gameApp.MainWindow.PoolEvents();

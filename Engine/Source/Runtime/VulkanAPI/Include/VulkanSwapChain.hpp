@@ -45,6 +45,10 @@ namespace Vulkan
 
         VULKAN_API bool Build() override;
 
+        VULKAN_API  uint32_t GetWidth() const override;
+
+        VULKAN_API  uint32_t GetHeight() const override;
+
     private:
         struct SyncObject
         {
@@ -59,13 +63,17 @@ namespace Vulkan
 
         vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, uint32_t _width,
                                       uint32_t _height);
+
+        void FromSurface(const VulkanPhysicalDevices& VulkanPhysicalDevices, vk::SurfaceKHR _Surface, 
+            uint32_t _Width, uint32_t _Height);
+
         void CreateImageViews();
 
         void CreateFrameBuffers();
 
         void CleanUpSwapChain();
 
-        void CreateSwapChain(uint32_t _width, uint32_t _height);
+        void CreateSwapChain();
 
         vk::SwapchainKHR m_SwapChain = VK_NULL_HANDLE;
 
@@ -81,13 +89,13 @@ namespace Vulkan
 
         vk::PresentModeKHR m_PresentModeKHR{};
 
+        vk::Extent2D m_Extent2D{};
+
         std::vector<vk::Framebuffer> m_Framebuffers;
 
         std::vector<vk::Image> m_SwapChainImage;
 
         std::vector<vk::ImageView> m_SwapChainImageViews;
-
-        vk::Extent2D m_Extent2D;
 
         const vk::Queue* m_PresentQueue;
         

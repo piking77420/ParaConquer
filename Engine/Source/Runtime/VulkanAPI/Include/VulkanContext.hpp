@@ -53,6 +53,8 @@ namespace Vulkan
 
         VULKAN_API ~VulkanContext() override;
 
+        VULKAN_API void WaitIdle() override;
+
         VULKAN_API std::shared_ptr<VulkanInstance> GetInstance();
         
         VULKAN_API std::shared_ptr<VulkanDevice> GetDevice();
@@ -64,7 +66,6 @@ namespace Vulkan
 
         VULKAN_API void CreateCommandPools();
 
-        VULKAN_API void WaitIdleInstance() override;
 
         VULKAN_API void CreateSyncObjects();
 

@@ -6,9 +6,3 @@ PC_CORE::RhiContext::RhiContext(Rhi& _Rhi, const RhiContextCreateInfo& rhiContex
     : m_Rhi(_Rhi)
 {
 };
-
-
-void PC_CORE::RhiContext::WaitIdle()
-{
-    WaitIdleInstance();
-}

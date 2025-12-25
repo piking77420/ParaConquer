@@ -50,7 +50,7 @@ namespace Vulkan
 
         VULKAN_API ~VulkanPhysicalDevices() override;
 
-        VULKAN_API SwapChainSupportDetails GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr);
+        VULKAN_API SwapChainSupportDetails GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr) const;
 
 
     private:
@@ -58,7 +58,10 @@ namespace Vulkan
 
         std::vector<QueueFamilyIndices> m_QueuesFamiliesProperty;
 
+        const VulkanPhysicalDevice* GetSelectedPhysicalDevice() const;
+
         VulkanPhysicalDevice* GetSelectedPhysicalDevice();
+
 
         VULKAN_API void Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo,
                                    std::set<std::string>* _extensionToEnable);

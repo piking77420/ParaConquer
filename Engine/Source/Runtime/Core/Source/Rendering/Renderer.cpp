@@ -58,14 +58,14 @@ void Renderer::Init(Rhi& _Rhi)
         .SetPoolFamilly(CommandList::PoolFamily::Graphics)
         .SetName("PrimaryCommandList")
         .Build();
-
+    /*
     SwapChainPassCommandList.reset(m_Rhi->CreateCommandList());
     SwapChainPassCommandList
         ->SetBufferType(CommandList::BufferType::Primary)
         .SetPoolFamilly(CommandList::PoolFamily::Graphics)
         .SetName("SwapChainPassCommandList")
         .Build();
-
+        */
     LinearReapeat = Sampler(*m_Rhi, "LinearReapeat");
     LinearReapeat
         ->SetMagFilter(Filter::Linear)
@@ -104,6 +104,9 @@ void Renderer::BeginFrame(Window* _window)
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     m_Rhi->GetRhiContext().rhiSwapChain->GetSwapChainImageIndex(_window);
+
+    PrimaryCommandList->Reset();
+    PrimaryCommandList->BeginRecordCommands();
 }
 
 void Renderer::UpdateGpuCameraData()
@@ -217,8 +220,7 @@ void Renderer::Draw(const View& _view)
 
     UpdateGpuCameraData();
     
-    PrimaryCommandList->Reset();
-    PrimaryCommandList->BeginRecordCommands();
+ 
 #ifdef WITH_EDITOR
     m_DebugDrawContext->Prepare();
 #endif
@@ -230,10 +232,6 @@ void Renderer::Draw(const View& _view)
     ForwardPass(viewportInfo);
     //PostProcess(viewportInfo);
     //FinalPass(viewportInfo);
-
-    PrimaryCommandList->EndRecordCommands();
-    PrimaryCommandList->Flush(FlushCommandMethod::Sync
-                              , GpuPipelineStage::ColorAttachmentOutput); // flush
 }
 
 
@@ -244,18 +242,13 @@ void Renderer::SwapBuffers(Window* _window)
     std::shared_ptr<RhiSwapChain> rhiSwapChain = m_Rhi->GetRhiContext().rhiSwapChain;
 
     // THIS FUNCTION SHOULDE BE IN RHI
+    rhiSwapChain->BeginSwapChainRenderPass(PrimaryCommandList.get());
+    PrimaryCommandList->ExecuteExternalCommand();
+    rhiSwapChain->EndSwapChainRenderPass(PrimaryCommandList.get());
 
-    SwapChainPassCommandList->Reset();
-    SwapChainPassCommandList->BeginRecordCommands();
+    PrimaryCommandList->EndRecordCommands();
+    PrimaryCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStage::ColorAttachmentOutput);
 
-    rhiSwapChain->BeginSwapChainRenderPass(SwapChainPassCommandList.get());
-    SwapChainPassCommandList->ExecuteExternalCommand();
-    rhiSwapChain->EndSwapChainRenderPass(SwapChainPassCommandList.get());
-
-    SwapChainPassCommandList->EndRecordCommands();
-
-
-    SwapChainPassCommandList->Flush(FlushCommandMethod::Sync, GpuPipelineStage::ColorAttachmentOutput);
     ClearRenderData();
     rhiSwapChain->Present(_window);
     m_Rhi->Rhi::NextFrame();

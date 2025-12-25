@@ -222,6 +222,10 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     };
     renderPassInfo.renderArea.extent = vk::Extent2D{_BeginRenderPassInfo.Extent.x, _BeginRenderPassInfo.Extent.y};
 
+    assert((renderPassInfo.renderArea.offset.x + renderPassInfo.renderArea.extent.width) <= frameBuffer->GetWidth());
+    assert((renderPassInfo.renderArea.offset.y + renderPassInfo.renderArea.extent.height) <= frameBuffer->GetHeight());
+
+
     constexpr size_t MaxClearValues = 10;
     size_t clearCount = 0;
     std::array<vk::ClearValue, MaxClearValues> clearValues;

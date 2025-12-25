@@ -12,7 +12,7 @@ BEGIN_PCCORE
     class RhiSwapChain : public RhiObjectT<RhiSwapChain>
     {
     public:
-        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi, uint32_t _Widht, uint32_t _Height);
+        PC_CORE_API explicit RhiSwapChain(Rhi& _Rhi);
 
         PC_CORE_API virtual ~RhiSwapChain() = default;
 
@@ -30,15 +30,9 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void* GetFrameBuffer() = 0;
 
-        PC_CORE_API uint32_t GetWidth() const
-        {
-            return m_SwapChainWidth;
-        }
+        PC_CORE_API virtual uint32_t GetWidth() const = 0;
 
-        PC_CORE_API uint32_t GetHeight() const
-        {
-            return m_SwapChainHeight;
-        }
+        PC_CORE_API virtual uint32_t GetHeight() const = 0;
 
         PC_CORE_API size_t GetNbrOfImage() const
         {
@@ -49,10 +43,6 @@ BEGIN_PCCORE
         std::shared_ptr<RhiRenderPass> m_SwapChainRenderPass;
 
         uint32_t m_SwapChainImageIndex = 0;
-
-        uint32_t m_SwapChainWidth = 0;
-
-        uint32_t m_SwapChainHeight = 0;
 
         uint32_t m_SwapChainImageCount = 0;
     };
