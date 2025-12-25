@@ -47,7 +47,6 @@ BEGIN_EDITOR_PCCORE
     {
         EditorFont editorFont;
         EditorFont editorFontItalic;
-        PC_CORE::Sampler nearestSampler;
 
         ProjectData projectData;
         std::filesystem::path projectPath;

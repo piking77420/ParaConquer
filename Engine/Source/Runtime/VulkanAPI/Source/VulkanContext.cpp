@@ -62,11 +62,17 @@ VulkanContext::~VulkanContext()
     PERF_REGION_SCOPED;
     auto device = GetDevice();
 
+    DestroySyncObjects();
     descritptorManager.ClearCaches();
+
+    device->GetDevice().destroyFence(transferFence);
+    transferFence = VK_NULL_HANDLE;
 
     device->GetDevice().destroyCommandPool(commandPool);
     commandPool = nullptr;
 
+    device->GetDevice().destroyCommandPool(transferCommandPool);
+    transferCommandPool = nullptr;
 
     vmaDestroyAllocator(allocator);
     allocator = nullptr;

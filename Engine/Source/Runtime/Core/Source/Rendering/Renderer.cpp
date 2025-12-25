@@ -75,6 +75,7 @@ void Renderer::Init(Rhi& _Rhi)
         .SetW(SamplerAddressMode::Repeat)
         .Build();
 
+    /*
     m_SkyBoxSampler = Sampler(*m_Rhi, "SkyBoxSampler");
     m_SkyBoxSampler
         ->SetMagFilter(Filter::Linear)
@@ -83,7 +84,7 @@ void Renderer::Init(Rhi& _Rhi)
         .SetV(SamplerAddressMode::ClampToEdge)
         .SetW(SamplerAddressMode::ClampToEdge)
         .Build();
-    m_SkyBoxSampler->Build();
+    m_SkyBoxSampler->Build();*/
 
 
     InitCubeBuffers();

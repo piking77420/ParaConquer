@@ -15,5 +15,5 @@ PC_CORE::Sampler::Sampler(Rhi& _rhi, std::string&& _name)
 {
     DYNAMIC_REFLECT_INIT
     m_RhiSampler.reset(_rhi.CreateSampler());
-    m_RhiSampler->SetName(std::move(_name));
+    m_RhiSampler->SetName(Name);
 }

@@ -421,23 +421,12 @@ void Editor::Run(bool* _appShouldClose)
 
     gameApp.RenderHarwareInteface.GetRhiContext().WaitIdle();
     // to do move this 
-    editorData.nearestSampler.~Sampler();
 }
 
 void Editor::InitEditor()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Editor);
-
-    {
-        PC_LOG("Init Editor NearestSampler...")
-
-        editorData.nearestSampler = Sampler(gameApp.RenderHarwareInteface, "ImguiImageSampler");
-        editorData.nearestSampler
-            ->SetMagFilter(Filter::Linear)
-            .SetMinFilter(Filter::Linear)
-            .Build();
-    }
 
 
     {

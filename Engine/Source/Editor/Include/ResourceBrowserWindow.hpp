@@ -102,6 +102,8 @@ BEGIN_EDITOR_PCCORE
 
         std::unordered_map<PC_CORE::TypeId, ImguiImage> m_TypeIconMap;
 
+        std::unique_ptr<PC_CORE::RhiSampler> m_NearestSampler;
+
         bool m_HasSelectedObject = false;
 
         std::string GetAssetRegisterPath() const;

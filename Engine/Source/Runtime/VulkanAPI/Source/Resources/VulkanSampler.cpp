@@ -3,6 +3,7 @@
 #include "Utils/RhiToVulkan.hpp"
 #include "VulkanDevice.hpp"
 #include "LowRenderer/Rhi.hpp"
+#include "VulkanContext.hpp"
 
 Vulkan::VulkanSampler::VulkanSampler(PC_CORE::Rhi& _Rhi)
     : RhiSampler(_Rhi)
@@ -14,7 +15,10 @@ Vulkan::VulkanSampler::~VulkanSampler()
 {
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->
         GetDevice();
-    device.destroySampler(m_Sampler);
+
+
+    if (m_Sampler != VK_NULL_HANDLE)
+        device.destroySampler(m_Sampler);
 }
 
 
@@ -49,10 +53,20 @@ bool Vulkan::VulkanSampler::Build()
     samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
     samplerInfo.mipLodBias = 0.0f;
 
+
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->
         GetDevice();
 
     m_Sampler = device.createSampler(samplerInfo);
+
+    vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
+    nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+    nameInfoImageView.pNext = nullptr;
+    nameInfoImageView.objectType = vk::ObjectType::eSampler;
+    nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkSampler>(m_Sampler));
+    nameInfoImageView.pObjectName = GetName().data();
+
+    SET_VK_DEBUG_NAME(nameInfoImageView);
     
     return true;
 }

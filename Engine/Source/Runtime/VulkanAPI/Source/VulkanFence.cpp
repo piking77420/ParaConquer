@@ -56,7 +56,7 @@ Vulkan::VulkanFence::~VulkanFence()
 
     for (auto& it : m_Fences)
     {
-        if (it == VK_NULL_HANDLE)
+        if (it != VK_NULL_HANDLE)
             d.destroyFence(it);
     }
 }
