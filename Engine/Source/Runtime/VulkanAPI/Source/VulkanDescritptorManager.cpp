@@ -126,7 +126,7 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
 
 
     descriptorLayoutCache.emplace(bindingMap, cacheDescriptor);
-    m_DescriptorSets[m_IdCounter] = cacheDescriptor.get();
+    descriptorSets[m_IdCounter] = cacheDescriptor.get();
     cacheDescriptor->id = m_IdCounter++;
 
     return cacheDescriptor->id;
@@ -135,7 +135,7 @@ size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvRe
 
 void Vulkan::VulkanDescritptorManager::ClearCaches()
 {
-    m_DescriptorSets.clear();
+    descriptorSets.clear();
 
     vk::Device vkDevice = m_Context.GetDevice()->GetDevice();
     for (auto it : descriptorLayoutCache)
@@ -149,7 +149,7 @@ void Vulkan::VulkanDescritptorManager::ClearCaches()
 
 Vulkan::CacheDescriptor* Vulkan::VulkanDescritptorManager::GetDescriptorSets(size_t setID) const
 {
-    return m_DescriptorSets.at(setID);
+    return descriptorSets.at(setID);
 }
 
 bool Vulkan::VulkanDescritptorManager::FindInCache(const std::vector<SpvReflectShaderModule>& _modules,

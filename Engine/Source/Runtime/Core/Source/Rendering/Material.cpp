@@ -43,7 +43,7 @@ PC_CORE::Material::Material(const std::string& _name)
             .resourceState = RhiResourceState::ShaderRead
         };
 
-        std::vector<DescriptorWrite> descriptorSets =
+        std::vector<DescriptorWrite> DescriptorSets =
         {
             {
                 DescriptorType::CombinedImageSampler,
@@ -53,7 +53,7 @@ PC_CORE::Material::Material(const std::string& _name)
         };
 
         m_PShaderProgramDescriptorSets
-            ->SetBindings(MATERIAL_DESCRIPTOR_SET, descriptorSets)
+            ->SetBindings(MATERIAL_DESCRIPTOR_SET, DescriptorSets)
             .SetName(std::format("Material Binding {}", Name))
             .Build();
     }

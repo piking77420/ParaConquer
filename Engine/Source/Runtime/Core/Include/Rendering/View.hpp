@@ -18,38 +18,6 @@ BEGIN_PCCORE
     class PC_CORE_API View
     {
     public:
-        PostProcessGpu PostProcessGpu;
-
-        CameraGpu CameraGpu;
-
-        RenderingContext RenderingContext;
-
-        Gbuffers Gbuffers;
-
-        ForwardTexture ForwardTexture;
-
-        std::unique_ptr<RhiTexture> FinalImage;
-
-        std::unique_ptr<RhiTexture> ResolvedImages;
-
-        void SetRenderingContextFlag(size_t _flag);
-
-        void SetCamera(Camera* _camera);
-
-        void Resize(Tbx::Vector2i _viewPortSize);
-
-        void Update();
-
-
-        DEFAULT_COPY_MOVE_OPERATIONS(View)
-
-        View(Renderer* _renderer, Tbx::Vector2i _viewPortSize);
-
-        View() = default;
-
-        ~View() = default;
-
-    private:
         struct DescriptorSets
         {
             std::unique_ptr<ShaderProgramDescriptorSets> GeometryPass = nullptr;
@@ -70,16 +38,49 @@ BEGIN_PCCORE
             std::shared_ptr<RhiFrameBuffer> FinalImageFrameBuffer;
         };
 
+        PostProcessGpu PostProcessGpu;
+
+        CameraGpu CameraGpu;
+
+        RenderingContext RenderingContext;
+
+        Gbuffers Gbuffers;
+
+        ForwardTexture ForwardTexture;
+
+        std::unique_ptr<RhiTexture> FinalImage;
+
+        std::unique_ptr<RhiTexture> ResolvedImages;
+
+        DescriptorSets DescriptorSets{};
+
+        FrameBuffers FrameBuffers{};
+
+        void SetRenderingContextFlag(size_t _flag);
+
+        void SetCamera(Camera* _camera);
+
+        void Resize(Tbx::Vector2i _viewPortSize);
+
+        void Update();
+
+
+        DEFAULT_COPY_MOVE_OPERATIONS(View)
+
+        View(Renderer* _renderer, Tbx::Vector2i _viewPortSize);
+
+        View() = default;
+
+        ~View() = default;
+
+    private:
         Renderer* m_Renderer = nullptr;
 
         Camera* m_Camera = nullptr;
 
         Tbx::Vector2i m_CurrentSize{};
 
-        FrameBuffers m_FrameBuffers{};
-
-        DescriptorSets m_DescriptorSets{};
-
+ 
         void UpdateRenderingContext();
 
         void CreateImages();

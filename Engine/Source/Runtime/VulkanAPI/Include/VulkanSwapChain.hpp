@@ -50,13 +50,6 @@ namespace Vulkan
         VULKAN_API  uint32_t GetHeight() const override;
 
     private:
-        struct SyncObject
-        {
-            vk::Semaphore imageAvailableSemaphore;
-            vk::Semaphore renderFinishedSemaphore;
-            vk::Fence inFlightFence;
-        };
-
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 
         vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
@@ -74,6 +67,8 @@ namespace Vulkan
         void CleanUpSwapChain();
 
         void CreateSwapChain();
+
+        std::vector<vk::Fence> m_ImagesInFligh;
 
         vk::SwapchainKHR m_SwapChain = VK_NULL_HANDLE;
 

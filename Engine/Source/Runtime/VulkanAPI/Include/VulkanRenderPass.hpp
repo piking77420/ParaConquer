@@ -39,8 +39,7 @@ namespace Vulkan
     protected:
         vk::RenderPass m_RenderPass = VK_NULL_HANDLE;
 
-        void ParseSubPassTransition(const PC_CORE::SubPassTransition& _subPassDependcies,
-                             vk::SubpassDependency* _vkdependency);
+        void ParseSubPassTransition(const PC_CORE::SubPass& _SubPass, vk::SubpassDependency* _vkdependency);
 
 
         vk::ImageLayout GetImageLayoutSubPassForInputAttachement(RhiResourceState resourceState);

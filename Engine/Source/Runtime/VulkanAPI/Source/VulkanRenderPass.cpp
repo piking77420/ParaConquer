@@ -5,6 +5,29 @@
 #include "VulkanContext.hpp"
 #include "VulkanSwapChain.hpp"
 
+void CountAttachementRef(const std::vector<PC_CORE::SubPass>& _SubPasses, size_t AttachementCount,  
+    size_t* colorAttachRefCount, size_t* inputAttachRefCount, size_t* preservedAttachementRefCount)
+{
+    assert(colorAttachRefCount != nullptr && inputAttachRefCount != nullptr && preservedAttachementRefCount != nullptr);
+
+    for (const auto& subpass : _SubPasses)
+    {
+        const size_t colorAttachementCount = subpass.colorAttachementDescriptorIndicies.
+            size();
+
+        const size_t inputAttachementCount = subpass.inputAttachementIndicies.
+            size();
+
+        const size_t preserved = AttachementCount - colorAttachementCount -
+            inputAttachementCount;
+
+        *colorAttachRefCount += colorAttachementCount;
+        *inputAttachRefCount += inputAttachementCount;
+        *preservedAttachementRefCount += preserved;
+    }
+}
+
+
 Vulkan::VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi)
     : RhiRenderPass(_Rhi)
 {
@@ -244,24 +267,10 @@ bool Vulkan::VulkanRenderPass::Build()
 
     size_t colorAttachementRefsCount = 0;
     size_t inputAttachementRefsCount = 0;
-
     size_t totalPreserved = 0;
 
-    for (const auto& subpass : m_SubPasses)
-    {
-        const size_t colorAttachementCount = subpass.colorAttachementDescriptorIndicies.
-            size();
-
-        const size_t inputAttachementCount = subpass.inputAttachementIndicies.
-            size();
-
-        const size_t preserved = m_Attachement.size() - colorAttachementCount -
-            inputAttachementCount;
-
-        colorAttachementRefsCount += colorAttachementCount;
-        inputAttachementRefsCount += inputAttachementCount;
-        totalPreserved += preserved;
-    }
+    CountAttachementRef(m_SubPasses, m_Attachement.size(),
+        &colorAttachementRefsCount, &inputAttachementRefsCount, &totalPreserved);
 
     colorAttachmentReferences.resize(colorAttachementRefsCount);
     inputAttachementReferences.resize(inputAttachementRefsCount);
@@ -333,7 +342,7 @@ bool Vulkan::VulkanRenderPass::Build()
         vkSubpass.flags = {};
         vkSubpass.pipelineBindPoint = Utils::RhiPipelineBindPointToVulkan(subPass.type);
 
-
+        // Color
         vkSubpass.colorAttachmentCount = 0;
         if (vkSubpass.colorAttachmentCount < colorAttachmentReferences.size())
         {
@@ -341,6 +350,8 @@ bool Vulkan::VulkanRenderPass::Build()
             vkSubpass.pColorAttachments = &colorAttachmentReferences[colorAttachementOffset];
         }
 
+
+        // Input
         vkSubpass.inputAttachmentCount = 0;
         if (inputAttachementOffset < inputAttachementReferences.size())
         {
@@ -348,6 +359,7 @@ bool Vulkan::VulkanRenderPass::Build()
             vkSubpass.pInputAttachments = &inputAttachementReferences[inputAttachementOffset];
         }
 
+        // Depth
         vkSubpass.pDepthStencilAttachment = subPass.useDepth ? &depthAttachmentRef : nullptr;
 
         vkSubpass.preserveAttachmentCount = 0;
@@ -366,17 +378,16 @@ bool Vulkan::VulkanRenderPass::Build()
     // ---------------- Dependencies ----------------
     std::vector<vk::SubpassDependency> dependencies(subPasses.size());
 
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    ParseSubPassTransition(m_SubPasses[0].subPassTransition, &dependencies[0]);
-
-    for (uint32_t i = 1; i < dependencies.size(); ++i)
+    for (int i = 0; i < dependencies.size(); i++)
     {
+        const int srcIndex = (i - 1) <= 0 ? 0 : (i - 1);
+        const int destIndex = (i + 1) == dependencies.size() ? VK_SUBPASS_EXTERNAL : (i + 1);
+
         auto& dep = dependencies[i];
-        dep.srcSubpass = i - 1;
-        dep.dstSubpass = i;
-        ParseSubPassTransition(m_SubPasses[i].subPassTransition, &dep);
-        dep.dependencyFlags = {};
+        dep.srcSubpass = static_cast<uint32_t>(srcIndex);
+        dep.dstSubpass = static_cast<uint32_t>(destIndex);
+
+        ParseSubPassTransition(m_SubPasses[i], &dep);
     }
 
     // ---------------- Create Render Pass ----------------
@@ -463,12 +474,23 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
     return vkAttachments;
 }
 
-void Vulkan::VulkanRenderPass::ParseSubPassTransition(const PC_CORE::SubPassTransition& _subPassDependcies,
+
+void Vulkan::VulkanRenderPass::ParseSubPassTransition(const PC_CORE::SubPass& _subPass,
     vk::SubpassDependency* _vkdependency)
 {
-    _vkdependency->srcAccessMask = Utils::RhiResourceStateToAccesFlag(_subPassDependcies.ImageStateTransition.OldState);
-    _vkdependency->dstAccessMask = Utils::RhiResourceStateToAccesFlag(_subPassDependcies.ImageStateTransition.NewState);
 
-    _vkdependency->srcStageMask = Utils::RhiPipelineStageToVulkan(_subPassDependcies.SrcStageFlag);
-    _vkdependency->dstStageMask = Utils::RhiPipelineStageToVulkan(_subPassDependcies.DstStageFlag);
+    // Handle Access
+    {
+        _vkdependency->srcAccessMask = Utils::RhiResourceStateToAccesFlag(_subPass.subPassTransition.ImageStateTransition.OldState);
+        _vkdependency->dstAccessMask = Utils::RhiResourceStateToAccesFlag(_subPass.subPassTransition.ImageStateTransition.NewState);
+    }
+
+
+
+    // Handle Stage
+    {
+        _vkdependency->srcStageMask = Utils::RhiPipelineStageToVulkan(_subPass.subPassTransition.SrcStageFlag);
+        _vkdependency->dstStageMask = Utils::RhiPipelineStageToVulkan(_subPass.subPassTransition.DstStageFlag);
+    }
+
 }

@@ -35,19 +35,6 @@ BEGIN_PCCORE
         float DeltaTime;
         float Time;
 
-        std::shared_ptr<RhiFrameBuffer> GbufferFrameBuffer;
-        std::shared_ptr<RhiFrameBuffer> ForwardFrameBuffer;
-        std::shared_ptr<RhiFrameBuffer> FinalImageFrameBuffer;
-
-        ShaderProgramDescriptorSets* GeometryDescritproSet;
-        ShaderProgramDescriptorSets* DefferdLightingGbufferSet;
-        ShaderProgramDescriptorSets* DefferdLightingLightingCameraSet;
-        ShaderProgramDescriptorSets* ForwardDesritptorSet;
-        ShaderProgramDescriptorSets* ToneMapDescritptorSet;
-        ShaderProgramDescriptorSets* FinalImageDescritptorSet;
-
-        RhiTexture* HdrImage;
-
         Tbx::Vector2ui RenderingContextSize;
 #ifdef WITH_EDITOR
         size_t RenderingContextFlag;

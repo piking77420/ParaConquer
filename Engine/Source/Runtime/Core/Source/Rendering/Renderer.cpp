@@ -213,10 +213,8 @@ void Renderer::Draw(const View& _view)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
-    
-
     m_CurrentView = &_view;
-    const auto& rContextView = m_CurrentView->RenderingContext;
+
 
     UpdateGpuCameraData();
     
@@ -226,6 +224,7 @@ void Renderer::Draw(const View& _view)
 #endif
     UpdateLightGpuData(PrimaryCommandList.get());
 
+    const auto& rContextView = m_CurrentView->RenderingContext;
     const ViewportInfo viewportInfo(rContextView.RenderingContextSize);
     PrimaryCommandList->SetViewPort(viewportInfo);
     //DefferdPass(viewportInfo);
@@ -322,16 +321,18 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
     PERF_REGION_COLOR(PerfRegion::Rendering);
     const auto& rContextView = m_CurrentView->RenderingContext;
 
-
+    std::array<Tbx::Vector4f, 1> clearValues = {
+      Tbx::Vector4f(0, 1, 0, 1.f),
+    };
     const BeginRenderPassInfo beginRenderPassInfo =
     {
         .RenderPass = RenderPasses.ForwardPass,
-        .FrameBuffer = rContextView.ForwardFrameBuffer,
+        .FrameBuffer = m_CurrentView->FrameBuffers.ForwardFrameBuffer,
         .RenderOffSet = {0, 0},
         .Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
-        .ClearValueFlags = {},
-        .ClearColor = nullptr,
-        .ClearValueCount = 0,
+        .ClearValueFlag = ClearValueFlagBits::ClearValueColor | ClearValueFlagBits::ClearValueDepth,
+        .ClearColor = clearValues.data(),
+        .ClearValueCount = clearValues.size(),
         .ClearDepth = 1.f
     };
 
@@ -346,7 +347,8 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
         PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
 
         PrimaryCommandList->SetViewPort(_viewportInfo);
-        PrimaryCommandList->BindDescriptorSet(*ForwardShader.get(), rContextView.ForwardDesritptorSet,
+        PrimaryCommandList->BindDescriptorSet(*ForwardShader.get(), 
+                                              m_CurrentView->DescriptorSets.ForwardDescriptor.get(),
                                               SCENE_DESCRIPTOR_SET, 1);
 
         // draw all static mesh
@@ -375,6 +377,8 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 
     PrimaryCommandList->EndRenderPass();
     PrimaryCommandList->EndDebugLabel();
+
+
 }
 
 void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
@@ -383,10 +387,10 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
     PERF_REGION_COLOR(PerfRegion::Rendering);
 
     return; // TO DO HANDLE INPUT ATTACHEMNT
-
+    /*
     const auto& rContextView = m_CurrentView->RenderingContext;
 
-    auto clearValueFlags = static_cast<ClearValueFlags>(ClearValueColor |
+    auto clearValueFlags = static_cast<ClearValueFlag>(ClearValueColor |
         ClearValueDepth);
 
     // + 1 for depth 
@@ -400,7 +404,7 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
         .FrameBuffer = rContextView.GbufferFrameBuffer,
         .RenderOffSet = {0, 0},
         .Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
-        .ClearValueFlags = clearValueFlags,
+        .ClearValueFlag = clearValueFlags,
         .ClearColor = clearValues2.data(),
         .ClearValueCount = clearValues2.size(),
         .ClearDepth = 1.f
@@ -434,7 +438,7 @@ void Renderer::DefferdPass(const ViewportInfo& _viewportInfo)
         PrimaryCommandList->EndDebugLabel();
     }
 
-    PrimaryCommandList->EndRenderPass();
+    PrimaryCommandList->EndRenderPass();*/
 }
 
 PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
@@ -508,10 +512,10 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
     const BeginRenderPassInfo drawToViewport =
     {
         .RenderPass = RenderPasses.DrawToFinalViewPort,
-        .FrameBuffer = rContextView.FinalImageFrameBuffer,
+        .FrameBuffer = m_CurrentView->FrameBuffers.FinalImageFrameBuffer,
         .RenderOffSet = {0, 0},
         .Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
-        .ClearValueFlags = (ClearValueColor),
+        .ClearValueFlag = (ClearValueColor),
         .ClearColor = clearValues2.data(),
         .ClearValueCount = clearValues2.size(),
         .ClearDepth = 0.f,
@@ -524,8 +528,11 @@ void Renderer::FinalPass(const ViewportInfo& _viewportInfo)
         PrimaryCommandList->BindProgram(*DrawTextureScreenQuadShader);
         PrimaryCommandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
 
-        PrimaryCommandList->BindDescriptorSet(*DrawTextureScreenQuadShader,
-                                              rContextView.FinalImageDescritptorSet, 0, 1);
+        PrimaryCommandList->BindDescriptorSet(
+            *DrawTextureScreenQuadShader,
+            m_CurrentView->DescriptorSets.FinalViewPort.get(),
+            0, 
+            1);
         PrimaryCommandList->Draw(4, 1, 0, 0);
     }
     PrimaryCommandList->EndRenderPass();
@@ -697,7 +704,7 @@ void Renderer::CreateRenderPasss()
         {
             .format = RhiFormat::R16G16B16A16Sfloat,
             .sampleCount = 1,
-            .load = LoadOperation::Load,
+            .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
@@ -709,7 +716,7 @@ void Renderer::CreateRenderPasss()
         {
             .format = RhiFormat::D24UnormS8Uint,
             .sampleCount = 1,
-            .load = LoadOperation::Load,
+            .load = LoadOperation::Clear,
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
@@ -1096,12 +1103,12 @@ void Renderer::CreateDescriptorSets()
         .resourceState = PC_CORE::ImageState::ShaderReadOptimal
     };*/
 
-    std::vector<DescriptorWrite> descriptorSets;
+    std::vector<DescriptorWrite> DescriptorSets;
 
     {
         PERF_REGION_SCOPED_NAMED("Skybox Shader DescriptorSets");
         /*
-        descriptorSets =
+        DescriptorSets =
         {
             {
                 ShaderProgramDescriptorType::UniformBuffer,
@@ -1110,9 +1117,9 @@ void Renderer::CreateDescriptorSets()
             },
         };
         SkyBoxShader.lock()->CreateDescriptorBinding(&m_SkyboxCameraDescriptorSet, SCENE_DESCRIPTOR_SET);
-        m_SkyboxCameraDescriptorSet->SetBindings(descriptorSets);
+        m_SkyboxCameraDescriptorSet->SetBindings(DescriptorSets);
      
-        descriptorSets =
+        DescriptorSets =
         {
             {
                 ShaderProgramDescriptorType::CombinedImageSampler,
@@ -1122,7 +1129,7 @@ void Renderer::CreateDescriptorSets()
         };
         m_SkyBoxShader.lock()->CreateDescriptorBinding(&skyBoxCubeMapDescriptorSet,
                                                    ENVIRONEMENT_DESCRIPTOR_SET);
-        skyBoxCubeMapDescriptorSet->SetBindings(descriptorSets);*/
+        skyBoxCubeMapDescriptorSet->SetBindings(DescriptorSets);*/
     }
 }
 #pragma endregion CreateDescriptorSets

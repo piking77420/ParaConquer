@@ -283,7 +283,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         .resourceState = RhiResourceState::ShaderRead
     };
 
-    std::vector<PC_CORE::ShaderProgramDescriptorWrite> descriptorSets =
+    std::vector<PC_CORE::ShaderProgramDescriptorWrite> DescriptorSets =
     {
         {
             PC_CORE::ShaderProgramDescriptorType::UniformBuffer,
@@ -292,9 +292,9 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         }
     };
 
-    m_CameraSet->SetBindings(descriptorSets, SCENE_DESCRIPTOR_SET).Build();
+    m_CameraSet->SetBindings(DescriptorSets, SCENE_DESCRIPTOR_SET).Build();
 
-    descriptorSets =
+    DescriptorSets =
     {
         {
             PC_CORE::ShaderProgramDescriptorType::CombinedImageSampler,
@@ -302,11 +302,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
             directionalTexture,
         }
     };
-    m_DirectionalDescriptorSet->SetBindings(descriptorSets, SPRITE_SET).Build();
+    m_DirectionalDescriptorSet->SetBindings(DescriptorSets, SPRITE_SET).Build();
 
-    descriptorSets[0].descriptor = spothLightTexture;
-    m_SpotLightDescriptorSet->SetBindings(descriptorSets, SPRITE_SET).Build();
+    DescriptorSets[0].descriptor = spothLightTexture;
+    m_SpotLightDescriptorSet->SetBindings(DescriptorSets, SPRITE_SET).Build();
 
-    descriptorSets[0].descriptor = pointLightTexture;
-    m_PointLightDescriptorSet->SetBindings(descriptorSets, SPRITE_SET).Build();*/
+    DescriptorSets[0].descriptor = pointLightTexture;
+    m_PointLightDescriptorSet->SetBindings(DescriptorSets, SPRITE_SET).Build();*/
 }

@@ -233,8 +233,8 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
         _BeginRenderPassInfo.ClearValueCount < clearValues.size() &&
         "clearValues.size() should be graeter than _BeginRenderPassInfo.clearValueCount");
 
-    if ((_BeginRenderPassInfo.ClearValueFlags & PC_CORE::ClearValueFlags::ClearValueColor) &&
-        (_BeginRenderPassInfo.ClearValueFlags & PC_CORE::ClearValueFlags::ClearValueDepth))
+    if ((_BeginRenderPassInfo.ClearValueFlag & PC_CORE::ClearValueFlagBits::ClearValueColor) &&
+        (_BeginRenderPassInfo.ClearValueFlag & PC_CORE::ClearValueFlagBits::ClearValueDepth))
     {
         // Clear + Depht
         clearCount = _BeginRenderPassInfo.ClearValueCount + 1;
@@ -250,12 +250,12 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 
         clearValues[clearCount - 1].depthStencil.setDepth(_BeginRenderPassInfo.ClearDepth);
     }
-    else if (_BeginRenderPassInfo.ClearValueFlags & PC_CORE::ClearValueFlags::ClearValueDepth)
+    else if (_BeginRenderPassInfo.ClearValueFlag & PC_CORE::ClearValueFlagBits::ClearValueDepth)
     {
         clearValues[0].depthStencil.setDepth(_BeginRenderPassInfo.ClearDepth);
         clearCount = 1;
     }
-    else if (_BeginRenderPassInfo.ClearValueFlags & PC_CORE::ClearValueFlags::ClearValueColor)
+    else if (_BeginRenderPassInfo.ClearValueFlag & PC_CORE::ClearValueFlagBits::ClearValueColor)
     {
         clearCount = _BeginRenderPassInfo.ClearValueCount;
         for (size_t i = 0; i < _BeginRenderPassInfo.ClearValueCount; i++)

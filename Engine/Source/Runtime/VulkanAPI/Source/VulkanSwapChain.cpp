@@ -41,6 +41,8 @@ Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht,
     CreateSwapChain();
     CreateImageViews();
     CreateFrameBuffers();
+
+    m_ImagesInFligh.resize(m_SwapChainImageCount);
 }
 
 Vulkan::VulkanSwapChain::~VulkanSwapChain()
@@ -58,25 +60,63 @@ void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
 {
     VulkanContext& context = GET_VK_CONTEXT;
     vk::Device device = context.GetDevice()->GetDevice();
-    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
+    uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
-    VK_CALL(device.waitForFences(1, &context.syncObjects[frameIndex].inFlightFence, VK_TRUE, UINT64_MAX));
+    // Wait for the CPU/GPU pacing fence (frame reuse)
+    device.waitForFences(
+        1,
+        &context.syncObjects[frameIndex].inFlightFence,
+        VK_TRUE,
+        UINT64_MAX
+    );
 
-    uint32_t nextImageIndex = 0;
-    vk::Result result = device.acquireNextImageKHR(m_SwapChain, UINT64_MAX, context.syncObjects[frameIndex].imageAvailableSemaphore,
-        VK_NULL_HANDLE, &nextImageIndex);
+    uint32_t imageIndex;
+    vk::Result result = device.acquireNextImageKHR
+    (   m_SwapChain, 
+        UINT64_MAX, 
+        context.syncObjects[frameIndex].imageAvailableSemaphore, 
+        VK_NULL_HANDLE,
+        &imageIndex
+    );
 
-    VK_CALL(device.resetFences(1, &context.syncObjects[frameIndex].inFlightFence));
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
         HandleRecreateSwapChain(windowHandle);
+        return;
     }
-    else if (vk::Result::eSuccess != result && result != vk::Result::eSuboptimalKHR)
+    else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
     {
         VK_CALL(result);
     }
 
-    m_SwapChainImageIndex = nextImageIndex;
+    // If this swapchain image is already in flight, wait for it
+     // because acquireNextImageKHR can not give sequencal image index 
+     // Exexpect : 0 1 2 0
+     // Reality : 0 1 0 1 2
+    if (m_ImagesInFligh[imageIndex] != VK_NULL_HANDLE)
+    {
+        device.waitForFences
+        (
+            1,
+            &m_ImagesInFligh[imageIndex],
+            VK_TRUE,
+            UINT64_MAX
+        );
+    }
+
+    // Mark image as now using this frame's fence
+    m_ImagesInFligh[imageIndex] =
+        context.syncObjects[frameIndex].inFlightFence;
+
+    // Reset fence before submitting new work
+    device.resetFences
+    (
+        1,
+        &context.syncObjects[frameIndex].inFlightFence
+    );
+
+    m_SwapChainImageIndex = imageIndex;
+
 }
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
@@ -289,7 +329,7 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &flushedCommands[0].cmd;
 
-    vk::Semaphore signalSemaphores[] = { context.syncObjects[frameIndex].renderFinishedSemaphore};
+    vk::Semaphore signalSemaphores[] = { context.syncObjects[m_SwapChainImageIndex].renderFinishedSemaphore};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 

@@ -15,7 +15,7 @@ Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
         GET_VK_CONTEXT.rhiDevice);
 
-    for (auto& framebuffer : m_FrameBuffers)
+    for (auto& framebuffer : FrameBuffers)
     {
         if (framebuffer == VK_NULL_HANDLE)
             continue;
@@ -35,7 +35,7 @@ bool Vulkan::VulkanFrameBuffer::Build()
     auto renderPass = reinterpret_cast<const VulkanRenderPass*>(m_RenderPass);
 
     int frame = 0;
-    for (auto& framebuffer : m_FrameBuffers)
+    for (auto& framebuffer : FrameBuffers)
     {
         std::vector<vk::ImageView> image_views;
         image_views.reserve(m_Attachments.size());
@@ -75,5 +75,5 @@ bool Vulkan::VulkanFrameBuffer::Build()
 
 vk::Framebuffer Vulkan::VulkanFrameBuffer::GetFramebuffer() const
 {
-    return m_FrameBuffers[m_Rhi.GetFrameIndex()];
+    return FrameBuffers[m_Rhi.GetFrameIndex()];
 }

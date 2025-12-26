@@ -18,19 +18,19 @@ namespace Vulkan
 
         VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override
         {
-            return &m_FrameBuffers;
+            return &FrameBuffers;
         }
 
         VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override
         {
-            return &m_FrameBuffers;
+            return &FrameBuffers;
         }
 
         
 
         VULKAN_API vk::Framebuffer GetFramebuffer() const;
 
-        std::array<vk::Framebuffer, MaxFramesInFlight> m_FrameBuffers =
+        std::array<vk::Framebuffer, MaxFramesInFlight> FrameBuffers =
         {
             VK_NULL_HANDLE
         };

@@ -132,6 +132,6 @@ namespace Vulkan
         std::unordered_map<SetBindingMap, std::shared_ptr<CacheDescriptor>, SetBindingMapHasher,
                            SetBindingMapEqual> descriptorLayoutCache;
 
-        std::unordered_map<size_t, CacheDescriptor*> m_DescriptorSets;
+        std::unordered_map<size_t, CacheDescriptor*> descriptorSets;
     };
 }

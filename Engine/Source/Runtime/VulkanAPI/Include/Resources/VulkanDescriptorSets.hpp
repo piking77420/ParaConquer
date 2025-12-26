@@ -32,7 +32,7 @@ namespace Vulkan
     private:
         const CacheDescriptor& m_Cache;
 
-        std::array<vk::DescriptorSet, MaxFramesInFlight> m_DescriptorSets;
+        std::array<vk::DescriptorSet, MaxFramesInFlight> descriptorSets;
 
         void CreateDescriptors();
 

@@ -85,20 +85,6 @@ void View::UpdateRenderingContext()
     RenderingContext.Time = Time::GetTime();
     RenderingContext.DeltaTime = Time::DeltaTime();
 
-    // Frame Buffer
-    RenderingContext.ForwardFrameBuffer = m_FrameBuffers.ForwardFrameBuffer;
-    RenderingContext.GbufferFrameBuffer = m_FrameBuffers.GbufferFrameBuffer;
-    RenderingContext.FinalImageFrameBuffer = m_FrameBuffers.FinalImageFrameBuffer;
-
-    // Descriptor
-    RenderingContext.GeometryDescritproSet = m_DescriptorSets.GeometryPass.get();
-    RenderingContext.DefferdLightingGbufferSet = m_DescriptorSets.DefferedPassGbuffers.get();
-    RenderingContext.DefferdLightingLightingCameraSet = m_DescriptorSets.DefferedPassCameraLight.get();
-    RenderingContext.ForwardDesritptorSet = m_DescriptorSets.ForwardDescriptor.get();
-    RenderingContext.ToneMapDescritptorSet = m_DescriptorSets.ToneMap.get();
-    RenderingContext.FinalImageDescritptorSet = m_DescriptorSets.FinalViewPort.get();
-
-    RenderingContext.HdrImage = ForwardTexture.color.get();
     RenderingContext.RenderingContextSize = {
         static_cast<uint32_t>(m_CurrentSize.x), static_cast<uint32_t>(m_CurrentSize.y)
     };
@@ -199,13 +185,13 @@ void View::CreateFrameBuffers()
         createFrameBufferInfo.RenderPass = m_Renderer->RenderPasses.DefferedPass.get();
 
         // HANDLE INPUT ATTACHEMENT
-        //m_FrameBuffers.GbufferFrameBuffer.reset(Rhi::CreateFrameBuffer("Gbuffer FrameBuffer", createFrameBufferInfo));*/
+        //FrameBuffers.GbufferFrameBuffer.reset(Rhi::CreateFrameBuffer("Gbuffer FrameBuffer", createFrameBufferInfo));*/
     }
 
     // Forward FrameBuffer
     {
-        m_FrameBuffers.ForwardFrameBuffer.reset(Rhi.CreateFrameBuffer()) ;
-        m_FrameBuffers.ForwardFrameBuffer
+        FrameBuffers.ForwardFrameBuffer.reset(Rhi.CreateFrameBuffer()) ;
+        FrameBuffers.ForwardFrameBuffer
             ->SetWidth(Width)
             .SetHeight(Height)
             .SetAttachments(
@@ -219,8 +205,8 @@ void View::CreateFrameBuffers()
 
     // Final Image
     {
-        m_FrameBuffers.FinalImageFrameBuffer.reset(Rhi.CreateFrameBuffer());
-        m_FrameBuffers.FinalImageFrameBuffer
+        FrameBuffers.FinalImageFrameBuffer.reset(Rhi.CreateFrameBuffer());
+        FrameBuffers.FinalImageFrameBuffer
             ->SetWidth(Width)
             .SetHeight(Height)
             .SetAttachments(
@@ -270,11 +256,11 @@ void View::CreateDescritproSets()
             }
         };
 
-        if (m_DescriptorSets.GeometryPass != nullptr)
-            geometryShaderPass->FreeDescriptorSet(&m_DescriptorSets.GeometryPass);
+        if (DescriptorSets.GeometryPass != nullptr)
+            geometryShaderPass->FreeDescriptorSet(&DescriptorSets.GeometryPass);
 
-        geometryShaderPass->CreateDescriptorBinding(&m_DescriptorSets.GeometryPass, SCENE_DESCRIPTOR_SET);
-        m_DescriptorSets.GeometryPass->SetBindings(descriptorWrites);*/
+        geometryShaderPass->CreateDescriptorBinding(&DescriptorSets.GeometryPass, SCENE_DESCRIPTOR_SET);
+        DescriptorSets.GeometryPass->SetBindings(descriptorWrites);*/
     }
 
     // Defferd Lighting Descritptors
@@ -303,11 +289,11 @@ void View::CreateDescritproSets()
                 };
         }
 
-        if (m_DescriptorSets.DefferedPassGbuffers != nullptr)
-            deferredShader->FreeDescriptorSet(&m_DescriptorSets.DefferedPassGbuffers);
+        if (DescriptorSets.DefferedPassGbuffers != nullptr)
+            deferredShader->FreeDescriptorSet(&DescriptorSets.DefferedPassGbuffers);
 
-        deferredShader->CreateDescriptorBinding(&m_DescriptorSets.DefferedPassGbuffers, GBUFFER_SET);
-        m_DescriptorSets.DefferedPassGbuffers->SetBindings(descriptorWrites);
+        deferredShader->CreateDescriptorBinding(&DescriptorSets.DefferedPassGbuffers, GBUFFER_SET);
+        DescriptorSets.DefferedPassGbuffers->SetBindings(descriptorWrites);
 
 
         descriptorWrites.resize(2);
@@ -321,11 +307,11 @@ void View::CreateDescritproSets()
             }
         };
 
-        if (m_DescriptorSets.DefferedPassCameraLight != nullptr)
-            deferredShader->FreeDescriptorSet(&m_DescriptorSets.DefferedPassCameraLight);
+        if (DescriptorSets.DefferedPassCameraLight != nullptr)
+            deferredShader->FreeDescriptorSet(&DescriptorSets.DefferedPassCameraLight);
 
-        deferredShader->CreateDescriptorBinding(&m_DescriptorSets.DefferedPassCameraLight, SCENE_DESCRIPTOR_SET);
-        m_DescriptorSets.DefferedPassCameraLight->SetBindings(descriptorWrites);*/
+        deferredShader->CreateDescriptorBinding(&DescriptorSets.DefferedPassCameraLight, SCENE_DESCRIPTOR_SET);
+        DescriptorSets.DefferedPassCameraLight->SetBindings(descriptorWrites);*/
     }
 
     {
@@ -354,8 +340,8 @@ void View::CreateDescritproSets()
         };
 
 
-        m_DescriptorSets.ForwardDescriptor.reset(forwardShader->CreateDescriptorBinding());
-        m_DescriptorSets.ForwardDescriptor
+        DescriptorSets.ForwardDescriptor.reset(forwardShader->CreateDescriptorBinding());
+        DescriptorSets.ForwardDescriptor
             ->SetBindings(SCENE_DESCRIPTOR_SET, descriptorWrites)
             .SetName("View Forward Descriptor")
             .Build();
@@ -385,8 +371,8 @@ void View::CreateDescritproSets()
             },
         };
 
-        m_DescriptorSets.ToneMap.reset(ToneMappShader->CreateDescriptorBinding());
-        m_DescriptorSets.ToneMap
+        DescriptorSets.ToneMap.reset(ToneMappShader->CreateDescriptorBinding());
+        DescriptorSets.ToneMap
             ->SetBindings(0, descriptorWrites)
             .SetName("Tome map view binging")
             .Build();
@@ -414,8 +400,8 @@ void View::CreateDescritproSets()
             }
         };
 
-        m_DescriptorSets.FinalViewPort.reset(drawToFinalImage->CreateDescriptorBinding());
-        m_DescriptorSets.FinalViewPort
+        DescriptorSets.FinalViewPort.reset(drawToFinalImage->CreateDescriptorBinding());
+        DescriptorSets.FinalViewPort
             ->SetBindings(0, descriptorWrites)
             .SetName("drawToFinalImage View Binding")
             .Build();

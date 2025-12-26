@@ -19,7 +19,7 @@ BEGIN_PCCORE
     class RhiShaderProgram;
 
 
-    enum ClearValueFlags : uint32_t
+    enum ClearValueFlagBits : uint32_t
     {
         ClearValueNone = 0,
         ClearValueColor = 1 << 0,
@@ -27,6 +27,9 @@ BEGIN_PCCORE
         ClearValueStencil = 1 << 2,
         ClearValueCount = 1 << 3
     };
+
+    using ClearValueFlag = uint32_t;
+
 
 
     struct BeginRenderPassInfo
@@ -36,7 +39,7 @@ BEGIN_PCCORE
         Tbx::Vector2i RenderOffSet;
         Tbx::Vector2ui Extent;
 
-        ClearValueFlags ClearValueFlags;
+        ClearValueFlag ClearValueFlag;
         Tbx::Vector4f* ClearColor;
         size_t ClearValueCount;
         float ClearDepth = 0.f;
