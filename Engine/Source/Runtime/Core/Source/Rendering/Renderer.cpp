@@ -230,7 +230,7 @@ void Renderer::Draw(const View& _view)
     //DefferdPass(viewportInfo);
     ForwardPass(viewportInfo);
     //PostProcess(viewportInfo);
-    //FinalPass(viewportInfo);
+    FinalPass(viewportInfo);
 }
 
 
@@ -320,9 +320,11 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rendering);
     const auto& rContextView = m_CurrentView->RenderingContext;
-
+    
+   
+    
     std::array<Tbx::Vector4f, 1> clearValues = {
-      Tbx::Vector4f(0, 1, 0, 1.f),
+      Tbx::Vector4f(0.1, 0.1, 0.1, 1.f),
     };
     const BeginRenderPassInfo beginRenderPassInfo =
     {
@@ -377,7 +379,6 @@ void Renderer::ForwardPass(const ViewportInfo& _viewportInfo)
 
     PrimaryCommandList->EndRenderPass();
     PrimaryCommandList->EndDebugLabel();
-
 
 }
 
@@ -708,7 +709,7 @@ void Renderer::CreateRenderPasss()
             .store = StoreOperation::Store,
             .stencilLoad = LoadOperation::DontCare,
             .stencilStore = StoreOperation::DontCare,
-            .currentImageState = RhiResourceState::RenderTarget,
+            .currentImageState = RhiResourceState::Undefined,
             .finalImageState = RhiResourceState::ShaderRead,
         };
 
@@ -734,12 +735,12 @@ void Renderer::CreateRenderPasss()
             .inputAttachementIndicies = {},
             .subPassTransition =
             {
-                .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
-                .DstStageFlag = GpuPipelineStage::FragmentShader,
+                .SrcStageFlag = GpuPipelineStage::TopOfPipe,
+                .DstStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
                 .ImageStateTransition = 
                 {
                         .OldState = RhiResourceState::RenderTarget,
-                        .NewState = RhiResourceState::ShaderRead
+                        .NewState = RhiResourceState::RenderTarget
                 }
             },
             .useDepth = true,

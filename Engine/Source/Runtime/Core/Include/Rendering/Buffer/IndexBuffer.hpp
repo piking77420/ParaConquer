@@ -6,6 +6,20 @@ BEGIN_PCCORE
     class IndexBuffer final : public GpuBuffer
     {
     public:
+
+        IndexBuffer& SetIndexFormat(RhiBuffer::IndexFormat _IndexFormat)
+        {
+            m_RhiBufferFormat = _IndexFormat;
+            return *this;
+        }
+
+        IndexBuffer& SetIndexCount(size_t _IndexCount)
+        {
+            m_IndiciesCount = _IndexCount;
+            return *this;
+        }
+
+
         RhiBuffer::IndexFormat GetIndexFormat() const
         {
             return m_RhiBufferFormat;
@@ -18,10 +32,8 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
     
-        explicit IndexBuffer(Rhi& rhi, const std::string& _name, size_t _indexCount, RhiBuffer::IndexFormat _indexFormat);
+        explicit IndexBuffer(Rhi& rhi);
     
-        explicit IndexBuffer(Rhi& rhi, std::string&& _name, size_t _indexCount, RhiBuffer::IndexFormat _indexFormat);
-
         IndexBuffer() = default;
 
         ~IndexBuffer() override = default;

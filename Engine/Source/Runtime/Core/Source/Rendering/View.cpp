@@ -135,7 +135,7 @@ void View::CreateImages()
             .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled)
             .SetMemoryUsage(RhiMemoryUsage::Dynamic)
             .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
-            .SetName("View Forward Texture")
+            .SetName("FinalImage Texture")
             .Build();
 
         ResolvedImages.reset(Rhi.CreateTexture());
@@ -146,7 +146,7 @@ void View::CreateImages()
             .SetMemoryUsage(RhiMemoryUsage::Dynamic)
             .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
             .SetSamples(Rhi.GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().GetMaxUsableSampleCount())
-            .SetName("View Forward Texture")
+            .SetName("ResolvedImages Texture")
             .Build();
     }
 }

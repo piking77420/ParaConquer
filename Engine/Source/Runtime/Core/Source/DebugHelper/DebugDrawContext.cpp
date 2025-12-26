@@ -106,6 +106,7 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList,
 
    
     _commandList->BindProgram(*m_ShaderProgram.get());
+    _commandList->SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleList);
 
     for (size_t i = 0; i < m_PrimitiveData.size(); i++)
     {
@@ -604,8 +605,33 @@ void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveTyp
 
     if (!vertices.empty() && !indices.empty())
     {
-        VertexBuffer& VertexBuffer = *_vertexBuffer;
-        IndexBuffer& IndexBuffer = *_indexBuffer;
+        VertexBuffer& vertexBuffer = *_vertexBuffer;
+        vertexBuffer = VertexBuffer(m_Renderer->GetRhi());
+
+        vertexBuffer
+            .SetVerticiesSize(sizeof(Tbx::Vector3f))
+            .SetVerticiesCount(vertices.size())
+            ->SetSize(sizeof(Tbx::Vector3f)* vertices.size())
+            .SetMemoryUsage(RhiMemoryUsage::Static)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::TransferDst)
+            .SetName("Vertex Buffer " + PrimitiveTypeToString(_primitiveType))
+            .Build();
+
+        vertexBuffer->UploadData(nullptr, vertices.data(), vertexBuffer->GetSize());
+
+        IndexBuffer& indexBuffer = *_indexBuffer;
+        indexBuffer = IndexBuffer(m_Renderer->GetRhi());
+
+        indexBuffer
+            .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
+            .SetIndexCount(indices.size())
+            ->SetSize(static_cast<size_t>(RhiBuffer::IndexFormat::Uint32) * indices.size())
+            .SetMemoryUsage(RhiMemoryUsage::Static)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::Index | RhiBuffer::BufferUsageFlagBits::TransferDst)
+            .SetName("Index Buffer " + PrimitiveTypeToString(_primitiveType))
+            .Build();
+
+        indexBuffer->UploadData(nullptr, indices.data(), indexBuffer->GetSize());
 
         // TODO UPOLOAD DATA
         /*

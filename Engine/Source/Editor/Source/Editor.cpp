@@ -301,6 +301,8 @@ void Editor::UpdateEditor()
         ImGui::EndMenuBar();
     }
 
+    DebugDrawContext::DrawSphere(Tbx::Vector3d{ 0,0,0 }, 1.f);
+
     {
         PERF_REGION_SCOPED_NAMED("Update Windows");
         for (auto& editorWindow : editorWindows)

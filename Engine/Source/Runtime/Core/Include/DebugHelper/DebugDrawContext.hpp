@@ -111,7 +111,7 @@ BEGIN_PCCORE
 
         bool NeedToRender();
 
-        static void GenerateBasePrimitve(PrimitiveType _primitiveType, VertexBuffer* _vertexBuffer, IndexBuffer* _indexBuffer);
+        void GenerateBasePrimitve(PrimitiveType _primitiveType, VertexBuffer* _vertexBuffer, IndexBuffer* _indexBuffer);
 
         static void PushBoxGizmo(PrimitiveType _primitiveType,
                                  const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler, const Tbx::Vector3d& _size,

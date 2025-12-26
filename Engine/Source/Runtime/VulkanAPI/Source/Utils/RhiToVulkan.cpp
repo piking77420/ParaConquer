@@ -1192,7 +1192,7 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
     case PC_CORE::RhiResource::State::ShaderRead:
         return vk::AccessFlagBits::eShaderRead;
     case PC_CORE::RhiResource::State::RenderTarget:
-        return vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead;
+        return vk::AccessFlagBits::eColorAttachmentWrite;
     case PC_CORE::RhiResource::State::DepthStencilWrite:
         return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
     case PC_CORE::RhiResource::State::DepthStencilRead:

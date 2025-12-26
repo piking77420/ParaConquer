@@ -478,6 +478,7 @@ std::vector<vk::AttachmentDescription> Vulkan::VulkanRenderPass::ParseAttahcheme
 void Vulkan::VulkanRenderPass::ParseSubPassTransition(const PC_CORE::SubPass& _subPass,
     vk::SubpassDependency* _vkdependency)
 {
+    // TODO HANDLE LOAD AND STORE OP
 
     // Handle Access
     {
