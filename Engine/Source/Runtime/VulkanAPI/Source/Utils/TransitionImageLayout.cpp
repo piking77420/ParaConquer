@@ -110,7 +110,7 @@ bool Vulkan::HasStencilComponent(vk::Format _format)
 {
     return _format == vk::Format::eD32Sfloat || _format == vk::Format::eD24UnormS8Uint;
 }
-
+/*/
 void Vulkan::TransitionImageLayout(vk::CommandBuffer commandBuffer, const PC_CORE::ImageStateTransition& _ImageStateTransition, size_t _FrameIndex)
 {
     PERF_REGION_SCOPED;
@@ -145,5 +145,5 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer commandBuffer, const PC_COR
         0, nullptr,
         1, &barrier);
 }
-
+*/
 

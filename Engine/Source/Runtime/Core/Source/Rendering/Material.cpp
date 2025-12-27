@@ -40,7 +40,7 @@ PC_CORE::Material::Material(const std::string& _name)
         {
             .sampler = ResourceManager::Get<Sampler>(std::string("LinearRepeat"))->Get(),
             .texture = Albedo.Lock()->Get(),
-            .resourceState = RhiResourceState::ShaderRead
+            .resourceState = RhiResourceState::FragmentShaderResource
         };
 
         std::vector<DescriptorWrite> DescriptorSets =

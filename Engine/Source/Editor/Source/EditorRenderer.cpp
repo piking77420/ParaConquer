@@ -266,21 +266,21 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     {
         .sampler = m_SpriteSampler.Get(),
         .texture = m_DirectionalLightTexture.lock()->Get(),
-        .resourceState = RhiResourceState::ShaderRead
+        .resourceState = RhiResourceState::FragmentShaderResource
     };
 
     PC_CORE::ImageSamplerDescriptor spothLightTexture
     {
         .sampler = directionalTexture.sampler,
         .texture = m_SpotLightTexture.lock()->Get(),
-        .resourceState = RhiResourceState::ShaderRead
+        .resourceState = RhiResourceState::FragmentShaderResource
     };
 
     PC_CORE::ImageSamplerDescriptor pointLightTexture
     {
         .sampler = directionalTexture.sampler,
         .texture = m_PointLightTexture.lock()->Get(),
-        .resourceState = RhiResourceState::ShaderRead
+        .resourceState = RhiResourceState::FragmentShaderResource
     };
 
     std::vector<PC_CORE::ShaderProgramDescriptorWrite> DescriptorSets =

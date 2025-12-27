@@ -84,6 +84,35 @@ BEGIN_PCCORE
         Async, // send directly to gpu // TODO
     };
 
+    struct ImageStateTransition
+    {
+        RhiTexture* Texture = nullptr;
+
+        RhiResourceState OldState = RhiResourceState::Undefined;
+        RhiResourceState NewState = RhiResourceState::Undefined;
+
+        uint32_t FirstMipLevel = 0;
+        uint32_t MipLevelsCount = 0;
+        uint32_t FirstArraySlice = 0;
+        uint32_t ArraySliceCount = 0;
+
+        bool updateState = false;
+    };
+
+    struct BufferStateTransition
+    {
+        RhiTexture* Texture = nullptr;
+        RhiBuffer* Buffer = nullptr;
+
+        RhiResourceState OldState = RhiResourceState::Undefined;
+        RhiResourceState NewState = RhiResourceState::Undefined;
+
+        uint32_t Offset = 0;
+        uint32_t Size = 0;
+
+        bool updateState = false;
+    };
+
    
     class CommandList : public RhiObjectT<CommandList>
     {

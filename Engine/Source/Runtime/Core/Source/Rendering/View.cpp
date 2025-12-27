@@ -237,7 +237,7 @@ void View::CreateDescritproSets()
     {
         .sampler = m_Renderer->LinearReapeat.Get(),
         .texture = m_Renderer->Cubemap.Lock()->Get(),
-        .resourceState = RhiResourceState::ShaderRead
+        .resourceState = RhiResourceState::FragmentShaderResource
     };
 
     std::vector<DescriptorWrite> descriptorWrites;
@@ -271,21 +271,21 @@ void View::CreateDescritproSets()
         std::shared_ptr<GraphicShader> deferredShader = m_Renderer->DeferedShader.lock();
         descriptorWrites.resize(static_cast<uint8_t>(GbufferType::Count));
 
-        std::array<InputAttachementDescriptor, static_cast<uint8_t>(GbufferType::Count)> inputAttachements;
+        std::array<InputAttachementDescriptor, static_cast<uint8_t>(GbufferType::Count)> InputAttachements;
 
         for (size_t i = 0; i < static_cast<uint8_t>(GbufferType::Count); i++)
         {
-            inputAttachements[i] =
+            InputAttachements[i] =
                 {
                     .image = Gbuffers.gbuffers[i].Get(),
-                    .resourceState = RhiResourceState::ShaderRead
+                    .resourceState = RhiResourceState::FragmentShaderResource
                 },
 
                 descriptorWrites[i] =
                 {
                     .shaderProgramDescriptorType = ShaderProgramDescriptorType::InputAttachment,
                     .bindingIndex = static_cast<uint32_t>(i),
-                    .descriptor = inputAttachements[i]
+                    .descriptor = InputAttachements[i]
                 };
         }
 
@@ -386,7 +386,7 @@ void View::CreateDescritproSets()
         {
             .sampler = m_Renderer->LinearReapeat.Get(),
             .texture = ForwardTexture.color.get(),
-            .resourceState = RhiResourceState::ShaderRead
+            .resourceState = RhiResourceState::FragmentShaderResource
         };
 
         descriptorWrites.resize(1);

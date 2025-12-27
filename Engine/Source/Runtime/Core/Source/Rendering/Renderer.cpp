@@ -480,7 +480,7 @@ PC_CORE_API void Renderer::PostProcess(const ViewportInfo& _viewportInfo)
         const ImageBarrier gbufferImage2 =
         {
             .CurrentState = RhiResourceState::ComputeWrite,
-            .NewState = RhiResourceState::ShaderRead,
+            .NewState = RhiResourceState::FragmentShaderResource,
 
             .Texture = rContextView.HdrImage->Get(),
         };
@@ -640,21 +640,21 @@ void Renderer::CreateRenderPasss()
         subPassDescriptions[0] =
         {
             .type = PipelineType::Graphic,
-            .colorAttachementDescriptorIndicies = {
+            .ColorAttachements = {
                 static_cast<size_t>(GbufferType::Albedo),
                 static_cast<size_t>(GbufferType::Normal),
                 static_cast<size_t>(GbufferType::RoughnessMetallicAo),
                 static_cast<size_t>(GbufferType::WorldPosition)
             },
-            .inputAttachementIndicies = {},
-            .subPassTransition =
+            .InputAttachements = {},
+            .subPassAccess =
             {
                 .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
                 .DstStageFlag = GpuPipelineStage::FragmentShader,
                 .ImageStateTransition =
                     {
                         .OldState = RhiResourceState::RenderTarget,
-                        .NewState = RhiResourceState::ShaderRead
+                        .NewState = RhiResourceState::FragmentShaderResource
                     }
             },
             .useDepth = true,
@@ -662,24 +662,24 @@ void Renderer::CreateRenderPasss()
         subPassDescriptions[1] =
         {
             .type = PipelineType::Graphic,
-            .colorAttachementDescriptorIndicies =
+            .ColorAttachements =
             {
                 attachements.size() - 1
             },
-            .inputAttachementIndicies = {
+            .InputAttachements = {
                 static_cast<size_t>(GbufferType::Albedo),
                 static_cast<size_t>(GbufferType::Normal),
                 static_cast<size_t>(GbufferType::RoughnessMetallicAo),
                 static_cast<size_t>(GbufferType::WorldPosition)
             },
-            .subPassTransition =
+            .subPassAccess =
             {
                 .SrcStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
                 .DstStageFlag = GpuPipelineStage::FragmentShader,
                 .ImageStateTransition =
                     {
                         .OldState = RhiResourceState::RenderTarget,
-                        .NewState = RhiResourceState::ShaderRead
+                        .NewState = RhiResourceState::FragmentShaderResource
                     }
             },
             .useDepth = false,
@@ -698,62 +698,44 @@ void Renderer::CreateRenderPasss()
     {
         PERF_REGION_SCOPED_NAMED("Create Forward RenderPass");
 
-        std::vector<RenderPassAttachementDescriptor> colorAttachement;
-        colorAttachement.resize(1);
-
-        colorAttachement[0] =
-        {
-            .format = RhiFormat::R16G16B16A16Sfloat,
-            .sampleCount = 1,
-            .load = LoadOperation::Clear,
-            .store = StoreOperation::Store,
-            .stencilLoad = LoadOperation::DontCare,
-            .stencilStore = StoreOperation::DontCare,
-            .currentImageState = RhiResourceState::Undefined,
-            .finalImageState = RhiResourceState::ShaderRead,
-        };
-
-        RenderPassAttachementDescriptor depthAttachement =
-        {
-            .format = RhiFormat::D24UnormS8Uint,
-            .sampleCount = 1,
-            .load = LoadOperation::Clear,
-            .store = StoreOperation::Store,
-            .stencilLoad = LoadOperation::DontCare,
-            .stencilStore = StoreOperation::DontCare,
-            .currentImageState = RhiResourceState::DepthStencilWrite,
-            .finalImageState = RhiResourceState::DepthStencilWrite,
-        };
-
-        std::vector<SubPass> subPassDescriptions;
-        subPassDescriptions.resize(1);
-
-        subPassDescriptions[0] =
-        {
-            .type = RhiShaderProgram::PipelineType::Graphic,
-            .colorAttachementDescriptorIndicies = {0},
-            .inputAttachementIndicies = {},
-            .subPassTransition =
-            {
-                .SrcStageFlag = GpuPipelineStage::TopOfPipe,
-                .DstStageFlag = GpuPipelineStage::ColorAttachmentOutput | GpuPipelineStage::EarlyFragmentTests,
-                .ImageStateTransition = 
-                {
-                        .OldState = RhiResourceState::RenderTarget,
-                        .NewState = RhiResourceState::RenderTarget
-                }
-            },
-            .useDepth = true,
-        };
-
         RenderPasses.ForwardPass.reset(m_Rhi->CreateRenderPass());
+        RhiRenderPass& forwardPass = *RenderPasses.ForwardPass;
 
-        RenderPasses.ForwardPass
-            ->SetAttachement(colorAttachement)
-            .SetDepthStencilAttachement(depthAttachement)
-            .SetSubPass(subPassDescriptions)
+        // Color
+        const RenderPassAttachementDescriptor& Albedo = forwardPass
+            .CreateAttachment()
+            .SetAttachementSlot(AttachementSlot::S00)
+            .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
+            .SetSampleCount(1)
+            .SetLoadOp(LoadOperation::Clear)
+            .SetStoreOp(StoreOperation::Store)
+            .SetInitialImageState(RhiResourceState::Undefined)
+            .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+
+        // Set Depth
+        const RenderPassAttachementDescriptor& DepthBuffer = forwardPass
+            .CreateAttachment()
+            .SetAttachementSlot(AttachementSlot::S01)
+            .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+            .SetSampleCount(1)
+            .SetLoadOp(LoadOperation::Clear)
+            .SetStoreOp(StoreOperation::Store)
+            .SetInitialImageState(RhiResourceState::DepthStencilWrite)
+            .SetFinalImageState(RhiResourceState::DepthStencilWrite);
+
+        // SubPass 0
+        forwardPass
+            .CreateSubPass()
+            .SetType(RhiShaderProgram::PipelineType::Graphic)
+            .SetAttachementRef(AttachementRef(Albedo, RhiResourceState::RenderTarget))
+            .SetDepthAttachementRef(AttachementRef(DepthBuffer, RhiResourceState::DepthStencilWrite))
+            .SetSrcStageFlag({})
+            .SetDstStageFlag({});
+
+        forwardPass
             .SetName("ForwardPass")
             .Build();
+
     }
 
     // Draw To Final Viewport

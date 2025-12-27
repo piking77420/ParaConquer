@@ -13,5 +13,5 @@ namespace Vulkan
     bool HasStencilComponent(vk::Format _format);
 
 
-    void TransitionImageLayout(vk::CommandBuffer commandBuffer, const PC_CORE::ImageStateTransition& _ImageStateTransition, size_t _FrameIndex);
+    //void TransitionImageLayout(vk::CommandBuffer commandBuffer, const PC_CORE::ImageStateTransition& _ImageStateTransition, size_t _FrameIndex);
 }

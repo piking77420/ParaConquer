@@ -1104,7 +1104,7 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
     case RhiResourceState::CopyDst:
         return vk::ImageLayout::eTransferDstOptimal;
     // Shader
-    case RhiResourceState::ShaderRead:
+    case RhiResourceState::FragmentShaderResource:
         return vk::ImageLayout::eShaderReadOnlyOptimal;
     case RhiResourceState::RenderTarget:
         return vk::ImageLayout::eColorAttachmentOptimal;
@@ -1143,7 +1143,7 @@ RhiResourceState Vulkan::Utils::VulkanImageLayoutToResourceState(vk::ImageLayout
     case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
         return RhiResourceState::RenderTarget;
     case vk::ImageLayout::eShaderReadOnlyOptimal:
-        return RhiResourceState::ShaderRead;
+        return RhiResourceState::FragmentShaderResource;
     case vk::ImageLayout::eTransferSrcOptimal:
         return RhiResourceState::CopySrc;
     case vk::ImageLayout::eTransferDstOptimal:
@@ -1189,7 +1189,7 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
         return vk::AccessFlagBits::eIndexRead;
     case PC_CORE::RhiResource::State::UniformBuffer:
         return vk::AccessFlagBits::eUniformRead;
-    case PC_CORE::RhiResource::State::ShaderRead:
+    case PC_CORE::RhiResource::State::FragmentShaderResource:
         return vk::AccessFlagBits::eShaderRead;
     case PC_CORE::RhiResource::State::RenderTarget:
         return vk::AccessFlagBits::eColorAttachmentWrite;

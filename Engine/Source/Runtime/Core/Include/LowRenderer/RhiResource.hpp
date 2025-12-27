@@ -19,7 +19,7 @@ public:
     };
     REFLECT(MemoryUsage)
 
-    enum struct State
+    enum struct State : uint8_t
     {
         Undefined = 0,
 
@@ -33,7 +33,8 @@ public:
         UniformBuffer,
 
         // Texture uses
-        ShaderRead,
+        VertexShaderResource,
+        FragmentShaderResource,
         RenderTarget,
         DepthStencilWrite,
         DepthStencilRead,

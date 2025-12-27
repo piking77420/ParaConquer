@@ -544,7 +544,7 @@ BEGIN_PCCORE
 
     REFLECT(BorderColor)
 
-    enum struct LoadOperation
+    enum struct LoadOperation : uint8_t
     {
         Load,
         Clear,
@@ -553,7 +553,7 @@ BEGIN_PCCORE
 
     REFLECT(LoadOperation)
 
-    enum struct StoreOperation
+    enum struct StoreOperation : uint8_t
     {
         Store,
         DontCare,

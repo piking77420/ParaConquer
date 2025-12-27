@@ -37,13 +37,41 @@ namespace Vulkan
 
 
     protected:
+        struct CreateRenderPassContext
+        {
+         
+    
+        };
+
+        struct RenderPassBuildContext
+        {
+
+            std::vector<vk::AttachmentDescription> AttachmentDescriptions;
+            std::vector<vk::AttachmentReference> ColorAttachmentReferences;
+            std::vector<vk::AttachmentReference> InputAttachementReferences;
+            std::vector<vk::AttachmentReference> Preserved;
+            std::vector<vk::AttachmentReference> DepthsAttachements;
+
+            std::vector<vk::SubpassDescription> vkSubpassDescriptions;
+            std::vector<vk::SubpassDependency> vkSubpassDependicies;
+        };
+
         vk::RenderPass m_RenderPass = VK_NULL_HANDLE;
 
-        void ParseSubPassTransition(const PC_CORE::SubPass& _SubPass, vk::SubpassDependency* _vkdependency);
+        void PopulateAttachementDescription(RenderPassBuildContext* _RenderPassBuildContext);
 
+        void PopulateSubPassContext(RenderPassBuildContext* _RenderPassBuildContext);
 
-        vk::ImageLayout GetImageLayoutSubPassForInputAttachement(RhiResourceState resourceState);
+        void PopulateSubPassDependies(std::vector<vk::SubpassDependency>* _RenderPassBuildContext);
 
-        std::vector<vk::AttachmentDescription> ParseAttahchementDescription(bool _hasdepth);
+        vk::SubpassDependency ComputeMask(
+            const std::array<std::array<RhiResourceState, MaxSubPass>, MaxAttachementSlot>& usageTable,
+            uint32_t _SubPassIndex,
+            PC_CORE::AttachementRef _AttachementRef,
+            uint32_t _SrcSubPassIndex,
+            uint32_t _DstSubPasIndex);
+
+        static std::pair<vk::AccessFlags, vk::PipelineStageFlags> AttachementDependencies(const PC_CORE::RhiResource::State _State, const PC_CORE::RenderPassAttachementDescriptor& RenderPassAttachementDescriptor);
+
     };
 }

@@ -67,7 +67,7 @@ static RhiResourceState GetAfterCreationImageLayout(
         if (aspect & vk::ImageAspectFlagBits::eDepth)
             return RhiResourceState::DepthStencilRead;
 
-        return RhiResourceState::ShaderRead;
+        return RhiResourceState::FragmentShaderResource;
     }
 
     if (flag & TexF::LoadAndStore) // for compute shader
@@ -272,7 +272,7 @@ void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, cons
             }
             if (m_TextureUsage & TextureUsageFlagBits::Sampled)
             {
-                handle.resourceState = RhiResourceState::ShaderRead;
+                handle.resourceState = RhiResourceState::FragmentShaderResource;
             }
         }
 
@@ -386,7 +386,7 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
             }
             if (m_TextureUsage & TextureUsageFlagBits::Sampled)
             {
-                handle.resourceState = RhiResourceState::ShaderRead;
+                handle.resourceState = RhiResourceState::FragmentShaderResource;
             }
         }
 
