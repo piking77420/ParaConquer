@@ -54,16 +54,19 @@ BEGIN_EDITOR_PCCORE
 
     using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ObjectPtr<PC_CORE::Resource>>;
 
-    class Editor
+    class Editor : public PC_CORE::App
     {
     public:
-        void Init();
-
-        void Destroy();
-
+    
         Editor();
 
-        ~Editor();
+        ~Editor() override;
+
+        void Init() override;
+
+        void Destroy() override;
+
+        void Run(bool* _appShouldClose) override;
 
         template <EditorCommandDerived T, typename... Args>
         void PushCommand(Args&&... args);
@@ -74,7 +77,6 @@ BEGIN_EDITOR_PCCORE
 
         void DestroyTestScene();
 
-        void Run(bool* _appShouldClose);
 
         void InitEditor();
 
@@ -85,8 +87,6 @@ BEGIN_EDITOR_PCCORE
         static inline Editor* instance = nullptr;
 
         ShaderCompiler shaderCompiler;
-
-        PC_CORE::App gameApp;
 
         PC_CORE::IMGUIContext IMGUIContext;
 

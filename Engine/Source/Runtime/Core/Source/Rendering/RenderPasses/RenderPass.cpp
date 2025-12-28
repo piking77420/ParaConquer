@@ -2,7 +2,7 @@
 
 #include "Resources/ResourceManager.hpp"
 
-PC_CORE::RenderPass::RenderPass()
+PC_CORE::Rendering::RenderPass::RenderPass()
 {
-    //m_RenderResources = ResourceManager::Get<RenderResources>("RenderResources");
+	DYNAMIC_REFLECT_INIT
 }

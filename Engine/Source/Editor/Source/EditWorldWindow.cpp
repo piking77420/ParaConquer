@@ -1,18 +1,19 @@
 ﻿#include "EditWorldWindow.hpp"
 
-#include <Imgui.h>
-#include "Editor.hpp"
 #include "App.hpp"
 #include "EasingFunction.hpp"
-#include "Time/CoreTime.hpp"
+#include "Editor.hpp"
 #include "Log.hpp"
+#include "Rendering/View/CameraView.hpp"
+#include "Time/CoreTime.hpp"
+#include <Imgui.h>
 
 using namespace PC_EDITOR_CORE;
 
 EditWorldWindow::EditWorldWindow(Editor& _editor, const std::string& _name) : WorldViewWindow(_editor, _name)
 {
-    RotateCamera(0.2f);
-    m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
+    bool dummy;
+    RotateCamera(0.01f, &dummy);
 }
 
 
@@ -26,10 +27,10 @@ void EditWorldWindow::Update()
         deltass.Reset();
 
     if (ImGui::IsWindowFocused())
-        MoveCameraUpDate();
+        MoveCameraUpdate();
 }
 
-void EditWorldWindow::MoveCameraUpDate()
+void EditWorldWindow::MoveCameraUpdate()
 {
     const float deltatime = PC_CORE::Time::DeltaTime();
 
@@ -40,42 +41,51 @@ void EditWorldWindow::MoveCameraUpDate()
 
     HideCursor();
     CameraChangeSpeed(deltatime);
-    CameratMovment(deltatime);
-    RotateCamera(deltatime);
+
+    bool CameraDirty = false;
+    CameratMovment(deltatime, &CameraDirty);
+    RotateCamera(deltatime, &CameraDirty);
+    if (CameraDirty && m_View)
+        m_View->UpdateView();
 }
 
-void EditWorldWindow::RotateCamera(float _deltatime)
+void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)
 {
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
     {
+        deltass.Reset();
         return;
     }
 
 
-    const auto io = ImGui::GetIO();
-    const Tbx::Vector2f vec = {io.MouseDelta.x, -io.MouseDelta.y};
-    deltass.AddSample(vec);
+    const ImGuiIO& io = ImGui::GetIO();
+    const Tbx::Vector2f delta = {io.MouseDelta.x, -io.MouseDelta.y};
+    if (std::abs(delta.x) < 0.01f && std::abs(delta.y))
+    {
+        return;
+    }
+    *_isDirty = true;
+
+    deltass.AddSample(delta);
     const Tbx::Vector2f average = deltass.GetAvarage<Tbx::Vector2f>();
-    yaw += average.x * _deltatime * cameraSensitivity;
-    pitch += average.y * _deltatime * cameraSensitivity;
+    yaw += average.x * cameraSensitivity;
+    pitch += average.y * cameraSensitivity;
 
-    constexpr float MaxPitch = 89.f;
+    constexpr float MaxPitch = 89.0f;
+    pitch = std::clamp(pitch, -MaxPitch, MaxPitch);
 
-    if (pitch >= MaxPitch)
-        pitch = MaxPitch;
-    if (pitch <= -MaxPitch)
-        pitch = -MaxPitch;
-
-    camera.Front = camera.Front.Normalize();
     Tbx::Vector3d forward;
     forward.x = std::cos(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
     forward.y = std::sin(pitch * Tbx::dDeg2Rad);
     forward.z = std::sin(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
 
+    camera.Front = forward.Normalize();
+
     camera.LookAt(camera.Position + forward);
+    *_isDirty = true;
 }
 
-void EditWorldWindow::CameratMovment(float _deltatime)
+void EditWorldWindow::CameratMovment(float _deltatime, bool* isDirty)
 {
     bool isPositionDirty = false;
     Tbx::Vector3d addVector = Tbx::Vector3d::Zero();
@@ -100,14 +110,11 @@ void EditWorldWindow::CameratMovment(float _deltatime)
     }
 
     float mag = addVector.Magnitude();
-    if (mag <= Tbx::Epsilon<float>())
-    {
-        camera.Position = SmoothDamp(camera.Position, camera.Position, m_CameraSpeed, smoothTime, _deltatime);
-    }
-    else
+    if (mag > Tbx::Epsilon<float>())
     {
         Tbx::Vector3d desiredPosition = camera.Position + (addVector.Normalize() * m_CameraSpeedValue);
         camera.Position = SmoothDamp(camera.Position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
+        *isDirty = true;
     }
 }
 
@@ -131,11 +138,11 @@ void EditWorldWindow::HideCursor()
 
     if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
     {
-       m_Editor->gameApp.MainWindow.HideCursor(false);
+       m_Editor->MainWindow.HideCursor(false);
     }
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
-        m_Editor->gameApp.MainWindow.HideCursor(true);
+        m_Editor->MainWindow.HideCursor(true);
     }
 }

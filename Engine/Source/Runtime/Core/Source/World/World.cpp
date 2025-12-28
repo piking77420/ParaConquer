@@ -3,6 +3,7 @@
 
 #include "Rendering/Light.hpp"
 #include "World/Transform.hpp"
+#include "Rendering/RenderSystem.hpp"
 
 using namespace PC_CORE;
 
@@ -15,6 +16,7 @@ World::World()
     }
 
     m_World = this;
+    World::GetWorld()->level.RegisterSystem<RendererSystem>(&RenderingWorldData);
 }
 
 

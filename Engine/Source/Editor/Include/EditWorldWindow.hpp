@@ -10,14 +10,10 @@ BEGIN_EDITOR_PCCORE
     public:
         void OnPlayButton() override
         {
-            m_RenderingContextFlag &= ~PC_CORE::RenderingContextFlag::DebugDrawGeometry;
-            m_View->SetRenderingContextFlag(m_RenderingContextFlag);
         }
 
         void OnResetScene() override
         {
-            m_RenderingContextFlag |= PC_CORE::RenderingContextFlag::DebugDrawGeometry;
-            m_View->SetRenderingContextFlag(m_RenderingContextFlag);
         }
 
         explicit EditWorldWindow(Editor& _editor, const std::string& _name);
@@ -27,9 +23,9 @@ BEGIN_EDITOR_PCCORE
         void Update() override;
 
     protected:
-        void MoveCameraUpDate();
+        void MoveCameraUpdate();
 
-        PC_CORE::LowPassFilter<Tbx::Vector2f, 6> deltass;
+        PC_CORE::LowPassFilter<Tbx::Vector2f, 4> deltass;
 
         float m_BaseCameraSpeed = 5.f;
 
@@ -39,15 +35,15 @@ BEGIN_EDITOR_PCCORE
 
         float yaw = 90.f;
 
-        float cameraSensitivity = 100.f;
+        float cameraSensitivity = 1.f;
 
         Tbx::Vector3d m_CameraSpeed = Tbx::Vector3d::Zero();
 
         float smoothTime = 0.3f;
 
-        void RotateCamera(float _deltatime);
+        void RotateCamera(float _deltatime, bool* _isDirty);
 
-        void CameratMovment(float _deltatime);
+        void CameratMovment(float _deltatime, bool* _isDirty);
 
         void CameraChangeSpeed(float _deltatime);
 

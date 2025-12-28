@@ -21,6 +21,8 @@ BEGIN_PCCORE
 
         Level level;
 
+        Rendering::RenderingWorldData RenderingWorldData; // TODO DO HANDLE RENDER THREAD
+
         PC_CORE_API void Begin();
 
         PC_CORE_API void Update(double _tick);
@@ -31,7 +33,6 @@ BEGIN_PCCORE
 
         PC_CORE_API World();
 
-
         PC_CORE_API ~World()
         {
             m_World = nullptr;
@@ -41,9 +42,9 @@ BEGIN_PCCORE
         PC_CORE_API static inline World* m_World = nullptr;
 
 
-        void GetStaticMesh(RenderingWorldData& _renderData, EntityId _entityId);
+        //void GetStaticMesh(RenderingWorldData& _renderData, EntityId _entityId);
 
-        void GetStaticLightData(RenderingWorldData& _renderData, EntityId _entityId);
+        //void GetStaticLightData(RenderingWorldData& _renderData, EntityId _entityId);
 
         REFLECT(World)
         REFLECT_MEMBER(World, level)

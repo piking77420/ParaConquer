@@ -13,11 +13,16 @@ BEGIN_PCCORE
     class Camera
     {
     public:
-        Tbx::Vector3d Position = Tbx::Vector3d(0, 1, -10);
+        // Fov in radians
+        PC_CORE_API Camera(float _fov, float _aspect, float _near, float _far,
+            const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward, const Tbx::Vector3d& _up);
 
-        Tbx::Vector3d Up = Tbx::Vector3d::UnitY();
+        PC_CORE_API Camera(Tbx::Vector2f _screenSize, float _near, float _far,
+            const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward, const Tbx::Vector3d& _up);
 
-        Tbx::Vector3d Front = Tbx::Vector3d::UnitZ();
+        PC_CORE_API ~Camera() = default;
+
+        PC_CORE_API Camera() = default;
 
         PC_CORE_API void SetProjectionType(ProjectionType _projectionType);
 
@@ -39,28 +44,47 @@ BEGIN_PCCORE
 
         PC_CORE_API float GetFar() const;
 
-        PC_CORE_API Tbx::Matrix4x4d GetViewMatrix() const;
+        PC_CORE_API const Tbx::Matrix4x4d& GetViewMatrix() const
+        {
+            return m_View;
+        }
 
-        PC_CORE_API Tbx::Matrix4x4d GetProjectionMatrix() const;
+        PC_CORE_API const Tbx::Matrix4x4d& GetViewInvMatrix() const
+        {
+            return m_ViewInv;
+        }
 
-        PC_CORE_API Tbx::Matrix4x4d GetVpMatrix() const;
+        PC_CORE_API const Tbx::Matrix4x4d& GetProjection() const
+        {
+            return m_Projection;
+        }
+
+        PC_CORE_API const Tbx::Matrix4x4d& GetProjectionInv() const
+        {
+            return m_ProjectionInv;
+        }
+
+        PC_CORE_API const Tbx::Matrix4x4d& GetViewProjection() const
+        {
+            return m_ViewProjection;
+        }
+
+        PC_CORE_API const Tbx::Matrix4x4d& GetViewProjectionInv() const
+        {
+            return m_ViewProjectionInv;
+        }
 
         PC_CORE_API void LookAt(const Tbx::Vector3d& _point, const Tbx::Vector3d& _up);
 
         PC_CORE_API void LookAt(const Tbx::Vector3d& _point);
 
-        PC_CORE_API Camera() = default;
-
         PC_CORE_API void SetScreenSize(int width, int height);
 
-        // Fov in radians
-        PC_CORE_API Camera(float _fov, float _aspect, float _near, float _far,
-                           const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward, const Tbx::Vector3d& _up);
+        Tbx::Vector3d Position = Tbx::Vector3d(0, 0, -10);
 
-        PC_CORE_API Camera(Tbx::Vector2f _screenSize, float _near, float _far,
-                           const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward, const Tbx::Vector3d& _up);
+        Tbx::Vector3d Up = Tbx::Vector3d::UnitY();
 
-        PC_CORE_API ~Camera() = default;
+        Tbx::Vector3d Front = Tbx::Vector3d::UnitZ();
 
     private:
         ProjectionType m_ProjectionType = ProjectionType::Perspective;
@@ -71,9 +95,23 @@ BEGIN_PCCORE
         float m_Near = 0.1f;
         float m_Far = 10000.f;
 
+        Tbx::Matrix4x4d m_View = Tbx::Matrix4x4d::Identity();
+        Tbx::Matrix4x4d m_ViewInv = Tbx::Matrix4x4d::Identity();
 
-        Tbx::Vector2f m_BottomTopScreen;
-        Tbx::Vector2f m_LeftRightScreen;
+        Tbx::Matrix4x4d m_Projection = Tbx::Matrix4x4d::Identity();
+        Tbx::Matrix4x4d m_ProjectionInv = Tbx::Matrix4x4d::Identity();
+
+        Tbx::Matrix4x4d m_ViewProjection = Tbx::Matrix4x4d::Identity();
+        Tbx::Matrix4x4d m_ViewProjectionInv = Tbx::Matrix4x4d::Identity();
+
+        Tbx::Vector2f m_BottomTopScreen{ 0.f,0.f };
+        Tbx::Vector2f m_LeftRightScreen{ 0.f,0.f };
+
+        void ComputeView();
+
+        void ComputeProjection();
+
+        void ComputeViewProjection();
     };
 
 END_PCCORE

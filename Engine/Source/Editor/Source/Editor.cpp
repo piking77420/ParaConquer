@@ -214,31 +214,9 @@ void Editor::Init()
     };
 
     CompileShader();
-    gameApp.Init(appCreateInfo);
-    IMGUIContext.Init(gameApp.RenderHarwareInteface, gameApp.MainWindow.GetHandle());
+    App::Init(appCreateInfo);
 
-    gameApp.Renderer.PrimaryCommandList->RecordFetchCommand([&](CommandList* cmd)
-    {
-        cmd->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
-        IMGUIContext.Render(cmd);
-        cmd->EndDebugLabel();
-    });
-
-
-    // TO AVOID USING A SYSTEM TO GET ENTIES SYGNATURE 
-    // TO DO FIND A WAY TO ITERATE OVER A BIT SET OF 100000000 QUICKLY
-    //https://en.wikipedia.org/wiki/Van_Emde_Boas_tree
-    World::GetWorld()->level.RegisterSystem<RendererSystem>(&gameApp.RenderingWorldData);
-
-
-    ObjectPtr sampler = ResourceManager::Create<Sampler>(gameApp.RenderHarwareInteface, "LinearRepeat");
-
-    Sampler& s = *sampler;
-    s->SetMagFilter(Filter::Linear)
-        .SetMinFilter(Filter::Linear)
-        .Build();
-    
-
+    IMGUIContext.Init(RenderHarwareInteface, MainWindow.GetHandle());
     InitTestScene();
     InitEditor();
 }
@@ -253,7 +231,7 @@ void Editor::Destroy()
 
     IMGUIContext.Destroy();
 
-    gameApp.Destroy();
+    App::Destroy();
 }
 
 void Editor::UpdateEditor()
@@ -281,14 +259,14 @@ void Editor::UpdateEditor()
             }
             ImGui::EndMenu();
         }
-
+        /*
         if (ImGui::BeginMenu("Rendering"))
         {
             auto l = [&](std::shared_ptr<Resource> _shader)
             {
                 if (ImGui::MenuItem(_shader->Name.c_str()))
                 {
-                   gameApp.RenderHarwareInteface.GetRhiContext().WaitIdle();
+                   RenderHarwareInteface.GetRhiContext().WaitIdle();
                     _shader->Reload();
                     // reload shader
                 }
@@ -298,10 +276,9 @@ void Editor::UpdateEditor()
 
             ImGui::EndMenu();
         }
-        ImGui::EndMenuBar();
+        ImGui::EndMenuBar();*/
     }
 
-    DebugDrawContext::DrawSphere(Tbx::Vector3d{ 0,0,0 }, 1.f);
 
     {
         PERF_REGION_SCOPED_NAMED("Update Windows");
@@ -319,16 +296,6 @@ void Editor::UpdateEditor()
     EditorCommandUpdate();
     ImGui::PopFont();
     dockSpace.EndDockSpace();
-
-    {
-        PERF_REGION_SCOPED_NAMED("Editor Render");
-        m_EditorRenderer.DrawSelectedEntity();
-
-        for (auto& editorWindow : editorWindows)
-            editorWindow->Render();
-        for (auto& sub : editorSubSystems)
-            sub->Render();
-    }
 }
 
 void Editor::RewindCommand()
@@ -397,30 +364,47 @@ void Editor::DestroyTestScene()
 void Editor::Run(bool* _appShouldClose)
 {
     // begin game thread
-    while (!gameApp.MainWindow.ShouldClose())
+    while (!MainWindow.ShouldClose())
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Editor);
 
-        gameApp.CoreIo.PoolEvent();
-        gameApp.MainWindow.PoolEvents();
+        CoreIo.PoolEvent();
+        MainWindow.PoolEvents();
         Time::UpdateTime();
 
 
         IMGUIContext.NewFrame();
-        gameApp.WorldTick(Time::DeltaTime());
-        gameApp.Renderer.GetRenderingData(gameApp.RenderingWorldData);
-
-        // end game thread
-        // begin render thread
-        //gameApp.RenderHarwareInteface.ProcessResourceUpdate();
-        gameApp.Renderer.BeginFrame(&gameApp.MainWindow);
+        WorldTick(Time::DeltaTime());
+        //Renderer.GetRenderingData(RenderingWorldData);
         UpdateEditor();
-        gameApp.Renderer.SwapBuffers(&gameApp.MainWindow);
+
+        { // Render
+            RhiSwapChain* swapChain = RenderHarwareInteface.GetRhiContext().rhiSwapChain.get();
+            Window* mainWindow = &MainWindow;
+
+            swapChain->GetSwapChainImageIndex(mainWindow);  
+            PrimaryCommandBuffer->BeginRecordCommands();
+
+            {
+                PERF_REGION_SCOPED_NAMED("Editor Render");
+                m_EditorRenderer.DrawSelectedEntity();
+
+                for (auto& editorWindow : editorWindows)
+                    editorWindow->Render();
+                for (auto& sub : editorSubSystems)
+                    sub->Render();
+            }
+
+            IMGUIContext.Render(PrimaryCommandBuffer.get());
+            PrimaryCommandBuffer->Flush(PC_CORE::FlushCommandMethod::Sync, PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
+            swapChain->Present(&MainWindow);
+        }
+        
         PERF_FRAME_MARK;
     }
 
-    gameApp.RenderHarwareInteface.GetRhiContext().WaitIdle();
+    RenderHarwareInteface.GetRhiContext().WaitIdle();
     // to do move this 
 }
 

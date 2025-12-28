@@ -2,6 +2,10 @@
 
 #include "RenderingTypedef.h"
 #include "Ecs/EcsSystem.h"
+namespace PC_CORE::Rendering
+{
+    struct RenderingWorldData;
+}
 
 BEGIN_PCCORE
     class Level;
@@ -25,12 +29,12 @@ BEGIN_PCCORE
 
         PC_CORE_API RendererSystem() = default;
 
-        PC_CORE_API RendererSystem(RenderingWorldData* _renderingWorldData);
+        PC_CORE_API RendererSystem(Rendering::RenderingWorldData* _renderingWorldData);
 
         PC_CORE_API ~RendererSystem() override = default;
 
     private:
-        RenderingWorldData* m_RenderingDataPtr = nullptr;
+        Rendering::RenderingWorldData* m_RenderingDataPtr = nullptr;
 
         Signature m_StaticMeshSignature;
 

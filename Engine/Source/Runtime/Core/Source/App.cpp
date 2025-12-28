@@ -30,7 +30,11 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     };
 
     RenderHarwareInteface.Init(createInfo);
-    Renderer.Init(RenderHarwareInteface);
+    PrimaryCommandBuffer.reset(RenderHarwareInteface.CreateCommandList());
+    PrimaryCommandBuffer
+        ->SetName("PrimaryCommandBuffer")
+        .Build();
+
     Time::Init();
 }
 
@@ -43,11 +47,6 @@ void App::Destroy()
 App::App()
 {
     Instance = this;
-}
-
-
-void App::Run()
-{
 }
 
 void App::WorldTick(double _tick)

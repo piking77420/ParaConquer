@@ -2,23 +2,65 @@
 
 #include "CoreHeader.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
-#include "Rendering/Renderer.hpp"
 
-BEGIN_PCCORE
-    class RenderPass : public IGpuResource
+
+
+namespace PC_CORE::Rendering
+{
+class RenderGraphContext;
+
+class RenderPass : public DynamicReflectable
+{
+public:
+    PC_CORE_API RenderPass();
+
+    PC_CORE_API ~RenderPass() override = default;
+
+    IMP_DYNAMIC_REFLECT()
+
+    const RhiRenderPass& operator*() const
     {
-    public:
-        PC_CORE_API RhiObject* const GetRhiHandle() const
-        {
-            return m_RhiRenderPass.get();
-        }
+        return *m_RhiRenderPass;
+    }
 
-        PC_CORE_API RenderPass();
+    RhiRenderPass& operator*()
+    {
+        return *m_RhiRenderPass;
+    }
 
-        PC_CORE_API ~RenderPass() override = default;
+    RhiRenderPass* operator->()
+    {
+        return m_RhiRenderPass.get();
+    }
 
-    protected:
-        std::shared_ptr<RhiRenderPass> m_RhiRenderPass;
-    };
+    const RhiRenderPass* operator->() const
+    {
+        return m_RhiRenderPass.get();
+    }
 
-END_PCCORE
+    RhiRenderPass* Get()
+    {
+        return m_RhiRenderPass.get();
+    }
+
+    const RhiRenderPass* Get() const
+    {
+        return m_RhiRenderPass.get();
+    }
+
+    virtual void Build(RenderGraph& RenderGraph) = 0;
+
+    virtual void Update(const RenderGraphContext& _RenderGraphContext) = 0;
+
+    virtual void Execute(const RenderGraphContext& _RenderGraphContext) = 0;
+
+    bool IsDisable = false;
+
+protected:
+    std::unique_ptr<RhiRenderPass> m_RhiRenderPass;
+};
+
+REFLECT(RenderPass, PC_CORE::DynamicReflectable);
+
+
+}

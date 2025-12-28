@@ -36,20 +36,6 @@ BEGIN_PCCORE
 
     REFLECT(RhiExtension);
 
-    struct CameraGpu
-    {
-        Tbx::Matrix4x4f View;
-        Tbx::Matrix4x4f Proj;
-        Tbx::Matrix4x4f Vp;
-        Tbx::Matrix4x4f VpInv;
-        Tbx::Matrix4x4f ViewInv;
-        Tbx::Matrix4x4f ProjInv;
-        float Time;
-        float Deltatime;
-        float CameraNear;
-        float CameraFar;
-        Tbx::Vector3f CameraPos;
-    };
 
     struct ALIGNAS_16 DrawObjectBufferGPU
     {
@@ -250,8 +236,20 @@ BEGIN_PCCORE
         D24UnormS8Uint = 129,
         D32SfloatS8Uint = 130,
     };
-
     REFLECT(RhiFormat)
+
+    enum struct SampleCount
+    {
+        S1 = 1,
+        S2 = 2,
+        S4 = 4,
+        S8 = 8,
+        S16 = 16,
+        S32 = 32,
+        S64 = 64,
+    };
+    REFLECT(SampleCount)
+
 
 #pragma region GetBytePerPixel
     static inline uint32_t GetBytePerPixel(RhiFormat RhiFormat)

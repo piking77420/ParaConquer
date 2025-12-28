@@ -7,6 +7,8 @@ using namespace PC_CORE;
 void Camera::SetProjectionType(ProjectionType _projectionType)
 {
     m_ProjectionType = _projectionType;
+    ComputeProjection();
+    ComputeViewProjection();
 }
 
 ProjectionType Camera::GetProjectionType() const
@@ -17,6 +19,8 @@ ProjectionType Camera::GetProjectionType() const
 void Camera::SetFov(float _fov)
 {
     m_Fov = _fov;
+    ComputeProjection();
+    ComputeViewProjection();
 }
 
 float Camera::GetFov() const
@@ -27,6 +31,8 @@ float Camera::GetFov() const
 void Camera::SetAspect(float _aspect)
 {
     m_Aspect = _aspect;
+    ComputeProjection();
+    ComputeViewProjection();
 }
 
 float Camera::GetAspect() const
@@ -37,6 +43,8 @@ float Camera::GetAspect() const
 void Camera::SetNear(float _near)
 {
     m_Near = _near;
+    ComputeProjection();
+    ComputeViewProjection();
 }
 
 float Camera::GetNear() const
@@ -47,6 +55,8 @@ float Camera::GetNear() const
 void Camera::SetFar(float _far)
 {
     m_Far = _far;
+    ComputeProjection();
+    ComputeViewProjection();
 }
 
 float Camera::GetFar() const
@@ -54,42 +64,41 @@ float Camera::GetFar() const
     return m_Far;
 }
 
-Tbx::Matrix4x4d Camera::GetViewMatrix() const
-{
-    Tbx::Matrix4x4f viewMatrix;
-    return Tbx::LookAtRH(Position, Position + Front, Up);
-}
-
-Tbx::Matrix4x4d Camera::GetProjectionMatrix() const
-{
-    return m_ProjectionType == ProjectionType::Perspective
-               ? Tbx::PerspectiveMatrix(m_Fov, m_Aspect, m_Near, m_Far)
-               : Tbx::OrthoGraphicMatrix(m_LeftRightScreen.x, m_LeftRightScreen.y, m_BottomTopScreen.x,
-                                         m_BottomTopScreen.y, m_Near, m_Far);
-}
-
-Tbx::Matrix4x4d Camera::GetVpMatrix() const
-{
-    return GetViewMatrix() * GetProjectionMatrix();
-}
-
-
 void Camera::LookAt(const Tbx::Vector3d& _point, const Tbx::Vector3d& _up)
 {
     Front = (_point - Position).Normalize();
     Up = _up;
+    ComputeView();
+    ComputeViewProjection();
 }
 
 void Camera::LookAt(const Tbx::Vector3d& _point)
 {
-    Front = (_point - Position).Normalize();
-    const Tbx::Vector3d right = Tbx::Vector3d::Cross(Front, Tbx::Vector3d::UnitY()).Normalize();
+    Front = (_point - Position);
+
+    if (Front.MagnitudeSquare() < 1e-8)
+    {
+        return;
+    }
+    Front = Front.Normalize();
+
+    Tbx::Vector3d worldUp = Tbx::Vector3d::UnitY();
+
+    if (std::abs(Tbx::Vector3d::Dot(Front, worldUp)) > 0.999f)
+    {
+        worldUp = Tbx::Vector3d::UnitZ();
+    }
+
+    const Tbx::Vector3d right = Tbx::Vector3d::Cross(Front, worldUp).Normalize();
     Up = Tbx::Vector3d::Cross(right, Front).Normalize();
+
+    ComputeView();
+    ComputeViewProjection();
 }
 
 void Camera::SetScreenSize(int width, int height)
 {
-    m_Aspect = static_cast<float>(width) / static_cast<float>(height);
+    SetAspect(static_cast<float>(width) / static_cast<float>(height));
 }
 
 Camera::Camera(float _fov, float _aspect, float _near, float _far, const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward,
@@ -102,4 +111,37 @@ Camera::Camera(Tbx::Vector2f _screenSize, float _near, float _far, const Tbx::Ve
                                         Tbx::Vector2f(0.f - _screenSize.y, _screenSize.y)),
                                     m_LeftRightScreen(Tbx::Vector2f(0.f - _screenSize.x, _screenSize.x))
 {
+}
+
+void Camera::ComputeView()
+{
+    m_View = Tbx::LookAtRH(Position, Position + Front, Up);
+    m_ViewInv = m_View.Invert();
+}
+
+void Camera::ComputeProjection()
+{
+    const double Aspect = static_cast<double>(m_Aspect);
+    const double Near = static_cast<double>(m_Near);
+    const double Far = static_cast<double>(m_Far);
+
+    m_Projection = m_ProjectionType == ProjectionType::Perspective
+        ? Tbx::PerspectiveMatrix(
+            static_cast<double>(m_Fov),
+            Aspect,
+            Near,
+            Far)
+        : Tbx::OrthoGraphicMatrix(
+            static_cast<double>(m_LeftRightScreen.x),
+            static_cast<double>(m_LeftRightScreen.y), 
+            static_cast<double>(m_BottomTopScreen.x),
+            static_cast<double>(m_BottomTopScreen.y), Near, Far);
+
+    m_ProjectionInv = m_Projection.Invert();
+}
+
+void Camera::ComputeViewProjection()
+{
+    m_ViewProjection = m_Projection * m_View;
+    m_ViewProjectionInv = m_ViewInv * m_ProjectionInv;
 }

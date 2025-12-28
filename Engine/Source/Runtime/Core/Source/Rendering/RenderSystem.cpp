@@ -5,8 +5,9 @@
 #include "World/StaticMeshComponent.hpp"
 #include "World/Transform.hpp"
 #include "World/World.hpp"
+#include "Rendering/Renderer.hpp"
 
-PC_CORE::RendererSystem::RendererSystem(RenderingWorldData* _renderingWorldData)
+PC_CORE::RendererSystem::RendererSystem(Rendering::RenderingWorldData* _renderingWorldData)
 {
     DYNAMIC_REFLECT_INIT
 
@@ -43,6 +44,7 @@ void PC_CORE::RendererSystem::RenderingTick(double deltatime)
 
 void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 {
+    /*
     std::set<EntityId>& staticMeshes = *GetEntitySet(m_StaticMeshSignature);
 
     for (auto& ent : staticMeshes)
@@ -70,11 +72,12 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         };
 
         m_RenderingDataPtr->StaticMeshComponentData.push_back(staticMeshData);
-    }
+    }*/
 }
 
 void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
 {
+    /*
     std::set<EntityId>& dirLights = *GetEntitySet(m_DirLightSignature);
     for (auto& ent : dirLights)
     {
@@ -110,5 +113,5 @@ void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
         };
 
         m_RenderingDataPtr->LightData.push_back(lightData);
-    }
+    }*/
 }

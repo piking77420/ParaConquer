@@ -5,6 +5,8 @@
 #include "Time/CoreTime.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Resources/VulkanDescriptorSets.hpp"
+#include "Rendering/View/CameraView.hpp"
+#include "LowRenderer/CommandList.hpp"
 
 #undef near
 #undef far
@@ -17,15 +19,17 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
 
-    m_ViewPortSampler = PC_CORE::Sampler(m_Editor->gameApp.RenderHarwareInteface,"ViewPortImageSampler");
+    m_ViewPortSampler = PC_CORE::Sampler(m_Editor->RenderHarwareInteface,"ViewPortImageSampler");
     m_ViewPortSampler
         ->SetMagFilter(PC_CORE::Filter::Linear)
         .SetMinFilter(PC_CORE::Filter::Linear)
         .Build();
+
 }
 
 WorldViewWindow::~WorldViewWindow()
 {
+   
 }
 
 
@@ -41,42 +45,42 @@ void WorldViewWindow::Update()
         auto sizeI = Tbx::Vector2i(static_cast<int>(size.x), static_cast<int>(size.y));
         const float aspect = size.x / size.y;
         camera.SetAspect(aspect);
-
-        if (!m_View)
-        {
-            m_View = m_Editor->gameApp.Renderer.CreateView(sizeI);
-            m_View->SetCamera(&camera);
-        }
-        else
-        {
-            m_View->Resize(sizeI);
-        }
-
+        UpdateViewPort(sizeI);
         UpdateImguiViewPort();
     }
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    uint32_t currentImage = m_Editor->gameApp.RenderHarwareInteface.GetFrameIndex();
+    uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
 
-    m_View->Update();
     ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
                  ImVec2(1, 1));
 }
 
-void WorldViewWindow::Render()
+void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
 {
     PERF_REGION_SCOPED;
 
-    EditorWindow::Render();
+    EditorWindow::Render(_Cmd);
     if (size == Tbx::Vector2f{0.f, 0.f} || !m_View)
         return;
 
-    m_Editor->gameApp.Renderer.Draw(*m_View.get());
+    if (m_View)
+    {
+        PC_CORE::Rendering::RenderGraphContext context{
+           .View = *m_View,
+           .RenderGraph = m_RenderGraph,
+           .RenderingWorldData = m_RenderingWorldData,
+           .CommandBuffer = *_Cmd
+        };
+
+
+       //(*m_View.get());
+    }
 }
 
 void WorldViewWindow::UpdateImguiViewPort()
 {
-    
+    /*
     bool needFree = false;
     for (auto& it : imguiDescriptorSet)
         if (it != VK_NULL_HANDLE)
@@ -90,5 +94,20 @@ void WorldViewWindow::UpdateImguiViewPort()
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_View->FinalImage.get(),
                                                     m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
-                                                    imguiDescriptorSet.size());
+                                                    imguiDescriptorSet.size());*/
+}
+
+void WorldViewWindow::UpdateViewPort(Tbx::Vector2i _Size)
+{
+
+    if (!m_View )
+    {
+        m_View.reset(new PC_CORE::Rendering::CameraView(m_Editor->RenderHarwareInteface, _Size));
+        m_View->DeclarePass(&m_RenderGraph);
+    }
+    if (m_View->renderSize != _Size)
+    {
+        m_View->SetCamera(&camera);
+    }
+
 }

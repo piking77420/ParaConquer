@@ -24,31 +24,25 @@ BEGIN_PCCORE
     class App
     {
     public:
-        static constexpr auto AppName = "ParaConquer";
-
         CoreIo CoreIo;
+
+        World World;
 
         Window MainWindow;
 
         Rhi RenderHarwareInteface;
 
-        RenderingWorldData RenderingWorldData;
-
-        std::shared_ptr<RhiSwapChain> mainSwapChain;
-
-        Renderer Renderer;
-
-        World World;
-
-        PC_CORE_API void Init(const AppCreateInfo& _appCreateInfo);
-
-        PC_CORE_API void Destroy();
+        std::unique_ptr<CommandList> PrimaryCommandBuffer; // TO DO HANDLE MULTIPLE
 
         PC_CORE_API App();
 
-        PC_CORE_API ~App() = default;
+        PC_CORE_API virtual ~App() = default;
 
-        PC_CORE_API void Run();
+        PC_CORE_API virtual void Init(const AppCreateInfo& _appCreateInfo);
+
+        PC_CORE_API virtual void Destroy();
+
+        PC_CORE_API virtual void Run(bool* _appShouldClose) = 0;
 
         PC_CORE_API void WorldTick(double _tick);
 
