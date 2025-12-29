@@ -66,8 +66,8 @@ void WorldViewWindow::Update()
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
 
-    ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
-                 ImVec2(1, 1));
+    //ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
+      //           ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)

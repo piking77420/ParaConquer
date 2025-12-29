@@ -20,6 +20,7 @@ BEGIN_PCCORE
     
     class Rhi;
 
+
     class RhiContext
     {
     public:
@@ -39,8 +40,9 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void WaitIdle() = 0;
 
-    protected:
+        PC_CORE_API virtual void SendEnqueuCommand(CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) = 0;
 
+    protected:
         Rhi& m_Rhi;
     };
 

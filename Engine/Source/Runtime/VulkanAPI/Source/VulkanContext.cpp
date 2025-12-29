@@ -12,6 +12,8 @@
 #include "LowRenderer/Rhi.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanSwapChain.hpp"
+#include "VulkanCommandList.hpp"
+#include "Utils/RhiToVulkan.hpp"
 
 using namespace Vulkan;
 
@@ -20,6 +22,8 @@ VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreate
     , descritptorManager(*this)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+    
 
     std::set<std::string> extensionToEnable;
 
@@ -94,6 +98,7 @@ std::shared_ptr<VulkanPhysicalDevices> VulkanContext::GetPhysicalDevices()
     return std::reinterpret_pointer_cast<VulkanPhysicalDevices>(rhiPhysicalDevices);
 }
 
+
 void VulkanContext::WaitIdle()  
 {
     GetDevice()->GetDevice().waitIdle();
@@ -147,6 +152,10 @@ void VulkanContext::CreateCommandPools()
 
 void VulkanContext::CreateSyncObjects()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice);
 
     vk::SemaphoreCreateInfo semaphoreInfo{};
@@ -168,6 +177,9 @@ void VulkanContext::CreateSyncObjects()
 
 void VulkanContext::DestroySyncObjects()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(rhiDevice);
     for (size_t i = 0; i < syncObjects.size(); i++)
     {
@@ -177,4 +189,18 @@ void VulkanContext::DestroySyncObjects()
         //vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].computeFinishedSemaphore);
         //vulkanDevice->GetDevice().destroyFence(syncObjects[i].computeInFlightFence);
     }
+}
+
+
+
+void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage)
+{
+    PERF_REGION_SCOPED  
+    PERF_REGION_COLOR(PerfRegion::Rhi)
+
+    VulkanCommandList* vkCmdL = reinterpret_cast<VulkanCommandList*>(_EnqueuCommands);
+
+    flushedCommands.Commands.emplace_back(vkCmdL->GetVkHandle());
+    flushedCommands.Semaphores.emplace_back(vkCmdL->GetVkSemaphore());
+    flushedCommands.BatchPipelineStageFlag.emplace_back(Utils::RhiPipelineStageToVulkan(waitStage));
 }

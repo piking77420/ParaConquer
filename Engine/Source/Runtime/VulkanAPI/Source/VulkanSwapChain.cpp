@@ -18,6 +18,8 @@ Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht,
     : RhiSwapChain(_Rhi)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+    
     m_Surface = _Surface;
     m_Device = _VulkanDevice.GetDevice();
     FromSurface(vulkanPhysicalDevices, _Surface, _Widht, _Height);
@@ -58,6 +60,10 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 
 bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     VulkanContext& context = GET_VK_CONTEXT;
     vk::Device device = context.GetDevice()->GetDevice();
     uint32_t frameIndex = m_Rhi.GetFrameIndex();
@@ -168,6 +174,10 @@ vk::Extent2D Vulkan::VulkanSwapChain::ChooseSwapExtent(const vk::SurfaceCapabili
 void Vulkan::VulkanSwapChain::FromSurface(const VulkanPhysicalDevices& VulkanPhysicalDevices, vk::SurfaceKHR _Surface, 
     uint32_t _Width, uint32_t _Height)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     m_SwapChainSupportDetails = VulkanPhysicalDevices.GetSwapChainSupport(_Surface);
 
     m_SurfaceFormatKHR = ChooseSwapSurfaceFormat(m_SwapChainSupportDetails.formats);
@@ -190,8 +200,11 @@ void Vulkan::VulkanSwapChain::FromSurface(const VulkanPhysicalDevices& VulkanPhy
 
 void Vulkan::VulkanSwapChain::CreateImageViews()
 {
-    m_SwapChainImageViews.resize(m_SwapChainImage.size());
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
+
+    m_SwapChainImageViews.resize(m_SwapChainImage.size());
 
     for (size_t i = 0; i < m_SwapChainImageViews.size(); i++)
     {
@@ -216,6 +229,8 @@ void Vulkan::VulkanSwapChain::CreateImageViews()
 
 void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
     m_Framebuffers.resize(m_SwapChainImage.size());
 
@@ -242,6 +257,10 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 
 void Vulkan::VulkanSwapChain::CleanUpSwapChain()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     for (const auto& frameBuffer : m_Framebuffers)
         m_Device.destroyFramebuffer(frameBuffer);
 
@@ -254,6 +273,10 @@ void Vulkan::VulkanSwapChain::CleanUpSwapChain()
 
 void Vulkan::VulkanSwapChain::CreateSwapChain()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     vk::SwapchainCreateInfoKHR swapChainCreateInfo{};
     swapChainCreateInfo.sType = vk::StructureType::eSwapchainCreateInfoKHR;
     swapChainCreateInfo.surface = m_Surface;
@@ -311,30 +334,62 @@ uint32_t Vulkan::VulkanSwapChain::GetHeight() const
 
 void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
     VulkanContext& context = GET_VK_CONTEXT;
     vk::Device device = context.GetDevice()->GetDevice();
     vk::Queue mainQueu = context.mainQueue;
-    auto& flushedCommands = context.flushedCommands;
 
-    vk::Semaphore waitSemaphores[] = { context.syncObjects[frameIndex].imageAvailableSemaphore };
+    
+    vk::Semaphore waitSemaphoresImageAvailable[] = { context.syncObjects[frameIndex].imageAvailableSemaphore };
+    vk::PipelineStageFlags waitPipelineStageImageAvailable[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
-    vk::SubmitInfo submitInfo{};
-    submitInfo.sType = vk::StructureType::eSubmitInfo;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    vk::PipelineStageFlags stage = Utils::RhiPipelineStageToVulkan(flushedCommands[0].waitStages);
-    submitInfo.pWaitDstStageMask = &stage;
+    vk::Semaphore signalSemaphores[] = { context.syncObjects[m_SwapChainImageIndex].renderFinishedSemaphore };
+    // Handle all user Command list
+    context.SubmitInfoBuffer.clear();
+    context.SubmitInfoBuffer.resize(context.flushedCommands.Commands.size());
+    for (size_t i = 0; i < context.SubmitInfoBuffer.size(); i++)
+    {
+        vk::SubmitInfo& submitInfo = context.SubmitInfoBuffer[i];
+        submitInfo.sType = vk::StructureType::eSubmitInfo;
 
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &flushedCommands[0].cmd;
+        submitInfo.waitSemaphoreCount = 1; // always one for bow
 
-    vk::Semaphore signalSemaphores[] = { context.syncObjects[m_SwapChainImageIndex].renderFinishedSemaphore};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+        // Wait previous Work
+        if (i == 0)
+        {
+            submitInfo.pWaitSemaphores = waitSemaphoresImageAvailable;
+            submitInfo.pWaitDstStageMask = waitPipelineStageImageAvailable;
+        }
+        else
+        {
+            submitInfo.waitSemaphoreCount = 1;
+            submitInfo.pWaitSemaphores = &context.flushedCommands.Semaphores[i - 1];
+            submitInfo.pWaitDstStageMask = &context.flushedCommands.BatchPipelineStageFlag[i - 1]; // wait the previous 
+        }
+ 
+        // Signal n + 1 work
+        if (i == context.SubmitInfoBuffer.size() - 1)
+        {
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = signalSemaphores;
+        }
+        else
+        {
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = &context.flushedCommands.Semaphores[i];
+        }
 
-    VK_CALL(context.mainQueue.submit(1, &submitInfo, context.syncObjects[frameIndex].inFlightFence));
+        // Current Command
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &context.flushedCommands.Commands[i];
+    }
+   
+    VK_CALL(context.mainQueue.submit(static_cast<uint32_t>(context.SubmitInfoBuffer.size()), context.SubmitInfoBuffer.data(), context.syncObjects[frameIndex].inFlightFence));
 
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
@@ -358,11 +413,15 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
         VK_CALL(result);
     }
 
-    flushedCommands.clear();
+    context.flushedCommands.Clear();
 }
 
 void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHandle)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     if (!windowHandle->resizeDirty)
         return;
 
@@ -382,6 +441,10 @@ void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHan
 
 void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
 
     std::shared_ptr<VulkanRenderPass> renderPass = reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass);
@@ -406,6 +469,10 @@ void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _co
 
 void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
     vcommandList->GetVkHandle().endRenderPass();
 }

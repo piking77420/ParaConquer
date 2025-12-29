@@ -553,33 +553,8 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
 }
 
 
-void Vulkan::VulkanCommandList::Flush(PC_CORE::FlushCommandMethod _flushCommandMethod,
-                                      PC_CORE::GpuPipelineStage _waitGpuPipelineStageFlag)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    assert(_flushCommandMethod == PC_CORE::FlushCommandMethod::Sync);
-
-    VulkanContext& vkContext = GET_VK_CONTEXT;
-    const size_t frameIndex = m_Rhi.GetFrameIndex();
-
-    switch (m_PoolFamily)
-    {
-    case PC_CORE::CommandList::PoolFamily::Graphics:
-        vkContext.flushedCommands.emplace_back(FlushCommand{
-            m_CommandBuffer[frameIndex], m_Semaphore[frameIndex], _waitGpuPipelineStageFlag
-        });
-        break;
-    case PC_CORE::CommandList::PoolFamily::Compute: // not implemented yet
-    case PC_CORE::CommandList::PoolFamily::Count:
-        assert(false);
-        break;
-    default: ;
-    }
-}
-
-
+/*
 void Vulkan::VulkanCommandList::Flush(PC_CORE::RhiFence& _fence)
 {
     const size_t frameIndex = m_Rhi.GetFrameIndex();
@@ -599,11 +574,16 @@ void Vulkan::VulkanCommandList::Flush(PC_CORE::RhiFence& _fence)
     auto device = vkContext.GetDevice()->GetDevice();
     VK_CALL(device.waitForFences(1, &vkfence, vk::True, UINT64_MAX));
     VK_CALL(device.resetFences(1, &vkfence));
-}
+}*/
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle() const
 {
     return m_CommandBuffer[m_Rhi.GetFrameIndex()];
+}
+
+VULKAN_API vk::Semaphore Vulkan::VulkanCommandList::GetVkSemaphore() const
+{
+    return m_Semaphore[m_Rhi.GetFrameIndex()];
 }
 
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)

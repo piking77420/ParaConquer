@@ -77,16 +77,14 @@ namespace Vulkan
             const std::span<PC_CORE::ImageStateTransition>& _ImageStateTransition,
             const std::span<PC_CORE::BufferStateTransition>& _BufferStateTransition) override;
 
-        VULKAN_API void Flush(PC_CORE::FlushCommandMethod _flushCommandMethod,
-            PC_CORE::GpuPipelineStage _waitGpuPipelineStageFlag) override;
-
-        VULKAN_API void Flush(PC_CORE::RhiFence& _fence) override;
 
         VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;
 
         VULKAN_API void EndDebugLabel() override;
 
         VULKAN_API vk::CommandBuffer GetVkHandle() const;
+
+        VULKAN_API vk::Semaphore GetVkSemaphore() const;
 
     private:
         std::array<vk::CommandBuffer, MaxFramesInFlight> m_CommandBuffer;

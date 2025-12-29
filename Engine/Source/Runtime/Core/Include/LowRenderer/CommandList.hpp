@@ -77,13 +77,6 @@ BEGIN_PCCORE
         
     };
 
-
-    enum struct FlushCommandMethod
-    {
-        Sync, // will flush command at once at the end of tick
-        Async, // send directly to gpu // TODO
-    };
-
     struct ImageStateTransition
     {
         RhiTexture* Texture = nullptr;
@@ -190,11 +183,6 @@ BEGIN_PCCORE
         PC_CORE_API void RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction);
 
         PC_CORE_API void ExecuteExternalCommand();
-
-        PC_CORE_API virtual void Flush(PC_CORE::FlushCommandMethod _flushCommandMethod,
-                                       PC_CORE::GpuPipelineStage _waitGpuPipelineStageFlag) = 0;
-
-        PC_CORE_API virtual void Flush(RhiFence& _fence) = 0;
 
         PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
 

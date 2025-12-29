@@ -22,12 +22,18 @@ namespace Vulkan
         vk::Fence inFlightFence;
     };
 
-    // to do make it batchable
     struct FlushCommand
     {
-        vk::CommandBuffer cmd;
-        vk::Semaphore semaphore;
-        PC_CORE::GpuPipelineStage waitStages;
+        std::vector<vk::CommandBuffer> Commands;
+        std::vector<vk::Semaphore> Semaphores;
+        std::vector<vk::PipelineStageFlags> BatchPipelineStageFlag;
+
+        void Clear()
+        {
+            Commands.clear();
+            Semaphores.clear();
+            BatchPipelineStageFlag.clear();
+        }
     };
 
     class VulkanContext : public PC_CORE::RhiContext
@@ -47,7 +53,9 @@ namespace Vulkan
 
         VulkanDescritptorManager descritptorManager;
 
-        std::vector<FlushCommand> flushedCommands;
+        FlushCommand flushedCommands;
+
+        std::vector<vk::SubmitInfo> SubmitInfoBuffer;
 
         VULKAN_API explicit VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
 
@@ -61,15 +69,18 @@ namespace Vulkan
 
         VULKAN_API std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
 
+        VULKAN_API void SendEnqueuCommand(PC_CORE::CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) override;
+
     private:
         VULKAN_API void CreateMemoryAllocator();
 
         VULKAN_API void CreateCommandPools();
 
-
         VULKAN_API void CreateSyncObjects();
 
         VULKAN_API void DestroySyncObjects();
+
+
     };
 
 #define GET_VK_CONTEXT \

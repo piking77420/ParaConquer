@@ -33,6 +33,7 @@ BEGIN_PCCORE
         Rhi RenderHarwareInteface;
 
         std::unique_ptr<CommandList> PrimaryCommandBuffer; // TO DO HANDLE MULTIPLE
+        std::unique_ptr<CommandList> SecondCommandBuffer; // TO DO HANDLE MULTIPLE
 
         PC_CORE_API App();
 
