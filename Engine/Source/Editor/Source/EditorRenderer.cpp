@@ -68,7 +68,7 @@ void PC_EDITOR_CORE::EditorRenderer::DrawSelectedEntity()
     {
         return;
     }
-
+    /*
     PC_CORE::EntityId selectedEntity = std::get<PC_CORE::EntityId>(m_Editor->selectedObject);
 
     if (m_Editor->gameApp.World.level.HasComponent<PC_CORE::Transform>(selectedEntity) && m_Editor->gameApp.World.level.
@@ -78,14 +78,14 @@ void PC_EDITOR_CORE::EditorRenderer::DrawSelectedEntity()
         PC_CORE::PointLight& p = m_Editor->gameApp.World.level.GetComponent<PC_CORE::PointLight>(selectedEntity);
 
         PC_CORE::DebugDrawContext::DrawWireSphere(t.Position, std::sqrt(p.intensity), Tbx::Vector3f(0, 1, 0));
-    }
+    }*/
 }
-
+/*
 void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer, PC_CORE::CommandList* _commandList,
                                                     const PC_CORE::RenderingContext& _renderingContext,
                                                     const PC_CORE::RenderingWorldData* _renderingWorldData)
 {
-    /*
+  
     PERF_REGION_SCOPED;
 
     m_DirectionalLightIndices.clear();
@@ -160,9 +160,9 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
         }
     }
 
-    _commandList->EndDebugLabel();*/
+    _commandList->EndDebugLabel();
 }
-
+*/
 void PC_EDITOR_CORE::EditorRenderer::InitResources()
 {
     /*

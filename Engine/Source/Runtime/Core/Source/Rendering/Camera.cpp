@@ -1,11 +1,15 @@
 ﻿#include "rendering/camera.hpp"
 
+#include "PerfRegion.hpp"
 #include "Math/MatrixTransformation.hpp"
 
 using namespace PC_CORE;
 
 void Camera::SetProjectionType(ProjectionType _projectionType)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     m_ProjectionType = _projectionType;
     ComputeProjection();
     ComputeViewProjection();
@@ -18,6 +22,9 @@ ProjectionType Camera::GetProjectionType() const
 
 void Camera::SetFov(float _fov)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     m_Fov = _fov;
     ComputeProjection();
     ComputeViewProjection();
@@ -30,6 +37,9 @@ float Camera::GetFov() const
 
 void Camera::SetAspect(float _aspect)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     m_Aspect = _aspect;
     ComputeProjection();
     ComputeViewProjection();
@@ -66,6 +76,9 @@ float Camera::GetFar() const
 
 void Camera::LookAt(const Tbx::Vector3d& _point, const Tbx::Vector3d& _up)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     Front = (_point - Position).Normalize();
     Up = _up;
     ComputeView();
@@ -74,6 +87,9 @@ void Camera::LookAt(const Tbx::Vector3d& _point, const Tbx::Vector3d& _up)
 
 void Camera::LookAt(const Tbx::Vector3d& _point)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     Front = (_point - Position);
 
     if (Front.MagnitudeSquare() < 1e-8)
@@ -98,6 +114,9 @@ void Camera::LookAt(const Tbx::Vector3d& _point)
 
 void Camera::SetScreenSize(int width, int height)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     SetAspect(static_cast<float>(width) / static_cast<float>(height));
 }
 
@@ -115,12 +134,19 @@ Camera::Camera(Tbx::Vector2f _screenSize, float _near, float _far, const Tbx::Ve
 
 void Camera::ComputeView()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
+
     m_View = Tbx::LookAtRH(Position, Position + Front, Up);
     m_ViewInv = m_View.Invert();
 }
 
 void Camera::ComputeProjection()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     const double Aspect = static_cast<double>(m_Aspect);
     const double Near = static_cast<double>(m_Near);
     const double Far = static_cast<double>(m_Far);
@@ -142,6 +168,9 @@ void Camera::ComputeProjection()
 
 void Camera::ComputeViewProjection()
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     m_ViewProjection = m_Projection * m_View;
     m_ViewProjectionInv = m_ViewInv * m_ProjectionInv;
 }

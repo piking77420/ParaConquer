@@ -3,11 +3,11 @@
 #include "LowRenderer/Rhi.hpp"
 #include "Rendering/View/ViewUniformBuffer.hpp"
 
-using namespace PC_CORE;
+using namespace PC_CORE::Rendering;
 
 View::View(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _viewPortSize)
     : m_Rhi(_Rhi)
-    , m_RenderSize(_viewPortSize)
+    , renderSize(_viewPortSize)
 {
     SceneBufferUbo.reset(_Rhi.CreateBuffer());
     SceneBufferUbo

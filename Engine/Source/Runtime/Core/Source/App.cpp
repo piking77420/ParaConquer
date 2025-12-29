@@ -52,8 +52,42 @@ App::App()
 void App::WorldTick(double _tick)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
 
     World.Begin();
     World.Update(_tick);
     World.RenderingTick(_tick);
 }
+
+void App::RenderFrame()
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+    PC_CORE::RhiSwapChain* swapChain = RenderHarwareInteface.GetRhiContext().rhiSwapChain.get();
+    PC_CORE::Window* mainWindow = &MainWindow;
+    constexpr std::array<float, 4> Color = {
+        0.5f,
+        0.5f,
+        0.5f,
+        0.5f,
+    };
+
+
+    if (swapChain->GetSwapChainImageIndex(mainWindow))
+    {
+        PrimaryCommandBuffer->BeginRecordCommands();
+        {
+            PrimaryCommandBuffer->BeginDebugLabel("SwapChain", Color);
+            swapChain->BeginSwapChainRenderPass(PrimaryCommandBuffer.get());
+            OnSwapChainRender(PrimaryCommandBuffer.get());
+            swapChain->EndSwapChainRenderPass(PrimaryCommandBuffer.get());
+            PrimaryCommandBuffer->EndDebugLabel();
+        }
+        PrimaryCommandBuffer->EndRecordCommands();
+        PrimaryCommandBuffer->Flush(PC_CORE::FlushCommandMethod::Sync, PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
+
+        swapChain->Present(&MainWindow);
+    }
+
+}
+

@@ -48,7 +48,6 @@ Editor::Editor()
         exit(-1);
     }
     instance = this;
-    editorData.projectData.graphicApi = GraphicAPI::Vulkan;
 }
 
 Editor::~Editor()
@@ -56,6 +55,7 @@ Editor::~Editor()
     SaveInitFiles();
     instance = nullptr;
 }
+
 
 void Editor::LoadFromInitFiles()
 {
@@ -198,24 +198,15 @@ void Editor::CompileShader()
     }
 }
 
-void Editor::Init()
+void Editor::Init(const PC_CORE::AppCreateInfo& _appCreateInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Editor);
 
     LoadFromInitFiles();
-
-    const AppCreateInfo appCreateInfo =
-    {
-        .appName = editorData.projectData.projectName,
-        .appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
-        .enableGpuDebug = true,
-        .graphicAPI = editorData.projectData.graphicApi
-    };
-
     CompileShader();
-    App::Init(appCreateInfo);
 
+    App::Init(_appCreateInfo);
     IMGUIContext.Init(RenderHarwareInteface, MainWindow.GetHandle());
     InitTestScene();
     InitEditor();
@@ -276,7 +267,8 @@ void Editor::UpdateEditor()
 
             ImGui::EndMenu();
         }
-        ImGui::EndMenuBar();*/
+        */
+        ImGui::EndMenuBar();
     }
 
 
@@ -361,6 +353,15 @@ void Editor::DestroyTestScene()
     //ResourceManager::Delete<Material>("material2");
 }
 
+void Editor::OnSwapChainRender(PC_CORE::CommandList* _Cmd)
+{
+    for (auto& editorWindow : editorWindows)
+        editorWindow->Render(PrimaryCommandBuffer.get());
+    for (auto& sub : editorSubSystems)
+        sub->Render();
+    IMGUIContext.Render(PrimaryCommandBuffer.get());
+}
+
 void Editor::Run(bool* _appShouldClose)
 {
     // begin game thread
@@ -378,28 +379,7 @@ void Editor::Run(bool* _appShouldClose)
         WorldTick(Time::DeltaTime());
         //Renderer.GetRenderingData(RenderingWorldData);
         UpdateEditor();
-
-        { // Render
-            RhiSwapChain* swapChain = RenderHarwareInteface.GetRhiContext().rhiSwapChain.get();
-            Window* mainWindow = &MainWindow;
-
-            swapChain->GetSwapChainImageIndex(mainWindow);  
-            PrimaryCommandBuffer->BeginRecordCommands();
-
-            {
-                PERF_REGION_SCOPED_NAMED("Editor Render");
-                m_EditorRenderer.DrawSelectedEntity();
-
-                for (auto& editorWindow : editorWindows)
-                    editorWindow->Render();
-                for (auto& sub : editorSubSystems)
-                    sub->Render();
-            }
-
-            IMGUIContext.Render(PrimaryCommandBuffer.get());
-            PrimaryCommandBuffer->Flush(PC_CORE::FlushCommandMethod::Sync, PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
-            swapChain->Present(&MainWindow);
-        }
+        RenderFrame();
         
         PERF_FRAME_MARK;
     }

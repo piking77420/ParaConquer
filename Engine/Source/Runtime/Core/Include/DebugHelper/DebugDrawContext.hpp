@@ -13,10 +13,6 @@
 #include "ObjectPtr.hpp"
 
 BEGIN_PCCORE
-    // TO DO MOVE IT TO Core / RENDER
-
-    class Renderer;
-
     class PC_CORE_API DebugDrawContext
     {
     public:
@@ -41,20 +37,20 @@ BEGIN_PCCORE
         static void DrawWireCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler, float _radius, float _height,
                                     Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-        void DrawDebugPrimitive(CommandList* _commandList, const RenderingContext& _renderingContex);
+        void DrawDebugPrimitive(CommandList* _commandList);
 
         void Prepare();
 
         DEFAULT_COPY_MOVE_OPERATIONS(DebugDrawContext);
 
-        DebugDrawContext(Renderer* _renderer);
+        DebugDrawContext(Rhi& _Rhi);
 
         ~DebugDrawContext() = default;
 
     private:
-        static inline DebugDrawContext* m_Instance = nullptr;
+        Rhi& m_Rhi;
 
-        Renderer* m_Renderer;
+        static inline DebugDrawContext* m_Instance = nullptr;
 
         static constexpr size_t MAX_GIZMO_PRIMITIVE = 2048;
         static constexpr size_t GIZMO_BUFFER_SIZE = sizeof(Tbx::Matrix4x4f) * MAX_GIZMO_PRIMITIVE;

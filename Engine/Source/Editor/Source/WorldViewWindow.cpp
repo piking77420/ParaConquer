@@ -49,6 +49,20 @@ void WorldViewWindow::Update()
         UpdateImguiViewPort();
     }
 
+    /*
+    if (m_View)
+    {
+        PC_CORE::Rendering::RenderGraphContext context
+        { .Rhi = m_Editor->RenderHarwareInteface,
+           .View = *m_View,
+           .RenderGraph = m_RenderGraph,
+           .RenderingWorldData = m_Editor->World.RenderingWorldData,
+           .CommandBuffer = *_Cmd
+        };
+
+        m_RenderGraph.Update(context);
+    }*/
+
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
 
@@ -63,19 +77,19 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
     EditorWindow::Render(_Cmd);
     if (size == Tbx::Vector2f{0.f, 0.f} || !m_View)
         return;
-
+    /*
     if (m_View)
     {
-        PC_CORE::Rendering::RenderGraphContext context{
+        PC_CORE::Rendering::RenderGraphContext context
+        {  .Rhi = m_Editor->RenderHarwareInteface,
            .View = *m_View,
            .RenderGraph = m_RenderGraph,
-           .RenderingWorldData = m_RenderingWorldData,
+           .RenderingWorldData = m_Editor->World.RenderingWorldData,
            .CommandBuffer = *_Cmd
         };
 
-
-       //(*m_View.get());
-    }
+        m_RenderGraph.Update(context);
+    }*/
 }
 
 void WorldViewWindow::UpdateImguiViewPort()
@@ -99,15 +113,16 @@ void WorldViewWindow::UpdateImguiViewPort()
 
 void WorldViewWindow::UpdateViewPort(Tbx::Vector2i _Size)
 {
-
+    /*
     if (!m_View )
     {
         m_View.reset(new PC_CORE::Rendering::CameraView(m_Editor->RenderHarwareInteface, _Size));
         m_View->DeclarePass(&m_RenderGraph);
+        m_RenderGraph.Build();
     }
     if (m_View->renderSize != _Size)
     {
         m_View->SetCamera(&camera);
-    }
+    }*/
 
 }

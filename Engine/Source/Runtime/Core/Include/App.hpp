@@ -46,7 +46,11 @@ BEGIN_PCCORE
 
         PC_CORE_API void WorldTick(double _tick);
 
+        PC_CORE_API void RenderFrame();
+
         PC_CORE_API static inline App* Instance = nullptr;
+    protected:
+        virtual void OnSwapChainRender(PC_CORE::CommandList* _Cmd) = 0;
     };
 
 END_PCCORE

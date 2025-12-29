@@ -186,5 +186,5 @@ void IMGUIContext::Render(CommandList* _commandBuffer)
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }
-    _commandBuffer->EndRecordCommands();
+    _commandBuffer->EndDebugLabel();
 }

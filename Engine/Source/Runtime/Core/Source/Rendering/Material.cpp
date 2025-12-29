@@ -24,10 +24,10 @@ PC_CORE::Material::Material(const std::string& _name)
     switch (MaterialType)
     {
     case MaterialType::Opaque:
-        m_ShaderProgram = App::Instance->Renderer.GeometryBufferShader.get();
+       // m_ShaderProgram = App::Instance->Renderer.GeometryBufferShader.get();
         break;
     case MaterialType::Transparent:
-        m_ShaderProgram = App::Instance->Renderer.ForwardShader.get();
+        //m_ShaderProgram = App::Instance->Renderer.ForwardShader.get();
         break;
     default: ;
     }

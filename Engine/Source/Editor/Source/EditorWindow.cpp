@@ -44,7 +44,7 @@ bool EditorWindow::IsInsideWindow(Tbx::Vector2f _point) const
 
 bool EditorWindow::IsCursorInsideWindow() const
 {
-    const auto cursorPos = m_Editor->gameApp.MainWindow.GetCursorPos();
+    const auto cursorPos = m_Editor->MainWindow.GetCursorPos();
 
 
     return IsInsideWindow({static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y)});

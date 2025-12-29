@@ -1,52 +1,21 @@
 ﻿#pragma once
 
-#include "CoreHeader.hpp"
+#include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
-
-
 
 namespace PC_CORE::Rendering
 {
 class RenderGraphContext;
+class RenderGraph;
 
-class RenderPass : public DynamicReflectable
+class PC_CORE_API RenderPass : public DynamicReflectable
 {
 public:
-    PC_CORE_API RenderPass();
+    RenderPass();
 
-    PC_CORE_API ~RenderPass() override = default;
+    ~RenderPass() override = default;
 
     IMP_DYNAMIC_REFLECT()
-
-    const RhiRenderPass& operator*() const
-    {
-        return *m_RhiRenderPass;
-    }
-
-    RhiRenderPass& operator*()
-    {
-        return *m_RhiRenderPass;
-    }
-
-    RhiRenderPass* operator->()
-    {
-        return m_RhiRenderPass.get();
-    }
-
-    const RhiRenderPass* operator->() const
-    {
-        return m_RhiRenderPass.get();
-    }
-
-    RhiRenderPass* Get()
-    {
-        return m_RhiRenderPass.get();
-    }
-
-    const RhiRenderPass* Get() const
-    {
-        return m_RhiRenderPass.get();
-    }
 
     virtual void Build(RenderGraph& RenderGraph) = 0;
 
@@ -57,7 +26,6 @@ public:
     bool IsDisable = false;
 
 protected:
-    std::unique_ptr<RhiRenderPass> m_RhiRenderPass;
 };
 
 REFLECT(RenderPass, PC_CORE::DynamicReflectable);

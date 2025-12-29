@@ -20,7 +20,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void Present(Window* _window) = 0;
 
-        PC_CORE_API virtual void GetSwapChainImageIndex(Window* windowHandle) = 0;
+        PC_CORE_API virtual bool GetSwapChainImageIndex(Window* windowHandle) = 0;
 
         PC_CORE_API virtual void HandleRecreateSwapChain(Window* windowHandle) = 0;
 

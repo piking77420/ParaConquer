@@ -43,7 +43,7 @@ void SceneButton::OnEdit()
 {
     constexpr int ButtonSize = 48;
 
-    PC_CORE::World& world = m_Editor->gameApp.World;
+    PC_CORE::World& world = m_Editor->World;
 
     /*
     const ImguiImage& button = world.run ? m_ResetImage : m_PlayImage;

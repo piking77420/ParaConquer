@@ -8,6 +8,11 @@
 #include "Importer.hpp"
 
 
+namespace PC_CORE
+{
+    class CommandList;
+}
+
 namespace PC_EDITOR_CORE
 {
     class Editor;
@@ -44,7 +49,7 @@ BEGIN_EDITOR_PCCORE
         bool IsCursorInsideWindow() const;
 
 
-        virtual void Render(PC_CORE::CommandList* _Cmd)
+        virtual void Render([[maybe_unsed]] PC_CORE::CommandList* _Cmd)
         {
         };
 

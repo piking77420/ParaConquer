@@ -65,7 +65,7 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
     m_CurrenPath = normalizePath(std::wstring(m_Editor->editorData.projectPath));
     windowFlags |= ImGuiWindowFlags_MenuBar;
 
-    m_NearestSampler.reset(m_Editor->gameApp.RenderHarwareInteface.CreateSampler());
+    m_NearestSampler.reset(m_Editor->RenderHarwareInteface.CreateSampler());
     m_NearestSampler
         ->SetMagFilter(Filter::Linear)
         .SetMinFilter(Filter::Linear)
@@ -77,11 +77,11 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
     Image imageFolder(EDITOR_RESOURCE_PATH "/Icons/Folder.png", RhiChannel::Rgba);
     Image imageNull(EDITOR_RESOURCE_PATH "/Icons/Null.png", RhiChannel::Rgba);
 
-    CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, "Folder.png", m_FolderIcon.texure, imageFolder);
+    CreateTextureFromImage(m_Editor->RenderHarwareInteface, "Folder.png", m_FolderIcon.texure, imageFolder);
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.Get(),
         &s, &m_FolderIcon.descritproSet, 1);
 
-    CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, "Null.png", m_NullIcon.texure, imageNull);
+    CreateTextureFromImage(m_Editor->RenderHarwareInteface, "Null.png", m_NullIcon.texure, imageNull);
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.Get(), &s,
                                                     &m_NullIcon.descritproSet, 1);
 
@@ -136,9 +136,9 @@ ResourceBrowserWindow::~ResourceBrowserWindow()
 }
 
 
-void ResourceBrowserWindow::Render()
+void ResourceBrowserWindow::Render([[maybe_unsed]] PC_CORE::CommandList* _Cmd)
 {
-    EditorWindow::Render();
+    EditorWindow::Render(_Cmd);
 }
 
 void ResourceBrowserWindow::Update()
@@ -417,7 +417,7 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const s
 
     ImguiImage newIcon;
 
-    CreateTextureFromImage(m_Editor->gameApp.RenderHarwareInteface, _path.filename().generic_string(), newIcon.texure, image);
+    CreateTextureFromImage(m_Editor->RenderHarwareInteface, _path.filename().generic_string(), newIcon.texure, image);
 
 
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(
@@ -455,7 +455,7 @@ void ResourceBrowserWindow::OnImportButton()
 
     // Try to decode imported file
     // Pass json in order to give render data
-    if (!m_Importer.Import(m_Editor->gameApp.RenderHarwareInteface, p, &jSerializer, &id, &r) || id == PC_CORE::NullTypeId)
+    if (!m_Importer.Import(m_Editor->RenderHarwareInteface, p, &jSerializer, &id, &r) || id == PC_CORE::NullTypeId)
     {
         jSerializer.CloseFile();
         return;

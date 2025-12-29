@@ -56,7 +56,7 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 }
 
 
-void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
+bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
     VulkanContext& context = GET_VK_CONTEXT;
     vk::Device device = context.GetDevice()->GetDevice();
@@ -82,7 +82,7 @@ void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
         HandleRecreateSwapChain(windowHandle);
-        return;
+        return false;
     }
     else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
     {
@@ -117,6 +117,7 @@ void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
 
     m_SwapChainImageIndex = imageIndex;
 
+    return true;
 }
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(

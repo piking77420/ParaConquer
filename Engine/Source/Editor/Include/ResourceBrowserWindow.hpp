@@ -23,7 +23,7 @@ BEGIN_EDITOR_PCCORE
     class ResourceBrowserWindow : public EditorWindow
     {
     public:
-        void Render() override;
+        void Render(PC_CORE::CommandList* _Cmd) override;
 
         void Update() override;
 

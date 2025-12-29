@@ -7,7 +7,7 @@
 namespace PC_CORE::Rendering {
 
 	CameraView::CameraView(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _viewPortSize)
-		: CameraView(_Rhi, _viewPortSize)
+		: View(_Rhi, _viewPortSize)
 	{
 	}
 
@@ -69,9 +69,6 @@ namespace PC_CORE::Rendering {
 		return m_CameraPtr;
 	}
 
-	void CameraView::DeclarePass(Rendering::RenderGraph* RenderGraph)
-	{
-	}
 
 
 }

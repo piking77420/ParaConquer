@@ -92,12 +92,8 @@ void PC_CORE::DebugDrawContext::DrawWireCapsule(const Tbx::Vector3d& _p1, const 
     PushCapsuleGizmo(PrimitiveType::WireCapsule, _p1, euler, _radius, _height, _color);
 }
 
-void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList,
-                                                   const RenderingContext& _renderingContext)
+void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
 {
-    if (!(_renderingContext.RenderingContextFlag & DebugDrawGeometry))
-        return;
-
     if (!NeedToRender())
         return;
 
@@ -188,8 +184,8 @@ void PC_CORE::DebugDrawContext::Prepare()
     }
 }
 
-PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
-    : m_Renderer(_renderer)
+PC_CORE::DebugDrawContext::DebugDrawContext(Rhi& _Rhi)
+    : m_Rhi(_Rhi)
 {
     m_Instance = this;
 
@@ -206,7 +202,7 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
     int i = 0;
     for (auto& primitiveData : m_PrimitiveData)
     {
-        primitiveData.instanceBuffer.reset(_renderer->GetRhi().CreateBuffer());
+        primitiveData.instanceBuffer.reset(m_Rhi.CreateBuffer());
         primitiveData.instanceBuffer
             ->SetSize(GIZMO_BUFFER_SIZE)
             .SetMemoryUsage(RhiMemoryUsage::Dynamic)
@@ -216,7 +212,7 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Renderer* _renderer)
 
         i++;
     }
-    m_RayPrimitiveData.vertexBuffer = VertexBuffer(_renderer->GetRhi());
+    m_RayPrimitiveData.vertexBuffer = VertexBuffer(m_Rhi);
     m_RayPrimitiveData.vertexBuffer
         ->SetSize(RAY_BUFFER_SIZE)
         .SetMemoryUsage(RhiMemoryUsage::Dynamic)
@@ -291,7 +287,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
             ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()
         }
     };
-
+    /*
     m_ShaderProgram.reset(m_Renderer->GetRhi().CreateRhiShaderProgram());
     m_ShaderProgram->SetShaderModules(shaderModule)
         .SetPipelineType(RhiShader::PipelineType::Graphic)
@@ -325,7 +321,7 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
     m_ShaderProgramDescriptorSets
         ->SetBindings(SCENE_DESCRIPTOR_SET, DescriptorWrite{ DescriptorType::UniformBuffer, CAMERA_BINDING, uniformBufferDescriptor })
         .SetName("DebugGizmoShader Bindings")
-        .Build();
+        .Build();*/
 }
 
 void PC_CORE::DebugDrawContext::CreateRayShaders()
@@ -376,7 +372,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
 
         }
     };
-
+    /*
     m_ShaderProgramRay.reset(m_Renderer->GetRhi().CreateRhiShaderProgram());
     m_ShaderProgramRay->SetShaderModules(shaderModule)
         .SetPipelineType(RhiShader::PipelineType::Graphic)
@@ -390,9 +386,10 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
         .SetAttachementCount(1)
         .SetSubPassIndex(0)
         .SetName("DebugGizmoShaderRay")
-        .Build();
+        .Build();*/
 
     // Binding
+    /*
     m_ShaderProgramDescriptorSetsRay.reset(m_ShaderProgramRay->CreateDescriptorBinding());
     
     const DescriptorWrite descriptor =
@@ -405,7 +402,7 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
     m_ShaderProgramDescriptorSetsRay
         ->SetBindings(SCENE_DESCRIPTOR_SET, descriptor)
         .SetName("DebugDrawGizmo Ray Binding ")
-        .Build();
+        .Build();*/
 }
 
 bool PC_CORE::DebugDrawContext::NeedToRender()
@@ -605,6 +602,7 @@ void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveTyp
 
     if (!vertices.empty() && !indices.empty())
     {
+        /*
         VertexBuffer& vertexBuffer = *_vertexBuffer;
         vertexBuffer = VertexBuffer(m_Renderer->GetRhi());
 

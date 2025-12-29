@@ -51,7 +51,7 @@ namespace ImGui
         if (!ItemAdd(bb, id))
             return false;
 
-        // Render
+        // RenderFrame
         const float circleStart = size.x * 0.7f;
         const float circleEnd = size.x;
         const float circleWidth = circleEnd - circleStart;
@@ -96,7 +96,7 @@ namespace ImGui
         if (!ItemAdd(bb, id))
             return false;
 
-        // Render
+        // RenderFrame
         window->DrawList->PathClear();
 
         int num_segments = 30;

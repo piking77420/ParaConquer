@@ -7,11 +7,11 @@ PC_EDITOR_CORE::EditorCommandAddComponent::EditorCommandAddComponent(Editor& _ed
     EditorCommand(_editor), m_EntityId(_id), m_ComponentId(_componentId)
 {
     if (m_EntityId != PC_CORE::INVALID_ENTITY_ID && m_ComponentId != PC_CORE::NullTypeId)
-        m_Editor.gameApp.World.level.AddComponent(m_EntityId, m_ComponentId);
+        m_Editor.World.level.AddComponent(m_EntityId, m_ComponentId);
 }
 
 PC_EDITOR_CORE::EditorCommandAddComponent::~EditorCommandAddComponent()
 {
     if (m_EntityId != PC_CORE::INVALID_ENTITY_ID && m_ComponentId != PC_CORE::NullTypeId)
-        m_Editor.gameApp.World.level.RemoveComponent(m_EntityId, m_ComponentId);
+        m_Editor.World.level.RemoveComponent(m_EntityId, m_ComponentId);
 }

@@ -62,7 +62,7 @@ BEGIN_EDITOR_PCCORE
 
         ~Editor() override;
 
-        void Init() override;
+        void Init(const PC_CORE::AppCreateInfo& _appCreateInfo) override;
 
         void Destroy() override;
 
@@ -76,7 +76,6 @@ BEGIN_EDITOR_PCCORE
         void InitTestScene();
 
         void DestroyTestScene();
-
 
         void InitEditor();
 
@@ -101,6 +100,8 @@ BEGIN_EDITOR_PCCORE
         EditableSelectedObj selectedObject;
 
         EditorData editorData;
+    protected:
+        void OnSwapChainRender(PC_CORE::CommandList* _Cmd) override;
 
     private:
         void LoadFromInitFiles();

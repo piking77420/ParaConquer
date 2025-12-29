@@ -1,16 +1,33 @@
 #include "Rendering/RenderGraph.hpp"
 
-PC_CORE::Rendering::RenderGraph::RenderGraph()
+#include "Rendering/RenderPasses/RenderPass.hpp"
+
+namespace PC_CORE::Rendering
+{
+
+RenderGraph::RenderGraph()
 {
 	DYNAMIC_REFLECT_INIT;
 }
 
-PC_CORE::Rendering::RenderGraph::~RenderGraph()
+RenderGraph::~RenderGraph()
 {
-	
+
 }
 
-PC_CORE::Rendering::RenderGraph& PC_CORE::Rendering::RenderGraph::Clear()
+void RenderGraph::Build()
 {
-	m_RenderPasses.clear();
+
+}
+
+void RenderGraph::Update(const RenderGraphContext& _RenderGraphContext)
+{
+}
+
+void RenderGraph::Execute(const RenderGraphContext& _RenderGraphContext)
+{
+
+}
+
+
 }
