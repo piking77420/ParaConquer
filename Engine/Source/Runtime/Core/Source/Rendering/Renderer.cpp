@@ -22,6 +22,17 @@ public:
     {
         return "FowardPass";
     }
+
+    std::array<float, 4> GetColor() const
+    {
+        return
+        {
+            0.f,
+            0.f,
+            1.f,
+            1.f
+        };
+    }
 	
     void Build(const PC_CORE::Rendering::RenderView&)
     {

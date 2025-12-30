@@ -26,6 +26,8 @@ namespace PC_CORE::Rendering
 
 		RenderPassGetNameFunc GetNameFunc;
 
+		RenderPassGetColorFunc GetColorFunc;
+
 		RenderPassBuildFunc BuildFunc;
 
 		RenderPassExecuteFunc ExecuteFunc;
@@ -35,52 +37,7 @@ namespace PC_CORE::Rendering
 	class PC_CORE_API RenderGraph : public PC_CORE::DynamicReflectable
 	{
 	private: 
-		template <bool Cst ,typename Ret, typename... Args>
-		struct RenderPassTrampoline
-		{
-			template <typename T, Ret(T::* Method)(Args...)>
-			static Ret Call(void* obj, Args... args) {
-				return (static_cast<T*>(obj)->*Method)(std::forward<Args>(args)...);
-			}
-		};
-
-		// None const 
-		template <typename Ret>
-		struct RenderPassTrampoline<false, Ret, void>
-		{
-			template <typename T, Ret(T::* Method)()>
-			static Ret Call(void* obj) {
-				return (static_cast<T*>(obj)->*Method)();
-			}
-		};
-
-		template <typename... Args>
-		struct RenderPassTrampoline<false, void, Args...>
-		{
-			template <typename T, void(T::* Method)(Args...)>
-			static void Call(void* obj, Args... args) {
-				return (static_cast<T*>(obj)->*Method)(std::forward<Args>(args)...);
-			}
-		};
-
-		// Const
-		template <typename Ret>
-		struct RenderPassTrampoline<true, Ret, void>
-		{
-			template <typename T, Ret(T::* Method)() const>
-			static Ret Call(void* obj) {
-				return (static_cast<T*>(obj)->*Method)();
-			}
-		};
-
-		template <typename... Args>
-		struct RenderPassTrampoline<true, void, Args...>
-		{
-			template <typename T, void(T::* Method)(Args...) const>
-			static void Call(void* obj, Args... args) {
-				return (static_cast<T*>(obj)->*Method)(std::forward<Args>(args)...);
-			}
-		};
+	
 
 	public:
 		RenderGraph();
@@ -94,9 +51,10 @@ namespace PC_CORE::Rendering
 		{
 			RenderGraphNode Node;
 			Node.RenderPassObject = _RenderPassT;
-			Node.GetNameFunc = &RenderPassTrampoline<true ,const char*, void>::Call<T, &T::GetName>;
-			Node.BuildFunc = &RenderPassTrampoline<false, void, const RenderView&>::Call<T, &T::Build>;
-			Node.ExecuteFunc = &RenderPassTrampoline<true, void, PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&>::Call<T, &T::Execute>;
+			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
+			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
+			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RenderView&>::Call<T, &T::Build>;
+			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<true, void, PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&>::Call<T, &T::Execute>;
 			m_Nodes.emplace_back(std::move(Node));
 		}
 
@@ -110,11 +68,7 @@ namespace PC_CORE::Rendering
 			
 		}
 
-		void Execute(CommandList* _CommandList, const RenderView& view)
-		{
-
-		}
-
+		void Execute(CommandList* _CommandList, const RenderView& _View, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
 
 	private:
 		std::vector<RenderGraphNode> m_Nodes;

@@ -14,11 +14,13 @@ namespace PC_CORE::Rendering
     class RenderingWorldData;
 
 
-    using RenderPassGetNameFunc = const char* (*)(void*);
+    using RenderPassGetNameFunc = const char* (*)(const void*);
+
+    using RenderPassGetColorFunc = std::array<float, 4> (*)(const void*);
 
     using RenderPassBuildFunc = void (*)(void*, const RenderView&);
 
-    using RenderPassExecuteFunc = void (*)(void*, CommandList*, const RenderView&, const RenderingWorldData&);
+    using RenderPassExecuteFunc = void (*)(const void*, CommandList*, const RenderView&, const RenderingWorldData&);
 
 
 class PC_CORE_API RenderPass : public DynamicReflectable
