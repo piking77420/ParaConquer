@@ -34,12 +34,12 @@ void Renderer::Init(Rhi& _Rhi)
     return;
 }
 
-PC_CORE_API void PC_CORE::Rendering::Renderer::Update(const View& _view, const RenderGraph& RenderGraph)
+PC_CORE_API void PC_CORE::Rendering::Renderer::Update(const RenderView& _view, const RenderGraph& RenderGraph)
 {
     
 }
 
-PC_CORE_API void PC_CORE::Rendering::Renderer::Excute(const View& _view, const RenderGraph& RenderGraph)
+PC_CORE_API void PC_CORE::Rendering::Renderer::Excute(const RenderView& _view, const RenderGraph& RenderGraph)
 {
    
 }

@@ -13,7 +13,7 @@ namespace PC_CORE::Rendering
    
 
 class RenderGraph;
-class View;
+class RenderView;
 
 
 class Renderer
@@ -25,9 +25,9 @@ public:
 
     PC_CORE_API void Init(Rhi& _Rhi);
 
-    PC_CORE_API void Update(const View& _view, const RenderGraph& RenderGraph);
+    PC_CORE_API void Update(const RenderView& _view, const RenderGraph& RenderGraph);
 
-    PC_CORE_API void Excute(const View& _view, const RenderGraph& RenderGraph);
+    PC_CORE_API void Excute(const RenderView& _view, const RenderGraph& RenderGraph);
 
 
 

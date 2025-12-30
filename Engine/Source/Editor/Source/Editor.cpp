@@ -353,7 +353,7 @@ void Editor::DestroyTestScene()
     //ResourceManager::Delete<Material>("material2");
 }
 
-void Editor::OnSwapChainRender(PC_CORE::CommandList* _Cmd)
+void Editor::OnRender(PC_CORE::CommandList* _Cmd)
 {
     for (auto& editorWindow : editorWindows)
         editorWindow->Render(PrimaryCommandBuffer.get());
@@ -377,7 +377,6 @@ void Editor::Run(bool* _appShouldClose)
 
         IMGUIContext.NewFrame();
         WorldTick(Time::DeltaTime());
-        //Renderer.GetRenderingData(RenderingWorldData);
         UpdateEditor();
         RenderFrame();
         

@@ -101,7 +101,7 @@ BEGIN_EDITOR_PCCORE
 
         EditorData editorData;
     protected:
-        void OnSwapChainRender(PC_CORE::CommandList* _Cmd) override;
+        void OnRender(PC_CORE::CommandList* _Cmd) override;
 
     private:
         void LoadFromInitFiles();

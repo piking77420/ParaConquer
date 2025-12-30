@@ -139,7 +139,6 @@ void Camera::ComputeView()
 
 
     m_View = Tbx::LookAtRH(Position, Position + Front, Up);
-    m_ViewInv = m_View.Invert();
 }
 
 void Camera::ComputeProjection()
@@ -163,7 +162,6 @@ void Camera::ComputeProjection()
             static_cast<double>(m_BottomTopScreen.x),
             static_cast<double>(m_BottomTopScreen.y), Near, Far);
 
-    m_ProjectionInv = m_Projection.Invert();
 }
 
 void Camera::ComputeViewProjection()
@@ -172,5 +170,4 @@ void Camera::ComputeViewProjection()
     PERF_REGION_COLOR(PerfRegion::Core);
 
     m_ViewProjection = m_Projection * m_View;
-    m_ViewProjectionInv = m_ViewInv * m_ProjectionInv;
 }

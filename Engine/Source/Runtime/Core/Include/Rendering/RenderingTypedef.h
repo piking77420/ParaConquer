@@ -8,15 +8,17 @@
 #include "LowRenderer/DescriptorSet.hpp"
 #include "Resources/StaticMesh.hpp"
 
+#define GPU_ALIGN alignas(16)
+
 namespace PC_CORE::Rendering
 {
 
-    using mat4 = std::array<float, 16>;
-    using mat3 = std::array<float, 9>;
+using mat4 = std::array<float, 16>;
+using mat3 = std::array<float, 9>;
 
-    using vec4 = std::array<float, 4>;
-    using vec3 = std::array<float, 3>;
-    using vec2 = std::array<float, 2>;
+using vec4 = std::array<float, 4>;
+using vec3 = std::array<float, 3>;
+using vec2 = std::array<float, 2>;
 
 
 struct StaticMeshComponentData

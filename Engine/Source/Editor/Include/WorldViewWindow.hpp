@@ -9,6 +9,7 @@
 #include "Rendering/Sampler.hpp"
 #include "Resources/Texture2d.hpp"
 #include "Rendering/RenderGraph.hpp"
+#include "Rendering/RenderView.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -19,7 +20,7 @@ namespace PC_CORE
 
 namespace PC_CORE::Rendering
 {
-    class CameraView;
+    class RenderView;
 }
 
 // TODO MAKE A VIEW CLASS
@@ -28,7 +29,6 @@ BEGIN_EDITOR_PCCORE
     class WorldViewWindow : public EditorWindow
     {
     public:
-        PC_CORE::Camera camera;
 
         explicit WorldViewWindow(Editor& _editor, const std::string& _name);
 
@@ -38,15 +38,22 @@ BEGIN_EDITOR_PCCORE
 
         void Render(PC_CORE::CommandList* _Cmd) override;
 
+        const PC_CORE::Camera& GetCamera() const
+        {
+            return m_Camera;
+        }
+
     protected:
+        PC_CORE::Camera m_Camera;
+
+        bool m_IsViewDirty = false; // TODO USE A EVENT
+
         PC_CORE::Rendering::RenderGraph m_RenderGraph;
 
-        std::unique_ptr<PC_CORE::Rendering::CameraView> m_View;
+        PC_CORE::Rendering::RenderView m_View;
 
     private:
         void UpdateImguiViewPort();
-
-        void UpdateViewPort(Tbx::Vector2i _Size);
 
         PC_CORE::Sampler m_ViewPortSampler;
 

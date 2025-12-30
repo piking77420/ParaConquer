@@ -49,29 +49,14 @@ BEGIN_PCCORE
             return m_View;
         }
 
-        PC_CORE_API const Tbx::Matrix4x4d& GetViewInvMatrix() const
-        {
-            return m_ViewInv;
-        }
-
         PC_CORE_API const Tbx::Matrix4x4d& GetProjection() const
         {
             return m_Projection;
         }
 
-        PC_CORE_API const Tbx::Matrix4x4d& GetProjectionInv() const
-        {
-            return m_ProjectionInv;
-        }
-
         PC_CORE_API const Tbx::Matrix4x4d& GetViewProjection() const
         {
             return m_ViewProjection;
-        }
-
-        PC_CORE_API const Tbx::Matrix4x4d& GetViewProjectionInv() const
-        {
-            return m_ViewProjectionInv;
         }
 
         PC_CORE_API void LookAt(const Tbx::Vector3d& _point, const Tbx::Vector3d& _up);
@@ -96,13 +81,8 @@ BEGIN_PCCORE
         float m_Far = 10000.f;
 
         Tbx::Matrix4x4d m_View = Tbx::Matrix4x4d::Identity();
-        Tbx::Matrix4x4d m_ViewInv = Tbx::Matrix4x4d::Identity();
-
         Tbx::Matrix4x4d m_Projection = Tbx::Matrix4x4d::Identity();
-        Tbx::Matrix4x4d m_ProjectionInv = Tbx::Matrix4x4d::Identity();
-
         Tbx::Matrix4x4d m_ViewProjection = Tbx::Matrix4x4d::Identity();
-        Tbx::Matrix4x4d m_ViewProjectionInv = Tbx::Matrix4x4d::Identity();
 
         Tbx::Vector2f m_BottomTopScreen{ 0.f,0.f };
         Tbx::Vector2f m_LeftRightScreen{ 0.f,0.f };

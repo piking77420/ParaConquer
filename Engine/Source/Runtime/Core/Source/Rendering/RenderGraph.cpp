@@ -15,19 +15,5 @@ RenderGraph::~RenderGraph()
 
 }
 
-void RenderGraph::Build()
-{
-
-}
-
-void RenderGraph::Update(const RenderGraphContext& _RenderGraphContext)
-{
-}
-
-void RenderGraph::Execute(const RenderGraphContext& _RenderGraphContext)
-{
-
-}
-
 
 }

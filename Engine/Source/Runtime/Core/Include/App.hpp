@@ -32,8 +32,7 @@ BEGIN_PCCORE
 
         Rhi RenderHarwareInteface;
 
-        std::unique_ptr<CommandList> PrimaryCommandBuffer; // TO DO HANDLE MULTIPLE
-        std::unique_ptr<CommandList> SecondCommandBuffer; // TO DO HANDLE MULTIPLE
+        std::unique_ptr<CommandList> PrimaryCommandBuffer;
 
         PC_CORE_API App();
 
@@ -51,7 +50,7 @@ BEGIN_PCCORE
 
         PC_CORE_API static inline App* Instance = nullptr;
     protected:
-        virtual void OnSwapChainRender(PC_CORE::CommandList* _Cmd) = 0;
+        virtual void OnRender(PC_CORE::CommandList* _Cmd) = 0;
     };
 
 END_PCCORE

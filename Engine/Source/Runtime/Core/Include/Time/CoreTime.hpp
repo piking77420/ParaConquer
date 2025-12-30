@@ -3,7 +3,7 @@
 #include "CoreHeader.hpp"
 
 BEGIN_PCCORE
-    class Time
+    class Time // TODO PUT THIS IN CORE IO
     {
     public:
         PC_CORE_API static double GetTime();

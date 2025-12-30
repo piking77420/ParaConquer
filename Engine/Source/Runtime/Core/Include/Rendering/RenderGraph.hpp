@@ -13,17 +13,10 @@ namespace PC_CORE
 namespace PC_CORE::Rendering
 {
 	class RenderPass;
-	class View;
+	class RenderView;
 	class RenderingWorldData;
 
-	struct RenderGraphContext
-	{
-		Rhi& Rhi;
-		const View& View;
-		const RenderingWorldData& RenderingWorldData;
-		CommandList& CommandBuffer;
-	};
-
+	
 	class PC_CORE_API RenderGraph : public PC_CORE::DynamicReflectable
 	{
 	public:
@@ -36,9 +29,9 @@ namespace PC_CORE::Rendering
 
 		void Build();
 
-		void Update(const RenderGraphContext& _RenderGraphContext);
+		void Update();
 
-		void Execute(const RenderGraphContext& _RenderGraphContext);
+		void Execute();
 
 	private:
 		

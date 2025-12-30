@@ -1,12 +1,12 @@
 ﻿#include "EditWorldWindow.hpp"
 
+#include <Imgui.h>
+
 #include "App.hpp"
 #include "EasingFunction.hpp"
 #include "Editor.hpp"
 #include "Log.hpp"
-#include "Rendering/View/CameraView.hpp"
 #include "Time/CoreTime.hpp"
-#include <Imgui.h>
 
 using namespace PC_EDITOR_CORE;
 
@@ -42,11 +42,14 @@ void EditWorldWindow::MoveCameraUpdate()
     HideCursor();
     CameraChangeSpeed(deltatime);
 
-    bool CameraDirty = false;
-    CameratMovment(deltatime, &CameraDirty);
-    RotateCamera(deltatime, &CameraDirty);
-    if (CameraDirty && m_View)
-        m_View->UpdateView();
+    
+    CameratMovment(deltatime, &m_IsViewDirty);
+    RotateCamera(deltatime, &m_IsViewDirty);
+
+    if (m_IsViewDirty)
+    {
+        m_View.FromCamera(m_Camera, PC_CORE::Time::GetTime(), PC_CORE::Time::DeltaTime());
+    }
 }
 
 void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)
@@ -79,9 +82,9 @@ void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)
     forward.y = std::sin(pitch * Tbx::dDeg2Rad);
     forward.z = std::sin(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
 
-    camera.Front = forward.Normalize();
+    m_Camera.Front = forward.Normalize();
 
-    camera.LookAt(camera.Position + forward);
+    m_Camera.LookAt(m_Camera.Position + forward);
     *_isDirty = true;
 }
 
@@ -89,15 +92,15 @@ void EditWorldWindow::CameratMovment(float _deltatime, bool* isDirty)
 {
     bool isPositionDirty = false;
     Tbx::Vector3d addVector = Tbx::Vector3d::Zero();
-    const Tbx::Vector3d right = Tbx::Vector3d::Cross(camera.Front, camera.Up);
+    const Tbx::Vector3d right = Tbx::Vector3d::Cross(m_Camera.Front, m_Camera.Up);
 
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
-        addVector += camera.Front;
+        addVector += m_Camera.Front;
     }
     if (ImGui::IsKeyDown(ImGuiKey_S))
     {
-        addVector -= camera.Front;
+        addVector -= m_Camera.Front;
     }
 
     if (ImGui::IsKeyDown(ImGuiKey_A))
@@ -112,8 +115,8 @@ void EditWorldWindow::CameratMovment(float _deltatime, bool* isDirty)
     float mag = addVector.Magnitude();
     if (mag > Tbx::Epsilon<float>())
     {
-        Tbx::Vector3d desiredPosition = camera.Position + (addVector.Normalize() * m_CameraSpeedValue);
-        camera.Position = SmoothDamp(camera.Position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
+        Tbx::Vector3d desiredPosition = m_Camera.Position + (addVector.Normalize() * m_CameraSpeedValue);
+        m_Camera.Position = SmoothDamp(m_Camera.Position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
         *isDirty = true;
     }
 }

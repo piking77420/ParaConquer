@@ -35,11 +35,6 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
         ->SetName("PrimaryCommandBuffer")
         .Build();
 
-    SecondCommandBuffer.reset(RenderHarwareInteface.CreateCommandList());
-    SecondCommandBuffer
-        ->SetName("SecondCommandBuffer")
-        .Build();
-
     Time::Init();
 }
 
@@ -80,20 +75,11 @@ void App::RenderFrame()
 
     if (swapChain->GetSwapChainImageIndex(mainWindow))
     {
-
-        {
-            SecondCommandBuffer->BeginRecordCommands();
-            SecondCommandBuffer->BeginDebugLabel("SecondCommandBuffer", { 1.f,0.f,1.f, 1.f });
-            SecondCommandBuffer->EndDebugLabel();
-            SecondCommandBuffer->EndRecordCommands();
-            RenderHarwareInteface.GetRhiContext().SendEnqueuCommand(SecondCommandBuffer.get(), PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
-        }
-       
         PrimaryCommandBuffer->BeginRecordCommands();
         {
             PrimaryCommandBuffer->BeginDebugLabel("SwapChain", Color);
             swapChain->BeginSwapChainRenderPass(PrimaryCommandBuffer.get());
-            OnSwapChainRender(PrimaryCommandBuffer.get());
+            OnRender(PrimaryCommandBuffer.get());
             swapChain->EndSwapChainRenderPass(PrimaryCommandBuffer.get());
             PrimaryCommandBuffer->EndDebugLabel();
         }
