@@ -18,7 +18,7 @@ public:
 
     IMP_DYNAMIC_REFLECT();
     
-    const char* GetName()
+    const char* GetName() const
     {
         return "FowardPass";
     }
@@ -28,7 +28,7 @@ public:
 
     }
 
-    void Execute(PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&)
+    void Execute(PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&) const
     {
 
     }
