@@ -39,6 +39,7 @@ BEGIN_PCCORE
         REFLECT_MEMBER(DynamicReflectable, m_TypeId);
     };
 
+END_PCCORE
 
 #define IMP_DYNAMIC_REFLECT() \
 void QueryType() override \
@@ -47,5 +48,3 @@ void QueryType() override \
 }
 #define DYNAMIC_REFLECT_INIT \
 QueryType();
-
-END_PCCORE

@@ -4,42 +4,65 @@
 #include <PerfRegion.hpp>
 
 #include "LowRenderer/Rhi.hpp"
-#include "LowRenderer/Vertex.hpp"
-#include "Resources/ResourceManager.hpp"
-#include "Time/CoreTime.hpp"
-#include "Math/MatrixTransformation.hpp"
-#include "World/StaticMeshComponent.hpp"
-#include "World/Transform.hpp"
+#include "Rendering/RenderView.hpp"
 #include "Rendering/RenderPasses/RenderPass.hpp"
 
-
-#include "Math/ToolboxTypedef.hpp"
-#include "Rendering/RenderSystem.hpp"
-#include "Resources/ShaderSourceBinary.hpp"
-
-#include "VulkanCommandList.hpp"
-#include "Resources/ComputeShader.hpp"
-#include "Rendering/Sampler.hpp"
-
-using namespace PC_CORE::Rendering;
-
-
-Renderer::~Renderer()
+class PC_CORE_API FowardPass : public PC_CORE::Rendering::RenderPass
 {
+public:
+
+    FowardPass();
+
+    ~FowardPass() override = default;
+
+
+    IMP_DYNAMIC_REFLECT();
     
+    const char* GetName()
+    {
+        return "FowardPass";
+    }
+	
+    void Build(const PC_CORE::Rendering::RenderView&)
+    {
+
+    }
+
+    void Execute(PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&)
+    {
+
+    }
+
+private:
+
+};
+
+FowardPass::FowardPass()
+{
+    DYNAMIC_REFLECT_INIT;
 }
 
-void Renderer::Init(Rhi& _Rhi)
+
+
+namespace PC_CORE::Rendering
 {
-    return;
+    Renderer::Renderer(Rhi& _Rhi)
+        : m_Rhi(_Rhi)
+    {
+        static FowardPass fowardPass;
+
+        m_RenderGraph.AddRenderPass<FowardPass>(&fowardPass);
+    }
+
+   void Renderer::Update(const RenderView& _view)
+   {
+
+   }
+
+   void Renderer::Excute(const RenderView& _view)
+   {
+
+   }
+
 }
 
-PC_CORE_API void PC_CORE::Rendering::Renderer::Update(const RenderView& _view, const RenderGraph& RenderGraph)
-{
-    
-}
-
-PC_CORE_API void PC_CORE::Rendering::Renderer::Excute(const RenderView& _view, const RenderGraph& RenderGraph)
-{
-   
-}

@@ -14,6 +14,7 @@ using namespace PC_EDITOR_CORE;
 
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
+    , m_Renderer(m_Editor->RenderHarwareInteface)
 {
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;

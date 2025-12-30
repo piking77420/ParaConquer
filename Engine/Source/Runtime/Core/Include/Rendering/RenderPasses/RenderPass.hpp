@@ -3,10 +3,23 @@
 #include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
 
+namespace PC_CORE 
+{
+    class CommandList;
+}
+
 namespace PC_CORE::Rendering
 {
-class RenderGraphContext;
-class RenderGraph;
+    class RenderView;
+    class RenderingWorldData;
+
+
+    using RenderPassGetNameFunc = const char* (*)(void*);
+
+    using RenderPassBuildFunc = void (*)(void*, const RenderView&);
+
+    using RenderPassExecuteFunc = void (*)(void*, CommandList*, const RenderView&, const RenderingWorldData&);
+
 
 class PC_CORE_API RenderPass : public DynamicReflectable
 {
@@ -17,18 +30,15 @@ public:
 
     IMP_DYNAMIC_REFLECT()
 
-    virtual void Build(RenderGraph& RenderGraph) = 0;
-
-    virtual void Update(const RenderGraphContext& _RenderGraphContext) = 0;
-
-    virtual void Execute(const RenderGraphContext& _RenderGraphContext) = 0;
-
     bool IsDisable = false;
 
 protected:
 };
 
+template <typename Derived>
+concept RenderPassT = std::is_base_of_v<RenderPass, std::remove_cvref_t<Derived>>;
+
 REFLECT(RenderPass, PC_CORE::DynamicReflectable);
 
-
 }
+

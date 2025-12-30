@@ -6,10 +6,11 @@
 #include "LowRenderer/DescriptorSet.hpp"
 #include "Rendering/Camera.hpp"
 #include "Rendering/Gbuffers.hpp"
-#include "Rendering/Sampler.hpp"
-#include "Resources/Texture2d.hpp"
+#include "Rendering/Renderer.hpp"
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
+#include "Rendering/Sampler.hpp"
+#include "Resources/Texture2d.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -48,9 +49,9 @@ BEGIN_EDITOR_PCCORE
 
         bool m_IsViewDirty = false; // TODO USE A EVENT
 
-        PC_CORE::Rendering::RenderGraph m_RenderGraph;
-
         PC_CORE::Rendering::RenderView m_View;
+
+        PC_CORE::Rendering::Renderer m_Renderer;
 
     private:
         void UpdateImguiViewPort();
