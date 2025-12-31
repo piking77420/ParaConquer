@@ -22,6 +22,51 @@ Rhi::~Rhi()
 
 }
 
+void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
+{
+	PERF_REGION_SCOPED;
+	PC_LOG("Rhi Initialize");
+	m_GraphicsApi = _createInfo.GraphicsAPI;
+
+	RenderInstanceCreateInfo renderInstanceCreateInfo =
+	{
+		.appName = _createInfo.appName,
+		.gpuDebug = _createInfo.gpuDebug
+	};
+
+	const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
+	{
+		{
+			// RhiExtension::RayTracing,
+			//RhiExtension::MeshShader
+		},
+
+	};
+
+	const RhiContextCreateInfo renderContextCreateInfo =
+	{
+		_createInfo.window->GetHandle(),
+		&renderInstanceCreateInfo,
+		&physicalDevicesCreateInfo
+	};
+
+
+	switch (m_GraphicsApi)
+	{
+	case GraphicAPI::Vulkan:
+		VulkanInitialize(renderContextCreateInfo);
+		break;
+	case GraphicAPI::D3d12:
+		DX12Initialize(renderContextCreateInfo);
+		break;
+	case GraphicAPI::Count:
+	case GraphicAPI::None:
+		break;
+	}
+
+}
+
+
 RhiSwapChain* Rhi::CreateRhiSwapChain()
 {
 	switch (m_GraphicsApi)
@@ -274,68 +319,14 @@ void Rhi::NextFrame()
 	m_CurrentFrame = (m_CurrentFrame + 1) % MaxFramesInFlight;
 }
 
-void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
+
+void Rhi::VulkanInitialize(const RhiContextCreateInfo& _CreateInfo)
 {
-	PERF_REGION_SCOPED;
-	PC_LOG("Rhi Initialize");
-	m_GraphicsApi = _createInfo.GraphicsAPI;
-
-	RenderInstanceCreateInfo renderInstanceCreateInfo =
-	{
-		.appName = _createInfo.appName,
-		.gpuDebug = _createInfo.gpuDebug
-	};
-
-	const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
-	{
-		{
-			// RhiExtension::RayTracing,
-			//RhiExtension::MeshShader
-		},
-
-	};
-
-	const RhiContextCreateInfo renderContextCreateInfo =
-	{
-		_createInfo.window->GetHandle(),
-		&renderInstanceCreateInfo,
-		&physicalDevicesCreateInfo
-	};
-
-
-	switch (m_GraphicsApi)
-	{
-	case GraphicAPI::Vulkan:
-		VulkanInitialize(renderContextCreateInfo);
-		break;
-	case GraphicAPI::D3d12:
-		DX12Initialize(renderContextCreateInfo);
-		break;
-	case GraphicAPI::Count:
-	case GraphicAPI::None:
-		break;
-	}
-	/*
-	// Create Resource Update Command List
-	m_ResourceUpdateCommandList.reset(Rhi::CreateCommandList());
-	m_ResourceUpdateCommandList
-		->SetBufferType(CommandList::BufferType::Primary)
-		.SetPoolFamilly(CommandList::PoolFamily::Graphics)
-		.SetName("Resource Operation")
-		.Build();*/
-	// Create Resource Update Fence
-	m_ResourceUpdateFence.reset(Rhi::CreateFence());
-	m_ResourceUpdateFence
-		->SetSignaled(true)
-		.SetName("ResourceUpdateFence")
-		.Build();
+	m_RhiContext.reset(new Vulkan::VulkanContext(*this));
+	Vulkan::VulkanContext* VkContext = reinterpret_cast<Vulkan::VulkanContext*>(m_RhiContext.get());
+	VkContext->Init(_CreateInfo);
 }
 
-void Rhi::VulkanInitialize(const RhiContextCreateInfo& _createInfo)
-{
-	m_RhiContext.reset(new Vulkan::VulkanContext(*this, _createInfo));
-}
-
-void Rhi::DX12Initialize(const RhiContextCreateInfo& _createInfo)
+void Rhi::DX12Initialize(const RhiContextCreateInfo& _CreateInfo)
 {
 }

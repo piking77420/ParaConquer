@@ -50,7 +50,7 @@ BEGIN_PCCORE
     
         PC_CORE_API ~RhiBuffer() override = default;
     
-        PC_CORE_API virtual void UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes) = 0;
+        PC_CORE_API virtual bool UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes) = 0;
     
         PC_CORE_API virtual char* BeginFullDynamicBufferUpdateForCurrentFrame() = 0;
 

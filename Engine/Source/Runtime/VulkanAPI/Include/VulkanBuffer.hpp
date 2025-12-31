@@ -35,7 +35,7 @@ namespace Vulkan
         
         bool Build() override;
         
-        void UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes) override;
+        bool UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes) override;
 
         char* BeginFullDynamicBufferUpdateForCurrentFrame() override;
 
@@ -53,6 +53,8 @@ namespace Vulkan
         std::vector<BufferAndAlloc> m_Handles;
         
         void* m_CurrentFrameMappedData = nullptr;
+
+        BufferAndAlloc stagingBuffer;
         
     };
 }

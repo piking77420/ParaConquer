@@ -578,7 +578,12 @@ void Vulkan::VulkanCommandList::Flush(PC_CORE::RhiFence& _fence)
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle() const
 {
-    return m_CommandBuffer[m_Rhi.GetFrameIndex()];
+    return GetVkHandle(m_Rhi.GetFrameIndex());
+}
+
+VULKAN_API vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle(size_t _FrameIndex) const
+{
+    return m_CommandBuffer[_FrameIndex];
 }
 
 VULKAN_API vk::Semaphore Vulkan::VulkanCommandList::GetVkSemaphore() const

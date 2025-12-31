@@ -84,6 +84,8 @@ namespace Vulkan
 
         VULKAN_API vk::CommandBuffer GetVkHandle() const;
 
+        VULKAN_API vk::CommandBuffer GetVkHandle(size_t _FrameIndex) const;
+
         VULKAN_API vk::Semaphore GetVkSemaphore() const;
 
     private:

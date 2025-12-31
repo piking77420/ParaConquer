@@ -16,6 +16,10 @@
 #include "Serialize/Serializer.h"
 
 
+namespace PC_EDITOR_CORE
+{
+
+
 bool PC_EDITOR_CORE::Importer::Import(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
                                       PC_CORE::TypeId* _outId,
                                       PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
@@ -90,6 +94,7 @@ bool PC_EDITOR_CORE::Importer::ImportStaticMesh(PC_CORE::Rhi& _Rhi, const std::f
                                                 PC_CORE::Serializer* _serializer, PC_CORE::TypeId* _outId,
                                                 PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const
 {
+    /*
     PERF_REGION_SCOPED
     Assimp::Importer importer;
 
@@ -169,6 +174,67 @@ bool PC_EDITOR_CORE::Importer::ImportStaticMesh(PC_CORE::Rhi& _Rhi, const std::f
 
     _serializer->SerializeCompactBuffer("StaticMeshRenderData Vertex", verticies);
     _serializer->SerializeCompactBuffer("StaticMeshRenderData Indicies", indicies);
-
+    */
     return true;
+}
+
+bool Importer::ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh) const
+{
+    PERF_REGION_SCOPED
+    Assimp::Importer importer;
+
+    // Load the model with common processing flags
+    const aiScene* scene = importer.ReadFile(
+        _path.generic_string(),
+        aiProcess_Triangulate |
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_GenNormals |
+        aiProcess_CalcTangentSpace |
+        aiProcess_ImproveCacheLocality
+    );
+
+    if (!scene || !scene->HasMeshes())
+    {
+        PC_LOGERROR("Failed to load model: {} \n {} ", _path.generic_string(), importer.GetErrorString());
+    }
+
+    aiMesh* mesh = scene->mMeshes[0];
+
+    std::vector<PC_CORE::StaticMeshVertex> vertices;
+    std::vector<uint32_t> indices;
+
+    vertices.reserve(mesh->mNumVertices);
+    for (size_t i = 0; i < mesh->mNumVertices; ++i)
+    {
+        PC_CORE::StaticMeshVertex v{};
+        v.Position = Tbx::Vector3f{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+
+        if (mesh->HasNormals())
+            v.Normal = Tbx::Vector3f{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+
+        if (mesh->HasTextureCoords(0))
+            v.Uv = Tbx::Vector2f{ mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+
+        if (mesh->HasTangentsAndBitangents())
+            v.Tangent = Tbx::Vector3f{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
+
+        vertices.push_back(v);
+    }
+
+    // Extract indices
+    for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
+    {
+        const aiFace& face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; ++j)
+            indices.push_back(face.mIndices[j]);
+    }
+
+    PC_CORE::StaticMeshRenderData StaticMeshRenderDat(vertices, indices);
+    
+    *_StaticMesh = PC_CORE::StaticMesh(std::string(mesh->mName.C_Str()), StaticMeshRenderDat);
+
+
+    return false;
+}
+
 }

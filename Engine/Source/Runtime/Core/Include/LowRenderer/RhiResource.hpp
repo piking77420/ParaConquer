@@ -55,6 +55,11 @@ public:
 
     DEFAULT_COPY_MOVE_OPERATIONS(RhiResource)
 
+    size_t GetNbrOfResourcePerFrameInFlight() const
+    {
+        return GetNbrOfHandle(m_MemoryUsage);
+    }
+
 protected:
     bool m_AllowCpuAcces = false;
 

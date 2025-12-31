@@ -9,12 +9,13 @@
 
 namespace Vulkan
 {
-
+    class VulkanCommandList;
 
     struct SyncObject
     {
         vk::Semaphore imageAvailableSemaphore;
         vk::Semaphore renderFinishedSemaphore;
+        vk::Semaphore transferFinishSemaphore;
 
         //vk::Semaphore computeFinishedSemaphore;
         //vk::m_ResourceUpdateFence computeInFlightFence;
@@ -57,19 +58,23 @@ namespace Vulkan
 
         std::vector<vk::SubmitInfo> SubmitInfoBuffer;
 
-        VULKAN_API explicit VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
+        VULKAN_API explicit VulkanContext(PC_CORE::Rhi& _Rhi);
 
         VULKAN_API ~VulkanContext() override;
 
+        VULKAN_API void Init(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo); // TODO BUILD PATTER
+
         VULKAN_API void WaitIdle() override;
 
+        VULKAN_API void SendEnqueuCommand(PC_CORE::CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) override;
+
+        VULKAN_API void ProceedResourceUpdateBranch() override;
+
         VULKAN_API std::shared_ptr<VulkanInstance> GetInstance();
-        
+
         VULKAN_API std::shared_ptr<VulkanDevice> GetDevice();
 
         VULKAN_API std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
-
-        VULKAN_API void SendEnqueuCommand(PC_CORE::CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) override;
 
     private:
         VULKAN_API void CreateMemoryAllocator();
@@ -80,7 +85,7 @@ namespace Vulkan
 
         VULKAN_API void DestroySyncObjects();
 
-
+        std::unique_ptr<VulkanCommandList> m_TransferCommandList;
     };
 
 #define GET_VK_CONTEXT \

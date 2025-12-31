@@ -304,6 +304,12 @@ void Editor::InitTestScene()
     PERF_REGION_COLOR(PerfRegion::Editor);
     PC_LOG("InitTestScene...")
     auto& level = World::GetWorld()->level;
+    
+    ObjectPtr staticMesh = ResourceManager::Create<StaticMesh>();
+
+    Importer importer;
+    importer.ImportMesh(RenderHarwareInteface, "C:/Data/ParaConquerGame/Assets/Meshs/obj/RoundedCube.obj", staticMesh.Get());
+
 
     /*
         std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");

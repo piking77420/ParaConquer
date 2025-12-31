@@ -101,13 +101,13 @@ bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
      // Reality : 0 1 0 1 2
     if (m_ImagesInFligh[imageIndex] != VK_NULL_HANDLE)
     {
-        device.waitForFences
+        VK_CALL(device.waitForFences
         (
             1,
             &m_ImagesInFligh[imageIndex],
             VK_TRUE,
             UINT64_MAX
-        );
+        ));
     }
 
     // Mark image as now using this frame's fence
@@ -115,11 +115,11 @@ bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHand
         context.syncObjects[frameIndex].inFlightFence;
 
     // Reset fence before submitting new work
-    device.resetFences
+    VK_CALL(device.resetFences
     (
         1,
         &context.syncObjects[frameIndex].inFlightFence
-    );
+    ));
 
     m_SwapChainImageIndex = imageIndex;
 
@@ -344,9 +344,23 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     vk::Device device = context.GetDevice()->GetDevice();
     vk::Queue mainQueu = context.mainQueue;
 
+
+    uint32_t WaitSemaphoreCount = 0;
+    std::array<vk::Semaphore, 2> waitSemaphore = {};
+    std::array<vk::PipelineStageFlags, 2> waitPipelineStageImageAvailable = {};
+
+    // Transfer
+    if (context.PendingExcutionResourceUpdate())
+    {
+        waitSemaphore[WaitSemaphoreCount] = context.syncObjects[frameIndex].transferFinishSemaphore;
+        waitPipelineStageImageAvailable[WaitSemaphoreCount] = vk::PipelineStageFlagBits::eTransfer;
+        WaitSemaphoreCount++;
+    }
     
-    vk::Semaphore waitSemaphoresImageAvailable[] = { context.syncObjects[frameIndex].imageAvailableSemaphore };
-    vk::PipelineStageFlags waitPipelineStageImageAvailable[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+    // SwapChain
+    waitSemaphore[WaitSemaphoreCount] = context.syncObjects[frameIndex].imageAvailableSemaphore;
+    waitPipelineStageImageAvailable[WaitSemaphoreCount] = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    WaitSemaphoreCount++;
 
     vk::Semaphore signalSemaphores[] = { context.syncObjects[m_SwapChainImageIndex].renderFinishedSemaphore };
     // Handle all user Command list
@@ -357,13 +371,12 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
         vk::SubmitInfo& submitInfo = context.SubmitInfoBuffer[i];
         submitInfo.sType = vk::StructureType::eSubmitInfo;
 
-        submitInfo.waitSemaphoreCount = 1; // always one for bow
-
         // Wait previous Work
         if (i == 0)
         {
-            submitInfo.pWaitSemaphores = waitSemaphoresImageAvailable;
-            submitInfo.pWaitDstStageMask = waitPipelineStageImageAvailable;
+            submitInfo.waitSemaphoreCount = WaitSemaphoreCount;
+            submitInfo.pWaitSemaphores = waitSemaphore.data();
+            submitInfo.pWaitDstStageMask = waitPipelineStageImageAvailable.data();
         }
         else
         {

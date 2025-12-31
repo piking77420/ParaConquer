@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bitset>
+#include <variant>
 
 #include "RhiTypedef.h"
 
@@ -13,83 +13,54 @@ namespace PC_CORE
 
 namespace PC_CORE::RHI
 {
-	class PC_CORE_API ResourceUpdate
-	{
-	public:
+	namespace ResourceUpdate {
 		enum ResourceUpdateStatus
 		{
 			Failed,
 			Success,
-			Complet
+			Complete
 		};
 
-		ResourceUpdate();
-		virtual ~ResourceUpdate();
+		class PC_CORE_API BufferUpload
+		{
+		public:
+			explicit BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size);
 
-		
-		[[nodiscard]] virtual bool Record(CommandList& _CommandList) = 0;
+			~BufferUpload() = default;
 
-	private:
-		std::bitset<MaxFramesInFlight> m_FrameUpdateBitSet{};
-	};
+			DEFAULT_COPY_MOVE_OPERATIONS(BufferUpload)
 
+			[[nodiscard]] ResourceUpdateStatus Execute(CommandList& _CommandList);
 
-	class Texture2DUploadUpdate final : public ResourceUpdate
+		private:
+			RhiBuffer* m_RhiBuffer;
+
+			size_t m_NbrOfUpdate{ 0u };
+
+			std::unique_ptr<uint8_t[]> m_Data;
+
+			size_t m_DataSize{ 0u };
+		};
+	}
+	
+
+	class PC_CORE_API ResourceUpdateBranch
 	{
 	public:
+		DEFAULT_CONSTRUCTOR_DESTRUCTOR(ResourceUpdateBranch)
 
-		explicit Texture2DUploadUpdate(RhiTexture& _RhiTexture, uint8_t* _Data, size_t _DataSize)
-			: m_Texture(_RhiTexture)
-			, m_DataSize(_DataSize)
+		DEFAULT_COPY_MOVE_OPERATIONS(ResourceUpdateBranch)
+
+	    void BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size);
+
+		void Reset()
 		{
-			m_Data = new uint8_t[m_DataSize];
+			m_UpdateBranch = std::monostate();
 		}
 
-		~Texture2DUploadUpdate() override
-		{
-			if (m_DataSize != 0)
-				delete[] m_Data;
-		}
-
+		ResourceUpdate::ResourceUpdateStatus Execute(CommandList& _CommandList);
 	private:
-		RhiTexture& m_Texture;
-		uint8_t* m_Data{ nullptr };
-		size_t m_DataSize{ 0 };
-
-	};
-
-	class GenerateMipmapsUpdate final : public ResourceUpdate
-	{
-	public:
-		explicit GenerateMipmapsUpdate(RhiTexture& texture)
-			: m_Texture(texture) {
-		}
-
-		
-		~GenerateMipmapsUpdate() override
-		{
-
-		}
-
-	private:
-		RhiTexture& m_Texture;
-	};
-
-	class BufferUpload final : public ResourceUpdate
-	{
-	public:
-		explicit BufferUpload(RhiBuffer& _RhiBuffer)
-			: m_RhiBuffer(_RhiBuffer) {
-		}
-
-
-		~BufferUpload() override
-		{
-
-		}
-
-	private:
-		RhiBuffer& m_RhiBuffer;
+		std::variant<std::monostate, ResourceUpdate::BufferUpload> m_UpdateBranch;
 	};
 
 

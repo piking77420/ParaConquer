@@ -53,6 +53,7 @@ FowardPass::FowardPass()
     DYNAMIC_REFLECT_INIT;
 }
 
+REFLECT(FowardPass, PC_CORE::Rendering::RenderPass);
 
 
 namespace PC_CORE::Rendering

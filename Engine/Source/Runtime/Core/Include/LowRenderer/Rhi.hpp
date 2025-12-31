@@ -82,13 +82,9 @@ private:
 
     std::unique_ptr<RhiContext> m_RhiContext = nullptr;
 
-    std::vector<std::function<void(CommandList*)>> m_ResourceUpdateStack;
+    void VulkanInitialize(const RhiContextCreateInfo& _CreateInfo);
 
-    std::unique_ptr<RhiFence> m_ResourceUpdateFence;
-
-    void VulkanInitialize(const RhiContextCreateInfo& _createInfo);
-
-    void DX12Initialize(const RhiContextCreateInfo& _createInfo);
+    void DX12Initialize(const RhiContextCreateInfo& _CreateInfo);
 };
 
 

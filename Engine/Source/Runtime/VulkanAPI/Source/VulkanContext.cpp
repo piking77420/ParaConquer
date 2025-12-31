@@ -17,25 +17,31 @@
 
 using namespace Vulkan;
 
-VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo)
-    : RhiContext(_Rhi, rhiContextCreateInfo)
+VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi)
+    : RhiContext(_Rhi)
     , descritptorManager(*this)
+{
+   
+
+}
+
+void Vulkan::VulkanContext::Init(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    
+
 
     std::set<std::string> extensionToEnable;
 
 
     std::shared_ptr<VulkanInstance> vkInstance = std::make_shared<VulkanInstance>(*rhiContextCreateInfo.instanceCreate,
-                                                      rhiContextCreateInfo.WindowHandle);
+        rhiContextCreateInfo.WindowHandle);
     std::shared_ptr<VulkanPhysicalDevices> vkPhysicalDevice = std::make_shared<VulkanPhysicalDevices>(vkInstance->GetVulkanInstance(), vkInstance->surface, *rhiContextCreateInfo.physicalDevicesCreateInfo,
         &extensionToEnable);
 
     std::shared_ptr<VulkanDevice> vkDevice = std::make_shared<VulkanDevice>(vkPhysicalDevice,
         extensionToEnable, &mainQueue);
-    
+
     renderInstance = vkInstance;
     rhiPhysicalDevices = vkPhysicalDevice;
     rhiDevice = vkDevice;
@@ -47,19 +53,24 @@ VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi, const PC_CORE::RhiContextCreate
 
     const uint32_t uwidht = static_cast<uint32_t>(widht);
     const uint32_t uheight = static_cast<uint32_t>(height);
-    rhiSwapChain = std::make_shared<VulkanSwapChain>(m_Rhi, uwidht, uheight, *vkPhysicalDevice, *vkDevice,  vkInstance->surface);
+    rhiSwapChain = std::make_shared<VulkanSwapChain>(m_Rhi, uwidht, uheight, *vkPhysicalDevice, *vkDevice, vkInstance->surface);
     rhiSwapChain->SetName("MainSwapChain");
 
     vk::FenceCreateInfo fenceInfo{};
     fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
     fenceInfo.flags = {};
-
     transferFence = GetDevice()->GetDevice().createFence(fenceInfo);
 
     CreateMemoryAllocator();
     CreateCommandPools();
     CreateSyncObjects();
+
+    m_TransferCommandList.reset(new VulkanCommandList(m_Rhi));
+    m_TransferCommandList
+        ->SetName("TransferCommandList")
+        .Build();
 }
+
 
 VulkanContext::~VulkanContext()
 {
@@ -81,6 +92,7 @@ VulkanContext::~VulkanContext()
     vmaDestroyAllocator(allocator);
     allocator = nullptr;
 }
+
 
 
 std::shared_ptr<VulkanInstance> VulkanContext::GetInstance()
@@ -168,6 +180,7 @@ void VulkanContext::CreateSyncObjects()
     {
         syncObjects[i].imageAvailableSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
         syncObjects[i].renderFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
+        syncObjects[i].transferFinishSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
 
         //syncObjects[i].computeInFlightFence = vulkanDevice->GetDevice().createFence(fenceInfo);
         //syncObjects[i].computeFinishedSemaphore = vulkanDevice->GetDevice().createSemaphore(semaphoreInfo);
@@ -185,6 +198,7 @@ void VulkanContext::DestroySyncObjects()
     {
         vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].renderFinishedSemaphore);
         vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].imageAvailableSemaphore);
+        vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].transferFinishSemaphore);
         vulkanDevice->GetDevice().destroyFence(syncObjects[i].inFlightFence);
         //vulkanDevice->GetDevice().destroySemaphore(syncObjects[i].computeFinishedSemaphore);
         //vulkanDevice->GetDevice().destroyFence(syncObjects[i].computeInFlightFence);
@@ -203,4 +217,62 @@ void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuComma
     flushedCommands.Commands.emplace_back(vkCmdL->GetVkHandle());
     flushedCommands.Semaphores.emplace_back(vkCmdL->GetVkSemaphore());
     flushedCommands.BatchPipelineStageFlag.emplace_back(Utils::RhiPipelineStageToVulkan(waitStage));
+}
+
+void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
+{
+    const size_t CurrentFrameIndex = m_Rhi.GetFrameIndex();
+    
+    bool NeedToSendToGpu = false;
+
+    if (!m_ResourceUpdate.empty())
+    {
+        m_TransferCommandList->BeginRecordCommands();
+        m_TransferCommandList->BeginDebugLabel("Resource Update", { 0.75f,0.5f, 0, 1.f });
+        for (auto it = m_ResourceUpdate.begin(); it != m_ResourceUpdate.end(); )
+        {
+            PC_CORE::RHI::ResourceUpdate::ResourceUpdateStatus Status = it->Execute(*m_TransferCommandList);
+            switch (Status)
+            {
+            case PC_CORE::RHI::ResourceUpdate::Success:
+                NeedToSendToGpu = true;
+                it++;
+                break;
+            case PC_CORE::RHI::ResourceUpdate::Failed:
+                it = m_ResourceUpdate.erase(it);
+                break;
+            case PC_CORE::RHI::ResourceUpdate::Complete:
+                it = m_ResourceUpdate.erase(it);
+                NeedToSendToGpu = true;
+                break;
+            default:
+                it++;
+                break;
+            }
+        }
+        m_TransferCommandList->EndDebugLabel();
+        m_TransferCommandList->EndRecordCommands();
+    }
+    
+
+    if (NeedToSendToGpu)
+    {
+        vk::Semaphore signalSemaphores[] = {
+        syncObjects[CurrentFrameIndex].transferFinishSemaphore
+        };
+
+        vk::CommandBuffer cmd = m_TransferCommandList->GetVkHandle(CurrentFrameIndex);
+
+        vk::SubmitInfo submitInfo{};
+        submitInfo
+            .setWaitSemaphoreCount(0)
+            .setPWaitSemaphores(nullptr)
+            .setPWaitDstStageMask(nullptr)
+            .setSignalSemaphoreCount(1)
+            .setPSignalSemaphores(signalSemaphores)
+            .setCommandBufferCount(1)
+            .setPCommandBuffers(&cmd);
+
+        VK_CALL(mainQueue.submit(1u, &submitInfo, nullptr));
+    }   
 }

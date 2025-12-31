@@ -66,8 +66,8 @@ BEGIN_PCCORE
 
     struct StaticMeshRenderData
     {
-        std::vector<StaticMeshVertex> Vertices;
-        std::vector<uint32_t> Indices;
+        const std::vector<StaticMeshVertex>& Vertices;
+        const std::vector<uint32_t>& Indices;
     };
 
 
@@ -104,7 +104,7 @@ BEGIN_PCCORE
 
         DEFAULT_COPY_MOVE_OPERATIONS(StaticMesh)
 
-        explicit StaticMesh(const StaticMeshCreateInfo& _staticMeshCreateInfo);
+        explicit StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData);
 
         StaticMesh();
 
@@ -114,8 +114,6 @@ BEGIN_PCCORE
         bool m_HallowCpuAcces = false;
 
         MotionCore::Aabb<double> m_Aabb;
-
-        StaticMeshRenderData m_RenderData;
 
         REFLECT(StaticMesh, Resource)
         REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)

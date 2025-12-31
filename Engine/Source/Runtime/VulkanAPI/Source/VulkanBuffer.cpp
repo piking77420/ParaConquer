@@ -126,14 +126,21 @@ bool Vulkan::VulkanBuffer::Build()
     
 }
 
-void Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes)
+bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes)
 {
     assert(m_MemoryUsage != RhiResource::MemoryUsage::Dynamic && "You can only UploadData with static or streamable buffers");
     assert(_sizeInBytes <= m_SizeInByte);
 
-    BufferAndAlloc stagingBuffer; // may store this in the class for only upload it when beign frame that allows uis to avoid calling waitdeviceIdle
-    
+    if (m_MemoryUsage == RhiResource::MemoryUsage::Dynamic)
+        return false;
+    if (_sizeInBytes > m_SizeInByte)
+        return false;
+
     auto& context = GET_VK_CONTEXT;
+    const size_t FrameIndex = m_Rhi.GetFrameIndex();
+
+    if (stagingBuffer.buffer != VK_NULL_HANDLE)
+        FreeAlloc(context, stagingBuffer);
     CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes);
     
     // Copy Data to stagingBuffer
@@ -141,32 +148,19 @@ void Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
     vmaMapMemory(context.allocator, stagingBuffer.alloc, &mappedData);
     std::memcpy(mappedData, _data, _sizeInBytes);
     vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
-
-    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
-    {
-        .device = GET_VK_DEVICE,
-        .commandPool = context.transferCommandPool,
-        .queue = context.mainQueue
-    };
-
-    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
     
     vk::BufferCopy copyRegion = {};
     copyRegion.srcOffset = 0;
     copyRegion.dstOffset = 0;
     copyRegion.size = _sizeInBytes;
 
-    for (size_t i = 0; i < m_Handles.size(); i++)
-    {
-        auto& buffer = m_Handles[i];
 
-        commandBuffer.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
-    }
-
-    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    BufferAndAlloc& buffer = *GetBufferAndAlloc(FrameIndex);
+    GET_VK_COMMAND_BUFFER(_commandList, FrameIndex);
     
-    // Destroy the staging buffer no need it anymore
-    FreeAlloc(context, stagingBuffer);
+    cmb.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
+
+    return true;
 }
 
 char* Vulkan::VulkanBuffer::BeginFullDynamicBufferUpdateForCurrentFrame()
@@ -199,7 +193,7 @@ void Vulkan::VulkanBuffer::EndFullDynamicBufferUpdateForCurrentFrame()
     m_CurrentFrameMappedData = nullptr;
 }
 
-void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes)
+void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes) // TODO MAKE AN HELPER CLASS 
 {
     
     vk::BufferCreateInfo bufferCreate{};

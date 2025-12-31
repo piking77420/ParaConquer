@@ -75,6 +75,8 @@ void App::RenderFrame()
 
     if (swapChain->GetSwapChainImageIndex(mainWindow))
     {
+        RenderHarwareInteface.GetRhiContext().ProceedResourceUpdateBranch();
+
         PrimaryCommandBuffer->BeginRecordCommands();
         {
             PrimaryCommandBuffer->BeginDebugLabel("SwapChain", Color);
@@ -84,7 +86,6 @@ void App::RenderFrame()
             PrimaryCommandBuffer->EndDebugLabel();
         }
         PrimaryCommandBuffer->EndRecordCommands();
-
 
         RenderHarwareInteface.GetRhiContext().SendEnqueuCommand(PrimaryCommandBuffer.get(), PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
         swapChain->Present(&MainWindow);
