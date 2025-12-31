@@ -72,7 +72,7 @@ bool Vulkan::VulkanSampler::Build()
 }
 
 
-vk::Sampler Vulkan::VulkanSampler::GetSampler() const
+vk::Sampler Vulkan::VulkanSampler::GetVkSampler() const
 {
     return m_Sampler;
 }

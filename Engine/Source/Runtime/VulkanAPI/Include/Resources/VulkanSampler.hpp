@@ -27,7 +27,7 @@ namespace Vulkan
         
         VULKAN_API bool Build() override;
         
-        vk::Sampler GetSampler() const;
+        vk::Sampler GetVkSampler() const;
 
     private:
         vk::Sampler m_Sampler;

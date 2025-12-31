@@ -40,9 +40,9 @@ namespace Vulkan
         
         VULKAN_API void GenerateMipMap(PC_CORE::CommandList* commandList) override;
         
-        const TextureAndAlloc* GetTextureAndAlloc(size_t _frameIndex) const;
+        const TextureAndAlloc* GetTextureAndAlloc(size_t _FrameIndex) const;
         
-        TextureAndAlloc* GetTextureAndAlloc(size_t _frameIndex); 
+        TextureAndAlloc* GetTextureAndAlloc(size_t _FrameIndex);
         
         vk::ImageAspectFlags VkImageAspectFlags{};
         

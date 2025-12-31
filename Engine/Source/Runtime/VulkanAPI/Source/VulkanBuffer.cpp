@@ -53,6 +53,10 @@ Vulkan::VulkanBuffer::VulkanBuffer(PC_CORE::Rhi& _Rhi)
 Vulkan::VulkanBuffer::~VulkanBuffer()
 {
     auto& context = GET_VK_CONTEXT;
+
+    if (stagingBuffer.alloc != VK_NULL_HANDLE)
+        FreeAlloc(context, stagingBuffer);
+
     for (auto& alloc : m_Handles)
         FreeAlloc(context, alloc);
 }
@@ -236,24 +240,34 @@ void Vulkan::VulkanBuffer::FreeAlloc(VulkanContext& _VkContext, BufferAndAlloc& 
 
 const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetBufferAndAlloc(size_t _frameIndex) const
 {
-    if (m_Handles.empty())
-    {
-        PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_Handles.empty()");
-        return nullptr;
-    }
-    
-    const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
-    return &m_Handles[handleIndex];
+    return GetVkAlloc(_frameIndex);
 }
 
 Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetBufferAndAlloc(size_t _frameIndex)
+{
+    return GetVkAlloc(_frameIndex);
+}
+
+Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkAlloc(size_t _frameIndex)
 {
     if (m_Handles.empty())
     {
         PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_Handles.empty()");
         return nullptr;
     }
-    
+
+    const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
+    return &m_Handles[handleIndex];
+}
+
+const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkAlloc(size_t _frameIndex) const
+{
+    if (m_Handles.empty())
+    {
+        PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_Handles.empty()");
+        return nullptr;
+    }
+
     const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
     return &m_Handles[handleIndex];
 }

@@ -503,6 +503,7 @@ Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc(size_t _frame
     return &m_Handles[handleIndex];
 }
 
+
 Vulkan::VulkanTexture::~VulkanTexture()
 {
     for (auto& handle : m_Handles)

@@ -145,9 +145,10 @@ void IMGUIContext::VulkanInitialize(void* _glfwWindowPtr)
 void IMGUIContext::CreateImguiVulkanTexture(const RhiTexture* _texture, const RhiSampler* _sampler,
                                             VkDescriptorSet* _descriptors, size_t _descriptorsCount)
 {
-    const Vulkan::VulkanTexture* vulkanTexture = reinterpret_cast<const Vulkan::VulkanTexture*>(_texture);
-    
-    const VkSampler* vkSamplers = static_cast<const VkSampler*>(_sampler->GetFrameNativeHandle(0));
+    const Vulkan::VulkanTexture& vulkanTexture = reinterpret_cast<const Vulkan::VulkanTexture&>(*_texture);
+    const Vulkan::VulkanSampler& vulkanSampler = reinterpret_cast<const Vulkan::VulkanSampler&>(*_sampler);
+
+    const VkSampler vkSamplers = vulkanSampler.GetVkSampler();
 
     if (vkSamplers == nullptr)
     {
@@ -155,7 +156,7 @@ void IMGUIContext::CreateImguiVulkanTexture(const RhiTexture* _texture, const Rh
         return;
     }
     for (size_t i = 0; i < _descriptorsCount; i++)
-        _descriptors[i] = ImGui_ImplVulkan_AddTexture(*vkSamplers, vulkanTexture->GetTextureAndAlloc(i)->ImageView,
+        _descriptors[i] = ImGui_ImplVulkan_AddTexture(vkSamplers, vulkanTexture.GetTextureAndAlloc(i)->ImageView,
                                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 

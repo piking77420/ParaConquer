@@ -423,7 +423,7 @@ void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiBuffer& _vert
     const size_t frameIndex = m_Rhi.GetFrameIndex();
 
     const VulkanBuffer* vulkanBuffer = reinterpret_cast<const VulkanBuffer*>(&_vertexBuffer);
-    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetFrameNativeHandle(frameIndex));
+    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetBufferAndAlloc(frameIndex));
 
     vk::DeviceSize offsets[] = {0};
     m_CommandBuffer[frameIndex].bindVertexBuffers(_firstBinding, _bindingCount, &bufferAndAllocs->buffer,
@@ -437,7 +437,7 @@ void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiBuffer& _index
 
     const size_t frameIndex = m_Rhi.GetFrameIndex();
     const VulkanBuffer* vulkanBuffer = reinterpret_cast<const VulkanBuffer*>(&_indexBuffer);
-    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetFrameNativeHandle(frameIndex));
+    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetBufferAndAlloc(frameIndex));
 
     const vk::IndexType indexType = Utils::RhiToIndexType(_format);
 
@@ -456,8 +456,11 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
     
     const size_t frameIndex = m_Rhi.GetFrameIndex();
 
-    const BufferAndAlloc* bufferAndAllocSrc = static_cast<const BufferAndAlloc*>(_src.GetFrameNativeHandle(frameIndex));
-    const BufferAndAlloc* bufferAndAllocDst = static_cast<const BufferAndAlloc*>(_dst.GetFrameNativeHandle(frameIndex));
+    const VulkanBuffer& VulkanSrcBuffer = reinterpret_cast<const VulkanBuffer&>(_src);
+    const VulkanBuffer& VulkanDstBuffer = reinterpret_cast<const VulkanBuffer&>(_dst);
+
+    const BufferAndAlloc* bufferAndAllocSrc = static_cast<const BufferAndAlloc*>(VulkanSrcBuffer.GetBufferAndAlloc(frameIndex));
+    const BufferAndAlloc* bufferAndAllocDst = static_cast<const BufferAndAlloc*>(VulkanDstBuffer.GetBufferAndAlloc(frameIndex));
 
     vk::Buffer bufferSrc = bufferAndAllocSrc->buffer;
     vk::Buffer bufferDst = bufferAndAllocDst->buffer;
@@ -501,16 +504,16 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
     m_VkImageBarrier.resize(_ImageStateTransition.size());
     for (size_t i = 0; i < _ImageStateTransition.size(); i++)
     {
-        PC_CORE::RhiTexture* texture = _ImageStateTransition[i].Texture;
+        const PC_CORE::RhiTexture& texture = *_ImageStateTransition[i].Texture;
 
-        const VulkanTexture* vulkanTexture = static_cast<VulkanTexture*>(texture);
-        const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(vulkanTexture->GetFrameNativeHandle(frameIndex));
+        const VulkanTexture& vulkanTexture = static_cast<const VulkanTexture&>(texture);
+        const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*vulkanTexture.GetTextureAndAlloc(frameIndex));
 
         vk::ImageMemoryBarrier& bar = m_VkImageBarrier[i];
 
         bar.sType = vk::StructureType::eImageMemoryBarrier;
         bar.pNext = nullptr;
-        bar.image = textureAndAlloc->Image;
+        bar.image = textureAndAlloc.Image;
         bar.srcAccessMask = Utils::RhiResourceStateToAccesFlag(_ImageStateTransition[i].OldState);
         bar.dstAccessMask = Utils::RhiResourceStateToAccesFlag(_ImageStateTransition[i].NewState);
         bar.oldLayout = Utils::RhiResourceStateToVulkanImageLayout(_ImageStateTransition[i].OldState);
@@ -520,7 +523,7 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
 
 
         vk::ImageSubresourceRange& ImageSubresourceRange = bar.subresourceRange;
-        ImageSubresourceRange.aspectMask = vulkanTexture->VkImageAspectFlags;
+        ImageSubresourceRange.aspectMask = vulkanTexture.VkImageAspectFlags;
 
         ImageSubresourceRange.baseMipLevel = _ImageStateTransition[i].FirstMipLevel;
         ImageSubresourceRange.levelCount = _ImageStateTransition[i].MipLevelsCount;
@@ -533,7 +536,8 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
 
     for (size_t i = 0; i < _BufferStateTransition.size(); i++)
     {
-        const BufferAndAlloc* bufferAndAlloc = static_cast<const BufferAndAlloc*>(_BufferStateTransition[i].Buffer->GetFrameNativeHandle(frameIndex));
+        const VulkanBuffer& VkBuffer = reinterpret_cast<const VulkanBuffer&>(_BufferStateTransition[i].Buffer);
+        const BufferAndAlloc* bufferAndAlloc = static_cast<const BufferAndAlloc*>(VkBuffer.GetBufferAndAlloc(frameIndex));
 
         m_VkBufferBarrier[i].sType = vk::StructureType::eBufferMemoryBarrier;
         m_VkBufferBarrier[i].pNext = nullptr;

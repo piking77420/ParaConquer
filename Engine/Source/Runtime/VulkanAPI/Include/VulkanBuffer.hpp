@@ -49,6 +49,10 @@ namespace Vulkan
 
         BufferAndAlloc* GetBufferAndAlloc(size_t _frameIndex);
 
+        const BufferAndAlloc* GetVkAlloc(size_t _frameIndex) const;
+
+        BufferAndAlloc* GetVkAlloc(size_t _frameIndex);
+
     private:
         std::vector<BufferAndAlloc> m_Handles;
         

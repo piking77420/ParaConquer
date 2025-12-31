@@ -158,8 +158,8 @@ void Vulkan::VulkanDescriptorSets::FillDescriptorInfo(
                 const PC_CORE::BufferDescriptor* uniformBufferDescriptor = &std::get<
                     PC_CORE::BufferDescriptor>(des);
 
-                const BufferAndAlloc* bufferAndAlloc = static_cast<const BufferAndAlloc*>(uniformBufferDescriptor->buffer->
-                    GetFrameNativeHandle(f));
+                const VulkanBuffer& VkBuffer = *reinterpret_cast<VulkanBuffer*>(uniformBufferDescriptor->buffer);
+                const BufferAndAlloc* bufferAndAlloc = static_cast<const BufferAndAlloc*>(VkBuffer.GetBufferAndAlloc(f));
 
                 bufferInfo[bufferIndex].buffer = bufferAndAlloc->buffer;
                 bufferInfo[bufferIndex].offset = 0;
@@ -169,46 +169,45 @@ void Vulkan::VulkanDescriptorSets::FillDescriptorInfo(
 
             if (std::holds_alternative<PC_CORE::ImageSamplerDescriptor>(des))
             {
-                const PC_CORE::ImageSamplerDescriptor* imageSamplerDescriptor = &std::get<PC_CORE::ImageSamplerDescriptor>(des);
+                const PC_CORE::ImageSamplerDescriptor& imageSamplerDescriptor = std::get<PC_CORE::ImageSamplerDescriptor>(des);
 
-                const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(imageSamplerDescriptor->texture->GetFrameNativeHandle(f));
-                const vk::Sampler* samplerHandle = static_cast<const vk::Sampler*>(imageSamplerDescriptor->sampler->
-                    GetFrameNativeHandle(f));
+                const VulkanTexture& VkTexture = reinterpret_cast<const VulkanTexture&>(*imageSamplerDescriptor.texture);
+                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
 
-                assert(*samplerHandle != VK_NULL_HANDLE);
-                assert(textureAndAlloc->Image != VK_NULL_HANDLE);
-                assert(textureAndAlloc->ImageView != VK_NULL_HANDLE);
-                assert(textureAndAlloc->Allocation != VK_NULL_HANDLE);
+                const VulkanSampler& VkSampler = reinterpret_cast<const VulkanSampler&>(*imageSamplerDescriptor.sampler);
+                const vk::Sampler samplerHandle = VkSampler.GetVkSampler();
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
-                    imageSamplerDescriptor->resourceState);
-                imageInfo[imageIndex].imageView = textureAndAlloc->ImageView;
-                imageInfo[imageIndex].sampler = *samplerHandle;
+                    imageSamplerDescriptor.resourceState);
+                imageInfo[imageIndex].imageView = textureAndAlloc.ImageView;
+                imageInfo[imageIndex].sampler = samplerHandle;
                 imageIndex++;
             }
 
             if (std::holds_alternative<PC_CORE::ImageDescriptor>(des))
             {
-                const PC_CORE::ImageDescriptor* imageDescriptor = &std::get<PC_CORE::ImageDescriptor>(des);
+                const PC_CORE::ImageDescriptor& imageDescriptor = std::get<PC_CORE::ImageDescriptor>(des);
 
-                const TextureAndAlloc* textureAndAlloc = static_cast<TextureAndAlloc*>(imageDescriptor->texture->GetFrameNativeHandle(f));
+                const VulkanTexture& VkTexture = reinterpret_cast<const VulkanTexture&>(*imageDescriptor.texture);
+                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
-                    imageDescriptor->resourceState);
-                imageInfo[imageIndex].imageView = textureAndAlloc->ImageView;
+                    imageDescriptor.resourceState);
+                imageInfo[imageIndex].imageView = textureAndAlloc.ImageView;
                 imageIndex++;
             }
 
             if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
             {
-                const PC_CORE::InputAttachementDescriptor* inputAttachementDescriptor = &std::get<
+                const PC_CORE::InputAttachementDescriptor& inputAttachementDescriptor = std::get<
                     PC_CORE::InputAttachementDescriptor>(des);
-                const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(inputAttachementDescriptor->
-                    image->GetFrameNativeHandle(f));
+
+                const VulkanTexture& VkTexture = reinterpret_cast<const VulkanTexture&>(*inputAttachementDescriptor.image);
+                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
-                    inputAttachementDescriptor->resourceState);
-                imageInfo[imageIndex].imageView = textureAndAlloc->ImageView;
+                    inputAttachementDescriptor.resourceState);
+                imageInfo[imageIndex].imageView = textureAndAlloc.ImageView;
                 imageIndex++;
             }
         }
