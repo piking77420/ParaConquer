@@ -1,26 +1,56 @@
 ﻿#pragma once
 
+#include "Guid.hpp"
 #include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
 
 namespace PC_CORE 
 {
     class CommandList;
+    class Rhi;
 }
+
+
 
 namespace PC_CORE::Rendering
 {
     class RenderView;
     class RenderingWorldData;
+    class Renderer;
+    class RenderGraph;
 
+    struct RendererPassBuildContext
+    {
+        CommandList& cmd;
+        Rhi& RHI;
+        const RenderView& View;
+        const Renderer& Renderer;
+        RenderGraph& RenderGraph;
+    };
+
+    struct RendererPassExecuteContext
+    {
+        CommandList& cmd;
+        Rhi& RHI;
+        const RenderView& View;
+        const Renderer& Renderer;
+        const RenderGraph& RenderGraph;
+        const RenderingWorldData& RenderingWorldData;
+    };
 
     using RenderPassGetNameFunc = const char* (*)(const void*);
 
     using RenderPassGetColorFunc = std::array<float, 4> (*)(const void*);
 
-    using RenderPassBuildFunc = void (*)(void*, const RenderView&);
+    using RenderPassBuildFunc = void (*)(void*, const RendererPassBuildContext&);
 
-    using RenderPassExecuteFunc = void (*)(const void*, CommandList*, const RenderView&, const RenderingWorldData&);
+    using RenderPassExecuteFunc = void (*)(const void*, const RendererPassExecuteContext&);
+
+    using ResourceHandle = PC_CORE::Guid;
+    
+    using BufferHandle = ResourceHandle;
+
+    using TextureHandle = ResourceHandle;
 
 
 class PC_CORE_API RenderPass : public DynamicReflectable

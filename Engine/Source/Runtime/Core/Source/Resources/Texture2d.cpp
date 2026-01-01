@@ -27,8 +27,16 @@ Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name)
     m_RhiTexture->SetName(Name);
 }
 
+Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path)
+    : Texture(_Path.filename().generic_string())
+{
+    m_RhiTexture.reset(rhi.CreateTexture());
+    m_RhiTexture->SetName(Name);
+}
+
 void Texture2D::AfterSerialize(Serializer* _serializer) const
 {
+
 }
 
 void Texture2D::AfterDeSerialize(Serializer* _serializer)

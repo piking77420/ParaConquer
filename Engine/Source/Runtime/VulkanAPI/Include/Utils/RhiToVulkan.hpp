@@ -75,4 +75,6 @@ namespace Vulkan::Utils
     RhiResourceState VulkanImageLayoutToResourceState(vk::ImageLayout layout);
 
     vk::AccessFlags RhiResourceStateToAccesFlag(RhiResourceState _RhiResourceState);
+
+    vk::PipelineStageFlags PipelineStageFlagsFromRhiResourceState(RhiResourceState _RhiResourceState);
 }

@@ -132,8 +132,8 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer commandBuffer, const PC_COR
     barrier.subresourceRange.aspectMask = vulkanTexture->VkImageAspectFlags;
     barrier.subresourceRange.baseMipLevel = _ImageStateTransition.FirstMipLevel;
     barrier.subresourceRange.levelCount = _ImageStateTransition.MipLevelsCount;
-    barrier.subresourceRange.baseArrayLayer = _ImageStateTransition.FirstArraySlice;
-    barrier.subresourceRange.layerCount = _ImageStateTransition.ArraySliceCount;
+    barrier.subresourceRange.baseArrayLayer = _ImageStateTransition.FirstLayer;
+    barrier.subresourceRange.layerCount = _ImageStateTransition.LayerCount;
 
 
     vk::PipelineStageFlags sourceStage;

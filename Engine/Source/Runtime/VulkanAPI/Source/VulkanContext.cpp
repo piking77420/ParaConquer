@@ -223,7 +223,7 @@ void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
 {
     const size_t CurrentFrameIndex = m_Rhi.GetFrameIndex();
     
-    bool NeedToSendToGpu = false;
+    m_PendingTransferOperation = false;
 
     if (!m_ResourceUpdate.empty())
     {
@@ -231,23 +231,10 @@ void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
         m_TransferCommandList->BeginDebugLabel("Resource Update", { 0.75f,0.5f, 0, 1.f });
         for (auto it = m_ResourceUpdate.begin(); it != m_ResourceUpdate.end(); )
         {
-            PC_CORE::RHI::ResourceUpdate::ResourceUpdateStatus Status = it->Execute(*m_TransferCommandList);
-            switch (Status)
+            m_PendingTransferOperation = it->Proceed(*m_TransferCommandList);
+            if (it->IsEmpty())
             {
-            case PC_CORE::RHI::ResourceUpdate::Success:
-                NeedToSendToGpu = true;
-                it++;
-                break;
-            case PC_CORE::RHI::ResourceUpdate::Failed:
                 it = m_ResourceUpdate.erase(it);
-                break;
-            case PC_CORE::RHI::ResourceUpdate::Complete:
-                it = m_ResourceUpdate.erase(it);
-                NeedToSendToGpu = true;
-                break;
-            default:
-                it++;
-                break;
             }
         }
         m_TransferCommandList->EndDebugLabel();
@@ -255,7 +242,7 @@ void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
     }
     
 
-    if (NeedToSendToGpu)
+    if (m_PendingTransferOperation)
     {
         vk::Semaphore signalSemaphores[] = {
         syncObjects[CurrentFrameIndex].transferFinishSemaphore

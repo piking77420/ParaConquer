@@ -474,29 +474,19 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
     m_CommandBuffer[frameIndex].copyBuffer(bufferSrc, bufferDst, 1, &bufferCopy);
 }
 
-VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _srcStageMask, PC_CORE::GpuPipelineStage _DstStageMask,
+VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
     const std::span<PC_CORE::ImageStateTransition>& _ImageStateTransition,
     const std::span<PC_CORE::BufferStateTransition>& _BufferStateTransition)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    const vk::PipelineStageFlags srcStageFlag = Utils::RhiPipelineStageToVulkan(_srcStageMask);
-    const vk::PipelineStageFlags dstStageFlag = Utils::RhiPipelineStageToVulkan(_DstStageMask);
-
-    /*// Memory Barrier
-    std::vector<vk::MemoryBarrier> vkMemoryBarriers;
-    vkMemoryBarriers.resize(_memoryBarrierCount);
-    for (size_t i = 0; i < _memoryBarrierCount; i++)
-    {
-        vkMemoryBarriers[i].sType = vk::StructureType::eMemoryBarrier;
-        vkMemoryBarriers[i].pNext = nullptr;
-        vkMemoryBarriers[i].srcAccessMask = Utils::RhiAccessFlagToVulkan(_memoryBarrier[i].SrcAccessMask);
-        vkMemoryBarriers[i].dstAccessMask = Utils::RhiAccessFlagToVulkan(_memoryBarrier[i].DstAccessMask);
-    }*/
-    // BufferMemoryBarrier
-
 
     const size_t frameIndex = m_Rhi.GetFrameIndex();
+    const vk::AccessFlags OldAccesMask = Utils::RhiResourceStateToAccesFlag(_OldState);
+    const vk::AccessFlags NewAccesMask = Utils::RhiResourceStateToAccesFlag(_NewState);
+    const vk::ImageLayout OldLayout = Utils::RhiResourceStateToVulkanImageLayout(_OldState);
+    const vk::ImageLayout NewMayout = Utils::RhiResourceStateToVulkanImageLayout(_NewState);
+
 
     m_VkImageBarrier.clear();
     m_VkBufferBarrier.clear();
@@ -514,10 +504,10 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
         bar.sType = vk::StructureType::eImageMemoryBarrier;
         bar.pNext = nullptr;
         bar.image = textureAndAlloc.Image;
-        bar.srcAccessMask = Utils::RhiResourceStateToAccesFlag(_ImageStateTransition[i].OldState);
-        bar.dstAccessMask = Utils::RhiResourceStateToAccesFlag(_ImageStateTransition[i].NewState);
-        bar.oldLayout = Utils::RhiResourceStateToVulkanImageLayout(_ImageStateTransition[i].OldState);
-        bar.newLayout = Utils::RhiResourceStateToVulkanImageLayout(_ImageStateTransition[i].NewState);
+        bar.srcAccessMask = OldAccesMask;
+        bar.dstAccessMask = OldAccesMask;
+        bar.oldLayout = OldLayout;
+        bar.newLayout = NewMayout;
         bar.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         bar.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
@@ -528,8 +518,8 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
         ImageSubresourceRange.baseMipLevel = _ImageStateTransition[i].FirstMipLevel;
         ImageSubresourceRange.levelCount = _ImageStateTransition[i].MipLevelsCount;
 
-        ImageSubresourceRange.baseArrayLayer = _ImageStateTransition[i].FirstArraySlice;
-        ImageSubresourceRange.layerCount = _ImageStateTransition[i].ArraySliceCount;
+        ImageSubresourceRange.baseArrayLayer = _ImageStateTransition[i].FirstLayer;
+        ImageSubresourceRange.layerCount = _ImageStateTransition[i].LayerCount;
     }
 
     m_VkBufferBarrier.resize(_BufferStateTransition.size());
@@ -541,8 +531,8 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
 
         m_VkBufferBarrier[i].sType = vk::StructureType::eBufferMemoryBarrier;
         m_VkBufferBarrier[i].pNext = nullptr;
-        m_VkBufferBarrier[i].srcAccessMask = Utils::RhiResourceStateToAccesFlag(_BufferStateTransition[i].OldState);
-        m_VkBufferBarrier[i].dstAccessMask = Utils::RhiResourceStateToAccesFlag(_BufferStateTransition[i].NewState);
+        m_VkBufferBarrier[i].srcAccessMask = OldAccesMask;
+        m_VkBufferBarrier[i].dstAccessMask = NewAccesMask;
         m_VkBufferBarrier[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         m_VkBufferBarrier[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         m_VkBufferBarrier[i].buffer = bufferAndAlloc->buffer;
@@ -550,7 +540,11 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(PC_CORE::GpuPipelineStage _sr
         m_VkBufferBarrier[i].size = _BufferStateTransition[i].Size;
     }
     
-    m_CommandBuffer[frameIndex].pipelineBarrier(srcStageFlag, dstStageFlag , {},
+
+    const vk::PipelineStageFlags SrcStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_OldState);
+    const vk::PipelineStageFlags DstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_OldState);
+
+    m_CommandBuffer[frameIndex].pipelineBarrier(SrcStageFlags, DstStageFlags, {},
         0, nullptr,
         static_cast<uint32_t>(m_VkBufferBarrier.size()), m_VkBufferBarrier.data(),
         static_cast<uint32_t>(m_VkImageBarrier.size()), m_VkImageBarrier.data());

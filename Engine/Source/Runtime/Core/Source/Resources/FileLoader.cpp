@@ -24,7 +24,7 @@ PC_CORE::Image::Image(const std::string& _path, PC_CORE::RhiChannel _desireChann
     if (x != -1 && y != -1)
     {
         m_Widht = static_cast<uint32_t>(x);
-        m_Height = static_cast<uint32_t>(x);
+        m_Height = static_cast<uint32_t>(y);
 
     }
     else
@@ -43,7 +43,7 @@ PC_CORE::Image::Image(const char* _path , PC_CORE::RhiChannel _desireChannel)
     if (x != -1 && y != -1)
     {
         m_Widht = static_cast<uint32_t>(x);
-        m_Height = static_cast<uint32_t>(x);
+        m_Height = static_cast<uint32_t>(y);
 
     }
     else

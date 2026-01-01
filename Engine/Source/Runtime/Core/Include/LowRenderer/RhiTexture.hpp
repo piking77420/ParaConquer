@@ -47,11 +47,13 @@ public:
     
     PC_CORE_API ~RhiTexture() override = default;
     
-    PC_CORE_API virtual void UploadData2D(PC_CORE::CommandList* commandList, const void* _imageData, uint32_t _imageWidht, uint32_t _imageHeight) = 0;
+    PC_CORE_API virtual bool UploadData2D(CommandList* _CommandList, const void* _ImageData, RhiFormat _Format, uint32_t _ImageWidht, uint32_t _ImageHeight) = 0;
     
     PC_CORE_API virtual void UploadDataLayer(CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layer) = 0;
     
-    PC_CORE_API virtual void GenerateMipMap(CommandList* commandList) = 0;
+    PC_CORE_API virtual bool GenerateMipMap(CommandList* commandList) = 0;
+
+    PC_CORE_API virtual RhiResourceState GetResourceState() const = 0;
     
     // Setter 
 

@@ -36,32 +36,28 @@ void WorldViewWindow::Update()
 {
     EditorWindow::Update();
 
-    if (size == Tbx::Vector2f{0.f, 0.f})
-        return;
-    
+   
+    m_View.Time = PC_CORE::Time::GetTime();
+    m_View.Deltatime = PC_CORE::Time::DeltaTime();
+
+    if (m_CameraViewDirty)
+    {
+        m_View.FromCamera(m_Camera);
+        m_CameraViewDirty = false;
+    }
+
     if (resize)
     {
         auto sizeI = Tbx::Vector2i(static_cast<int>(size.x), static_cast<int>(size.y));
         const float aspect = size.x / size.y;
         m_Camera.SetAspect(aspect);
+        m_Renderer.Build(m_View);
         UpdateImguiViewPort();
+        m_CameraViewDirty = true;
 
-        m_IsViewDirty = true;
     }
 
-    /*
-    if (m_View)
-    {
-        PC_CORE::Rendering::RenderGraphContext context
-        { .Rhi = m_Editor->RenderHarwareInteface,
-           .RenderView = *m_View,
-           .RenderGraph = m_RenderGraph,
-           .RenderingWorldData = m_Editor->World.RenderingWorldData,
-           .CommandBuffer = *_Cmd
-        };
-
-        m_RenderGraph.Update(context);
-    }*/
+   
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();

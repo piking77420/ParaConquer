@@ -1214,3 +1214,65 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
 
     return {};
 }
+
+vk::PipelineStageFlags Vulkan::Utils::PipelineStageFlagsFromRhiResourceState(
+    PC_CORE::RhiResource::State _RhiResourceState)
+{
+
+    using State = PC_CORE::RhiResource::State;
+
+    switch (_RhiResourceState)
+    {
+    case State::Undefined:
+        return vk::PipelineStageFlagBits::eTopOfPipe;
+
+        // Transfer
+    case State::CopySrc:
+    case State::CopyDst:
+        return vk::PipelineStageFlagBits::eTransfer;
+
+        // Buffer input
+    case State::VertexBuffer:
+    case State::IndexBuffer:
+        return vk::PipelineStageFlagBits::eVertexInput;
+
+    case State::UniformBuffer:
+        return
+            vk::PipelineStageFlagBits::eVertexShader |
+            vk::PipelineStageFlagBits::eFragmentShader |
+            vk::PipelineStageFlagBits::eComputeShader;
+
+        // Shader resources
+    case State::VertexShaderResource:
+        return vk::PipelineStageFlagBits::eVertexShader;
+
+    case State::FragmentShaderResource:
+        return vk::PipelineStageFlagBits::eFragmentShader;
+
+        // Render targets
+    case State::RenderTarget:
+        return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+        // Depth / stencil
+    case State::DepthStencilWrite:
+    case State::DepthStencilRead:
+        return
+            vk::PipelineStageFlagBits::eEarlyFragmentTests |
+            vk::PipelineStageFlagBits::eLateFragmentTests;
+
+        // Compute
+    case State::ComputeRead:
+    case State::ComputeWrite:
+    case State::ComputeReadWrite:
+        return vk::PipelineStageFlagBits::eComputeShader;
+
+        // Presentation
+    case State::Present:
+        return vk::PipelineStageFlagBits::eBottomOfPipe;
+
+    default:
+        PC_LOGERROR("Unsupported PC_CORE::RhiResource::State");
+        assert(false);
+        return vk::PipelineStageFlagBits::eAllCommands;
+    }
+}

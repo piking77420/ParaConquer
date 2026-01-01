@@ -10,13 +10,6 @@ void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
                                        uint32_t _mipLevel, 
                                        vk::ImageAspectFlags _aspectFlag)
 {
-    //VkFormatProperties formatProperties;
-    //vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
-
-    //if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
-    //  throw std::runtime_error("texture image format does not support linear blitting!");
-    //}
-
     vk::ImageMemoryBarrier barrier{};
     barrier.sType = vk::StructureType::eImageMemoryBarrier;
     barrier.image = _image;

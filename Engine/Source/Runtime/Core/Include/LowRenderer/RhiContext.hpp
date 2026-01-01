@@ -23,7 +23,6 @@ struct RhiContextCreateInfo
     
 class Rhi;
 
-
 class RhiContext
 {
 public:
@@ -47,14 +46,14 @@ public:
 
     PC_CORE_API virtual void ProceedResourceUpdateBranch() = 0;
 
-    PC_CORE_API void FetchResourceUpdate(RHI::ResourceUpdateBranch* _ResourceUpdateBranch);
+    PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch();
 
-    PC_CORE_API bool PendingExcutionResourceUpdate() const;
+    PC_CORE_API bool PendingTransferOperation() const;
 
 protected:
     Rhi& m_Rhi;
 
-    bool m_PendingExcutionResourceUpdate = false;
+    bool m_PendingTransferOperation = false;
 
     std::deque<RHI::ResourceUpdateBranch> m_ResourceUpdate;
 };

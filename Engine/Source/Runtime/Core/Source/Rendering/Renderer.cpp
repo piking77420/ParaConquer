@@ -1,79 +1,68 @@
 #include "Rendering/Renderer.hpp"
 
-#include <Thread>
 #include <PerfRegion.hpp>
+#include <Thread>
+
+#include "Resources/ResourceManager.hpp"
+#include "Resources/ShaderSourceBinary.hpp"
 
 #include "LowRenderer/Rhi.hpp"
 #include "Rendering/RenderView.hpp"
-#include "Rendering/RenderPasses/RenderPass.hpp"
 
-class PC_CORE_API FowardPass : public PC_CORE::Rendering::RenderPass
-{
-public:
-
-    FowardPass();
-
-    ~FowardPass() override = default;
-
-
-    IMP_DYNAMIC_REFLECT();
-    
-    const char* GetName() const
-    {
-        return "FowardPass";
-    }
-
-    std::array<float, 4> GetColor() const
-    {
-        return
-        {
-            0.f,
-            0.f,
-            1.f,
-            1.f
-        };
-    }
-	
-    void Build(const PC_CORE::Rendering::RenderView&)
-    {
-
-    }
-
-    void Execute(PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&) const
-    {
-
-    }
-
-private:
-
-};
-
-FowardPass::FowardPass()
-{
-    DYNAMIC_REFLECT_INIT;
-}
-
-REFLECT(FowardPass, PC_CORE::Rendering::RenderPass);
 
 
 namespace PC_CORE::Rendering
 {
     Renderer::Renderer(Rhi& _Rhi)
         : m_Rhi(_Rhi)
+        , m_RenderGraph(m_Rhi)
     {
-        static FowardPass fowardPass;
-
-        m_RenderGraph.AddRenderPass<FowardPass>(&fowardPass);
+       
     }
 
-   void Renderer::Update(const RenderView& _view)
+   void Renderer::Build(const RenderView& _View)
    {
+       m_CommandList.reset(m_Rhi.CreateCommandList());
+       m_CommandList
+           ->SetName("RendererCommandList")
+           .Build();
 
+
+       m_RenderGraph.AddRenderPass(&m_FowardPass);
+       m_RenderGraph.AddRenderPass(&m_ToneMapPass);
+
+       RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph);
+       m_RenderGraph.Build(buildContext);
    }
 
-   void Renderer::Excute(const RenderView& _view)
+   void Renderer::Excute(const RenderView& _View)
    {
+       RenderingWorldData RenderingWorldData;
+       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph, RenderingWorldData);
 
+       m_RenderGraph.Execute(executeContext);
+   }
+
+   void Renderer::InitShaders()
+   {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageType::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageType::Pixel, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.ps.hlsl.binary")->GetCode() }
+           };
+
+           drawTextureQuad.reset(m_Rhi.CreateRhiShaderProgram());
+           drawTextureQuad
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(shaderModules)
+               .SetName("DrawQuadTriangle")
+               .Build();
+       }
    }
 
 }

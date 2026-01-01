@@ -34,8 +34,8 @@ BEGIN_PCCORE
 
     struct BeginRenderPassInfo
     {
-        std::shared_ptr<RhiRenderPass> RenderPass;
-        std::shared_ptr<RhiFrameBuffer> FrameBuffer;
+        RhiRenderPass* RenderPass;
+        RhiFrameBuffer* FrameBuffer;
         Tbx::Vector2i RenderOffSet;
         Tbx::Vector2ui Extent;
 
@@ -81,24 +81,17 @@ BEGIN_PCCORE
     {
         RhiTexture* Texture = nullptr;
 
-        RhiResourceState OldState = RhiResourceState::Undefined;
-        RhiResourceState NewState = RhiResourceState::Undefined;
-
         uint32_t FirstMipLevel = 0;
         uint32_t MipLevelsCount = 0;
-        uint32_t FirstArraySlice = 0;
-        uint32_t ArraySliceCount = 0;
+        uint32_t FirstLayer = 0;
+        uint32_t LayerCount = 0;
 
         bool updateState = false;
     };
 
     struct BufferStateTransition
     {
-        RhiTexture* Texture = nullptr;
         RhiBuffer* Buffer = nullptr;
-
-        RhiResourceState OldState = RhiResourceState::Undefined;
-        RhiResourceState NewState = RhiResourceState::Undefined;
 
         uint32_t Offset = 0;
         uint32_t Size = 0;
@@ -176,9 +169,9 @@ BEGIN_PCCORE
         PC_CORE_API virtual void CopyBuffer(const RhiBuffer& _src, const RhiBuffer& _dst, size_t _srcOffSet,
                                             size_t _dstoffset, size_t _sizeInBytes) = 0;
 
-        PC_CORE_API virtual void Barrier(GpuPipelineStage _srcStageMask, GpuPipelineStage _DstStageMask,                 
-                                          const std::span<ImageStateTransition>& _ImageStateTransition,
-                                          const std::span<BufferStateTransition>& _BufferStateTransition) = 0;
+        PC_CORE_API virtual void Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
+                                          const std::span<ImageStateTransition>& _ImageStateTransition = {},
+                                          const std::span<BufferStateTransition>& _BufferStateTransition = {}) = 0;
 
         PC_CORE_API void RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction);
 

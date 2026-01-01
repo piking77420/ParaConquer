@@ -180,8 +180,8 @@ void Editor::CompileShader()
     }
 
     {
-        auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuad.vs.hlsl",
-                                                                    EDITOR_RESOURCE_PATH "/Shaders/DrawQuad.vs.hlsl");
+        auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuadTriangle.vs.hlsl",
+                                                                    EDITOR_RESOURCE_PATH "/Shaders/DrawQuadTriangle.vs.hlsl");
 
         auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
                                                                          EDITOR_RESOURCE_PATH
@@ -309,6 +309,9 @@ void Editor::InitTestScene()
 
     Importer importer;
     importer.ImportMesh(RenderHarwareInteface, "C:/Data/ParaConquerGame/Assets/Meshs/obj/RoundedCube.obj", staticMesh.Get());
+
+
+    //ObjectPtr<Texture2D> texture = ResourceManager::Create<Texture2D>();
 
 
     /*

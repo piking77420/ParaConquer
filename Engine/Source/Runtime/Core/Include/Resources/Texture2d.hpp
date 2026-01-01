@@ -27,6 +27,8 @@ BEGIN_PCCORE
 
         PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, std::string&& _name);
 
+        PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path);
+
         PC_CORE_API Texture2D();
 
         PC_CORE_API ~Texture2D() override = default;

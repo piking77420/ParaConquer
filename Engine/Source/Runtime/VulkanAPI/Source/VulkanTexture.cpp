@@ -3,7 +3,6 @@
 #include "LowRenderer/Rhi.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanTexture.hpp"
-#include "VulkanBuffer.hpp"
 #include "VulkanCommandList.hpp"
 
 #include "Utils/HelperFunctions.hpp"
@@ -213,110 +212,70 @@ bool Vulkan::VulkanTexture::Build()
     return true;
 }
 
-void Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* commandList, const void* _data, uint32_t _imageWidht, uint32_t _imageHeight)
+bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, const void* _Data, PC_CORE::RhiFormat _Format, uint32_t _ImageWidht, uint32_t _ImageHeight)
 {
+    assert(_CommandList != nullptr);
+
     if (GetTextureType() != Type::Texture2D)
     {
         PC_LOGERROR("UploadData2D should only be used for TextureType::Texture2D");
-        return;
+        return false;
     }
     
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
-    const int multiplayer = PC_CORE::GetBytePerPixel(GetRhiFormat());
-    const size_t imageSize = static_cast<size_t>(_imageWidht * _imageHeight * multiplayer);
-    
+    const int multiplayer = PC_CORE::GetBytePerPixel(_Format);
+    const size_t imageSize = static_cast<size_t>(_ImageWidht * _ImageHeight * multiplayer);
 
-    BufferAndAlloc stagingBuffer;
-    VulkanBuffer::CreateStagingBufferForCopy(context, &stagingBuffer, imageSize);
+    if (m_StagingBuffer.buffer != VK_NULL_HANDLE)
+    {
+        VulkanBuffer::FreeAlloc(context, m_StagingBuffer);
+    }
+    VulkanBuffer::CreateStagingBufferForCopy(context, &m_StagingBuffer, imageSize);
 
     void* mappedData;
-    vmaMapMemory(context.allocator, stagingBuffer.alloc, &mappedData);
-    std::memcpy(mappedData, _data, imageSize);
-    vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
+    vmaMapMemory(context.allocator, m_StagingBuffer.alloc, &mappedData);
+    assert(mappedData != nullptr);
+    std::memcpy(mappedData, _Data, imageSize);
+    vmaUnmapMemory(context.allocator, m_StagingBuffer.alloc);
 
 
-    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
-    {
-        .device = device,
-        .commandPool = context.transferCommandPool,
-        .queue = context.mainQueue
+    const size_t FrameIndex = m_Rhi.GetFrameIndex();
+    GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
+
+    TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
+
+    vk::BufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = VkImageAspectFlags;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset = VkOffset3D{ 0, 0, 0 };
+
+    region.imageExtent = vk::Extent3D{
+        _ImageWidht,
+        _ImageHeight,
+        1
     };
-
-    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
-
-    for (size_t i = 0; i < m_Handles.size(); i++)
-    {
-        TextureAndAlloc& handle = m_Handles[i];
-
-        const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
-
-        if (handle.resourceState != RhiResourceState::CopyDst)
-        {
-            TransitionImageLayout(commandBuffer,
-                handle.Image,
-                VkFormat,
-                current,
-                vk::ImageLayout::eTransferDstOptimal,
-                VkImageAspectFlags,
-                GetLayer(),
-                GetLevel());
-
-            if (m_TextureUsage & TextureUsageFlagBits::RenderTarget)
-            {
-                handle.resourceState = RhiResourceState::RenderTarget;
-            }
-            if (m_TextureUsage & TextureUsageFlagBits::DepthStencil)
-            {
-                handle.resourceState = RhiResourceState::DepthStencilWrite;
-            }
-            if (m_TextureUsage & TextureUsageFlagBits::Sampled)
-            {
-                handle.resourceState = RhiResourceState::FragmentShaderResource;
-            }
-        }
-
-        vk::BufferImageCopy region{};
-        region.bufferOffset = 0;
-        region.bufferRowLength = 0;
-        region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = VkImageAspectFlags;
-        region.imageSubresource.mipLevel = 0;
-        region.imageSubresource.baseArrayLayer = 0;
-        region.imageSubresource.layerCount = 1;
-
-        region.imageOffset = VkOffset3D{ 0, 0, 0 };
-
-        region.imageExtent = vk::Extent3D{
-            _imageWidht,
-            _imageHeight,
-            1
-        };
         
-        commandBuffer.copyBufferToImage(
-             stagingBuffer.buffer,
-             handle.Image,
-             vk::ImageLayout::eTransferDstOptimal,
-             region
-         );    
-
-        // back to normal
-        TransitionImageLayout(commandBuffer,
+    cmb.copyBufferToImage(
+            m_StagingBuffer.buffer,
             handle.Image,
-            VkFormat,
             vk::ImageLayout::eTransferDstOptimal,
-            Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState),
-            VkImageAspectFlags,
-            m_Layer,
-            m_Level);
-    }
+            region
+        );    
 
-    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
-    VulkanBuffer::FreeAlloc(context, stagingBuffer);
+    return true;
+    
 }
 
 void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount)
 {
+    /*
     if (m_TextureType != Type::TextureArray2D &&
         m_TextureType != Type::CubeMap &&
         m_TextureType != Type::CubeMapArray)
@@ -429,53 +388,57 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
     }
 
     EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
-    VulkanBuffer::FreeAlloc(context, stagingBuffer);
+    VulkanBuffer::FreeAlloc(context, stagingBuffer);*/
 }
 
-void Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* commandList)
+bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList)
 {   
     if (!IsNeededToGenerateMip())
-        return;
+        return false;
     
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
+    const size_t FrameIndex = m_Rhi.GetFrameIndex();
+    GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
+    TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
+    const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
-    const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
-    {
-        .device = device,
-        .commandPool = context.transferCommandPool,
-        .queue = context.mainQueue
-    };
+    TransitionImageLayout(cmb,
+        handle.Image,
+        VkFormat,
+        vk::ImageLayout::eShaderReadOnlyOptimal,
+        current,
+        VkImageAspectFlags,
+        m_Layer,
+        m_Level);
 
-    vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
-
-    for (size_t i = 0; i < m_Handles.size(); i++)
-    {
-        TextureAndAlloc& handle = m_Handles[i];
-        const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
-
-        Utils::GenerateMipMapFunc(commandBuffer,
-                                  handle.Image, 
-                                  vk::ImageLayout::eShaderReadOnlyOptimal,  // todo not harcoded
-                                  m_Width,
-                                  m_Height, 
-                                  Utils::RhiFormatToVkFormat(m_RhiFormat), 
-                                  m_Level, 
-                                  VkImageAspectFlags);
+    Utils::GenerateMipMapFunc(cmb,
+                                handle.Image, 
+                                vk::ImageLayout::eShaderReadOnlyOptimal,  // todo not harcoded
+                                m_Width,
+                                m_Height, 
+                                Utils::RhiFormatToVkFormat(m_RhiFormat), 
+                                m_Level, 
+                                VkImageAspectFlags);
     
-        // image transition to eShaderReadOnlyOptimal in GenerateMipMapFunc
-            TransitionImageLayout(commandBuffer,
-                handle.Image,
-                VkFormat,
-                vk::ImageLayout::eShaderReadOnlyOptimal,
-                current,
-                VkImageAspectFlags,
-                m_Layer,
-                m_Level);
-        
-    }
+    // image transition to eShaderReadOnlyOptimal in GenerateMipMapFunc
+    TransitionImageLayout(cmb,
+        handle.Image,
+        VkFormat,
+        vk::ImageLayout::eShaderReadOnlyOptimal,
+        current,
+        VkImageAspectFlags,
+        m_Layer,
+        m_Level);
 
-    EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
+    return true;
+}
+
+RhiResourceState Vulkan::VulkanTexture::GetResourceState() const
+{
+    const TextureAndAlloc* ptr = GetTextureAndAlloc(m_Rhi.GetFrameIndex());
+
+    return ptr->resourceState;
 }
 
 const Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc(size_t _frameIndex) const
@@ -506,6 +469,12 @@ Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc(size_t _frame
 
 Vulkan::VulkanTexture::~VulkanTexture()
 {
+    auto& context = GET_VK_CONTEXT;
+    if (m_StagingBuffer.buffer != VK_NULL_HANDLE)
+    {
+        VulkanBuffer::FreeAlloc(context, m_StagingBuffer);
+    }
+
     for (auto& handle : m_Handles)
         FreeAlloc(handle);
 }

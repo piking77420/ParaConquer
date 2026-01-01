@@ -4,8 +4,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "Resources/Resource.hpp"
 #include "ObjectPtr.hpp"
+#include "Resources/Texture2d.hpp"
 
 BEGIN_PCCORE
     class Serializer;
@@ -34,6 +34,8 @@ BEGIN_EDITOR_PCCORE
                                             PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const;
 
         [[nodiscard]] bool ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh) const;
+
+        [[nodiscard]] bool ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::ObjectPtr<PC_CORE::Texture2D>* _OutTexture2D) const;
     };
 
 END_EDITOR_PCCORE

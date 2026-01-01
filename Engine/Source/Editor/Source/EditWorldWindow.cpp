@@ -21,13 +21,13 @@ void EditWorldWindow::Update()
 {
     PERF_REGION_SCOPED;
 
-    WorldViewWindow::Update();
-
     if (resize)
         deltass.Reset();
 
     if (ImGui::IsWindowFocused())
         MoveCameraUpdate();
+
+    WorldViewWindow::Update();
 }
 
 void EditWorldWindow::MoveCameraUpdate()
@@ -43,13 +43,8 @@ void EditWorldWindow::MoveCameraUpdate()
     CameraChangeSpeed(deltatime);
 
     
-    CameratMovment(deltatime, &m_IsViewDirty);
-    RotateCamera(deltatime, &m_IsViewDirty);
-
-    if (m_IsViewDirty)
-    {
-        m_View.FromCamera(m_Camera, PC_CORE::Time::GetTime(), PC_CORE::Time::DeltaTime());
-    }
+    CameratMovment(deltatime, &m_CameraViewDirty);
+    RotateCamera(deltatime, &m_CameraViewDirty);
 }
 
 void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)

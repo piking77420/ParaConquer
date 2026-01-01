@@ -237,4 +237,9 @@ bool Importer::ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path
     return false;
 }
 
+bool Importer::ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::ObjectPtr<PC_CORE::Texture2D>* _OutTexture2D) const
+{
+    return false;
+}
+
 }

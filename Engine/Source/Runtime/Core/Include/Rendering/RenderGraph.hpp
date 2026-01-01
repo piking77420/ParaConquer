@@ -17,6 +17,7 @@ namespace PC_CORE::Rendering
 {
 	class RenderView;
 	class RenderingWorldData;
+	class Renderer;
 
 
 
@@ -40,11 +41,17 @@ namespace PC_CORE::Rendering
 	
 
 	public:
-		RenderGraph();
+		RenderGraph(Rhi& _Rhi);
 
 		~RenderGraph() override;
 
 		IMP_DYNAMIC_REFLECT();
+
+		enum ResourceAccesType : uint8_t
+		{
+			Write = 1 << 0,
+			Read = 1 << 1,
+		};
 
 		template <RenderPassT T>
 		void AddRenderPass(T* _RenderPassT)
@@ -53,25 +60,61 @@ namespace PC_CORE::Rendering
 			Node.RenderPassObject = _RenderPassT;
 			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
 			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
-			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RenderView&>::Call<T, &T::Build>;
-			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<true, void, PC_CORE::CommandList*, const PC_CORE::Rendering::RenderView&, const PC_CORE::Rendering::RenderingWorldData&>::Call<T, &T::Execute>;
+			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;
+			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<true, void, const RendererPassExecuteContext&>::Call<T, &T::Execute>;
 			m_Nodes.emplace_back(std::move(Node));
 		}
 
-		void Clear()
-		{
-			m_Nodes.clear();
-		}
+		void Build(const RendererPassBuildContext& _RendererPassBuildContext);
 
-		void Build(const RenderView&)
+		void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext);
+
+		template <RhiResourceType T>
+		T& CreateResourceHandle(const char* _Name)
 		{
+			T* resource = nullptr;
+			if constexpr (std::is_same_v<T, RhiBuffer>)
+			{
+				resource = m_Rhi.CreateBuffer();
+			}
+			else if constexpr (std::is_same_v<T, RhiTexture>)
+			{
+				resource = m_Rhi.CreateTexture();
+			}
+			else
+			{
+
+			}
+			assert(resource != nullptr);
 			
+			const ResourceHandle Handle = ResourceHandle::New();
+			m_RenderGraphResources[_Name].reset(resource);
+			resource
+				->SetName(_Name);
+
+			return *resource;
 		}
 
-		void Execute(CommandList* _CommandList, const RenderView& _View, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
+		template <RhiResourceType T>
+		auto GetResource(ResourceHandle _ResourceHandle)
+		{
+			return m_RenderGraphResources.find(_ResourceHandle);
+		}
+
+		const RhiTexture& GetOutPutImage() const
+		{
+			return *m_OutputImage;
+		}
+
 
 	private:
+		Rhi& m_Rhi;
+
 		std::vector<RenderGraphNode> m_Nodes;
+
+		std::unique_ptr<RhiTexture> m_OutputImage;
+
+		std::unordered_map<std::string_view, std::unique_ptr<RhiResource>> m_RenderGraphResources;
 
 	};
 

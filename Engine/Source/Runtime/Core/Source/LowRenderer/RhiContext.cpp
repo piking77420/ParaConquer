@@ -9,15 +9,15 @@ namespace PC_CORE
         : m_Rhi(_Rhi)
     {
     }
-    
-    void RhiContext::FetchResourceUpdate(RHI::ResourceUpdateBranch* _ResourceUpdateBranch)
+
+    RHI::ResourceUpdateBranch* RhiContext::ResourceUpdateBranch()
     {
-        m_ResourceUpdate.push_back(std::move(*_ResourceUpdateBranch));
-        _ResourceUpdateBranch->Reset();
+        m_ResourceUpdate.push_back(RHI::ResourceUpdateBranch{});
+        return &m_ResourceUpdate.back();
     }
 
-    bool RhiContext::PendingExcutionResourceUpdate() const
+    bool RhiContext::PendingTransferOperation() const
     {
-        return m_PendingExcutionResourceUpdate;
+        return m_PendingTransferOperation;
     }
 }

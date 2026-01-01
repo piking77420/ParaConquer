@@ -47,7 +47,7 @@ BEGIN_EDITOR_PCCORE
     protected:
         PC_CORE::Camera m_Camera;
 
-        bool m_IsViewDirty = false; // TODO USE A EVENT
+        bool m_CameraViewDirty = false;
 
         PC_CORE::Rendering::RenderView m_View;
 

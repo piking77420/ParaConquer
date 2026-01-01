@@ -137,10 +137,6 @@ struct SubPass
 
     AttachementRef DepthAttachement{};
 
-    GpuPipelineStage SrcStageFlag;
-
-    GpuPipelineStage DstStageFlag;
-
     SubPass& SetType(RhiShaderProgram::PipelineType _Type)
     {
         type = _Type;
@@ -164,18 +160,6 @@ struct SubPass
     SubPass& SetDepthAttachementRef(AttachementRef _AttachementRef)
     {
         DepthAttachement = std::move(_AttachementRef);
-        return *this;
-    }
-
-    SubPass& SetSrcStageFlag(GpuPipelineStage _SrcStageFlag)
-    {
-        SrcStageFlag = _SrcStageFlag;
-        return *this;
-    }
-
-    SubPass& SetDstStageFlag(GpuPipelineStage _DstStageFlag)
-    {
-        DstStageFlag = _DstStageFlag;
         return *this;
     }
 

@@ -350,7 +350,7 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     std::array<vk::PipelineStageFlags, 2> waitPipelineStageImageAvailable = {};
 
     // Transfer
-    if (context.PendingExcutionResourceUpdate())
+    if (context.PendingTransferOperation())
     {
         waitSemaphore[WaitSemaphoreCount] = context.syncObjects[frameIndex].transferFinishSemaphore;
         waitPipelineStageImageAvailable[WaitSemaphoreCount] = vk::PipelineStageFlagBits::eTransfer;

@@ -50,7 +50,7 @@ namespace PC_CORE::Rendering
         };
         using RenderViewFlag = uint8_t;
 
-        void FromCamera(const PC_CORE::Camera& _Camera, float _Time, float _Deltatime);
+        void FromCamera(const PC_CORE::Camera& _Camera);
 
         Tbx::Matrix4x4f View;
         Tbx::Matrix4x4f ViewInv;

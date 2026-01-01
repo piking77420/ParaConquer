@@ -4,6 +4,7 @@
 #include "VulkanHeader.h"
 
 #include "LowRenderer/RhiTexture.hpp"
+#include "VulkanBuffer.hpp"
 
 namespace Vulkan
 {
@@ -19,7 +20,7 @@ namespace Vulkan
         DEFAULT_CONSTRUCTOR_DESTRUCTOR(TextureAndAlloc)
     };
 
-    class VulkanTexture : public PC_CORE::RhiTexture // TODO FIND A WAY TO GET RIDE OF SINGLECOMMAND
+    class VulkanTexture : public PC_CORE::RhiTexture
     {
     public:
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanTexture)
@@ -34,11 +35,13 @@ namespace Vulkan
         
         VULKAN_API bool Build() override;
     
-        VULKAN_API void UploadData2D(PC_CORE::CommandList* commandList, const void* _imageData, uint32_t _imageWidht, uint32_t _imageHeight) override;
+        VULKAN_API bool UploadData2D(PC_CORE::CommandList* _CommandList, const void* _ImageData, PC_CORE::RhiFormat _Format, uint32_t _ImageWidht, uint32_t _ImageHeight) override;
     
         VULKAN_API void UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount) override;
         
-        VULKAN_API void GenerateMipMap(PC_CORE::CommandList* commandList) override;
+        VULKAN_API bool GenerateMipMap(PC_CORE::CommandList* _CommandList) override;
+
+        VULKAN_API RhiResourceState GetResourceState() const override;
         
         const TextureAndAlloc* GetTextureAndAlloc(size_t _FrameIndex) const;
         
@@ -51,7 +54,7 @@ namespace Vulkan
     private:
         std::vector<TextureAndAlloc> m_Handles;
         
-        TextureAndAlloc m_StagingBuffer{};
+        BufferAndAlloc m_StagingBuffer{};
             
         void FreeAlloc(TextureAndAlloc& _handle);
     };

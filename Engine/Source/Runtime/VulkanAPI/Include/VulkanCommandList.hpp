@@ -73,7 +73,7 @@ namespace Vulkan
         VULKAN_API void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet,
                                    size_t _dstoffset, size_t _sizeInBytes) override;
 
-        VULKAN_API void Barrier(PC_CORE::GpuPipelineStage _srcStageMask, PC_CORE::GpuPipelineStage _DstStageMask,
+        VULKAN_API void Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
             const std::span<PC_CORE::ImageStateTransition>& _ImageStateTransition,
             const std::span<PC_CORE::BufferStateTransition>& _BufferStateTransition) override;
 

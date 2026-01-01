@@ -49,11 +49,9 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
         .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
         .Build();
 
-    texture->UploadData2D(nullptr, image.GetData(), image.GetWidht(), image.GetHeight());
-    /*rhi.PushResourceUpdate([&](CommandList* list)
-        {
-            texture->UploadData2D(list, image.GetData(), image.GetWidht(), image.GetHeight());
-        });*/
+    rhi.GetRhiContext().
+        ResourceUpdateBranch()
+        ->TextureUpload2D(*texture.Get(), image.GetData(), RhiFormat::R8G8B8A8Unorm, image.GetWidht(), image.GetHeight(), RhiResourceState::FragmentShaderResource);
 }
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
@@ -78,6 +76,7 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
     Image imageNull(EDITOR_RESOURCE_PATH "/Icons/Null.png", RhiChannel::Rgba);
 
     CreateTextureFromImage(m_Editor->RenderHarwareInteface, "Folder.png", m_FolderIcon.texure, imageFolder);
+
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_FolderIcon.texure.Get(),
         &s, &m_FolderIcon.descritproSet, 1);
 

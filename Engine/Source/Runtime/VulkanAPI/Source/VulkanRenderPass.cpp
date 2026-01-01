@@ -573,7 +573,7 @@ vk::SubpassDependency VulkanRenderPass::ComputeMask
     return dependicies;
 }
 
-std::pair<vk::AccessFlags, vk::PipelineStageFlags> VulkanRenderPass::AttachementDependencies(const PC_CORE::RhiResource::State _State, const PC_CORE::RenderPassAttachementDescriptor& RenderPassAttachementDescriptor)
+std::pair<vk::AccessFlags, vk::PipelineStageFlags> VulkanRenderPass::AttachementDependencies(const PC_CORE::RhiResource::State _State, [[maybe_unsed]] const PC_CORE::RenderPassAttachementDescriptor& RenderPassAttachementDescriptor)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
