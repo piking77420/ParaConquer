@@ -52,6 +52,12 @@ namespace PC_CORE::Rendering
 
         void FromCamera(const PC_CORE::Camera& _Camera);
 
+        void SetRenderSize(Tbx::Vector2f _Size)
+        {
+            RenderSize = _Size;
+            InvRenderSize = Tbx::Vector2f(1.f /RenderSize.x, 1.f /RenderSize.y);
+        }
+
         Tbx::Matrix4x4f View;
         Tbx::Matrix4x4f ViewInv;
 

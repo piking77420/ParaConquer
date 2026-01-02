@@ -13,13 +13,33 @@
 namespace PC_CORE::Rendering
 {
 
-using mat4 = std::array<float, 16>;
-using mat3 = std::array<float, 9>;
+namespace Gpu
+{
+    struct GPU_ALIGN mat4
+    {
+        std::array<float, 16> data;
+    };
 
-using vec4 = std::array<float, 4>;
-using vec3 = std::array<float, 3>;
-using vec2 = std::array<float, 2>;
+    struct GPU_ALIGN mat3
+    {
+        std::array<float, 9> data;
+    };
 
+    struct GPU_ALIGN vec4
+    {
+        std::array<float, 4> data;
+    };
+
+    struct GPU_ALIGN vec3
+    {
+        std::array<float, 3> data;
+    };
+
+    struct GPU_ALIGN vec2
+    {
+        std::array<float, 2> data;
+    };
+}
 
 struct StaticMeshComponentData
 {

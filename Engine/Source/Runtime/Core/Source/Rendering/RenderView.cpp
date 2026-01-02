@@ -4,7 +4,7 @@
 
 namespace PC_CORE::Rendering  
 {
-	void PC_CORE::Rendering::RenderView::FromCamera(const PC_CORE::Camera& _Camera, float _Time, float _Deltatime)
+	void PC_CORE::Rendering::RenderView::FromCamera(const PC_CORE::Camera& _Camera)
 	{
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -18,8 +18,6 @@ namespace PC_CORE::Rendering
 
         CameraNear = _Camera.GetNear();
         CameraFar = _Camera.GetNear();
-        Time = _Time;
-        Deltatime = _Deltatime;
 	}
 
 } // PC_CORE::Rendering

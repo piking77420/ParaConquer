@@ -8,9 +8,9 @@ namespace PC_CORE
 {
     class CommandList;
     class Rhi;
+    class ShaderProgramDescriptorSets;
+    class RhiFrameBuffer;
 }
-
-
 
 namespace PC_CORE::Rendering
 {
@@ -45,13 +45,6 @@ namespace PC_CORE::Rendering
     using RenderPassBuildFunc = void (*)(void*, const RendererPassBuildContext&);
 
     using RenderPassExecuteFunc = void (*)(const void*, const RendererPassExecuteContext&);
-
-    using ResourceHandle = PC_CORE::Guid;
-    
-    using BufferHandle = ResourceHandle;
-
-    using TextureHandle = ResourceHandle;
-
 
 class PC_CORE_API RenderPass : public DynamicReflectable
 {

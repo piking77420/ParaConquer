@@ -27,29 +27,29 @@ enum class DescriptorType
 
 struct BufferDescriptor
 {
-    RhiBuffer* buffer;
+    const RhiBuffer* buffer;
 };
 
 struct ImageDescriptor
 {
-    RhiTexture* texture;
+    const RhiTexture* texture;
     RhiResourceState resourceState;
 };
 
 struct ImageSamplerDescriptor
 {
-    RhiSampler* sampler;
-    RhiTexture* texture;
+    const RhiSampler* sampler;
+    const RhiTexture* texture;
     RhiResourceState resourceState;
 };
 
 struct InputAttachementDescriptor
 {
-    RhiTexture* image;
+    const RhiTexture* image;
     RhiResourceState resourceState;
 };
 
-using Descriptor = std::variant<BufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor,
+using Descriptor = std::variant<std::monostate, BufferDescriptor, ImageSamplerDescriptor, InputAttachementDescriptor,
     ImageDescriptor>;
 
 struct DescriptorWrite

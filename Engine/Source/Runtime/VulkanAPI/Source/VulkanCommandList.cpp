@@ -207,23 +207,23 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    std::shared_ptr<const VulkanFrameBuffer> frameBuffer = std::reinterpret_pointer_cast<const VulkanFrameBuffer>(
+    const VulkanFrameBuffer& frameBuffer = *reinterpret_cast<const VulkanFrameBuffer*>(
         _BeginRenderPassInfo.FrameBuffer);
-    std::shared_ptr<const VulkanRenderPass> renderPass = std::reinterpret_pointer_cast<const VulkanRenderPass>(
+    const VulkanRenderPass& renderPass = *reinterpret_cast<const VulkanRenderPass*>(
         _BeginRenderPassInfo.RenderPass);
 
 
     vk::RenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
-    renderPassInfo.renderPass = renderPass->GetVulkanRenderPass();
-    renderPassInfo.framebuffer = frameBuffer->GetFramebuffer();
+    renderPassInfo.renderPass = renderPass.GetVulkanRenderPass();
+    renderPassInfo.framebuffer = frameBuffer.GetVkFramebuffer();
     renderPassInfo.renderArea.offset = vk::Offset2D{
         _BeginRenderPassInfo.RenderOffSet.x, _BeginRenderPassInfo.RenderOffSet.y
     };
     renderPassInfo.renderArea.extent = vk::Extent2D{_BeginRenderPassInfo.Extent.x, _BeginRenderPassInfo.Extent.y};
 
-    assert((renderPassInfo.renderArea.offset.x + renderPassInfo.renderArea.extent.width) <= frameBuffer->GetWidth());
-    assert((renderPassInfo.renderArea.offset.y + renderPassInfo.renderArea.extent.height) <= frameBuffer->GetHeight());
+    assert((renderPassInfo.renderArea.offset.x + renderPassInfo.renderArea.extent.width) <= frameBuffer.GetWidth());
+    assert((renderPassInfo.renderArea.offset.y + renderPassInfo.renderArea.extent.height) <= frameBuffer.GetHeight());
 
 
     constexpr size_t MaxClearValues = 10;
@@ -241,10 +241,10 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
         for (size_t i = 0; i < _BeginRenderPassInfo.ClearValueCount; i++)
         {
             clearValues[0].color.setFloat32({
-                _BeginRenderPassInfo.ClearColor[i].x,
-                _BeginRenderPassInfo.ClearColor[i].y,
-                _BeginRenderPassInfo.ClearColor[i].z,
-                _BeginRenderPassInfo.ClearColor[i].w
+                _BeginRenderPassInfo.ClearColor[i][0],
+                _BeginRenderPassInfo.ClearColor[i][1],
+                _BeginRenderPassInfo.ClearColor[i][2],
+                _BeginRenderPassInfo.ClearColor[i][3]
             });
         }
 
@@ -261,10 +261,10 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
         for (size_t i = 0; i < _BeginRenderPassInfo.ClearValueCount; i++)
         {
             clearValues[0].color.setFloat32({
-                _BeginRenderPassInfo.ClearColor[i].x,
-                _BeginRenderPassInfo.ClearColor[i].y,
-                _BeginRenderPassInfo.ClearColor[i].z,
-                _BeginRenderPassInfo.ClearColor[i].w
+                _BeginRenderPassInfo.ClearColor[i][0],
+                _BeginRenderPassInfo.ClearColor[i][1],
+                _BeginRenderPassInfo.ClearColor[i][2],
+                _BeginRenderPassInfo.ClearColor[i][3]
             });
         }
     }

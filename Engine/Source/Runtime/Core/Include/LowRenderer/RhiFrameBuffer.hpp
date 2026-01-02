@@ -46,6 +46,14 @@ public:
         return *this;
     }
 
+    
+    RhiFrameBuffer& SetDepthAttachments(RhiTexture* _DepthAttvachement)
+    {
+        m_DepthAttachement = _DepthAttvachement;
+        return *this;
+    }
+
+
     RhiFrameBuffer& SetRenderPass(RhiRenderPass* _RhiRenderPass)
     {
         m_RenderPass = _RhiRenderPass;
@@ -74,6 +82,11 @@ public:
         return m_Attachments;
     }
 
+    PC_CORE_API const RhiTexture* GetDepthAttachements() const
+    {
+        return m_DepthAttachement;
+    }
+
     PC_CORE_API RhiRenderPass* GetRenderPass() const
     {
         return m_RenderPass;
@@ -86,6 +99,8 @@ protected:
     uint32_t m_Height{ 0 };
 
     std::vector<RhiTexture*> m_Attachments;
+
+    RhiTexture* m_DepthAttachement{ nullptr };
 
     RhiRenderPass* m_RenderPass{ nullptr };
 };

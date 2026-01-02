@@ -22,7 +22,16 @@ public:
 
     PC_CORE_API void Excute(const RenderView& _view);
 
+    const RenderGraph& GetRenderGraph() const
+    {
+        return m_RenderGraph;
+    }
+
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
+
+    std::unique_ptr<RhiShaderProgram> fowardShader;
+
+    std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
 private:
     Rhi& m_Rhi;
@@ -35,7 +44,7 @@ private:
 
     std::unique_ptr<CommandList> m_CommandList;
 
-    void InitShaders();
+    void InitShaders(const RenderView& _View);
     
 };
 

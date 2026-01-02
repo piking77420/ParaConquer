@@ -32,18 +32,33 @@ bool Vulkan::VulkanFrameBuffer::Build()
     std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
         GET_VK_CONTEXT.rhiDevice);
 
+    assert(m_RenderPass != nullptr);
+
     auto renderPass = reinterpret_cast<const VulkanRenderPass*>(m_RenderPass);
 
     int frame = 0;
     for (auto& framebuffer : FrameBuffers)
     {
         std::vector<vk::ImageView> image_views;
-        image_views.reserve(m_Attachments.size());
+        image_views.reserve((m_DepthAttachement != nullptr) ? (m_Attachments.size() + 1) : m_Attachments.size());
 
-
-        for (auto& attachement : m_Attachments)
+        for (PC_CORE::RhiTexture* attachement : m_Attachments)
         {
-            const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(attachement->GetFrameNativeHandle(frame));
+            if (attachement == nullptr)
+            {
+                PC_LOGERROR("One of the attachemtn was null")
+                return false;
+            }
+
+            const VulkanTexture& VkTexture = *reinterpret_cast<const VulkanTexture*>(attachement);
+            const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(VkTexture.GetTextureAndAlloc(frame));
+            image_views.emplace_back(textureAndAlloc->ImageView);
+        }
+
+        if (m_DepthAttachement != nullptr)
+        {
+            const VulkanTexture& VkTexture = *reinterpret_cast<const VulkanTexture*>(m_DepthAttachement);
+            const TextureAndAlloc* textureAndAlloc = static_cast<const TextureAndAlloc*>(VkTexture.GetTextureAndAlloc(frame));
             image_views.emplace_back(textureAndAlloc->ImageView);
         }
 
@@ -73,7 +88,7 @@ bool Vulkan::VulkanFrameBuffer::Build()
 }
 
 
-vk::Framebuffer Vulkan::VulkanFrameBuffer::GetFramebuffer() const
+vk::Framebuffer Vulkan::VulkanFrameBuffer::GetVkFramebuffer() const
 {
     return FrameBuffers[m_Rhi.GetFrameIndex()];
 }

@@ -5,6 +5,7 @@
 #include "LowRenderer/RhiTypedef.h"
 #include "Reflection/DynamicReflectable.hpp"
 #include "RenderPasses/RenderPass.hpp"
+#include "LowRenderer/Rhi.hpp"
 
 namespace PC_CORE
 {
@@ -65,6 +66,12 @@ namespace PC_CORE::Rendering
 			m_Nodes.emplace_back(std::move(Node));
 		}
 
+		void Clear()
+		{
+			m_Nodes.clear();
+			m_RenderGraphResources.clear();
+		}
+
 		void Build(const RendererPassBuildContext& _RendererPassBuildContext);
 
 		void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext);
@@ -72,33 +79,32 @@ namespace PC_CORE::Rendering
 		template <RhiResourceType T>
 		T& CreateResourceHandle(const char* _Name)
 		{
-			T* resource = nullptr;
+			std::shared_ptr<RhiResource> resource{ nullptr };
 			if constexpr (std::is_same_v<T, RhiBuffer>)
 			{
-				resource = m_Rhi.CreateBuffer();
+				resource = std::shared_ptr<RhiResource>(m_Rhi.CreateBuffer());
 			}
 			else if constexpr (std::is_same_v<T, RhiTexture>)
 			{
-				resource = m_Rhi.CreateTexture();
+				resource = std::shared_ptr<RhiResource>(m_Rhi.CreateTexture());
 			}
 			else
 			{
-
+				static_assert(false);
 			}
 			assert(resource != nullptr);
 			
-			const ResourceHandle Handle = ResourceHandle::New();
-			m_RenderGraphResources[_Name].reset(resource);
+			m_RenderGraphResources[_Name] = resource;
 			resource
 				->SetName(_Name);
 
-			return *resource;
+			return static_cast<T&>(*resource.get());
 		}
 
 		template <RhiResourceType T>
-		auto GetResource(ResourceHandle _ResourceHandle)
+		const T& GetResource(const char* _Name)
 		{
-			return m_RenderGraphResources.find(_ResourceHandle);
+			return static_cast<const T&>(*m_RenderGraphResources[_Name]);
 		}
 
 		const RhiTexture& GetOutPutImage() const
@@ -110,14 +116,13 @@ namespace PC_CORE::Rendering
 	private:
 		Rhi& m_Rhi;
 
-		std::vector<RenderGraphNode> m_Nodes;
+		std::unordered_map<std::string_view, std::shared_ptr<RhiResource>> m_RenderGraphResources;
 
 		std::unique_ptr<RhiTexture> m_OutputImage;
 
-		std::unordered_map<std::string_view, std::unique_ptr<RhiResource>> m_RenderGraphResources;
+		std::vector<RenderGraphNode> m_Nodes;
 
 	};
 
-	REFLECT(RenderGraph, PC_CORE::DynamicReflectable);
 
 } // PC_CORE::Rendering

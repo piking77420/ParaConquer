@@ -28,7 +28,7 @@ namespace Vulkan
 
         
 
-        VULKAN_API vk::Framebuffer GetFramebuffer() const;
+        VULKAN_API vk::Framebuffer GetVkFramebuffer() const;
 
         std::array<vk::Framebuffer, MaxFramesInFlight> FrameBuffers =
         {

@@ -42,8 +42,11 @@ namespace PC_CORE::Rendering::Pass
         void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
 
     private:
+        std::unique_ptr<RhiRenderPass> m_RenderPass;
 
-        std::unique_ptr<RhiRenderPass> m_RhiRenderPass;
+        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_DescriptorSet;
+
+        std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
 
     };
 

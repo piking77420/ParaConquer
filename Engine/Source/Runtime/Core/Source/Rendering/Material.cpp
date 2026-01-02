@@ -34,6 +34,7 @@ PC_CORE::Material::Material(const std::string& _name)
 
     if (m_ShaderProgram && Albedo.Lock())
     {
+        /*
         m_PShaderProgramDescriptorSets.reset(m_ShaderProgram->CreateDescriptorBinding());
 
         ImageSamplerDescriptor imageSamperDescriptor =
@@ -55,7 +56,7 @@ PC_CORE::Material::Material(const std::string& _name)
         m_PShaderProgramDescriptorSets
             ->SetBindings(MATERIAL_DESCRIPTOR_SET, DescriptorSets)
             .SetName(std::format("Material Binding {}", Name))
-            .Build();
+            .Build();*/
     }
 }
 

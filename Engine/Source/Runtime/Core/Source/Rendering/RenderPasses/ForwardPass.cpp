@@ -1,6 +1,7 @@
 #include "Rendering/RenderPasses/ForwardPass.hpp"
 
 #include "LowRenderer/Rhi.hpp"
+#include "LowRenderer/RhiFrameBuffer.hpp"
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
 
@@ -73,26 +74,40 @@ namespace PC_CORE::Rendering::Pass
 		m_RenderPass
 			->SetName("ForwardPass")
 			.Build();
+
+		m_FrameBuffer.reset(_RendererPassBuildContext.RHI.CreateFrameBuffer());
+		m_FrameBuffer
+			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
+			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
+			.SetAttachments(&lightingImage)
+			.SetDepthAttachments(&DepthBuffer)
+			.SetRenderPass(m_RenderPass.get())
+			.SetName("Forward Framebuffer")
+			.Build();
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
 	{
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
 
-		std::array<Tbx::Vector4f, 1> clearValues = {
-			Tbx::Vector4f(0.1, 0.1, 0.1, 1.f),
-		};
+		std::array<float, 4> Color = GetColor();
+		
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
 			.RenderPass = m_RenderPass.get(),
-			.FrameBuffer = m_CurrentView->FrameBuffers.ForwardFrameBuffer,
+			.FrameBuffer = m_FrameBuffer.get(),
 			.RenderOffSet = {0, 0},
-			.Extent = {rContextView.RenderingContextSize.x, rContextView.RenderingContextSize.y},
+			.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},
 			.ClearValueFlag = ClearValueFlagBits::ClearValueColor | ClearValueFlagBits::ClearValueDepth,
-			.ClearColor = clearValues.data(),
-			.ClearValueCount = clearValues.size(),
+			.ClearColor = &Color,
+			.ClearValueCount = 1,
 			.ClearDepth = 1.f
 		};
-		cmd.BeginRenderPass()
+		cmd.BeginRenderPass(beginRenderPassInfo);
+
+
+
+
+		cmd.EndRenderPass();
 	}
 }

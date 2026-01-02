@@ -12,7 +12,7 @@ namespace PC_CORE::Rendering
 RenderGraph::RenderGraph(Rhi& _Rhi)
 	: m_Rhi(_Rhi)
 {
-	DYNAMIC_REFLECT_INIT
+	
 }
 
 RenderGraph::~RenderGraph()
@@ -22,8 +22,6 @@ RenderGraph::~RenderGraph()
 
 void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContext)
 {
-	m_Nodes.clear();
-	m_RenderGraphResources.clear();
 	m_OutputImage.reset(_RendererPassBuildContext.RHI.CreateTexture());
 
 	m_OutputImage

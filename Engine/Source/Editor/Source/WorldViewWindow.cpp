@@ -51,31 +51,30 @@ void WorldViewWindow::Update()
         auto sizeI = Tbx::Vector2i(static_cast<int>(size.x), static_cast<int>(size.y));
         const float aspect = size.x / size.y;
         m_Camera.SetAspect(aspect);
+        m_View.SetRenderSize(size);
+
         m_Renderer.Build(m_View);
         UpdateImguiViewPort();
         m_CameraViewDirty = true;
-
     }
-
-   
 
     const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
 
-    //ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
-      //           ImVec2(1, 1));
+    ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
+                 ImVec2(1, 1));
 }
 
 void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
 {
     PERF_REGION_SCOPED;
-
     EditorWindow::Render(_Cmd);
+    m_Renderer.Excute(m_View);
 }
 
 void WorldViewWindow::UpdateImguiViewPort()
 {
-    /*
+    
     bool needFree = false;
     for (auto& it : imguiDescriptorSet)
         if (it != VK_NULL_HANDLE)
@@ -87,7 +86,7 @@ void WorldViewWindow::UpdateImguiViewPort()
     
     if (needFree)
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_View->FinalImage.get(),
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_Renderer.GetRenderGraph().GetOutPutImage(),
                                                     m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
-                                                    imguiDescriptorSet.size());*/
+                                                    imguiDescriptorSet.size());
 }
