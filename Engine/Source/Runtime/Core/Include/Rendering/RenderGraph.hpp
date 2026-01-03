@@ -24,15 +24,16 @@ namespace PC_CORE::Rendering
 
 	struct RenderGraphNode
 	{
-		void* RenderPassObject;
+		std::unique_ptr<RenderPass> RenderPassObject = nullptr;
 
-		RenderPassGetNameFunc GetNameFunc;
+		RenderPassGetNameFunc GetNameFunc = nullptr;
 
-		RenderPassGetColorFunc GetColorFunc;
+		RenderPassGetColorFunc GetColorFunc = nullptr;
 
-		RenderPassBuildFunc BuildFunc;
+		RenderPassBuildFunc BuildFunc = nullptr;
 
-		RenderPassExecuteFunc ExecuteFunc;
+		RenderPassExecuteFunc ExecuteFunc = nullptr;
+
 	};
 
 
@@ -55,10 +56,10 @@ namespace PC_CORE::Rendering
 		};
 
 		template <RenderPassT T>
-		void AddRenderPass(T* _RenderPassT)
+		void AddRenderPass()
 		{
 			RenderGraphNode Node;
-			Node.RenderPassObject = _RenderPassT;
+			Node.RenderPassObject = std::make_unique<T>();
 			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
 			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
 			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;

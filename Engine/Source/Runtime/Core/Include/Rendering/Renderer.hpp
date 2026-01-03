@@ -1,8 +1,7 @@
 #pragma once
 #include "RenderingTypedef.h"
 #include "RenderGraph.hpp"
-#include "Rendering/RenderPasses/ForwardPass.hpp"
-#include "Rendering/RenderPasses/ToneMapPass.hpp"
+
 
 namespace PC_CORE::Rendering
 {
@@ -37,10 +36,6 @@ private:
     Rhi& m_Rhi;
 
     RenderGraph m_RenderGraph;
-
-    Pass::FowardPass m_FowardPass;
-
-    Pass::ToneMapPass m_ToneMapPass;
 
     std::unique_ptr<CommandList> m_CommandList;
 

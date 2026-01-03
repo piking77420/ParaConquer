@@ -61,7 +61,7 @@ protected:
 };
 
 template <typename Derived>
-concept RenderPassT = std::is_base_of_v<RenderPass, std::remove_cvref_t<Derived>>;
+concept RenderPassT = std::is_base_of_v<RenderPass, std::remove_cvref_t<Derived>> && std::is_base_of_v<DynamicReflectable, std::remove_cvref_t<Derived>>;
 
 REFLECT(RenderPass, PC_CORE::DynamicReflectable);
 

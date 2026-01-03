@@ -7,8 +7,9 @@
 #include "Resources/ShaderSourceBinary.hpp"
 
 #include "LowRenderer/Rhi.hpp"
+#include "Rendering/RenderPasses/ForwardPass.hpp"
+#include "Rendering/RenderPasses/ToneMapPass.hpp"
 #include "Rendering/RenderView.hpp"
-
 
 
 namespace PC_CORE::Rendering
@@ -24,7 +25,6 @@ namespace PC_CORE::Rendering
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-
 
        m_CommandList.reset(m_Rhi.CreateCommandList());
        m_CommandList
@@ -45,8 +45,9 @@ namespace PC_CORE::Rendering
        InitShaders(_View);
 
        m_RenderGraph.Clear();
-       m_RenderGraph.AddRenderPass(&m_FowardPass);
-       m_RenderGraph.AddRenderPass(&m_ToneMapPass);
+       m_RenderGraph.AddRenderPass<Pass::FowardPass>();
+       m_RenderGraph.AddRenderPass<Pass::ToneMapPass>();
+
        RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph);
        m_RenderGraph.Build(buildContext);
    }

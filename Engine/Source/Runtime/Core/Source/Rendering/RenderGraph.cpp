@@ -36,7 +36,7 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 
 	for (const auto& Nodes : m_Nodes)
 	{
-		Nodes.BuildFunc(Nodes.RenderPassObject, _RendererPassBuildContext);
+		Nodes.BuildFunc(Nodes.RenderPassObject.get(), _RendererPassBuildContext);
 	}
 }
 
@@ -44,8 +44,8 @@ void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecute
 {
 	for (const auto& Nodes : m_Nodes)
 	{
-		_RendererPassExecuteContext.cmd.BeginDebugLabel(Nodes.GetNameFunc(Nodes.RenderPassObject), Nodes.GetColorFunc(Nodes.RenderPassObject));
-		Nodes.ExecuteFunc(Nodes.RenderPassObject, _RendererPassExecuteContext);
+		_RendererPassExecuteContext.cmd.BeginDebugLabel(Nodes.GetNameFunc(Nodes.RenderPassObject.get()), Nodes.GetColorFunc(Nodes.RenderPassObject.get()));
+		Nodes.ExecuteFunc(Nodes.RenderPassObject.get(), _RendererPassExecuteContext);
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
 	}
 }
