@@ -57,13 +57,13 @@ BEGIN_PCCORE
 
         PC_CORE_API ~Material() override;
 
-        const ShaderProgramDescriptorSets* GetDescriptorSet() const
+        const RhiDescriptorBindings* GetDescriptorSet() const
         {
             return m_PShaderProgramDescriptorSets.get();
         }
 
     private:
-        std::unique_ptr<ShaderProgramDescriptorSets> m_PShaderProgramDescriptorSets = nullptr;
+        std::unique_ptr<RhiDescriptorBindings> m_PShaderProgramDescriptorSets = nullptr;
 
         RhiShaderProgram* m_ShaderProgram{ nullptr };
 

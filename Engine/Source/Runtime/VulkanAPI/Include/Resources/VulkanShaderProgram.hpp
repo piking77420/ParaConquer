@@ -46,11 +46,9 @@ namespace Vulkan
 
         void* GetFrameNativeHandle(size_t _frameIndex) override
         {
-            return &m_Pipeline;
+            return &m_Pipeline; 
         }
         
-        PC_CORE::ShaderProgramDescriptorSets* CreateDescriptorBinding() override;
-
         void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data,
                           size_t _size) const;
         

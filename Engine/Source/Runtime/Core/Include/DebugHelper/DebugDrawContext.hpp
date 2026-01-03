@@ -93,13 +93,13 @@ BEGIN_PCCORE
 
         RayCastPrimitiveData m_RayPrimitiveData;
 
-        std::unique_ptr<ShaderProgramDescriptorSets> m_ShaderProgramDescriptorSets;
+        std::unique_ptr<RhiDescriptorBindings> m_ShaderProgramDescriptorSets;
 
         std::unique_ptr<RhiShaderProgram> m_ShaderProgram;
 
         std::unique_ptr<RhiShaderProgram> m_ShaderProgramRay;
 
-        std::unique_ptr<ShaderProgramDescriptorSets> m_ShaderProgramDescriptorSetsRay;
+        std::unique_ptr<RhiDescriptorBindings> m_ShaderProgramDescriptorSetsRay;
 
         void CreatePrimitiveShaders();
 

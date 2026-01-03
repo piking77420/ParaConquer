@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "VulkanHeader.h"
-#include "LowRenderer/DescriptorSet.hpp"
+#include "LowRenderer/ShaderProgramDescriptorBinding.hpp"
 
 namespace PC_CORE
 {
@@ -14,25 +14,29 @@ namespace Vulkan
     struct CacheDescriptor;
      
 
-    class VulkanDescriptorSets : public PC_CORE::ShaderProgramDescriptorSets
+    class VulkanDescriptorBinding : public PC_CORE::RhiDescriptorBindings
     {
     public:
+        VULKAN_API VulkanDescriptorBinding(PC_CORE::Rhi& _Rhi);
 
-        VULKAN_API VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const CacheDescriptor& _Cache);
+        VULKAN_API ~VulkanDescriptorBinding() override;
 
-        VULKAN_API ~VulkanDescriptorSets() override;
+        VULKAN_API const void* GetFrameNativeHandle(size_t _FrameIndex) const override;
 
-        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
-
-        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
+        VULKAN_API void* GetFrameNativeHandle(size_t _FrameIndex) override;
 
         VULKAN_API bool Build() override;
 
+        VULKAN_API vk::DescriptorSet GetVkDescriptorSet(size_t _FrameIndex) const;
 
+        VULKAN_API vk::DescriptorSet GetVkDescriptorSet() const;
+
+        const CacheDescriptor* CacheDescriptor = nullptr;
     private:
-        const CacheDescriptor& m_Cache;
+        const VulkanDescritptorManager& m_VulkanDescritptorManager;
 
-        std::array<vk::DescriptorSet, MaxFramesInFlight> descriptorSets;
+        std::array<vk::DescriptorSet, MaxFramesInFlight> m_DescriptorSets;
+
 
         void CreateDescriptors();
 

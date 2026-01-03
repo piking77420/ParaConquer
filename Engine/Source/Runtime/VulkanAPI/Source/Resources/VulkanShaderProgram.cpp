@@ -61,16 +61,6 @@ vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
     return m_PipelineLayout;
 }
 
-PC_CORE::ShaderProgramDescriptorSets* VulkanShaderProgram::CreateDescriptorBinding()
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
-
-    const CacheDescriptor* cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
-
-    return cache == nullptr ? nullptr : new VulkanDescriptorSets(m_Rhi, *cache);
-}
-
 void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey,
                                        const void* data, size_t _size) const
 {
@@ -376,6 +366,8 @@ void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
 {
     auto cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
 
+    assert(false);
+
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache->descriptorSetLayout.size()); // Optional
@@ -418,8 +410,8 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(
 
 void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
 {
-    m_DescriptorId = GET_VK_CONTEXT.descritptorManager.GetDescriptorId(
-        _vulkanShaderProgramCreateContext.modulesReflected);
+    //m_DescriptorId = GET_VK_CONTEXT.descritptorManager.GetDescriptorId(
+      //  _vulkanShaderProgramCreateContext.modulesReflected);
 }
 
 

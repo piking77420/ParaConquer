@@ -36,13 +36,13 @@ BEGIN_EDITOR_PCCORE
 
         std::weak_ptr<PC_CORE::Texture2D> m_PointLightTexture;
 
-        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_CameraSet = nullptr;
+        std::unique_ptr<PC_CORE::RhiDescriptorBindings> m_CameraSet = nullptr;
 
-        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_DirectionalDescriptorSet = nullptr;
+        std::unique_ptr<PC_CORE::RhiDescriptorBindings> m_DirectionalDescriptorSet = nullptr;
 
-        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_SpotLightDescriptorSet = nullptr;
+        std::unique_ptr<PC_CORE::RhiDescriptorBindings> m_SpotLightDescriptorSet = nullptr;
 
-        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_PointLightDescriptorSet = nullptr;
+        std::unique_ptr<PC_CORE::RhiDescriptorBindings> m_PointLightDescriptorSet = nullptr;
 
         std::vector<size_t> m_DirectionalLightIndices;
         std::vector<size_t> m_SpotLightIndices;

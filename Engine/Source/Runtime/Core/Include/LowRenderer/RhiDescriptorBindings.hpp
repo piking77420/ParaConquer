@@ -63,14 +63,12 @@ template<typename T>
 concept DescriptorWriteType =
 std::same_as<std::remove_cvref_t<T>, DescriptorWrite>;
 
-class ShaderProgramDescriptorSets : public RhiObjectT<ShaderProgramDescriptorSets>
+class RhiDescriptorBindings : public RhiObjectT<RhiDescriptorBindings>
 {
 public:
+    PC_CORE_API explicit RhiDescriptorBindings(Rhi& _Rhi);
 
-
-    PC_CORE_API explicit ShaderProgramDescriptorSets(Rhi& _Rhi);
-
-    PC_CORE_API ~ShaderProgramDescriptorSets() override;
+    PC_CORE_API ~RhiDescriptorBindings() override;
 
     PC_CORE_API void SetBindings(std::initializer_list<DescriptorWrite> values)
     {
@@ -82,7 +80,7 @@ public:
         m_Bindings = values;
     }
 
-    PC_CORE_API ShaderProgramDescriptorSets& SetBindings(size_t _Set, const std::vector<DescriptorWrite>& values) noexcept
+    PC_CORE_API RhiDescriptorBindings& SetBindings(size_t _Set, const std::vector<DescriptorWrite>& values) noexcept
     {
         m_Bindings = values;
         m_Set = _Set;
@@ -90,7 +88,7 @@ public:
         return *this;
     }
 
-    PC_CORE_API ShaderProgramDescriptorSets& SetBindings(size_t _Set, std::vector<DescriptorWrite>&& values) noexcept
+    PC_CORE_API RhiDescriptorBindings& SetBindings(size_t _Set, std::vector<DescriptorWrite>&& values) noexcept
     {
         m_Bindings = std::move(values);
         m_Set = _Set;
@@ -99,7 +97,7 @@ public:
     }
 
     template <DescriptorWriteType ...T>
-    ShaderProgramDescriptorSets& SetBindings(size_t _Set, T&&... _Binding) noexcept
+    RhiDescriptorBindings& SetBindings(size_t _Set, T&&... _Binding) noexcept
     {
         m_Bindings.clear();
         (m_Bindings.emplace_back(std::forward<T>(_Binding)), ...);
@@ -109,7 +107,7 @@ public:
     }
 
     template <DescriptorWriteType ...T>
-    ShaderProgramDescriptorSets& SetBindings(size_t _Set, const T&... _Binding) noexcept
+    RhiDescriptorBindings& SetBindings(size_t _Set, const T&... _Binding) noexcept
     {
         m_Bindings.clear();
         (m_Bindings.push_back(_Binding), ...);

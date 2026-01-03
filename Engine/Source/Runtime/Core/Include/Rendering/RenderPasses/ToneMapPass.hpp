@@ -44,7 +44,7 @@ namespace PC_CORE::Rendering::Pass
     private:
         std::unique_ptr<RhiRenderPass> m_RenderPass;
 
-        std::unique_ptr<PC_CORE::ShaderProgramDescriptorSets> m_DescriptorSet;
+        std::unique_ptr<PC_CORE::RhiDescriptorBindings> m_DescriptorSet;
 
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
 

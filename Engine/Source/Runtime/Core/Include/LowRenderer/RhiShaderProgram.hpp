@@ -8,7 +8,7 @@
 BEGIN_PCCORE
 
 class RhiRenderPass;
-class ShaderProgramDescriptorSets;
+class RhiDescriptorBindings;
 
 
 
@@ -257,7 +257,6 @@ public:
         return std::get<ComputePipelineData>(m_PipelineData).LocalSize;
     }
 
-    PC_CORE_API virtual ShaderProgramDescriptorSets* CreateDescriptorBinding() = 0;
 
     PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
 

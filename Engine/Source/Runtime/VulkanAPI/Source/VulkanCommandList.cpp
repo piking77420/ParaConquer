@@ -289,7 +289,7 @@ void Vulkan::VulkanCommandList::EndRenderPass()
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
-                                                  const PC_CORE::ShaderProgramDescriptorSets*
+                                                  const PC_CORE::RhiDescriptorBindings*
                                                   _shaderProgramDescriptorSets, size_t _firstSet,
                                                   size_t _descriptorSetCount)
 {
@@ -299,8 +299,8 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgra
     const size_t currentFrame = m_Rhi.GetFrameIndex();
 
     const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
-    const VulkanDescriptorSets* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSets*>(_shaderProgramDescriptorSets);
-    const vk::DescriptorSet& descriptorHandles = *static_cast<const vk::DescriptorSet*>(vulkanDescriptorSets->GetFrameNativeHandle(currentFrame));
+    const VulkanDescriptorBinding* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorBinding*>(_shaderProgramDescriptorSets);
+    vk::DescriptorSet descriptorHandles = vulkanDescriptorSets->GetVkDescriptorSet(currentFrame);
     
     m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),
                                                      shaderProgram.GetPipelineLayout(),

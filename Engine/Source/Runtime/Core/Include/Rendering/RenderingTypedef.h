@@ -44,7 +44,7 @@ namespace Gpu
 struct StaticMeshComponentData
 {
     MaterialType MaterialType;
-    const ShaderProgramDescriptorSets* DescriptorSet;
+    const RhiDescriptorBindings* DescriptorSet;
     const StaticMesh* StaticMesh;
 
     Tbx::Matrix4x4d WorldMatrix;

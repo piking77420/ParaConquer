@@ -1,4 +1,4 @@
-﻿#include "Resources/VulkanDescriptorSets.hpp"
+﻿#include "Resources/VulkanDescriptorBindings.hpp"
 
 #include "LowRenderer/Rhi.hpp"
 #include "VulkanDevice.hpp"
@@ -29,14 +29,14 @@ static inline void CountBufferAndImageDescriptor(const std::vector<PC_CORE::Desc
     }
 }
 
-Vulkan::VulkanDescriptorSets::VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const CacheDescriptor& _Cache)
+Vulkan::VulkanDescriptorBinding::VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const VulkanDescritptorManager& _VulkanDescritptorManager)
     : ShaderProgramDescriptorSets(_Rhi)
-    , m_Cache(_Cache)
+    , m_VulkanDescritptorManager(_VulkanDescritptorManager)
 {
 }
 
 
-bool Vulkan::VulkanDescriptorSets::Build()
+bool Vulkan::VulkanDescriptorBinding::Build()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -44,20 +44,32 @@ bool Vulkan::VulkanDescriptorSets::Build()
     if (GetBinding().empty())
         return false;
 
+    const CacheDescriptor* CacheDescriptor = nullptr; // TODO
+    assert(CacheDescriptor != nullptr)
     CreateDescriptors();
     UpdateDesciptors();
 
     return true;
 }
 
-
-Vulkan::VulkanDescriptorSets::~VulkanDescriptorSets()
+vk::DescriptorSet Vulkan::VulkanDescriptorBinding::GetVkDescriptorSet(size_t _FrameIndex) const
 {
-    vk::Device d = GET_VK_DEVICE;
-    d.freeDescriptorSets(m_Cache.descriptorPool, MaxFramesInFlight, descriptorSets.data());
+    return m_DescriptorSets[_FrameIndex];
 }
 
-void Vulkan::VulkanDescriptorSets::CreateDescriptors()
+vk::DescriptorSet Vulkan::VulkanDescriptorBinding::GetVkDescriptorSet() const
+{
+    return GetVkDescriptorSet(m_Rhi.GetFrameIndex());
+}
+
+
+Vulkan::VulkanDescriptorBinding::~VulkanDescriptorBinding()
+{
+    vk::Device d = GET_VK_DEVICE;
+    d.freeDescriptorSets(m_Cache.descriptorPool, MaxFramesInFlight, m_DescriptorSets.data());
+}
+
+void Vulkan::VulkanDescriptorBinding::CreateDescriptors()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -74,9 +86,9 @@ void Vulkan::VulkanDescriptorSets::CreateDescriptors()
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
 
     PC_LOG_VERBOSE("CreateDescritptor Set [{}]", GetName().data());
-    d.allocateDescriptorSets(&descriptorSetAllocateInfo, descriptorSets.data());
+    d.allocateDescriptorSets(&descriptorSetAllocateInfo, m_DescriptorSets.data());
 
-    for (const auto& descriptorSet : descriptorSets)
+    for (const auto& descriptorSet : m_DescriptorSets)
     {
         vk::DebugUtilsObjectNameInfoEXT nameInfoImage;
         nameInfoImage.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
@@ -118,7 +130,7 @@ void Vulkan::VulkanDescriptorSets::UpdateDesciptors()
     std::span<vk::DescriptorBufferInfo> bufferSpan(descriptorBufferInfos);
     FillDescriptorInfo(imageSpan, bufferSpan, imageDescriptorCount, bufferDescriptorCount);
 
-    std::vector<vk::WriteDescriptorSet> descriptorWrites(Bindings.size() * descriptorSets.size());
+    std::vector<vk::WriteDescriptorSet> descriptorWrites(Bindings.size() * m_DescriptorSets.size());
     std::span<vk::WriteDescriptorSet> descriptorWritesSpan(descriptorWrites);
 
     // Reset counters before descriptor writes
@@ -129,11 +141,11 @@ void Vulkan::VulkanDescriptorSets::UpdateDesciptors()
     size_t descritproWriteCount = Bindings.size();
     size_t descritionWriteOffset = 0;
 
-    for (size_t i = 0; i < descriptorSets.size(); i++)
+    for (size_t i = 0; i < m_DescriptorSets.size(); i++)
     {
         for (size_t j = 0; j < Bindings.size(); j++)
         {
-            descriptorWrites[descritionWriteOffset].dstSet = descriptorSets[i];
+            descriptorWrites[descritionWriteOffset].dstSet = m_DescriptorSets[i];
             descritionWriteOffset++;
         }
         d.updateDescriptorSets(static_cast<uint32_t>(descritproWriteCount),
@@ -147,7 +159,7 @@ void Vulkan::VulkanDescriptorSets::FillDescriptorInfo(
     size_t& imageIndex,
     size_t& bufferIndex)
 {
-    for (size_t f = 0; f < descriptorSets.size(); f++)
+    for (size_t f = 0; f < m_DescriptorSets.size(); f++)
     {
         for (size_t i = 0; i < GetBinding().size(); i++)
         {
@@ -221,7 +233,7 @@ void Vulkan::VulkanDescriptorSets::FillDescritptorWrite(std::span<vk::WriteDescr
 {
     const size_t BindingSize = GetBinding().size();
     size_t descriptorWriteOffset = 0;
-    for (size_t f = 0; f < descriptorSets.size(); f++)
+    for (size_t f = 0; f < m_DescriptorSets.size(); f++)
     {
         for (size_t i = 0; i < BindingSize; i++)
         {
@@ -267,11 +279,11 @@ void Vulkan::VulkanDescriptorSets::FillDescritptorWrite(std::span<vk::WriteDescr
 
 const void* Vulkan::VulkanDescriptorSets::GetFrameNativeHandle(size_t _frameIndex) const
 {
-    return &descriptorSets[_frameIndex];
+    return &m_DescriptorSets[_frameIndex];
 }
 
 void* Vulkan::VulkanDescriptorSets::GetFrameNativeHandle(size_t _frameIndex)
 {
-    return &descriptorSets[_frameIndex];
+    return &m_DescriptorSets[_frameIndex];
 }
 

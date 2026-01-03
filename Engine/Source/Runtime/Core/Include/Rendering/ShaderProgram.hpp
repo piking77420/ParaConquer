@@ -7,7 +7,6 @@
 #include "CoreHeader.hpp"
 #include "Objectptr.hpp"
 #include "Reflection/Reflector.hpp"
-#include "LowRenderer/DescriptorSet.hpp"
 #include "LowRenderer/RhiTypedef.h"
 #include "LowRenderer/RhiRenderPass.hpp"
 #include "LowRenderer/RhiShaderProgram.hpp"
