@@ -9,7 +9,7 @@
 #include "VulkanFence.hpp"
 #include "VulkanTexture.hpp"
 #include "VulkanSwapChain.hpp"
-#include "Resources/VulkanDescriptorSets.hpp"
+#include "Resources/VulkanDescriptorBindings.hpp"
 #include "Resources/VulkanSampler.hpp"
 #include "Resources/VulkanShaderProgram.hpp"
 #include "Utils/HelperFunctions.hpp"
@@ -93,6 +93,24 @@ RhiShaderProgram* Rhi::CreateRhiShaderProgram()
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanShaderProgram(*this);
+		break;
+	case GraphicAPI::D3d12:
+		break;
+	case GraphicAPI::None:
+	case GraphicAPI::Count:
+		break;
+	}
+
+	return nullptr;
+}
+
+RhiDescriptorBindings* Rhi::CreateDescriptorBindings()
+{
+	switch (m_GraphicsApi)
+	{
+		break;
+	case GraphicAPI::Vulkan:
+		return new Vulkan::VulkanDescriptorBindings(*this);
 		break;
 	case GraphicAPI::D3d12:
 		break;

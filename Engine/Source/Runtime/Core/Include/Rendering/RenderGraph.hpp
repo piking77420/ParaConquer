@@ -67,6 +67,19 @@ namespace PC_CORE::Rendering
 			m_Nodes.emplace_back(std::move(Node));
 		}
 
+		template <RenderPassT T>
+		const T* GetRenderPass()
+		{
+			constexpr TypeId ID = GetTypeKey<T>();
+
+			auto it = std::ranges::find_if(m_Nodes, [ID]<T>(const RenderGraphNode& _RenderGraphNode) 
+			{
+				return _RenderGraphNode.RenderPassObject->GetTypeKey() == ID;
+			});
+
+			return it == m_Nodes.end() : nullptr : it->RenderPassObject.get();
+		}
+
 		void Clear()
 		{
 			m_Nodes.clear();

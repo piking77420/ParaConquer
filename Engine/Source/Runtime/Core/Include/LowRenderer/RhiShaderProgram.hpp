@@ -3,14 +3,11 @@
 #include <array>
 
 #include "RhiResource.hpp"
-#include "Vertex.hpp"
 
 BEGIN_PCCORE
 
 class RhiRenderPass;
 class RhiDescriptorBindings;
-
-
 
 class RhiShaderProgram : public RhiObjectT<RhiShaderProgram>
 {
@@ -26,7 +23,7 @@ public:
         Count
     };
 
-    enum struct ShaderStageType : uint8_t
+    enum ShaderStageType : uint8_t
     {
         Vertex,
         Hull,
@@ -45,6 +42,8 @@ public:
 
         Count
     };
+
+    using ShaderStageTypeFlag = uint8_t;
 
     using ShaderModule = std::pair<ShaderStageType, std::vector<char>>;
 

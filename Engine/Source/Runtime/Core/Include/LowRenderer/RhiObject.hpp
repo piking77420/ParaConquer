@@ -49,8 +49,8 @@ public:
 	{
 
 	}
-
-	virtual const void* GetFrameNativeHandle(size_t _frameIndex) const = 0;
+	// TO DO MAY REMOVE
+	virtual const void* GetFrameNativeHandle(size_t _frameIndex) const = 0; 
 
 	virtual void* GetFrameNativeHandle(size_t _frameIndex) = 0;
 

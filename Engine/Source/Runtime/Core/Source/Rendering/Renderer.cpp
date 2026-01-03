@@ -41,15 +41,16 @@ namespace PC_CORE::Rendering
            .SetName("Linear Clamp To EdgeSampler")
            .Build();
 
-
-       InitShaders(_View);
-
        m_RenderGraph.Clear();
        m_RenderGraph.AddRenderPass<Pass::FowardPass>();
        m_RenderGraph.AddRenderPass<Pass::ToneMapPass>();
 
+       InitRhiRenderPasses(_View);
+       InitShaders(_View);
+
        RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph);
        m_RenderGraph.Build(buildContext);
+
    }
 
    void Renderer::Excute(const RenderView& _View)
@@ -58,6 +59,69 @@ namespace PC_CORE::Rendering
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph, RenderingWorldData);
 
        m_RenderGraph.Execute(executeContext);
+   }
+
+   void Renderer::InitRhiRenderPasses(const RenderView& _View)
+   {
+       {
+           forwardPass.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& ColorAttachement = forwardPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+
+           // Set Depth
+           const RenderPassAttachementDescriptor& DepthAttachement = forwardPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S01)
+               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::DepthStencilWrite)
+               .SetFinalImageState(RhiResourceState::DepthStencilWrite);
+
+           // SubPass 0
+           forwardPass
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(ColorAttachement, RhiResourceState::RenderTarget))
+               .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
+
+           forwardPass
+               ->SetName("ForwardPass")
+               .Build();
+       }
+
+       {
+           toneMapPass.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = toneMapPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+
+           toneMapPass
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
+
+           toneMapPass
+               ->SetName("ToneMap temp")
+               .Build();
+       }
+      
    }
 
    void Renderer::InitShaders([[maybe_unsed]] const RenderView& _View)
@@ -93,6 +157,7 @@ namespace PC_CORE::Rendering
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(2)
                .SetShaderModules(shaderModules)
+               .SetRenderPass(*forwardPass)
                .SetName("FowardShader")
                .Build();
        }

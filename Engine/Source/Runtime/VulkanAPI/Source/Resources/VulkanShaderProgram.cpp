@@ -7,7 +7,7 @@
 #include "Resources/ResourceFormat.hpp"
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
-#include "Resources/VulkanDescriptorSets.hpp"
+#include "Resources/VulkanDescriptorBindings.hpp"
 #include "Utils/RhiToVulkan.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanDescritptorManager.hpp"

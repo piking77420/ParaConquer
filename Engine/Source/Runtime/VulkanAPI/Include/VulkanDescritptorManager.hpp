@@ -9,6 +9,7 @@
 
 namespace Vulkan
 {
+
     class VulkanContext;
 
     struct DescriptorInfo

@@ -3,7 +3,7 @@
 #include <map>
 
 #include "VulkanContext.hpp"
-#include "Resources/VulkanDescriptorSets.hpp"
+#include "Resources/VulkanDescriptorBindings.hpp"
 
 Vulkan::VulkanDescritptorManager::VulkanDescritptorManager(VulkanContext& _Context)
     : m_Context(_Context)

@@ -43,6 +43,8 @@ public:
 
     PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram();
 
+    PC_CORE_API RhiDescriptorBindings* CreateDescriptorBindings();
+
     PC_CORE_API CommandList* CreateCommandList();
 
     PC_CORE_API RhiRenderPass* CreateRenderPass(RhiFormat _colorFormat, RhiFormat _depthFormat);

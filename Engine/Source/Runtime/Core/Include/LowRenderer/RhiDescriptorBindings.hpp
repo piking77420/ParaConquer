@@ -2,7 +2,7 @@
 
 #include <Vector>
 
-#include "RhiResource.hpp"
+#include "RhiShaderProgram.hpp"
 
 BEGIN_PCCORE
 
@@ -57,6 +57,7 @@ struct DescriptorWrite
     DescriptorType type;
     uint32_t bindingIndex;
     Descriptor descriptor;
+    RhiShaderProgram::ShaderStageTypeFlag StagesBits;
 };
 
 template<typename T>

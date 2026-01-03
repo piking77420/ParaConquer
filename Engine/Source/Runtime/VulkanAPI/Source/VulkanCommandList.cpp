@@ -7,7 +7,7 @@
 #include "VulkanFrameBuffer.hpp"
 #include "VulkanRenderPass.hpp"
 #include "Resources/VulkanShaderProgram.hpp"
-#include "Resources/VulkanDescriptorSets.hpp"
+#include "Resources/VulkanDescriptorBindings.hpp"
 #include "VulkanFence.hpp"
 #include "VulkanBuffer.hpp"
 #include "VulkanTexture.hpp"
@@ -122,12 +122,13 @@ bool Vulkan::VulkanCommandList::Build()
 #ifdef PROFILING
     vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
     VulkanInstance& instance = *std::reinterpret_pointer_cast<VulkanInstance>(vulkanContext.renderInstance).get();
-    VulkanDevice& vulkanDevice = *GET_VK_DEVICE.get();
+    VulkanDevice& vulkanDevice = *std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice).get();
 
+        /*
     tracyContext = tracy::CreateVkContext(physDv, device,
         vulkanDevice.GetPFN_vkResetQueryPoolEXT(),
         instance.GetPFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(),
-        vulkanDevice.GetPFN_vkGetCalibratedTimestampsEXT());
+        vulkanDevice.GetPFN_vkGetCalibratedTimestampsEXT());*/
 
 #endif
 
@@ -299,7 +300,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgra
     const size_t currentFrame = m_Rhi.GetFrameIndex();
 
     const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
-    const VulkanDescriptorBinding* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorBinding*>(_shaderProgramDescriptorSets);
+    const VulkanDescriptorBindings* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorBindings*>(_shaderProgramDescriptorSets);
     vk::DescriptorSet descriptorHandles = vulkanDescriptorSets->GetVkDescriptorSet(currentFrame);
     
     m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),

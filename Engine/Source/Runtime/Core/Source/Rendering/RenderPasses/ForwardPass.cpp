@@ -2,6 +2,7 @@
 
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiFrameBuffer.hpp"
+#include "Rendering/Renderer.hpp"
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
 
@@ -41,47 +42,13 @@ namespace PC_CORE::Rendering::Pass
 			.Build();
 
 
-		m_RenderPass.reset(_RendererPassBuildContext.RHI.CreateRenderPass());
-
-		const RenderPassAttachementDescriptor& ColorAttachement = m_RenderPass
-			->CreateAttachment()
-			.SetAttachementSlot(AttachementSlot::S00)
-			.SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
-			.SetSampleCount(1)
-			.SetLoadOp(LoadOperation::Clear)
-			.SetStoreOp(StoreOperation::Store)
-			.SetInitialImageState(RhiResourceState::Undefined)
-			.SetFinalImageState(RhiResourceState::FragmentShaderResource);
-
-		// Set Depth
-		const RenderPassAttachementDescriptor& DepthAttachement = m_RenderPass
-			->CreateAttachment()
-			.SetAttachementSlot(AttachementSlot::S01)
-			.SetRhiFormat(RhiFormat::D24UnormS8Uint)
-			.SetSampleCount(1)
-			.SetLoadOp(LoadOperation::Clear)
-			.SetStoreOp(StoreOperation::Store)
-			.SetInitialImageState(RhiResourceState::DepthStencilWrite)
-			.SetFinalImageState(RhiResourceState::DepthStencilWrite);
-
-		// SubPass 0
-		m_RenderPass
-			->CreateSubPass()
-			.SetType(RhiShaderProgram::PipelineType::Graphic)
-			.SetAttachementRef(AttachementRef(ColorAttachement, RhiResourceState::RenderTarget))
-			.SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
-
-		m_RenderPass
-			->SetName("ForwardPass")
-			.Build();
-
 		m_FrameBuffer.reset(_RendererPassBuildContext.RHI.CreateFrameBuffer());
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 			.SetAttachments(&lightingImage)
 			.SetDepthAttachments(&DepthBuffer)
-			.SetRenderPass(m_RenderPass.get())
+			.SetRenderPass(_RendererPassBuildContext.Renderer.forwardPass.get())
 			.SetName("Forward Framebuffer")
 			.Build();
 	}
@@ -94,7 +61,7 @@ namespace PC_CORE::Rendering::Pass
 		
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
-			.RenderPass = m_RenderPass.get(),
+			.RenderPass = _RendererPassExecuteContext.Renderer.forwardPass.get(),
 			.FrameBuffer = m_FrameBuffer.get(),
 			.RenderOffSet = {0, 0},
 			.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},

@@ -630,6 +630,8 @@ BEGIN_PCCORE
         uint32_t Offset = 0;
     };
 
+
+
 END_PCCORE
 
 
@@ -645,38 +647,6 @@ T* SafeCastReinterpreCast(U* _ptr)
     return reinterpret_cast<T*>(_ptr);
 #endif // DEBUG
 }
-
-//TODO do bindles descritpro
-// DescriptorSet
-#define SCENE_DESCRIPTOR_SET 0
-#define MATERIAL_DESCRIPTOR_SET 1
-#define ENVIRONEMENT_DESCRIPTOR_SET 1
-
-// Binding
-// SCENE_DESCRIPTOR_SET
-#define CAMERA_BINDING 0
-#define LIGHTDATA_BINDING 1
-#define FORWARD_SKYBOX_CUBEMAP 2
-// MATERIAL_DESCRIPTOR_SET
-#define ALBEDO_BINDING 0
-
-// ENVIRONEMENT_DESCRIPTOR_SET
-#define SKYBOX_BINDING 0
-
-#define CAM_DEPTH_MAX 1.f
-#define CAM_DEPTH_MIN 0.f
-
-// SPRITE
-#define SPRITE_SET 1
-#define SPRITE_TEXTURE 0
-
-
-// Deffered 
-#define GBUFFER_SET 1
-#define G_ALBEDO 0
-#define G_NORMAL 1
-#define G_ROUGNESS_METALLIC_AO 2
-#define G_WORLD_POSITION 3
 
 // PREPROCESSOR
 

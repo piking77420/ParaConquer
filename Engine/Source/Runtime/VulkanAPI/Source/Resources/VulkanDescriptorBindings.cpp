@@ -29,14 +29,14 @@ static inline void CountBufferAndImageDescriptor(const std::vector<PC_CORE::Desc
     }
 }
 
-Vulkan::VulkanDescriptorBinding::VulkanDescriptorSets(PC_CORE::Rhi& _Rhi, const VulkanDescritptorManager& _VulkanDescritptorManager)
-    : ShaderProgramDescriptorSets(_Rhi)
-    , m_VulkanDescritptorManager(_VulkanDescritptorManager)
+Vulkan::VulkanDescriptorBindings::VulkanDescriptorBindings(PC_CORE::Rhi& _Rhi, const CacheDescriptor& _CacheDescriptor)
+    : PC_CORE::RhiDescriptorBindings(_Rhi)
+    , m_CacheDescriptor(_CacheDescriptor)
 {
 }
 
 
-bool Vulkan::VulkanDescriptorBinding::Build()
+bool Vulkan::VulkanDescriptorBindings::Build()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -44,44 +44,40 @@ bool Vulkan::VulkanDescriptorBinding::Build()
     if (GetBinding().empty())
         return false;
 
-    const CacheDescriptor* CacheDescriptor = nullptr; // TODO
-    assert(CacheDescriptor != nullptr)
     CreateDescriptors();
     UpdateDesciptors();
 
     return true;
 }
 
-vk::DescriptorSet Vulkan::VulkanDescriptorBinding::GetVkDescriptorSet(size_t _FrameIndex) const
+vk::DescriptorSet Vulkan::VulkanDescriptorBindings::GetVkDescriptorSet(size_t _FrameIndex) const
 {
     return m_DescriptorSets[_FrameIndex];
 }
 
-vk::DescriptorSet Vulkan::VulkanDescriptorBinding::GetVkDescriptorSet() const
+vk::DescriptorSet Vulkan::VulkanDescriptorBindings::GetVkDescriptorSet() const
 {
     return GetVkDescriptorSet(m_Rhi.GetFrameIndex());
 }
 
 
-Vulkan::VulkanDescriptorBinding::~VulkanDescriptorBinding()
+Vulkan::VulkanDescriptorBindings::~VulkanDescriptorBindings()
 {
     vk::Device d = GET_VK_DEVICE;
-    d.freeDescriptorSets(m_Cache.descriptorPool, MaxFramesInFlight, m_DescriptorSets.data());
+    d.freeDescriptorSets(m_CacheDescriptor.descriptorPool, MaxFramesInFlight, m_DescriptorSets.data());
 }
 
-void Vulkan::VulkanDescriptorBinding::CreateDescriptors()
+void Vulkan::VulkanDescriptorBindings::CreateDescriptors()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     vk::Device d = GET_VK_DEVICE;
-
-    std::vector<vk::DescriptorSetLayout> layouts(MaxFramesInFlight, m_Cache.descriptorSetLayout[GetSet()]);
-    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(GET_VK_CONTEXT.rhiDevice)->GetDevice();
+    std::vector<vk::DescriptorSetLayout> layouts(MaxFramesInFlight, m_CacheDescriptor.descriptorSetLayout[GetSet()]);
 
     vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
     descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
-    descriptorSetAllocateInfo.descriptorPool = m_Cache.descriptorPool;
+    descriptorSetAllocateInfo.descriptorPool = m_CacheDescriptor.descriptorPool;
     descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MaxFramesInFlight);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
 
@@ -101,7 +97,7 @@ void Vulkan::VulkanDescriptorBinding::CreateDescriptors()
     }
 }
 
-void Vulkan::VulkanDescriptorSets::UpdateDesciptors()
+void Vulkan::VulkanDescriptorBindings::UpdateDesciptors()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -153,7 +149,7 @@ void Vulkan::VulkanDescriptorSets::UpdateDesciptors()
     }
 }
 
-void Vulkan::VulkanDescriptorSets::FillDescriptorInfo(
+void Vulkan::VulkanDescriptorBindings::FillDescriptorInfo(
     std::span<vk::DescriptorImageInfo>& imageInfo,
     std::span<vk::DescriptorBufferInfo>& bufferInfo,
     size_t& imageIndex,
@@ -226,7 +222,7 @@ void Vulkan::VulkanDescriptorSets::FillDescriptorInfo(
     }
 }
 
-void Vulkan::VulkanDescriptorSets::FillDescritptorWrite(std::span<vk::WriteDescriptorSet>& _WriteDescriptorSetSpan,
+void Vulkan::VulkanDescriptorBindings::FillDescritptorWrite(std::span<vk::WriteDescriptorSet>& _WriteDescriptorSetSpan,
     const std::span<vk::DescriptorImageInfo>& imageInfo , const std::span<vk::DescriptorBufferInfo>& bufferInfo,
     size_t& imageIndex,
     size_t& bufferIndex)
@@ -277,12 +273,12 @@ void Vulkan::VulkanDescriptorSets::FillDescritptorWrite(std::span<vk::WriteDescr
 }
 
 
-const void* Vulkan::VulkanDescriptorSets::GetFrameNativeHandle(size_t _frameIndex) const
+const void* Vulkan::VulkanDescriptorBindings::GetFrameNativeHandle(size_t _frameIndex) const
 {
     return &m_DescriptorSets[_frameIndex];
 }
 
-void* Vulkan::VulkanDescriptorSets::GetFrameNativeHandle(size_t _frameIndex)
+void* Vulkan::VulkanDescriptorBindings::GetFrameNativeHandle(size_t _frameIndex)
 {
     return &m_DescriptorSets[_frameIndex];
 }

@@ -32,12 +32,18 @@ public:
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
+    std::unique_ptr<RhiRenderPass> forwardPass;
+
+    std::unique_ptr<RhiRenderPass> toneMapPass;
+
 private:
     Rhi& m_Rhi;
 
     RenderGraph m_RenderGraph;
 
     std::unique_ptr<CommandList> m_CommandList;
+
+    void InitRhiRenderPasses(const RenderView& _View);
 
     void InitShaders(const RenderView& _View);
     
