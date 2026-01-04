@@ -1,6 +1,9 @@
 #pragma once
+
+#include <filesystem>
 #include <string>
 #include <unordered_map>
+
 
 #include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
@@ -18,7 +21,7 @@ namespace PC_CORE::Rendering
     //class Material;
 }
 
-class aiScene;
+struct aiScene;
 
 BEGIN_EDITOR_PCCORE
     class AssetsImporter

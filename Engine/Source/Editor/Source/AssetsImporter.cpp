@@ -1,12 +1,14 @@
 #include "AssetsImporter.hpp"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <filesystem>
 #include <string_view>
 
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+
 
 #include "Resources/Texture2d.hpp"
 #include "Rendering/Material.hpp"
@@ -22,8 +24,6 @@
 
 namespace PC_EDITOR_CORE
 {
-
-
 
 bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh)
 {
