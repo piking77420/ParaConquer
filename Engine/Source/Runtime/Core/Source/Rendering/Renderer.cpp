@@ -53,9 +53,8 @@ namespace PC_CORE::Rendering
 
    }
 
-   void Renderer::Excute(RenderView& _View)
+   void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
-       RenderingWorldData RenderingWorldData;
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph, RenderingWorldData);
 
        m_RenderGraph.Execute(executeContext, _View);

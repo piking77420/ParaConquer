@@ -6,6 +6,7 @@
 #include "Resources/ResourceManager.hpp"
 #include "VulkanDescriptorSet.hpp"
 #include "LowRenderer/CommandList.hpp"
+#include "Rendering/RenderSystem.hpp"
 
 #undef near
 #undef far
@@ -37,32 +38,29 @@ void WorldViewWindow::Update()
     EditorWindow::Update();
 
    
-    m_View.Time = PC_CORE::Time::GetTime();
     m_View.Deltatime = PC_CORE::Time::DeltaTime();
 
-    if (m_CameraViewDirty)
+    if (m_CameraViewDirty || resize)
     {
-        m_View.FromCamera(m_Camera);
         m_CameraViewDirty = false;
-    }
+        m_Camera.ComputeMatricies();
 
-    if (resize)
-    {
         auto sizeI = Tbx::Vector2i(static_cast<int>(size.x), static_cast<int>(size.y));
         const float aspect = size.x / size.y;
         m_Camera.SetAspect(aspect);
         m_View.SetRenderSize(size);
+        m_View.FromCamera(m_Camera);
+    }
 
+    if (resize)
+    {
         m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
         m_Editor->Renderer.Build(m_View);
         UpdateImguiViewPort();
-        m_CameraViewDirty = true;
     }
 
-    const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
-
-    ImGui::Image(imguiDescriptorSet[currentImage], ImVec2{viewportPanelSize.x, viewportPanelSize.y}, ImVec2(0, 0),
+    ImGui::Image(imguiDescriptorSet[currentImage], ImGui::GetContentRegionAvail(), ImVec2(0, 0),
                  ImVec2(1, 1));
 }
 
@@ -70,7 +68,10 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
 {
     PERF_REGION_SCOPED;
     EditorWindow::Render(_Cmd);
-    m_Editor->Renderer.Excute(m_View);
+
+    const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::RendererSystem>()->GetRenderRenderingWorldData();
+
+    m_Editor->Renderer.Excute(m_View, worldData);
 }
 
 void WorldViewWindow::UpdateImguiViewPort()

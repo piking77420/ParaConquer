@@ -312,11 +312,24 @@ void Editor::InitTestScene()
     PC_LOG("InitTestScene...")
     auto& level = World::GetWorld()->level;
     
-    ObjectPtr staticMesh = ResourceManager::Create<StaticMesh>();
-
-    
+    ObjectPtr<StaticMesh> CubeMesh = std::make_shared<StaticMesh>();
     Importer importer;
-    importer.ImportMesh(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/cube.obj", staticMesh.Get());
+    importer.ImportMesh(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/cube.obj", CubeMesh.Get());
+    ResourceManager::Add(CubeMesh);
+
+
+
+    {
+        EntityId Cube = level.CreateEntity("Cube");
+        level.AddComponent<Transform>(Cube);
+        level.AddComponent<StaticMeshComponent>(Cube);
+        Transform* t = &level.GetComponent<Transform>(Cube);
+        t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
+        StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
+        s->staticMesh = CubeMesh;
+    }
+   
 
 
     //ObjectPtr<Texture2D> texture = ResourceManager::Create<Texture2D>();
@@ -349,16 +362,19 @@ void Editor::InitTestScene()
         mesh2->material = m2;
         */
 
-    EntityId pointLight = level.CreateEntity("PointLight");
-    level.AddComponent<Transform>(pointLight);
-    level.AddComponent<PointLight>(pointLight);
-    Transform* t = &level.GetComponent<Transform>(pointLight);
-    t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
-    t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
+    {
+        EntityId pointLight = level.CreateEntity("PointLight");
+        level.AddComponent<Transform>(pointLight);
+        level.AddComponent<PointLight>(pointLight);
+        Transform* t = &level.GetComponent<Transform>(pointLight);
+        t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
+        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
-    PointLight& p = level.GetComponent<PointLight>(pointLight);
-    p.intensity = 5.f;
-}
+        PointLight& p = level.GetComponent<PointLight>(pointLight);
+        p.intensity = 5.f;
+    }
+    }
+  
 
 void Editor::DestroyTestScene()
 {
@@ -401,7 +417,6 @@ void Editor::Run(bool* _appShouldClose)
     }
 
     RenderHarwareInteface.GetRhiContext().WaitIdle();
-    // to do move this 
 }
 
 void Editor::InitEditor()
@@ -447,6 +462,7 @@ void Editor::InitEditor()
         io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
         io.FontDefault = editorData.editorFont.big;
     }
+
 }
 
 void Editor::EditorCommandUpdate()

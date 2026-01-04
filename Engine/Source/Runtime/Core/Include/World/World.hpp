@@ -21,8 +21,6 @@ BEGIN_PCCORE
 
         Level level;
 
-        Rendering::RenderingWorldData RenderingWorldData; // TODO DO HANDLE RENDER THREAD
-
         PC_CORE_API void Begin();
 
         PC_CORE_API void Update(double _tick);

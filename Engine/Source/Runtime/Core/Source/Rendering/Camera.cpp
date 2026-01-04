@@ -20,7 +20,7 @@ ProjectionType Camera::GetProjectionType() const
     return m_ProjectionType;
 }
 
-void Camera::SetFov(float _fov)
+void Camera::SetFov(double _fov)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Core);
@@ -30,46 +30,40 @@ void Camera::SetFov(float _fov)
     ComputeViewProjection();
 }
 
-float Camera::GetFov() const
+double Camera::GetFov() const
 {
     return m_Fov;
 }
 
-void Camera::SetAspect(float _aspect)
+void Camera::SetAspect(double _aspect)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Core);
 
     m_Aspect = _aspect;
-    ComputeProjection();
-    ComputeViewProjection();
 }
 
-float Camera::GetAspect() const
+double Camera::GetAspect() const
 {
     return m_Aspect;
 }
 
-void Camera::SetNear(float _near)
+void Camera::SetNear(double _near)
 {
     m_Near = _near;
-    ComputeProjection();
-    ComputeViewProjection();
 }
 
-float Camera::GetNear() const
+double Camera::GetNear() const
 {
     return m_Near;
 }
 
-void Camera::SetFar(float _far)
+void Camera::SetFar(double _far)
 {
     m_Far = _far;
-    ComputeProjection();
-    ComputeViewProjection();
 }
 
-float Camera::GetFar() const
+double Camera::GetFar() const
 {
     return m_Far;
 }
@@ -81,8 +75,6 @@ void Camera::LookAt(const Tbx::Vector3d& _point, const Tbx::Vector3d& _up)
 
     Front = (_point - Position).Normalize();
     Up = _up;
-    ComputeView();
-    ComputeViewProjection();
 }
 
 void Camera::LookAt(const Tbx::Vector3d& _point)
@@ -98,31 +90,30 @@ void Camera::LookAt(const Tbx::Vector3d& _point)
     }
     Front = Front.Normalize();
 
-    Tbx::Vector3d worldUp = Tbx::Vector3d::UnitY();
+    const Tbx::Vector3d WorldUp = Tbx::Vector3d::UnitY();
 
-    if (std::abs(Tbx::Vector3d::Dot(Front, worldUp)) > 0.999f)
-    {
-        worldUp = Tbx::Vector3d::UnitZ();
-    }
-
-    const Tbx::Vector3d right = Tbx::Vector3d::Cross(Front, worldUp).Normalize();
+    const Tbx::Vector3d right = Tbx::Vector3d::Cross(Front, WorldUp).Normalize();
     Up = Tbx::Vector3d::Cross(right, Front).Normalize();
-
-    ComputeView();
-    ComputeViewProjection();
 }
 
 void Camera::SetScreenSize(int width, int height)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Core);
-
     SetAspect(static_cast<float>(width) / static_cast<float>(height));
+}
+
+PC_CORE_API void Camera::ComputeMatricies()
+{
+    ComputeView();
+    ComputeProjection();
+    ComputeViewProjection();
 }
 
 Camera::Camera(float _fov, float _aspect, float _near, float _far, const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward,
                const Tbx::Vector3d& _up) : Position(_pos), Up(_up), Front(_forward), m_Fov(_fov), m_Aspect(_aspect)
 {
+    ComputeMatricies();
 }
 
 Camera::Camera(Tbx::Vector2f _screenSize, float _near, float _far, const Tbx::Vector3d& _pos, const Tbx::Vector3d& _forward,
@@ -130,14 +121,13 @@ Camera::Camera(Tbx::Vector2f _screenSize, float _near, float _far, const Tbx::Ve
                                         Tbx::Vector2f(0.f - _screenSize.y, _screenSize.y)),
                                     m_LeftRightScreen(Tbx::Vector2f(0.f - _screenSize.x, _screenSize.x))
 {
+    ComputeMatricies();
 }
 
 void Camera::ComputeView()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Core);
-
-
     m_View = Tbx::LookAtRH(Position, Position + Front, Up);
 }
 
@@ -151,7 +141,7 @@ void Camera::ComputeProjection()
     const double Far = static_cast<double>(m_Far);
 
     m_Projection = m_ProjectionType == ProjectionType::Perspective
-        ? Tbx::PerspectiveMatrix(
+        ? Tbx::PerspectiveMatrixFlipYAxis(
             static_cast<double>(m_Fov),
             Aspect,
             Near,

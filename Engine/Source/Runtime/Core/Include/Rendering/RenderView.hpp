@@ -26,7 +26,6 @@ namespace PC_CORE::Rendering
             float CameraNear;
             float CameraFar;
 
-            float Time;
             float Deltatime;
 
             float Gamma;
@@ -63,23 +62,22 @@ namespace PC_CORE::Rendering
 
         void UpdateUniformBuffer();
 
-        Tbx::Matrix4x4f View;
-        Tbx::Matrix4x4f ViewInv;
+        Tbx::Matrix4x4d View;
+        Tbx::Matrix4x4d ViewInv;
 
-        Tbx::Matrix4x4f Projection;
-        Tbx::Matrix4x4f ProjectionInv;
+        Tbx::Matrix4x4d Projection;
+        Tbx::Matrix4x4d ProjectionInv;
 
-        Tbx::Matrix4x4f ViewProjection;
-        Tbx::Matrix4x4f ViewProjectionInv;
+        Tbx::Matrix4x4d ViewProjection;
+        Tbx::Matrix4x4d ViewProjectionInv;
 
-        float CameraNear;
-        float CameraFar;
+        double CameraNear;
+        double CameraFar;
 
-        float Time;
-        float Deltatime;
+        double Deltatime;
 
-        float Gamma;
-        float Exposure;
+        double Gamma;
+        double Exposure;
 
         Tbx::Vector2f RenderSize{};
         Tbx::Vector2f InvRenderSize{};

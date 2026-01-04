@@ -13,6 +13,10 @@ BEGIN_PCCORE
     class RendererSystem : public EcsSystem
     {
     public:
+        PC_CORE_API RendererSystem();
+
+        PC_CORE_API ~RendererSystem() override = default;
+
         DEFAULT_COPY_MOVE_OPERATIONS(RendererSystem)
 
         IMP_DYNAMIC_REFLECT();
@@ -27,14 +31,12 @@ BEGIN_PCCORE
 
         PC_CORE_API void RenderingTick(double deltatime) override;
 
-        PC_CORE_API RendererSystem() = default;
-
-        PC_CORE_API RendererSystem(Rendering::RenderingWorldData* _renderingWorldData);
-
-        PC_CORE_API ~RendererSystem() override = default;
+        PC_CORE_API const Rendering::RenderingWorldData& GetRenderRenderingWorldData() const;
 
     private:
-        Rendering::RenderingWorldData* m_RenderingDataPtr = nullptr;
+        Rendering::RenderingWorldData m_GameRenderingWorldData;
+
+        Rendering::RenderingWorldData m_RenderRenderingWorldData;
 
         Signature m_StaticMeshSignature;
 

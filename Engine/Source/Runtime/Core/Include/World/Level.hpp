@@ -78,6 +78,14 @@ BEGIN_PCCORE
         }
 
         template <SystemDerived T>
+        PC_FORCE_INLINE std::shared_ptr<T> GetSystem()
+        {
+            static_assert(!std::is_same_v<T, EcsSystem>, "EcsSystem is pure virtual");
+
+            return m_SystemManagers.GetSystem<T>();
+        }
+
+        template <SystemDerived T>
         PC_FORCE_INLINE std::shared_ptr<T> RegisterSystem()
         {
             static_assert(!std::is_same_v<T, EcsSystem>, "EcsSystem is pure virtual");

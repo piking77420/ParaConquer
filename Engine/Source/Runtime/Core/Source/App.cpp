@@ -90,6 +90,7 @@ void App::RenderFrame()
 
         RenderHarwareInteface.GetRhiContext().SendEnqueuCommand(PrimaryCommandBuffer.get(), PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
         swapChain->Present(&MainWindow);
+        RenderHarwareInteface.NextFrame();
     }
 
 }

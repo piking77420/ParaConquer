@@ -12,8 +12,7 @@ using namespace PC_EDITOR_CORE;
 
 EditWorldWindow::EditWorldWindow(Editor& _editor, const std::string& _name) : WorldViewWindow(_editor, _name)
 {
-    bool dummy;
-    RotateCamera(0.01f, &dummy);
+    RotateCamera(0.01f);
 }
 
 
@@ -32,7 +31,7 @@ void EditWorldWindow::Update()
 
 void EditWorldWindow::MoveCameraUpdate()
 {
-    const float deltatime = PC_CORE::Time::DeltaTime();
+    const float deltatime = ImGui::GetIO().DeltaTime;
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
@@ -43,12 +42,16 @@ void EditWorldWindow::MoveCameraUpdate()
     CameraChangeSpeed(deltatime);
 
     
-    CameratMovment(deltatime, &m_CameraViewDirty);
-    RotateCamera(deltatime, &m_CameraViewDirty);
+    CameratMovment(deltatime);
+    RotateCamera(deltatime);
+    ScroolWheelMovement(deltatime);
+    UpdatePosition(deltatime);
 }
 
-void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)
+void EditWorldWindow::RotateCamera(float _deltatime)
 {
+    // TODO USE QUATERNION TO SLERP
+
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
     {
         deltass.Reset();
@@ -58,11 +61,10 @@ void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)
 
     const ImGuiIO& io = ImGui::GetIO();
     const Tbx::Vector2f delta = {io.MouseDelta.x, -io.MouseDelta.y};
-    if (std::abs(delta.x) < 0.01f && std::abs(delta.y))
+    if (std::abs(delta.x) < 0.0001f && std::abs(delta.y) < 0.0001f)
     {
         return;
     }
-    *_isDirty = true;
 
     deltass.AddSample(delta);
     const Tbx::Vector2f average = deltass.GetAvarage<Tbx::Vector2f>();
@@ -77,13 +79,12 @@ void EditWorldWindow::RotateCamera(float _deltatime, bool* _isDirty)
     forward.y = std::sin(pitch * Tbx::dDeg2Rad);
     forward.z = std::sin(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
 
-    m_Camera.Front = forward.Normalize();
-
     m_Camera.LookAt(m_Camera.Position + forward);
-    *_isDirty = true;
+
+    m_CameraViewDirty = true;
 }
 
-void EditWorldWindow::CameratMovment(float _deltatime, bool* isDirty)
+void EditWorldWindow::CameratMovment(float _deltatime)
 {
     bool isPositionDirty = false;
     Tbx::Vector3d addVector = Tbx::Vector3d::Zero();
@@ -107,13 +108,8 @@ void EditWorldWindow::CameratMovment(float _deltatime, bool* isDirty)
         addVector += right;
     }
 
-    float mag = addVector.Magnitude();
-    if (mag > Tbx::Epsilon<float>())
-    {
-        Tbx::Vector3d desiredPosition = m_Camera.Position + (addVector.Normalize() * m_CameraSpeedValue);
-        m_Camera.Position = SmoothDamp(m_Camera.Position, desiredPosition, m_CameraSpeed, smoothTime, _deltatime);
-        *isDirty = true;
-    }
+
+    m_DesiredVelocity += addVector * m_CameraSpeedValue;
 }
 
 void EditWorldWindow::CameraChangeSpeed(float _deltatime)
@@ -143,4 +139,28 @@ void EditWorldWindow::HideCursor()
     {
         m_Editor->MainWindow.HideCursor(true);
     }
+}
+
+void EditWorldWindow::ScroolWheelMovement(float _Deltatime)
+{
+    float mouseWheel = ImGui::GetIO().MouseWheel;
+
+    if (mouseWheel == 0.f)
+        return;
+
+    m_DesiredVelocity += m_Camera.Front * mouseWheel * ScrolWheelForce;
+}
+
+void EditWorldWindow::UpdatePosition(float _Deltatime)
+{
+    m_CameraVelocity = Lerp(
+        m_CameraVelocity,
+        m_DesiredVelocity,
+        1.f - std::exp(-AccTime * _Deltatime)
+    );
+
+    m_Camera.Position += m_CameraVelocity * _Deltatime;
+
+    m_CameraViewDirty = true;
+    m_DesiredVelocity = Tbx::Vector3d::Zero();
 }

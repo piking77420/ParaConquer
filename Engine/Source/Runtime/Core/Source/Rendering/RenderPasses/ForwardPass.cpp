@@ -65,6 +65,9 @@ namespace PC_CORE::Rendering::Pass
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
 	{
+		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Rendering)
+
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
 
 		std::array<float, 4> Color = GetColor();
@@ -86,7 +89,31 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetViewPort(viewPort);
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
+		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.fowardShader);
+		cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.fowardShader, m_DescriptorSet.get(), 0, 1);
 
+		const auto& DrawObjects = _RendererPassExecuteContext.RenderingWorldData.StaticMeshComponentData;
+		for (const auto& DrawObject : DrawObjects)
+		{
+			const StaticMesh& mesh = *DrawObject.StaticMesh;
+
+			cmd.BindVertexBuffer(*mesh.VBuffer, 0, 1);
+			cmd.BindIndexBuffer(*mesh.IBuffer, mesh.IBuffer.GetIndexFormat(), 0);
+
+			Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * DrawObject.WorldMatrix;
+			Tbx::Matrix4x4d NormalInvMatrixView = _RendererPassExecuteContext.View.View * DrawObject.NormalInvertMatrix;
+
+			struct ModelPushConstant
+			{
+				Gpu::mat4 ModelView;
+				Gpu::mat4 NormalInvMatrixView;
+			}PushConstant;
+			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
+			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
+
+			cmd.PushConstant(*_RendererPassExecuteContext.Renderer.fowardShader, "pushConstant", &PushConstant, sizeof(ModelPushConstant));
+			cmd.DrawIndexed(mesh.IBuffer.GetIndexCount(), 1, 0, 0, 0);
+		}
 
 		cmd.EndRenderPass();
 	}

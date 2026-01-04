@@ -34,7 +34,7 @@ BEGIN_PCCORE
             {
                 if (it->get()->GetTypeKey() == systemTypeId)
                 {
-                    return it;
+                    return std::static_pointer_cast<T>(*it);
                 }
             }
 

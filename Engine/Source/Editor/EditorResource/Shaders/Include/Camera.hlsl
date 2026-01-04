@@ -11,8 +11,7 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     float CameraNear;
     float CameraFar;
     
-    float Deltatime;
-    float deltaTime;
+    float DeltaTime;
     
     float Gamma;
     float Exposure;

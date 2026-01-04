@@ -25,9 +25,9 @@ BEGIN_EDITOR_PCCORE
     protected:
         void MoveCameraUpdate();
 
-        PC_CORE::LowPassFilter<Tbx::Vector2f, 4> deltass;
+        PC_CORE::LowPassFilter<Tbx::Vector2f, 8> deltass;
 
-        float m_BaseCameraSpeed = 5.f;
+        float m_BaseCameraSpeed = 25.0f;
 
         float m_CameraSpeedValue = m_BaseCameraSpeed;
 
@@ -37,17 +37,25 @@ BEGIN_EDITOR_PCCORE
 
         float cameraSensitivity = 1.f;
 
-        Tbx::Vector3d m_CameraSpeed = Tbx::Vector3d::Zero();
+        Tbx::Vector3d m_DesiredVelocity = Tbx::Vector3d::Zero();
 
-        float smoothTime = 0.3f;
+        Tbx::Vector3d m_CameraVelocity = Tbx::Vector3d::Zero();
 
-        void RotateCamera(float _deltatime, bool* _isDirty);
+        static constexpr float AccTime = 10.0f; 
 
-        void CameratMovment(float _deltatime, bool* _isDirty);
+        static constexpr float ScrolWheelForce = 50.f;
+
+        void RotateCamera(float _deltatime);
+
+        void CameratMovment(float _deltatime);
 
         void CameraChangeSpeed(float _deltatime);
 
         void HideCursor();
+
+        void ScroolWheelMovement(float _Deltatime);
+
+        void UpdatePosition(float _Deltatime);
     };
 
 END_EDITOR_PCCORE

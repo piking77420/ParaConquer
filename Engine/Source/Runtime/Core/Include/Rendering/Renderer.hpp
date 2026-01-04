@@ -19,7 +19,7 @@ public:
 
     PC_CORE_API void Build(const RenderView& _view);
 
-    PC_CORE_API void Excute(RenderView& _view);
+    PC_CORE_API void Excute(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     const RenderGraph& GetRenderGraph() const
     {

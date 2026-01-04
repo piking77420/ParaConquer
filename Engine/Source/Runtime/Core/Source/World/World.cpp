@@ -16,7 +16,7 @@ World::World()
     }
 
     m_World = this;
-    World::GetWorld()->level.RegisterSystem<RendererSystem>(&RenderingWorldData);
+    World::GetWorld()->level.RegisterSystem<RendererSystem>();
 }
 
 
@@ -25,7 +25,6 @@ void World::Begin()
     if (begin)
     {
         PERF_REGION_SCOPED;
-        //TO DO CALL SYS BEGIN
         begin = false;
         level.Begin();
         run = true;
