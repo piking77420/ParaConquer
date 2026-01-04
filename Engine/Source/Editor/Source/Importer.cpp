@@ -196,43 +196,83 @@ bool Importer::ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path
     if (!scene || !scene->HasMeshes())
     {
         PC_LOGERROR("Failed to load model: {} \n {} ", _path.generic_string(), importer.GetErrorString());
+        return false;
     }
-
-    aiMesh* mesh = scene->mMeshes[0];
-
-    std::vector<PC_CORE::StaticMeshVertex> vertices;
-    std::vector<uint32_t> indices;
-
-    vertices.reserve(mesh->mNumVertices);
-    for (size_t i = 0; i < mesh->mNumVertices; ++i)
-    {
-        PC_CORE::StaticMeshVertex v{};
-        v.Position = Tbx::Vector3f{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-
-        if (mesh->HasNormals())
-            v.Normal = Tbx::Vector3f{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-
-        if (mesh->HasTextureCoords(0))
-            v.Uv = Tbx::Vector2f{ mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-
-        if (mesh->HasTangentsAndBitangents())
-            v.Tangent = Tbx::Vector3f{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-
-        vertices.push_back(v);
-    }
-
-    // Extract indices
-    for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
-    {
-        const aiFace& face = mesh->mFaces[i];
-        for (unsigned int j = 0; j < face.mNumIndices; ++j)
-            indices.push_back(face.mIndices[j]);
-    }
-
-    PC_CORE::StaticMeshRenderData StaticMeshRenderDat(vertices, indices);
     
-    *_StaticMesh = PC_CORE::StaticMesh(std::string(mesh->mName.C_Str()), StaticMeshRenderDat);
 
+    PC_CORE::StaticMeshRenderData StaticMeshRenderData;
+
+    // CountVertex And Index
+    uint32_t nbrOfVerticies = 0;
+    uint32_t nbrOfIndex = 0;
+    StaticMeshRenderData.SubMeshes.reserve(scene->mNumMeshes);
+    for (size_t i = 0; i < scene->mNumMeshes; i++)
+    {
+        uint32_t accFaceIndicies = 0;
+        for (size_t f = 0; f < scene->mMeshes[i]->mNumFaces; f++)
+        {
+            accFaceIndicies += scene->mMeshes[i]->mFaces[f].mNumIndices;
+        }
+
+        PC_CORE::SubMesh subMesh =
+        {
+            .VertexOffSet = nbrOfVerticies,
+            .VerticiesCount = scene->mMeshes[i]->mNumVertices,
+            .IndexOffset = nbrOfIndex,
+            .IndiciesCount = accFaceIndicies
+        };
+
+        nbrOfVerticies += subMesh.VerticiesCount;
+        nbrOfIndex += subMesh.IndiciesCount;
+
+        StaticMeshRenderData.SubMeshes.emplace_back(std::move(subMesh));
+    }
+
+    StaticMeshRenderData.Vertices.reserve(nbrOfVerticies);
+    StaticMeshRenderData.Indices.reserve(nbrOfIndex);
+
+
+    for (size_t m = 0; m < scene->mNumMeshes; m++)
+    {
+        const aiMesh& mesh = *scene->mMeshes[m];
+        for (size_t v = 0; v < mesh.mNumVertices; v++)
+        {
+            PC_CORE::StaticMeshVertex vertex{};
+            vertex.Position = Tbx::Vector3f{ mesh.mVertices[v].x, mesh.mVertices[v].y, mesh.mVertices[v].z };
+
+            if (mesh.HasNormals())
+                vertex.Normal = Tbx::Vector3f{ mesh.mNormals[v].x, mesh.mNormals[v].y, mesh.mNormals[v].z };
+
+            if (mesh.HasTextureCoords(0))
+                vertex.Uv = Tbx::Vector2f{ mesh.mTextureCoords[0][v].x, mesh.mTextureCoords[0][v].y };
+
+            if (mesh.HasTangentsAndBitangents())
+                vertex.Tangent = Tbx::Vector3f{ mesh.mTangents[v].x, mesh.mTangents[v].y, mesh.mTangents[v].z };
+
+            StaticMeshRenderData.Vertices.emplace_back(vertex);
+        }
+
+        for (size_t f = 0; f < mesh.mNumFaces; f++)
+        {
+            for (size_t i = 0; i < mesh.mFaces[f].mNumIndices; i++)
+            {
+                StaticMeshRenderData.Indices.emplace_back(mesh.mFaces[f].mIndices[i]);
+            }
+        }
+    }
+
+    std::string Name;
+    if (scene->mName.Empty())
+    {
+        Name = scene->mNumMeshes > 0 ? std::string(scene->mMeshes[0]->mName.C_Str()) : _path.filename().generic_string();
+    }
+    else
+    {
+        Name = std::string(scene->mName.C_Str());
+    }
+    
+ 
+    *_StaticMesh = PC_CORE::StaticMesh(std::move(Name), std::move(StaticMeshRenderData));
 
     return false;
 }

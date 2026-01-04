@@ -45,8 +45,10 @@ void StaticMesh::AfterDeSerialize(Serializer* _serializer)
     }*/
 }
 
+
 StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData)
     : Resource(std::move(_Name))
+    , m_StaticMeshRenderData(_StaticMeshRenderData)
 {
     DYNAMIC_REFLECT_INIT
 
@@ -55,10 +57,10 @@ StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMes
     // VertexBuffer
     VBuffer = VertexBuffer(rhi);
     VBuffer
-        .SetVerticiesCount(_StaticMeshRenderData.Vertices.size())
+        .SetVerticiesCount(m_StaticMeshRenderData.Vertices.size())
         .SetVerticiesSize(sizeof(StaticMeshVertex))
         ->SetMemoryUsage(RhiMemoryUsage::Static)
-        .SetSize(_StaticMeshRenderData.Vertices.size() * sizeof(StaticMeshVertex))
+        .SetSize(m_StaticMeshRenderData.Vertices.size() * sizeof(StaticMeshVertex))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
         .SetName(Name + " Vertex Buffer")
         .Build();
@@ -66,18 +68,67 @@ StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMes
 
     IBuffer = IndexBuffer(rhi);
     IBuffer
-        .SetIndexCount(_StaticMeshRenderData.Indices.size())
+        .SetIndexCount(m_StaticMeshRenderData.Indices.size())
         .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
         ->SetMemoryUsage(RhiMemoryUsage::Static)
-        .SetSize(_StaticMeshRenderData.Indices.size() * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
+        .SetSize(m_StaticMeshRenderData.Indices.size() * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
         .SetName(Name + " Index Buffer")
         .Build();
 
 
     rhi.GetRhiContext().ResourceUpdateBranch()
-        ->BufferUpload(*VBuffer.Get(), _StaticMeshRenderData.Vertices.data(), VBuffer->GetSize())
-        .BufferUpload(*IBuffer.Get(), _StaticMeshRenderData.Indices.data(), IBuffer->GetSize());
+        ->BufferUpload(*VBuffer.Get(), m_StaticMeshRenderData.Vertices.data(), VBuffer->GetSize())
+        .BufferUpload(*IBuffer.Get(), m_StaticMeshRenderData.Indices.data(), IBuffer->GetSize());
+
+    if (!m_HallowCpuAcces)
+    {
+        m_StaticMeshRenderData.Vertices.clear();
+        m_StaticMeshRenderData.Indices.clear();
+    }
+
+}
+
+StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData)
+    : Resource(std::move(_Name))
+    , m_StaticMeshRenderData(std::move(_StaticMeshRenderData))
+{
+    DYNAMIC_REFLECT_INIT
+
+        Rhi& rhi = App::Instance->RenderHarwareInteface;
+
+    // VertexBuffer
+    VBuffer = VertexBuffer(rhi);
+    VBuffer
+        .SetVerticiesCount(m_StaticMeshRenderData.Vertices.size())
+        .SetVerticiesSize(sizeof(StaticMeshVertex))
+        ->SetMemoryUsage(RhiMemoryUsage::Static)
+        .SetSize(m_StaticMeshRenderData.Vertices.size() * sizeof(StaticMeshVertex))
+        .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
+        .SetName(Name + " Vertex Buffer")
+        .Build();
+
+
+    IBuffer = IndexBuffer(rhi);
+    IBuffer
+        .SetIndexCount(m_StaticMeshRenderData.Indices.size())
+        .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
+        ->SetMemoryUsage(RhiMemoryUsage::Static)
+        .SetSize(m_StaticMeshRenderData.Indices.size() * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
+        .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
+        .SetName(Name + " Index Buffer")
+        .Build();
+
+
+    rhi.GetRhiContext().ResourceUpdateBranch()
+        ->BufferUpload(*VBuffer.Get(), m_StaticMeshRenderData.Vertices.data(), VBuffer->GetSize())
+        .BufferUpload(*IBuffer.Get(), m_StaticMeshRenderData.Indices.data(), IBuffer->GetSize());
+
+    if (!m_HallowCpuAcces)
+    {
+        m_StaticMeshRenderData.Vertices.clear();
+        m_StaticMeshRenderData.Indices.clear();
+    }
 
 }
 
