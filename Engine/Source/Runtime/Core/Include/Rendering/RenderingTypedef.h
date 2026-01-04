@@ -5,7 +5,7 @@
 #include "CoreHeader.hpp"
 #include "Material.hpp"
 #include "LowRenderer/RhiFrameBuffer.hpp"
-#include "LowRenderer/DescriptorSet.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 #include "Resources/StaticMesh.hpp"
 
 #define GPU_ALIGN alignas(16)
@@ -44,7 +44,7 @@ namespace Gpu
 struct StaticMeshComponentData
 {
     MaterialType MaterialType;
-    const RhiDescriptorBindings* DescriptorSet;
+    const RhiDescriptorSet* DescriptorSet;
     const StaticMesh* StaticMesh;
 
     Tbx::Matrix4x4d WorldMatrix;

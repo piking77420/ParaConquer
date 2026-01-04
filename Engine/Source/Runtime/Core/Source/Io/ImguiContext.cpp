@@ -2,21 +2,21 @@
 
 #include <memory>
 
-#include "imgui.h"
-#include "backends/imgui_impl_vulkan.h"
 #include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
+#include "imgui.h"
 
 #include "LowRenderer/Rhi.hpp"
 
-#include "VulkanInstance.hpp"
+#include "Resources/ResourceManager.hpp"
 #include "VulkanCommandList.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanDevice.hpp"
+#include "VulkanInstance.hpp"
 #include "VulkanPhysicalDevices.hpp"
+#include "VulkanSampler.hpp"
 #include "VulkanSwapChain.hpp"
 #include "VulkanTexture.hpp"
-#include "Resources/ResourceManager.hpp"
-#include "Resources/VulkanSampler.hpp"
 
 namespace Vulkan
 {
@@ -179,7 +179,7 @@ void IMGUIContext::Render(CommandList* _commandBuffer)
     _commandBuffer->BeginDebugLabel("Imgui Draw", IMGUI_RENDER_DEBUG_COLOR);
 
     ImDrawData* draw_data = ImGui::GetDrawData();
-    vk::CommandBuffer commandBuffer = reinterpret_cast<Vulkan::VulkanCommandList*>(_commandBuffer)->GetVkHandle();
+    vk::CommandBuffer commandBuffer = reinterpret_cast<Vulkan::VulkanCommandList*>(_commandBuffer)->GetVulkanCommandBufferHandle();
     ImGui_ImplVulkan_RenderDrawData(draw_data, commandBuffer);
 
     if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

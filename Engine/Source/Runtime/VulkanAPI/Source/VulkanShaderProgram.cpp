@@ -1,13 +1,13 @@
-﻿#include "Resources/VulkanShaderProgram.hpp"
+﻿#include "VulkanShaderProgram.hpp"
 
 #include <map>
 #include <string_view>
 
-#include "include/spirv/unified1/spirv.h"
+
 #include "Resources/ResourceFormat.hpp"
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
-#include "Resources/VulkanDescriptorBindings.hpp"
+#include "VulkanDescriptorSet.hpp"
 #include "Utils/RhiToVulkan.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanDescritptorManager.hpp"
@@ -364,10 +364,10 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
 void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
                                                const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
-    auto cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
+    //auto cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
 
     assert(false);
-
+    /*
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache->descriptorSetLayout.size()); // Optional
@@ -376,7 +376,7 @@ void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
                                                                       pushConstantRanges.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
-    m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);
+    m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);*/
 }
 
 void VulkanShaderProgram::CreatePushConstantMapFromReflection(

@@ -18,7 +18,7 @@ namespace PC_CORE::Rendering::Pass
 		const RhiTexture& lightingImage = _RendererPassBuildContext.RenderGraph.GetResource<RhiTexture>("Lighting Image");
 		const RhiTexture& outPutImage = _RendererPassBuildContext.RenderGraph.GetOutPutImage();
 
-	 
+	 /*
 		m_DescriptorSet.reset(_RendererPassBuildContext.Renderer.fowardShader->CreateDescriptorBinding());
 
 		const ImageSamplerDescriptor imageSamplerDescriptor =
@@ -37,7 +37,7 @@ namespace PC_CORE::Rendering::Pass
 		m_DescriptorSet
 			->SetBindings(0, Write)
 			.SetName("Desciptor Set Binding Lighting Image to final Image")
-			.Build();
+			.Build();*/
 	}
 
 	void ToneMapPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
@@ -48,7 +48,7 @@ namespace PC_CORE::Rendering::Pass
 
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
-			.RenderPass = m_RenderPass.get(),
+			.RenderPass = _RendererPassExecuteContext.Renderer.toneMapPass.get(),
 			.FrameBuffer = m_FrameBuffer.get(),
 			.RenderOffSet = {0, 0},
 			.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},

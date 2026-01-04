@@ -43,7 +43,7 @@ public:
 
     PC_CORE_API RhiShaderProgram* CreateRhiShaderProgram();
 
-    PC_CORE_API RhiDescriptorBindings* CreateDescriptorBindings();
+    PC_CORE_API RhiDescriptorSet* CreateDescriptorBindings();
 
     PC_CORE_API CommandList* CreateCommandList();
 

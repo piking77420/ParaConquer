@@ -39,15 +39,13 @@ namespace Vulkan
 
         VULKAN_API void EndSwapChainRenderPass(PC_CORE::CommandList* _commandList) override;
 
-        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
-
-        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
-
         VULKAN_API bool Build() override;
 
         VULKAN_API  uint32_t GetWidth() const override;
 
         VULKAN_API  uint32_t GetHeight() const override;
+
+        VULKAN_API vk::SwapchainKHR GetVulkanSwapChain() const;
 
     private:
         vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);

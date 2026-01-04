@@ -70,14 +70,14 @@ namespace PC_CORE::Rendering
 		template <RenderPassT T>
 		const T* GetRenderPass()
 		{
-			constexpr TypeId ID = GetTypeKey<T>();
+			constexpr TypeId ID = PC_CORE::Reflector::GetTypeKey<T>();
 
 			auto it = std::ranges::find_if(m_Nodes, [ID]<T>(const RenderGraphNode& _RenderGraphNode) 
 			{
 				return _RenderGraphNode.RenderPassObject->GetTypeKey() == ID;
 			});
 
-			return it == m_Nodes.end() : nullptr : it->RenderPassObject.get();
+			return it == m_Nodes.end() ? nullptr : it->RenderPassObject.get();
 		}
 
 		void Clear()

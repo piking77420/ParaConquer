@@ -3,7 +3,7 @@
 #include "VulkanHeader.h"
 #include "VulkanImageHelper.hpp"
 #include "LowRenderer/RhiTypedef.h"
-#include "LowRenderer/RhiDescriptorBindings.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 #include "LowRenderer/RhiShaderProgram.hpp"
 #include "LowRenderer/RhiTexture.hpp"
 

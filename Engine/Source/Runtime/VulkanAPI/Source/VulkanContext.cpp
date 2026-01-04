@@ -78,7 +78,7 @@ VulkanContext::~VulkanContext()
     auto device = GetDevice();
 
     DestroySyncObjects();
-    descritptorManager.ClearCaches();
+    //descritptorManager.ClearCaches();
 
     device->GetDevice().destroyFence(transferFence);
     transferFence = VK_NULL_HANDLE;
@@ -214,7 +214,7 @@ void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuComma
 
     VulkanCommandList* vkCmdL = reinterpret_cast<VulkanCommandList*>(_EnqueuCommands);
 
-    flushedCommands.Commands.emplace_back(vkCmdL->GetVkHandle());
+    flushedCommands.Commands.emplace_back(vkCmdL->GetVulkanCommandBufferHandle());
     flushedCommands.Semaphores.emplace_back(vkCmdL->GetVkSemaphore());
     flushedCommands.BatchPipelineStageFlag.emplace_back(Utils::RhiPipelineStageToVulkan(waitStage));
 }
@@ -248,7 +248,7 @@ void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
         syncObjects[CurrentFrameIndex].transferFinishSemaphore
         };
 
-        vk::CommandBuffer cmd = m_TransferCommandList->GetVkHandle(CurrentFrameIndex);
+        vk::CommandBuffer cmd = m_TransferCommandList->GetVulkanCommandBufferHandle(CurrentFrameIndex);
 
         vk::SubmitInfo submitInfo{};
         submitInfo

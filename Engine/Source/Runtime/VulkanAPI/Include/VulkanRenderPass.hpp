@@ -23,26 +23,9 @@ namespace Vulkan
 
         bool Build() override;
 
-        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override
-        {
-            return &m_RenderPass;
-        }
-
-        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override
-        {
-            return &m_RenderPass;
-        }
-
         VULKAN_API vk::RenderPass GetVulkanRenderPass() const;
 
-
     protected:
-        struct CreateRenderPassContext
-        {
-         
-    
-        };
-
         struct RenderPassBuildContext
         {
 

@@ -8,7 +8,7 @@ namespace PC_CORE
 {
     class CommandList;
     class Rhi;
-    class RhiDescriptorBindings;
+    class RhiDescriptorSet;
     class RhiFrameBuffer;
 }
 

@@ -7,7 +7,7 @@
 BEGIN_PCCORE
 
 class RhiRenderPass;
-class RhiDescriptorBindings;
+class RhiDescriptorSet;
 
 class RhiShaderProgram : public RhiObjectT<RhiShaderProgram>
 {
@@ -40,14 +40,14 @@ public:
         Task,
         Mesh,
 
-        Count
+        ShaderStageTypeCount
     };
 
     using ShaderStageTypeFlag = uint8_t;
 
     using ShaderModule = std::pair<ShaderStageType, std::vector<char>>;
 
-    static constexpr const std::array<std::string_view, static_cast<size_t>(ShaderStageType::Count)> ShaderSourceFormat =
+    static constexpr const std::array<std::string_view, static_cast<size_t>(ShaderStageType::ShaderStageTypeCount)> ShaderSourceFormat =
     {
         ".vs.hlsl",
         ".hs.hlsl",
@@ -87,7 +87,7 @@ public:
         PrimitiveTopologyTriangleStripWithAdjacency = 9,
         PrimitiveTopologyPathList = 10,
 
-        Count
+        PrimitiveTopologyCount
     };
 
     enum CullModeFlagBits

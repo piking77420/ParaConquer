@@ -3,13 +3,13 @@
 #include "PerfRegion.hpp"
 
 #include "LowRenderer/Rhi.hpp"
+#include "VulkanBuffer.hpp"
 #include "VulkanContext.hpp"
+#include "VulkanDescriptorSet.hpp"
+#include "VulkanFence.hpp"
 #include "VulkanFrameBuffer.hpp"
 #include "VulkanRenderPass.hpp"
-#include "Resources/VulkanShaderProgram.hpp"
-#include "Resources/VulkanDescriptorBindings.hpp"
-#include "VulkanFence.hpp"
-#include "VulkanBuffer.hpp"
+#include "VulkanShaderProgram.hpp"
 #include "VulkanTexture.hpp"
 
 #include "Utils/RhiToVulkan.hpp"
@@ -34,18 +34,6 @@ Vulkan::VulkanCommandList::~VulkanCommandList()
     tracy::DestroyVkContext(tracyContext);
     tracyContext = nullptr;
 #endif
-}
-
-const void* Vulkan::VulkanCommandList::GetFrameNativeHandle(size_t _frameIndex) const
-{
-    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
-    return &m_CommandBuffer[frameIndex];
-}
-
-void* Vulkan::VulkanCommandList::GetFrameNativeHandle(size_t _frameIndex)
-{
-    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
-    return &m_CommandBuffer[frameIndex];
 }
 
 bool Vulkan::VulkanCommandList::Build() 
@@ -290,7 +278,7 @@ void Vulkan::VulkanCommandList::EndRenderPass()
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
-                                                  const PC_CORE::RhiDescriptorBindings*
+                                                  const PC_CORE::RhiDescriptorSet*
                                                   _shaderProgramDescriptorSets, size_t _firstSet,
                                                   size_t _descriptorSetCount)
 {
@@ -300,7 +288,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgra
     const size_t currentFrame = m_Rhi.GetFrameIndex();
 
     const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
-    const VulkanDescriptorBindings* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorBindings*>(_shaderProgramDescriptorSets);
+    const VulkanDescriptorSet* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSet*>(_shaderProgramDescriptorSets);
     vk::DescriptorSet descriptorHandles = vulkanDescriptorSets->GetVkDescriptorSet(currentFrame);
     
     m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),
@@ -329,7 +317,7 @@ void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::RhiShaderProgram& _R
     PERF_REGION_COLOR(PerfRegion::Rhi);
     const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
 
-    vshadeProgram.PushConstant(GetVkHandle(), _pushConstantKey, _data, _size);
+    vshadeProgram.PushConstant(GetVulkanCommandBufferHandle(), _pushConstantKey, _data, _size);
 }
 
 void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPort)
@@ -575,12 +563,12 @@ void Vulkan::VulkanCommandList::Flush(PC_CORE::RhiFence& _fence)
     VK_CALL(device.resetFences(1, &vkfence));
 }*/
 
-vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle() const
+vk::CommandBuffer Vulkan::VulkanCommandList::GetVulkanCommandBufferHandle() const
 {
-    return GetVkHandle(m_Rhi.GetFrameIndex());
+    return GetVulkanCommandBufferHandle(m_Rhi.GetFrameIndex());
 }
 
-VULKAN_API vk::CommandBuffer Vulkan::VulkanCommandList::GetVkHandle(size_t _FrameIndex) const
+VULKAN_API vk::CommandBuffer Vulkan::VulkanCommandList::GetVulkanCommandBufferHandle(size_t _FrameIndex) const
 {
     return m_CommandBuffer[_FrameIndex];
 }

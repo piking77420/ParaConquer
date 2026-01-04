@@ -2,7 +2,7 @@
 
 #include "CoreHeader.hpp"
 #include "MaterialInstance.hpp"
-#include "LowRenderer/DescriptorSet.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 #include "Resources/Texture2d.hpp"
 #include "ObjectPtr.hpp"
 #include "ShaderProgram.hpp"
@@ -57,13 +57,13 @@ BEGIN_PCCORE
 
         PC_CORE_API ~Material() override;
 
-        const RhiDescriptorBindings* GetDescriptorSet() const
+        const RhiDescriptorSet* GetDescriptorSet() const
         {
             return m_PShaderProgramDescriptorSets.get();
         }
 
     private:
-        std::unique_ptr<RhiDescriptorBindings> m_PShaderProgramDescriptorSets = nullptr;
+        std::unique_ptr<RhiDescriptorSet> m_PShaderProgramDescriptorSets = nullptr;
 
         RhiShaderProgram* m_ShaderProgram{ nullptr };
 

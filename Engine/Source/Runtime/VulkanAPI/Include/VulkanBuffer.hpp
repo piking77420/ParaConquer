@@ -28,10 +28,6 @@ namespace Vulkan
         explicit VulkanBuffer(PC_CORE::Rhi& _Rhi);
         
         ~VulkanBuffer() override;
-
-        const void* GetFrameNativeHandle(size_t _frameIndex) const override;
-        
-        void* GetFrameNativeHandle(size_t _frameIndex) override;
         
         bool Build() override;
         

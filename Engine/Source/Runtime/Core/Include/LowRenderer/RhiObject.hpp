@@ -20,10 +20,6 @@ public:
 
 	PC_CORE_API explicit RhiObject(Rhi& rhi);
 
-	PC_CORE_API virtual const void* GetFrameNativeHandle(size_t _frameIndex) const = 0;
-
-	PC_CORE_API virtual void* GetFrameNativeHandle(size_t _frameIndex) = 0;
-
 	PC_CORE_API virtual bool Build() = 0;
 
 	PC_CORE_API Rhi& GetRhi();
@@ -49,10 +45,6 @@ public:
 	{
 
 	}
-	// TO DO MAY REMOVE
-	virtual const void* GetFrameNativeHandle(size_t _frameIndex) const = 0; 
-
-	virtual void* GetFrameNativeHandle(size_t _frameIndex) = 0;
 
 	virtual bool Build() = 0;
 

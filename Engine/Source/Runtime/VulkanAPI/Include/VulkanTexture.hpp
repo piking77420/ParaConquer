@@ -29,10 +29,6 @@ namespace Vulkan
         
         VULKAN_API ~VulkanTexture() override;
         
-        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
-        
-        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
-        
         VULKAN_API bool Build() override;
     
         VULKAN_API bool UploadData2D(PC_CORE::CommandList* _CommandList, const void* _ImageData, PC_CORE::RhiFormat _Format, uint32_t _ImageWidht, uint32_t _ImageHeight) override;

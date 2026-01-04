@@ -77,16 +77,6 @@ static RhiResourceState GetAfterCreationImageLayout(
     return RhiResourceState::Undefined;
 }
 
-const void* Vulkan::VulkanTexture::GetFrameNativeHandle(size_t _frameIndex) const
-{
-    return GetTextureAndAlloc(_frameIndex);
-}
-
-void* Vulkan::VulkanTexture::GetFrameNativeHandle(size_t _frameIndex)
-{
-    return GetTextureAndAlloc(_frameIndex);
-}
-
 Vulkan::VulkanTexture::VulkanTexture(PC_CORE::Rhi& _Rhi)
     : RhiTexture(_Rhi)
 {

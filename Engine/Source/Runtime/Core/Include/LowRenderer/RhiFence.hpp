@@ -16,8 +16,6 @@ public:
 
     PC_CORE_API ~RhiFence() override = default;
 
-    PC_CORE_API const void* GetFrameNativeHandle(size_t _frameIndex) const override = 0;
-
     PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) = 0;
 
     PC_CORE_API virtual void Reset() = 0;

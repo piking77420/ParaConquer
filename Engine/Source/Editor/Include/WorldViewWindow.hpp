@@ -3,7 +3,6 @@
 
 #include "EditorHeader.hpp"
 #include "EditorWindow.hpp"
-#include "LowRenderer/DescriptorSet.hpp"
 #include "Rendering/Camera.hpp"
 #include "Rendering/Gbuffers.hpp"
 #include "Rendering/Renderer.hpp"

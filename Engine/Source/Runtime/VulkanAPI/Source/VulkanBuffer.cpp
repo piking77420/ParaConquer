@@ -61,16 +61,6 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
         FreeAlloc(context, alloc);
 }
 
-const void* Vulkan::VulkanBuffer::GetFrameNativeHandle(size_t _frameIndex) const
-{
-    return GetBufferAndAlloc(_frameIndex);
-}
-
-void* Vulkan::VulkanBuffer::GetFrameNativeHandle(size_t _frameIndex)
-{
-    return GetBufferAndAlloc(_frameIndex);
-}
-
 bool Vulkan::VulkanBuffer::Build()
 {
     PERF_REGION_SCOPED;

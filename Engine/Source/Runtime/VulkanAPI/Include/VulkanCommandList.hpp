@@ -18,10 +18,6 @@ namespace Vulkan
 
         VULKAN_API ~VulkanCommandList() override;
 
-        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override;
-
-        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override;
-
         VULKAN_API bool Build() override;
 
         VULKAN_API void Reset() override;
@@ -39,7 +35,7 @@ namespace Vulkan
         VULKAN_API void EndRenderPass() override;
 
         VULKAN_API void BindDescriptorSet(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
-                                          const PC_CORE::RhiDescriptorBindings* _shaderProgramDescriptorSets,
+                                          const PC_CORE::RhiDescriptorSet* _shaderProgramDescriptorSets,
                                           size_t _firstSet,
                                           size_t _descriptorSetCount) override;
 
@@ -82,9 +78,9 @@ namespace Vulkan
 
         VULKAN_API void EndDebugLabel() override;
 
-        VULKAN_API vk::CommandBuffer GetVkHandle() const;
+        VULKAN_API vk::CommandBuffer GetVulkanCommandBufferHandle() const;
 
-        VULKAN_API vk::CommandBuffer GetVkHandle(size_t _FrameIndex) const;
+        VULKAN_API vk::CommandBuffer GetVulkanCommandBufferHandle(size_t _FrameIndex) const;
 
         VULKAN_API vk::Semaphore GetVkSemaphore() const;
 
@@ -106,4 +102,4 @@ namespace Vulkan
 
 
 #define GET_VK_COMMAND_BUFFER(CommandList, frameIndex) \
-    vk::CommandBuffer cmb = *static_cast<vk::CommandBuffer*>(CommandList->GetFrameNativeHandle(frameIndex));
+    vk::CommandBuffer cmb = reinterpret_cast<VulkanCommandList*>(CommandList)->GetVulkanCommandBufferHandle(FrameIndex);

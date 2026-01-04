@@ -4,7 +4,7 @@
 #include "Editor.hpp"
 #include "Time/CoreTime.hpp"
 #include "Resources/ResourceManager.hpp"
-#include "Resources/VulkanDescriptorSets.hpp"
+#include "VulkanDescriptorSet.hpp"
 #include "LowRenderer/CommandList.hpp"
 
 #undef near

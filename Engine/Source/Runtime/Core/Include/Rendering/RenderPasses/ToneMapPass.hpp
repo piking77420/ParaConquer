@@ -42,7 +42,7 @@ namespace PC_CORE::Rendering::Pass
         void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
 
     private:
-        std::unique_ptr<PC_CORE::RhiDescriptorBindings> m_DescriptorSet;
+        std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DescriptorSet;
 
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
 

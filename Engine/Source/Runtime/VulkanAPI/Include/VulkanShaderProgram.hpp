@@ -1,10 +1,9 @@
 ﻿#pragma once
 
 #include <VulkanHeader.h>
+#include <spirv_reflect.h>
 
 #include "LowRenderer/RhiShaderProgram.hpp"
-
-struct SpvReflectShaderModule;
 
 namespace Vulkan
 {
@@ -38,16 +37,6 @@ namespace Vulkan
         ~VulkanShaderProgram() override;
         
         bool Build() override;
-        
-        const void* GetFrameNativeHandle(size_t _frameIndex) const override
-        {
-            return &m_Pipeline;
-        }
-
-        void* GetFrameNativeHandle(size_t _frameIndex) override
-        {
-            return &m_Pipeline; 
-        }
         
         void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data,
                           size_t _size) const;

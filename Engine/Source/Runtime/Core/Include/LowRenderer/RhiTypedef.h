@@ -630,6 +630,19 @@ BEGIN_PCCORE
         uint32_t Offset = 0;
     };
 
+    enum class DescriptorType : uint8_t
+    {
+        Sampler,
+        CombinedImageSampler,
+        SampledImage,
+        StorageImage,
+        UniformBuffer,
+        StorageBuffer,
+        InputAttachment,
+        InlineUniformBlock,
+        AccelerationStructure,
+        Count,
+    };
 
 
 END_PCCORE

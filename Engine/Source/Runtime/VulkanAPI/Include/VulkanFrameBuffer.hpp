@@ -14,19 +14,7 @@ namespace Vulkan
 
         VULKAN_API ~VulkanFrameBuffer() override;
 
-        bool Build() override;
-
-        VULKAN_API const void* GetFrameNativeHandle(size_t _frameIndex) const override
-        {
-            return &FrameBuffers;
-        }
-
-        VULKAN_API void* GetFrameNativeHandle(size_t _frameIndex) override
-        {
-            return &FrameBuffers;
-        }
-
-        
+        bool Build() override;        
 
         VULKAN_API vk::Framebuffer GetVkFramebuffer() const;
 

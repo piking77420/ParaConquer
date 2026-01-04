@@ -137,7 +137,7 @@ BEGIN_PCCORE
         PC_CORE_API virtual void NextSubPass() = 0;
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiShaderProgram& _RhiShaderProgram,
-                                                   const RhiDescriptorBindings* _shaderProgramDescriptorSets,
+                                                   const RhiDescriptorSet* _shaderProgramDescriptorSets,
                                                    size_t _firstSet, size_t _descriptorSetCount) = 0;
 
         PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;

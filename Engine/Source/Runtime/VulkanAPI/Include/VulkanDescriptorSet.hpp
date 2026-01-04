@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "VulkanHeader.h"
-#include "LowRenderer/RhiDescriptorBindings.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 
 namespace PC_CORE
 {
@@ -10,20 +10,12 @@ namespace PC_CORE
 
 namespace Vulkan
 {
-    class VulkanDescritptorManager;
-    struct CacheDescriptor;
-     
-
-    class VulkanDescriptorBindings : public PC_CORE::RhiDescriptorBindings
+    class VulkanDescriptorSet : public PC_CORE::RhiDescriptorSet
     {
     public:
-        VULKAN_API VulkanDescriptorBindings(PC_CORE::Rhi& _Rhi);
+        VULKAN_API VulkanDescriptorSet(PC_CORE::Rhi& _Rhi);
 
-        VULKAN_API ~VulkanDescriptorBindings() override;
-
-        VULKAN_API const void* GetFrameNativeHandle(size_t _FrameIndex) const override;
-
-        VULKAN_API void* GetFrameNativeHandle(size_t _FrameIndex) override;
+        VULKAN_API ~VulkanDescriptorSet() override;
 
         VULKAN_API bool Build() override;
 
@@ -32,10 +24,7 @@ namespace Vulkan
         VULKAN_API vk::DescriptorSet GetVkDescriptorSet() const;
 
     private:
-        const CacheDescriptor& m_CacheDescriptor;
-
         std::array<vk::DescriptorSet, MaxFramesInFlight> m_DescriptorSets;
-
 
         void CreateDescriptors();
 

@@ -116,8 +116,8 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
             needReset = true;
         }
 
-
-        _commandList->BindDescriptorSet(*m_ShaderProgram.get(), m_ShaderProgramDescriptorSets.get(), SCENE_DESCRIPTOR_SET, 1);
+        constexpr size_t set = 0;
+        _commandList->BindDescriptorSet(*m_ShaderProgram.get(), m_ShaderProgramDescriptorSets.get(), set, 1);
         _commandList->BindVertexBuffer(*m_PrimitiveData[i].primitiveBuffer.Get(), 0, 1);
         _commandList->BindVertexBuffer(*m_PrimitiveData[i].instanceBuffer, 1, 1);
 
@@ -135,7 +135,8 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
         _commandList->BindProgram(*m_ShaderProgramRay.get());
         _commandList->SetPrimitiveTopology(RhiShader::PrimitiveTopologyLineList);
         _commandList->SetLineWidth(1.f);
-        _commandList->BindDescriptorSet(*m_ShaderProgramRay.get(), m_ShaderProgramDescriptorSets.get(), SCENE_DESCRIPTOR_SET, 1);
+        constexpr size_t set = 0;
+        _commandList->BindDescriptorSet(*m_ShaderProgramRay.get(), m_ShaderProgramDescriptorSets.get(), set, 1);
         _commandList->BindVertexBuffer(*m_RayPrimitiveData.vertexBuffer.Get(), 0, 1);
         _commandList->Draw(2, static_cast<uint32_t>(m_RayPrimitiveData.rayCount), 0, 0);
     }

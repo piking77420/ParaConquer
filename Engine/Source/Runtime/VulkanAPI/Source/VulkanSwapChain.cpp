@@ -307,16 +307,6 @@ void Vulkan::VulkanSwapChain::CreateSwapChain()
     m_SwapChainImageCount = m_SwapChainImage.size();
 }
 
-const void* Vulkan::VulkanSwapChain::GetFrameNativeHandle(size_t _frameIndex) const
-{
-    return &m_SwapChain;
-}
-
-void* Vulkan::VulkanSwapChain::GetFrameNativeHandle(size_t _frameIndex)
-{
-    return &m_SwapChain;
-}
-
 bool Vulkan::VulkanSwapChain::Build()
 {
     return true; // TODO
@@ -330,6 +320,11 @@ uint32_t Vulkan::VulkanSwapChain::GetWidth() const
 uint32_t Vulkan::VulkanSwapChain::GetHeight() const
 {
     return m_Extent2D.height;
+}
+
+vk::SwapchainKHR Vulkan::VulkanSwapChain::GetVulkanSwapChain() const
+{
+    return m_SwapChain;
 }
 
 void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
@@ -477,7 +472,7 @@ void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _co
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    vcommandList->GetVkHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    vcommandList->GetVulkanCommandBufferHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
 
 void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _commandList)
@@ -487,5 +482,5 @@ void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _comm
 
 
     auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
-    vcommandList->GetVkHandle().endRenderPass();
+    vcommandList->GetVulkanCommandBufferHandle().endRenderPass();
 }

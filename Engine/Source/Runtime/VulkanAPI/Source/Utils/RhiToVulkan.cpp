@@ -677,7 +677,7 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::RhiShaderProgra
         return vk::ShaderStageFlagBits::eTaskEXT;
     case PC_CORE::RhiShaderProgram::ShaderStageType::Mesh:
         return vk::ShaderStageFlagBits::eMeshEXT;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Count:
+    case PC_CORE::RhiShaderProgram::ShaderStageType::ShaderStageTypeCount:
     default:
         assert(false);
         break;
@@ -780,7 +780,7 @@ vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::RhiShaderProg
     case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyPathList:
         // Not directly supported in Vulkan; return something or assert
         throw std::runtime_error("PrimitiveTopologyPathList is not supported in Vulkan.");
-    case PC_CORE::RhiShaderProgram::PrimitiveTopology::Count:
+    case PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyCount:
     default:
         throw std::runtime_error("Invalid or unsupported primitive topology.");
     }
