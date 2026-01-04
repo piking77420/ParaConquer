@@ -1,10 +1,13 @@
 #include "Rendering/RenderPasses/ForwardPass.hpp"
 
 #include "LowRenderer/Rhi.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 #include "LowRenderer/RhiFrameBuffer.hpp"
 #include "Rendering/Renderer.hpp"
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
+#include "Rendering/RenderSystem.hpp"
+
 
 namespace PC_CORE::Rendering::Pass
 {

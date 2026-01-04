@@ -62,7 +62,7 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
         std::shared_ptr<StaticMesh> mesh = staticMesh.staticMesh.lock();
-        std::shared_ptr<Material> material = staticMesh.material.lock();
+        std::shared_ptr<Rendering::Material> material = staticMesh.material.lock();
 
         if (!mesh /*|| !material*/)
             return;
@@ -89,41 +89,5 @@ void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
     PERF_REGION_SCOPED
     PERF_REGION_COLOR(PerfRegion::Game);
 
-    /*
-    std::set<EntityId>& dirLights = *GetEntitySet(m_DirLightSignature);
-    for (auto& ent : dirLights)
-    {
-        const DirLight& dirLight = _level.GetComponent<DirLight>(ent);
-        const Transform& transform = _level.GetComponent<Transform>(ent);
-
-        LightData lightData;
-        lightData.LightType = LightType::Directional;
-        lightData.Data.DirectionalLight =
-        {
-            .Color = dirLight.color,
-            .Intensity = dirLight.intensity,
-            .Direction = Tbx::Quaternionf::ToEulerAngles(transform.Rotation.Quaternion.Normalize())
-        };
-
-        m_RenderingDataPtr->LightData.push_back(lightData);
-    }
-
-    std::set<EntityId>& pointLights = *GetEntitySet(m_PointLightSignature);
-
-    for (auto& ent : pointLights)
-    {
-        const PointLight& pointLight = _level.GetComponent<PointLight>(ent);
-        const Transform& transform = _level.GetComponent<Transform>(ent);
-
-        LightData lightData;
-        lightData.LightType = LightType::Point;
-        lightData.Data.PointLightData =
-        {
-            .Color = pointLight.color,
-            .Intensity = pointLight.intensity,
-            .Position = transform.Position,
-        };
-
-        m_RenderingDataPtr->LightData.push_back(lightData);
-    }*/
+   
 }

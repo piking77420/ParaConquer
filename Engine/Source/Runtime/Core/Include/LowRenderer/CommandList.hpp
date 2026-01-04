@@ -17,6 +17,7 @@ BEGIN_PCCORE
     class RhiFrameBuffer;
     class RhiFence;
     class RhiShaderProgram;
+    class RhiDescriptorSet;
 
 
     enum ClearValueFlagBits : uint32_t

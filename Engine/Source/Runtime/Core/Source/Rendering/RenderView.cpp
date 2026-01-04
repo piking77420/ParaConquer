@@ -2,6 +2,7 @@
 
 #include "Rendering/Camera.hpp"
 #include "LowRenderer/Rhi.hpp"
+#include "LowRenderer/RhiBuffer.h"
 
 
 namespace PC_CORE::Rendering  

@@ -10,7 +10,7 @@ BEGIN_PCCORE
     {
         WeakObjectPtr<StaticMesh> staticMesh;
 
-        WeakObjectPtr<Material> material;
+        WeakObjectPtr<Rendering::Material> material;
     };
 
     REFLECT(StaticMeshComponent, Component)

@@ -2,9 +2,36 @@
 
 #include "RenderingTypedef.h"
 #include "Ecs/EcsSystem.h"
+#include "Resources/StaticMesh.hpp"
+#include "Rendering/Material.hpp"
+
 namespace PC_CORE::Rendering
 {
-    struct RenderingWorldData;
+    struct StaticMeshComponentData
+    {
+        MaterialType MaterialType;
+        const RhiDescriptorSet* DescriptorSet;
+        const StaticMesh* StaticMesh;
+
+        Tbx::Matrix4x4d WorldMatrix;
+        // TO DO PASS IT TO MAT3
+        Tbx::Matrix4x4d NormalInvertMatrix;
+    };
+
+    struct RenderingWorldData
+    {
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderingWorldData);
+
+        DEFAULT_COPY_MOVE_OPERATIONS(RenderingWorldData);
+
+        void Clear()
+        {
+            StaticMeshComponentData.clear();
+        }
+
+        std::vector<Rendering::StaticMeshComponentData> StaticMeshComponentData;
+    };
+
 }
 
 BEGIN_PCCORE

@@ -10,6 +10,8 @@
 #include "Rendering/RenderPasses/ForwardPass.hpp"
 #include "Rendering/RenderPasses/ToneMapPass.hpp"
 #include "Rendering/RenderView.hpp"
+#include "Resources/StaticMesh.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 
 
 namespace PC_CORE::Rendering

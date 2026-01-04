@@ -1,4 +1,4 @@
-#include "Importer.hpp"
+#include "AssetsImporter.hpp"
 
 #include <filesystem>
 #include <string_view>
@@ -25,7 +25,7 @@ namespace PC_EDITOR_CORE
 
 
 
-bool Importer::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh, std::vector<PC_CORE::Material>* _Material)
+bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -33,13 +33,13 @@ bool Importer::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _pat
     m_ImportFormat = FindImportFormat(_path);
 
     if (m_ImportFormat == ImportFormat::None)
-        return;
+        return false;
 
     Assimp::Importer importer;
 
     // Load the model with common processing flags
     const aiScene* scene = importer.ReadFile(
-        _path.generic_string(),
+        _path.generic_string().c_str(),
         aiProcess_Triangulate |
         aiProcess_JoinIdenticalVertices |
         aiProcess_GenNormals |
@@ -74,7 +74,7 @@ bool Importer::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _pat
     return false;
 }
 
-Importer::ImportFormat Importer::FindImportFormat(const std::filesystem::path& path)
+AssetsImporter::ImportFormat AssetsImporter::FindImportFormat(const std::filesystem::path& path)
 {
     std::string ext = path.extension().string();
 
@@ -93,7 +93,7 @@ Importer::ImportFormat Importer::FindImportFormat(const std::filesystem::path& p
     return ImportFormat::None;
     
 }
-bool Importer::ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData)
+bool AssetsImporter::ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -161,8 +161,8 @@ bool Importer::ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRe
 
     return true;
 }
-
-bool Importer::ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Material>* _Material)
+/*
+bool AssetsImporter::ImportMaterial(const aiScene* scene, std::vector < PC_CORE::Rendering::Material > * _Material)
 {
     
     _Material->reserve(scene->mNumMaterials);
@@ -170,6 +170,7 @@ bool Importer::ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Materia
     {
         const aiMaterial& material = *scene->mMaterials[i];
 
+        //_Material->at(0).SetMaterialAttributeData<MaterialAttribute::Color>(1.f); / /TODO FIX
     }
 
 
@@ -177,5 +178,5 @@ bool Importer::ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Materia
     return true;
 }
 
-
+*/
 }

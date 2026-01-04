@@ -1,3 +1,5 @@
+#ifndef CAMERA_HEADER_HLSL
+#define CAMERA_HEADER_HLSL
 
 cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
 {
@@ -19,3 +21,5 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     float2 RenderSize;
     float2 InvRenderSize;
 };
+
+#endif // CAMERA_HEADER_HLSL

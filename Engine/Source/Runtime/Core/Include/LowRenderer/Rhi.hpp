@@ -25,6 +25,7 @@ class RhiTexture;
 class RhiBuffer;
 class RhiSampler;
 class RhiFence;
+class RhiDescriptorSet;
 
 class Rhi
 {

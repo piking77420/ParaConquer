@@ -2,6 +2,7 @@
 
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiFrameBuffer.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
 #include "Rendering/Renderer.hpp"

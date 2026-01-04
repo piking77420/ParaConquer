@@ -6,6 +6,8 @@
 namespace PC_CORE
 {
     class Camera;
+    class RhiBuffer;
+    class Rhi;
 }
 
 namespace PC_CORE::Rendering

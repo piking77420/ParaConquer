@@ -10,6 +10,7 @@
 #include "VulkanSampler.hpp"
 #include "World/World.hpp"
 
+#include "Resources/StaticMesh.hpp"
 
 #include "Resources/FileLoader.hpp"
 #include <Fstream>

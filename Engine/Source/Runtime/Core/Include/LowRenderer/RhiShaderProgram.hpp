@@ -7,7 +7,6 @@
 BEGIN_PCCORE
 
 class RhiRenderPass;
-class RhiDescriptorSet;
 
 class RhiShaderProgram : public RhiObjectT<RhiShaderProgram>
 {

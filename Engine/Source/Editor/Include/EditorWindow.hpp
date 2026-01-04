@@ -5,7 +5,6 @@
 #include <Math/ToolboxTypedef.hpp>
 
 #include "EditorHeader.hpp"
-#include "Importer.hpp"
 
 
 namespace PC_CORE
@@ -68,7 +67,6 @@ BEGIN_EDITOR_PCCORE
     protected:
         Editor* m_Editor = nullptr;
 
-        Importer m_Importer;
     };
 
 END_EDITOR_PCCORE

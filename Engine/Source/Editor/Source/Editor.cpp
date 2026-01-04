@@ -1,38 +1,39 @@
-﻿#include <thread>
-#include <Chrono>
+﻿#include <Chrono>
 #include <Iostream>
+#include <thread>
 
 
-#include <PerfRegion.hpp>
 #include <imgui_internal.h>
+#include <PerfRegion.hpp>
 
 
 #include "Editor.hpp"
 #include "Resources/ResourceManager.hpp"
 
 
-#include "ResourceBrowserWindow.hpp"
 #include "EditWorldWindow.hpp"
 #include "Hierachy.hpp"
 #include "Inspector.hpp"
+#include "ResourceBrowserWindow.hpp"
 #include "SceneButton.hpp"
-#include "WorldViewWindow.hpp"
 #include "Time/CoreTime.hpp"
+#include "WorldViewWindow.hpp"
 #include <Resources/ResourceManager.hpp>
 
+#include "AssetsImporter.hpp"
 #include "EditorFiles.hpp"
-#include "ProjectMaker.hpp"
-#include "SystemDialogue.hpp"
-#include "Rendering/Light.hpp"
 #include "Io/CoreIo.hpp"
 #include "Io/ImguiContext.h"
 #include "Physics/RigidBody.hpp"
+#include "ProjectMaker.hpp"
+#include "Rendering/Light.hpp"
 #include "Rendering/Material.hpp"
-#include "Resources/ShaderSource.hpp"
-#include "World/StaticMeshComponent.hpp"
-#include "Serialize/Serializer.h"
 #include "Rendering/RenderSystem.hpp"
+#include "Resources/ShaderSource.hpp"
 #include "Serialize/JsonSerializer.hpp"
+#include "Serialize/Serializer.h"
+#include "SystemDialogue.hpp"
+#include "World/StaticMeshComponent.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -313,8 +314,9 @@ void Editor::InitTestScene()
     auto& level = World::GetWorld()->level;
     
     ObjectPtr<StaticMesh> CubeMesh = std::make_shared<StaticMesh>();
-    Importer importer;
-    importer.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/sponza.gltf", CubeMesh.Get());
+    AssetsImporter AssetsImporter;
+    //std::vector<PC_CORE::Rendering::Material> material;
+    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/sponza.gltf", CubeMesh.Get());
     ResourceManager::Add(CubeMesh);
 
 

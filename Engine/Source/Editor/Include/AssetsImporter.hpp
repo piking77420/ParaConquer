@@ -1,9 +1,8 @@
 #pragma once
-
-#include "EditorHeader.hpp"
 #include <string>
 #include <unordered_map>
 
+#include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
 
 namespace PC_CORE
@@ -11,16 +10,21 @@ namespace PC_CORE
     class Serializer;
     class Rhi;
     class StaticMesh;
-    class Material;
     struct StaticMeshRenderData;
 }
+
+namespace PC_CORE::Rendering
+{
+    //class Material;
+}
+
 class aiScene;
 
 BEGIN_EDITOR_PCCORE
-    class Importer
+    class AssetsImporter
     {
     public:
-        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh, std::vector<PC_CORE::Material>* _Material);
+        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh);
 
     private:
         enum class ImportFormat
@@ -37,7 +41,7 @@ BEGIN_EDITOR_PCCORE
 
         bool ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
 
-        bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Material>* _Material);
+       // bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
 
     };
 
