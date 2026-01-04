@@ -32,6 +32,8 @@ BEGIN_PCCORE
 
         Rhi RenderHarwareInteface;
 
+        PC_CORE::Rendering::Renderer Renderer; //  TODO HANDLE MULIPTLE VIEW PORT
+
         std::unique_ptr<CommandList> PrimaryCommandBuffer;
 
         PC_CORE_API App();

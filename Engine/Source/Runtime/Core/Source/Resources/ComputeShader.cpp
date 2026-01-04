@@ -19,7 +19,7 @@ PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, const std::string& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderModule = {{RhiShaderProgram::ShaderStageType::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
+        .shaderModule = {{RhiShaderProgram::ShaderStageTypeBits::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };
@@ -43,7 +43,7 @@ PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, std::string&& _shaderName,
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderModule = {{RhiShaderProgram::ShaderStageType::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
+        .shaderModule = {{RhiShaderProgram::ShaderStageTypeBits::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };

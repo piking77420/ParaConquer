@@ -18,26 +18,22 @@ namespace PC_CORE::Rendering::Pass
 		const RhiTexture& lightingImage = _RendererPassBuildContext.RenderGraph.GetResource<RhiTexture>("Lighting Image");
 		const RhiTexture& outPutImage = _RendererPassBuildContext.RenderGraph.GetOutPutImage();
 
-	 /*
-		m_DescriptorSet.reset(_RendererPassBuildContext.Renderer.fowardShader->CreateDescriptorBinding());
+	 
+		m_FrameBuffer.reset(_RendererPassBuildContext.RHI.CreateFrameBuffer());
+		m_FrameBuffer
+			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
+			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
+			.SetAttachments(&outPutImage)
+			.SetRenderPass(_RendererPassBuildContext.Renderer.toneMapPass.get())
+			.SetName("ToneMap Framebuffer")
+			.Build();
 
-		const ImageSamplerDescriptor imageSamplerDescriptor =
-		{
-			.sampler = _RendererPassBuildContext.Renderer.linearClampToEdgeSampler.get(),
-			.texture = &lightingImage,
-			.resourceState = RhiResourceState::FragmentShaderResource
-		};
-
-		const DescriptorWrite Write = {
-			.type = DescriptorType::CombinedImageSampler,
-			.bindingIndex = 0,
-			.descriptor = imageSamplerDescriptor
-		};
-
+		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		RhiSampler* sampler = _RendererPassBuildContext.Renderer.linearClampToEdgeSampler.get();
 		m_DescriptorSet
-			->SetBindings(0, Write)
+			->BindTexture(RhiShaderStageBits::Pixel, 0, &lightingImage, sampler)
 			.SetName("Desciptor Set Binding Lighting Image to final Image")
-			.Build();*/
+			.Build();
 	}
 
 	void ToneMapPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
@@ -57,6 +53,10 @@ namespace PC_CORE::Rendering::Pass
 			.ClearValueCount = 1,
 		};
 		cmd.BeginRenderPass(beginRenderPassInfo);
+
+		ViewportInfo viewPort(beginRenderPassInfo.Extent);
+		cmd.SetViewPort(viewPort);
+		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
 		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.drawTextureQuad);
 		cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.drawTextureQuad, m_DescriptorSet.get(), 0, 1);

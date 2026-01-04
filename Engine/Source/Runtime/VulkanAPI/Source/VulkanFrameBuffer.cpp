@@ -42,7 +42,7 @@ bool Vulkan::VulkanFrameBuffer::Build()
         std::vector<vk::ImageView> image_views;
         image_views.reserve((m_DepthAttachement != nullptr) ? (m_Attachments.size() + 1) : m_Attachments.size());
 
-        for (PC_CORE::RhiTexture* attachement : m_Attachments)
+        for (const PC_CORE::RhiTexture* attachement : m_Attachments)
         {
             if (attachement == nullptr)
             {

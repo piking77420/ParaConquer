@@ -14,7 +14,7 @@ using namespace PC_EDITOR_CORE;
 
 WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     : EditorWindow(_editor, _name)
-    , m_Renderer(m_Editor->RenderHarwareInteface)
+    , m_View(m_Editor->RenderHarwareInteface)
 {
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
@@ -53,7 +53,8 @@ void WorldViewWindow::Update()
         m_Camera.SetAspect(aspect);
         m_View.SetRenderSize(size);
 
-        m_Renderer.Build(m_View);
+        m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
+        m_Editor->Renderer.Build(m_View);
         UpdateImguiViewPort();
         m_CameraViewDirty = true;
     }
@@ -69,7 +70,7 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
 {
     PERF_REGION_SCOPED;
     EditorWindow::Render(_Cmd);
-    m_Renderer.Excute(m_View);
+    m_Editor->Renderer.Excute(m_View);
 }
 
 void WorldViewWindow::UpdateImguiViewPort()
@@ -86,7 +87,7 @@ void WorldViewWindow::UpdateImguiViewPort()
     
     if (needFree)
         m_Editor->IMGUIContext.DestroyVulkanTexture(imguiDescriptorSet.data(), imguiDescriptorSet.size());
-    m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_Renderer.GetRenderGraph().GetOutPutImage(),
+    m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_Editor->Renderer.GetRenderGraph().GetOutPutImage(),
                                                     m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
                                                     imguiDescriptorSet.size());
 }

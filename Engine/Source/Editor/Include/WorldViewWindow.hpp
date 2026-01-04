@@ -50,8 +50,6 @@ BEGIN_EDITOR_PCCORE
 
         PC_CORE::Rendering::RenderView m_View;
 
-        PC_CORE::Rendering::Renderer m_Renderer;
-
     private:
         void UpdateImguiViewPort();
 

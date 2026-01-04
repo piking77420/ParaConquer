@@ -1,17 +1,22 @@
 
-cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SPACE)
+cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
 {
-    float4x4 view;
-    float4x4 proj;
-    float4x4 vp;
-    float4x4 vpIn;
-    float4x4 viewInv;
-    float4x4 projInv;
-
-    float time;
+    float4x4 View;
+    float4x4 ViewInv;
+    float4x4 Projection;
+    float4x4 ProjectionInv;
+    float4x4 ViewProjection;
+    float4x4 ViewProjectionInv;
+    
+    float CameraNear;
+    float CameraFar;
+    
+    float Deltatime;
     float deltaTime;
-    float nearZ;
-    float farZ;
-
-    float3 cameraPos;
+    
+    float Gamma;
+    float Exposure;
+    
+    float2 RenderSize;
+    float2 InvRenderSize;
 };

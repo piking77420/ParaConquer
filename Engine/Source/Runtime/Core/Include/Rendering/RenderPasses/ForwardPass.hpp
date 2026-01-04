@@ -44,6 +44,8 @@ namespace PC_CORE::Rendering::Pass
     private:
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
 
+        std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
+
     };
 
     REFLECT(FowardPass, PC_CORE::Rendering::RenderPass);

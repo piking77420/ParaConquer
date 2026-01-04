@@ -45,6 +45,7 @@ void App::Destroy()
 }
 
 App::App()
+    : Renderer(RenderHarwareInteface)
 {
     Instance = this;
 }

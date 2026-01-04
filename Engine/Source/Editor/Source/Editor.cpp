@@ -125,11 +125,25 @@ void Editor::CompileShader()
 
     PC_LOG("CompileShader...")
 
+    {
+        auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuadTriangle.vs.hlsl",
+            EDITOR_RESOURCE_PATH "/Shaders/DrawQuadTriangle.vs.hlsl");
+
+        auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
+            EDITOR_RESOURCE_PATH
+            "/Shaders/SampleSingleTexture.ps.hlsl");
+    }
+
+    {
+
+   
     auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
                                                              EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.vs.hlsl");
 
     auto forwardFrag = ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
                                                              EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.ps.hlsl");
+    }
+    /*
     // sprite
     {
         auto spriteVert = ResourceManager::Create<ShaderSource>("DrawSprite.vs.hlsl",
@@ -179,14 +193,7 @@ void Editor::CompileShader()
                                                              "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
     }
 
-    {
-        auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuadTriangle.vs.hlsl",
-                                                                    EDITOR_RESOURCE_PATH "/Shaders/DrawQuadTriangle.vs.hlsl");
-
-        auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
-                                                                         EDITOR_RESOURCE_PATH
-                                                                         "/Shaders/SampleSingleTexture.ps.hlsl");
-    }
+   
 
     // skybox
     {
@@ -195,7 +202,7 @@ void Editor::CompileShader()
 
         auto skyboxFrag = ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
                                                                 EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.ps.hlsl");
-    }
+    }*/
 }
 
 void Editor::Init(const PC_CORE::AppCreateInfo& _appCreateInfo)
@@ -307,8 +314,9 @@ void Editor::InitTestScene()
     
     ObjectPtr staticMesh = ResourceManager::Create<StaticMesh>();
 
+    
     Importer importer;
-    importer.ImportMesh(RenderHarwareInteface, "C:/Data/ParaConquerGame/Assets/Meshs/obj/RoundedCube.obj", staticMesh.Get());
+    importer.ImportMesh(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/cube.obj", staticMesh.Get());
 
 
     //ObjectPtr<Texture2D> texture = ResourceManager::Create<Texture2D>();

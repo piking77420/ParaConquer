@@ -1,7 +1,7 @@
 
 
 #define CAMERA_BINDING b0
-#define CAMERA_SPACE space0
+#define CAMERA_SET space0
 #include "Camera.hlsl"
 
 struct VsInput
@@ -23,8 +23,8 @@ struct VsOutput
 
 struct PushConstant
 {
-    float4x4 model;
-    float4x4 normalInvMatrix;
+    float4x4 modelView;
+    float4x4 normalInvMatrixView;
 };
 
 [[vk::push_constant]]
@@ -35,14 +35,14 @@ VsOutput Main(VsInput input)
     VsOutput output;
 
     // World position
-    float4 worldPos = mul(float4(input.Position, 1.0), pushConstant.model);
+    float4 ViewPos = mul(float4(input.Position, 1.0), pushConstant.modelView);
 
     // Clip-space position
-    output.Position = mul(worldPos,vp);
+    output.Position = mul(ViewPos, Projection);
 
     // Pass to fragment shader
-    output.ViewSpacePosition = worldPos.xyz;
-    output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrix));
+    output.ViewSpacePosition = ViewPos;
+    output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrixView));
 
     output.Tangent = input.Tangent;
     output.TexCoord = input.TexCoord;

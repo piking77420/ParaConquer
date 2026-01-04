@@ -8,26 +8,6 @@
 #include "VulkanSampler.hpp"
 #include "VulkanTexture.hpp"
 
-static inline void CountBufferAndImageDescriptor(const std::vector<PC_CORE::DescriptorWrite>& Bindings,
-    size_t& ImageCount, size_t& BufferCount)
-{
-    for (size_t i = 0; i < Bindings.size(); i++)
-    {
-        const PC_CORE::Descriptor& des = Bindings[i].descriptor;
-
-        if (std::holds_alternative<PC_CORE::BufferDescriptor>(des))
-            BufferCount++;
-
-        if (std::holds_alternative<PC_CORE::ImageSamplerDescriptor>(des))
-            ImageCount++;
-
-        if (std::holds_alternative<PC_CORE::ImageDescriptor>(des))
-            ImageCount++;
-
-        if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
-            ImageCount++;
-    }
-}
 
 Vulkan::VulkanDescriptorSet::VulkanDescriptorSet(PC_CORE::Rhi& _Rhi)
     : PC_CORE::RhiDescriptorSet(_Rhi)
@@ -43,6 +23,7 @@ bool Vulkan::VulkanDescriptorSet::Build()
     if (GetBinding().empty())
         return false;
 
+    GetDescriptorSetLayout();
     CreateDescriptors();
     UpdateDesciptors();
 
@@ -62,22 +43,31 @@ vk::DescriptorSet Vulkan::VulkanDescriptorSet::GetVkDescriptorSet() const
 
 Vulkan::VulkanDescriptorSet::~VulkanDescriptorSet()
 {
-    assert(false);
-    //vk::Device d = GET_VK_DEVICE;
-    //d.freeDescriptorSets(m_CacheDescriptor.descriptorPool, MaxFramesInFlight, m_DescriptorSets.data());
+    VulkanContext& VkContext = static_cast<VulkanContext&>(m_Rhi.GetRhiContext());
+    vk::Device d = GET_VK_DEVICE;
+    d.freeDescriptorSets(VkContext.descritptorManager.GetVkDesciptorPool(), MaxFramesInFlight, m_DescriptorSets.data());
+}
+
+void Vulkan::VulkanDescriptorSet::GetDescriptorSetLayout()
+{
+    VulkanContext& VkContext = static_cast<VulkanContext&>(m_Rhi.GetRhiContext());
+    m_Layout = VkContext.descritptorManager.GetDescriptorLayout(GetBinding());
+    assert(m_Layout != VK_NULL_HANDLE);
+
 }
 
 void Vulkan::VulkanDescriptorSet::CreateDescriptors()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    VulkanContext& VkContext = static_cast<VulkanContext&>(m_Rhi.GetRhiContext());
 
-    /*vk::Device d = GET_VK_DEVICE;
-    std::vector<vk::DescriptorSetLayout> layouts(MaxFramesInFlight, m_CacheDescriptor.descriptorSetLayout[GetSet()]);
+    vk::Device d = GET_VK_DEVICE;
+    std::vector<vk::DescriptorSetLayout> layouts(MaxFramesInFlight, m_Layout);
 
     vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
     descriptorSetAllocateInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
-    descriptorSetAllocateInfo.descriptorPool = m_CacheDescriptor.descriptorPool;
+    descriptorSetAllocateInfo.descriptorPool = VkContext.descritptorManager.GetVkDesciptorPool();
     descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(MaxFramesInFlight);
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
 
@@ -94,7 +84,7 @@ void Vulkan::VulkanDescriptorSet::CreateDescriptors()
         nameInfoImage.pObjectName = GetName().data();
 
         SET_VK_DEBUG_NAME(nameInfoImage);
-    }*/
+    }
 }
 
 void Vulkan::VulkanDescriptorSet::UpdateDesciptors()
@@ -179,14 +169,14 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
             {
                 const PC_CORE::ImageSamplerDescriptor& imageSamplerDescriptor = std::get<PC_CORE::ImageSamplerDescriptor>(des);
 
-                const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(imageSamplerDescriptor.texture);
+                const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(imageSamplerDescriptor.Texture);
                 const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
 
-                const VulkanSampler& VkSampler = *static_cast<const VulkanSampler*>(imageSamplerDescriptor.sampler);
+                const VulkanSampler& VkSampler = *static_cast<const VulkanSampler*>(imageSamplerDescriptor.Sampler);
                 const vk::Sampler samplerHandle = VkSampler.GetVkSampler();
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
-                    imageSamplerDescriptor.resourceState);
+                    imageSamplerDescriptor.ResourceState);
                 imageInfo[imageIndex].imageView = textureAndAlloc.ImageView;
                 imageInfo[imageIndex].sampler = samplerHandle;
                 imageIndex++;
@@ -196,19 +186,18 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
             {
                 const PC_CORE::ImageDescriptor& imageDescriptor = std::get<PC_CORE::ImageDescriptor>(des);
 
-                const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(imageDescriptor.texture);
+                const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(imageDescriptor.Texture);
                 const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
-                    imageDescriptor.resourceState);
+                    imageDescriptor.ResourceState);
                 imageInfo[imageIndex].imageView = textureAndAlloc.ImageView;
                 imageIndex++;
             }
 
             if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
             {
-                const PC_CORE::InputAttachementDescriptor& inputAttachementDescriptor = std::get<
-                    PC_CORE::InputAttachementDescriptor>(des);
+                const PC_CORE::InputAttachementDescriptor& inputAttachementDescriptor = std::get<PC_CORE::InputAttachementDescriptor>(des);
 
                 const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(inputAttachementDescriptor.image);
                 const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
@@ -269,5 +258,25 @@ void Vulkan::VulkanDescriptorSet::FillDescritptorWrite(std::span<vk::WriteDescri
             
         }
         descriptorWriteOffset += BindingSize;
+    }
+}
+
+void Vulkan::VulkanDescriptorSet::CountBufferAndImageDescriptor(const std::vector<PC_CORE::DescriptorWrite>& Bindings, size_t& ImageCount, size_t& BufferCount)
+{
+    for (size_t i = 0; i < Bindings.size(); i++)
+    {
+        const PC_CORE::Descriptor& des = Bindings[i].descriptor;
+
+        if (std::holds_alternative<PC_CORE::BufferDescriptor>(des))
+            BufferCount++;
+
+        if (std::holds_alternative<PC_CORE::ImageSamplerDescriptor>(des))
+            ImageCount++;
+
+        if (std::holds_alternative<PC_CORE::ImageDescriptor>(des))
+            ImageCount++;
+
+        if (std::holds_alternative<PC_CORE::InputAttachementDescriptor>(des))
+            ImageCount++;
     }
 }

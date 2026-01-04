@@ -23,16 +23,16 @@ namespace PC_CORE::Rendering::Pass
 
         const char* GetName() const
         {
-            return "FowardPass";
+            return "ToneMapPass";
         }
 
         std::array<float, 4> GetColor() const
         {
             return
             {
-                0.f,
-                0.f,
-                1.f,
+                0.3f,
+                0.5f,
+                0.2f,
                 1.f
             };
         }

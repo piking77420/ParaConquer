@@ -14,7 +14,7 @@
 #include "Resources/ShaderSourceBinary.hpp"
 
 BEGIN_PCCORE
-    using SourceList = std::vector<std::pair<RhiShaderProgram::ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>;
+    using SourceList = std::vector<std::pair<RhiShaderProgram::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>;
 
     class ShaderProgram : public Resource
     {
@@ -31,7 +31,7 @@ BEGIN_PCCORE
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
                                   RhiShaderProgram::PipelineType _shaderProgramPipelineType,
-                                  const std::vector<std::pair<RhiShaderProgram::ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>&
+                                  const std::vector<std::pair<RhiShaderProgram::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
                                   _sources);
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,

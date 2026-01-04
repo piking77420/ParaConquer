@@ -24,7 +24,14 @@ namespace Vulkan
         VULKAN_API vk::DescriptorSet GetVkDescriptorSet() const;
 
     private:
-        std::array<vk::DescriptorSet, MaxFramesInFlight> m_DescriptorSets;
+        vk::DescriptorSetLayout m_Layout = VK_NULL_HANDLE;
+
+        std::array<vk::DescriptorSet, MaxFramesInFlight> m_DescriptorSets =
+        {
+            VK_NULL_HANDLE
+        };
+
+        void GetDescriptorSetLayout();
 
         void CreateDescriptors();
 
@@ -37,5 +44,8 @@ namespace Vulkan
                                   const std::span<vk::DescriptorBufferInfo>& bufferInfo, 
                                   size_t& imageIndex,
                                   size_t& bufferIndex);
+
+        static void CountBufferAndImageDescriptor(const std::vector<PC_CORE::DescriptorWrite>& Bindings,
+            size_t& ImageCount, size_t& BufferCount);
     };
 }

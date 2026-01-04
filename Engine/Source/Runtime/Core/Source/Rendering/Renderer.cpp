@@ -53,12 +53,12 @@ namespace PC_CORE::Rendering
 
    }
 
-   void Renderer::Excute(const RenderView& _View)
+   void Renderer::Excute(RenderView& _View)
    {
        RenderingWorldData RenderingWorldData;
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph, RenderingWorldData);
 
-       m_RenderGraph.Execute(executeContext);
+       m_RenderGraph.Execute(executeContext, _View);
    }
 
    void Renderer::InitRhiRenderPasses(const RenderView& _View)
@@ -105,7 +105,7 @@ namespace PC_CORE::Rendering
            const RenderPassAttachementDescriptor& renderTragetSlot = toneMapPass
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
-               .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
+               .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
@@ -132,8 +132,8 @@ namespace PC_CORE::Rendering
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
-               { RhiShaderProgram::ShaderStageType::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageType::Pixel, ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")->GetCode() }
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")->GetCode() }
            };
 
            drawTextureQuad.reset(m_Rhi.CreateRhiShaderProgram());
@@ -141,6 +141,7 @@ namespace PC_CORE::Rendering
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
+               .SetRenderPass(*toneMapPass)
                .SetName("DrawQuadTriangle")
                .Build();
        }
@@ -148,16 +149,20 @@ namespace PC_CORE::Rendering
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
-               { RhiShaderProgram::ShaderStageType::Vertex, ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageType::Pixel, ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")->GetCode() }
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")->GetCode() }
            };
 
            fowardShader.reset(m_Rhi.CreateRhiShaderProgram());
            fowardShader
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(2)
+               .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
                .SetRenderPass(*forwardPass)
+               .SetDepthTest(true)
+               .SetDepthWrite(true)
+               .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
+               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
                .SetName("FowardShader")
                .Build();
        }

@@ -219,11 +219,11 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     std::vector<PC_CORE::RhiShaderProgram::ShaderModule> sourceList =
     {
         {
-            PC_CORE::RhiShaderProgram::ShaderStageType::Vertex,
+            PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Vertex,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.vs.hlsl.binary")->GetCode(),
         },
         {
-            PC_CORE::RhiShaderProgram::ShaderStageType::Pixel,
+            PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Pixel,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.ps.hlsl.binary")->GetCode()
         }
     };

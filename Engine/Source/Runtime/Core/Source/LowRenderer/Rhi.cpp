@@ -104,7 +104,7 @@ RhiShaderProgram* Rhi::CreateRhiShaderProgram()
 	return nullptr;
 }
 
-RhiDescriptorSet* Rhi::CreateDescriptorBindings()
+RhiDescriptorSet* Rhi::CreateDescriptorSet()
 {
 	switch (m_GraphicsApi)
 	{

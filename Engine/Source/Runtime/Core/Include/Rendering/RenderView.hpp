@@ -37,18 +37,21 @@ namespace PC_CORE::Rendering
         };
     }
 
-    struct PC_CORE_API RenderView
+    class PC_CORE_API RenderView
     {
     public:
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderView)
+        explicit RenderView(PC_CORE::Rhi& _Rhi);
 
-        DEFAULT_COPY_MOVE_OPERATIONS(RenderView)
+        ~RenderView() = default;
+
+        DEFAULT_COPY_MOVE_OPERATIONS(RenderView);
 
         enum RenderViewFlagBits : uint8_t
         {
             DebugGeometry = 1 << 0,
         };
         using RenderViewFlag = uint8_t;
+
 
         void FromCamera(const PC_CORE::Camera& _Camera);
 
@@ -57,6 +60,8 @@ namespace PC_CORE::Rendering
             RenderSize = _Size;
             InvRenderSize = Tbx::Vector2f(1.f /RenderSize.x, 1.f /RenderSize.y);
         }
+
+        void UpdateUniformBuffer();
 
         Tbx::Matrix4x4f View;
         Tbx::Matrix4x4f ViewInv;
@@ -81,6 +86,7 @@ namespace PC_CORE::Rendering
 
         RenderViewFlag Flag{};
 
+        std::unique_ptr<RhiBuffer> UniformBuffer;
     };
 }
 

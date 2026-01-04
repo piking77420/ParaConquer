@@ -645,45 +645,77 @@ vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::RhiShaderProgram::CullMo
     return cullModeFlags;
 }
 
-vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStage(PC_CORE::RhiShaderProgram::ShaderStageType _shaderStageType)
+vk::ShaderStageFlags Vulkan::Utils::RhiToShaderStage(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag)
 {
-    switch (_shaderStageType)
-    {
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Vertex:
-        return vk::ShaderStageFlagBits::eVertex;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Hull:
-        return vk::ShaderStageFlagBits::eTessellationControl;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Domain:
-        return vk::ShaderStageFlagBits::eTessellationEvaluation;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Geometry:
-        return vk::ShaderStageFlagBits::eGeometry;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Pixel:
-        return vk::ShaderStageFlagBits::eFragment;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Compute:
-        return vk::ShaderStageFlagBits::eCompute;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Raygen:
-        return vk::ShaderStageFlagBits::eRaygenKHR;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Intersection:
-        return vk::ShaderStageFlagBits::eIntersectionKHR;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Anyhit:
-        return vk::ShaderStageFlagBits::eAnyHitKHR;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Closesthit:
-        return vk::ShaderStageFlagBits::eClosestHitKHR;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Miss:
-        return vk::ShaderStageFlagBits::eMissKHR;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Callable:
-        return vk::ShaderStageFlagBits::eCallableKHR;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Task:
-        return vk::ShaderStageFlagBits::eTaskEXT;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::Mesh:
-        return vk::ShaderStageFlagBits::eMeshEXT;
-    case PC_CORE::RhiShaderProgram::ShaderStageType::ShaderStageTypeCount:
-    default:
-        assert(false);
-        break;
-    }
+    vk::ShaderStageFlags ShaderStageFlag;
 
-    return {};
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Vertex)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eVertex;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Hull)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eTessellationControl;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Domain)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eTessellationEvaluation;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Geometry)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eGeometry;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Pixel)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eFragment;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Compute)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eCompute;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Raygen)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eRaygenKHR;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Intersection)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eIntersectionKHR;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Anyhit)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eAnyHitKHR;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Closesthit)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eClosestHitKHR;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Miss)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eMissKHR;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Callable)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eCallableKHR;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Task)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eTaskEXT;
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Mesh)
+        ShaderStageFlag |= vk::ShaderStageFlagBits::eMeshEXT;
+
+    return ShaderStageFlag;
+}
+
+vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStageBits(RhiShaderStageBits _RhiShaderStageBits)
+{
+    vk::ShaderStageFlagBits ShaderStageFlag;
+
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Vertex)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eVertex;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Hull)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eTessellationControl;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Domain)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eTessellationEvaluation;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Geometry)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eGeometry;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Pixel)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eFragment;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Compute)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eCompute;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Raygen)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eRaygenKHR;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Intersection)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eIntersectionKHR;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Anyhit)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eAnyHitKHR;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Closesthit)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eClosestHitKHR;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Miss)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eMissKHR;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Callable)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eCallableKHR;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Task)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eTaskEXT;
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Mesh)
+        ShaderStageFlag = vk::ShaderStageFlagBits::eMeshEXT;
+
+    return ShaderStageFlag;
+    
 }
 
 

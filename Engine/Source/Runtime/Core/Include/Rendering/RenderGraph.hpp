@@ -88,7 +88,7 @@ namespace PC_CORE::Rendering
 
 		void Build(const RendererPassBuildContext& _RendererPassBuildContext);
 
-		void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext);
+		void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext, PC_CORE::Rendering::RenderView& _View);
 
 		template <RhiResourceType T>
 		T& CreateResourceHandle(const char* _Name)

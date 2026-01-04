@@ -86,7 +86,6 @@ namespace Vulkan
         void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion
-        void ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext);
 
         void ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo);
 
@@ -117,5 +116,7 @@ namespace Vulkan
 #pragma endregion ParseRegion
 
         void HotReload(const std::vector<ShaderModule>& _modules) override;
+
+        
     };
 }

@@ -23,31 +23,29 @@ public:
         Count
     };
 
-    enum ShaderStageType : uint8_t
+    enum ShaderStageTypeBits : uint16_t
     {
-        Vertex,
-        Hull,
-        Domain,
-        Geometry,
-        Pixel,
-        Compute,
-        Raygen,
-        Intersection,
-        Anyhit,
-        Closesthit,
-        Miss,
-        Callable,
-        Task,
-        Mesh,
+        Vertex = 1 << 0,
+        Hull = 1 << 1,
+        Domain = 1 << 2,
+        Geometry = 1 << 3,
+        Pixel = 1 << 4,
+        Compute = 1 << 5,
+        Raygen = 1 << 6,
+        Intersection = 1 << 7,
+        Anyhit = 1 << 8,
+        Closesthit = 1 << 9,
+        Miss = 1 << 10,
+        Callable = 1 << 11,
+        Task = 1 << 12,
+        Mesh = 1 << 13,
 
-        ShaderStageTypeCount
+        ShaderStageTypeCount = 14
     };
 
-    using ShaderStageTypeFlag = uint8_t;
+    using ShaderModule = std::pair<ShaderStageTypeBits, std::vector<char>>;
 
-    using ShaderModule = std::pair<ShaderStageType, std::vector<char>>;
-
-    static constexpr const std::array<std::string_view, static_cast<size_t>(ShaderStageType::ShaderStageTypeCount)> ShaderSourceFormat =
+    static constexpr const std::array<std::string_view, static_cast<size_t>(ShaderStageTypeBits::ShaderStageTypeCount)> ShaderSourceFormat =
     {
         ".vs.hlsl",
         ".hs.hlsl",
@@ -272,3 +270,5 @@ REFLECT(RhiShaderProgram, RhiResource);
 END_PCCORE
 
 using RhiShader = PC_CORE::RhiShaderProgram;
+using RhiShaderStageBits = PC_CORE::RhiShaderProgram::ShaderStageTypeBits;
+using RhiShaderStageTypeFlag = uint8_t;

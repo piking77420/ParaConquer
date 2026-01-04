@@ -40,14 +40,20 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 	}
 }
 
-void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext)
+void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext, PC_CORE::Rendering::RenderView& _View)
 {
+	_View.UpdateUniformBuffer(); // may do the update in someWhereElse
+
+	_RendererPassExecuteContext.cmd.BeginRecordCommands();
 	for (const auto& Nodes : m_Nodes)
 	{
 		_RendererPassExecuteContext.cmd.BeginDebugLabel(Nodes.GetNameFunc(Nodes.RenderPassObject.get()), Nodes.GetColorFunc(Nodes.RenderPassObject.get()));
 		Nodes.ExecuteFunc(Nodes.RenderPassObject.get(), _RendererPassExecuteContext);
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
 	}
+	_RendererPassExecuteContext.cmd.EndRecordCommands();
+	
+	_RendererPassExecuteContext.RHI.GetRhiContext().SendEnqueuCommand(&_RendererPassExecuteContext.cmd, GpuPipelineStage::ColorAttachmentOutput);
 }
 
 }

@@ -19,7 +19,7 @@ public:
 
     PC_CORE_API void Build(const RenderView& _view);
 
-    PC_CORE_API void Excute(const RenderView& _view);
+    PC_CORE_API void Excute(RenderView& _view);
 
     const RenderGraph& GetRenderGraph() const
     {
@@ -39,7 +39,7 @@ public:
 private:
     Rhi& m_Rhi;
 
-    RenderGraph m_RenderGraph;
+    RenderGraph m_RenderGraph; // TODO SET IT OUTSIT ThE CLASS
 
     std::unique_ptr<CommandList> m_CommandList;
 

@@ -52,9 +52,9 @@ namespace Vulkan
 
         VmaAllocator allocator = VK_NULL_HANDLE;
 
-        VulkanDescritptorManager descritptorManager;
-
         FlushCommand flushedCommands;
+
+        VulkanDescritptorManager descritptorManager;
 
         std::vector<vk::SubmitInfo> SubmitInfoBuffer;
 

@@ -40,12 +40,14 @@ namespace Vulkan::Utils
 
     vk::CullModeFlags RhiToCullMode(PC_CORE::RhiShaderProgram::CullModeFlag _cullModeFlagBit);
 
-    vk::ShaderStageFlagBits RhiToShaderStage(PC_CORE::RhiShaderProgram::ShaderStageType _shaderStageType);
+    vk::ShaderStageFlags RhiToShaderStage(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag);
+
+    vk::ShaderStageFlagBits RhiToShaderStageBits(RhiShaderStageBits _RhiShaderStageBits);
+
 
     vk::IndexType RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _format);
 
     vk::DescriptorType RhiToDescriptorType(const PC_CORE::DescriptorType& descriptorType);
-
     vk::SampleCountFlagBits RhSampleCountToVulkan(uint32_t _sampleCount);
 
     vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology);

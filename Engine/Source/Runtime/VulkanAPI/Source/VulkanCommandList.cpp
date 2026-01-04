@@ -31,8 +31,11 @@ Vulkan::VulkanCommandList::~VulkanCommandList()
     }
 
 #ifdef PROFILING
-    tracy::DestroyVkContext(tracyContext);
-    tracyContext = nullptr;
+    if (tracyContext != nullptr)
+    {
+        tracy::DestroyVkContext(tracyContext);
+        tracyContext = nullptr;
+    }
 #endif
 }
 

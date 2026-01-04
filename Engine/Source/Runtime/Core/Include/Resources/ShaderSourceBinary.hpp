@@ -7,7 +7,7 @@ BEGIN_PCCORE
     class PC_CORE_API ShaderSourceBinary : public Resource
     {
     public:
-        PC_CORE::RhiShaderProgram::ShaderStageType GetShaderStageType() const
+        PC_CORE::RhiShaderProgram::ShaderStageTypeBits GetShaderStageType() const
         {
             return m_ShaderStageType;
         }
@@ -26,15 +26,15 @@ BEGIN_PCCORE
         std::vector<char> GetCode() const;
 
         ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
-            RhiShaderProgram::ShaderStageType _shaderStageType, GraphicAPI _api);
+            RhiShaderProgram::ShaderStageTypeBits _shaderStageType, GraphicAPI _api);
 
         ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
-            RhiShaderProgram::ShaderStageType _shaderStageType, GraphicAPI _api);
+            RhiShaderProgram::ShaderStageTypeBits _shaderStageType, GraphicAPI _api);
 
         ~ShaderSourceBinary() override = default;
 
     private:
-        RhiShaderProgram::ShaderStageType m_ShaderStageType;
+        RhiShaderProgram::ShaderStageTypeBits m_ShaderStageType;
 
         std::string m_Path;
 

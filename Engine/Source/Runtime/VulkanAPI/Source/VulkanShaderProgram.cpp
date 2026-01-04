@@ -163,11 +163,6 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     for (size_t i = 0; i < shaderStageCount; i++)
     {
         const ShaderModule& shaderSource = _programShaderCreateInfo[i];
-        const char* format = nullptr;
-        if (!PC_CORE::GetFormatFromValue(ShaderSourceFormat, shaderSource.first, &format))
-        {
-            PC_LOGERROR("Failed to parse shader source for shader ");
-        }
         vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = shaderSource.second;
     }
 
@@ -175,10 +170,6 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
         spvReflectCreateShaderModule(vulkanShaderProgramCreateContex.spvModuleSourceCode[i].size(),
                                      vulkanShaderProgramCreateContex.spvModuleSourceCode[i].data(),
                                      &vulkanShaderProgramCreateContex.modulesReflected[i]);
-
-    // Reflection Start
-    if (_createDescriptorResources)
-        ParseDescriptor(vulkanShaderProgramCreateContex);
 
     ParsePushConstantRange(vulkanShaderProgramCreateContex);
     CreatePushConstantMapFromReflection(vulkanShaderProgramCreateContex.modulesReflected);
@@ -201,8 +192,8 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
     {
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType =
             vk::StructureType::ePipelineShaderStageCreateInfo;
-        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = Utils::RhiToShaderStage(
-            _programShaderCreateInfo[i].first);
+        vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = static_cast<vk::ShaderStageFlagBits>(Utils::RhiToShaderStageBits(
+            _programShaderCreateInfo[i].first));
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.
             vkShaderModules[i];
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.
@@ -364,19 +355,17 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
 void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
                                                const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
-    //auto cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorSets(m_DescriptorId);
-
-    assert(false);
-    /*
+    std::vector<vk::DescriptorSetLayout> cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorLayouts(_vulkanShaderProgramCreateContex.modulesReflected);
+    
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache->descriptorSetLayout.size()); // Optional
-    pipelineLayoutInfo.pSetLayouts = cache->descriptorSetLayout.data(); // Optional
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache.size()); // Optional
+    pipelineLayoutInfo.pSetLayouts = cache.data(); // Optional
     pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.
                                                                       pushConstantRanges.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
-    m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);*/
+    m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);
 }
 
 void VulkanShaderProgram::CreatePushConstantMapFromReflection(
@@ -407,13 +396,6 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(
     }
 }
 #pragma region ParseRegion
-
-void VulkanShaderProgram::ParseDescriptor(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContext)
-{
-    //m_DescriptorId = GET_VK_CONTEXT.descritptorManager.GetDescriptorId(
-      //  _vulkanShaderProgramCreateContext.modulesReflected);
-}
-
 
 void VulkanShaderProgram::ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo)
 {

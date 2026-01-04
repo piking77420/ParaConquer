@@ -280,11 +280,11 @@ void PC_CORE::DebugDrawContext::CreatePrimitiveShaders()
     std::vector<RhiShaderProgram::ShaderModule> shaderModule =
     {
         {
-            RhiShaderProgram::ShaderStageType::Vertex,
+            RhiShaderProgram::ShaderStageTypeBits::Vertex,
             ResourceManager::Get<ShaderSourceBinary>("DebugDraw.vs.hlsl.binary")->GetCode()
         },
         {
-            RhiShaderProgram::ShaderStageType::Pixel,
+            RhiShaderProgram::ShaderStageTypeBits::Pixel,
             ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()
         }
     };
@@ -363,12 +363,12 @@ void PC_CORE::DebugDrawContext::CreateRayShaders()
     const std::vector<RhiShader::ShaderModule> shaderModule =
     {
         {
-            RhiShaderProgram::ShaderStageType::Vertex,
+            RhiShaderProgram::ShaderStageTypeBits::Vertex,
             ResourceManager::Get<ShaderSourceBinary>("DebugDrawRay.vs.hlsl.binary")->GetCode()
 
         },
         {
-            RhiShaderProgram::ShaderStageType::Pixel,
+            RhiShaderProgram::ShaderStageTypeBits::Pixel,
             ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()
 
         }

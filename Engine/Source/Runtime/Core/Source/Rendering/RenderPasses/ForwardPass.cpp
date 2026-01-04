@@ -25,7 +25,8 @@ namespace PC_CORE::Rendering::Pass
 			.SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
 			.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetTextureUsage(RhiTexture::TextureUsageFlagBits::LoadAndStore | RhiTexture::TextureUsageFlagBits::RenderTarget)
+			.SetTextureUsage(RhiTexture::TextureUsageFlagBits::LoadAndStore | RhiTexture::TextureUsageFlagBits::RenderTarget | 
+				RhiTexture::TextureUsageFlagBits::Sampled)
 			.SetSamples(1) // TODO MUTIPLE MSAA SETTING FROM VIEW
 			.Build();
 
@@ -51,6 +52,15 @@ namespace PC_CORE::Rendering::Pass
 			.SetRenderPass(_RendererPassBuildContext.Renderer.forwardPass.get())
 			.SetName("Forward Framebuffer")
 			.Build();
+
+
+		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		m_DescriptorSet
+			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.SetName("Forward Pass Scene Set")
+			.Build();
+			
+
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
@@ -72,6 +82,9 @@ namespace PC_CORE::Rendering::Pass
 		};
 		cmd.BeginRenderPass(beginRenderPassInfo);
 
+		ViewportInfo viewPort(beginRenderPassInfo.Extent);
+		cmd.SetViewPort(viewPort);
+		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
 
 

@@ -65,6 +65,7 @@ void Vulkan::VulkanContext::Init(const PC_CORE::RhiContextCreateInfo& rhiContext
     CreateCommandPools();
     CreateSyncObjects();
 
+    descritptorManager.CreateDesciptorPool();
     m_TransferCommandList.reset(new VulkanCommandList(m_Rhi));
     m_TransferCommandList
         ->SetName("TransferCommandList")

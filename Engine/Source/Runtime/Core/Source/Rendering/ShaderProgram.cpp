@@ -30,7 +30,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 }
 
 ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiShaderProgram::PipelineType _shaderProgramPipelineType,
-                             const std::vector<std::pair<RhiShaderProgram::ShaderStageType, WeakObjectPtr<ShaderSourceBinary>>>&
+                             const std::vector<std::pair<RhiShaderProgram::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
                              _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     PERF_REGION_SCOPED;
