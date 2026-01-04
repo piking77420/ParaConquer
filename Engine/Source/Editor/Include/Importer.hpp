@@ -5,37 +5,40 @@
 #include <unordered_map>
 
 #include "ObjectPtr.hpp"
-#include "Resources/Texture2d.hpp"
 
-BEGIN_PCCORE
+namespace PC_CORE
+{
     class Serializer;
     class Rhi;
     class StaticMesh;
-END_PCCORE
+    class Material;
+    struct StaticMeshRenderData;
+}
+class aiScene;
 
 BEGIN_EDITOR_PCCORE
     class Importer
     {
     public:
-        [[nodiscard]] bool Import(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
-                                  PC_CORE::TypeId* _outId, PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const;
+        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh, std::vector<PC_CORE::Material>* _Material);
 
-        [[nodiscard]] bool ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
-                                         PC_CORE::TypeId* _outId,
-                                         PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const;
+    private:
+        enum class ImportFormat
+        {
+            None,
+            Gltf,
+            Fbc,
+            Obj
+        };
 
+        ImportFormat m_ImportFormat;
 
-        [[nodiscard]] bool ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
-                                      PC_CORE::TypeId* _outId,
-                                      PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const;
+        ImportFormat FindImportFormat(const std::filesystem::path& path);
 
-        [[nodiscard]] bool ImportStaticMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::Serializer* _serializer,
-                                            PC_CORE::TypeId* _outId,
-                                            PC_CORE::ObjectPtr<PC_CORE::Resource>* _outResource) const;
+        bool ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
 
-        [[nodiscard]] bool ImportMesh(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh) const;
+        bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Material>* _Material);
 
-        [[nodiscard]] bool ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::ObjectPtr<PC_CORE::Texture2D>* _OutTexture2D) const;
     };
 
 END_EDITOR_PCCORE

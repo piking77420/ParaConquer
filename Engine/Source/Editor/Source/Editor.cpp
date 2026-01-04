@@ -314,7 +314,7 @@ void Editor::InitTestScene()
     
     ObjectPtr<StaticMesh> CubeMesh = std::make_shared<StaticMesh>();
     Importer importer;
-    importer.ImportMesh(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/sponza.gltf", CubeMesh.Get());
+    importer.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/sponza.gltf", CubeMesh.Get());
     ResourceManager::Add(CubeMesh);
 
 

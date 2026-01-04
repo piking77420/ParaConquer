@@ -21,9 +21,19 @@ BEGIN_PCCORE
     class Resource : public DynamicReflectable
     {
     public:
+
+        DEFAULT_COPY_MOVE_OPERATIONS(Resource);
+
+        PC_CORE_API Resource(const std::string& _name);
+
+        PC_CORE_API Resource(std::string&& _name);
+
+        PC_CORE_API Resource() = default;
+
+        PC_CORE_API ~Resource() override = default;
+
         static PC_CORE_API void LinkDependencies(Resource* _resourceParent, Resource* _resourceChild);
 
-        std::string Name; // TODO PROTECT IT 
 
         PC_CORE_API void QueryType() override = 0;
 
@@ -54,30 +64,10 @@ BEGIN_PCCORE
             return m_Guid;
         }
 
-        PC_CORE_API Resource& operator=(const Resource& _other) noexcept;
-
-        PC_CORE_API Resource(const Resource& _other) noexcept;
-
-        PC_CORE_API Resource& operator=(Resource&& _other) noexcept;
-
-        PC_CORE_API Resource(Resource&& _other) noexcept;
-
-        PC_CORE_API Resource() : m_Guid(Guid::New())
-        {
-        }
-
-        PC_CORE_API Resource(const Guid& _guid) : m_Guid(_guid)
-        {
-        }
-
-        PC_CORE_API Resource(const std::string& _name);
-
-        PC_CORE_API Resource(std::string&& _name);
-
-        PC_CORE_API ~Resource() override = default;
+        std::string Name; // TODO PROTECT IT 
 
     protected:
-        Guid m_Guid;
+        Guid m_Guid = Guid::New();
 
         const std::vector<Guid>& GetParentResource() const
         {

@@ -40,50 +40,13 @@ void Resource::BroadCastReload()
     }
 }
 
-Resource& Resource::operator=(const Resource& _other) noexcept
-{
-    DynamicReflectable::operator=(_other);
-    Name = _other.Name;
-    m_Guid = Guid::New();
-    m_ChildsResource = _other.m_ChildsResource;
-    m_ParentsResource = _other.m_ParentsResource;
-
-    return *this;
-}
-
-Resource& Resource::operator=(Resource&& _other) noexcept
-{
-    DynamicReflectable::operator=(_other);
-    Name = std::move(_other.Name);
-    m_Guid = Guid::New();
-    m_ChildsResource = std::move(_other.m_ChildsResource);
-    m_ParentsResource = std::move(_other.m_ParentsResource);
-
-    return *this;
-}
-
-
-Resource::Resource(const Resource& _other) noexcept : DynamicReflectable(_other),
-                                                      Name(_other.Name),
-                                                      m_Guid(Guid::New()), m_ParentsResource(_other.m_ParentsResource),
-                                                      m_ChildsResource(_other.m_ChildsResource)
+Resource::Resource(const std::string& _name)
+    : Name(_name)
 {
 }
 
-Resource::Resource(Resource&& _other) noexcept
-{
-    DynamicReflectable::operator=(_other);
-    Name = std::move(_other.Name);
-    m_Guid = _other.m_Guid;
-    m_ChildsResource = std::move(_other.m_ChildsResource);
-    m_ParentsResource = std::move(_other.m_ParentsResource);
-}
-
-Resource::Resource(const std::string& _name) : Name(_name), m_Guid(Guid::New())
-{
-}
-
-Resource::Resource(std::string&& _name) : Name(std::move(_name)), m_Guid(Guid::New())
+Resource::Resource(std::string&& _name)
+    : Name(std::move(_name))
 {
 }
 

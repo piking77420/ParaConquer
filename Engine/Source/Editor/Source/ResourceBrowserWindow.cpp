@@ -429,6 +429,7 @@ void ResourceBrowserWindow::CreateAssetsBrowserIcon(PC_CORE::TypeId _id, const s
 
 void ResourceBrowserWindow::OnImportButton()
 {
+    /*
     const std::wstring& assetPath = m_Editor->editorData.projectPath;
     const std::wstring s = SystemDialogue::Instance().SeletecFile(L"Select your project imported source",
                                                                   assetPath.c_str());
@@ -479,7 +480,7 @@ void ResourceBrowserWindow::OnImportButton()
     }
 
     // Close file
-    jSerializer.CloseFile();
+    jSerializer.CloseFile();*/
 }
 
 void ResourceBrowserWindow::CreateFile(const std::string& _filename) const

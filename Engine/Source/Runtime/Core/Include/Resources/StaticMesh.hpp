@@ -71,6 +71,7 @@ BEGIN_PCCORE
         uint32_t VerticiesCount;
         uint32_t IndexOffset;
         uint32_t IndiciesCount;
+        uint32_t MaterialIndex;
     };
 
     struct StaticMeshRenderData
