@@ -15,10 +15,9 @@ struct VsInput
 struct VsOutput
 {
     float4 Position : SV_POSITION;
-    float3 ViewSpacePosition : TEXCOORD0;
-    float3 Normal : TEXCOORD1;
-    float2 TexCoord : TEXCOORD2;
-    float3 Tangent : TEXCOORD3;
+    float3 Normal : NORMAL0;
+    float2 TexCoord : TEXCOORD0;
+    float3 Tangent : TEXCOORD1;
 };
 
 struct PushConstant
@@ -37,13 +36,8 @@ VsOutput Main(VsInput input)
     // World position
     float4 ViewPos = mul(float4(input.Position, 1.0), pushConstant.modelView);
 
-    // Clip-space position
     output.Position = mul(ViewPos, Projection);
-
-    // Pass to fragment shader
-    output.ViewSpacePosition = ViewPos;
     output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrixView));
-
     output.Tangent = input.Tangent;
     output.TexCoord = input.TexCoord;
 
