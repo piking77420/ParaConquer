@@ -55,7 +55,10 @@ bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path
     
 
     PC_CORE::StaticMeshRenderData StaticMeshRenderData;
-    ImportMeshesFromScene(scene, StaticMeshRenderData);
+    if (!ImportMeshesFromScene(scene, StaticMeshRenderData))
+    {
+
+    }
    
 
     std::string Name;
@@ -161,22 +164,66 @@ bool AssetsImporter::ImportMeshesFromScene(const aiScene* scene, PC_CORE::Static
 
     return true;
 }
-/*
-bool AssetsImporter::ImportMaterial(const aiScene* scene, std::vector < PC_CORE::Rendering::Material > * _Material)
+
+bool AssetsImporter::ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material> * _Material)
 {
-    
+    //std::map<uint32_t, std::vector<std>> mapCoreMaterialTextureIDs;
+
+    /*
     _Material->reserve(scene->mNumMaterials);
     for (size_t i = 0; i < scene->mNumMaterials; i++)
     {
         const aiMaterial& material = *scene->mMaterials[i];
 
-        //_Material->at(0).SetMaterialAttributeData<MaterialAttribute::Color>(1.f); / /TODO FIX
-    }
+        if (m_ImportFormat == ImportFormat::Gltf)
+        {
 
+            auto  GetValues = [&]<MaterialAttribute T>(const char* Key, uint32_t type, uint32_t idx, aiTextureType aiTextureType, uint32_t textureInx) ->void {
+                
+                if (Key != nullptr) // TODO HANDLE aiTextureType_GLTF_METALLIC_ROUGHNESS
+                {
+                    float Scalar;
+                    if (AI_SUCCESS == material.Get(Key, type, idx, Scalar))
+                    {
+                        (*_Material)[i].SetMaterialAttributeData<T>(Scalar);
+                    }
+
+                    aiColor3D baseColor3;
+                    if (AI_SUCCESS == material.Get(Key, type, idx, baseColor3))
+                    {
+                        (*_Material)[i].SetMaterialAttributeData<T>(Tbx::Vector3f(baseColor3.r, baseColor3.g, baseColor3.b)));
+                    }
+
+                    aiColor4D baseColor4;
+                    if (AI_SUCCESS == material.Get(Key, type, idx, baseColor4))
+                    {
+                        (*_Material)[i].SetMaterialAttributeData<T>(Tbx::Vector4f(baseColor4.r, baseColor4.g, baseColor4.b, baseColor4.a)));
+                    }
+
+                }
+
+                aiString albedoTexture;
+                if (AI_SUCCESS == material.GetTexture(aiTextureType, textureInx, &albedoTexture))
+                {
+                    // TODO 
+                    // Create map
+                }
+             };
+
+            GetValues.template operator()<MaterialAttribute::Color>(AI_MATKEY_BASE_COLOR, AI_MATKEY_BASE_COLOR_TEXTURE); 
+            GetValues.template operator() < MaterialAttribute::Roughness > (AI_MATKEY_ROUGHNESS_FACTOR, AI_MATKEY_ROUGHNESS_TEXTURE);
+            GetValues.template operator() < MaterialAttribute::Metallic > (AI_MATKEY_METALLIC_FACTOR, AI_MATKEY_METALLIC_TEXTURE);
+            GetValues.template operator() < MaterialAttribute::Normal > (nullptr, 0, 0, AI_MATKEY_BASE_COLOR_TEXTURE);
+            GetValues.template operator() < MaterialAttribute::Ao > (nullptr, 0, 0, aiTextureType_AMBIENT_OCCLUSION, 0);
+
+
+        }
+
+    }
+    */
 
 
     return true;
 }
 
-*/
 }

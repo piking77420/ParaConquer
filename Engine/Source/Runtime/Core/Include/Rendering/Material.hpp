@@ -20,8 +20,8 @@ namespace PC_CORE::Rendering
     enum struct MaterialAttribute : uint8_t
     {
         Color,
-        Roughness,
         Metallic,
+        Roughness,
         Normal,
         Ao,
     };
@@ -41,33 +41,27 @@ namespace PC_CORE::Rendering
     template<>
     struct MaterialValueTypeMap<float>
     {
-        MaterialValueType type = MaterialValueType::Scalar;
+        static constexpr MaterialValueType type = MaterialValueType::Scalar;
     };
 
     template<>
     struct MaterialValueTypeMap<Tbx::Vector2f>
     {
-        MaterialValueType type = MaterialValueType::Scalar;
+        static constexpr MaterialValueType type = MaterialValueType::Vec2;
     };
 
     template<>
     struct MaterialValueTypeMap<Tbx::Vector3f>
     {
-        MaterialValueType type = MaterialValueType::Scalar;
+        static constexpr MaterialValueType type = MaterialValueType::Vec3;
     };
 
     template<>
     struct MaterialValueTypeMap<Tbx::Vector4f>
     {
-        MaterialValueType type = MaterialValueType::Scalar;
+        static constexpr MaterialValueType type = MaterialValueType::Vec4;
     };
 
-    template<>
-    struct MaterialValueTypeMap<bool>
-    {
-        MaterialValueType type = MaterialValueType::Scalar;
-        
-    };
 
     
     namespace Gpu
@@ -110,6 +104,19 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
+        template<MaterialAttribute MaterialAttribute>
+        Material& SetMaterialAttributeData(WeakObjectPtr<Texture2D>& _ValueDataType)
+        {
+            m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)] = MaterialValueType::TextureSample;
+            m_MaterialAttributesData[static_cast<size_t>(MaterialAttribute)] = _ValueDataType;
+        }
+
+        Material& SetPackMetallicAndRougness(bool _Value)
+        {
+            m_UseMetallicRoughnessTexture = _Value;
+        }
+
+
         // Getter
 
         template <MaterialAttribute MaterialAttribute>
@@ -118,7 +125,10 @@ namespace PC_CORE::Rendering
             return m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)];
         }
 
-       
+        bool GetPackMetallicAndRougness() const
+        {
+            return m_UseMetallicRoughnessTexture;
+        }
 
     private:
         std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
@@ -126,6 +136,8 @@ namespace PC_CORE::Rendering
         using MaterialAttributeData = std::variant<std::monostate, float, Tbx::Vector2f, Tbx::Vector3f, Tbx::Vector4f, WeakObjectPtr<Texture2D>>;
 
         MaterialType MaterialType = MaterialType::Opaque;
+
+        bool m_UseMetallicRoughnessTexture = false;
 
         std::array<MaterialValueType, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesValueType;
 

@@ -74,8 +74,8 @@ BEGIN_EDITOR_PCCORE
 
         struct AssetHeader
         {
-            PC_CORE::TypeId typeId;
-            PC_CORE::Guid assetGuid;
+            PC_CORE::TypeId typeId{};
+            PC_CORE::Guid assetGuid{};
             REFLECT(AssetHeader);
             REFLECT_MEMBER(AssetHeader, typeId);
             REFLECT_MEMBER(AssetHeader, assetGuid);

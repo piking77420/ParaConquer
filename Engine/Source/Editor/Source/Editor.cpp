@@ -316,7 +316,7 @@ void Editor::InitTestScene()
     ObjectPtr<StaticMesh> CubeMesh = std::make_shared<StaticMesh>();
     AssetsImporter AssetsImporter;
     //std::vector<PC_CORE::Rendering::Material> material;
-    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf", CubeMesh.Get());
+    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/dragon.fbx", CubeMesh.Get());
     ResourceManager::Add(CubeMesh);
 
 

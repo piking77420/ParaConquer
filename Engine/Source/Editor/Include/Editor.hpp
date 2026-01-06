@@ -29,8 +29,8 @@ BEGIN_EDITOR_PCCORE
 
     struct ProjectData
     {
-        std::string projectName;
-        PC_CORE::GraphicAPI graphicApi;
+        std::string projectName{};
+        PC_CORE::GraphicAPI graphicApi{};
 
         ProjectData(ProjectFile& projectFile)
         {
@@ -45,11 +45,11 @@ BEGIN_EDITOR_PCCORE
 
     struct EditorData
     {
-        EditorFont editorFont;
-        EditorFont editorFontItalic;
+        EditorFont editorFont{};
+        EditorFont editorFontItalic{};
 
-        ProjectData projectData;
-        std::filesystem::path projectPath;
+        ProjectData projectData{};
+        std::filesystem::path projectPath{};
     };
 
     using EditableSelectedObj = std::variant<std::monostate, PC_CORE::EntityId, PC_CORE::ObjectPtr<PC_CORE::Resource>>;

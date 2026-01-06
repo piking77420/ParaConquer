@@ -18,7 +18,7 @@ namespace PC_CORE
 
 namespace PC_CORE::Rendering
 {
-    //class Material;
+    class Material;
 }
 
 struct aiScene;
@@ -44,7 +44,7 @@ BEGIN_EDITOR_PCCORE
 
         bool ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
 
-       // bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
+       bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
 
     };
 
