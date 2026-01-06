@@ -34,6 +34,7 @@ bool Vulkan::VulkanSampler::Build()
     samplerInfo.addressModeU = Utils::RhiToVulkanSamplerAddressMode(m_U);
     samplerInfo.addressModeV = Utils::RhiToVulkanSamplerAddressMode(m_V);
     samplerInfo.addressModeW = Utils::RhiToVulkanSamplerAddressMode(m_W);
+    
     if (maxAnisotopie > 0.f)
     {
         samplerInfo.anisotropyEnable = VK_TRUE;
@@ -42,16 +43,16 @@ bool Vulkan::VulkanSampler::Build()
     else
     {
         samplerInfo.anisotropyEnable = VK_FALSE;
-        samplerInfo.maxAnisotropy = 0;
+        samplerInfo.maxAnisotropy = 1;
     }
     samplerInfo.borderColor = vk::BorderColor::eIntOpaqueBlack;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
     samplerInfo.compareEnable = m_CompareEnable ? vk::True : vk::False;
     samplerInfo.compareOp = Utils::RhiToVulkanCompareOp(m_CompareOp);
     samplerInfo.mipmapMode = Utils::RhiToSamplerMipmapMode(m_MipmapMode);
     samplerInfo.minLod = 0.f;
-    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
+    samplerInfo.maxLod = 0.f;
     samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
 
     vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->

@@ -22,9 +22,9 @@ namespace PC_CORE::Rendering::Pass
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Rendering);
 
-		RhiTexture& lightingImage = _RendererPassBuildContext.RenderGraph.CreateResourceHandle<RhiTexture>("Lighting Image");
-		lightingImage
-			.SetMemoryUsage(RhiMemoryUsage::Dynamic)
+		m_LightingImage = &_RendererPassBuildContext.RenderGraph.CreateResourceHandle<RhiTexture>("Lighting Image");
+		m_LightingImage
+			->SetMemoryUsage(RhiMemoryUsage::Dynamic)
 			.SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
 			.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
@@ -50,7 +50,7 @@ namespace PC_CORE::Rendering::Pass
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetAttachments(&lightingImage)
+			.SetAttachments(m_LightingImage)
 			.SetDepthAttachments(&DepthBuffer)
 			.SetRenderPass(_RendererPassBuildContext.Renderer.forwardPass.get())
 			.SetName("Forward Framebuffer")
@@ -124,5 +124,20 @@ namespace PC_CORE::Rendering::Pass
 		}
 
 		cmd.EndRenderPass();
+
+		const ImageStateTransition ImageStateTransition
+		{
+			.Texture = m_LightingImage,
+			.FirstMipLevel = 0,
+			.MipLevelsCount = 1,
+			.FirstLayer = 0,
+			.LayerCount = 1,
+
+			.updateState = false
+		};
+
+		cmd.Barrier(RhiResourceState::FragmentShaderResource, RhiResourceState::FragmentShaderResource, std::span(&ImageStateTransition, 1), {});
+
 	}
+
 }

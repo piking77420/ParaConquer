@@ -48,6 +48,8 @@ namespace PC_CORE::Rendering::Pass
 
         std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
 
+        RhiTexture* m_LightingImage = nullptr;
+
     };
 
     REFLECT(FowardPass, PC_CORE::Rendering::RenderPass);

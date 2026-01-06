@@ -170,9 +170,22 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 #ifdef DEBUG_GPU_ON
+
+    VkValidationFeatureEnableEXT enables[] = {
+    VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+    VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT
+    };
+    VkValidationFeaturesEXT validationFeatures{};
+    validationFeatures.sType =
+        VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+    validationFeatures.enabledValidationFeatureCount =
+        static_cast<uint32_t>(std::size(enables));
+    validationFeatures.pEnabledValidationFeatures = enables;
+
     if constexpr (ENABLE_VALIDATION_LAYERS)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            
     }
 #endif
 
@@ -199,6 +212,9 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     {
         instanceCreateInfo.enabledLayerCount = 0;
     }
+
+  // instanceCreateInfo.pNext = &validationFeatures;
+
 #endif
     VK_CHECK_CALL(vk::createInstance(&instanceCreateInfo, nullptr, &m_Instance));
 

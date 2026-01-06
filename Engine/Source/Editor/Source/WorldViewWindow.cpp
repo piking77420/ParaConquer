@@ -24,6 +24,10 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     m_ViewPortSampler
         ->SetMagFilter(PC_CORE::Filter::Linear)
         .SetMinFilter(PC_CORE::Filter::Linear)
+        .SetMipmapMode(PC_CORE::SamplerMipmapMode::Nearest)
+        .SetU(PC_CORE::SamplerAddressMode::ClampToEdge)
+        .SetV(PC_CORE::SamplerAddressMode::ClampToEdge)
+        .SetW(PC_CORE::SamplerAddressMode::ClampToEdge)
         .Build();
 }
 

@@ -64,5 +64,18 @@ namespace PC_CORE::Rendering::Pass
 		cmd.Draw(3, 1, 0, 0);
 
 		cmd.EndRenderPass();
+
+		const ImageStateTransition ImageStateTransition
+		{
+			.Texture = &_RendererPassExecuteContext.RenderGraph.GetOutPutImage(),
+			.FirstMipLevel = 0,
+			.MipLevelsCount = 1,
+			.FirstLayer = 0,
+			.LayerCount = 1,
+
+			.updateState = false
+		};
+
+		cmd.Barrier(RhiResourceState::FragmentShaderResource, RhiResourceState::FragmentShaderResource, std::span(&ImageStateTransition, 1), {});
 	}
 }

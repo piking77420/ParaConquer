@@ -121,11 +121,15 @@ namespace PC_CORE::Rendering
 			return static_cast<const T&>(*m_RenderGraphResources[_Name]);
 		}
 
-		const RhiTexture& GetOutPutImage() const
+		RhiTexture& GetOutPutImage()
 		{
 			return *m_OutputImage;
 		}
 
+		const RhiTexture& GetOutPutImage() const
+		{
+			return *m_OutputImage;
+		}
 
 	private:
 		Rhi& m_Rhi;

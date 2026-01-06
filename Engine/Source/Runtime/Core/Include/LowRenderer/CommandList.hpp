@@ -171,8 +171,8 @@ BEGIN_PCCORE
                                             size_t _dstoffset, size_t _sizeInBytes) = 0;
 
         PC_CORE_API virtual void Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
-                                          const std::span<ImageStateTransition>& _ImageStateTransition = {},
-                                          const std::span<BufferStateTransition>& _BufferStateTransition = {}) = 0;
+                                          const std::span<const ImageStateTransition>& _ImageStateTransition = {},
+                                          const std::span<const BufferStateTransition>& _BufferStateTransition = {}) = 0;
 
         PC_CORE_API void RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction);
 

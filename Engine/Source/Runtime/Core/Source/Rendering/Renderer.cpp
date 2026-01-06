@@ -50,14 +50,14 @@ namespace PC_CORE::Rendering
        InitRhiRenderPasses(_View);
        InitShaders(_View);
 
-       RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph);
+       RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this);
        m_RenderGraph.Build(buildContext);
 
    }
 
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
-       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, _View, *this, m_RenderGraph, RenderingWorldData);
+       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
 
        m_RenderGraph.Execute(executeContext, _View);
    }

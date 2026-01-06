@@ -316,7 +316,7 @@ void Editor::InitTestScene()
     ObjectPtr<StaticMesh> CubeMesh = std::make_shared<StaticMesh>();
     AssetsImporter AssetsImporter;
     //std::vector<PC_CORE::Rendering::Material> material;
-    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/sponza.gltf", CubeMesh.Get());
+    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf", CubeMesh.Get());
     ResourceManager::Add(CubeMesh);
 
 
@@ -394,6 +394,7 @@ void Editor::OnRender(PC_CORE::CommandList* _Cmd)
         editorWindow->Render(PrimaryCommandBuffer.get());
     for (auto& sub : editorSubSystems)
         sub->Render();
+
     IMGUIContext.Render(PrimaryCommandBuffer.get());
 }
 

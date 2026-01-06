@@ -70,8 +70,8 @@ namespace Vulkan
                                    size_t _dstoffset, size_t _sizeInBytes) override;
 
         VULKAN_API void Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
-            const std::span<PC_CORE::ImageStateTransition>& _ImageStateTransition,
-            const std::span<PC_CORE::BufferStateTransition>& _BufferStateTransition) override;
+            const std::span<const PC_CORE::ImageStateTransition>& _ImageStateTransition,
+            const std::span<const PC_CORE::BufferStateTransition>& _BufferStateTransition) override;
 
 
         VULKAN_API void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) override;

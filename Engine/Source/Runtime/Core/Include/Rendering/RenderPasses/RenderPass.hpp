@@ -24,18 +24,18 @@ namespace PC_CORE::Rendering
     {
         CommandList& cmd;
         Rhi& RHI;
+        RenderGraph& RenderGraph;
         const RenderView& View;
         const Renderer& Renderer;
-        RenderGraph& RenderGraph;
     };
 
     struct RendererPassExecuteContext
     {
         CommandList& cmd;
         Rhi& RHI;
+        RenderGraph& RenderGraph;
         const RenderView& View;
         const Renderer& Renderer;
-        const RenderGraph& RenderGraph;
         const RenderingWorldData& RenderingWorldData;
     };
 

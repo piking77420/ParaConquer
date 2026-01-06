@@ -467,8 +467,8 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
 }
 
 VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
-    const std::span<PC_CORE::ImageStateTransition>& _ImageStateTransition,
-    const std::span<PC_CORE::BufferStateTransition>& _BufferStateTransition)
+    const std::span<const PC_CORE::ImageStateTransition>& _ImageStateTransition,
+    const std::span<const PC_CORE::BufferStateTransition>& _BufferStateTransition)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
