@@ -5,26 +5,24 @@
 #include "Reflection/Reflector.hpp"
 
 BEGIN_PCCORE
+    struct RigidBody : Component
+    {
+        bool useGravity = true;
 
-struct RigidBody : public Component
-{
+        float mass = 1.f;
 
-    bool useGravity = true;
+        float restitutionCoef = 1.f;
 
-    float mass = 1.f;
+        float damping = 0.90f;
 
-    float restitutionCoef = 1.f;
-
-    float damping = 0.90f;
-
-    float angularDamping = 0.1f;
-};
+        float angularDamping = 0.1f;
+    };
 
 
-REFLECT(RigidBody, Component);
-REFLECT_MEMBER(RigidBody, useGravity);
-REFLECT_MEMBER(RigidBody, restitutionCoef);
-REFLECT_MEMBER(RigidBody, damping);
-REFLECT_MEMBER(RigidBody, angularDamping);
+    REFLECT(RigidBody, Component);
+    REFLECT_MEMBER(RigidBody, useGravity);
+    REFLECT_MEMBER(RigidBody, restitutionCoef);
+    REFLECT_MEMBER(RigidBody, damping);
+    REFLECT_MEMBER(RigidBody, angularDamping);
 
 END_PCCORE

@@ -10,123 +10,64 @@ using namespace PC_CORE;
 Texture2D::Texture2D()
 {
     DYNAMIC_REFLECT_INIT
-
-}
-
-Texture2D::Texture2D(const std::string& _name) : Texture(_name)
-{
-    DYNAMIC_REFLECT_INIT
-}
-
-Texture2D::Texture2D(const std::string& _name, const std::string& _path) : Texture(_name)
-{
-    DYNAMIC_REFLECT_INIT
-    
-    LoadTextureFromPath(_path);
-}
-
-Texture2D::Texture2D(const CreateImageInfo& _createTextureInfo) : m_Size(_createTextureInfo.width, _createTextureInfo.height)
-{
-    DYNAMIC_REFLECT_INIT
-    
-    m_Format = _createTextureInfo.format;
-    
-    m_Texture2D = Rhi::CreateTexture2D(_createTextureInfo);
 }
 
 
-Texture2D::~Texture2D()
+Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::string& _name)
+    : Texture(_name)
 {
+    m_RhiTexture.reset(rhi.CreateTexture());
+    m_RhiTexture->SetName(Name);
 }
 
-void Texture2D::AfterSerialize(Serializer* serializer) const
+Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name)
+    : Texture(std::move(_name))
 {
-    
+    m_RhiTexture.reset(rhi.CreateTexture());
+    m_RhiTexture->SetName(Name);
 }
 
-void Texture2D::AfterDeSerialize(Serializer* serializer)
+Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path)
+    : Texture(_Path.filename().generic_string())
 {
-    serializer->DeSerializeStream(m_Texture2DMetaData);
+    m_RhiTexture.reset(rhi.CreateTexture());
+    m_RhiTexture->SetName(Name);
+}
+
+void Texture2D::AfterSerialize(Serializer* _serializer) const
+{
+
+}
+
+void Texture2D::AfterDeSerialize(Serializer* _serializer)
+{
+    /*
+    _serializer->DeSerializeStream(m_Texture2DMetaData);
 
 
-    if (!m_Texture2DMetaData.data.empty() && m_Format != RHIFormat::UNDEFINED
-        && m_Size != Tbx::Vector2i::Zero() && m_TextureChannel != Channel::DEFAULT)
+    if (!m_Texture2DMetaData.data.empty() && m_Format != RhiFormat::Undefined
+        && m_Size != Tbx::Vector2i::Zero() && m_TextureChannel != Channel::Default)
     {
         PC_LOG("Create Texture");
 
         const CreateImageInfo createTextureInfo =
         {
-            .width = m_Size.x,
-            .height = m_Size.y,
-            .depth = 1,
-            .layerCount = 1,
-            .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Size.x, m_Size.y)))) + 1,
-            .textureType = TextureType::Texture2D,
-            .format = m_Format,
-            .channel = m_TextureChannel,
-            .textureUsage = TextureUsage::Sampled,
-            .memoryVisibility = MemoryLocalisation::GPU_Only,
-            .samples = 1,
+            .Width = m_Size.x,
+            .Height = m_Size.y,
+            .Depth = 1,
+            .LayerCount = 1,
+            .MipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(m_Size.x, m_Size.y)))) + 1,
+            .TextureType = TextureType::Texture2D,
+            .Format = m_Format,
+            .Channel = m_TextureChannel,
+            .TextureUsage = TextureUsage::Sampled,
+            .MemoryVisibility = MemoryLocalisation::GpuOnly,
+            .Samples = 1,
             .GenerateMipMap = true,
-            .datas = {reinterpret_cast<void*>(m_Texture2DMetaData.data.data())}
+            .Datas = {reinterpret_cast<void*>(m_Texture2DMetaData.data.data())}
         };
 
         m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);
         m_Texture2DMetaData.data.clear();
-    }
-
-}
-
-void Texture2D::LoadTextureFromPath(const std::string& _path)
-{
-    int width;
-    int height;
-
-    uint8_t* pixels = FileLoader::LoadImage(_path.c_str(), &width, &height, &m_TextureChannel, Channel::RGBA);
-    if (!pixels)
-    {
-        PC_LOGERROR("failed to load texture image!");
-        throw std::runtime_error("failed to load texture image!");
-    }
-    m_Size = { width, height };
-    
-    RHIFormat format = RHIFormat::UNDEFINED;
-    m_TextureChannel = Channel::RGBA;
-
-    switch (m_TextureChannel)
-    {
-    case PC_CORE::Channel::RGB:
-    case PC_CORE::Channel::RGBA:
-        format = RHIFormat::R8G8B8A8_UNORM;
-        break;
-    default:
-        assert("false");
-        break;
-    }
-
-    const CreateImageInfo createTextureInfo =
-    {
-        .width = width,
-        .height = height,
-        .depth = 1,
-        .layerCount = 1,
-        .mipsLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1,
-        .textureType = TextureType::Texture2D,
-        .format = format,
-        .channel = m_TextureChannel,
-        .textureUsage = TextureUsage::Sampled,
-        .memoryVisibility = MemoryLocalisation::GPU_Only,
-        .samples = 1,
-        .GenerateMipMap = true,
-        .datas = {reinterpret_cast<void*>(pixels)}
-    };
-
-    m_Texture2D = Rhi::CreateTexture2D(createTextureInfo);
-
-    FileLoader::FreeData(pixels);
-}
-
-RHIFormat Texture2D::GetRHIFormat() const
-{
-    return m_Format;
+    }*/
 }

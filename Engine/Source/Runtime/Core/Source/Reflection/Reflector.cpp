@@ -20,7 +20,7 @@ const ReflectedType& Reflector::GetType(uint32_t _hash)
 
 bool Reflector::isTrivialType(TypeId _id)
 {
-    return !(GetType(_id).typeFlags & TypeFlagBits::COMPOSITE);
+    return !(GetType(_id).typeFlags & ReflectedType::TypeFlagBits::Composite);
 }
 
 bool Reflector::Exist(TypeId typeId)
@@ -44,7 +44,7 @@ bool Reflector::GetPtrToTypeField(TypeId _id, void* _object, const std::string& 
 }
 
 bool Reflector::GetPtrToTypeField(TypeId _id, const void* _object, const std::string& _fieldName,
-    const void** _outPtrToField)
+                                  const void** _outPtrToField)
 {
     const auto& t = GetType(_id);
 
@@ -58,8 +58,6 @@ bool Reflector::GetPtrToTypeField(TypeId _id, const void* _object, const std::st
     *_outPtrToField = static_cast<const uint8_t*>(_object) + m->offset;
     return true;
 }
-
-
 
 
 // REFLECT TRIVIAL TYPE //
@@ -78,7 +76,3 @@ REFLECT(uint64_t);
 using namespace std;
 REFLECT(string)
 REFLECT(wstring)
-
-
-
-

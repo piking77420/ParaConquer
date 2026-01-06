@@ -1,7 +1,7 @@
 
 
 #define CAMERA_BINDING b0
-#define CAMERA_SPACE space0
+#define CAMERA_SET space0
 #include "Camera.hlsl"
 
 struct VsInput
@@ -9,20 +9,21 @@ struct VsInput
     float3 Position : POSITION;
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD0;
+    float3 Tangent : TANGENT;
 };
 
 struct VsOutput
 {
     float4 Position : SV_POSITION;
-    float3 ViewSpacePosition : TEXCOORD0;
-    float3 Normal : TEXCOORD1;
-    float2 TextCoord : TEXCOORD2;
+    float3 Normal : NORMAL0;
+    float2 TexCoord : TEXCOORD0;
+    float3 Tangent : TEXCOORD1;
 };
 
 struct PushConstant
 {
-    float4x4 model;
-    float4x4 normalInvMatrix;
+    float4x4 modelView;
+    float4x4 normalInvMatrixView;
 };
 
 [[vk::push_constant]]
@@ -33,15 +34,12 @@ VsOutput Main(VsInput input)
     VsOutput output;
 
     // World position
-    float4 worldPos = mul(float4(input.Position, 1.0), pushConstant.model);
+    float4 ViewPos = mul(float4(input.Position, 1.0), pushConstant.modelView);
 
-    // Clip-space position
-    output.Position = mul(worldPos,vp);
-
-    // Pass to fragment shader
-    output.ViewSpacePosition = worldPos.xyz;
-    output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrix));
-    output.TextCoord = input.TexCoord;
+    output.Position = mul(ViewPos, Projection);
+    output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrixView));
+    output.Tangent = input.Tangent;
+    output.TexCoord = input.TexCoord;
 
     return output;
 }

@@ -1,80 +1,152 @@
 ﻿#pragma once
 
-#include "CoreHeader.hpp"
-#include "MaterialInstance.hpp"
-#include "LowRenderer/DescriptorSet.hpp"
-#include "Resources/Texture2d.hpp"
+#include <type_traits>
+#include <array>
+
+#include "RenderingTypedef.h"
 #include "ObjectPtr.hpp"
-#include "ShaderProgram.hpp"
+#include "Resources/Texture2d.hpp"
+#include "LowRenderer/RhiDescriptorSet.hpp"
 
-BEGIN_PCCORE
-
-enum class MaterialType
+namespace PC_CORE::Rendering
 {
-    Opaque,
-    Transparent,
-    
-};
 
-enum struct MaterialAttribute : uint8_t
-{
-    Color,
-    Roughness,
-    Metallic,
-    Normal,
-    Ao,
-};
-
-enum struct MaterialValueType : uint8_t
-{
-    Scalar,
-    Vec2,
-    Vec3,
-    Vec4,
-    TextureSample,
-};
-
-
-
-class Material : public Resource
-{
-public:
-    MaterialType materialType = MaterialType::Opaque;
-
-    WeakObjectPtr<Texture2D> albedo;
-
-    WeakObjectPtr<Texture2D> metallic;
-
-    WeakObjectPtr<Texture2D> roughess;
-
-    WeakObjectPtr<Texture2D> normal;
-
-
-    std::shared_ptr<MaterialInstance> CreateMaterialInstance();
-
-    PC_CORE_API IMP_DYNAMIC_REFLECT();
-
-    PC_CORE_API Material();
-
-    PC_CORE_API Material(const std::string& _name);
-
-    PC_CORE_API ~Material();
-
-    PC_CORE_API void Build();
-
-    const ShaderProgramDescriptorSets* GetDescriptorSet() const
+    enum class MaterialType
     {
-        return m_PShaderProgramDescriptorSets;
+        Opaque,
+        Transparent,
+    };
+
+    enum struct MaterialAttribute : uint8_t
+    {
+        Color,
+        Metallic,
+        Roughness,
+        Normal,
+        Ao,
+    };
+
+    enum struct MaterialValueType : uint8_t
+    {
+        Scalar,
+        Vec2,
+        Vec3,
+        Vec4,
+        TextureSample,
+    };
+
+    template<typename T>
+    struct MaterialValueTypeMap;
+
+    template<>
+    struct MaterialValueTypeMap<float>
+    {
+        static constexpr MaterialValueType type = MaterialValueType::Scalar;
+    };
+
+    template<>
+    struct MaterialValueTypeMap<Tbx::Vector2f>
+    {
+        static constexpr MaterialValueType type = MaterialValueType::Vec2;
+    };
+
+    template<>
+    struct MaterialValueTypeMap<Tbx::Vector3f>
+    {
+        static constexpr MaterialValueType type = MaterialValueType::Vec3;
+    };
+
+    template<>
+    struct MaterialValueTypeMap<Tbx::Vector4f>
+    {
+        static constexpr MaterialValueType type = MaterialValueType::Vec4;
+    };
+
+
+    
+    namespace Gpu
+    {
+        struct GPU_ALIGN MaterialBuffer
+        {
+            std::array<MaterialValueType, static_cast<size_t>(MaterialAttribute::Ao) + 1> MaterialValueTypes;
+            uint8_t reserved[3];
+            uint8_t pad0[4];
+
+            uint32_t MaterialId;
+            std::array<vec4, static_cast<size_t>(MaterialAttribute::Ao) + 1> MaterialData;
+        };
     }
 
-private:
-    ShaderProgramDescriptorSets* m_PShaderProgramDescriptorSets = nullptr;
+    template<class T>
+    concept ValueDataType = std::is_same_v<T, float> || std::is_same_v<T, std::array<float, 2>> || 
+        std::is_same_v<T, std::array<float, 3>> || std::is_same_v<T, std::array<float, 4>> || std::is_same_v<T, WeakObjectPtr<Texture2D>> || std::is_same_v<T, ObjectPtr<Texture2D>>;
 
-    WeakObjectPtr<ShaderProgram> m_ShaderProgram;
+    class Material : public Resource
+    {
+    public:
+        PC_CORE_API Material();
 
-    std::vector<std::shared_ptr<MaterialInstance>> m_MaterialInstances;
-};
+        PC_CORE_API ~Material() override;
 
-REFLECT(Material, Resource)
+        DEFAULT_COPY_MOVE_OPERATIONS(Material)
 
-END_PCCORE
+        IMP_DYNAMIC_REFLECT();
+
+        void Build();
+
+        // Setter
+
+        template <MaterialAttribute MaterialAttribute, typename ValueDataType>
+        Material& SetMaterialAttributeData(ValueDataType _ValueDataType)
+        {
+            m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)] = MaterialValueTypeMap<ValueDataType>::type;
+            m_MaterialAttributesData[static_cast<size_t>(MaterialAttribute)] = _ValueDataType;
+            return *this;
+        }
+
+        template<MaterialAttribute MaterialAttribute>
+        Material& SetMaterialAttributeData(WeakObjectPtr<Texture2D>& _ValueDataType)
+        {
+            m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)] = MaterialValueType::TextureSample;
+            m_MaterialAttributesData[static_cast<size_t>(MaterialAttribute)] = _ValueDataType;
+        }
+
+        Material& SetPackMetallicAndRougness(bool _Value)
+        {
+            m_UseMetallicRoughnessTexture = _Value;
+        }
+
+
+        // Getter
+
+        template <MaterialAttribute MaterialAttribute>
+        MaterialValueType GetMaterialAttributeValueType() const
+        {
+            return m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)];
+        }
+
+        bool GetPackMetallicAndRougness() const
+        {
+            return m_UseMetallicRoughnessTexture;
+        }
+
+    private:
+        std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
+
+        using MaterialAttributeData = std::variant<std::monostate, float, Tbx::Vector2f, Tbx::Vector3f, Tbx::Vector4f, WeakObjectPtr<Texture2D>>;
+
+        MaterialType MaterialType = MaterialType::Opaque;
+
+        bool m_UseMetallicRoughnessTexture = false;
+
+        std::array<MaterialValueType, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesValueType;
+
+        std::array<MaterialAttributeData, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesData;
+
+    };
+
+    REFLECT(Material, Resource)
+
+}
+
+using MaterialAttribute = PC_CORE::Rendering::MaterialAttribute;

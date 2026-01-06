@@ -1,50 +1,46 @@
 ﻿#pragma once
 
 #include "GpuBuffer.hpp"
-#include "LowRenderer/RhiIndexBuffer.hpp"
-#include "LowRenderer/RhiTypedef.h"
 
 BEGIN_PCCORE
-    class RhiBuffer;
-
-    class IndexBuffer final : public PC_CORE::GpuBuffer
+    class IndexBuffer final : public GpuBuffer
     {
     public:
-        std::shared_ptr<RhiResource> GetRhiHandle() const override
+
+        IndexBuffer& SetIndexFormat(RhiBuffer::IndexFormat _IndexFormat)
         {
-            return m_RhiBuffer;
+            m_RhiBufferFormat = _IndexFormat;
+            return *this;
         }
 
-        IndexFormat GetIndexFormat() const
+        IndexBuffer& SetIndexCount(size_t _IndexCount)
         {
-            return m_RhiBuffer->GetIndexFormat();
+            m_IndiciesCount = _IndexCount;
+            return *this;
+        }
+
+
+        RhiBuffer::IndexFormat GetIndexFormat() const
+        {
+            return m_RhiBufferFormat;
         }
 
         size_t GetIndexCount() const
         {
-            return m_RhiBuffer->GetIndexCount();
-        }
-
-        std::shared_ptr<RhiIndexBuffer> GetRhiBuffer() const
-        {
-            return m_RhiBuffer;
+            return m_IndiciesCount;
         }
 
         DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
-
-        IndexBuffer(const uint8_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
-
-        IndexBuffer(const uint16_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
-
-        IndexBuffer(const uint32_t* _indicies, size_t _count, PC_CORE::MemoryLocalisation _memoryLocalisation, MemoryUsage _memoryUsageFlag);
-
+    
+        explicit IndexBuffer(Rhi& rhi);
+    
         IndexBuffer() = default;
 
         ~IndexBuffer() override = default;
-
     private:
-        std::shared_ptr<RhiIndexBuffer> m_RhiBuffer;
-
+        RhiBuffer::IndexFormat m_RhiBufferFormat{};
+    
+        size_t m_IndiciesCount = 0;
     };
 
 END_PCCORE

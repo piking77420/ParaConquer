@@ -12,20 +12,20 @@ namespace PC_CORE
 
 BEGIN_EDITOR_PCCORE
     class Hierachy : public EditorWindow
-{
-public:
-    void Update() override;
+    {
+    public:
+        void Update() override;
 
-    Hierachy(Editor& _editor , const std::string& name);
-    
-    ~Hierachy() override = default;
-    
-private:
-    void ShowGraph();
+        Hierachy(Editor& _editor, const std::string& name);
 
-    PC_CORE::EntityManager* m_EntityManagerPtr = nullptr;
+        ~Hierachy() override = default;
 
-    std::bitset<PC_CORE::MAX_ENTITIES>* m_EnableEntitiesBitSetPtr = nullptr;
-};
+    private:
+        void ShowGraph();
+
+        PC_CORE::EntityManager* m_EntityManagerPtr = nullptr;
+
+        std::bitset<PC_CORE::MAX_ENTITIES>* m_EnableEntitiesBitSetPtr = nullptr;
+    };
 
 END_EDITOR_PCCORE

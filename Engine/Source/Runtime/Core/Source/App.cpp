@@ -12,25 +12,29 @@
 
 using namespace PC_CORE;
 
- 
+
 void App::Init(const AppCreateInfo& _appCreateInfo)
 {
     PERF_REGION_SCOPED;
     PC_LOG("App Init")
     // Can init without any depedancies
-    window = Window(_appCreateInfo.appName.data());
-    window.SetIcon(_appCreateInfo.appLogoPath.data());
+    MainWindow = Window(_appCreateInfo.appName.data());
+    MainWindow.SetIcon(_appCreateInfo.appLogoPath.data());
 
     const RenderHardwareInterfaceCreateInfo createInfo =
-        {
+    {
         .GraphicsAPI = GraphicAPI::Vulkan,
-        .window = &window,
+        .window = &MainWindow,
         .appName = _appCreateInfo.appName.data(),
         .gpuDebug = _appCreateInfo.enableGpuDebug
-        };
-    
-    rhi = Rhi(createInfo);
-    renderer.Init();
+    };
+
+    RenderHarwareInteface.Init(createInfo);
+    PrimaryCommandBuffer.reset(RenderHarwareInteface.CreateCommandList());
+    PrimaryCommandBuffer
+        ->SetName("PrimaryCommandBuffer")
+        .Build();
+
     Time::Init();
 }
 
@@ -39,19 +43,55 @@ void App::Destroy()
     ResourceManager::Destroy();
     PC_LOG("App Destroy")
 }
-    
-App::App()
-{
-    instance = this;
-}
 
+App::App()
+    : Renderer(RenderHarwareInteface)
+{
+    Instance = this;
+}
 
 void App::WorldTick(double _tick)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
 
-    world.Begin();
-    world.Update(_tick);
-    world.RenderingTick(_tick);
+    World.Begin();
+    World.Update(_tick);
+    World.RenderingTick(_tick);
+}
+
+void App::RenderFrame()
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+    PC_CORE::RhiSwapChain* swapChain = RenderHarwareInteface.GetRhiContext().rhiSwapChain.get();
+    PC_CORE::Window* mainWindow = &MainWindow;
+    constexpr std::array<float, 4> Color = {
+        0.5f,
+        0.5f,
+        0.5f,
+        0.5f,
+    };
+
+
+    if (swapChain->GetSwapChainImageIndex(mainWindow))
+    {
+        RenderHarwareInteface.GetRhiContext().ProceedResourceUpdateBranch();
+
+        PrimaryCommandBuffer->BeginRecordCommands();
+        {
+            PrimaryCommandBuffer->BeginDebugLabel("SwapChain", Color);
+            swapChain->BeginSwapChainRenderPass(PrimaryCommandBuffer.get());
+            OnRender(PrimaryCommandBuffer.get());
+            swapChain->EndSwapChainRenderPass(PrimaryCommandBuffer.get());
+            PrimaryCommandBuffer->EndDebugLabel();
+        }
+        PrimaryCommandBuffer->EndRecordCommands();
+
+        RenderHarwareInteface.GetRhiContext().SendEnqueuCommand(PrimaryCommandBuffer.get(), PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
+        swapChain->Present(&MainWindow);
+        RenderHarwareInteface.NextFrame();
+    }
+
 }
 

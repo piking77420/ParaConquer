@@ -1,39 +1,29 @@
 ﻿#pragma once
 
 #include <VulkanHeader.h>
-#include "LowRenderer/FrameBuffer.hpp"
+#include "LowRenderer/RhiFrameBuffer.hpp"
 
 namespace Vulkan
 {
-    
-    class VulkanFrameBuffer : public PC_CORE::FrameBuffer
+    class VulkanFrameBuffer : public PC_CORE::RhiFrameBuffer
     {
     public:
-
-        VULKAN_API const void* GetNativeHandle() const override
-        {
-            return &m_FrameBuffers;
-        }
-
-        VULKAN_API void* GetNativeHandle() override
-        {
-            return &m_FrameBuffers;
-        }
-        
         DEFAULT_COPY_MOVE_OPERATIONS(VulkanFrameBuffer)
 
-        VULKAN_API explicit VulkanFrameBuffer(const PC_CORE::CreateFrameInfo& _createFrameInfo);
-        
-        VULKAN_API explicit VulkanFrameBuffer(vk::Framebuffer _vkFramebuffer, uint32_t widht, uint32_t height);
-        
-        VULKAN_API VulkanFrameBuffer() = default;
+        VULKAN_API explicit VulkanFrameBuffer(PC_CORE::Rhi& _Rhi);
 
-        VULKAN_API ~VulkanFrameBuffer();
+        VULKAN_API ~VulkanFrameBuffer() override;
 
-        VULKAN_API vk::Framebuffer GetFramebuffer() const;
-        
+        bool Build() override;        
+
+        VULKAN_API vk::Framebuffer GetVkFramebuffer() const;
+
+        std::array<vk::Framebuffer, MaxFramesInFlight> FrameBuffers =
+        {
+            VK_NULL_HANDLE
+        };
+
     private:
-        std::array<vk::Framebuffer, MAX_FRAMES_IN_FLIGHT> m_FrameBuffers;
+        
     };
-
 }

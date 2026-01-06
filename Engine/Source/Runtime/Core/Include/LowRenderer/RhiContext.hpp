@@ -1,6 +1,8 @@
 ﻿#pragma once
 
-#include <Memory>
+#include <memory>
+#include <queue>
+#include <unordered_set>
 
 #include "CoreHeader.hpp"
 #include "RenderInstance.hpp"
@@ -9,48 +11,51 @@
 #include "RhiSampler.hpp"
 #include "SwapChain.hpp"
 #include "RhiFence.hpp"
+#include "RhiResourceUpdate.hpp"
 
 BEGIN_PCCORE
-    struct RhiContextCreateInfo
-    {
-        GLFWwindow* WindowHandle = nullptr;
-        const RenderInstanceCreateInfo* instanceCreate;
-        const PhysicalDevicesCreateInfo* physicalDevicesCreateInfo;
-    };
-
-
-    class RhiContext
-    {
-    public:
-        std::shared_ptr<PC_CORE::RenderInstance> renderInstance;
-
-        std::shared_ptr<PC_CORE::PhysicalDevices> physicalDevices;
-
-        std::shared_ptr<PC_CORE::RhiDevice> rhiDevice;
-
-        std::shared_ptr<PC_CORE::SwapChain> swapChain;
-        
-        static RhiContext& GetContext() 
-        {
-            return *m_CurrentContext;
-        }
-
-        PC_CORE_API RhiContext(const RhiContextCreateInfo& rhiContextCreateInfo);
-     
-        PC_CORE_API RhiContext() = delete;
-
-        PC_CORE_API virtual ~RhiContext() = default;
-
-        PC_CORE_API static void WaitIdle();
+struct RhiContextCreateInfo
+{
+    GLFWwindow* WindowHandle = nullptr;
+    const RenderInstanceCreateInfo* instanceCreate;
+    const PhysicalDevicesCreateInfo* physicalDevicesCreateInfo;
+};
     
-    protected:
-        static inline RhiContext* m_CurrentContext = nullptr;
+class Rhi;
 
-        PC_CORE_API virtual void WaitIdleInstance() = 0;
+class RhiContext
+{
+public:
+    std::shared_ptr<RenderInstance> renderInstance;
 
-    
-        std::vector<std::function<void(CommandList*)>> m_PendingResourceFuncion;
+    std::shared_ptr<PhysicalDevices> rhiPhysicalDevices;
 
-    };
+    std::shared_ptr<RhiDevice> rhiDevice;
+
+    std::shared_ptr<RhiSwapChain> rhiSwapChain;
+
+    PC_CORE_API RhiContext(Rhi& _Rhi);
+
+    PC_CORE_API RhiContext() = delete;
+
+    PC_CORE_API virtual ~RhiContext() = default;
+
+    PC_CORE_API virtual void WaitIdle() = 0;
+
+    PC_CORE_API virtual void SendEnqueuCommand(CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) = 0;
+
+    PC_CORE_API virtual void ProceedResourceUpdateBranch() = 0;
+
+    PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch();
+
+    PC_CORE_API bool PendingTransferOperation() const;
+
+protected:
+    Rhi& m_Rhi;
+
+    bool m_PendingTransferOperation = false;
+
+    std::deque<RHI::ResourceUpdateBranch> m_ResourceUpdate;
+};
 
 END_PCCORE

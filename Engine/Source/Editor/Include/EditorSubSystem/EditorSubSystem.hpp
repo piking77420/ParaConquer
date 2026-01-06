@@ -3,25 +3,29 @@
 #include "EditorHeader.hpp"
 
 BEGIN_EDITOR_PCCORE
+    class Editor;
 
-class Editor;
+    class EditorSubSystem
+    {
+    public:
+        DEFAULT_COPY_MOVE_OPERATIONS(EditorSubSystem);
 
-class EditorSubSystem
-{
-public:
+        EditorSubSystem(Editor& _editor) : m_Editor(_editor)
+        {
+        }
 
-    DEFAULT_COPY_MOVE_OPERATIONS(EditorSubSystem);
-    
-    EditorSubSystem(Editor& _editor) : m_Editor(_editor) {}
+        virtual void Render()
+        {
+        }
 
-    virtual void Render() {}
+        virtual void Update()
+        {
+        }
 
-    virtual void Update(){}
-    
-    virtual ~EditorSubSystem() = default;
+        virtual ~EditorSubSystem() = default;
 
-protected:
-    Editor& m_Editor;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
-};
+    protected:
+        Editor& m_Editor; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+    };
 
 END_EDITOR_PCCORE

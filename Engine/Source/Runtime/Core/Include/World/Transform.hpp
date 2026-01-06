@@ -6,57 +6,55 @@
 #include "Math/ToolboxTypedef.hpp"
 
 BEGIN_PCCORE
-
-
-struct Rotation
-{
-    Tbx::Vector3f eulerAngles;
-    Tbx::Quaternionf quaternion = Tbx::Quaternionf::Identity();
-
-    Rotation() = default;
-    
-    Rotation(Tbx::Quaternionf q)
+    struct Rotation
     {
-        auto Qn = quaternion.Normalize();
-        quaternion = Qn;
-        eulerAngles = Tbx::Quaternionf::ToEulerAngles(quaternion);
-    }
+        Tbx::Vector3f EulerAngles;
+        Tbx::Quaternionf Quaternion = Tbx::Quaternionf::Identity();
 
-    Rotation(Tbx::Vector3f eulerAngle) : eulerAngles(eulerAngle), quaternion( Tbx::Quaternionf::FromEuler(eulerAngle).Normalize())
+        Rotation() = default;
+
+        explicit Rotation(Tbx::Quaternionf q)
+        {
+            auto Qn = Quaternion.Normalize();
+            Quaternion = Qn;
+            EulerAngles = Tbx::Quaternionf::ToEulerAngles(Quaternion);
+        }
+
+        explicit Rotation(const Tbx::Vector3f _eulerAngle) : EulerAngles(_eulerAngle),
+                                                             Quaternion(
+                                                                 Tbx::Quaternionf::FromEuler(_eulerAngle).Normalize())
+        {
+        }
+
+        ~Rotation() = default;
+    };
+
+    REFLECT(Rotation)
+    REFLECT_MEMBER(Rotation, EulerAngles)
+    REFLECT_MEMBER(Rotation, Quaternion)
+
+    // TODO be more cache friendly for rendering fetch data
+    struct Transform : Component
     {
-        
-    }
-        
-    ~Rotation() = default;
-};
+        EntityId ParentId = INVALID_ENTITY_ID;
 
-REFLECT(Rotation)
-REFLECT_MEMBER(Rotation, eulerAngles)
-REFLECT_MEMBER(Rotation, quaternion)
+        Tbx::Vector3d Position;
 
-// TODO be more cache friendly for rendering fetch data
-struct Transform : Component
-{
-    EntityId parentId = INVALID_ENTITY_ID;
+        Rotation Rotation;
 
-    Tbx::Vector3d position;
+        Tbx::Vector3d Scale = Tbx::Vector3d::UnitOne();
 
-    Rotation rotation;
-    
-    Tbx::Vector3d scale = Tbx::Vector3d::UnitOne();
+        Tbx::Vector3d LocalPosition;
 
-    Tbx::Vector3d localPosition;
-    
-    
-    // TO HANDLE MATRIX TO AVOID RECALCULATION
-    
-};
-// TODO PUT THE REFLECT IN THE CLASS 
+        // TO HANDLE MATRIX TO AVOID RECALCULATION
+    };
+
+    // TODO PUT THE REFLECT IN THE CLASS 
 
 
-REFLECT(Transform, Component)
-REFLECT_MEMBER(Transform, position)
-REFLECT_MEMBER(Transform, rotation)
-REFLECT_MEMBER(Transform, scale)
+    REFLECT(Transform, Component)
+    REFLECT_MEMBER(Transform, Position)
+    REFLECT_MEMBER(Transform, Rotation)
+    REFLECT_MEMBER(Transform, Scale)
 
 END_PCCORE

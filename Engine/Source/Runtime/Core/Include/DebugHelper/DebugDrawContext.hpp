@@ -4,117 +4,125 @@
 
 #include "LowRenderer/CommandList.hpp"
 
+#include "LowRenderer/RhiDescriptorSet.hpp"
 #include "Math/ToolboxTypedef.hpp"
-#include "Rendering/RenderingTypedef.h"
+#include "ObjectPtr.hpp"
 #include "Rendering/Buffer/UniformBuffer.hpp"
+#include "Rendering/RenderingTypedef.h"
 #include "Resources/GraphicShader.hpp"
 #include "Resources/Mesh.hpp"
 #include "Scripting/ScriptingLua.hpp"
-#include "ObjectPtr.hpp"
+
 
 BEGIN_PCCORE
+    class PC_CORE_API DebugDrawContext
+    {
+    public:
+        static void DrawRay(const Tbx::Vector3d& _p1, const Tbx::Vector3d& _dir, float _distance = 1.f,
+                            Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-// TO DO MOVE IT TO Core / RENDER
+        static void DrawSphere(const Tbx::Vector3d& _p1, float _radius = 0.5f,
+                               Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-class Renderer;
+        static void DrawBox(const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler, const Tbx::Vector3d& _size,
+                            Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-class PC_CORE_API DebugDrawContext
-{
-public:
+        static void DrawWireSphere(const Tbx::Vector3d& _p1, float _radius = 0.5f,
+                                   Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-	static void DrawRay(Tbx::Vector3d _p1, Tbx::Vector3d _dir, float _distance = 1.f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        static void DrawWireBox(const Tbx::Vector3d& _p1, const Tbx::Vector3d& _euler, const Tbx::Vector3d& _size,
+                                Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-	static void DrawSphere(Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f,1.f));
+        static void DrawCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& _euler, float _radius, float _height,
+                                Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-	static void DrawBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f,1.f));
-	
-	static void DrawWireSphere(Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f,1.f));
-	
-	static void DrawWireBox(Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        static void DrawWireCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler, float _radius, float _height,
+                                    Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
-	static void DrawCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        void DrawDebugPrimitive(CommandList* _commandList);
 
-	static void DrawWireCapsule(Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        void Prepare();
 
-	void DrawDebugPrimitive(PC_CORE::CommandList* _commandList, const PC_CORE::RenderingContext& _renderingContex);
+        DEFAULT_COPY_MOVE_OPERATIONS(DebugDrawContext);
 
-	void Prepare();
-	
-	DEFAULT_COPY_MOVE_OPERATIONS(DebugDrawContext);
-	
-	DebugDrawContext(Renderer* _renderer);
+        DebugDrawContext(Rhi& _Rhi);
 
-	~DebugDrawContext() = default;
+        ~DebugDrawContext() = default;
 
-private:
-	static inline DebugDrawContext* m_Instance = nullptr;
-	
-	Renderer* m_Renderer;
+    private:
+        Rhi& m_Rhi;
 
-	static constexpr size_t MAX_GIZMO_PRIMITIVE = 2048;
-	static constexpr size_t GIZMO_BUFFER_SIZE = sizeof(Tbx::Matrix4x4f) * MAX_GIZMO_PRIMITIVE;
+        static inline DebugDrawContext* m_Instance = nullptr;
 
-	using RayDataPerInstance = std::array<Tbx::Vector4f, 3>;
-	static constexpr size_t MAX_RAY_COUNT = 1024;
-	static constexpr size_t RAY_BUFFER_SIZE = sizeof(RayDataPerInstance) * MAX_RAY_COUNT;
+        static constexpr size_t MAX_GIZMO_PRIMITIVE = 2048;
+        static constexpr size_t GIZMO_BUFFER_SIZE = sizeof(Tbx::Matrix4x4f) * MAX_GIZMO_PRIMITIVE;
 
-	enum class PrimitiveType
-	{
-		Sphere,
-		Box,	
-		Capsule,
-		WireSphere,
-		WireBox,
-		WireCapsule,
-		Count,
-	};
+        using RayDataPerInstance = std::array<Tbx::Vector4f, 3>;
+        static constexpr size_t MAX_RAY_COUNT = 1024;
+        static constexpr size_t RAY_BUFFER_SIZE = sizeof(RayDataPerInstance) * MAX_RAY_COUNT;
 
-	struct PrimitiveData
-	{
-		std::vector<Tbx::Matrix4x4f> matrixBuffer;
-		VertexBuffer primitiveBuffer;
-		IndexBuffer primitiveIndexBuffer;
-		size_t primitiveCount;
-		PC_CORE::VertexBuffer instanceBuffer;
-	};
+        enum class PrimitiveType
+        {
+            Sphere,
+            Box,
+            Capsule,
+            WireSphere,
+            WireBox,
+            WireCapsule,
+            Count,
+        };
 
-	struct RayCastPrimitiveData
-	{
-		
-		std::vector<RayDataPerInstance> rayBuffer;
-		std::vector<float> rayThicknessBuffer;
+        struct PrimitiveData
+        {
+            std::vector<Tbx::Matrix4x4f> matrixBuffer;
+            VertexBuffer primitiveBuffer;
+            IndexBuffer primitiveIndexBuffer;
+            size_t primitiveCount;
 
-		size_t rayCount;
-		PC_CORE::VertexBuffer vertexBuffer;
-	};
+            std::unique_ptr<RhiBuffer> instanceBuffer;
+        };
 
-	std::array<PrimitiveData, static_cast<size_t>(PrimitiveType::Count)> m_PrimitiveData;
+        struct RayCastPrimitiveData
+        {
+            std::vector<RayDataPerInstance> rayBuffer;
+            std::vector<float> rayThicknessBuffer;
 
-	RayCastPrimitiveData m_RayPrimitiveData;
-	
-	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSets;
+            size_t rayCount;
+            VertexBuffer vertexBuffer;
+        };
 
-	PC_CORE::WeakObjectPtr<PC_CORE::GraphicShader> m_ShaderProgram;
-	
-	PC_CORE::WeakObjectPtr<PC_CORE::GraphicShader> m_ShaderProgramRay;
+        std::array<PrimitiveData, static_cast<size_t>(PrimitiveType::Count)> m_PrimitiveData;
 
-	PC_CORE::ShaderProgramDescriptorSets* m_ShaderProgramDescriptorSetsRay;
+        RayCastPrimitiveData m_RayPrimitiveData;
 
-	void CreatePrimitiveShaders();
+        std::unique_ptr<RhiDescriptorSet> m_ShaderProgramDescriptorSets;
 
-	void CreateRayShaders();
-	
-	bool NeedToRender();
+        std::unique_ptr<RhiShaderProgram> m_ShaderProgram;
 
-	void GenerateBasePrimitve(PrimitiveType _primitiveType, VertexBuffer* _vertexBuffer, IndexBuffer* _indexBuffer);
+        std::unique_ptr<RhiShaderProgram> m_ShaderProgramRay;
 
-	static void PushBoxGizmo(PrimitiveType _primitiveType,
-		Tbx::Vector3d _p1, Tbx::Vector3d euler, Tbx::Vector3d _size, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        std::unique_ptr<RhiDescriptorSet> m_ShaderProgramDescriptorSetsRay;
 
-	static void PushSphereGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, float _radius = 0.5f, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        void CreatePrimitiveShaders();
 
-	static void PushCapsuleGizmo(PrimitiveType _primitiveType, Tbx::Vector3d _p1, Tbx::Vector3d euler, float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
-};
+        void CreateRayShaders();
+
+        bool NeedToRender();
+
+        void GenerateBasePrimitve(PrimitiveType _primitiveType, VertexBuffer* _vertexBuffer, IndexBuffer* _indexBuffer);
+
+        static void PushBoxGizmo(PrimitiveType _primitiveType,
+                                 const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler, const Tbx::Vector3d& _size,
+                                 Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+        static void PushSphereGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, float _radius = 0.5f,
+                                    Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+        static void PushCapsuleGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler,
+                                     float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+        
+        static std::string PrimitiveTypeToString(PrimitiveType _primitiveType);
+    };
 
 
 END_PCCORE

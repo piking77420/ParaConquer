@@ -3,17 +3,13 @@
 #include "CoreHeader.hpp"
 
 BEGIN_PCCORE
+    class Material;
 
-class Material;
+    class MaterialInstance
+    {
+        friend Material;
 
-class MaterialInstance
-{
-public:
-
-private:
-    friend Material;
-
-    Material* m_pMaterial = nullptr;
-};
+        Material* m_pMaterial = nullptr;
+    };
 
 END_PCCORE

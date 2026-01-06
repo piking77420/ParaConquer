@@ -1,33 +1,44 @@
 #pragma once
 
-#include "RhiResource.hpp"
+#include "RhiObject.hpp"
 
 
 BEGIN_PCCORE
 
-struct RhiFenceCreateInfo
-{
-	bool signaled;
-};
-
-class RhiFence : public RhiResource
+class RhiFence : public RhiObjectT<RhiFence>
 {
 public:
+    DEFAULT_COPY_MOVE_OPERATIONS(RhiFence);
 
-	PC_CORE_API const void* GetNativeHandle() const = 0;
+    PC_CORE_API explicit RhiFence(Rhi& _Rhi);
 
-	PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) = 0;
+    PC_CORE_API RhiFence() = default;
 
-	PC_CORE_API virtual void Reset() = 0;
+    PC_CORE_API ~RhiFence() override = default;
 
-	DEFAULT_COPY_MOVE_OPERATIONS(RhiFence);
+    PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) = 0;
 
-	PC_CORE_API RhiFence() = default;
+    PC_CORE_API virtual void Reset() = 0;
 
-	PC_CORE_API virtual ~RhiFence() = default;
+    PC_CORE_API virtual bool Build() = 0;
+        
+    // Setter 
 
-private:
+    RhiFence& SetSignaled(bool Signaled)
+    {
+        m_Signaled = Signaled;
+        return *this;
+    }
 
+    // Getter
+
+    bool GetSignaled() const
+    {
+        return m_Signaled;
+    }
+
+protected: 
+    bool m_Signaled = false;
 };
 
 END_PCCORE

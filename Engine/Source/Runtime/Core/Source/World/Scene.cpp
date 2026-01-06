@@ -1,4 +1,4 @@
-﻿#include "world\scene.hpp"
+﻿#include "world/scene.hpp"
 
 #include <Cassert>
 
@@ -15,4 +15,3 @@ void Scene::Begin()
 void Scene::Update()
 {
 }
-

@@ -3,17 +3,12 @@
 #include "CoreHeader.hpp"
 
 BEGIN_PCCORE
+    class RhiDevice
+    {
+    public:
+        RhiDevice() = default;
 
-class RhiDevice
-{
-public:
-
-    RhiDevice() = default;
-
-    virtual ~RhiDevice() = default;
-
-private:
-    
-};
+        virtual ~RhiDevice() = default;
+    };
 
 END_PCCORE

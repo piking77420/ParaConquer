@@ -2,7 +2,5 @@
 
 
 void PC_EDITOR_CORE::MaterialBuilder::CreateMaterial()
-{   
-    
-    
+{
 }

@@ -18,18 +18,18 @@ static constexpr bool CreateBasicsResource = true;
 void ResourceManager::InitPath()
 {
     PERF_REGION_SCOPED;
-    
 }
 
 void ResourceManager::Destroy()
 {
-    for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); it++)
+    for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); ++it)
     {
-
         Instance().m_ResourcesMap[it->second];
         if (Instance().m_ResourcesMap[it->second].use_count() > 1)
         {
-            PC_LOGERROR("There is a remaining reference before destroyed by the resource manager " + Instance().m_ResourcesMap[it->second]->name);
+            PC_LOGERROR(
+                "There is a remaining reference before destroyed by the resource manager " + Instance().m_ResourcesMap[
+                    it->second]->Name);
         }
         Instance().m_ResourcesMap[it->second].reset();
         Instance().m_ResourcesMap[it->second] = nullptr;
@@ -39,7 +39,7 @@ void ResourceManager::Destroy()
 
 const std::string& ResourceManager::GetName(const Guid& _guid)
 {
-    return Instance().m_ResourcesMap.at(_guid)->name;
+    return Instance().m_ResourcesMap.at(_guid)->Name;
 }
 
 bool ResourceManager::Exist(const std::string& _name)
@@ -56,15 +56,12 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
 {
     if (!Reflector::Exist(typeID))
         return;
-        
-    for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); it++)
+
+    for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); ++it)
     {
         if (typeID != it->second->GetType().typeId)
             continue;
-        
+
         _lamba(it->second);
     }
-    
 }
-
-

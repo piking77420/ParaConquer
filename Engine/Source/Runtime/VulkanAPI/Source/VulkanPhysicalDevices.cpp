@@ -1,7 +1,5 @@
 ﻿#include "VulkanPhysicalDevices.hpp"
 
-#include <set>
-
 #include "Log.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanInstance.hpp"
@@ -21,8 +19,9 @@ uint32_t Vulkan::VulkanPhysicalDevice::GetMaxUsableSampleCount() const
 {
     vk::PhysicalDeviceProperties properties;
     physicalDevice.getProperties(&properties);
-    
-    vk::SampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+
+    vk::SampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.
+        framebufferDepthSampleCounts;
     if (counts & vk::SampleCountFlagBits::e64) { return 64; }
     if (counts & vk::SampleCountFlagBits::e32) { return 32; }
     if (counts & vk::SampleCountFlagBits::e16) { return 16; }
@@ -32,7 +31,6 @@ uint32_t Vulkan::VulkanPhysicalDevice::GetMaxUsableSampleCount() const
 
     return 1;
 }
-
 
 
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
@@ -46,18 +44,14 @@ const std::vector<Vulkan::QueueFamilyIndices>& Vulkan::VulkanPhysicalDevices::Ge
     return m_QueuesFamiliesProperty;
 }
 
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSupportDetails() const
-{
-    return m_SwapChainSupportDetails;
-}
-
-Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(
+Vulkan::VulkanPhysicalDevices::VulkanPhysicalDevices(vk::Instance _VkInstance, vk::SurfaceKHR _Surface,
     const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable)
     : PhysicalDevices(_physicalDevicesCreateInfo)
+    , m_VkInstance(_VkInstance)
 {
     PERF_REGION_SCOPED;
     Initialize(_physicalDevicesCreateInfo, _extensionToEnable);
-    QueryQueueFamilies();
+    QueryQueueFamilies(_Surface);
 }
 
 Vulkan::VulkanPhysicalDevices::~VulkanPhysicalDevices()
@@ -66,11 +60,15 @@ Vulkan::VulkanPhysicalDevices::~VulkanPhysicalDevices()
         delete device;
 }
 
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::UpdateSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr)
+Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::GetSwapChainSupport(const vk::SurfaceKHR& _surfaceKhr) const
 {
+    SwapChainSupportDetails m_SwapChainSupportDetails;
+
     vk::PhysicalDevice device = GetSelectedPhysicalDevice()->physicalDevice;
-    
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surfaceKhr, reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&m_SwapChainSupportDetails.capabilities));
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surfaceKhr,
+                                              reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&m_SwapChainSupportDetails.
+                                                  capabilities));
     m_SwapChainSupportDetails.formats = device.getSurfaceFormatsKHR(_surfaceKhr);
     m_SwapChainSupportDetails.presentModes = device.getSurfacePresentModesKHR(_surfaceKhr);
     return m_SwapChainSupportDetails;
@@ -88,7 +86,7 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
     for (size_t i = 0; i < _physicalDevices.size(); i++)
     {
         const vk::PhysicalDevice& vkphysicalDevice = _physicalDevices[i];
-        devicesScore[i] = GetDeviceScore(vkphysicalDevice, _requestExtensions,  i);
+        devicesScore[i] = GetDeviceScore(vkphysicalDevice, _requestExtensions, i);
     }
 
     int32_t deviceBestScore = std::numeric_limits<int32_t>::min();
@@ -107,32 +105,27 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
         throw std::runtime_error("failed to find suitable GPU!");
     }
     m_PhysicalDeviceIndex = deviceBestScoreIndex;
-    
-    VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
-    const Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext.GetSurface(), GetSelectedPhysicalDevice()->physicalDevice);
-    m_SwapChainSupportDetails = swapChainSupportDetails;
-
 }
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
-                                                        const vk::PhysicalDeviceProperties& _physicalDeviceProperties, size_t* _score)
+                                                        const vk::PhysicalDeviceProperties& _physicalDeviceProperties,
+                                                        size_t* _score)
 {
     _physicalDevice->name = _physicalDeviceProperties.deviceName.data();
     _physicalDevice->driverVersion = _physicalDeviceProperties.driverVersion;
 
     const vk::PhysicalDeviceLimits& limits = _physicalDeviceProperties.limits;
     // TODO
-
 }
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
-                                                      const vk::PhysicalDeviceFeatures& _physicalDeviceProperties, size_t* _score)
+                                                      const vk::PhysicalDeviceFeatures& _physicalDeviceProperties,
+                                                      size_t* _score)
 {
-       
 }
 
 std::set<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
-    const std::vector <PC_CORE::RhiExtension>& _requestExtensions)
+    const std::vector<PC_CORE::RhiExtension>& _requestExtensions)
 {
     using namespace PC_CORE;
 
@@ -140,15 +133,15 @@ std::set<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
 
     for (size_t i = 0; i < _requestExtensions.size(); i++)
     {
-        const RhiExtension rhiExt = static_cast<RhiExtension>(_requestExtensions[i]);
+        const auto rhiExt = _requestExtensions[i];
         switch (rhiExt)
         {
         case RhiExtension::RayTracing:
-			out.emplace(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-			out.emplace(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-			out.emplace(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-			out.emplace(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
-			out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+            out.emplace(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+            out.emplace(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            out.emplace(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+            out.emplace(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+            out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
             out.emplace(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
             out.emplace(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
             break;
@@ -186,59 +179,48 @@ bool Vulkan::VulkanPhysicalDevices::CheckDeviceExtensionSupport(
     return remainingExtensions.empty();
 }
 
-void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies()
+void Vulkan::VulkanPhysicalDevices::QueryQueueFamilies(vk::SurfaceKHR _Surface)
 {
     vk::PhysicalDevice currentDevice = GetSelectedPhysicalDevice()->physicalDevice;
 
-    
+
     uint32_t queueFamilyCount = 0;
     currentDevice.getQueueFamilyProperties(&queueFamilyCount, nullptr);
 
-    std::vector<vk::QueueFamilyProperties> queueFamilyPropertieses = std::vector<vk::QueueFamilyProperties>(queueFamilyCount);
+    auto queueFamilyPropertieses = std::vector<vk::QueueFamilyProperties>(queueFamilyCount);
     currentDevice.getQueueFamilyProperties(&queueFamilyCount, queueFamilyPropertieses.data());
     m_QueuesFamiliesProperty.resize(queueFamilyPropertieses.size());
-
-    vk::SurfaceKHR surfaceKhr = reinterpret_cast<VulkanContext&>(Vulkan::VulkanContext::GetContext()).GetSurface();
 
     for (size_t i = 0; i < queueFamilyPropertieses.size(); i++)
     {
         m_QueuesFamiliesProperty[i].familyProperties = queueFamilyPropertieses[i];
-        m_QueuesFamiliesProperty[i].supportPresent = currentDevice.getSurfaceSupportKHR(static_cast<uint32_t>(i), surfaceKhr);
+        m_QueuesFamiliesProperty[i].supportPresent = currentDevice.getSurfaceSupportKHR(
+            static_cast<uint32_t>(i), _Surface);
     }
 }
 
-Vulkan::SwapChainSupportDetails Vulkan::VulkanPhysicalDevices::QuerySwapChainSupport(const vk::SurfaceKHR& _surfaceKhr,
-    vk::PhysicalDevice _physicalDevices)
+const Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysicalDevice() const
 {
-    SwapChainSupportDetails details;
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevices, _surfaceKhr, reinterpret_cast<VkSurfaceCapabilitiesKHR*>(&details.capabilities));
-
-    details.formats = _physicalDevices.getSurfaceFormatsKHR(_surfaceKhr);
-    details.presentModes = _physicalDevices.getSurfacePresentModesKHR(_surfaceKhr);
-    return details;
+    return reinterpret_cast<const VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
 }
-
 
 Vulkan::VulkanPhysicalDevice* Vulkan::VulkanPhysicalDevices::GetSelectedPhysicalDevice()
 {
-    return reinterpret_cast<Vulkan::VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
+    return reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[m_PhysicalDeviceIndex]);
+
 }
 
-void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo, std::set<std::string>* _extensionToEnable)
+void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCreateInfo& _physicalDevicesCreateInfo,
+                                               std::set<std::string>* _extensionToEnable)
 {
-    PC_CORE::RhiContext& RhiContext = PC_CORE::RhiContext::GetContext();
-    std::shared_ptr instanceInterface(std::reinterpret_pointer_cast<VulkanInstance>(RhiContext.renderInstance));
-    vk::Instance vulkanInstance = instanceInterface->Get();
-
     // Get Vulkan Device NBR
     uint32_t physicalDeviceCount = 0;
-    VK_CHECK_CALL(vulkanInstance.enumeratePhysicalDevices(&physicalDeviceCount, nullptr));
+    VK_CHECK_CALL(m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, nullptr));
 
     // Get Vulkan Device
     std::vector<vk::PhysicalDevice> vkPhysicalDevices;
     vkPhysicalDevices.resize(physicalDeviceCount);
-    VK_CHECK_CALL(vulkanInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
+    VK_CHECK_CALL(m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
 
     // Get Extension as vulkna ext
     std::set<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
@@ -253,9 +235,8 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
     m_PhysicalDevices.resize(vkPhysicalDevices.size());
     for (size_t i = 0; i < vkPhysicalDevices.size(); i++)
         m_PhysicalDevices[i] = new VulkanPhysicalDevice();
-    
-    
-    
+
+
     LookForSuitableDevices(vkPhysicalDevices, requestVulkanExtensions);
     *_extensionToEnable = requestVulkanExtensions;
 
@@ -263,39 +244,30 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
 }
 
 int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& _physicalDevice,
-    const std::set<std::string>& _requestExtensions,
+                                                      const std::set<std::string>& _requestExtensions,
                                                       size_t _deviceIndex)
 {
-
-    VulkanPhysicalDevice* myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
+    auto myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
     myPhysicalDevice->physicalDevice = _physicalDevice;
-    
+
     size_t score = 0;
 
     uint32_t extensionCount;
     VK_CALL(myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr));
 
     std::vector<vk::ExtensionProperties> availableExtensions(extensionCount);
-    VK_CALL(myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()));
+    VK_CALL(
+        myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount,
+            availableExtensions.data()));
     std::set<std::string> requiredExtensions(_requestExtensions.begin(), _requestExtensions.end());
 
     if (!CheckDeviceExtensionSupport(availableExtensions, requiredExtensions))
     {
         score = std::numeric_limits<size_t>::min();
         PC_LOGERROR("Unsuported extension!")
-        
-        for (const auto& extension : requiredExtensions)
-            PC_LOGERROR("Extension requiered: {} ", extension);
-        
-    }
-    
-    VulkanContext* vulkanContext = reinterpret_cast<VulkanContext*>(&VulkanContext::GetContext());
-    Vulkan::SwapChainSupportDetails swapChainSupportDetails = QuerySwapChainSupport(vulkanContext->GetSurface(), myPhysicalDevice->physicalDevice);
 
-    if (swapChainSupportDetails.formats.empty() || swapChainSupportDetails.presentModes.empty())
-    {
-        score = std::numeric_limits<int32_t>::min();
-        PC_LOGERROR("Unsuported surface!")
+        for (const auto& extension : requiredExtensions)
+        PC_LOGERROR("Extension requiered: {} ", extension);
     }
 
     vk::PhysicalDeviceFeatures2 deviceFeatures2 = {};
@@ -306,7 +278,7 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     vk::PhysicalDeviceProperties2 deviceProperties = {};
     deviceProperties.sType = vk::StructureType::ePhysicalDeviceProperties2;
     myPhysicalDevice->physicalDevice.getProperties2(&deviceProperties);
-    
+
     GetDeviceProperties(myPhysicalDevice, deviceProperties.properties, &score);
     GetDeviceFeatures(myPhysicalDevice, deviceFeatures2.features, &score);
     // Evaluate score based on VkPhysicalDeviceFeatures
@@ -321,7 +293,6 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
             score++;
     }
 
-    
 
     return score;
 }

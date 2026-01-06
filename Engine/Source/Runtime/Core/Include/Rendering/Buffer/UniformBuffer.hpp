@@ -3,34 +3,21 @@
 #include <Array>
 
 #include "GpuBuffer.hpp"
-#include "LowRenderer/RhiUniformBuffer.hpp"
 
 BEGIN_PCCORE
-    class PC_CORE_API UniformBuffer final: public GpuBuffer
-{
-public:
-    std::shared_ptr<RhiResource> GetRhiHandle() const override
+    class PC_CORE_API UniformBuffer final : public GpuBuffer
     {
-        return m_RhiBuffer;
-    }
+    public:
 
-    std::shared_ptr<RhiBuffer> GetRhiBuffer() const
-    {
-        return m_RhiBuffer;
-    }
+        DEFAULT_COPY_MOVE_OPERATIONS(UniformBuffer);
 
-    void Update(const void* _data, size_t _size);
+        explicit UniformBuffer(PC_CORE::Rhi& rhi, const std::string& _name, size_t _size);
+    
+        explicit UniformBuffer() = default;
 
-    explicit UniformBuffer(void* _data, size_t _size, MemoryLocalisation _memoryLocalisation, MemoryUsage _usage);
+        ~UniformBuffer() override = default;
 
-    explicit UniformBuffer(size_t _size, MemoryLocalisation _memoryLocalisation,  MemoryUsage _usage);
-
-    explicit UniformBuffer() = default;
-
-    ~UniformBuffer() override = default;
-
-private:
-    std::shared_ptr<RhiBuffer> m_RhiBuffer;
-};
+    private:
+    };
 
 END_PCCORE

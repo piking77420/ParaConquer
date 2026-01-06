@@ -3,10 +3,8 @@
 #include "CoreHeader.hpp"
 
 BEGIN_PCCORE
-
-struct ColliderDrawInfo
-{
-    
-};
+    struct ColliderDrawInfo
+    {
+    };
 
 END_PCCORE

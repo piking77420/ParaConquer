@@ -4,14 +4,13 @@
 
 using namespace PC_CORE;
 
-SwapChain::SwapChain(uint32_t _widht, uint32_t _height) :
-    m_SwapChainWidth(_widht), m_SwapChainHeight(_height)
+RhiSwapChain::RhiSwapChain(Rhi& _Rhi)
+    : RhiObjectT(_Rhi)
 {
 
 }
 
- std::shared_ptr<RhiRenderPass> SwapChain::GetSwapChainRenderPass() const
+std::shared_ptr<RhiRenderPass> RhiSwapChain::GetSwapChainRenderPass() const
 {
     return m_SwapChainRenderPass;
 }
-

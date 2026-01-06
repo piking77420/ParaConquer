@@ -3,24 +3,23 @@
 #include "Io/ImguiContext.h"
 
 BEGIN_EDITOR_PCCORE
+    class SceneButton : public EditorWindow
+    {
+    public:
+        SceneButton(Editor& _editor, const std::string& _name);
 
-class SceneButton : public EditorWindow
-{
-public:
-    SceneButton(Editor& _editor, const std::string& _name);
+        ~SceneButton() override;
 
-    ~SceneButton() override;
+        void Update() override;
 
-    void Update() override;
-private:
-    void OnEdit();
+    private:
+        void OnEdit();
 
-    ImguiImage m_PlayImage;
-    
-    ImguiImage m_PauseImage;
+        ImguiImage m_PlayImage;
 
-    ImguiImage m_ResetImage;
+        ImguiImage m_PauseImage;
 
-};
+        ImguiImage m_ResetImage;
+    };
 
 END_EDITOR_PCCORE

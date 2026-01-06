@@ -1,190 +1,72 @@
 ﻿#pragma once
 
-#include "CoreHeader.hpp"
-#include "Material.hpp"
-#include "LowRenderer/FrameBuffer.hpp"
-#include "LowRenderer/DescriptorSet.hpp"
-#include "Resources/StaticMesh.hpp"
+#include <array>
 
-BEGIN_PCCORE
-    struct LowLevelCamera
+#include "LowRenderer/RhiTypedef.h"
+
+#define GPU_ALIGN alignas(16)
+
+namespace PC_CORE::Rendering
+{
+
+namespace Gpu
+{
+    struct GPU_ALIGN mat4
     {
-        Tbx::Vector3d position;
-        Tbx::Vector3f front;
-        Tbx::Vector3f up;
-
-        float aspect; 
-        float fov;
-        float near;
-        float far;
-        bool isOrthographic;
+        std::array<float, 16> data;
     };
 
-#ifdef WITH_EDITOR
-    enum RenderingContextFlag
+    struct GPU_ALIGN mat3
     {
-        DebugDrawGeometry = 1 << 0  
-    };
-    
-
-#endif
-
-    struct RenderingContext
-    {
-        LowLevelCamera lowLevelCamera;
-        float deltaTime;
-        float time;
-        
-        std::shared_ptr<FrameBuffer> gbufferFrameBuffer;
-        std::shared_ptr<FrameBuffer> forwardFrameBuffer;
-        std::shared_ptr<FrameBuffer> finalImageFrameBuffer;
-        
-        PC_CORE::ShaderProgramDescriptorSets* geometryDescritproSet;
-        PC_CORE::ShaderProgramDescriptorSets* defferdLightingGbufferSet;
-        PC_CORE::ShaderProgramDescriptorSets* defferdLightingLightingCameraSet;
-        PC_CORE::ShaderProgramDescriptorSets* forwardDesritptorSet;
-        PC_CORE::ShaderProgramDescriptorSets* toneMapDescritptorSet;
-        PC_CORE::ShaderProgramDescriptorSets* finalImageDescritptorSet;
-
-        Texture2D* hdrImage;
-
-        Tbx::Vector2ui renderingContextSize;
-#ifdef WITH_EDITOR
-        size_t renderingContextFlag;
-#endif
-
-        float gamma;
-        float exposure;
+        std::array<float, 9> data;
     };
 
-    enum struct GbufferType : std::uint8_t
+    struct GPU_ALIGN vec4
     {
-        Albedo,
-        Normal,
-        RoughnessMetallicAo,
-        WorldPosition,
-
-        Count
-    };
-    
-
-    struct StaticMeshComponentData
-    {
-        PC_CORE::MaterialType materialType;
-        const PC_CORE::ShaderProgramDescriptorSets* descriptorSet;
-        const PC_CORE::StaticMesh* staticMesh;
-
-        Tbx::Matrix4x4d worldMatrix;
-        // TO DO PASS IT TO MAT3
-        Tbx::Matrix4x4d normalInvertMatrix;
-
+        std::array<float, 4> data;
     };
 
-
-    enum class LightType : uint8_t
+    struct GPU_ALIGN vec3
     {
-        Directional,
-        Spotlight,
-        Point,
-        Area,
-        Count,
+        std::array<float, 3> data;
     };
 
-    struct DirectionalLightData
+    struct GPU_ALIGN vec2
     {
-        Tbx::Vector3f color;
-        float intensity;
-        Tbx::Vector3f direction;
+        std::array<float, 2> data;
     };
 
-    struct SpotLightData
+    static inline void StreamDoubleToFloat(vec2* _Dst, Tbx::Vector2d* _Src)
     {
-        Tbx::Vector3f color;
-        float intensity;
-        Tbx::Vector3f direction;
-        float cutoff;
-        Tbx::Vector3d position;
-        float outerCutOff;
-    };
+        _Dst->data[0] = static_cast<float>(_Src->x);
+        _Dst->data[1] = static_cast<float>(_Src->y);
+    }
 
-    struct PointLightData
+    static inline void StreamDoubleToFloat(vec3* _Dst, Tbx::Vector3d* _Src)
     {
-        Tbx::Vector3f color;
-        float intensity;
-        Tbx::Vector3d position;
-    };
+        _Dst->data[0] = static_cast<float>(_Src->x);
+        _Dst->data[1] = static_cast<float>(_Src->y);
+        _Dst->data[2] = static_cast<float>(_Src->z);
 
-    
-    // World Data
-    struct LightData
+    }
+
+    static inline void StreamDoubleToFloat(vec4* _Dst, Tbx::Vector4d* _Src)
     {
-        LightType lightType;
-        union Data
+        _Dst->data[0] = static_cast<float>(_Src->x);
+        _Dst->data[1] = static_cast<float>(_Src->y);
+        _Dst->data[2] = static_cast<float>(_Src->z);
+        _Dst->data[3] = static_cast<float>(_Src->w);
+    }
+
+    static inline void StreamDoubleToFloat(mat4* _Dst, Tbx::Matrix4x4d* _Src)
+    {
+        for (size_t i = 0; i < 16; i++)
         {
-            DirectionalLightData directionalLight;
-            SpotLightData spotLight;
-            PointLightData pointLightData;
-        }data;
-    };
-
-    struct RenderingWorldData
-    {
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderingWorldData);
-
-        DEFAULT_COPY_MOVE_OPERATIONS(RenderingWorldData);
-
-        void Clear()
-        {
-            staticMeshComponentData.clear();
-            lightData.clear();
+            _Dst->data[i] = static_cast<float>(_Src->data[i]);
         }
+    }
 
-        std::vector<StaticMeshComponentData> staticMeshComponentData;
-        std::vector<LightData> lightData;
-    };
+}
 
 
-#define MAX_DIRLIGHT 1
-#define MAX_POINTLIGHT 10
-#define MAX_SPOTLIGHT 10
-
-    struct ALIGNAS_16 DirectionalLightGPU
-    {
-        Tbx::Vector3f direction;
-        float intensity;
-        Tbx::Vector3f color;
-        float _pad;
-    };
-
-    struct ALIGNAS_16 SpotLightGPU
-    {
-        Tbx::Vector3f position;
-        float intensity;
-        Tbx::Vector3f direction;
-        float cutoff;
-        Tbx::Vector3f color;
-        float outerCutOff;
-        float maxRange;
-        float _pad[3];
-    };
-
-    struct ALIGNAS_16 PointLightGPU
-    {
-        Tbx::Vector3f position;
-        float maxRange;
-        Tbx::Vector3f color;
-        float intensity;
-    };
-
-    struct ALIGNAS_16 GPUDynamicLightData   
-    {
-        DirectionalLightGPU directionalLights[MAX_DIRLIGHT];
-        SpotLightGPU spothLights[MAX_SPOTLIGHT];
-        PointLightGPU pointLights[MAX_POINTLIGHT];
-        int dirLightCount;
-        int spothLightCount;
-        int pointLightCount;    
-        int _pad;
-    };
-
-END_PCCORE
+}

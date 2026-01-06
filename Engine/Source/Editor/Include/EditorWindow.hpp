@@ -5,8 +5,12 @@
 #include <Math/ToolboxTypedef.hpp>
 
 #include "EditorHeader.hpp"
-#include "Importer.hpp"
 
+
+namespace PC_CORE
+{
+    class CommandList;
+}
 
 namespace PC_EDITOR_CORE
 {
@@ -14,54 +18,55 @@ namespace PC_EDITOR_CORE
 }
 
 BEGIN_EDITOR_PCCORE
-class EditorWindow
-{
-public:
-
-    ImGuiWindowFlags windowFlags;
-    
-    std::string name = "EditorWindow";
-
-    bool isOpen = true;
-
-    Tbx::Vector2f size;
-
-    Tbx::Vector2f position;
-
-    bool resize = false;
-    
-    EditorWindow(Editor& _editor, const std::string& _name);
-    
-    virtual ~EditorWindow() = default;
-
-    void Begin();
-    
-    void End();
-
-    void GetInfo();
-    
-    bool IsInsideWindow(Tbx::Vector2f _point) const;
-
-    bool IsCursorInsideWindow() const;
-
-
-    virtual void Render() {};
-    
-    virtual void Update()
+    class EditorWindow
     {
-      
-    }
+    public:
+        ImGuiWindowFlags windowFlags;
 
-    virtual void OnPlayButton()
-    {}
+        std::string name = "EditorWindow";
 
-    virtual void OnResetScene(){}
+        bool isOpen = true;
 
-protected:
-    Editor* m_Editor = nullptr;
+        Tbx::Vector2f size;
 
-    Importer m_Importer;
-    
-};
+        Tbx::Vector2f position;
+
+        bool resize = false;
+
+        EditorWindow(Editor& _editor, const std::string& _name);
+
+        virtual ~EditorWindow() = default;
+
+        void Begin();
+
+        void End();
+
+        void GetInfo();
+
+        bool IsInsideWindow(Tbx::Vector2f _point) const;
+
+        bool IsCursorInsideWindow() const;
+
+
+        virtual void Render([[maybe_unsed]] PC_CORE::CommandList* _Cmd)
+        {
+        };
+
+        virtual void Update()
+        {
+        }
+
+        virtual void OnPlayButton()
+        {
+        }
+
+        virtual void OnResetScene()
+        {
+        }
+
+    protected:
+        Editor* m_Editor = nullptr;
+
+    };
 
 END_EDITOR_PCCORE

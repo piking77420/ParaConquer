@@ -1,45 +1,44 @@
 ﻿#pragma once
 
 #include "Resource.hpp"
-#include "LowRenderer/RhiTypedef.h"
+#include "LowRenderer/RhiShaderProgram.hpp"
 
 BEGIN_PCCORE
-
-class PC_CORE_API ShaderSourceBinary : public PC_CORE::Resource
-{
-public:
-
-    ShaderStageType GetShaderStageType() const
+    class PC_CORE_API ShaderSourceBinary : public Resource
     {
-        return m_ShaderStageType;
-    }
-       
-    IMP_DYNAMIC_REFLECT()
+    public:
+        PC_CORE::RhiShaderProgram::ShaderStageTypeBits GetShaderStageType() const
+        {
+            return m_ShaderStageType;
+        }
 
-    ShaderSourceBinary()
-    {
-        DYNAMIC_REFLECT_INIT;
-    }
+        IMP_DYNAMIC_REFLECT()
 
-    void OnParentReload(const Guid& _parentGuid) override;
+        ShaderSourceBinary()
+        {
+            DYNAMIC_REFLECT_INIT;
+        }
 
-    void WriteSprivToFile(const std::vector<uint32_t>* _sprivCode, GraphicAPI _api);
+        void OnParentReload(const Guid& _parentGuid) override;
 
-    std::vector<char> GetCode() const;
+        void WriteSprivToFile(const std::vector<uint32_t>* _sprivCode, GraphicAPI _api);
 
-    ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType, GraphicAPI _api);
-    
-    ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode, ShaderStageType _shaderStageType, GraphicAPI _api);
-    
-    ~ShaderSourceBinary() override = default;
+        std::vector<char> GetCode() const;
 
-private:
-    ShaderStageType m_ShaderStageType;
+        ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
+            RhiShaderProgram::ShaderStageTypeBits _shaderStageType, GraphicAPI _api);
 
-    std::string m_Path;
+        ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
+            RhiShaderProgram::ShaderStageTypeBits _shaderStageType, GraphicAPI _api);
 
-    REFLECT(ShaderSourceBinary, PC_CORE::Resource);
+        ~ShaderSourceBinary() override = default;
 
-};
+    private:
+        RhiShaderProgram::ShaderStageTypeBits m_ShaderStageType;
+
+        std::string m_Path;
+
+        REFLECT(ShaderSourceBinary, PC_CORE::Resource);
+    };
 
 END_PCCORE

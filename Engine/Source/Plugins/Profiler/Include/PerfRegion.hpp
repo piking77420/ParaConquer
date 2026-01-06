@@ -749,7 +749,9 @@ namespace PerfRegion
         };
     };
 
-    constexpr Color::ColorType Game = Color::Gray;
+    constexpr Color::ColorType Core = Color::Gray;
+
+    constexpr Color::ColorType Game = Color::RebeccaPurple;
 
     constexpr Color::ColorType Rendering = Color::Yellow;
 

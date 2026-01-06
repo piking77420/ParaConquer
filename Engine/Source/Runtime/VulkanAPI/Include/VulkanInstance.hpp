@@ -8,21 +8,21 @@ namespace Vulkan
     class VulkanInstance : public PC_CORE::RenderInstance
     {
     public:
-
         vk::SurfaceKHR surface;
 
-        VULKAN_API explicit VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo, GLFWwindow* _window);
-        
+        VULKAN_API explicit VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& _renderInstanceCreateInfo,
+                                           GLFWwindow* _window);
+
         VULKAN_API explicit VulkanInstance() = default;
 
         VULKAN_API ~VulkanInstance() override;
-        
-        VULKAN_API inline vk::Instance Get() const
+
+        VULKAN_API vk::Instance Get() const
         {
             return m_Instance;
         }
 
-        inline vk::Instance GetVulkanInstance() const
+        vk::Instance GetVulkanInstance() const
         {
             return m_Instance;
         }
@@ -37,7 +37,8 @@ namespace Vulkan
         {
             return m_EndDebugLabel;
         }
-void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNameInfo);
+
+        void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* _pNameInfo) const ;
 #endif
 
 #ifdef  PROFILING
@@ -64,15 +65,14 @@ void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* pNa
 
         void PopulateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& _debugMessengerCreateInfo);
 
-        PFN_vkCmdBeginDebugUtilsLabelEXT m_BeginDebugLabel;
+        PFN_vkCmdBeginDebugUtilsLabelEXT m_BeginDebugLabel = nullptr;
 
-        PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel;
+        PFN_vkCmdEndDebugUtilsLabelEXT m_EndDebugLabel = nullptr;
 
-        PFN_vkSetDebugUtilsObjectNameEXT m_DebugName;
+        PFN_vkSetDebugUtilsObjectNameEXT m_DebugName = nullptr;
 
         PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT m_Gpdctd = nullptr;
 
 #endif  DEBUG_GPU_ON
-
     };
 }

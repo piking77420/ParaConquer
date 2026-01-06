@@ -1,18 +1,21 @@
 ﻿#include "LowRenderer/CommandList.hpp"
 
-
-PC_CORE_API PC_CORE::CommandList::CommandList(const CommandListCreateInfo& _commandListCreateInfo) : m_CommandPoolFamily(_commandListCreateInfo.commandPoolFamily)
+PC_CORE::CommandList::CommandList(Rhi& _Rhi)
+    : RhiObjectT(_Rhi)
 {
-	
 }
 
-void PC_CORE::CommandList::RecordFetchCommand(std::function<void(CommandList*)> _fectFunction)
+void PC_CORE::CommandList::BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo)
 {
-	m_FecthCommands.push_back(_fectFunction);
+}
+
+void PC_CORE::CommandList::RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction)
+{
+    m_FetchCommands.push_back(_fectFunction);
 }
 
 void PC_CORE::CommandList::ExecuteExternalCommand()
 {
-	for (auto& command : m_FecthCommands)
-		command(this);
+    for (auto& command : m_FetchCommands)
+        command(this);
 }

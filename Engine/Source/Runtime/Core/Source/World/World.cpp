@@ -3,6 +3,7 @@
 
 #include "Rendering/Light.hpp"
 #include "World/Transform.hpp"
+#include "Rendering/RenderSystem.hpp"
 
 using namespace PC_CORE;
 
@@ -13,8 +14,9 @@ World::World()
         PC_LOGERROR("World already initialized");
         throw std::runtime_error("World already initialized");
     }
-    
+
     m_World = this;
+    World::GetWorld()->level.RegisterSystem<RendererSystem>();
 }
 
 
@@ -23,7 +25,6 @@ void World::Begin()
     if (begin)
     {
         PERF_REGION_SCOPED;
-        //TO DO CALL SYS BEGIN
         begin = false;
         level.Begin();
         run = true;

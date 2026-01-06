@@ -3,183 +3,257 @@
 #include <map>
 
 #include "VulkanContext.hpp"
+#include "VulkanDescriptorSet.hpp"
+#include "Utils/RhiToVulkan.hpp"
 
 
-size_t Vulkan::VulkanDescritptorManager::GetDescriptorId(const std::vector<SpvReflectShaderModule>& _modules)
+struct DescriptorVkBindingHash {
+
+    inline [[nodiscard]] std::size_t hash_combine(std::size_t seed, std::size_t h) const noexcept {
+        // classic combine
+        seed ^= h + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+
+    size_t operator()(const vk::DescriptorSetLayoutBinding& w) const noexcept {
+        size_t h = 0;
+        h = hash_combine(h, static_cast<size_t>(w.binding));
+        h = hash_combine(h, static_cast<size_t>(w.descriptorCount));
+        h = hash_combine(h, static_cast<size_t>(w.descriptorType));
+        h = hash_combine(h, static_cast<size_t>(static_cast<uint32_t>(w.stageFlags)));
+        assert(w.pImmutableSamplers == nullptr);
+
+        return h;
+    }
+};
+
+vk::ShaderStageFlags SpvShaderStageBitsToVk(SpvReflectShaderStageFlagBits _SpvReflectShaderStageFlagBits)
+{
+    switch (_SpvReflectShaderStageFlagBits)
+    {
+    case SPV_REFLECT_SHADER_STAGE_VERTEX_BIT:
+        return vk::ShaderStageFlagBits::eVertex  ;
+    case SPV_REFLECT_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+        return vk::ShaderStageFlagBits::eTessellationControl;
+    case SPV_REFLECT_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+        return vk::ShaderStageFlagBits::eTessellationEvaluation;
+    case SPV_REFLECT_SHADER_STAGE_GEOMETRY_BIT:
+        return vk::ShaderStageFlagBits::eGeometry;
+    case SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT:
+        return vk::ShaderStageFlagBits::eFragment;
+    case SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT:
+        return vk::ShaderStageFlagBits::eCompute;
+    case SPV_REFLECT_SHADER_STAGE_TASK_BIT_EXT:
+        return vk::ShaderStageFlagBits::eTaskEXT;
+    case SPV_REFLECT_SHADER_STAGE_MESH_BIT_NV:
+        return vk::ShaderStageFlagBits::eMeshEXT;
+    case SPV_REFLECT_SHADER_STAGE_RAYGEN_BIT_KHR:
+        return vk::ShaderStageFlagBits::eRaygenKHR;
+    case SPV_REFLECT_SHADER_STAGE_ANY_HIT_BIT_KHR:
+        return vk::ShaderStageFlagBits::eAnyHitKHR;
+    case SPV_REFLECT_SHADER_STAGE_CLOSEST_HIT_BIT_KHR:
+        return vk::ShaderStageFlagBits::eClosestHitKHR;
+    case SPV_REFLECT_SHADER_STAGE_MISS_BIT_KHR:
+        return vk::ShaderStageFlagBits::eMissKHR;
+    case SPV_REFLECT_SHADER_STAGE_INTERSECTION_BIT_KHR:
+        return vk::ShaderStageFlagBits::eIntersectionKHR;
+    case SPV_REFLECT_SHADER_STAGE_CALLABLE_BIT_KHR:
+        return vk::ShaderStageFlagBits::eCallableKHR;
+    default:
+        break;
+    }
+
+    assert(false);
+    return {};
+}
+
+
+Vulkan::VulkanDescritptorManager::VulkanDescritptorManager(VulkanContext& _Context)
+    : m_Context(_Context)
+{
+
+}
+
+Vulkan::VulkanDescritptorManager::~VulkanDescritptorManager()
+{
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Context.GetDevice())->GetDevice();
+
+    for (auto& it : m_Layouts)
+    {
+        if (it.second != VK_NULL_HANDLE)
+        {
+            device.destroyDescriptorSetLayout(it.second);
+        }
+    }
+
+    device.destroyDescriptorPool(m_Pool);
+}
+
+void Vulkan::VulkanDescritptorManager::CreateDesciptorPool()
+{
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Context.GetDevice())->GetDevice();
+
+    constexpr size_t maxSet = 10;
+    constexpr size_t MaxElementBinding = 2048;
+
+    /*VK_DESCRIPTOR_TYPE_SAMPLER = 0,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
+        VK_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
+        VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
+        VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
+        VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
+        VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK = 1000138000,
+        VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR = 1000150000,*/
+
+    std::array<vk::DescriptorPoolSize, 11> PoolSize;
+
+    // TODO CHECK IF EXTENSION SUPPORTED
+    for (size_t i = 0; i < PoolSize.size(); i++)
+    {
+        vk::DescriptorType type = static_cast<vk::DescriptorType>(i);
+
+        PoolSize[i]
+            .setDescriptorCount(MaxElementBinding)
+            .setType(type);
+    }
+
+    vk::DescriptorPoolCreateInfo poolInfo{};
+    poolInfo
+        .setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind)
+        .setMaxSets(MaxElementBinding * 2)
+        .setPoolSizeCount(PoolSize.size())
+        .setPoolSizes(PoolSize);
+
+    m_Pool = device.createDescriptorPool(poolInfo);
+    assert(m_Pool != VK_NULL_HANDLE);
+}
+
+std::vector<vk::DescriptorSetLayout> Vulkan::VulkanDescritptorManager::GetDescriptorLayouts(const std::vector<SpvReflectShaderModule>& _SpvReflectShaderModule)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    SetBindingMap bindingMap;
-    std::shared_ptr<CacheDescriptorSets> cache = nullptr;
-    if (FindInCache(_modules, &bindingMap, &cache))
-    {
-        return cache->id;
-    }
-    
-    std::map<vk::DescriptorType, uint32_t> descriptorTypeCount;
-    std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layoutsMap;
-    
-        // Compute Unique Set
-    for (auto& moduleIndex : _modules)
-        for (size_t i = 0; i < moduleIndex.descriptor_set_count; i++)
-            if (moduleIndex.descriptor_sets[i].set != std::numeric_limits<uint32_t>::max())
-                layoutsMap.insert({ moduleIndex.descriptor_bindings[i].set ,{} });
-            
-        
-    
-    // Resize Vector
-    uint32_t descritptorCount = 0;
-    for (auto& moduleIndex : _modules)
-    {
-        for (size_t setIndex = 0 ; setIndex < moduleIndex.descriptor_set_count; setIndex++)
-        {
-            const SpvReflectDescriptorSet& s = moduleIndex.descriptor_sets[setIndex];
-
-            if (s.binding_count == 0)
-                continue;
-
-
-            for (size_t descriptorIndex = 0; descriptorIndex < s.binding_count; descriptorIndex++)
-            {
-                 SpvReflectDescriptorBinding& spvBinding = *s.bindings[descriptorIndex];
-
-                 vk::DescriptorSetLayoutBinding descriptorSetLayout{};
-                descriptorSetLayout.binding =  spvBinding.binding;
-                descriptorSetLayout.descriptorType = static_cast<vk::DescriptorType>(spvBinding.descriptor_type);
-                descriptorSetLayout.descriptorCount = spvBinding.count;
-                descriptorSetLayout.stageFlags = static_cast<vk::ShaderStageFlags>(moduleIndex.shader_stage);
-                descriptorSetLayout.pImmutableSamplers = nullptr;// optional
-
-                descriptorTypeCount[static_cast<vk::DescriptorType>(spvBinding.descriptor_type)] += spvBinding.count;
-                descritptorCount += spvBinding.count;
-
-                auto& bindingsVec = layoutsMap[s.set];
-                bool found = false;
-
-                for (auto& existingBinding : bindingsVec)
-                {
-                    if (existingBinding.binding == descriptorSetLayout.binding)
-                    {
-                        existingBinding.stageFlags |= descriptorSetLayout.stageFlags;
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    bindingsVec.push_back(descriptorSetLayout);
-                }
-            }
-        }
-    }
-    
+    std::map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> BindingsPerSet;
     uint32_t maxSet = 0;
-    for (const auto& it : layoutsMap)
-        maxSet = std::max(maxSet, it.first);
 
-    std::shared_ptr<CacheDescriptorSets> cacheDescriptor = std::make_shared<CacheDescriptorSets>();
-    cacheDescriptor->descriptorSetLayout.clear();
-    cacheDescriptor->descriptorSetLayout.resize(maxSet + 1, VK_NULL_HANDLE);
-
-    for (const auto& it : layoutsMap)
+    for (auto& ShaderModules : _SpvReflectShaderModule) // for each module
     {
-        vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-        descriptorSetLayoutCreateInfo.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
-        descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(it.second.size());
-        descriptorSetLayoutCreateInfo.pBindings = it.second.data();
+        vk::ShaderStageFlags ModuleFlag = SpvShaderStageBitsToVk(ShaderModules.shader_stage);
 
-        cacheDescriptor->descriptorSetLayout[it.first] =
-            GET_VK_DEVICE->GetDevice().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
-    }
-
-    // Descriptor Pool
-    std::vector<vk::DescriptorPoolSize> descriptorPoolSizes(descriptorTypeCount.size());
-
-    size_t i = 0;
-    for (auto it = descriptorTypeCount.begin(); it != descriptorTypeCount.end();)
-    {
-        vk::DescriptorPoolSize& descriptorPoolSize = descriptorPoolSizes[i];
-        descriptorPoolSize.type = it->first;
-        descriptorPoolSize.descriptorCount = it->second * static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-        i++;
-        it++;
-    }
-    
-    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
-    descriptorPoolCreateInfo.sType = vk::StructureType::eDescriptorPoolCreateInfo;
-    descriptorPoolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind;
-    descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-    descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
-    descriptorPoolCreateInfo.maxSets = MAX_ALLOC_DESCRIPTOR_SET;
-
-    cacheDescriptor->descriptorPool = GET_VK_DEVICE->GetDevice().createDescriptorPool(descriptorPoolCreateInfo);
-
-
-    
-    descriptorLayoutCache.emplace(bindingMap, cacheDescriptor);
-    m_DescriptorSets[m_IdCounter] = cacheDescriptor.get();
-    cacheDescriptor->id = m_IdCounter++;
-
-    return cacheDescriptor->id;
-}
-
-void Vulkan::VulkanDescritptorManager::ClearCaches()
-{
-    m_DescriptorSets.clear();
-
-    vk::Device d = GET_VK_DEVICE->GetDevice();
-    for (auto it : descriptorLayoutCache)
-    {
-        for (auto it : it.second->descriptorSetLayout)
-            d.destroyDescriptorSetLayout(it);
-        
-        d.destroyDescriptorPool(it.second->descriptorPool);
-    }
-}
-
-Vulkan::CacheDescriptorSets* Vulkan::VulkanDescritptorManager::GetDescriptorSets(size_t setID) const
-{
-    return m_DescriptorSets.at(setID);
-}
-
-bool Vulkan::VulkanDescritptorManager::FindInCache(const std::vector<SpvReflectShaderModule>& _modules, SetBindingMap* _outSetBindingMap,   std::shared_ptr<CacheDescriptorSets>* cache) const
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
-
-    for (const auto& module : _modules)
-    {
-        for (uint32_t i = 0; i < module.descriptor_binding_count; ++i)
+        for (size_t s = 0; s < ShaderModules.descriptor_set_count; s++) // for each desciptor set
         {
-            const SpvReflectDescriptorBinding& binding = module.descriptor_bindings[i];
+            std::vector<vk::DescriptorSetLayoutBinding>& Binding = BindingsPerSet[s];
 
-            if (binding.set == std::numeric_limits<uint32_t>::max())
-                continue;
-
-            vk::DescriptorType type = static_cast<vk::DescriptorType>(binding.descriptor_type);
-
-            auto& setMap = (*_outSetBindingMap)[binding.set];
-
-            auto it = setMap.find(binding.binding);
-            if (it == setMap.end())
+            for (size_t j = 0; j < ShaderModules.descriptor_sets[s].binding_count; j++) // for binding
             {
-                setMap.emplace(binding.binding, DescriptorInfo{ type, static_cast<size_t>(module.shader_stage) });
+                const SpvReflectDescriptorBinding& SpvBinding = *ShaderModules.descriptor_sets[s].bindings[j];
+                maxSet = std::max(maxSet, SpvBinding.set);
+
+                vk::DescriptorSetLayoutBinding VkBinding{};
+                VkBinding.binding = SpvBinding.binding;
+                VkBinding.descriptorCount = SpvBinding.count;
+
+                static_assert((uint32_t)vk::DescriptorType::eAccelerationStructureKHR == (uint32_t)SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR);
+                VkBinding.descriptorType = static_cast<vk::DescriptorType>(SpvBinding.descriptor_type);
+                
+                auto it = std::ranges::find_if(Binding, [&VkBinding](const vk::DescriptorSetLayoutBinding& DescriptorSetLayoutBinding)
+                    {
+                        return DescriptorSetLayoutBinding == VkBinding;
+                    });
+
+                if (it != Binding.end())
+                {
+                    it->stageFlags |= ModuleFlag;
+                }
+                else
+                {
+                    VkBinding.stageFlags = ModuleFlag;
+                    Binding.push_back(VkBinding);
+                }
             }
-            else
-            {
-                it->second.stages |= module.shader_stage;
-            }
+
         }
     }
+    
+    // out
+    std::vector<vk::DescriptorSetLayoutBinding> BindingBuffer;
+    std::vector<vk::DescriptorSetLayout> OutSet(maxSet + 1, VK_NULL_HANDLE);
+    
+    for (auto it = BindingsPerSet.begin(); it != BindingsPerSet.end(); it++)
+    {
+        BindingBuffer.resize(it->second.size());
+        size_t i = 0;
+        for (const auto& BindingInSet : it->second)
+            BindingBuffer[i++] = BindingInSet;
+       
+        OutSet[it->first] = CreateLayout(BindingBuffer);
+    }
 
-    // Sort bindings to ensure canonical ordering
 
-    auto it = descriptorLayoutCache.find(*_outSetBindingMap);
-    if (it == descriptorLayoutCache.end())
-        return false;
+    return OutSet;
+}
 
-    *cache = it->second;
-    return true;
+vk::DescriptorSetLayout Vulkan::VulkanDescritptorManager::GetDescriptorLayout(const std::vector<PC_CORE::DescriptorWrite>& _DescriptorWrites)
+{
+
+    PERF_REGION_SCOPED;
+   PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    // Compute Layout
+    std::vector<vk::DescriptorSetLayoutBinding> Bindings;
+    Bindings.reserve(_DescriptorWrites.size());
+
+    for (size_t i = 0; i < _DescriptorWrites.size(); i++)
+    {
+        vk::DescriptorSetLayoutBinding uboLayoutBinding;
+        uboLayoutBinding
+            .setBinding(_DescriptorWrites[i].bindingIndex)
+            .setDescriptorType(Utils::RhiToDescriptorType(_DescriptorWrites[i].type))
+            .setDescriptorCount(1)
+            .setStageFlags(Utils::RhiToShaderStage(_DescriptorWrites[i].StagesBits))
+            .setPImmutableSamplers(nullptr);
+        Bindings.emplace_back(std::move(uboLayoutBinding));
+    }
+
+    return CreateLayout(Bindings);
+}
+
+size_t Vulkan::VulkanDescritptorManager::HashLayout(const std::vector<vk::DescriptorSetLayoutBinding>& _DescriptorWrites)
+{
+    DescriptorVkBindingHash elemHash;
+    size_t h = 0;
+    // Hashing
+    for (const auto& e : _DescriptorWrites) {
+        h ^= elemHash(e); // XOR is order-independent
+    }
+
+    return h;
+}
+
+vk::DescriptorSetLayout Vulkan::VulkanDescritptorManager::CreateLayout(const std::vector<vk::DescriptorSetLayoutBinding>& _Bindings)
+{
+    const size_t h = HashLayout(_Bindings);
+    auto it = m_Layouts.find(h);
+    if (it != m_Layouts.end())
+        return it->second;
+
+    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Context.GetDevice())->GetDevice();
+
+    vk::DescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo{};
+    DescriptorSetLayoutCreateInfo
+        .setBindingCount(_Bindings.size())
+        .setBindings(_Bindings)
+        .setFlags({});
+
+
+    vk::DescriptorSetLayout layout = device.createDescriptorSetLayout(DescriptorSetLayoutCreateInfo, nullptr);
+    assert(layout != nullptr);
+
+    m_Layouts.emplace(h, layout);
+    return layout;
 }

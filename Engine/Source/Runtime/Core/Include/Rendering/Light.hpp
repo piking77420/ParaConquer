@@ -6,43 +6,43 @@
 #include "Ecs/EcsFront.h"
 
 BEGIN_PCCORE
+    struct Light : Component
+    {
+        bool isDirty = true;
+        Tbx::Vector3f color = Tbx::Vector3f(1.f, 1.f, 1.f);
+        float intensity = 1.f;
 
-struct Light : public Component
-{
-    bool isDirty = true;
-    Tbx::Vector3f color = Tbx::Vector3f(1.f,1.f,1.f);
-    float intensity = 1.f;
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(Light);
+    };
 
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(Light);
-};
+    REFLECT(Light, Component)
+    REFLECT_MEMBER(Light, isDirty)
+    REFLECT_MEMBER(Light, color, Members::EnumFlag::Color);
+    REFLECT_MEMBER(Light, intensity)
 
-REFLECT(Light,Component)
-REFLECT_MEMBER(Light, isDirty)
-REFLECT_MEMBER(Light, color, COLOR)
-REFLECT_MEMBER(Light, intensity)
+    struct DirLight : Light
+    {
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(DirLight);
+    };
 
-struct DirLight : public Light
-{
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(DirLight);
-};
-REFLECT(DirLight, Light)
+    REFLECT(DirLight, Light)
 
-struct SpotLight : public Light
-{
-    float outerCutOff;
-    float innerCutOff;
-};
-REFLECT(SpotLight, Light)
-REFLECT_MEMBER(SpotLight, outerCutOff)
-REFLECT_MEMBER(SpotLight, innerCutOff)
+    struct SpotLight : Light
+    {
+        float outerCutOff;
+        float innerCutOff;
+    };
+
+    REFLECT(SpotLight, Light)
+    REFLECT_MEMBER(SpotLight, outerCutOff)
+    REFLECT_MEMBER(SpotLight, innerCutOff)
 
 
+    struct PointLight : Light
+    {
+        DEFAULT_CONSTRUCTOR_DESTRUCTOR(PointLight);
+    };
 
-struct PointLight : public Light
-{
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(PointLight);
-
-};
-REFLECT(PointLight, Light)
+    REFLECT(PointLight, Light)
 
 END_PCCORE

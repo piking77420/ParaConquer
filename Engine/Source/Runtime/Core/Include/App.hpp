@@ -12,49 +12,47 @@
 
 
 BEGIN_PCCORE
+    struct AppCreateInfo
+    {
+        std::string appName;
+        std::string appLogoPath;
 
+        bool enableGpuDebug;
+        GraphicAPI graphicAPI;
+    };
 
+    class App
+    {
+    public:
+        CoreIo CoreIo;
 
-struct AppCreateInfo
-{
-	std::string appName;
-	std::string appLogoPath;
-	
-	bool enableGpuDebug;
-	GraphicAPI graphicAPI;
+        World World;
 
-};
+        Window MainWindow;
 
-class App
-{
-public:
-	static constexpr const char* appName = "ParaConquer";
+        Rhi RenderHarwareInteface;
 
-	CoreIo coreIo;
+        PC_CORE::Rendering::Renderer Renderer; //  TODO HANDLE MULIPTLE VIEW PORT
 
-	Window window;
+        std::unique_ptr<CommandList> PrimaryCommandBuffer;
 
-	Rhi rhi;
+        PC_CORE_API App();
 
-	RenderingWorldData renderingWorldData;
+        PC_CORE_API virtual ~App() = default;
 
-	Renderer renderer;
-		
-	World world;
-		
-	PC_CORE_API void Init(const AppCreateInfo& _appCreateInfo);
+        PC_CORE_API virtual void Init(const AppCreateInfo& _appCreateInfo);
 
-	PC_CORE_API void Destroy();
-	
-	PC_CORE_API App();
+        PC_CORE_API virtual void Destroy();
 
-	PC_CORE_API ~App() = default;
+        PC_CORE_API virtual void Run(bool* _appShouldClose) = 0;
 
-	PC_CORE_API void Run();
-	
-	PC_CORE_API void WorldTick(double _tick);
-	
-	PC_CORE_API static inline App* instance = nullptr;
-};
+        PC_CORE_API void WorldTick(double _tick);
+
+        PC_CORE_API void RenderFrame();
+
+        PC_CORE_API static inline App* Instance = nullptr;
+    protected:
+        virtual void OnRender(PC_CORE::CommandList* _Cmd) = 0;
+    };
 
 END_PCCORE

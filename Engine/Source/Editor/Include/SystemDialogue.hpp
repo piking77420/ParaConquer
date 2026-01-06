@@ -8,8 +8,6 @@
 class SystemDialogue : public PC_CORE::Singleton<SystemDialogue>
 {
 public:
-
-   
     [[nodiscard]] static std::wstring SeletecFolder(const wchar_t* _caption);
 
 
@@ -18,7 +16,4 @@ public:
     SystemDialogue();
 
     ~SystemDialogue();
-    
-private:
-
 };

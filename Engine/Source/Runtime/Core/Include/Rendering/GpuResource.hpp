@@ -8,19 +8,16 @@
 
 
 BEGIN_PCCORE
+    class IGpuResource
+    {
+    public:
+        DEFAULT_COPY_MOVE_OPERATIONS(IGpuResource)
 
-class IGpuResource
-{
-public:
-    PC_CORE_API virtual std::shared_ptr<RhiResource> GetRhiHandle() const = 0;
+        PC_CORE_API IGpuResource() = default;
 
-    DEFAULT_COPY_MOVE_OPERATIONS(IGpuResource)
-    
-    PC_CORE_API IGpuResource() = default;
-    
-    PC_CORE_API virtual ~IGpuResource() = default;
+        PC_CORE_API virtual ~IGpuResource() = default;
 
 protected:
-};
+    };
 
 END_PCCORE

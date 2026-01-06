@@ -1,27 +1,70 @@
 ﻿#pragma once
+#include <memory>
 
-#include "CoreHeader.hpp"
+#include "Guid.hpp"
+#include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
-#include "Rendering/Renderer.hpp"
 
-BEGIN_PCCORE
+namespace PC_CORE 
+{
+    class CommandList;
+    class Rhi;
+    class RhiDescriptorSet;
+    class RhiFrameBuffer;
+}
 
-class RenderPass : public IGpuResource
+namespace PC_CORE::Rendering
+{
+    class RenderView;
+    class RenderingWorldData;
+    class Renderer;
+    class RenderGraph;
+
+    struct RendererPassBuildContext
+    {
+        CommandList& cmd;
+        Rhi& RHI;
+        RenderGraph& RenderGraph;
+        const RenderView& View;
+        const Renderer& Renderer;
+    };
+
+    struct RendererPassExecuteContext
+    {
+        CommandList& cmd;
+        Rhi& RHI;
+        RenderGraph& RenderGraph;
+        const RenderView& View;
+        const Renderer& Renderer;
+        const RenderingWorldData& RenderingWorldData;
+    };
+
+    using RenderPassGetNameFunc = const char* (*)(const void*);
+
+    using RenderPassGetColorFunc = std::array<float, 4> (*)(const void*);
+
+    using RenderPassBuildFunc = void (*)(void*, const RendererPassBuildContext&);
+
+    using RenderPassExecuteFunc = void (*)(const void*, const RendererPassExecuteContext&);
+
+class PC_CORE_API RenderPass : public DynamicReflectable
 {
 public:
+    RenderPass();
 
-    PC_CORE_API virtual std::shared_ptr<RhiResource> GetRhiHandle() const
-    {
-        return m_RhiRenderPass;
-    }
+    ~RenderPass() override = default;
 
-    PC_CORE_API RenderPass();
-    
-    PC_CORE_API virtual ~RenderPass() = default;
-        
-    
+    IMP_DYNAMIC_REFLECT()
+
+    bool IsDisable = false;
+
 protected:
-    std::shared_ptr<RhiRenderPass> m_RhiRenderPass;
 };
 
-END_PCCORE
+template <typename Derived>
+concept RenderPassT = std::is_base_of_v<RenderPass, std::remove_cvref_t<Derived>> && std::is_base_of_v<DynamicReflectable, std::remove_cvref_t<Derived>>;
+
+REFLECT(RenderPass, PC_CORE::DynamicReflectable);
+
+}
+

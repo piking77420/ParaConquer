@@ -6,22 +6,22 @@
 #include "Reflection/Reflector.hpp"
 
 BEGIN_PCCORE
+    struct BoxCollider : Component
+    {
+        uint32_t body_Id = -1;
 
-struct BoxCollider : public Component
-{
-    uint32_t body_Id = -1;
+        bool draw = false;
 
-    bool draw = false;
+        bool drawAABB = false;
 
-    bool drawAABB = false;
-    
-    Tbx::Vector3f extend = Tbx::Vector3f(0.5f, 0.5f, 0.5f);
-    Tbx::Vector3f center;
-};
-REFLECT(BoxCollider, Component)
-REFLECT_MEMBER(BoxCollider, drawAABB)
-REFLECT_MEMBER(BoxCollider, draw)
-REFLECT_MEMBER(BoxCollider, extend)
-REFLECT_MEMBER(BoxCollider, center)
+        Tbx::Vector3f extend = Tbx::Vector3f(0.5f, 0.5f, 0.5f);
+        Tbx::Vector3f center;
+    };
+
+    REFLECT(BoxCollider, Component)
+    REFLECT_MEMBER(BoxCollider, drawAABB)
+    REFLECT_MEMBER(BoxCollider, draw)
+    REFLECT_MEMBER(BoxCollider, extend)
+    REFLECT_MEMBER(BoxCollider, center)
 
 END_PCCORE

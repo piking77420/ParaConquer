@@ -1,80 +1,221 @@
 ﻿#pragma once
 
-#include <Vector>
+#include <vector>
 
-#include "RhiTypedef.h"
-#include "RhiResource.hpp"
+#include "RhiTexture.hpp"
+#include "RhiBuffer.h"
+#include "RhiShaderProgram.hpp"
 
 BEGIN_PCCORE
 
+enum struct AttachementSlot : uint8_t
+{
+    S00,
+    S01,
+    S02,
+    S03,
+    S04,
+    S05,
+    S06,
+    S07,
+    S08,
+    S09,
+    S10,
+    S11,
+    S12,
+    S13,
+    S14,
+    S15,
+    S16,
+    S17,
+    S18,
+    S19,
+    Count,
+};
+static_assert(static_cast<uint32_t>(AttachementSlot::Count) == 20u);
+
+
+
 struct RenderPassAttachementDescriptor
 {
-    AttachmentType attachmentType;
-    RHIFormat format;
-    int sampleCount;
+    AttachementSlot Slot{ AttachementSlot::Count };
+    RhiFormat Format{ RhiFormat::Undefined };
+    uint8_t SampleCount{1}; // TO DO CHANGE IT FOR ENUM
 
-    PC_CORE::LoadOperation load;
-    PC_CORE::StoreOperation store;
+    LoadOperation Load{ LoadOperation::DontCare };
+    StoreOperation Store{ StoreOperation::DontCare };
 
-    PC_CORE::LoadOperation stencilLoad;
-    PC_CORE::StoreOperation stencilStore;
+    LoadOperation StencilLoad{ LoadOperation::DontCare };
+    StoreOperation StencilStore{ StoreOperation::DontCare };
 
-    ImageState currentImageState;
-    ImageState finalImageState;
+    RhiResourceState InitialImageState{ RhiResourceState::Undefined };
+    RhiResourceState FinalImageState{ RhiResourceState::Undefined };
 
+    RenderPassAttachementDescriptor& SetAttachementSlot(AttachementSlot AttachementSlot)
+    {
+        Slot = AttachementSlot;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetRhiFormat(RhiFormat _Format)
+    {
+        Format = _Format;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetSampleCount(int _SampleCount)
+    {
+        SampleCount = _SampleCount;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetLoadOp(LoadOperation LoadOperation)
+    {
+        Load = LoadOperation;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetStoreOp(StoreOperation StoreOperation)
+    {
+        Store = StoreOperation;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetStencilLoadOp(LoadOperation LoadOperation)
+    {
+        Load = LoadOperation;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetStencilStoreOp(StoreOperation StoreOperation)
+    {
+        Store = StoreOperation;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetInitialImageState(RhiResourceState _RhiResourceState)
+    {
+        InitialImageState = _RhiResourceState;
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& SetFinalImageState(RhiResourceState _RhiResourceState)
+    {
+        FinalImageState = _RhiResourceState;
+        return *this;
+    }
 };
 
-struct SubPassDependcies
+struct AttachementRef
 {
-    GpuPipelineStageFlagBits srcStageMask;
-    GpuPipelineStageFlagBits dstStageMask;
-  
-    GpuAccessFlag srcAccessMask;    
-    GpuAccessFlag dstAccessMask;
-  
+    AttachementSlot Slot = AttachementSlot::Count;
+    RhiResourceState ResourceState{RhiResourceState::Undefined};
+
+    AttachementRef() = default;
+
+    AttachementRef(const RenderPassAttachementDescriptor& _RenderPassAttachementDescriptor,
+        RhiResourceState _RhiResourceState)
+    {
+        Slot = _RenderPassAttachementDescriptor.Slot;
+        ResourceState = _RhiResourceState;
+    }
+
+    ~AttachementRef() = default;
 };
 
+template<typename T>
+concept AttachementT =
+std::same_as<std::remove_cvref_t<T>, AttachementRef>;
 
-struct SubPassDescription
+struct SubPass
 {
-    ShaderProgramPipelineType shaderProgramPipelineType;
-    std::vector<size_t> colorAttachementDescriptorIndicies;
-    std::vector<size_t> inputAttachementDescriptorIndicies;
+    RhiShaderProgram::PipelineType type{};
 
-    SubPassDependcies subPassDependcies;
-    bool useDepth;
+    std::vector<AttachementRef> ColorAttachements{};
+
+    std::vector<AttachementRef> InputAttachements{};
+
+    AttachementRef DepthAttachement{};
+
+    SubPass& SetType(RhiShaderProgram::PipelineType _Type)
+    {
+        type = _Type;
+        return *this;
+    }
+
+    template <AttachementT... Refs>
+    SubPass& SetAttachementRef(Refs&&... _Args)
+    {
+        (ColorAttachements.emplace_back(std::forward<Refs>(_Args)), ...);
+        return *this;
+    }
+
+    template <AttachementT... Refs>
+    SubPass& SetInputAttachementRef(Refs&&... _Args)
+    {
+        (InputAttachements.emplace_back(std::forward<Refs>(_Args)), ...);
+        return *this;
+    }
+
+    SubPass& SetDepthAttachementRef(AttachementRef _AttachementRef)
+    {
+        DepthAttachement = std::move(_AttachementRef);
+        return *this;
+    }
+
+    bool HasDepthAttachement() const
+    {
+        return DepthAttachement.Slot != AttachementSlot::Count;
+    }
+
 };
 
-struct RenderPassDescriptor
-{
-    std::vector<RenderPassAttachementDescriptor> attachement;
-    RenderPassAttachementDescriptor* depthAttachment;
-    
-    std::vector<SubPassDescription> subPasses;
-};
-
-// this class represent a pass within is frame buffer attemechement
-// collection of pass for a same frame buffer
-class RhiRenderPass : public RhiResource
+class RhiRenderPass : public RhiObjectT<RhiRenderPass>
 {
 public:
-    
-    PC_CORE_API RhiRenderPass(PC_CORE::RHIFormat colorFormat, PC_CORE::RHIFormat depthFormat) {}
-    
-    PC_CORE_API RhiRenderPass() = default;
+    static constexpr size_t MaxAttachementSlot = static_cast<uint32_t>(AttachementSlot::Count);
+    static constexpr size_t MaxSubPass = 10u;
 
-    PC_CORE_API RhiRenderPass(const RenderPassDescriptor& _attachementDescriptors) {}
+
+    PC_CORE_API explicit RhiRenderPass(Rhi& _Rhi);
+
+    PC_CORE_API ~RhiRenderPass() override = default;
     
-    PC_CORE_API virtual ~RhiRenderPass() = default;
-    
+    RhiRenderPass& ClearContext()
+    {
+        m_SubPassCount = 0;
+        m_AttachementCount = 0;
+
+        m_SubPasses = {};
+        m_Attachements = {};
+
+        return *this;
+    }
+
+    RenderPassAttachementDescriptor& CreateAttachment()
+    {
+        assert((m_AttachementCount + 1) < MaxAttachementSlot);
+
+        return m_Attachements[m_AttachementCount++];
+    }
+
+    SubPass& CreateSubPass()
+    {
+        assert((m_SubPassCount + 1) < MaxSubPass);
+
+        return m_SubPasses[m_SubPassCount++];
+    }
+
+       
+
 protected:
-    ShaderProgramPipelineType m_ShaderProgramPipelineType;
+    size_t m_AttachementCount{ 0 };
 
-    uint32_t AttachementCount;
-    
-    bool m_HasDepth = false;
-    
-    bool m_HasStencil = false;
+    size_t m_SubPassCount{ 0 };
+
+    std::array<RenderPassAttachementDescriptor, MaxAttachementSlot> m_Attachements;
+
+    std::array<SubPass, MaxSubPass> m_SubPasses;
 };
 
 END_PCCORE

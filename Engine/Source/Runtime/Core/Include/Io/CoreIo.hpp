@@ -3,7 +3,6 @@
 #include "CoreHeader.hpp"
 
 BEGIN_PCCORE
-    
     class CoreIo
     {
     public:
@@ -13,4 +12,5 @@ BEGIN_PCCORE
 
         PC_CORE_API void PoolEvent();
     };
+
 END_PCCORE

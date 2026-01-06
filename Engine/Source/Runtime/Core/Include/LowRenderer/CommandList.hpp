@@ -4,191 +4,217 @@
 #include <String>
 #include <Memory>
 #include <Functional>
+#include <span>
 
 #include "CoreHeader.hpp"
 #include "Math/ToolboxTypedef.hpp"
 
-#include "FrameBuffer.hpp"
-#include "RhiIndexBuffer.hpp"
+#include "RhiFrameBuffer.hpp"
 #include "RhiRenderPass.hpp"
-#include "RhiVertexBuffer.hpp"
-
-
-#include "Rendering/ShaderProgram.hpp"
-#include "Rendering/Buffer/IndexBuffer.hpp"
 #include "Rendering/Buffer/VertexBuffer.hpp"
-#include "RhiFence.hpp"
 
 BEGIN_PCCORE
-    class FrameBuffer;
-
-    enum class CommandPoolFamily
-{
-    Graphics,
-    Compute,
-    Count
-};
+    class RhiFrameBuffer;
+    class RhiFence;
+    class RhiShaderProgram;
+    class RhiDescriptorSet;
 
 
-enum ClearValueFlags : uint32_t
-{
-    ClearValueNone    = 0,
-    ClearValueColor   = 1 << 0, 
-    ClearValueDepth   = 1 << 1, 
-    ClearValueStencil = 1 << 2, 
-    ClearValueCount   = 1 << 3  
-};
+    enum ClearValueFlagBits : uint32_t
+    {
+        ClearValueNone = 0,
+        ClearValueColor = 1 << 0,
+        ClearValueDepth = 1 << 1,
+        ClearValueStencil = 1 << 2,
+        ClearValueCount = 1 << 3
+    };
+
+    using ClearValueFlag = uint32_t;
 
 
-struct BeginRenderPassInfo
-{
-    std::shared_ptr<PC_CORE::RhiRenderPass> renderPass;
-    std::shared_ptr<PC_CORE::FrameBuffer> frameBuffer;
-    Tbx::Vector2i renderOffSet;
-    Tbx::Vector2ui extent;
 
-    ClearValueFlags clearValueFlags;
-    Tbx::Vector4f* clearColor;
-    size_t clearValueCount;
-    float clearDepth = 0.f;
-    float clearStencil = 0.f;
-    
-};
+    struct BeginRenderPassInfo
+    {
+        RhiRenderPass* RenderPass;
+        RhiFrameBuffer* FrameBuffer;
+        Tbx::Vector2i RenderOffSet;
+        Tbx::Vector2ui Extent;
 
-struct ViewportInfo
-{
-    Tbx::Vector2f transform;
-    Tbx::Vector2f size;
-    float minDepth;
-    float maxDepth;
+        ClearValueFlag ClearValueFlag;
+        std::array<float, 4>* ClearColor;
+        size_t ClearValueCount;
+        float ClearDepth = 0.f;
+        float ClearStencil = 0.f;
+    };
 
-    Tbx::Vector2i scissorsOff;
-    Tbx::Vector2ui scissorsextent;
-};
+    struct ViewportInfo
+    {
+        Tbx::Vector2f Transform{ 0,0 };
+        Tbx::Vector2f Size{ 0,0 };
+        float MinDepth = 0.0f;
+        float MaxDepth = 1.0;
 
-enum struct CommandBufferType
-{
-    Primary,
-    Secondary
-};
+        Tbx::Vector2i ScissorsOff{ 0,0 };
+        Tbx::Vector2ui ScissorsExtent{ 0,0 };
 
-struct CommandListCreateInfo
-{
-    CommandPoolFamily commandPoolFamily;
-    CommandBufferType commandBufferType;
-};
+        explicit ViewportInfo(RhiTexture& texture)
+        {
+            const uint32_t widht = texture.GetWidth();
+            const uint32_t height = texture.GetHeight();
 
-struct MemoryBarrier
-{
-    GpuAccessFlag srcAccessMask;
-    GpuAccessFlag dstAccessMask;
-};
+            Size = Tbx::Vector2f(static_cast<float>(widht), static_cast<float>(height));
+            ScissorsExtent = Tbx::Vector2ui(widht, height);
+        }
 
-struct BufferMemoryBarrier
-{
-    GpuAccessFlag srcAccessMask;
-    GpuAccessFlag dstAccessMask;
-    RhiBuffer* buffer;
-    size_t offset;
-    size_t size;
-};
+        explicit ViewportInfo(Tbx::Vector2ui size)
+        {
+            Size = Tbx::Vector2f(static_cast<float>(size.x), static_cast<float>(size.y));
+            ScissorsExtent = size;
+        }
 
-struct ImageMemoryBarrier
-{
-    // TODO
-    GpuAccessFlag srcAccessMask;
-    GpuAccessFlag dstAccessMask;
+        ViewportInfo() = default;
 
-    ImageState currentState;
-    ImageState newState;
+        ~ViewportInfo() = default;
+        
+    };
 
-    RhiTexture* texture; 
-};
+    struct ImageStateTransition
+    {
+        RhiTexture* Texture = nullptr;
 
-enum struct FlushCommandMethod
-{
-    Sync, // will flush command at once at the end of tick
-    Async, // send directly to gpu // TODO
-};
+        uint32_t FirstMipLevel = 0;
+        uint32_t MipLevelsCount = 0;
+        uint32_t FirstLayer = 0;
+        uint32_t LayerCount = 0;
 
-class CommandList
-{
-public:
+        bool updateState = false;
+    };
 
-    DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
+    struct BufferStateTransition
+    {
+        RhiBuffer* Buffer = nullptr;
 
-    PC_CORE_API CommandList(const CommandListCreateInfo& _commandListCreateInfo);
-    
-    PC_CORE_API CommandList() = default;
+        uint32_t Offset = 0;
+        uint32_t Size = 0;
 
-    PC_CORE_API virtual ~CommandList() = default;
+        bool updateState = false;
+    };
 
-    PC_CORE_API virtual void Reset() = 0;
+   
+    class CommandList : public RhiObjectT<CommandList>
+    {
+    public:
+        enum struct PoolFamily
+        {
+            Graphics,
+            Compute,
+            Count
+        };
 
-    PC_CORE_API virtual void MergeCommands(CommandList* _secondaries, size_t _count) = 0;
+        enum struct BufferType
+        {
+            Primary,
+            Secondary
+        };
 
-    PC_CORE_API virtual void BeginRecordCommands() = 0;
+        DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 
-    PC_CORE_API virtual void EndRecordCommands() = 0;
+        PC_CORE_API explicit CommandList(Rhi& _Rhi);
 
-    PC_CORE_API virtual void BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo) = 0;
+        PC_CORE_API virtual ~CommandList() = default;
 
-    PC_CORE_API virtual void EndRenderPass() = 0;
+        PC_CORE_API virtual void Reset() = 0;
 
-    PC_CORE_API virtual void NextSubPass() = 0;
-    
-    PC_CORE_API virtual void BindDescriptorSet(const ShaderProgram* _shaderProgram, const ShaderProgramDescriptorSets* _shaderProgramDescriptorSets,
-        size_t _firstSet, size_t _descriptorSetCount) = 0;
+        PC_CORE_API virtual void MergeCommands(CommandList* _secondaries, size_t _count) = 0;
 
-    PC_CORE_API virtual void BindProgram(const ShaderProgram* _shaderProgramm) = 0;
+        PC_CORE_API virtual void BeginRecordCommands() = 0;
 
-    PC_CORE_API virtual void PushConstant(const PC_CORE::ShaderProgram* _shaderProgram, const std::string& _pushConstantKey,
-        const void* _data, size_t _size) = 0;
+        PC_CORE_API virtual void EndRecordCommands() = 0;
 
-    PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
+        PC_CORE_API virtual void BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo);
 
-    PC_CORE_API virtual void SetPrimitiveTopology(PrimitiveTopology _primitiveTopology) = 0;
+        PC_CORE_API virtual void EndRenderPass() = 0;
 
-    PC_CORE_API virtual void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) = 0;
+        PC_CORE_API virtual void NextSubPass() = 0;
 
-    PC_CORE_API virtual void SetLineWidth(float _widht) = 0;
+        PC_CORE_API virtual void BindDescriptorSet(const RhiShaderProgram& _RhiShaderProgram,
+                                                   const RhiDescriptorSet* _shaderProgramDescriptorSets,
+                                                   size_t _firstSet, size_t _descriptorSetCount) = 0;
 
-    PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex, uint32_t _firstInstance) = 0;
+        PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;
 
-    PC_CORE_API virtual void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex, int32_t _vertexOffset, size_t _firstInstance) = 0;
+        PC_CORE_API virtual void PushConstant(const RhiShaderProgram& _RhiShaderProgram, const std::string& _pushConstantKey,
+                                              const void* _data, size_t _size) = 0;
 
-    PC_CORE_API virtual void Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
+        PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
-    PC_CORE_API virtual void BindVertexBuffer(const PC_CORE::RhiVertexBuffer& _vertexBuffer, uint32_t _firstBinding, uint32_t _bindingCount) = 0;
+        PC_CORE_API virtual void SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology) = 0;
 
-    PC_CORE_API virtual void BindIndexBuffer(const PC_CORE::RhiIndexBuffer& _indexBuffer, size_t _offset) = 0;
+        PC_CORE_API virtual void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) = 0;
 
-    PC_CORE_API virtual void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes) = 0;
+        PC_CORE_API virtual void SetLineWidth(float _widht) = 0;
 
-    PC_CORE_API virtual void Barrier(PC_CORE::GpuPipelineStageFlagBits srcStageMask, PC_CORE::GpuPipelineStageFlagBits dstStageMask,
-        const PC_CORE::MemoryBarrier* _memoryBarrier, size_t _memoryBarrierCount,
-        const PC_CORE::BufferMemoryBarrier* _buffermemoryBarrier, size_t _bufferMemoryBarrierCount,
-        const PC_CORE::ImageMemoryBarrier* _imageMemoryBarrier, size_t _imageMemoryBarrierCount) = 0;
+        PC_CORE_API virtual void Draw(uint32_t _vertexCount, uint32_t _instanceCount, uint32_t _firstVertex,
+                                      uint32_t _firstInstance) = 0;
 
-    PC_CORE_API void RecordFetchCommand(std::function<void(CommandList*)> _fectFunction);
+        PC_CORE_API virtual void DrawIndexed(size_t _indexCount, size_t _instanceCount, size_t _firstIndex,
+                                             int32_t _vertexOffset, size_t _firstInstance) = 0;
 
-    PC_CORE_API void ExecuteExternalCommand();
+        PC_CORE_API virtual void Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
 
-    PC_CORE_API virtual void Flush(FlushCommandMethod _flushCommandMethod, 
-        PC_CORE::GpuPipelineStageFlagBits _waitGpuPipelineStageFlag) = 0;
+        PC_CORE_API virtual void BindVertexBuffer(const RhiBuffer& _vertexBuffer, uint32_t _firstBinding,
+                                                  uint32_t _bindingCount) = 0;
 
-    PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
+        PC_CORE_API virtual void BindIndexBuffer(const RhiBuffer& _indexBuffer, RhiBuffer::IndexFormat _format, size_t _offset) = 0;
 
-    PC_CORE_API virtual void EndDebugLabel() = 0;
+        PC_CORE_API virtual void CopyBuffer(const RhiBuffer& _src, const RhiBuffer& _dst, size_t _srcOffSet,
+                                            size_t _dstoffset, size_t _sizeInBytes) = 0;
 
+        PC_CORE_API virtual void Barrier(RhiResourceState _OldState, RhiResourceState _NewState,
+                                          const std::span<const ImageStateTransition>& _ImageStateTransition = {},
+                                          const std::span<const BufferStateTransition>& _BufferStateTransition = {}) = 0;
 
-protected:
-    CommandPoolFamily m_CommandPoolFamily;
+        PC_CORE_API void RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction);
 
-    CommandBufferType m_CommandBufferType;
+        PC_CORE_API void ExecuteExternalCommand();
 
-    std::vector<std::function<void(CommandList*)>> m_FecthCommands;
-};
+        PC_CORE_API virtual void BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color) = 0;
+
+        PC_CORE_API virtual void EndDebugLabel() = 0;
+
+        // Setter
+
+        CommandList& SetBufferType(BufferType _BufferType)
+        {
+            m_BufferType = _BufferType;
+            return *this;
+        }
+
+        CommandList& SetPoolFamilly(PoolFamily _PoolFamily)
+        {
+            m_PoolFamily = _PoolFamily;
+            return *this;
+        }
+
+        // Getter
+
+        BufferType GetBufferType() const
+        {
+            return m_BufferType;
+        }
+
+        PoolFamily GetPoolFamilly() const
+        {
+            return m_PoolFamily;
+        }
+
+    protected:
+        BufferType m_BufferType { BufferType::Primary };
+
+        PoolFamily m_PoolFamily { PoolFamily::Graphics };
+
+        std::vector<std::function<void(CommandList*)>> m_FetchCommands;
+    };
 
 
 END_PCCORE

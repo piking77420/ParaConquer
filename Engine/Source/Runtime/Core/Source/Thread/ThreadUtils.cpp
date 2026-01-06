@@ -20,17 +20,17 @@ void PC_CORE::Utils::SetThreadName(const char* _name)
     // We're throwing the exception as long as a debugger is connected.
     // This means we may both throw the exception and call SetThreadDescription, 
     // which is a bit redundant but will work with all tools.
-    if (::IsDebuggerPresent())
+    if (IsDebuggerPresent())
     {
-        const DWORD MS_VC_EXCEPTION = 0x406D1388;
+        constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push,8)
-        typedef struct tagTHREADNAME_INFO
+        using THREADNAME_INFO = struct tagTHREADNAME_INFO
         {
             DWORD dwType; // Must be 0x1000.
             LPCSTR szName; // Pointer to name (in user addr space).
             DWORD dwThreadID; // Thread ID (-1=caller thread).
             DWORD dwFlags; // Reserved for future use, must be zero.
-        } THREADNAME_INFO;
+        };
 #pragma pack(pop)
 
         DWORD dwThreadID = GetCurrentThreadId();
@@ -51,7 +51,8 @@ void PC_CORE::Utils::SetThreadName(const char* _name)
     }
 
     using SetThreadDescriptionType = decltype(SetThreadDescription)*;
-    static auto sSetThreadDescriptionPtr = (SetThreadDescriptionType)GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription");
+    static auto sSetThreadDescriptionPtr = (SetThreadDescriptionType)GetProcAddress(
+        GetModuleHandleA("kernel32.dll"), "SetThreadDescription");
 
     WCHAR threadNameWStr[512];
     if (sSetThreadDescriptionPtr && MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, _name, -1, threadNameWStr, 512))

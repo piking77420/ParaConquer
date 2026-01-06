@@ -8,33 +8,42 @@
 #include "VulkanDevice.hpp"
 
 namespace Vulkan
-{    
+{
+    class VulkanCommandList;
+
     struct SyncObject
     {
         vk::Semaphore imageAvailableSemaphore;
+        vk::Semaphore renderFinishedSemaphore;
+        vk::Semaphore transferFinishSemaphore;
 
         //vk::Semaphore computeFinishedSemaphore;
-        //vk::Fence computeInFlightFence;
+        //vk::m_ResourceUpdateFence computeInFlightFence;
 
         vk::Fence inFlightFence;
     };
 
-    // to do make it batchable
     struct FlushCommand
     {
-        vk::CommandBuffer cmd;
-        vk::Semaphore semaphore;
-        PC_CORE::GpuPipelineStageFlagBits waitStages;
+        std::vector<vk::CommandBuffer> Commands;
+        std::vector<vk::Semaphore> Semaphores;
+        std::vector<vk::PipelineStageFlags> BatchPipelineStageFlag;
+
+        void Clear()
+        {
+            Commands.clear();
+            Semaphores.clear();
+            BatchPipelineStageFlag.clear();
+        }
     };
 
     class VulkanContext : public PC_CORE::RhiContext
     {
     public:
-        
-        std::array<SyncObject, MAX_FRAMES_IN_FLIGHT> syncObjects;
+        std::array<SyncObject, MaxFramesInFlight> syncObjects;
 
         vk::Queue mainQueue;
-                
+
         vk::CommandPool commandPool = VK_NULL_HANDLE;
 
         vk::CommandPool transferCommandPool = VK_NULL_HANDLE;
@@ -43,52 +52,53 @@ namespace Vulkan
 
         VmaAllocator allocator = VK_NULL_HANDLE;
 
+        FlushCommand flushedCommands;
+
         VulkanDescritptorManager descritptorManager;
 
-        std::vector<FlushCommand> flushedCommands;
+        std::vector<vk::SubmitInfo> SubmitInfoBuffer;
 
-        VULKAN_API explicit VulkanContext(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo);
+        VULKAN_API explicit VulkanContext(PC_CORE::Rhi& _Rhi);
 
         VULKAN_API ~VulkanContext() override;
 
-        static inline VulkanContext& GetContext()
-        {
-            return *reinterpret_cast<VulkanContext*>(m_CurrentContext);
-        }
+        VULKAN_API void Init(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo); // TODO BUILD PATTER
 
-        VULKAN_API const vk::SurfaceKHR& GetSurface() const { return std::reinterpret_pointer_cast<VulkanInstance>(renderInstance)->surface; }
+        VULKAN_API void WaitIdle() override;
 
-        VULKAN_API static std::shared_ptr<VulkanDevice> GetDevice();
+        VULKAN_API void SendEnqueuCommand(PC_CORE::CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) override;
 
-        VULKAN_API static std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
-    
+        VULKAN_API void ProceedResourceUpdateBranch() override;
+
+        VULKAN_API std::shared_ptr<VulkanInstance> GetInstance();
+
+        VULKAN_API std::shared_ptr<VulkanDevice> GetDevice();
+
+        VULKAN_API std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
+
     private:
-
         VULKAN_API void CreateMemoryAllocator();
-        
-        VULKAN_API void CreateCommandPools();
 
-        VULKAN_API void WaitIdleInstance() override;
+        VULKAN_API void CreateCommandPools();
 
         VULKAN_API void CreateSyncObjects();
 
         VULKAN_API void DestroySyncObjects();
 
+        std::unique_ptr<VulkanCommandList> m_TransferCommandList;
     };
 
+#define GET_VK_CONTEXT \
+    reinterpret_cast<VulkanContext&>(m_Rhi.GetRhiContext())
 
 #define GET_VK_INSTANCE \
-    std::reinterpret_pointer_cast<VulkanInstance>(VulkanContext::GetContext().renderInstance) \
-
+    std::reinterpret_pointer_cast<VulkanInstance>(m_Rhi.GetRhiContext().renderInstance)
 #define GET_VK_DEVICE \
-    std::reinterpret_pointer_cast<VulkanDevice>( VulkanContext::GetContext().rhiDevice) \
-
+    std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice()
 #ifdef  DEBUG_GPU_ON
 #define SET_VK_DEBUG_NAME(debugInfo)\
-    GET_VK_INSTANCE->SetDebugName(GET_VK_DEVICE->GetDevice(), &debugInfo)\
-
+    GET_VK_INSTANCE->SetDebugName(GET_VK_DEVICE, &debugInfo)
 #else
-    #define SET_VK_DEBUG_NAME(x)
+#define SET_VK_DEBUG_NAME(x)
 #endif
 }
-

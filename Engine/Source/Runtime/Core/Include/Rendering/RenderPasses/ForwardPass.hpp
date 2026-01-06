@@ -1,18 +1,56 @@
-﻿#pragma once
+#pragma once
 
 #include "RenderPass.hpp"
 
-BEGIN_PCCORE
 
-class ForwardPass : public RenderPass
+
+namespace PC_CORE::Rendering
 {
-public:
+    class Renderer;
+}
 
-    ForwardPass();
+namespace PC_CORE::Rendering::Pass
+{
 
-    ~ForwardPass() override = default;
-    
-private:
-};
+    class PC_CORE_API FowardPass : public PC_CORE::Rendering::RenderPass
+    {
+    public:
 
-END_PCCORE
+        FowardPass();
+
+        ~FowardPass() override = default;
+
+
+        IMP_DYNAMIC_REFLECT();
+
+        const char* GetName() const
+        {
+            return "FowardPass";
+        }
+
+        std::array<float, 4> GetColor() const
+        {
+            return
+            {
+                0.f,
+                0.f,
+                1.f,
+                1.f
+            };
+        }
+
+        void Build(const RendererPassBuildContext& _RendererPassBuildContext);
+
+        void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
+
+    private:
+        std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
+
+        std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
+
+        RhiTexture* m_LightingImage = nullptr;
+
+    };
+
+    REFLECT(FowardPass, PC_CORE::Rendering::RenderPass);
+}

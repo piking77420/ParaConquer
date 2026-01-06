@@ -1,25 +1,50 @@
 ﻿#include "VulkanSwapChain.hpp"
 
+#include "Glfw/Glfw3.h"
+#include "LowRenderer/Rhi.hpp"
 #include "VulkanCommandList.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanFrameBuffer.hpp"
-#include "VulkanPhysicalDevices.hpp"
-#include "Glfw/Glfw3.h"
-#include "LowRenderer/Rhi.hpp"
-#include <Utils/RhiVulkanParser.hpp>
 
+#include <Utils/RhiToVulkan.hpp>
 
 void* Vulkan::VulkanSwapChain::GetFrameBuffer()
 {
     return m_Framebuffers.at(m_SwapChainImageIndex);
 }
 
-Vulkan::VulkanSwapChain::VulkanSwapChain(uint32_t _widht, uint32_t _height): SwapChain(_widht, _height)
+Vulkan::VulkanSwapChain::VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht, 
+    uint32_t _Height, VulkanPhysicalDevices& vulkanPhysicalDevices, VulkanDevice& _VulkanDevice, vk::SurfaceKHR _Surface)
+    : RhiSwapChain(_Rhi)
 {
     PERF_REGION_SCOPED;
-    CreateSwapChain(m_SwapChainWidth, m_SwapChainHeight);
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+    
+    m_Surface = _Surface;
+    m_Device = _VulkanDevice.GetDevice();
+    FromSurface(vulkanPhysicalDevices, _Surface, _Widht, _Height);
+
+    const auto& queueFamilyIndices = vulkanPhysicalDevices.GetQueuesFamilies();
+    m_QueueFamilyIndices = 0;
+    for (int i = static_cast<int>(queueFamilyIndices.size()) - 1; i >= 0; i--)
+    {
+        if (queueFamilyIndices[static_cast<size_t>(i)].supportPresent)
+        {
+            m_QueueFamilyIndices = static_cast<uint32_t>(i);
+            break;
+        }
+    }
+
+    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_Rhi, _VulkanDevice.GetDevice(), m_SurfaceFormatKHR.format);
+    m_SwapChainRenderPass
+        ->SetName("SwapChainRenderPass");
+       // .Build(); DO NOT CALL IT
+
+    CreateSwapChain();
     CreateImageViews();
     CreateFrameBuffers();
+
+    m_ImagesInFligh.resize(m_SwapChainImageCount);
 }
 
 Vulkan::VulkanSwapChain::~VulkanSwapChain()
@@ -29,39 +54,76 @@ Vulkan::VulkanSwapChain::~VulkanSwapChain()
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 {
-    return m_SurfaceFormat;
+    return m_SurfaceFormatKHR;
 }
 
 
-
-void Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
+bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
-    VulkanContext& context = VulkanContext::GetContext();
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice);
-    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
 
-    std::array<vk::Fence, 1> inflightFence = { context.syncObjects[frameIndex].inFlightFence };
+    VulkanContext& context = GET_VK_CONTEXT;
+    vk::Device device = context.GetDevice()->GetDevice();
+    uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
-    vk::Semaphore imageAvaibleSemaphore = context.syncObjects[frameIndex].imageAvailableSemaphore;
+    // Wait for the CPU/GPU pacing fence (frame reuse)
+    device.waitForFences(
+        1,
+        &context.syncObjects[frameIndex].inFlightFence,
+        VK_TRUE,
+        UINT64_MAX
+    );
 
-	VK_CALL(vulkanDevice->GetDevice().waitForFences(inflightFence.size(), inflightFence.data(), VK_TRUE, UINT64_MAX));
-
-	uint32_t nextImageIndex = 0;
-	vk::Result result = vulkanDevice->GetDevice().acquireNextImageKHR(m_SwapChain, UINT64_MAX,imageAvaibleSemaphore, 
-        VK_NULL_HANDLE, &nextImageIndex);
+    uint32_t imageIndex;
+    vk::Result result = device.acquireNextImageKHR
+    (   m_SwapChain, 
+        UINT64_MAX, 
+        context.syncObjects[frameIndex].imageAvailableSemaphore, 
+        VK_NULL_HANDLE,
+        &imageIndex
+    );
 
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
         HandleRecreateSwapChain(windowHandle);
+        return false;
     }
-    else if (vk::Result::eSuccess != result)
+    else if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
     {
         VK_CALL(result);
     }
 
-    m_SwapChainImageIndex = nextImageIndex;
-    VK_CALL(vulkanDevice->GetDevice().resetFences(inflightFence.size(), inflightFence.data()));
+    // If this swapchain image is already in flight, wait for it
+     // because acquireNextImageKHR can not give sequencal image index 
+     // Exexpect : 0 1 2 0
+     // Reality : 0 1 0 1 2
+    if (m_ImagesInFligh[imageIndex] != VK_NULL_HANDLE)
+    {
+        VK_CALL(device.waitForFences
+        (
+            1,
+            &m_ImagesInFligh[imageIndex],
+            VK_TRUE,
+            UINT64_MAX
+        ));
+    }
+
+    // Mark image as now using this frame's fence
+    m_ImagesInFligh[imageIndex] =
+        context.syncObjects[frameIndex].inFlightFence;
+
+    // Reset fence before submitting new work
+    VK_CALL(device.resetFences
+    (
+        1,
+        &context.syncObjects[frameIndex].inFlightFence
+    ));
+
+    m_SwapChainImageIndex = imageIndex;
+
+    return true;
 }
 
 vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
@@ -109,12 +171,40 @@ vk::Extent2D Vulkan::VulkanSwapChain::ChooseSwapExtent(const vk::SurfaceCapabili
     return actualExtent;
 }
 
+void Vulkan::VulkanSwapChain::FromSurface(const VulkanPhysicalDevices& VulkanPhysicalDevices, vk::SurfaceKHR _Surface, 
+    uint32_t _Width, uint32_t _Height)
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
+    m_SwapChainSupportDetails = VulkanPhysicalDevices.GetSwapChainSupport(_Surface);
+
+    m_SurfaceFormatKHR = ChooseSwapSurfaceFormat(m_SwapChainSupportDetails.formats);
+    m_PresentModeKHR = ChooseSwapPresentMode(m_SwapChainSupportDetails.presentModes);
+    m_Extent2D = ChooseSwapExtent(m_SwapChainSupportDetails.capabilities, _Width, _Height);
+    m_SwapChainImageCount = m_SwapChainSupportDetails.capabilities.minImageCount + 1;
+    if (m_SwapChainSupportDetails.capabilities.maxImageCount > 0 && m_SwapChainImageCount > m_SwapChainSupportDetails.capabilities.
+        maxImageCount)
+    {
+        m_SwapChainImageCount = m_SwapChainSupportDetails.capabilities.maxImageCount;
+    }
+
+    if (m_SwapChainSupportDetails.formats.empty() || m_SwapChainSupportDetails.presentModes.empty())
+    {
+        PC_LOGCRITICAL("Unsuported swapChain formats or presents modes");
+        return;
+    }
+
+}
+
 void Vulkan::VulkanSwapChain::CreateImageViews()
 {
-    m_SwapChainImageViews.resize(m_SwapChainImage.size());
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-        VulkanContext::GetContext().rhiDevice);
+
+    m_SwapChainImageViews.resize(m_SwapChainImage.size());
 
     for (size_t i = 0; i < m_SwapChainImageViews.size(); i++)
     {
@@ -122,7 +212,7 @@ void Vulkan::VulkanSwapChain::CreateImageViews()
         createInfo.sType = vk::StructureType::eImageViewCreateInfo;
         createInfo.image = m_SwapChainImage[i];
         createInfo.viewType = vk::ImageViewType::e2D;
-        createInfo.format = m_SurfaceFormat.format;
+        createInfo.format = m_SurfaceFormatKHR.format;
         createInfo.components.r = vk::ComponentSwizzle::eIdentity;
         createInfo.components.g = vk::ComponentSwizzle::eIdentity;
         createInfo.components.b = vk::ComponentSwizzle::eIdentity;
@@ -133,14 +223,15 @@ void Vulkan::VulkanSwapChain::CreateImageViews()
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
 
-        m_SwapChainImageViews[i] = vulkanDevice->GetDevice().createImageView(createInfo);
+        m_SwapChainImageViews[i] = m_Device.createImageView(createInfo);
     }
 }
 
 void Vulkan::VulkanSwapChain::CreateFrameBuffers()
 {
-    std::shared_ptr<VulkanDevice> vulkanDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-        VulkanContext::GetContext().rhiDevice);
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
     m_Framebuffers.resize(m_SwapChainImage.size());
 
     for (size_t i = 0; i < m_SwapChainImage.size(); i++)
@@ -159,159 +250,162 @@ void Vulkan::VulkanSwapChain::CreateFrameBuffers()
         framebufferInfo.height = m_Extent2D.height;
         framebufferInfo.layers = 1;
 
-        vk::Framebuffer framebuffer = vulkanDevice->GetDevice().createFramebuffer(framebufferInfo);
-        m_Framebuffers[i] = framebuffer;
+        m_Framebuffers[i] = m_Device.createFramebuffer(framebufferInfo);
     }
 }
 
 
 void Vulkan::VulkanSwapChain::CleanUpSwapChain()
 {
-    VulkanContext& vulkanContext = VulkanContext::GetContext();
-    std::shared_ptr<VulkanDevice> device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice);
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    m_SwapChainRenderPass.reset();
-    m_SwapChainRenderPass = nullptr;
 
     for (const auto& frameBuffer : m_Framebuffers)
-        device->GetDevice().destroyFramebuffer(frameBuffer);
-    
-    for (const auto& swapChainImageView : m_SwapChainImageViews)
-        device->GetDevice().destroyImageView(swapChainImageView);
+        m_Device.destroyFramebuffer(frameBuffer);
 
-    device->GetDevice().destroySwapchainKHR(m_SwapChain);
+    for (const auto& swapChainImageView : m_SwapChainImageViews)
+        m_Device.destroyImageView(swapChainImageView);
+
+
+    m_Device.destroySwapchainKHR(m_SwapChain);
 }
 
-void Vulkan::VulkanSwapChain::CreateSwapChain(uint32_t _width, uint32_t _height)
+void Vulkan::VulkanSwapChain::CreateSwapChain()
 {
-    m_SwapChainWidth = _width;
-    m_SwapChainHeight = _height;
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    VulkanContext& vulkanContext = reinterpret_cast<VulkanContext&>(VulkanContext::GetContext());
-
-    const Vulkan::SwapChainSupportDetails swapChainSupportDetails = std::reinterpret_pointer_cast<
-        VulkanPhysicalDevices>(vulkanContext.physicalDevices)->UpdateSwapChainSupport(vulkanContext.GetSurface());
-    
-    const auto& queueFamilyIndices = std::reinterpret_pointer_cast<VulkanPhysicalDevices>(vulkanContext.physicalDevices)
-        ->GetQueuesFamilies();
-
-    const vk::SurfaceFormatKHR surfaceFormatKHR = ChooseSwapSurfaceFormat(swapChainSupportDetails.formats);
-    const vk::PresentModeKHR presentModeKHR = ChooseSwapPresentMode(swapChainSupportDetails.presentModes);
-
-
-    m_Extent2D = swapChainSupportDetails.capabilities.currentExtent;
-    m_SurfaceFormat = surfaceFormatKHR;
-    m_SwapChainRenderPass = std::make_shared<VulkanRenderPass>(m_SurfaceFormat.format);
-
-
-    uint32_t imageCount = swapChainSupportDetails.capabilities.minImageCount + 1;
-
-    if (swapChainSupportDetails.capabilities.maxImageCount > 0 && imageCount > swapChainSupportDetails.capabilities.
-        maxImageCount)
-    {
-        imageCount = swapChainSupportDetails.capabilities.maxImageCount;
-    }
 
     vk::SwapchainCreateInfoKHR swapChainCreateInfo{};
     swapChainCreateInfo.sType = vk::StructureType::eSwapchainCreateInfoKHR;
-    swapChainCreateInfo.surface = vulkanContext.GetSurface();
-    swapChainCreateInfo.minImageCount = imageCount;
-    swapChainCreateInfo.imageFormat = surfaceFormatKHR.format;
-    swapChainCreateInfo.imageColorSpace = surfaceFormatKHR.colorSpace;
+    swapChainCreateInfo.surface = m_Surface;
+    swapChainCreateInfo.minImageCount = m_SwapChainImageCount;
+    swapChainCreateInfo.imageFormat = m_SurfaceFormatKHR.format;
+    swapChainCreateInfo.imageColorSpace = m_SurfaceFormatKHR.colorSpace;
     swapChainCreateInfo.imageExtent = m_Extent2D;
     swapChainCreateInfo.imageArrayLayers = 1;
     swapChainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
 
-    uint32_t presentIndex = 0;
-    for (int i = static_cast<int>(queueFamilyIndices.size()) - 1; i >= 0; i--)
-    {
-        if (queueFamilyIndices[static_cast<size_t>(i)].supportPresent)
-        {
-            presentIndex = static_cast<uint32_t>(i);
-            break;
-        }
-    }
+
     swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
-    swapChainCreateInfo.queueFamilyIndexCount = 2;
-    swapChainCreateInfo.pQueueFamilyIndices = &presentIndex;
-    swapChainCreateInfo.preTransform = swapChainSupportDetails.capabilities.currentTransform;
+    swapChainCreateInfo.queueFamilyIndexCount = 1;
+    swapChainCreateInfo.pQueueFamilyIndices = &m_QueueFamilyIndices;
+    swapChainCreateInfo.preTransform = m_SwapChainSupportDetails.capabilities.currentTransform;
     swapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-    swapChainCreateInfo.presentMode = presentModeKHR;
+    swapChainCreateInfo.presentMode = m_PresentModeKHR;
     swapChainCreateInfo.clipped = vk::True;
     swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
 
-    vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice)->GetDevice();
-    m_SwapChain = device.createSwapchainKHR(swapChainCreateInfo, nullptr);
+    m_SwapChain = m_Device.createSwapchainKHR(swapChainCreateInfo, nullptr);
 
-    VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
-    m_SwapChainImage.resize(imageCount);
-    VK_CALL(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, m_SwapChainImage.data()));
+    VK_CALL(m_Device.getSwapchainImagesKHR(m_SwapChain, &m_SwapChainImageCount, nullptr));
+    m_SwapChainImage.resize(m_SwapChainImageCount);
+    VK_CALL(m_Device.getSwapchainImagesKHR(m_SwapChain, &m_SwapChainImageCount, m_SwapChainImage.data()));
 
     m_SwapChainImageCount = m_SwapChainImage.size();
 }
 
+bool Vulkan::VulkanSwapChain::Build()
+{
+    return true; // TODO
+}
+
+uint32_t Vulkan::VulkanSwapChain::GetWidth() const
+{
+    return m_Extent2D.width;
+}
+
+uint32_t Vulkan::VulkanSwapChain::GetHeight() const
+{
+    return m_Extent2D.height;
+}
+
+vk::SwapchainKHR Vulkan::VulkanSwapChain::GetVulkanSwapChain() const
+{
+    return m_SwapChain;
+}
+
 void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
 {
-    const uint32_t frameIndex = PC_CORE::Rhi::GetFrameIndex();
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    VulkanContext& context = VulkanContext::GetContext();
 
-    vk::Fence inFlightFence = context.syncObjects[frameIndex].inFlightFence;
+    const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
-    vk::Semaphore imageAvailableSemaphore = context.syncObjects[frameIndex].imageAvailableSemaphore;
+    VulkanContext& context = GET_VK_CONTEXT;
+    vk::Device device = context.GetDevice()->GetDevice();
+    vk::Queue mainQueu = context.mainQueue;
 
-    
-    vk::Queue mainQueu = VulkanContext::GetContext().mainQueue;
 
-    vk::SubmitInfo submitInfo{};
-    submitInfo.sType = vk::StructureType::eSubmitInfo;
+    uint32_t WaitSemaphoreCount = 0;
+    std::array<vk::Semaphore, 2> waitSemaphore = {};
+    std::array<vk::PipelineStageFlags, 2> waitPipelineStageImageAvailable = {};
 
-    auto& flushedCommands = VulkanContext::GetContext().flushedCommands;
-    // Graphic Work
+    // Transfer
+    if (context.PendingTransferOperation())
     {
-        
-        for (size_t i = 0; i < flushedCommands.size(); i++)
-        {
-            vk::Semaphore waitSemaphore;
-            vk::PipelineStageFlags waitStage;
-
-            if (i == 0)
-            {
-                waitSemaphore = imageAvailableSemaphore;
-                waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-            }
-            else
-            {
-                waitSemaphore = flushedCommands[i - 1].semaphore;
-                waitStage = Vulkan::Utils::RhiPipelineStageToVulkan(flushedCommands[i - 1].waitStages);
-            }
-
-            submitInfo.waitSemaphoreCount = 1;
-            submitInfo.pWaitSemaphores = &waitSemaphore;
-            submitInfo.pWaitDstStageMask = &waitStage;
-
-            submitInfo.commandBufferCount = 1;
-            submitInfo.pCommandBuffers = &flushedCommands[i].cmd;
-
-            submitInfo.signalSemaphoreCount = 1;
-            submitInfo.pSignalSemaphores = &flushedCommands[i].semaphore;
-
-            // Only attach the fence to the LAST submission
-            vk::Fence fence = (i == flushedCommands.size() - 1) ? inFlightFence : VK_NULL_HANDLE;
-
-            VK_CALL(mainQueu.submit(1, &submitInfo, fence));
-        }
+        waitSemaphore[WaitSemaphoreCount] = context.syncObjects[frameIndex].transferFinishSemaphore;
+        waitPipelineStageImageAvailable[WaitSemaphoreCount] = vk::PipelineStageFlagBits::eTransfer;
+        WaitSemaphoreCount++;
     }
-  
+    
+    // SwapChain
+    waitSemaphore[WaitSemaphoreCount] = context.syncObjects[frameIndex].imageAvailableSemaphore;
+    waitPipelineStageImageAvailable[WaitSemaphoreCount] = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    WaitSemaphoreCount++;
+
+    vk::Semaphore signalSemaphores[] = { context.syncObjects[m_SwapChainImageIndex].renderFinishedSemaphore };
+    // Handle all user Command list
+    context.SubmitInfoBuffer.clear();
+    context.SubmitInfoBuffer.resize(context.flushedCommands.Commands.size());
+    for (size_t i = 0; i < context.SubmitInfoBuffer.size(); i++)
+    {
+        vk::SubmitInfo& submitInfo = context.SubmitInfoBuffer[i];
+        submitInfo.sType = vk::StructureType::eSubmitInfo;
+
+        // Wait previous Work
+        if (i == 0)
+        {
+            submitInfo.waitSemaphoreCount = WaitSemaphoreCount;
+            submitInfo.pWaitSemaphores = waitSemaphore.data();
+            submitInfo.pWaitDstStageMask = waitPipelineStageImageAvailable.data();
+        }
+        else
+        {
+            submitInfo.waitSemaphoreCount = 1;
+            submitInfo.pWaitSemaphores = &context.flushedCommands.Semaphores[i - 1];
+            submitInfo.pWaitDstStageMask = &context.flushedCommands.BatchPipelineStageFlag[i - 1]; // wait the previous 
+        }
+ 
+        // Signal n + 1 work
+        if (i == context.SubmitInfoBuffer.size() - 1)
+        {
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = signalSemaphores;
+        }
+        else
+        {
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = &context.flushedCommands.Semaphores[i];
+        }
+
+        // Current Command
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &context.flushedCommands.Commands[i];
+    }
+   
+    VK_CALL(context.mainQueue.submit(static_cast<uint32_t>(context.SubmitInfoBuffer.size()), context.SubmitInfoBuffer.data(), context.syncObjects[frameIndex].inFlightFence));
+
     vk::PresentInfoKHR presentInfo{};
     presentInfo.sType = vk::StructureType::ePresentInfoKHR;
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(1);
-    
-    presentInfo.pWaitSemaphores = flushedCommands.size() != 0 ? 
-        &flushedCommands[flushedCommands.size() - 1].semaphore : nullptr;
 
-    vk::SwapchainKHR swapChains[] = { m_SwapChain };
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+    vk::SwapchainKHR swapChains[] = {m_SwapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &m_SwapChainImageIndex;
@@ -327,21 +421,27 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
         VK_CALL(result);
     }
 
-    flushedCommands.clear();
+    context.flushedCommands.Clear();
 }
 
 void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHandle)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
     if (!windowHandle->resizeDirty)
         return;
 
-    std::shared_ptr<VulkanDevice> vPtrDevice = std::reinterpret_pointer_cast<VulkanDevice>(
-        PC_CORE::Rhi::GetRhiContext()->rhiDevice);
-    vPtrDevice->GetDevice().waitIdle();
+    GET_VK_DEVICE.waitIdle();
 
     Tbx::Vector2ui size = windowHandle->GetWindowSize();
     CleanUpSwapChain();
-    CreateSwapChain(size.x, size.y);
+
+    std::shared_ptr<VulkanPhysicalDevices> physicalDevice = GET_VK_CONTEXT.GetPhysicalDevices();
+
+    FromSurface(*physicalDevice, m_Surface, size.x, size.y);
+    CreateSwapChain();
     CreateImageViews();
     CreateFrameBuffers();
     windowHandle->resizeDirty = false;
@@ -349,8 +449,12 @@ void Vulkan::VulkanSwapChain::HandleRecreateSwapChain(PC_CORE::Window* windowHan
 
 void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
-    VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
-    
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
+    auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
+
     std::shared_ptr<VulkanRenderPass> renderPass = reinterpret_pointer_cast<VulkanRenderPass>(m_SwapChainRenderPass);
 
     vk::RenderPassBeginInfo renderPassInfo{};
@@ -358,21 +462,25 @@ void Vulkan::VulkanSwapChain::BeginSwapChainRenderPass(PC_CORE::CommandList* _co
     renderPassInfo.renderPass = renderPass->GetVulkanRenderPass();
     renderPassInfo.framebuffer = m_Framebuffers.at(m_SwapChainImageIndex);
     renderPassInfo.renderArea.offset = vk::Offset2D{0, 0};
-    renderPassInfo.renderArea.extent = vk::Extent2D{m_SwapChainWidth, m_SwapChainHeight};
+    renderPassInfo.renderArea.extent = m_Extent2D;
 
-    vk::ClearValue clearColor  = {};
-    clearColor.color.setFloat32({ 
-        0, 0, 0, 0});
-    
+    vk::ClearValue clearColor = {};
+    clearColor.color.setFloat32({
+        0, 0, 0, 0
+    });
+
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    vcommandList->GetVkHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
-    
+    vcommandList->GetVulkanCommandBufferHandle().beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
-        
+
 void Vulkan::VulkanSwapChain::EndSwapChainRenderPass(PC_CORE::CommandList* _commandList)
 {
-    VulkanCommandList* vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
-    vcommandList->GetVkHandle().endRenderPass();
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+
+    auto vcommandList = reinterpret_cast<VulkanCommandList*>(_commandList);
+    vcommandList->GetVulkanCommandBufferHandle().endRenderPass();
 }

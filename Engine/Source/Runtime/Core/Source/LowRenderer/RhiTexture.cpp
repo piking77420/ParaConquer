@@ -1,12 +1,22 @@
 ﻿#include "LowRenderer/RhiTexture.hpp"
 
+#include "LowRenderer/Rhi.hpp"
 
-PC_CORE::RhiTexture::RhiTexture(const PC_CORE::CreateImageInfo& _createImageInfo) : m_MipLevelCount(_createImageInfo.mipsLevels),
-m_TextureUsage(_createImageInfo.textureUsage), m_RhiFormat(_createImageInfo.format)
+PC_CORE::RhiTexture::RhiTexture(Rhi& _Rhi)
+    : RhiResourceT(_Rhi)
 {
-	assert(_createImageInfo.textureType != PC_CORE::TextureType::TextureArray2D && "Unsure correct Layers");
+}
 
+bool PC_CORE::RhiTexture::IsDepthFormat(RhiFormat _format)
+{
+    if (_format == PC_CORE::RhiFormat::D32Sfloat ||
+        _format == PC_CORE::RhiFormat::D24UnormS8Uint ||
+        _format == PC_CORE::RhiFormat::D16UnormS8Uint ||
+        _format == PC_CORE::RhiFormat::D32SfloatS8Uint)
+    {
+        
+        return true;
+    }
 
-
-
+    return false;
 }

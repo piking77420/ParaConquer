@@ -32,3 +32,6 @@
 [submodule "Engine/Source/ThirdParty/lzav"]
 	path = Engine/Source/ThirdParty/lzav
 	url = https://github.com/avaneev/lzav.git
+[submodule "Engine/Source/ThirdParty/meshoptimizer"]
+	path = Engine/Source/ThirdParty/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer.git

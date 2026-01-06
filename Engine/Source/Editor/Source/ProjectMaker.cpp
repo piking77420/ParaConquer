@@ -13,17 +13,17 @@ PC_EDITOR_CORE::ProjectFile PC_EDITOR_CORE::ProjectMaker::CreateBaseProject(cons
     const std::filesystem::path path(_path);
     std::filesystem::create_directory(path);
     std::filesystem::create_directory(path / "/Assets");
-    
+
     const ProjectFile projectFile =
-        {
+    {
         .name = path.filename().string(),
         .graphicApi = PC_CORE::GraphicAPI::Vulkan
-        };
+    };
 
 
     PC_CORE::JsonSerializer s;
 
-    s.Serialize<PC_EDITOR_CORE::ProjectFile>(projectFile, (path / ProjectFileName).generic_string());
+    s.Serialize<ProjectFile>(projectFile, (path / ProjectFileName).generic_string());
 
     return std::move(projectFile);
 }

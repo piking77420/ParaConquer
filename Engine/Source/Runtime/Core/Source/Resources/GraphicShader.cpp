@@ -2,18 +2,19 @@
 
 #include "LowRenderer/Rhi.hpp"
 
-PC_CORE::GraphicShader::GraphicShader(const std::string& _shaderName,
-                                      const GraphicShaderProgramCreateInfo& _graphicShaderProgramCreateInfo) : ShaderProgram(_shaderName, ShaderProgramPipelineType::POINT_GRAPHICS, _graphicShaderProgramCreateInfo.sourceList)
+/*
+PC_CORE::GraphicShader::GraphicShader(Rhi& rhi, const std::string& _shaderName,
+                                      const GraphicShaderProgramCreateInfo& _graphicShaderProgramCreateInfo) :
+    ShaderProgram(_shaderName, RhiShaderProgram::PipelineType::Graphic, _graphicShaderProgramCreateInfo.sourceList)
 {
- 
-    const ShaderInfo shaderInfo =
-  {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+    const RhiShaderProgram::ShaderInfo shaderInfo =
+    {
+        .type = RhiShaderProgram::PipelineType::Graphic,
         .shaderInfoData = _graphicShaderProgramCreateInfo.shaderGraphicPointInfo,
     };
     // TODO check if source extension are suitable for pipelyne
 
-    const PC_CORE::ProgramShaderCreateInfo programShaderCreateInfo =
+    const RhiShaderProgram::ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
@@ -22,20 +23,22 @@ PC_CORE::GraphicShader::GraphicShader(const std::string& _shaderName,
         .subPassIndex = _graphicShaderProgramCreateInfo.subPassIndex,
     };
 
-    m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
+    m_RhiShaderProgram.reset(rhi.CreateRhiShaderProgram(Name, programShaderCreateInfo));
 }
 
-PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
-    const GraphicShaderProgramCreateInfo& _graphicShaderProgramCreateInfo) : ShaderProgram(std::move(_shaderName), ShaderProgramPipelineType::POINT_GRAPHICS, _graphicShaderProgramCreateInfo.sourceList)
+PC_CORE::GraphicShader::GraphicShader(Rhi& rhi, std::string&& _shaderName,
+                                      const GraphicShaderProgramCreateInfo& _graphicShaderProgramCreateInfo) :
+    ShaderProgram(std::move(_shaderName), RhiShaderProgram::PipelineType::Graphic,
+                  _graphicShaderProgramCreateInfo.sourceList)
 {
-    const ShaderInfo shaderInfo =
-  {
-        .shaderProgramPipelineType = ShaderProgramPipelineType::POINT_GRAPHICS,
+    const RhiShaderProgram::ShaderInfo shaderInfo =
+    {
+        .type = RhiShaderProgram::PipelineType::Graphic,
         .shaderInfoData = _graphicShaderProgramCreateInfo.shaderGraphicPointInfo,
     };
     // TODO check if source extension are suitable for pipelyne
 
-    const PC_CORE::ProgramShaderCreateInfo programShaderCreateInfo =
+    const RhiShaderProgram::ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = _graphicShaderProgramCreateInfo.renderPass,
@@ -45,7 +48,6 @@ PC_CORE::GraphicShader::GraphicShader(std::string&& _shaderName,
 
     };
 
-    m_RhiShaderProgram = Rhi::CreateRhiShaderProgram(programShaderCreateInfo);
-    
+    m_RhiShaderProgram.reset(rhi.CreateRhiShaderProgram(Name, programShaderCreateInfo));
 }
-
+*/

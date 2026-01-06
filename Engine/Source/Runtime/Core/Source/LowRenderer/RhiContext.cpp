@@ -2,15 +2,22 @@
 
 #include "LowRenderer/Rhi.hpp"
 
-PC_CORE::RhiContext::RhiContext(const RhiContextCreateInfo& rhiContextCreateInfo)
+namespace PC_CORE 
 {
-	m_CurrentContext = this;
-};
 
+    RhiContext::RhiContext(Rhi& _Rhi)
+        : m_Rhi(_Rhi)
+    {
+    }
 
-void PC_CORE::RhiContext::WaitIdle()
-{
-	m_CurrentContext->WaitIdleInstance();
+    RHI::ResourceUpdateBranch* RhiContext::ResourceUpdateBranch()
+    {
+        m_ResourceUpdate.push_back(RHI::ResourceUpdateBranch{});
+        return &m_ResourceUpdate.back();
+    }
+
+    bool RhiContext::PendingTransferOperation() const
+    {
+        return m_PendingTransferOperation;
+    }
 }
-
-

@@ -24,48 +24,45 @@
 #include <memory>
 
 BEGIN_PCCORE
-
-/**
- * \brief Templated Singleton class
- *
- * Note - There is not destructor as this object exists
- *        the entire time of the program.
- *        All resources will be released when the program is terminated.
- *        Any implementation of a Singleton should not hold resources
- *        such as open files, ports, or other items that would be
- *        cleaned up at destruction time.
- */
-template <class _class_>
-class Singleton
-{
-public:
-    
     /**
-     * Returns a reference to the singleton.
-     * This is a static function.
+     * \brief Templated Singleton class
      *
-     * Example use case:
-     *
-     *      class SingletonTest1 : public Singleton<SingletonTest1> {};
-     *      SingletonTest1::instance();
-     *
-     * @return Returns a reference to the singleton object
+     * Note - There is not destructor as this object exists
+     *        the entire time of the program.
+     *        All resources will be released when the program is terminated.
+     *        Any implementation of a Singleton should not hold resources
+     *        such as open files, ports, or other items that would be
+     *        cleaned up at destruction time.
      */
-    static _class_& Instance()
+    template <class _class_>
+    class Singleton
     {
-        if (instance_ == nullptr)
+    public:
+        /**
+         * Returns a reference to the singleton.
+         * This is a static function.
+         *
+         * Example use case:
+         *
+         *      class SingletonTest1 : public Singleton<SingletonTest1> {};
+         *      SingletonTest1::instance();
+         *
+         * @return Returns a reference to the singleton object
+         */
+        static _class_& Instance()
         {
-            instance_ = std::unique_ptr<_class_>(new _class_);
+            if (instance_ == nullptr)
+            {
+                instance_ = std::unique_ptr<_class_>(new _class_);
+            }
+
+            return *instance_;
         }
-        
-        return *instance_;
-    }
-    
-private:
-    
-    /// The Singleton pointer for the class.
-    static inline std::unique_ptr<_class_> instance_ = nullptr;
-};
+
+    private:
+        /// The Singleton pointer for the class.
+        static inline std::unique_ptr<_class_> instance_ = nullptr;
+    };
 
 END_PCCORE
 

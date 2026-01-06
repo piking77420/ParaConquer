@@ -5,14 +5,17 @@
 #include "World/StaticMeshComponent.hpp"
 #include "World/Transform.hpp"
 #include "World/World.hpp"
+#include "Rendering/Renderer.hpp"
 
-PC_CORE::RendererSystem::RendererSystem(PC_CORE::RenderingWorldData* _renderingWorldData)
+PC_CORE::RendererSystem::RendererSystem()
 {
     DYNAMIC_REFLECT_INIT
 
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Game);
+
     Level& l = World::GetWorld()->level;
-    
+
     m_StaticMeshSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_StaticMeshSignature.set(l.GetComponentTypeBit<StaticMeshComponent>(), true);
     AddSignature(m_StaticMeshSignature);
@@ -24,25 +27,33 @@ PC_CORE::RendererSystem::RendererSystem(PC_CORE::RenderingWorldData* _renderingW
     m_PointLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_PointLightSignature.set(l.GetComponentTypeBit<PointLight>(), true);
     AddSignature(m_PointLightSignature);
-
-
-    m_RenderingDataPtr = _renderingWorldData;
-    assert(m_RenderingDataPtr != nullptr);
 }
 
 void PC_CORE::RendererSystem::RenderingTick(double deltatime)
 {
     PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Game);
 
     const Level& l = World::GetWorld()->level;
 
-    m_RenderingDataPtr->Clear();
+    m_GameRenderingWorldData.Clear();
     PopulateStaticMeshes(l);
     PopulateLight(l);
+
+    // Make a copy
+    m_RenderRenderingWorldData = m_GameRenderingWorldData;
+}
+
+const PC_CORE::Rendering::RenderingWorldData& PC_CORE::RendererSystem::GetRenderRenderingWorldData() const
+{
+    return m_RenderRenderingWorldData;
 }
 
 void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 {
+    PERF_REGION_SCOPED
+    PERF_REGION_COLOR(PerfRegion::Game);
+    
     std::set<EntityId>& staticMeshes = *GetEntitySet(m_StaticMeshSignature);
 
     for (auto& ent : staticMeshes)
@@ -51,66 +62,32 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
         std::shared_ptr<StaticMesh> mesh = staticMesh.staticMesh.lock();
-        std::shared_ptr<Material> material = staticMesh.material.lock();
+        std::shared_ptr<Rendering::Material> material = staticMesh.material.lock();
 
-        if (!mesh || !material)
+        if (!mesh /*|| !material*/)
             return;
 
 
-        const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.position, static_cast<Tbx::Quaterniond>(transform.rotation.quaternion),
-            transform.scale);
-        const StaticMeshComponentData staticMeshData =
+        const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.Position,
+                                                      static_cast<Tbx::Quaterniond>(transform.Rotation.Quaternion),
+                                                      transform.Scale);
+        const Rendering::StaticMeshComponentData staticMeshData =
         {
-        .materialType = material->materialType,
-        .descriptorSet = material->GetDescriptorSet(),
-        .staticMesh = mesh.get(),
-        .worldMatrix = m,
-        .normalInvertMatrix = m.Invert().Transpose(),
+            .MaterialType = {},
+            .DescriptorSet = nullptr,
+            .StaticMesh = mesh.get(),
+            .WorldMatrix = m,
+            .NormalInvertMatrix = m.Invert().Transpose(),
         };
 
-        m_RenderingDataPtr->staticMeshComponentData.push_back(staticMeshData);
+        m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
     }
-        
-   
 }
 
 void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
 {
-    std::set<EntityId>& dirLights = *GetEntitySet(m_DirLightSignature);
-    for (auto& ent : dirLights)
-    {
-        const DirLight& dirLight = _level.GetComponent<DirLight>(ent);
-        const Transform& transform = _level.GetComponent<Transform>(ent);
+    PERF_REGION_SCOPED
+    PERF_REGION_COLOR(PerfRegion::Game);
 
-        LightData lightData;
-        lightData.lightType = LightType::Directional;
-        lightData.data.directionalLight  =
-        {
-        .color = dirLight.color,
-        .intensity = dirLight.intensity,
-        .direction = Tbx::Quaternionf::ToEulerAngles(transform.rotation.quaternion.Normalize())
-        };
-
-        m_RenderingDataPtr->lightData.push_back(lightData);
-    }
-
-    std::set<EntityId>& pointLights = *GetEntitySet(m_PointLightSignature);
-
-    for (auto& ent : pointLights)
-    {
-        const PointLight& pointLight = _level.GetComponent<PointLight>(ent);
-        const Transform& transform = _level.GetComponent<Transform>(ent);
-
-        LightData lightData;
-        lightData.lightType = LightType::Point;
-        lightData.data.pointLightData  =
-        {
-          .color = pointLight.color,
-          .intensity = pointLight.intensity,
-          .position = transform.position,
-            };
-
-        m_RenderingDataPtr->lightData.push_back(lightData);
-    }
+   
 }
-

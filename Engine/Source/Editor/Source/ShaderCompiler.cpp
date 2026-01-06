@@ -18,7 +18,7 @@
 using Microsoft::WRL::ComPtr;
 using namespace PC_EDITOR_CORE;
 
-constexpr const wchar_t* INCLUDE_PATH = EDITOR_RESOURCE_PATH_W L"/Shaders/Include/";
+constexpr auto INCLUDE_PATH = EDITOR_RESOURCE_PATH_W L"/Shaders/Include/";
 
 static ComPtr<IDxcLibrary> library;
 static ComPtr<IDxcCompiler3> compiler;
@@ -26,39 +26,42 @@ static ComPtr<IDxcUtils> utils;
 
 // TODO to regular code
 const std::array<std::pair<std::wstring, std::wstring>, 14> ShaderFormats =
-{ {
-    { L".vs",   L"vs_6_1" },       // Vertex Shader
-    { L".hs",   L"hs_6_1" },       // Hull Shader
-    { L".ds",   L"ds_6_1" },       // Domain Shader
-    { L".gs",   L"gs_6_1" },       // Geometry Shader
-    { L".ps",   L"ps_6_1" },       // Pixel Shader
-    { L".cs",   L"cs_6_1" },       // Compute Shader
+{
+    {
+        {L".vs", L"vs_6_1"}, // Vertex Shader
+        {L".hs", L"hs_6_1"}, // Hull Shader
+        {L".ds", L"ds_6_1"}, // Domain Shader
+        {L".gs", L"gs_6_1"}, // Geometry Shader
+        {L".ps", L"ps_6_1"}, // Pixel Shader
+        {L".cs", L"cs_6_1"}, // Compute Shader
 
-    // DXR raytracing stages
-    { L".rgen", L"lib_6_3" },      // Ray generation (DXC: lib_6_3 with [shader("raygeneration")])
-    { L".rint", L"lib_6_3" },      // Intersection
-    { L".ahit", L"lib_6_3" },      // Any hit
-    { L".chit", L"lib_6_3" },      // Closest hit
-    { L".miss", L"lib_6_3" },      // Miss
-    { L".call", L"lib_6_3" },      // Callable
+        // DXR raytracing stages
+        {L".rgen", L"lib_6_3"}, // Ray generation (DXC: lib_6_3 with [shader("raygeneration")])
+        {L".rint", L"lib_6_3"}, // Intersection
+        {L".ahit", L"lib_6_3"}, // Any hit
+        {L".chit", L"lib_6_3"}, // Closest hit
+        {L".miss", L"lib_6_3"}, // Miss
+        {L".call", L"lib_6_3"}, // Callable
 
-    // Mesh shaders (DirectX 12 Ultimate)
-    { L".task", L"as_6_5" },       // Amplification Shader
-    { L".mesh", L"ms_6_5" }        // Mesh Shader
-} };
+        // Mesh shaders (DirectX 12 Ultimate)
+        {L".task", L"as_6_5"}, // Amplification Shader
+        {L".mesh", L"ms_6_5"} // Mesh Shader
+    }
+};
 
 // Thanks to https://simoncoenen.com/blog/programming/graphics/DxcCompiling
 class CustomIncludeHandler : public IDxcIncludeHandler
 {
 public:
-    HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
+    HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename,
+                                         _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
     {
         ComPtr<IDxcBlobEncoding> pEncoding;
-        std::string path = std::string(&pFilename[0], pFilename + wcslen(pFilename));
-        if (IncludedFiles.find(path) != IncludedFiles.end())
+        auto path = std::string(&pFilename[0], pFilename + wcslen(pFilename));
+        if (IncludedFiles.contains(path))
         {
             // Return empty string blob if this file has been included before
-            static const char nullStr[] = " ";
+            static constexpr char nullStr[] = " ";
             utils->CreateBlobFromPinned(nullStr, ARRAYSIZE(nullStr), DXC_CP_ACP, pEncoding.GetAddressOf());
             *ppIncludeSource = pEncoding.Detach();
             return S_OK;
@@ -73,7 +76,11 @@ public:
         return hr;
     }
 
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override { return E_NOINTERFACE; }
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override
+    {
+        return E_NOINTERFACE;
+    }
+
     ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
     ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
 
@@ -83,7 +90,6 @@ public:
 
 static const wchar_t* GetTargetProfile(const std::wstring_view& _fileFormat)
 {
- 
     for (const auto& pair : ShaderFormats)
     {
         if (_fileFormat == pair.first)
@@ -95,8 +101,8 @@ static const wchar_t* GetTargetProfile(const std::wstring_view& _fileFormat)
     return nullptr;
 }
 
-static bool GetExtension(const wchar_t* _file, wchar_t* _buffer, size_t _bufferSize, 
-    size_t _extensionBegin, size_t _extensionSize)
+static bool GetExtension(const wchar_t* _file, wchar_t* _buffer, size_t _bufferSize,
+                         size_t _extensionBegin, size_t _extensionSize)
 {
     if (_extensionSize >= _bufferSize) // buffer overflow
         return false;
@@ -117,7 +123,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     uint32_t codePage = DXC_CP_ACP;
     ComPtr<IDxcBlobEncoding> sourceBlob;
     hres = utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
-    if (FAILED(hres) || !sourceBlob) // Vérifie que le blob est valide
+    if (FAILED(hres) || !sourceBlob) // Vï¿½rifie que le blob est valide
     {
         PC_LOGERROR("Failed to load file FromDisk = {}", hres);
         exit(-1);
@@ -147,9 +153,9 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     auto testInclude = std::wstring(INCLUDE_PATH) + L"Camera.hlsl";
 
     std::vector<LPCWSTR> arguments = {
-        _fileName.c_str(),          // Shader path
-        L"-E", L"Main",             // Entry point
-        L"-T", targetProfile,       // Target profile
+        _fileName.c_str(), // Shader path
+        L"-E", L"Main", // Entry point
+        L"-T", targetProfile, // Target profile
         L"-I", INCLUDE_PATH,
         L"-Zpr"
     };
@@ -193,7 +199,8 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         hres = result->GetErrorBuffer(&errorBlob);
         if (SUCCEEDED(hres) && errorBlob)
         {
-            PC_LOGERROR("Shader compilation failed, {} \n {}", std::string(_fileName.begin(), _fileName.end()), (const char*)errorBlob->GetBufferPointer());
+            PC_LOGERROR("Shader compilation failed, {} \n {}", std::string(_fileName.begin(), _fileName.end()),
+                        static_cast<const char*>(errorBlob->GetBufferPointer()));
             return {};
         }
     }
@@ -230,8 +237,8 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::EditorResource);
 
-    std::wstring wfileName = std::wstring(_filename.begin(), _filename.end());
-     
+    auto wfileName = std::wstring(_filename.begin(), _filename.end());
+
     return CompileFile(_api, std::move(wfileName));
 }
 
@@ -251,23 +258,20 @@ ShaderCompiler::ShaderCompiler()
     }
 
     hres = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-    if (FAILED(hres)) 
+    if (FAILED(hres))
     {
         PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
         exit(-1);
     }
 
     hres = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
-    if (FAILED(hres)) 
+    if (FAILED(hres))
     {
         PC_LOGERROR("Failed to create CLSID_DxcUtils error = {}", hres);
         exit(-1);
     }
-
-  
 }
 
 ShaderCompiler::~ShaderCompiler()
 {
-   
 }
