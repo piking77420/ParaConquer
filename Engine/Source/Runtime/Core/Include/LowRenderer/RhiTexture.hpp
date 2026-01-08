@@ -51,7 +51,7 @@ public:
     
     PC_CORE_API virtual void UploadDataLayer(CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layer) = 0;
     
-    PC_CORE_API virtual bool GenerateMipMap(CommandList* commandList) = 0;
+    PC_CORE_API virtual bool GenerateMipMap(CommandList* commandList, PC_CORE::Filter _Filter) = 0;
 
     PC_CORE_API virtual RhiResourceState GetResourceState() const = 0;
     

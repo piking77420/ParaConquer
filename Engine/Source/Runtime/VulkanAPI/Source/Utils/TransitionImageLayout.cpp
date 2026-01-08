@@ -76,9 +76,6 @@ void Vulkan::TransitionImageLayout(vk::CommandBuffer _commandBuffer, vk::Image i
                                    vk::ImageLayout oldLayout, vk::ImageLayout newLayout,
                                    vk::ImageAspectFlags imageAspect, uint32_t _layerCount, uint32_t _levelCount)
 {
-    if (oldLayout == newLayout)
-        return;
-
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 

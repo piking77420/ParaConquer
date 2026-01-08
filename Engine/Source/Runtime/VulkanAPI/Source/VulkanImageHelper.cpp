@@ -1,13 +1,14 @@
 ﻿#include "Utils/VulkanImageHelper.hpp"
 
 
-void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer, 
+void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
                                        vk::Image _image,
+                                       vk::Filter _Filter,
                                        vk::ImageLayout newImageLayout,
-                                       int32_t _imageWidth,     
-                                       int32_t _imageHeight, 
-                                       vk::Format _format, 
-                                       uint32_t _mipLevel, 
+                                       int32_t _imageWidth,
+                                       int32_t _imageHeight,
+                                       vk::Format _format,
+                                       uint32_t _mipLevel,
                                        vk::ImageAspectFlags _aspectFlag)
 {
     vk::ImageMemoryBarrier barrier{};
@@ -56,7 +57,7 @@ void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
             _image, vk::ImageLayout::eTransferSrcOptimal,
             _image, vk::ImageLayout::eTransferDstOptimal,
             1, &blit,
-            vk::Filter::eLinear);
+            _Filter);
 
         barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
         barrier.newLayout = newImageLayout;

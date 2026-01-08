@@ -11,6 +11,7 @@ namespace Vulkan::Utils
 
     VULKAN_API void GenerateMipMapFunc(vk::CommandBuffer _commandBuffer, 
                                        vk::Image _image,
+                                       vk::Filter _Filter,
                                        vk::ImageLayout newImageLayout,
                                        int32_t _imageWidth,     
                                        int32_t _imageHeight, 

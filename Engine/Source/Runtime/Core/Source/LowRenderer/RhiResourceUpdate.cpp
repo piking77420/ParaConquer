@@ -2,7 +2,7 @@
 
 #include "LowRenderer/CommandList.hpp"
 #include "LowRenderer/Rhi.hpp"
-#include "LowRenderer/RhiBuffer.h"
+
 
 template<class... Ts>
 struct Overload : Ts... { using Ts::operator()...; };
@@ -42,22 +42,19 @@ namespace ResourceUpdateOperation
 
 	BufferUpload::BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size)
 		: m_RhiBuffer(&_RhiBuffer)
+		, m_UploadOperation(_Data, _Size)
 		, m_NbrOfUpdate(m_RhiBuffer->GetNbrOfResourcePerFrameInFlight())
-		, m_DataSize(_Size)
 	{
-		assert(m_DataSize != 0);
-		m_Data = std::make_unique<uint8_t[]>(m_DataSize);
-		std::memcpy(m_Data.get(), _Data, m_DataSize);
+
 	}
 
 	ResourceUpdateStatus BufferUpload::Execute(CommandList& _CommandList)
 	{
 		_CommandList.BeginDebugLabel(std::format("BufferUpload {}", m_RhiBuffer->GetName()).c_str(), DebugColorBufferUpload);
 		assert(m_RhiBuffer != nullptr);
-		assert(m_Data);
-		assert(m_DataSize != 0ull);
+		assert(m_UploadOperation);
 
-		if (!m_RhiBuffer->UploadData(&_CommandList, m_Data.get(), m_DataSize))
+		if (!m_RhiBuffer->UploadData(&_CommandList, m_UploadOperation.GetData(), m_UploadOperation.m_DataSize))
 		{
 			_CommandList.EndDebugLabel();
 			return ResourceUpdateStatus::Failed;
@@ -70,6 +67,7 @@ namespace ResourceUpdateOperation
 	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, RhiFormat _Format,
 		size_t _ImageWidht, size_t _ImageHeight, RhiResourceState _AfterUploadState)
 		: m_RhiTexture(&_RhiTexture)
+		, m_UploadOperation(_Data, PC_CORE::GetBytePerPixel(_Format) * _ImageWidht * _ImageHeight)
 		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
 		, m_ImageWidht(_ImageWidht)
 		, m_ImageHeight(_ImageHeight)
@@ -77,14 +75,12 @@ namespace ResourceUpdateOperation
 		, m_AfterUploadState(_AfterUploadState)
 	{
 	
-		const size_t size = PC_CORE::GetBytePerPixel(m_RhiFormat) * m_ImageWidht * m_ImageHeight;
-		m_Data = std::make_unique<uint8_t[]>(size);
-		std::memcpy(m_Data.get(), _Data, size);
 	}
 
 	[[nodiscard]] ResourceUpdateStatus TextureUpload2D::Execute(CommandList& _CommandList)
 	{
 		assert(m_RhiTexture != nullptr);
+		assert(m_UploadOperation);
 		assert(m_ImageWidht != 0u);
 		assert(m_ImageHeight != 0u);
 		assert(m_RhiFormat != RhiFormat::Undefined);
@@ -106,7 +102,7 @@ namespace ResourceUpdateOperation
 
 		_CommandList.Barrier(m_RhiTexture->GetResourceState(), RhiResourceState::CopyDst, std::span(&transitionState, 1));
 		
-		if (!m_RhiTexture->UploadData2D(&_CommandList, m_Data.get(), m_RhiFormat, m_ImageWidht, m_ImageHeight))
+		if (!m_RhiTexture->UploadData2D(&_CommandList, m_UploadOperation.GetData(), m_RhiFormat, m_ImageWidht, m_ImageHeight))
 		{
 			_CommandList.Barrier(RhiResourceState::CopyDst, RhiResourceState::FragmentShaderResource, std::span(&transitionState, 1));
 			_CommandList.EndDebugLabel();
@@ -118,8 +114,9 @@ namespace ResourceUpdateOperation
 		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
 	}
 	
-	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture)
+	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter)
 		: m_RhiTexture(&_RhiTexture)
+		, m_Filter(_Filter)
 	{
 
 	}
@@ -131,7 +128,7 @@ namespace ResourceUpdateOperation
 
 		_CommandList.BeginDebugLabel(std::format("GenerateMipMap {}", m_RhiTexture->GetName()).c_str(), DebugColorTextureGenerateMipMap);
 
-		if (!m_RhiTexture->GenerateMipMap(&_CommandList))
+		if (!m_RhiTexture->GenerateMipMap(&_CommandList, m_Filter))
 		{
 			_CommandList.EndDebugLabel();
 			return ResourceUpdateStatus::Failed;
@@ -139,6 +136,46 @@ namespace ResourceUpdateOperation
 		_CommandList.EndDebugLabel();
 		m_NbrOfUpdate--;
 		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
+	}
+
+	UploadOperation::UploadOperation(const void* _Data, size_t _Size)
+		: m_DataSize(_Size)
+		, m_Data(std::make_unique<uint8_t[]>(_Size))
+	{
+		assert(m_DataSize != 0);
+		std::memcpy(GetData(), _Data, m_DataSize);
+	}
+
+	UploadOperation::operator bool() const
+	{
+		return std::visit(
+			Overload{
+				[&](const std::unique_ptr<uint8_t[]>& _Data) {
+					return _Data.operator bool();
+				},
+				[&](const std::unique_ptr<uint8_t[], Image::ImageDeleter>& _Data) {
+					return _Data.operator bool();
+				},
+
+			},
+			m_Data
+		) && m_DataSize != 0ull;
+	}
+
+	uint8_t* UploadOperation::GetData() const
+	{
+		return std::visit(
+			Overload{
+				[&](const std::unique_ptr<uint8_t[]>& _Data) {
+					return _Data.get();
+				},
+				[&](const std::unique_ptr<uint8_t[], Image::ImageDeleter>& _Data) {
+					return _Data.get();
+				},
+
+			},
+			m_Data
+		);
 	}
 
 }
@@ -157,6 +194,13 @@ ResourceUpdateBranch& ResourceUpdateBranch::TextureUpload2D(RhiTexture& _RhiText
 {
 	m_UpdateBranchs.emplace_back();
 	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, _Data, _Format, _ImageWidht, _ImageHeight, _AfterUploadState);
+	return *this;
+}
+
+ResourceUpdateBranch& ResourceUpdateBranch::GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter)
+{
+	m_UpdateBranchs.emplace_back();
+	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::GenerateMipMap>(_RhiTexture, _Filter);
 	return *this;
 }
 
@@ -201,6 +245,9 @@ ResourceUpdateOperation::ResourceUpdateStatus ResourceUpdateBranch::Execute(Comm
 			},
 			[&](ResourceUpdateOperation::TextureUpload2D& upload) {
 				return upload.Execute(_CommandList);
+			},
+			[&](ResourceUpdateOperation::GenerateMipMap& mip) {
+				return mip.Execute(_CommandList);
 			}
 
 		},

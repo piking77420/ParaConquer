@@ -18,18 +18,33 @@ BEGIN_PCCORE
 
         static uint8_t* LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _channel);
 
+        static uint8_t* LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp);
+
         static void FreeData(uint8_t* _file);
     };
 
     class Image
     {
     public:
+        struct ImageDeleter {
+
+            ImageDeleter() = default;
+            ImageDeleter(ImageDeleter&&) noexcept = default;
+            ImageDeleter& operator=(ImageDeleter&&) noexcept = default;
+
+            void operator()(uint8_t* p) const noexcept {
+                FileLoader::FreeData(p);
+            }
+        };
+
 
         DEFAULT_COPY_MOVE_OPERATIONS(Image);
 
         PC_CORE_API Image(const std::string& _path, PC_CORE::RhiChannel _desireChannel);
 
         PC_CORE_API Image(const char* _path, PC_CORE::RhiChannel _desireChannel);
+
+        PC_CORE_API Image(const uint8_t* _ptr, size_t _size, const char* _name);
 
         Image() = default;
 
@@ -61,15 +76,26 @@ BEGIN_PCCORE
             return m_Data.get();
         }
 
+        bool IsHdr() const
+        {
+            return m_IsHDR;
+        }
+
+        operator bool() const
+        {
+            return m_Data.get() != nullptr;
+        }
+
+        [[nodiscard]] std::unique_ptr<uint8_t[], ImageDeleter> Release() noexcept
+        {
+            auto tmp = std::move(m_Data);
+            m_Data.reset();
+            return tmp;
+        }
+
 
     private:
-        struct ImageDeleter {
-            void operator()(uint8_t* p) const noexcept {
-                FileLoader::FreeData(p);
-            }
-        };
-
-
+       
         REFLECT(Image);
 
         uint32_t m_Widht = -1;
@@ -79,6 +105,8 @@ BEGIN_PCCORE
         PC_CORE::RhiChannel m_Channel{};
 
         std::unique_ptr<uint8_t[], ImageDeleter> m_Data;
+
+        bool m_IsHDR = false;
     };
 
 END_PCCORE

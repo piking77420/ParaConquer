@@ -315,7 +315,7 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
     VulkanBuffer::FreeAlloc(context, stagingBuffer);*/
 }
 
-bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList)
+bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, PC_CORE::Filter _Filter)
 {   
     if (!IsNeededToGenerateMip())
         return false;
@@ -327,6 +327,8 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList)
     TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
     const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
+    // TODO REFACTOR THIS
+
     TransitionImageLayout(cmb,
         handle.Image,
         VkFormat,
@@ -337,7 +339,8 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList)
         m_Level);
 
     Utils::GenerateMipMapFunc(cmb,
-                                handle.Image, 
+                                handle.Image,
+                                Utils::RhiToVulkanFilter(_Filter),
                                 vk::ImageLayout::eShaderReadOnlyOptimal,  // todo not harcoded
                                 m_Width,
                                 m_Height, 

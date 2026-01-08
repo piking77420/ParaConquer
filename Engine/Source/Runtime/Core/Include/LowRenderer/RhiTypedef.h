@@ -252,7 +252,7 @@ BEGIN_PCCORE
 
 
 #pragma region GetBytePerPixel
-    static inline uint32_t GetBytePerPixel(RhiFormat RhiFormat)
+    static inline size_t GetBytePerPixel(RhiFormat RhiFormat)
     {
         switch (RhiFormat)
         {

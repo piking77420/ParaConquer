@@ -30,7 +30,6 @@ BEGIN_PCCORE
             return *this;
         }
 
-
         size_t GetVerticiesCount() const
         {
             return m_VerticiesCount;

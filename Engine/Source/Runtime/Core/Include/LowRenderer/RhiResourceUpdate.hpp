@@ -4,7 +4,9 @@
 #include <variant>
 #include <deque>
 
-#include "RhiResource.hpp"
+#include "Resources/FileLoader.hpp"
+#include "LowRenderer/RhiBuffer.h"
+#include "LowRenderer/RhiTexture.hpp"
 
 namespace PC_CORE
 {
@@ -23,10 +25,56 @@ namespace PC_CORE::RHI
 			Complete
 		};
 
+		template <typename T>
+		concept UploadBufferType = requires(T t)
+		{
+			{ t.get() } -> std::same_as<uint8_t*>;
+		};
+
+		struct PC_CORE_API UploadOperation
+		{
+			using UploadData = std::variant<std::unique_ptr<uint8_t[]>, std::unique_ptr<uint8_t[], Image::ImageDeleter>>;
+
+			UploadOperation(UploadOperation&&) noexcept = default;
+			UploadOperation& operator=(UploadOperation&&) noexcept = default;
+		
+			explicit UploadOperation(const void* _Data, size_t _Size);
+
+			template <UploadBufferType T>
+			explicit UploadOperation(T&& _Data, size_t _Size)
+				: m_DataSize(_Size)
+				, m_Data(std::forward<T>(_Data))
+			{
+				assert(m_DataSize != 0);
+			}
+
+			operator bool() const;
+
+			UploadOperation() = default;
+
+			~UploadOperation() = default;
+
+			uint8_t* GetData() const;
+
+			size_t m_DataSize{ 0u };
+
+			UploadData m_Data;
+		};
+
 		class PC_CORE_API BufferUpload
 		{
 		public:
 			explicit BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size);
+
+			template <UploadBufferType T>
+			explicit BufferUpload(RhiBuffer& _RhiBuffer, T&& _Data, size_t _Size)
+				: m_RhiBuffer(&_RhiBuffer)
+				, m_UploadOperation(std::forward<T>(_Data), _Size)
+				, m_NbrOfUpdate(m_RhiBuffer->GetNbrOfResourcePerFrameInFlight())
+			{
+
+			}
+
 
 			~BufferUpload() = default;
 
@@ -37,11 +85,9 @@ namespace PC_CORE::RHI
 		private:
 			RhiBuffer* m_RhiBuffer{ nullptr };
 
+			UploadOperation m_UploadOperation;
+
 			size_t m_NbrOfUpdate{ 0u };
-
-			std::unique_ptr<uint8_t[]> m_Data;
-
-			size_t m_DataSize{ 0u };
 		};
 
 		class PC_CORE_API TextureUpload2D
@@ -49,6 +95,20 @@ namespace PC_CORE::RHI
 		public:
 			explicit TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, RhiFormat _Format,
 				size_t _ImageWidht, size_t _ImageHeight, RhiResourceState _AfterUploadState);
+
+			template <UploadBufferType T>
+			explicit TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, RhiFormat _Format,
+				size_t _ImageWidht, size_t _ImageHeight, RhiResourceState _AfterUploadState)
+				: m_RhiTexture(&_RhiTexture)
+				, m_UploadOperation(std::forward<T>(_Data), PC_CORE::GetBytePerPixel(_Format) * _ImageWidht * _ImageHeight)
+				, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
+				, m_ImageWidht(_ImageWidht)
+				, m_ImageHeight(_ImageHeight)
+				, m_RhiFormat(_Format)
+				, m_AfterUploadState(_AfterUploadState)
+			{
+
+			}
 
 			~TextureUpload2D() = default;
 
@@ -59,9 +119,9 @@ namespace PC_CORE::RHI
 		private:
 			RhiTexture* m_RhiTexture{ nullptr };
 
-			size_t m_NbrOfUpdate{ 0u };
+			UploadOperation m_UploadOperation;
 
-			std::unique_ptr<uint8_t[]> m_Data;
+			size_t m_NbrOfUpdate{ 0u };
 
 			size_t m_ImageWidht{ 0u };
 
@@ -77,7 +137,7 @@ namespace PC_CORE::RHI
 		class PC_CORE_API GenerateMipMap
 		{
 		public:
-			explicit GenerateMipMap(RhiTexture& _RhiTexture);
+			explicit GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter);
 
 			~GenerateMipMap() = default;
 
@@ -89,6 +149,8 @@ namespace PC_CORE::RHI
 			RhiTexture* m_RhiTexture{ nullptr };
 
 			size_t m_NbrOfUpdate{ 0u };
+
+			Filter m_Filter = Filter::Nearest;
 		};
 
 	}
@@ -96,7 +158,8 @@ namespace PC_CORE::RHI
 	class PC_CORE_API ResourceUpdateBranch
 	{
 	public:
-		using ResourceUpdate = std::variant<std::monostate, ResourceUpdateOperation::BufferUpload, ResourceUpdateOperation::TextureUpload2D>;
+		using ResourceUpdate = std::variant<std::monostate, ResourceUpdateOperation::BufferUpload, ResourceUpdateOperation::TextureUpload2D, 
+											ResourceUpdateOperation::GenerateMipMap>;
 
 		DEFAULT_CONSTRUCTOR_DESTRUCTOR(ResourceUpdateBranch)
 
@@ -108,8 +171,27 @@ namespace PC_CORE::RHI
 
 		ResourceUpdateBranch& BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size);
 
+		template <ResourceUpdateOperation::UploadBufferType T>
+		ResourceUpdateBranch& BufferUpload(RhiBuffer& _RhiBuffer, T&& _Data, size_t _Size)
+		{
+			m_UpdateBranchs.emplace_back();
+			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::BufferUpload>(_RhiBuffer, std::forward<T>(_Data), _Size);
+			return *this;
+		}
+
+
 		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, RhiFormat _Format, 
 											 size_t _ImageWidht, size_t _ImageHeight, RhiResourceState _AfterUploadState);
+
+		template <ResourceUpdateOperation::UploadBufferType T>
+		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, RhiFormat _Format,
+			size_t _ImageWidht, size_t _ImageHeight, RhiResourceState _AfterUploadState)
+		{
+			m_UpdateBranchs.emplace_back();
+			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _Format, _ImageWidht, _ImageHeight, _AfterUploadState);
+		}
+
+		ResourceUpdateBranch& GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter);
 
 		bool IsEmpty() const
 		{
