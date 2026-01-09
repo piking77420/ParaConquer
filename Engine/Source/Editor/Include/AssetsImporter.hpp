@@ -7,13 +7,16 @@
 
 #include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
+#include "LowRenderer/RhiTexture.hpp"
+#include "Resources/StaticMesh.hpp"
+#include "Resources/Texture2D.hpp"
 
 namespace PC_CORE
 {
     class Serializer;
     class Rhi;
-    class StaticMesh;
     struct StaticMeshRenderData;
+    class Image;
 }
 
 namespace PC_CORE::Rendering
@@ -22,12 +25,19 @@ namespace PC_CORE::Rendering
 }
 
 struct aiScene;
+struct aiTexture;
+enum aiTextureType;
 
 BEGIN_EDITOR_PCCORE
     class AssetsImporter
     {
     public:
-        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path, PC_CORE::StaticMesh* _StaticMesh);
+        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path);
+
+        const std::string& GetName() const;
+
+        bool GetStaticMesh(PC_CORE::ObjectPtr<PC_CORE::StaticMesh>* StaticMehs) const;
+
 
     private:
         enum class ImportFormat
@@ -38,13 +48,33 @@ BEGIN_EDITOR_PCCORE
             Obj
         };
 
+        bool m_Succes = false;
+
+        std::string m_ImportObjectName;
+
+        std::filesystem::path m_filePath;
+
+        PC_CORE::ObjectPtr<PC_CORE::StaticMesh> m_StaticMesh;
+
+        std::map<const char*, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
+
         ImportFormat m_ImportFormat;
 
         ImportFormat FindImportFormat(const std::filesystem::path& path);
 
-        bool ImportMeshesFromScene(const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
+        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
 
-       bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
+        bool ImportTextures(PC_CORE::Rhi& _Rhi, const aiScene* scene);
+
+        [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
+
+        [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromPath(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
+
+        [[nodiscard]] void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image);
+
+        //bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
+
+        //bool ImportMaterialGltf(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
 
     };
 

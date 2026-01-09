@@ -1,8 +1,8 @@
 #include <Iostream>
 #include "Editor.hpp"
 
-
 #define WAIT_DEBUG_GPU_INJECTION 0
+
 
 int main(int argc, char* argv[])
 {

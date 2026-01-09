@@ -7,6 +7,7 @@
 #include "ObjectPtr.hpp"
 #include "Resources/Texture2d.hpp"
 #include "LowRenderer/RhiDescriptorSet.hpp"
+#include "Sampler.hpp"
 
 namespace PC_CORE::Rendering
 {
@@ -24,6 +25,7 @@ namespace PC_CORE::Rendering
         Roughness,
         Normal,
         Ao,
+        MetallicRougnessPack,
     };
 
     enum struct MaterialValueType : uint8_t
@@ -34,6 +36,8 @@ namespace PC_CORE::Rendering
         Vec4,
         TextureSample,
     };
+
+    using TextureSampler = std::pair<const ObjectPtr<const Texture2D>, const ObjectPtr<const Sampler>>;
 
     template<typename T>
     struct MaterialValueTypeMap;
@@ -62,6 +66,11 @@ namespace PC_CORE::Rendering
         static constexpr MaterialValueType type = MaterialValueType::Vec4;
     };
 
+    template<>
+    struct MaterialValueTypeMap<TextureSampler>
+    {
+        static constexpr MaterialValueType type = MaterialValueType::TextureSample;
+    };
 
     
     namespace Gpu
@@ -77,9 +86,11 @@ namespace PC_CORE::Rendering
         };
     }
 
+
     template<class T>
-    concept ValueDataType = std::is_same_v<T, float> || std::is_same_v<T, std::array<float, 2>> || 
-        std::is_same_v<T, std::array<float, 3>> || std::is_same_v<T, std::array<float, 4>> || std::is_same_v<T, WeakObjectPtr<Texture2D>> || std::is_same_v<T, ObjectPtr<Texture2D>>;
+    concept ValueDataType = std::is_same_v<T, float> || std::is_same_v<T, Tbx::Vector2f> ||
+        std::is_same_v<T, Tbx::Vector3f> || std::is_same_v<T, Tbx::Vector4f> || std::is_same_v<T, TextureSampler>;
+
 
     class Material : public Resource
     {
@@ -94,8 +105,15 @@ namespace PC_CORE::Rendering
 
         void Build();
 
-        // Setter
+        template <MaterialAttribute T, typename V>
+        Material& SetMaterialAttribute(const V _Value)
+        {
+            m_MaterialAttributesValueType[static_cast<size_t>(T)] = MaterialValueTypeMap<V>::type;
+            m_MaterialAttributesData[static_cast<size_t>(T)] = _Value;
+        }
 
+        // Setter
+        /*
         template <MaterialAttribute MaterialAttribute, typename ValueDataType>
         Material& SetMaterialAttributeData(ValueDataType _ValueDataType)
         {
@@ -128,21 +146,23 @@ namespace PC_CORE::Rendering
         bool GetPackMetallicAndRougness() const
         {
             return m_UseMetallicRoughnessTexture;
-        }
+        }*/
 
     private:
-        std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
-
-        using MaterialAttributeData = std::variant<std::monostate, float, Tbx::Vector2f, Tbx::Vector3f, Tbx::Vector4f, WeakObjectPtr<Texture2D>>;
+        using MaterialAttributeData = 
+            std::variant<std::monostate, 
+            float, Tbx::Vector2f, 
+            Tbx::Vector3f, Tbx::Vector4f, 
+            std::pair<WeakObjectPtr<const Texture2D>, WeakObjectPtr<const Sampler>>
+            >;
 
         MaterialType MaterialType = MaterialType::Opaque;
-
-        bool m_UseMetallicRoughnessTexture = false;
 
         std::array<MaterialValueType, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesValueType;
 
         std::array<MaterialAttributeData, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesData;
 
+        std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
     };
 
     REFLECT(Material, Resource)

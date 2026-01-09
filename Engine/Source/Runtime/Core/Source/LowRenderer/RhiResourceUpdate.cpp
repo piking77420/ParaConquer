@@ -117,6 +117,7 @@ namespace ResourceUpdateOperation
 	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter)
 		: m_RhiTexture(&_RhiTexture)
 		, m_Filter(_Filter)
+		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
 	{
 
 	}

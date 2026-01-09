@@ -23,6 +23,8 @@ BEGIN_PCCORE
         {
             
         }
+
+        explicit Texture(std::unique_ptr<PC_CORE::RhiTexture> _Texture);
     
         ~Texture() override = default;
     

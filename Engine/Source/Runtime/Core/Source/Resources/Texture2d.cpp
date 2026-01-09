@@ -34,6 +34,13 @@ Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path)
     m_RhiTexture->SetName(Name);
 }
 
+Texture2D::Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture)
+    : Texture(std::move(_Texture))
+{
+
+}
+
+
 void Texture2D::AfterSerialize(Serializer* _serializer) const
 {
 

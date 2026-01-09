@@ -313,13 +313,11 @@ void Editor::InitTestScene()
     PC_LOG("InitTestScene...")
     auto& level = World::GetWorld()->level;
     
-    ObjectPtr<StaticMesh> CubeMesh = std::make_shared<StaticMesh>();
+    
     AssetsImporter AssetsImporter;
-    //std::vector<PC_CORE::Rendering::Material> material;
-    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/obj/dragon.fbx", CubeMesh.Get());
-    ResourceManager::Add(CubeMesh);
 
-
+    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
+    
 
     {
         EntityId Cube = level.CreateEntity("Cube");
@@ -329,7 +327,12 @@ void Editor::InitTestScene()
         t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
         t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
         StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
-        s->staticMesh = CubeMesh;
+
+        PC_CORE::ObjectPtr<PC_CORE::StaticMesh> mesh;
+        if (AssetsImporter.GetStaticMesh(&mesh))
+        {
+            s->staticMesh = mesh;
+        }
     }
    
 
@@ -360,7 +363,7 @@ void Editor::InitTestScene()
     
     
         StaticMeshComponent* mesh2 = &level.GetComponent<StaticMeshComponent>(sphere);
-        mesh2->staticMesh = ResourceManager::Get<StaticMesh>("Sphere.obj");
+        mesh2->staticMesh = ResourceManager::Get<m_StaticMesh>("Sphere.obj");
         mesh2->material = m2;
         */
 

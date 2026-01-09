@@ -189,6 +189,7 @@ namespace PC_CORE::RHI
 		{
 			m_UpdateBranchs.emplace_back();
 			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _Format, _ImageWidht, _ImageHeight, _AfterUploadState);
+			return *this;
 		}
 
 		ResourceUpdateBranch& GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter);
