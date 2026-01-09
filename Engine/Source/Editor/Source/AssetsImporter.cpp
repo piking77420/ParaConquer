@@ -289,6 +289,7 @@ namespace PC_EDITOR_CORE
                         std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
                         if (texture && image)
                         {
+                            texture->SetName(str.C_Str());
                             BuildRhiTextureFromImage(_Rhi, *texture, &image);
 
                             PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
@@ -327,6 +328,7 @@ namespace PC_EDITOR_CORE
         if (aiTexture.mHeight == 0) // Compressed
         {
             PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName);
+            RhiTexturePtr->SetName(TextureName);
 
             BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image);
             return RhiTexturePtr;
@@ -344,7 +346,7 @@ namespace PC_EDITOR_CORE
         _Texture
             .SetMemoryUsage(RhiMemoryUsage::Static)
             .SetTextureUsage(PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferDst
-                | PC_CORE::RhiTexture::TextureUsageFlagBits::LoadAndStore)
+                | PC_CORE::RhiTexture::TextureUsageFlagBits::LoadAndStore | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferSrc)
             .SetTextureType(PC_CORE::RhiTexture::Type::Texture2D)
             .SetWidth(_Image->GetWidht())
             .SetHeight(_Image->GetHeight())
@@ -372,11 +374,12 @@ namespace PC_EDITOR_CORE
                 _Texture.GetRhiFormat(),
                 _Texture.GetWidth(),
                 _Texture.GetWidth(),
+                RhiResourceState::CopyDst)
+            .GenerateMipmap(
+                _Texture,
+                PC_CORE::Filter::Linear,
                 RhiResourceState::FragmentShaderResource);
-            //.GenerateMipmap(
-              //  _Texture,
-                //PC_CORE::Filter::Linear);
-
+        
     }
     
 }

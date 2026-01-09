@@ -486,10 +486,9 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
     m_VkImageBarrier.resize(_ImageStateTransition.size());
     for (size_t i = 0; i < _ImageStateTransition.size(); i++)
     {
-        const PC_CORE::RhiTexture& texture = *_ImageStateTransition[i].Texture;
-
-        const VulkanTexture& vulkanTexture = static_cast<const VulkanTexture&>(texture);
-        const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*vulkanTexture.GetTextureAndAlloc(frameIndex));
+        PC_CORE::RhiTexture& texture = *_ImageStateTransition[i].Texture;
+        VulkanTexture& vulkanTexture = static_cast<VulkanTexture&>(texture);
+        TextureAndAlloc& textureAndAlloc = static_cast<TextureAndAlloc&>(*vulkanTexture.GetTextureAndAlloc(frameIndex));
 
         vk::ImageMemoryBarrier& bar = m_VkImageBarrier[i];
 
@@ -512,14 +511,19 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
 
         ImageSubresourceRange.baseArrayLayer = _ImageStateTransition[i].FirstLayer;
         ImageSubresourceRange.layerCount = _ImageStateTransition[i].LayerCount;
+
+        if (_ImageStateTransition[i].updateState)
+        {
+            textureAndAlloc.resourceState = _NewState;
+        }
     }
 
     m_VkBufferBarrier.resize(_BufferStateTransition.size());
 
     for (size_t i = 0; i < _BufferStateTransition.size(); i++)
     {
-        const VulkanBuffer& VkBuffer = reinterpret_cast<const VulkanBuffer&>(_BufferStateTransition[i].Buffer);
-        const BufferAndAlloc* bufferAndAlloc = static_cast<const BufferAndAlloc*>(VkBuffer.GetBufferAndAlloc(frameIndex));
+        VulkanBuffer& VkBuffer = static_cast<VulkanBuffer&>(*_BufferStateTransition[i].Buffer);
+        BufferAndAlloc& bufferAndAlloc = static_cast<BufferAndAlloc&>(*VkBuffer.GetBufferAndAlloc(frameIndex));
 
         m_VkBufferBarrier[i].sType = vk::StructureType::eBufferMemoryBarrier;
         m_VkBufferBarrier[i].pNext = nullptr;
@@ -527,9 +531,15 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
         m_VkBufferBarrier[i].dstAccessMask = NewAccesMask;
         m_VkBufferBarrier[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         m_VkBufferBarrier[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        m_VkBufferBarrier[i].buffer = bufferAndAlloc->buffer;
+        m_VkBufferBarrier[i].buffer = bufferAndAlloc.buffer;
         m_VkBufferBarrier[i].offset = _BufferStateTransition[i].Offset;
         m_VkBufferBarrier[i].size = _BufferStateTransition[i].Size;
+
+
+        if (_BufferStateTransition[i].updateState)
+        {
+            bufferAndAlloc.ResourceState = _NewState;
+        }
     }
     
 
@@ -540,31 +550,8 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
         0, nullptr,
         static_cast<uint32_t>(m_VkBufferBarrier.size()), m_VkBufferBarrier.data(),
         static_cast<uint32_t>(m_VkImageBarrier.size()), m_VkImageBarrier.data());
+
 }
-
-
-
-/*
-void Vulkan::VulkanCommandList::Flush(PC_CORE::RhiFence& _fence)
-{
-    const size_t frameIndex = m_Rhi.GetFrameIndex();
-    vk::CommandBuffer cmb = m_CommandBuffer[frameIndex];
-
-    vk::Fence vkfence = *static_cast<vk::Fence*>(static_cast<VulkanFence&>(_fence).GetFrameNativeHandle(frameIndex));
-  
-    vk::SubmitInfo submitInfo;
-    submitInfo.pCommandBuffers = &cmb;
-    submitInfo.commandBufferCount = 1;
-    
-    VulkanContext& vkContext = GET_VK_CONTEXT;
-
-
-    VK_CALL(vkContext.mainQueue.submit(1, &submitInfo, vkfence));
-
-    auto device = vkContext.GetDevice()->GetDevice();
-    VK_CALL(device.waitForFences(1, &vkfence, vk::True, UINT64_MAX));
-    VK_CALL(device.resetFences(1, &vkfence));
-}*/
 
 vk::CommandBuffer Vulkan::VulkanCommandList::GetVulkanCommandBufferHandle() const
 {

@@ -9,14 +9,19 @@
 namespace Vulkan::Utils
 {
 
-    VULKAN_API void GenerateMipMapFunc(vk::CommandBuffer _commandBuffer, 
-                                       vk::Image _image,
-                                       vk::Filter _Filter,
-                                       vk::ImageLayout newImageLayout,
-                                       int32_t _imageWidth,     
-                                       int32_t _imageHeight, 
-                                       vk::Format _format, 
-                                       uint32_t _mipLevel,
-                                       vk::ImageAspectFlags _aspectFlag);
+    VULKAN_API void GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
+        vk::Image _image,
+        vk::Filter _Filter,
+        vk::AccessFlags oldAccesFlag,
+        vk::ImageLayout oldImageLayout,
+        vk::PipelineStageFlags oldPipelineStageFlags,
+        vk::AccessFlags newAccesFlag,
+        vk::ImageLayout newImageLayout,
+        vk::PipelineStageFlags newPipelineStageFlags,
+        int32_t _imageWidth,
+        int32_t _imageHeight,
+        vk::Format _format,
+        uint32_t _mipLevel,
+        vk::ImageAspectFlags _aspectFlag);
 
 }

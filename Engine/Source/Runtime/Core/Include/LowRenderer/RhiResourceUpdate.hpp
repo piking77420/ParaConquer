@@ -137,7 +137,7 @@ namespace PC_CORE::RHI
 		class PC_CORE_API GenerateMipMap
 		{
 		public:
-			explicit GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter);
+			explicit GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation);
 
 			~GenerateMipMap() = default;
 
@@ -151,6 +151,8 @@ namespace PC_CORE::RHI
 			size_t m_NbrOfUpdate{ 0u };
 
 			Filter m_Filter = Filter::Nearest;
+
+			RhiResourceState m_StateAfterOperation;
 		};
 
 	}
@@ -192,7 +194,7 @@ namespace PC_CORE::RHI
 			return *this;
 		}
 
-		ResourceUpdateBranch& GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter);
+		ResourceUpdateBranch& GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation);
 
 		bool IsEmpty() const
 		{

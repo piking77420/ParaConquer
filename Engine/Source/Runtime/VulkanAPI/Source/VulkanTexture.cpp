@@ -185,13 +185,14 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
         _ImageHeight,
         1
     };
-        
+
     cmb.copyBufferToImage(
             m_StagingBuffer.buffer,
             handle.Image,
             vk::ImageLayout::eTransferDstOptimal,
             region
         );    
+
 
     return true;
     
@@ -315,7 +316,7 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
     VulkanBuffer::FreeAlloc(context, stagingBuffer);*/
 }
 
-bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, PC_CORE::Filter _Filter)
+bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, PC_CORE::Filter _Filter, RhiResourceState _StateAfterOperation)
 {   
     if (!IsNeededToGenerateMip())
         return false;
@@ -325,38 +326,35 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, P
     const size_t FrameIndex = m_Rhi.GetFrameIndex();
     GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
     TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
-    const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
-    // TODO REFACTOR THIS
 
-    TransitionImageLayout(cmb,
-        handle.Image,
-        VkFormat,
-        vk::ImageLayout::eShaderReadOnlyOptimal,
-        current,
-        VkImageAspectFlags,
-        m_Layer,
-        m_Level);
+    const vk::ImageLayout OldImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
+    const vk::AccessFlags Oldflag = Vulkan::Utils::RhiResourceStateToAccesFlag(handle.resourceState);
+    const vk::PipelineStageFlags OldDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(handle.resourceState);
+
+    const vk::ImageLayout NewImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(_StateAfterOperation);
+    const vk::AccessFlags Newflag = Vulkan::Utils::RhiResourceStateToAccesFlag(_StateAfterOperation);
+    const vk::PipelineStageFlags NewDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_StateAfterOperation);
 
     Utils::GenerateMipMapFunc(cmb,
                                 handle.Image,
                                 Utils::RhiToVulkanFilter(_Filter),
-                                vk::ImageLayout::eShaderReadOnlyOptimal,  // todo not harcoded
+                                // CURRENT
+                                Oldflag,
+                                OldImageLayout,
+                                OldDstStageFlags,
+                                // NEW
+                                Newflag,
+                                NewImageLayout,
+                                NewDstStageFlags,
+
                                 m_Width,
                                 m_Height, 
                                 Utils::RhiFormatToVkFormat(m_RhiFormat), 
                                 m_Level, 
                                 VkImageAspectFlags);
-    
-    // image transition to eShaderReadOnlyOptimal in GenerateMipMapFunc
-    TransitionImageLayout(cmb,
-        handle.Image,
-        VkFormat,
-        vk::ImageLayout::eShaderReadOnlyOptimal,
-        current,
-        VkImageAspectFlags,
-        m_Layer,
-        m_Level);
+
+    handle.resourceState = _StateAfterOperation; // Update State
 
     return true;
 }

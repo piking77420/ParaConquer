@@ -4,7 +4,12 @@
 void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
                                        vk::Image _image,
                                        vk::Filter _Filter,
+                                       vk::AccessFlags oldAccesFlag,
+                                       vk::ImageLayout oldImageLayout,
+                                       vk::PipelineStageFlags oldPipelineStageFlags,
+                                       vk::AccessFlags newAccesFlag,
                                        vk::ImageLayout newImageLayout,
+                                        vk::PipelineStageFlags newPipelineStageFlags,
                                        int32_t _imageWidth,
                                        int32_t _imageHeight,
                                        vk::Format _format,
@@ -61,11 +66,11 @@ void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
 
         barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
         barrier.newLayout = newImageLayout;
-        barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = newAccesFlag;
 
         vk::DependencyFlags innerLoopDepencyFlag{};
-        _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader,
+        _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, newPipelineStageFlags,
             innerLoopDepencyFlag,
             0, nullptr,
             0, nullptr,
@@ -75,14 +80,16 @@ void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _commandBuffer,
         if (mipHeight > 1) mipHeight /= 2;
     }
 
+    // last mip
+
     barrier.subresourceRange.baseMipLevel = _mipLevel - 1;
     barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
     barrier.newLayout = newImageLayout;
     barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+    barrier.dstAccessMask = newAccesFlag;
 
     vk::DependencyFlags depencyFlag{};
-    _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader,
+    _commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, newPipelineStageFlags,
                                    depencyFlag,
                                    0, nullptr,
                                    0, nullptr,

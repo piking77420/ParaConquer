@@ -85,11 +85,11 @@ namespace ResourceUpdateOperation
 		assert(m_ImageHeight != 0u);
 		assert(m_RhiFormat != RhiFormat::Undefined);
 		assert(m_AfterUploadState != RhiResourceState::Undefined);
-
-
 		_CommandList.BeginDebugLabel(std::format("TextureUpload2D {}", m_RhiTexture->GetName()).c_str(), DebugColorTextureUpload2D);
 
-		ImageStateTransition transitionState =
+
+		constexpr RhiResourceState RequireState = RhiResourceState::CopyDst;
+		ImageStateTransition barrier =
 		{
 			.Texture = m_RhiTexture,
 			.FirstMipLevel = 0,
@@ -97,27 +97,32 @@ namespace ResourceUpdateOperation
 			.FirstLayer = 0,
 			.LayerCount = m_RhiTexture->GetLayer(),
 
-			.updateState = false
+			.updateState = true
 		};
 
-		_CommandList.Barrier(m_RhiTexture->GetResourceState(), RhiResourceState::CopyDst, std::span(&transitionState, 1));
-		
+		if (m_RhiTexture->GetResourceState() != RequireState)
+		{
+			_CommandList.Barrier(m_RhiTexture->GetResourceState(), RequireState, std::span(&barrier, 1));
+		}
+
 		if (!m_RhiTexture->UploadData2D(&_CommandList, m_UploadOperation.GetData(), m_RhiFormat, m_ImageWidht, m_ImageHeight))
 		{
-			_CommandList.Barrier(RhiResourceState::CopyDst, RhiResourceState::FragmentShaderResource, std::span(&transitionState, 1));
+			_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 			_CommandList.EndDebugLabel();
 			return ResourceUpdateStatus::Failed;
 		}
-		_CommandList.Barrier(RhiResourceState::CopyDst, m_AfterUploadState, std::span(&transitionState, 1));
+
+		_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 		_CommandList.EndDebugLabel();
 		m_NbrOfUpdate--;
 		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
 	}
 	
-	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter)
+	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation)
 		: m_RhiTexture(&_RhiTexture)
 		, m_Filter(_Filter)
 		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
+		, m_StateAfterOperation(_StateAfterOperation)
 	{
 
 	}
@@ -126,10 +131,10 @@ namespace ResourceUpdateOperation
 	{
 		assert(m_RhiTexture != nullptr);
 		assert(m_NbrOfUpdate != 0);
-
 		_CommandList.BeginDebugLabel(std::format("GenerateMipMap {}", m_RhiTexture->GetName()).c_str(), DebugColorTextureGenerateMipMap);
 
-		if (!m_RhiTexture->GenerateMipMap(&_CommandList, m_Filter))
+
+		if (!m_RhiTexture->GenerateMipMap(&_CommandList, m_Filter, m_StateAfterOperation))
 		{
 			_CommandList.EndDebugLabel();
 			return ResourceUpdateStatus::Failed;
@@ -198,10 +203,10 @@ ResourceUpdateBranch& ResourceUpdateBranch::TextureUpload2D(RhiTexture& _RhiText
 	return *this;
 }
 
-ResourceUpdateBranch& ResourceUpdateBranch::GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter)
+ResourceUpdateBranch& ResourceUpdateBranch::GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation)
 {
 	m_UpdateBranchs.emplace_back();
-	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::GenerateMipMap>(_RhiTexture, _Filter);
+	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::GenerateMipMap>(_RhiTexture, _Filter, _StateAfterOperation);
 	return *this;
 }
 
