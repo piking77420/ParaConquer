@@ -4,6 +4,9 @@
 
 uint8_t* PC_CORE::FileLoader::LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     int channel = 0;
     uint8_t* memory = stbi_load(_filename, _x, _y, &channel, static_cast<int>(_req_comp));
     *_comp = (_req_comp != RhiChannel::Default)
@@ -14,6 +17,9 @@ uint8_t* PC_CORE::FileLoader::LoadImage(const char* _filename, int* _x, int* _y,
 
 uint8_t* PC_CORE::FileLoader::LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     int channel = 0;
     uint8_t* memory = stbi_load_from_memory(_ptr, static_cast<int>(_size), _x, _y, &channel, static_cast<int>(_req_comp));
     *_comp = (_req_comp != RhiChannel::Default)
@@ -35,6 +41,9 @@ bool PC_CORE::FileLoader::IsHdr(const char* _filename)
 PC_CORE::Image::Image(const std::string& _path, PC_CORE::RhiChannel _desireChannel)
     : m_IsHDR(FileLoader::IsHdr(_path.c_str()))
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     int x = -1;
     int y = -1;
     m_Data.reset(FileLoader::LoadImage(_path.c_str(), &x, &y, &m_Channel, _desireChannel));
@@ -55,6 +64,9 @@ PC_CORE::Image::Image(const std::string& _path, PC_CORE::RhiChannel _desireChann
 PC_CORE::Image::Image(const char* _path , PC_CORE::RhiChannel _desireChannel)
     : m_IsHDR(FileLoader::IsHdr(_path))
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     int x = -1;
     int y = -1;
     m_Data.reset(FileLoader::LoadImage(_path, &x, &y, &m_Channel, _desireChannel));
@@ -73,6 +85,9 @@ PC_CORE::Image::Image(const char* _path , PC_CORE::RhiChannel _desireChannel)
 
 PC_CORE::Image::Image(const uint8_t* _ptr, size_t _size, const char* _name, PC_CORE::RhiChannel _Channel)
 {
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
     int x = -1;
     int y = -1;
     m_Data.reset(FileLoader::LoadImageFromMemory(_ptr, _size, &x, &y, &m_Channel, _Channel));

@@ -20,7 +20,6 @@
 #include "WorldViewWindow.hpp"
 #include <Resources/ResourceManager.hpp>
 
-#include "AssetsImporter.hpp"
 #include "EditorFiles.hpp"
 #include "Io/CoreIo.hpp"
 #include "Io/ImguiContext.h"
@@ -34,6 +33,7 @@
 #include "Serialize/Serializer.h"
 #include "SystemDialogue.hpp"
 #include "World/StaticMeshComponent.hpp"
+#include "Thread/ThreadUtils.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -206,6 +206,16 @@ void Editor::CompileShader()
     }*/
 }
 
+void Editor::HandleAsyncTask()
+{
+    if(m_HasFinish.load(std::memory_order_acquire))
+    {
+        m_AfterImportFunc();
+        m_ImportThread.reset();
+        m_HasFinish = false;
+    }
+}
+
 void Editor::Init(const PC_CORE::AppCreateInfo& _appCreateInfo)
 {
     PERF_REGION_SCOPED;
@@ -311,76 +321,48 @@ void Editor::InitTestScene()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Editor);
     PC_LOG("InitTestScene...")
-    auto& level = World::GetWorld()->level;
+        
+    m_ImportThread.reset(new std::jthread([&]() {
+        Utils::SetThreadName("m_ImportThread");
+        AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
+        m_HasFinish.store(true, std::memory_order_release);
+        }));
     
-    
-    AssetsImporter AssetsImporter;
+    m_AfterImportFunc = [this]()
+        {
+            auto& level = World::GetWorld()->level;
 
-    AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
-    
+            PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
+            material->m_Albedo = ResourceManager::Get<PC_CORE::Texture2D>("5792855332885324923.jpg");
 
-    {
-        PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
-        material->m_Albedo = ResourceManager::Get<PC_CORE::Texture2D>("5792855332885324923.jpg");
+            material->Build();
 
-        material->Build();
+            EntityId Cube = level.CreateEntity("Cube");
+            level.AddComponent<Transform>(Cube);
+            level.AddComponent<StaticMeshComponent>(Cube);
+            Transform* t = &level.GetComponent<Transform>(Cube);
+            t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+            t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
+            StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
+            s->material = material;
 
-        EntityId Cube = level.CreateEntity("Cube");
-        level.AddComponent<Transform>(Cube);
-        level.AddComponent<StaticMeshComponent>(Cube);
-        Transform* t = &level.GetComponent<Transform>(Cube);
-        t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-        StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
-        s->material = material;
+            const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& mesh = AssetsImporter.GetStaticMeshes();
+            s->staticMesh = mesh[0];
 
-        const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& mesh = AssetsImporter.GetStaticMeshes();
-        s->staticMesh = mesh[0];
-    }
-   
+            {
+                EntityId pointLight = level.CreateEntity("PointLight");
+                level.AddComponent<Transform>(pointLight);
+                level.AddComponent<PointLight>(pointLight);
+                Transform* t = &level.GetComponent<Transform>(pointLight);
+                t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
+                t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
+                PointLight& p = level.GetComponent<PointLight>(pointLight);
+                p.intensity = 5.f;
+            }
+        };
 
-    //ObjectPtr<Texture2D> texture = ResourceManager::Create<Texture2D>();
-
-
-    /*
-        std::shared_ptr<Material> m1 = ResourceManager::Create<Material>("DiamondBlockMaterial.mat");
-        std::shared_ptr<Material> m2 = ResourceManager::Create<Material>("EmerauldBlockMaterial.mat");
-    
-        m1->albedo = ResourceManager::Create<Texture2D>("DiamondBlock.jpg", "C:/Data/Isart/Projet/C++/ParaConquerGame/Assets/Textures/DiamondBlock.jpg");
-        m1->Build();
-    
-    
-        m2->albedo = ResourceManager::Create<Texture2D>("EmerauldBlock.png", "C:/Data/Isart/Projet/C++/ParaConquerGame/Assets/Textures/EmerauldBlock.png");
-        m2->Build();
-    
-    
-    
-    
-        EntityId sphere = level.CreateEntity("Sphere");
-        level.AddComponent<Transform>(sphere);
-        level.AddComponent<StaticMeshComponent>(sphere);
-        Transform* t = &level.GetComponent<Transform>(sphere);
-        t->position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-        t->scale = Tbx::Vector3d(2.0f, 2.0f, 2.0f);
-    
-    
-        StaticMeshComponent* mesh2 = &level.GetComponent<StaticMeshComponent>(sphere);
-        mesh2->staticMesh = ResourceManager::Get<m_StaticMesh>("Sphere.obj");
-        mesh2->material = m2;
-        */
-
-    {
-        EntityId pointLight = level.CreateEntity("PointLight");
-        level.AddComponent<Transform>(pointLight);
-        level.AddComponent<PointLight>(pointLight);
-        Transform* t = &level.GetComponent<Transform>(pointLight);
-        t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
-        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-
-        PointLight& p = level.GetComponent<PointLight>(pointLight);
-        p.intensity = 5.f;
-    }
+  
     }
   
 
@@ -419,6 +401,7 @@ void Editor::Run(bool* _appShouldClose)
 
         IMGUIContext.NewFrame();
         WorldTick(Time::DeltaTime());
+        HandleAsyncTask();
         UpdateEditor();
         RenderFrame();
         

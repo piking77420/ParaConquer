@@ -37,11 +37,6 @@ bool Vulkan::VulkanTexture::Build()
     }
     m_Handles.resize(nbrOfObjectHandle);
 
-    
-    auto& context = GET_VK_CONTEXT;
-    const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
-    std::shared_ptr<VulkanInstance> instance = context.GetInstance();
-
     VkImageAspectFlags = Utils::RhiTextureFormatToImageAspectFlagFlags(GetRhiFormat());
     VkFormat = Utils::RhiFormatToVkFormat(GetRhiFormat());
     
@@ -60,6 +55,12 @@ bool Vulkan::VulkanTexture::Build()
     imageInfo.samples = Utils::RhSampleCountToVulkan(GetSamples());
     imageInfo.sharingMode = vk::SharingMode::eExclusive;
     imageInfo.flags = Utils::ImageCreateFlagFromTextureType(GetTextureType());
+
+
+    auto& context = GET_VK_CONTEXT;
+    std::scoped_lock _(context.lock);
+    const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
+    std::shared_ptr<VulkanInstance> instance = context.GetInstance();
  
     for (size_t i = 0; i < nbrOfObjectHandle; i++)
     {
@@ -104,34 +105,6 @@ bool Vulkan::VulkanTexture::Build()
         SET_VK_DEBUG_NAME(nameInfoImageView); 
     }
 
-
-    if (m_TextureUsage & TextureUsageFlagBits::DepthStencil || m_TextureUsage & TextureUsageFlagBits::RenderTarget) // hardcoded
-    {
-        const Utils::SingleCommandBeginInfo singleCommandBeginInfo =
-        {
-            .device = device,
-            .commandPool = context.transferCommandPool,
-            .queue = context.mainQueue
-        };
-
-        vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
-
-        for (size_t i = 0; i < m_Handles.size(); i++)
-        {
-            TextureAndAlloc& handle = m_Handles[i];
-            TransitionImageLayout(commandBuffer,
-                handle.Image,
-                VkFormat,
-                vk::ImageLayout::eUndefined,
-                m_TextureUsage & TextureUsageFlagBits::DepthStencil ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eColorAttachmentOptimal,
-                VkImageAspectFlags,
-                m_Layer,
-                m_Level);
-
-        }
-        EndSingleTimeCommand(commandBuffer, singleCommandBeginInfo, context.transferFence);
-    }
-   
 
     return true;
 }

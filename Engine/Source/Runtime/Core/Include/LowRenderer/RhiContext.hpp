@@ -48,14 +48,18 @@ public:
 
     PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch();
 
+    PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch_AssumeLock();
+
     PC_CORE_API bool PendingTransferOperation() const;
 
+    std::mutex lock;
 protected:
     Rhi& m_Rhi;
 
     bool m_PendingTransferOperation = false;
 
     std::vector<std::unique_ptr<RHI::ResourceUpdateBranch>> m_ResourceUpdate;
+
 };
 
 END_PCCORE

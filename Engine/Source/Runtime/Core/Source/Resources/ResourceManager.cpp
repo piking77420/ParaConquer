@@ -22,6 +22,8 @@ void ResourceManager::InitPath()
 
 void ResourceManager::Destroy()
 {
+    std::scoped_lock _(Instance().m_lock);
+
     for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); ++it)
     {
         Instance().m_ResourcesMap[it->second];
@@ -54,6 +56,8 @@ bool ResourceManager::Exist(const Guid& _guid)
 
 void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
 {
+    std::scoped_lock _(Instance().m_lock);
+
     if (!Reflector::Exist(typeID))
         return;
     auto& instance = Instance();
@@ -68,12 +72,16 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
 
 size_t ResourceManager::GetResourceCount()
 {
+    std::scoped_lock _(Instance().m_lock);
+
     return Instance().m_ResourcesMap.size();
 }
 
 
 bool ResourceManager::Add(const ObjectPtr<Resource>& _object)
 {
+    std::scoped_lock _(Instance().m_lock);
+
     auto& resourcesMap = Instance().m_ResourcesMap;
     auto& nameToGuid = Instance().m_NameToGuid;
 

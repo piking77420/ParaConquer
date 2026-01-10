@@ -4,6 +4,7 @@
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiBuffer.h"
 #include "LowRenderer/RhiResource.hpp"
+#include "LowRenderer/RhiResourceUpdate.hpp"
 #include "CompactBuffer.hpp"
 
 using namespace PC_CORE;
@@ -55,16 +56,16 @@ StaticMesh::StaticMesh(std::string _Name, const PC_CORE::ObjectPtr<Resource>& Sh
     DYNAMIC_REFLECT_INIT
 }
 
-StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData)
+StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
     : Resource(std::move(_Name))
     , m_StaticMeshRenderData(_StaticMeshRenderData)
     , m_IsSharedMesh(true)
 {
     DYNAMIC_REFLECT_INIT
 
-    Rhi& rhi = App::Instance->RenderHarwareInteface;
+        Rhi& rhi = App::Instance->RenderHarwareInteface;
 
-    InitFromRenderData(_StaticMeshRenderData);
+    InitFromRenderData(_StaticMeshRenderData, _Branch);
 
     if (!m_HallowCpuAcces)
     {
@@ -74,14 +75,14 @@ StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMes
 
 }
 
-StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData)
+StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
     : Resource(std::move(_Name))
     , m_StaticMeshRenderData(std::move(_StaticMeshRenderData))
     , m_IsSharedMesh(true)
 {
     DYNAMIC_REFLECT_INIT
 
-    InitFromRenderData(_StaticMeshRenderData);
+        InitFromRenderData(_StaticMeshRenderData, _Branch);
 
     if (!m_HallowCpuAcces)
     {
@@ -93,7 +94,7 @@ StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRend
 
 
 
-void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData)
+void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
 {
     Rhi& rhi = App::Instance->RenderHarwareInteface;
 
@@ -120,7 +121,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
         .Build();
 
 
-    rhi.GetRhiContext().ResourceUpdateBranch()
+    _Branch
         ->BufferUpload(*m_VertexBuffer.Get(), m_StaticMeshRenderData.Vertices.data(), m_VertexBuffer->GetSize())
         .BufferUpload(*m_IndexBuffer.Get(), m_StaticMeshRenderData.Indices.data(), m_IndexBuffer->GetSize());
 }

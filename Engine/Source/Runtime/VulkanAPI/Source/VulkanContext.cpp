@@ -222,6 +222,8 @@ void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuComma
 
 void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
 {
+    std::scoped_lock _(lock);
+
     const size_t CurrentFrameIndex = m_Rhi.GetFrameIndex();
     
     m_PendingTransferOperation = false;

@@ -85,7 +85,7 @@ namespace PC_CORE::Rendering
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
-               .SetInitialImageState(RhiResourceState::DepthStencilWrite)
+               .SetInitialImageState(RhiResourceState::Undefined)
                .SetFinalImageState(RhiResourceState::DepthStencilWrite);
 
            // SubPass 0

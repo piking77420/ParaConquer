@@ -133,6 +133,19 @@ namespace PC_EDITOR_CORE
 
         }
 
+        {
+            PERF_REGION_SCOPED;
+            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Fetch ResourceUpdateBranchs");
+
+            std::scoped_lock _(_Rhi.GetRhiContext().lock);
+            for (auto& it : m_ResourceUpdateBranchs)
+            {
+                *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
+            }
+        }
+        
+
+
         return true;
     }
 
@@ -231,7 +244,7 @@ namespace PC_EDITOR_CORE
             }
         }
 
-        m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData));
+        m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back()));
         for (size_t i = 0; i < scene->mNumMeshes; i++)
         {
             std::string meshName = scene->mMeshes[i]->mName.Empty() ? std::string(scene->mMeshes[i]->mName.C_Str()) : std::format("SubMesh {}", i);
@@ -246,7 +259,9 @@ namespace PC_EDITOR_CORE
 
     bool AssetsImporter::ImportTextures(PC_CORE::Rhi& _Rhi, const aiScene* scene)
     {
-        
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::EditorResource);
+
         auto TextureFromType = [&](
             aiMaterial* mat,
             aiTextureType type)
@@ -370,10 +385,12 @@ namespace PC_EDITOR_CORE
 
         _Texture.Build();
 
-        PC_CORE::RHI::ResourceUpdateBranch* updateBranch = _Rhi.GetRhiContext().ResourceUpdateBranch();
+
+
+        PC_CORE::RHI::ResourceUpdateBranch* updateBranch(&m_ResourceUpdateBranchs.emplace_back());
         updateBranch
             ->TextureUpload2D(_Texture,
-                (void*)_Image->GetData(),
+                _Image->Release(),
                 _Image->GetSizeInBytes(),
                 RhiResourceState::CopyDst)
             .GenerateMipmap(

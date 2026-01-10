@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <Atomic>
+#include <future>
+#include <functional>
 
 #include "App.hpp"
 #include "DockSpace.hpp"
@@ -16,6 +18,7 @@
 #include "EditorFiles.hpp"
 #include "Reflection/Reflector.hpp"
 #include "ObjectPtr.hpp"
+#include "AssetsImporter.hpp"
 
 BEGIN_EDITOR_PCCORE
     struct EditorFont
@@ -116,7 +119,17 @@ BEGIN_EDITOR_PCCORE
 
         void ReloadShaders();
 
+        void HandleAsyncTask();
+
         EditorRenderer m_EditorRenderer;
+
+        AssetsImporter AssetsImporter;
+
+        std::function<void()> m_AfterImportFunc;
+
+        std::atomic<bool> m_HasFinish;
+
+        std::unique_ptr<std::jthread> m_ImportThread;
     };
 
     template <EditorCommandDerived T, typename... Args>

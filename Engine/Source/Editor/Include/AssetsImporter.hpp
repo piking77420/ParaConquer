@@ -8,6 +8,7 @@
 #include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
 #include "LowRenderer/RhiTexture.hpp"
+#include "LowRenderer/RhiResourceUpdate.hpp"
 #include "Resources/StaticMesh.hpp"
 #include "Resources/Texture2D.hpp"
 
@@ -62,6 +63,8 @@ BEGIN_EDITOR_PCCORE
         std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
 
         std::vector<PC_CORE::Rendering::Material> m_Materials;
+
+        std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
 
         ImportFormat m_ImportFormat;
 

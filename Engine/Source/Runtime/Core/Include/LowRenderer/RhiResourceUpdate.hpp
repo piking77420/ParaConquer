@@ -8,11 +8,15 @@
 #include "LowRenderer/RhiBuffer.h"
 #include "LowRenderer/RhiTexture.hpp"
 
+
 namespace PC_CORE
 {
 	class CommandList;
 	class RhiTexture;
 	class RhiBuffer;
+
+	class Image;
+	struct Image::ImageDeleter;
 }
 
 namespace PC_CORE::RHI
@@ -178,8 +182,7 @@ namespace PC_CORE::RHI
 		template <ResourceUpdateOperation::UploadBufferType T>
 		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data,size_t _DataSize, RhiResourceState _AfterUploadState)
 		{
-			m_UpdateBranchs.emplace_back();
-			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _DataSize, _AfterUploadState);
+			m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, std::forward<T>(_Data), _DataSize, _AfterUploadState)));
 			return *this;
 		}
 

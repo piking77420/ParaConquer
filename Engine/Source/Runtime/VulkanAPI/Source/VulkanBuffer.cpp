@@ -87,19 +87,18 @@ bool Vulkan::VulkanBuffer::Build()
     {
         bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
     }
-    
-    
-    auto& context = GET_VK_CONTEXT;
-    const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
-    auto instance = context.GetInstance();
-    
     VmaAllocationCreateInfo aCreateInfo = VmaAllocationCreateInfoFromBuffer(m_MemoryUsage);
-    
     VmaAllocationInfo VmaAllocationInfo;
     VmaAllocationInfo.pName = GetName().data();
     
+
+    auto& context = GET_VK_CONTEXT;
+    std::scoped_lock _(context.lock);
+    auto instance = context.GetInstance();
+    const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
     for (size_t i = 0; i < nbrOfHandle; i++)
     {
+
          VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate), 
                         &aCreateInfo, reinterpret_cast<VkBuffer*>(&m_Handles[i].buffer), &m_Handles[i].alloc, &VmaAllocationInfo)));
         

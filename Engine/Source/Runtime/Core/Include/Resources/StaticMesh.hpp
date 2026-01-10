@@ -3,6 +3,11 @@
 #include "ObjectPtr.hpp"
 #include "Mesh.hpp"
 
+namespace PC_CORE::RHI
+{
+    class ResourceUpdateBranch;
+}
+
 BEGIN_PCCORE
     struct StaticMeshVertex
     {
@@ -88,9 +93,9 @@ BEGIN_PCCORE
 
         explicit StaticMesh(std::string _Name, const PC_CORE::ObjectPtr<Resource>& SharedMesh, SubMesh subMesh);
 
-        explicit StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData);
+        explicit StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _branch);
 
-        explicit StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData);
+        explicit StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _branch);
 
 
         StaticMesh();
@@ -169,7 +174,7 @@ BEGIN_PCCORE
 
         SubMesh m_SubMesh;
 
-        void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData);
+        void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch);
 
         REFLECT(StaticMesh, Resource)
         REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)

@@ -59,6 +59,8 @@ BEGIN_PCCORE
 
         std::unordered_map<std::string, Guid> m_NameToGuid;
 
+        std::mutex m_lock;
+
         REFLECT(ResourceManager);
         REFLECT(PC_CORE::ObjectPtr<PC_CORE::Resource>);
     };
@@ -80,6 +82,8 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     ObjectPtr<ResourceDerived> ResourceManager::Get(const std::string& _name)
     {
+        std::scoped_lock _(Instance().m_lock);
+
         auto it = Instance().m_NameToGuid.find(_name);
         if (it != Instance().m_NameToGuid.end())
         {
@@ -100,7 +104,7 @@ BEGIN_PCCORE
     ObjectPtr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
     {
         assert(Instance().m_ResourcesMap.contains(_guid));
-
+        std::scoped_lock _(Instance().m_lock);
 
         return Instance().m_ResourcesMap.at(_guid);
     }
@@ -108,6 +112,8 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     bool ResourceManager::TryGetAs(const Guid& _guid, ObjectPtr<ResourceDerived>* _outPtr)
     {
+        std::scoped_lock _(Instance().m_lock);
+
         auto it = Instance().m_ResourcesMap.find(_guid);
         if (it == Instance().m_ResourcesMap.end())
         {
@@ -127,6 +133,8 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     ObjectPtr<ResourceDerived> ResourceManager::Get()
     {
+        std::scoped_lock _(Instance().m_lock);
+
         for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); ++it)
         {
             return std::dynamic_pointer_cast<ResourceDerived>(it->second);
@@ -140,6 +148,8 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     bool ResourceManager::Delete(const std::string& _name)
     {
+        std::scoped_lock _(Instance().m_lock);
+
         auto itGuid = Instance().m_NameToGuid.find(_name);
         if (itGuid == Instance().m_NameToGuid.end())
         {
@@ -168,6 +178,7 @@ BEGIN_PCCORE
     {
         const TypeId typeId = Reflector::GetTypeKey<ResourceDerived>();
 
+        std::scoped_lock _(Instance().m_lock);
         for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); ++it)
         {
             const ResourceDerived* interface = reinterpret_cast<ResourceDerived*>(it->second);
