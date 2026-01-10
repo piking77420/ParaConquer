@@ -16,6 +16,7 @@ Texture2D::Texture2D()
 Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::string& _name)
     : Texture(_name)
 {
+    DYNAMIC_REFLECT_INIT
     m_RhiTexture.reset(rhi.CreateTexture());
     m_RhiTexture->SetName(Name);
 }
@@ -23,6 +24,7 @@ Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::string& _name)
 Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name)
     : Texture(std::move(_name))
 {
+    DYNAMIC_REFLECT_INIT
     m_RhiTexture.reset(rhi.CreateTexture());
     m_RhiTexture->SetName(Name);
 }
@@ -30,6 +32,7 @@ Texture2D::Texture2D(PC_CORE::Rhi& rhi, std::string&& _name)
 Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path)
     : Texture(_Path.filename().generic_string())
 {
+    DYNAMIC_REFLECT_INIT
     m_RhiTexture.reset(rhi.CreateTexture());
     m_RhiTexture->SetName(Name);
 }
@@ -37,7 +40,7 @@ Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path)
 Texture2D::Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture)
     : Texture(std::move(_Texture))
 {
-
+    DYNAMIC_REFLECT_INIT
 }
 
 

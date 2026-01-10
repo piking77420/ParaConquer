@@ -40,6 +40,7 @@ VsOutput Main(VsInput input)
     output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrixView));
     output.Tangent = input.Tangent;
     output.TexCoord = input.TexCoord;
+    output.Tangent = input.Position;
 
     return output;
 }

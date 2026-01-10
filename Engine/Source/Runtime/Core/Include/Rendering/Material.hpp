@@ -97,72 +97,27 @@ namespace PC_CORE::Rendering
     public:
         PC_CORE_API Material();
 
+        PC_CORE_API Material(std::string _Name);
+
         PC_CORE_API ~Material() override;
 
         DEFAULT_COPY_MOVE_OPERATIONS(Material)
 
         IMP_DYNAMIC_REFLECT();
 
-        void Build();
+        PC_CORE_API void Build();
 
-        template <MaterialAttribute T, typename V>
-        Material& SetMaterialAttribute(const V _Value)
-        {
-            m_MaterialAttributesValueType[static_cast<size_t>(T)] = MaterialValueTypeMap<V>::type;
-            m_MaterialAttributesData[static_cast<size_t>(T)] = _Value;
-        }
+        RhiDescriptorSet* GetDescriptorSet();
 
-        // Setter
-        /*
-        template <MaterialAttribute MaterialAttribute, typename ValueDataType>
-        Material& SetMaterialAttributeData(ValueDataType _ValueDataType)
-        {
-            m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)] = MaterialValueTypeMap<ValueDataType>::type;
-            m_MaterialAttributesData[static_cast<size_t>(MaterialAttribute)] = _ValueDataType;
-            return *this;
-        }
-
-        template<MaterialAttribute MaterialAttribute>
-        Material& SetMaterialAttributeData(WeakObjectPtr<Texture2D>& _ValueDataType)
-        {
-            m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)] = MaterialValueType::TextureSample;
-            m_MaterialAttributesData[static_cast<size_t>(MaterialAttribute)] = _ValueDataType;
-        }
-
-        Material& SetPackMetallicAndRougness(bool _Value)
-        {
-            m_UseMetallicRoughnessTexture = _Value;
-        }
-
-
-        // Getter
-
-        template <MaterialAttribute MaterialAttribute>
-        MaterialValueType GetMaterialAttributeValueType() const
-        {
-            return m_MaterialAttributesValueType[static_cast<size_t>(MaterialAttribute)];
-        }
-
-        bool GetPackMetallicAndRougness() const
-        {
-            return m_UseMetallicRoughnessTexture;
-        }*/
+        WeakObjectPtr<Texture2D> m_Albedo;
 
     private:
-        using MaterialAttributeData = 
-            std::variant<std::monostate, 
-            float, Tbx::Vector2f, 
-            Tbx::Vector3f, Tbx::Vector4f, 
-            std::pair<WeakObjectPtr<const Texture2D>, WeakObjectPtr<const Sampler>>
-            >;
 
         MaterialType MaterialType = MaterialType::Opaque;
 
-        std::array<MaterialValueType, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesValueType;
-
-        std::array<MaterialAttributeData, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_MaterialAttributesData;
-
         std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
+
+        std::unique_ptr<RhiSampler> TextureSampler;
     };
 
     REFLECT(Material, Resource)

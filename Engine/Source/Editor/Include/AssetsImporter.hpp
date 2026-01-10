@@ -36,7 +36,10 @@ BEGIN_EDITOR_PCCORE
 
         const std::string& GetName() const;
 
-        bool GetStaticMesh(PC_CORE::ObjectPtr<PC_CORE::StaticMesh>* StaticMehs) const;
+        const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& GetStaticMeshes() const
+        {
+            return m_StaticMeshs;
+        }
 
 
     private:
@@ -54,15 +57,15 @@ BEGIN_EDITOR_PCCORE
 
         std::filesystem::path m_filePath;
 
-        PC_CORE::ObjectPtr<PC_CORE::StaticMesh> m_StaticMesh;
+        std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>> m_StaticMeshs;
 
-        std::map<const char*, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
+        std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
 
         ImportFormat m_ImportFormat;
 
         ImportFormat FindImportFormat(const std::filesystem::path& path);
 
-        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
+        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene);
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, const aiScene* scene);
 

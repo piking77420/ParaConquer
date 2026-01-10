@@ -19,8 +19,7 @@ BEGIN_PCCORE
 
         static void Destroy();
 
-        template <class ResourceDerived>
-        [[nodiscard]] static bool Add(const ObjectPtr<ResourceDerived>& _object);
+        [[nodiscard]] static bool Add(const ObjectPtr<Resource>& _object);
 
         template <class ResourceDerived, typename... Arg>
         static ObjectPtr<ResourceDerived> Create(Arg&& ... _args);
@@ -51,7 +50,11 @@ BEGIN_PCCORE
 
         static void ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba);
 
+        static size_t GetResourceCount();
+
     private:
+
+        // TODO USE FLAT MAP
         std::unordered_map<Guid, ObjectPtr<Resource>> m_ResourcesMap;
 
         std::unordered_map<std::string, Guid> m_NameToGuid;
@@ -66,34 +69,13 @@ BEGIN_PCCORE
     {
         ObjectPtr<ResourceDerived> newR = std::make_shared<ResourceDerived>(std::forward<Arg>(_args)...);
 
-        if (!Add(newR))
+        if (!Add(std::static_pointer_cast<Resource>(newR)))
             return nullptr;
 
-        return std::reinterpret_pointer_cast<ResourceDerived>(newR);
+        return newR;
     }
 
-    template <class ResourceDerived>
-    bool ResourceManager::Add(const ObjectPtr<ResourceDerived>& _object)
-    {
-        auto& resourcesMap = Instance().m_ResourcesMap;
-        auto& nameToGuid = Instance().m_NameToGuid;
-
-        if (const bool guidExist = resourcesMap.contains(_object->GetGuid()))
-        {
-            PC_LOGERROR("There is already a resource with this guid {}", static_cast<std::string>(_object->GetGuid()));
-            return false;
-        }
-        if (const bool nameExist = nameToGuid.contains(_object->Name))
-        {
-            PC_LOGERROR("There is already a resource with this Name {}", _object->Name);
-            return false;
-        }
-        resourcesMap.insert({_object->GetGuid(), _object});
-        nameToGuid.insert({_object->Name, _object->GetGuid()});
-
-        return true;
-    }
-
+ 
 
     template <class ResourceDerived>
     ObjectPtr<ResourceDerived> ResourceManager::Get(const std::string& _name)

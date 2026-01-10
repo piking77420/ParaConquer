@@ -12,8 +12,8 @@ namespace PC_CORE
 
     RHI::ResourceUpdateBranch* RhiContext::ResourceUpdateBranch()
     {
-        m_ResourceUpdate.push_back(RHI::ResourceUpdateBranch{});
-        return &m_ResourceUpdate.back();
+        m_ResourceUpdate.push_back(std::make_unique<RHI::ResourceUpdateBranch>());
+        return m_ResourceUpdate.back().get();
     }
 
     bool RhiContext::PendingTransferOperation() const

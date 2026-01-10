@@ -56,12 +56,39 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
 {
     if (!Reflector::Exist(typeID))
         return;
-
-    for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); ++it)
+    auto& instance = Instance();
+    for (auto it = instance.m_ResourcesMap.begin(); it != instance.m_ResourcesMap.end(); ++it)
     {
         if (typeID != it->second->GetType().typeId)
             continue;
 
         _lamba(it->second);
     }
+}
+
+size_t ResourceManager::GetResourceCount()
+{
+    return Instance().m_ResourcesMap.size();
+}
+
+
+bool ResourceManager::Add(const ObjectPtr<Resource>& _object)
+{
+    auto& resourcesMap = Instance().m_ResourcesMap;
+    auto& nameToGuid = Instance().m_NameToGuid;
+
+    if (const bool guidExist = resourcesMap.contains(_object->GetGuid()))
+    {
+        PC_LOGERROR("There is already a resource with this guid {}", static_cast<std::string>(_object->GetGuid()));
+        return false;
+    }
+    if (const bool nameExist = nameToGuid.contains(_object->Name))
+    {
+        PC_LOGERROR("There is already a resource with this Name {}", _object->Name);
+        return false;
+    }
+    resourcesMap.insert({ _object->GetGuid(), _object });
+    nameToGuid.insert({ _object->Name, _object->GetGuid() });
+
+    return true;
 }

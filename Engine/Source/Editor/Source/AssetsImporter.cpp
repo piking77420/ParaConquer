@@ -116,26 +116,14 @@ namespace PC_EDITOR_CORE
             PC_LOGERROR("Failed to load model: {} \n {} ", _path.generic_string(), importer.GetErrorString());
             return false;
         }
+        m_ImportObjectName = scene->mName.Empty() ? _path.filename().generic_string() : std::string(scene->mName.C_Str());
 
-        // Mesh
         {
-            if (scene->mName.Empty())
-            {
-                m_ImportObjectName = scene->mNumMeshes > 0 ? std::string(scene->mMeshes[0]->mName.C_Str()) : _path.filename().generic_string();
-            }
-            else
-            {
-                m_ImportObjectName = std::string(scene->mName.C_Str());
-            }
-
-            PC_CORE::StaticMeshRenderData StaticMeshRenderData;
-
-            if (!ImportMeshesFromScene(_Rhi, scene, StaticMeshRenderData))
+            if (!ImportMeshesFromScene(_Rhi, scene))
             {
                 PC_LOGERROR("Failed To Import Mesh From Scene")
                     return false;
             }
-            m_StaticMesh = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, std::move(StaticMeshRenderData));
 
             if (!ImportTextures(_Rhi, scene))
             {
@@ -151,16 +139,6 @@ namespace PC_EDITOR_CORE
     const std::string& AssetsImporter::GetName() const
     {
         return m_ImportObjectName;
-    }
-
-    bool AssetsImporter::GetStaticMesh(PC_CORE::ObjectPtr<PC_CORE::StaticMesh>* StaticMehs) const
-    {
-        if (!StaticMehs)
-            return false;
-
-        *StaticMehs = m_StaticMesh;
-
-        return *StaticMehs != nullptr;
     }
 
     AssetsImporter::ImportFormat AssetsImporter::FindImportFormat(const std::filesystem::path& path)
@@ -182,16 +160,22 @@ namespace PC_EDITOR_CORE
         return ImportFormat::None;
 
     }
-    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene, PC_CORE::StaticMeshRenderData& _StaticMeshRenderData)
+    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
+        if (scene->mNumMeshes == 0)
+            return false;
 
+        PC_CORE::StaticMeshRenderData StaticMeshRenderData;
         // CountVertex And Index
         uint32_t nbrOfVerticies = 0;
         uint32_t nbrOfIndex = 0;
-        _StaticMeshRenderData.SubMeshes.reserve(scene->mNumMeshes);
+        StaticMeshRenderData.SubMeshes.reserve(scene->mNumMeshes);
+        m_StaticMeshs.reserve(scene->mNumMeshes + 1);
+
+      
         for (size_t i = 0; i < scene->mNumMeshes; i++)
         {
             uint32_t accFaceIndicies = 0;
@@ -212,11 +196,11 @@ namespace PC_EDITOR_CORE
             nbrOfVerticies += subMesh.VerticiesCount;
             nbrOfIndex += subMesh.IndiciesCount;
 
-            _StaticMeshRenderData.SubMeshes.emplace_back(std::move(subMesh));
+            StaticMeshRenderData.SubMeshes.emplace_back(std::move(subMesh));
         }
 
-        _StaticMeshRenderData.Vertices.reserve(nbrOfVerticies);
-        _StaticMeshRenderData.Indices.reserve(nbrOfIndex);
+        StaticMeshRenderData.Vertices.reserve(nbrOfVerticies);
+        StaticMeshRenderData.Indices.reserve(nbrOfIndex);
 
         for (size_t m = 0; m < scene->mNumMeshes; m++)
         {
@@ -235,17 +219,26 @@ namespace PC_EDITOR_CORE
                 if (mesh.HasTangentsAndBitangents())
                     vertex.Tangent = Tbx::Vector3f{ mesh.mTangents[v].x, mesh.mTangents[v].y, mesh.mTangents[v].z };
 
-                _StaticMeshRenderData.Vertices.emplace_back(vertex);
+                StaticMeshRenderData.Vertices.emplace_back(vertex);
             }
 
             for (size_t f = 0; f < mesh.mNumFaces; f++)
             {
                 for (size_t i = 0; i < mesh.mFaces[f].mNumIndices; i++)
                 {
-                    _StaticMeshRenderData.Indices.emplace_back(mesh.mFaces[f].mIndices[i]);
+                    StaticMeshRenderData.Indices.emplace_back(mesh.mFaces[f].mIndices[i]);
                 }
             }
         }
+
+        m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData));
+        for (size_t i = 0; i < scene->mNumMeshes; i++)
+        {
+            std::string meshName = scene->mMeshes[i]->mName.Empty() ? std::string(scene->mMeshes[i]->mName.C_Str()) : std::format("SubMesh {}", i);
+
+            m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName + " " + meshName, m_StaticMeshs[0], StaticMeshRenderData.SubMeshes[i]));
+        }
+
 
 
         return true;
@@ -259,8 +252,8 @@ namespace PC_EDITOR_CORE
             aiTextureType type)
             ->void
             {
-
-                for (size_t i = 0; i < mat->GetTextureCount(type); i++)
+                const size_t TextureCount = mat->GetTextureCount(type);
+                for (size_t i = 0; i < TextureCount; i++)
                 {
                     aiString str;
                     if (mat->GetTexture(type, i, &str) != aiReturn::aiReturn_SUCCESS)
@@ -285,7 +278,7 @@ namespace PC_EDITOR_CORE
                     const auto texturePath = m_filePath.parent_path() / std::filesystem::u8path(str.C_Str());
                     if (std::filesystem::exists(texturePath))
                     {
-                        PC_CORE::Image image(texturePath.generic_string().c_str(), {});
+                        PC_CORE::Image image(texturePath.generic_string().c_str(), PC_CORE::RhiChannel::Rgba);
                         std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
                         if (texture && image)
                         {
@@ -327,7 +320,7 @@ namespace PC_EDITOR_CORE
 
         if (aiTexture.mHeight == 0) // Compressed
         {
-            PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName);
+            PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName, PC_CORE::RhiChannel::Rgba);
             RhiTexturePtr->SetName(TextureName);
 
             BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image);
@@ -343,6 +336,8 @@ namespace PC_EDITOR_CORE
 
     void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image)
     {
+        assert(!_Image->IsHdr());
+
         _Texture
             .SetMemoryUsage(RhiMemoryUsage::Static)
             .SetTextureUsage(PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferDst
@@ -355,8 +350,6 @@ namespace PC_EDITOR_CORE
         switch (_Image->GetChannel())
         {
         case PC_CORE::RhiChannel::Rgb:
-            _Texture.SetRhiFormat(_Image->IsHdr() ? PC_CORE::RhiFormat::R16G16B16A16Sfloat : PC_CORE::RhiFormat::R8G8B8A8Unorm); // check if device ahndle 3 channel
-            break;
         case PC_CORE::RhiChannel::Rgba:
             _Texture.SetRhiFormat(_Image->IsHdr() ? PC_CORE::RhiFormat::R16G16B16A16Sfloat : PC_CORE::RhiFormat::R8G8B8A8Unorm);
             break;
@@ -370,10 +363,8 @@ namespace PC_EDITOR_CORE
         PC_CORE::RHI::ResourceUpdateBranch* updateBranch = _Rhi.GetRhiContext().ResourceUpdateBranch();
         updateBranch
             ->TextureUpload2D(_Texture,
-                _Image->Release(),
-                _Texture.GetRhiFormat(),
-                _Texture.GetWidth(),
-                _Texture.GetWidth(),
+                (void*)_Image->GetData(),
+                _Image->GetSizeInBytes(),
                 RhiResourceState::CopyDst)
             .GenerateMipmap(
                 _Texture,

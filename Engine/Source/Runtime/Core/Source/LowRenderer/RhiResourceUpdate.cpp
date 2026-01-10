@@ -64,14 +64,10 @@ namespace ResourceUpdateOperation
 		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
 	}
 
-	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, RhiFormat _Format,
-		size_t _ImageWidht, size_t _ImageHeight, RhiResourceState _AfterUploadState)
+	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _Size, RhiResourceState _AfterUploadState)
 		: m_RhiTexture(&_RhiTexture)
-		, m_UploadOperation(_Data, PC_CORE::GetBytePerPixel(_Format) * _ImageWidht * _ImageHeight)
+		, m_UploadOperation(_Data, _Size)
 		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
-		, m_ImageWidht(_ImageWidht)
-		, m_ImageHeight(_ImageHeight)
-		, m_RhiFormat(_Format)
 		, m_AfterUploadState(_AfterUploadState)
 	{
 	
@@ -81,9 +77,6 @@ namespace ResourceUpdateOperation
 	{
 		assert(m_RhiTexture != nullptr);
 		assert(m_UploadOperation);
-		assert(m_ImageWidht != 0u);
-		assert(m_ImageHeight != 0u);
-		assert(m_RhiFormat != RhiFormat::Undefined);
 		assert(m_AfterUploadState != RhiResourceState::Undefined);
 		_CommandList.BeginDebugLabel(std::format("TextureUpload2D {}", m_RhiTexture->GetName()).c_str(), DebugColorTextureUpload2D);
 
@@ -105,7 +98,7 @@ namespace ResourceUpdateOperation
 			_CommandList.Barrier(m_RhiTexture->GetResourceState(), RequireState, std::span(&barrier, 1));
 		}
 
-		if (!m_RhiTexture->UploadData2D(&_CommandList, m_UploadOperation.GetData(), m_RhiFormat, m_ImageWidht, m_ImageHeight))
+		if (!m_RhiTexture->UploadData2D(&_CommandList, m_UploadOperation.GetData(), m_UploadOperation.m_DataSize))
 		{
 			_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 			_CommandList.EndDebugLabel();
@@ -188,25 +181,22 @@ namespace ResourceUpdateOperation
 
 ResourceUpdateBranch& ResourceUpdateBranch::BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size)
 {
-	m_UpdateBranchs.emplace_back();
-	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::BufferUpload>(_RhiBuffer, _Data, _Size);
+	m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::BufferUpload(_RhiBuffer, _Data, _Size)));
 	return *this;
 }
 
 ResourceUpdateBranch& ResourceUpdateBranch::TextureUpload2D(RhiTexture& _RhiTexture,
 	const void* _Data,
-	RhiFormat _Format, size_t _ImageWidht, size_t _ImageHeight, 
+	size_t _DataSize,
 	RhiResourceState _AfterUploadState)
 {
-	m_UpdateBranchs.emplace_back();
-	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, _Data, _Format, _ImageWidht, _ImageHeight, _AfterUploadState);
+	m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, _Data, _DataSize, _AfterUploadState)));
 	return *this;
 }
 
 ResourceUpdateBranch& ResourceUpdateBranch::GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation)
 {
-	m_UpdateBranchs.emplace_back();
-	m_UpdateBranchs.back().emplace<ResourceUpdateOperation::GenerateMipMap>(_RhiTexture, _Filter, _StateAfterOperation);
+	m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::GenerateMipMap(_RhiTexture, _Filter, _StateAfterOperation)));
 	return *this;
 }
 
@@ -216,7 +206,7 @@ bool ResourceUpdateBranch::Proceed(CommandList& _CommandList)
 
 	for (auto it = m_UpdateBranchs.begin(); it != m_UpdateBranchs.end(); )
 	{
-		ResourceUpdateOperation::ResourceUpdateStatus Status = Execute(_CommandList, *it);
+		ResourceUpdateOperation::ResourceUpdateStatus Status = Execute(_CommandList, *(*it).get());
 		switch (Status)
 		{
 		case PC_CORE::RHI::ResourceUpdateOperation::Success:

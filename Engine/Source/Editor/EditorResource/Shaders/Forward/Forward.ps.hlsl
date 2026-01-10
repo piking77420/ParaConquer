@@ -6,8 +6,16 @@ struct PSInput
     float3 Tangent : TEXCOORD1;
 };
 
+
+[[vk::combinedImageSampler]]
+Texture2D AlbedoTexture : register(t0, space1);
+[[vk::combinedImageSampler]]
+SamplerState AlbedoSampler : register(s0, space1);
+
 float4 Main(PSInput input) : SV_Target
 {
    
-	return float4(1, 1, 1, 1);
+    float3 albedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord).rgb;
+    
+    return float4(albedo, 1);
 }

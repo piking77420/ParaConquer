@@ -31,7 +31,7 @@ namespace Vulkan
         
         VULKAN_API bool Build() override;
     
-        VULKAN_API bool UploadData2D(PC_CORE::CommandList* _CommandList, const void* _ImageData, PC_CORE::RhiFormat _Format, uint32_t _ImageWidht, uint32_t _ImageHeight) override;
+        VULKAN_API bool UploadData2D(PC_CORE::CommandList* _CommandList, const void* _ImageData, size_t _DataSize) override;
     
         VULKAN_API void UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount) override;
         

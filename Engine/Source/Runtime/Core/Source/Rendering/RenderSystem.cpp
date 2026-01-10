@@ -64,7 +64,7 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         std::shared_ptr<StaticMesh> mesh = staticMesh.staticMesh.lock();
         std::shared_ptr<Rendering::Material> material = staticMesh.material.lock();
 
-        if (!mesh /*|| !material*/)
+        if (!mesh || !material)
             return;
 
 
@@ -74,7 +74,7 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         const Rendering::StaticMeshComponentData staticMeshData =
         {
             .MaterialType = {},
-            .DescriptorSet = nullptr,
+            .DescriptorSet = material->GetDescriptorSet(),
             .StaticMesh = mesh.get(),
             .WorldMatrix = m,
             .NormalInvertMatrix = m.Invert().Transpose(),

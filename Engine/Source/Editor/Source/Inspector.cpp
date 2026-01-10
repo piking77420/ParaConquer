@@ -433,7 +433,7 @@ void Inspector::HandlePtr(uint8_t* _ptr, const PC_CORE::ReflectedType& _type, co
             doublePtr->reset();
         }
 
-        // remove the type of the pointer
+   
         PC_CORE::ResourceManager::ForEach(std::get<PC_CORE::ReflectedWeakObjPtr>(_type.metaData.data).typeId, l);
 
         ImGui::End();

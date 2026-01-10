@@ -52,7 +52,7 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
 
     rhi.GetRhiContext().
         ResourceUpdateBranch()
-        ->TextureUpload2D(*texture.Get(), image.GetData(), RhiFormat::R8G8B8A8Unorm, image.GetWidht(), image.GetHeight(), RhiResourceState::FragmentShaderResource);
+        ->TextureUpload2D(*texture.Get(), image.GetData(), image.GetSizeInBytes(), RhiResourceState::FragmentShaderResource);
 }
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)

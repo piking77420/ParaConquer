@@ -19,7 +19,6 @@ BEGIN_PCCORE
     class Texture2D final : public Texture
     {
     public:
-        PC_CORE_API IMP_DYNAMIC_REFLECT()
 
         DEFAULT_COPY_MOVE_OPERATIONS(Texture2D)
         
@@ -31,10 +30,11 @@ BEGIN_PCCORE
 
         PC_CORE_API explicit Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture);
 
-
         PC_CORE_API Texture2D();
 
         PC_CORE_API ~Texture2D() override = default;
+
+        IMP_DYNAMIC_REFLECT()
         
         PC_CORE_API void AfterSerialize(Serializer* _serializer) const override;
 

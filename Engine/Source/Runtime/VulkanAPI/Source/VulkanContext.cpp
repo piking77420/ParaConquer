@@ -22,7 +22,7 @@ VulkanContext::VulkanContext(PC_CORE::Rhi& _Rhi)
     , descritptorManager(*this)
 {
    
-
+    
 }
 
 void Vulkan::VulkanContext::Init(const PC_CORE::RhiContextCreateInfo& rhiContextCreateInfo)
@@ -232,10 +232,14 @@ void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
         m_TransferCommandList->BeginDebugLabel("Resource Update", { 0.75f,0.5f, 0, 1.f });
         for (auto it = m_ResourceUpdate.begin(); it != m_ResourceUpdate.end(); )
         {
-            m_PendingTransferOperation = it->Proceed(*m_TransferCommandList);
-            if (it->IsEmpty())
+            m_PendingTransferOperation = (*it)->Proceed(*m_TransferCommandList);
+            if ((*it)->IsEmpty())
             {
                 it = m_ResourceUpdate.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
         m_TransferCommandList->EndDebugLabel();

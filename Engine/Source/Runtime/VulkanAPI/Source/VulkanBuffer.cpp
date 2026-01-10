@@ -205,8 +205,8 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
     
     const vk::Device device = _VkContext.GetDevice()->GetDevice();
 
-    vmaCreateBuffer(_VkContext.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate),
-                   &aCreateInfo, reinterpret_cast<VkBuffer*>(bufferAndAlloc), &bufferAndAlloc->alloc, &VmaAllocationInfo);
+    VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(_VkContext.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate),
+                   &aCreateInfo, reinterpret_cast<VkBuffer*>(bufferAndAlloc), &bufferAndAlloc->alloc, &VmaAllocationInfo)));
     
     vk::DebugUtilsObjectNameInfoEXT nameInfo;
     nameInfo.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;

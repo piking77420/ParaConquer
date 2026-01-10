@@ -142,6 +142,7 @@ bool Vulkan::VulkanShaderProgram::CreateFromContext(VulkanShaderProgramCreateCon
         _vulkanShaderProgramCreateContex.device.destroyShaderModule(vkShaderModule);
 
     m_Modules.reset();
+    return true;
 }
 
 VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources)

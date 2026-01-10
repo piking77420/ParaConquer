@@ -147,12 +147,13 @@ std::vector<vk::DescriptorSetLayout> Vulkan::VulkanDescritptorManager::GetDescri
 
         for (size_t s = 0; s < ShaderModules.descriptor_set_count; s++) // for each desciptor set
         {
-            std::vector<vk::DescriptorSetLayoutBinding>& Binding = BindingsPerSet[s];
+            uint32_t currentSet = ShaderModules.descriptor_sets[s].set;
+            std::vector<vk::DescriptorSetLayoutBinding>& Binding = BindingsPerSet[currentSet];
+            maxSet = std::max(maxSet, currentSet);
 
             for (size_t j = 0; j < ShaderModules.descriptor_sets[s].binding_count; j++) // for binding
             {
                 const SpvReflectDescriptorBinding& SpvBinding = *ShaderModules.descriptor_sets[s].bindings[j];
-                maxSet = std::max(maxSet, SpvBinding.set);
 
                 vk::DescriptorSetLayoutBinding VkBinding{};
                 VkBinding.binding = SpvBinding.binding;

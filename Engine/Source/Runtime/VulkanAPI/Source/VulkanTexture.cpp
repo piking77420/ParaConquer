@@ -53,7 +53,7 @@ bool Vulkan::VulkanTexture::Build()
     imageInfo.extent.depth = GetDepth();
     imageInfo.mipLevels = GetLevel();
     imageInfo.arrayLayers = GetLayer();
-    imageInfo.format = Utils::RhiFormatToVkFormat(GetRhiFormat());
+    imageInfo.format = VkFormat;
     imageInfo.tiling = vk::ImageTiling::eOptimal;
     imageInfo.initialLayout = vk::ImageLayout::eUndefined;
     imageInfo.usage = Utils::GetImageUsageFlags(GetTextureUsage());
@@ -136,8 +136,9 @@ bool Vulkan::VulkanTexture::Build()
     return true;
 }
 
-bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, const void* _Data, PC_CORE::RhiFormat _Format, uint32_t _ImageWidht, uint32_t _ImageHeight)
+bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, const void* _Data, size_t _DataSize)
 {
+
     assert(_CommandList != nullptr);
 
     if (GetTextureType() != Type::Texture2D)
@@ -148,19 +149,18 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
-    const int multiplayer = PC_CORE::GetBytePerPixel(_Format);
-    const size_t imageSize = static_cast<size_t>(_ImageWidht * _ImageHeight * multiplayer);
+
 
     if (m_StagingBuffer.buffer != VK_NULL_HANDLE)
     {
         VulkanBuffer::FreeAlloc(context, m_StagingBuffer);
     }
-    VulkanBuffer::CreateStagingBufferForCopy(context, &m_StagingBuffer, imageSize);
+    VulkanBuffer::CreateStagingBufferForCopy(context, &m_StagingBuffer, _DataSize);
 
     void* mappedData;
     vmaMapMemory(context.allocator, m_StagingBuffer.alloc, &mappedData);
     assert(mappedData != nullptr);
-    std::memcpy(mappedData, _Data, imageSize);
+    std::memcpy(mappedData, _Data, _DataSize);
     vmaUnmapMemory(context.allocator, m_StagingBuffer.alloc);
 
 
@@ -168,6 +168,13 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
 
     TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
+
+    VmaAllocationInfo allocInfo;
+    vmaGetAllocationInfo(context.allocator, handle.Allocation, &allocInfo);
+
+    VkDeviceSize size = allocInfo.size;
+
+    assert(_DataSize <= size);
 
     vk::BufferImageCopy region{};
     region.bufferOffset = 0;
@@ -181,8 +188,8 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     region.imageOffset = VkOffset3D{ 0, 0, 0 };
 
     region.imageExtent = vk::Extent3D{
-        _ImageWidht,
-        _ImageHeight,
+        m_Width,
+        m_Height,
         1
     };
 

@@ -55,7 +55,7 @@ protected:
 
     bool m_PendingTransferOperation = false;
 
-    std::deque<RHI::ResourceUpdateBranch> m_ResourceUpdate;
+    std::vector<std::unique_ptr<RHI::ResourceUpdateBranch>> m_ResourceUpdate;
 };
 
 END_PCCORE

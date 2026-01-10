@@ -1,6 +1,7 @@
 #pragma once
+#include "Resource.hpp"
+#include "ObjectPtr.hpp"
 #include "Mesh.hpp"
-#include "CompactBuffer.hpp"
 
 BEGIN_PCCORE
     struct StaticMeshVertex
@@ -81,14 +82,16 @@ BEGIN_PCCORE
         std::vector<SubMesh> SubMeshes;
     };
 
-
     class PC_CORE_API StaticMesh : public Resource
     {
     public:
 
+        explicit StaticMesh(std::string _Name, const PC_CORE::ObjectPtr<Resource>& SharedMesh, SubMesh subMesh);
+
         explicit StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData);
 
         explicit StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData);
+
 
         StaticMesh();
 
@@ -101,6 +104,16 @@ BEGIN_PCCORE
         void AfterSerialize(Serializer* _serializer) const override;
 
         void AfterDeSerialize(Serializer* _serializer) override;
+
+        const VertexBuffer& GetVertexBuffer() const
+        {
+            return m_VertexBuffer;
+        }
+
+        const IndexBuffer& GetIndexBuffer() const
+        {
+            return m_IndexBuffer;
+        }
 
         const MotionCore::Aabb<double>& GetAabb() const
         {
@@ -117,17 +130,46 @@ BEGIN_PCCORE
             return m_StaticMeshRenderData;
         }
 
-        VertexBuffer VBuffer;
+        bool IsSharedMesh() const
+        {
+            return m_IsSharedMesh;
+        }
 
-        IndexBuffer IBuffer;
+        const WeakObjectPtr<Resource>& GetSharedMesh() const
+        {
+            return m_SharedMesh;
+        }
 
+        const SubMesh& GetSubMesh() const
+        {
+#ifdef DEBUG
+            if (IsSharedMesh())
+            {
+                PC_LOGERROR("GetSubMeshInfo but the mesh is an shared mesh");
+            }
+#endif // DEBUG
+
+            return m_SubMesh;
+        }
 
     private:
-        bool m_HallowCpuAcces = false;
+        VertexBuffer m_VertexBuffer;
+
+        IndexBuffer m_IndexBuffer;
 
         StaticMeshRenderData m_StaticMeshRenderData;
 
         MotionCore::Aabb<double> m_Aabb;
+
+        WeakObjectPtr<Resource> m_SharedMesh;
+
+        bool m_HallowCpuAcces = false;
+
+        bool m_IsSharedMesh = false;
+
+        SubMesh m_SubMesh;
+
+        void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData);
 
         REFLECT(StaticMesh, Resource)
         REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)

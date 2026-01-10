@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <String>
+#include <string>
 #include <memory>
 
 #include "CoreHeader.hpp"
@@ -21,6 +21,8 @@ BEGIN_PCCORE
         static uint8_t* LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp);
 
         static void FreeData(uint8_t* _file);
+
+        static bool IsHdr(const char* _filename);
     };
 
     class Image
@@ -44,7 +46,7 @@ BEGIN_PCCORE
 
         PC_CORE_API Image(const char* _path, PC_CORE::RhiChannel _desireChannel);
 
-        PC_CORE_API Image(const uint8_t* _ptr, size_t _size, const char* _name);
+        PC_CORE_API Image(const uint8_t* _ptr, size_t _size, const char* _name, PC_CORE::RhiChannel _Channel);
 
         Image() = default;
 
@@ -53,7 +55,7 @@ BEGIN_PCCORE
 
         uint32_t GetWidht() const
         {
-            return m_Widht;
+            return m_Width;
         }
 
         uint32_t GetHeight() const
@@ -86,6 +88,11 @@ BEGIN_PCCORE
             return m_Data.get() != nullptr;
         }
 
+        size_t GetSizeInBytes() const
+        {
+            return m_SizeInBytes;
+        }
+
         [[nodiscard]] std::unique_ptr<uint8_t[], ImageDeleter> Release() noexcept
         {
             auto tmp = std::move(m_Data);
@@ -98,15 +105,19 @@ BEGIN_PCCORE
        
         REFLECT(Image);
 
-        uint32_t m_Widht = -1;
+        uint32_t m_Width = 0;
 
-        uint32_t m_Height = -1;
+        uint32_t m_Height = 0;
 
         PC_CORE::RhiChannel m_Channel{};
+
+        uint32_t m_SizeInBytes = 0;
 
         std::unique_ptr<uint8_t[], ImageDeleter> m_Data;
 
         bool m_IsHDR = false;
+
+        PC_CORE_API void ComputeDataSize();
     };
 
 END_PCCORE

@@ -320,6 +320,11 @@ void Editor::InitTestScene()
     
 
     {
+        PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
+        material->m_Albedo = ResourceManager::Get<PC_CORE::Texture2D>("5792855332885324923.jpg");
+
+        material->Build();
+
         EntityId Cube = level.CreateEntity("Cube");
         level.AddComponent<Transform>(Cube);
         level.AddComponent<StaticMeshComponent>(Cube);
@@ -327,12 +332,10 @@ void Editor::InitTestScene()
         t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
         t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
         StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
+        s->material = material;
 
-        PC_CORE::ObjectPtr<PC_CORE::StaticMesh> mesh;
-        if (AssetsImporter.GetStaticMesh(&mesh))
-        {
-            s->staticMesh = mesh;
-        }
+        const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& mesh = AssetsImporter.GetStaticMeshes();
+        s->staticMesh = mesh[0];
     }
    
 
