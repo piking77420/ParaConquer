@@ -61,6 +61,8 @@ BEGIN_EDITOR_PCCORE
 
         std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
 
+        std::vector<PC_CORE::Rendering::Material> m_Materials;
+
         ImportFormat m_ImportFormat;
 
         ImportFormat FindImportFormat(const std::filesystem::path& path);
@@ -68,6 +70,8 @@ BEGIN_EDITOR_PCCORE
         bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene);
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, const aiScene* scene);
+
+        bool ImportMaterials(PC_CORE::Rhi& _Rhi, const aiScene* scene);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 

@@ -119,15 +119,15 @@ namespace PC_EDITOR_CORE
         m_ImportObjectName = scene->mName.Empty() ? _path.filename().generic_string() : std::string(scene->mName.C_Str());
 
         {
-            if (!ImportMeshesFromScene(_Rhi, scene))
-            {
-                PC_LOGERROR("Failed To Import Mesh From Scene")
-                    return false;
-            }
-
             if (!ImportTextures(_Rhi, scene))
             {
                 PC_LOGERROR("Failed To Import Textures")
+                    return false;
+            }
+
+            if (!ImportMeshesFromScene(_Rhi, scene))
+            {
+                PC_LOGERROR("Failed To Import Mesh From Scene")
                     return false;
             }
 
@@ -263,37 +263,38 @@ namespace PC_EDITOR_CORE
                         continue;
 
                     const aiTexture* aiTexture = scene->GetEmbeddedTexture(str.C_Str());
+                    std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>> pair;
 
                     if (aiTexture) // HandleEmbeded Texture
                     {
                         std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(_Rhi, str.C_Str(), *aiTexture));
-
-
                         PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
-                        std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>  pair(type, texture2D);
+
+
+                        pair.first = type;
+                        pair.second = texture2D;
                         m_TextureMaps.emplace(str.C_Str(), std::move(pair));
-                        continue;
                     }
-
-                    const auto texturePath = m_filePath.parent_path() / std::filesystem::u8path(str.C_Str());
-                    if (std::filesystem::exists(texturePath))
+                    else // FROM PATH
                     {
-                        PC_CORE::Image image(texturePath.generic_string().c_str(), PC_CORE::RhiChannel::Rgba);
-                        std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
-                        if (texture && image)
+                        const auto texturePath = m_filePath.parent_path() / std::filesystem::u8path(str.C_Str());
+                        if (std::filesystem::exists(texturePath))
                         {
-                            texture->SetName(str.C_Str());
-                            BuildRhiTextureFromImage(_Rhi, *texture, &image);
+                            PC_CORE::Image image(texturePath.generic_string().c_str(), PC_CORE::RhiChannel::Rgba);
+                            std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
+                            if (texture && image)
+                            {
+                                texture->SetName(str.C_Str());
+                                BuildRhiTextureFromImage(_Rhi, *texture, &image);
+                                PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
-                            PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
-                            std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>  pair(type, texture2D);
+                                pair.first = type;
+                                pair.second = texture2D;
+                                m_TextureMaps.emplace(str.C_Str(), std::move(pair));
+                            }
 
-
-                            m_TextureMaps.emplace(str.C_Str(), std::move(pair));
                         }
-
                     }
-
                 }
 
             };
@@ -312,6 +313,15 @@ namespace PC_EDITOR_CORE
 
 
         return true;
+    }
+
+    bool AssetsImporter::ImportMaterials(PC_CORE::Rhi& _Rhi, const aiScene* scene)
+    {
+
+
+
+
+        return false;
     }
 
     PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture)
