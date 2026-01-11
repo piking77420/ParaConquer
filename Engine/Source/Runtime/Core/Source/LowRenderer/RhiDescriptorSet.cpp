@@ -22,12 +22,12 @@ RhiDescriptorSet& RhiDescriptorSet::BindUniformBuffer(RhiShaderStageTypeFlag Sha
 {
 	const BufferDescriptor Descriptor =
 	{
-		.buffer = _RhiBuffer
+		.buffer = _RhiBuffer,
 	};
 
 	DescriptorWrite Write
 	{
-		.type = DescriptorType::UniformBuffer,
+		.type = _RhiBuffer->GetBufferBackingStrategy() == RhiBuffer::CpuVisibleRing ? DescriptorType::DynamicUniformBuffer : DescriptorType::UniformBuffer,
 		.bindingIndex = _BindingIndex,
 		.StagesBits = ShaderStageBits,
 		.descriptor = Descriptor

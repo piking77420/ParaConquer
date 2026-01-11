@@ -34,6 +34,9 @@ namespace Vulkan
         float GetMaxSamplerAnisotropy() const override;
 
         uint32_t GetMaxUsableSampleCount() const override;
+
+        uint32_t GetUniformBufferOffsetAlignment() const;
+
     };
 
 

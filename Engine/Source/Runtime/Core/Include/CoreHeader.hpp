@@ -72,4 +72,9 @@ BEGIN_PCCORE
         return reinterpret_cast<size_t>(&(reinterpret_cast<const volatile T*>(0)->*_member));
     }
 
+    static inline uint32_t AlignUp(uint32_t value, uint32_t alignment)
+    {
+        return (value + alignment - 1) & ~(alignment - 1);
+    }
+
 END_PCCORE

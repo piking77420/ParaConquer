@@ -158,10 +158,10 @@ void PC_CORE::DebugDrawContext::Prepare()
         assert(updateDataSize < GIZMO_BUFFER_SIZE && "updateDataSize should be less than GIZMO_BUFFER_SIZE");
         updateDataSize = std::clamp(updateDataSize, static_cast<size_t>(0), GIZMO_BUFFER_SIZE);
 
-        if (char* ptr = m_PrimitiveData[i].instanceBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
+        if (char* ptr = m_PrimitiveData[i].instanceBuffer->BeginBufferUpdateForCurrentFrame())
         {
             std::memcpy(ptr, m_PrimitiveData[i].matrixBuffer.data(), updateDataSize);
-            m_PrimitiveData[i].instanceBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+            m_PrimitiveData[i].instanceBuffer->EndBufferUpdate();
         }
         m_PrimitiveData[i].primitiveCount = std::clamp(m_PrimitiveData[i].matrixBuffer.size(), static_cast<size_t>(0),
                                                        MAX_GIZMO_PRIMITIVE);
@@ -174,10 +174,10 @@ void PC_CORE::DebugDrawContext::Prepare()
 
         assert(updateRaySize < RAY_BUFFER_SIZE && "updateRaySize should be less than RAY_BUFFER_SIZE");
         updateRaySize = std::clamp(updateRaySize, static_cast<size_t>(0), RAY_BUFFER_SIZE);
-        if (char* ptr = m_RayPrimitiveData.vertexBuffer->BeginFullDynamicBufferUpdateForCurrentFrame())
+        if (char* ptr = m_RayPrimitiveData.vertexBuffer->BeginBufferUpdateForCurrentFrame())
         {
             std::memcpy(ptr, m_RayPrimitiveData.rayBuffer.data(), updateRaySize);
-            m_RayPrimitiveData.vertexBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+            m_RayPrimitiveData.vertexBuffer->EndBufferUpdate();
         }
         m_RayPrimitiveData.rayCount = std::clamp(m_RayPrimitiveData.rayBuffer.size(), static_cast<size_t>(0),
                                                  MAX_RAY_COUNT);
@@ -206,7 +206,8 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Rhi& _Rhi)
         primitiveData.instanceBuffer.reset(m_Rhi.CreateBuffer());
         primitiveData.instanceBuffer
             ->SetSize(GIZMO_BUFFER_SIZE)
-            .SetMemoryUsage(RhiMemoryUsage::Dynamic)
+            .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
             .SetName("Buffer " + PrimitiveTypeToString(static_cast<PrimitiveType>(i)))
             .Build();
@@ -216,7 +217,8 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Rhi& _Rhi)
     m_RayPrimitiveData.vertexBuffer = VertexBuffer(m_Rhi);
     m_RayPrimitiveData.vertexBuffer
         ->SetSize(RAY_BUFFER_SIZE)
-        .SetMemoryUsage(RhiMemoryUsage::Dynamic)
+        .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+        .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
         .SetName("Buffer Ray Gizmo")
         .Build();

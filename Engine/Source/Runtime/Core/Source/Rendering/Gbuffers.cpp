@@ -46,7 +46,7 @@ void PC_CORE::Gbuffers::CreateGBuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size)
             .SetHeight(Height)
             .SetRhiFormat(format)
             .SetTextureUsage(RhiTexture::RenderTarget | RhiTexture::Sampled)
-            .SetMemoryUsage(RhiMemoryUsage::Dynamic)
+            .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetName("Gbuffer" + GbufferTypeToString(gbufferType))
             .Build();
 

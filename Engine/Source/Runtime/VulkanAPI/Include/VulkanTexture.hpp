@@ -50,7 +50,11 @@ namespace Vulkan
     private:
         std::vector<TextureAndAlloc> m_Handles;
         
-        BufferAndAlloc m_StagingBuffer{};
+        std::vector <BufferAndAlloc> m_StagingBuffers{};
+
+        const BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex) const;
+
+        BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex);
             
         void FreeAlloc(TextureAndAlloc& _handle);
     };

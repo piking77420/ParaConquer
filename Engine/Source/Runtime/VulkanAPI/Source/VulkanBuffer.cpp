@@ -12,7 +12,7 @@ VmaAllocationCreateFlags VmaAllocationCreateFlagsFromBuffer(PC_CORE::RhiResource
 {
     VmaAllocationCreateFlags flag = 0;
     
-    if (_memoryUsage == PC_CORE::RhiResource::MemoryUsage::Dynamic)
+    if (_memoryUsage == PC_CORE::RhiResource::MemoryUsage::CPUVisible)
         flag |= VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT; 
     
     // VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT for raytring
@@ -25,12 +25,11 @@ VmaAllocationCreateInfo VmaAllocationCreateInfoFromBuffer(PC_CORE::RhiResource::
 {
     using Musage = PC_CORE::RhiResource::MemoryUsage;
     
-    assert(_memoryUsage != Musage::None || _memoryUsage != Musage::Count);
     
     VmaAllocationCreateInfo allocCI = 
     {
         .flags = VmaAllocationCreateFlagsFromBuffer(_memoryUsage),
-        .usage = (_memoryUsage == PC_CORE::RhiResource::MemoryUsage::Dynamic) ? VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE : VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+        .usage = (_memoryUsage == PC_CORE::RhiResource::MemoryUsage::CPUVisible) ? VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE : VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
         .requiredFlags = 0,
         .preferredFlags = 0,
         .memoryTypeBits = 0,
@@ -54,8 +53,9 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
 {
     auto& context = GET_VK_CONTEXT;
 
-    if (stagingBuffer.alloc != VK_NULL_HANDLE)
-        FreeAlloc(context, stagingBuffer);
+
+    for (auto& alloc : m_StagingBuffers)
+        FreeAlloc(context, alloc);
 
     for (auto& alloc : m_Handles)
         FreeAlloc(context, alloc);
@@ -65,10 +65,10 @@ bool Vulkan::VulkanBuffer::Build()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    
-    assert(m_MemoryUsage != RhiResource::MemoryUsage::Count && m_MemoryUsage != RhiResource::MemoryUsage::None);
 
-    const uint32_t nbrOfHandle = GetNbrOfHandle(m_MemoryUsage);
+    RhiBuffer::Build();
+  
+    const uint32_t nbrOfHandle = m_NbrOfBackendObject;
     
     if (nbrOfHandle == 0)
     {
@@ -76,17 +76,40 @@ bool Vulkan::VulkanBuffer::Build()
         return false;
     }
     m_Handles.resize(nbrOfHandle);
+    if (m_MemoryUsage != MemoryUsage::CPUVisible)
+        m_StagingBuffers.resize(m_Handles.size());
+    m_CurrentFrameMappedData.resize(m_Handles.size());
 
     vk::BufferCreateInfo bufferCreate{};
     bufferCreate.sType = vk::StructureType::eBufferCreateInfo;
-    bufferCreate.size = m_SizeInByte;
     bufferCreate.usage = Utils::RhiBufferUsageToVulkan(m_Usage);
     bufferCreate.sharingMode = vk::SharingMode::eExclusive;
     
-    if (m_MemoryUsage != RhiResource::MemoryUsage::Dynamic)
+    switch (m_BufferBackingStrategy)
     {
+    case PC_CORE::RhiBuffer::SingleBuffer:
         bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
+        bufferCreate.size = m_SizeInByte;
+
+        break;
+    case PC_CORE::RhiBuffer::CpuVisibleRing:
+        bufferCreate.size = m_SizeInByte * MaxFramesInFlight; // use stride to index correct one 
+        break;
+    case PC_CORE::RhiBuffer::PerFrameBuffers:
+        if (m_MemoryUsage == MemoryUsage::StaticGPU)
+            bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
+        break;
+    case PC_CORE::RhiBuffer::StagedUpload:
+        bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
+        break;
+    case PC_CORE::RhiBuffer::Readback:
+        bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
+
+        break;
+    default:
+        break;
     }
+
     VmaAllocationCreateInfo aCreateInfo = VmaAllocationCreateInfoFromBuffer(m_MemoryUsage);
     VmaAllocationInfo VmaAllocationInfo;
     VmaAllocationInfo.pName = GetName().data();
@@ -113,6 +136,17 @@ bool Vulkan::VulkanBuffer::Build()
         
         SET_VK_DEBUG_NAME(nameInfo);
     }
+
+    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
+    {
+        std::scoped_lock _(context.lock);
+
+        for (size_t i = 0; i < m_CurrentFrameMappedData.size(); i++)
+        {
+            VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
+                m_Handles[i].alloc, &m_CurrentFrameMappedData[i])));
+        }
+    }
     
     
     return true;
@@ -121,16 +155,24 @@ bool Vulkan::VulkanBuffer::Build()
 
 bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes)
 {
-    assert(m_MemoryUsage != RhiResource::MemoryUsage::Dynamic && "You can only UploadData with static or streamable buffers");
+    assert(
+        m_MemoryUsage == RhiResource::MemoryUsage::StaticGPU &&
+        "UploadData is only valid for GPU-only buffers (staged upload)"
+    );
+    assert(
+        m_BufferBackingStrategy == BufferBackingStrategy::StagedUpload ||
+        m_BufferBackingStrategy == BufferBackingStrategy::SingleBuffer &&
+        "UploadData is only valid for staged GPU buffers"
+    );    
     assert(_sizeInBytes <= m_SizeInByte);
 
-    if (m_MemoryUsage == RhiResource::MemoryUsage::Dynamic)
-        return false;
     if (_sizeInBytes > m_SizeInByte)
         return false;
 
     auto& context = GET_VK_CONTEXT;
     const size_t FrameIndex = m_Rhi.GetFrameIndex();
+
+    auto& stagingBuffer = *GetVkStagingBuffer(FrameIndex);
 
     if (stagingBuffer.buffer != VK_NULL_HANDLE)
         FreeAlloc(context, stagingBuffer);
@@ -159,31 +201,73 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
 char* Vulkan::VulkanBuffer::BeginFullDynamicBufferUpdateForCurrentFrame()
 {
     PERF_REGION_SCOPED;
-    assert(m_MemoryUsage == RhiResource::MemoryUsage::Dynamic && "You can only dynamic update dynamic buffers");
-    assert(m_CurrentFrameMappedData == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
-    
+    assert(m_MemoryUsage == RhiResource::MemoryUsage::CPUVisible && "You can only dynamic update dynamic buffers");
     const auto frameIndex = m_Rhi.GetFrameIndex();
+
+    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
+    {
+        return static_cast<char*>(m_CurrentFrameMappedData[0]);
+    }
     auto& context = GET_VK_CONTEXT;
+    assert(m_CurrentFrameMappedData[frameIndex] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
+
+
+    {
+        std::scoped_lock _(context.lock);
+        VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
+            m_Handles[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
+    }
     
-    
-    VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
-        m_Handles[frameIndex].alloc, &m_CurrentFrameMappedData)));
-    return static_cast<char*>(m_CurrentFrameMappedData);
+    return static_cast<char*>(m_CurrentFrameMappedData[frameIndex]);
+}
+
+char* Vulkan::VulkanBuffer::BeginBufferUpdateForCurrentFrame()
+{
+    PERF_REGION_SCOPED;
+    assert(m_MemoryUsage == RhiResource::MemoryUsage::CPUVisible && "You can only dynamic update dynamic buffers");
+    const auto frameIndex = m_Rhi.GetFrameIndex();
+
+    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
+    {
+        return static_cast<char*>(m_CurrentFrameMappedData[0]) + m_FrameStride;
+    }
+    auto& context = GET_VK_CONTEXT;
+    assert(m_CurrentFrameMappedData[frameIndex] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
+
+
+    {
+        std::scoped_lock _(context.lock);
+        VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
+            m_Handles[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
+    }
+
+    return static_cast<char*>(m_CurrentFrameMappedData[frameIndex]);
 }
 
 
-void Vulkan::VulkanBuffer::EndFullDynamicBufferUpdateForCurrentFrame()
+
+void Vulkan::VulkanBuffer::EndBufferUpdate()
 {
     PERF_REGION_SCOPED
-    assert(m_MemoryUsage == RhiResource::MemoryUsage::Dynamic && "You can only dynamic update dynamic buffers");
-    assert(m_CurrentFrameMappedData != nullptr && "Data not Map or forgot to call BeginFullDynamicBufferUpdateForCurrentFrame");
+    assert(m_MemoryUsage == RhiResource::MemoryUsage::CPUVisible && "You can only dynamic update dynamic buffers");
+
+    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
+    {
+        return;
+    }
 
     const auto frameIndex = m_Rhi.GetFrameIndex();
+    assert(m_CurrentFrameMappedData[frameIndex] != nullptr && "Data not Map or forgot to call BeginFullDynamicBufferUpdateForCurrentFrame");
+
     auto& context = GET_VK_CONTEXT;
     
-    vmaUnmapMemory(context.allocator,
-        m_Handles[frameIndex].alloc);
-    m_CurrentFrameMappedData = nullptr;
+    {
+        std::scoped_lock _(context.lock);
+        vmaUnmapMemory(context.allocator,
+            m_Handles[frameIndex].alloc);
+    }
+
+    m_CurrentFrameMappedData[frameIndex] = nullptr;
 }
 
 void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes) // TODO MAKE AN HELPER CLASS 
@@ -247,6 +331,30 @@ Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkAlloc(size_t _frameIndex)
 
     const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
     return &m_Handles[handleIndex];
+}
+
+const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkStagingBuffer(size_t _frameIndex) const
+{
+    if (m_StagingBuffers.empty())
+    {
+        PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_StagingBuffer.empty()");
+        return nullptr;
+    }
+
+    const size_t handleIndex = std::min(m_StagingBuffers.size() - 1, _frameIndex);
+    return &m_StagingBuffers[handleIndex];
+}
+
+Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkStagingBuffer(size_t _frameIndex)
+{
+    if (m_StagingBuffers.empty())
+    {
+        PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_StagingBuffer.empty()");
+        return nullptr;
+    }
+
+    const size_t handleIndex = std::min(m_StagingBuffers.size() - 1, _frameIndex);
+    return &m_StagingBuffers[handleIndex];
 }
 
 const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkAlloc(size_t _frameIndex) const

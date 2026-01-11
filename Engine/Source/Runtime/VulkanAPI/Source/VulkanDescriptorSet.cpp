@@ -161,7 +161,7 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
 
                 bufferInfo[bufferIndex].buffer = bufferAndAlloc->buffer;
                 bufferInfo[bufferIndex].offset = 0;
-                bufferInfo[bufferIndex].range = VK_WHOLE_SIZE;
+                bufferInfo[bufferIndex].range = VkBuffer.GetBufferBackingStrategy() == PC_CORE::RhiBuffer::BufferBackingStrategy::CpuVisibleRing ? VK_WHOLE_SIZE : VkBuffer.GetObjectSize();
                 bufferIndex++;
             }
 

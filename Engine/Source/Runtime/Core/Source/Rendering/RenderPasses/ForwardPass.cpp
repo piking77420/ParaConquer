@@ -24,7 +24,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_LightingImage = &_RendererPassBuildContext.RenderGraph.CreateResourceHandle<RhiTexture>("Lighting Image");
 		m_LightingImage
-			->SetMemoryUsage(RhiMemoryUsage::Dynamic)
+			->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
 			.SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
 			.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
@@ -36,7 +36,7 @@ namespace PC_CORE::Rendering::Pass
 		RhiTexture& DepthBuffer = _RendererPassBuildContext.RenderGraph.CreateResourceHandle<RhiTexture>("Depth Buffer");
 		DepthBuffer
 			.SetTextureType(RhiTexture::Type::Texture2D)
-			.SetMemoryUsage(RhiMemoryUsage::Dynamic)
+			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
 			.SetRhiFormat(RhiFormat::D24UnormS8Uint)
 			.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)

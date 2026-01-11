@@ -10,7 +10,7 @@ class CommandList;
 class RhiTexture : public RhiResourceT<RhiTexture>
 {
 public:
-    
+
     enum class Type
     {
         None,
@@ -46,6 +46,8 @@ public:
     PC_CORE_API RhiTexture(Rhi& _Rhi);
     
     PC_CORE_API ~RhiTexture() override = default;
+
+    PC_CORE_API virtual bool Build();
     
     PC_CORE_API virtual bool UploadData2D(CommandList* _CommandList, const void* _ImageData, size_t _DataSize) = 0;
     
@@ -163,11 +165,6 @@ public:
         return m_Level > 1;
     }
     
-    size_t GetNbrOfInFlightResource() const
-    {
-        return GetNbrOfHandle(m_MemoryUsage);
-    }
-
     static bool IsDepthFormat(RhiFormat _format);
 
 protected:    

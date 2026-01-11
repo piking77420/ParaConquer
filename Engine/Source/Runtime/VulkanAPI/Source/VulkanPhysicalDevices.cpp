@@ -32,6 +32,15 @@ uint32_t Vulkan::VulkanPhysicalDevice::GetMaxUsableSampleCount() const
     return 1;
 }
 
+uint32_t Vulkan::VulkanPhysicalDevice::GetUniformBufferOffsetAlignment() const
+{
+    vk::PhysicalDeviceProperties properties;
+    physicalDevice.getProperties(&properties);
+
+    return properties.limits.minUniformBufferOffsetAlignment;
+}
+
+
 
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const
 {

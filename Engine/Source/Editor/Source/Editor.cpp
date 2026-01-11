@@ -350,9 +350,10 @@ void Editor::InitTestScene()
             auto& level = World::GetWorld()->level;
 
             PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
-            material->m_Albedo = ResourceManager::Get<PC_CORE::Texture2D>("5792855332885324923.jpg");
 
             material->Build();
+
+            assert(false && "Fill material");
 
             EntityId Cube = level.CreateEntity("Cube");
             level.AddComponent<Transform>(Cube);

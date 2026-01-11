@@ -48,6 +48,7 @@ namespace Vulkan::Utils
     vk::IndexType RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _format);
 
     vk::DescriptorType RhiToDescriptorType(const PC_CORE::DescriptorType& descriptorType);
+
     vk::SampleCountFlagBits RhSampleCountToVulkan(uint32_t _sampleCount);
 
     vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology);

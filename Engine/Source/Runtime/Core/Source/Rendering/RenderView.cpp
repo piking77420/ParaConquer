@@ -11,7 +11,8 @@ namespace PC_CORE::Rendering
     {
         UniformBuffer.reset(_Rhi.CreateBuffer());
         UniformBuffer
-            ->SetMemoryUsage(RhiMemoryUsage::Dynamic)
+            ->SetMemoryUsage(RhiMemoryUsage::CPUVisible)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
             .SetSize(sizeof(Gpu::RenderViewViewUniformBuffer))
             .SetName("RenderViewUniformBuffer")
@@ -40,7 +41,7 @@ namespace PC_CORE::Rendering
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Rendering);
 
-        if (Gpu::RenderViewViewUniformBuffer* ptr = reinterpret_cast<Gpu::RenderViewViewUniformBuffer*>(UniformBuffer->BeginFullDynamicBufferUpdateForCurrentFrame()))
+        if (Gpu::RenderViewViewUniformBuffer* ptr = reinterpret_cast<Gpu::RenderViewViewUniformBuffer*>(UniformBuffer->BeginBufferUpdateForCurrentFrame()))
         {
             Gpu::StreamDoubleToFloat(&ptr->View, &View);
             Gpu::StreamDoubleToFloat(&ptr->ViewInv, &ViewInv);
@@ -62,7 +63,7 @@ namespace PC_CORE::Rendering
             std::memcpy(&ptr->RenderSize, &RenderSize, 2 * sizeof(float));
             std::memcpy(&ptr->InvRenderSize, &InvRenderSize, 2 * sizeof(float));
 
-            UniformBuffer->EndFullDynamicBufferUpdateForCurrentFrame();
+            UniformBuffer->EndBufferUpdate();
         }
     }
 

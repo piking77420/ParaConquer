@@ -35,6 +35,17 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
         ->SetName("PrimaryCommandBuffer")
         .Build();
 
+    TextureSampler.reset(RenderHarwareInteface.CreateSampler());
+    TextureSampler
+        ->SetMagFilter(Filter::Linear)
+        .SetMinFilter(Filter::Linear)
+        .SetU(SamplerAddressMode::Repeat)
+        .SetV(SamplerAddressMode::Repeat)
+        .SetW(SamplerAddressMode::Repeat)
+        .SetName("TextureSampler")
+        .Build();
+
+
     Time::Init();
 }
 

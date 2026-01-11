@@ -43,7 +43,7 @@ namespace ResourceUpdateOperation
 	BufferUpload::BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size)
 		: m_RhiBuffer(&_RhiBuffer)
 		, m_UploadOperation(_Data, _Size)
-		, m_NbrOfUpdate(m_RhiBuffer->GetNbrOfResourcePerFrameInFlight())
+		, m_FrameUpdateCount(m_RhiBuffer->GetNbrOfBackendObject())
 	{
 
 	}
@@ -60,14 +60,14 @@ namespace ResourceUpdateOperation
 			return ResourceUpdateStatus::Failed;
 		}
 		_CommandList.EndDebugLabel();
-		m_NbrOfUpdate--;
-		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
+		m_FrameUpdateCount--;
+		return m_FrameUpdateCount > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
 	}
 
 	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _Size, RhiResourceState _AfterUploadState)
 		: m_RhiTexture(&_RhiTexture)
 		, m_UploadOperation(_Data, _Size)
-		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
+		, m_FrameUpdateCount(m_RhiTexture->GetNbrOfBackendObject())
 		, m_AfterUploadState(_AfterUploadState)
 	{
 	
@@ -107,14 +107,14 @@ namespace ResourceUpdateOperation
 
 		_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 		_CommandList.EndDebugLabel();
-		m_NbrOfUpdate--;
-		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
+		m_FrameUpdateCount--;
+		return m_FrameUpdateCount > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
 	}
 	
 	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation)
 		: m_RhiTexture(&_RhiTexture)
 		, m_Filter(_Filter)
-		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
+		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfBackendObject())
 		, m_StateAfterOperation(_StateAfterOperation)
 	{
 

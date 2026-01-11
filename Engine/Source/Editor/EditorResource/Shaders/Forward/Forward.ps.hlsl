@@ -6,11 +6,8 @@ struct PSInput
     float3 Tangent : TEXCOORD1;
 };
 
-
-[[vk::combinedImageSampler]]
-Texture2D AlbedoTexture : register(t0, space1);
-[[vk::combinedImageSampler]]
-SamplerState AlbedoSampler : register(s0, space1);
+#define MATERIAL_SET space1
+#include "Material.hlsl"
 
 float4 Main(PSInput input) : SV_Target
 {

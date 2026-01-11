@@ -748,6 +748,10 @@ vk::DescriptorType Vulkan::Utils::RhiToDescriptorType(
         return vk::DescriptorType::eStorageImage;
     case PC_CORE::DescriptorType::UniformBuffer:
         return vk::DescriptorType::eUniformBuffer;
+    case PC_CORE::DescriptorType::DynamicStorageBuffer:
+        return vk::DescriptorType::eStorageBufferDynamic;
+    case PC_CORE::DescriptorType::DynamicUniformBuffer:
+        return vk::DescriptorType::eUniformBufferDynamic;
     case PC_CORE::DescriptorType::StorageBuffer:
         return vk::DescriptorType::eStorageBuffer;
     case PC_CORE::DescriptorType::InputAttachment:

@@ -74,7 +74,7 @@ namespace PC_CORE::RHI
 			explicit BufferUpload(RhiBuffer& _RhiBuffer, T&& _Data, size_t _Size)
 				: m_RhiBuffer(&_RhiBuffer)
 				, m_UploadOperation(std::forward<T>(_Data), _Size)
-				, m_NbrOfUpdate(m_RhiBuffer->GetNbrOfResourcePerFrameInFlight())
+				, m_FrameUpdateCount(m_RhiBuffer->GetNbrOfBackendObject())
 			{
 
 			}
@@ -91,7 +91,7 @@ namespace PC_CORE::RHI
 
 			UploadOperation m_UploadOperation;
 
-			size_t m_NbrOfUpdate{ 0u };
+			size_t m_FrameUpdateCount{ 0u };
 		};
 
 		class PC_CORE_API TextureUpload2D
@@ -103,7 +103,7 @@ namespace PC_CORE::RHI
 			explicit TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, size_t _DataSize, RhiResourceState _AfterUploadState)
 				: m_RhiTexture(&_RhiTexture)
 				, m_UploadOperation(std::forward<T>(_Data), _DataSize)
-				, m_NbrOfUpdate(m_RhiTexture->GetNbrOfResourcePerFrameInFlight())
+				, m_FrameUpdateCount(m_RhiTexture->GetNbrOfBackendObject())
 				, m_AfterUploadState(_AfterUploadState)
 			{
 
@@ -120,7 +120,7 @@ namespace PC_CORE::RHI
 
 			UploadOperation m_UploadOperation;
 
-			size_t m_NbrOfUpdate{ 0u };
+			size_t m_FrameUpdateCount{ 0u };
 
 			RhiResourceState m_AfterUploadState{ RhiResourceState::Undefined };
 

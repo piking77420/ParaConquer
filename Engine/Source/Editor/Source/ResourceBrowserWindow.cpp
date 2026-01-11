@@ -45,7 +45,7 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
     texture
         ->SetWidth(image.GetWidht())
         .SetHeight(image.GetHeight())
-        .SetMemoryUsage(RhiResource::MemoryUsage::Static)
+        .SetMemoryUsage(RhiResource::MemoryUsage::StaticGPU)
         .SetTextureUsage(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst)
         .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
         .Build();

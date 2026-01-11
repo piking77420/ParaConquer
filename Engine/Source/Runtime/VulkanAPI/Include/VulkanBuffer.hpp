@@ -35,7 +35,9 @@ namespace Vulkan
 
         char* BeginFullDynamicBufferUpdateForCurrentFrame() override;
 
-        void EndFullDynamicBufferUpdateForCurrentFrame() override;
+        void EndBufferUpdate() override;
+
+        char* BeginBufferUpdateForCurrentFrame() override;
     
         static void CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes);
     
@@ -50,11 +52,16 @@ namespace Vulkan
         BufferAndAlloc* GetVkAlloc(size_t _frameIndex);
 
     private:
+
+        const BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex) const;
+
+        BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex);
+
         std::vector<BufferAndAlloc> m_Handles;
         
-        void* m_CurrentFrameMappedData = nullptr;
+        std::vector<void*> m_CurrentFrameMappedData;
 
-        BufferAndAlloc stagingBuffer;
+        std::vector<BufferAndAlloc> m_StagingBuffers;
         
     };
 }

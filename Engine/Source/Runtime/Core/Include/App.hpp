@@ -38,6 +38,8 @@ BEGIN_PCCORE
 
         std::unique_ptr<CommandList> PrimaryCommandBuffer;
 
+        std::unique_ptr<RhiSampler> TextureSampler;
+
         PC_CORE_API App();
 
         PC_CORE_API virtual ~App() = default;

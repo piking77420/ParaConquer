@@ -102,7 +102,8 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
     m_VertexBuffer
         .SetVerticiesCount(m_StaticMeshRenderData.Vertices.size())
         .SetVerticiesSize(sizeof(StaticMeshVertex))
-        ->SetMemoryUsage(RhiMemoryUsage::Static)
+        ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+        .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
         .SetSize(m_StaticMeshRenderData.Vertices.size() * sizeof(StaticMeshVertex))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
         .SetName(Name + " Vertex Buffer")
@@ -113,7 +114,8 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
     m_IndexBuffer
         .SetIndexCount(m_StaticMeshRenderData.Indices.size())
         .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
-        ->SetMemoryUsage(RhiMemoryUsage::Static)
+        ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+        .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
         .SetSize(m_StaticMeshRenderData.Indices.size()* static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
         .SetName(Name + " Index Buffer")

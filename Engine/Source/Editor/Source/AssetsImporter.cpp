@@ -392,7 +392,7 @@ namespace PC_EDITOR_CORE
         assert(!_Image->IsHdr());
 
         _Texture
-            .SetMemoryUsage(RhiMemoryUsage::Static)
+            .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetTextureUsage(PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferDst
                 | PC_CORE::RhiTexture::TextureUsageFlagBits::LoadAndStore | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferSrc)
             .SetTextureType(PC_CORE::RhiTexture::Type::Texture2D)

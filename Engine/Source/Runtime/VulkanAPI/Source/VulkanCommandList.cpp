@@ -443,8 +443,6 @@ void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
     
-    assert(_src.GetMemoryUsage() == PC_CORE::RhiResource::MemoryUsage::Dynamic && _src.GetMemoryUsage() == _dst.GetMemoryUsage()
-        && "This function only work for dynamic for now");
     
     const size_t frameIndex = m_Rhi.GetFrameIndex();
 

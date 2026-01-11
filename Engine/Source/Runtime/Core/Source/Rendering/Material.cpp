@@ -24,30 +24,33 @@ Material::~Material()
 
 void Material::Build()
 {
-    
-    if (auto text = m_Albedo.Lock())
+    PC_LOG_VERBOSE("Build Material Name {}", Name);
+
+    m_RhiMaterialBuffer.reset(App::Instance->RenderHarwareInteface.CreateBuffer());
+    m_RhiMaterialBuffer
+        ->SetMemoryUsage(RhiMemoryUsage::CPUVisible) // may use static
+        .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Dynamic)
+        .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
+        .SetSize(sizeof(Gpu::MaterialBuffer) * MaxFramesInFlight)
+        .SetObjectSize(sizeof(Gpu::MaterialBuffer))
+        .SetMaxObjectPerFrame(1)
+        .SetName(Name + " UniformBuffer")
+        .Build();
+
+    m_RhiDescriptorSets.reset(App::Instance->RenderHarwareInteface.CreateDescriptorSet());
+    m_RhiDescriptorSets->BindUniformBuffer(RhiShaderStageBits::Pixel, 0, m_RhiMaterialBuffer.get());
+
+    for (size_t i = 0; i < m_Textures.size(); i++)
     {
-        PC_LOG_VERBOSE("Build Material Name {}", Name);
-
-        TextureSampler.reset(App::Instance->RenderHarwareInteface.CreateSampler());
-        TextureSampler
-            ->SetMagFilter(Filter::Linear)
-            .SetMinFilter(Filter::Linear)
-            .SetU(SamplerAddressMode::Repeat)
-            .SetV(SamplerAddressMode::Repeat)
-            .SetW(SamplerAddressMode::Repeat)
-            .SetName("TextureSampler")
-            .Build();
-
-
-
-        m_RhiDescriptorSets.reset(App::Instance->RenderHarwareInteface.CreateDescriptorSet());
-        m_RhiDescriptorSets
-            ->BindTexture(RhiShaderStageBits::Pixel, 0, text->Get(), TextureSampler.get())
-            .SetName(Name + "DescriptorSet")
-            .Build();
+        if (auto tex = m_Textures[i].lock())
+        {
+            m_RhiDescriptorSets
+                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i), tex.get()->Get(), App::Instance->TextureSampler.get());
+        }
     }
 
+    m_RhiDescriptorSets->SetName(Name + "DescriptorSet")
+        .Build();
 }
 
 RhiDescriptorSet* Material::GetDescriptorSet()

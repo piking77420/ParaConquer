@@ -10,14 +10,10 @@ class RhiResource : public RhiObjectT<RhiResource>
 public:
     enum struct MemoryUsage : uint8_t
     {
-        None,
-        Static, // Not modified over its lifetime 1 handle for all frames and memory on GPU
-        Streamable, // a handle for each frames but memory on GPU
-        Dynamic, // a handle for each frames memory on CPU
-
-        Count // Total enum values
+        StaticGPU,        // GPU-only, immutable
+        CPUVisible,       // CPU-visible, persistently mapped
+        ReadbackCPU       // GPU → CPU
     };
-    REFLECT(MemoryUsage)
 
     enum struct State : uint8_t
     {
@@ -47,7 +43,6 @@ public:
         // Presentation
         Present,
     };
-    REFLECT(MemoryUsage)
 
     PC_CORE_API explicit RhiResource(Rhi& _Rhi);
 
@@ -55,32 +50,12 @@ public:
 
     DEFAULT_COPY_MOVE_OPERATIONS(RhiResource)
 
-    size_t GetNbrOfResourcePerFrameInFlight() const
-    {
-        return GetNbrOfHandle(m_MemoryUsage);
-    }
-
 protected:
     bool m_AllowCpuAcces = false;
 
-    static uint32_t GetNbrOfHandle(MemoryUsage _memoryUsage)
-    {
-        switch (_memoryUsage)
-        {
-        case MemoryUsage::None:
-        case MemoryUsage::Count:
-            assert(false);
-            return 0;
-        case MemoryUsage::Static:
-        case MemoryUsage::Streamable:
-            return 1;
-        case MemoryUsage::Dynamic:
-            return MaxFramesInFlight;
-        }
+    MemoryUsage m_MemoryUsage = {};
 
-        return static_cast<uint32_t>(-1);
-    }
-    MemoryUsage m_MemoryUsage = MemoryUsage::None;
+    uint32_t m_NbrOfBackendObject{ 0 };
 };
 
 template <typename T>
@@ -128,11 +103,11 @@ public:
         return m_AllowCpuAcces;
     }
 
-    size_t GetNbrOfInFlightResource() const
+    size_t GetNbrOfBackendObject() const
     {
-        return GetNbrOfHandle(m_MemoryUsage);
+        return m_NbrOfBackendObject;
     }
-
+     
 
 private:
 

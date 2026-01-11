@@ -159,8 +159,16 @@ std::vector<vk::DescriptorSetLayout> Vulkan::VulkanDescritptorManager::GetDescri
                 VkBinding.binding = SpvBinding.binding;
                 VkBinding.descriptorCount = SpvBinding.count;
 
+
                 static_assert((uint32_t)vk::DescriptorType::eAccelerationStructureKHR == (uint32_t)SpvReflectDescriptorType::SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR);
                 VkBinding.descriptorType = static_cast<vk::DescriptorType>(SpvBinding.descriptor_type);
+
+                if (VkBinding.descriptorType == vk::DescriptorType::eUniformBuffer || VkBinding.descriptorType == vk::DescriptorType::eStorageBuffer)
+                {
+                    const bool isDynamic = std::string(SpvBinding.name).find(PC_CORE::RhiBuffer::DynamicBufferKey) != std::string::npos;
+                    if (isDynamic)
+                        VkBinding.descriptorType = (VkBinding.descriptorType == vk::DescriptorType::eUniformBuffer) ? vk::DescriptorType::eUniformBufferDynamic : vk::DescriptorType::eStorageBufferDynamic;
+                }
                 
                 auto it = std::ranges::find_if(Binding, [&VkBinding](const vk::DescriptorSetLayoutBinding& DescriptorSetLayoutBinding)
                     {

@@ -11,27 +11,27 @@ namespace PC_CORE::Rendering
 
 namespace Gpu
 {
-    struct GPU_ALIGN mat4
+    struct mat4
     {
         std::array<float, 16> data;
     };
 
-    struct GPU_ALIGN mat3
+    struct mat3
     {
         std::array<float, 9> data;
     };
 
-    struct GPU_ALIGN vec4
+    struct vec4
     {
         std::array<float, 4> data;
     };
 
-    struct GPU_ALIGN vec3
+    struct vec3
     {
         std::array<float, 3> data;
     };
 
-    struct GPU_ALIGN vec2
+    struct vec2
     {
         std::array<float, 2> data;
     };
