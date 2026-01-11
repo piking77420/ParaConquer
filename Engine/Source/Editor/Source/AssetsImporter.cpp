@@ -1,19 +1,20 @@
 #include "AssetsImporter.hpp"
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 #include <filesystem>
 #include <string_view>
 
 #include "Rendering/Material.hpp"
 
-#include "Resources/FileLoader.hpp"
-#include "Resources/StaticMesh.hpp"
-#include "Resources/ResourceManager.hpp"
 #include "LowRenderer/Rhi.hpp"
+#include "Resources/FileLoader.hpp"
+#include "Resources/ResourceManager.hpp"
+#include "Resources/StaticMesh.hpp"
 #include "Serialize/Serializer.h"
+#include "Thread/ThreadPool.hpp"
 
 static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTextureType)
 {
@@ -86,7 +87,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 namespace PC_EDITOR_CORE
 {
 
-    bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path)
+    bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -119,7 +120,9 @@ namespace PC_EDITOR_CORE
         m_ImportObjectName = scene->mName.Empty() ? _path.filename().generic_string() : std::string(scene->mName.C_Str());
 
         {
-            if (!ImportTextures(_Rhi, scene))
+            std::vector<std::future<void>> futurs;
+
+            if (!ImportTextures(_Rhi, ThreadPool, &futurs, scene))
             {
                 PC_LOGERROR("Failed To Import Textures")
                     return false;
@@ -130,6 +133,12 @@ namespace PC_EDITOR_CORE
                 PC_LOGERROR("Failed To Import Mesh From Scene")
                     return false;
             }
+
+            for (auto& f : futurs)
+            {
+                f.wait();
+            }
+            futurs.clear();
 
         }
 
@@ -244,20 +253,24 @@ namespace PC_EDITOR_CORE
             }
         }
 
-        m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back()));
+        {
+            std::scoped_lock _(m_mutex);
+           m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back()));
+        }
         for (size_t i = 0; i < scene->mNumMeshes; i++)
         {
             std::string meshName = scene->mMeshes[i]->mName.Empty() ? std::string(scene->mMeshes[i]->mName.C_Str()) : std::format("SubMesh {}", i);
-
             m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName + " " + meshName, m_StaticMeshs[0], StaticMeshRenderData.SubMeshes[i]));
         }
+        
+      
 
 
 
         return true;
     }
 
-    bool AssetsImporter::ImportTextures(PC_CORE::Rhi& _Rhi, const aiScene* scene)
+    bool AssetsImporter::ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -270,25 +283,35 @@ namespace PC_EDITOR_CORE
                 const size_t TextureCount = mat->GetTextureCount(type);
                 for (size_t i = 0; i < TextureCount; i++)
                 {
+                    const aiTexture* aiTexture{ nullptr };
                     aiString str;
-                    if (mat->GetTexture(type, i, &str) != aiReturn::aiReturn_SUCCESS)
-                        continue;
+                    {
+                        std::scoped_lock _(m_mutex);
 
-                    if (m_TextureMaps.contains(str.C_Str()))
-                        continue;
-
-                    const aiTexture* aiTexture = scene->GetEmbeddedTexture(str.C_Str());
-                    std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>> pair;
+                        if (mat->GetTexture(type, i, &str) != aiReturn::aiReturn_SUCCESS)
+                            continue;
+                        
+                        if (m_TextureMaps.contains(str.C_Str()))
+                        {   
+                            continue;
+                        }
+                        m_TextureMaps.emplace(str.C_Str(), std::pair <aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>());
+                       aiTexture = scene->GetEmbeddedTexture(str.C_Str());
+                    }
+                    
+                    std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>> pair{};
 
                     if (aiTexture) // HandleEmbeded Texture
                     {
                         std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(_Rhi, str.C_Str(), *aiTexture));
                         PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
-
                         pair.first = type;
                         pair.second = texture2D;
-                        m_TextureMaps.emplace(str.C_Str(), std::move(pair));
+                        {
+                            std::scoped_lock _(m_mutex);
+                            m_TextureMaps[str.C_Str()] = std::move(pair);
+                        }
                     }
                     else // FROM PATH
                     {
@@ -305,27 +328,32 @@ namespace PC_EDITOR_CORE
 
                                 pair.first = type;
                                 pair.second = texture2D;
-                                m_TextureMaps.emplace(str.C_Str(), std::move(pair));
+
+                                {
+                                    std::scoped_lock _(m_mutex);
+                                    m_TextureMaps[str.C_Str()] = std::move(pair);
+                                }
                             }
 
                         }
                     }
                 }
 
-            };
+   };
 
 
         for (size_t i = 0; i < scene->mNumMaterials; i++)
         {
             if (scene->mMaterials[i] != nullptr)
+            {
                 for (size_t j = 0; j < static_cast<size_t>(AI_TEXTURE_TYPE_MAX); j++)
                 {
                     const aiTextureType type = static_cast<aiTextureType>(j);
 
-                   TextureFromType(scene->mMaterials[i], type);
+                    Futures->emplace_back(ThreadPool.Enqueue(TextureFromType, scene->mMaterials[i], type));
                 }
+            }    
         }
-
 
         return true;
     }
@@ -386,17 +414,20 @@ namespace PC_EDITOR_CORE
         _Texture.Build();
 
 
-
-        PC_CORE::RHI::ResourceUpdateBranch* updateBranch(&m_ResourceUpdateBranchs.emplace_back());
-        updateBranch
-            ->TextureUpload2D(_Texture,
-                _Image->Release(),
-                _Image->GetSizeInBytes(),
-                RhiResourceState::CopyDst)
-            .GenerateMipmap(
-                _Texture,
-                PC_CORE::Filter::Linear,
-                RhiResourceState::FragmentShaderResource);
+        {
+            std::scoped_lock _(m_mutex);
+            PC_CORE::RHI::ResourceUpdateBranch* updateBranch(&m_ResourceUpdateBranchs.emplace_back());
+            updateBranch
+                ->TextureUpload2D(_Texture,
+                    _Image->Release(),
+                    _Image->GetSizeInBytes(),
+                    RhiResourceState::CopyDst)
+                .GenerateMipmap(
+                    _Texture,
+                    PC_CORE::Filter::Linear,
+                    RhiResourceState::FragmentShaderResource);
+        }
+        
         
     }
     

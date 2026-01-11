@@ -134,10 +134,8 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
     PERF_REGION_COLOR(PerfRegion::Resource);
 
     assert(Editor::instance != nullptr);
-    Editor::instance->shaderCompiler.lock.lock();
     std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(
         Editor::instance->editorData.projectData.graphicApi, m_PathToSource);
-    Editor::instance->shaderCompiler.lock.unlock();
 
     if (code.empty())
         return false;

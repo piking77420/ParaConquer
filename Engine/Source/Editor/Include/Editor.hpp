@@ -130,6 +130,8 @@ BEGIN_EDITOR_PCCORE
         std::atomic<bool> m_HasFinish;
 
         std::unique_ptr<std::jthread> m_ImportThread;
+
+        std::vector<std::future<void>> m_FuturInits;
     };
 
     template <EditorCommandDerived T, typename... Args>

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <unordered_map>
-
+#include <future>
 
 #include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
@@ -20,6 +20,11 @@ namespace PC_CORE
     class Image;
 }
 
+namespace PC_CORE::Thread
+{
+    class ThreadPool;
+}
+
 namespace PC_CORE::Rendering
 {
     class Material;
@@ -33,7 +38,7 @@ BEGIN_EDITOR_PCCORE
     class AssetsImporter
     {
     public:
-        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path);
+        [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path);
 
         const std::string& GetName() const;
 
@@ -66,13 +71,15 @@ BEGIN_EDITOR_PCCORE
 
         std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
 
+        std::mutex m_mutex;
+
         ImportFormat m_ImportFormat;
 
         ImportFormat FindImportFormat(const std::filesystem::path& path);
 
         bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene);
 
-        bool ImportTextures(PC_CORE::Rhi& _Rhi, const aiScene* scene);
+        bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
 
         bool ImportMaterials(PC_CORE::Rhi& _Rhi, const aiScene* scene);
 

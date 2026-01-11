@@ -9,7 +9,7 @@
 
 #include "LowRenderer/Rhi.hpp"
 #include "Rendering/Renderer.hpp"
-
+#include "Thread/ThreadPool.hpp"
 
 BEGIN_PCCORE
     struct AppCreateInfo
@@ -24,6 +24,8 @@ BEGIN_PCCORE
     class App
     {
     public:
+        Thread::ThreadPool ThreadPool;
+
         CoreIo CoreIo;
 
         World World;
@@ -53,6 +55,7 @@ BEGIN_PCCORE
         PC_CORE_API static inline App* Instance = nullptr;
     protected:
         virtual void OnRender(PC_CORE::CommandList* _Cmd) = 0;
+
     };
 
 END_PCCORE
