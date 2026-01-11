@@ -126,24 +126,36 @@ void Editor::CompileShader()
 
     PC_LOG("CompileShader...")
 
-    {
-        auto drawQuadvertex = ResourceManager::Create<ShaderSource>("DrawQuadTriangle.vs.hlsl",
-            EDITOR_RESOURCE_PATH "/Shaders/DrawQuadTriangle.vs.hlsl");
+	{
+        auto task = []()->void {
+            ResourceManager::Create<ShaderSource>("DrawQuadTriangle.vs.hlsl",
+                EDITOR_RESOURCE_PATH "/Shaders/DrawQuadTriangle.vs.hlsl");
+            };
 
-        auto sampleSingleTexture = ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
-            EDITOR_RESOURCE_PATH
-            "/Shaders/SampleSingleTexture.ps.hlsl");
-    }
+		m_FuturInits.emplace_back(ThreadPool.Enqueue(task));
+        
+		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+			ResourceManager::Create<ShaderSource>("SampleSingleTexture.ps.hlsl",
+				EDITOR_RESOURCE_PATH
+				"/Shaders/SampleSingleTexture.ps.hlsl");
+			}));
+	}
 
-    {
+	{
 
-   
-    auto forwardVert = ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
-                                                             EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.vs.hlsl");
+        
+		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+			ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
+				EDITOR_RESOURCE_PATH
+				"/Shaders/Forward/Forward.vs.hlsl");
+			}));
 
-    auto forwardFrag = ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
-                                                             EDITOR_RESOURCE_PATH "/Shaders/Forward/Forward.ps.hlsl");
-    }
+		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+			ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
+				EDITOR_RESOURCE_PATH
+				"/Shaders/Forward/Forward.ps.hlsl");
+			}));
+	}
     /*
     // sprite
     {
@@ -228,6 +240,11 @@ void Editor::Init(const PC_CORE::AppCreateInfo& _appCreateInfo)
     IMGUIContext.Init(RenderHarwareInteface, MainWindow.GetHandle());
     InitTestScene();
     InitEditor();
+
+    for (auto& f : m_FuturInits)
+    {
+        f.wait();
+    }
 }
 
 void Editor::Destroy()
@@ -323,8 +340,8 @@ void Editor::InitTestScene()
     PC_LOG("InitTestScene...")
         
     m_ImportThread.reset(new std::jthread([&]() {
-        Utils::SetThreadName("m_ImportThread");
-        AssetsImporter.ImportModel(RenderHarwareInteface, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
+        Utils::SetThreadName("ImportThread");
+        AssetsImporter.ImportModel(RenderHarwareInteface, ThreadPool, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
         m_HasFinish.store(true, std::memory_order_release);
         }));
     
@@ -370,10 +387,6 @@ void Editor::DestroyTestScene()
 {
     if (std::holds_alternative<EntityId>(selectedObject))
         selectedObject = std::monostate();
-
-
-    //ResourceManager::Delete<Material>("material1");
-    //ResourceManager::Delete<Material>("material2");
 }
 
 void Editor::OnRender(PC_CORE::CommandList* _Cmd)
@@ -400,8 +413,8 @@ void Editor::Run(bool* _appShouldClose)
 
 
         IMGUIContext.NewFrame();
-        WorldTick(Time::DeltaTime());
         HandleAsyncTask();
+        WorldTick(Time::DeltaTime());
         UpdateEditor();
         RenderFrame();
         

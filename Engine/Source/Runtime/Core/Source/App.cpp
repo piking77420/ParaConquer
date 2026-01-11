@@ -46,6 +46,7 @@ void App::Destroy()
 
 App::App()
     : Renderer(RenderHarwareInteface)
+    , ThreadPool()
 {
     Instance = this;
 }

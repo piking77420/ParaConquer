@@ -63,7 +63,6 @@ StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMes
 {
     DYNAMIC_REFLECT_INIT
 
-        Rhi& rhi = App::Instance->RenderHarwareInteface;
 
     InitFromRenderData(_StaticMeshRenderData, _Branch);
 
@@ -120,10 +119,11 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
         .SetName(Name + " Index Buffer")
         .Build();
 
-
+    
     _Branch
         ->BufferUpload(*m_VertexBuffer.Get(), m_StaticMeshRenderData.Vertices.data(), m_VertexBuffer->GetSize())
         .BufferUpload(*m_IndexBuffer.Get(), m_StaticMeshRenderData.Indices.data(), m_IndexBuffer->GetSize());
+    
 }
 
 

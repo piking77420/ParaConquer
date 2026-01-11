@@ -10,7 +10,6 @@ BEGIN_EDITOR_PCCORE
     class ShaderCompiler
     {
     public:
-        std::mutex lock;
 
         std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::string& _filename);
 
@@ -19,6 +18,9 @@ BEGIN_EDITOR_PCCORE
         ShaderCompiler();
 
         ~ShaderCompiler();
+
+    private:
+        std::mutex lock;
     };
 
 END_EDITOR_PCCORE

@@ -20,9 +20,12 @@ using namespace PC_EDITOR_CORE;
 
 constexpr auto INCLUDE_PATH = EDITOR_RESOURCE_PATH_W L"/Shaders/Include/";
 
-static ComPtr<IDxcLibrary> library;
-static ComPtr<IDxcCompiler3> compiler;
-static ComPtr<IDxcUtils> utils;
+struct DXCContext
+{
+    ComPtr<IDxcLibrary> library;
+    ComPtr<IDxcCompiler3> compiler;
+    ComPtr<IDxcUtils> utils;
+};
 
 // TODO to regular code
 const std::array<std::pair<std::wstring, std::wstring>, 14> ShaderFormats =
@@ -49,6 +52,46 @@ const std::array<std::pair<std::wstring, std::wstring>, 14> ShaderFormats =
     }
 };
 
+static DXCContext& GetContext()
+{
+    static thread_local DXCContext Context;
+
+    HRESULT hres;
+
+    if (!Context.library)
+    {
+        CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+        hres = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&Context.library));
+        if (FAILED(hres))
+        {
+            PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
+            exit(-1);
+        }
+    }
+   
+    if (!Context.compiler)
+    {
+        hres = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&Context.compiler));
+        if (FAILED(hres))
+        {
+            PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
+            exit(-1);
+        }
+    }
+    if (!Context.utils)
+    {
+        hres = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&Context.utils));
+        if (FAILED(hres))
+        {
+            PC_LOGERROR("Failed to create CLSID_DxcUtils error = {}", hres);
+            exit(-1);
+        }
+    }
+
+    return Context;
+}
+
 // Thanks to https://simoncoenen.com/blog/programming/graphics/DxcCompiling
 class CustomIncludeHandler : public IDxcIncludeHandler
 {
@@ -62,12 +105,12 @@ public:
         {
             // Return empty string blob if this file has been included before
             static constexpr char nullStr[] = " ";
-            utils->CreateBlobFromPinned(nullStr, ARRAYSIZE(nullStr), DXC_CP_ACP, pEncoding.GetAddressOf());
+            GetContext().utils->CreateBlobFromPinned(nullStr, ARRAYSIZE(nullStr), DXC_CP_ACP, pEncoding.GetAddressOf());
             *ppIncludeSource = pEncoding.Detach();
             return S_OK;
         }
 
-        HRESULT hr = utils->LoadFile(pFilename, nullptr, pEncoding.GetAddressOf());
+        HRESULT hr = GetContext().utils->LoadFile(pFilename, nullptr, pEncoding.GetAddressOf());
         if (SUCCEEDED(hr))
         {
             IncludedFiles.insert(path);
@@ -102,7 +145,7 @@ static const wchar_t* GetTargetProfile(const std::wstring_view& _fileFormat)
 }
 
 static bool GetExtension(const wchar_t* _file, wchar_t* _buffer, size_t _bufferSize,
-                         size_t _extensionBegin, size_t _extensionSize)
+    size_t _extensionBegin, size_t _extensionSize)
 {
     if (_extensionSize >= _bufferSize) // buffer overflow
         return false;
@@ -122,7 +165,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
 
     uint32_t codePage = DXC_CP_ACP;
     ComPtr<IDxcBlobEncoding> sourceBlob;
-    hres = utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
+    hres = GetContext().utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
     if (FAILED(hres) || !sourceBlob) // V�rifie que le blob est valide
     {
         PC_LOGERROR("Failed to load file FromDisk = {}", hres);
@@ -180,7 +223,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
 
     CustomIncludeHandler includer;
     ComPtr<IDxcResult> result;
-    hres = compiler->Compile(
+    hres = GetContext().compiler->Compile(
         &buffer,
         arguments.data(),
         static_cast<uint32_t>(arguments.size()),
@@ -244,32 +287,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
 
 ShaderCompiler::ShaderCompiler()
 {
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::EditorResource);
-    PC_LOG("Init ShadersCompiler")
-
-    HRESULT hres;
-
-    hres = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&library));
-    if (FAILED(hres))
-    {
-        PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
-        exit(-1);
-    }
-
-    hres = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-    if (FAILED(hres))
-    {
-        PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
-        exit(-1);
-    }
-
-    hres = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
-    if (FAILED(hres))
-    {
-        PC_LOGERROR("Failed to create CLSID_DxcUtils error = {}", hres);
-        exit(-1);
-    }
+    
 }
 
 ShaderCompiler::~ShaderCompiler()

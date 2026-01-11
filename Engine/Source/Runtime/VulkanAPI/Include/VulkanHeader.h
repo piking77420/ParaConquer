@@ -144,10 +144,7 @@ namespace Vulkan
     {
         if (_x != vk::Result::eSuccess)
         {
-            PC_CORE::Log::Error("**Vulkan Function Call Error** Description : {}",
-                                ErrorDescriptions[static_cast<VkResult>(_x)]);
-            PC_CORE::Log::PrintMetaData(_lign, _func, _file);
-
+            PC_LOGERROR("**Vulkan Function Call Error** Description : {}", ErrorDescriptions[static_cast<VkResult>(_x)])
             return true;
         }
         return false;

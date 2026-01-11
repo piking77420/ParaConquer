@@ -5,6 +5,7 @@
 #include <String>
 #include <Format>
 #include <Ranges>
+#include <mutex>
 
 #include "CoreHeader.hpp"
 
@@ -36,51 +37,61 @@ static inline const char* ExtractFileName(const char* _path)
 
 
 #define PC_LOG(unformatted, ...) \
-PC_CORE::Log::Debug(unformatted, ##__VA_ARGS__);\
-PC_CORE::Log::PrintMetaData(__LINE__, FUNCTION_NAME, FILENAME);
+PC_CORE::Log::Debug(__LINE__, FUNCTION_NAME, FILENAME, unformatted, ##__VA_ARGS__);\
+
 #define PC_LOG_VERBOSE(unformatted, ...) \
-PC_CORE::Log::Verbose(unformatted, ##__VA_ARGS__);\
-PC_CORE::Log::PrintMetaData(__LINE__, FUNCTION_NAME, FILENAME);
+PC_CORE::Log::Verbose(__LINE__, FUNCTION_NAME, FILENAME, unformatted, ##__VA_ARGS__);\
+
 #define PC_LOGERROR(unformatted, ...) \
-PC_CORE::Log::Error(unformatted, ##__VA_ARGS__);\
-PC_CORE::Log::PrintMetaData(__LINE__, FUNCTION_NAME, FILENAME);
+PC_CORE::Log::Error(__LINE__, FUNCTION_NAME, FILENAME, unformatted, ##__VA_ARGS__);\
+
 #define PC_LOGCRITICAL(unformatted, ...) \
-PC_CORE::Log::Critical(unformatted, ##__VA_ARGS__);\
-PC_CORE::Log::PrintMetaData(__LINE__, FUNCTION_NAME, FILENAME);
+PC_CORE::Log::Critical(__LINE__, FUNCTION_NAME, FILENAME, unformatted, ##__VA_ARGS__);\
 
 BEGIN_PCCORE
     class Log
     {
     public:
         template <typename... Args>
-        static void Debug(const std::string& unformatted, Args&&... args)
+        static void Debug(int _lign, const char* _func, const char* _file, const std::string& unformatted, Args&&... args)
         {
+            std::scoped_lock _(m_lock);
+
             std::cout << ANSI_COLOR_RESET;
             PrintFormat(unformatted, std::forward<Args>(args)...);
+            PrintMetaData(_lign, _func, _file);
         }
 
         template <typename... Args>
-        static void Verbose(const std::string& unformatted, Args&&... args)
+        static void Verbose(int _lign, const char* _func, const char* _file, const std::string& unformatted, Args&&... args)
         {
+            std::scoped_lock _(m_lock);
+
             std::cout << ANSI_COLOR_DARK_GRAY;
             PrintFormat(unformatted, std::forward<Args>(args)...);
+            PrintMetaData(_lign,_func,_file);
         }
 
         template <typename... Args>
-        static void Error(const std::string& unformatted, Args&&... args)
+        static void Error(int _lign, const char* _func, const char* _file, const std::string& unformatted, Args&&... args)
         {
+            std::scoped_lock _(m_lock);
+
             std::cout << ANSI_COLOR_ORANGE;
             PrintFormat(unformatted, std::forward<Args>(args)...);
+            PrintMetaData(_lign,_func,_file);
         }
 
         template <typename... Args>
-        static void Critical(const std::string& unformatted, Args&&... args)
+        static void Critical(int _lign, const char* _func, const char* _file, const std::string& unformatted, Args&&... args)
         {
+            std::scoped_lock _(m_lock);
+
             std::cout << ANSI_COLOR_RED;
             PrintFormat(unformatted, std::forward<Args>(args)...);
+            PrintMetaData(_lign, _func, _file);
         }
 
-        PC_CORE_API static void PrintMetaData(int _lign, const char* _func, const char* _file);
 
     private:
         template <typename... Args>
@@ -88,6 +99,10 @@ BEGIN_PCCORE
         {
             std::cout << std::vformat(unformatted, std::make_format_args(args...)) << '\n';
         }
+
+        PC_CORE_API static void PrintMetaData(int _lign, const char* _func, const char* _file);
+
+        static inline std::mutex m_lock;
     };
 
 END_PCCORE
