@@ -14,44 +14,60 @@ static constexpr bool CreateBasicsResource = true;
 
 #define RESSOURCE_MAP_FILE "ParaConquerResource.res"
 
-
-void ResourceManager::InitPath()
+ResourceManager::ResourceManager()
 {
-    PERF_REGION_SCOPED;
+    assert(m_ResourceManager == nullptr);
+    m_ResourceManager = this;
+}
+
+ResourceManager::~ResourceManager()
+{
+
 }
 
 void ResourceManager::Destroy()
 {
-    std::scoped_lock _(Instance().m_lock);
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
 
-    for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); ++it)
+    for (auto it = instance.m_NameToGuid.begin(); it != instance.m_NameToGuid.end(); ++it)
     {
-        Instance().m_ResourcesMap[it->second];
-        if (Instance().m_ResourcesMap[it->second].use_count() > 1)
+        instance.m_ResourcesMap[it->second];
+        if (instance.m_ResourcesMap[it->second].use_count() > 1)
         {
             PC_LOGERROR(
-                "There is a remaining reference before destroyed by the resource manager " + Instance().m_ResourcesMap[
+                "There is a remaining reference before destroyed by the resource manager " + instance.m_ResourcesMap[
                     it->second]->Name);
         }
-        Instance().m_ResourcesMap[it->second].reset();
-        Instance().m_ResourcesMap[it->second] = nullptr;
+        instance.m_ResourcesMap[it->second].reset();
+        instance.m_ResourcesMap[it->second] = nullptr;
     }
-    Instance().m_NameToGuid.clear();
+    instance.m_NameToGuid.clear();
 }
 
 const std::string& ResourceManager::GetName(const Guid& _guid)
 {
-    return Instance().m_ResourcesMap.at(_guid)->Name;
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
+
+    return instance.m_ResourcesMap.at(_guid)->Name;
 }
 
 bool ResourceManager::Exist(const std::string& _name)
 {
-    return Instance().m_NameToGuid.contains(_name);
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
+
+    return instance.m_NameToGuid.contains(_name);
 }
 
 bool ResourceManager::Exist(const Guid& _guid)
 {
-    return Instance().m_ResourcesMap.contains(_guid);
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
+
+
+    return instance.m_ResourcesMap.contains(_guid);
 }
 
 void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::shared_ptr<Resource>)>& _lamba)
@@ -72,18 +88,26 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
 
 size_t ResourceManager::GetResourceCount()
 {
-    std::scoped_lock _(Instance().m_lock);
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
 
-    return Instance().m_ResourcesMap.size();
+    return instance.m_ResourcesMap.size();
+}
+
+ResourceManager& ResourceManager::Instance()
+{
+    return *m_ResourceManager;
 }
 
 
 bool ResourceManager::Add(const ObjectPtr<Resource>& _object)
 {
-    std::scoped_lock _(Instance().m_lock);
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
 
-    auto& resourcesMap = Instance().m_ResourcesMap;
-    auto& nameToGuid = Instance().m_NameToGuid;
+
+    auto& resourcesMap = instance.m_ResourcesMap;
+    auto& nameToGuid = instance.m_NameToGuid;
 
     if (const bool guidExist = resourcesMap.contains(_object->GetGuid()))
     {

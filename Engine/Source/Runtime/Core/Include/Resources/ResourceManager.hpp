@@ -12,10 +12,12 @@
 #include "Resource.hpp"
 
 BEGIN_PCCORE
-    class PC_CORE_API ResourceManager : public Singleton<ResourceManager>
+    class PC_CORE_API ResourceManager
     {
     public:
-        static void InitPath();
+        ResourceManager();
+
+        ~ResourceManager();
 
         static void Destroy();
 
@@ -53,6 +55,9 @@ BEGIN_PCCORE
         static size_t GetResourceCount();
 
     private:
+        static inline ResourceManager* m_ResourceManager = nullptr;
+
+        static ResourceManager& Instance();
 
         // TODO USE FLAT MAP
         std::unordered_map<Guid, ObjectPtr<Resource>> m_ResourcesMap;
@@ -82,12 +87,13 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     ObjectPtr<ResourceDerived> ResourceManager::Get(const std::string& _name)
     {
-        std::scoped_lock _(Instance().m_lock);
+        auto& instance = Instance();
+        std::scoped_lock _(instance.m_lock);
 
-        auto it = Instance().m_NameToGuid.find(_name);
-        if (it != Instance().m_NameToGuid.end())
+        auto it = instance.m_NameToGuid.find(_name);
+        if (it != instance.m_NameToGuid.end())
         {
-            auto r = Instance().m_ResourcesMap.at(it->second);
+            auto r = instance.m_ResourcesMap.at(it->second);
             assert(r->GetGuid() == it->second);
             assert(r->Name == _name);
             assert(std::dynamic_pointer_cast<ResourceDerived>(r) != nullptr);
@@ -103,19 +109,22 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     ObjectPtr<ResourceDerived> ResourceManager::Get(const Guid& _guid)
     {
-        assert(Instance().m_ResourcesMap.contains(_guid));
-        std::scoped_lock _(Instance().m_lock);
+        auto& instance = Instance();
+        std::scoped_lock _(instance.m_lock);
 
-        return Instance().m_ResourcesMap.at(_guid);
+        assert(instance.m_ResourcesMap.contains(_guid));
+
+        return instance.m_ResourcesMap.at(_guid);
     }
 
     template <class ResourceDerived>
     bool ResourceManager::TryGetAs(const Guid& _guid, ObjectPtr<ResourceDerived>* _outPtr)
     {
-        std::scoped_lock _(Instance().m_lock);
+        auto& instance = Instance();
+        std::scoped_lock _(instance.m_lock);
 
-        auto it = Instance().m_ResourcesMap.find(_guid);
-        if (it == Instance().m_ResourcesMap.end())
+        auto it = instance.m_ResourcesMap.find(_guid);
+        if (it == instance.m_ResourcesMap.end())
         {
             PC_LOGERROR("Cant find resource")
             return false;
@@ -133,9 +142,10 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     ObjectPtr<ResourceDerived> ResourceManager::Get()
     {
-        std::scoped_lock _(Instance().m_lock);
+        auto& instance = Instance();
+        std::scoped_lock _(instance.m_lock);
 
-        for (auto it = Instance().m_ResourcesMap.begin(); it != Instance().m_ResourcesMap.end(); ++it)
+        for (auto it = instance.m_ResourcesMap.begin(); it != instance.m_ResourcesMap.end(); ++it)
         {
             return std::dynamic_pointer_cast<ResourceDerived>(it->second);
         }
@@ -148,18 +158,19 @@ BEGIN_PCCORE
     template <class ResourceDerived>
     bool ResourceManager::Delete(const std::string& _name)
     {
-        std::scoped_lock _(Instance().m_lock);
+        auto& instance = Instance();
+        std::scoped_lock _(instance.m_lock);
 
-        auto itGuid = Instance().m_NameToGuid.find(_name);
-        if (itGuid == Instance().m_NameToGuid.end())
+        auto itGuid = instance.m_NameToGuid.find(_name);
+        if (itGuid == instance.m_NameToGuid.end())
         {
             PC_LOGERROR("There is no m_NameToGuid map {}", _name);
             return false;
         }
 
-        auto it = Instance().m_ResourcesMap.find(itGuid->second);
+        auto it = instance.m_ResourcesMap.find(itGuid->second);
 
-        if (it == Instance().m_ResourcesMap.end())
+        if (it == instance.m_ResourcesMap.end())
         {
             PC_LOGERROR("There is no m_ResourcesMap map {}", _name);
             return false;
@@ -168,7 +179,7 @@ BEGIN_PCCORE
 
         PC_LOG("Erase resource name as {}", it->second->Name);
         it->second.reset();
-        Instance().m_ResourcesMap.erase(it);
+        instance.m_ResourcesMap.erase(it);
 
         return true;
     }
@@ -178,8 +189,9 @@ BEGIN_PCCORE
     {
         const TypeId typeId = Reflector::GetTypeKey<ResourceDerived>();
 
-        std::scoped_lock _(Instance().m_lock);
-        for (auto it = Instance().m_NameToGuid.begin(); it != Instance().m_NameToGuid.end(); ++it)
+        auto& instance = Instance();
+        std::scoped_lock _(instance.m_lock);
+        for (auto it = instance.m_NameToGuid.begin(); it != instance.m_NameToGuid.end(); ++it)
         {
             const ResourceDerived* interface = reinterpret_cast<ResourceDerived*>(it->second);
 

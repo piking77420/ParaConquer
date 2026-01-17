@@ -10,6 +10,7 @@
 #include "LowRenderer/Rhi.hpp"
 #include "Rendering/Renderer.hpp"
 #include "Thread/ThreadPool.hpp"
+#include "Resources/ResourceManager.hpp"
 
 BEGIN_PCCORE
     struct AppCreateInfo
@@ -25,6 +26,8 @@ BEGIN_PCCORE
     {
     public:
         Thread::ThreadPool ThreadPool;
+
+        ResourceManager ResourceManager;
 
         CoreIo CoreIo;
 
