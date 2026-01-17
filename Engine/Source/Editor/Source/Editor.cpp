@@ -351,9 +351,10 @@ void Editor::InitTestScene()
 
             PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
 
+            material->SetAlbedoTexture(AssetsImporter.GetTextures().at("5792855332885324923.jpg").second.Lock());
+
             material->Build();
 
-            assert(false && "Fill material");
 
             EntityId Cube = level.CreateEntity("Cube");
             level.AddComponent<Transform>(Cube);

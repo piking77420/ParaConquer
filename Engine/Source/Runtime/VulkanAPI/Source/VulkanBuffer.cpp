@@ -98,13 +98,15 @@ bool Vulkan::VulkanBuffer::Build()
     case PC_CORE::RhiBuffer::PerFrameBuffers:
         if (m_MemoryUsage == MemoryUsage::StaticGPU)
             bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
+        bufferCreate.size = m_SizeInByte;
         break;
     case PC_CORE::RhiBuffer::StagedUpload:
         bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
+        bufferCreate.size = m_SizeInByte;
         break;
     case PC_CORE::RhiBuffer::Readback:
         bufferCreate.usage |= vk::BufferUsageFlagBits::eTransferDst;
-
+        bufferCreate.size = m_SizeInByte;
         break;
     default:
         break;
@@ -117,6 +119,8 @@ bool Vulkan::VulkanBuffer::Build()
 
     auto& context = GET_VK_CONTEXT;
     std::scoped_lock _(context.lock);
+
+
     auto instance = context.GetInstance();
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
     for (size_t i = 0; i < nbrOfHandle; i++)
@@ -139,8 +143,6 @@ bool Vulkan::VulkanBuffer::Build()
 
     if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
     {
-        std::scoped_lock _(context.lock);
-
         for (size_t i = 0; i < m_CurrentFrameMappedData.size(); i++)
         {
             VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,

@@ -47,6 +47,10 @@ BEGIN_EDITOR_PCCORE
             return m_StaticMeshs;
         }
 
+        const std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>>& GetTextures() const
+        {
+            return m_TextureMaps;
+        }
 
     private:
         enum class ImportFormat

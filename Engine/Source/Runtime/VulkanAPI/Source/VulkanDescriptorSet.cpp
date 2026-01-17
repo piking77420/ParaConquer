@@ -161,7 +161,7 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
 
                 bufferInfo[bufferIndex].buffer = bufferAndAlloc->buffer;
                 bufferInfo[bufferIndex].offset = 0;
-                bufferInfo[bufferIndex].range = VkBuffer.GetBufferBackingStrategy() == PC_CORE::RhiBuffer::BufferBackingStrategy::CpuVisibleRing ? VK_WHOLE_SIZE : VkBuffer.GetObjectSize();
+                bufferInfo[bufferIndex].range = VkBuffer.GetBufferBackingStrategy() != PC_CORE::RhiBuffer::BufferBackingStrategy::CpuVisibleRing ? VK_WHOLE_SIZE : VkBuffer.GetObjectSize();
                 bufferIndex++;
             }
 
@@ -235,7 +235,9 @@ void Vulkan::VulkanDescriptorSet::FillDescritptorWrite(std::span<vk::WriteDescri
             switch (CurrentBinding.type)
             {
             case PC_CORE::DescriptorType::UniformBuffer:
-            case PC_CORE::DescriptorType::StorageBuffer:;
+            case PC_CORE::DescriptorType::StorageBuffer:
+            case PC_CORE::DescriptorType::DynamicUniformBuffer:
+            case PC_CORE::DescriptorType::DynamicStorageBuffer:
                 _WriteDescriptorSetSpan[descriptorWriteIndex].pBufferInfo = &bufferInfo[bufferIndex++];
                 break;
             case PC_CORE::DescriptorType::CombinedImageSampler:

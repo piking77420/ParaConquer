@@ -61,10 +61,10 @@ file(RELATIVE_PATH REL_PATH_FROM_TARGET "${CMAKE_CURRENT_LIST_FILE}" "${CMAKE_SO
 
 ## TODO
 target_compile_definitions(${PROJECT_NAME}
-    PRIVATE EDITOR_RESOURCE_PATH="${REL_PATH_FROM_TARGET}Engine/Source/Editor/EditorResource"
+    PRIVATE EDITOR_RESOURCE_PATH="${REL_PATH_FROM_TARGET}../../Engine/Source/Editor/EditorResource"
 )
 target_compile_definitions(${PROJECT_NAME}
-    PRIVATE EDITOR_RESOURCE_PATH_W=L"${REL_PATH_FROM_TARGET}Engine/Source/Editor/EditorResource"
+    PRIVATE EDITOR_RESOURCE_PATH_W=L"${REL_PATH_FROM_TARGET}../../Engine/Source/Editor/EditorResource"
 )
 
 

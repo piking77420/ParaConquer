@@ -53,7 +53,7 @@ BEGIN_PCCORE
         {
             if (instance_ == nullptr)
             {
-                instance_ = std::unique_ptr<_class_>(new _class_);
+                instance_ = std::move(std::unique_ptr<_class_>(new _class_));
             }
 
             return *instance_;

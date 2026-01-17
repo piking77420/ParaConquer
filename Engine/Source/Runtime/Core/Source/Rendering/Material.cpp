@@ -25,7 +25,7 @@ Material::~Material()
 void Material::Build()
 {
     PC_LOG_VERBOSE("Build Material Name {}", Name);
-
+    /*
     m_RhiMaterialBuffer.reset(App::Instance->RenderHarwareInteface.CreateBuffer());
     m_RhiMaterialBuffer
         ->SetMemoryUsage(RhiMemoryUsage::CPUVisible) // may use static
@@ -35,19 +35,21 @@ void Material::Build()
         .SetObjectSize(sizeof(Gpu::MaterialBuffer))
         .SetMaxObjectPerFrame(1)
         .SetName(Name + " UniformBuffer")
-        .Build();
+        .Build();*/
 
     m_RhiDescriptorSets.reset(App::Instance->RenderHarwareInteface.CreateDescriptorSet());
-    m_RhiDescriptorSets->BindUniformBuffer(RhiShaderStageBits::Pixel, 0, m_RhiMaterialBuffer.get());
+    //m_RhiDescriptorSets->BindUniformBuffer(RhiShaderStageBits::Pixel, 0, m_RhiMaterialBuffer.get());
+    m_RhiDescriptorSets
+        ->BindTexture(RhiShaderStageBits::Pixel, 0, m_Textures[0].Lock()->Get(), App::Instance->TextureSampler.get());
 
-    for (size_t i = 0; i < m_Textures.size(); i++)
+    /*for (size_t i = 0; i < m_Textures.size(); i++)
     {
         if (auto tex = m_Textures[i].lock())
         {
             m_RhiDescriptorSets
                 ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i), tex.get()->Get(), App::Instance->TextureSampler.get());
         }
-    }
+    }*/
 
     m_RhiDescriptorSets->SetName(Name + "DescriptorSet")
         .Build();

@@ -113,8 +113,6 @@ namespace PC_CORE::Rendering::Pass
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
 			cmd.PushConstant(*_RendererPassExecuteContext.Renderer.fowardShader, "pushConstant", &PushConstant, sizeof(ModelPushConstant));
 
-			
-
 			if (mesh.IsSharedMesh())
 			{
 				cmd.BindVertexBuffer(*mesh.GetVertexBuffer(), 0, 1);
