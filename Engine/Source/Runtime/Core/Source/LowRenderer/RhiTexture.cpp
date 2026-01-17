@@ -14,20 +14,7 @@ bool PC_CORE::RhiTexture::Build()
     case PC_CORE::RhiResource::MemoryUsage::StaticGPU:
 
     {
-        constexpr auto GPU_WRITE_USAGE =
-            RhiTexture::TextureUsageFlagBits::RenderTarget |
-            RhiTexture::TextureUsageFlagBits::DepthStencil;
-
-        // if only just a texture that is read only then i need only one vkimage use across all frames
-        if (m_TextureUsage & (GPU_WRITE_USAGE))
-        {
-            m_NbrOfBackendObject = MaxFramesInFlight;
-        }
-        else
-        {
-            m_NbrOfBackendObject = 1;
-        }
-
+        m_NbrOfBackendObject = 1;
     }
         break;
     case PC_CORE::RhiResource::MemoryUsage::CPUVisible:

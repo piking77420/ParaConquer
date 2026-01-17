@@ -37,9 +37,6 @@ bool Vulkan::VulkanTexture::Build()
         PC_LOGERROR("VulkanTexture::Create() nbrOfObjectHandle = 0");
         return false;
     }
-    m_Handles.resize(nbrOfObjectHandle);
-    if (m_MemoryUsage != MemoryUsage::CPUVisible)
-        m_StagingBuffers.resize(m_Handles.size());
 
     VkImageAspectFlags = Utils::RhiTextureFormatToImageAspectFlagFlags(GetRhiFormat());
     VkFormat = Utils::RhiFormatToVkFormat(GetRhiFormat());
@@ -74,13 +71,13 @@ bool Vulkan::VulkanTexture::Build()
         VmaAllocationInfo VmaAllocationInfo;
         VmaAllocationInfo.pName = GetName().data();
         VK_CALL(static_cast<vk::Result>(vmaCreateImage(context.allocator, reinterpret_cast<VkImageCreateInfo*>(&imageInfo), &allocInfo, 
-            reinterpret_cast<VkImage*>(&m_Handles[i].Image), &m_Handles[i].Allocation, &VmaAllocationInfo)));
+            reinterpret_cast<VkImage*>(&m_Handle.Image), &m_Handle.Allocation, &VmaAllocationInfo)));
         
         vk::DebugUtilsObjectNameInfoEXT nameInfoImage;
         nameInfoImage.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
         nameInfoImage .pNext = nullptr;
         nameInfoImage.objectType = vk::ObjectType::eImage;
-        nameInfoImage.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkImage>(m_Handles[i].Image));
+        nameInfoImage.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkImage>(m_Handle.Image));
         nameInfoImage.pObjectName = GetName().data();
         
         
@@ -88,7 +85,7 @@ bool Vulkan::VulkanTexture::Build()
         
         vk::ImageViewCreateInfo imageviewInfo{};
         imageviewInfo.sType = vk::StructureType::eImageViewCreateInfo;
-        imageviewInfo.image = m_Handles[i].Image;
+        imageviewInfo.image = m_Handle.Image;
         imageviewInfo.viewType = Utils::RhiImageToVkImageViewType(GetTextureType());
         imageviewInfo.format = imageInfo.format;
         imageviewInfo.subresourceRange.aspectMask = VkImageAspectFlags;
@@ -97,13 +94,13 @@ bool Vulkan::VulkanTexture::Build()
         imageviewInfo.subresourceRange.levelCount = GetLevel();
         imageviewInfo.subresourceRange.layerCount = GetLayer();
         
-        VK_CALL(device.createImageView(&imageviewInfo, nullptr, &m_Handles[i].ImageView));
+        VK_CALL(device.createImageView(&imageviewInfo, nullptr, &m_Handle.ImageView));
         
         vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
         nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
         nameInfoImageView.pNext = nullptr;
         nameInfoImageView.objectType = vk::ObjectType::eImageView;
-        nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkImageView>(m_Handles[i].ImageView));
+        nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkImageView>(m_Handle.ImageView));
         nameInfoImageView.pObjectName = GetName().data();
         
         SET_VK_DEBUG_NAME(nameInfoImageView); 
@@ -127,7 +124,7 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     const size_t FrameIndex = m_Rhi.GetFrameIndex();
     auto& context = GET_VK_CONTEXT;
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
-    auto& StagingBufferFrame = *GetVkStagingBuffer(FrameIndex);
+    auto& StagingBufferFrame = m_StagingBuffer;
 
     if (StagingBufferFrame.buffer != VK_NULL_HANDLE)
     {
@@ -144,10 +141,8 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
 
     GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
 
-    TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
-
     VmaAllocationInfo allocInfo;
-    vmaGetAllocationInfo(context.allocator, handle.Allocation, &allocInfo);
+    vmaGetAllocationInfo(context.allocator, m_Handle.Allocation, &allocInfo);
 
     VkDeviceSize size = allocInfo.size;
 
@@ -172,7 +167,7 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
 
     cmb.copyBufferToImage(
             StagingBufferFrame.buffer,
-            handle.Image,
+            m_Handle.Image,
             vk::ImageLayout::eTransferDstOptimal,
             region
         );    
@@ -225,9 +220,9 @@ void Vulkan::VulkanTexture::UploadDataLayer(PC_CORE::CommandList* commandList, c
 
     vk::CommandBuffer commandBuffer = BeginSingleTimeCommand(singleCommandBeginInfo);
 
-    for (size_t i = 0; i < m_Handles.size(); i++)
+    for (size_t i = 0; i < m_Handle.size(); i++)
     {
-        TextureAndAlloc& handle = m_Handles[i];
+        TextureAndAlloc& handle = m_Handle[i];
 
         const vk::ImageLayout current = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
 
@@ -308,19 +303,18 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, P
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
     const size_t FrameIndex = m_Rhi.GetFrameIndex();
     GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
-    TextureAndAlloc& handle = *GetTextureAndAlloc(FrameIndex);
 
 
-    const vk::ImageLayout OldImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(handle.resourceState);
-    const vk::AccessFlags Oldflag = Vulkan::Utils::RhiResourceStateToAccesFlag(handle.resourceState);
-    const vk::PipelineStageFlags OldDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(handle.resourceState);
+    const vk::ImageLayout OldImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(m_ResourceState);
+    const vk::AccessFlags Oldflag = Vulkan::Utils::RhiResourceStateToAccesFlag(m_ResourceState);
+    const vk::PipelineStageFlags OldDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(m_ResourceState);
 
     const vk::ImageLayout NewImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(_StateAfterOperation);
     const vk::AccessFlags Newflag = Vulkan::Utils::RhiResourceStateToAccesFlag(_StateAfterOperation);
     const vk::PipelineStageFlags NewDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_StateAfterOperation);
 
     Utils::GenerateMipMapFunc(cmb,
-                                handle.Image,
+                                m_Handle.Image,
                                 Utils::RhiToVulkanFilter(_Filter),
                                 // CURRENT
                                 Oldflag,
@@ -337,41 +331,19 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, P
                                 m_Level, 
                                 VkImageAspectFlags);
 
-    handle.resourceState = _StateAfterOperation; // Update State
+    m_ResourceState = _StateAfterOperation;
 
     return true;
 }
 
-RhiResourceState Vulkan::VulkanTexture::GetResourceState() const
+const Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc() const
 {
-    const TextureAndAlloc* ptr = GetTextureAndAlloc(m_Rhi.GetFrameIndex());
-
-    return ptr->resourceState;
+    return &m_Handle;
 }
 
-const Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc(size_t _frameIndex) const
+Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc()
 {
-    if (m_Handles.empty())
-    {
-        PC_LOGERROR("VulkanTexture::GetFrameNativeHandle() m_Handles.empty()");
-        return nullptr;
-    }
-    
-    const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
-    return &m_Handles[handleIndex];
-}
-
-Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc(size_t _frameIndex)
-{
-    if (m_Handles.empty())
-    {
-        PC_LOGERROR("VulkanTexture::GetFrameNativeHandle() m_Handles.empty()");
-        return nullptr;
-    }
-    
-    const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
-
-    return &m_Handles[handleIndex];
+    return &m_Handle;
 }
 
 
@@ -379,35 +351,8 @@ Vulkan::VulkanTexture::~VulkanTexture()
 {
     auto& context = GET_VK_CONTEXT;
 
-    for (auto& handle : m_StagingBuffers)
-        VulkanBuffer::FreeAlloc(context, handle);
-
-    for (auto& handle : m_Handles)
-        FreeAlloc(handle);
-}
-
-const Vulkan::BufferAndAlloc* Vulkan::VulkanTexture::GetVkStagingBuffer(size_t _frameIndex) const
-{
-    if (m_StagingBuffers.empty())
-    {
-        PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_StagingBuffer.empty()");
-        return nullptr;
-    }
-
-    const size_t handleIndex = std::min(m_StagingBuffers.size() - 1, _frameIndex);
-    return &m_StagingBuffers[handleIndex];
-}
-
-Vulkan::BufferAndAlloc* Vulkan::VulkanTexture::GetVkStagingBuffer(size_t _frameIndex)
-{
-    if (m_StagingBuffers.empty())
-    {
-        PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_StagingBuffer.empty()");
-        return nullptr;
-    }
-
-    const size_t handleIndex = std::min(m_StagingBuffers.size() - 1, _frameIndex);
-    return &m_StagingBuffers[handleIndex];
+    VulkanBuffer::FreeAlloc(context, m_StagingBuffer);
+    FreeAlloc(m_Handle);
 }
 
 void Vulkan::VulkanTexture::FreeAlloc(TextureAndAlloc& _handle)

@@ -55,8 +55,6 @@ public:
     
     PC_CORE_API virtual bool GenerateMipMap(CommandList* commandList, PC_CORE::Filter _Filter, RhiResourceState _StateAfterOperation) = 0;
 
-    PC_CORE_API virtual RhiResourceState GetResourceState() const = 0;
-    
     // Setter 
 
     RhiTexture& SetWidth(uint32_t _Width)
@@ -113,6 +111,12 @@ public:
         return *this;
     }
 
+    RhiTexture& SetResourceState(RhiResourceState _RhiResourceState)
+    {
+        m_RhiResourceState = _RhiResourceState;
+        return *this;
+    }
+
     // Getter
 
     uint32_t GetWidth() const
@@ -164,6 +168,11 @@ public:
     {
         return m_Level > 1;
     }
+
+    RhiResourceState GetResourceState()
+    {
+        return m_RhiResourceState;
+    }
     
     static bool IsDepthFormat(RhiFormat _format);
 
@@ -186,6 +195,8 @@ protected:
     TextureUsageFlag m_TextureUsage = TextureUsageFlagBits::None;
 
     RhiFormat m_RhiFormat = RhiFormat::Undefined;
+
+    RhiResourceState m_RhiResourceState = RhiResourceState::Undefined;
 };
 
 

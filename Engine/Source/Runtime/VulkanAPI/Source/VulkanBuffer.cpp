@@ -57,7 +57,7 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
     for (auto& alloc : m_StagingBuffers)
         FreeAlloc(context, alloc);
 
-    for (auto& alloc : m_Handles)
+    for (auto& alloc : m_Handle)
         FreeAlloc(context, alloc);
 }
 
@@ -75,10 +75,10 @@ bool Vulkan::VulkanBuffer::Build()
         PC_LOGERROR("VulkanBuffer::GetNbrOfHandle() m_Handles.empty()");
         return false;
     }
-    m_Handles.resize(nbrOfHandle);
+    m_Handle.resize(nbrOfHandle);
     if (m_MemoryUsage != MemoryUsage::CPUVisible)
-        m_StagingBuffers.resize(m_Handles.size());
-    m_CurrentFrameMappedData.resize(m_Handles.size());
+        m_StagingBuffers.resize(m_Handle.size());
+    m_CurrentFrameMappedData.resize(m_Handle.size());
 
     vk::BufferCreateInfo bufferCreate{};
     bufferCreate.sType = vk::StructureType::eBufferCreateInfo;
@@ -127,14 +127,14 @@ bool Vulkan::VulkanBuffer::Build()
     {
 
          VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate), 
-                        &aCreateInfo, reinterpret_cast<VkBuffer*>(&m_Handles[i].buffer), &m_Handles[i].alloc, &VmaAllocationInfo)));
+                        &aCreateInfo, reinterpret_cast<VkBuffer*>(&m_Handle[i].buffer), &m_Handle[i].alloc, &VmaAllocationInfo)));
         
         vk::DebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
         nameInfo.pNext = nullptr;
         nameInfo.objectType = vk::ObjectType::eBuffer;
         nameInfo.objectHandle = reinterpret_cast<uint64_t>(
-            static_cast<VkBuffer>(m_Handles[i].buffer)
+            static_cast<VkBuffer>(m_Handle[i].buffer)
             );       
         nameInfo.pObjectName = GetName().data();
         
@@ -146,7 +146,7 @@ bool Vulkan::VulkanBuffer::Build()
         for (size_t i = 0; i < m_CurrentFrameMappedData.size(); i++)
         {
             VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
-                m_Handles[i].alloc, &m_CurrentFrameMappedData[i])));
+                m_Handle[i].alloc, &m_CurrentFrameMappedData[i])));
         }
     }
     
@@ -217,7 +217,7 @@ char* Vulkan::VulkanBuffer::BeginFullDynamicBufferUpdateForCurrentFrame()
     {
         std::scoped_lock _(context.lock);
         VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
-            m_Handles[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
+            m_Handle[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
     }
     
     return static_cast<char*>(m_CurrentFrameMappedData[frameIndex]);
@@ -240,7 +240,7 @@ char* Vulkan::VulkanBuffer::BeginBufferUpdateForCurrentFrame()
     {
         std::scoped_lock _(context.lock);
         VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
-            m_Handles[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
+            m_Handle[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
     }
 
     return static_cast<char*>(m_CurrentFrameMappedData[frameIndex]);
@@ -266,7 +266,7 @@ void Vulkan::VulkanBuffer::EndBufferUpdate()
     {
         std::scoped_lock _(context.lock);
         vmaUnmapMemory(context.allocator,
-            m_Handles[frameIndex].alloc);
+            m_Handle[frameIndex].alloc);
     }
 
     m_CurrentFrameMappedData[frameIndex] = nullptr;
@@ -325,14 +325,14 @@ Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetBufferAndAlloc(size_t _frameInd
 
 Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkAlloc(size_t _frameIndex)
 {
-    if (m_Handles.empty())
+    if (m_Handle.empty())
     {
         PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_Handles.empty()");
         return nullptr;
     }
 
-    const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
-    return &m_Handles[handleIndex];
+    const size_t handleIndex = std::min(m_Handle.size() - 1, _frameIndex);
+    return &m_Handle[handleIndex];
 }
 
 const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkStagingBuffer(size_t _frameIndex) const
@@ -361,12 +361,12 @@ Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkStagingBuffer(size_t _frameIn
 
 const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetVkAlloc(size_t _frameIndex) const
 {
-    if (m_Handles.empty())
+    if (m_Handle.empty())
     {
         PC_LOGERROR("VulkanBuffer::GetFrameNativeHandle() m_Handles.empty()");
         return nullptr;
     }
 
-    const size_t handleIndex = std::min(m_Handles.size() - 1, _frameIndex);
-    return &m_Handles[handleIndex];
+    const size_t handleIndex = std::min(m_Handle.size() - 1, _frameIndex);
+    return &m_Handle[handleIndex];
 }

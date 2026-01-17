@@ -156,7 +156,7 @@ void IMGUIContext::CreateImguiVulkanTexture(const RhiTexture* _texture, const Rh
         return;
     }
     for (size_t i = 0; i < _descriptorsCount; i++)
-        _descriptors[i] = ImGui_ImplVulkan_AddTexture(vkSamplers, vulkanTexture.GetTextureAndAlloc(i)->ImageView,
+        _descriptors[i] = ImGui_ImplVulkan_AddTexture(vkSamplers, vulkanTexture.GetTextureAndAlloc()->ImageView,
                                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 

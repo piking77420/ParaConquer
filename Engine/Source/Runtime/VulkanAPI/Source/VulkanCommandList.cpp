@@ -486,7 +486,7 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
     {
         PC_CORE::RhiTexture& texture = *_ImageStateTransition[i].Texture;
         VulkanTexture& vulkanTexture = static_cast<VulkanTexture&>(texture);
-        TextureAndAlloc& textureAndAlloc = static_cast<TextureAndAlloc&>(*vulkanTexture.GetTextureAndAlloc(frameIndex));
+        TextureAndAlloc& textureAndAlloc = static_cast<TextureAndAlloc&>(*vulkanTexture.GetTextureAndAlloc());
 
         vk::ImageMemoryBarrier& bar = m_VkImageBarrier[i];
 
@@ -512,7 +512,7 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
 
         if (_ImageStateTransition[i].updateState)
         {
-            textureAndAlloc.resourceState = _NewState;
+            texture.SetResourceState(_NewState);
         }
     }
 

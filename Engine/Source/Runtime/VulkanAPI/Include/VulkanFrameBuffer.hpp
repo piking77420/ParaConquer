@@ -18,12 +18,8 @@ namespace Vulkan
 
         VULKAN_API vk::Framebuffer GetVkFramebuffer() const;
 
-        std::array<vk::Framebuffer, MaxFramesInFlight> FrameBuffers =
-        {
-            VK_NULL_HANDLE
-        };
 
     private:
-        
+        vk::Framebuffer m_FrameBufferHandle = VK_NULL_HANDLE;
     };
 }

@@ -14,7 +14,6 @@ namespace Vulkan
         vk::Image Image = VK_NULL_HANDLE;
         vk::ImageView ImageView = VK_NULL_HANDLE;
         VmaAllocation Allocation = VK_NULL_HANDLE;
-        RhiResourceState resourceState = RhiResourceState::Undefined;
         
         DEFAULT_COPY_MOVE_OPERATIONS(TextureAndAlloc)
         DEFAULT_CONSTRUCTOR_DESTRUCTOR(TextureAndAlloc)
@@ -37,25 +36,21 @@ namespace Vulkan
         
         VULKAN_API bool GenerateMipMap(PC_CORE::CommandList* _CommandList, PC_CORE::Filter _Filter, RhiResourceState _StateAfterOperation) override;
 
-        VULKAN_API RhiResourceState GetResourceState() const override;
+        const TextureAndAlloc* GetTextureAndAlloc() const;
         
-        const TextureAndAlloc* GetTextureAndAlloc(size_t _FrameIndex) const;
-        
-        TextureAndAlloc* GetTextureAndAlloc(size_t _FrameIndex);
+        TextureAndAlloc* GetTextureAndAlloc();
         
         vk::ImageAspectFlags VkImageAspectFlags{};
         
         vk::Format VkFormat{};
 
     private:
-        std::vector<TextureAndAlloc> m_Handles;
+        TextureAndAlloc m_Handle;
         
-        std::vector <BufferAndAlloc> m_StagingBuffers{};
+        BufferAndAlloc m_StagingBuffer{};
 
-        const BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex) const;
+        RhiResourceState m_ResourceState = RhiResourceState::Undefined;
 
-        BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex);
-            
         void FreeAlloc(TextureAndAlloc& _handle);
     };
 }

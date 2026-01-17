@@ -57,7 +57,7 @@ namespace Vulkan
 
         BufferAndAlloc* GetVkStagingBuffer(size_t _frameIndex);
 
-        std::vector<BufferAndAlloc> m_Handles;
+        std::vector<BufferAndAlloc> m_Handle;
         
         std::vector<void*> m_CurrentFrameMappedData;
 

@@ -170,7 +170,7 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
                 const PC_CORE::ImageSamplerDescriptor& imageSamplerDescriptor = std::get<PC_CORE::ImageSamplerDescriptor>(des);
 
                 const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(imageSamplerDescriptor.Texture);
-                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
+                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc());
 
                 const VulkanSampler& VkSampler = *static_cast<const VulkanSampler*>(imageSamplerDescriptor.Sampler);
                 const vk::Sampler samplerHandle = VkSampler.GetVkSampler();
@@ -187,7 +187,7 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
                 const PC_CORE::ImageDescriptor& imageDescriptor = std::get<PC_CORE::ImageDescriptor>(des);
 
                 const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(imageDescriptor.Texture);
-                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
+                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc());
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
                     imageDescriptor.ResourceState);
@@ -200,7 +200,7 @@ void Vulkan::VulkanDescriptorSet::FillDescriptorInfo(
                 const PC_CORE::InputAttachementDescriptor& inputAttachementDescriptor = std::get<PC_CORE::InputAttachementDescriptor>(des);
 
                 const VulkanTexture& VkTexture = *static_cast<const VulkanTexture*>(inputAttachementDescriptor.image);
-                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc(f));
+                const TextureAndAlloc& textureAndAlloc = static_cast<const TextureAndAlloc&>(*VkTexture.GetTextureAndAlloc());
 
                 imageInfo[imageIndex].imageLayout = Utils::RhiResourceStateToVulkanImageLayout(
                     inputAttachementDescriptor.resourceState);
