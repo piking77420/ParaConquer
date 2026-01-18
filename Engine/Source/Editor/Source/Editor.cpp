@@ -341,7 +341,8 @@ void Editor::InitTestScene()
         
     m_ImportThread.reset(new std::jthread([&]() {
         Utils::SetThreadName("ImportThread");
-        AssetsImporter.ImportModel(RenderHarwareInteface, ThreadPool, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
+        AssetsImporter.emplace();
+        AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
         m_HasFinish.store(true, std::memory_order_release);
         }));
     
@@ -351,7 +352,7 @@ void Editor::InitTestScene()
 
             PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
 
-            material->SetAlbedoTexture(AssetsImporter.GetTextures().at("5792855332885324923.jpg").second.Lock());
+            material->SetAlbedoTexture(AssetsImporter->GetTextures().at("5792855332885324923.jpg").second.Lock());
 
             material->Build();
 
@@ -365,7 +366,7 @@ void Editor::InitTestScene()
             StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
             s->material = material;
 
-            const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& mesh = AssetsImporter.GetStaticMeshes();
+            const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& mesh = AssetsImporter->GetStaticMeshes();
             s->staticMesh = mesh[0];
 
             {
@@ -379,6 +380,8 @@ void Editor::InitTestScene()
                 PointLight& p = level.GetComponent<PointLight>(pointLight);
                 p.intensity = 5.f;
             }
+
+            AssetsImporter.reset();
         };
 
   
@@ -422,7 +425,6 @@ void Editor::Run(bool* _appShouldClose)
         
         PERF_FRAME_MARK;
     }
-
     RenderHarwareInteface.GetRhiContext().WaitIdle();
 }
 

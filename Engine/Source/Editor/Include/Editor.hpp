@@ -3,6 +3,7 @@
 #include <Atomic>
 #include <future>
 #include <functional>
+#include <optional>
 
 #include "App.hpp"
 #include "DockSpace.hpp"
@@ -123,7 +124,7 @@ BEGIN_EDITOR_PCCORE
 
         EditorRenderer m_EditorRenderer;
 
-        AssetsImporter AssetsImporter;
+        std::optional<AssetsImporter> AssetsImporter;
 
         std::function<void()> m_AfterImportFunc;
 
