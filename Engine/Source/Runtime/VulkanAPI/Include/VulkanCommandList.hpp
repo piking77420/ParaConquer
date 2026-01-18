@@ -34,14 +34,16 @@ namespace Vulkan
 
         VULKAN_API void EndRenderPass() override;
 
-        VULKAN_API void BindDescriptorSet(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
-                                          const PC_CORE::RhiDescriptorSet* _shaderProgramDescriptorSets,
-                                          size_t _firstSet,
-                                          size_t _descriptorSetCount) override;
+        VULKAN_API void BindDescriptorSet(const PC_CORE::RhiDescriptorSet* _shaderProgramDescriptorSets,
+                                          size_t _firstSet) override;
+
+        VULKAN_API void BindDescriptorSets(
+            const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,
+            size_t firstSet) override;
 
         VULKAN_API void BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
 
-        VULKAN_API void PushConstant(const PC_CORE::RhiShaderProgram& _RhiShaderProgram, const std::string& _pushConstantKey,
+        VULKAN_API void PushConstant(const std::string& _pushConstantKey,
                                      const void* _data, size_t _size) override;
 
         VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;

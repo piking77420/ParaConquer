@@ -60,7 +60,7 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
 		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.drawTextureQuad);
-		cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.drawTextureQuad, m_DescriptorSet.get(), 0, 1);
+		cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 		cmd.Draw(3, 1, 0, 0);
 
 		cmd.EndRenderPass();

@@ -117,7 +117,7 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
         }
 
         constexpr size_t set = 0;
-        _commandList->BindDescriptorSet(*m_ShaderProgram.get(), m_ShaderProgramDescriptorSets.get(), set, 1);
+        _commandList->BindDescriptorSet(m_ShaderProgramDescriptorSets.get(), set);
 
         CommandList::DrawBuffers drawBuffer;
         drawBuffer
@@ -145,7 +145,7 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
         needReset = true;
         _commandList->BindProgram(*m_ShaderProgramRay.get());
         constexpr size_t set = 0;
-        _commandList->BindDescriptorSet(*m_ShaderProgramRay.get(), m_ShaderProgramDescriptorSets.get(), set, 1);
+        _commandList->BindDescriptorSet(m_ShaderProgramDescriptorSets.get(), set);
 
         _commandList->SetPrimitiveTopology(RhiShader::PrimitiveTopologyLineList);
         _commandList->SetLineWidth(1.f);

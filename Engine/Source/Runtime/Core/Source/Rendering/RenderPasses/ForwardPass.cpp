@@ -93,7 +93,7 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
 		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.fowardShader);
-		cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.fowardShader, m_DescriptorSet.get(), 0, 1);
+		cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
 		const auto& DrawObjects = _RendererPassExecuteContext.RenderingWorldData.StaticMeshComponentData;
 		for (const auto& DrawObject : DrawObjects)
@@ -111,47 +111,34 @@ namespace PC_CORE::Rendering::Pass
 			}PushConstant;
 			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-			cmd.PushConstant(*_RendererPassExecuteContext.Renderer.fowardShader, "pushConstant", &PushConstant, sizeof(ModelPushConstant));
+			cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
 
-			auto BindMeshData = [&](const PC_CORE::StaticMesh& _StaticMesh) {
-				CommandList::DrawBuffers drawBuffer;
-				drawBuffer
-					.PushVertexBuffer(
-						*_StaticMesh.GetVertexBuffer()
-						, 0ull)
-					.SetIndexBuffer(
-						*_StaticMesh.GetIndexBuffer()
-						, 0ull
-						, _StaticMesh.GetIndexBuffer().GetIndexFormat()
-					);
-				cmd.BindDrawBuffers(drawBuffer);
-				};
-				
+	
 
-			if (mesh.IsSharedMesh())
+			CommandList::DrawBuffers drawBuffer;
+			drawBuffer
+				.PushVertexBuffer(
+					*mesh.GetVertexBuffer()
+					, 0ull)
+				.SetIndexBuffer(
+					*mesh.GetIndexBuffer()
+					, 0ull
+					, mesh.GetIndexBuffer().GetIndexFormat()
+				);
+			cmd.BindDrawBuffers(drawBuffer);
+
+			std::vector<const RhiDescriptorSet*> materialDescriptorSets;
+			materialDescriptorSets.resize(DrawObject.Materials.size());
+			for (size_t i = 0; i < DrawObject.Materials.size(); i++)
 			{
-				BindMeshData(mesh);
-				cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.fowardShader, DrawObject.DescriptorSet, 1, 1);
-
-				for (const auto& SubMesh : Data.SubMeshes)
-					cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
+				materialDescriptorSets[i] = DrawObject.Materials[i]->GetDescriptorSet();
 			}
-			else
-			{
+			;
+			static constexpr size_t FirstSet = 1ull;
+			cmd.BindDescriptorSets(std::span(materialDescriptorSets.data(), materialDescriptorSets.size()), FirstSet);
 
-				if (ObjectPtr<Resource> staticMeshR = mesh.GetSharedMesh().Lock())
-				{
-					if (ObjectPtr<PC_CORE::StaticMesh> staticMesh = std::static_pointer_cast<PC_CORE::StaticMesh>(staticMeshR))
-					{
-						BindMeshData(*staticMesh);
-						cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.fowardShader, DrawObject.DescriptorSet, 1, 1);
-
-						const SubMesh& SubMesh = mesh.GetSubMesh();
-						cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
-					}
-				}
-
-			}
+			for (const auto& SubMesh : Data.SubMeshes)
+				cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
 
 		}
 

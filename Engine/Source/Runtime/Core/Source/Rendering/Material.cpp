@@ -55,7 +55,7 @@ void Material::Build()
         .Build();
 }
 
-RhiDescriptorSet* Material::GetDescriptorSet()
+const RhiDescriptorSet* Material::GetDescriptorSet() const
 {
     return m_RhiDescriptorSets.get();
 }

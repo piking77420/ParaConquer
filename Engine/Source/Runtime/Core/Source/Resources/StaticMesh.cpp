@@ -49,28 +49,22 @@ void StaticMesh::AfterDeSerialize(Serializer* _serializer)
     }*/
 }
 
-StaticMesh& StaticMesh::SetBaseMaterial(const ObjectPtr<Rendering::Material>& _Material)
+StaticMesh& StaticMesh::SetBaseMaterial(const std::vector<ObjectPtr<Rendering::Material>>& _Material)
 {
-    m_BaseMaterial = _Material;
+    m_BaseMaterials.resize(_Material.size());
+    for (size_t i = 0; i < _Material.size(); i++)
+    {
+        m_BaseMaterials[i] = _Material[i];
+    }
+
     return *this;
-}
-
-
-StaticMesh::StaticMesh(std::string _Name, const PC_CORE::ObjectPtr<Resource>& SharedMesh, PC_CORE::SubMesh subMesh)
-    : Resource(std::move(_Name))
-    , m_SharedMesh(SharedMesh)
-    , m_SubMesh(subMesh)
-{
-    DYNAMIC_REFLECT_INIT
 }
 
 StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
     : Resource(std::move(_Name))
     , m_StaticMeshRenderData(_StaticMeshRenderData)
-    , m_IsSharedMesh(true)
 {
     DYNAMIC_REFLECT_INIT
-
 
     InitFromRenderData(_StaticMeshRenderData, _Branch);
 
@@ -85,11 +79,10 @@ StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMes
 StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
     : Resource(std::move(_Name))
     , m_StaticMeshRenderData(std::move(_StaticMeshRenderData))
-    , m_IsSharedMesh(true)
 {
     DYNAMIC_REFLECT_INIT
 
-        InitFromRenderData(_StaticMeshRenderData, _Branch);
+    InitFromRenderData(_StaticMeshRenderData, _Branch);
 
     if (!m_HallowCpuAcces)
     {
@@ -99,9 +92,9 @@ StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRend
 
 }
 
-const WeakObjectPtr<PC_CORE::Rendering::Material>& StaticMesh::GetBaseMaterial() const
+const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& StaticMesh::GetBaseMaterial() const
 {
-    return m_BaseMaterial;
+    return m_BaseMaterials;
 }
 
 void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)

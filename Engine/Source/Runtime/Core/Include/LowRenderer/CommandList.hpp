@@ -178,13 +178,17 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void NextSubPass() = 0;
 
-        PC_CORE_API virtual void BindDescriptorSet(const RhiShaderProgram& _RhiShaderProgram,
-                                                   const RhiDescriptorSet* _shaderProgramDescriptorSets,
-                                                   size_t _firstSet, size_t _descriptorSetCount) = 0;
+        PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram);
 
-        PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;
 
-        PC_CORE_API virtual void PushConstant(const RhiShaderProgram& _RhiShaderProgram, const std::string& _pushConstantKey,
+        PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
+                                                   size_t _Set) = 0;
+
+        PC_CORE_API virtual void BindDescriptorSets(
+            const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,
+            size_t firstSet) = 0;
+
+        PC_CORE_API virtual void PushConstant(const std::string& _pushConstantKey,
                                               const void* _data, size_t _size) = 0;
 
         PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
@@ -255,7 +259,13 @@ BEGIN_PCCORE
 
         DrawBuffers m_LastDrawBuffersState;
 
+        const RhiShaderProgram& GetLastBindProgram() const;
+
         bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
+
+        private:
+            const RhiShaderProgram* m_LastBindProgram = nullptr;
+
     };
 
 

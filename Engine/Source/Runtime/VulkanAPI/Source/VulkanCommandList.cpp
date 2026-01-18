@@ -208,6 +208,8 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    CommandList::BeginRenderPass(_BeginRenderPassInfo);
+
     const VulkanFrameBuffer& frameBuffer = *reinterpret_cast<const VulkanFrameBuffer*>(
         _BeginRenderPassInfo.FrameBuffer);
     const VulkanRenderPass& renderPass = *reinterpret_cast<const VulkanRenderPass*>(
@@ -289,32 +291,46 @@ void Vulkan::VulkanCommandList::EndRenderPass()
     m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
 }
 
-void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
-                                                  const PC_CORE::RhiDescriptorSet*
-                                                  _shaderProgramDescriptorSets, size_t _firstSet,
-                                                  size_t _descriptorSetCount)
+void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
+    _DescriptorSet, size_t _firstSet)
+{
+    BindDescriptorSets(std::span<const PC_CORE::RhiDescriptorSet*>(&_DescriptorSet, 1), _firstSet);
+}
+
+void Vulkan::VulkanCommandList::BindDescriptorSets(
+    const std::span<const PC_CORE::RhiDescriptorSet*>& _DescriptorSets,
+    size_t _FirstSet)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
 
-    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
-    const VulkanDescriptorSet* vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSet*>(_shaderProgramDescriptorSets);
-    vk::DescriptorSet descriptorHandles = vulkanDescriptorSets->GetVkDescriptorSet(currentFrame);
-    
+    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(GetLastBindProgram());
+
+    vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(alloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
+
+    for (size_t i = 0; i < _DescriptorSets.size(); i++)
+    {
+        const VulkanDescriptorSet& vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSet&>(*_DescriptorSets[i]);
+        vkDescriptorSet[i] = vulkanDescriptorSets.GetVkDescriptorSet(currentFrame);
+    }
+
+
     m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),
-                                                     shaderProgram.GetPipelineLayout(),
-                                                     static_cast<uint32_t>(_firstSet), 
-                                                     static_cast<uint32_t>(_descriptorSetCount),
-                                                     &descriptorHandles,
-                                                     0, nullptr);
+        shaderProgram.GetPipelineLayout(),
+        static_cast<uint32_t>(_FirstSet),
+        static_cast<uint32_t>(_DescriptorSets.size()),
+        vkDescriptorSet,
+        0, 
+        nullptr);
 }
 
 void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    CommandList::BindProgram(_RhiShaderProgram);
 
     const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
     
@@ -322,12 +338,12 @@ void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _Rh
                                                                 vshadeProgram.GetPipeline());
 }
 
-void Vulkan::VulkanCommandList::PushConstant(const PC_CORE::RhiShaderProgram& _RhiShaderProgram,
-                                             const std::string& _pushConstantKey, const void* _data, const size_t _size)
+void Vulkan::VulkanCommandList::PushConstant(const std::string& _pushConstantKey, const void* _data, const size_t _size)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
+    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(GetLastBindProgram());
+
 
     vshadeProgram.PushConstant(GetVulkanCommandBufferHandle(), _pushConstantKey, _data, _size);
 }

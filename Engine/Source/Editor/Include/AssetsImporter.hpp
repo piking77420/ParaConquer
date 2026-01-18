@@ -42,7 +42,7 @@ BEGIN_EDITOR_PCCORE
 
         const std::string& GetName() const;
 
-        const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& GetStaticMeshes() const
+        const PC_CORE::ObjectPtr<PC_CORE::StaticMesh>& GetStaticMeshes() const
         {
             return m_StaticMeshs;
         }
@@ -75,7 +75,7 @@ BEGIN_EDITOR_PCCORE
 
         std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
 
-        std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>> m_StaticMeshs;
+        PC_CORE::ObjectPtr<PC_CORE::StaticMesh> m_StaticMeshs;
 
         std::unordered_map<size_t, std::vector<std::string>> m_MaterialsMap;
 

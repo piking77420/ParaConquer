@@ -153,7 +153,7 @@ namespace PC_CORE::Rendering
             return m_Emmisive;
         }
 
-        RhiDescriptorSet* GetDescriptorSet();
+        const RhiDescriptorSet* GetDescriptorSet() const;
     private:
 
         std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_Textures;

@@ -10,6 +10,7 @@ namespace PC_CORE
     void CommandList::BeginRecordCommands()
     {
         m_LastDrawBuffersState = {};
+        m_LastBindProgram = nullptr;
     }
 
     void CommandList::EndRecordCommands()
@@ -19,6 +20,7 @@ namespace PC_CORE
 
     void PC_CORE::CommandList::BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo)
     {
+        m_LastBindProgram = nullptr;
     }
 
     void PC_CORE::CommandList::RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction)
@@ -32,6 +34,13 @@ namespace PC_CORE
             command(this);
     }
 
+    const RhiShaderProgram& CommandList::GetLastBindProgram() const
+    {
+        assert(m_LastBindProgram != nullptr && "Forgot to bind a ShaderProgram ? ");
+
+        return *m_LastBindProgram;
+    }
+
     bool CommandList::DrawBufferStateChanged(const DrawBuffers& _DrawBuffers)
     {
         PERF_REGION_SCOPED;
@@ -43,6 +52,12 @@ namespace PC_CORE
 
         return changed;
     }
+
+    void CommandList::BindProgram(const RhiShaderProgram& _RhiShaderProgram)
+    {
+        m_LastBindProgram = &_RhiShaderProgram;
+    }
+
 
 } // namespace PC_CORE
 

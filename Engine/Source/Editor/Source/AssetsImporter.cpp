@@ -197,9 +197,7 @@ namespace PC_EDITOR_CORE
         uint32_t nbrOfVerticies = 0;
         uint32_t nbrOfIndex = 0;
         StaticMeshRenderData.SubMeshes.reserve(scene->mNumMeshes);
-        m_StaticMeshs.reserve(scene->mNumMeshes + 1);
 
-      
         for (size_t i = 0; i < scene->mNumMeshes; i++)
         {
             uint32_t accFaceIndicies = 0;
@@ -257,13 +255,7 @@ namespace PC_EDITOR_CORE
 
         {
             std::scoped_lock _(m_mutex);
-           m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back()));
-        }
-        for (size_t i = 0; i < scene->mNumMeshes; i++)
-        {
-            
-            std::string meshName = scene->mMeshes[i]->mName.Empty() ? std::string(scene->mMeshes[i]->mName.C_Str()) : std::format("SubMesh {}", i);
-            m_StaticMeshs.emplace_back(PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName + " " + meshName, m_StaticMeshs[0], StaticMeshRenderData.SubMeshes[i]));
+            m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back());
         }
 
         return true;
@@ -366,11 +358,7 @@ namespace PC_EDITOR_CORE
  
     void AssetsImporter::ResolveMaterial(const aiScene* scene)
     {
-        for (auto& mesh : m_StaticMeshs)
-        {
-
-
-        }
+     
     }
 
     PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture)

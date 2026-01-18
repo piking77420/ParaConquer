@@ -10,7 +10,7 @@ namespace PC_CORE::Rendering
     struct StaticMeshComponentData
     {
         MaterialType MaterialType;
-        const RhiDescriptorSet* DescriptorSet;
+        std::vector<const Material*> Materials; // make an array with MAX
         const StaticMesh* StaticMesh;
 
         Tbx::Matrix4x4d WorldMatrix;

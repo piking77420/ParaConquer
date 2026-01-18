@@ -353,21 +353,19 @@ void Editor::InitTestScene()
             PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
 
             material->SetAlbedoTexture(AssetsImporter->GetTextures().at("5792855332885324923.jpg").second.Lock());
-
             material->Build();
 
+            auto& StaticMesh = AssetsImporter->GetStaticMeshes();
 
-            EntityId Cube = level.CreateEntity("Cube");
-            level.AddComponent<Transform>(Cube);
-            level.AddComponent<StaticMeshComponent>(Cube);
-            Transform* t = &level.GetComponent<Transform>(Cube);
+            EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
+            level.AddComponent<Transform>(staticMesh);
+            level.AddComponent<StaticMeshComponent>(staticMesh);
+            Transform* t = &level.GetComponent<Transform>(staticMesh);
             t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
             t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-            StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(Cube);
-            s->material = material;
-
-            const std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>>& mesh = AssetsImporter->GetStaticMeshes();
-            s->staticMesh = mesh[0];
+            StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
+            s->materials.push_back(material);
+            s->staticMesh = StaticMesh;
 
             {
                 EntityId pointLight = level.CreateEntity("PointLight");

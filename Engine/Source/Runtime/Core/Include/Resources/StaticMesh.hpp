@@ -116,7 +116,7 @@ BEGIN_PCCORE
             return *this;
         }
 
-        StaticMesh& SetBaseMaterial(const ObjectPtr<Rendering::Material>& _Material);
+        StaticMesh& SetBaseMaterial(const std::vector<ObjectPtr<Rendering::Material>>& _Material);
 
 
         const VertexBuffer& GetVertexBuffer() const
@@ -144,29 +144,7 @@ BEGIN_PCCORE
             return m_StaticMeshRenderData;
         }
 
-        bool IsSharedMesh() const
-        {
-            return m_IsSharedMesh;
-        }
-
-        const WeakObjectPtr<Resource>& GetSharedMesh() const
-        {
-            return m_SharedMesh;
-        }
-
-        const SubMesh& GetSubMesh() const
-        {
-#ifdef DEBUG
-            if (IsSharedMesh())
-            {
-                PC_LOGERROR("GetSubMeshInfo but the mesh is an shared mesh");
-            }
-#endif // DEBUG
-
-            return m_SubMesh;
-        }
-
-        const WeakObjectPtr<PC_CORE::Rendering::Material>& GetBaseMaterial() const;
+        const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& GetBaseMaterial() const;
 
     private:
         VertexBuffer m_VertexBuffer;
@@ -177,15 +155,9 @@ BEGIN_PCCORE
 
         MotionCore::Aabb<double> m_Aabb;
 
-        WeakObjectPtr<Resource> m_SharedMesh;
-
         bool m_HallowCpuAcces = false;
 
-        bool m_IsSharedMesh = false;
-
-        SubMesh m_SubMesh;
-
-        WeakObjectPtr<PC_CORE::Rendering::Material> m_BaseMaterial;
+        std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>> m_BaseMaterials;
 
         void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch);
 
