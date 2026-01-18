@@ -274,18 +274,25 @@ namespace PC_EDITOR_CORE
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
-        auto TextureFromType = [&](
+        auto AiTextureToTexture2D = [&](
             aiString&& textureName,
-            const aiTexture* embeded,
             aiTextureType type)
             ->void
-            {     
+            {    
+                PERF_REGION_SCOPED;
+                PERF_REGION_COLOR(PerfRegion::EditorResource);
+
+                const aiTexture* embeded = scene->GetEmbeddedTexture(textureName.C_Str());
+
                 std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>> pair{};
 
                 if (embeded) // HandleEmbeded Texture
                 {
                     std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(_Rhi, textureName.C_Str(), *embeded));
                     PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
+
+                    if (!texture || !texture2D)
+                        return;
 
                     pair.first = type;
                     pair.second = texture2D;
@@ -301,21 +308,21 @@ namespace PC_EDITOR_CORE
                     {
                         PC_CORE::Image image(texturePath.generic_string().c_str(), PC_CORE::RhiChannel::Rgba);
                         std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
-                        if (texture && image)
+
+                        if (!texture || !image)
+                            return;
+                        
+                        texture->SetName(textureName.C_Str());
+                        BuildRhiTextureFromImage(_Rhi, *texture, &image);
+                        PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
+
+                        pair.first = type;
+                        pair.second = texture2D;
+
                         {
-                            texture->SetName(textureName.C_Str());
-                            BuildRhiTextureFromImage(_Rhi, *texture, &image);
-                            PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
-
-                            pair.first = type;
-                            pair.second = texture2D;
-
-                            {
-                                std::scoped_lock _(m_mutex);
-                                m_TextureMaps[textureName.C_Str()] = std::move(pair);
-                            }
+                            std::scoped_lock _(m_mutex);
+                            m_TextureMaps[textureName.C_Str()] = std::move(pair);
                         }
-
                     }
                 }      
             };
@@ -334,24 +341,20 @@ namespace PC_EDITOR_CORE
                 {
 
                     aiString str;
-                    if (scene->mMaterials[i]->GetTexture(type, k, &str) == aiReturn::aiReturn_SUCCESS)
+                    if (scene->mMaterials[i]->GetTexture(type, k, &str) != aiReturn::aiReturn_SUCCESS)
                     {
-                        const aiTexture* embeded = nullptr;
-                            
-                        {
-                            std::scoped_lock _(m_mutex);
-                            if (m_TextureMaps.contains(str.C_Str()))
-                            {
-                                continue;
-                            }
-
-                            m_TextureMaps.emplace(str.C_Str(), std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>());
-                            embeded = scene->GetEmbeddedTexture(str.C_Str());
-                        }
-                        
-                            
-                        Futures->emplace_back(ThreadPool.Enqueue(TextureFromType, std::move(str), embeded, type));
+                        continue;
                     }
+                            
+                    {
+                        std::scoped_lock _(m_mutex);
+                        if (m_TextureMaps.contains(str.C_Str()))
+                        {
+                            continue;
+                        }
+                        m_TextureMaps.emplace(str.C_Str(), std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>());
+                    }        
+                    Futures->emplace_back(ThreadPool.Enqueue(AiTextureToTexture2D, std::move(str), type));
                 }
             }
               
