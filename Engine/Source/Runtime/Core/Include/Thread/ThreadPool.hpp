@@ -6,6 +6,7 @@
 #include <mutex>
 #include <future>
 
+#include "PerfRegion.hpp"
 
 namespace PC_CORE::Thread
 {
@@ -27,6 +28,9 @@ namespace PC_CORE::Thread
 		[[nodiscard]] auto Enqueue(F&& f, Args&&... args)
 			-> std::future<std::invoke_result_t<F, Args...>>
 		{
+			PERF_REGION_SCOPED;
+			PERF_REGION_COLOR(PerfRegion::Core);
+
 			using ReturnType = std::invoke_result_t<F, Args...>;
 
 			auto task = std::make_shared<std::packaged_task<ReturnType()>>(
