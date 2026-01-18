@@ -141,6 +141,7 @@ bool Vulkan::VulkanBuffer::Build()
         SET_VK_DEBUG_NAME(nameInfo);
     }
 
+    /*
     if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
     {
         for (size_t i = 0; i < m_CurrentFrameMappedData.size(); i++)
@@ -148,7 +149,7 @@ bool Vulkan::VulkanBuffer::Build()
             VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
                 m_Handle[i].alloc, &m_CurrentFrameMappedData[i])));
         }
-    }
+    }*/
     
     
     return true;
@@ -204,46 +205,41 @@ char* Vulkan::VulkanBuffer::BeginFullDynamicBufferUpdateForCurrentFrame()
 {
     PERF_REGION_SCOPED;
     assert(m_MemoryUsage == RhiResource::MemoryUsage::CPUVisible && "You can only dynamic update dynamic buffers");
-    const auto frameIndex = m_Rhi.GetFrameIndex();
 
-    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
-    {
-        return static_cast<char*>(m_CurrentFrameMappedData[0]);
-    }
+    const size_t frameIndex = static_cast<uint32_t>(m_Rhi.GetFrameIndex());
+    const size_t index = std::min(m_Handle.size() - 1, frameIndex);
+
     auto& context = GET_VK_CONTEXT;
-    assert(m_CurrentFrameMappedData[frameIndex] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
-
+    assert(m_CurrentFrameMappedData[index] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
 
     {
         std::scoped_lock _(context.lock);
         VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
-            m_Handle[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
+            m_Handle[index].alloc, &m_CurrentFrameMappedData[index])));
     }
     
-    return static_cast<char*>(m_CurrentFrameMappedData[frameIndex]);
+    return static_cast<char*>(m_CurrentFrameMappedData[index]);
 }
 
 char* Vulkan::VulkanBuffer::BeginBufferUpdateForCurrentFrame()
 {
     PERF_REGION_SCOPED;
     assert(m_MemoryUsage == RhiResource::MemoryUsage::CPUVisible && "You can only dynamic update dynamic buffers");
-    const auto frameIndex = m_Rhi.GetFrameIndex();
 
-    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
-    {
-        return static_cast<char*>(m_CurrentFrameMappedData[0]) + m_FrameStride;
-    }
+    const size_t frameIndex = static_cast<uint32_t>(m_Rhi.GetFrameIndex());
+    const size_t index = std::min(m_Handle.size() - 1, frameIndex);
+
     auto& context = GET_VK_CONTEXT;
-    assert(m_CurrentFrameMappedData[frameIndex] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
+    assert(m_CurrentFrameMappedData[index] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
 
 
     {
         std::scoped_lock _(context.lock);
         VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
-            m_Handle[frameIndex].alloc, &m_CurrentFrameMappedData[frameIndex])));
+            m_Handle[index].alloc, &m_CurrentFrameMappedData[index])));
     }
 
-    return static_cast<char*>(m_CurrentFrameMappedData[frameIndex]);
+    return static_cast<char*>(m_CurrentFrameMappedData[index]);
 }
 
 
@@ -253,23 +249,25 @@ void Vulkan::VulkanBuffer::EndBufferUpdate()
     PERF_REGION_SCOPED
     assert(m_MemoryUsage == RhiResource::MemoryUsage::CPUVisible && "You can only dynamic update dynamic buffers");
 
-    if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
+    if (m_BufferBackingStrategy != PC_CORE::RhiBuffer::CpuVisibleRing &&
+        m_BufferBackingStrategy != PC_CORE::RhiBuffer::PerFrameBuffers)
     {
         return;
     }
 
-    const auto frameIndex = m_Rhi.GetFrameIndex();
-    assert(m_CurrentFrameMappedData[frameIndex] != nullptr && "Data not Map or forgot to call BeginFullDynamicBufferUpdateForCurrentFrame");
+    const size_t frameIndex = static_cast<uint32_t>(m_Rhi.GetFrameIndex());
+    const size_t index = std::min(m_Handle.size() - 1, frameIndex);
+
+    assert(m_CurrentFrameMappedData[index] != nullptr && "Data not Map or forgot to call BeginFullDynamicBufferUpdateForCurrentFrame");
 
     auto& context = GET_VK_CONTEXT;
     
     {
         std::scoped_lock _(context.lock);
         vmaUnmapMemory(context.allocator,
-            m_Handle[frameIndex].alloc);
+            m_Handle[index].alloc);
     }
-
-    m_CurrentFrameMappedData[frameIndex] = nullptr;
+    m_CurrentFrameMappedData[index] = nullptr;
 }
 
 void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes) // TODO MAKE AN HELPER CLASS 

@@ -35,11 +35,13 @@ namespace Vulkan
         VULKAN_API void EndRenderPass() override;
 
         VULKAN_API void BindDescriptorSet(const PC_CORE::RhiDescriptorSet* _shaderProgramDescriptorSets,
-                                          size_t _firstSet) override;
+                                          size_t _FirstSet,
+                                          size_t _DynamicOffset) override;
 
         VULKAN_API void BindDescriptorSets(
             const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,
-            size_t firstSet) override;
+            size_t firstSet,
+            const std::span<const size_t>& dynamicOffset) override;
 
         VULKAN_API void BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
 

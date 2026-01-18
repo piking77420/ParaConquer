@@ -127,15 +127,23 @@ namespace PC_CORE::Rendering::Pass
 				);
 			cmd.BindDrawBuffers(drawBuffer);
 
+			static constexpr size_t FirstSet = 1ull;
 			std::vector<const RhiDescriptorSet*> materialDescriptorSets;
 			materialDescriptorSets.resize(DrawObject.Materials.size());
 			for (size_t i = 0; i < DrawObject.Materials.size(); i++)
 			{
 				materialDescriptorSets[i] = DrawObject.Materials[i]->GetDescriptorSet();
 			}
-			;
-			static constexpr size_t FirstSet = 1ull;
-			cmd.BindDescriptorSets(std::span(materialDescriptorSets.data(), materialDescriptorSets.size()), FirstSet);
+			
+			std::vector<size_t> strides;
+			strides.resize(DrawObject.Materials.size());
+			for (size_t i = 0; i < DrawObject.Materials.size(); i++)
+			{
+				strides[i] = DrawObject.Materials[i]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
+			}
+
+
+			cmd.BindDescriptorSets(std::span(materialDescriptorSets.data(), materialDescriptorSets.size()), FirstSet, std::span(strides.data(), strides.size()));
 
 			for (const auto& SubMesh : Data.SubMeshes)
 				cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);

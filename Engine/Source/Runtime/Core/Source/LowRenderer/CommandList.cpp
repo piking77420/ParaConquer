@@ -9,6 +9,9 @@ namespace PC_CORE
 
     void CommandList::BeginRecordCommands()
     {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::Rhi);
+
         m_LastDrawBuffersState = {};
         m_LastBindProgram = nullptr;
     }

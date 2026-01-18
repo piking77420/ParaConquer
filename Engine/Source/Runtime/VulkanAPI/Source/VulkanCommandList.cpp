@@ -292,14 +292,15 @@ void Vulkan::VulkanCommandList::EndRenderPass()
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
-    _DescriptorSet, size_t _firstSet)
+    _DescriptorSet, size_t _FirstSet, size_t _DynamicOffset)
 {
-    BindDescriptorSets(std::span<const PC_CORE::RhiDescriptorSet*>(&_DescriptorSet, 1), _firstSet);
+    BindDescriptorSets(std::span<const PC_CORE::RhiDescriptorSet*>(&_DescriptorSet, 1), _FirstSet, _DynamicOffset != 0 ? std::span(&_DynamicOffset, 1) : std::span<size_t>());
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSets(
     const std::span<const PC_CORE::RhiDescriptorSet*>& _DescriptorSets,
-    size_t _FirstSet)
+    size_t _FirstSet,
+    const std::span<const size_t>& dynamicOffset)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -316,14 +317,18 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
         vkDescriptorSet[i] = vulkanDescriptorSets.GetVkDescriptorSet(currentFrame);
     }
 
+    uint32_t* pDynamicOffsets = dynamicOffset.empty() ? nullptr : static_cast<uint32_t*>(alloca(sizeof(vk::DescriptorSet) * dynamicOffset.size()));
+
+    for (size_t i = 0; i < dynamicOffset.size(); i++)
+        pDynamicOffsets[i] = static_cast<uint32_t>(dynamicOffset[i]);
 
     m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),
         shaderProgram.GetPipelineLayout(),
         static_cast<uint32_t>(_FirstSet),
         static_cast<uint32_t>(_DescriptorSets.size()),
         vkDescriptorSet,
-        0, 
-        nullptr);
+        static_cast<uint32_t>(dynamicOffset.size()),
+        pDynamicOffsets);
 }
 
 void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)

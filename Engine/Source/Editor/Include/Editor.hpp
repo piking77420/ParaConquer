@@ -133,6 +133,8 @@ BEGIN_EDITOR_PCCORE
         std::unique_ptr<std::jthread> m_ImportThread;
 
         std::vector<std::future<void>> m_FuturInits;
+
+        PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> testMaterial;
     };
 
     template <EditorCommandDerived T, typename... Args>

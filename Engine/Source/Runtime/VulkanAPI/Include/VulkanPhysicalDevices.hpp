@@ -35,7 +35,9 @@ namespace Vulkan
 
         uint32_t GetMaxUsableSampleCount() const override;
 
-        uint32_t GetUniformBufferOffsetAlignment() const;
+        uint32_t GetUniformBufferOffsetAlignment() const override;
+
+        uint32_t GetStorageBufferOffsetAlignment() const override;
 
     };
 

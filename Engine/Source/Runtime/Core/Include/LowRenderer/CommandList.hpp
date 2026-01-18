@@ -182,11 +182,13 @@ BEGIN_PCCORE
 
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
-                                                   size_t _Set) = 0;
+                                                   size_t _Set,
+                                                   size_t _DynamicOffset = 0) = 0;
 
         PC_CORE_API virtual void BindDescriptorSets(
             const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,
-            size_t firstSet) = 0;
+            size_t firstSet,
+            const std::span<const size_t>& dynamicOffset = {}) = 0;
 
         PC_CORE_API virtual void PushConstant(const std::string& _pushConstantKey,
                                               const void* _data, size_t _size) = 0;

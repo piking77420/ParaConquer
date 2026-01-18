@@ -25,7 +25,7 @@ BEGIN_EDITOR_PCCORE
     protected:
         void MoveCameraUpdate();
 
-        PC_CORE::LowPassFilter<Tbx::Vector2f, 4> deltass;
+        PC_CORE::LowPassFilter<Tbx::Vector2f, 7> deltass;
 
         float m_BaseCameraSpeed = 25.0f;
 

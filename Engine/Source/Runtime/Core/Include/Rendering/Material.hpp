@@ -33,7 +33,6 @@ namespace PC_CORE::Rendering
         {
             std::array<int, 4> TextureDescriptor; // bit flag for if attrivute has texture
             Gpu::vec4 Albedo;
-            float Pad0;
             Gpu::vec4 MetallicSpecularRoughnessAnisotropy;
             Gpu::vec3 Emissive;
             float Pad01;
@@ -123,6 +122,11 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
+        PC_CORE_API Gpu::MaterialBuffer& BeginUpdateMaterialData();
+
+        PC_CORE_API void UpdateMaterialData();
+
+
         const Tbx::Vector3f& GetAlbedo() const
         {
             return m_Albedo;
@@ -154,6 +158,8 @@ namespace PC_CORE::Rendering
         }
 
         const RhiDescriptorSet* GetDescriptorSet() const;
+
+        size_t GetMaterialStride() const;
     private:
 
         std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_Textures;
@@ -175,6 +181,8 @@ namespace PC_CORE::Rendering
         std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
 
         std::unique_ptr<RhiBuffer> m_RhiMaterialBuffer = nullptr;
+
+        Gpu::MaterialBuffer m_MaterialBuffer = {};
 
     };
 

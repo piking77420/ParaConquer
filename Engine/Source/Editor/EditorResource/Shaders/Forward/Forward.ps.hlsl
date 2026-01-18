@@ -14,5 +14,7 @@ float4 Main(PSInput input) : SV_Target
    
     float3 albedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord).rgb;
     
+    albedo += Albedo.rgb * Albedo.a;
+    
     return float4(albedo, 1);
 }

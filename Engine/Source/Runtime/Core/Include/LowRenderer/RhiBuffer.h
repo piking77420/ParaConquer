@@ -134,6 +134,16 @@ BEGIN_PCCORE
             return m_MaxObjectPerFrame;
         }
 
+        size_t GetStride() const
+        {
+            return m_Stride;
+        }
+
+        size_t GetFrameStride() const
+        {
+            return m_FrameStride;
+        }
+
     protected:
         uint32_t m_SizeInByte = 0u;
 

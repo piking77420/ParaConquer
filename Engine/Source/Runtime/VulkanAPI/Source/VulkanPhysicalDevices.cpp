@@ -40,6 +40,14 @@ uint32_t Vulkan::VulkanPhysicalDevice::GetUniformBufferOffsetAlignment() const
     return properties.limits.minUniformBufferOffsetAlignment;
 }
 
+uint32_t Vulkan::VulkanPhysicalDevice::GetStorageBufferOffsetAlignment() const
+{
+    vk::PhysicalDeviceProperties properties;
+    physicalDevice.getProperties(&properties);
+
+    return properties.limits.minStorageBufferOffsetAlignment;
+}
+
 
 
 vk::PhysicalDevice Vulkan::VulkanPhysicalDevices::GetVulkanDevice() const

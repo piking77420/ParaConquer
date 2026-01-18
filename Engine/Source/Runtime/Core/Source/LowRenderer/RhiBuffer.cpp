@@ -87,15 +87,37 @@ void PC_CORE::RhiBuffer::ChooseBackingStrategy()
         break;
     case BufferBackingStrategy::CpuVisibleRing:
     {
-        assert( ((m_Usage & BufferUsageFlagBits::Uniform) != 0 || (m_Usage & BufferUsageFlagBits::ShaderStorage != 0) ) &&
-            "CpuVisibleRing only available for uniform buffers");
-        const uint32_t minUniformAlignment = m_Rhi.GetRhiContext().rhiPhysicalDevices->GetPhysicalDevice().GetUniformBufferOffsetAlignment();
-        m_NbrOfBackendObject = 1;
+       const bool isUniform =
+            (m_Usage & BufferUsageFlagBits::Uniform) != 0;
+        const bool isStorage =
+            (m_Usage & BufferUsageFlagBits::ShaderStorage) != 0;
 
-        assert(m_MaxObjectPerFrame != 0 && m_ObjectSize != 0);
+        assert(isUniform || isStorage);
+        uint32_t alignment = 1;
 
-        m_Stride = AlignUp(m_ObjectSize , minUniformAlignment);
+        if (isUniform)
+        {
+            alignment =
+                m_Rhi.GetRhiContext()
+                .rhiPhysicalDevices
+                ->GetPhysicalDevice()
+                .GetUniformBufferOffsetAlignment();
+        }
+        else 
+        {
+            alignment =
+                m_Rhi.GetRhiContext()
+                .rhiPhysicalDevices
+                ->GetPhysicalDevice()
+                .GetStorageBufferOffsetAlignment();
+        }
+
+        assert(alignment != 0);
+        assert((alignment & (alignment - 1)) == 0);
+
+        m_Stride = AlignUp(m_ObjectSize, alignment);
         m_FrameStride = m_MaxObjectPerFrame * m_Stride;
+        m_NbrOfBackendObject = 1;
     }
         break;
 

@@ -306,6 +306,21 @@ void Editor::UpdateEditor()
         ImGui::EndMenuBar();
     }
 
+    if (testMaterial)
+    {
+
+
+        ImGui::Begin("TestUpdateMaterial");
+
+        auto& m = testMaterial->BeginUpdateMaterialData();
+        if (ImGui::ColorPicker4("Color", &m.Albedo.data[0]))
+        {
+            testMaterial->UpdateMaterialData();
+        }
+
+        ImGui::End();
+    }
+
 
     {
         PERF_REGION_SCOPED_NAMED("Update Windows");
@@ -350,10 +365,10 @@ void Editor::InitTestScene()
         {
             auto& level = World::GetWorld()->level;
 
-            PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> material = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
+            testMaterial = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
 
-            material->SetAlbedoTexture(AssetsImporter->GetTextures().at("5792855332885324923.jpg").second.Lock());
-            material->Build();
+            testMaterial->SetAlbedoTexture(AssetsImporter->GetTextures().at("5792855332885324923.jpg").second.Lock());
+            testMaterial->Build();
 
             auto& StaticMesh = AssetsImporter->GetStaticMeshes();
 
@@ -364,7 +379,7 @@ void Editor::InitTestScene()
             t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
             t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
             StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
-            s->materials.push_back(material);
+            s->materials.push_back(testMaterial);
             s->staticMesh = StaticMesh;
 
             {

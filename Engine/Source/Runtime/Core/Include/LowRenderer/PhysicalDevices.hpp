@@ -32,6 +32,9 @@ BEGIN_PCCORE
 
         virtual uint32_t GetUniformBufferOffsetAlignment() const = 0;
 
+        virtual uint32_t GetStorageBufferOffsetAlignment() const = 0;
+
+
         constexpr bool DoesSupportExtension(RhiExtension _queryExtSupport)
         {
             return true; //  TODO

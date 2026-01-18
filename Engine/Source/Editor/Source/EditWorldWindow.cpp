@@ -149,7 +149,8 @@ void EditWorldWindow::ScroolWheelMovement(float _Deltatime)
         return;
 
     m_CameraSpeedValue += mouseWheel * ScrolWheelForce;
-    m_CameraSpeedValue = std::min(m_CameraSpeedValue, 0.f);
+    if (m_CameraSpeedValue < 0.f)
+        m_CameraSpeedValue = std::abs(m_BaseCameraSpeed);
 }
 
 void EditWorldWindow::UpdatePosition(float _Deltatime)
