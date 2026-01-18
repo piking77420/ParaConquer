@@ -67,17 +67,19 @@ BEGIN_EDITOR_PCCORE
 
         std::filesystem::path m_filePath;
 
-        std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>> m_StaticMeshs;
-
-        std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
-
-        std::vector<PC_CORE::Rendering::Material> m_Materials;
-
-        std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
+        ImportFormat m_ImportFormat;
 
         std::mutex m_mutex;
 
-        ImportFormat m_ImportFormat;
+        std::vector<PC_CORE::Rendering::Material> m_Materials;
+
+        std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
+
+        std::vector<PC_CORE::ObjectPtr<PC_CORE::StaticMesh>> m_StaticMeshs;
+
+        std::unordered_map<size_t, std::vector<std::string>> m_MaterialsMap;
+
+        std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
 
         ImportFormat FindImportFormat(const std::filesystem::path& path);
 
@@ -85,7 +87,9 @@ BEGIN_EDITOR_PCCORE
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
 
-        bool ImportMaterials(PC_CORE::Rhi& _Rhi, const aiScene* scene);
+        bool ImportMaterial(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
+
+        void ResolveMaterial(const aiScene* scene);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 
