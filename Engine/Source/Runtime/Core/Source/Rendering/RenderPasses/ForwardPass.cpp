@@ -113,11 +113,26 @@ namespace PC_CORE::Rendering::Pass
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
 			cmd.PushConstant(*_RendererPassExecuteContext.Renderer.fowardShader, "pushConstant", &PushConstant, sizeof(ModelPushConstant));
 
+			auto BindMeshData = [&](const PC_CORE::StaticMesh& _StaticMesh) {
+				CommandList::DrawBuffers drawBuffer;
+				drawBuffer
+					.PushVertexBuffer(
+						*_StaticMesh.GetVertexBuffer()
+						, 0ull)
+					.SetIndexBuffer(
+						*_StaticMesh.GetIndexBuffer()
+						, 0ull
+						, _StaticMesh.GetIndexBuffer().GetIndexFormat()
+					);
+				cmd.BindDrawBuffers(drawBuffer);
+				};
+				
+
 			if (mesh.IsSharedMesh())
 			{
-				cmd.BindVertexBuffer(*mesh.GetVertexBuffer(), 0, 1);
-				cmd.BindIndexBuffer(*mesh.GetIndexBuffer(), mesh.GetIndexBuffer().GetIndexFormat(), 0);
+				BindMeshData(mesh);
 				cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.fowardShader, DrawObject.DescriptorSet, 1, 1);
+
 				for (const auto& SubMesh : Data.SubMeshes)
 					cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
 			}
@@ -128,8 +143,7 @@ namespace PC_CORE::Rendering::Pass
 				{
 					if (ObjectPtr<PC_CORE::StaticMesh> staticMesh = std::static_pointer_cast<PC_CORE::StaticMesh>(staticMeshR))
 					{
-						cmd.BindVertexBuffer(*(staticMesh->GetVertexBuffer()), 0, 1);
-						cmd.BindIndexBuffer(*(staticMesh->GetIndexBuffer()), staticMesh->GetIndexBuffer().GetIndexFormat(), 0);
+						BindMeshData(*staticMesh);
 						cmd.BindDescriptorSet(*_RendererPassExecuteContext.Renderer.fowardShader, DrawObject.DescriptorSet, 1, 1);
 
 						const SubMesh& SubMesh = mesh.GetSubMesh();

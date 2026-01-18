@@ -117,6 +117,47 @@ BEGIN_PCCORE
             Secondary
         };
 
+        struct DrawBuffers
+        {
+            using VertexBufferAndOffSet = std::pair<const RhiBuffer*, size_t>;
+            using VertexBufferArray = std::vector<VertexBufferAndOffSet>; // TODO use fixed one
+
+            VertexBufferArray VertexBufferBinded{};
+            const RhiBuffer* IndexBuffer = nullptr;
+            size_t IndexBufferOffset {0ull};
+            RhiBuffer::IndexFormat IndexFormat{ RhiBuffer::IndexFormat::Uint8 };
+
+            DrawBuffers& PushVertexBuffer(
+                const RhiBuffer& _RhiBuffer,
+                size_t _Offset)
+            {
+                VertexBufferBinded.emplace_back(std::pair<const RhiBuffer*, size_t>(&_RhiBuffer, _Offset));
+                return *this;
+            }
+
+            DrawBuffers& SetIndexBuffer(
+                const RhiBuffer& _RhiBuffer,
+                size_t _Offset,
+                RhiBuffer::IndexFormat _IndexFormat)
+            {
+                IndexBuffer = &_RhiBuffer;
+                IndexBufferOffset = _Offset;
+                IndexFormat = _IndexFormat;
+                return *this;
+            }
+
+          
+            bool operator==(const DrawBuffers& _rhs) const noexcept
+            {
+                return IndexBuffer == _rhs.IndexBuffer
+                    && IndexFormat == _rhs.IndexFormat
+                    && IndexBufferOffset == _rhs.IndexBufferOffset
+                    && VertexBufferBinded == _rhs.VertexBufferBinded;
+            }
+
+        };
+
+
         DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 
         PC_CORE_API explicit CommandList(Rhi& _Rhi);
@@ -127,9 +168,9 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void MergeCommands(CommandList* _secondaries, size_t _count) = 0;
 
-        PC_CORE_API virtual void BeginRecordCommands() = 0;
+        PC_CORE_API virtual void BeginRecordCommands();
 
-        PC_CORE_API virtual void EndRecordCommands() = 0;
+        PC_CORE_API virtual void EndRecordCommands();
 
         PC_CORE_API virtual void BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo);
 
@@ -162,10 +203,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
 
-        PC_CORE_API virtual void BindVertexBuffer(const RhiBuffer& _vertexBuffer, uint32_t _firstBinding,
-                                                  uint32_t _bindingCount) = 0;
-
-        PC_CORE_API virtual void BindIndexBuffer(const RhiBuffer& _indexBuffer, RhiBuffer::IndexFormat _format, size_t _offset) = 0;
+        PC_CORE_API virtual void BindDrawBuffers(const DrawBuffers& _DrawBuffers) = 0;
 
         PC_CORE_API virtual void CopyBuffer(const RhiBuffer& _src, const RhiBuffer& _dst, size_t _srcOffSet,
                                             size_t _dstoffset, size_t _sizeInBytes) = 0;
@@ -214,6 +252,10 @@ BEGIN_PCCORE
         PoolFamily m_PoolFamily { PoolFamily::Graphics };
 
         std::vector<std::function<void(CommandList*)>> m_FetchCommands;
+
+        DrawBuffers m_LastDrawBuffersState;
+
+        bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
     };
 
 

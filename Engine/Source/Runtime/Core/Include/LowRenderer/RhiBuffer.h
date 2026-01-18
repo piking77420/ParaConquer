@@ -19,11 +19,11 @@ BEGIN_PCCORE
 
         enum IndexFormat : uint8_t
         {
-            Uiunt8 = 1,
+            Uint8 = 1,
             Uint16 = 2,
             Uint32 = 4
         };
-        static_assert(static_cast<uint8_t>(IndexFormat::Uiunt8) == sizeof(uint8_t), "Size of Uint8");
+        static_assert(static_cast<uint8_t>(IndexFormat::Uint8) == sizeof(uint8_t), "Size of Uint8");
         static_assert(static_cast<uint8_t>(IndexFormat::Uint16) == sizeof(uint16_t), "Size of Uint32");
         static_assert(static_cast<uint8_t>(IndexFormat::Uint32) == sizeof(uint32_t), "Size of Uint16");
         REFLECT(IndexFormat)

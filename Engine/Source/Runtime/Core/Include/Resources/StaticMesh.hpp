@@ -2,6 +2,7 @@
 #include "Resource.hpp"
 #include "ObjectPtr.hpp"
 #include "Mesh.hpp"
+#include "Rendering/Material.hpp"
 
 namespace PC_CORE::RHI
 {
@@ -13,8 +14,8 @@ BEGIN_PCCORE
     {
         Tbx::Vector3f Position;
         Tbx::Vector3f Normal;
-        Tbx::Vector2f Uv;
         Tbx::Vector3f Tangent;
+        Tbx::Vector2f Uv;
 
         static constexpr VertexInputBindingDescrition GetVertexBindingDescription(uint32_t _binding);
 
@@ -36,15 +37,15 @@ BEGIN_PCCORE
                 },
                 {
                     .Binding = _binding,
-                    .Location = 2,
-                    .Format = RhiFormat::R32G32Sfloat,
-                    .Offset = offsetof(StaticMeshVertex, Uv)
+                    .Location = 3,
+                    .Format = RhiFormat::R32G32B32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Tangent)  
                 },
                 {
                     .Binding = _binding,
-                    .Location = 3,
-                    .Format = RhiFormat::R32G32B32Sfloat,
-                    .Offset = offsetof(StaticMeshVertex, Tangent)
+                    .Location = 2,
+                    .Format = RhiFormat::R32G32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Uv)
                 }
 
 
@@ -97,7 +98,6 @@ BEGIN_PCCORE
 
         explicit StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _branch);
 
-
         StaticMesh();
 
         ~StaticMesh() override = default;
@@ -109,6 +109,15 @@ BEGIN_PCCORE
         void AfterSerialize(Serializer* _serializer) const override;
 
         void AfterDeSerialize(Serializer* _serializer) override;
+
+        StaticMesh& SetAABB(const MotionCore::Aabb<double>& _AABB)
+        {
+            m_Aabb = _AABB;
+            return *this;
+        }
+
+        StaticMesh& SetBaseMaterial(const ObjectPtr<Rendering::Material>& _Material);
+
 
         const VertexBuffer& GetVertexBuffer() const
         {
@@ -157,6 +166,8 @@ BEGIN_PCCORE
             return m_SubMesh;
         }
 
+        const WeakObjectPtr<PC_CORE::Rendering::Material>& GetBaseMaterial() const;
+
     private:
         VertexBuffer m_VertexBuffer;
 
@@ -173,6 +184,8 @@ BEGIN_PCCORE
         bool m_IsSharedMesh = false;
 
         SubMesh m_SubMesh;
+
+        WeakObjectPtr<PC_CORE::Rendering::Material> m_BaseMaterial;
 
         void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch);
 

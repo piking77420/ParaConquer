@@ -6,6 +6,7 @@
 #include "World/Transform.hpp"
 #include "World/World.hpp"
 #include "Rendering/Renderer.hpp"
+#include "Rendering/Material.hpp"
 
 PC_CORE::RendererSystem::RendererSystem()
 {
@@ -61,26 +62,31 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
         const StaticMeshComponent& staticMesh = _level.GetComponent<StaticMeshComponent>(ent);
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
-        std::shared_ptr<StaticMesh> mesh = staticMesh.staticMesh.lock();
-        std::shared_ptr<Rendering::Material> material = staticMesh.material.lock();
+        ObjectPtr<StaticMesh> mesh = staticMesh.staticMesh.lock();
+        ObjectPtr<Rendering::Material> material = staticMesh.material.lock();
 
-        if (!mesh || !material)
-            return;
-
-
-        const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.Position,
-                                                      static_cast<Tbx::Quaterniond>(transform.Rotation.Quaternion),
-                                                      transform.Scale);
-        const Rendering::StaticMeshComponentData staticMeshData =
+        if (!material && mesh)
+            material = mesh->GetBaseMaterial().Lock();
+ 
+        if (material && mesh)
         {
-            .MaterialType = {},
-            .DescriptorSet = material->GetDescriptorSet(),
-            .StaticMesh = mesh.get(),
-            .WorldMatrix = m,
-            .NormalInvertMatrix = m.Invert().Transpose(),
-        };
+            const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.Position,
+                static_cast<Tbx::Quaterniond>(transform.Rotation.Quaternion),
+                transform.Scale);
 
-        m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
+            const Rendering::StaticMeshComponentData staticMeshData =
+            {
+                .MaterialType = {},
+                .DescriptorSet = material->GetDescriptorSet(),
+                .StaticMesh = mesh.get(),
+                .WorldMatrix = m,
+                .NormalInvertMatrix = m.Invert().Transpose(),
+            };
+
+            m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
+        }
+
+        
     }
 }
 

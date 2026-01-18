@@ -61,10 +61,9 @@ namespace Vulkan
 
         VULKAN_API void Dispatch(uint32_t, uint32_t, uint32_t) override;
 
-        VULKAN_API void BindVertexBuffer(const PC_CORE::RhiBuffer& _vertexBuffer, uint32_t _firstBinding,
-                                         uint32_t _bindingCount) override;
 
-        VULKAN_API void BindIndexBuffer(const PC_CORE::RhiBuffer& _indexBuffer, PC_CORE::RhiBuffer::IndexFormat _format, size_t _offset) override;
+        VULKAN_API void BindDrawBuffers(const DrawBuffers& _DrawBuffers) override;
+
 
         VULKAN_API void CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst, size_t _srcOffSet,
                                    size_t _dstoffset, size_t _sizeInBytes) override;

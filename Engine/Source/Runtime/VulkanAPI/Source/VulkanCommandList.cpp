@@ -1,5 +1,12 @@
 ﻿#include "VulkanCommandList.hpp"
 
+#if defined(_MSC_VER)
+#include <malloc.h>
+#define alloca _alloca
+#else
+#include <alloca.h>
+#endif
+
 #include "PerfRegion.hpp"
 
 #include "LowRenderer/Rhi.hpp"
@@ -159,6 +166,8 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    CommandList::BeginRecordCommands();
+
 
     const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
@@ -190,6 +199,7 @@ void Vulkan::VulkanCommandList::EndRecordCommands()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    CommandList::EndRecordCommands();
 
     m_CommandBuffer[m_Rhi.GetFrameIndex()].end();
 }
@@ -198,7 +208,6 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-
     const VulkanFrameBuffer& frameBuffer = *reinterpret_cast<const VulkanFrameBuffer*>(
         _BeginRenderPassInfo.FrameBuffer);
     const VulkanRenderPass& renderPass = *reinterpret_cast<const VulkanRenderPass*>(
@@ -392,6 +401,9 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    assert(m_LastDrawBuffersState.IndexBuffer != nullptr && "DrawIndexed but no index buffer binded");
+
+
     m_CommandBuffer[m_Rhi.GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount),
                                                                static_cast<uint32_t>(_instanceCount),
                                                                static_cast<uint32_t>(_firstIndex), _vertexOffset,
@@ -407,35 +419,52 @@ void Vulkan::VulkanCommandList::Dispatch(uint32_t _groupCountX, uint32_t _groupC
     m_CommandBuffer[m_Rhi.GetFrameIndex()].dispatch(_groupCountX, _groupCountY, _groupCountZ);
 }
 
-void Vulkan::VulkanCommandList::BindVertexBuffer(const PC_CORE::RhiBuffer& _vertexBuffer, uint32_t _firstBinding,
-                                                 uint32_t _bindingCount)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Rhi);
-    const size_t frameIndex = m_Rhi.GetFrameIndex();
-
-    const VulkanBuffer* vulkanBuffer = reinterpret_cast<const VulkanBuffer*>(&_vertexBuffer);
-    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetBufferAndAlloc(frameIndex));
-
-    vk::DeviceSize offsets[] = {0};
-    m_CommandBuffer[frameIndex].bindVertexBuffers(_firstBinding, _bindingCount, &bufferAndAllocs->buffer,
-                                                  offsets);
-}
-
-void Vulkan::VulkanCommandList::BindIndexBuffer(const PC_CORE::RhiBuffer& _indexBuffer, PC_CORE::RhiBuffer::IndexFormat _format, size_t _offset)
+void Vulkan::VulkanCommandList::BindDrawBuffers(const DrawBuffers& _DrawBuffers)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    if (!DrawBufferStateChanged(_DrawBuffers))
+        return;
+
     const size_t frameIndex = m_Rhi.GetFrameIndex();
-    const VulkanBuffer* vulkanBuffer = reinterpret_cast<const VulkanBuffer*>(&_indexBuffer);
-    const BufferAndAlloc* bufferAndAllocs = static_cast<const BufferAndAlloc*>(vulkanBuffer->GetBufferAndAlloc(frameIndex));
 
-    const vk::IndexType indexType = Utils::RhiToIndexType(_format);
+    struct VkVertexBufferEnty
+    {
+        vk::Buffer* buffers;
+        vk::DeviceSize* offsets;
+    } VkVertexBufferEnty;
 
-    m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs->buffer, static_cast<uint32_t>(_offset),
-                                                indexType);
+    const uint32_t BindexVertexBufferCount = static_cast<uint32_t>(_DrawBuffers.VertexBufferBinded.size());
+
+    VkVertexBufferEnty.buffers = reinterpret_cast<vk::Buffer*>(alloca(sizeof(vk::Buffer) * BindexVertexBufferCount));
+    VkVertexBufferEnty.offsets = reinterpret_cast<vk::DeviceSize*>(alloca(sizeof(vk::DeviceSize) * BindexVertexBufferCount));
+
+    for (size_t i = 0; i < BindexVertexBufferCount; i++)
+    {
+        const VulkanBuffer& vulkanBuffer = reinterpret_cast<const VulkanBuffer&>(*_DrawBuffers.VertexBufferBinded[i].first);
+        const BufferAndAlloc& bufferAndAllocs = static_cast<const BufferAndAlloc&>(*vulkanBuffer.GetBufferAndAlloc(frameIndex));
+
+        VkVertexBufferEnty.buffers[i] = bufferAndAllocs.buffer;
+        VkVertexBufferEnty.offsets[i] = static_cast<vk::DeviceSize>(_DrawBuffers.VertexBufferBinded[i].second);
+    }
+
+    m_CommandBuffer[frameIndex].bindVertexBuffers(0u, BindexVertexBufferCount, VkVertexBufferEnty.buffers,
+        VkVertexBufferEnty.offsets);
+
+    if (_DrawBuffers.IndexBuffer != nullptr)
+    {
+        const VulkanBuffer& vulkanBuffer = reinterpret_cast<const VulkanBuffer&>(*_DrawBuffers.IndexBuffer);
+        const BufferAndAlloc& bufferAndAllocs = static_cast<const BufferAndAlloc&>(*vulkanBuffer.GetBufferAndAlloc(frameIndex));
+
+        const vk::IndexType indexType = Utils::RhiToIndexType(_DrawBuffers.IndexFormat);
+
+        m_CommandBuffer[frameIndex].bindIndexBuffer(bufferAndAllocs.buffer, static_cast<vk::DeviceSize>(_DrawBuffers.IndexBufferOffset),
+            indexType);
+    }
+    
 }
+
 
 void Vulkan::VulkanCommandList::CopyBuffer(const PC_CORE::RhiBuffer& _src, const PC_CORE::RhiBuffer& _dst,
                                            size_t _srcOffSet, size_t _dstoffset, size_t _sizeInBytes)

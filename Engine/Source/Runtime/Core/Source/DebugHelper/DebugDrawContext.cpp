@@ -118,11 +118,22 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
 
         constexpr size_t set = 0;
         _commandList->BindDescriptorSet(*m_ShaderProgram.get(), m_ShaderProgramDescriptorSets.get(), set, 1);
-        _commandList->BindVertexBuffer(*m_PrimitiveData[i].primitiveBuffer.Get(), 0, 1);
-        _commandList->BindVertexBuffer(*m_PrimitiveData[i].instanceBuffer, 1, 1);
 
-        _commandList->BindIndexBuffer(*m_PrimitiveData[i].primitiveIndexBuffer.Get(), m_PrimitiveData[i].primitiveIndexBuffer.GetIndexFormat(), 0);
+        CommandList::DrawBuffers drawBuffer;
+        drawBuffer
+            .PushVertexBuffer(
+                *m_PrimitiveData[i].primitiveBuffer
+                , 0ull)
+            .PushVertexBuffer(
+                *m_PrimitiveData[i].instanceBuffer
+                , 0ull)
+            .SetIndexBuffer(
+                *m_PrimitiveData[i].primitiveIndexBuffer
+                , 0ull
+                , m_PrimitiveData[i].primitiveIndexBuffer.GetIndexFormat()
+            );
 
+        _commandList->BindDrawBuffers(drawBuffer);
         _commandList->DrawIndexed(m_PrimitiveData[i].primitiveIndexBuffer.GetIndexCount(),
                                     m_PrimitiveData[i].primitiveCount, 0, 0, 0);
     }
@@ -133,11 +144,18 @@ void PC_CORE::DebugDrawContext::DrawDebugPrimitive(CommandList* _commandList)
     {
         needReset = true;
         _commandList->BindProgram(*m_ShaderProgramRay.get());
-        _commandList->SetPrimitiveTopology(RhiShader::PrimitiveTopologyLineList);
-        _commandList->SetLineWidth(1.f);
         constexpr size_t set = 0;
         _commandList->BindDescriptorSet(*m_ShaderProgramRay.get(), m_ShaderProgramDescriptorSets.get(), set, 1);
-        _commandList->BindVertexBuffer(*m_RayPrimitiveData.vertexBuffer.Get(), 0, 1);
+
+        _commandList->SetPrimitiveTopology(RhiShader::PrimitiveTopologyLineList);
+        _commandList->SetLineWidth(1.f);
+
+        CommandList::DrawBuffers drawBuffer;
+        drawBuffer
+            .PushVertexBuffer(
+                *m_RayPrimitiveData.vertexBuffer
+                , 0ull);
+        _commandList->BindDrawBuffers(drawBuffer);
         _commandList->Draw(2, static_cast<uint32_t>(m_RayPrimitiveData.rayCount), 0, 0);
     }
        

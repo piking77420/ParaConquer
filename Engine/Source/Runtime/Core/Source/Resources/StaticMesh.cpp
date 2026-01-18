@@ -7,6 +7,8 @@
 #include "LowRenderer/RhiResourceUpdate.hpp"
 #include "CompactBuffer.hpp"
 
+#include "Rendering/Material.hpp"
+
 using namespace PC_CORE;
 
 void StaticMesh::AfterSerialize(Serializer* _serializer) const
@@ -45,6 +47,12 @@ void StaticMesh::AfterDeSerialize(Serializer* _serializer)
             m_RenderData.Indices = std::move(indiciesRaw);
         }
     }*/
+}
+
+StaticMesh& StaticMesh::SetBaseMaterial(const ObjectPtr<Rendering::Material>& _Material)
+{
+    m_BaseMaterial = _Material;
+    return *this;
 }
 
 
@@ -91,7 +99,10 @@ StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRend
 
 }
 
-
+const WeakObjectPtr<PC_CORE::Rendering::Material>& StaticMesh::GetBaseMaterial() const
+{
+    return m_BaseMaterial;
+}
 
 void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
 {

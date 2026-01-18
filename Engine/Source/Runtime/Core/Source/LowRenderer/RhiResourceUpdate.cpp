@@ -43,12 +43,11 @@ namespace ResourceUpdateOperation
 	BufferUpload::BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size)
 		: m_RhiBuffer(&_RhiBuffer)
 		, m_UploadOperation(_Data, _Size)
-		, m_FrameUpdateCount(m_RhiBuffer->GetNbrOfBackendObject())
 	{
 
 	}
 
-	ResourceUpdateStatus BufferUpload::Execute(CommandList& _CommandList)
+	bool BufferUpload::Execute(CommandList& _CommandList)
 	{
 		_CommandList.BeginDebugLabel(std::format("BufferUpload {}", m_RhiBuffer->GetName()).c_str(), DebugColorBufferUpload);
 		assert(m_RhiBuffer != nullptr);
@@ -57,23 +56,22 @@ namespace ResourceUpdateOperation
 		if (!m_RhiBuffer->UploadData(&_CommandList, m_UploadOperation.GetData(), m_UploadOperation.m_DataSize))
 		{
 			_CommandList.EndDebugLabel();
-			return ResourceUpdateStatus::Failed;
+			return false;
 		}
 		_CommandList.EndDebugLabel();
 		m_FrameUpdateCount--;
-		return m_FrameUpdateCount > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
+		return true;
 	}
 
 	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _Size, RhiResourceState _AfterUploadState)
 		: m_RhiTexture(&_RhiTexture)
 		, m_UploadOperation(_Data, _Size)
-		, m_FrameUpdateCount(m_RhiTexture->GetNbrOfBackendObject())
 		, m_AfterUploadState(_AfterUploadState)
 	{
 	
 	}
 
-	[[nodiscard]] ResourceUpdateStatus TextureUpload2D::Execute(CommandList& _CommandList)
+	[[nodiscard]] bool TextureUpload2D::Execute(CommandList& _CommandList)
 	{
 		assert(m_RhiTexture != nullptr);
 		assert(m_UploadOperation);
@@ -102,39 +100,35 @@ namespace ResourceUpdateOperation
 		{
 			_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 			_CommandList.EndDebugLabel();
-			return ResourceUpdateStatus::Failed;
+			return false;
 		}
 
 		_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 		_CommandList.EndDebugLabel();
-		m_FrameUpdateCount--;
-		return m_FrameUpdateCount > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
+		return true;
 	}
 	
 	GenerateMipMap::GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation)
 		: m_RhiTexture(&_RhiTexture)
 		, m_Filter(_Filter)
-		, m_NbrOfUpdate(m_RhiTexture->GetNbrOfBackendObject())
 		, m_StateAfterOperation(_StateAfterOperation)
 	{
 
 	}
 
-	[[nodiscard]] ResourceUpdateStatus GenerateMipMap::Execute(CommandList& _CommandList)
+	[[nodiscard]] bool GenerateMipMap::Execute(CommandList& _CommandList)
 	{
 		assert(m_RhiTexture != nullptr);
-		assert(m_NbrOfUpdate != 0);
 		_CommandList.BeginDebugLabel(std::format("GenerateMipMap {}", m_RhiTexture->GetName()).c_str(), DebugColorTextureGenerateMipMap);
 
 
 		if (!m_RhiTexture->GenerateMipMap(&_CommandList, m_Filter, m_StateAfterOperation))
 		{
 			_CommandList.EndDebugLabel();
-			return ResourceUpdateStatus::Failed;
+			return false;
 		}
 		_CommandList.EndDebugLabel();
-		m_NbrOfUpdate--;
-		return m_NbrOfUpdate > 0 ? ResourceUpdateStatus::Success : ResourceUpdateStatus::Complete;
+		return true;
 	}
 
 	UploadOperation::UploadOperation(const void* _Data, size_t _Size)
@@ -181,7 +175,7 @@ namespace ResourceUpdateOperation
 
 ResourceUpdateBranch& ResourceUpdateBranch::BufferUpload(RhiBuffer& _RhiBuffer, const void* _Data, size_t _Size)
 {
-	m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::BufferUpload(_RhiBuffer, _Data, _Size)));
+	m_UpdateBranchs.emplace_back(ResourceUpdateOperation::BufferUpload(_RhiBuffer, _Data, _Size));
 	return *this;
 }
 
@@ -190,13 +184,13 @@ ResourceUpdateBranch& ResourceUpdateBranch::TextureUpload2D(RhiTexture& _RhiText
 	size_t _DataSize,
 	RhiResourceState _AfterUploadState)
 {
-	m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, _Data, _DataSize, _AfterUploadState)));
+	m_UpdateBranchs.emplace_back(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, _Data, _DataSize, _AfterUploadState));
 	return *this;
 }
 
 ResourceUpdateBranch& ResourceUpdateBranch::GenerateMipmap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation)
 {
-	m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::GenerateMipMap(_RhiTexture, _Filter, _StateAfterOperation)));
+	m_UpdateBranchs.emplace_back(ResourceUpdateOperation::GenerateMipMap(_RhiTexture, _Filter, _StateAfterOperation));
 	return *this;
 }
 
@@ -206,35 +200,26 @@ bool ResourceUpdateBranch::Proceed(CommandList& _CommandList)
 
 	for (auto it = m_UpdateBranchs.begin(); it != m_UpdateBranchs.end(); )
 	{
-		ResourceUpdateOperation::ResourceUpdateStatus Status = Execute(_CommandList, *(*it).get());
-		switch (Status)
+		if (Execute(_CommandList, *it))
 		{
-		case PC_CORE::RHI::ResourceUpdateOperation::Success:
 			NeedToSendToGpu = true;
-			it++;
-			break;
-		case PC_CORE::RHI::ResourceUpdateOperation::Failed:
-			it = m_UpdateBranchs.erase(it);
-			break;
-		case PC_CORE::RHI::ResourceUpdateOperation::Complete:
-			it = m_UpdateBranchs.erase(it);
-			NeedToSendToGpu = true;
-			break;
-		default:
-			it++;
-			break;
 		}
+		else
+		{
+			PC_LOGERROR("Resource Update Failed");
+		}
+		it = m_UpdateBranchs.erase(it);
 	}
 
 	return NeedToSendToGpu;
 }
 
-ResourceUpdateOperation::ResourceUpdateStatus ResourceUpdateBranch::Execute(CommandList& _CommandList, ResourceUpdate& _ResourceUpdate)
+bool ResourceUpdateBranch::Execute(CommandList& _CommandList, ResourceUpdate& _ResourceUpdate)
 {
 	return std::visit(
 		Overload{
 			[&](std::monostate&) {
-				return ResourceUpdateOperation::Failed;
+				return false;
 			},
 			[&](ResourceUpdateOperation::BufferUpload& upload) {
 				return upload.Execute(_CommandList);

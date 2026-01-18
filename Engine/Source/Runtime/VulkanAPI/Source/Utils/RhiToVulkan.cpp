@@ -723,7 +723,7 @@ vk::IndexType Vulkan::Utils::RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _for
 {
     switch (_format)
     {
-    case PC_CORE::RhiBuffer::IndexFormat::Uiunt8:
+    case PC_CORE::RhiBuffer::IndexFormat::Uint8:
         return vk::IndexType::eUint8;
     case PC_CORE::RhiBuffer::IndexFormat::Uint16:
         return vk::IndexType::eUint16;

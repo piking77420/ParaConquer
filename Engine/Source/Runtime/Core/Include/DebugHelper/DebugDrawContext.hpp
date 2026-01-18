@@ -85,7 +85,6 @@ BEGIN_PCCORE
         struct RayCastPrimitiveData
         {
             std::vector<RayDataPerInstance> rayBuffer;
-            std::vector<float> rayThicknessBuffer;
 
             size_t rayCount;
             VertexBuffer vertexBuffer;

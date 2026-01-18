@@ -58,8 +58,8 @@ protected:
 
     bool m_PendingTransferOperation = false;
 
+    // TO DO FIND A WAY TO REUSE THE ALLOCATION
     std::vector<std::unique_ptr<RHI::ResourceUpdateBranch>> m_ResourceUpdate;
-
 };
 
 END_PCCORE

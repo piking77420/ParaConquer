@@ -22,12 +22,6 @@ namespace PC_CORE
 namespace PC_CORE::RHI
 {
 	namespace ResourceUpdateOperation {
-		enum ResourceUpdateStatus
-		{
-			Failed,
-			Success,
-			Complete
-		};
 
 		template <typename T>
 		concept UploadBufferType = requires(T t)
@@ -74,7 +68,6 @@ namespace PC_CORE::RHI
 			explicit BufferUpload(RhiBuffer& _RhiBuffer, T&& _Data, size_t _Size)
 				: m_RhiBuffer(&_RhiBuffer)
 				, m_UploadOperation(std::forward<T>(_Data), _Size)
-				, m_FrameUpdateCount(m_RhiBuffer->GetNbrOfBackendObject())
 			{
 
 			}
@@ -84,7 +77,7 @@ namespace PC_CORE::RHI
 
 			DEFAULT_COPY_MOVE_OPERATIONS(BufferUpload)
 
-			[[nodiscard]] ResourceUpdateStatus Execute(CommandList& _CommandList);
+			[[nodiscard]] bool Execute(CommandList& _CommandList);
 
 		private:
 			RhiBuffer* m_RhiBuffer{ nullptr };
@@ -103,7 +96,6 @@ namespace PC_CORE::RHI
 			explicit TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, size_t _DataSize, RhiResourceState _AfterUploadState)
 				: m_RhiTexture(&_RhiTexture)
 				, m_UploadOperation(std::forward<T>(_Data), _DataSize)
-				, m_FrameUpdateCount(m_RhiTexture->GetNbrOfBackendObject())
 				, m_AfterUploadState(_AfterUploadState)
 			{
 
@@ -113,37 +105,30 @@ namespace PC_CORE::RHI
 
 			DEFAULT_COPY_MOVE_OPERATIONS(TextureUpload2D)
 
-			[[nodiscard]] ResourceUpdateStatus Execute(CommandList& _CommandList);
+			[[nodiscard]] bool Execute(CommandList& _CommandList);
 
 		private:
 			RhiTexture* m_RhiTexture{ nullptr };
 
 			UploadOperation m_UploadOperation;
 
-			size_t m_FrameUpdateCount{ 0u };
-
 			RhiResourceState m_AfterUploadState{ RhiResourceState::Undefined };
-
 		};
 
 		
 		class PC_CORE_API GenerateMipMap
 		{
 		public:
-
-
 			explicit GenerateMipMap(RhiTexture& _RhiTexture, Filter _Filter, RhiResourceState _StateAfterOperation);
 
 			~GenerateMipMap() = default;
 
 			DEFAULT_COPY_MOVE_OPERATIONS(GenerateMipMap)
 
-			[[nodiscard]] ResourceUpdateStatus Execute(CommandList& _CommandList);
+			[[nodiscard]] bool Execute(CommandList& _CommandList);
 
 		private:
 			RhiTexture* m_RhiTexture{ nullptr };
-
-			size_t m_NbrOfUpdate{ 0u };
 
 			Filter m_Filter = Filter::Nearest;
 
@@ -182,7 +167,8 @@ namespace PC_CORE::RHI
 		template <ResourceUpdateOperation::UploadBufferType T>
 		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data,size_t _DataSize, RhiResourceState _AfterUploadState)
 		{
-			m_UpdateBranchs.push_back(std::make_unique<ResourceUpdate>(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, std::forward<T>(_Data), _DataSize, _AfterUploadState)));
+			m_UpdateBranchs.emplace_back();
+			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _DataSize, _AfterUploadState);
 			return *this;
 		}
 
@@ -196,9 +182,9 @@ namespace PC_CORE::RHI
 		bool Proceed(CommandList& _CommandList);
 
 	private:
-		ResourceUpdateOperation::ResourceUpdateStatus Execute(CommandList& _CommandList, ResourceUpdate& _ResourceUpdate);
+		bool Execute(CommandList& _CommandList, ResourceUpdate& _ResourceUpdate);
 
-		std::vector<std::unique_ptr<ResourceUpdate>> m_UpdateBranchs;
+		std::vector<ResourceUpdate> m_UpdateBranchs;
 	};
 
 
