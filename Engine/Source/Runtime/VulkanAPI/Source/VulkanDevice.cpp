@@ -72,6 +72,7 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
     extendedFeatures3.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
     extendedFeatures3.pNext = &extendedFeatures2;
 
+
 #ifdef PROFILING
     extendedFeatures2.pNext = &hostQueryResetFeatures;
 #endif

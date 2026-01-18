@@ -56,6 +56,7 @@ using Descriptor = std::variant<std::monostate, BufferDescriptor, ImageSamplerDe
 
 struct DescriptorWrite
 {
+
     DescriptorType type;
     uint32_t bindingIndex;
     RhiShaderStageTypeFlag StagesBits;
@@ -89,6 +90,8 @@ protected:
 
 private:
     std::vector<DescriptorWrite> m_Bindings;
+
+    size_t m_MaxBindingIndex = 0;
 };
 
 END_PCCORE

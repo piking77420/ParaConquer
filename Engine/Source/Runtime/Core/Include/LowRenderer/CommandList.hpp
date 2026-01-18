@@ -183,7 +183,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
                                                    size_t _Set,
-                                                   size_t _DynamicOffset = 0) = 0;
+                                                   size_t _DynamicOffset = std::numeric_limits<size_t>::max()) = 0;
 
         PC_CORE_API virtual void BindDescriptorSets(
             const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,

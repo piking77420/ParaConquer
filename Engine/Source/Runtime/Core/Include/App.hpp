@@ -43,6 +43,8 @@ BEGIN_PCCORE
 
         std::unique_ptr<RhiSampler> TextureSampler;
 
+        std::unique_ptr<RhiTexture> DummyTexture;
+
         PC_CORE_API App();
 
         PC_CORE_API virtual ~App() = default;

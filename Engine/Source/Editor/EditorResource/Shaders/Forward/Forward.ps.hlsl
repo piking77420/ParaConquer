@@ -12,9 +12,13 @@ struct PSInput
 float4 Main(PSInput input) : SV_Target
 {
    
-    float3 albedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord).rgb;
+    float3 FragAlbedo = TextureDescriptor[0] == 1 ? AlbedoTexture.Sample(AlbedoSampler, input.TexCoord).rgb : Albedo.rgb;
     
-    albedo += Albedo.rgb * Albedo.a;
-    
-    return float4(albedo, 1);
+    float3 FragMaterialRougness = TextureDescriptor[1] == 1 ? MetallicRouhnessTexture.Sample(MetallicRouhnessSampler, input.TexCoord).rgb : float3(MetallicRoughnessAnisotropy.rgb);
+    float3 FragNormal = TextureDescriptor[2] == 1 ? NormalTexture.Sample(NormalSampler, input.TexCoord).rgb : float3(float3(0, 0, 1));
+    float3 FragEmmisive = TextureDescriptor[3] == 1 ? EmissiveTexture.Sample(EmmissiveSampler, input.TexCoord).rgb : float3(Emissive);
+    float FragAO = TextureDescriptor2[0] == 1 ? AOTexture.Sample(AOSampler, input.TexCoord).r : AO;
+
+
+    return float4(FragAlbedo + (FragMaterialRougness * 0.001) + (FragNormal * 0.001) + (FragEmmisive * 0.001) + float3(FragAO, FragAO, FragAO) * 0.001, 1);
 }

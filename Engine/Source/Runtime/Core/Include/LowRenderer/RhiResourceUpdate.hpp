@@ -165,7 +165,7 @@ namespace PC_CORE::RHI
 		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _DataSize, RhiResourceState _AfterUploadState);
 
 		template <ResourceUpdateOperation::UploadBufferType T>
-		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data,size_t _DataSize, RhiResourceState _AfterUploadState)
+		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, size_t _DataSize, RhiResourceState _AfterUploadState)
 		{
 			m_UpdateBranchs.emplace_back();
 			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _DataSize, _AfterUploadState);

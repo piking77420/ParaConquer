@@ -101,16 +101,21 @@ namespace PC_EDITOR_CORE
         }
 
         Assimp::Importer importer;
-
-        // Load the model with common processing flags
-        const aiScene* scene = importer.ReadFile(
-            _path.generic_string().c_str(),
-            aiProcess_Triangulate |
-            aiProcess_JoinIdenticalVertices |
-            aiProcess_GenNormals |
-            aiProcess_CalcTangentSpace |
-            aiProcess_ImproveCacheLocality
-        );
+        const aiScene* scene = nullptr;
+        {
+           PERF_REGION_SCOPED_NAMED("Read Imported File");
+           PERF_REGION_COLOR(PerfRegion::EditorResource);
+           // Load the model with common processing flags
+           scene = importer.ReadFile(
+               _path.generic_string().c_str(),
+               aiProcess_Triangulate |
+               aiProcess_JoinIdenticalVertices |
+               aiProcess_GenNormals |
+               aiProcess_CalcTangentSpace |
+               aiProcess_ImproveCacheLocality
+           );
+        }
+       
 
         if (!scene || !scene->HasMeshes())
         {
@@ -125,20 +130,24 @@ namespace PC_EDITOR_CORE
             if (!ImportTextures(_Rhi, ThreadPool, &futurs, scene))
             {
                 PC_LOGERROR("Failed To Import Textures")
-                    return false;
+                return false;
             }
 
             if (!ImportMeshesFromScene(_Rhi, scene))
             {
                 PC_LOGERROR("Failed To Import Mesh From Scene")
-                    return false;
+                return false;
             }
 
-            for (auto& f : futurs)
             {
-                f.wait();
+                PERF_REGION_SCOPED_NAMED("Wait Texture Load Futur");
+                PERF_REGION_COLOR(PerfRegion::EditorResource);
+                for (auto& f : futurs)
+                {
+                    f.wait();
+                }
+                futurs.clear();
             }
-            futurs.clear();
 
             ResolveMaterial(scene);
 
@@ -358,7 +367,171 @@ namespace PC_EDITOR_CORE
  
     void AssetsImporter::ResolveMaterial(const aiScene* scene)
     {
-     
+        std::vector<PC_CORE::ObjectPtr<PC_CORE::Rendering::Material>> Materials;
+        Materials.resize(scene->mNumMaterials);
+      
+        for (size_t i = 0; i < Materials.size(); i++)
+        {
+            std::string materialName;
+
+            aiString str = scene->mMaterials[i]->GetName();
+            if (str.Empty())
+            {
+                materialName = m_StaticMeshs->Name + " Material " + std::to_string(i);
+            }
+            else
+            {
+                materialName = std::string(str.C_Str());
+            }
+
+            Materials[i] = PC_CORE::ResourceManager::Create<PC_CORE::Rendering::Material>(materialName);
+        }
+
+        for (size_t i = 0; i < scene->mNumMaterials; i++)
+        {
+            if (scene->mMaterials[i] == nullptr)
+                continue;
+
+            aiMaterial& Material = *scene->mMaterials[i];
+            PC_CORE::Rendering::Material& CoreMaterial = *Materials[i];
+            FillMaterialTexture(CoreMaterial, *scene->mMaterials[i]);
+           
+            aiColor3D color;
+            if (Material.Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS || Material.Get(AI_MATKEY_BASE_COLOR, color) == AI_SUCCESS)
+            {
+                CoreMaterial.SetAlbedo(Tbx::Vector4f(color.r, color.g, color.b, 1.0f));
+            }
+
+            float metallic = 0.0f;
+            if (Material.Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS)
+            {
+                CoreMaterial.SetMetallic(metallic);
+            }
+
+            float roughness = 1.0f;
+            if (Material.Get(AI_MATKEY_METALLIC_FACTOR, roughness) == AI_SUCCESS)
+            {
+                CoreMaterial.SetRoughness(roughness);
+            }
+
+            float anisotropy = 1.0f;
+            if (Material.Get(AI_MATKEY_ANISOTROPY_FACTOR, anisotropy) == AI_SUCCESS)
+            {
+                CoreMaterial.SetRoughness(anisotropy);
+            }
+
+            aiColor3D emmisive;
+            if (Material.Get(AI_MATKEY_COLOR_EMISSIVE, emmisive) == AI_SUCCESS)
+            {
+                CoreMaterial.SetEmmisive(Tbx::Vector3f(emmisive.r, emmisive.g, emmisive.b));
+            }
+        }
+
+        for (auto& m : Materials)
+        {
+            m->Build();
+        }
+
+        if (m_StaticMeshs)
+        {
+            m_StaticMeshs->SetBaseMaterial(Materials);
+        }
+    }
+
+    void AssetsImporter::FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material)
+    {
+        // TODO 
+        // USE THIS 
+        //
+        // aiString mrTexture;
+        /*
+        if (Material.Get(
+            AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
+            mrTexture) == AI_SUCCESS)
+        {
+            auto it = m_TextureMaps.find(mrTexture.C_Str());
+            if (it != m_TextureMaps.end())
+            {
+                auto tex = it->second.second.Lock();
+                if (tex)
+                {
+                    CoreMaterial.SetMetallicRougnessAnisotropyTexture(tex);
+                }
+            }
+        }*/
+
+
+        for (size_t j = 0; j < static_cast<size_t>(AI_TEXTURE_TYPE_MAX); j++)
+        {
+            const aiTextureType type = static_cast<aiTextureType>(j);
+            switch (type)
+            {
+            case aiTextureType_NONE:
+                continue;
+            case aiTextureType_BASE_COLOR:// PBR albedo
+            case aiTextureType_DIFFUSE:
+                break;
+                break;
+            case aiTextureType_NORMAL_CAMERA:
+            case aiTextureType_NORMALS: // Normal
+                break;
+            case aiTextureType_EMISSION_COLOR:
+            case aiTextureType_EMISSIVE: // Emisive
+                break;
+
+
+            case aiTextureType_LIGHTMAP: // AO
+            case aiTextureType_AMBIENT_OCCLUSION:
+                break;
+            case aiTextureType_GLTF_METALLIC_ROUGHNESS:
+                break;
+            case aiTextureType_SPECULAR:
+            case aiTextureType_METALNESS:
+            case aiTextureType_DIFFUSE_ROUGHNESS:
+            case aiTextureType_HEIGHT:
+            case aiTextureType_SHININESS:
+            case aiTextureType_OPACITY:
+            case aiTextureType_DISPLACEMENT:
+            case aiTextureType_AMBIENT:
+            case aiTextureType_REFLECTION:
+            case aiTextureType_UNKNOWN:
+            default:
+                PC_LOGERROR("Ignore texture when build material {} type was {}", CoreMaterial.Name, AssimpTextureTypeToString(type).data());
+                continue;
+                break;
+            }
+
+            aiString textureName;
+
+            const size_t TextureCount = Material.GetTextureCount(type);
+            for (size_t k = 0; k < TextureCount; k++)
+            {
+                if (Material.GetTexture(type, k, &textureName) == aiReturn::aiReturn_SUCCESS)
+                {
+                    auto& pair = m_TextureMaps[std::string(textureName.C_Str())].second;
+                    auto Texture = pair.Lock();
+                    if (!Texture)
+                        continue;
+
+                    if (type == aiTextureType_BASE_COLOR || type == aiTextureType_DIFFUSE)
+                        CoreMaterial.SetAlbedoTexture(Texture);
+
+                    if (type == aiTextureType_NORMAL_CAMERA || type == aiTextureType_NORMALS)
+                        CoreMaterial.SetNormalTexture(Texture);
+
+                    if (type == aiTextureType_EMISSIVE || type == aiTextureType_EMISSION_COLOR)
+                        CoreMaterial.SetEmisiveTexture(Texture);
+
+                    if (type == aiTextureType_LIGHTMAP || type == aiTextureType_AMBIENT_OCCLUSION)
+                        CoreMaterial.SetAoTexture(Texture);
+
+                    if (type == aiTextureType_GLTF_METALLIC_ROUGHNESS)
+                        CoreMaterial.SetMetallicRougnessAnisotropyTexture(Texture);
+
+                }
+            }
+
+        }
     }
 
     PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture)

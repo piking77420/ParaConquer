@@ -135,18 +135,16 @@ namespace PC_CORE::Rendering::Pass
 				materialDescriptorSets[i] = DrawObject.Materials[i]->GetDescriptorSet();
 			}
 			
-			std::vector<size_t> strides;
-			strides.resize(DrawObject.Materials.size());
-			for (size_t i = 0; i < DrawObject.Materials.size(); i++)
-			{
-				strides[i] = DrawObject.Materials[i]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
-			}
+			// material have the the same 
+			const size_t MaterialStride = DrawObject.Materials[0]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
 
-
-			cmd.BindDescriptorSets(std::span(materialDescriptorSets.data(), materialDescriptorSets.size()), FirstSet, std::span(strides.data(), strides.size()));
-
+			// TODO SORT SUBMESH SECTION BY METRIAL ID
 			for (const auto& SubMesh : Data.SubMeshes)
+			{
+				cmd.BindDescriptorSet(materialDescriptorSets[SubMesh.MaterialIndex], 1, MaterialStride);
+
 				cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
+			}
 
 		}
 

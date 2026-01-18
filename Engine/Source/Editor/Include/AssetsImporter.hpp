@@ -33,6 +33,7 @@ namespace PC_CORE::Rendering
 struct aiScene;
 struct aiTexture;
 enum aiTextureType;
+struct aiMaterial;
 
 BEGIN_EDITOR_PCCORE
     class AssetsImporter
@@ -71,8 +72,6 @@ BEGIN_EDITOR_PCCORE
 
         std::mutex m_mutex;
 
-        std::vector<PC_CORE::Rendering::Material> m_Materials;
-
         std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
 
         PC_CORE::ObjectPtr<PC_CORE::StaticMesh> m_StaticMeshs;
@@ -87,9 +86,9 @@ BEGIN_EDITOR_PCCORE
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
 
-        bool ImportMaterial(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
-
         void ResolveMaterial(const aiScene* scene);
+
+        void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 

@@ -39,6 +39,7 @@ RhiDescriptorSet& RhiDescriptorSet::BindUniformBuffer(RhiShaderStageTypeFlag Sha
 
 RhiDescriptorSet& RhiDescriptorSet::BindTexture(RhiShaderStageTypeFlag _ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture, const RhiSampler* _RhiSampler)
 {
+	m_MaxBindingIndex = std::max(static_cast<size_t>(_BindingIndex), m_MaxBindingIndex);
 	assert(_RhiSampler && _RhiTexture);
 
 	const RhiResourceState resourceState = RhiResourceState::Undefined;
@@ -64,6 +65,7 @@ RhiDescriptorSet& RhiDescriptorSet::BindTexture(RhiShaderStageTypeFlag _ShaderSt
 
 RhiDescriptorSet& RhiDescriptorSet::BindImageLoad(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture)
 {
+	m_MaxBindingIndex = std::max(static_cast<size_t>(_BindingIndex), m_MaxBindingIndex);
 	assert(_RhiTexture);
 	const RhiResourceState resourceState = RhiResourceState::Undefined;
 
@@ -89,6 +91,8 @@ RhiDescriptorSet& RhiDescriptorSet::BindImageLoad(RhiShaderStageTypeFlag ShaderS
 
 RhiDescriptorSet& RhiDescriptorSet::BindImageWrite(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture)
 {
+	m_MaxBindingIndex = std::max(static_cast<size_t>(_BindingIndex), m_MaxBindingIndex);
+
 	assert(_RhiTexture);
 	const RhiResourceState resourceState = RhiResourceState::Undefined;
 
@@ -114,6 +118,7 @@ RhiDescriptorSet& RhiDescriptorSet::BindImageWrite(RhiShaderStageTypeFlag Shader
 
 RhiDescriptorSet& RhiDescriptorSet::BindImageLoadWrite(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture)
 {
+	m_MaxBindingIndex = std::max(static_cast<size_t>(_BindingIndex), m_MaxBindingIndex);
 	assert(_RhiTexture);
 	const RhiResourceState resourceState = RhiResourceState::Undefined;
 

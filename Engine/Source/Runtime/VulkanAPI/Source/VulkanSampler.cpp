@@ -50,7 +50,7 @@ bool Vulkan::VulkanSampler::Build()
     samplerInfo.compareOp = Utils::RhiToVulkanCompareOp(m_CompareOp);
     samplerInfo.mipmapMode = Utils::RhiToSamplerMipmapMode(m_MipmapMode);
     samplerInfo.minLod = 0.f;
-    samplerInfo.maxLod = 0.f;
+    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 

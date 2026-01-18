@@ -294,7 +294,9 @@ void Vulkan::VulkanCommandList::EndRenderPass()
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
     _DescriptorSet, size_t _FirstSet, size_t _DynamicOffset)
 {
-    BindDescriptorSets(std::span<const PC_CORE::RhiDescriptorSet*>(&_DescriptorSet, 1), _FirstSet, _DynamicOffset != 0 ? std::span(&_DynamicOffset, 1) : std::span<size_t>());
+    BindDescriptorSets(std::span<const PC_CORE::RhiDescriptorSet*>(&_DescriptorSet, 1), 
+        _FirstSet, 
+        _DynamicOffset != std::numeric_limits<size_t>::max() ? std::span(&_DynamicOffset, 1) : std::span<size_t>());
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSets(

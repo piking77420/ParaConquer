@@ -59,17 +59,38 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 
     for (auto& ent : staticMeshes)
     {
-        const StaticMeshComponent& staticMesh = _level.GetComponent<StaticMeshComponent>(ent);
+        const StaticMeshComponent& staticMeshComponent = _level.GetComponent<StaticMeshComponent>(ent);
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
-        ObjectPtr<StaticMesh> mesh = staticMesh.staticMesh.lock();
+        ObjectPtr<StaticMesh> mesh = staticMeshComponent.staticMesh.lock();
         std::vector<const Rendering::Material*> material;
 
-        for (size_t i = 0; i < staticMesh.materials.size(); i++)
         {
-            material.push_back(staticMesh.materials[i].Lock().Get());
+            if (staticMeshComponent.materials.empty())
+            {
+                if (mesh)
+                {
+                    auto& baseMaterialsWeak = mesh->GetBaseMaterial();
+                    material.reserve(baseMaterialsWeak.size());
+                    for (auto& it : baseMaterialsWeak)
+                    {
+                        if (const auto& locked = it.Lock())
+                        {
+                            material.emplace_back(locked.get());
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (size_t i = 0; i < staticMeshComponent.materials.size(); i++)
+                {
+                    material.push_back(staticMeshComponent.materials[i].Lock().Get());
+                }
+            }
+ 
         }
-
+        
         if (!material.empty() && mesh)
         {
             const Tbx::Matrix4x4d m = Tbx::Trs4x4<double>(transform.Position,

@@ -306,7 +306,7 @@ void Editor::UpdateEditor()
         ImGui::EndMenuBar();
     }
 
-    if (testMaterial)
+    /*if (testMaterial)
     {
 
 
@@ -319,7 +319,7 @@ void Editor::UpdateEditor()
         }
 
         ImGui::End();
-    }
+    }*/
 
 
     {
@@ -365,11 +365,6 @@ void Editor::InitTestScene()
         {
             auto& level = World::GetWorld()->level;
 
-            testMaterial = ResourceManager::Create<PC_CORE::Rendering::Material>("BaseAlbedo");
-
-            testMaterial->SetAlbedoTexture(AssetsImporter->GetTextures().at("5792855332885324923.jpg").second.Lock());
-            testMaterial->Build();
-
             auto& StaticMesh = AssetsImporter->GetStaticMeshes();
 
             EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
@@ -379,7 +374,6 @@ void Editor::InitTestScene()
             t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
             t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
             StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
-            s->materials.push_back(testMaterial);
             s->staticMesh = StaticMesh;
 
             {

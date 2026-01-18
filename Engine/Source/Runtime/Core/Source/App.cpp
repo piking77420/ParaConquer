@@ -39,12 +39,30 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     TextureSampler
         ->SetMagFilter(Filter::Linear)
         .SetMinFilter(Filter::Linear)
+        .SetMipmapMode(SamplerMipmapMode::Linear)
         .SetU(SamplerAddressMode::Repeat)
         .SetV(SamplerAddressMode::Repeat)
         .SetW(SamplerAddressMode::Repeat)
         .SetName("TextureSampler")
         .Build();
 
+    DummyTexture.reset(RenderHarwareInteface.CreateTexture());
+    DummyTexture
+        ->SetTextureType(RhiTexture::Type::Texture2D)
+        .SetMemoryUsage(RhiTexture::MemoryUsage::StaticGPU)
+        .SetTextureUsage(RhiTexture::TextureUsageFlagBits::All)
+        .SetWidth(64)
+        .SetHeight(64)
+        .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+        .SetName("DummyTexture")
+        .Build();
+
+    RHI::ResourceUpdateBranch* branch = RenderHarwareInteface.GetRhiContext().ResourceUpdateBranch();
+
+    std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight());
+    branch->
+        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight()), RhiResourceState::FragmentShaderResource);
+        
 
     Time::Init();
 }
