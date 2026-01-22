@@ -130,7 +130,7 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     {
         VulkanBuffer::FreeAlloc(context, StagingBufferFrame);
     }
-    VulkanBuffer::CreateStagingBufferForCopy(context, &StagingBufferFrame, _DataSize);
+    VulkanBuffer::CreateStagingBufferForCopy(context, &StagingBufferFrame, _DataSize, m_Name.c_str());
 
     void* mappedData;
     vmaMapMemory(context.allocator, StagingBufferFrame.alloc, &mappedData);

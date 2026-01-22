@@ -37,13 +37,13 @@ BEGIN_PCCORE
                 },
                 {
                     .Binding = _binding,
-                    .Location = 3,
+                    .Location = 2,
                     .Format = RhiFormat::R32G32B32Sfloat,
                     .Offset = offsetof(StaticMeshVertex, Tangent)  
                 },
                 {
                     .Binding = _binding,
-                    .Location = 2,
+                    .Location = 3,
                     .Format = RhiFormat::R32G32Sfloat,
                     .Offset = offsetof(StaticMeshVertex, Uv)
                 }
@@ -116,7 +116,7 @@ BEGIN_PCCORE
             return *this;
         }
 
-        StaticMesh& SetBaseMaterial(const std::vector<ObjectPtr<Rendering::Material>>& _Material);
+        StaticMesh& SetBaseMaterials(const std::vector<ObjectPtr<Rendering::Material>>& _Material);
 
 
         const VertexBuffer& GetVertexBuffer() const

@@ -8,42 +8,38 @@ Texture2D AlbedoTexture : register(t1, MATERIAL_SET);
 [[vk::combinedImageSampler]]
 SamplerState AlbedoSampler : register(s1, MATERIAL_SET);
 
+[[vk::combinedImageSampler]]
+Texture2D NormalTexture : register(t2, MATERIAL_SET);
+[[vk::combinedImageSampler]]
+SamplerState NormalSampler : register(s2, MATERIAL_SET);
 
 [[vk::combinedImageSampler]]
-Texture2D MetallicTexture : register(t2, MATERIAL_SET);
+Texture2D EmissiveTexture : register(t3, MATERIAL_SET);
 [[vk::combinedImageSampler]]
-SamplerState MetallicSampler : register(s2, MATERIAL_SET);
+SamplerState EmmissiveSampler : register(s3, MATERIAL_SET);
 
 [[vk::combinedImageSampler]]
-Texture2D RoughnessTexture : register(t3, MATERIAL_SET);
+Texture2D ORMTexture : register(t4, MATERIAL_SET);
 [[vk::combinedImageSampler]]
-SamplerState RoughnessSampler : register(s3, MATERIAL_SET);
+SamplerState ORMTextureSampler : register(s4, MATERIAL_SET);
 
-[[vk::combinedImageSampler]]
-Texture2D NormalTexture : register(t4, MATERIAL_SET);
-[[vk::combinedImageSampler]]
-SamplerState NormalSampler : register(s4, MATERIAL_SET);
 
-[[vk::combinedImageSampler]]
-Texture2D EmissiveTexture : register(t5, MATERIAL_SET);
-[[vk::combinedImageSampler]]
-SamplerState EmmissiveSampler : register(s5, MATERIAL_SET);
+#define ALBEDO_KEY 0
+#define NORMAL_KEY 1
+#define EMMISIVE_KEY 2
 
-[[vk::combinedImageSampler]]
-Texture2D AOTexture : register(t6, MATERIAL_SET);
-[[vk::combinedImageSampler]]
-SamplerState AOSampler : register(s6, MATERIAL_SET);
+#define METALLIC_ROUGNESS_AO_ANI_KEY 0
+
 
 
 cbuffer DynamicObjectMaterialBuffer : register(b0, MATERIAL_SET)
 {
-    int4 TextureDescriptor; // bit flag
-    int4 TextureDescriptor2;
-    float4 Albedo;  
-    float4 MetallicRoughnessAnisotropy;
-    float3 Emissive;
+    int4 AlbedoNormalEmissiveDescriptor; // AlbedoTexture // Metallic // Rougness // Normal
+    int4 ORMTextureDescriptor; //  Emmisive // Ao
+    float4 AlbedoFactor;  
+    float4 AORoughnessMetallicEmptyFactors;
+    float3 EmissiveFactor;
     float Pad01;
-    float AO;
 };
 
 #endif // MATERIAL_HEADER_HLSL

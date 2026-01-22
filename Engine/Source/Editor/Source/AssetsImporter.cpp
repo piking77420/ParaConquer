@@ -399,31 +399,31 @@ namespace PC_EDITOR_CORE
             aiColor3D color;
             if (Material.Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS || Material.Get(AI_MATKEY_BASE_COLOR, color) == AI_SUCCESS)
             {
-                CoreMaterial.SetAlbedo(Tbx::Vector4f(color.r, color.g, color.b, 1.0f));
+                CoreMaterial.SetAlbedoFactor(Tbx::Vector4f(color.r, color.g, color.b, 1.0f));
             }
 
             float metallic = 0.0f;
             if (Material.Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS)
             {
-                CoreMaterial.SetMetallic(metallic);
+                CoreMaterial.SetMetallicFactor(metallic);
             }
 
             float roughness = 1.0f;
             if (Material.Get(AI_MATKEY_METALLIC_FACTOR, roughness) == AI_SUCCESS)
             {
-                CoreMaterial.SetRoughness(roughness);
+                CoreMaterial.SetRoughnessFactor(roughness);
             }
 
             float anisotropy = 1.0f;
             if (Material.Get(AI_MATKEY_ANISOTROPY_FACTOR, anisotropy) == AI_SUCCESS)
             {
-                CoreMaterial.SetRoughness(anisotropy);
+                CoreMaterial.SetRoughnessFactor(anisotropy);
             }
 
             aiColor3D emmisive;
             if (Material.Get(AI_MATKEY_COLOR_EMISSIVE, emmisive) == AI_SUCCESS)
             {
-                CoreMaterial.SetEmmisive(Tbx::Vector3f(emmisive.r, emmisive.g, emmisive.b));
+                CoreMaterial.SetEmmisiveFactor(Tbx::Vector3f(emmisive.r, emmisive.g, emmisive.b));
             }
         }
 
@@ -434,7 +434,7 @@ namespace PC_EDITOR_CORE
 
         if (m_StaticMeshs)
         {
-            m_StaticMeshs->SetBaseMaterial(Materials);
+            m_StaticMeshs->SetBaseMaterials(Materials);
         }
     }
 
@@ -491,26 +491,21 @@ namespace PC_EDITOR_CORE
                     if (!Texture)
                         continue;
 
-                    if (type == aiTextureType_BASE_COLOR || type == aiTextureType_DIFFUSE)
+                    if (type == aiTextureType_DIFFUSE)
                         CoreMaterial.SetAlbedoTexture(Texture);
 
-                    if (type == aiTextureType_DIFFUSE_ROUGHNESS)
-                        CoreMaterial.SetRoughness(Texture);
-
-                    if (type == aiTextureType_METALNESS)
-                        CoreMaterial.SetMetallic(Texture);
+                    if (type == aiTextureType_METALNESS ||
+                        type == aiTextureType_DIFFUSE_ROUGHNESS ||
+                        type == aiTextureType_AMBIENT_OCCLUSION)
+                    {
+                        CoreMaterial.SetMetallicRoughnessAOTexture(Texture);
+                    }
 
                     if (type == aiTextureType_NORMAL_CAMERA || type == aiTextureType_NORMALS)
                         CoreMaterial.SetNormalTexture(Texture);
 
                     if (type == aiTextureType_EMISSIVE || type == aiTextureType_EMISSION_COLOR)
                         CoreMaterial.SetEmissiveTexture(Texture);
-
-                    if (type == aiTextureType_LIGHTMAP || type == aiTextureType_AMBIENT_OCCLUSION)
-                        CoreMaterial.SetAoTexture(Texture);
-
-                   
-
                 }
             }
 

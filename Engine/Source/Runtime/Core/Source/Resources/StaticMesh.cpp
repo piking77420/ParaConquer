@@ -49,7 +49,7 @@ void StaticMesh::AfterDeSerialize(Serializer* _serializer)
     }*/
 }
 
-StaticMesh& StaticMesh::SetBaseMaterial(const std::vector<ObjectPtr<Rendering::Material>>& _Material)
+StaticMesh& StaticMesh::SetBaseMaterials(const std::vector<ObjectPtr<Rendering::Material>>& _Material)
 {
     m_BaseMaterials.resize(_Material.size());
     for (size_t i = 0; i < _Material.size(); i++)

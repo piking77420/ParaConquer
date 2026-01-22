@@ -21,12 +21,9 @@ namespace PC_CORE::Rendering
     enum struct MaterialAttribute : uint8_t
     {
         AlbedoFactors,
-        Metallic,
-        Roughness,
-        Anisotropy,
         Normal,
         Emisive,
-        Ao,
+        AoRoughnessMetallic,
     };
  
     namespace Gpu
@@ -35,10 +32,9 @@ namespace PC_CORE::Rendering
         {
             std::array<int, 8> TextureDescriptor = {0};
             Gpu::vec4 AlbedoFactors = {0.f};
-            Gpu::vec4 MetallicRoughnessAnisotropyFactors{ 0.f };
+            Gpu::vec4 AORoughnessMetallicFactors{ 0.f };
             Gpu::vec3 EmissiveFactor{ 0.f };
-            float Pad01 = 0xDEAD;
-            float AO = 0.f;
+            int UseAlpha = 0;
         };
     }
 
@@ -58,13 +54,13 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API void Build();
 
-        Material& SetAlbedo(const Tbx::Vector4f& _Albedo)
+        Material& SetAlbedoFactor(const Tbx::Vector4f& _Albedo)
         {
             m_Albedo = _Albedo;
             return *this;
         }
 
-        Material& SetMetallic(float _Metallic)
+        Material& SetMetallicFactor(float _Metallic)
         {
             m_Metallic = _Metallic;
             return *this;
@@ -76,19 +72,19 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
-        Material& SetRoughness(float _Roughness)
+        Material& SetRoughnessFactor(float _Roughness)
         {
             m_Roughness = _Roughness;
             return *this;
         }
 
-        Material& SetAnisotropy(float _Anisotropy)
+        Material& SetAnisotropyFactor(float _Anisotropy)
         {
             m_Anisotropy = _Anisotropy;
             return *this;
         }
 
-        Material& SetEmmisive(const Tbx::Vector3f& _Emmisive)
+        Material& SetEmmisiveFactor(const Tbx::Vector3f& _Emmisive)
         {
             m_Emmisive = _Emmisive;
             return *this;
@@ -100,21 +96,21 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
+        Material& GetUseAlpha(bool _UseAlpha)
+        {
+            m_UseAlpha = _UseAlpha;
+            return *this;
+        }
+
         Material& SetAlbedoTexture(const ObjectPtr<Texture2D>& _AlbedoTexture)
         {
             m_Textures[static_cast<size_t>(MaterialAttribute::AlbedoFactors)] = _AlbedoTexture;
             return *this;
         }
 
-        Material& SetMetallic(const ObjectPtr<Texture2D>& _MetallicSpecularRougnessTextureTextureAnisotropy)
+        Material& SetMetallicRoughnessAOTexture(const ObjectPtr<Texture2D>& _MetallicSpecularRougnessTextureTextureAnisotropy)
         {
-            m_Textures[static_cast<size_t>(MaterialAttribute::Metallic)] = _MetallicSpecularRougnessTextureTextureAnisotropy;
-            return *this;
-        }
-
-        Material& SetRoughness(const ObjectPtr<Texture2D>& _Roughness)
-        {
-            m_Textures[static_cast<size_t>(MaterialAttribute::Roughness)] = _Roughness;
+            m_Textures[static_cast<size_t>(MaterialAttribute::AoRoughnessMetallic)] = _MetallicSpecularRougnessTextureTextureAnisotropy;
             return *this;
         }
 
@@ -124,22 +120,10 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
-        Material& SetAnisotropyTexture(const ObjectPtr<Texture2D>& _Texture)
-        {
-            m_Textures[static_cast<size_t>(MaterialAttribute::Anisotropy)] = _Texture;
-            return *this;
-        }
-
 
         Material& SetEmissiveTexture(const ObjectPtr<Texture2D>& _Texture)
         {
             m_Textures[static_cast<size_t>(MaterialAttribute::Emisive)] = _Texture;
-            return *this;
-        }
-
-        Material& SetAoTexture(const ObjectPtr<Texture2D>& _Texture)
-        {
-            m_Textures[static_cast<size_t>(MaterialAttribute::Ao)] = _Texture;
             return *this;
         }
 
@@ -180,12 +164,17 @@ namespace PC_CORE::Rendering
             return m_AmbiantOcclusion;
         }
 
+        bool GetUseAlpha() const
+        {
+            return m_UseAlpha;
+        }
+
         const RhiDescriptorSet* GetDescriptorSet() const;
 
         size_t GetMaterialStride() const;
     private:
 
-        std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_Textures;
+        std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::AoRoughnessMetallic) + 1> m_Textures;
 
         Tbx::Vector4f m_Albedo = Tbx::Vector4f(0.f, 0.f, 0.f, 1.0f);
 
@@ -202,6 +191,8 @@ namespace PC_CORE::Rendering
         float m_AmbiantOcclusion = 0.f;
 
         MaterialType MaterialType = MaterialType::Opaque;
+
+        bool m_UseAlpha = false;
 
         std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
 

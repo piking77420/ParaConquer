@@ -354,7 +354,7 @@ void Editor::InitTestScene()
     PERF_REGION_COLOR(PerfRegion::Editor);
     PC_LOG("InitTestScene...")
         
-    m_ImportThread.reset(new std::jthread([&]() {
+   m_ImportThread.reset(new std::jthread([&]() {
         Utils::SetThreadName("ImportThread");
         AssetsImporter.emplace();
         AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");

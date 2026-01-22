@@ -104,34 +104,22 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
         case MaterialAttribute::AlbedoFactors:
             std::memcpy(_MaterialBuffer.AlbedoFactors.data.data(), &m_Albedo.x, sizeof(_MaterialBuffer.AlbedoFactors.data));
             break;
-        case MaterialAttribute::Metallic:
-        {
-            std::array<float, 4> buffer;
-            buffer[0] = m_Metallic;
-            buffer[1] = m_Specular;
-            buffer[2] = m_Roughness;
-            buffer[3] = m_Anisotropy;
-            std::memcpy(_MaterialBuffer.MetallicRoughnessAnisotropyFactors.data.data(), &buffer, sizeof(_MaterialBuffer.MetallicRoughnessAnisotropyFactors.data));
-        }
-        break;
-        case MaterialAttribute::Roughness:
-
-            break;
         case MaterialAttribute::Normal:
             break;
         case MaterialAttribute::Emisive:
             std::memcpy(_MaterialBuffer.EmissiveFactor.data.data(), &m_Emmisive, sizeof(_MaterialBuffer.EmissiveFactor.data));
             break;
-        case MaterialAttribute::Ao:
-            _MaterialBuffer.AO = m_AmbiantOcclusion;
+        case MaterialAttribute::AoRoughnessMetallic:
+            _MaterialBuffer.AORoughnessMetallicFactors.data[0] = m_AmbiantOcclusion;
+            _MaterialBuffer.AORoughnessMetallicFactors.data[1] = m_Metallic;
+            _MaterialBuffer.AORoughnessMetallicFactors.data[2] = m_Roughness;
             break;
-
         default:
             break;
         }
     }
 
-
+    _MaterialBuffer.UseAlpha = m_UseAlpha;
 }
 
 }

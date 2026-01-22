@@ -179,7 +179,7 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
 
     if (stagingBuffer.buffer != VK_NULL_HANDLE)
         FreeAlloc(context, stagingBuffer);
-    CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes);
+    CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes, m_Name.c_str());
     
     // Copy Data to stagingBuffer
     void* mappedData;
@@ -270,7 +270,7 @@ void Vulkan::VulkanBuffer::EndBufferUpdate()
     m_CurrentFrameMappedData[index] = nullptr;
 }
 
-void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes) // TODO MAKE AN HELPER CLASS 
+void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes, const char* BufferName) // TODO MAKE AN HELPER CLASS 
 {
     
     vk::BufferCreateInfo bufferCreate{};
@@ -280,7 +280,7 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
     bufferCreate.sharingMode = vk::SharingMode::eExclusive;
     
     VmaAllocationInfo VmaAllocationInfo;
-    VmaAllocationInfo.pName = "StagingBuffer";
+    VmaAllocationInfo.pName = BufferName;
     
     VmaAllocationCreateInfo aCreateInfo{};
     aCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -296,7 +296,7 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
     nameInfo.pNext = nullptr;
     nameInfo.objectType = vk::ObjectType::eBuffer;
     nameInfo.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkBuffer>(bufferAndAlloc->buffer));
-    nameInfo.pObjectName = "StagingBuffer";
+    nameInfo.pObjectName = BufferName;
     
     _VkContext.GetInstance()->SetDebugName(device, &nameInfo);
 }
