@@ -23,7 +23,7 @@ void PC_CORE::Gbuffers::CreateGBuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size)
         RhiFormat format{};
         switch (gbufferType)
         {
-        case GbufferType::Albedo:
+        case GbufferType::AlbedoFactors:
             format = RhiFormat::R16G16B16A16Sfloat;
             break;
         case GbufferType::Normal:

@@ -440,26 +440,6 @@ namespace PC_EDITOR_CORE
 
     void AssetsImporter::FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material)
     {
-        // TODO 
-        // USE THIS 
-        //
-        // aiString mrTexture;
-        /*
-        if (Material.Get(
-            AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
-            mrTexture) == AI_SUCCESS)
-        {
-            auto it = m_TextureMaps.find(mrTexture.C_Str());
-            if (it != m_TextureMaps.end())
-            {
-                auto tex = it->second.second.Lock();
-                if (tex)
-                {
-                    CoreMaterial.SetMetallicRougnessAnisotropyTexture(tex);
-                }
-            }
-        }*/
-
 
         for (size_t j = 0; j < static_cast<size_t>(AI_TEXTURE_TYPE_MAX); j++)
         {
@@ -471,6 +451,9 @@ namespace PC_EDITOR_CORE
             case aiTextureType_BASE_COLOR:// PBR albedo
             case aiTextureType_DIFFUSE:
                 break;
+            case aiTextureType_METALNESS: // metallic
+                break;
+            case aiTextureType_DIFFUSE_ROUGHNESS: // Rouhness
                 break;
             case aiTextureType_NORMAL_CAMERA:
             case aiTextureType_NORMALS: // Normal
@@ -478,16 +461,11 @@ namespace PC_EDITOR_CORE
             case aiTextureType_EMISSION_COLOR:
             case aiTextureType_EMISSIVE: // Emisive
                 break;
-
-
             case aiTextureType_LIGHTMAP: // AO
             case aiTextureType_AMBIENT_OCCLUSION:
                 break;
             case aiTextureType_GLTF_METALLIC_ROUGHNESS:
-                break;
             case aiTextureType_SPECULAR:
-            case aiTextureType_METALNESS:
-            case aiTextureType_DIFFUSE_ROUGHNESS:
             case aiTextureType_HEIGHT:
             case aiTextureType_SHININESS:
             case aiTextureType_OPACITY:
@@ -516,17 +494,22 @@ namespace PC_EDITOR_CORE
                     if (type == aiTextureType_BASE_COLOR || type == aiTextureType_DIFFUSE)
                         CoreMaterial.SetAlbedoTexture(Texture);
 
+                    if (type == aiTextureType_DIFFUSE_ROUGHNESS)
+                        CoreMaterial.SetRoughness(Texture);
+
+                    if (type == aiTextureType_METALNESS)
+                        CoreMaterial.SetMetallic(Texture);
+
                     if (type == aiTextureType_NORMAL_CAMERA || type == aiTextureType_NORMALS)
                         CoreMaterial.SetNormalTexture(Texture);
 
                     if (type == aiTextureType_EMISSIVE || type == aiTextureType_EMISSION_COLOR)
-                        CoreMaterial.SetEmisiveTexture(Texture);
+                        CoreMaterial.SetEmissiveTexture(Texture);
 
                     if (type == aiTextureType_LIGHTMAP || type == aiTextureType_AMBIENT_OCCLUSION)
                         CoreMaterial.SetAoTexture(Texture);
 
-                    if (type == aiTextureType_GLTF_METALLIC_ROUGHNESS)
-                        CoreMaterial.SetMetallicRougnessAnisotropyTexture(Texture);
+                   
 
                 }
             }

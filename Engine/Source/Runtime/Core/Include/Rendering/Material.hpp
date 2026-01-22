@@ -20,8 +20,10 @@ namespace PC_CORE::Rendering
 
     enum struct MaterialAttribute : uint8_t
     {
-        Albedo,
-        MetallicRoughnessAnisotropy,
+        AlbedoFactors,
+        Metallic,
+        Roughness,
+        Anisotropy,
         Normal,
         Emisive,
         Ao,
@@ -32,9 +34,9 @@ namespace PC_CORE::Rendering
         struct GPU_ALIGN MaterialBuffer
         {
             std::array<int, 8> TextureDescriptor = {0};
-            Gpu::vec4 Albedo = {0.f};
-            Gpu::vec4 MetallicRoughnessAnisotropy{ 0.f };
-            Gpu::vec3 Emissive{ 0.f };
+            Gpu::vec4 AlbedoFactors = {0.f};
+            Gpu::vec4 MetallicRoughnessAnisotropyFactors{ 0.f };
+            Gpu::vec3 EmissiveFactor{ 0.f };
             float Pad01 = 0xDEAD;
             float AO = 0.f;
         };
@@ -100,13 +102,19 @@ namespace PC_CORE::Rendering
 
         Material& SetAlbedoTexture(const ObjectPtr<Texture2D>& _AlbedoTexture)
         {
-            m_Textures[static_cast<size_t>(MaterialAttribute::Albedo)] = _AlbedoTexture;
+            m_Textures[static_cast<size_t>(MaterialAttribute::AlbedoFactors)] = _AlbedoTexture;
             return *this;
         }
 
-        Material& SetMetallicRougnessAnisotropyTexture(const ObjectPtr<Texture2D>& _MetallicSpecularRougnessTextureTextureAnisotropy)
+        Material& SetMetallic(const ObjectPtr<Texture2D>& _MetallicSpecularRougnessTextureTextureAnisotropy)
         {
-            m_Textures[static_cast<size_t>(MaterialAttribute::MetallicRoughnessAnisotropy)] = _MetallicSpecularRougnessTextureTextureAnisotropy;
+            m_Textures[static_cast<size_t>(MaterialAttribute::Metallic)] = _MetallicSpecularRougnessTextureTextureAnisotropy;
+            return *this;
+        }
+
+        Material& SetRoughness(const ObjectPtr<Texture2D>& _Roughness)
+        {
+            m_Textures[static_cast<size_t>(MaterialAttribute::Roughness)] = _Roughness;
             return *this;
         }
 
@@ -116,7 +124,14 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
-        Material& SetEmisiveTexture(const ObjectPtr<Texture2D>& _Texture)
+        Material& SetAnisotropyTexture(const ObjectPtr<Texture2D>& _Texture)
+        {
+            m_Textures[static_cast<size_t>(MaterialAttribute::Anisotropy)] = _Texture;
+            return *this;
+        }
+
+
+        Material& SetEmissiveTexture(const ObjectPtr<Texture2D>& _Texture)
         {
             m_Textures[static_cast<size_t>(MaterialAttribute::Emisive)] = _Texture;
             return *this;

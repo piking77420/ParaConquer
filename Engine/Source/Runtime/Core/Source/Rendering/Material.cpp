@@ -97,36 +97,37 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
         {
             _MaterialBuffer.TextureDescriptor[i] = 1;
         }
-        else
-        {
-            const MaterialAttribute att = static_cast<MaterialAttribute>(i);
-            switch (att)
-            {
-			case MaterialAttribute::Albedo:
-                std::memcpy(_MaterialBuffer.Albedo.data.data(), &m_Albedo.x, sizeof(_MaterialBuffer.Albedo.data));
-				break;
-            case MaterialAttribute::MetallicRoughnessAnisotropy:
-            {
-                std::array<float, 4> buffer;
-                buffer[0] = m_Metallic;
-                buffer[1] = m_Specular;
-                buffer[2] = m_Roughness;
-                buffer[3] = m_Anisotropy;
-                std::memcpy(_MaterialBuffer.MetallicRoughnessAnisotropy.data.data(), &buffer, sizeof(_MaterialBuffer.MetallicRoughnessAnisotropy.data));
-            }
-				break;
-			case MaterialAttribute::Normal:
-				break;
-			case MaterialAttribute::Emisive:
-                std::memcpy(_MaterialBuffer.Emissive.data.data(), &m_Emmisive, sizeof(_MaterialBuffer.Emissive.data));
-				break;
-			case MaterialAttribute::Ao:
-                _MaterialBuffer.AO = m_AmbiantOcclusion;
-				break;
 
-            default:
-                break;
-            }
+        const MaterialAttribute att = static_cast<MaterialAttribute>(i);
+        switch (att)
+        {
+        case MaterialAttribute::AlbedoFactors:
+            std::memcpy(_MaterialBuffer.AlbedoFactors.data.data(), &m_Albedo.x, sizeof(_MaterialBuffer.AlbedoFactors.data));
+            break;
+        case MaterialAttribute::Metallic:
+        {
+            std::array<float, 4> buffer;
+            buffer[0] = m_Metallic;
+            buffer[1] = m_Specular;
+            buffer[2] = m_Roughness;
+            buffer[3] = m_Anisotropy;
+            std::memcpy(_MaterialBuffer.MetallicRoughnessAnisotropyFactors.data.data(), &buffer, sizeof(_MaterialBuffer.MetallicRoughnessAnisotropyFactors.data));
+        }
+        break;
+        case MaterialAttribute::Roughness:
+
+            break;
+        case MaterialAttribute::Normal:
+            break;
+        case MaterialAttribute::Emisive:
+            std::memcpy(_MaterialBuffer.EmissiveFactor.data.data(), &m_Emmisive, sizeof(_MaterialBuffer.EmissiveFactor.data));
+            break;
+        case MaterialAttribute::Ao:
+            _MaterialBuffer.AO = m_AmbiantOcclusion;
+            break;
+
+        default:
+            break;
         }
     }
 

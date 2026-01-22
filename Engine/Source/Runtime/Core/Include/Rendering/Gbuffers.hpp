@@ -9,7 +9,7 @@
 BEGIN_PCCORE
 enum struct GbufferType : std::uint8_t
 {
-Albedo,
+AlbedoFactors,
 Normal,
 RoughnessMetallicAo,
 WorldPosition,
@@ -21,7 +21,7 @@ inline std::string GbufferTypeToString(GbufferType _gbufferType)
 {
 switch (_gbufferType)
 {
-case GbufferType::Albedo:
+case GbufferType::AlbedoFactors:
     return "Albedo";
 case GbufferType::Normal:
     return "Normal";

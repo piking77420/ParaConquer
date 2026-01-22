@@ -313,7 +313,7 @@ void Editor::UpdateEditor()
         ImGui::Begin("TestUpdateMaterial");
 
         auto& m = testMaterial->BeginUpdateMaterialData();
-        if (ImGui::ColorPicker4("Color", &m.Albedo.data[0]))
+        if (ImGui::ColorPicker4("Color", &m.AlbedoFactors.data[0]))
         {
             testMaterial->UpdateMaterialData();
         }

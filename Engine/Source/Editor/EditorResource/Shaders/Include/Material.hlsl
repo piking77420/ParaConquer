@@ -10,24 +10,29 @@ SamplerState AlbedoSampler : register(s1, MATERIAL_SET);
 
 
 [[vk::combinedImageSampler]]
-Texture2D MetallicRouhnessTexture : register(t2, MATERIAL_SET);
+Texture2D MetallicTexture : register(t2, MATERIAL_SET);
 [[vk::combinedImageSampler]]
-SamplerState MetallicRouhnessSampler : register(s2, MATERIAL_SET);
+SamplerState MetallicSampler : register(s2, MATERIAL_SET);
 
 [[vk::combinedImageSampler]]
-Texture2D NormalTexture : register(t3, MATERIAL_SET);
+Texture2D RoughnessTexture : register(t3, MATERIAL_SET);
 [[vk::combinedImageSampler]]
-SamplerState NormalSampler : register(s3, MATERIAL_SET);
+SamplerState RoughnessSampler : register(s3, MATERIAL_SET);
 
 [[vk::combinedImageSampler]]
-Texture2D EmissiveTexture : register(t4, MATERIAL_SET);
+Texture2D NormalTexture : register(t4, MATERIAL_SET);
 [[vk::combinedImageSampler]]
-SamplerState EmmissiveSampler : register(s4, MATERIAL_SET);
+SamplerState NormalSampler : register(s4, MATERIAL_SET);
 
 [[vk::combinedImageSampler]]
-Texture2D AOTexture : register(t5, MATERIAL_SET);
+Texture2D EmissiveTexture : register(t5, MATERIAL_SET);
 [[vk::combinedImageSampler]]
-SamplerState AOSampler : register(s5, MATERIAL_SET);
+SamplerState EmmissiveSampler : register(s5, MATERIAL_SET);
+
+[[vk::combinedImageSampler]]
+Texture2D AOTexture : register(t6, MATERIAL_SET);
+[[vk::combinedImageSampler]]
+SamplerState AOSampler : register(s6, MATERIAL_SET);
 
 
 cbuffer DynamicObjectMaterialBuffer : register(b0, MATERIAL_SET)
