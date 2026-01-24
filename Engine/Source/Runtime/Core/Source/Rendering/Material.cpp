@@ -25,6 +25,20 @@ Material::~Material()
 void Material::Build()
 {
     PC_LOG_VERBOSE("Build Material Name {}", Name);
+
+    switch (m_MaterialType)
+    {
+    case PC_CORE::Rendering::MaterialType::Opaque:
+        m_Program = App::Instance->Renderer.opaqueFowardShader.get();
+        break;
+    case PC_CORE::Rendering::MaterialType::Transparent:
+        m_Program = App::Instance->Renderer.transparentForwardShader.get();
+        break;
+    default:
+        break;
+    }
+
+
     
     m_RhiMaterialBuffer.reset(App::Instance->RenderHarwareInteface.CreateBuffer());
     m_RhiMaterialBuffer
@@ -118,7 +132,6 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
             break;
         }
     }
-
     _MaterialBuffer.UseAlpha = m_UseAlpha;
 }
 

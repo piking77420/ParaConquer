@@ -154,8 +154,8 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")->GetCode() }
            };
 
-           fowardShader.reset(m_Rhi.CreateRhiShaderProgram());
-           fowardShader
+           opaqueFowardShader.reset(m_Rhi.CreateRhiShaderProgram());
+           opaqueFowardShader
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
@@ -164,8 +164,36 @@ namespace PC_CORE::Rendering
                .SetDepthWrite(true)
                .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
                .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
-               .SetName("FowardShader")
+               .SetName("Opaque FowardShader")
                .Build();
+
+
+           constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
+           {
+               .ColorSrcFactor = PC_CORE::BlendFactor::One,
+               .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+               .ColorOp = PC_CORE::BlendOp::Add,
+
+               .AlphaSrcFactor = PC_CORE::BlendFactor::One,
+               .AlphaDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+               .AlphaOp = PC_CORE::BlendOp::Add,
+
+               .BlendMask = PC_CORE::ColorComponent::ColorComponentRGBA
+           };
+           transparentForwardShader.reset(m_Rhi.CreateRhiShaderProgram());
+           transparentForwardShader
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(shaderModules)
+               .SetRenderPass(*forwardPass)
+               .SetDepthTest(true)
+               .SetDepthWrite(true)
+               .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
+               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
+               .SetName("Transparent FowardShader")
+               .SetBlendState(blenstate)
+               .Build();
+
        }
    }
 

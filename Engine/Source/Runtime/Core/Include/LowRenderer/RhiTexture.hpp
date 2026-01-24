@@ -117,6 +117,12 @@ public:
         return *this;
     }
 
+    RhiTexture& SetUseAlpha(bool _UseAlpha) 
+    {
+        m_UseAlpha = _UseAlpha;
+        return *this;
+    }
+
     // Getter
 
     uint32_t GetWidth() const
@@ -173,6 +179,11 @@ public:
     {
         return m_RhiResourceState;
     }
+
+    bool UseAlpha() const
+    {
+        return m_UseAlpha;
+    }
     
     static bool IsDepthFormat(RhiFormat _format);
 
@@ -197,6 +208,8 @@ protected:
     RhiFormat m_RhiFormat = RhiFormat::Undefined;
 
     RhiResourceState m_RhiResourceState = RhiResourceState::Undefined;
+
+    bool m_UseAlpha : 1 = false;
 };
 
 

@@ -92,8 +92,6 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetViewPort(viewPort);
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
-		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.fowardShader);
-		cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
 		const auto& DrawObjects = _RendererPassExecuteContext.RenderingWorldData.StaticMeshComponentData;
 		for (const auto& DrawObject : DrawObjects)
@@ -104,16 +102,7 @@ namespace PC_CORE::Rendering::Pass
 			Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * DrawObject.WorldMatrix;
 			Tbx::Matrix4x4d NormalInvMatrixView = _RendererPassExecuteContext.View.View * DrawObject.NormalInvertMatrix;
 
-			struct ModelPushConstant
-			{
-				Gpu::mat4 ModelView;
-				Gpu::mat4 NormalInvMatrixView;
-			}PushConstant;
-			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
-			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-			cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
-
-	
+			
 
 			CommandList::DrawBuffers drawBuffer;
 			drawBuffer
@@ -127,21 +116,39 @@ namespace PC_CORE::Rendering::Pass
 				);
 			cmd.BindDrawBuffers(drawBuffer);
 
-			static constexpr size_t FirstSet = 1ull;
-			std::vector<const RhiDescriptorSet*> materialDescriptorSets;
-			materialDescriptorSets.resize(DrawObject.Materials.size());
-			for (size_t i = 0; i < DrawObject.Materials.size(); i++)
-			{
-				materialDescriptorSets[i] = DrawObject.Materials[i]->GetDescriptorSet();
-			}
-			
 			// material have the the same 
 			const size_t MaterialStride = DrawObject.Materials[0]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
 
 			// TODO SORT SUBMESH SECTION BY METRIAL ID
 			for (const auto& SubMesh : Data.SubMeshes)
 			{
-				cmd.BindDescriptorSet(materialDescriptorSets[SubMesh.MaterialIndex], 1, MaterialStride);
+				PC_CORE::Rendering::MaterialType type = DrawObject.Materials[SubMesh.MaterialIndex]->GetMaterialType();
+
+				switch (type)
+				{
+				case PC_CORE::Rendering::MaterialType::Opaque:
+					cmd.BindProgram(*_RendererPassExecuteContext.Renderer.opaqueFowardShader);
+					break;
+				case PC_CORE::Rendering::MaterialType::Transparent:
+					cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
+					break;
+				default:
+					break;
+				}
+
+				// TODO MOVE THIS per mesh or subsidvce submesh -> static mehs
+				struct ModelPushConstant
+				{
+					Gpu::mat4 ModelView;
+					Gpu::mat4 NormalInvMatrixView;
+				}PushConstant;
+				Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
+				Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
+				cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
+
+
+				cmd.BindDescriptorSet(DrawObject.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
+				cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
 				cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
 			}

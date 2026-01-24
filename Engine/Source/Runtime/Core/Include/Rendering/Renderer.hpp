@@ -28,7 +28,9 @@ public:
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
-    std::unique_ptr<RhiShaderProgram> fowardShader;
+    std::unique_ptr<RhiShaderProgram> opaqueFowardShader;
+
+    std::unique_ptr<RhiShaderProgram> transparentForwardShader;
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 

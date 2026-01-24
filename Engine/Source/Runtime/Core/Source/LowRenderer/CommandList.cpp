@@ -37,13 +37,6 @@ namespace PC_CORE
             command(this);
     }
 
-    const RhiShaderProgram& CommandList::GetLastBindProgram() const
-    {
-        assert(m_LastBindProgram != nullptr && "Forgot to bind a ShaderProgram ? ");
-
-        return *m_LastBindProgram;
-    }
-
     bool CommandList::DrawBufferStateChanged(const DrawBuffers& _DrawBuffers)
     {
         PERF_REGION_SCOPED;
@@ -55,12 +48,6 @@ namespace PC_CORE
 
         return changed;
     }
-
-    void CommandList::BindProgram(const RhiShaderProgram& _RhiShaderProgram)
-    {
-        m_LastBindProgram = &_RhiShaderProgram;
-    }
-
 
 } // namespace PC_CORE
 

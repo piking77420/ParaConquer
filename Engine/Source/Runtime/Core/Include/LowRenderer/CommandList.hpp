@@ -178,7 +178,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void NextSubPass() = 0;
 
-        PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram);
+        PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;
 
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
@@ -261,12 +261,11 @@ BEGIN_PCCORE
 
         DrawBuffers m_LastDrawBuffersState;
 
-        const RhiShaderProgram& GetLastBindProgram() const;
+       const RhiShaderProgram* m_LastBindProgram = nullptr;
 
-        bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
+       bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
 
-        private:
-            const RhiShaderProgram* m_LastBindProgram = nullptr;
+     private:
 
     };
 

@@ -39,7 +39,7 @@ cbuffer DynamicObjectMaterialBuffer : register(b0, MATERIAL_SET)
     float4 AlbedoFactor;  
     float4 AORoughnessMetallicEmptyFactors;
     float3 EmissiveFactor;
-    float Pad01;
+    int UseAlpha;
 };
 
 #endif // MATERIAL_HEADER_HLSL

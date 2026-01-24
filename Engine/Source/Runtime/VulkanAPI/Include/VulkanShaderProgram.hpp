@@ -91,7 +91,7 @@ namespace Vulkan
 
         void ParsePipelineColorAttachementBlendState(
             vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
-            const BlendState* _blendInfo);
+            const std::optional<RhiShaderProgram::BlendState>&);
 
         void ParsePipelineDepthStencilAttachmentState(
             vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
@@ -100,7 +100,7 @@ namespace Vulkan
         void ParseParsePipelineColorBlendState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo,
             const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
             size_t _PipelineColorBlendAttachmentSize,
-            const BlendState* _blendInfo);
+            const std::optional<RhiShaderProgram::BlendState>& _blendInfo);
 
         vk::VertexInputBindingDescription ParseVertexInputBindingDescription(
             const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition);

@@ -108,6 +108,7 @@ namespace PC_EDITOR_CORE
            // Load the model with common processing flags
            scene = importer.ReadFile(
                _path.generic_string().c_str(),
+               aiProcess_FlipUVs |
                aiProcess_Triangulate |
                aiProcess_JoinIdenticalVertices |
                aiProcess_GenNormals |
@@ -307,14 +308,15 @@ namespace PC_EDITOR_CORE
                     const auto texturePath = m_filePath.parent_path() / std::filesystem::u8path(textureName.C_Str());
                     if (std::filesystem::exists(texturePath))
                     {
-                        PC_CORE::Image image(texturePath.generic_string().c_str(), PC_CORE::RhiChannel::Rgba);
+                        std::string pathString = texturePath.generic_string();
+                        PC_CORE::Image image(pathString.c_str(), PC_CORE::RhiChannel::Rgba);
                         std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
 
                         if (!texture || !image)
                             return;
                         
                         texture->SetName(textureName.C_Str());
-                        BuildRhiTextureFromImage(_Rhi, *texture, &image);
+                        BuildRhiTextureFromImage(_Rhi, *texture, &image, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
                         PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
                         pair.first = type;
@@ -395,13 +397,30 @@ namespace PC_EDITOR_CORE
             aiMaterial& Material = *scene->mMaterials[i];
             PC_CORE::Rendering::Material& CoreMaterial = *Materials[i];
             FillMaterialTexture(CoreMaterial, *scene->mMaterials[i]);
-           
-            aiColor3D color;
-            if (Material.Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS || Material.Get(AI_MATKEY_BASE_COLOR, color) == AI_SUCCESS)
-            {
-                CoreMaterial.SetAlbedoFactor(Tbx::Vector4f(color.r, color.g, color.b, 1.0f));
-            }
 
+            {
+                aiColor4D color;
+                bool hasColor = false;
+
+                // Prefer PBR base color
+                if (Material.Get(AI_MATKEY_BASE_COLOR, color) == AI_SUCCESS)
+                {
+                    hasColor = true;
+                }
+                // Fallback to legacy diffuse
+                else if (Material.Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+                {
+                    hasColor = true;
+                }
+
+                if (hasColor)
+                {
+                    CoreMaterial.SetAlbedoFactor(Tbx::Vector4f{
+                        color.r, color.g, color.b, color.a
+                        });
+                }
+            }
+            
             float metallic = 0.0f;
             if (Material.Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS)
             {
@@ -425,6 +444,15 @@ namespace PC_EDITOR_CORE
             {
                 CoreMaterial.SetEmmisiveFactor(Tbx::Vector3f(emmisive.r, emmisive.g, emmisive.b));
             }
+
+            float opacity = 1.0f;
+            if (AI_SUCCESS == Material.Get(AI_MATKEY_OPACITY, opacity)) {
+                if (opacity < 1.0f) {
+                      // Material is transparent
+                    CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialType::Transparent);
+                    CoreMaterial.SetUseAlpha(true);
+                }
+            }
         }
 
         for (auto& m : Materials)
@@ -444,12 +472,14 @@ namespace PC_EDITOR_CORE
         for (size_t j = 0; j < static_cast<size_t>(AI_TEXTURE_TYPE_MAX); j++)
         {
             const aiTextureType type = static_cast<aiTextureType>(j);
+
             switch (type)
             {
             case aiTextureType_NONE:
                 continue;
             case aiTextureType_BASE_COLOR:// PBR albedo
             case aiTextureType_DIFFUSE:
+            case aiTextureType_OPACITY:
                 break;
             case aiTextureType_METALNESS: // metallic
                 break;
@@ -468,7 +498,6 @@ namespace PC_EDITOR_CORE
             case aiTextureType_SPECULAR:
             case aiTextureType_HEIGHT:
             case aiTextureType_SHININESS:
-            case aiTextureType_OPACITY:
             case aiTextureType_DISPLACEMENT:
             case aiTextureType_AMBIENT:
             case aiTextureType_REFLECTION:
@@ -492,7 +521,13 @@ namespace PC_EDITOR_CORE
                         continue;
 
                     if (type == aiTextureType_DIFFUSE)
+                    {
                         CoreMaterial.SetAlbedoTexture(Texture);
+                        if (Texture->Get()->UseAlpha())
+                        {
+                            CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialType::Transparent);
+                        }
+                    }
 
                     if (type == aiTextureType_METALNESS ||
                         type == aiTextureType_DIFFUSE_ROUGHNESS ||
@@ -521,7 +556,7 @@ namespace PC_EDITOR_CORE
             PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName, PC_CORE::RhiChannel::Rgba);
             RhiTexturePtr->SetName(TextureName);
 
-            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image);
+            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, false); // TODO ALPHA
             return RhiTexturePtr;
         }
         else
@@ -532,7 +567,7 @@ namespace PC_EDITOR_CORE
         return nullptr;
     }
 
-    void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image)
+    void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha)
     {
         assert(!_Image->IsHdr());
 
@@ -543,7 +578,8 @@ namespace PC_EDITOR_CORE
             .SetTextureType(PC_CORE::RhiTexture::Type::Texture2D)
             .SetWidth(_Image->GetWidht())
             .SetHeight(_Image->GetHeight())
-            .SetLevel(static_cast<uint32_t>(std::floor(std::log2(std::max(_Image->GetWidht(), _Image->GetHeight())))) + 1);
+            .SetLevel(static_cast<uint32_t>(std::floor(std::log2(std::max(_Image->GetWidht(), _Image->GetHeight())))) + 1)
+            .SetUseAlpha(_UseApha);
 
         switch (_Image->GetChannel())
         {

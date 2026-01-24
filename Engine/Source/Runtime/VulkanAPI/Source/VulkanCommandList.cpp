@@ -309,7 +309,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
 
-    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(GetLastBindProgram());
+    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_LastBindProgram);
 
     vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(alloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
 
@@ -337,19 +337,22 @@ void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _Rh
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    CommandList::BindProgram(_RhiShaderProgram);
 
-    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(_RhiShaderProgram);
-    
-    m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
-                                                                vshadeProgram.GetPipeline());
+    if (m_LastBindProgram != &_RhiShaderProgram)
+    {
+        m_LastBindProgram = &_RhiShaderProgram;
+        const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_LastBindProgram);
+
+        m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
+            vshadeProgram.GetPipeline());
+    }
 }
 
 void Vulkan::VulkanCommandList::PushConstant(const std::string& _pushConstantKey, const void* _data, const size_t _size)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(GetLastBindProgram());
+    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_LastBindProgram);
 
 
     vshadeProgram.PushConstant(GetVulkanCommandBufferHandle(), _pushConstantKey, _data, _size);

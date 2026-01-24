@@ -54,6 +54,12 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API void Build();
 
+        Material& SetMaterialType(const MaterialType _Type)
+        {
+            m_MaterialType = _Type;
+            return *this;
+        }
+
         Material& SetAlbedoFactor(const Tbx::Vector4f& _Albedo)
         {
             m_Albedo = _Albedo;
@@ -90,13 +96,13 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
-        Material& GetAmbiantOcclusion(float _AmbiantOcclusion)
+        Material& SetAmbiantOcclusion(float _AmbiantOcclusion)
         {
             m_AmbiantOcclusion = _AmbiantOcclusion;
             return *this;
         }
 
-        Material& GetUseAlpha(bool _UseAlpha)
+        Material& SetUseAlpha(bool _UseAlpha)
         {
             m_UseAlpha = _UseAlpha;
             return *this;
@@ -105,7 +111,7 @@ namespace PC_CORE::Rendering
         Material& SetAlbedoTexture(const ObjectPtr<Texture2D>& _AlbedoTexture)
         {
             m_Textures[static_cast<size_t>(MaterialAttribute::AlbedoFactors)] = _AlbedoTexture;
-            return *this;
+            return SetUseAlpha(_AlbedoTexture->Get()->UseAlpha());
         }
 
         Material& SetMetallicRoughnessAOTexture(const ObjectPtr<Texture2D>& _MetallicSpecularRougnessTextureTextureAnisotropy)
@@ -128,6 +134,11 @@ namespace PC_CORE::Rendering
         }
 
         PC_CORE_API void Upload();
+
+        MaterialType GetMaterialType() const
+        {
+            return m_MaterialType;
+        }
 
         const Tbx::Vector4f& GetAlbedo() const
         {
@@ -169,10 +180,16 @@ namespace PC_CORE::Rendering
             return m_UseAlpha;
         }
 
+        const RhiShaderProgram& GetProgram() const
+        {
+            return *m_Program;
+        }
+
         const RhiDescriptorSet* GetDescriptorSet() const;
 
         size_t GetMaterialStride() const;
     private:
+        MaterialType m_MaterialType = MaterialType::Opaque;
 
         std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::AoRoughnessMetallic) + 1> m_Textures;
 
@@ -190,13 +207,13 @@ namespace PC_CORE::Rendering
 
         float m_AmbiantOcclusion = 0.f;
 
-        MaterialType MaterialType = MaterialType::Opaque;
-
         bool m_UseAlpha = false;
 
         std::unique_ptr<RhiDescriptorSet> m_RhiDescriptorSets = nullptr;
 
         std::unique_ptr<RhiBuffer> m_RhiMaterialBuffer = nullptr;
+
+        RhiShaderProgram* m_Program{ nullptr };
 
         void PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer);
     };

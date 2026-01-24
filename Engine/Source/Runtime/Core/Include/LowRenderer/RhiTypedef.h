@@ -92,13 +92,16 @@ BEGIN_PCCORE
         Max,
     };
 
+
     enum ColorComponent : uint8_t
     {
         None = 0,
         ColorComponentR = 1 << 0,
         ColorComponentG = 1 << 1,
         ColorComponentB = 1 << 2,
-        ColorComponentA = 1 << 3
+        ColorComponentA = 1 << 3,
+
+        ColorComponentRGBA = ColorComponentR | ColorComponentG | ColorComponentB | ColorComponentA
     };
 
 

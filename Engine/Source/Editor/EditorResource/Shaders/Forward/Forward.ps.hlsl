@@ -12,6 +12,7 @@ struct PSInput
 float4 Main(PSInput input) : SV_Target
 {
     float4 FragAlbedo = AlbedoFactor;
+    float Alpha = 1.0f;
     float3 Normal = normalize(input.Normal);
     float Metallic = AORoughnessMetallicEmptyFactors.x;
     float Roughness = AORoughnessMetallicEmptyFactors.y;
@@ -21,7 +22,13 @@ float4 Main(PSInput input) : SV_Target
     if (AlbedoNormalEmissiveDescriptor[ALBEDO_KEY] == 1)
     {
         FragAlbedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord);
+        Alpha = UseAlpha ? FragAlbedo.a : 1.0f;
+        if (Alpha < 0.5)
+            discard;
     }
+    
+    float3 Color = FragAlbedo.xyz * Alpha;
+    
     
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
     {
@@ -36,7 +43,7 @@ float4 Main(PSInput input) : SV_Target
         float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb;
         NormalTS = normalize(NormalTS * 2.0 - 1.0);
 
-        Normal = mul(NormalTS, TBN);
+        Normal = normalize(mul(NormalTS, TBN));
     }
     
     
@@ -59,7 +66,9 @@ float4 Main(PSInput input) : SV_Target
     keepAlive += Metallic * 1e-6;
     keepAlive += Roughness * 1e-6;
     keepAlive += AO * 1e-6;
+    keepAlive += FragAlbedo.x;
     keepAlive += dot(Emissive, float3(1, 1, 1)) * 1e-6;
-  
-    return float4(FragAlbedo.xyz + float3(keepAlive, keepAlive, keepAlive) * 1e-6, 1);
+ 
+        
+    return float4(Color + float3(keepAlive, keepAlive, keepAlive) * 1e-6, Alpha);
 }

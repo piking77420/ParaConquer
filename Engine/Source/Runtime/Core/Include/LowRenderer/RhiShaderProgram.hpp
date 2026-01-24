@@ -105,16 +105,57 @@ public:
 
     struct BlendState
     {
-        bool enabled = false;
-        BlendFactor srcColorBlendFactor = BlendFactor::One;
-        BlendFactor dstColorBlendFactor = BlendFactor::Zero;
-        BlendOp colorBlendOp = BlendOp::Add;
+        BlendFactor ColorSrcFactor = BlendFactor::SrcAlpha;
+        BlendFactor ColorDstFactor = BlendFactor::OneMinusSrcAlpha;
+        BlendOp ColorOp = BlendOp::Add;
 
-        BlendFactor srcAlphaBlendFactor = BlendFactor::One;
-        BlendFactor dstAlphaBlendFactor = BlendFactor::Zero;
-        BlendOp alphaBlendOp = BlendOp::Add;
-        ColorComponent colorMask = static_cast<ColorComponent>(ColorComponentR | ColorComponentG | ColorComponentB |
-            ColorComponentA);
+        BlendFactor AlphaSrcFactor = BlendFactor::One;
+        BlendFactor AlphaDstFactor = BlendFactor::OneMinusSrcAlpha;
+        BlendOp AlphaOp = BlendOp::Add;
+
+        ColorComponent BlendMask = ColorComponent::ColorComponentRGBA;
+
+        BlendState& SetColorSrcFactor(BlendFactor _BlendFactor)
+        {
+            ColorSrcFactor = _BlendFactor;
+            return *this;
+        }
+
+        BlendState& SetColorDstFactor(BlendFactor _BlendFactor)
+        {
+            ColorDstFactor = _BlendFactor;
+            return *this;
+        }
+
+        BlendState& SetColorBlendOp(BlendOp _BlendOp)
+        {
+            ColorOp = _BlendOp;
+            return *this;
+        }
+
+        BlendState& SetAlphaSrcFactor(BlendFactor _BlendFactor)
+        {
+            AlphaSrcFactor = _BlendFactor;
+            return *this;
+        }
+
+        BlendState& SetAlphaDstFactor(BlendFactor _BlendFactor)
+        {
+            AlphaDstFactor = _BlendFactor;
+            return *this;
+        }
+
+        BlendState& SetAlphaBlendOp(BlendOp _BlendOp)
+        {
+            ColorOp = _BlendOp;
+            return *this;
+        }
+
+        BlendState& SetBlendMask(PC_CORE::ColorComponent _BlendMask)
+        {
+            BlendMask = _BlendMask;
+            return *this;
+        }
     };
 
     struct DephStencilInfo
@@ -140,7 +181,7 @@ protected:
         uint32_t Sample{ 1u };
         FrontFace FrontFace{ FrontFace::CounterClockwise };
         DephStencilInfo DephStencilInfo;
-        BlendState BlendState;
+        std::optional<BlendState> BlendState;
         PrimitiveTopology PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
 
         RhiRenderPass* RenderPass{ nullptr };
@@ -209,7 +250,7 @@ public:
 
     PC_CORE_API RhiShaderProgram& SetBlendState(BlendState _BlendInfo)
     {
-        std::get<GraphicPipelineData>(m_PipelineData).BlendState = _BlendInfo;
+        std::get<GraphicPipelineData>(m_PipelineData).BlendState.emplace(_BlendInfo);
         return *this;
     }
 
