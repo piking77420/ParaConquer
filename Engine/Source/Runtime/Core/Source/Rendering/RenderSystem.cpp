@@ -118,5 +118,21 @@ void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
     PERF_REGION_SCOPED
     PERF_REGION_COLOR(PerfRegion::Game);
 
-   
+    std::set<EntityId>& staticMeshes = *GetEntitySet(m_DirLightSignature);
+    for (auto& ent : staticMeshes)
+    {
+        const DirLight& Dir = _level.GetComponent<DirLight>(ent);
+        const Transform& transform = _level.GetComponent<Transform>(ent);
+
+        constexpr Tbx::Vector3f WorldUp = Tbx::Vector3f(0.0f, 1.0f, 0.0f);
+        const Tbx::Matrix3x3f rot = Tbx::Rotation3x3<float>(transform.Rotation.Quaternion);
+        const Tbx::Vector3f WorldUpRot = rot * WorldUp;
+
+        m_GameRenderingWorldData.DirLightData.emplace(PC_CORE::Rendering::DirLightData
+            {
+                .LightDirW = WorldUpRot,
+                .LightColor = Dir.color,
+                .LightIntensity = Dir.intensity
+            });
+    }
 }

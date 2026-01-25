@@ -18,6 +18,13 @@ namespace PC_CORE::Rendering
         Tbx::Matrix4x4d NormalInvertMatrix;
     };
 
+    struct DirLightData
+    {
+        Tbx::Vector3f LightDirW;
+        Tbx::Vector3f LightColor;
+        float LightIntensity;
+    };
+
     struct RenderingWorldData
     {
         DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderingWorldData);
@@ -30,6 +37,8 @@ namespace PC_CORE::Rendering
         }
 
         std::vector<Rendering::StaticMeshComponentData> StaticMeshComponentData;
+        std::optional<DirLightData> DirLightData;
+
     };
 
 }

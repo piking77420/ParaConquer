@@ -60,6 +60,8 @@ namespace PC_CORE::Rendering::Pass
 		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorSet
 			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 1, _RendererPassBuildContext.View.LightBuffer.get())
+			.BindUniformBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBufferHeader.get())
 			.SetName("Forward Pass Scene Set")
 			.Build();
 			
@@ -190,20 +192,6 @@ namespace PC_CORE::Rendering::Pass
 		}
 
 		cmd.EndRenderPass();
-
-		const ImageStateTransition ImageStateTransition
-		{
-			.Texture = m_LightingImage,
-			.FirstMipLevel = 0,
-			.MipLevelsCount = 1,
-			.FirstLayer = 0,
-			.LayerCount = 1,
-
-			.updateState = false
-		};
-
-		cmd.Barrier(RhiResourceState::FragmentShaderResource, RhiResourceState::FragmentShaderResource, std::span(&ImageStateTransition, 1), {});
-
 	}
 
 }

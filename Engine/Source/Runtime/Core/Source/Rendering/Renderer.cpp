@@ -101,9 +101,9 @@ namespace PC_CORE::Rendering
        }
 
        {
-           toneMapPass.reset(m_Rhi.CreateRenderPass());
+           drawTextureQuadPass.reset(m_Rhi.CreateRenderPass());
 
-           const RenderPassAttachementDescriptor& renderTragetSlot = toneMapPass
+           const RenderPassAttachementDescriptor& renderTragetSlot = drawTextureQuadPass
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
                .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
@@ -113,12 +113,12 @@ namespace PC_CORE::Rendering
                .SetInitialImageState(RhiResourceState::Undefined)
                .SetFinalImageState(RhiResourceState::FragmentShaderResource);
 
-           toneMapPass
+           drawTextureQuadPass
                ->CreateSubPass()
                .SetType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
-           toneMapPass
+           drawTextureQuadPass
                ->SetName("ToneMap temp")
                .Build();
        }
@@ -133,6 +133,19 @@ namespace PC_CORE::Rendering
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
+               { RhiShaderProgram::ShaderStageTypeBits::Compute, ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")->GetCode() },
+           };
+           toneMapAces.reset(m_Rhi.CreateRhiShaderProgram());
+           toneMapAces
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Compute)
+               .SetShaderModules(shaderModules)
+               .SetName("ToneMapAces")
+               .Build();
+       }
+
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           {
                { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode() },
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")->GetCode() }
            };
@@ -142,7 +155,7 @@ namespace PC_CORE::Rendering
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
-               .SetRenderPass(*toneMapPass)
+               .SetRenderPass(*drawTextureQuadPass)
                .SetName("DrawQuadTriangle")
                .Build();
        }

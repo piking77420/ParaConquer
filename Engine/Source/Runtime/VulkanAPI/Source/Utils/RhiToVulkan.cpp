@@ -1070,6 +1070,7 @@ vk::ImageAspectFlags Vulkan::Utils::RhiTextureFormatToImageAspectFlagFlags(PC_CO
     case PC_CORE::RhiFormat::R8G8B8A8Unorm:
     case PC_CORE::RhiFormat::R8G8B8A8Snorm:
     case PC_CORE::RhiFormat::B8G8R8A8Snorm:
+    case PC_CORE::RhiFormat::R8G8B8A8Srgb:
     case PC_CORE::RhiFormat::R16G16B16A16Sfloat:
     case PC_CORE::RhiFormat::R32Sfloat:
     case PC_CORE::RhiFormat::R16G16Snorm:
@@ -1154,7 +1155,8 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
         return vk::ImageLayout::eReadOnlyOptimal;
     case RhiResourceState::ComputeWrite:
         return vk::ImageLayout::eGeneral;
-
+    case RhiResourceState::ComputeReadWrite:
+        return vk::ImageLayout::eGeneral;
     // Present 
     case RhiResourceState::Present:
         return vk::ImageLayout::ePresentSrcKHR;
