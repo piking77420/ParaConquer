@@ -7,12 +7,15 @@
 //https://github.com/google/filament
 //https://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
 
+static const float3 DIELECTRIC_F0 = float3(0.04, 0.04, 0.04);
+
 // D term (GGX / Trowbridge-Reitz)
-float D_GGX(float NoH, float roughness)
+float D_GGX(float NoH, float Roughness)
 {
-    float a = NoH * roughness;
-    float k = roughness / (1.0 - NoH * NoH + a * a);
-    return k * k * (1.0 / PI);
+    float alpha = Roughness * Roughness;
+    float a2 = alpha * alpha;
+    float denom = NoH * NoH * (a2 - 1.0) + 1.0;
+    return a2 / (PI * denom * denom);
 }
 
 // Fresnel term (Schlick approximation)
@@ -29,13 +32,16 @@ float GGX(float NdotV, float a2)
     return num / denum;
 }
 
-// Geometry term (Smith GGX)
-float G_GGX(float NoV, float NoL, float roughness)
+
+float V_SmithGGXCorrelated(float NoV, float NoL, float Roughness)
 {
-    float a = roughness * roughness;
-    float GGXV = GGX(NoV, a);
-    float GGXL = GGX(NoL, a);
-    return GGXV * GGXL;
+    float alpha = Roughness * Roughness;
+    float a2 = alpha * alpha;
+    // Geometry term (Smith GGX)
+    float GV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
+    float GL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
+
+    return 0.5 / (GV + GL);
 }
 
 float F_Schlick(float u, float f0, float f90)
@@ -43,9 +49,9 @@ float F_Schlick(float u, float f0, float f90)
     return f0 + (f90 - f0) * pow(1.0 - u, 5.0);
 }
 
-float Fd_Burley(float NoV, float NoL, float LoH, float roughness)
+float Fd_Burley(float NoV, float NoL, float LoH, float Roughness)
 {
-    float f90 = 0.5 + 2.0 * roughness * LoH * LoH;
+    float f90 = 0.5 + 2.0 * Roughness * LoH * LoH;
     float lightScatter = F_Schlick(NoL, 1.0, f90);
     float viewScatter = F_Schlick(NoV, 1.0, f90);
     return lightScatter * viewScatter * (1.0 / PI);
@@ -57,15 +63,19 @@ float Fd_Lambert()
 }
 
 // Full BRDF combining specular + diffuse
-float3 BRDF(float3 diffuseColor, float NoV, float NoL, float NoH, float LoH, float roughness)
+float3 BRDF(float3 BaseColor, float Metallic, float Roughness, float NoV, float NoL, float NoH, float LoH)
 {
-    float D = D_GGX(NoH, roughness);
-    float3 F = F_Schlick(LoH, float3(0.04, 0.04, 0.04));
-    float V = G_GGX(NoV, NoL, roughness);
+    // Specular F0 from metallic workflow
+    float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
 
-    float3 Fr = (D * V * F) / (4.0 * NoV * NoL);
+    float D = D_GGX(NoH, Roughness);
+    float3 F = F_Schlick(LoH, F0);
+    float V = V_SmithGGXCorrelated(NoV, NoL, Roughness); // G / (4 * NoV * NoL)
 
-    float3 Fd = diffuseColor * Fd_Burley(NoV, NoL, LoH, roughness) * (float3(1.0, 1.0, 1.0) - F);
+    float3 Fr = D * V * F; 
+
+    float3 kD = (1.0 - F) * (1.0 - Metallic);
+    float3 Fd = kD * BaseColor * Fd_Burley(NoV, NoL, LoH, Roughness);
 
     return Fr + Fd;
 }

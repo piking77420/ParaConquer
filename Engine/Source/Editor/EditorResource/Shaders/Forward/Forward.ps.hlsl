@@ -75,7 +75,6 @@ float4 Main(PSInput input) : SV_Target
     
     float3 Lo = float3(0, 0, 0);
     
-    Roughness = Roughness * Roughness; // map to perspectual Rougness
     float3 N = Normal;
     float3 V = -normalize(input.ViewSpacePosition);
     float NoV = saturate(dot(N, V)) + 1e-5;
@@ -98,7 +97,7 @@ float4 Main(PSInput input) : SV_Target
             float3 Radiance = DirLight.ColorIntensity.xyz * DirLight.ColorIntensity.w;
             float3 DiffuseColor = (1.0 - Metallic) * FragAlbedo.xyz;
         
-            float3 Brdf = BRDF(DiffuseColor, NoV, NoL, NoH, LoH, Roughness);
+            float3 Brdf = BRDF(DiffuseColor, Metallic, Roughness,  NoV, NoL, NoH, LoH);
             Lo += Brdf * Radiance * NoL;
         }
     }
