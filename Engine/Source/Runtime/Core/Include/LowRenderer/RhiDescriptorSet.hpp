@@ -74,6 +74,8 @@ public:
 
     PC_CORE_API RhiDescriptorSet& BindUniformBuffer(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiBuffer* _RhiBuffer);
 
+    PC_CORE_API RhiDescriptorSet& BindShaderStorageBuffer(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiBuffer* _RhiBuffer);
+
     PC_CORE_API RhiDescriptorSet& BindTexture(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture, const RhiSampler* _RhiSampler);
 
     PC_CORE_API RhiDescriptorSet& BindImageLoad(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture);

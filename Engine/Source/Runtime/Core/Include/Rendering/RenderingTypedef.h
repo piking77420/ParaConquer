@@ -66,6 +66,34 @@ namespace Gpu
         }
     }
 
+    static constexpr size_t MAX_LIGHT = 1024;
+
+    struct GPU_ALIGN DirLight
+    {
+        vec3 Direction;
+        float Pad0;
+        vec4 ColorIntensity; // rgb = color, a = intensity
+    };
+
+    enum LightType : int
+    {
+        Point,
+        Spoth,
+    };
+
+    // amy pack color in one float
+    struct GPU_ALIGN Light
+    {
+        vec4 PositionType;   // xyz = position / direction, w = type
+        vec4 ColorIntensity; // rgb = color, a = intensity
+        vec4 Params;
+    };
+
+    struct GPU_ALIGN LightHeader {
+        DirLight DirLight;
+        int LightCount;
+    };
+
 }
 
 

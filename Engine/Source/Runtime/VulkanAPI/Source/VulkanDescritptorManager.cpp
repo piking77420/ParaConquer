@@ -170,9 +170,13 @@ std::vector<vk::DescriptorSetLayout> Vulkan::VulkanDescritptorManager::GetDescri
                         VkBinding.descriptorType = (VkBinding.descriptorType == vk::DescriptorType::eUniformBuffer) ? vk::DescriptorType::eUniformBufferDynamic : vk::DescriptorType::eStorageBufferDynamic;
                 }
                 
+                // TODO REPLACE IT WITH A SET IF POSSIBLE
                 auto it = std::ranges::find_if(Binding, [&VkBinding](const vk::DescriptorSetLayoutBinding& DescriptorSetLayoutBinding)
                     {
-                        return DescriptorSetLayoutBinding == VkBinding;
+                        return DescriptorSetLayoutBinding.binding == VkBinding.binding && 
+                            DescriptorSetLayoutBinding.descriptorCount == VkBinding.descriptorCount &&
+                            DescriptorSetLayoutBinding.descriptorType == VkBinding.descriptorType && 
+                            DescriptorSetLayoutBinding.pImmutableSamplers == VkBinding.pImmutableSamplers;
                     });
 
                 if (it != Binding.end())

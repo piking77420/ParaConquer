@@ -183,6 +183,15 @@ void Editor::CompileShader()
 				"/Shaders/Forward/Forward.ps.hlsl");
 			}));
 	}
+
+    // Tone Map
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("Aces.cs.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
+            }));
+    }
     /*
     // sprite
     {
@@ -226,12 +235,7 @@ void Editor::CompileShader()
                                                                       EDITOR_RESOURCE_PATH
                                                                       "/Shaders/DebugDraw/DebugDrawRay.vs.hlsl");
     }
-    // Tone Map
-    {
-        auto toneMap = ResourceManager::Create<ShaderSource>("Aces.cs.hlsl",
-                                                             EDITOR_RESOURCE_PATH
-                                                             "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
-    }
+
 
    
 
@@ -415,15 +419,16 @@ void Editor::InitTestScene()
             s->staticMesh = StaticMesh;
 
             {
-                EntityId pointLight = level.CreateEntity("PointLight");
-                level.AddComponent<Transform>(pointLight);
-                level.AddComponent<PointLight>(pointLight);
-                Transform* t = &level.GetComponent<Transform>(pointLight);
+                EntityId dirLight = level.CreateEntity("DirLight");
+                level.AddComponent<Transform>(dirLight);
+                level.AddComponent<DirLight>(dirLight);
+                Transform* t = &level.GetComponent<Transform>(dirLight);
                 t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
                 t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
-                PointLight& p = level.GetComponent<PointLight>(pointLight);
-                p.intensity = 5.f;
+                DirLight& p = level.GetComponent<DirLight>(dirLight);
+                p.intensity = 1.f;
+                p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
             }
 
             AssetsImporter.reset();

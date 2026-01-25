@@ -295,7 +295,7 @@ namespace PC_EDITOR_CORE
 
                 if (embeded) // HandleEmbeded Texture
                 {
-                    std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(_Rhi, textureName.C_Str(), *embeded));
+                    std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(_Rhi, textureName.C_Str(), *embeded, type));
                     PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
                     if (!texture || !texture2D)
@@ -321,7 +321,7 @@ namespace PC_EDITOR_CORE
                             return;
                         
                         texture->SetName(textureName.C_Str());
-                        BuildRhiTextureFromImage(_Rhi, *texture, &image, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
+                        BuildRhiTextureFromImage(_Rhi, *texture, &image, type, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
                         PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
                         pair.first = type;
@@ -552,7 +552,7 @@ namespace PC_EDITOR_CORE
         }
     }
 
-    PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture)
+    PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType)
     {
         PC_CORE::RhiTexture* RhiTexturePtr = _Rhi.CreateTexture();
 
@@ -561,7 +561,7 @@ namespace PC_EDITOR_CORE
             PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName, PC_CORE::RhiChannel::Rgba);
             RhiTexturePtr->SetName(TextureName);
 
-            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, false); // TODO ALPHA
+            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, textureType, false); // TODO ALPHA
             return RhiTexturePtr;
         }
         else
@@ -572,7 +572,7 @@ namespace PC_EDITOR_CORE
         return nullptr;
     }
 
-    void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha)
+    void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, aiTextureType textureType, bool _UseApha)
     {
         assert(!_Image->IsHdr());
 
@@ -586,11 +586,16 @@ namespace PC_EDITOR_CORE
             .SetLevel(static_cast<uint32_t>(std::floor(std::log2(std::max(_Image->GetWidht(), _Image->GetHeight())))) + 1)
             .SetUseAlpha(_UseApha);
 
+   
         switch (_Image->GetChannel())
         {
         case PC_CORE::RhiChannel::Rgb:
         case PC_CORE::RhiChannel::Rgba:
-            _Texture.SetRhiFormat(_Image->IsHdr() ? PC_CORE::RhiFormat::R16G16B16A16Sfloat : PC_CORE::RhiFormat::R8G8B8A8Unorm);
+         
+                _Texture.SetRhiFormat(_Image->IsHdr()
+                    ? PC_CORE::RhiFormat::R16G16B16A16Sfloat
+                    : PC_CORE::RhiFormat::R8G8B8A8Unorm);
+
             break;
         default:
             assert(false && "NotSupported");

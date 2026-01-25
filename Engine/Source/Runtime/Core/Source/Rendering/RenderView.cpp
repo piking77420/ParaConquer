@@ -18,6 +18,24 @@ namespace PC_CORE::Rendering
             .SetName("RenderViewUniformBuffer")
             .Build();
 
+        LightBuffer.reset(_Rhi.CreateBuffer());
+        LightBuffer
+            ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage | RhiBuffer::BufferUsageFlagBits::TransferDst)
+            .SetSize(sizeof(Gpu::Light) * Gpu::MAX_LIGHT)
+            .SetName("Light Buffer")
+            .Build();
+
+        LightBufferHeader.reset(_Rhi.CreateBuffer());
+        LightBufferHeader
+            ->SetMemoryUsage(RhiMemoryUsage::CPUVisible)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
+            .SetSize(sizeof(Gpu::LightHeader))
+            .SetName("Light Header Buffer")
+            .Build();
+
     }
     void PC_CORE::Rendering::RenderView::FromCamera(const PC_CORE::Camera& _Camera)
 	{
@@ -38,12 +56,13 @@ namespace PC_CORE::Rendering
         ViewPosition = _Camera.Position;
 	}
 
-    void RenderView::UpdateUniformBuffer()
+    void RenderView::UpdaterRhiBuffers(const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
     {
         assert(UniformBuffer);
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Rendering);
 
+        // Update Camera Buffer
         if (Gpu::RenderViewViewUniformBuffer* ptr = reinterpret_cast<Gpu::RenderViewViewUniformBuffer*>(UniformBuffer->BeginBufferUpdateForCurrentFrame()))
         {
             Gpu::StreamDoubleToFloat(&ptr->View, &View);
@@ -68,6 +87,34 @@ namespace PC_CORE::Rendering
 
             UniformBuffer->EndBufferUpdate();
         }
+
+        if (Gpu::LightHeader* ptr = reinterpret_cast<Gpu::LightHeader*>(LightBufferHeader->BeginBufferUpdateForCurrentFrame()))
+        {
+            ptr->LightCount = 0;
+            if (_RenderingWorldData.DirLightData)
+            {
+                // shoul be 3x3
+                Tbx::Vector4d lightDirV = View * Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
+                lightDirV = lightDirV.Normalize();
+
+                ptr->DirLight.Direction = { static_cast<float>(lightDirV.x) ,static_cast<float>(lightDirV.y),static_cast<float>(lightDirV.z) };
+
+
+                ptr->DirLight.ColorIntensity.data[0] = _RenderingWorldData.DirLightData->LightColor.x;
+                ptr->DirLight.ColorIntensity.data[1] = _RenderingWorldData.DirLightData->LightColor.y;
+                ptr->DirLight.ColorIntensity.data[2] = _RenderingWorldData.DirLightData->LightColor.y;
+                ptr->DirLight.Pad0 = 0xDEAD;
+                ptr->DirLight.ColorIntensity.data[3] = _RenderingWorldData.DirLightData->LightIntensity;
+
+            }
+            else
+            {
+                std::memset(&ptr->DirLight, 0, sizeof(ptr->DirLight));
+            }
+            LightBufferHeader->EndBufferUpdate();
+        }
+
+
     }
 
 } // PC_CORE::Rendering

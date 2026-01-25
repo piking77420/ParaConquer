@@ -42,7 +42,7 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 
 void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext, PC_CORE::Rendering::RenderView& _View)
 {
-	_View.UpdateUniformBuffer(); // may do the update in someWhereElse
+	_View.UpdaterRhiBuffers(_RendererPassExecuteContext.RenderingWorldData); // may do the update in someWhereElse
 
 	_RendererPassExecuteContext.cmd.BeginRecordCommands();
 	for (const auto& Nodes : m_Nodes)

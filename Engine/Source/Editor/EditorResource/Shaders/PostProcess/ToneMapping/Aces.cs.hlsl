@@ -21,11 +21,19 @@ static const float3x3 ACESOutputMat = float3x3(
    -0.00327, -0.07276, 1.07602
 );
 
-[numthreads(512, 1, 1)]
+float3 LinearToSRGB(float3 x)
+{
+    return select(
+        x * 12.92,
+        1.055 * pow(x, 1.0 / 2.4) - 0.055,
+        x > 0.0031308
+    );
+}
+
+[numthreads(16, 16, 1)]
 void Main(uint3 DTid : SV_DispatchThreadID)
 {
     const float exposure = 1.f; 
-    const float gamma = 2.2f;
 
     uint2 gid = DTid.xy;
     uint2 size;
@@ -40,7 +48,7 @@ void Main(uint3 DTid : SV_DispatchThreadID)
     float3 color = mul(ACESInputMat, hdr.rgb); // Linear sRGB -> AP1
     color = RRTAndODTFit(color); // RRT+ODT in AP1 space
     color = mul(ACESOutputMat, color); // AP1 -> Linear sRGB
-    color = pow(saturate(color), 1.0 / gamma); // Clamp + gamma correction
+    color = LinearToSRGB(color); // Clamp + gamma correction
 
     hdrImage[gid] = float4(color, hdr.a);
 }

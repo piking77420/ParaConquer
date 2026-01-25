@@ -37,6 +37,25 @@ RhiDescriptorSet& RhiDescriptorSet::BindUniformBuffer(RhiShaderStageTypeFlag Sha
 	return *this;
 }
 
+RhiDescriptorSet& RhiDescriptorSet::BindShaderStorageBuffer(RhiShaderStageTypeFlag ShaderStageBits, uint32_t _BindingIndex, const RhiBuffer* _RhiBuffer)
+{
+	const BufferDescriptor Descriptor =
+	{
+		.buffer = _RhiBuffer,
+	};
+
+	DescriptorWrite Write
+	{
+		.type = _RhiBuffer->GetBufferBackingStrategy() == RhiBuffer::CpuVisibleRing ? DescriptorType::DynamicStorageBuffer : DescriptorType::StorageBuffer,
+		.bindingIndex = _BindingIndex,
+		.StagesBits = ShaderStageBits,
+		.descriptor = Descriptor
+	};
+
+	m_Bindings.emplace_back(std::move(Write));
+	return *this;
+}
+
 RhiDescriptorSet& RhiDescriptorSet::BindTexture(RhiShaderStageTypeFlag _ShaderStageBits, uint32_t _BindingIndex, const RhiTexture* _RhiTexture, const RhiSampler* _RhiSampler)
 {
 	m_MaxBindingIndex = std::max(static_cast<size_t>(_BindingIndex), m_MaxBindingIndex);

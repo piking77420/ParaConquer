@@ -1,3 +1,7 @@
+
+#ifndef PBR_HEADER
+#define PBR_HEADER
+
 #include "Math.hlsl" // Make sure PI / InvPI are defined here
 
 //https://github.com/google/filament
@@ -62,7 +66,7 @@ float3 BRDF(float3 diffuseColor, float NoV, float NoL, float NoH, float LoH, flo
     float3 Fr = (D * V * F) / (4.0 * NoV * NoL);
 
     float3 Fd = diffuseColor * Fd_Burley(NoV, NoL, LoH, roughness) * (float3(1.0, 1.0, 1.0) - F);
-    // float3 Fd = diffuseColor * Fd_Lambert() * (float3(1.0,1.0,1.0) - F);
 
     return Fr + Fd;
 }
+#endif //PBR_HEADER

@@ -4,6 +4,7 @@
 #define CAMERA_SET space0
 #include "Camera.hlsl"
 
+
 struct VsInput
 {
     float3 Position : POSITION; // location 0
@@ -40,7 +41,7 @@ VsOutput Main(VsInput input)
     output.Position = mul(ViewPos, Projection);
     output.ViewSpacePosition = ViewPos.xyz;
     output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrixView));
-    output.Tangent = input.Tangent;
+    output.Tangent = normalize(mul(input.Tangent, (float3x3) pushConstant.normalInvMatrixView));
     output.TexCoord = input.TexCoord;
 
     return output;

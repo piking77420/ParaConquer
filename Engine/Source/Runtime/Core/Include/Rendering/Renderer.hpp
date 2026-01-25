@@ -28,6 +28,8 @@ public:
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
+    std::unique_ptr<RhiShaderProgram> toneMapAces;
+
     std::unique_ptr<RhiShaderProgram> opaqueFowardShader;
 
     std::unique_ptr<RhiShaderProgram> transparentForwardShader;
@@ -36,7 +38,7 @@ public:
 
     std::unique_ptr<RhiRenderPass> forwardPass;
 
-    std::unique_ptr<RhiRenderPass> toneMapPass;
+    std::unique_ptr<RhiRenderPass> drawTextureQuadPass;
 
 private:
     Rhi& m_Rhi;

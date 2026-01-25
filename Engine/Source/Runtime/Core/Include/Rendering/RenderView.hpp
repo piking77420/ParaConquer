@@ -2,6 +2,7 @@
 
 #include "Rendering/RenderingTypedef.h"
 #include "Math/ToolBoxTypeDef.hpp"
+#include "Rendering/RenderSystem.hpp"
 
 namespace PC_CORE
 {
@@ -36,6 +37,7 @@ namespace PC_CORE::Rendering
             vec2 RenderSize;
             vec2 InvRenderSize;
         };
+
     }
 
     class PC_CORE_API RenderView
@@ -62,7 +64,7 @@ namespace PC_CORE::Rendering
             InvRenderSize = Tbx::Vector2f(1.f /RenderSize.x, 1.f /RenderSize.y);
         }
 
-        void UpdateUniformBuffer();
+        void UpdaterRhiBuffers(const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
 
         Tbx::Matrix4x4d View;
         Tbx::Matrix4x4d ViewInv;
@@ -87,6 +89,10 @@ namespace PC_CORE::Rendering
         RenderViewFlag Flag{};
 
         std::unique_ptr<RhiBuffer> UniformBuffer;
+
+        std::unique_ptr<RhiBuffer> LightBuffer;
+
+        std::unique_ptr<RhiBuffer> LightBufferHeader;
 
         Tbx::Vector3d ViewPosition;
     };

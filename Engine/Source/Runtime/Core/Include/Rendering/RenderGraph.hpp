@@ -116,9 +116,19 @@ namespace PC_CORE::Rendering
 		}
 
 		template <RhiResourceType T>
-		const T& GetResource(const char* _Name)
+		const T& GetResource(const char* _Name) const
 		{
-			return static_cast<const T&>(*m_RenderGraphResources[_Name]);
+			return static_cast<const T&>(*m_RenderGraphResources.at(_Name));
+		}
+
+		template <RhiResourceType T>
+		T* GetResource(const char* name)
+		{
+			auto it = m_RenderGraphResources.find(name);
+
+			return it != m_RenderGraphResources.end()
+				? static_cast<T*>(it->second.get())
+				: nullptr;
 		}
 
 		RhiTexture& GetOutPutImage()

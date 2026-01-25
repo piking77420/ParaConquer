@@ -42,9 +42,17 @@ namespace PC_CORE::Rendering::Pass
         void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
 
     private:
-        std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DescriptorSet;
+        RhiTexture* m_LightingImageRef{ nullptr };
+
+        std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DesciptorSetDrawQuad;
+
+        std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DesciptorSetToneMap;
 
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
+
+        void ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
+
+        void DrawToViewPort(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
 
     };
 
