@@ -63,6 +63,7 @@ namespace Vulkan
 
         std::vector<QueueFamilyIndices> m_QueuesFamiliesProperty;
 
+
         const VulkanPhysicalDevice* GetSelectedPhysicalDevice() const;
 
         VulkanPhysicalDevice* GetSelectedPhysicalDevice();

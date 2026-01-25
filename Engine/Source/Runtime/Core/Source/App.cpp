@@ -86,7 +86,7 @@ void App::Destroy()
 
 App::App()
     : Renderer(RenderHarwareInteface)
-    , ThreadPool()
+    , ThreadPool("Main Thread Pool")
 {
     Instance = this;
 }
@@ -136,3 +136,21 @@ void App::RenderFrame()
 
 }
 
+void App::DequeuMainThreadTask()
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Core);
+
+    while (!m_MainThreadQueue.empty())
+    {
+        std::function<void()> func;
+        {
+            std::scoped_lock _(m_MainThreadMutex);
+            if (m_MainThreadQueue.empty())
+                break;
+            func = m_MainThreadQueue.front();
+            m_MainThreadQueue.pop();
+        }
+        func();
+    }
+}

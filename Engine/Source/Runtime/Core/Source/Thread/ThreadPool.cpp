@@ -7,12 +7,12 @@
 
 namespace PC_CORE::Thread
 {
-	ThreadPool::ThreadPool(std::size_t NbrofThread)
+	ThreadPool::ThreadPool(const char* ThreadPoolName, std::size_t NbrofThread)
 	{
 		for (size_t i = 0; i < NbrofThread; i++)
 		{
-			m_Workers.emplace_back(std::jthread([this, i] {
-				Utils::SetThreadName((std::string("Worker") + std::to_string(i)).c_str());
+			m_Workers.emplace_back(std::jthread([this, i, ThreadPoolName] {
+				Utils::SetThreadName((std::string(ThreadPoolName) + std::string(" Worker") + std::to_string(i)).c_str());
 				Worker();
 				}));
 		}

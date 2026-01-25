@@ -53,6 +53,21 @@ BEGIN_EDITOR_PCCORE
             return m_TextureMaps;
         }
 
+        bool GetSuccess() const
+        {
+            return m_Succes;
+        }
+
+        const PC_CORE::Guid& GetGuid() const
+        {
+            return m_Guid;
+        }
+
+        bool operator==(const AssetsImporter& AssetsImporter) const
+        {
+            return m_Guid == AssetsImporter.m_Guid;
+        }
+
     private:
         enum class ImportFormat
         {
@@ -69,6 +84,8 @@ BEGIN_EDITOR_PCCORE
         std::filesystem::path m_filePath;
 
         ImportFormat m_ImportFormat;
+
+        PC_CORE::Guid m_Guid = PC_CORE::Guid::New();
 
         std::mutex m_mutex;
 

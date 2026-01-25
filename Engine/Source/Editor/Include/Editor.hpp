@@ -4,6 +4,7 @@
 #include <future>
 #include <functional>
 #include <optional>
+#include <memory>
 
 #include "App.hpp"
 #include "DockSpace.hpp"
@@ -61,6 +62,12 @@ BEGIN_EDITOR_PCCORE
     class Editor : public PC_CORE::App
     {
     public:
+        struct AssetImportData
+        {
+            std::vector<std::unique_ptr<AssetsImporter>> Imports;
+
+            std::mutex _lock;
+        };
     
         Editor();
 
@@ -104,10 +111,16 @@ BEGIN_EDITOR_PCCORE
         EditableSelectedObj selectedObject;
 
         EditorData editorData;
+
+        AssetImportData AssetImportData;
     protected:
         void OnRender(PC_CORE::CommandList* _Cmd) override;
 
+
     private:
+
+        void TempImportModel(const std::filesystem::path& _path);
+
         void LoadFromInitFiles();
 
         void SaveInitFiles();
@@ -120,21 +133,13 @@ BEGIN_EDITOR_PCCORE
 
         void ReloadShaders();
 
-        void HandleAsyncTask();
-
         EditorRenderer m_EditorRenderer;
-
-        std::optional<AssetsImporter> AssetsImporter;
-
-        std::function<void()> m_AfterImportFunc;
-
-        std::atomic<bool> m_HasFinish;
-
-        std::unique_ptr<std::jthread> m_ImportThread;
 
         std::vector<std::future<void>> m_FuturInits;
 
         PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> testMaterial;
+
+        PC_CORE::Thread::ThreadPool m_EditorThreadPool;
     };
 
     template <EditorCommandDerived T, typename... Args>

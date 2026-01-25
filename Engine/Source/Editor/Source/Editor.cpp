@@ -42,7 +42,9 @@ using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
 
 
+
 Editor::Editor()
+    : m_EditorThreadPool("Editor Thread Pool", std::max(1u, std::min(2u, std::thread::hardware_concurrency())))
 {
     PROFILER_NOOP;
 
@@ -249,16 +251,6 @@ void Editor::CompileShader()
     }*/
 }
 
-void Editor::HandleAsyncTask()
-{
-    if(m_HasFinish.load(std::memory_order_acquire))
-    {
-        m_AfterImportFunc();
-        m_ImportThread.reset();
-        m_HasFinish = false;
-    }
-}
-
 void Editor::Init(const PC_CORE::AppCreateInfo& _appCreateInfo)
 {
     PERF_REGION_SCOPED;
@@ -390,52 +382,93 @@ void Editor::RewindCommand()
     editorCommands.pop_back();
 }
 
+void Editor::TempImportModel(const std::filesystem::path& _path)
+{
+    Guid importesGuid{};
+    AssetsImporter* ptr = nullptr;
+    {
+        std::scoped_lock _(AssetImportData._lock);
+        ptr = AssetImportData.Imports.emplace_back(new AssetsImporter()).get();
+    }
+
+    if (!ptr)
+        return;
+    importesGuid = ptr->GetGuid();
+
+    {
+        TaskHandle ImportMesh = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&, Importer = ptr, path = _path]
+            ()
+            {
+                Importer->ImportModel(RenderHarwareInteface, ThreadPool, path);
+            });
+
+        if (importesGuid != Guid::Empty())
+        {
+            TaskHandle CreateStaticMesh = TaskScheduler.NewTask(TaskThread::MainThread,
+                [this, impGuid = importesGuid]()
+                {
+                    ObjectPtr<PC_CORE::StaticMesh> StaticMesh;
+
+                    PERF_REGION_SCOPED;
+                    PERF_REGION_COLOR(PerfRegion::EditorResource);
+                    {
+                        std::scoped_lock _(AssetImportData._lock);
+                        auto it = std::ranges::find_if(AssetImportData.Imports, [&](const std::unique_ptr<AssetsImporter>& _Importer) {
+                            return _Importer->GetGuid() == impGuid;
+                            });
+                        if (it != AssetImportData.Imports.end() && (*it)->GetSuccess())
+                        {
+                            StaticMesh = (*it)->GetStaticMeshes();
+                        }
+                    }
+
+                    auto& level = World::GetWorld()->level;
+                    if (StaticMesh)
+                    {
+                        EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
+                        level.AddComponent<Transform>(staticMesh);
+                        level.AddComponent<StaticMeshComponent>(staticMesh);
+                        Transform* t = &level.GetComponent<Transform>(staticMesh);
+                        t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+                        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
+                        StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
+                        s->staticMesh = StaticMesh;
+                    }
+                }, { ImportMesh });
+        }
+
+        TaskScheduler.Lauch(ImportMesh);
+    }
+}
+
+
 void Editor::InitTestScene()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Editor);
     PC_LOG("InitTestScene...")
-        
-   m_ImportThread.reset(new std::jthread([&]() {
-        Utils::SetThreadName("ImportThread");
-        AssetsImporter.emplace();
-        AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf");
-        m_HasFinish.store(true, std::memory_order_release);
-        }));
-    
-    m_AfterImportFunc = [this]()
-        {
-            auto& level = World::GetWorld()->level;
 
-            auto& StaticMesh = AssetsImporter->GetStaticMeshes();
 
-            EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
-            level.AddComponent<Transform>(staticMesh);
-            level.AddComponent<StaticMeshComponent>(staticMesh);
-            Transform* t = &level.GetComponent<Transform>(staticMesh);
-            t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-            t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-            StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
-            s->staticMesh = StaticMesh;
+    {
+        auto& level = World::GetWorld()->level;
+        EntityId dirLight = level.CreateEntity("DirLight");
+        level.AddComponent<Transform>(dirLight);
+        level.AddComponent<DirLight>(dirLight);
+        Transform* t = &level.GetComponent<Transform>(dirLight);
+        t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
+        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
 
-            {
-                EntityId dirLight = level.CreateEntity("DirLight");
-                level.AddComponent<Transform>(dirLight);
-                level.AddComponent<DirLight>(dirLight);
-                Transform* t = &level.GetComponent<Transform>(dirLight);
-                t->Position = Tbx::Vector3d(0.0f, 2.5f, 0.0f);
-                t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-
-                DirLight& p = level.GetComponent<DirLight>(dirLight);
-                p.intensity = 1.f;
-                p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
-            }
-
-            AssetsImporter.reset();
-        };
-
-  
+        DirLight& p = level.GetComponent<DirLight>(dirLight);
+        p.intensity = 1.f;
+        p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
+    
+    //
+    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
+
+}
   
 
 void Editor::DestroyTestScene()
@@ -468,7 +501,7 @@ void Editor::Run(bool* _appShouldClose)
 
 
         IMGUIContext.NewFrame();
-        HandleAsyncTask();
+        DequeuMainThreadTask();
         WorldTick(Time::DeltaTime());
         UpdateEditor();
         RenderFrame();

@@ -91,84 +91,88 @@ namespace PC_EDITOR_CORE
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
-
-        m_filePath = _path;
-        m_ImportFormat = FindImportFormat(_path);
-
-        if (m_ImportFormat == ImportFormat::None)
         {
-            return false;
-        }
+            PERF_REGION_SCOPED_NAME_DYNAMIC(_path.generic_string().c_str());
+            m_filePath = _path;
+            m_ImportFormat = FindImportFormat(_path);
 
-        Assimp::Importer importer;
-        const aiScene* scene = nullptr;
-        {
-           PERF_REGION_SCOPED_NAMED("Read Imported File");
-           PERF_REGION_COLOR(PerfRegion::EditorResource);
-           // Load the model with common processing flags
-           scene = importer.ReadFile(
-               _path.generic_string().c_str(),
-               aiProcess_FlipUVs |
-               aiProcess_Triangulate |
-               aiProcess_JoinIdenticalVertices |
-               aiProcess_GenNormals |
-               aiProcess_CalcTangentSpace |
-               aiProcess_ImproveCacheLocality | 
-               aiProcess_GenBoundingBoxes
-           );
-        }
-       
-
-        if (!scene || !scene->HasMeshes())
-        {
-            PC_LOGERROR("Failed to load model: {} \n {} ", _path.generic_string(), importer.GetErrorString());
-            return false;
-        }
-        m_ImportObjectName = scene->mName.Empty() ? _path.filename().generic_string() : std::string(scene->mName.C_Str());
-
-        {
-            std::vector<std::future<void>> futurs;
-
-            if (!ImportTextures(_Rhi, ThreadPool, &futurs, scene))
+            if (m_ImportFormat == ImportFormat::None)
             {
-                PC_LOGERROR("Failed To Import Textures")
                 return false;
             }
 
-            if (!ImportMeshesFromScene(_Rhi, scene))
+            Assimp::Importer importer;
+            const aiScene* scene = nullptr;
             {
-                PC_LOGERROR("Failed To Import Mesh From Scene")
-                return false;
-            }
-
-            {
-                PERF_REGION_SCOPED_NAMED("Wait Texture Load Futur");
+                PERF_REGION_SCOPED_NAMED("Read Imported File");
                 PERF_REGION_COLOR(PerfRegion::EditorResource);
-                for (auto& f : futurs)
-                {
-                    f.wait();
-                }
-                futurs.clear();
+                // Load the model with common processing flags
+                scene = importer.ReadFile(
+                    _path.generic_string().c_str(),
+                    aiProcess_FlipUVs |
+                    aiProcess_Triangulate |
+                    aiProcess_JoinIdenticalVertices |
+                    aiProcess_GenNormals |
+                    aiProcess_CalcTangentSpace |
+                    aiProcess_ImproveCacheLocality |
+                    aiProcess_GenBoundingBoxes
+                );
             }
 
-            ResolveMaterial(scene);
 
-        }
-
-        {
-            PERF_REGION_SCOPED;
-            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Fetch ResourceUpdateBranchs");
-
-            std::scoped_lock _(_Rhi.GetRhiContext().lock);
-            for (auto& it : m_ResourceUpdateBranchs)
+            if (!scene || !scene->HasMeshes())
             {
-                *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
+                PC_LOGERROR("Failed to load model: {} \n {} ", _path.generic_string(), importer.GetErrorString());
+                return false;
             }
+            m_ImportObjectName = scene->mName.Empty() ? _path.filename().generic_string() : std::string(scene->mName.C_Str());
+
+            {
+                std::vector<std::future<void>> futurs;
+
+                if (!ImportTextures(_Rhi, ThreadPool, &futurs, scene))
+                {
+                    PC_LOGERROR("Failed To Import Textures")
+                        return false;
+                }
+
+                if (!ImportMeshesFromScene(_Rhi, scene))
+                {
+                    PC_LOGERROR("Failed To Import Mesh From Scene")
+                        return false;
+                }
+
+                {
+                    PERF_REGION_SCOPED_NAMED("Wait Texture Load Futur");
+                    PERF_REGION_COLOR(PerfRegion::EditorResource);
+                    for (auto& f : futurs)
+                    {
+                        f.wait();
+                    }
+                    futurs.clear();
+                }
+
+                ResolveMaterial(scene);
+
+            }
+
+            {
+                PERF_REGION_SCOPED;
+                PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Fetch ResourceUpdateBranchs");
+
+                std::scoped_lock _(_Rhi.GetRhiContext().lock);
+                for (auto& it : m_ResourceUpdateBranchs)
+                {
+                    *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
+                }
+            }
+
+            m_Succes = true;
         }
+
         
 
-
-        return true;
+        return m_Succes;
     }
 
     const std::string& AssetsImporter::GetName() const

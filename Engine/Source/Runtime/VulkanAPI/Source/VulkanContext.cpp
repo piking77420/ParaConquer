@@ -39,7 +39,9 @@ void Vulkan::VulkanContext::Init(const PC_CORE::RhiContextCreateInfo& rhiContext
     std::shared_ptr<VulkanPhysicalDevices> vkPhysicalDevice = std::make_shared<VulkanPhysicalDevices>(vkInstance->GetVulkanInstance(), vkInstance->surface, *rhiContextCreateInfo.physicalDevicesCreateInfo,
         &extensionToEnable);
 
-    std::shared_ptr<VulkanDevice> vkDevice = std::make_shared<VulkanDevice>(vkPhysicalDevice,
+    std::shared_ptr<VulkanDevice> vkDevice = std::make_shared<VulkanDevice>(
+        rhiContextCreateInfo.physicalDevicesCreateInfo->requestExtensions, 
+        vkPhysicalDevice,
         extensionToEnable, &mainQueue);
 
     renderInstance = vkInstance;

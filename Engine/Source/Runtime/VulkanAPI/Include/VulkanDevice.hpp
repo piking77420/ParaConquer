@@ -1,8 +1,11 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "LowRenderer/RhiDevice.hpp"
 #include "VulkanHeader.h"
 #include "VulkanPhysicalDevices.hpp"
+
 
 namespace Vulkan
 {
@@ -11,7 +14,7 @@ namespace Vulkan
     public:
         vk::Device GetDevice() const;
 
-        VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices,
+        VulkanDevice(const std::vector<PC_CORE::RhiExtension>& RhiExtension, const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices,
                      const std::set<std::string>& _extensionToEnable, vk::Queue* _graphicQueue);
 
         VulkanDevice() = default;

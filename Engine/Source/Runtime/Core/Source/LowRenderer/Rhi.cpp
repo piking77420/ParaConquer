@@ -38,7 +38,7 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 	{
 		{
 			// RhiExtension::RayTracing,
-			//RhiExtension::MeshShader
+			RhiExtension::MeshShader
 		},
 
 	};
