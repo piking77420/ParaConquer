@@ -35,15 +35,26 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
         ->SetName("PrimaryCommandBuffer")
         .Build();
 
-    TextureSampler.reset(RenderHarwareInteface.CreateSampler());
-    TextureSampler
+    SamplerLinearReapet.reset(RenderHarwareInteface.CreateSampler());
+    SamplerLinearReapet
         ->SetMagFilter(Filter::Linear)
         .SetMinFilter(Filter::Linear)
         .SetMipmapMode(SamplerMipmapMode::Linear)
         .SetU(SamplerAddressMode::Repeat)
         .SetV(SamplerAddressMode::Repeat)
         .SetW(SamplerAddressMode::Repeat)
-        .SetName("TextureSampler")
+        .SetName("SamplerLinearReapet")
+        .Build();
+
+    SamplerLinearClamp.reset(RenderHarwareInteface.CreateSampler());
+    SamplerLinearClamp
+        ->SetMagFilter(Filter::Linear)
+        .SetMinFilter(Filter::Linear)
+        .SetMipmapMode(SamplerMipmapMode::Linear)
+        .SetU(SamplerAddressMode::ClampToBorder)
+        .SetV(SamplerAddressMode::ClampToBorder)
+        .SetW(SamplerAddressMode::ClampToBorder)
+        .SetName("SamplerLinearClamp")
         .Build();
 
     DummyTexture.reset(RenderHarwareInteface.CreateTexture());
@@ -59,7 +70,7 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
 
     RHI::ResourceUpdateBranch* branch = RenderHarwareInteface.GetRhiContext().ResourceUpdateBranch();
 
-    std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight());
+    std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
     branch->
         TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight()), RhiResourceState::FragmentShaderResource);
         

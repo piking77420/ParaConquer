@@ -34,6 +34,9 @@
 #include "SystemDialogue.hpp"
 #include "World/StaticMeshComponent.hpp"
 #include "Thread/ThreadUtils.hpp"
+#include "ImguiHelper.h"
+
+#include "ImguiReflectedObject.hpp"
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -103,6 +106,19 @@ void Editor::LoadFromInitFiles()
 
     editorData.projectPath = editorIniFile.projectPath;
     editorData.projectData = ProjectData(projectFile);
+
+
+    // RenderSettings
+    {
+        JsonSerializer s;
+        if (s.OpenFile("RenderSettings.ini", Serializer::SerializeOperation::DeSerialize))
+        {
+            s.DeSerialize<Rendering::RenderSettings>(&RenderSettings);
+            s.CloseFile();
+        }
+        
+    }
+
 }
 
 void Editor::SaveInitFiles()
@@ -113,10 +129,21 @@ void Editor::SaveInitFiles()
     EditorIniFile editorIniFile;
     editorIniFile.projectPath = editorData.projectPath.generic_string();
 
-    JsonSerializer s;
-    s.OpenFile(std::string(EditorIniFileName), Serializer::SerializeOperation::Serialize);
-    s.Serialize<EditorIniFile>(editorIniFile);
-    s.CloseFile();
+    {
+        JsonSerializer s;
+        s.OpenFile(std::string(EditorIniFileName), Serializer::SerializeOperation::Serialize);
+        s.Serialize<EditorIniFile>(editorIniFile);
+        s.CloseFile();
+    }
+    
+    {
+        JsonSerializer s;
+        s.OpenFile("RenderSettings.ini", Serializer::SerializeOperation::Serialize);
+        s.Serialize<Rendering::RenderSettings>(RenderSettings);
+        s.CloseFile();
+    }
+
+
 }
 
 void Editor::CompileShader()
@@ -282,6 +309,17 @@ void Editor::UpdateEditor()
             {
                 Level& l = World::GetWorld()->level;
                 //Serializer::DeSerialize(&l,"TestScene.map");
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("RenderSettings"))
+        {
+            ImGui::Text("MSAA : ");
+            ImGui::SameLine();
+            {
+                ImGui::ScopedFont(editorData.editorFont.tiny);
+                ImGuiReflection::SelectEnum<decltype(PC_CORE::Rendering::RenderSettings::MSAASampleCount)>(&RenderSettings.MSAASampleCount);
             }
             ImGui::EndMenu();
         }

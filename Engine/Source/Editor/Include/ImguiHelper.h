@@ -8,6 +8,19 @@
 
 namespace ImGui
 {
+    struct ScopedFont
+    {
+        ScopedFont(ImFont* font)
+        {
+            if (font)
+                ImGui::PushFont(font);
+        }
+        ~ScopedFont()
+        {
+            ImGui::PopFont();
+        }
+    };
+
     bool ButtonCenteredOnLine(const char* label, float alignment = 0.5f);
 
     void TextCenter(const char* _text);

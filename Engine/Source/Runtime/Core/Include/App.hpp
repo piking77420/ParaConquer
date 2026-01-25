@@ -11,6 +11,7 @@
 #include "Rendering/Renderer.hpp"
 #include "Thread/ThreadPool.hpp"
 #include "Resources/ResourceManager.hpp"
+#include "Rendering/RenderSettings.hpp"
 
 BEGIN_PCCORE
     struct AppCreateInfo
@@ -37,11 +38,15 @@ BEGIN_PCCORE
 
         Rhi RenderHarwareInteface;
 
+        Rendering::RenderSettings RenderSettings;
+
         PC_CORE::Rendering::Renderer Renderer; //  TODO HANDLE MULIPTLE VIEW PORT
 
         std::unique_ptr<CommandList> PrimaryCommandBuffer;
 
-        std::unique_ptr<RhiSampler> TextureSampler;
+        std::unique_ptr<RhiSampler> SamplerLinearReapet;
+
+        std::unique_ptr<RhiSampler> SamplerLinearClamp;
 
         std::unique_ptr<RhiTexture> DummyTexture;
 

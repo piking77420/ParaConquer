@@ -58,7 +58,7 @@ BEGIN_PCCORE
         };
 
 
-        virtual void OpenFile(const std::string& _path, SerializeOperation _operation)
+        virtual bool OpenFile(const std::string& _path, SerializeOperation _operation)
         {
             assert(_operation != SerializeOperation::None && "Invalid Enum");
             assert(m_SerializeOperation == SerializeOperation::None && "Did you forget to call CloseFile");
@@ -66,15 +66,19 @@ BEGIN_PCCORE
 
             m_SerializeOperation = _operation;
             m_CurrentFilePath = _path;
+
+            return true;
         }
 
-        virtual void CloseFile()
+        virtual bool CloseFile()
         {
             assert(m_SerializeOperation != SerializeOperation::None && "Did you forget to call OpenFile");
             assert(m_CurrentFilePath != "" && "Did you forget to call OpenFile");
 
             m_CurrentFilePath = "";
             m_SerializeOperation = SerializeOperation::None;
+
+            return true;
         }
 
         template <typename... T>

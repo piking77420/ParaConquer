@@ -33,6 +33,9 @@ namespace PC_CORE::Rendering
 
         CameraNear = _Camera.GetNear();
         CameraFar = _Camera.GetFar();
+
+
+        ViewPosition = _Camera.Position;
 	}
 
     void RenderView::UpdateUniformBuffer()

@@ -241,7 +241,7 @@ BEGIN_PCCORE
     };
     REFLECT(RhiFormat)
 
-    enum struct SampleCount
+    enum struct SampleCount : uint8_t
     {
         S1 = 1,
         S2 = 2,

@@ -79,6 +79,8 @@ BEGIN_PCCORE
         uint32_t IndexOffset;
         uint32_t IndiciesCount;
         uint32_t MaterialIndex;
+
+        MotionCore::Aabb<double> AABB;
     };
 
     struct StaticMeshRenderData

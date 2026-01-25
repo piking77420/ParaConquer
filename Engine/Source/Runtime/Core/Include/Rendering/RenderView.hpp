@@ -87,6 +87,8 @@ namespace PC_CORE::Rendering
         RenderViewFlag Flag{};
 
         std::unique_ptr<RhiBuffer> UniformBuffer;
+
+        Tbx::Vector3d ViewPosition;
     };
 }
 

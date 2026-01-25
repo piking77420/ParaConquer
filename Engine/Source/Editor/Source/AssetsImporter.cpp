@@ -113,7 +113,8 @@ namespace PC_EDITOR_CORE
                aiProcess_JoinIdenticalVertices |
                aiProcess_GenNormals |
                aiProcess_CalcTangentSpace |
-               aiProcess_ImproveCacheLocality
+               aiProcess_ImproveCacheLocality | 
+               aiProcess_GenBoundingBoxes
            );
         }
        
@@ -216,13 +217,17 @@ namespace PC_EDITOR_CORE
                 accFaceIndicies += scene->mMeshes[i]->mFaces[f].mNumIndices;
             }
 
+            const Tbx::Vector3d min = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMin.x, scene->mMeshes[i]->mAABB.mMin.y , scene->mMeshes[i]->mAABB.mMin.z));
+            const Tbx::Vector3d max = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMax.x, scene->mMeshes[i]->mAABB.mMax.y, scene->mMeshes[i]->mAABB.mMax.z));
+
             PC_CORE::SubMesh subMesh =
             {
                 .VertexOffSet = nbrOfVerticies,
                 .VerticiesCount = scene->mMeshes[i]->mNumVertices,
                 .IndexOffset = nbrOfIndex,
                 .IndiciesCount = accFaceIndicies,
-                .MaterialIndex = scene->mMeshes[i]->mMaterialIndex
+                .MaterialIndex = scene->mMeshes[i]->mMaterialIndex,
+                .AABB = MotionCore::Aabb<double>(min, max),
             };
 
             nbrOfVerticies += subMesh.VerticiesCount;

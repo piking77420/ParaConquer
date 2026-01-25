@@ -170,7 +170,7 @@ namespace PC_CORE::Rendering
 
            constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
            {
-               .ColorSrcFactor = PC_CORE::BlendFactor::One,
+               .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
                .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
                .ColorOp = PC_CORE::BlendOp::Add,
 

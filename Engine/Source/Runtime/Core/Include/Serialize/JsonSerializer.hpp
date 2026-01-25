@@ -3,6 +3,8 @@
 #include "Serialize/Serializer.h"
 
 #include <String>
+
+#define JSON_NOEXCEPTION
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -14,9 +16,9 @@ BEGIN_PCCORE
     public:
         bool IsOpen() const override;
 
-        void OpenFile(const std::string& _path, SerializeOperation _operation) override;
+        bool OpenFile(const std::string& _path, SerializeOperation _operation) override;
 
-        void CloseFile() override;
+        bool CloseFile() override;
 
         void SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer) override;
 
@@ -27,38 +29,63 @@ BEGIN_PCCORE
 
         explicit JsonSerializer() = default;
 
-        ~JsonSerializer() override
-        {
-            assert(m_SerializeOperation == SerializeOperation::None && "Did you forgot to call CloseFile");
-        };
+        ~JsonSerializer() override = default;
 
     private:
-        static constexpr auto CONTAINER_SIZE = "size";
-        static constexpr auto RESOURCE_TYPE = "resourceType";
-        static constexpr auto KEY = "key";
-        static constexpr auto VALUE = "value";
-        static constexpr auto DATA = "data";
-        static constexpr auto GUID_KEY = "Guid";
+        static constexpr const char* CONTAINER_SIZE = "size";
+        static constexpr const char* RESOURCE_TYPE = "resourceType";
+        static constexpr const char* KEY = "key";
+        static constexpr const char* VALUE = "value";
+        static constexpr const char* DATA = "data";
+        static constexpr const char* GUID_KEY = "Guid";
 
-        static constexpr auto boolAlpha0s = "false";
-        static constexpr auto boolAlpha1s = "true";
+        static constexpr const char* boolAlpha0s = "false";
+        static constexpr const char* boolAlpha1s = "true";
         static constexpr bool boolAlpha0b = false;
         static constexpr bool boolAlpha1b = true;
 
-        static constexpr auto SPARSE_SET_DENSE = "dense";
-        static constexpr auto SPARSE_SET_SPARSE = "sparse";
+        static constexpr const char* SPARSE_SET_DENSE = "dense";
+        static constexpr const char* SPARSE_SET_SPARSE = "sparse";
 
-        static constexpr auto RESOURCE_OBJECT = "Object";
-        static constexpr auto OBJECT_TYPE = "ObjectType";
+        static constexpr const char* RESOURCE_OBJECT = "Object";
+        static constexpr const char* OBJECT_TYPE = "ObjectType";
+
 
 
         json m_MainJson;
 
         std::vector<json*> m_JsonStack;
 
-        json& GetLastJson()
+        json* GetLastJson()
         {
-            return *m_JsonStack.back();
+            return m_JsonStack.back();
+        }
+
+        template <typename T>
+        bool WriteJson(T&& v)
+        {
+            if (m_JsonStack.empty())
+                return false;
+
+            if (m_JsonStack.back() == nullptr)
+                return false;
+
+            *m_JsonStack.back() = v;
+            return true;
+        }
+
+        template <typename T>
+        bool ReadJson(T& v)
+        {
+            if (m_JsonStack.empty())
+                return false;
+
+            const auto* json = m_JsonStack.back();
+            if (json == nullptr)
+                return false;
+
+            v = json->get<T>();
+            return true;
         }
 
         void SerializeMember(const Members& member, const uint8_t* objetPtr) override;

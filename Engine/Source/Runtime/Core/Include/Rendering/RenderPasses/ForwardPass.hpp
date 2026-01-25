@@ -7,6 +7,7 @@
 namespace PC_CORE::Rendering
 {
     class Renderer;
+    struct StaticMeshComponentData;
 }
 
 namespace PC_CORE::Rendering::Pass
@@ -49,6 +50,8 @@ namespace PC_CORE::Rendering::Pass
         std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
 
         RhiTexture* m_LightingImage = nullptr;
+
+        mutable std::vector<std::pair<double, uint32_t>> m_TransparentSubMeshDistanceV;
 
     };
 

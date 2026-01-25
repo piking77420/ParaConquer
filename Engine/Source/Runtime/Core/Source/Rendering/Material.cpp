@@ -54,17 +54,19 @@ void Material::Build()
 
     m_RhiDescriptorSets.reset(App::Instance->RenderHarwareInteface.CreateDescriptorSet());
     m_RhiDescriptorSets->BindUniformBuffer(RhiShaderStageBits::Pixel, 0, m_RhiMaterialBuffer.get());
+
+    const RhiSampler& sampler = (m_MaterialType == MaterialType::Opaque) ? *App::Instance->SamplerLinearReapet.get() : *App::Instance->SamplerLinearReapet.get();
     for (size_t i = 0; i < m_Textures.size(); i++)
     {
         if (auto Text = m_Textures[i].Lock())
         {
             m_RhiDescriptorSets
-                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i) + 1, Text->Get(), App::Instance->TextureSampler.get());
+                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i) + 1, Text->Get(), &sampler);
         }
         else
         {
             m_RhiDescriptorSets
-                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i) + 1, App::Instance->DummyTexture.get(), App::Instance->TextureSampler.get());
+                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i) + 1, App::Instance->DummyTexture.get(), &sampler);
         }
         
     }
