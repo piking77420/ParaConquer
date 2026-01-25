@@ -16,7 +16,7 @@ Vulkan::VulkanFrameBuffer::~VulkanFrameBuffer()
         GET_VK_CONTEXT.rhiDevice);
 
 
-    if (m_FrameBufferHandle == VK_NULL_HANDLE)
+    if (m_FrameBufferHandle != VK_NULL_HANDLE)
     {
         vulkanDevice->GetDevice().destroyFramebuffer(m_FrameBufferHandle);
         m_FrameBufferHandle = VK_NULL_HANDLE;
