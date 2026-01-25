@@ -441,9 +441,20 @@ void Vulkan::VulkanCommandList::Dispatch(uint32_t _groupCountX, uint32_t _groupC
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-
     m_CommandBuffer[m_Rhi.GetFrameIndex()].dispatch(_groupCountX, _groupCountY, _groupCountZ);
 }
+
+void Vulkan::VulkanCommandList::DrawMeshTask(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ)
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+    // Should not be static but id does the job
+    static PFN_vkCmdDrawMeshTasksEXT func = GET_VK_INSTANCE->GetPFN_vkCmdDrawMeshTasksEXT();
+    assert(func && "Misssing function");
+
+    func(m_CommandBuffer[m_Rhi.GetFrameIndex()], _groupCountX, _groupCountY, _groupCountZ);
+}
+
 
 void Vulkan::VulkanCommandList::BindDrawBuffers(const DrawBuffers& _DrawBuffers)
 {

@@ -74,7 +74,9 @@ Vulkan::VulkanDevice::VulkanDevice(const std::vector<PC_CORE::RhiExtension>& Rhi
         vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
     extendedFeatures3.pNext = &extendedFeatures2;
 
-
+    vk::PhysicalDeviceVulkan13Features v13 = {
+ 
+    };
     VkBaseOutStructure* chainHead =
         reinterpret_cast<VkBaseOutStructure*>(&extendedFeatures3);
 
@@ -91,6 +93,13 @@ Vulkan::VulkanDevice::VulkanDevice(const std::vector<PC_CORE::RhiExtension>& Rhi
 
             meshFeatures.pNext = chainHead;
             chainHead = reinterpret_cast<VkBaseOutStructure*>(&meshFeatures);
+
+            v13.sType = vk::StructureType::ePhysicalDeviceVulkan13Features;
+            v13.shaderDemoteToHelperInvocation = VK_TRUE;
+
+            v13.pNext = chainHead;
+            chainHead = reinterpret_cast<VkBaseOutStructure*>(&v13);
+
             break;
 
         default:

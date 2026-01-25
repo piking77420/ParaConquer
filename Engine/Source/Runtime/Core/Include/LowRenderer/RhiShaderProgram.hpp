@@ -17,7 +17,6 @@ public:
         Graphic,
         Compute,
         RayTracing,
-        MeshShader,
 
         Count
     };
@@ -58,8 +57,8 @@ public:
         ".chit.hlsl",
         ".miss.hlsl",
         ".call.hlsl",
-        ".task.hlsl",
-        ".mesh.hlsl",
+        ".as.hlsl",
+        ".ms.hlsl",
     };
 
     enum class PolygonMode
@@ -180,7 +179,7 @@ protected:
         CullModeFlag CullMode{ 0u };
         uint32_t Sample{ 1u };
         FrontFace FrontFace{ FrontFace::CounterClockwise };
-        DephStencilInfo DephStencilInfo;
+        std::optional< DephStencilInfo> DephStencilInfo;
         std::optional<BlendState> BlendState;
         PrimitiveTopology PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
 
@@ -232,19 +231,34 @@ public:
 
     PC_CORE_API RhiShaderProgram& SetDepthTest(bool _DepthTest)
     {
-        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.enableDepthTest = _DepthTest;
+        if (!std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.has_value())
+        {
+            std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.emplace();
+        }
+       
+
+        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo->enableDepthTest = _DepthTest;
         return *this;
     }
 
     PC_CORE_API RhiShaderProgram& SetDepthWrite(bool _DepthWrite)
     {
-        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.enableDepthWrite = _DepthWrite;
+        if (!std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.has_value())
+        {
+            std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.emplace();
+        }
+        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo->enableDepthWrite = _DepthWrite;
         return *this;
     }
 
     PC_CORE_API RhiShaderProgram& SetDepthCompareOp(CompareOp _CompareOp)
     {
-        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.depthCompareOp = _CompareOp;
+        if (!std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.has_value())
+        {
+            std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.emplace();
+        }
+
+        std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo->depthCompareOp = _CompareOp;
         return *this;
     }
 

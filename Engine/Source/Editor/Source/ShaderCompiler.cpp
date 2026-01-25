@@ -47,8 +47,8 @@ const std::array<std::pair<std::wstring, std::wstring>, 14> ShaderFormats =
         {L".call", L"lib_6_3"}, // Callable
 
         // Mesh shaders (DirectX 12 Ultimate)
-        {L".task", L"as_6_5"}, // Amplification Shader
-        {L".mesh", L"ms_6_5"} // Mesh Shader
+        {L".as", L"as_6_5"}, // Amplification Shader
+        {L".ms", L"ms_6_5"} // Mesh Shader
     }
 };
 
@@ -193,14 +193,12 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     if (!targetProfile)
         return {};
 
-    auto testInclude = std::wstring(INCLUDE_PATH) + L"Camera.hlsl";
-
     std::vector<LPCWSTR> arguments = {
         _fileName.c_str(), // Shader path
         L"-E", L"Main", // Entry point
         L"-T", targetProfile, // Target profile
         L"-I", INCLUDE_PATH,
-        L"-Zpr"
+        L"-Zpr",
     };
 
     switch (_api)
@@ -208,6 +206,8 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     case PC_CORE::GraphicAPI::Vulkan:
         arguments.push_back(L"-Zpr");
         arguments.push_back(L"-spirv");
+        arguments.push_back(L"-fspv-target-env=vulkan1.3");
+        arguments.push_back(L"-fspv-extension=SPV_EXT_mesh_shader");
         break;
     case PC_CORE::GraphicAPI::D3d12:
         arguments.push_back(L"-Zpc");

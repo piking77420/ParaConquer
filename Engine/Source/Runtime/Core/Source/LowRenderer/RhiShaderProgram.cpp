@@ -19,7 +19,6 @@ RhiShaderProgram& RhiShaderProgram::SetPipelineType(PipelineType _Type)
         m_PipelineData = ComputePipelineData();
         break;
     case PC_CORE::RhiShaderProgram::PipelineType::RayTracing:
-    case PC_CORE::RhiShaderProgram::PipelineType::MeshShader:
     case PC_CORE::RhiShaderProgram::PipelineType::None:
     case PC_CORE::RhiShaderProgram::PipelineType::Count:
         break;

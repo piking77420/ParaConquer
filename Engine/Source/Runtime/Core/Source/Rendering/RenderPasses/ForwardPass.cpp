@@ -92,9 +92,8 @@ namespace PC_CORE::Rendering::Pass
 
 		ViewportInfo viewPort(beginRenderPassInfo.Extent);
 		cmd.SetViewPort(viewPort);
+
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
-
-
 		const auto& DrawObjects = _RendererPassExecuteContext.RenderingWorldData.StaticMeshComponentData;
 		for (const auto& DrawObject : DrawObjects)
 		{
@@ -190,6 +189,11 @@ namespace PC_CORE::Rendering::Pass
 			}
 
 		}
+
+
+
+		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.meshShader);
+		cmd.DrawMeshTask(1, 1, 1);
 
 		cmd.EndRenderPass();
 	}

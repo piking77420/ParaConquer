@@ -307,7 +307,8 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     }
 
     vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
-    ParsePipelineDepthStencilAttachmentState(&depthStencilState, Data.DephStencilInfo);
+    if (Data.DephStencilInfo)
+        ParsePipelineDepthStencilAttachmentState(&depthStencilState, *Data.DephStencilInfo);
 
     vk::PipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo;
@@ -329,7 +330,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     graphicsPipelineInfo.pInputAssemblyState = &inputAssembly;
     graphicsPipelineInfo.pViewportState = &viewportState;
     graphicsPipelineInfo.pRasterizationState = &rasterizer;
-    if (Data.DephStencilInfo.enableDepthTest || Data.DephStencilInfo.enableDepthWrite)
+    if (Data.DephStencilInfo)
         graphicsPipelineInfo.pDepthStencilState = &depthStencilState;
     graphicsPipelineInfo.pMultisampleState = &multisampling;
     graphicsPipelineInfo.pColorBlendState = &colorBlending;
@@ -357,13 +358,17 @@ void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
                                                const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     std::vector<vk::DescriptorSetLayout> cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorLayouts(_vulkanShaderProgramCreateContex.modulesReflected);
-    
+   
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache.size()); // Optional
-    pipelineLayoutInfo.pSetLayouts = cache.data(); // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.
-                                                                      pushConstantRanges.size()); // Optional
+    if (!cache.empty() && cache[0] != VK_NULL_HANDLE)
+
+    {
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(cache.size()); // Optional
+        pipelineLayoutInfo.pSetLayouts = cache.data(); // Optional
+    }
+
+    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(_vulkanShaderProgramCreateContex.pushConstantRanges.size()); // Optional
     pipelineLayoutInfo.pPushConstantRanges = _vulkanShaderProgramCreateContex.pushConstantRanges.data(); // Optional
 
     m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);

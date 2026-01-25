@@ -425,8 +425,6 @@ vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
         return vk::PipelineBindPoint::eCompute;
     case PC_CORE::RhiShaderProgram::PipelineType::RayTracing:
         return vk::PipelineBindPoint::eRayTracingKHR;
-    case PC_CORE::RhiShaderProgram::PipelineType::MeshShader:
-        return vk::PipelineBindPoint::eCompute;
     case PC_CORE::RhiShaderProgram::PipelineType::Count:
         return {};
     }

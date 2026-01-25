@@ -223,6 +223,10 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
     GetDebugFunc();
 #endif
 
+
+    m_DrawMeshTasksTExt = reinterpret_cast<PFN_vkCmdDrawMeshTasksEXT>(vkGetInstanceProcAddr(
+        m_Instance, "vkCmdDrawMeshTasksEXT"));
+
     InitSurface(_window);
 }
 

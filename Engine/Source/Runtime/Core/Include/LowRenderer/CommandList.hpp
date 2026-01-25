@@ -209,6 +209,8 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
 
+        PC_CORE_API virtual void DrawMeshTask(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
+
         PC_CORE_API virtual void BindDrawBuffers(const DrawBuffers& _DrawBuffers) = 0;
 
         PC_CORE_API virtual void CopyBuffer(const RhiBuffer& _src, const RhiBuffer& _dst, size_t _srcOffSet,

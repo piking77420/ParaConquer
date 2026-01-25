@@ -65,6 +65,7 @@ namespace Vulkan
 
         VULKAN_API void Dispatch(uint32_t, uint32_t, uint32_t) override;
 
+        VULKAN_API void DrawMeshTask(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) override;
 
         VULKAN_API void BindDrawBuffers(const DrawBuffers& _DrawBuffers) override;
 
