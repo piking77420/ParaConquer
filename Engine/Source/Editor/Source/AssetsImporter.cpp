@@ -16,6 +16,11 @@
 #include "Serialize/Serializer.h"
 #include "Thread/ThreadPool.hpp"
 
+#include "meshoptimizer.h"
+
+#define kMaxTriangles 124
+#define kMaxVertices  64
+
 static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTextureType)
 {
     switch (aiTextureType)
@@ -199,20 +204,23 @@ namespace PC_EDITOR_CORE
         return ImportFormat::None;
 
     }
-    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene)
+
+    void AssetsImporter::LoadMesh(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
-        if (scene->mNumMeshes == 0)
-            return false;
-
-        PC_CORE::StaticMeshRenderData StaticMeshRenderData;
+        assert(_StaticMeshRenderData);
+        if (!_StaticMeshRenderData)
+            return;
+             
         // CountVertex And Index
         uint32_t nbrOfVerticies = 0;
         uint32_t nbrOfIndex = 0;
-        StaticMeshRenderData.SubMeshes.reserve(scene->mNumMeshes);
+        _StaticMeshRenderData->SubMeshes.reserve(scene->mNumMeshes);
 
+        // No job 
+        // Fully single thread
         for (size_t i = 0; i < scene->mNumMeshes; i++)
         {
             uint32_t accFaceIndicies = 0;
@@ -221,7 +229,7 @@ namespace PC_EDITOR_CORE
                 accFaceIndicies += scene->mMeshes[i]->mFaces[f].mNumIndices;
             }
 
-            const Tbx::Vector3d min = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMin.x, scene->mMeshes[i]->mAABB.mMin.y , scene->mMeshes[i]->mAABB.mMin.z));
+            const Tbx::Vector3d min = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMin.x, scene->mMeshes[i]->mAABB.mMin.y, scene->mMeshes[i]->mAABB.mMin.z));
             const Tbx::Vector3d max = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMax.x, scene->mMeshes[i]->mAABB.mMax.y, scene->mMeshes[i]->mAABB.mMax.z));
 
             PC_CORE::SubMesh subMesh =
@@ -237,11 +245,11 @@ namespace PC_EDITOR_CORE
             nbrOfVerticies += subMesh.VerticiesCount;
             nbrOfIndex += subMesh.IndiciesCount;
 
-            StaticMeshRenderData.SubMeshes.emplace_back(std::move(subMesh));
+            _StaticMeshRenderData->SubMeshes.emplace_back(std::move(subMesh));
         }
 
-        StaticMeshRenderData.Vertices.reserve(nbrOfVerticies);
-        StaticMeshRenderData.Indices.reserve(nbrOfIndex);
+        _StaticMeshRenderData->Vertices.reserve(nbrOfVerticies);
+        _StaticMeshRenderData->Indices.reserve(nbrOfIndex);
 
         for (size_t m = 0; m < scene->mNumMeshes; m++)
         {
@@ -260,18 +268,84 @@ namespace PC_EDITOR_CORE
                 if (mesh.HasTangentsAndBitangents())
                     vertex.Tangent = Tbx::Vector3f{ mesh.mTangents[v].x, mesh.mTangents[v].y, mesh.mTangents[v].z };
 
-                StaticMeshRenderData.Vertices.emplace_back(vertex);
+                _StaticMeshRenderData->Vertices.emplace_back(vertex);
             }
 
             for (size_t f = 0; f < mesh.mNumFaces; f++)
             {
                 for (size_t i = 0; i < mesh.mFaces[f].mNumIndices; i++)
                 {
-                    StaticMeshRenderData.Indices.emplace_back(mesh.mFaces[f].mIndices[i]);
+                    _StaticMeshRenderData->Indices.emplace_back(mesh.mFaces[f].mIndices[i]);
                 }
             }
         }
+    }
 
+    void AssetsImporter::OptimiseMesh(PC_CORE::StaticMeshRenderData& _StaticMeshRenderData)
+    {
+        std::vector<std::future<void>> MeshOptTask;
+
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::EditorResource);
+
+        std::vector<uint32_t> remap(_StaticMeshRenderData.Vertices.size());
+
+        size_t TotalVertices;
+
+        {
+            PERF_REGION_SCOPED_NAMED("VertexRemap");
+
+            TotalVertices = meshopt_generateVertexRemap(
+                remap.data(),
+                _StaticMeshRenderData.Indices.data(),
+                (uint32_t)_StaticMeshRenderData.Indices.size(),
+                _StaticMeshRenderData.Vertices.data(),
+                (uint32_t)_StaticMeshRenderData.Vertices.size(),
+                sizeof(PC_CORE::StaticMeshVertex)
+            );
+        }
+
+        std::vector<PC_CORE::StaticMeshVertex> newVertices(TotalVertices);
+        std::vector<uint32_t> newIndices(_StaticMeshRenderData.Indices.size());
+
+        {
+            PERF_REGION_SCOPED_NAMED("remap IndexBuffer And Vertex Buffer");
+            meshopt_remapIndexBuffer(
+                newIndices.data(),
+                _StaticMeshRenderData.Indices.data(),
+                _StaticMeshRenderData.Indices.size(),
+                remap.data()
+            );
+
+            meshopt_remapVertexBuffer(
+                newVertices.data(),
+                _StaticMeshRenderData.Vertices.data(),
+                _StaticMeshRenderData.Vertices.size(),
+                sizeof(PC_CORE::StaticMeshVertex),
+                remap.data()
+            );
+
+        }
+       
+        /*for (const auto& f : MeshOptTask)
+        {
+            f.wait();
+        }*/
+    }
+
+
+    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene)
+    {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::EditorResource);
+
+        if (scene->mNumMeshes == 0)
+            return false;
+
+
+        PC_CORE::StaticMeshRenderData StaticMeshRenderData;
+        LoadMesh(&StaticMeshRenderData, scene);
+        OptimiseMesh(StaticMeshRenderData);
         {
             std::scoped_lock _(m_mutex);
             m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back());

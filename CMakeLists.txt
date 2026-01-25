@@ -37,6 +37,9 @@ add_subdirectory(${THIRD_PARTY_DIR}/json)
 ## Magic Enum
 add_subdirectory(${THIRD_PARTY_DIR}/magic_enum)
 
+## MeshOpt
+add_subdirectory(${THIRD_PARTY_DIR}/meshoptimizer)
+
 add_subdirectory(${RUNTIME_SOURCE_DIR}/CoreDependencies)
 add_subdirectory(${RUNTIME_SOURCE_DIR}/Core)
 

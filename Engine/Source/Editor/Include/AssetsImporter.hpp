@@ -107,15 +107,16 @@ BEGIN_EDITOR_PCCORE
 
         void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
+        void OptimiseMesh(PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
+
+        void LoadMesh(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene);
+
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromPath(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 
         [[nodiscard]] void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, aiTextureType textureType , bool _UseApha);
 
-        //bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
-
-        //bool ImportMaterialGltf(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
 
     };
 
