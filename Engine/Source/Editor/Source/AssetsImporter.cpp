@@ -141,10 +141,10 @@ namespace PC_EDITOR_CORE
                         return false;
                 }
 
-                if (!ImportMeshesFromScene(_Rhi, scene))
+                if (!ImportMeshesFromScene(_Rhi, ThreadPool, scene))
                 {
                     PC_LOGERROR("Failed To Import Mesh From Scene")
-                        return false;
+                    return false;
                 }
 
                 {
@@ -205,8 +205,9 @@ namespace PC_EDITOR_CORE
 
     }
 
-    void AssetsImporter::LoadMesh(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene)
+    void AssetsImporter::LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene)
     {
+        
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
@@ -288,6 +289,10 @@ namespace PC_EDITOR_CORE
 
         uint8_t* UnOptRawIndicesPtr = reinterpret_cast<uint8_t*>(UnOptIndices.data());
         uint8_t* UnOptRawVerticesPtr = reinterpret_cast<uint8_t*>(UnOptVertices.data());
+        using OutOPTMesh = std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>>;
+ 
+        std::vector<std::future<OutOPTMesh>> SubMeshFuture;
+        SubMeshFuture.resize(_StaticMeshRenderData->SubMeshes.size());
 
         for (size_t m = 0; m < scene->mNumMeshes; m++)
         {
@@ -306,15 +311,35 @@ namespace PC_EDITOR_CORE
                 SubMesh.VerticiesCount
             );
 
-            OptimiseMesh(_StaticMeshRenderData->Vertices, _StaticMeshRenderData->Indices, _StaticMeshRenderData->SubMeshes[m], SubMeshSpanVertices, SubMeshSpanIndicies);
+            
+            SubMeshFuture[m] = ThreadPool.Enqueue(
+                [this, _StaticMeshRenderData, SubMeshIndex = m, spanIndicies = SubMeshSpanIndicies, spanVerticies = SubMeshSpanVertices]() -> OutOPTMesh
+                {
+                    return OptimiseMesh(_StaticMeshRenderData->SubMeshes[SubMeshIndex],
+                        spanVerticies, spanIndicies);
+                });
+        }
+
+        for (size_t i = 0; i < SubMeshFuture.size(); i++)
+        {
+            SubMeshFuture[i].wait();
+            auto OutOptMesh = SubMeshFuture[i].get();
+            PC_CORE::SubMesh& SubMesh = _StaticMeshRenderData->SubMeshes[i];
+
+            SubMesh.IndexOffset = _StaticMeshRenderData->Indices.size();
+            SubMesh.VertexOffSet = _StaticMeshRenderData->Vertices.size();
+
+            SubMesh.VerticiesCount = (uint32_t)OutOptMesh.second.size();
+            SubMesh.IndiciesCount = (uint32_t)OutOptMesh.first.size();
+
+            _StaticMeshRenderData->Indices.insert(_StaticMeshRenderData->Indices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
+            _StaticMeshRenderData->Vertices.insert(_StaticMeshRenderData->Vertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
         }
 
     }
 
-    void AssetsImporter::OptimiseMesh
+    std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> AssetsImporter::OptimiseMesh
     (   
-        std::vector<PC_CORE::StaticMeshVertex>& MeshVertices,
-        std::vector<uint32_t>& MeshIndicies,
         PC_CORE::SubMesh& SubMesh,
         const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
         const std::span<const uint32_t>& UnOptIndices
@@ -362,19 +387,12 @@ namespace PC_EDITOR_CORE
 
         SimplifiedIndicies.resize(OptIndexCount);
         
-        SubMesh.IndexOffset = MeshIndicies.size();
-        SubMesh.IndiciesCount = SimplifiedIndicies.size();
 
-        SubMesh.VertexOffSet = (uint32_t)MeshVertices.size();
-        SubMesh.VerticiesCount = OptVerticies.size();
-
-        MeshVertices.insert(MeshVertices.end(), OptVerticies.begin(), OptVerticies.end());
-        MeshIndicies.insert(MeshIndicies.end(), SimplifiedIndicies.begin(), SimplifiedIndicies.end());
-
+        return std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>>(std::move(SimplifiedIndicies), std::move(OptVerticies));
     }
 
 
-    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene)
+    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* scene)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -384,7 +402,7 @@ namespace PC_EDITOR_CORE
 
 
         PC_CORE::StaticMeshRenderData StaticMeshRenderData;
-        LoadMesh(&StaticMeshRenderData, scene);
+        LoadMesh(ThreadPool, &StaticMeshRenderData, scene);
         {
             std::scoped_lock _(m_mutex);
             m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back());

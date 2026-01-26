@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <future>
+#include <utility>
 
 #include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
@@ -99,7 +100,7 @@ BEGIN_EDITOR_PCCORE
 
         ImportFormat FindImportFormat(const std::filesystem::path& path);
 
-        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene);
+        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* scene);
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
 
@@ -107,14 +108,12 @@ BEGIN_EDITOR_PCCORE
 
         void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
-        void OptimiseMesh(
-            std::vector<PC_CORE::StaticMeshVertex>& MeshVertices,
-            std::vector<uint32_t>& MeshIndicies,
+        std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> OptimiseMesh(
             PC_CORE::SubMesh& SubMesh,
             const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
             const std::span<const uint32_t>& UnOptIndices);
 
-        void LoadMesh(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene);
+        void LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 

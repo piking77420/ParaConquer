@@ -399,6 +399,9 @@ void Editor::RewindCommand()
 
 void Editor::TempImportModel(const std::filesystem::path& _path)
 {
+    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR
+
+
     Guid importesGuid{};
     AssetsImporter* ptr = nullptr;
     {
