@@ -107,7 +107,12 @@ BEGIN_EDITOR_PCCORE
 
         void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
-        void OptimiseMesh(PC_CORE::StaticMeshRenderData& _StaticMeshRenderData);
+        void OptimiseMesh(
+            std::vector<PC_CORE::StaticMeshVertex>& MeshVertices,
+            std::vector<uint32_t>& MeshIndicies,
+            PC_CORE::SubMesh& SubMesh,
+            const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
+            const std::span<const uint32_t>& UnOptIndices);
 
         void LoadMesh(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene);
 
