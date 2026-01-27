@@ -115,9 +115,9 @@ namespace PC_EDITOR_CORE
                     aiProcess_Triangulate |
                     aiProcess_GenNormals |
                     aiProcess_CalcTangentSpace |
-                    aiProcess_GenBoundingBoxes | 
-                    aiProcess_OptimizeMeshes | 
-                    aiProcess_OptimizeGraph
+                    aiProcess_GenBoundingBoxes //| 
+                    //aiProcess_OptimizeMeshes | 
+                    //aiProcess_OptimizeGraph
                 );
             }
 
@@ -127,7 +127,7 @@ namespace PC_EDITOR_CORE
                 PC_LOGERROR("Failed to load model: {} \n {} ", _path.generic_string(), importer.GetErrorString());
                 return false;
             }
-            m_ImportObjectName = scene->mName.Empty() ? _path.filename().generic_string() : std::string(scene->mName.C_Str());
+            m_ImportObjectName = _path.filename().generic_string();
 
             {
                 std::vector<std::future<void>> futurs;
@@ -202,7 +202,7 @@ namespace PC_EDITOR_CORE
 
     }
 
-    void AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData)
+    void AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::SubMesh::MeshletData& _SubMeshMeshletData, const std::span<uint32_t>& _Indices)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -210,22 +210,22 @@ namespace PC_EDITOR_CORE
         static_assert(sizeof(meshopt_Meshlet) == sizeof(PC_CORE::Meshlet));
 
         std::vector<PC_CORE::Meshlet> MeshletsOpt;
-        std::vector<uint32_t>   meshletVertices;
+        std::vector<uint32_t>   MeshletVertices;
         std::vector<uint8_t>    meshletTriangles;
 
-        const size_t maxMeshlets = meshopt_buildMeshletsBound(_StaticMeshRenderData->Indices.size(), PC_CORE::Meshlet::MeshletMaxVertices, PC_CORE::Meshlet::MeshletMaxTriangle);
+        const size_t maxMeshlets = meshopt_buildMeshletsBound(_Indices.size(), PC_CORE::Meshlet::MeshletMaxVertices, PC_CORE::Meshlet::MeshletMaxTriangle);
 
         MeshletsOpt.resize(maxMeshlets);
-        meshletVertices.resize(maxMeshlets * PC_CORE::Meshlet::MeshletMaxVertices);
+        MeshletVertices.resize(maxMeshlets * PC_CORE::Meshlet::MeshletMaxVertices);
         meshletTriangles.resize(maxMeshlets * PC_CORE::Meshlet::MeshletMaxTriangle * 3);
 
         constexpr float kConeWeight = 0.0f;
         size_t meshletCount = meshopt_buildMeshlets(
             reinterpret_cast<meshopt_Meshlet*>(MeshletsOpt.data()),
-            meshletVertices.data(),
+            MeshletVertices.data(),
             meshletTriangles.data(),
-            reinterpret_cast<const uint32_t*>(_StaticMeshRenderData->Indices.data()),
-            _StaticMeshRenderData->Indices.size(),
+            reinterpret_cast<const uint32_t*>(_Indices.data()),
+            _Indices.size(),
             reinterpret_cast<const float*>(_StaticMeshRenderData->Vertices.data()),
             _StaticMeshRenderData->Vertices.size(),
             sizeof(PC_CORE::StaticMeshVertex),
@@ -235,26 +235,18 @@ namespace PC_EDITOR_CORE
 
         // Finally, resize (or trim) the storage to fit the actual number of meshlets built.
         //  meshopt_buildMeshletsBound return the worst scnerio size
+        // Shrink
         auto& last = MeshletsOpt[meshletCount - 1];
-        meshletVertices.resize(last.VertexOffset + last.VertexCount);
+        MeshletVertices.resize(last.VertexOffset + last.VertexCount);
         meshletTriangles.resize(last.TriangleOffset + ((last.TriangleCount * 3 + 3) & ~3));
+        MeshletsOpt.resize(meshletCount);
 
 
-        std::vector<uint32_t> meshletTrianglesU32;
-
-        {
-            size_t count{ 0ull };
-            for (size_t i = 0; i < MeshletsOpt.size(); i++)
-                for (uint32_t j = 0; j < MeshletsOpt[i].TriangleCount; j++)
-                    count++;
-            
-            meshletTrianglesU32.reserve(count);
-        }
+        std::vector<uint32_t> MeshletTrianglesU32;
         
-
         for (auto& m : MeshletsOpt) {
             // Save triangle offset for current meshlet
-            uint32_t triangleOffset = static_cast<uint32_t>(meshletTrianglesU32.size());
+            uint32_t triangleOffset = static_cast<uint32_t>(MeshletTrianglesU32.size());
 
             // Repack to uint32_t
             for (uint32_t i = 0; i < m.TriangleCount; ++i) {
@@ -268,17 +260,28 @@ namespace PC_EDITOR_CORE
                 const uint32_t packed = ((static_cast<uint32_t>(vIdx0) & 0xFF) << 0) |
                     ((static_cast<uint32_t>(vIdx1) & 0xFF) << 8) |
                     ((static_cast<uint32_t>(vIdx2) & 0xFF) << 16);
-                meshletTrianglesU32.emplace_back(std::move(packed));
+                MeshletTrianglesU32.push_back(packed);
             }
 
             // Update triangle offset for current meshlet
             m.TriangleOffset = triangleOffset;
         }
 
-        _StaticMeshRenderData->Meshlets = std::move(MeshletsOpt);
-        _StaticMeshRenderData->MeshletVertices = std::move(meshletVertices);
-        _StaticMeshRenderData->MeshletTriangles = std::move(meshletTrianglesU32);
+        /*_StaticMeshRenderData->Meshlets = std::move(MeshletsOpt);
+        _StaticMeshRenderData->MeshletVertices = std::move(MeshletVertices);
+        _StaticMeshRenderData->MeshletTriangles = std::move(MeshletTrianglesU32);*/
 
+        // Fill SubMesh 
+        _SubMeshMeshletData.MeshletOffset = static_cast<uint32_t>(_StaticMeshRenderData->Meshlets.size());
+        _SubMeshMeshletData.MeshletCount = static_cast<uint32_t>(MeshletsOpt.size());
+        _SubMeshMeshletData.MeshletVerticiesIndiciesOffset = static_cast<uint32_t>(_StaticMeshRenderData->MeshletVertices.size());
+        _SubMeshMeshletData.MeshletTriangleIndiciesOffset = static_cast<uint32_t>(_StaticMeshRenderData->MeshletTriangles.size());
+
+        // InsertData
+        // TODO LOCK
+        _StaticMeshRenderData->Meshlets.insert(_StaticMeshRenderData->Meshlets.end(), MeshletsOpt.begin(), MeshletsOpt.end());
+        _StaticMeshRenderData->MeshletVertices.insert(_StaticMeshRenderData->MeshletVertices.end(), MeshletVertices.begin(), MeshletVertices.end());
+        _StaticMeshRenderData->MeshletTriangles.insert(_StaticMeshRenderData->MeshletTriangles.end(), MeshletTrianglesU32.begin(), MeshletTrianglesU32.end());
     }
 
     void AssetsImporter::LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene)
@@ -366,7 +369,7 @@ namespace PC_EDITOR_CORE
         uint8_t* UnOptRawIndicesPtr = reinterpret_cast<uint8_t*>(UnOptIndices.data());
         uint8_t* UnOptRawVerticesPtr = reinterpret_cast<uint8_t*>(UnOptVertices.data());
         using OutOPTMesh = std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>>;
- 
+
         std::vector<std::future<OutOPTMesh>> SubMeshFuture;
         SubMeshFuture.resize(_StaticMeshRenderData->SubMeshes.size());
 
@@ -377,9 +380,8 @@ namespace PC_EDITOR_CORE
             const PC_CORE::SubMesh& SubMesh = _StaticMeshRenderData->SubMeshes[m];
 
             InitUnOptSubMesh(mesh, _StaticMeshRenderData->SubMeshes[m]);
-
             
-            std::span<const uint32_t> SubMeshSpanIndicies(
+            /*std::span<const uint32_t> SubMeshSpanIndicies(
                 UnOptIndices.data() + SubMesh.IndexOffset,
                 SubMesh.IndiciesCount
             );
@@ -395,28 +397,36 @@ namespace PC_EDITOR_CORE
                     return OptimiseMesh(_StaticMeshRenderData->SubMeshes[SubMeshIndex],
                         spanVerticies, spanIndicies);
                 });
-            
+            */
         }
         
-        // Wait sequencallly each future in order to keep submesh order
-        for (size_t i = 0; i < SubMeshFuture.size(); i++)
+        //// Wait sequencallly each future in order to keep submesh order
+        //for (size_t i = 0; i < SubMeshFuture.size(); i++)
+        //{
+        //    SubMeshFuture[i].wait();
+        //    auto OutOptMesh = SubMeshFuture[i].get();
+        //    PC_CORE::SubMesh& SubMesh = _StaticMeshRenderData->SubMeshes[i];
+
+        //    SubMesh.IndexOffset = _StaticMeshRenderData->Indices.size();
+        //    SubMesh.VertexOffSet = _StaticMeshRenderData->Vertices.size();
+
+        //    SubMesh.VerticiesCount = static_cast<uint32_t>(OutOptMesh.second.size());
+        //    SubMesh.IndiciesCount = static_cast<uint32_t>(OutOptMesh.first.size());
+
+        //    _StaticMeshRenderData->Indices.insert(_StaticMeshRenderData->Indices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
+        //    _StaticMeshRenderData->Vertices.insert(_StaticMeshRenderData->Vertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
+        //}
+        
+
+        _StaticMeshRenderData->Vertices = std::move(UnOptVertices);
+        _StaticMeshRenderData->Indices = std::move(UnOptIndices);
+
+        //for (size_t m = 0; m < _StaticMeshRenderData->SubMeshes.size(); m++)
         {
-            SubMeshFuture[i].wait();
-            auto OutOptMesh = SubMeshFuture[i].get();
-            PC_CORE::SubMesh& SubMesh = _StaticMeshRenderData->SubMeshes[i];
+            //std::span<uint32_t> subMeshIndicies(_StaticMeshRenderData->Indices.data() + _StaticMeshRenderData->SubMeshes[m].IndexOffset, _StaticMeshRenderData->SubMeshes[m].IndiciesCount);
 
-            SubMesh.IndexOffset = _StaticMeshRenderData->Indices.size();
-            SubMesh.VertexOffSet = _StaticMeshRenderData->Vertices.size();
-
-            SubMesh.VerticiesCount = static_cast<uint32_t>(OutOptMesh.second.size());
-            SubMesh.IndiciesCount = static_cast<uint32_t>(OutOptMesh.first.size());
-
-            _StaticMeshRenderData->Indices.insert(_StaticMeshRenderData->Indices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
-            _StaticMeshRenderData->Vertices.insert(_StaticMeshRenderData->Vertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
+            BuildMeshlet(_StaticMeshRenderData, _StaticMeshRenderData->SubMeshes[0].Meshlet, std::span<uint32_t>(_StaticMeshRenderData->Indices.data(), _StaticMeshRenderData->Indices.size()));
         }
-
-
-        BuildMeshlet(_StaticMeshRenderData);
     }
 
     std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> AssetsImporter::OptimiseMesh

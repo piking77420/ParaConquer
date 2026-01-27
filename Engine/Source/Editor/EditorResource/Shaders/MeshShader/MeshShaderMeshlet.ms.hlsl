@@ -3,10 +3,11 @@
 #include "StaticMeshVertex.hlsl"
 
 
-StructuredBuffer<Vertex> Vertices : register(t0, space1);
+StructuredBuffer<float4> Vertices : register(t0, space1);
 StructuredBuffer<Meshlet> Meshlets : register(t1, space1);
 StructuredBuffer<uint> VertexIndices : register(t2, space1);
 StructuredBuffer<uint> TriangleIndices : register(t3, space1);
+
 
 
 #define CAMERA_BINDING b0
@@ -15,7 +16,8 @@ StructuredBuffer<uint> TriangleIndices : register(t3, space1);
 
 struct PushConstant
 {
-    float4x4 modelView;
+    float4x4 ModelView; // 64
+    unsigned int MesletOffset; // 4  68
 };
 
 [[vk::push_constant]]
@@ -29,13 +31,12 @@ struct MeshOutput
 
 [outputtopology("triangle")]
 [numthreads(128, 1, 1)]
-void Main(
-                 uint gtid : SV_GroupThreadID,
-                 uint gid : SV_GroupID,
-    out indices uint3 triangles[128],
-    out vertices MeshOutput vertices[64])
+void Main(uint gtid : SV_GroupThreadID, 
+         uint gid : SV_GroupID,
+         out indices uint3 triangles[128],
+         out vertices MeshOutput vertices[64])
 {
-    Meshlet m = Meshlets[gid];
+    Meshlet m = Meshlets[pushConstant.MesletOffset + gid];
     SetMeshOutputCounts(m.VertexCount, m.TriangleCount);
        
     if (gtid < m.TriangleCount)
@@ -48,6 +49,7 @@ void Main(
         // aligned to 4 and we can easily grab it as a uint without any 
         // additional offset math.
         //
+        
         uint packed = TriangleIndices[m.TriangleOffset + gtid];
         uint vIdx0 = (packed >> 0) & 0xFF;
         uint vIdx1 = (packed >> 8) & 0xFF;
@@ -57,11 +59,12 @@ void Main(
 
     if (gtid < m.VertexCount)
     {
-        uint vertexIndex = m.VertexOffset + gtid;
-        vertexIndex = VertexIndices[vertexIndex];
-
-        vertices[gtid].Position = mul(Projection, mul(pushConstant.modelView, float4(Vertices[vertexIndex].Position, 1.0)));
+        // meshlet offset + wrap instance
+        uint localVertexIndex = m.VertexOffset + gtid;
         
+        uint vertexIndex = VertexIndices[localVertexIndex];
+        
+        vertices[gtid].Position = mul(mul(float4(Vertices[vertexIndex].xyz, 1.0), pushConstant.ModelView), Projection);
         float3 color = float3(
             float(gid & 1),
             float(gid & 3) / 4,

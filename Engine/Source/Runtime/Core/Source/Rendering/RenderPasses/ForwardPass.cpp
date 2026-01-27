@@ -170,19 +170,35 @@ namespace PC_CORE::Rendering::Pass
 
 	void FowardPass::DrawMeshLet(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const
 	{
-		struct alignas(16) ModelPushConstant
+		const StaticMeshRenderData& Data = _DrawObj.StaticMesh->GetStaticMeshRenderData();
+
+		struct MeshModelPushConstant
 		{
 			Gpu::mat4 ModelView;
-		}PushConstant;
-
-		const Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix;
-		Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
+			uint32_t MesletOffset;
+		}
+		PushConstant;
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.meshShaderMeshlet);
+
+		const Tbx::Matrix4x4d ModelView =_RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix;
+		Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0ull);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 1ull);
-		_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
+
+
+		PushConstant.MesletOffset = 0u;
+		_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(MeshModelPushConstant));
 		_RendererPassExecuteContext.cmd.DrawMeshTask(static_cast<uint32_t>(_DrawObj.StaticMesh->GetMeshletCount()), 1u, 1u);
+		/*for (const auto& subMeh : Data.SubMeshes)
+		{
+			PushConstant.MesletOffset = subMeh.Meshlet.MeshletOffset;
+			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(MeshModelPushConstant));
+			_RendererPassExecuteContext.cmd.DrawMeshTask(subMeh.Meshlet.MeshletCount, 1u, 1u);
+		}*/
+
+		
+	
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const

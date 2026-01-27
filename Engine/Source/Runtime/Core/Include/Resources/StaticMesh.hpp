@@ -97,6 +97,16 @@ struct SubMesh
 	uint32_t IndiciesCount;
 	uint32_t MaterialIndex;
 
+	struct MeshletData
+	{
+		uint32_t MeshletOffset;
+		uint32_t MeshletCount;
+		uint32_t MeshletVerticiesIndiciesOffset;
+		uint32_t MeshletTriangleIndiciesOffset;
+		
+	} Meshlet;
+
+	
 	MotionCore::Aabb<double> AABB;
 };
 
@@ -194,6 +204,8 @@ private:
 	std::unique_ptr<RhiBuffer> m_MeshletTriangleBuffer;
 
 	std::unique_ptr<RhiBuffer> m_MeshletBuffer;
+
+	std::unique_ptr<RhiBuffer> m_PositionBuffer;
 
 	std::unique_ptr<RhiDescriptorSet> m_MeshletDescriptor;
 

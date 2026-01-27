@@ -85,7 +85,7 @@ void VulkanShaderProgram::PushConstant(vk::CommandBuffer _commandBuffer, const s
 
     if (pushConstatnField.pushConstantSize != _size)
     {
-        PC_LOGERROR("MissMatch size in pushconstant")
+        PC_LOGERROR("MissMatch size in pushconstant reflected {}, pushed {}", pushConstatnField.pushConstantSize, _size);
     }
 
     _commandBuffer.pushConstants(m_PipelineLayout, pushConstatnField.shaderStage,
