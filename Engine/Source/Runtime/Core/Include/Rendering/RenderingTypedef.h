@@ -58,7 +58,15 @@ namespace Gpu
         _Dst->data[3] = static_cast<float>(_Src->w);
     }
 
-    static inline void StreamDoubleToFloat(mat4* _Dst, Tbx::Matrix4x4d* _Src)
+    static inline void StreamDoubleToFloat(mat3* _Dst, const Tbx::Matrix3x3d* _Src)
+    {
+        for (size_t i = 0; i < 9; i++)
+        {
+            _Dst->data[i] = static_cast<float>(_Src->data[i]);
+        }
+    }
+
+    static inline void StreamDoubleToFloat(mat4* _Dst, const Tbx::Matrix4x4d* _Src)
     {
         for (size_t i = 0; i < 16; i++)
         {

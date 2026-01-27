@@ -100,10 +100,8 @@ namespace PC_CORE::Rendering::Pass
 			const StaticMesh& mesh = *DrawObject.StaticMesh;
 			const StaticMeshRenderData& Data = mesh.GetStaticMeshRenderData();
 
-			Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * DrawObject.WorldMatrix;
-			Tbx::Matrix4x4d NormalInvMatrixView = _RendererPassExecuteContext.View.View * DrawObject.NormalInvertMatrix;
-
-			
+			const Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * DrawObject.WorldMatrix;
+			const Tbx::Matrix4x4d NormalInvMatrixView = ModelView.Invert().Transpose();
 
 			CommandList::DrawBuffers drawBuffer;
 			drawBuffer
@@ -121,7 +119,7 @@ namespace PC_CORE::Rendering::Pass
 			const size_t MaterialStride = DrawObject.Materials[0]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
 
 			// TODO SORT SUBMESH SECTION BY METRIAL ID
-			struct ModelPushConstant
+			struct alignas(16) ModelPushConstant
 			{
 				Gpu::mat4 ModelView;
 				Gpu::mat4 NormalInvMatrixView;

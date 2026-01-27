@@ -14,8 +14,6 @@ namespace PC_CORE::Rendering
         const StaticMesh* StaticMesh;
 
         Tbx::Matrix4x4d WorldMatrix;
-        // TO DO PASS IT TO MAT3
-        Tbx::Matrix4x4d NormalInvertMatrix;
     };
 
     struct DirLightData

@@ -103,7 +103,6 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
                 .Materials = std::move(material),
                 .StaticMesh = mesh.get(),
                 .WorldMatrix = m,
-                .NormalInvertMatrix = m.Invert().Transpose(),
             };
 
             m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
