@@ -171,6 +171,7 @@ namespace PC_CORE::Rendering
            opaqueFowardShader
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
+               .SetCullMode(RhiShaderProgram::CullModeFlagBits::CullBack)
                .SetShaderModules(shaderModules)
                .SetRenderPass(*forwardPass)
                .SetDepthTest(true)
@@ -215,8 +216,27 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("MeshShaderTriangle.ps.hlsl.binary")->GetCode() }
            };
 
-           meshShader.reset(m_Rhi.CreateRhiShaderProgram());
-           meshShader
+           meshShaderTriangle.reset(m_Rhi.CreateRhiShaderProgram());
+           meshShaderTriangle
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(shaderModules)
+               .SetRenderPass(*forwardPass)
+               .SetDepthWrite(true)
+               .SetDepthTest(true)
+               .SetName("Triangle MeshShader")
+               .Build();
+       }
+
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ms.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ps.hlsl.binary")->GetCode() }
+           };
+
+           meshShaderMeshlet.reset(m_Rhi.CreateRhiShaderProgram());
+           meshShaderMeshlet
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)

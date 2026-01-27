@@ -195,7 +195,7 @@ void Editor::CompileShader()
             }));
     }
 
-    // Mesh Shader
+    // Mesh Shader Traingle
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderTriangle.ms.hlsl",
@@ -207,6 +207,21 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("MeshShaderTriangle.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/MeshShader/MeshShaderTriangle.ps.hlsl");
+            }));
+    }
+
+    // Mesh Shader
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ms.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl");
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl");
             }));
     }
     /*
@@ -485,6 +500,7 @@ void Editor::InitTestScene()
     //
     TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
     TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
 
 }
   

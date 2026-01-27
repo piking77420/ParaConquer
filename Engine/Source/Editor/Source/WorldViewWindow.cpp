@@ -80,7 +80,7 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
 
 void WorldViewWindow::UpdateImguiViewPort()
 {
-    
+
     bool needFree = false;
     for (auto& it : imguiDescriptorSet)
         if (it != VK_NULL_HANDLE)

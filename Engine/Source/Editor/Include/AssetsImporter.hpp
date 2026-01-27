@@ -113,6 +113,8 @@ BEGIN_EDITOR_PCCORE
             const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
             const std::span<const uint32_t>& UnOptIndices);
 
+        void BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData);
+
         void LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);

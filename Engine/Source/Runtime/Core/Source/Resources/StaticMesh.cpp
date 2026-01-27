@@ -101,6 +101,46 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
 {
     Rhi& rhi = App::Instance->RenderHarwareInteface;
 
+    if (!_StaticMeshRenderData.MeshletVertices.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
+    {
+        assert(!_StaticMeshRenderData.MeshletVertices.empty() && !_StaticMeshRenderData.MeshletTriangles.empty() && !_StaticMeshRenderData.Meshlets.empty());
+
+        m_MeshletVerticiesBuffer.reset(rhi.CreateBuffer());
+        m_MeshletVerticiesBuffer
+            ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+            .SetSize(_StaticMeshRenderData.MeshletVertices.size() * sizeof(_StaticMeshRenderData.MeshletVertices[0]))
+            .SetName(Name + "Meshlet Vertex Buffer")
+            .Build();
+        _Branch->BufferUpload(*m_MeshletVerticiesBuffer, _StaticMeshRenderData.MeshletVertices.data(), m_MeshletVerticiesBuffer->GetSize());
+
+        m_MeshletTriangleBuffer.reset(rhi.CreateBuffer());
+        m_MeshletTriangleBuffer
+            ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+            .SetSize(_StaticMeshRenderData.MeshletTriangles.size() * sizeof(_StaticMeshRenderData.MeshletTriangles[0]))
+            .SetName(Name + "Meshlet Triangles Buffer")
+            .Build();
+
+        _Branch->BufferUpload(*m_MeshletTriangleBuffer, _StaticMeshRenderData.MeshletTriangles.data(), m_MeshletTriangleBuffer->GetSize());
+
+        m_MeshletBuffer.reset(rhi.CreateBuffer());
+        m_MeshletBuffer
+            ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+            .SetSize(_StaticMeshRenderData.Meshlets.size() * sizeof(_StaticMeshRenderData.Meshlets[0]))
+            .SetName(Name + "Meshlet Buffer")
+            .Build();
+
+        _Branch->BufferUpload(*m_MeshletBuffer, _StaticMeshRenderData.Meshlets.data(), m_MeshletBuffer->GetSize());
+
+
+        m_MeshLetCount = _StaticMeshRenderData.Meshlets.size();
+    }
+
     // VertexBuffer
     m_VertexBuffer = VertexBuffer(rhi);
     m_VertexBuffer
@@ -109,7 +149,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
         ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
         .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
         .SetSize(m_StaticMeshRenderData.Vertices.size() * sizeof(StaticMeshVertex))
-        .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
+        .SetUsage(HasMeshlet() ? RhiBuffer::BufferUsageFlagBits::Vertex : RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::ShaderStorage)
         .SetName(Name + " Vertex Buffer")
         .Build();
 
@@ -120,15 +160,26 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
         .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
         ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
         .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-        .SetSize(m_StaticMeshRenderData.Indices.size()* static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
+        .SetSize(m_StaticMeshRenderData.Indices.size() * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
         .SetName(Name + " Index Buffer")
         .Build();
 
-    
     _Branch
         ->BufferUpload(*m_VertexBuffer.Get(), m_StaticMeshRenderData.Vertices.data(), m_VertexBuffer->GetSize())
         .BufferUpload(*m_IndexBuffer.Get(), m_StaticMeshRenderData.Indices.data(), m_IndexBuffer->GetSize());
+
+    if (HasMeshlet())
+    {
+        m_MeshletDescriptor.reset(rhi.CreateDescriptorSet());
+        m_MeshletDescriptor
+            ->BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 0, m_VertexBuffer.Get())
+            .BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 1, m_MeshletBuffer.get())
+            .BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 2, m_MeshletVerticiesBuffer.get())
+            .BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 3, m_MeshletTriangleBuffer.get())
+            .SetName(Name + " Meshlet Bindings")
+            .Build();
+    }
     
 }
 

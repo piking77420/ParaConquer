@@ -11,10 +11,13 @@ BEGIN_PCCORE
         WeakObjectPtr<StaticMesh> staticMesh;
 
         std::vector<WeakObjectPtr<Rendering::Material>> materials;
+
+        bool UseMeshlet = false;
     };
 
     REFLECT(StaticMeshComponent, Component)
     REFLECT_MEMBER(StaticMeshComponent, staticMesh)
     REFLECT_MEMBER(StaticMeshComponent, materials)
+    REFLECT_MEMBER(StaticMeshComponent, UseMeshlet)
 
 END_PCCORE

@@ -102,7 +102,7 @@ float4 Main(PSInput input) : SV_Target
         }
     }
     
-    Lo += Emissive;
+    Lo += Emissive * 0.001;
     
 
         

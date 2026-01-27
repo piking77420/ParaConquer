@@ -49,9 +49,15 @@ namespace PC_CORE::Rendering::Pass
 
         std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
 
+        std::unique_ptr<RhiDescriptorSet> m_DescriptorMeshlet;
+
         RhiTexture* m_LightingImage = nullptr;
 
         mutable std::vector<std::pair<double, uint32_t>> m_TransparentSubMeshDistanceV;
+
+        void DrawVertex(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const;
+
+        void DrawMeshLet(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const;
 
     };
 

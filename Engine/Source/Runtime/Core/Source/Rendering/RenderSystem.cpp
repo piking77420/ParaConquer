@@ -99,10 +99,10 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
 
             const Rendering::StaticMeshComponentData staticMeshData =
             {
-                .MaterialType = {},
                 .Materials = std::move(material),
                 .StaticMesh = mesh.get(),
                 .WorldMatrix = m,
+                .UseMeshlet = staticMeshComponent.UseMeshlet && mesh->HasMeshlet()
             };
 
             m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);

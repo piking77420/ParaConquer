@@ -325,4 +325,4 @@ END_PCCORE
 
 using RhiShader = PC_CORE::RhiShaderProgram;
 using RhiShaderStageBits = PC_CORE::RhiShaderProgram::ShaderStageTypeBits;
-using RhiShaderStageTypeFlag = uint8_t;
+using RhiShaderStageTypeFlag = uint16_t;
