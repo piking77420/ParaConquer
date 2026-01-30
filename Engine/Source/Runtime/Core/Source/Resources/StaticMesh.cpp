@@ -102,20 +102,20 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
 {
     Rhi& rhi = App::Instance->RenderHarwareInteface;
 
-    if (!_StaticMeshRenderData.MeshletVertices.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
+    if (!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
     {
         
-        assert(!_StaticMeshRenderData.MeshletVertices.empty() && !_StaticMeshRenderData.MeshletTriangles.empty() && !_StaticMeshRenderData.Meshlets.empty());
+        assert(!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() && !_StaticMeshRenderData.MeshletTriangles.empty() && !_StaticMeshRenderData.Meshlets.empty());
 
         m_MeshletVerticiesBuffer.reset(rhi.CreateBuffer());
         m_MeshletVerticiesBuffer
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
-            .SetSize(_StaticMeshRenderData.MeshletVertices.size() * sizeof(_StaticMeshRenderData.MeshletVertices[0]))
+            .SetSize(_StaticMeshRenderData.MeshletVertexTrianglesIndex.size() * sizeof(_StaticMeshRenderData.MeshletVertexTrianglesIndex[0]))
             .SetName(Name + "Meshlet Vertex Buffer")
             .Build();
-        _Branch->BufferUpload(*m_MeshletVerticiesBuffer, _StaticMeshRenderData.MeshletVertices.data(), m_MeshletVerticiesBuffer->GetSize());
+        _Branch->BufferUpload(*m_MeshletVerticiesBuffer, _StaticMeshRenderData.MeshletVertexTrianglesIndex.data(), m_MeshletVerticiesBuffer->GetSize());
 
         m_MeshletTriangleBuffer.reset(rhi.CreateBuffer());
         m_MeshletTriangleBuffer

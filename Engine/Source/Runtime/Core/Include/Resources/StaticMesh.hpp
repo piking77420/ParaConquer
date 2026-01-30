@@ -93,20 +93,17 @@ struct SubMesh
 {
 	uint32_t VertexOffSet;
 	uint32_t VerticiesCount;
+
 	uint32_t IndexOffset;
 	uint32_t IndiciesCount;
+
+	uint32_t MeshletOffset;
+	uint32_t MeshletCount;
+
+	uint32_t MeshletTriangleVertexOffet;
+	uint32_t MeshletTriangleOffset;
+
 	uint32_t MaterialIndex;
-
-	struct MeshletData
-	{
-		uint32_t MeshletOffset;
-		uint32_t MeshletCount;
-		uint32_t MeshletVerticiesIndiciesOffset;
-		uint32_t MeshletTriangleIndiciesOffset;
-		
-	} Meshlet;
-
-	
 	MotionCore::Aabb<double> AABB;
 };
 
@@ -117,7 +114,7 @@ struct StaticMeshRenderData
 	std::vector<SubMesh> SubMeshes;
 
 	std::vector<Meshlet>  Meshlets;
-	std::vector<uint32_t>   MeshletVertices;
+	std::vector<uint32_t>   MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
 };
 

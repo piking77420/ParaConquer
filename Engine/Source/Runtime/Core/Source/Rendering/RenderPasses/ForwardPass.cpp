@@ -122,7 +122,7 @@ namespace PC_CORE::Rendering::Pass
 
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, 0, 0);
+			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
 		}
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
@@ -164,7 +164,7 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, 0, 0);
+			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
 		}
 	}
 
@@ -175,7 +175,10 @@ namespace PC_CORE::Rendering::Pass
 		struct MeshModelPushConstant
 		{
 			Gpu::mat4 ModelView;
-			uint32_t MesletOffset;
+			uint32_t SubMeshMesletOffset; // 4  68
+			uint32_t SubMeshVertexOffset;
+			uint32_t SubMeshTriangleVertexOffset;
+			uint32_t SubMeshTriangleOffset;
 		}
 		PushConstant;
 
@@ -188,9 +191,13 @@ namespace PC_CORE::Rendering::Pass
 
 		for (const auto& subMeh : Data.SubMeshes)
 		{
-			PushConstant.MesletOffset = subMeh.Meshlet.MeshletOffset;
+			PushConstant.SubMeshMesletOffset = subMeh.MeshletOffset;
+			PushConstant.SubMeshVertexOffset = subMeh.VertexOffSet;
+			PushConstant.SubMeshTriangleVertexOffset = subMeh.MeshletTriangleVertexOffet;
+			PushConstant.SubMeshTriangleOffset = subMeh.MeshletTriangleOffset;
+
 			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(MeshModelPushConstant));
-			_RendererPassExecuteContext.cmd.DrawMeshTask(subMeh.Meshlet.MeshletCount, 1u, 1u);
+			_RendererPassExecuteContext.cmd.DrawMeshTask(subMeh.MeshletCount, 1u, 1u);
 		}
 	}
 

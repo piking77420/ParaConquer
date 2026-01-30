@@ -17,8 +17,11 @@ StructuredBuffer<uint> TriangleIndices : register(t3, space1);
 struct PushConstant
 {
     float4x4 ModelView; // 64
-    unsigned int MesletOffset; // 4  68
-
+    unsigned int SubMeshMesletOffset; // 4  68
+    unsigned int SubMeshVertexOffset;
+    unsigned int SubMeshTriangleVertexOffset;
+    unsigned int SubMeshTriangleOffset;
+    
 };
 
 [[vk::push_constant]]
@@ -37,7 +40,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
          out indices uint3 triangles[128],
          out vertices MeshOutput vertices[64])
 {
-    Meshlet m = Meshlets[pushConstant.MesletOffset + gid.x];
+    Meshlet m = Meshlets[pushConstant.SubMeshMesletOffset + gid.x];
     SetMeshOutputCounts(m.VertexCount, m.TriangleCount);
        
     if (gtid.x < m.TriangleCount)
@@ -51,7 +54,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
         // additional offset math.
         //
         
-        uint packed = TriangleIndices[m.TriangleOffset + gtid.x];
+        uint packed = TriangleIndices[pushConstant.SubMeshTriangleOffset + m.TriangleOffset + gtid.x];
         uint vIdx0 = (packed >> 0) & 0xFF;
         uint vIdx1 = (packed >> 8) & 0xFF;
         uint vIdx2 = (packed >> 16) & 0xFF;
@@ -62,9 +65,9 @@ void Main(uint3 gtid : SV_GroupThreadID,
     {
         uint localVertexIndex = m.VertexOffset + gtid.x;
         
-        uint vertexIndex = VertexIndices[localVertexIndex];
+        uint vertexIndex = VertexIndices[pushConstant.SubMeshTriangleVertexOffset + localVertexIndex];
         
-        vertices[gtid.x].Position = mul(mul(float4(Vertices[vertexIndex].xyz, 1.0), pushConstant.ModelView), Projection);
+        vertices[gtid.x].Position = mul(mul(float4(Vertices[pushConstant.SubMeshVertexOffset + vertexIndex].xyz, 1.0), pushConstant.ModelView), Projection);
         float3 color = float3(
             float(gid.x & 1),
             float(gid.x & 3) / 4,
