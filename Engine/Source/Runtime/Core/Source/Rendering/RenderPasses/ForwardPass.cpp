@@ -122,7 +122,7 @@ namespace PC_CORE::Rendering::Pass
 
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
+			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, 0, 0);
 		}
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
@@ -164,7 +164,7 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
+			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, 0, 0);
 		}
 	}
 
@@ -186,19 +186,12 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0ull);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 1ull);
 
-
-		PushConstant.MesletOffset = 0u;
-		_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(MeshModelPushConstant));
-		_RendererPassExecuteContext.cmd.DrawMeshTask(static_cast<uint32_t>(_DrawObj.StaticMesh->GetMeshletCount()), 1u, 1u);
-		/*for (const auto& subMeh : Data.SubMeshes)
+		for (const auto& subMeh : Data.SubMeshes)
 		{
 			PushConstant.MesletOffset = subMeh.Meshlet.MeshletOffset;
 			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(MeshModelPushConstant));
 			_RendererPassExecuteContext.cmd.DrawMeshTask(subMeh.Meshlet.MeshletCount, 1u, 1u);
-		}*/
-
-		
-	
+		}
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const

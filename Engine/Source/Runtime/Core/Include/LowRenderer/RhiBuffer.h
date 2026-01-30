@@ -38,12 +38,9 @@ BEGIN_PCCORE
             TransferSrc   = 1 << 4,
             TransferDst   = 1 << 5,
             RayTracing    = 1 << 6,
-            MeshShader    = 1 << 7,
         };
         using BufferUsageFlag = uint32_t;
 
-        static_assert(MeshShader <= (1u << 31),
-              "BufferUsage flags exceed uint32_t bit capacity");
     
         REFLECT(BufferUsageFlagBits)
 

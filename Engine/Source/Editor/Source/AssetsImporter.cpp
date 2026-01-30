@@ -360,7 +360,7 @@ namespace PC_EDITOR_CORE
                     for (size_t i = 0; i < aiMeshes.mFaces[f].mNumIndices; i++)
                     {
                         UnOptIndices[LocalStartIndiciesIndex++] =
-                            aiMeshes.mFaces[f].mIndices[i];
+                            aiMeshes.mFaces[f].mIndices[i] + SubMesh.VertexOffSet;
                     }
                 }
                 assert((LocalStartIndiciesIndex - SubMesh.IndexOffset) == SubMesh.IndiciesCount);
@@ -381,7 +381,7 @@ namespace PC_EDITOR_CORE
 
             InitUnOptSubMesh(mesh, _StaticMeshRenderData->SubMeshes[m]);
             
-            /*std::span<const uint32_t> SubMeshSpanIndicies(
+           /* std::span<const uint32_t> SubMeshSpanIndicies(
                 UnOptIndices.data() + SubMesh.IndexOffset,
                 SubMesh.IndiciesCount
             );
@@ -396,26 +396,26 @@ namespace PC_EDITOR_CORE
                 {
                     return OptimiseMesh(_StaticMeshRenderData->SubMeshes[SubMeshIndex],
                         spanVerticies, spanIndicies);
-                });
-            */
+                });*/
+            
         }
         
         //// Wait sequencallly each future in order to keep submesh order
-        //for (size_t i = 0; i < SubMeshFuture.size(); i++)
-        //{
-        //    SubMeshFuture[i].wait();
-        //    auto OutOptMesh = SubMeshFuture[i].get();
-        //    PC_CORE::SubMesh& SubMesh = _StaticMeshRenderData->SubMeshes[i];
+      /*  for (size_t i = 0; i < SubMeshFuture.size(); i++)
+        {
+            SubMeshFuture[i].wait();
+            auto OutOptMesh = SubMeshFuture[i].get();
+            PC_CORE::SubMesh& SubMesh = _StaticMeshRenderData->SubMeshes[i];
 
-        //    SubMesh.IndexOffset = _StaticMeshRenderData->Indices.size();
-        //    SubMesh.VertexOffSet = _StaticMeshRenderData->Vertices.size();
+            SubMesh.IndexOffset = _StaticMeshRenderData->Indices.size();
+            SubMesh.VertexOffSet = _StaticMeshRenderData->Vertices.size();
 
-        //    SubMesh.VerticiesCount = static_cast<uint32_t>(OutOptMesh.second.size());
-        //    SubMesh.IndiciesCount = static_cast<uint32_t>(OutOptMesh.first.size());
+            SubMesh.VerticiesCount = static_cast<uint32_t>(OutOptMesh.second.size());
+            SubMesh.IndiciesCount = static_cast<uint32_t>(OutOptMesh.first.size());
 
-        //    _StaticMeshRenderData->Indices.insert(_StaticMeshRenderData->Indices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
-        //    _StaticMeshRenderData->Vertices.insert(_StaticMeshRenderData->Vertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
-        //}
+            _StaticMeshRenderData->Indices.insert(_StaticMeshRenderData->Indices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
+            _StaticMeshRenderData->Vertices.insert(_StaticMeshRenderData->Vertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
+        }*/
         
 
         _StaticMeshRenderData->Vertices = std::move(UnOptVertices);

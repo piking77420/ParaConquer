@@ -18,6 +18,7 @@ struct PushConstant
 {
     float4x4 ModelView; // 64
     unsigned int MesletOffset; // 4  68
+
 };
 
 [[vk::push_constant]]
@@ -31,15 +32,15 @@ struct MeshOutput
 
 [outputtopology("triangle")]
 [numthreads(128, 1, 1)]
-void Main(uint gtid : SV_GroupThreadID, 
-         uint gid : SV_GroupID,
+void Main(uint3 gtid : SV_GroupThreadID, 
+         uint3 gid : SV_GroupID,
          out indices uint3 triangles[128],
          out vertices MeshOutput vertices[64])
 {
-    Meshlet m = Meshlets[pushConstant.MesletOffset + gid];
+    Meshlet m = Meshlets[pushConstant.MesletOffset + gid.x];
     SetMeshOutputCounts(m.VertexCount, m.TriangleCount);
        
-    if (gtid < m.TriangleCount)
+    if (gtid.x < m.TriangleCount)
     {
         //
         // meshopt stores the triangle offset in bytes since it stores the
@@ -50,25 +51,24 @@ void Main(uint gtid : SV_GroupThreadID,
         // additional offset math.
         //
         
-        uint packed = TriangleIndices[m.TriangleOffset + gtid];
+        uint packed = TriangleIndices[m.TriangleOffset + gtid.x];
         uint vIdx0 = (packed >> 0) & 0xFF;
         uint vIdx1 = (packed >> 8) & 0xFF;
         uint vIdx2 = (packed >> 16) & 0xFF;
-        triangles[gtid] = uint3(vIdx0, vIdx1, vIdx2);
+        triangles[gtid.x] = uint3(vIdx0, vIdx1, vIdx2);
     }
 
-    if (gtid < m.VertexCount)
+    if (gtid.x < m.VertexCount)
     {
-        // meshlet offset + wrap instance
-        uint localVertexIndex = m.VertexOffset + gtid;
+        uint localVertexIndex = m.VertexOffset + gtid.x;
         
         uint vertexIndex = VertexIndices[localVertexIndex];
         
-        vertices[gtid].Position = mul(mul(float4(Vertices[vertexIndex].xyz, 1.0), pushConstant.ModelView), Projection);
+        vertices[gtid.x].Position = mul(mul(float4(Vertices[vertexIndex].xyz, 1.0), pushConstant.ModelView), Projection);
         float3 color = float3(
-            float(gid & 1),
-            float(gid & 3) / 4,
-            float(gid & 7) / 8);
-        vertices[gtid].Color = color;
+            float(gid.x & 1),
+            float(gid.x & 3) / 4,
+            float(gid.x & 7) / 8);
+        vertices[gtid.x].Color = color;
     }
 }
