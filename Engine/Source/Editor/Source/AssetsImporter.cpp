@@ -202,7 +202,7 @@ namespace PC_EDITOR_CORE
 
     }
 
-    void AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::SubMesh& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices)
+    AssetsImporter::MeshLetBuildOut AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::SubMesh& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -274,15 +274,19 @@ namespace PC_EDITOR_CORE
         _SubMesh.MeshletTriangleVertexOffet = static_cast<uint32_t>(_StaticMeshRenderData->MeshletVertexTrianglesIndex.size());
         _SubMesh.MeshletTriangleOffset = static_cast<uint32_t>(_StaticMeshRenderData->MeshletTriangles.size());
 
-        // InsertData
-        // TODO LOCK
-        _StaticMeshRenderData->Meshlets.insert(_StaticMeshRenderData->Meshlets.end(), MeshletsOpt.begin(), MeshletsOpt.end());
-        _StaticMeshRenderData->MeshletVertexTrianglesIndex.insert(_StaticMeshRenderData->MeshletVertexTrianglesIndex.end(), MeshletVertexTrianglesIndex.begin(), MeshletVertexTrianglesIndex.end());
-        _StaticMeshRenderData->MeshletTriangles.insert(_StaticMeshRenderData->MeshletTriangles.end(), MeshletTrianglesU32.begin(), MeshletTrianglesU32.end());
+        AssetsImporter::MeshLetBuildOut Out;
+        Out.MeshletsOpt = std::move(MeshletsOpt);
+        Out.MeshletVertexTrianglesIndex = std::move(MeshletVertexTrianglesIndex);
+        Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);
+
+        return std::move(Out);
     }
 
     void AssetsImporter::ProcessMeshes(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _RenderData, const aiScene* scene)
     {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::EditorResource);
+
         std::vector<PC_CORE::SubMesh>& SubMeshes = _RenderData->SubMeshes;
 
         SubMeshes.resize(scene->mNumMeshes);
@@ -415,7 +419,6 @@ namespace PC_EDITOR_CORE
 
     void AssetsImporter::LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene)
     {
-        
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
@@ -425,13 +428,37 @@ namespace PC_EDITOR_CORE
 
         ProcessMeshes(ThreadPool, _StaticMeshRenderData, scene);
 
+        std::mutex m;
+        std::vector<std::future<AssetsImporter::MeshLetBuildOut>> Futurs;
+        Futurs.resize(_StaticMeshRenderData->SubMeshes.size());
+
         for (size_t m = 0; m < _StaticMeshRenderData->SubMeshes.size(); m++)
         {
             std::span<uint32_t> subMeshIndicies(_StaticMeshRenderData->Indices.data() + _StaticMeshRenderData->SubMeshes[m].IndexOffset, _StaticMeshRenderData->SubMeshes[m].IndiciesCount);
             std::span<PC_CORE::StaticMeshVertex> subMeshVerticies(_StaticMeshRenderData->Vertices.data() + _StaticMeshRenderData->SubMeshes[m].VertexOffSet, _StaticMeshRenderData->SubMeshes[m].VerticiesCount);
 
-            BuildMeshlet(_StaticMeshRenderData, _StaticMeshRenderData->SubMeshes[m], subMeshVerticies, subMeshIndicies);
+            Futurs[m] = ThreadPool.Enqueue([this, Submesh = &_StaticMeshRenderData->SubMeshes[m], SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies, _StaticMeshRenderData]()
+                {
+                    return BuildMeshlet(_StaticMeshRenderData, *Submesh, SubMeshVerticies , SubMeshIndicies);
+                });
+
+
         }
+
+        {
+            PERF_REGION_SCOPED;
+            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Wait futures");
+            for (auto& F : Futurs)
+            {
+                F.wait();
+                AssetsImporter::MeshLetBuildOut Data(F.get());
+                _StaticMeshRenderData->Meshlets.insert(_StaticMeshRenderData->Meshlets.end(), Data.MeshletsOpt.begin(), Data.MeshletsOpt.end());
+                _StaticMeshRenderData->MeshletVertexTrianglesIndex.insert(_StaticMeshRenderData->MeshletVertexTrianglesIndex.end(), Data.MeshletVertexTrianglesIndex.begin(), Data.MeshletVertexTrianglesIndex.end());
+                _StaticMeshRenderData->MeshletTriangles.insert(_StaticMeshRenderData->MeshletTriangles.end(), Data.MeshletTrianglesU32.begin(), Data.MeshletTrianglesU32.end());
+            }
+
+        }
+        
     }
 
     std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> AssetsImporter::OptimiseMesh

@@ -555,40 +555,41 @@ void VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    std::unordered_map<const char*, vk::PushConstantRange> map;
+
     std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContex.pushConstantRanges;
 
     uint32_t pushConstantRangeCount = 0;
-    for (auto& moduleIndex : _vulkanShaderProgramCreateContex.modulesReflected)
-    {
-        pushConstantRangeCount += moduleIndex.push_constant_block_count;
-    }
-    pushConstantRanges->resize(pushConstantRangeCount);
-
-    pushConstantRangeCount = 0;
-
-    // PushRange
     for (size_t i = 0; i < _vulkanShaderProgramCreateContex.modulesReflected.size(); i++)
     {
         const auto& Module = _vulkanShaderProgramCreateContex.modulesReflected[i];
-
-        if (Module.push_constant_block_count == 0)
-            continue;
-
-        assert(Module.push_constant_blocks);
-
         for (uint32_t j = 0; j < Module.push_constant_block_count; j++)
         {
             const SpvReflectBlockVariable& block = Module.push_constant_blocks[j];
+            if (auto it = map.find(block.name); it != map.end())
+            {
+                auto& pushConstant = map[block.name];
+                assert(pushConstant.size == block.size);
+                assert(pushConstant.offset == block.offset);
 
-            vk::PushConstantRange& range = pushConstantRanges->at(pushConstantRangeCount);
-
-            range.offset = block.offset;
-            range.size = block.size;
-            range.stageFlags = static_cast<vk::ShaderStageFlags>(Module.shader_stage);
-
-            pushConstantRangeCount++;
+                pushConstant.stageFlags |= static_cast<vk::ShaderStageFlags>(Module.shader_stage);
+            }
+            else
+            {
+                auto& pushConstant = map[block.name];
+                pushConstant.offset = block.offset;
+                pushConstant.size = block.size;
+                pushConstant.stageFlags = static_cast<vk::ShaderStageFlags>(Module.shader_stage);
+            }
         }
     }
+    pushConstantRanges->resize(map.size());
+    size_t Index = 0;
+    for (auto& E : map)
+    {
+        (*pushConstantRanges)[Index++] = E.second;
+    }
+   
 }
 
 void VulkanShaderProgram::HotReload(const std::vector<RhiShaderProgram::ShaderModule>& _modules)

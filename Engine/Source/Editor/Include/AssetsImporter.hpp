@@ -78,6 +78,13 @@ BEGIN_EDITOR_PCCORE
             Obj
         };
 
+        struct MeshLetBuildOut
+        {
+            std::vector<PC_CORE::Meshlet> MeshletsOpt;
+            std::vector<uint32_t> MeshletVertexTrianglesIndex;
+            std::vector<uint32_t> MeshletTrianglesU32;
+        };
+
         bool m_Succes = false;
 
         std::string m_ImportObjectName;
@@ -113,7 +120,7 @@ BEGIN_EDITOR_PCCORE
             const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
             const std::span<const uint32_t>& UnOptIndices);
 
-        void BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::SubMesh& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices);
+        MeshLetBuildOut BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::SubMesh& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices);
 
         void LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene);
 
