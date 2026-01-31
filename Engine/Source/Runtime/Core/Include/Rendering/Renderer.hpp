@@ -38,7 +38,6 @@ public:
 
     std::unique_ptr<RhiShaderProgram> meshShaderMeshlet;
 
-
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;

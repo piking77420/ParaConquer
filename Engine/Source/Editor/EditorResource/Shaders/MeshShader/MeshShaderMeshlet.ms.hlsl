@@ -1,31 +1,14 @@
-
+#include "MeshShaderPayload.hlsl"
 #include "Meshlet.hlsl"
 #include "StaticMeshVertex.hlsl"
+#include "MeshShaderDrawCall.hlsl"
 
 
-StructuredBuffer<float4> Vertices : register(t0, space1);
-StructuredBuffer<Meshlet> Meshlets : register(t1, space1);
-StructuredBuffer<uint> VertexIndices : register(t2, space1);
-StructuredBuffer<uint> TriangleIndices : register(t3, space1);
+StructuredBuffer<float4> Vertices : register(t0, space0);
+StructuredBuffer<Meshlet> Meshlets : register(t1, space0);
+StructuredBuffer<uint> VertexIndices : register(t2, space0);
+StructuredBuffer<uint> TriangleIndices : register(t3, space0);
 
-
-
-#define CAMERA_BINDING b0
-#define CAMERA_SET space0
-#include "Camera.hlsl"
-
-struct PushConstant
-{
-    float4x4 ModelView; // 64
-    unsigned int SubMeshMesletOffset; // 4  68
-    unsigned int SubMeshVertexOffset;
-    unsigned int SubMeshTriangleVertexOffset;
-    unsigned int SubMeshTriangleOffset;
-    
-};
-
-[[vk::push_constant]]
-PushConstant pushConstant;
 
 struct MeshOutput
 {
@@ -37,10 +20,14 @@ struct MeshOutput
 [numthreads(128, 1, 1)]
 void Main(uint3 gtid : SV_GroupThreadID, 
          uint3 gid : SV_GroupID,
+         in payload Payload payload,
          out indices uint3 triangles[128],
          out vertices MeshOutput vertices[64])
 {
-    Meshlet m = Meshlets[pushConstant.SubMeshMesletOffset + gid.x];
+    uint SubmeshMeshlet = payload.MeshletIndices[gid.x];
+    
+    uint MeshletID = DrawCall.SubMeshMesletOffset + SubmeshMeshlet;
+    Meshlet m = Meshlets[MeshletID];
     SetMeshOutputCounts(m.VertexCount, m.TriangleCount);
        
     if (gtid.x < m.TriangleCount)
@@ -54,7 +41,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
         // additional offset math.
         //
         
-        uint packed = TriangleIndices[pushConstant.SubMeshTriangleOffset + m.TriangleOffset + gtid.x];
+        uint packed = TriangleIndices[DrawCall.SubMeshTriangleOffset + m.TriangleOffset + gtid.x];
         uint vIdx0 = (packed >> 0) & 0xFF;
         uint vIdx1 = (packed >> 8) & 0xFF;
         uint vIdx2 = (packed >> 16) & 0xFF;
@@ -65,9 +52,9 @@ void Main(uint3 gtid : SV_GroupThreadID,
     {
         uint localVertexIndex = m.VertexOffset + gtid.x;
         
-        uint vertexIndex = VertexIndices[pushConstant.SubMeshTriangleVertexOffset + localVertexIndex];
+        uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
         
-        vertices[gtid.x].Position = mul(mul(float4(Vertices[pushConstant.SubMeshVertexOffset + vertexIndex].xyz, 1.0), pushConstant.ModelView), Projection);
+        vertices[gtid.x].Position = mul(float4(Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].xyz, 1.0), DrawCall.ModelViewProjection);
         float3 color = float3(
             float(gid.x & 1),
             float(gid.x & 3) / 4,

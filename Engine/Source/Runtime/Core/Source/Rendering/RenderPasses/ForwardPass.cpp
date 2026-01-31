@@ -64,14 +64,6 @@ namespace PC_CORE::Rendering::Pass
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBufferHeader.get())
 			.SetName("Forward Pass Scene Set")
 			.Build();
-
-		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
-		m_DescriptorMeshlet
-			->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-			.SetName("Forward Pass Scene Set Meshlet")
-			.Build();
-			
-
 	}
 
 	void FowardPass::DrawVertex(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const
@@ -172,32 +164,35 @@ namespace PC_CORE::Rendering::Pass
 	{
 		const StaticMeshRenderData& Data = _DrawObj.StaticMesh->GetStaticMeshRenderData();
 
-		struct MeshModelPushConstant
+		struct MeshShaderDrawCall
 		{
-			Gpu::mat4 ModelView;
+			Gpu::mat4 ModelViewProjection;
+			uint32_t SubMeshMeshletCount;
 			uint32_t SubMeshMesletOffset; // 4  68
 			uint32_t SubMeshVertexOffset;
 			uint32_t SubMeshTriangleVertexOffset;
 			uint32_t SubMeshTriangleOffset;
 		}
-		PushConstant;
+		MeshShaderDrawCall;
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.meshShaderMeshlet);
 
-		const Tbx::Matrix4x4d ModelView =_RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix;
-		Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
-		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0ull);
-		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 1ull);
+		const Tbx::Matrix4x4d ModelViewProjection = _RendererPassExecuteContext.View.Projection * (_RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix);
+		Gpu::StreamDoubleToFloat(&MeshShaderDrawCall.ModelViewProjection, &ModelViewProjection);
+		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 0ull);
 
-		for (const auto& subMeh : Data.SubMeshes)
+		static constexpr auto GroupSize = 32;
+		for (const auto& subMesh : Data.SubMeshes)
 		{
-			PushConstant.SubMeshMesletOffset = subMeh.MeshletOffset;
-			PushConstant.SubMeshVertexOffset = subMeh.VertexOffSet;
-			PushConstant.SubMeshTriangleVertexOffset = subMeh.MeshletTriangleVertexOffet;
-			PushConstant.SubMeshTriangleOffset = subMeh.MeshletTriangleOffset;
+			MeshShaderDrawCall.SubMeshMeshletCount = subMesh.MeshletCount;
+			MeshShaderDrawCall.SubMeshMesletOffset = subMesh.MeshletOffset;
+			MeshShaderDrawCall.SubMeshVertexOffset = subMesh.VertexOffSet;
+			MeshShaderDrawCall.SubMeshTriangleVertexOffset = subMesh.MeshletTriangleVertexOffet;
+			MeshShaderDrawCall.SubMeshTriangleOffset = subMesh.MeshletTriangleOffset;
 
-			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(MeshModelPushConstant));
-			_RendererPassExecuteContext.cmd.DrawMeshTask(subMeh.MeshletCount, 1u, 1u);
+			_RendererPassExecuteContext.cmd.PushConstant("DrawCall", &MeshShaderDrawCall, sizeof(MeshShaderDrawCall));
+			const uint32_t DispachtSize = (subMesh.MeshletCount + GroupSize - 1) / GroupSize;
+			_RendererPassExecuteContext.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 		}
 	}
 

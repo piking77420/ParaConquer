@@ -569,23 +569,23 @@ void VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex
     // PushRange
     for (size_t i = 0; i < _vulkanShaderProgramCreateContex.modulesReflected.size(); i++)
     {
-        const uint32_t pushConstantCount = _vulkanShaderProgramCreateContex.modulesReflected[i].
-            push_constant_block_count;
-        if (pushConstantCount == 0)
+        const auto& Module = _vulkanShaderProgramCreateContex.modulesReflected[i];
+
+        if (Module.push_constant_block_count == 0)
             continue;
 
-        for (size_t j = 0; j < pushConstantCount; j++)
-        {
-            SpvReflectBlockVariable* spvReflectBlockVariablePushConstant = _vulkanShaderProgramCreateContex.
-                modulesReflected[j].push_constant_blocks;
-            if (!spvReflectBlockVariablePushConstant)
-                continue;
+        assert(Module.push_constant_blocks);
 
-            vk::PushConstantRange& pushConstantRange = pushConstantRanges->at(pushConstantRangeCount);
-            pushConstantRange.offset = spvReflectBlockVariablePushConstant->offset;
-            pushConstantRange.size = spvReflectBlockVariablePushConstant->size;
-            pushConstantRange.stageFlags = static_cast<vk::ShaderStageFlags>(_vulkanShaderProgramCreateContex.
-                modulesReflected[i].shader_stage);
+        for (uint32_t j = 0; j < Module.push_constant_block_count; j++)
+        {
+            const SpvReflectBlockVariable& block = Module.push_constant_blocks[j];
+
+            vk::PushConstantRange& range = pushConstantRanges->at(pushConstantRangeCount);
+
+            range.offset = block.offset;
+            range.size = block.size;
+            range.stageFlags = static_cast<vk::ShaderStageFlags>(Module.shader_stage);
+
             pushConstantRangeCount++;
         }
     }

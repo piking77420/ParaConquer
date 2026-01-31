@@ -213,6 +213,12 @@ void Editor::CompileShader()
     // Mesh Shader
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.as.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl");
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl");
@@ -502,6 +508,8 @@ void Editor::InitTestScene()
     TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
     TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
     TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
 
 }
   

@@ -35,7 +35,7 @@ public:
         Closesthit = 1 << 9,
         Miss = 1 << 10,
         Callable = 1 << 11,
-        Task = 1 << 12,
+        Amp = 1 << 12,
         Mesh = 1 << 13,
 
         ShaderStageTypeCount = 14

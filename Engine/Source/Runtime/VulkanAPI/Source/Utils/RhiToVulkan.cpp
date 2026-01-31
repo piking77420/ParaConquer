@@ -671,7 +671,7 @@ vk::ShaderStageFlags Vulkan::Utils::RhiToShaderStage(RhiShaderStageTypeFlag _Rhi
         ShaderStageFlag |= vk::ShaderStageFlagBits::eMissKHR;
     if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Callable)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eCallableKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Task)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Amp)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eTaskEXT;
     if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Mesh)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eMeshEXT;
@@ -707,7 +707,7 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStageBits(RhiShaderStageBits _
         ShaderStageFlag = vk::ShaderStageFlagBits::eMissKHR;
     if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Callable)
         ShaderStageFlag = vk::ShaderStageFlagBits::eCallableKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Task)
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Amp)
         ShaderStageFlag = vk::ShaderStageFlagBits::eTaskEXT;
     if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Mesh)
         ShaderStageFlag = vk::ShaderStageFlagBits::eMeshEXT;

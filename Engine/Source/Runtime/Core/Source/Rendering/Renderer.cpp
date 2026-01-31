@@ -231,6 +231,7 @@ namespace PC_CORE::Rendering
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
+               { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.as.hlsl.binary")->GetCode() },
                { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ms.hlsl.binary")->GetCode() },
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ps.hlsl.binary")->GetCode() }
            };
