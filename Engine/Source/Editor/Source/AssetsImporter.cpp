@@ -202,7 +202,39 @@ namespace PC_EDITOR_CORE
 
     }
 
-    AssetsImporter::MeshLetBuildOut AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::SubMesh& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices)
+    size_t AssetsImporter::LODFromMeshName(const aiString& _AiS) const
+    {
+        std::string_view meshName(_AiS.C_Str());
+
+        size_t LodIndex = 0;
+
+        const size_t LodPos = meshName.find("LOD");
+        if (LodPos != std::string_view::npos)
+        {
+            // Start right after "LOD"
+            const char* begin = meshName.data() + LodPos + 3;
+            size_t EndOfLOD = std::string_view(begin).find('_');
+
+            if (EndOfLOD != std::string_view::npos)
+            {
+
+                auto [ptr, ec] = std::from_chars(begin, begin + EndOfLOD, LodIndex);
+
+                if (ec != std::errc{})
+                {
+                    PC_LOGERROR("Failed to parse LOD index from mesh name: {}", _AiS.C_Str());
+                    LodIndex = 0;
+                    return LodIndex;
+                }
+            }
+            
+        }
+
+        return LodIndex;
+    }
+
+
+    AssetsImporter::MeshLetBuildOut AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::MeshSection& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -267,8 +299,8 @@ namespace PC_EDITOR_CORE
             m.TriangleOffset = triangleOffset;
         }
 
-        // Fill SubMesh offset
-        _SubMesh.MeshletOffset = static_cast<uint32_t>(_StaticMeshRenderData->Meshlets.size());
+        // Fill MeshSection offset
+        /*_SubMesh.MeshletOffset = static_cast<uint32_t>(_StaticMeshRenderData->Meshlets.size());
         _SubMesh.MeshletCount = static_cast<uint32_t>(MeshletsOpt.size());
 
         _SubMesh.MeshletTriangleVertexOffet = static_cast<uint32_t>(_StaticMeshRenderData->MeshletVertexTrianglesIndex.size());
@@ -277,167 +309,215 @@ namespace PC_EDITOR_CORE
         AssetsImporter::MeshLetBuildOut Out;
         Out.MeshletsOpt = std::move(MeshletsOpt);
         Out.MeshletVertexTrianglesIndex = std::move(MeshletVertexTrianglesIndex);
-        Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);
+        Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);*/
 
-        return std::move(Out);
+        //return std::move(Out);
+
+        return {};
     }
 
-    void AssetsImporter::ProcessMeshes(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _RenderData, const aiScene* scene)
+    void AssetsImporter::GatherUniqueMeshes([[maybe_unsed]] PC_CORE::StaticMeshData* _Data, const aiScene* scene , const aiNode* node)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
-        std::vector<PC_CORE::SubMesh>& SubMeshes = _RenderData->SubMeshes;
-
-        SubMeshes.resize(scene->mNumMeshes);
-        using OutOPTMesh = std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>>;
-        std::vector<std::future<OutOPTMesh>> SubMeshFuture;
-        SubMeshFuture.resize(SubMeshes.size());
-
-        // Resize Global Memory
-        std::vector<PC_CORE::StaticMeshVertex> UnOptVertices;
-        std::vector<uint32_t> UnOptIndices;
+        for (size_t i = 0; i < node->mNumMeshes; i++)
         {
-            uint32_t nbrOfIndex = 0;
-            uint32_t nbrOfVerticies = 0;
-            // Count For reserv and fill submesh with Unopt data
-            for (size_t i = 0; i < scene->mNumMeshes; i++)
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            if (!mesh || mesh->mName.Empty())
+                continue;
+
+            size_t lodIndex = LODFromMeshName(mesh->mName);
+            std::string UniqueMeshSection(mesh->mName.C_Str());
+
+            if (auto it = m_UniqueMeshSectionWithLod.try_emplace(UniqueMeshSection).second)
             {
-                uint32_t accFaceIndicies = 0;
-                for (size_t f = 0; f < scene->mMeshes[i]->mNumFaces; f++)
-                    accFaceIndicies += scene->mMeshes[i]->mFaces[f].mNumIndices;
-
-                const Tbx::Vector3d min = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMin.x, scene->mMeshes[i]->mAABB.mMin.y, scene->mMeshes[i]->mAABB.mMin.z));
-                const Tbx::Vector3d max = static_cast<Tbx::Vector3d>(Tbx::Vector3f(scene->mMeshes[i]->mAABB.mMax.x, scene->mMeshes[i]->mAABB.mMax.y, scene->mMeshes[i]->mAABB.mMax.z));
-                const PC_CORE::SubMesh subMesh =
-                {
-                    .VertexOffSet = nbrOfVerticies,
-                    .VerticiesCount = scene->mMeshes[i]->mNumVertices,
-                    .IndexOffset = nbrOfIndex,
-                    .IndiciesCount = accFaceIndicies,
-                    .MeshletOffset = 0u,
-                    .MeshletCount = 0u,
-                    .MeshletTriangleVertexOffet = 0u,
-                    .MeshletTriangleOffset = 0u,
-                    .MaterialIndex = scene->mMeshes[i]->mMaterialIndex,
-                    .AABB = MotionCore::Aabb<double>(min, max),
-                };
-                SubMeshes[i] = (std::move(subMesh));
-
-                nbrOfVerticies += scene->mMeshes[i]->mNumVertices;
-                nbrOfIndex += accFaceIndicies;
+                m_UniqueMeshSectionOrder.push_back(UniqueMeshSection);
             }
-            assert(nbrOfIndex % 3 == 0);
-            UnOptIndices.resize(nbrOfIndex);
-            UnOptVertices.resize(nbrOfVerticies);
-        }
+            auto& it = m_UniqueMeshSectionWithLod[UniqueMeshSection];
 
-        auto InitUnOptSubMesh = [&UnOptVertices, &UnOptIndices](const aiMesh& aiMeshes, const PC_CORE::SubMesh& SubMesh)
+            size_t LodMax = std::max(it.size(), lodIndex + 1);
+
+            if (LodMax != it.size())
             {
-                uint32_t LocalStartVertexIndex = SubMesh.VertexOffSet;
+                it.resize(LodMax);
+            }
+            
+            it[lodIndex] = mesh;
 
-                for (size_t v = 0; v < aiMeshes.mNumVertices; v++)
-                {
-                    PC_CORE::StaticMeshVertex vertex{};
-                    vertex.Position = Tbx::Vector3f{ aiMeshes.mVertices[v].x, aiMeshes.mVertices[v].y, aiMeshes.mVertices[v].z };
-
-                    if (aiMeshes.HasNormals())
-                        vertex.Normal = Tbx::Vector3f{ aiMeshes.mNormals[v].x, aiMeshes.mNormals[v].y, aiMeshes.mNormals[v].z };
-
-                    if (aiMeshes.HasTextureCoords(0))
-                        vertex.Uv = Tbx::Vector2f{ aiMeshes.mTextureCoords[0][v].x, aiMeshes.mTextureCoords[0][v].y };
-
-                    if (aiMeshes.HasTangentsAndBitangents())
-                        vertex.Tangent = Tbx::Vector3f{ aiMeshes.mTangents[v].x, aiMeshes.mTangents[v].y, aiMeshes.mTangents[v].z };
-
-                    UnOptVertices[LocalStartVertexIndex++] = std::move(vertex);
-                }
-                assert((LocalStartVertexIndex - SubMesh.VertexOffSet) == SubMesh.VerticiesCount);
-
-                uint32_t LocalStartIndiciesIndex = SubMesh.IndexOffset;
-
-                for (size_t f = 0; f < aiMeshes.mNumFaces; f++)
-                {
-                    for (size_t i = 0; i < aiMeshes.mFaces[f].mNumIndices; i++)
-                        UnOptIndices[LocalStartIndiciesIndex++] = aiMeshes.mFaces[f].mIndices[i];
-                    
-                }
-                assert((LocalStartIndiciesIndex - SubMesh.IndexOffset) == SubMesh.IndiciesCount);
-            };
-
-        for (size_t m = 0; m < scene->mNumMeshes; m++)
-        {
-            const aiMesh& mesh = *scene->mMeshes[m];
-
-            const PC_CORE::SubMesh& SubMesh = SubMeshes[m];
-
-            InitUnOptSubMesh(mesh, SubMeshes[m]);
-
-            std::span<const uint32_t> SubMeshSpanIndicies(
-                 UnOptIndices.data() + SubMesh.IndexOffset,
-                 SubMesh.IndiciesCount
-             );
-             std::span<const PC_CORE::StaticMeshVertex> SubMeshSpanVertices(
-                 UnOptVertices.data() + SubMesh.VertexOffSet,
-                 SubMesh.VerticiesCount
-             );
-
-
-             SubMeshFuture[m] = ThreadPool.Enqueue(
-                 [this, _RenderData, SubMeshIndex = m, spanIndicies = SubMeshSpanIndicies, spanVerticies = SubMeshSpanVertices]() -> OutOPTMesh
-                 {
-                     return OptimiseMesh(_RenderData->SubMeshes[SubMeshIndex],
-                         spanVerticies, spanIndicies);
-                 });
+            m_NativeVertexCount += mesh->mNumVertices;
+            for (size_t i = 0; i < mesh->mNumFaces; i++)
+                m_NativeIndiciesCount += mesh->mFaces[i].mNumIndices;
 
         }
+
+        for (size_t i = 0; i < node->mNumChildren; i++)
+            GatherUniqueMeshes(_Data, scene, node->mChildren[i]);
+
+    }
+
+
+    void AssetsImporter::ProcessMeshes(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene)
+    {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR(PerfRegion::EditorResource);
+        using OutOPTMesh = std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>>;
+        std::vector<std::vector<std::future<OutOPTMesh>>> Futurs;
+
+        // Un Opt Data Resize Data
+        std::vector<PC_CORE::StaticMeshVertex> UnOptVertices;
+        UnOptVertices.reserve(m_NativeVertexCount);
+        std::vector<uint32_t> UnOptIndices;
+        UnOptIndices.reserve(m_NativeIndiciesCount);
+
+        _Data->MeshSections.resize(m_UniqueMeshSectionWithLod.size());
+
+        Futurs.resize(m_UniqueMeshSectionWithLod.size());
+        for (size_t mS = 0; mS < m_UniqueMeshSectionWithLod.size(); mS++)
+        {
+            auto& MeshSectionAssimpWithLOD = m_UniqueMeshSectionWithLod[m_UniqueMeshSectionOrder[mS]];
+            PC_CORE::MeshSection& MeshSection = _Data->MeshSections[mS];
+            MeshSection.MaterialIndex = MeshSectionAssimpWithLOD[0]->mMaterialIndex;
+
+            MeshSection.LODs.resize(MeshSectionAssimpWithLOD.size());
+
+            // Init mesh Section
+            MeshSection.VerticesGlobal = PC_CORE::OffsetAndCount(UnOptVertices.size(), 0);
+            MeshSection.IndicesGlobal = PC_CORE::OffsetAndCount(UnOptIndices.size(), 0);
+
+            Futurs[mS].resize(MeshSectionAssimpWithLOD.size());
+            for (size_t lod = 0; lod < MeshSectionAssimpWithLOD.size(); lod++)
+            {
+                const aiMesh& AiMesh = *MeshSectionAssimpWithLOD[lod];
+                PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
+
+                LOD.VertexSection = PC_CORE::OffsetAndCount(MeshSection.VerticesGlobal.Count, static_cast<size_t>(AiMesh.mNumVertices));
+                FillVertices(UnOptVertices, AiMesh);
+
+                size_t MeshIndexCount = 0;
+                for (size_t i = 0; i < AiMesh.mNumFaces; i++)
+                    MeshIndexCount += AiMesh.mFaces[i].mNumIndices;
+                
+                LOD.IndicesSection = PC_CORE::OffsetAndCount(MeshSection.IndicesGlobal.Count, MeshIndexCount);
+                FillIndices(UnOptIndices, AiMesh);
+
+                // Increase Global Count Mesh Section
+                MeshSection.VerticesGlobal.Count += LOD.VertexSection.Count;
+                MeshSection.IndicesGlobal.Count += LOD.IndicesSection.Count;
+            }
+        }
+
+
+        // PreReserveData
         std::vector<PC_CORE::StaticMeshVertex> OptVertices;
         OptVertices.reserve(UnOptVertices.size());
         std::vector<uint32_t> OptIndices;
         OptIndices.reserve(UnOptIndices.size());
 
-        for (size_t i = 0; i < SubMeshFuture.size(); i++)
+        for (size_t mS = 0; mS < m_UniqueMeshSectionWithLod.size(); mS++)
         {
-            SubMeshFuture[i].wait();
-            auto OutOptMesh = SubMeshFuture[i].get();
-            PC_CORE::SubMesh& SubMesh = SubMeshes[i];
+            const PC_CORE::MeshSection& MeshSection = _Data->MeshSections[mS];
 
-            SubMesh.IndexOffset = OptIndices.size();
-            SubMesh.VertexOffSet = OptVertices.size();
+            for (size_t lod = 0; lod < MeshSection.LODs.size(); lod++)
+            {
+                const PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
 
-            SubMesh.VerticiesCount = static_cast<uint32_t>(OutOptMesh.second.size());
-            SubMesh.IndiciesCount = static_cast<uint32_t>(OutOptMesh.first.size());
+                std::span<const uint32_t> SubMeshSpanIndicies(
+                    UnOptIndices.data() + MeshSection.IndicesGlobal.Offset + LOD.VertexSection.Offset,
+                    + LOD.IndicesSection.Count
+                );
+                std::span<const PC_CORE::StaticMeshVertex> SubMeshSpanVertices(
+                    UnOptVertices.data() + MeshSection.VerticesGlobal.Offset,
+                    LOD.VertexSection.Count
+                );
 
-            OptIndices.insert(OptIndices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
-            OptVertices.insert(OptVertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
+                Futurs[mS][lod] = ThreadPool.Enqueue(
+                    [this, spanIndicies = SubMeshSpanIndicies, spanVerticies = SubMeshSpanVertices]() -> OutOPTMesh
+                    {
+                        return OptimiseMesh(spanVerticies, spanIndicies);
+                    });
+            }
         }
 
-        _RenderData->Vertices = std::move(OptVertices);
-        _RenderData->Indices = std::move(OptIndices);
+        for (size_t mS = 0; mS < m_UniqueMeshSectionWithLod.size(); mS++)
+        {
+            PC_CORE::MeshSection& MeshSection = _Data->MeshSections[mS];
+
+            MeshSection.VerticesGlobal = PC_CORE::OffsetAndCount(OptVertices.size(), 0);
+            MeshSection.IndicesGlobal = PC_CORE::OffsetAndCount(OptIndices.size(), 0);
+
+            for (size_t lod = 0; lod < MeshSection.LODs.size(); lod++)
+            {
+                Futurs[mS][lod].wait();
+                PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
+                auto OutOptMesh = Futurs[mS][lod].get();
+
+                // Recompute mesh offset and count
+                LOD.IndicesSection = PC_CORE::OffsetAndCount(MeshSection.IndicesGlobal.Offset, OutOptMesh.first.size());
+                LOD.VertexSection = PC_CORE::OffsetAndCount(MeshSection.VerticesGlobal.Offset, OutOptMesh.second.size());
+
+                MeshSection.IndicesGlobal.Count = OutOptMesh.first.size();
+                MeshSection.VerticesGlobal.Count = OutOptMesh.second.size();
+
+                OptIndices.insert(OptIndices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
+                OptVertices.insert(OptVertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
+            }
+        }
+
+
+        _Data->RenderData.Vertices = std::move(OptVertices);
+        _Data->RenderData.Indices = std::move(OptIndices);
+    }
+
+    void AssetsImporter::FillVertices(std::vector<PC_CORE::StaticMeshVertex>& _Verticies, const aiMesh& _Meshes)
+    {
+        for (size_t v = 0; v < _Meshes.mNumVertices; v++)
+        {
+            PC_CORE::StaticMeshVertex Vertex{};
+            Vertex.Position = Tbx::Vector3f{ _Meshes.mVertices[v].x, _Meshes.mVertices[v].y, _Meshes.mVertices[v].z };
+
+            if (_Meshes.HasNormals())
+                Vertex.Normal = Tbx::Vector3f{ _Meshes.mNormals[v].x, _Meshes.mNormals[v].y, _Meshes.mNormals[v].z };
+
+            if (_Meshes.HasTextureCoords(0))
+                Vertex.Uv = Tbx::Vector2f{ _Meshes.mTextureCoords[0][v].x, _Meshes.mTextureCoords[0][v].y };
+
+            if (_Meshes.HasTangentsAndBitangents())
+                Vertex.Tangent = Tbx::Vector3f{ _Meshes.mTangents[v].x, _Meshes.mTangents[v].y, _Meshes.mTangents[v].z };
+
+            _Verticies.emplace_back(std::move(Vertex));
+        }
+    }
+
+    void AssetsImporter::FillIndices(std::vector<uint32_t>& _Indices, const aiMesh& _Meshes)
+    {
+        for (size_t i = 0; i < _Meshes.mNumFaces; i++)
+        {
+            for (size_t j = 0; i < _Meshes.mFaces[i].mNumIndices; i++)
+                _Indices.emplace_back(_Meshes.mFaces[i].mIndices[j]);
+        }
     }
 
 
-    void AssetsImporter::LoadMesh(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, const aiScene* scene)
+    void AssetsImporter::LoadMesheletFromScene(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
-        assert(_StaticMeshRenderData);
-        if (!_StaticMeshRenderData)
+        if (!_Data)
             return;
 
-        ProcessMeshes(ThreadPool, _StaticMeshRenderData, scene);
 
-        std::mutex m;
+        /*std::mutex m;
         std::vector<std::future<AssetsImporter::MeshLetBuildOut>> Futurs;
-        Futurs.resize(_StaticMeshRenderData->SubMeshes.size());
+        Futurs.resize(_StaticMeshRenderData->MeshSections.size());
 
-        for (size_t m = 0; m < _StaticMeshRenderData->SubMeshes.size(); m++)
+        for (size_t m = 0; m < _StaticMeshRenderData->MeshSections.size(); m++)
         {
-            std::span<uint32_t> subMeshIndicies(_StaticMeshRenderData->Indices.data() + _StaticMeshRenderData->SubMeshes[m].IndexOffset, _StaticMeshRenderData->SubMeshes[m].IndiciesCount);
-            std::span<PC_CORE::StaticMeshVertex> subMeshVerticies(_StaticMeshRenderData->Vertices.data() + _StaticMeshRenderData->SubMeshes[m].VertexOffSet, _StaticMeshRenderData->SubMeshes[m].VerticiesCount);
+            std::span<uint32_t> subMeshIndicies(_StaticMeshRenderData->Indices.data() + _StaticMeshRenderData->MeshSections[m].IndexOffset, _StaticMeshRenderData->MeshSections[m].IndiciesCount);
+            std::span<PC_CORE::StaticMeshVertex> subMeshVerticies(_StaticMeshRenderData->Vertices.data() + _StaticMeshRenderData->MeshSections[m].VertexOffSet, _StaticMeshRenderData->MeshSections[m].VerticiesCount);
 
-            Futurs[m] = ThreadPool.Enqueue([this, Submesh = &_StaticMeshRenderData->SubMeshes[m], SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies, _StaticMeshRenderData]()
+            Futurs[m] = ThreadPool.Enqueue([this, Submesh = &_StaticMeshRenderData->MeshSections[m], SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies, _StaticMeshRenderData]()
                 {
                     return BuildMeshlet(_StaticMeshRenderData, *Submesh, SubMeshVerticies , SubMeshIndicies);
                 });
@@ -457,13 +537,12 @@ namespace PC_EDITOR_CORE
                 _StaticMeshRenderData->MeshletTriangles.insert(_StaticMeshRenderData->MeshletTriangles.end(), Data.MeshletTrianglesU32.begin(), Data.MeshletTrianglesU32.end());
             }
 
-        }
+        }*/
         
     }
 
     std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> AssetsImporter::OptimiseMesh
     (   
-        PC_CORE::SubMesh& SubMesh,
         const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
         const std::span<const uint32_t>& UnOptIndices
     )
@@ -522,13 +601,14 @@ namespace PC_EDITOR_CORE
 
         if (scene->mNumMeshes == 0)
             return false;
+        PC_CORE::StaticMeshData StaticMeshData;
 
-
-        PC_CORE::StaticMeshRenderData StaticMeshRenderData;
-        LoadMesh(ThreadPool, &StaticMeshRenderData, scene);
+        GatherUniqueMeshes(&StaticMeshData, scene, scene->mRootNode);
+        ProcessMeshes(ThreadPool, &StaticMeshData, scene);
+        LoadMesheletFromScene(ThreadPool, &StaticMeshData, scene);
         {
             std::scoped_lock _(m_mutex);
-            m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshRenderData, &m_ResourceUpdateBranchs.emplace_back());
+            m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshData, &m_ResourceUpdateBranchs.emplace_back());
         }
 
         return true;

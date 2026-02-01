@@ -3,7 +3,6 @@
 
 #define WAIT_DEBUG_GPU_INJECTION 0
 
-
 int main(int argc, char* argv[])
 {
 #if WAIT_DEBUG_GPU_INJECTION

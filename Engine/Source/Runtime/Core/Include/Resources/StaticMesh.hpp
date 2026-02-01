@@ -87,46 +87,70 @@ constexpr VertexInputBindingDescrition StaticMeshVertex::GetVertexBindingDescrip
 	};
 }
 
+struct OffsetAndCount { size_t Offset = 0; size_t Count = 0; };
 
-
-struct SubMesh
+struct MeshLOD
 {
-	uint32_t VertexOffSet;
-	uint32_t VerticiesCount;
+	OffsetAndCount VertexSection;
+	OffsetAndCount IndicesSection;
+	OffsetAndCount MeshletsSection;
+	OffsetAndCount MeshletsTriangleIndexSection;
+	OffsetAndCount MeshletsTrianglesSection;
+	MotionCore::Aabb<double> AABB;
+};
 
-	uint32_t IndexOffset;
-	uint32_t IndiciesCount;
+struct MeshSection
+{
+	std::string Name;
+	std::vector<MeshLOD> LODs;
 
-	uint32_t MeshletOffset;
-	uint32_t MeshletCount;
-
-	uint32_t MeshletTriangleVertexOffet;
-	uint32_t MeshletTriangleOffset;
+	// Section Offset To That mesh section 
+	// Global Offset GPU -> begin submesh Load Sections
+	OffsetAndCount VerticesGlobal;
+	OffsetAndCount IndicesGlobal;
+	OffsetAndCount MeshletsGlobal;
+	OffsetAndCount MeshletsTriangleIndexGlobal;
+	OffsetAndCount MeshletsTrianglesGlobal;
 
 	uint32_t MaterialIndex;
-	MotionCore::Aabb<double> AABB;
 };
 
 struct StaticMeshRenderData
 {
 	std::vector<StaticMeshVertex> Vertices;
 	std::vector<uint32_t> Indices;
-	std::vector<SubMesh> SubMeshes;
-
 	std::vector<Meshlet>  Meshlets;
-	std::vector<uint32_t>   MeshletVertexTrianglesIndex;
+	std::vector<uint32_t> MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
 };
 
+struct MeshNode
+{
+	size_t MeshSectionIndex;
+	Tbx::Matrix4x4d Transform;
+};
+
+// LOD are store Seqencally in gpu memory
+	// SubMesh0_LOD0
+	// SubMesh0_LOD1
+	// SubMesh1_LOD0
+	// SubMesh1_LOD1
+struct StaticMeshData
+{
+	std::vector<MeshNode> StaticMeshNode; // TODO FILL
+	std::vector<MeshSection> MeshSections;
+	StaticMeshRenderData RenderData;
+};
+	
 class PC_CORE_API StaticMesh : public Resource
 {
 public:
 
-	explicit StaticMesh(std::string _Name, const PC_CORE::ObjectPtr<Resource>& SharedMesh, SubMesh subMesh);
+	explicit StaticMesh(std::string _Name, const PC_CORE::ObjectPtr<Resource>& SharedMesh, MeshSection subMesh);
 
-	explicit StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _branch);
+	explicit StaticMesh(std::string _Name, const StaticMeshData& _StaticMeshData, RHI::ResourceUpdateBranch* _branch);
 
-	explicit StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _branch);
+	explicit StaticMesh(std::string _Name, StaticMeshData&& _StaticMeshData, RHI::ResourceUpdateBranch* _branch);
 
 	StaticMesh();
 
@@ -179,9 +203,9 @@ public:
 		return m_MeshLetCount;
 	}
 
-	const StaticMeshRenderData& GetStaticMeshRenderData() const
+	const StaticMeshData& GetStaticMeshData() const
 	{
-		return m_StaticMeshRenderData;
+		return m_StaticMeshData;
 	}
 
 	RhiDescriptorSet* GetMeshletDescriptor() const
@@ -206,7 +230,7 @@ private:
 
 	std::unique_ptr<RhiDescriptorSet> m_MeshletDescriptor;
 
-	StaticMeshRenderData m_StaticMeshRenderData;
+	StaticMeshData m_StaticMeshData;
 
 	MotionCore::Aabb<double> m_Aabb;
 

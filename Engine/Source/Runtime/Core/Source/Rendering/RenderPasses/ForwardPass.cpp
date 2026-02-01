@@ -69,7 +69,7 @@ namespace PC_CORE::Rendering::Pass
 	void FowardPass::DrawVertex(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const
 	{
 		const StaticMesh& mesh = *_DrawObj.StaticMesh;
-		const StaticMeshRenderData& Data = mesh.GetStaticMeshRenderData();
+		const StaticMeshData& Data = mesh.GetStaticMeshData();
 
 		const Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix;
 		const Tbx::Matrix4x4d NormalInvMatrixView = ModelView.Invert().Transpose();
@@ -99,46 +99,46 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.opaqueFowardShader);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
-		for (const auto& SubMesh : Data.SubMeshes)
-		{
-			PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[SubMesh.MaterialIndex]->GetMaterialType();
+		//for (const auto& MeshSection : Data.MeshSections)
+		//{
+		//	PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[MeshSection.MaterialIndex]->GetMaterialType();
 
-			if (type != PC_CORE::Rendering::MaterialType::Opaque)
-				continue;
-			// TODO MOVE THIS per mesh or subsidvce submesh -> static mehs
+		//	if (type != PC_CORE::Rendering::MaterialType::Opaque)
+		//		continue;
+		//	// TODO MOVE THIS per mesh or subsidvce submesh -> static mehs
 
-			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
-			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
+		//	Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
+		//	Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
+		//	_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
 
 
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
+		//	_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[MeshSection.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
-		}
+		//	_RendererPassExecuteContext.cmd.DrawIndexed(MeshSection.IndiciesCount, 1, MeshSection.IndexOffset, MeshSection.VertexOffSet, 0);
+		//}
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
-		m_TransparentSubMeshDistanceV.clear();
-		m_TransparentSubMeshDistanceV.reserve(Data.SubMeshes.size());
+		/*m_TransparentSubMeshDistanceV.clear();
+		m_TransparentSubMeshDistanceV.reserve(Data.MeshSections.size());
 
 		{
 			uint32_t Index = 0;
-			for (const auto& SubMesh : Data.SubMeshes)
+			for (const auto& MeshSection : Data.MeshSections)
 			{
-				const PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[SubMesh.MaterialIndex]->GetMaterialType();
+				const PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[MeshSection.MaterialIndex]->GetMaterialType();
 
 				if (type == PC_CORE::Rendering::MaterialType::Transparent)
 				{
-					const Tbx::Vector3d aabbCenterL = (SubMesh.AABB.max - SubMesh.AABB.min);
+					const Tbx::Vector3d aabbCenterL = (MeshSection.AABB.max - MeshSection.AABB.min);
 					const Tbx::Vector4d aabbCenter4V = (ModelView * Tbx::Vector4d(aabbCenterL.x, aabbCenterL.y, aabbCenterL.z, 1.0));
 					const Tbx::Vector3d aabbCenterV = Tbx::Vector3d(aabbCenter4V.x, aabbCenter4V.y, aabbCenter4V.z);
 					m_TransparentSubMeshDistanceV.emplace_back(std::make_pair(aabbCenterV.MagnitudeSquare(), Index));
 				}
 				Index++;
 			}
-		}
+		}*/
 
 		// Sort Transparent object based on their view distance
 		// Draw farest item first
@@ -147,22 +147,22 @@ namespace PC_CORE::Rendering::Pass
 				return _Left.first > _Right.first;
 			});
 
-		for (const auto& item : m_TransparentSubMeshDistanceV)
+		/*for (const auto& item : m_TransparentSubMeshDistanceV)
 		{
-			const auto& SubMesh = Data.SubMeshes[item.second];
+			const auto& MeshSection = Data.MeshSections[item.second];
 
 			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
 			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
+			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[MeshSection.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
-		}
+			_RendererPassExecuteContext.cmd.DrawIndexed(MeshSection.IndiciesCount, 1, MeshSection.IndexOffset, MeshSection.VertexOffSet, 0);
+		}*/
 	}
 
 	void FowardPass::DrawMeshLet(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const
 	{
-		const StaticMeshRenderData& Data = _DrawObj.StaticMesh->GetStaticMeshRenderData();
+		const StaticMeshData& Data = _DrawObj.StaticMesh->GetStaticMeshData();
 
 		struct MeshShaderDrawCall
 		{
@@ -182,7 +182,7 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 0ull);
 
 		static constexpr auto GroupSize = 32;
-		for (const auto& subMesh : Data.SubMeshes)
+		/*for (const auto& subMesh : Data.MeshSections)
 		{
 			MeshShaderDrawCall.SubMeshMeshletCount = subMesh.MeshletCount;
 			MeshShaderDrawCall.SubMeshMesletOffset = subMesh.MeshletOffset;
@@ -193,7 +193,7 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.PushConstant("DrawCall", &MeshShaderDrawCall, sizeof(MeshShaderDrawCall));
 			const uint32_t DispachtSize = (subMesh.MeshletCount + GroupSize - 1) / GroupSize;
 			_RendererPassExecuteContext.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
-		}
+		}*/
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const

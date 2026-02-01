@@ -61,34 +61,32 @@ StaticMesh& StaticMesh::SetBaseMaterials(const std::vector<ObjectPtr<Rendering::
     return *this;
 }
 
-StaticMesh::StaticMesh(std::string _Name, const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
+StaticMesh::StaticMesh(std::string _Name, const StaticMeshData& _StaticMeshData, RHI::ResourceUpdateBranch* _Branch)
     : Resource(std::move(_Name))
-    , m_StaticMeshRenderData(_StaticMeshRenderData)
+    , m_StaticMeshData(_StaticMeshData)
 {
     DYNAMIC_REFLECT_INIT
 
-    InitFromRenderData(_StaticMeshRenderData, _Branch);
+    InitFromRenderData(_StaticMeshData.RenderData, _Branch);
 
     if (!m_HallowCpuAcces)
     {
-        m_StaticMeshRenderData.Vertices.clear();
-        m_StaticMeshRenderData.Indices.clear();
+        m_StaticMeshData.RenderData = {};
     }
 
 }
 
-StaticMesh::StaticMesh(std::string _Name, StaticMeshRenderData&& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
+StaticMesh::StaticMesh(std::string _Name, StaticMeshData&& _StaticMeshData, RHI::ResourceUpdateBranch* _Branch)
     : Resource(std::move(_Name))
-    , m_StaticMeshRenderData(std::move(_StaticMeshRenderData))
+    , m_StaticMeshData(std::move(_StaticMeshData))
 {
     DYNAMIC_REFLECT_INIT
 
-    InitFromRenderData(_StaticMeshRenderData, _Branch);
+    InitFromRenderData(_StaticMeshData.RenderData, _Branch);
 
     if (!m_HallowCpuAcces)
     {
-        m_StaticMeshRenderData.Vertices.clear();
-        m_StaticMeshRenderData.Indices.clear();
+        m_StaticMeshData.RenderData = {};
     }
 
 }
@@ -102,7 +100,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
 {
     Rhi& rhi = App::Instance->RenderHarwareInteface;
 
-    if (!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
+    /*if (!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
     {
         
         assert(!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() && !_StaticMeshRenderData.MeshletTriangles.empty() && !_StaticMeshRenderData.Meshlets.empty());
@@ -163,16 +161,16 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
         _Branch->BufferUpload(*m_PositionBuffer, position.data(), m_PositionBuffer->GetSize());
 
         m_MeshLetCount = _StaticMeshRenderData.Meshlets.size();
-    }
+    }*/
 
     // VertexBuffer
     m_VertexBuffer = VertexBuffer(rhi);
     m_VertexBuffer
-        .SetVerticiesCount(m_StaticMeshRenderData.Vertices.size())
+        .SetVerticiesCount(m_StaticMeshData.RenderData.Vertices.size())
         .SetVerticiesSize(sizeof(StaticMeshVertex))
         ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
         .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-        .SetSize(m_StaticMeshRenderData.Vertices.size() * sizeof(StaticMeshVertex))
+        .SetSize(m_StaticMeshData.RenderData.Vertices.size() * sizeof(StaticMeshVertex))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
         .SetName(Name + " Vertex Buffer")
         .Build();
@@ -180,18 +178,18 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
 
     m_IndexBuffer = IndexBuffer(rhi);
     m_IndexBuffer
-        .SetIndexCount(m_StaticMeshRenderData.Indices.size())
+        .SetIndexCount(m_StaticMeshData.RenderData.Indices.size())
         .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
         ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
         .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-        .SetSize(m_StaticMeshRenderData.Indices.size() * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
+        .SetSize(m_StaticMeshData.RenderData.Indices.size() * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
         .SetName(Name + " Index Buffer")
         .Build();
 
     _Branch
-        ->BufferUpload(*m_VertexBuffer.Get(), m_StaticMeshRenderData.Vertices.data(), m_VertexBuffer->GetSize())
-        .BufferUpload(*m_IndexBuffer.Get(), m_StaticMeshRenderData.Indices.data(), m_IndexBuffer->GetSize());
+        ->BufferUpload(*m_VertexBuffer.Get(), m_StaticMeshData.RenderData.Vertices.data(), m_VertexBuffer->GetSize())
+        .BufferUpload(*m_IndexBuffer.Get(), m_StaticMeshData.RenderData.Indices.data(), m_IndexBuffer->GetSize());
 
     if (HasMeshlet())
     {
