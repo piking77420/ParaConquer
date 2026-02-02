@@ -362,7 +362,7 @@ namespace PC_EDITOR_CORE
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
         using OutOPTMesh = std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>>;
-        std::vector<std::vector<std::future<OutOPTMesh>>> Futurs;
+        std::vector<std::vector<std::future<OutOPTMesh>>> Futures;
 
         // Un Opt Data Resize Data
         std::vector<PC_CORE::StaticMeshVertex> UnOptVertices;
@@ -372,7 +372,7 @@ namespace PC_EDITOR_CORE
 
         _Data->MeshSections.resize(m_UniqueMeshSectionWithLod.size());
 
-        Futurs.resize(m_UniqueMeshSectionWithLod.size());
+        Futures.resize(m_UniqueMeshSectionWithLod.size());
         for (size_t mS = 0; mS < m_UniqueMeshSectionWithLod.size(); mS++)
         {
             auto& MeshSectionAssimpWithLOD = m_UniqueMeshSectionWithLod[m_UniqueMeshSectionOrder[mS]];
@@ -385,7 +385,7 @@ namespace PC_EDITOR_CORE
             MeshSection.VerticesGlobal = PC_CORE::OffsetAndCount(UnOptVertices.size(), 0);
             MeshSection.IndicesGlobal = PC_CORE::OffsetAndCount(UnOptIndices.size(), 0);
 
-            Futurs[mS].resize(MeshSectionAssimpWithLOD.size());
+            Futures[mS].resize(MeshSectionAssimpWithLOD.size());
             for (size_t lod = 0; lod < MeshSectionAssimpWithLOD.size(); lod++)
             {
                 const aiMesh& AiMesh = *MeshSectionAssimpWithLOD[lod];
@@ -400,6 +400,9 @@ namespace PC_EDITOR_CORE
                 
                 LOD.IndicesSection = PC_CORE::OffsetAndCount(MeshSection.IndicesGlobal.Count, MeshIndexCount);
                 FillIndices(UnOptIndices, AiMesh);
+
+                LOD.AABB = MotionCore::Aabb<double>(Tbx::Vector3d(AiMesh.mAABB.mMin.x, AiMesh.mAABB.mMin.y, AiMesh.mAABB.mMin.z), 
+                    (Tbx::Vector3d(AiMesh.mAABB.mMax.x, AiMesh.mAABB.mMax.y, AiMesh.mAABB.mMax.z)));
 
                 // Increase Global Count Mesh Section
                 MeshSection.VerticesGlobal.Count += LOD.VertexSection.Count;
@@ -423,15 +426,15 @@ namespace PC_EDITOR_CORE
                 const PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
 
                 std::span<const uint32_t> SubMeshSpanIndicies(
-                    UnOptIndices.data() + MeshSection.IndicesGlobal.Offset + LOD.VertexSection.Offset,
+                    UnOptIndices.data() + MeshSection.IndicesGlobal.Offset + LOD.IndicesSection.Offset,
                     + LOD.IndicesSection.Count
                 );
                 std::span<const PC_CORE::StaticMeshVertex> SubMeshSpanVertices(
-                    UnOptVertices.data() + MeshSection.VerticesGlobal.Offset,
+                    UnOptVertices.data() + MeshSection.VerticesGlobal.Offset + LOD.VertexSection.Offset,
                     LOD.VertexSection.Count
                 );
 
-                Futurs[mS][lod] = ThreadPool.Enqueue(
+                Futures[mS][lod] = ThreadPool.Enqueue(
                     [this, spanIndicies = SubMeshSpanIndicies, spanVerticies = SubMeshSpanVertices]() -> OutOPTMesh
                     {
                         return OptimiseMesh(spanVerticies, spanIndicies);
@@ -448,19 +451,20 @@ namespace PC_EDITOR_CORE
 
             for (size_t lod = 0; lod < MeshSection.LODs.size(); lod++)
             {
-                Futurs[mS][lod].wait();
+                Futures[mS][lod].wait();
                 PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
-                auto OutOptMesh = Futurs[mS][lod].get();
+                auto OutOptMesh = Futures[mS][lod].get();
 
                 // Recompute mesh offset and count
                 LOD.IndicesSection = PC_CORE::OffsetAndCount(MeshSection.IndicesGlobal.Offset, OutOptMesh.first.size());
                 LOD.VertexSection = PC_CORE::OffsetAndCount(MeshSection.VerticesGlobal.Offset, OutOptMesh.second.size());
 
-                MeshSection.IndicesGlobal.Count = OutOptMesh.first.size();
-                MeshSection.VerticesGlobal.Count = OutOptMesh.second.size();
-
                 OptIndices.insert(OptIndices.end(), OutOptMesh.first.begin(), OutOptMesh.first.end());
                 OptVertices.insert(OptVertices.end(), OutOptMesh.second.begin(), OutOptMesh.second.end());
+
+                MeshSection.IndicesGlobal.Count += OutOptMesh.first.size();
+                MeshSection.VerticesGlobal.Count += OutOptMesh.second.size();
+
             }
         }
 
@@ -493,7 +497,7 @@ namespace PC_EDITOR_CORE
     {
         for (size_t i = 0; i < _Meshes.mNumFaces; i++)
         {
-            for (size_t j = 0; i < _Meshes.mFaces[i].mNumIndices; i++)
+            for (size_t j = 0; j < _Meshes.mFaces[i].mNumIndices; j++)
                 _Indices.emplace_back(_Meshes.mFaces[i].mIndices[j]);
         }
     }
@@ -509,15 +513,15 @@ namespace PC_EDITOR_CORE
 
 
         /*std::mutex m;
-        std::vector<std::future<AssetsImporter::MeshLetBuildOut>> Futurs;
-        Futurs.resize(_StaticMeshRenderData->MeshSections.size());
+        std::vector<std::future<AssetsImporter::MeshLetBuildOut>> Futures;
+        Futures.resize(_StaticMeshRenderData->MeshSections.size());
 
         for (size_t m = 0; m < _StaticMeshRenderData->MeshSections.size(); m++)
         {
             std::span<uint32_t> subMeshIndicies(_StaticMeshRenderData->Indices.data() + _StaticMeshRenderData->MeshSections[m].IndexOffset, _StaticMeshRenderData->MeshSections[m].IndiciesCount);
             std::span<PC_CORE::StaticMeshVertex> subMeshVerticies(_StaticMeshRenderData->Vertices.data() + _StaticMeshRenderData->MeshSections[m].VertexOffSet, _StaticMeshRenderData->MeshSections[m].VerticiesCount);
 
-            Futurs[m] = ThreadPool.Enqueue([this, Submesh = &_StaticMeshRenderData->MeshSections[m], SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies, _StaticMeshRenderData]()
+            Futures[m] = ThreadPool.Enqueue([this, Submesh = &_StaticMeshRenderData->MeshSections[m], SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies, _StaticMeshRenderData]()
                 {
                     return BuildMeshlet(_StaticMeshRenderData, *Submesh, SubMeshVerticies , SubMeshIndicies);
                 });
@@ -528,7 +532,7 @@ namespace PC_EDITOR_CORE
         {
             PERF_REGION_SCOPED;
             PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Wait futures");
-            for (auto& F : Futurs)
+            for (auto& F : Futures)
             {
                 F.wait();
                 AssetsImporter::MeshLetBuildOut Data(F.get());
