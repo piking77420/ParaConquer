@@ -396,8 +396,18 @@ void VulkanShaderProgram::CreatePushConstantMapFromReflection(
                 .shaderStage = static_cast<vk::ShaderStageFlags>(_spvReflectShaderModule[module].shader_stage)
             };
 
+            if (auto it = m_PushConstantMap.find(pushConstantBlock[pushConstant].name); it != m_PushConstantMap.end())
+            {
+                assert(it->second.pushConstantOffSet == pushConstantField.pushConstantOffSet);
+                assert(it->second.pushConstantSize == pushConstantField.pushConstantSize);
 
-            m_PushConstantMap.insert({pushConstantBlock[pushConstant].name, pushConstantField});
+                it->second.shaderStage |= pushConstantField.shaderStage;
+            }
+            else
+            {
+                m_PushConstantMap.insert({ pushConstantBlock[pushConstant].name, pushConstantField });
+            }
+
         }
     }
 }

@@ -195,21 +195,6 @@ void Editor::CompileShader()
             }));
     }
 
-    // Mesh Shader Traingle
-    {
-        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-            ResourceManager::Create<ShaderSource>("MeshShaderTriangle.ms.hlsl",
-                EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderTriangle.ms.hlsl");
-            }));
-
-        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-            ResourceManager::Create<ShaderSource>("MeshShaderTriangle.ps.hlsl",
-                EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderTriangle.ps.hlsl");
-            }));
-    }
-
     // Mesh Shader
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {

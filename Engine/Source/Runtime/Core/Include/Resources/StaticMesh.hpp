@@ -94,7 +94,7 @@ struct MeshLOD
 	OffsetAndCount VertexSection;
 	OffsetAndCount IndicesSection;
 	OffsetAndCount MeshletsSection;
-	OffsetAndCount MeshletsTriangleIndexSection;
+	OffsetAndCount MeshletsTriangleVertexIndexSection;
 	OffsetAndCount MeshletsTrianglesSection;
 	MotionCore::Aabb<double> AABB;
 };
@@ -109,7 +109,7 @@ struct MeshSection
 	OffsetAndCount VerticesGlobal;
 	OffsetAndCount IndicesGlobal;
 	OffsetAndCount MeshletsGlobal;
-	OffsetAndCount MeshletsTriangleIndexGlobal;
+	OffsetAndCount MeshletsTriangleVertexIndexGlobal;
 	OffsetAndCount MeshletsTrianglesGlobal;
 
 	uint32_t MaterialIndex;

@@ -234,7 +234,7 @@ namespace PC_EDITOR_CORE
     }
 
 
-    AssetsImporter::MeshLetBuildOut AssetsImporter::BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::MeshSection& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices)
+    AssetsImporter::MeshLetBuildOut AssetsImporter::BuildMeshlet(const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -299,21 +299,13 @@ namespace PC_EDITOR_CORE
             m.TriangleOffset = triangleOffset;
         }
 
-        // Fill MeshSection offset
-        /*_SubMesh.MeshletOffset = static_cast<uint32_t>(_StaticMeshRenderData->Meshlets.size());
-        _SubMesh.MeshletCount = static_cast<uint32_t>(MeshletsOpt.size());
-
-        _SubMesh.MeshletTriangleVertexOffet = static_cast<uint32_t>(_StaticMeshRenderData->MeshletVertexTrianglesIndex.size());
-        _SubMesh.MeshletTriangleOffset = static_cast<uint32_t>(_StaticMeshRenderData->MeshletTriangles.size());
 
         AssetsImporter::MeshLetBuildOut Out;
         Out.MeshletsOpt = std::move(MeshletsOpt);
         Out.MeshletVertexTrianglesIndex = std::move(MeshletVertexTrianglesIndex);
-        Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);*/
+        Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);
 
-        //return std::move(Out);
-
-        return {};
+        return Out;
     }
 
     void AssetsImporter::GatherUniqueMeshes([[maybe_unsed]] PC_CORE::StaticMeshData* _Data, const aiScene* scene , const aiNode* node)
@@ -510,39 +502,63 @@ namespace PC_EDITOR_CORE
 
         if (!_Data)
             return;
+        std::vector<std::vector<std::future<AssetsImporter::MeshLetBuildOut>>> Futures;
 
-
-        /*std::mutex m;
-        std::vector<std::future<AssetsImporter::MeshLetBuildOut>> Futures;
-        Futures.resize(_StaticMeshRenderData->MeshSections.size());
-
-        for (size_t m = 0; m < _StaticMeshRenderData->MeshSections.size(); m++)
+        for (size_t mS = 0; mS < m_UniqueMeshSectionWithLod.size(); mS++)
         {
-            std::span<uint32_t> subMeshIndicies(_StaticMeshRenderData->Indices.data() + _StaticMeshRenderData->MeshSections[m].IndexOffset, _StaticMeshRenderData->MeshSections[m].IndiciesCount);
-            std::span<PC_CORE::StaticMeshVertex> subMeshVerticies(_StaticMeshRenderData->Vertices.data() + _StaticMeshRenderData->MeshSections[m].VertexOffSet, _StaticMeshRenderData->MeshSections[m].VerticiesCount);
-
-            Futures[m] = ThreadPool.Enqueue([this, Submesh = &_StaticMeshRenderData->MeshSections[m], SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies, _StaticMeshRenderData]()
-                {
-                    return BuildMeshlet(_StaticMeshRenderData, *Submesh, SubMeshVerticies , SubMeshIndicies);
-                });
+            PC_CORE::MeshSection& MeshSection = _Data->MeshSections[mS];
+            Futures.emplace_back();
+            for (size_t lod = 0; lod < MeshSection.LODs.size(); lod++)
+            {
+                PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
 
 
+                std::span<const uint32_t> subMeshIndicies(_Data->RenderData.Indices.data() + LOD.IndicesSection.Offset, LOD.IndicesSection.Count);
+                std::span<PC_CORE::StaticMeshVertex> subMeshVerticies(_Data->RenderData.Vertices.data() + LOD.VertexSection.Offset, LOD.VertexSection.Count);
+
+                Futures.back().emplace_back(ThreadPool.Enqueue([this, SubMeshIndicies = subMeshIndicies, SubMeshVerticies = subMeshVerticies]()
+                    {
+                        return BuildMeshlet(SubMeshVerticies, SubMeshIndicies);
+                    }));
+
+            }
         }
 
         {
             PERF_REGION_SCOPED;
             PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Wait futures");
-            for (auto& F : Futures)
-            {
-                F.wait();
-                AssetsImporter::MeshLetBuildOut Data(F.get());
-                _StaticMeshRenderData->Meshlets.insert(_StaticMeshRenderData->Meshlets.end(), Data.MeshletsOpt.begin(), Data.MeshletsOpt.end());
-                _StaticMeshRenderData->MeshletVertexTrianglesIndex.insert(_StaticMeshRenderData->MeshletVertexTrianglesIndex.end(), Data.MeshletVertexTrianglesIndex.begin(), Data.MeshletVertexTrianglesIndex.end());
-                _StaticMeshRenderData->MeshletTriangles.insert(_StaticMeshRenderData->MeshletTriangles.end(), Data.MeshletTrianglesU32.begin(), Data.MeshletTrianglesU32.end());
-            }
-
-        }*/
         
+            for (size_t mS = 0; mS < m_UniqueMeshSectionWithLod.size(); mS++)
+            {
+                PC_CORE::MeshSection& MeshSection = _Data->MeshSections[mS];
+
+                MeshSection.MeshletsGlobal = PC_CORE::OffsetAndCount(_Data->RenderData.Meshlets.size(), 0);
+                MeshSection.MeshletsTriangleVertexIndexGlobal = PC_CORE::OffsetAndCount(_Data->RenderData.MeshletVertexTrianglesIndex.size(), 0);
+                MeshSection.MeshletsTrianglesGlobal = PC_CORE::OffsetAndCount(_Data->RenderData.MeshletTriangles.size(), 0);
+
+                for (size_t lod = 0; lod < MeshSection.LODs.size(); lod++)
+                {
+                    PC_CORE::MeshLOD& LOD = _Data->MeshSections[mS].LODs[lod];
+                    auto& F = Futures[mS][lod];
+
+                    F.wait();
+                    AssetsImporter::MeshLetBuildOut Data(F.get());
+
+                    LOD.MeshletsSection = PC_CORE::OffsetAndCount(MeshSection.MeshletsGlobal.Offset, Data.MeshletsOpt.size());
+                    LOD.MeshletsTriangleVertexIndexSection = PC_CORE::OffsetAndCount(MeshSection.MeshletsTriangleVertexIndexGlobal.Offset, Data.MeshletVertexTrianglesIndex.size());
+                    LOD.MeshletsTrianglesSection = PC_CORE::OffsetAndCount(MeshSection.MeshletsTrianglesGlobal.Offset, Data.MeshletTrianglesU32.size());
+
+
+                    MeshSection.MeshletsGlobal.Count += LOD.MeshletsSection.Count;
+                    MeshSection.MeshletsTriangleVertexIndexGlobal.Count += LOD.MeshletsTriangleVertexIndexSection.Count;
+                    MeshSection.MeshletsTrianglesGlobal.Count += LOD.MeshletsTrianglesSection.Count;
+
+                    _Data->RenderData.Meshlets.insert(_Data->RenderData.Meshlets.end(), Data.MeshletsOpt.begin(), Data.MeshletsOpt.end());
+                    _Data->RenderData.MeshletVertexTrianglesIndex.insert(_Data->RenderData.MeshletVertexTrianglesIndex.end(), Data.MeshletVertexTrianglesIndex.begin(), Data.MeshletVertexTrianglesIndex.end());
+                    _Data->RenderData.MeshletTriangles.insert(_Data->RenderData.MeshletTriangles.end(), Data.MeshletTrianglesU32.begin(), Data.MeshletTrianglesU32.end());
+                }
+            }
+        }    
     }
 
     std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> AssetsImporter::OptimiseMesh

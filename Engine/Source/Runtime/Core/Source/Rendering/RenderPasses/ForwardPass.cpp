@@ -187,18 +187,20 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 0ull);
 
 		static constexpr auto GroupSize = 32;
-		/*for (const auto& subMesh : Data.MeshSections)
+		for (const auto& Section : Data.MeshSections)
 		{
-			MeshShaderDrawCall.SubMeshMeshletCount = subMesh.MeshletCount;
-			MeshShaderDrawCall.SubMeshMesletOffset = subMesh.MeshletOffset;
-			MeshShaderDrawCall.SubMeshVertexOffset = subMesh.VertexOffSet;
-			MeshShaderDrawCall.SubMeshTriangleVertexOffset = subMesh.MeshletTriangleVertexOffet;
-			MeshShaderDrawCall.SubMeshTriangleOffset = subMesh.MeshletTriangleOffset;
+			const PC_CORE::MeshLOD& LOD = Section.LODs[0];
+
+			MeshShaderDrawCall.SubMeshMeshletCount = LOD.MeshletsSection.Count;
+			MeshShaderDrawCall.SubMeshMesletOffset = LOD.MeshletsSection.Offset;
+			MeshShaderDrawCall.SubMeshVertexOffset = LOD.VertexSection.Offset;
+			MeshShaderDrawCall.SubMeshTriangleVertexOffset = LOD.MeshletsTriangleVertexIndexSection.Offset;
+			MeshShaderDrawCall.SubMeshTriangleOffset = LOD.MeshletsTrianglesSection.Offset;
 
 			_RendererPassExecuteContext.cmd.PushConstant("DrawCall", &MeshShaderDrawCall, sizeof(MeshShaderDrawCall));
-			const uint32_t DispachtSize = (subMesh.MeshletCount + GroupSize - 1) / GroupSize;
+			const uint32_t DispachtSize = (LOD.MeshletsSection.Count + GroupSize - 1) / GroupSize;
 			_RendererPassExecuteContext.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
-		}*/
+		}
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const

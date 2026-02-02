@@ -209,25 +209,7 @@ namespace PC_CORE::Rendering
                .Build();
 
        }
-       {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
-           {
-               { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("MeshShaderTriangle.ms.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("MeshShaderTriangle.ps.hlsl.binary")->GetCode() }
-           };
-
-           meshShaderTriangle.reset(m_Rhi.CreateRhiShaderProgram());
-           meshShaderTriangle
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*forwardPass)
-               .SetDepthWrite(true)
-               .SetDepthTest(true)
-               .SetName("Triangle MeshShader")
-               .Build();
-       }
-
+       
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {

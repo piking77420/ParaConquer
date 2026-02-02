@@ -100,7 +100,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
 {
     Rhi& rhi = App::Instance->RenderHarwareInteface;
 
-    /*if (!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
+    if (!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() || !_StaticMeshRenderData.MeshletTriangles.empty() || !_StaticMeshRenderData.Meshlets.empty())
     {
         
         assert(!_StaticMeshRenderData.MeshletVertexTrianglesIndex.empty() && !_StaticMeshRenderData.MeshletTriangles.empty() && !_StaticMeshRenderData.Meshlets.empty());
@@ -161,7 +161,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshRenderData& _StaticMeshRende
         _Branch->BufferUpload(*m_PositionBuffer, position.data(), m_PositionBuffer->GetSize());
 
         m_MeshLetCount = _StaticMeshRenderData.Meshlets.size();
-    }*/
+    }
 
     // VertexBuffer
     m_VertexBuffer = VertexBuffer(rhi);

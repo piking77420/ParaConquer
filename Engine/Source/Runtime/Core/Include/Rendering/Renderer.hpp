@@ -34,8 +34,6 @@ public:
 
     std::unique_ptr<RhiShaderProgram> transparentForwardShader;
 
-    std::unique_ptr<RhiShaderProgram> meshShaderTriangle;
-
     std::unique_ptr<RhiShaderProgram> meshShaderMeshlet;
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;

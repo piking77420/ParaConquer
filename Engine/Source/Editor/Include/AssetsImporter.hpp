@@ -129,7 +129,7 @@ BEGIN_EDITOR_PCCORE
             const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
             const std::span<const uint32_t>& UnOptIndices);
 
-        MeshLetBuildOut BuildMeshlet(PC_CORE::StaticMeshRenderData* _StaticMeshRenderData, PC_CORE::MeshSection& _SubMesh, const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<uint32_t>& _Indices);
+        MeshLetBuildOut BuildMeshlet(const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices);
 
         void LoadMesheletFromScene(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene);
 
