@@ -489,13 +489,15 @@ void Editor::InitTestScene()
     }
     
     //
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Tree/scene.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
+
+    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
 
 }
   

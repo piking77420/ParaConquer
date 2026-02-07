@@ -16,7 +16,7 @@ World::World()
     }
 
     m_World = this;
-    World::GetWorld()->level.RegisterSystem<RendererSystem>();
+    World::GetWorld()->level.RegisterSystem<Rendering::RendererSystem>();
 }
 
 

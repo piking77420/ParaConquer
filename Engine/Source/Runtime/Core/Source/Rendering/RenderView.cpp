@@ -48,6 +48,8 @@ namespace PC_CORE::Rendering
         ProjectionInv = Projection.Invert();
         ViewProjection = _Camera.GetViewProjection();
         ViewProjectionInv = ViewInv * ProjectionInv;
+        Gamma = 2.2f;
+        Exposure = 1.f;
 
         CameraNear = _Camera.GetNear();
         CameraFar = _Camera.GetFar();
@@ -56,7 +58,7 @@ namespace PC_CORE::Rendering
         ViewPosition = _Camera.Position;
 	}
 
-    void RenderView::UpdaterRhiBuffers(const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
+    void RenderView::UpdaterRhiBuffers(CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
     {
         assert(UniformBuffer);
         PERF_REGION_SCOPED;
@@ -88,9 +90,10 @@ namespace PC_CORE::Rendering
             UniformBuffer->EndBufferUpdate();
         }
 
+        // Update Light Header
         if (Gpu::LightHeader* ptr = reinterpret_cast<Gpu::LightHeader*>(LightBufferHeader->BeginBufferUpdateForCurrentFrame()))
         {
-            ptr->LightCount = 0;
+            ptr->LightCount = static_cast<uint32_t>(_RenderingWorldData.LightsData.size());
             if (_RenderingWorldData.DirLightData)
             {
                 // shoul be 3x3

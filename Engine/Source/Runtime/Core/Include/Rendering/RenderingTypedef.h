@@ -99,7 +99,7 @@ namespace Gpu
 
     struct GPU_ALIGN LightHeader {
         DirLight DirLight;
-        int LightCount;
+        uint32_t LightCount;
     };
 
 }

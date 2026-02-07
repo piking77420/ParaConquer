@@ -1150,9 +1150,8 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
 
     // Compute
     case RhiResourceState::ComputeRead:
-        return vk::ImageLayout::eReadOnlyOptimal;
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
     case RhiResourceState::ComputeWrite:
-        return vk::ImageLayout::eGeneral;
     case RhiResourceState::ComputeReadWrite:
         return vk::ImageLayout::eGeneral;
     // Present 
@@ -1165,6 +1164,49 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
 
     return vk::ImageLayout::eUndefined;
 }
+
+vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _RhiResourceState)
+{
+    switch (_RhiResourceState)
+    {
+    case PC_CORE::RhiResource::State::Undefined:
+        return {};
+    case PC_CORE::RhiResource::State::CopySrc:
+        return vk::AccessFlagBits::eTransferRead;
+    case PC_CORE::RhiResource::State::CopyDst:
+        return vk::AccessFlagBits::eTransferWrite;
+    case PC_CORE::RhiResource::State::VertexBuffer:
+        return vk::AccessFlagBits::eVertexAttributeRead;
+    case PC_CORE::RhiResource::State::IndexBuffer:
+        return vk::AccessFlagBits::eIndexRead;
+    case PC_CORE::RhiResource::State::UniformBuffer:
+        return vk::AccessFlagBits::eUniformRead;
+    case PC_CORE::RhiResource::State::FragmentShaderResource:
+        return vk::AccessFlagBits::eShaderRead;
+    case PC_CORE::RhiResource::State::RenderTarget:
+        return vk::AccessFlagBits::eColorAttachmentWrite;
+    case PC_CORE::RhiResource::State::DepthStencilWrite:
+        return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+    case PC_CORE::RhiResource::State::DepthStencilRead:
+        return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+    case PC_CORE::RhiResource::State::ComputeRead:
+        return vk::AccessFlagBits::eShaderRead;
+    case PC_CORE::RhiResource::State::ComputeWrite:
+        return vk::AccessFlagBits::eShaderWrite;
+    case PC_CORE::RhiResource::State::ComputeReadWrite:
+        return vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+    case PC_CORE::RhiResource::State::Present:
+    default:
+        break;
+    }
+
+    assert(false && "Unsuported");
+
+    PC_LOGERROR("Unsuported RhiResourceStateToAccesFlag")
+
+        return {};
+}
+
 
 RhiResourceState Vulkan::Utils::VulkanImageLayoutToResourceState(vk::ImageLayout layout)
 {
@@ -1209,47 +1251,6 @@ RhiResourceState Vulkan::Utils::VulkanImageLayoutToResourceState(vk::ImageLayout
     return RhiResourceState::Undefined;
 }
 
-vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _RhiResourceState)
-{
-    switch (_RhiResourceState)
-    {
-    case PC_CORE::RhiResource::State::Undefined:
-        return {};
-    case PC_CORE::RhiResource::State::CopySrc:
-        return vk::AccessFlagBits::eTransferRead;
-    case PC_CORE::RhiResource::State::CopyDst:
-        return vk::AccessFlagBits::eTransferWrite;
-    case PC_CORE::RhiResource::State::VertexBuffer:
-        return vk::AccessFlagBits::eVertexAttributeRead;
-    case PC_CORE::RhiResource::State::IndexBuffer:
-        return vk::AccessFlagBits::eIndexRead;
-    case PC_CORE::RhiResource::State::UniformBuffer:
-        return vk::AccessFlagBits::eUniformRead;
-    case PC_CORE::RhiResource::State::FragmentShaderResource:
-        return vk::AccessFlagBits::eShaderRead;
-    case PC_CORE::RhiResource::State::RenderTarget:
-        return vk::AccessFlagBits::eColorAttachmentWrite;
-    case PC_CORE::RhiResource::State::DepthStencilWrite:
-        return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-    case PC_CORE::RhiResource::State::DepthStencilRead:
-        return vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    case PC_CORE::RhiResource::State::ComputeRead:
-        return vk::AccessFlagBits::eShaderRead;
-    case PC_CORE::RhiResource::State::ComputeWrite:
-        return vk::AccessFlagBits::eShaderWrite;
-    case PC_CORE::RhiResource::State::ComputeReadWrite:
-        return vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
-    case PC_CORE::RhiResource::State::Present:
-    default:
-        break;
-    }
-
-    assert(false && "Unsuported");
-
-    PC_LOGERROR("Unsuported RhiResourceStateToAccesFlag")
-
-    return {};
-}
 
 vk::PipelineStageFlags Vulkan::Utils::PipelineStageFlagsFromRhiResourceState(
     PC_CORE::RhiResource::State _RhiResourceState)

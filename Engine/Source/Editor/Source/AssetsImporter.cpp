@@ -746,7 +746,14 @@ namespace PC_EDITOR_CORE
             }
             else
             {
-                materialName = std::string(str.C_Str());
+                if (std::strcmp(str.C_Str(), "DefaultMaterial") == 0)
+                {
+                    materialName = std::string(str.C_Str()) + "_" + m_StaticMeshs->Name;
+                }
+                else
+                {
+                    materialName = std::string(str.C_Str());
+                }
             }
 
             Materials[i] = PC_CORE::ResourceManager::Create<PC_CORE::Rendering::Material>(materialName);

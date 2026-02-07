@@ -22,9 +22,40 @@ struct PSInput
 #define MATERIAL_SET space1
 #include "Material.hlsl"
 
+#define CAMERA_BINDING b0
+#define CAMERA_SET space0
+#include "Camera.hlsl"
+
 
 #include "PBR.hlsl"
 
+float3 SRGBToLinear(float3 c)
+{
+    return lerp(c / 12.92,
+                pow((c + 0.055) / 1.055, Gamma),
+                step(0.04045, c));
+}
+
+/*
+float3 IntegrateDynamciLights()
+{
+    float3 Lo = float3(0, 0, 0);
+    
+    for (int i = 0; i < LightCount; i++)
+    {
+        switch (Lights[i].PositionType == 0.f) // 
+        {
+            
+        }
+
+        
+        
+    }
+
+    
+    return Lo;
+
+}*/
 
 float4 Main(PSInput input) : SV_Target
 {
@@ -40,6 +71,8 @@ float4 Main(PSInput input) : SV_Target
         FragAlbedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord);
         if (FragAlbedo.a < 0.5)
             discard;
+        
+        FragAlbedo.xyz = SRGBToLinear(FragAlbedo.xyz);
     }
         
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
@@ -70,7 +103,7 @@ float4 Main(PSInput input) : SV_Target
 
         AO = ORM.r;
         Roughness = ORM.g;
-        Metallic = ORM .b;
+        Metallic = ORM.b;
     }
     
     float3 Lo = float3(0, 0, 0);
@@ -95,16 +128,17 @@ float4 Main(PSInput input) : SV_Target
             float LoH = saturate(dot(L, H));
                     
             float3 Radiance = DirLight.ColorIntensity.xyz * DirLight.ColorIntensity.w;
-            float3 DiffuseColor = (1.0 - Metallic) * FragAlbedo.xyz;
+            float3 DiffuseColor = FragAlbedo.xyz;
         
             float3 Brdf = BRDF(DiffuseColor, Metallic, Roughness,  NoV, NoL, NoH, LoH);
             Lo += Brdf * Radiance * NoL;
         }
     }
     
-    Lo += Emissive * 0.001;
-    
+    // Other
 
+    
+    Lo += Emissive * 0.001;
         
     return float4(Lo, FragAlbedo.a);
 }

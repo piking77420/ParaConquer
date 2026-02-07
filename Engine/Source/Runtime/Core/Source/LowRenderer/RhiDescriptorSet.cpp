@@ -98,7 +98,7 @@ RhiDescriptorSet& RhiDescriptorSet::BindImageLoad(RhiShaderStageTypeFlag ShaderS
 
 	DescriptorWrite Write
 	{
-		.type = DescriptorType::StorageImage,
+		.type = DescriptorType::SampledImage,
 		.bindingIndex = _BindingIndex,
 		.StagesBits = ShaderStageBits,
 		.descriptor = Descriptor

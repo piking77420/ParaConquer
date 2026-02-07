@@ -1,5 +1,8 @@
-[[vk::image_format("rgba16f")]]
-RWTexture2D<float4> hdrImage : register(u0);
+Texture2D<float4> HdrImage : register(t0, space0);
+
+
+[[vk::image_format("rgba8")]]
+RWTexture2D<float4> RgbImage : register(u1, space0);
 
 // ACES RRT + ODT fit function
 float3 RRTAndODTFit(float3 v)
@@ -23,6 +26,8 @@ static const float3x3 ACESOutputMat = float3x3(
 
 float3 LinearToSRGB(float3 x)
 {
+    x = max(x, 0.0);
+
     return select(
         x * 12.92,
         1.055 * pow(x, 1.0 / 2.4) - 0.055,
@@ -37,18 +42,18 @@ void Main(uint3 DTid : SV_DispatchThreadID)
 
     uint2 gid = DTid.xy;
     uint2 size;
-    hdrImage.GetDimensions(size.x, size.y);
+    HdrImage.GetDimensions(size.x, size.y);
 
-    if (gid.x >= size.x || gid.y >= size.y)
+    if (gid.x >= size.x || gid.y >= size.y) // we assume thant HdrImage.GetDimensions == RgbImage
         return;
 
     // Read HDR color (linear)
-    float4 hdr = hdrImage[gid] * exposure;
+    float4 hdr = HdrImage[gid] * exposure;
 
     float3 color = mul(ACESInputMat, hdr.rgb); // Linear sRGB -> AP1
     color = RRTAndODTFit(color); // RRT+ODT in AP1 space
     color = mul(ACESOutputMat, color); // AP1 -> Linear sRGB
     color = LinearToSRGB(color); // Clamp + gamma correction
 
-    hdrImage[gid] = float4(color, hdr.a);
+    RgbImage[gid] = float4(color, hdr.a);
 }

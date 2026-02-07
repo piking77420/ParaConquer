@@ -26,7 +26,7 @@ ZoneScoped; \
 ZoneName(x, strlen(x))
 
 #define PERF_REGION_COLOR(x) ZoneColor(x);
-#define PERF_REGION_COLOR_NAME(name, x) ZoneColor(name, x);
+#define PERF_REGION_COLOR_NAME(x, name) ZoneColor(x, name);
 
 
 

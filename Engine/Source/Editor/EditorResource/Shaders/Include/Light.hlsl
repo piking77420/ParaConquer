@@ -8,6 +8,9 @@ struct DirLight
     float4 ColorIntensity;
 };
 
+#define POINT_LIGHT 0
+#define SPOTH_LIGHT 1
+
 struct Light
 {
     float4 PositionType; // xyz = position / direction, w = type

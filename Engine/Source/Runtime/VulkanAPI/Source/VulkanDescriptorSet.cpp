@@ -249,8 +249,10 @@ void Vulkan::VulkanDescriptorSet::FillDescritptorWrite(std::span<vk::WriteDescri
             case PC_CORE::DescriptorType::InputAttachment:
                 _WriteDescriptorSetSpan[descriptorWriteIndex].pImageInfo = &imageInfo[imageIndex++];
                 break;
-            case PC_CORE::DescriptorType::Sampler:
             case PC_CORE::DescriptorType::SampledImage:
+                _WriteDescriptorSetSpan[descriptorWriteIndex].pImageInfo = &imageInfo[imageIndex++];
+                break;
+            case PC_CORE::DescriptorType::Sampler:
             case PC_CORE::DescriptorType::InlineUniformBlock:
             case PC_CORE::DescriptorType::AccelerationStructure:
             case PC_CORE::DescriptorType::Count:
