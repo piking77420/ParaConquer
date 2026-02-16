@@ -120,7 +120,7 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
                 .Materials = std::move(material),
                 .StaticMesh = mesh.get(),
                 .WorldMatrix = m,
-                .UseMeshlet = staticMeshComponent.UseMeshlet && mesh->HasMeshlet()
+                .UseMeshlet = staticMeshComponent.UseMeshlet && mesh->IsBuildForMeshlet()
             };
 
             m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);

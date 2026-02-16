@@ -77,12 +77,12 @@ namespace PC_CORE::Rendering::Pass
 		CommandList::DrawBuffers drawBuffer;
 		drawBuffer
 			.PushVertexBuffer(
-				*mesh.GetVertexBuffer()
+				*mesh.GetVertexBuffer(0)
 				, 0ull)
 			.SetIndexBuffer(
-				*mesh.GetIndexBuffer()
+				*mesh.GetIndexBuffer(0)
 				, 0ull
-				, mesh.GetIndexBuffer().GetIndexFormat()
+				, mesh.GetIndexBuffer(0).GetIndexFormat()
 			);
 		_RendererPassExecuteContext.cmd.BindDrawBuffers(drawBuffer);
 
@@ -185,7 +185,7 @@ namespace PC_CORE::Rendering::Pass
 
 		const Tbx::Matrix4x4d ModelViewProjection = _RendererPassExecuteContext.View.Projection * (_RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix);
 		Gpu::StreamDoubleToFloat(&MeshShaderDrawCall.ModelViewProjection, &ModelViewProjection);
-		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 0ull);
+		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(0), 0ull);
 
 		static constexpr auto GroupSize = 32;
 		/*for (const auto& Section : Data.MeshSections)

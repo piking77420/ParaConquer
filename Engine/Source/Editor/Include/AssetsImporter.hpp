@@ -10,7 +10,7 @@
 #include "ObjectPtr.hpp"
 #include "LowRenderer/RhiTexture.hpp"
 #include "LowRenderer/RhiResourceUpdate.hpp"
-#include "Resources/StaticMesh.hpp"
+#include "Builder/MeshBuilder.hpp"
 #include "Resources/Texture2D.hpp"
 
 namespace PC_CORE
@@ -40,9 +40,17 @@ enum aiTextureType;
 struct aiMaterial;
 
 BEGIN_EDITOR_PCCORE
-    class AssetsImporter
+    class AssetsImporter : private MeshBuilder
     {
     public:
+        enum class ImportFormat
+        {
+            None,
+            Gltf,
+            Fbc,
+            Obj
+        };
+
         [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path);
 
         const std::string& GetName() const;
@@ -73,14 +81,6 @@ BEGIN_EDITOR_PCCORE
         }
 
     private:
-        enum class ImportFormat
-        {
-            None,
-            Gltf,
-            Fbc,
-            Obj
-        };
-
         struct MeshLetBuildOut
         {
             std::vector<PC_CORE::Meshlet> MeshletsOpt;
@@ -108,15 +108,6 @@ BEGIN_EDITOR_PCCORE
 
         std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
 
-        size_t m_NativeVertexCount = 0;
-
-        size_t m_NativeIndiciesCount = 0;
-
-        std::vector<std::string> m_UniqueMeshSectionOrder;
-        std::unordered_map<std::string, std::vector<aiMesh*>> m_UniqueMeshSectionWithLod;
-
-        ImportFormat FindImportFormat(const std::filesystem::path& path);
-
         bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* scene);
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
@@ -129,19 +120,18 @@ BEGIN_EDITOR_PCCORE
             const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
             const std::span<const uint32_t>& UnOptIndices);
 
-        MeshLetBuildOut BuildMeshlet(const std::span<PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices);
-
         void LoadMesheletFromScene(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene);
 
-        void ProcessMeshes(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene);
+        void ProcessMeshDrawCommands(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene);
 
         void FillVertices(std::vector<PC_CORE::StaticMeshVertex>& _Verticies, const aiMesh& _Meshes);
 
         void FillIndices(std::vector<uint32_t>& _Indices, const aiMesh& _Meshes);
 
-        void GatherUniqueMeshes(PC_CORE::StaticMeshData* _Data, const aiScene* scene, const aiNode* node);
-
-        size_t LODFromMeshName(const aiString& _AiS) const;
+        void LoadMeshes(std::vector<PC_CORE::StaticMeshVertex>* _Verticies,
+            std::vector<uint32_t>* _Indices,
+            std::vector<MeshDescriptor>* _MeshDescriptor,
+            const aiScene* _scene);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 

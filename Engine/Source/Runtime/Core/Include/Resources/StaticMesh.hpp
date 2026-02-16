@@ -169,7 +169,11 @@ public:
 
 	~StaticMesh() override = default;
 
-	DEFAULT_COPY_MOVE_OPERATIONS(StaticMesh)
+	StaticMesh(const StaticMesh&) = delete;
+	StaticMesh& operator=(const StaticMesh&) = delete;
+
+	StaticMesh(StaticMesh&&) noexcept = default;
+	StaticMesh& operator=(StaticMesh&&) noexcept = default;
 
 	IMP_DYNAMIC_REFLECT()
 
@@ -209,14 +213,14 @@ public:
 		return m_HallowCpuAcces;
 	}
 
-	bool IsBuildForMeshlet(uint32_t LodIndex) const
-	{
-		return m_MeshSectionGpu[LodIndex].MeshLetCount > 0ull;
-	}
-
-	size_t GetMeshletCount() const
+	bool IsBuildForMeshlet() const
 	{
 		return m_IsBuildForMeshlet;
+	}
+
+	size_t GetMeshletCount(uint32_t LodIndex) const
+	{
+		return m_MeshSectionGpu[LodIndex].MeshLetCount > 0ull;
 	}
 
 	const StaticMeshData& GetStaticMeshData() const
@@ -232,24 +236,30 @@ public:
 	const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& GetBaseMaterial() const;
 
 private:
-	struct MeshSectionGpu
-	{
-		VertexBuffer VertexBuffer;
+		struct MeshSectionGpu
+		{
+			VertexBuffer VertexBuffer;
 
-		IndexBuffer IndexBuffer;
+			IndexBuffer IndexBuffer;
 
-		std::unique_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
+			std::shared_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
 
-		std::unique_ptr<RhiBuffer> MeshletTriangleBuffer;
+			std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
 
-		std::unique_ptr<RhiBuffer> MeshletBuffer;
+			std::shared_ptr<RhiBuffer> MeshletBuffer;
 
-		std::unique_ptr<RhiBuffer> PositionBuffer;
+			std::shared_ptr<RhiBuffer> PositionBuffer;
 
-		std::unique_ptr<RhiDescriptorSet> MeshletDescriptor;
+			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
 
-		size_t MeshLetCount{ 0 };
-	};
+			size_t MeshLetCount{ 0 };
+
+			MeshSectionGpu(const MeshSectionGpu&) = delete;
+			MeshSectionGpu& operator=(const MeshSectionGpu&) = delete;
+
+			MeshSectionGpu(MeshSectionGpu&&) noexcept = default;
+			MeshSectionGpu& operator=(MeshSectionGpu&&) noexcept = default;
+		};
 
 	std::vector<MeshSectionGpu> m_MeshSectionGpu;
 
