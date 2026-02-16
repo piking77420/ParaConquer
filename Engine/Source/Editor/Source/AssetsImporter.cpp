@@ -233,32 +233,61 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         return m_ImportObjectName;
     }
 
-    void AssetsImporter::ProcessMeshDrawCommands(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene)
+    void AssetsImporter::ProcessMeshDrawCommands(std::vector<PC_CORE::MeshDrawCommand>& Commands, const aiScene* scene, const aiNode* Node)
     {
         PERF_REGION_SCOPED;
+
+        if (Node == nullptr)
+            return;
        
+        if (Node->mNumMeshes != 0u)
+        {
+            for (size_t i = 0; i < Node->mNumMeshes; i++)
+            {
+                const float* aiTransformFptr = &Node->mTransformation.a1;
+                static_assert(sizeof(Node->mTransformation) == sizeof(float) * Tbx::Matrix4x4d::Size * Tbx::Matrix4x4d::Size);
+                Tbx::Matrix4x4d m;
+                for (size_t i = 0; i < Tbx::Matrix4x4d::Size * Tbx::Matrix4x4d::Size; i++)
+                    m[i] = static_cast<double>(aiTransformFptr[i]);
+                
+                Commands.push_back(PC_CORE::MeshDrawCommand{
+                    .MeshSectionTransformL = std::move(m),
+                    .MeshSectionIndex = Node->mMeshes[i], // we load mesh section in the same order as assimp
+                 });
+            }
+
+        }
+
+
+        for (size_t i = 0; i < Node->mNumChildren; i++)
+            ProcessMeshDrawCommands(Commands, scene, Node->mChildren[i]);
     }
 
-    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* scene)
+    bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* Scene)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
-        if (scene->mNumMeshes == 0)
+        if (Scene->mNumMeshes == 0)
             return false;
         
         
-        MeshBuilder::MeshBuilderData Mesh = BuildMeshs(ThreadPool, scene, true);
-        //MeshBuilder::MeshletOutPutData Meshelets = BuildMeshlets(ThreadPool, Mesh);
+        MeshBuilder::MeshBuilderData Mesh = BuildMeshs(ThreadPool, Scene, true);
+        MeshBuilder::MeshletOutPutData Meshelets = BuildMeshlets(ThreadPool, Mesh);
 
         //LoadMesheletFromScene(ThreadPool, &StaticMeshData, scene);
-        //ProcessMeshDrawCommands(ThreadPool, &StaticMeshData, scene);
+        PC_CORE::StaticMeshRenderData StaticMeshRenderData;
+        StaticMeshRenderData.Vertices = std::move(Mesh.Verticies);
+        StaticMeshRenderData.Indices = std::move(Mesh.Indicies);
+        StaticMeshRenderData.Meshlets = std::move(Meshelets.Meshlets);
+        StaticMeshRenderData.MeshletVertexTrianglesIndex = std::move(Meshelets.MeshletVertexTrianglesIndex);
+        StaticMeshRenderData.MeshletTriangles = std::move(Meshelets.MeshletTrianglesU32);
+
+        std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
+        ProcessMeshDrawCommands(DrawCommands, Scene, Scene->mRootNode);
+
         PC_CORE::StaticMeshData StaticMeshData;
-        StaticMeshData.RenderData.Vertices = std::move(Mesh.Verticies);
-        StaticMeshData.RenderData.Indices = std::move(Mesh.Indicies);
-
-
-
+        StaticMeshData.RenderData = std::move(StaticMeshRenderData);
 
         {
             std::scoped_lock _(m_mutex);

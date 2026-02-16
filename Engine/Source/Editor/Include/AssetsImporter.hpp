@@ -116,22 +116,7 @@ BEGIN_EDITOR_PCCORE
 
         void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
-        std::pair<std::vector<uint32_t>, std::vector<PC_CORE::StaticMeshVertex>> OptimiseMesh(
-            const std::span<const PC_CORE::StaticMeshVertex>& UnOptVertices,
-            const std::span<const uint32_t>& UnOptIndices);
-
-        void LoadMesheletFromScene(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene);
-
-        void ProcessMeshDrawCommands(PC_CORE::Thread::ThreadPool& ThreadPool, PC_CORE::StaticMeshData* _Data, const aiScene* scene);
-
-        void FillVertices(std::vector<PC_CORE::StaticMeshVertex>& _Verticies, const aiMesh& _Meshes);
-
-        void FillIndices(std::vector<uint32_t>& _Indices, const aiMesh& _Meshes);
-
-        void LoadMeshes(std::vector<PC_CORE::StaticMeshVertex>* _Verticies,
-            std::vector<uint32_t>* _Indices,
-            std::vector<MeshDescriptor>* _MeshDescriptor,
-            const aiScene* _scene);
+        void ProcessMeshDrawCommands(std::vector<PC_CORE::MeshDrawCommand>& Commands, const aiScene* scene, const aiNode* Node);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 

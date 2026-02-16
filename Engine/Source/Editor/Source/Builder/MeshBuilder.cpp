@@ -247,12 +247,10 @@ namespace PC_EDITOR_CORE
 
         uint32_t MeshOffsetAndCountCount = 0;
         MeshDescriptorsData.reserve(Scene->mNumMeshes);
-        AiMeshToIndex.reserve(Scene->mNumMeshes);
 
         for (size_t i = 0; i < Scene->mNumMeshes; i++)
         {
             const aiMesh* Mesh = Scene->mMeshes[i];
-            AiMeshToIndex.insert({ Mesh, i });
 
             uint32_t MeshIndiciesCount = 0;
             for (size_t i = 0; i < Mesh->mNumFaces; i++)

@@ -65,10 +65,6 @@ namespace PC_EDITOR_CORE
 		MeshBuilder() = default;
 
 		~MeshBuilder() = default;
-
-	protected:
-		std::unordered_map<const aiMesh*, size_t> AiMeshToIndex;
-
 	private:
 		MeshBuilderData m_BuilderData;
 
