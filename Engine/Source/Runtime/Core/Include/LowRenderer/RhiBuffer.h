@@ -71,7 +71,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual char* BeginBufferUpdateForCurrentFrame() = 0;
 
-        RhiBuffer& SetSize(size_t _SizeInByte)
+        RhiBuffer& SetSizeInBytes(size_t _SizeInByte)
         {
             m_SizeInByte = _SizeInByte;
             return *this;
@@ -101,7 +101,7 @@ BEGIN_PCCORE
             return *this;
         }
 
-        size_t GetSize() const
+        size_t GetSizeInByte() const
         {
             return m_SizeInByte;
         }

@@ -14,7 +14,7 @@ namespace PC_CORE::Rendering
             ->SetMemoryUsage(RhiMemoryUsage::CPUVisible)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
-            .SetSize(sizeof(Gpu::RenderViewViewUniformBuffer))
+            .SetSizeInBytes(sizeof(Gpu::RenderViewViewUniformBuffer))
             .SetName("RenderViewUniformBuffer")
             .Build();
 
@@ -23,7 +23,7 @@ namespace PC_CORE::Rendering
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage | RhiBuffer::BufferUsageFlagBits::TransferDst)
-            .SetSize(sizeof(Gpu::Light) * Gpu::MAX_LIGHT)
+            .SetSizeInBytes(sizeof(Gpu::Light) * Gpu::MAX_LIGHT)
             .SetName("Light Buffer")
             .Build();
 
@@ -32,7 +32,7 @@ namespace PC_CORE::Rendering
             ->SetMemoryUsage(RhiMemoryUsage::CPUVisible)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
-            .SetSize(sizeof(Gpu::LightHeader))
+            .SetSizeInBytes(sizeof(Gpu::LightHeader))
             .SetName("Light Header Buffer")
             .Build();
 

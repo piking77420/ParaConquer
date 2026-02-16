@@ -45,7 +45,7 @@ void Material::Build()
         ->SetMemoryUsage(RhiMemoryUsage::CPUVisible) // may use static
         .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Dynamic)
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
-        .SetSize(sizeof(Gpu::MaterialBuffer) * MaxFramesInFlight)
+        .SetSizeInBytes(sizeof(Gpu::MaterialBuffer) * MaxFramesInFlight)
         .SetObjectSize(sizeof(Gpu::MaterialBuffer))
         .SetMaxObjectPerFrame(1)
         .SetName(Name + " UniformBuffer")
