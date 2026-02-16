@@ -99,7 +99,7 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.opaqueFowardShader);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
-		for (const auto& MeshSection : Data.MeshSections)
+		/*for (const auto& MeshSection : Data.MeshSections)
 		{
 			const PC_CORE::MeshLOD& LOD = MeshSection.LODs[0];
 
@@ -117,12 +117,13 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[MeshSection.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
 			_RendererPassExecuteContext.cmd.DrawIndexed(LOD.IndicesSection.Count, 1, LOD.IndicesSection.Offset, LOD.VertexSection.Offset, 0);
-		}
+		}*/
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
 		m_TransparentSubMeshDistanceV.clear();
+		/*
 		m_TransparentSubMeshDistanceV.reserve(Data.MeshSections.size());
 
 		{
@@ -162,7 +163,7 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[MeshSection.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
 			_RendererPassExecuteContext.cmd.DrawIndexed(LOD.IndicesSection.Count, 1, LOD.IndicesSection.Offset, LOD.VertexSection.Offset, 0);
-		}
+		}*/
 	}
 
 	void FowardPass::DrawMeshLet(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const
@@ -187,7 +188,7 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.StaticMesh->GetMeshletDescriptor(), 0ull);
 
 		static constexpr auto GroupSize = 32;
-		for (const auto& Section : Data.MeshSections)
+		/*for (const auto& Section : Data.MeshSections)
 		{
 			const PC_CORE::MeshLOD& LOD = Section.LODs[0];
 
@@ -200,7 +201,7 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.PushConstant("DrawCall", &MeshShaderDrawCall, sizeof(MeshShaderDrawCall));
 			const uint32_t DispachtSize = (LOD.MeshletsSection.Count + GroupSize - 1) / GroupSize;
 			_RendererPassExecuteContext.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
-		}
+		}*/
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
