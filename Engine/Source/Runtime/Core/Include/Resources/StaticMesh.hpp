@@ -104,7 +104,7 @@ struct MeshDataDescriptor
 
 	// MeshletTrianglesIndexOffset
 	uint32_t MeshletVertexTrianglesIndexOffset;
-	uint32_t MeshletVertexTrianglesCount;
+	uint32_t MeshletVertexTrianglesIndexCount;
 
 	// MeshletTriangles
 	uint32_t MeshletTrianglesOffset;
@@ -126,7 +126,6 @@ struct MeshSection
 
 struct MeshLOD
 {
-	std::optional<MeshDataDescriptor> MeshDataDescriptor;
 	std::vector<MeshSection> MeshesSections;
 };
 
@@ -139,6 +138,8 @@ struct StaticMeshRenderData
 	std::vector<uint32_t> MeshletTriangles;
 
 	MotionCore::Aabb<double> AABB;
+
+	std::vector<MeshDataDescriptor> LODSDescriptor;// per lods
 };
 
 struct MeshDrawCommand
@@ -150,7 +151,7 @@ struct MeshDrawCommand
 struct StaticMeshData
 {
 	std::vector<MeshDrawCommand> MeshDrawCommands;
-	MeshLOD meshLods;
+	std::vector<MeshLOD> meshLods;
 	StaticMeshRenderData RenderData;
 };
 	
@@ -188,14 +189,14 @@ public:
 	{
 		assert(LodIndex < m_MeshSectionGpu.size());
 
-		return m_MeshSectionGpu[LodIndex].m_VertexBuffer;
+		return m_MeshSectionGpu[LodIndex].VertexBuffer;
 	}
 
 	const IndexBuffer& GetIndexBuffer(uint32_t LodIndex) const
 	{
 		assert(LodIndex < m_MeshSectionGpu.size());
 
-		return m_MeshSectionGpu[LodIndex].m_IndexBuffer;
+		return m_MeshSectionGpu[LodIndex].IndexBuffer;
 	}
 
 	const MotionCore::Aabb<double>& GetAabb() const
@@ -210,7 +211,7 @@ public:
 
 	bool IsBuildForMeshlet(uint32_t LodIndex) const
 	{
-		return m_MeshSectionGpu[LodIndex].m_MeshLetCount > 0ull;
+		return m_MeshSectionGpu[LodIndex].MeshLetCount > 0ull;
 	}
 
 	size_t GetMeshletCount() const
@@ -225,7 +226,7 @@ public:
 
 	RhiDescriptorSet* GetMeshletDescriptor(uint32_t LodIndex) const
 	{
-		return m_MeshSectionGpu[LodIndex].m_MeshletDescriptor.get();
+		return m_MeshSectionGpu[LodIndex].MeshletDescriptor.get();
 	}
 
 	const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& GetBaseMaterial() const;
@@ -233,21 +234,21 @@ public:
 private:
 	struct MeshSectionGpu
 	{
-		VertexBuffer m_VertexBuffer;
+		VertexBuffer VertexBuffer;
 
-		IndexBuffer m_IndexBuffer;
+		IndexBuffer IndexBuffer;
 
-		std::unique_ptr<RhiBuffer> m_MeshletVerticiesBuffer;
+		std::unique_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
 
-		std::unique_ptr<RhiBuffer> m_MeshletTriangleBuffer;
+		std::unique_ptr<RhiBuffer> MeshletTriangleBuffer;
 
-		std::unique_ptr<RhiBuffer> m_MeshletBuffer;
+		std::unique_ptr<RhiBuffer> MeshletBuffer;
 
-		std::unique_ptr<RhiBuffer> m_PositionBuffer;
+		std::unique_ptr<RhiBuffer> PositionBuffer;
 
-		std::unique_ptr<RhiDescriptorSet> m_MeshletDescriptor;
+		std::unique_ptr<RhiDescriptorSet> MeshletDescriptor;
 
-		size_t m_MeshLetCount{ 0 };
+		size_t MeshLetCount{ 0 };
 	};
 
 	std::vector<MeshSectionGpu> m_MeshSectionGpu;
@@ -264,7 +265,7 @@ private:
 
 	void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch);
 
-	void InitMeshSectionGpu(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch)
+	void InitMeshSectionGpu(const StaticMeshRenderData& _StaticMeshRenderData, size_t LodIndex, RHI::ResourceUpdateBranch* _Branch);
 
 	REFLECT(StaticMesh, Resource)
 	REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)
