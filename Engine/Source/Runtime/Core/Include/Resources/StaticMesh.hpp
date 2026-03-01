@@ -116,17 +116,15 @@ struct MeshSection
 {
 	MotionCore::Aabb<double> AABB;
 
-	MeshDataDescriptor MeshDataDescriptor;
-
 	uint32_t MaterialIndex;
 };
 
 // LOD Strategie
-// Currently each lod are separte into  
+// Currently each lod are separte in buffers  
 
 struct MeshLOD
 {
-	std::vector<MeshSection> MeshesSections;
+	std::vector<MeshDataDescriptor> MeshesSections;
 };
 
 struct StaticMeshRenderData
@@ -136,10 +134,7 @@ struct StaticMeshRenderData
 	std::vector<Meshlet>  Meshlets;
 	std::vector<uint32_t> MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
-
-	MotionCore::Aabb<double> AABB;
-
-	std::vector<MeshDataDescriptor> LODSDescriptor;// per lods
+	std::vector<MeshDataDescriptor> RawMeshesDescriptor;
 };
 
 struct MeshDrawCommand
@@ -151,7 +146,9 @@ struct MeshDrawCommand
 struct StaticMeshData
 {
 	std::vector<MeshDrawCommand> MeshDrawCommands;
-	std::vector<MeshLOD> meshLods;
+	std::vector<MeshSection> MeshSections;
+	std::vector<MeshLOD> MeshLods;
+	MotionCore::Aabb<double> AABB;
 	StaticMeshRenderData RenderData;
 };
 	
@@ -273,9 +270,9 @@ private:
 
 	std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>> m_BaseMaterials;
 
-	void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch);
+	void InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::ResourceUpdateBranch* _Branch);
 
-	void InitMeshSectionGpu(const StaticMeshRenderData& _StaticMeshRenderData, size_t LodIndex, RHI::ResourceUpdateBranch* _Branch);
+	void InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_t LodIndex, RHI::ResourceUpdateBranch* _Branch);
 
 	REFLECT(StaticMesh, Resource)
 	REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)

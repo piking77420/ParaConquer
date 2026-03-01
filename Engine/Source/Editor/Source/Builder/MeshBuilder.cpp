@@ -10,6 +10,15 @@
 
 namespace PC_EDITOR_CORE
 {
+    MotionCore::Aabb<double> aiAABBToCore(const aiAABB& aabb)
+    {
+        const Tbx::Vector3d Min = Tbx::Vector3d(static_cast<double>(aabb.mMin.x), static_cast<double>(aabb.mMin.y), static_cast<double>(aabb.mMin.z));
+        const Tbx::Vector3d Max = Tbx::Vector3d(static_cast<double>(aabb.mMax.x), static_cast<double>(aabb.mMax.y), static_cast<double>(aabb.mMax.z));
+
+        return MotionCore::Aabb<double>(Min, Max);
+    }
+
+
 	MeshBuilder::MeshBuilderData MeshBuilder::BuildMeshs( 
 		PC_CORE::Thread::ThreadPool& ThreadPool, 
 		const aiScene* Scene, 
@@ -21,11 +30,25 @@ namespace PC_EDITOR_CORE
         std::vector<PC_CORE::StaticMeshVertex> VertexData;
         std::vector<uint32_t> IndiciesData;
         std::vector<MeshDescriptor> MeshDescriptorsData;
+        MotionCore::Aabb<double> SceneAABB{};
         LoadMeshesFromAiScene(&VertexData, &IndiciesData, &MeshDescriptorsData, Scene);
   
+        {
+            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Compute Global AABB");
+
+            for (size_t i = 0; i < Scene->mNumMeshes; i++)
+            {
+                //PC_LOG("Mesh Name {}", Scene->mMeshes[i]->mName.C_Str());
+
+                MotionCore::Aabb<double> AABB = aiAABBToCore(Scene->mMeshes[i]->mAABB);
+                MotionCore::Encapsulate(&SceneAABB, &AABB);
+            }
+        }
+        
+
         if (!Optimise)
         {
-            return MeshBuilder::MeshBuilderData(std::move(VertexData), std::move(IndiciesData), std::move(MeshDescriptorsData));
+            return MeshBuilder::MeshBuilderData(std::move(VertexData), std::move(IndiciesData), std::move(MeshDescriptorsData), SceneAABB);
         }
 
         // Enqueu Data
@@ -49,18 +72,21 @@ namespace PC_EDITOR_CORE
         MeshBuilderData Optimised;
         Optimised.Verticies.reserve(VertexData.size());
         Optimised.Indicies.reserve(IndiciesData.size());
+        Optimised.Aabb = SceneAABB;
         MeshDescriptorsData.clear();
 
-        for (auto& f : futures)
+        for (size_t i = 0; i < futures.size(); i++)
         {
+            auto& f = futures[i];
             OutOptimiseBuild Data = f.get();
 
             MeshDescriptorsData.emplace_back(MeshDescriptor
                 {
-                    .VertexOffset = static_cast<uint32_t>(Data.OutVertices.size()),
-                    .VertexCount = static_cast<uint32_t>(Optimised.Verticies.size()),
-                    .IndicesOffset = static_cast<uint32_t>(Data.OutIndices.size()),
-                    .IndiceCount = static_cast<uint32_t>(Optimised.Indicies.size()),
+                    .VertexOffset = static_cast<uint32_t>(Optimised.Verticies.size()),
+                    .VertexCount = static_cast<uint32_t>(Data.OutVertices.size()),
+                    .IndicesOffset = static_cast<uint32_t>(Optimised.Indicies.size()),
+                    .IndiceCount = static_cast<uint32_t>(Data.OutIndices.size()),
+                    .Aabb = aiAABBToCore(Scene->mMeshes[i]->mAABB)
                 });
             Optimised.Verticies.append_range(Data.OutVertices);
             Optimised.Indicies.append_range(Data.OutIndices);

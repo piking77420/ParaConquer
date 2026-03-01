@@ -116,7 +116,7 @@ BEGIN_EDITOR_PCCORE
 
         void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
-        void ProcessMeshDrawCommands(std::vector<PC_CORE::MeshDrawCommand>& Commands, const aiScene* scene, const aiNode* Node);
+        void ProcessMeshDrawCommands(std::vector<PC_CORE::MeshDrawCommand>& Commands, std::vector<PC_CORE::MeshLOD>& meshLods, const PC_CORE::StaticMeshRenderData& RenderData, const aiScene* scene, const aiNode* Node);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 

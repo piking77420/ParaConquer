@@ -20,9 +20,9 @@
 namespace PC_EDITOR_CORE
 {
 
-size_t LODFromMeshName(const aiString& _AiS)
+size_t LODFromMeshName(const char* Name)
 {
-    std::string_view meshName(_AiS.C_Str());
+    std::string_view meshName(Name);
 
     size_t LodIndex = 0;
 
@@ -40,7 +40,7 @@ size_t LODFromMeshName(const aiString& _AiS)
 
             if (ec != std::errc{})
             {
-                PC_LOGERROR("Failed to parse LOD index from mesh name: {}", _AiS.C_Str());
+                PC_LOGERROR("Failed to parse LOD index from mesh name: {}", Name);
                 LodIndex = 0;
                 return LodIndex;
             }
@@ -233,34 +233,65 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         return m_ImportObjectName;
     }
 
-    void AssetsImporter::ProcessMeshDrawCommands(std::vector<PC_CORE::MeshDrawCommand>& Commands, const aiScene* scene, const aiNode* Node)
+    void AssetsImporter::ProcessMeshDrawCommands(
+        std::vector<PC_CORE::MeshDrawCommand>& Commands,
+        std::vector<PC_CORE::MeshLOD>& meshLods,
+        const PC_CORE::StaticMeshRenderData& RenderData,
+        const aiScene* Scene, 
+        const aiNode* Node)
     {
         PERF_REGION_SCOPED;
-
+        /*
+        
         if (Node == nullptr)
             return;
-       
+
         if (Node->mNumMeshes != 0u)
         {
             for (size_t i = 0; i < Node->mNumMeshes; i++)
             {
-                const float* aiTransformFptr = &Node->mTransformation.a1;
+                const uint32_t MeshIndex = Node->mMeshes[i];
+                auto& Name = Scene->mMeshes[i]->mName;
+                const size_t LodNbr = LODFromMeshName(Name.C_Str());
+                PC_LOG("Mesh Name {}", Name.C_Str());
+
+                if (meshLods.size() < LodNbr)
+                    meshLods.resize(LodNbr);
+
+
+              /*const float* aiTransformFptr = &Node->mTransformation.a1;
                 static_assert(sizeof(Node->mTransformation) == sizeof(float) * Tbx::Matrix4x4d::Size * Tbx::Matrix4x4d::Size);
                 Tbx::Matrix4x4d m;
                 for (size_t i = 0; i < Tbx::Matrix4x4d::Size * Tbx::Matrix4x4d::Size; i++)
                     m[i] = static_cast<double>(aiTransformFptr[i]);
                 
+                
                 Commands.push_back(PC_CORE::MeshDrawCommand{
                     .MeshSectionTransformL = std::move(m),
-                    .MeshSectionIndex = Node->mMeshes[i], // we load mesh section in the same order as assimp
-                 });
-            }
-
+                    .MeshSectionIndex = MeshIndex,  //we load mesh section in the same order as assimp
+            }z
         }
 
-
         for (size_t i = 0; i < Node->mNumChildren; i++)
-            ProcessMeshDrawCommands(Commands, scene, Node->mChildren[i]);
+            ProcessMeshDrawCommands(Commands, meshLods, RenderData, Scene, Node->mChildren[i]); */
+
+        std::unordered_map<uint32_t, std::vector<uint32_t>> LodMeshIndex;
+    
+        for (size_t i = 0; i < Scene->mNumMeshes; i++)
+        {
+            const uint32_t MeshIndex = Node->mMeshes[i];
+            const auto& Name = Scene->mMeshes[i]->mName;
+            const size_t LodNbr = LODFromMeshName(Name.C_Str());
+            PC_LOG("Mesh Name {}", Name.C_Str());
+
+            if (meshLods.size() < LodNbr)
+            {
+                meshLods.resize(LodNbr);
+                LodMeshIndex.resize(LodNbr, {});
+            }
+            const auto& MehsDescriptor = RenderData.RawMeshesDescriptor[MeshIndex];
+            meshLods.push_back()
+        }
     }
 
     bool AssetsImporter::ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* Scene)
@@ -271,24 +302,56 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         if (Scene->mNumMeshes == 0)
             return false;
         
-        
-        MeshBuilder::MeshBuilderData Mesh = BuildMeshs(ThreadPool, Scene, true);
-        MeshBuilder::MeshletOutPutData Meshelets = BuildMeshlets(ThreadPool, Mesh);
+        constexpr bool BuildMeshlet = true;
+        MeshBuilder::MeshBuilderData Meshs = BuildMeshs(ThreadPool, Scene, true);
+        MeshBuilder::MeshletOutPutData Meshelets = BuildMeshlets(ThreadPool, Meshs);
 
-        //LoadMesheletFromScene(ThreadPool, &StaticMeshData, scene);
         PC_CORE::StaticMeshRenderData StaticMeshRenderData;
-        StaticMeshRenderData.Vertices = std::move(Mesh.Verticies);
-        StaticMeshRenderData.Indices = std::move(Mesh.Indicies);
+        StaticMeshRenderData.Vertices = std::move(Meshs.Verticies);
+        StaticMeshRenderData.Indices = std::move(Meshs.Indicies);
         StaticMeshRenderData.Meshlets = std::move(Meshelets.Meshlets);
         StaticMeshRenderData.MeshletVertexTrianglesIndex = std::move(Meshelets.MeshletVertexTrianglesIndex);
         StaticMeshRenderData.MeshletTriangles = std::move(Meshelets.MeshletTrianglesU32);
 
-        std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
-        ProcessMeshDrawCommands(DrawCommands, Scene, Scene->mRootNode);
+        assert(Meshs.MeshDescriptor.size() == Meshelets.MeshletDescriptor.size()); // there is meshelet build
+        StaticMeshRenderData.RawMeshesDescriptor.reserve(Meshs.MeshDescriptor.size());
+
+        for (size_t i = 0; i < StaticMeshRenderData.RawMeshesDescriptor.size(); i++)
+        {
+            const MeshDescriptor& MeshDescriptor = Meshs.MeshDescriptor[i];
+            const MeshletDescriptor* MeshletDescriptor = BuildMeshlet ? &Meshelets.MeshletDescriptor[i] : nullptr;
+
+
+            StaticMeshRenderData.RawMeshesDescriptor.emplace_back(PC_CORE::MeshDataDescriptor{
+                    // Vertex
+                    .VertexOffset = MeshDescriptor.VertexOffset,
+                    .VertexCount = MeshDescriptor.VertexCount,
+                     // Indicies
+                    .IndicesOffset = MeshDescriptor.IndicesOffset,
+                    .IndiceCount = MeshDescriptor.IndiceCount,
+
+                    // Meshlets
+                    .MeshetOffset = BuildMeshlet ? MeshletDescriptor->MeshletOffset : 0u,
+                    .MeshetCount = BuildMeshlet ? MeshletDescriptor->MeshletOffset : 0u,
+
+                    // MeshletTrianglesIndexOffset
+                    .MeshletVertexTrianglesIndexOffset = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexOffset : 0u,
+                    .MeshletVertexTrianglesIndexCount = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexCount : 0u,
+
+                    // MeshletTriangles
+                    .MeshletTrianglesOffset = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexOffset : 0u,
+                    .MeshletTrianglesCount = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexCount : 0u,
+                });
+        }
+
 
         PC_CORE::StaticMeshData StaticMeshData;
-        StaticMeshData.RenderData = std::move(StaticMeshRenderData);
+        StaticMeshData.AABB = Meshs.Aabb;
+        std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
+        ProcessMeshDrawCommands(DrawCommands, StaticMeshData.MeshLods, StaticMeshRenderData, Scene, Scene->mRootNode);
 
+        StaticMeshData.RenderData = std::move(StaticMeshRenderData);
+        StaticMeshData.MeshDrawCommands = std::move(DrawCommands);
         {
             std::scoped_lock _(m_mutex);
             m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshData, &m_ResourceUpdateBranchs.emplace_back());
