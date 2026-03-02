@@ -116,6 +116,8 @@ struct MeshSection
 {
 	MotionCore::Aabb<double> AABB;
 
+	MeshDataDescriptor MeshDataDescriptor;
+
 	uint32_t MaterialIndex;
 };
 
@@ -124,7 +126,7 @@ struct MeshSection
 
 struct MeshLOD
 {
-	std::vector<MeshDataDescriptor> MeshesSections;
+	std::vector<MeshSection> MeshesSections;
 };
 
 struct StaticMeshRenderData
@@ -134,19 +136,17 @@ struct StaticMeshRenderData
 	std::vector<Meshlet>  Meshlets;
 	std::vector<uint32_t> MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
-	std::vector<MeshDataDescriptor> RawMeshesDescriptor;
+	std::vector<MeshDataDescriptor> BaseMeshDescriptor;
 };
 
 struct MeshDrawCommand
 {
-	Tbx::Matrix4x4d MeshSectionTransformL;
 	uint32_t MeshSectionIndex;
 };
 
 struct StaticMeshData
 {
-	std::vector<MeshDrawCommand> MeshDrawCommands;
-	std::vector<MeshSection> MeshSections;
+	std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
 	std::vector<MeshLOD> MeshLods;
 	MotionCore::Aabb<double> AABB;
 	StaticMeshRenderData RenderData;
