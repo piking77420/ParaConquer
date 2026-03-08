@@ -27,7 +27,7 @@ namespace PC_EDITOR_CORE
 			uint32_t VertexOffset;
 			uint32_t VertexCount;
 			uint32_t IndicesOffset;
-			uint32_t IndiceCount;
+			uint32_t IndicesCount;
 
 			MotionCore::Aabb<double> Aabb;
 		};

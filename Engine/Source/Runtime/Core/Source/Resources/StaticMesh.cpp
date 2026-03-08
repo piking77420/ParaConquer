@@ -96,7 +96,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::
         assert(!RenderData.MeshletVertexTrianglesIndex.empty() || !RenderData.MeshletTriangles.empty());
     }
 
-    m_MeshSectionGpu.reserve(_StaticMeshData.MeshLods.size());
+    m_MeshSectionGpu.resize(_StaticMeshData.MeshLods.size());
 
     for (size_t i = 0; i < m_MeshSectionGpu.size(); i++)
         InitMeshSectionGpu(_StaticMeshData, i, _Branch);
@@ -110,11 +110,12 @@ void StaticMesh::InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::
 
 void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_t LodIndex, RHI::ResourceUpdateBranch* _Branch)
 {
-    /*
-    const StaticMeshRenderData& RenderData = _StaticMeshData.RenderData;
     MeshSectionGpu& MeshSectionGpu = m_MeshSectionGpu[LodIndex];
-
     Rhi& rhi = App::Instance->RenderHarwareInteface;
+    
+    const StaticMeshRenderData& RenderData = _StaticMeshData.RenderData;
+    const MeshLOD& MeshLod = _StaticMeshData.MeshLods[LodIndex];
+    const MeshDataDescriptor& MeshLodDescritptor = _StaticMeshData.MeshLods[LodIndex].Descriptor;
 
     if (m_IsBuildForMeshlet)
     {
@@ -123,11 +124,11 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
-            .SetSizeInBytes(RenderData.MeshletVertexTrianglesIndex.size() * sizeof(RenderData.MeshletVertexTrianglesIndex[0]))
+            .SetSizeInBytes(MeshLodDescritptor.MeshletVertexTrianglesIndexCount * sizeof(RenderData.MeshletVertexTrianglesIndex[0]))
             .SetName(Name + std::format("Meshlet Vertex Buffer LOD {}", LodIndex))
                 .Build();
 
-        const uint32_t * MesletVertexTriangleStart = RenderData.MeshletVertexTrianglesIndex.data() + RenderData.mes;
+        const uint32_t * MesletVertexTriangleStart = RenderData.MeshletVertexTrianglesIndex.data() + MeshLodDescritptor.MeshletVertexTrianglesIndexOffset;
         _Branch->BufferUpload(*MeshSectionGpu.MeshletVertexTriangleIndexBuffer.get(), MesletVertexTriangleStart, MeshSectionGpu.MeshletVertexTriangleIndexBuffer->GetSizeInByte());
 
         MeshSectionGpu.MeshletTriangleBuffer.reset(rhi.CreateBuffer());
@@ -135,11 +136,11 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
-            .SetSizeInBytes(MeshLodDescriptor.MeshletTrianglesCount * sizeof(_StaticMeshRenderData.MeshletTriangles[0]))
+            .SetSizeInBytes(MeshLodDescritptor.MeshletTrianglesCount * sizeof(RenderData.MeshletTriangles[0]))
             .SetName(Name + std::format("Meshlet Triangles Buffer LOD {}", LodIndex))
                 .Build();
 
-        const uint32_t * MeshletTriangleStart = _StaticMeshRenderData.MeshletTriangles.data() + MeshLodDescriptor.MeshletTrianglesOffset;
+        const uint32_t * MeshletTriangleStart = RenderData.MeshletTriangles.data() + MeshLodDescritptor.MeshletTrianglesOffset;
         _Branch->BufferUpload(*MeshSectionGpu.MeshletTriangleBuffer, MeshletTriangleStart, MeshSectionGpu.MeshletTriangleBuffer->GetSizeInByte());
 
         MeshSectionGpu.MeshletBuffer.reset(rhi.CreateBuffer());
@@ -147,21 +148,21 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
-            .SetSizeInBytes(MeshLodDescriptor.MeshetCount * sizeof(_StaticMeshRenderData.Meshlets[0]))
+            .SetSizeInBytes(MeshLodDescritptor.MeshetCount * sizeof(RenderData.Meshlets[0]))
             .SetName(Name + std::format("Meshlet Buffer LOD {}", LodIndex))
             .Build();
 
-        const Meshlet* MeshletStart = _StaticMeshRenderData.Meshlets.data() + MeshLodDescriptor.MeshetOffset;
+        const Meshlet* MeshletStart = RenderData.Meshlets.data() + MeshLodDescritptor.MeshetOffset;
         _Branch->BufferUpload(*MeshSectionGpu.MeshletBuffer, MeshletStart, MeshSectionGpu.MeshletBuffer->GetSizeInByte());
 
         // Copy pos
         std::vector<Rendering::Gpu::vec4> position;
-        position.resize(MeshLodDescriptor.VertexCount);
+        position.resize(MeshLodDescritptor.VertexCount);
         for (size_t i = 0; i < position.size(); i++)
         {
-            position[i].data[0] = _StaticMeshRenderData.Vertices[MeshLodDescriptor.VertexOffset + i].Position.x;
-            position[i].data[1] = _StaticMeshRenderData.Vertices[MeshLodDescriptor.VertexOffset + i].Position.y;
-            position[i].data[2] = _StaticMeshRenderData.Vertices[MeshLodDescriptor.VertexOffset + i].Position.z;
+            position[i].data[0] = RenderData.Vertices[MeshLodDescritptor.VertexOffset + i].Position.x;
+            position[i].data[1] = RenderData.Vertices[MeshLodDescritptor.VertexOffset + i].Position.y;
+            position[i].data[2] = RenderData.Vertices[MeshLodDescritptor.VertexOffset + i].Position.z;
             position[i].data[3] = 1.f;
         }
 
@@ -185,19 +186,19 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             .SetName(Name + std::format("Meshlet Bindings LOD {}", LodIndex))
             .Build();
 
-        MeshSectionGpu.MeshLetCount = _StaticMeshRenderData.Meshlets.size();
+        MeshSectionGpu.MeshLetCount = RenderData.Meshlets.size();
     }
 
-    if (MeshLodDescriptor.IndiceCount > 0 && MeshLodDescriptor.VertexCount > 0)
+    if (MeshLodDescritptor.IndicesCount > 0 && MeshLodDescritptor.VertexCount > 0)
     {
         // VertexBuffer
         MeshSectionGpu.VertexBuffer = VertexBuffer(rhi);
         MeshSectionGpu.VertexBuffer
-            .SetVerticiesCount(MeshLodDescriptor.IndiceCount)
+            .SetVerticiesCount(MeshLodDescritptor.VertexCount)
             .SetVerticiesSize(sizeof(StaticMeshVertex))
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-            .SetSizeInBytes(MeshLodDescriptor.VertexCount * sizeof(StaticMeshVertex))
+            .SetSizeInBytes(MeshLodDescritptor.VertexCount * sizeof(StaticMeshVertex))
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
             .SetName(Name + std::format(" Vertex Buffer LOD {}", LodIndex))
             .Build();
@@ -205,22 +206,22 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
 
         MeshSectionGpu.IndexBuffer = IndexBuffer(rhi);
         MeshSectionGpu.IndexBuffer
-            .SetIndexCount(MeshLodDescriptor.IndiceCount)
+            .SetIndexCount(MeshLodDescritptor.IndicesCount)
             .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-            .SetSizeInBytes(MeshLodDescriptor.IndiceCount * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
+            .SetSizeInBytes(MeshLodDescritptor.IndicesCount * static_cast<size_t>(RhiBuffer::IndexFormat::Uint32))
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
             .SetName(Name + std::format(" Index Buffer LOD {}", LodIndex))
             .Build();
 
 
-        const StaticMeshVertex* VerticiesStart = m_StaticMeshData.RenderData.Vertices.data() + MeshLodDescriptor.VertexOffset;
-        const uint32_t* IndexBufferStart = m_StaticMeshData.RenderData.Indices.data() + MeshLodDescriptor.IndicesOffset;
+        const StaticMeshVertex* VerticiesStart = m_StaticMeshData.RenderData.Vertices.data() + MeshLodDescritptor.VertexOffset;
+        const uint32_t* IndexBufferStart = m_StaticMeshData.RenderData.Indices.data() + MeshLodDescritptor.IndicesOffset;
         _Branch
             ->BufferUpload(*MeshSectionGpu.VertexBuffer.Get(), VerticiesStart, MeshSectionGpu.VertexBuffer->GetSizeInByte())
             .BufferUpload(*MeshSectionGpu.IndexBuffer.Get(), IndexBufferStart, MeshSectionGpu.IndexBuffer->GetSizeInByte());
-    }*/
+    }
 }
 
 StaticMesh::StaticMesh() 

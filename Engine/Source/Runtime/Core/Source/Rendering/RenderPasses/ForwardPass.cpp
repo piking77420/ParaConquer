@@ -99,25 +99,24 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.opaqueFowardShader);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
-		/*for (const auto& MeshSection : Data.MeshSections)
-		{
-			const PC_CORE::MeshLOD& LOD = MeshSection.LODs[0];
+		const auto& StaticMeshData = mesh.GetStaticMeshData();
+		;
+		const auto& DrawCommands = StaticMeshData.DrawCommands;
+		const uint32_t DrawCommandCount = DrawCommands.size() / StaticMeshData.MeshLods.size();
 
-			PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[MeshSection.MaterialIndex]->GetMaterialType();
+		for (size_t i = 0; i < DrawCommandCount; i++)
+		{
+			const auto& DrawCommand = DrawCommands[i];
+			const PC_CORE::MeshSection& Section = StaticMeshData.MeshLods[0].MeshesSections.at(DrawCommand.MeshSectionIndex);
+			PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[Section.MaterialIndex]->GetMaterialType();
 
 			if (type != PC_CORE::Rendering::MaterialType::Opaque)
 				continue;
-			 //TODO MOVE THIS per mesh or subsidvce submesh -> static mehs
-
 			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
 
-
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[MeshSection.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
-
-			_RendererPassExecuteContext.cmd.DrawIndexed(LOD.IndicesSection.Count, 1, LOD.IndicesSection.Offset, LOD.VertexSection.Offset, 0);
-		}*/
+			_RendererPassExecuteContext.cmd.DrawIndexed(Section.MeshDataDescriptor.IndicesCount, 1, Section.MeshDataDescriptor.IndicesOffset, Section.MeshDataDescriptor.VertexOffset, 0);
+		}
 
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);

@@ -96,7 +96,7 @@ struct MeshDataDescriptor
 	uint32_t VertexCount;
 	// Indicies
 	uint32_t IndicesOffset;
-	uint32_t IndiceCount;
+	uint32_t IndicesCount;
 
 	// Meshlets
 	uint32_t MeshetOffset;
@@ -127,6 +127,8 @@ struct MeshSection
 struct MeshLOD
 {
 	std::vector<MeshSection> MeshesSections;
+
+	MeshDataDescriptor Descriptor;
 };
 
 struct StaticMeshRenderData
@@ -250,12 +252,6 @@ private:
 			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
 
 			size_t MeshLetCount{ 0 };
-
-			MeshSectionGpu(const MeshSectionGpu&) = delete;
-			MeshSectionGpu& operator=(const MeshSectionGpu&) = delete;
-
-			MeshSectionGpu(MeshSectionGpu&&) noexcept = default;
-			MeshSectionGpu& operator=(MeshSectionGpu&&) noexcept = default;
 		};
 
 	std::vector<MeshSectionGpu> m_MeshSectionGpu;

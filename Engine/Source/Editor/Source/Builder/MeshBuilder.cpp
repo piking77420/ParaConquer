@@ -58,7 +58,7 @@ namespace PC_EDITOR_CORE
         for (size_t i = 0; i < MeshDescriptorsData.size(); i++)
         {
             const std::span<const PC_CORE::StaticMeshVertex> SpanV = std::span<const PC_CORE::StaticMeshVertex>(VertexData.data() + MeshDescriptorsData[i].VertexOffset, MeshDescriptorsData[i].VertexCount);
-            const std::span<const uint32_t> SpanI = std::span<const uint32_t>(IndiciesData.data() + MeshDescriptorsData[i].IndicesOffset, +MeshDescriptorsData[i].IndiceCount);
+            const std::span<const uint32_t> SpanI = std::span<const uint32_t>(IndiciesData.data() + MeshDescriptorsData[i].IndicesOffset, +MeshDescriptorsData[i].IndicesCount);
 
             futures.emplace_back(
                 ThreadPool.Enqueue(
@@ -85,7 +85,7 @@ namespace PC_EDITOR_CORE
                     .VertexOffset = static_cast<uint32_t>(Optimised.Verticies.size()),
                     .VertexCount = static_cast<uint32_t>(Data.OutVertices.size()),
                     .IndicesOffset = static_cast<uint32_t>(Optimised.Indicies.size()),
-                    .IndiceCount = static_cast<uint32_t>(Data.OutIndices.size()),
+                    .IndicesCount = static_cast<uint32_t>(Data.OutIndices.size()),
                     .Aabb = aiAABBToCore(Scene->mMeshes[i]->mAABB)
                 });
             Optimised.Verticies.append_range(Data.OutVertices);
@@ -109,7 +109,7 @@ namespace PC_EDITOR_CORE
         for (auto& Descriptor : MeshBuilderData.MeshDescriptor)
         {
             std::span<const PC_CORE::StaticMeshVertex> spanV = std::span<const PC_CORE::StaticMeshVertex>(MeshBuilderData.Verticies.data() + Descriptor.VertexOffset, Descriptor.VertexCount);
-            std::span<const uint32_t> spaI = std::span<const uint32_t>(MeshBuilderData.Indicies.data() + Descriptor.IndicesOffset, Descriptor.IndiceCount);
+            std::span<const uint32_t> spaI = std::span<const uint32_t>(MeshBuilderData.Indicies.data() + Descriptor.IndicesOffset, Descriptor.IndicesCount);
 
             Futures.emplace_back(
                 ThreadPool.Enqueue(
@@ -287,7 +287,7 @@ namespace PC_EDITOR_CORE
                     .VertexOffset = VertexCount,
                     .VertexCount = Scene->mMeshes[i]->mNumVertices,
                     .IndicesOffset = IndexCount,
-                    .IndiceCount = MeshIndiciesCount,
+                    .IndicesCount = MeshIndiciesCount,
                 });
 
             IndexCount += MeshIndiciesCount;

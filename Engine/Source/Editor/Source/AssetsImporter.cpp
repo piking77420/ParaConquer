@@ -272,60 +272,65 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         PopuplateLodMeshMap(AssimpMeshIndexToCoreIndex, MeshAndMaterialIndexPerLods, Scene, &LodMaxIndex);
         meshLods.resize(LodMaxIndex + 1);
 
+        size_t curreentLod = 0;
         for (const auto& LODMeshes : MeshAndMaterialIndexPerLods)
         {
-            // Vertex
-            uint32_t VertexOffset = 0u;
-            // Indicies
-            uint32_t IndicesOffset = 0u;
-            // Meshlets
-            uint32_t MeshetOffset = 0u;
-            // MeshletTrianglesIndexOffset
-            uint32_t MeshletVertexTrianglesIndexOffset = 0u;
-            // MeshletTriangles
-            uint32_t MeshletTrianglesOffset = 0u;
-
             auto& CurrentLod = meshLods[LODMeshes.first];
             CurrentLod.MeshesSections.reserve(LODMeshes.second.size());
+            PC_CORE::MeshDataDescriptor& LodDescriptor = CurrentLod.Descriptor;
+            LodDescriptor = {};
+
+            if (curreentLod != 0ull)
+            {
+                PC_CORE::MeshDataDescriptor& PrevLodDescriptor = meshLods[curreentLod - 1].Descriptor;
+
+                LodDescriptor.VertexOffset = PrevLodDescriptor.VertexOffset + PrevLodDescriptor.VertexCount;
+                LodDescriptor.IndicesOffset = PrevLodDescriptor.IndicesOffset + PrevLodDescriptor.IndicesCount;
+                LodDescriptor.MeshetOffset = PrevLodDescriptor.MeshetOffset + PrevLodDescriptor.MeshetCount;
+                LodDescriptor.MeshletVertexTrianglesIndexOffset = PrevLodDescriptor.MeshletVertexTrianglesIndexOffset + PrevLodDescriptor.MeshletVertexTrianglesIndexCount;
+                LodDescriptor.MeshletTrianglesOffset = PrevLodDescriptor.MeshletTrianglesOffset + PrevLodDescriptor.MeshletTrianglesCount;
+            }
+
             for (auto& [MeshIndex, MaterialIndex] : LODMeshes.second)
             {
                 const auto& BaseMeshDescritptor = RenderData.BaseMeshDescriptor[MeshIndex];
+                auto& MeshSection = CurrentLod.MeshesSections.emplace_back();
 
-                PC_CORE::MeshSection Section
+                MeshSection = 
                 {
                     .AABB = MeshDescriptor[MeshIndex].Aabb,
                     .MeshDataDescriptor = 
                     {
                         // Vertex
-                        .VertexOffset = VertexOffset,
+                        .VertexOffset = LodDescriptor.VertexOffset,
                         .VertexCount = BaseMeshDescritptor.VertexCount,
                         // Indicies
-                        .IndicesOffset = IndicesOffset,
-                        .IndiceCount = BaseMeshDescritptor.IndiceCount,
+                        .IndicesOffset = LodDescriptor.IndicesOffset,
+                        .IndicesCount = BaseMeshDescritptor.IndicesCount,
 
                         // Meshlets
-                        .MeshetOffset = MeshetOffset,
+                        .MeshetOffset = LodDescriptor.MeshetOffset,
                         .MeshetCount = BaseMeshDescritptor.MeshetCount,
 
                         // MeshletTrianglesIndexOffset
-                        .MeshletVertexTrianglesIndexOffset = MeshletVertexTrianglesIndexOffset,
+                        .MeshletVertexTrianglesIndexOffset = LodDescriptor.MeshletVertexTrianglesIndexOffset,
                         .MeshletVertexTrianglesIndexCount = BaseMeshDescritptor.MeshletVertexTrianglesIndexCount,
 
                         // MeshletTriangles
-                        .MeshletTrianglesOffset = MeshletTrianglesOffset,
-                        .MeshletTrianglesCount = BaseMeshDescritptor.MeshletTrianglesOffset,
+                        .MeshletTrianglesOffset = LodDescriptor.MeshletTrianglesOffset,
+                        .MeshletTrianglesCount = BaseMeshDescritptor.MeshletTrianglesCount,
                     },
                     .MaterialIndex = MaterialIndex
                 };
 
-                VertexOffset += Section.MeshDataDescriptor.VertexCount;
-                IndicesOffset += Section.MeshDataDescriptor.IndiceCount;
-                MeshetOffset += Section.MeshDataDescriptor.MeshetCount;
-                MeshletVertexTrianglesIndexOffset += Section.MeshDataDescriptor.MeshletVertexTrianglesIndexCount;
-                MeshletTrianglesOffset += Section.MeshDataDescriptor.MeshletTrianglesCount;
-
-                CurrentLod.MeshesSections.emplace_back(std::move(Section));
+                LodDescriptor.VertexCount += MeshSection.MeshDataDescriptor.VertexCount;
+                LodDescriptor.IndicesCount += MeshSection.MeshDataDescriptor.IndicesCount;
+                LodDescriptor.MeshetCount += MeshSection.MeshDataDescriptor.MeshetCount;
+                LodDescriptor.MeshletVertexTrianglesIndexCount += MeshSection.MeshDataDescriptor.MeshletVertexTrianglesIndexCount;
+                LodDescriptor.MeshletTrianglesCount += MeshSection.MeshDataDescriptor.MeshletTrianglesCount;
             }
+
+            curreentLod++;
         }
     }
 
@@ -380,7 +385,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .VertexCount = MeshDescriptor.VertexCount,
                      // Indicies
                     .IndicesOffset = MeshDescriptor.IndicesOffset,
-                    .IndiceCount = MeshDescriptor.IndiceCount,
+                    .IndicesCount = MeshDescriptor.IndicesCount,
 
                     // Meshlets
                     .MeshetOffset = BuildMeshlet ? MeshletDescriptor->MeshletOffset : 0u,
@@ -491,6 +496,10 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     {
                         continue;
                     }
+
+                    if (str.length == 0)
+                        continue;
+
                             
                     {
                         std::scoped_lock _(m_mutex);
@@ -653,7 +662,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
             case aiTextureType_REFLECTION:
             case aiTextureType_UNKNOWN:
             default:
-                PC_LOGERROR("Ignore texture when build material {} type was {}", CoreMaterial.Name, AssimpTextureTypeToString(type).data());
+                PC_LOG_VERBOSE("Ignore texture when build material {} type was {}", CoreMaterial.Name, AssimpTextureTypeToString(type).data());
                 continue;
                 break;
             }
