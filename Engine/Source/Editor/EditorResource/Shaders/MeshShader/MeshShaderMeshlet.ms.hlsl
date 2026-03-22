@@ -1,10 +1,11 @@
+#include "StaticMeshVertex.hlsl"
 #include "MeshShaderPayload.hlsl"
 #include "Meshlet.hlsl"
 #include "StaticMeshVertex.hlsl"
 #include "MeshShaderDrawCall.hlsl"
 
 
-StructuredBuffer<float4> Vertices : register(t0, space0);
+StructuredBuffer<Vertex> Vertices : register(t0, space0);
 StructuredBuffer<Meshlet> Meshlets : register(t1, space0);
 StructuredBuffer<uint> VertexIndices : register(t2, space0);
 StructuredBuffer<uint> TriangleIndices : register(t3, space0);
@@ -54,7 +55,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
         
         uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
         
-        vertices[gtid.x].Position = mul(float4(Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].xyz, 1.0), DrawCall.ModelViewProjection);
+        vertices[gtid.x].Position = mul(float4(Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz, 1.0), DrawCall.ModelViewProjection);
         float3 color = float3(
             float(gid.x & 1),
             float(gid.x & 3) / 4,

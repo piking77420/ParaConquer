@@ -248,8 +248,6 @@ private:
 
 			std::shared_ptr<RhiBuffer> MeshletBuffer;
 
-			std::shared_ptr<RhiBuffer> PositionBuffer;
-
 			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
 
 			size_t MeshLetCount{ 0 };
