@@ -223,7 +223,7 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Rhi& _Rhi)
     {
         primitiveData.instanceBuffer.reset(m_Rhi.CreateBuffer());
         primitiveData.instanceBuffer
-            ->SetSize(GIZMO_BUFFER_SIZE)
+            ->SetSizeInBytes(GIZMO_BUFFER_SIZE)
             .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
@@ -234,7 +234,7 @@ PC_CORE::DebugDrawContext::DebugDrawContext(Rhi& _Rhi)
     }
     m_RayPrimitiveData.vertexBuffer = VertexBuffer(m_Rhi);
     m_RayPrimitiveData.vertexBuffer
-        ->SetSize(RAY_BUFFER_SIZE)
+        ->SetSizeInBytes(RAY_BUFFER_SIZE)
         .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
         .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
         .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
@@ -630,13 +630,13 @@ void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveTyp
         vertexBuffer
             .SetVerticiesSize(sizeof(Tbx::Vector3f))
             .SetVerticiesCount(vertices.size())
-            ->SetSize(sizeof(Tbx::Vector3f)* vertices.size())
+            ->SetSizeInBytes(sizeof(Tbx::Vector3f)* vertices.size())
             .SetMemoryUsage(RhiMemoryUsage::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::TransferDst)
             .SetName("Vertex Buffer " + PrimitiveTypeToString(_primitiveType))
             .Build();
 
-        vertexBuffer->UploadData(nullptr, vertices.data(), vertexBuffer->GetSize());
+        vertexBuffer->UploadData(nullptr, vertices.data(), vertexBuffer->GetSizeInByte());
 
         IndexBuffer& indexBuffer = *_indexBuffer;
         indexBuffer = IndexBuffer(m_Renderer->GetRhi());
@@ -644,13 +644,13 @@ void PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveTyp
         indexBuffer
             .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
             .SetIndexCount(indices.size())
-            ->SetSize(static_cast<size_t>(RhiBuffer::IndexFormat::Uint32) * indices.size())
+            ->SetSizeInBytes(static_cast<size_t>(RhiBuffer::IndexFormat::Uint32) * indices.size())
             .SetMemoryUsage(RhiMemoryUsage::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Index | RhiBuffer::BufferUsageFlagBits::TransferDst)
             .SetName("Index Buffer " + PrimitiveTypeToString(_primitiveType))
             .Build();
 
-        indexBuffer->UploadData(nullptr, indices.data(), indexBuffer->GetSize());
+        indexBuffer->UploadData(nullptr, indices.data(), indexBuffer->GetSizeInByte());
 
         // TODO UPOLOAD DATA
         /*

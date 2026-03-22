@@ -1,4 +1,6 @@
 #pragma once
+#include <optional>
+
 #include "Resource.hpp"
 #include "ObjectPtr.hpp"
 #include "Mesh.hpp"
@@ -87,32 +89,42 @@ constexpr VertexInputBindingDescrition StaticMeshVertex::GetVertexBindingDescrip
 	};
 }
 
-struct OffsetAndCount { size_t Offset = 0; size_t Count = 0; };
-
-struct MeshLOD
+struct MeshDataDescriptor 
 {
-	OffsetAndCount VertexSection;
-	OffsetAndCount IndicesSection;
-	OffsetAndCount MeshletsSection;
-	OffsetAndCount MeshletsTriangleVertexIndexSection;
-	OffsetAndCount MeshletsTrianglesSection;
-	MotionCore::Aabb<double> AABB;
+	// Vertex
+	uint32_t VertexOffset;
+	uint32_t VertexCount;
+	// Indicies
+	uint32_t IndicesOffset;
+	uint32_t IndicesCount;
+
+	// Meshlets
+	uint32_t MeshetOffset;
+	uint32_t MeshetCount;
+
+	// MeshletTrianglesIndexOffset
+	uint32_t MeshletVertexTrianglesIndexOffset;
+	uint32_t MeshletVertexTrianglesIndexCount;
+
+	// MeshletTriangles
+	uint32_t MeshletTrianglesOffset;
+	uint32_t MeshletTrianglesCount;
 };
+
 
 struct MeshSection
 {
-	std::string Name;
-	std::vector<MeshLOD> LODs;
-
-	// Section Offset To That mesh section 
-	// Global Offset GPU -> begin submesh Load Sections
-	OffsetAndCount VerticesGlobal;
-	OffsetAndCount IndicesGlobal;
-	OffsetAndCount MeshletsGlobal;
-	OffsetAndCount MeshletsTriangleVertexIndexGlobal;
-	OffsetAndCount MeshletsTrianglesGlobal;
-
+	MotionCore::Aabb<double> AABB;
+	MeshDataDescriptor MeshDataDescriptor;
 	uint32_t MaterialIndex;
+};
+
+// LOD Strategie
+// Currently each lod are separte in buffers  
+struct MeshLOD
+{
+	std::vector<MeshSection> MeshesSections;
+	MeshDataDescriptor Descriptor;
 };
 
 struct StaticMeshRenderData
@@ -122,23 +134,19 @@ struct StaticMeshRenderData
 	std::vector<Meshlet>  Meshlets;
 	std::vector<uint32_t> MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
+	std::vector<MeshDataDescriptor> BaseMeshDescriptor;
 };
 
-struct MeshNode
+struct MeshDrawCommand
 {
-	size_t MeshSectionIndex;
-	Tbx::Matrix4x4d Transform;
+	uint32_t MeshSectionIndex;
 };
 
-// LOD are store Seqencally in gpu memory
-	// SubMesh0_LOD0
-	// SubMesh0_LOD1
-	// SubMesh1_LOD0
-	// SubMesh1_LOD1
 struct StaticMeshData
 {
-	std::vector<MeshNode> StaticMeshNode; // TODO FILL
-	std::vector<MeshSection> MeshSections;
+	std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
+	std::vector<MeshLOD> MeshLods;
+	MotionCore::Aabb<double> AABB;
 	StaticMeshRenderData RenderData;
 };
 	
@@ -156,11 +164,15 @@ public:
 
 	~StaticMesh() override = default;
 
-	DEFAULT_COPY_MOVE_OPERATIONS(StaticMesh)
+	StaticMesh(const StaticMesh&) = delete;
+	StaticMesh& operator=(const StaticMesh&) = delete;
 
-		IMP_DYNAMIC_REFLECT()
+	StaticMesh(StaticMesh&&) noexcept = default;
+	StaticMesh& operator=(StaticMesh&&) noexcept = default;
 
-		void AfterSerialize(Serializer* _serializer) const override;
+	IMP_DYNAMIC_REFLECT()
+
+	void AfterSerialize(Serializer* _serializer) const override;
 
 	void AfterDeSerialize(Serializer* _serializer) override;
 
@@ -172,15 +184,18 @@ public:
 
 	StaticMesh& SetBaseMaterials(const std::vector<ObjectPtr<Rendering::Material>>& _Material);
 
-
-	const VertexBuffer& GetVertexBuffer() const
+	const VertexBuffer& GetVertexBuffer(uint32_t LodIndex) const
 	{
-		return m_VertexBuffer;
+		assert(LodIndex < m_MeshSectionGpu.size());
+
+		return m_MeshSectionGpu[LodIndex].VertexBuffer;
 	}
 
-	const IndexBuffer& GetIndexBuffer() const
+	const IndexBuffer& GetIndexBuffer(uint32_t LodIndex) const
 	{
-		return m_IndexBuffer;
+		assert(LodIndex < m_MeshSectionGpu.size());
+
+		return m_MeshSectionGpu[LodIndex].IndexBuffer;
 	}
 
 	const MotionCore::Aabb<double>& GetAabb() const
@@ -193,14 +208,14 @@ public:
 		return m_HallowCpuAcces;
 	}
 
-	bool HasMeshlet() const
+	bool IsBuildForMeshlet() const
 	{
-		return m_MeshLetCount > 0ull;
+		return m_IsBuildForMeshlet;
 	}
 
-	size_t GetMeshletCount() const
+	size_t GetMeshletCount(uint32_t LodIndex) const
 	{
-		return m_MeshLetCount;
+		return m_MeshSectionGpu[LodIndex].MeshLetCount > 0ull;
 	}
 
 	const StaticMeshData& GetStaticMeshData() const
@@ -208,43 +223,59 @@ public:
 		return m_StaticMeshData;
 	}
 
-	RhiDescriptorSet* GetMeshletDescriptor() const
+	RhiDescriptorSet* GetMeshletDescriptor(uint32_t LodIndex) const
 	{
-		return m_MeshletDescriptor.get();
+		return m_MeshSectionGpu[LodIndex].MeshletDescriptor.get();
+	}
+
+	const std::vector<double>& GetLodThreshold() const
+	{
+		return m_LODThreshold;
 	}
 
 	const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& GetBaseMaterial() const;
 
 private:
-	VertexBuffer m_VertexBuffer;
+		struct MeshSectionGpu
+		{
+			VertexBuffer VertexBuffer;
 
-	IndexBuffer m_IndexBuffer;
+			IndexBuffer IndexBuffer;
 
-	std::unique_ptr<RhiBuffer> m_MeshletVerticiesBuffer;
+			std::shared_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
 
-	std::unique_ptr<RhiBuffer> m_MeshletTriangleBuffer;
+			std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
 
-	std::unique_ptr<RhiBuffer> m_MeshletBuffer;
+			std::shared_ptr<RhiBuffer> MeshletBuffer;
 
-	std::unique_ptr<RhiBuffer> m_PositionBuffer;
+			std::shared_ptr<RhiBuffer> PositionBuffer;
 
-	std::unique_ptr<RhiDescriptorSet> m_MeshletDescriptor;
+			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
+
+			size_t MeshLetCount{ 0 };
+		};
+
+	std::vector<MeshSectionGpu> m_MeshSectionGpu;
 
 	StaticMeshData m_StaticMeshData;
 
 	MotionCore::Aabb<double> m_Aabb;
 
-	size_t m_MeshLetCount{ 0 };
+	std::vector<double> m_LODThreshold;
 
 	bool m_HallowCpuAcces = false;
 
+	bool m_IsBuildForMeshlet = false;
+
 	std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>> m_BaseMaterials;
 
-	void InitFromRenderData(const StaticMeshRenderData& _StaticMeshRenderData, RHI::ResourceUpdateBranch* _Branch);
+	void InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::ResourceUpdateBranch* _Branch);
+
+	void InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_t LodIndex, RHI::ResourceUpdateBranch* _Branch);
 
 	REFLECT(StaticMesh, Resource)
-		REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)
-		REFLECT_MEMBER(StaticMesh, m_Aabb)
+	REFLECT_MEMBER(StaticMesh, m_HallowCpuAcces)
+	REFLECT_MEMBER(StaticMesh, m_Aabb)
 };
 
 END_PCCORE

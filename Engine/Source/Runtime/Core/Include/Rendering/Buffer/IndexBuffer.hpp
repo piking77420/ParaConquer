@@ -7,6 +7,20 @@ BEGIN_PCCORE
     {
     public:
 
+        IndexBuffer() = default;
+
+        explicit IndexBuffer(Rhi& rhi);
+
+        ~IndexBuffer() override = default;
+
+        IndexBuffer(const IndexBuffer&) = delete;
+
+        IndexBuffer& operator=(const IndexBuffer&) = delete;
+
+        IndexBuffer(IndexBuffer&&) noexcept = default;
+
+        IndexBuffer& operator=(IndexBuffer&&) noexcept = default;
+
         IndexBuffer& SetIndexFormat(RhiBuffer::IndexFormat _IndexFormat)
         {
             m_RhiBufferFormat = _IndexFormat;
@@ -30,13 +44,6 @@ BEGIN_PCCORE
             return m_IndiciesCount;
         }
 
-        DEFAULT_COPY_MOVE_OPERATIONS(IndexBuffer)
-    
-        explicit IndexBuffer(Rhi& rhi);
-    
-        IndexBuffer() = default;
-
-        ~IndexBuffer() override = default;
     private:
         RhiBuffer::IndexFormat m_RhiBufferFormat{};
     

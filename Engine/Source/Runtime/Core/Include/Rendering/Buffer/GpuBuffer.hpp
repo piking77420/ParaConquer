@@ -8,7 +8,13 @@ BEGIN_PCCORE
     class GpuBuffer : public IGpuResource
     {
     public:
-        DEFAULT_COPY_MOVE_OPERATIONS(GpuBuffer)
+        GpuBuffer(const GpuBuffer&) = delete;
+
+        GpuBuffer& operator=(const GpuBuffer&) = delete;
+
+        GpuBuffer(GpuBuffer&&) noexcept = default;
+
+        GpuBuffer& operator=(GpuBuffer&&) noexcept = default;
 
         PC_CORE_API GpuBuffer() = default;
 
@@ -33,7 +39,7 @@ BEGIN_PCCORE
         {
             return *m_RhiBuffer;
         }
-        
+
     protected:
         std::unique_ptr<RhiBuffer> m_RhiBuffer;
 
