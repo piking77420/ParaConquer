@@ -298,12 +298,10 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     PrevLodDescriptor.MeshetOffset + PrevLodDescriptor.MeshetCount;
 
                 LodDescriptor.MeshletVertexTrianglesIndexOffset =
-                    PrevLodDescriptor.MeshletVertexTrianglesIndexOffset +
-                    PrevLodDescriptor.MeshletVertexTrianglesIndexCount;
+                    PrevLodDescriptor.MeshletVertexTrianglesIndexOffset + PrevLodDescriptor.MeshletVertexTrianglesIndexCount;
 
                 LodDescriptor.MeshletTrianglesOffset =
-                    PrevLodDescriptor.MeshletTrianglesOffset +
-                    PrevLodDescriptor.MeshletTrianglesCount;
+                    PrevLodDescriptor.MeshletTrianglesOffset + PrevLodDescriptor.MeshletTrianglesCount;
             }
 
             for (auto& [MeshIndex, MaterialIndex] : LODMeshes)
@@ -407,12 +405,12 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .MeshetCount = BuildMeshlet ? MeshletDescriptor->MeshletCount : 0u,
 
                     // MeshletTrianglesIndexOffset
-                    .MeshletVertexTrianglesIndexOffset = BuildMeshlet ? MeshletDescriptor->MeshletTrianglesOffset : 0u,
-                    .MeshletVertexTrianglesIndexCount = BuildMeshlet ? MeshletDescriptor->MeshletTrianglesCount : 0u,
+                    .MeshletVertexTrianglesIndexOffset = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexOffset : 0u,
+                    .MeshletVertexTrianglesIndexCount = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexCount : 0u,
 
                     // MeshletTriangles
-                    .MeshletTrianglesOffset = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexOffset : 0u,
-                    .MeshletTrianglesCount = BuildMeshlet ? MeshletDescriptor->MeshletVertexTriangleIndexCount : 0u,
+                    .MeshletTrianglesOffset = BuildMeshlet ? MeshletDescriptor->MeshletTrianglesOffset : 0u,
+                    .MeshletTrianglesCount = BuildMeshlet ? MeshletDescriptor->MeshletTrianglesCount : 0u,
                 });
         }
 

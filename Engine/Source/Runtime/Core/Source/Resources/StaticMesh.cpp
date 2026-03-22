@@ -90,7 +90,7 @@ void StaticMesh::InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::
     const StaticMeshRenderData& RenderData = _StaticMeshData.RenderData;
 
     m_Aabb = _StaticMeshData.AABB;
-    m_IsBuildForMeshlet = false;// RenderData.Meshlets.size() > 0;
+    m_IsBuildForMeshlet = RenderData.Meshlets.size() > 0;
 
     if (m_IsBuildForMeshlet)
     {
