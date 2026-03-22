@@ -128,7 +128,7 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             .SetName(Name + std::format("Meshlet Vertex Buffer LOD {}", LodIndex))
                 .Build();
 
-        const uint32_t * MesletVertexTriangleStart = RenderData.MeshletVertexTrianglesIndex.data() + MeshLodDescritptor.MeshletVertexTrianglesIndexOffset;
+        const uint32_t* MesletVertexTriangleStart = RenderData.MeshletVertexTrianglesIndex.data() + MeshLodDescritptor.MeshletVertexTrianglesIndexOffset;
         _Branch->BufferUpload(*MeshSectionGpu.MeshletVertexTriangleIndexBuffer.get(), MesletVertexTriangleStart, MeshSectionGpu.MeshletVertexTriangleIndexBuffer->GetSizeInByte());
 
         MeshSectionGpu.MeshletTriangleBuffer.reset(rhi.CreateBuffer());

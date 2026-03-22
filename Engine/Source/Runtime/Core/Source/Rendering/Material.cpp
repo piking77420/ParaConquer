@@ -38,8 +38,6 @@ void Material::Build()
         break;
     }
 
-
-    
     m_RhiMaterialBuffer.reset(App::Instance->RenderHarwareInteface.CreateBuffer());
     m_RhiMaterialBuffer
         ->SetMemoryUsage(RhiMemoryUsage::CPUVisible) // may use static

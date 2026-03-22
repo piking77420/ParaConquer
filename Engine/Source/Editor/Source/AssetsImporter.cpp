@@ -302,22 +302,22 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .MeshDataDescriptor = 
                     {
                         // Vertex
-                        .VertexOffset = LodDescriptor.VertexOffset,
+                        .VertexOffset = LodDescriptor.VertexCount,
                         .VertexCount = BaseMeshDescritptor.VertexCount,
                         // Indicies
-                        .IndicesOffset = LodDescriptor.IndicesOffset,
+                        .IndicesOffset = LodDescriptor.IndicesCount,
                         .IndicesCount = BaseMeshDescritptor.IndicesCount,
 
                         // Meshlets
-                        .MeshetOffset = LodDescriptor.MeshetOffset,
+                        .MeshetOffset = LodDescriptor.MeshetCount,
                         .MeshetCount = BaseMeshDescritptor.MeshetCount,
 
                         // MeshletTrianglesIndexOffset
-                        .MeshletVertexTrianglesIndexOffset = LodDescriptor.MeshletVertexTrianglesIndexOffset,
+                        .MeshletVertexTrianglesIndexOffset = LodDescriptor.MeshletVertexTrianglesIndexCount,
                         .MeshletVertexTrianglesIndexCount = BaseMeshDescritptor.MeshletVertexTrianglesIndexCount,
 
                         // MeshletTriangles
-                        .MeshletTrianglesOffset = LodDescriptor.MeshletTrianglesOffset,
+                        .MeshletTrianglesOffset = LodDescriptor.MeshletTrianglesCount,
                         .MeshletTrianglesCount = BaseMeshDescritptor.MeshletTrianglesCount,
                     },
                     .MaterialIndex = MaterialIndex

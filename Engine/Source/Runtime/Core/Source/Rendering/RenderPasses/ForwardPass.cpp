@@ -77,12 +77,12 @@ namespace PC_CORE::Rendering::Pass
 		CommandList::DrawBuffers drawBuffer;
 		drawBuffer
 			.PushVertexBuffer(
-				*mesh.GetVertexBuffer(0)
-				, 0ull)
+				*mesh.GetVertexBuffer(0), 
+				0ull)
 			.SetIndexBuffer(
-				*mesh.GetIndexBuffer(0)
-				, 0ull
-				, mesh.GetIndexBuffer(0).GetIndexFormat()
+				*mesh.GetIndexBuffer(0),
+				0ull,
+				mesh.GetIndexBuffer(0).GetIndexFormat()
 			);
 		_RendererPassExecuteContext.cmd.BindDrawBuffers(drawBuffer);
 
@@ -100,28 +100,33 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
 		const auto& StaticMeshData = mesh.GetStaticMeshData();
-		;
 		const auto& DrawCommands = StaticMeshData.DrawCommands;
 		const uint32_t DrawCommandCount = DrawCommands.size() / StaticMeshData.MeshLods.size();
+		const uint32_t LODIndex = 0;
 
 		for (size_t i = 0; i < DrawCommandCount; i++)
 		{
-			const auto& DrawCommand = DrawCommands[i];
-			const PC_CORE::MeshSection& Section = StaticMeshData.MeshLods[0].MeshesSections.at(DrawCommand.MeshSectionIndex);
-			PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[Section.MaterialIndex]->GetMaterialType();
+			const auto& DrawCommand = DrawCommands[i + (LODIndex * DrawCommandCount)];
+			const PC_CORE::MeshSection& Section = StaticMeshData.MeshLods[LODIndex].MeshesSections.at(DrawCommand.MeshSectionIndex);
+			const Material* Material = _DrawObj.Materials[Section.MaterialIndex];
+			const PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[Section.MaterialIndex]->GetMaterialType();
 
 			if (type != PC_CORE::Rendering::MaterialType::Opaque)
 				continue;
+			const RhiDescriptorSet* MaterialDescriptorSet = Material->GetDescriptorSet();
+
 			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
 
+			_RendererPassExecuteContext.cmd.BindDescriptorSet(MaterialDescriptorSet, 1, 0);
+			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
 			_RendererPassExecuteContext.cmd.DrawIndexed(Section.MeshDataDescriptor.IndicesCount, 1, Section.MeshDataDescriptor.IndicesOffset, Section.MeshDataDescriptor.VertexOffset, 0);
 		}
 
-		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
-		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
+		//_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
+		//_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
-		m_TransparentSubMeshDistanceV.clear();
+		//m_TransparentSubMeshDistanceV.clear();
 		/*
 		m_TransparentSubMeshDistanceV.reserve(Data.MeshSections.size());
 

@@ -115,19 +115,15 @@ struct MeshDataDescriptor
 struct MeshSection
 {
 	MotionCore::Aabb<double> AABB;
-
 	MeshDataDescriptor MeshDataDescriptor;
-
 	uint32_t MaterialIndex;
 };
 
 // LOD Strategie
 // Currently each lod are separte in buffers  
-
 struct MeshLOD
 {
 	std::vector<MeshSection> MeshesSections;
-
 	MeshDataDescriptor Descriptor;
 };
 
