@@ -58,8 +58,7 @@ namespace PC_EDITOR_CORE
         for (size_t i = 0; i < MeshDescriptorsData.size(); i++)
         {
             const std::span<const PC_CORE::StaticMeshVertex> SpanV = std::span<const PC_CORE::StaticMeshVertex>(VertexData.data() + MeshDescriptorsData[i].VertexOffset, MeshDescriptorsData[i].VertexCount);
-            const std::span<const uint32_t> SpanI = std::span<const uint32_t>(IndiciesData.data() + MeshDescriptorsData[i].IndicesOffset, +MeshDescriptorsData[i].IndicesCount);
-
+            const std::span<const uint32_t> SpanI = std::span<const uint32_t>(IndiciesData.data() + MeshDescriptorsData[i].IndicesOffset, MeshDescriptorsData[i].IndicesCount);
             futures.emplace_back(
                 ThreadPool.Enqueue(
                     OptmiseMesh, 
@@ -102,10 +101,11 @@ namespace PC_EDITOR_CORE
         PERF_REGION_COLOR(PerfRegion::EditorResource);
 
         MeshBuilder::MeshletOutPutData MeshletOutPutData;
-        MeshletOutPutData.MeshletDescriptor.reserve(MeshBuilderData.MeshDescriptor.size());
-
         std::vector<std::future<OutMeshletBuild>> Futures;
-        Futures.reserve(MeshletOutPutData.MeshletDescriptor.size());
+
+        MeshletOutPutData.MeshletDescriptor.reserve(MeshBuilderData.MeshDescriptor.size());
+        Futures.reserve(MeshBuilderData.MeshDescriptor.size());
+
         for (auto& Descriptor : MeshBuilderData.MeshDescriptor)
         {
             std::span<const PC_CORE::StaticMeshVertex> spanV = std::span<const PC_CORE::StaticMeshVertex>(MeshBuilderData.Verticies.data() + Descriptor.VertexOffset, Descriptor.VertexCount);
@@ -148,7 +148,7 @@ namespace PC_EDITOR_CORE
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
-
+#if 1 
         const size_t NumIndicies = Indices.size();
         const size_t NumVerticies = Verticies.size();
         constexpr size_t SizeOfVertex = sizeof(std::remove_cv_t<std::remove_reference_t<decltype(Verticies)>>::value_type);
@@ -161,6 +161,7 @@ namespace PC_EDITOR_CORE
             Verticies.data(),
             NumVerticies,
             SizeOfVertex);
+
 
         std::vector<PC_CORE::StaticMeshVertex> OptVerticies{};
         std::vector<uint32_t> OptIndicies{};
@@ -178,7 +179,10 @@ namespace PC_EDITOR_CORE
 
         meshopt_optimizeVertexFetch(OptVerticies.data(), OptIndicies.data(), NumIndicies, OptVerticies.data(), OptVerticesCount, SizeOfVertex);
 
-        return OutOptimiseBuild(std::move(OptVerticies), std::move(OptIndicies));
+        return OutOptimiseBuild(OptVerticies, OptIndicies);
+#else
+        return OutOptimiseBuild(std::vector<PC_CORE::StaticMeshVertex>(Verticies.begin(), Verticies.end()), std::vector<uint32_t>(Indices.begin(), Indices.end()));
+#endif
     }
 
     MeshBuilder::OutMeshletBuild MeshBuilder::BuildMeshelts(const std::span<const PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices)
@@ -215,6 +219,8 @@ namespace PC_EDITOR_CORE
         // Finally, resize (or trim) the storage to fit the actual number of meshlets built.
         //  meshopt_buildMeshletsBound return the worst scnerio size
         // Shrink
+        if (meshletCount == 0)
+            return {};
         auto& last = MeshletsOpt[meshletCount - 1];
         MeshletVertexTrianglesIndex.resize(last.VertexOffset + last.VertexCount);
         meshletTriangles.resize(last.TriangleOffset + ((last.TriangleCount * 3 + 3) & ~3));

@@ -95,6 +95,8 @@ namespace PC_CORE::Rendering
         std::unique_ptr<RhiBuffer> LightBufferHeader;
 
         Tbx::Vector3d ViewPosition;
+
+        double Fov;
     };
 }
 

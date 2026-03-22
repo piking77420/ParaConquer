@@ -56,6 +56,7 @@ namespace PC_CORE::Rendering
 
 
         ViewPosition = _Camera.Position;
+        Fov = _Camera.GetFov();
 	}
 
     void RenderView::UpdaterRhiBuffers(CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)

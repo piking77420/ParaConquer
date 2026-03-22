@@ -89,7 +89,8 @@ void StaticMesh::InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::
     Rhi& rhi = App::Instance->RenderHarwareInteface;
     const StaticMeshRenderData& RenderData = _StaticMeshData.RenderData;
 
-    m_IsBuildForMeshlet = RenderData.Meshlets.size() > 0;
+    m_Aabb = _StaticMeshData.AABB;
+    m_IsBuildForMeshlet = false;// RenderData.Meshlets.size() > 0;
 
     if (m_IsBuildForMeshlet)
     {
@@ -105,6 +106,19 @@ void StaticMesh::InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::
     if (!m_HallowCpuAcces)
     {
         m_StaticMeshData.RenderData.~StaticMeshRenderData(); // free 
+    }
+
+    if (m_MeshSectionGpu.size() > 1)
+    {
+        m_LODThreshold.clear();
+        const size_t lodCount = m_MeshSectionGpu.size();
+        m_LODThreshold.reserve(lodCount - 1);
+        double base = 0.5;
+        for (size_t i = 0; i < lodCount - 1; ++i)
+        {
+            m_LODThreshold.emplace_back(base);
+            base *= 0.5;
+        }
     }
 }
 

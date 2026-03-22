@@ -7,7 +7,7 @@
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
 #include "Rendering/RenderSystem.hpp"
-
+#include "App.hpp"
 
 namespace PC_CORE::Rendering::Pass
 {
@@ -73,16 +73,18 @@ namespace PC_CORE::Rendering::Pass
 
 		const Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * _DrawObj.WorldMatrix;
 		const Tbx::Matrix4x4d NormalInvMatrixView = ModelView.Invert().Transpose();
+		MotionCore::Aabb<double> AABBW = _DrawObj.StaticMesh->GetAabb().GetTransformed(_DrawObj.WorldMatrix);
+		const uint32_t LODIndex = PickLodCount(mesh.GetLodThreshold(), AABBW, _RendererPassExecuteContext.View.ViewPosition, _RendererPassExecuteContext.View.Fov);
 
 		CommandList::DrawBuffers drawBuffer;
 		drawBuffer
 			.PushVertexBuffer(
-				*mesh.GetVertexBuffer(0), 
+				*mesh.GetVertexBuffer(LODIndex),
 				0ull)
 			.SetIndexBuffer(
-				*mesh.GetIndexBuffer(0),
+				*mesh.GetIndexBuffer(LODIndex),
 				0ull,
-				mesh.GetIndexBuffer(0).GetIndexFormat()
+				mesh.GetIndexBuffer(LODIndex).GetIndexFormat()
 			);
 		_RendererPassExecuteContext.cmd.BindDrawBuffers(drawBuffer);
 
@@ -102,7 +104,6 @@ namespace PC_CORE::Rendering::Pass
 		const auto& StaticMeshData = mesh.GetStaticMeshData();
 		const auto& DrawCommands = StaticMeshData.DrawCommands;
 		const uint32_t DrawCommandCount = DrawCommands.size() / StaticMeshData.MeshLods.size();
-		const uint32_t LODIndex = 0;
 
 		for (size_t i = 0; i < DrawCommandCount; i++)
 		{
@@ -123,29 +124,28 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.DrawIndexed(Section.MeshDataDescriptor.IndicesCount, 1, Section.MeshDataDescriptor.IndicesOffset, Section.MeshDataDescriptor.VertexOffset, 0);
 		}
 
-		//_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
-		//_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
+		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
+		_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
 
-		//m_TransparentSubMeshDistanceV.clear();
-		/*
-		m_TransparentSubMeshDistanceV.reserve(Data.MeshSections.size());
+		m_TransparentSubMeshDistanceV.clear();
+		m_TransparentSubMeshDistanceV.reserve(DrawCommandCount);
 
 		{
-			uint32_t Index = 0;
-			for (const auto& MeshSection : Data.MeshSections)
+			for (size_t i = 0; i < DrawCommandCount; i++)
 			{
-				const PC_CORE::MeshLOD& LOD = MeshSection.LODs[0];
-
-				const PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[MeshSection.MaterialIndex]->GetMaterialType();
+				const uint32_t DrawCommandIndex = i + (LODIndex * DrawCommandCount);
+				const auto& DrawCommand = DrawCommands[DrawCommandIndex];
+				const PC_CORE::MeshSection& Section = StaticMeshData.MeshLods[LODIndex].MeshesSections.at(DrawCommand.MeshSectionIndex);
+				const PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[Section.MaterialIndex]->GetMaterialType();
 
 				if (type == PC_CORE::Rendering::MaterialType::Transparent)
 				{
-					const Tbx::Vector3d aabbCenterL = (LOD.AABB.max - LOD.AABB.min);
+					MotionCore::Aabb<double> MeshAABB = Section.AABB;
+					const Tbx::Vector3d aabbCenterL = (MeshAABB.max - MeshAABB.min);
 					const Tbx::Vector4d aabbCenter4V = (ModelView * Tbx::Vector4d(aabbCenterL.x, aabbCenterL.y, aabbCenterL.z, 1.0));
 					const Tbx::Vector3d aabbCenterV = Tbx::Vector3d(aabbCenter4V.x, aabbCenter4V.y, aabbCenter4V.z);
-					m_TransparentSubMeshDistanceV.emplace_back(std::make_pair(aabbCenterV.MagnitudeSquare(), Index));
+					m_TransparentSubMeshDistanceV.emplace_back(std::make_pair(aabbCenterV.MagnitudeSquare(), DrawCommandIndex));
 				}
-				Index++;
 			}
 		}
 
@@ -156,18 +156,22 @@ namespace PC_CORE::Rendering::Pass
 				return _Left.first > _Right.first;
 			});
 
-		for (const auto& item : m_TransparentSubMeshDistanceV)
+		for (const auto& DrawCommandIndex : m_TransparentSubMeshDistanceV)
 		{
-			const auto& MeshSection = Data.MeshSections[item.second];
-			const PC_CORE::MeshLOD& LOD = MeshSection.LODs[0];
+			const auto& DrawCommand = DrawCommands[DrawCommandIndex.second];
+			const PC_CORE::MeshSection& Section = StaticMeshData.MeshLods[LODIndex].MeshesSections.at(DrawCommand.MeshSectionIndex);
+			const Material* Material = _DrawObj.Materials[Section.MaterialIndex];
+			const PC_CORE::Rendering::MaterialType type = _DrawObj.Materials[Section.MaterialIndex]->GetMaterialType();
+
+			const RhiDescriptorSet* MaterialDescriptorSet = Material->GetDescriptorSet();
 
 			Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
 			Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(_DrawObj.Materials[MeshSection.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
 
-			_RendererPassExecuteContext.cmd.DrawIndexed(LOD.IndicesSection.Count, 1, LOD.IndicesSection.Offset, LOD.VertexSection.Offset, 0);
-		}*/
+			_RendererPassExecuteContext.cmd.BindDescriptorSet(MaterialDescriptorSet, 1, 0);
+			_RendererPassExecuteContext.cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
+			_RendererPassExecuteContext.cmd.DrawIndexed(Section.MeshDataDescriptor.IndicesCount, 1, Section.MeshDataDescriptor.IndicesOffset, Section.MeshDataDescriptor.VertexOffset, 0);
+		}
 	}
 
 	void FowardPass::DrawMeshLet(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const

@@ -228,6 +228,11 @@ public:
 		return m_MeshSectionGpu[LodIndex].MeshletDescriptor.get();
 	}
 
+	const std::vector<double>& GetLodThreshold() const
+	{
+		return m_LODThreshold;
+	}
+
 	const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& GetBaseMaterial() const;
 
 private:
@@ -255,6 +260,8 @@ private:
 	StaticMeshData m_StaticMeshData;
 
 	MotionCore::Aabb<double> m_Aabb;
+
+	std::vector<double> m_LODThreshold;
 
 	bool m_HallowCpuAcces = false;
 

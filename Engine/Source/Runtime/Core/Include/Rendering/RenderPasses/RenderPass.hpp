@@ -4,6 +4,7 @@
 #include "Guid.hpp"
 #include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
+#include "Primitive/AABB.hpp"
 
 namespace PC_CORE 
 {
@@ -57,6 +58,8 @@ public:
     IMP_DYNAMIC_REFLECT()
 
     bool IsDisable = false;
+
+    size_t PickLodCount(const std::vector<double>& LodThreshold, const MotionCore::Aabb<double>& AABBW, const Tbx::Vector3d& CameraPos, double FovRad) const;
 
 protected:
 };

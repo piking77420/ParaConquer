@@ -376,7 +376,6 @@ void Editor::UpdateEditor()
         ImGui::End();
     }*/
 
-
     {
         PERF_REGION_SCOPED_NAMED("Update Windows");
         for (auto& editorWindow : editorWindows)
@@ -486,8 +485,8 @@ void Editor::InitTestScene()
         p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
     
-    /* 
     TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+    /* 
     TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
     TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
     TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
