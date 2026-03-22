@@ -3,10 +3,11 @@
 
 struct Vertex
 {
-	float3 Position;
-	float3 Normal;
-	float3 Tangent;
+	float4 Position;
+	float4 Normal;
+	float4 Tangent;
 	float2 Uv;
+    float2 pad;
 };
 
 #endif // STATIC_MESH_VERTEX_HEADER

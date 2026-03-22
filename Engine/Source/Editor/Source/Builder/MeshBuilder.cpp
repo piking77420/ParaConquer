@@ -316,17 +316,18 @@ namespace PC_EDITOR_CORE
         for (size_t v = 0; v < _Meshes.mNumVertices; v++)
         {
             PC_CORE::StaticMeshVertex Vertex{};
-            Vertex.Position = Tbx::Vector3f{ _Meshes.mVertices[v].x, _Meshes.mVertices[v].y, _Meshes.mVertices[v].z };
+            Vertex.Position = Tbx::Vector4f{ _Meshes.mVertices[v].x, _Meshes.mVertices[v].y, _Meshes.mVertices[v].z, 0.0f };
 
             if (_Meshes.HasNormals())
-                Vertex.Normal = Tbx::Vector3f{ _Meshes.mNormals[v].x, _Meshes.mNormals[v].y, _Meshes.mNormals[v].z };
+                Vertex.Normal = Tbx::Vector4f{ _Meshes.mNormals[v].x, _Meshes.mNormals[v].y, _Meshes.mNormals[v].z, 0.0f };
 
             if (_Meshes.HasTextureCoords(0))
                 Vertex.Uv = Tbx::Vector2f{ _Meshes.mTextureCoords[0][v].x, _Meshes.mTextureCoords[0][v].y };
 
             if (_Meshes.HasTangentsAndBitangents())
-                Vertex.Tangent = Tbx::Vector3f{ _Meshes.mTangents[v].x, _Meshes.mTangents[v].y, _Meshes.mTangents[v].z };
+                Vertex.Tangent = Tbx::Vector4f{ _Meshes.mTangents[v].x, _Meshes.mTangents[v].y, _Meshes.mTangents[v].z, 0.0f };
 
+            
             _Verticies.emplace_back(std::move(Vertex));
         }
     }

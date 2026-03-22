@@ -29,10 +29,11 @@ struct Meshlet
 
 struct StaticMeshVertex
 {
-	Tbx::Vector3f Position;
-	Tbx::Vector3f Normal;
-	Tbx::Vector3f Tangent;
+	Tbx::Vector4f Position;
+	Tbx::Vector4f Normal;
+	Tbx::Vector4f Tangent;
 	Tbx::Vector2f Uv;
+	Tbx::Vector2f pad;
 
 	static constexpr VertexInputBindingDescrition GetVertexBindingDescription(uint32_t _binding);
 
@@ -43,19 +44,19 @@ struct StaticMeshVertex
 			{
 				.Binding = _binding,
 				.Location = 0,
-				.Format = RhiFormat::R32G32B32Sfloat,
+				.Format = RhiFormat::R32G32B32A32Sfloat,
 				.Offset = offsetof(StaticMeshVertex, Position)
 			},
 			{
 				.Binding = _binding,
 				.Location = 1,
-				.Format = RhiFormat::R32G32B32Sfloat,
+				.Format = RhiFormat::R32G32B32A32Sfloat,
 				.Offset = offsetof(StaticMeshVertex, Normal)
 			},
 			{
 				.Binding = _binding,
 				.Location = 2,
-				.Format = RhiFormat::R32G32B32Sfloat,
+				.Format = RhiFormat::R32G32B32A32Sfloat,
 				.Offset = offsetof(StaticMeshVertex, Tangent)
 			},
 			{
@@ -63,6 +64,12 @@ struct StaticMeshVertex
 				.Location = 3,
 				.Format = RhiFormat::R32G32Sfloat,
 				.Offset = offsetof(StaticMeshVertex, Uv)
+			},
+			{
+				.Binding = _binding,
+				.Location = 4,
+				.Format = RhiFormat::R32G32Sfloat,
+				.Offset = offsetof(StaticMeshVertex, pad)
 			}
 
 

@@ -7,10 +7,11 @@
 
 struct VsInput
 {
-    float3 Position : POSITION; // location 0
-    float3 Normal : NORMAL; // location 1
-    float3 Tangent : TEXCOORD0; // location 2
+    float4 Position : POSITION; // location 0
+    float4 Normal : NORMAL; // location 1
+    float4 Tangent : TEXCOORD0; // location 2
     float2 TexCoord : TEXCOORD1; // location 3
+    float2 Pad : TEXCOORD2; // location 3
 };
 
 struct VsOutput
@@ -34,14 +35,18 @@ PushConstant pushConstant;
 VsOutput Main(VsInput input)
 {
     VsOutput output;
+    
+    float3 PositionL = input.Position.xyz;
+    float3 NormalL = input.Normal.xyz;
+    float3 TangentL = input.Tangent.xyz;
 
     // World position
-    float4 ViewPos = mul(float4(input.Position, 1.0), pushConstant.modelView);
+    float4 ViewPos = mul(float4(PositionL, 1.0), pushConstant.modelView);
 
     output.Position = mul(ViewPos, Projection);
     output.ViewSpacePosition = ViewPos.xyz;
-    output.Normal = normalize(mul(input.Normal, (float3x3) pushConstant.normalInvMatrixView));
-    output.Tangent = normalize(mul(input.Tangent, (float3x3) pushConstant.normalInvMatrixView));
+    output.Normal = normalize(mul(NormalL, (float3x3) pushConstant.normalInvMatrixView));
+    output.Tangent = normalize(mul(TangentL, (float3x3) pushConstant.normalInvMatrixView));
     output.TexCoord = input.TexCoord;
 
     return output;
