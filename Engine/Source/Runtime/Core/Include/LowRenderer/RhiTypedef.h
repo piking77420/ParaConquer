@@ -35,6 +35,17 @@ BEGIN_PCCORE
     };
 
     REFLECT(RhiExtension);
+    inline std::string_view RhiExtensionToString(RhiExtension RhiExtension)
+    {
+        switch (RhiExtension)
+        {
+        case PC_CORE::RhiExtension::RayTracing:
+            return "RayTracing";
+        case PC_CORE::RhiExtension::MeshShader:
+            return "MeshShader";;
+        }
+        return "Invalid Rhi Extension";
+    }
 
 
     struct ALIGNAS_16 DrawObjectBufferGPU

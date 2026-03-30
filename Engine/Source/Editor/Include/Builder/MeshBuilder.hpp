@@ -60,6 +60,7 @@ namespace PC_EDITOR_CORE
 			std::vector<uint32_t> MeshletTrianglesU32;
 
 			std::vector<MeshletDescriptor> MeshletDescriptor;
+			std::vector<MotionCore::Aabb<double>> MeshletsAABBS;
 		};
 
 		[[maybe_unsed]] MeshBuilderData BuildMeshs(PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* Scene, bool Optimise = true);
@@ -83,11 +84,14 @@ namespace PC_EDITOR_CORE
 			std::vector<PC_CORE::Meshlet> Meshlets;
 			std::vector<uint32_t> MeshletVertexTrianglesIndex;
 			std::vector<uint32_t> MeshletTrianglesU32;
+			std::vector<MotionCore::Aabb<double>> AABBs;
 		};
 
 		static OutOptimiseBuild OptmiseMesh(const std::span<const PC_CORE::StaticMeshVertex>& Verticies, const std::span<const uint32_t>& Indices);
 
-		static OutMeshletBuild BuildMeshelts(const std::span<const PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices);
+		static OutMeshletBuild BuildMeshelts(const std::span<const PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices, const MeshBuilderData& MeshBuilderData);
+
+		void BuildMeshletsBase(PC_CORE::Thread::ThreadPool& ThreadPool, MeshBuilder::MeshletOutPutData &MeshletOutPutData, const MeshBuilderData& MeshBuilderData);
 
 		void LoadMeshesFromAiScene(std::vector<PC_CORE::StaticMeshVertex>* _Verticies, std::vector<uint32_t>* _Indices, std::vector<MeshDescriptor>* _MeshDescriptors, const aiScene* Scene);
 

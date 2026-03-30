@@ -76,14 +76,11 @@ struct StaticMeshVertex
 		};
 	}
 
-
 	REFLECT(StaticMeshVertex)
-		REFLECT_MEMBER(StaticMeshVertex, Position)
-		REFLECT_MEMBER(StaticMeshVertex, Normal)
-		REFLECT_MEMBER(StaticMeshVertex, Uv)
-		REFLECT_MEMBER(StaticMeshVertex, Tangent)
-
-
+	REFLECT_MEMBER(StaticMeshVertex, Position)
+	REFLECT_MEMBER(StaticMeshVertex, Normal)
+	REFLECT_MEMBER(StaticMeshVertex, Uv)
+	REFLECT_MEMBER(StaticMeshVertex, Tangent)
 };
 
 constexpr VertexInputBindingDescrition StaticMeshVertex::GetVertexBindingDescription(const uint32_t _binding)
@@ -131,6 +128,7 @@ struct MeshSection
 struct MeshLOD
 {
 	std::vector<MeshSection> MeshesSections;
+	std::vector<MotionCore::Aabb<double>> MeshletAABB;
 	MeshDataDescriptor Descriptor;
 };
 
@@ -142,6 +140,7 @@ struct StaticMeshRenderData
 	std::vector<uint32_t> MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
 	std::vector<MeshDataDescriptor> BaseMeshDescriptor;
+	std::vector<MotionCore::Aabb<double>> MeshletAABB;
 };
 
 struct MeshDrawCommand

@@ -99,8 +99,14 @@ namespace PC_EDITOR_CORE
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
-
         MeshBuilder::MeshletOutPutData MeshletOutPutData;
+        BuildMeshletsBase(ThreadPool, MeshletOutPutData, MeshBuilderData);
+       
+        return MeshletOutPutData;
+    }
+
+    void MeshBuilder::BuildMeshletsBase(PC_CORE::Thread::ThreadPool& ThreadPool, MeshBuilder::MeshletOutPutData& MeshletOutPutData, const MeshBuilderData& MeshBuilderData)
+    {
         std::vector<std::future<OutMeshletBuild>> Futures;
 
         MeshletOutPutData.MeshletDescriptor.reserve(MeshBuilderData.MeshDescriptor.size());
@@ -115,7 +121,8 @@ namespace PC_EDITOR_CORE
                 ThreadPool.Enqueue(
                     BuildMeshelts,
                     spanV,
-                    spaI
+                    spaI,
+                    MeshBuilderData
                 )
             );
         }
@@ -138,10 +145,8 @@ namespace PC_EDITOR_CORE
             MeshletOutPutData.Meshlets.append_range(Data.Meshlets);
             MeshletOutPutData.MeshletVertexTrianglesIndex.append_range(Data.MeshletVertexTrianglesIndex);
             MeshletOutPutData.MeshletTrianglesU32.append_range(Data.MeshletTrianglesU32);
+            MeshletOutPutData.MeshletsAABBS.append_range(Data.AABBs);
         }
-
-
-        return MeshletOutPutData;
     }
 
     MeshBuilder::OutOptimiseBuild MeshBuilder::OptmiseMesh(const std::span<const PC_CORE::StaticMeshVertex>& Verticies, const std::span<const uint32_t>& Indices)
@@ -185,7 +190,7 @@ namespace PC_EDITOR_CORE
 #endif
     }
 
-    MeshBuilder::OutMeshletBuild MeshBuilder::BuildMeshelts(const std::span<const PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices)
+    MeshBuilder::OutMeshletBuild MeshBuilder::BuildMeshelts(const std::span<const PC_CORE::StaticMeshVertex>& _Verticies, const std::span<const uint32_t>& _Indices, const MeshBuilderData& MeshBuilderData)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -203,19 +208,25 @@ namespace PC_EDITOR_CORE
         meshletTriangles.resize(maxMeshlets * PC_CORE::Meshlet::MeshletMaxTriangle * 3);
 
         constexpr float kConeWeight = 0.0f;
-        size_t meshletCount = meshopt_buildMeshlets(
-            reinterpret_cast<meshopt_Meshlet*>(MeshletsOpt.data()),
-            MeshletVertexTrianglesIndex.data(),
-            meshletTriangles.data(),
-            reinterpret_cast<const uint32_t*>(_Indices.data()),
-            _Indices.size(),
-            reinterpret_cast<const float*>(_Verticies.data()),
-            _Verticies.size(),
-            sizeof(PC_CORE::StaticMeshVertex),
-            PC_CORE::Meshlet::MeshletMaxVertices,
-            PC_CORE::Meshlet::MeshletMaxTriangle,
-            kConeWeight);
 
+        size_t meshletCount = 0ull;
+        {
+            PERF_REGION_SCOPED;
+            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "meshopt_buildMeshlets");
+            meshletCount = meshopt_buildMeshlets(
+                reinterpret_cast<meshopt_Meshlet*>(MeshletsOpt.data()),
+                MeshletVertexTrianglesIndex.data(),
+                meshletTriangles.data(),
+                reinterpret_cast<const uint32_t*>(_Indices.data()),
+                _Indices.size(),
+                reinterpret_cast<const float*>(_Verticies.data()),
+                _Verticies.size(),
+                sizeof(PC_CORE::StaticMeshVertex),
+                PC_CORE::Meshlet::MeshletMaxVertices,
+                PC_CORE::Meshlet::MeshletMaxTriangle,
+                kConeWeight);
+
+        }
         // Finally, resize (or trim) the storage to fit the actual number of meshlets built.
         //  meshopt_buildMeshletsBound return the worst scnerio size
         // Shrink
@@ -227,35 +238,67 @@ namespace PC_EDITOR_CORE
         MeshletsOpt.resize(meshletCount);
 
 
+        std::vector<MotionCore::Aabb<double>> AABBS;
+        AABBS.reserve(MeshletsOpt.size());
+        {
+            PERF_REGION_SCOPED;
+            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "meshopt_computeMeshletBounds");
+            for (const auto& m : MeshletsOpt)
+            {
+                const auto AabbMeshOpt = meshopt_computeMeshletBounds(
+                    &MeshletVertexTrianglesIndex[m.VertexOffset],
+                    &meshletTriangles[m.TriangleOffset],
+                    m.TriangleCount,
+                    &MeshBuilderData.Verticies[0].Position.x,
+                    static_cast<uint32_t>(MeshBuilderData.Verticies.size()),
+                    sizeof(PC_CORE::StaticMeshVertex)
+                );
+
+                const Tbx::Vector3d Center = Tbx::Vector3d(static_cast<double>(AabbMeshOpt.center[0]), static_cast<double>(AabbMeshOpt.center[1]), static_cast<double>(AabbMeshOpt.center[2]));
+                const Tbx::Vector3d Extend = Tbx::Vector3d(static_cast<double>(AabbMeshOpt.radius), static_cast<double>(AabbMeshOpt.radius), static_cast<double>(AabbMeshOpt.radius));
+
+                MotionCore::Aabb<double> AABB;
+                AABB.FromCenterExtend(Center, Extend);
+
+                AABBS.emplace_back(AABB);
+            }
+        }
+        
         std::vector<uint32_t> MeshletTrianglesU32;
 
-        for (auto& m : MeshletsOpt) {
-            // Save triangle offset for current meshlet
-            uint32_t triangleOffset = static_cast<uint32_t>(MeshletTrianglesU32.size());
+        {
+            PERF_REGION_SCOPED;
+            PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Pack Meshlet Indicies");
+            for (auto& m : MeshletsOpt) {
+                // Save triangle offset for current meshlet
+                uint32_t triangleOffset = static_cast<uint32_t>(MeshletTrianglesU32.size());
 
-            // Repack to uint32_t
-            for (uint32_t i = 0; i < m.TriangleCount; ++i) {
-                uint32_t i0 = 3 * i + 0 + m.TriangleOffset;
-                uint32_t i1 = 3 * i + 1 + m.TriangleOffset;
-                uint32_t i2 = 3 * i + 2 + m.TriangleOffset;
+                // Repack to uint32_t
+                for (uint32_t i = 0; i < m.TriangleCount; ++i) {
+                    uint32_t i0 = 3 * i + 0 + m.TriangleOffset;
+                    uint32_t i1 = 3 * i + 1 + m.TriangleOffset;
+                    uint32_t i2 = 3 * i + 2 + m.TriangleOffset;
 
-                uint8_t  vIdx0 = meshletTriangles[i0];
-                uint8_t  vIdx1 = meshletTriangles[i1];
-                uint8_t  vIdx2 = meshletTriangles[i2];
-                const uint32_t packed = ((static_cast<uint32_t>(vIdx0) & 0xFF) << 0) |
-                    ((static_cast<uint32_t>(vIdx1) & 0xFF) << 8) |
-                    ((static_cast<uint32_t>(vIdx2) & 0xFF) << 16);
-                MeshletTrianglesU32.push_back(packed);
+                    uint8_t  vIdx0 = meshletTriangles[i0];
+                    uint8_t  vIdx1 = meshletTriangles[i1];
+                    uint8_t  vIdx2 = meshletTriangles[i2];
+                    const uint32_t packed = ((static_cast<uint32_t>(vIdx0) & 0xFF) << 0) |
+                        ((static_cast<uint32_t>(vIdx1) & 0xFF) << 8) |
+                        ((static_cast<uint32_t>(vIdx2) & 0xFF) << 16);
+                    MeshletTrianglesU32.push_back(packed);
+                }
+
+                // Update triangle offset for current meshlet
+                m.TriangleOffset = triangleOffset;
             }
-
-            // Update triangle offset for current meshlet
-            m.TriangleOffset = triangleOffset;
         }
+       
 
         OutMeshletBuild Out;
         Out.Meshlets = std::move(MeshletsOpt);
         Out.MeshletVertexTrianglesIndex = std::move(MeshletVertexTrianglesIndex);
         Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);
+        Out.AABBs = std::move(AABBS);
 
         return Out;
     }

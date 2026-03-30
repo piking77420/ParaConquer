@@ -33,8 +33,6 @@ VulkanShaderProgram::~VulkanShaderProgram()
     }
 }
 
-
-
 vk::PipelineBindPoint VulkanShaderProgram::GetPipelineBindPoint() const
 {
     switch (m_Type)
@@ -115,6 +113,38 @@ bool VulkanShaderProgram::Build()
 }
 
 
+std::vector<vk::DynamicState> Vulkan::VulkanShaderProgram::GetDynamicState() const
+{
+    std::vector<vk::DynamicState> State;
+
+    State.emplace_back (vk::DynamicState::eViewport);
+    State.emplace_back(vk::DynamicState::eScissor);
+    State.emplace_back(vk::DynamicState::eLineWidth);
+    State.emplace_back(vk::DynamicState::eDepthBias);
+    State.emplace_back(vk::DynamicState::eDepthBounds);
+    State.emplace_back(vk::DynamicState::eStencilCompareMask);
+    State.emplace_back(vk::DynamicState::eStencilWriteMask);
+    State.emplace_back(vk::DynamicState::eStencilReference);
+    State.emplace_back(vk::DynamicState::eBlendConstants);
+
+    bool isMeshShader = false;
+
+    if (auto& Modules = m_Modules)
+        for (const auto& it : *m_Modules)
+        {
+            if (it.first & ShaderStageTypeBits::Mesh || it.first & ShaderStageTypeBits::Amp)
+            {
+                isMeshShader = true;
+                break;
+            }   
+        }
+
+    if (!isMeshShader)
+        State.emplace_back(vk::DynamicState::ePrimitiveTopology);
+
+    return State;
+};
+
 bool Vulkan::VulkanShaderProgram::CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     PERF_REGION_SCOPED;
@@ -127,7 +157,6 @@ bool Vulkan::VulkanShaderProgram::CreateFromContext(VulkanShaderProgramCreateCon
         break;
     case PipelineType::Compute:
         CreateComputePipeline(_vulkanShaderProgramCreateContex);
-
         break;
     case PipelineType::RayTracing:
     case PipelineType::Count:
@@ -247,12 +276,13 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const GraphicPipelineData& Data = std::get<GraphicPipelineData>(m_PipelineData);
+    std::vector<vk::DynamicState> DynamicState = GetDynamicState();
 
     vk::Device device = GET_VK_DEVICE;
     vk::PipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(DynamicStateArray.size());
-    dynamicState.pDynamicStates = DynamicStateArray.data();
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(DynamicState.size());
+    dynamicState.pDynamicStates = DynamicState.data();
 
     // VertexInput
     std::vector<vk::VertexInputBindingDescription> vertexInputBindingDescriptions;

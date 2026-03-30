@@ -88,7 +88,7 @@ Vulkan::VulkanDevice::VulkanDevice(const std::vector<PC_CORE::RhiExtension>& Rhi
         case PC_CORE::RhiExtension::MeshShader:
             meshFeatures.sType = vk::StructureType::ePhysicalDeviceMeshShaderFeaturesEXT;
             meshFeatures.meshShader = vk::True;
-            meshFeatures.taskShader = vk::False;
+            meshFeatures.taskShader = vk::True;
 
             meshFeatures.pNext = chainHead;
             chainHead = reinterpret_cast<VkBaseOutStructure*>(&meshFeatures);

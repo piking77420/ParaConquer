@@ -304,6 +304,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     PrevLodDescriptor.MeshletTrianglesOffset + PrevLodDescriptor.MeshletTrianglesCount;
             }
 
+            // for each mesh In lod
             for (auto& [MeshIndex, MaterialIndex] : LODMeshes)
             {
                 const auto& BaseMeshDescritptor = RenderData.BaseMeshDescriptor[MeshIndex];
@@ -336,6 +337,14 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .MaterialIndex = MaterialIndex
                 };
 
+                // AABBS
+                CurrentLod.MeshletAABB.reserve(MeshSection.MeshDataDescriptor.MeshetCount);
+                for (uint32_t i = 0; i < static_cast<uint32_t>(MeshSection.MeshDataDescriptor.MeshetCount); i++)
+                {
+                    CurrentLod.MeshletAABB.emplace_back(RenderData.MeshletAABB[MeshSection.MeshDataDescriptor.MeshetOffset + i]);
+                }
+
+                // OFFSET
                 LodDescriptor.VertexCount += MeshSection.MeshDataDescriptor.VertexCount;
                 LodDescriptor.IndicesCount += MeshSection.MeshDataDescriptor.IndicesCount;
                 LodDescriptor.MeshetCount += MeshSection.MeshDataDescriptor.MeshetCount;
@@ -413,8 +422,9 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .MeshletTrianglesCount = BuildMeshlet ? MeshletDescriptor->MeshletTrianglesCount : 0u,
                 });
         }
+        StaticMeshRenderData.MeshletAABB = std::move(Meshelets.MeshletsAABBS);
 
-
+        // Now we proceed to each local lods
         PC_CORE::StaticMeshData StaticMeshData;
         StaticMeshData.AABB = Meshs.Aabb;
         std::unordered_map<uint32_t, uint32_t> AssimpMeshIndexToCore;

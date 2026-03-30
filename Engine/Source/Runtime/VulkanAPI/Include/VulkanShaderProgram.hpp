@@ -49,19 +49,6 @@ namespace Vulkan
     
 
     protected:
-        static constexpr std::array<vk::DynamicState, 10> DynamicStateArray =
-        {
-            vk::DynamicState::eViewport,
-            vk::DynamicState::eScissor,
-            vk::DynamicState::eLineWidth,
-            vk::DynamicState::eDepthBias,
-            vk::DynamicState::eDepthBounds,
-            vk::DynamicState::eStencilCompareMask,
-            vk::DynamicState::eStencilWriteMask,
-            vk::DynamicState::eStencilReference,
-            vk::DynamicState::ePrimitiveTopology,
-            vk::DynamicState::eBlendConstants,
-        };
         
         size_t m_DescriptorId = std::numeric_limits<size_t>::max();
 
@@ -70,6 +57,8 @@ namespace Vulkan
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
 
         std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
+
+        std::vector<vk::DynamicState> GetDynamicState() const;
 
         bool CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 

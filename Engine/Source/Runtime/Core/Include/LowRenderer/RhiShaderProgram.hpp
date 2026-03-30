@@ -13,7 +13,6 @@ class RhiShaderProgram : public RhiObjectT<RhiShaderProgram>
 public:
     enum class PipelineType
     {
-        None,
         Graphic,
         Compute,
         RayTracing,
@@ -312,7 +311,7 @@ public:
     PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
 
 protected:
-    PipelineType m_Type{PipelineType::None};
+    PipelineType m_Type;
 
     std::optional<std::vector<ShaderModule>> m_Modules;
 
