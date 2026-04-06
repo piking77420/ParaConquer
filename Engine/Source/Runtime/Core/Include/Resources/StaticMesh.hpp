@@ -128,8 +128,16 @@ struct MeshSection
 struct MeshLOD
 {
 	std::vector<MeshSection> MeshesSections;
-	std::vector<MotionCore::Aabb<double>> MeshletAABB;
 	MeshDataDescriptor Descriptor;
+
+	size_t MeshletCount() const
+	{
+		size_t Count = 0ull;
+		if (MeshesSections.empty())
+			return Count;
+
+		return MeshesSections[MeshesSections.size() - 1].MeshDataDescriptor.MeshetOffset + MeshesSections[MeshesSections.size() - 1].MeshDataDescriptor.MeshetCount;
+	}
 };
 
 struct StaticMeshRenderData
@@ -253,6 +261,8 @@ private:
 			std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
 
 			std::shared_ptr<RhiBuffer> MeshletBuffer;
+
+			std::shared_ptr<RhiBuffer> MeshletAABBBuffer;
 
 			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
 

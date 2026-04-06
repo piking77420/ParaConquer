@@ -337,13 +337,6 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .MaterialIndex = MaterialIndex
                 };
 
-                // AABBS
-                CurrentLod.MeshletAABB.reserve(MeshSection.MeshDataDescriptor.MeshetCount);
-                for (uint32_t i = 0; i < static_cast<uint32_t>(MeshSection.MeshDataDescriptor.MeshetCount); i++)
-                {
-                    CurrentLod.MeshletAABB.emplace_back(RenderData.MeshletAABB[MeshSection.MeshDataDescriptor.MeshetOffset + i]);
-                }
-
                 // OFFSET
                 LodDescriptor.VertexCount += MeshSection.MeshDataDescriptor.VertexCount;
                 LodDescriptor.IndicesCount += MeshSection.MeshDataDescriptor.IndicesCount;

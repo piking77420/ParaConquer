@@ -30,6 +30,8 @@ namespace Vulkan
 
         VULKAN_API void BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo) override;
 
+        VULKAN_API void BeginComputePasss() override;
+
         VULKAN_API void NextSubPass() override;
 
         VULKAN_API void EndRenderPass() override;

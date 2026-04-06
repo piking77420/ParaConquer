@@ -61,7 +61,7 @@ public:
 
 
 protected:
-    size_t PickLodCount(const std::vector<double>& LodThreshold, const MotionCore::Aabb<double>& AABBW, const Tbx::Vector3d& CameraPos, double FovRad) const;
+
 };
 
 template <typename Derived>

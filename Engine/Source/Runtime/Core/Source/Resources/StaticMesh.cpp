@@ -203,6 +203,42 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
         const Meshlet* MeshletStart = RenderData.Meshlets.data() + MeshLodDescritptor.MeshetOffset;
         _Branch->BufferUpload(*MeshSectionGpu.MeshletBuffer, MeshletStart, MeshSectionGpu.MeshletBuffer->GetSizeInByte());
 
+
+        // AABB
+        struct alignas(16) GPUAABB
+        {
+            float min[4];
+            float max[4];
+        };
+
+        std::vector<GPUAABB> GPUAabbs;
+        GPUAabbs.reserve(MeshLodDescritptor.MeshetCount);
+        std::span CpuAABBs(RenderData.MeshletAABB.data() + MeshLodDescritptor.MeshetOffset, MeshLodDescritptor.MeshetCount);
+        for (const auto& CpuAABB : CpuAABBs)
+        {
+            GPUAABB GPUAABB;
+            GPUAABB.min[0] = static_cast<float>(CpuAABB.min.x);
+            GPUAABB.min[1] = static_cast<float>(CpuAABB.min.y);
+            GPUAABB.min[2] = static_cast<float>(CpuAABB.min.z);
+
+            GPUAABB.max[0] = static_cast<float>(CpuAABB.max.x);
+            GPUAABB.max[1] = static_cast<float>(CpuAABB.max.y);
+            GPUAABB.max[2] = static_cast<float>(CpuAABB.max.z);
+
+            GPUAabbs.emplace_back(GPUAABB);
+        }
+
+        MeshSectionGpu.MeshletAABBBuffer.reset(rhi.CreateBuffer());
+        MeshSectionGpu.MeshletAABBBuffer
+            ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+            .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
+            .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+            .SetSizeInBytes(GPUAabbs.size() * sizeof(GPUAABB))
+            .SetName(Name + std::format("Meshlet AABB Buffer LOD {}", LodIndex))
+            .Build();
+
+        _Branch->BufferUpload(*MeshSectionGpu.MeshletAABBBuffer, GPUAabbs.data(), MeshSectionGpu.MeshletAABBBuffer->GetSizeInByte());
+
         MeshSectionGpu.MeshletDescriptor.reset(rhi.CreateDescriptorSet());
         MeshSectionGpu.MeshletDescriptor
             ->BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 0, MeshSectionGpu.VertexBuffer.Get())

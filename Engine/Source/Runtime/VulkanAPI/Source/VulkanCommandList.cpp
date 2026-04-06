@@ -277,10 +277,22 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     m_CommandBuffer[m_Rhi.GetFrameIndex()].beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 }
 
+void Vulkan::VulkanCommandList::BeginComputePasss()
+{
+    CommandList::BeginComputePasss();
+}
+
 void Vulkan::VulkanCommandList::NextSubPass()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    if (!IsInRenderPass(RecordRenderPassType::Graphic))
+    {
+        PC_LOGERROR("NextSubPass was call but Commandlist was not in graphic record state, CommandList Name : {}", m_Name);
+        return;
+    }
+
     m_CommandBuffer[m_Rhi.GetFrameIndex()].nextSubpass(vk::SubpassContents::eInline);
 }
 
@@ -288,7 +300,15 @@ void Vulkan::VulkanCommandList::EndRenderPass()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
+
+    switch (m_RecordState.RecordRenderPassType)
+    {
+    case RecordRenderPassType::Graphic:
+        m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
+        break;
+    default:
+        break;
+    }
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
@@ -309,7 +329,8 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
 
-    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_LastBindProgram);
+
+    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
 
     vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(alloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
 
@@ -319,7 +340,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
         vkDescriptorSet[i] = vulkanDescriptorSets.GetVkDescriptorSet(currentFrame);
     }
 
-    uint32_t* pDynamicOffsets = dynamicOffset.empty() ? nullptr : static_cast<uint32_t*>(alloca(sizeof(vk::DescriptorSet) * dynamicOffset.size()));
+    uint32_t* pDynamicOffsets = dynamicOffset.empty() ? nullptr : static_cast<uint32_t*>(_malloca(sizeof(vk::DescriptorSet) * dynamicOffset.size()));
 
     for (size_t i = 0; i < dynamicOffset.size(); i++)
         pDynamicOffsets[i] = static_cast<uint32_t>(dynamicOffset[i]);
@@ -331,6 +352,8 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
         vkDescriptorSet,
         static_cast<uint32_t>(dynamicOffset.size()),
         pDynamicOffsets);
+
+    _freea(pDynamicOffsets);
 }
 
 void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
@@ -338,10 +361,12 @@ void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _Rh
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    if (m_LastBindProgram != &_RhiShaderProgram)
+    const bool wasNull = !m_RecordState.lastBindProgram;
+
+    if (m_RecordState.lastBindProgram != &_RhiShaderProgram)
     {
-        m_LastBindProgram = &_RhiShaderProgram;
-        const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_LastBindProgram);
+        m_RecordState.lastBindProgram = &_RhiShaderProgram;
+        const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
 
         m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
             vshadeProgram.GetPipeline());
@@ -352,7 +377,7 @@ void Vulkan::VulkanCommandList::PushConstant(const std::string& _pushConstantKey
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
-    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_LastBindProgram);
+    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
 
 
     vshadeProgram.PushConstant(GetVulkanCommandBufferHandle(), _pushConstantKey, _data, _size);
@@ -418,6 +443,12 @@ void Vulkan::VulkanCommandList::Draw(uint32_t _vertexCount, uint32_t _instanceCo
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    if (!IsInRenderPass(RecordRenderPassType::Graphic))
+    {
+        PC_LOGERROR("Draw was call but Commandlist was not in graphic record state, CommandList Name : {}", m_Name);
+        return;
+    }
+
     m_CommandBuffer[m_Rhi.GetFrameIndex()].draw(_vertexCount, _instanceCount, _firstVertex, _firstInstance);
 }
 
@@ -427,7 +458,13 @@ void Vulkan::VulkanCommandList::DrawIndexed(size_t _indexCount, size_t _instance
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    assert(m_LastDrawBuffersState.IndexBuffer != nullptr && "DrawIndexed but no index buffer binded");
+    if (!IsInRenderPass(RecordRenderPassType::Graphic))
+    {
+        PC_LOGERROR("DrawIndexed was call but Commandlist was not in graphic record state, CommandList Name : {}", m_Name);
+        return;
+    }
+
+    assert(m_RecordState.lastDrawBuffersState.IndexBuffer != nullptr && "DrawIndexed but no index buffer binded");
 
 
     m_CommandBuffer[m_Rhi.GetFrameIndex()].drawIndexed(static_cast<uint32_t>(_indexCount),
@@ -441,6 +478,12 @@ void Vulkan::VulkanCommandList::Dispatch(uint32_t _groupCountX, uint32_t _groupC
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    if (!IsInRenderPass(RecordRenderPassType::Compute))
+    {
+        PC_LOGERROR("Dispatch was call but Commandlist was not in compute record state ,CommandList Name : {}", m_Name);
+        return;
+    }
+
     m_CommandBuffer[m_Rhi.GetFrameIndex()].dispatch(_groupCountX, _groupCountY, _groupCountZ);
 }
 
@@ -448,6 +491,13 @@ void Vulkan::VulkanCommandList::DrawMeshTask(uint32_t _groupCountX, uint32_t _gr
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    if (!IsInRenderPass(RecordRenderPassType::Graphic))
+    {
+        PC_LOGERROR("DrawMeshTask was call but Commandlist was not in graphic record state, CommandList Name : {}", m_Name);
+        return;
+    }
+
     // Should not be static but id does the job
     static PFN_vkCmdDrawMeshTasksEXT func = GET_VK_INSTANCE->GetPFN_vkCmdDrawMeshTasksEXT();
     assert(func && "Misssing function");

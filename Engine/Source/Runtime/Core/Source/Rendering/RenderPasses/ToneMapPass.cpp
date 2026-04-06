@@ -50,6 +50,7 @@ namespace PC_CORE::Rendering::Pass
 	void ToneMapPass::ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
 	{
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
+		cmd.BeginComputePasss();
 
 		ImageStateTransition ImageStateTransition
 		{
@@ -78,5 +79,7 @@ namespace PC_CORE::Rendering::Pass
 
 		ImageStateTransition.Texture = m_OutPutImageRef;
 		cmd.Barrier(RhiResourceState::ComputeReadWrite, RhiResourceState::FragmentShaderResource, std::span(&ImageStateTransition, 1), {});
+
+		cmd.EndRenderPass();
 	}
 }

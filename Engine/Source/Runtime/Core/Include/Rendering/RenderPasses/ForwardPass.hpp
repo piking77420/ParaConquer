@@ -1,19 +1,11 @@
 #pragma once
 
-#include "RenderPass.hpp"
-
-
-
-namespace PC_CORE::Rendering
-{
-    class Renderer;
-    struct StaticMeshComponentData;
-}
+#include "DrawPass.hpp"
 
 namespace PC_CORE::Rendering::Pass
 {
 
-    class PC_CORE_API FowardPass : public PC_CORE::Rendering::RenderPass
+    class PC_CORE_API FowardPass : public DrawPass
     {
     public:
 
@@ -50,14 +42,7 @@ namespace PC_CORE::Rendering::Pass
         std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
 
         RhiTexture* m_LightingImage = nullptr;
-
-        mutable std::vector<std::pair<double, uint32_t>> m_TransparentSubMeshDistanceV;
-
-        void DrawVertex(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const;
-
-        void DrawMeshLet(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj) const;
-
     };
 
-    REFLECT(FowardPass, PC_CORE::Rendering::RenderPass);
+    REFLECT(FowardPass, DrawPass);
 }

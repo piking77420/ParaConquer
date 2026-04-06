@@ -1,10 +1,11 @@
 ﻿#pragma once
 
-#include <Array>
-#include <String>
-#include <Memory>
-#include <Functional>
+#include <array>
+#include <string>
+#include <memory>
+#include <functional>
 #include <span>
+#include <tuple>
 
 #include "CoreHeader.hpp"
 #include "Math/ToolboxTypedef.hpp"
@@ -30,8 +31,6 @@ BEGIN_PCCORE
     };
 
     using ClearValueFlag = uint32_t;
-
-
 
     struct BeginRenderPassInfo
     {
@@ -174,6 +173,8 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo);
 
+        PC_CORE_API virtual void BeginComputePasss();
+
         PC_CORE_API virtual void EndRenderPass() = 0;
 
         PC_CORE_API virtual void NextSubPass() = 0;
@@ -255,17 +256,28 @@ BEGIN_PCCORE
         }
 
     protected:
-        BufferType m_BufferType { BufferType::Primary };
+        enum RecordRenderPassType
+        {
+            None,
+            Graphic,
+            Compute,
+        };
 
-        PoolFamily m_PoolFamily { PoolFamily::Graphics };
+        struct RecordState {
+            RecordRenderPassType RecordRenderPassType = RecordRenderPassType::None;
+            const RhiShaderProgram* lastBindProgram = nullptr;
+            DrawBuffers lastDrawBuffersState;
+        }m_RecordState;
 
-        std::vector<std::function<void(CommandList*)>> m_FetchCommands;
+		BufferType m_BufferType{ BufferType::Primary };
 
-        DrawBuffers m_LastDrawBuffersState;
+		PoolFamily m_PoolFamily{ PoolFamily::Graphics };
 
-       const RhiShaderProgram* m_LastBindProgram = nullptr;
+		std::vector<std::function<void(CommandList*)>> m_FetchCommands;
 
-       bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
+		bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
+
+        bool IsInRenderPass(RecordRenderPassType Type) const;
 
      private:
 

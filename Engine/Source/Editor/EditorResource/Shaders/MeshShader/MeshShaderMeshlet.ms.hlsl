@@ -41,7 +41,6 @@ void Main(uint3 gtid : SV_GroupThreadID,
         // aligned to 4 and we can easily grab it as a uint without any 
         // additional offset math.
         //
-        
         uint packed = TriangleIndices[DrawCall.SubMeshTriangleOffset + m.TriangleOffset + gtid.x];
         uint vIdx0 = (packed >> 0) & 0xFF;
         uint vIdx1 = (packed >> 8) & 0xFF;
@@ -52,10 +51,10 @@ void Main(uint3 gtid : SV_GroupThreadID,
     if (gtid.x < m.VertexCount)
     {
         uint localVertexIndex = m.VertexOffset + gtid.x;
-        
         uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
+        float3 Verticies = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz;
         
-        vertices[gtid.x].Position = mul(float4(Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz, 1.0), DrawCall.ModelViewProjection);
+        vertices[gtid.x].Position = mul(float4(Verticies, 1.0), DrawCall.ModelViewProjection);
         float3 color = float3(
             float(gid.x & 1),
             float(gid.x & 3) / 4,
