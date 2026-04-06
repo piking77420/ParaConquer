@@ -64,20 +64,6 @@ namespace PC_CORE::Rendering
         std::optional<DirLightData> DirLightData;
     };
 
-    /*struct RenderingWorldResource
-    {
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderingWorldResource);
-
-        DEFAULT_COPY_MOVE_OPERATIONS(RenderingWorldResource);
-
-        std::unique_ptr<RhiBuffer> LightBuffer;
-
-        std::unique_ptr<RhiBuffer> LightBufferHeader;
-    };*/
-
-
-
-
     class RendererSystem : public EcsSystem
     {
     public:
@@ -101,18 +87,9 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API const Rendering::RenderingWorldData& GetRenderRenderingWorldData() const;
 
-        /*PC_CORE_API const Rendering::RenderingWorldResource& GetRenderRenderingWorldResource() const
-        {
-            return m_RenderingWorldResource;
-        }*/
-
 
     private:
         Rendering::RenderingWorldData m_GameRenderingWorldData;
-
-        Rendering::RenderingWorldData m_RenderRenderingWorldData;
-
-       // Rendering::RenderingWorldResource m_RenderingWorldResource;
 
         Signature m_StaticMeshSignature;
 
@@ -121,7 +98,6 @@ namespace PC_CORE::Rendering
         Signature m_PointLightSignature;
 
         Signature m_SpothLightSignature;
-
 
         void PopulateStaticMeshes(const Level& _level);
 

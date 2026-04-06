@@ -1,7 +1,7 @@
 #pragma once
+#include <Rendering/DrawList.hpp>
 #include "RenderingTypedef.h"
 #include "RenderGraph.hpp"
-
 
 namespace PC_CORE::Rendering
 {
@@ -25,6 +25,10 @@ public:
     {
         return m_RenderGraph;
     }
+
+    DrawList m_OpaqueList;
+
+    DrawList m_TransparentList;
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
@@ -52,6 +56,14 @@ private:
     void InitRhiRenderPasses(const RenderView& _View);
 
     void InitShaders(const RenderView& _View);
+
+    void BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void FillListStaicMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void SortList();
+
+    size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const;
     
 };
 

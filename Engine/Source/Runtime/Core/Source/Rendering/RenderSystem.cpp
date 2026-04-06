@@ -53,19 +53,11 @@ void RendererSystem::RenderingTick(double deltatime)
     m_GameRenderingWorldData.Clear();
     PopulateStaticMeshes(l);
     PopulateLight(l);
-
-    // Wait render thread
-    // Make a copy 
-    {
-        PERF_REGION_COLOR_NAME(PerfRegion::Game, "Copy GameRenderingData to RenderRenderData");
-        m_RenderRenderingWorldData = m_GameRenderingWorldData;
-    }
-    // Continue
 }
 
-const PC_CORE::Rendering::RenderingWorldData& RendererSystem::GetRenderRenderingWorldData() const
+const Rendering::RenderingWorldData& RendererSystem::GetRenderRenderingWorldData() const
 {
-    return m_RenderRenderingWorldData;
+    return m_GameRenderingWorldData;
 }
 
 void RendererSystem::PopulateStaticMeshes(const Level& _level)

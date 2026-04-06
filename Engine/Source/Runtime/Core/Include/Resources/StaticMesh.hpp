@@ -256,13 +256,13 @@ private:
 
 			IndexBuffer IndexBuffer;
 
-			std::shared_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
-
-			std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
-
 			std::shared_ptr<RhiBuffer> MeshletBuffer;
 
 			std::shared_ptr<RhiBuffer> MeshletAABBBuffer;
+
+			std::shared_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
+
+			std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
 
 			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
 

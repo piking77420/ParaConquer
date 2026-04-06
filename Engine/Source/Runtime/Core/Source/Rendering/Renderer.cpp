@@ -231,5 +231,114 @@ namespace PC_CORE::Rendering
        }
    }
 
+   void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
+   {
+       m_OpaqueList.Clear();
+       m_TransparentList.Clear();
+       // TODO MAYCOUNT FOR RESERVE
+       FillListStaicMesh(_view, RenderingWorldData);
+       SortList();
+   }
+
+   void Renderer::FillListStaicMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
+   {
+
+       for (const auto& StaticMeshComponentData : RenderingWorldData.StaticMeshComponentData)
+       {
+           const StaticMesh* StaticMesh = StaticMeshComponentData.StaticMesh;
+           const StaticMeshData& StaticMeshData = StaticMesh->GetStaticMeshData();
+           const std::vector<MeshDrawCommand>& DrawCommands = StaticMeshData.DrawCommands;
+
+           // Pick Lod
+           uint32_t LODIndex = 0;
+           MotionCore::Aabb<double> AABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
+           double DistanceToCamera = (AABBW.GetCenter() - _view.ViewPosition).Magnitude();
+           double BoundingSphereRadius = (AABBW.GetSize() * 0.5).Magnitude();
+
+           if (!StaticMesh->GetLodThreshold().empty())
+           {
+               const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
+               const Tbx::Matrix4x4d NormalInvMatrixView = ModelView.Invert().Transpose();
+               LODIndex = PickLodCount(StaticMesh->GetLodThreshold(), BoundingSphereRadius, DistanceToCamera, _view.Fov);
+           }
+
+           const auto& Lod = StaticMeshData.MeshLods[LODIndex];
+
+           for (const auto& Dcmd : DrawCommands)
+           {
+               const MeshSection& MeshSection = Lod.MeshesSections[Dcmd.MeshSectionIndex];
+               const Material* Material = StaticMeshComponentData.Materials.at(MeshSection.MaterialIndex);
+               if (!Material)
+                   continue; // to do get dummy mat
+
+               DrawList& DrawList = Material->GetMaterialType() == MaterialType::Opaque ? m_OpaqueList : m_TransparentList;
+               DrawItem item;
+
+               if (StaticMeshComponentData.UseMeshlet)
+               {
+                   DrawStaticMeshTriangle& Descritptor = item.emplace<DrawStaticMeshTriangle>();
+                   Descritptor.VertexBuffer = StaticMesh->GetVertexBuffer(LODIndex).Get();
+                   Descritptor.IndexBuffer = StaticMesh->GetIndexBuffer(LODIndex).Get();
+                   Descritptor.VertexOffset = MeshSection.MeshDataDescriptor.VertexOffset;
+                   Descritptor.IndexOffset = MeshSection.MeshDataDescriptor.IndicesOffset;
+                   Descritptor.IndexCount = MeshSection.MeshDataDescriptor.IndicesCount;
+                   Descritptor.DitanceAABBToCam = DistanceToCamera;
+               }
+               else
+               {
+                   DrawStaticMeshMeshlet& Descritptor = item.emplace<DrawStaticMeshMeshlet>();
+
+                   //Descritptor.DitanceAABBToCam = DistanceToCamera;
+               }
+
+               DrawList.AddItem(item);
+           }
+
+       }
+   }
+
+   void Renderer::SortList()
+   {
+       /*
+       m_OpaqueList.Sort([](const DrawItem& A, const DrawItem& B)
+           {
+               return std::visit([&](auto&& ItemA) ->bool {
+                   return std::visit([&](auto&& ItemB) ->bool {
+                       if (ItemA.ShaderProgram != ItemB.ShaderProgram)
+                           return ItemA.ShaderProgram < ItemB.ShaderProgram;
+
+
+                       }, B);
+                   }, A);
+
+              
+
+               if (a.materialSet != b.materialSet)
+                   return a.materialSet < b.materialSet;
+
+               if (a.vertexBuffer != b.vertexBuffer)
+                   return a.vertexBuffer < b.vertexBuffer;
+
+               return a.indexBuffer < b.indexBuffer;
+           });*/
+   }
+
+   size_t Renderer::PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const
+   {
+       if (LodThreshold.empty())
+           return 0;
+
+       double ScreenSize = BoundingSphereRadius / (AABBDistanceToCam * std::tan(FovRad * 0.5));
+
+       for (size_t i = 0; i < LodThreshold.size(); i++)
+       {
+           if (ScreenSize >= LodThreshold[i])
+           {
+               return i;
+           }
+       }
+       return LodThreshold.size();
+   }
+
 }
 

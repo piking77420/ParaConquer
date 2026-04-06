@@ -73,7 +73,7 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
     PERF_REGION_SCOPED;
     EditorWindow::Render(_Cmd);
 
-    const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::Rendering::RendererSystem>()->GetRenderRenderingWorldData();
+    const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::Rendering::RendererSystem>()->GetRenderRenderingWorldData(); // should be done once
 
     m_Editor->Renderer.Excute(m_View, worldData);
 }
