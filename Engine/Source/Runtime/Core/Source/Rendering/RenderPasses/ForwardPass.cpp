@@ -96,10 +96,55 @@ namespace PC_CORE::Rendering::Pass
 
 		// Bind cam and other
 
-		const auto& DrawObjects = _RendererPassExecuteContext.RenderingWorldData.StaticMeshComponentData;
-		for (const auto& DrawObject : DrawObjects)
+		const auto& DrawListOpaque = _RendererPassExecuteContext.Renderer.OpaqueList;
+
+		const RhiShaderProgram* ShaderProgram{ nullptr };
+		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
+		RhiBuffer* VertexBuffer{ nullptr };
+		RhiBuffer* IndexBuffer{ nullptr };
+		struct alignas(16) ModelPushConstant
 		{
-			DrawStaticMesh(_RendererPassExecuteContext, DrawObject, m_DescriptorSet.get(), 0ull);
+			Gpu::mat4 ModelView;
+			Gpu::mat4 NormalInvMatrixView;
+		}PushConstant;
+
+		for (const auto& DrawItem : DrawListOpaque)
+		{
+			std::visit(overloaded{
+				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
+					if (StaticMesh.ShaderProgram && ShaderProgram != StaticMesh.ShaderProgram)
+					{
+						ShaderProgram = StaticMesh.ShaderProgram;
+						cmd.BindProgram(*ShaderProgram);
+						cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+					}
+
+					if (StaticMesh.MaterialDescriptor && MaterialDescriptor != StaticMesh.MaterialDescriptor)
+					{
+						MaterialDescriptor = StaticMesh.MaterialDescriptor;
+						const size_t MaterialStride = 0;//_DrawObj.Materials[0]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
+						cmd.BindDescriptorSet(MaterialDescriptor, 1, MaterialStride);
+					}
+					CommandList::DrawBuffers drawBuffer;
+					drawBuffer
+						.PushVertexBuffer(
+							*StaticMesh.VertexBuffer,
+							0ull)
+						.SetIndexBuffer(
+							*StaticMesh.IndexBuffer,
+							0ull,
+							StaticMesh.IndexFormat
+						);
+					const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
+
+					_RendererPassExecuteContext.cmd.BindDrawBuffers(drawBuffer);
+					_RendererPassExecuteContext.cmd.PushConstant("pushConstant", Push, sizeof(ModelPushConstant));
+					_RendererPassExecuteContext.cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
+				  },
+				  [&](const Rendering::DrawStaticMeshMeshlet& StaticMesh) {
+
+				  },
+			}, DrawItem.Data);
 		}
 
 		cmd.EndRenderPass();

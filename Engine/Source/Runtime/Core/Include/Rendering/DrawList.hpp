@@ -14,12 +14,15 @@ namespace PC_CORE::Rendering
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
 		const RhiBuffer* VertexBuffer{ nullptr };
 		const RhiBuffer* IndexBuffer{ nullptr };
+		RhiBuffer::IndexFormat IndexFormat{};
 
 		uint32_t VertexOffset{ 0u };
 		uint32_t IndexCount{ 0u };
 		uint32_t IndexOffset{ 0u };
 
-		double DitanceAABBToCam;
+		double DitanceAABBToCam{ 0 };
+		Tbx::Matrix4x4f MatrixMV{};
+		Tbx::Matrix4x4f NormalInverMatrixMV{};
 	};
 
 	struct DrawStaticMeshMeshlet
@@ -33,18 +36,59 @@ namespace PC_CORE::Rendering
 		const RhiBuffer* MeshletVertexTriangleIndexBuffer{ nullptr }; 
 	};
 
-	// sortkey and data
-	using DrawItem = std::variant<DrawStaticMeshTriangle, DrawStaticMeshMeshlet>;
+	struct DrawItem
+	{
+		uint64_t SortKey;
 
-	class DrawList
+		std::variant<
+			DrawStaticMeshTriangle,
+			DrawStaticMeshMeshlet
+		>Data;
+	};
+
+	// https://en.cppreference.com/w/cpp/utility/variant/visit2.html
+	// helper type for the visitor #4
+	template<class... Ts>
+	struct overloaded : Ts... { using Ts::operator()...; };
+	// explicit deduction guide (not needed as of C++20)
+	template<class... Ts>
+	overloaded(Ts...) -> overloaded<Ts...>;
+
+	class DrawList  
 	{
 	public:
 		DrawList() = default;
 		~DrawList() = default;
 
-		void AddItem(const DrawItem& DrawItem)
+		void PushBack(const DrawItem& DrawItem)
 		{
 			m_items.push_back(DrawItem);
+		}
+
+		void PushBack(DrawItem&& DrawItem)
+		{
+			m_items.push_back(std::move(DrawItem));
+		}
+
+		DrawItem& EmplaceBack(const DrawItem& DrawItem)
+		{
+			m_items.emplace_back(DrawItem);
+		}
+
+		DrawItem& EmplaceBack(DrawItem&& DrawItem)
+		{
+			return m_items.emplace_back(std::move(DrawItem));
+		}
+
+		DrawItem& EmplaceBack()
+		{
+			return m_items.emplace_back();
+		}
+
+		template<typename... Args>
+		DrawItem& EmplaceBack(Args&&... args)
+		{
+			return m_items.emplace_back(std::forward<Args>(args)...);
 		}
 
 		template<typename Comp>
@@ -74,6 +118,28 @@ namespace PC_CORE::Rendering
 		void Clear()
 		{
 			return m_items.clear();
+		}
+
+		auto begin() { return m_items.begin(); }
+
+		auto end() { return m_items.end(); }
+
+		auto begin() const { return m_items.begin(); }
+
+		auto end()   const { return m_items.end(); }
+
+		size_t size() const { return m_items.size(); }
+
+		bool empty() const { return m_items.empty(); }
+
+		void Reserve(size_t Size)
+		{
+			m_items.reserve(Size);
+		}
+
+		void Resize(size_t Size)
+		{
+			m_items.resize(Size);
 		}
 
 	private:

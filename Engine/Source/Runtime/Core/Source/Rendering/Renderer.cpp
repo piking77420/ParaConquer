@@ -57,8 +57,9 @@ namespace PC_CORE::Rendering
 
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
-       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
+       BuildDrawLists(_View, RenderingWorldData);
 
+       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
        m_RenderGraph.Execute(executeContext, _View);
    }
 
@@ -233,15 +234,19 @@ namespace PC_CORE::Rendering
 
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
-       m_OpaqueList.Clear();
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
+       OpaqueList.Clear();
        m_TransparentList.Clear();
-       // TODO MAYCOUNT FOR RESERVE
        FillListStaicMesh(_view, RenderingWorldData);
        SortList();
    }
 
    void Renderer::FillListStaicMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
 
        for (const auto& StaticMeshComponentData : RenderingWorldData.StaticMeshComponentData)
        {
@@ -255,10 +260,10 @@ namespace PC_CORE::Rendering
            double DistanceToCamera = (AABBW.GetCenter() - _view.ViewPosition).Magnitude();
            double BoundingSphereRadius = (AABBW.GetSize() * 0.5).Magnitude();
 
+           const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
+  
            if (!StaticMesh->GetLodThreshold().empty())
            {
-               const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
-               const Tbx::Matrix4x4d NormalInvMatrixView = ModelView.Invert().Transpose();
                LODIndex = PickLodCount(StaticMesh->GetLodThreshold(), BoundingSphereRadius, DistanceToCamera, _view.Fov);
            }
 
@@ -271,27 +276,56 @@ namespace PC_CORE::Rendering
                if (!Material)
                    continue; // to do get dummy mat
 
-               DrawList& DrawList = Material->GetMaterialType() == MaterialType::Opaque ? m_OpaqueList : m_TransparentList;
-               DrawItem item;
+               const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
+               DrawList& DrawList = isOpaque ? OpaqueList : m_TransparentList;
+               DrawItem& item = DrawList.EmplaceBack();
 
-               if (StaticMeshComponentData.UseMeshlet)
+               if (!StaticMeshComponentData.UseMeshlet)
                {
-                   DrawStaticMeshTriangle& Descritptor = item.emplace<DrawStaticMeshTriangle>();
+                   DrawStaticMeshTriangle& Descritptor = item.Data.emplace<DrawStaticMeshTriangle>();
+
+                   Descritptor.ShaderProgram = isOpaque ? opaqueFowardShader.get() : transparentForwardShader.get();
+                   Descritptor.MaterialDescriptor = Material->GetDescriptorSet();
                    Descritptor.VertexBuffer = StaticMesh->GetVertexBuffer(LODIndex).Get();
                    Descritptor.IndexBuffer = StaticMesh->GetIndexBuffer(LODIndex).Get();
                    Descritptor.VertexOffset = MeshSection.MeshDataDescriptor.VertexOffset;
                    Descritptor.IndexOffset = MeshSection.MeshDataDescriptor.IndicesOffset;
                    Descritptor.IndexCount = MeshSection.MeshDataDescriptor.IndicesCount;
+                   Descritptor.IndexFormat = StaticMesh->GetIndexBuffer(LODIndex).GetIndexFormat();
                    Descritptor.DitanceAABBToCam = DistanceToCamera;
+                   Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
+                   Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
+
+                   const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
+                   const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
+                   const uint32_t depthKey = static_cast<uint32_t>(Descritptor.DitanceAABBToCam * FIXED_POINT_NUMBER);
+
+                   if (isOpaque)
+                   {
+                       item.SortKey =
+                           ((shaderKey & 0xFFFF) << 48) |
+                           ((materialKey & 0xFFFF) << 32) |
+                           depthKey; // depth is lsb
+                   }
+                   else
+                   {
+                       // Reverse depth so that larger values correspond to closer objects.
+                       // When sorting ascending, this results in back-to-front ordering.
+                       item.SortKey =
+                           ((std::numeric_limits<uint32_t>::max() - depthKey) << 32) |
+                           (materialKey << 16) |
+                           shaderKey;
+                   }
+                   
                }
                else
                {
-                   DrawStaticMeshMeshlet& Descritptor = item.emplace<DrawStaticMeshMeshlet>();
+                   DrawStaticMeshMeshlet& Descritptor = item.Data.emplace<DrawStaticMeshMeshlet>();
 
                    //Descritptor.DitanceAABBToCam = DistanceToCamera;
                }
 
-               DrawList.AddItem(item);
+               
            }
 
        }
@@ -299,28 +333,11 @@ namespace PC_CORE::Rendering
 
    void Renderer::SortList()
    {
-       /*
-       m_OpaqueList.Sort([](const DrawItem& A, const DrawItem& B)
-           {
-               return std::visit([&](auto&& ItemA) ->bool {
-                   return std::visit([&](auto&& ItemB) ->bool {
-                       if (ItemA.ShaderProgram != ItemB.ShaderProgram)
-                           return ItemA.ShaderProgram < ItemB.ShaderProgram;
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
 
-
-                       }, B);
-                   }, A);
-
-              
-
-               if (a.materialSet != b.materialSet)
-                   return a.materialSet < b.materialSet;
-
-               if (a.vertexBuffer != b.vertexBuffer)
-                   return a.vertexBuffer < b.vertexBuffer;
-
-               return a.indexBuffer < b.indexBuffer;
-           });*/
+       OpaqueList.Sort(std::ranges::less{}, &DrawItem::SortKey);
+       m_TransparentList.Sort(std::ranges::greater{}, &DrawItem::SortKey);
    }
 
    size_t Renderer::PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const

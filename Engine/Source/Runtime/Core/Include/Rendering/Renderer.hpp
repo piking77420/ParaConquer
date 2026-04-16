@@ -26,7 +26,7 @@ public:
         return m_RenderGraph;
     }
 
-    DrawList m_OpaqueList;
+    DrawList OpaqueList;
 
     DrawList m_TransparentList;
 
@@ -52,6 +52,8 @@ private:
     RenderGraph m_RenderGraph; // TODO SET IT OUTSIT ThE CLASS
 
     std::unique_ptr<CommandList> m_CommandList;
+
+    static constexpr double FIXED_POINT_NUMBER = 1000.0f;
 
     void InitRhiRenderPasses(const RenderView& _View);
 

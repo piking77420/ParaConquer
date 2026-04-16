@@ -38,7 +38,7 @@ namespace Vulkan
 
         VULKAN_API void BindDescriptorSet(const PC_CORE::RhiDescriptorSet* _shaderProgramDescriptorSets,
                                           size_t _FirstSet,
-                                          size_t _DynamicOffset) override;
+                                          std::optional<size_t> _DynamicOffset) override;
 
         VULKAN_API void BindDescriptorSets(
             const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,

@@ -44,14 +44,7 @@ namespace PC_CORE::Rendering::Pass
 	void DrawPass::DrawStaticMesh(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj, 
 		const RhiDescriptorSet* RenderPassSet, size_t FirstSet) const
 	{
-		if (_DrawObj.UseMeshlet)
-		{
-			DrawStaticMeshMeshlet(_RendererPassExecuteContext, _DrawObj, RenderPassSet, FirstSet);
-		}
-		else
-		{
-			DrawStaticMeshTriangle(_RendererPassExecuteContext, _DrawObj, RenderPassSet, FirstSet);
-		}
+		
 	}
 
 	void DrawPass::DrawStaticMeshTriangle(const RendererPassExecuteContext& _RendererPassExecuteContext, const Rendering::StaticMeshComponentData& _DrawObj, const RhiDescriptorSet* RenderPassSet, size_t FirstSet) const

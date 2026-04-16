@@ -40,7 +40,7 @@ VsOutput Main(VsInput input)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
 
-    // World position
+    // View position
     float4 ViewPos = mul(float4(PositionL, 1.0), pushConstant.modelView);
 
     output.Position = mul(ViewPos, Projection);

@@ -312,11 +312,11 @@ void Vulkan::VulkanCommandList::EndRenderPass()
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
-    _DescriptorSet, size_t _FirstSet, size_t _DynamicOffset)
+    _DescriptorSet, size_t _FirstSet, std::optional<size_t> _DynamicOffset)
 {
     BindDescriptorSets(std::span<const PC_CORE::RhiDescriptorSet*>(&_DescriptorSet, 1), 
         _FirstSet, 
-        _DynamicOffset != std::numeric_limits<size_t>::max() ? std::span(&_DynamicOffset, 1) : std::span<size_t>());
+        _DynamicOffset ? std::span<size_t>(&_DynamicOffset.value(), 1ull) : std::span<size_t>());
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSets(
@@ -332,7 +332,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
     const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
 
-    vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(alloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
+    vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(_malloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
 
     for (size_t i = 0; i < _DescriptorSets.size(); i++)
     {
@@ -353,7 +353,10 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
         static_cast<uint32_t>(dynamicOffset.size()),
         pDynamicOffsets);
 
-    _freea(pDynamicOffsets);
+    if (pDynamicOffsets != nullptr)
+        _freea(pDynamicOffsets);
+    _freea(vkDescriptorSet);
+
 }
 
 void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
