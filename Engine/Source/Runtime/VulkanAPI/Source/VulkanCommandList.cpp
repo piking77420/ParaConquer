@@ -102,7 +102,6 @@ bool Vulkan::VulkanCommandList::Build()
     sCreateInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
 
 #if DEBUG_GPU_ON
-
     m_SemaphoreDebugName = std::move(std::string(GetName()) + " Semaphore");
     for (auto& s : m_Semaphore)
     {
@@ -115,6 +114,9 @@ bool Vulkan::VulkanCommandList::Build()
         nameInfoImageView.pObjectName = m_SemaphoreDebugName.c_str();
         SET_VK_DEBUG_NAME(nameInfoImageView);
     }
+#else 
+    for (auto& s : m_Semaphore)
+        s = device.createSemaphore(sCreateInfo);
 #endif
 
 #ifdef PROFILING

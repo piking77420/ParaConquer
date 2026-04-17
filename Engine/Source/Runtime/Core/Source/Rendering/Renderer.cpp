@@ -238,7 +238,7 @@ namespace PC_CORE::Rendering
        PERF_REGION_COLOR(PerfRegion::Rendering);
 
        OpaqueList.Clear();
-       m_TransparentList.Clear();
+       TransparentList.Clear();
        FillListStaicMesh(_view, RenderingWorldData);
        SortList();
    }
@@ -277,7 +277,7 @@ namespace PC_CORE::Rendering
                    continue; // to do get dummy mat
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
-               DrawList& DrawList = isOpaque ? OpaqueList : m_TransparentList;
+               DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
                if (!StaticMeshComponentData.UseMeshlet)
@@ -288,6 +288,8 @@ namespace PC_CORE::Rendering
                    Descritptor.MaterialDescriptor = Material->GetDescriptorSet();
                    Descritptor.VertexBuffer = StaticMesh->GetVertexBuffer(LODIndex).Get();
                    Descritptor.IndexBuffer = StaticMesh->GetIndexBuffer(LODIndex).Get();
+
+                   Descritptor.MaterialDescriptorOffset = Material->GetMaterialStride() * m_Rhi.GetFrameIndex();
                    Descritptor.VertexOffset = MeshSection.MeshDataDescriptor.VertexOffset;
                    Descritptor.IndexOffset = MeshSection.MeshDataDescriptor.IndicesOffset;
                    Descritptor.IndexCount = MeshSection.MeshDataDescriptor.IndicesCount;
@@ -337,7 +339,7 @@ namespace PC_CORE::Rendering
        PERF_REGION_COLOR(PerfRegion::Rendering);
 
        OpaqueList.Sort(std::ranges::less{}, &DrawItem::SortKey);
-       m_TransparentList.Sort(std::ranges::greater{}, &DrawItem::SortKey);
+       TransparentList.Sort(std::ranges::greater{}, &DrawItem::SortKey);
    }
 
    size_t Renderer::PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const

@@ -20,6 +20,7 @@ namespace PC_CORE::Rendering
     class RenderingWorldData;
     class Renderer;
     class RenderGraph;
+    class DrawList;
 
     struct RendererPassBuildContext
     {

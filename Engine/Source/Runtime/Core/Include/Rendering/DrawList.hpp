@@ -16,6 +16,7 @@ namespace PC_CORE::Rendering
 		const RhiBuffer* IndexBuffer{ nullptr };
 		RhiBuffer::IndexFormat IndexFormat{};
 
+		uint32_t MaterialDescriptorOffset{0u};
 		uint32_t VertexOffset{ 0u };
 		uint32_t IndexCount{ 0u };
 		uint32_t IndexOffset{ 0u };

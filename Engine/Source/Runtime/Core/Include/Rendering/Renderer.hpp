@@ -28,7 +28,7 @@ public:
 
     DrawList OpaqueList;
 
-    DrawList m_TransparentList;
+    DrawList TransparentList;
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 

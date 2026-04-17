@@ -297,8 +297,9 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
     nameInfo.objectType = vk::ObjectType::eBuffer;
     nameInfo.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkBuffer>(bufferAndAlloc->buffer));
     nameInfo.pObjectName = BufferName;
-    
+#ifdef  DEBUG_GPU_ON
     _VkContext.GetInstance()->SetDebugName(device, &nameInfo);
+#endif
 }
 
 void Vulkan::VulkanBuffer::FreeAlloc(VulkanContext& _VkContext, BufferAndAlloc& _handle)

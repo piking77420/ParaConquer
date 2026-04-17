@@ -42,6 +42,8 @@ namespace PC_CORE::Rendering::Pass
         std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
 
         RhiTexture* m_LightingImage = nullptr;
+
+        void DrawDrawList(const DrawList& DrawList, PC_CORE::CommandList& cmd) const;
     };
 
     REFLECT(FowardPass, DrawPass);
