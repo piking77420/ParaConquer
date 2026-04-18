@@ -69,11 +69,9 @@ BEGIN_EDITOR_PCCORE
             std::mutex _lock;
         };
     
-        Editor();
+        Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo);
 
         ~Editor() override;
-
-        void Init(const PC_CORE::AppCreateInfo& _appCreateInfo) override;
 
         void Destroy() override;
 

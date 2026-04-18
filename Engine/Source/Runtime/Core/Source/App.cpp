@@ -12,24 +12,31 @@
 
 using namespace PC_CORE;
 
-
-void App::Init(const AppCreateInfo& _appCreateInfo)
+void App::Destroy()
 {
+    ResourceManager::Destroy();
+    PC_LOG("App Destroy")
+}
+
+App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
+    : MainWindow(_AppCreateInfo.appName.data())
+    , RenderHarwareInteface(RenderHardwareInterfaceCreateInfo
+    (
+        GraphicAPI::Vulkan,
+        &MainWindow,
+        _AppCreateInfo.appName.data(),
+        _AppCreateInfo.enableGpuDebug
+    ))
+    , Renderer(RenderHarwareInteface)
+    , ThreadPool("Main Thread Pool")
+{
+    Instance = this;
+
     PERF_REGION_SCOPED;
     PC_LOG("App Init")
-    // Can init without any depedancies
-    MainWindow = Window(_appCreateInfo.appName.data());
-    MainWindow.SetIcon(_appCreateInfo.appLogoPath.data());
+        // Can init without any depedancies
+    MainWindow.SetIcon(_AppCreateInfo.appLogoPath.data());
 
-    const RenderHardwareInterfaceCreateInfo createInfo =
-    {
-        .GraphicsAPI = GraphicAPI::Vulkan,
-        .window = &MainWindow,
-        .appName = _appCreateInfo.appName.data(),
-        .gpuDebug = _appCreateInfo.enableGpuDebug
-    };
-
-    RenderHarwareInteface.Init(createInfo);
     PrimaryCommandBuffer.reset(RenderHarwareInteface.CreateCommandList());
     PrimaryCommandBuffer
         ->SetName("PrimaryCommandBuffer")
@@ -73,23 +80,11 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
     std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
     branch->
         TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::FragmentShaderResource);
-        
+
 
     Time::Init();
 }
 
-void App::Destroy()
-{
-    ResourceManager::Destroy();
-    PC_LOG("App Destroy")
-}
-
-App::App()
-    : Renderer(RenderHarwareInteface)
-    , ThreadPool("Main Thread Pool")
-{
-    Instance = this;
-}
 
 void App::WorldTick(double _tick)
 {

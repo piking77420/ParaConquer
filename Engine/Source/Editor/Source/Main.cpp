@@ -16,14 +16,15 @@ int main(int argc, char* argv[])
         .graphicAPI = PC_CORE::GraphicAPI::Vulkan
     };
 
+    PROFILER_NOOP;
+
     bool appShounldClose = false;
     while (!appShounldClose)
     {
         appShounldClose = true;
-        PC_EDITOR_CORE::Editor editor;
-        editor.Init(appCreateInfo);
-        editor.Run(&appShounldClose);
-        editor.Destroy();
+        PC_EDITOR_CORE::Editor Editor(appCreateInfo);
+        Editor.Run(&appShounldClose);
+        Editor.Destroy();
     }
 
 

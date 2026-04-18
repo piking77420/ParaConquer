@@ -20,7 +20,22 @@ namespace PC_CORE::Rendering
         : m_Rhi(_Rhi)
         , m_RenderGraph(m_Rhi)
     {
-       
+        m_CommandList.reset(m_Rhi.CreateCommandList());
+        m_CommandList
+            ->SetName("RendererCommandList")
+            .Build();
+
+        linearClampToEdgeSampler.reset(m_Rhi.CreateSampler());
+        linearClampToEdgeSampler
+            ->SetMagFilter(Filter::Linear)
+            .SetMinFilter(Filter::Linear)
+            .SetU(SamplerAddressMode::ClampToEdge)
+            .SetV(SamplerAddressMode::ClampToEdge)
+            .SetW(SamplerAddressMode::ClampToEdge)
+            .SetName("Linear Clamp To EdgeSampler")
+            .Build();
+
+        InitRhiRenderPasses();
     }
 
    void Renderer::Build(const RenderView& _View)
@@ -28,31 +43,13 @@ namespace PC_CORE::Rendering
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
 
-       m_CommandList.reset(m_Rhi.CreateCommandList());
-       m_CommandList
-           ->SetName("RendererCommandList")
-           .Build();
-
-       linearClampToEdgeSampler.reset(m_Rhi.CreateSampler());
-       linearClampToEdgeSampler
-           ->SetMagFilter(Filter::Linear)
-           .SetMinFilter(Filter::Linear)
-           .SetU(SamplerAddressMode::ClampToEdge)
-           .SetV(SamplerAddressMode::ClampToEdge)
-           .SetW(SamplerAddressMode::ClampToEdge)
-           .SetName("Linear Clamp To EdgeSampler")
-           .Build();
-
        m_RenderGraph.Clear();
        m_RenderGraph.AddRenderPass<Pass::FowardPass>();
        m_RenderGraph.AddRenderPass<Pass::ToneMapPass>();
 
-       InitRhiRenderPasses(_View);
        InitShaders(_View);
-
        RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this);
        m_RenderGraph.Build(buildContext);
-
    }
 
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
@@ -63,7 +60,7 @@ namespace PC_CORE::Rendering
        m_RenderGraph.Execute(executeContext, _View);
    }
 
-   void Renderer::InitRhiRenderPasses(const RenderView& _View)
+   void Renderer::InitRhiRenderPasses()
    {
        {
            forwardPass.reset(m_Rhi.CreateRenderPass());

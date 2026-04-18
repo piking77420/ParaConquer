@@ -30,13 +30,11 @@ class RhiDescriptorSet;
 class Rhi
 {
 public:
-    PC_CORE_API Rhi() = default;
+    PC_CORE_API Rhi(const RenderHardwareInterfaceCreateInfo& _CreateInfo);
 
     PC_CORE_API ~Rhi();
 
     DEFAULT_COPY_MOVE_OPERATIONS(Rhi)
-
-    void Init(const RenderHardwareInterfaceCreateInfo& _createInfo);
 
     GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
 

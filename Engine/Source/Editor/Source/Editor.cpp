@@ -43,10 +43,13 @@ using namespace PC_CORE;
 
 
 
-Editor::Editor()
-    : m_EditorThreadPool("Editor Thread Pool", std::max(1u, std::min(2u, std::thread::hardware_concurrency())))
+Editor::Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo) 
+    : PC_CORE::App(_AppCreateInfo)
+    , m_EditorThreadPool("Editor Thread Pool", std::max(1u, std::min(2u, std::thread::hardware_concurrency())))
 {
-    PROFILER_NOOP;
+
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
 
     if (instance != nullptr)
     {
@@ -54,6 +57,18 @@ Editor::Editor()
         exit(-1);
     }
     instance = this;
+
+    LoadFromInitFiles();
+    CompileShader();
+
+    IMGUIContext.Init(RenderHarwareInteface, MainWindow.GetHandle());
+    InitTestScene();
+    InitEditor();
+
+    for (auto& f : m_FuturInits)
+    {
+        f.wait();
+    }
 }
 
 Editor::~Editor()
@@ -270,25 +285,6 @@ void Editor::CompileShader()
         auto skyboxFrag = ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
                                                                 EDITOR_RESOURCE_PATH "/Shaders/Skybox/Skybox.ps.hlsl");
     }*/
-}
-
-void Editor::Init(const PC_CORE::AppCreateInfo& _appCreateInfo)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Editor);
-
-    LoadFromInitFiles();
-    CompileShader();
-
-    App::Init(_appCreateInfo);
-    IMGUIContext.Init(RenderHarwareInteface, MainWindow.GetHandle());
-    InitTestScene();
-    InitEditor();
-
-    for (auto& f : m_FuturInits)
-    {
-        f.wait();
-    }
 }
 
 void Editor::Destroy()

@@ -55,7 +55,7 @@ private:
 
     static constexpr double FIXED_POINT_NUMBER = 1000.0f;
 
-    void InitRhiRenderPasses(const RenderView& _View);
+    void InitRhiRenderPasses();
 
     void InitShaders(const RenderView& _View);
 

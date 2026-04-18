@@ -22,16 +22,16 @@ Rhi::~Rhi()
 
 }
 
-void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
+Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _CreateInfo)
+	: m_GraphicsApi(_CreateInfo.GraphicsAPI)
 {
 	PERF_REGION_SCOPED;
 	PC_LOG("Rhi Initialize");
-	m_GraphicsApi = _createInfo.GraphicsAPI;
 
 	RenderInstanceCreateInfo renderInstanceCreateInfo =
 	{
-		.appName = _createInfo.appName,
-		.gpuDebug = _createInfo.gpuDebug
+		.appName = _CreateInfo.appName,
+		.gpuDebug = _CreateInfo.gpuDebug
 	};
 
 	const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
@@ -45,7 +45,7 @@ void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
 
 	const RhiContextCreateInfo renderContextCreateInfo =
 	{
-		_createInfo.window->GetHandle(),
+		_CreateInfo.window->GetHandle(),
 		&renderInstanceCreateInfo,
 		&physicalDevicesCreateInfo
 	};

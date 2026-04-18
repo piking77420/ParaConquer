@@ -4,6 +4,7 @@
 #include "World/World.hpp"
 #include "Scripting/ScriptingLua.hpp"
 
+#include <Singleton.hpp>
 #include "Io/Window.hpp"
 #include <Io/CoreIo.hpp>
 
@@ -27,6 +28,8 @@ BEGIN_PCCORE
     class App
     {
     public:
+        PC_CORE_API static inline App* Instance = nullptr;
+
         Thread::ThreadPool ThreadPool;
 
         Thread::TaskScheduler TaskScheduler;
@@ -53,11 +56,9 @@ BEGIN_PCCORE
 
         std::unique_ptr<RhiTexture> DummyTexture;
 
-        PC_CORE_API App();
+        PC_CORE_API App(const PC_CORE::AppCreateInfo& _AppCreateInfo);
 
         PC_CORE_API virtual ~App() = default;
-
-        PC_CORE_API virtual void Init(const AppCreateInfo& _appCreateInfo);
 
         PC_CORE_API virtual void Destroy();
 
@@ -66,8 +67,6 @@ BEGIN_PCCORE
         PC_CORE_API void WorldTick(double _tick);
 
         PC_CORE_API void RenderFrame();
-
-        PC_CORE_API static inline App* Instance = nullptr;
 
         template<typename F, typename... Args>
         [[nodiscard]] auto Enqueue(F&& f, Args&&... args)
