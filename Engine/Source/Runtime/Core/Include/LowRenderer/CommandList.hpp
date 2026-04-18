@@ -191,8 +191,10 @@ BEGIN_PCCORE
             size_t firstSet,
             const std::span<const size_t>& dynamicOffset = {}) = 0;
 
-        PC_CORE_API virtual void PushConstant(const std::string& _pushConstantKey,
-                                              const void* _data, size_t _size) = 0;
+        PC_CORE_API virtual void PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
+                                              const void* _Data,
+                                              uint32_t _Offset,
+                                              uint32_t _Size) = 0;
 
         PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 

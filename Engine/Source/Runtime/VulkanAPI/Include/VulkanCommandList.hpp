@@ -47,8 +47,10 @@ namespace Vulkan
 
         VULKAN_API void BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
 
-        VULKAN_API void PushConstant(const std::string& _pushConstantKey,
-                                     const void* _data, size_t _size) override;
+        VULKAN_API void PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
+                                     const void* _Data,
+                                     uint32_t _Offset,
+                                     uint32_t _Size) override;
 
         VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;
 

@@ -18,7 +18,6 @@
 #include "VulkanRenderPass.hpp"
 #include "VulkanShaderProgram.hpp"
 #include "VulkanTexture.hpp"
-
 #include "Utils/RhiToVulkan.hpp"
 
 Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi)
@@ -378,14 +377,23 @@ void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _Rh
     }
 }
 
-void Vulkan::VulkanCommandList::PushConstant(const std::string& _pushConstantKey, const void* _data, const size_t _size)
+void Vulkan::VulkanCommandList::PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
+                                            const void* _Data,
+                                            uint32_t _Offset,
+                                            uint32_t _Size)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+
+#ifdef _DEBUG
+    if (_size > VULKAN_MAX_PUSH_CONSTANTS)
+    {
+        throw std::runtime_error("VULKAN_MAX_PUSH_CONSTANTS have been exceeded");
+    }
+#endif
     const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
-
-
-    vshadeProgram.PushConstant(GetVulkanCommandBufferHandle(), _pushConstantKey, _data, _size);
+    GetVulkanCommandBufferHandle().pushConstants(vshadeProgram.GetPipelineLayout(), Utils::RhiToShaderStage(_RhiShaderStageTypeFlag),
+        _Offset, _Size, _Data);
 }
 
 void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPort)

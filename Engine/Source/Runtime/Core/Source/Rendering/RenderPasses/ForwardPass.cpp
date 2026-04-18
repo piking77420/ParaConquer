@@ -142,7 +142,7 @@ namespace PC_CORE::Rendering::Pass
 					const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
 
 					cmd.BindDrawBuffers(drawBuffer);
-					cmd.PushConstant("pushConstant", Push, sizeof(ModelPushConstant));
+					cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
 					cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
 				  },
 				  [&](const Rendering::DrawStaticMeshMeshlet& StaticMesh) {
