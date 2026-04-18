@@ -21,5 +21,22 @@ namespace PC_CORE::Rendering::Pass
 	}
 
 	DrawPass::~DrawPass() = default;
+
+	void DrawPass::ProceedDrawList(const DrawList& _DrawList, PC_CORE::CommandList& _Cmd) const
+	{
+		for (const auto& DrawItem : _DrawList)
+		{
+			std::visit(overloaded{
+				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
+					if (m_OnMeshDrawTriangle)
+						m_OnMeshDrawTriangle(StaticMesh, _Cmd);
+				  },
+				  [&](const Rendering::DrawStaticMeshMeshlet& StaticMesh) {
+					if (m_OnMeshDrawMeshlet)
+						m_OnMeshDrawMeshlet(StaticMesh, _Cmd);
+				  },
+				}, DrawItem.Data);
+		}
+	}
 }
 

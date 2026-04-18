@@ -66,6 +66,39 @@ namespace PC_CORE::Rendering::Pass
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBufferHeader.get())
 			.SetName("Forward Pass Scene Set")
 			.Build();
+
+		m_OnMeshDrawTriangle = [&](const Rendering::DrawStaticMeshTriangle& StaticMesh, PC_CORE::CommandList& _Cmd)
+			{
+				if (StaticMesh.ShaderProgram && m_LastShaderProgram != StaticMesh.ShaderProgram)
+				{
+					m_LastShaderProgram = StaticMesh.ShaderProgram;
+					_Cmd.BindProgram(*m_LastShaderProgram);
+					_Cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+				}
+
+				if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
+				{
+					m_LastMaterialDescriptor = StaticMesh.MaterialDescriptor;
+					const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
+					_Cmd.BindDescriptorSet(m_LastMaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
+				}
+				CommandList::DrawBuffers drawBuffer;
+				drawBuffer
+					.PushVertexBuffer(
+						*StaticMesh.VertexBuffer,
+						0ull)
+					.SetIndexBuffer(
+						*StaticMesh.IndexBuffer,
+						0ull,
+						StaticMesh.IndexFormat
+					);
+				const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
+
+				_Cmd.BindDrawBuffers(drawBuffer);
+				_Cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
+				_Cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
+			};
+
 	}
 
 	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
@@ -94,62 +127,9 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetViewPort(viewPort);
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
-		DrawDrawList(_RendererPassExecuteContext.Renderer.OpaqueList, cmd);
-		DrawDrawList(_RendererPassExecuteContext.Renderer.TransparentList, cmd);
-
+		ProceedDrawList(_RendererPassExecuteContext.Renderer.OpaqueList, cmd);
+		ProceedDrawList(_RendererPassExecuteContext.Renderer.TransparentList, cmd);
 		cmd.EndRenderPass();
-	}
-
-	void FowardPass::DrawDrawList(const DrawList& DrawList, PC_CORE::CommandList& cmd) const
-	{
-		const RhiShaderProgram* ShaderProgram{ nullptr };
-		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
-		RhiBuffer* VertexBuffer{ nullptr };
-		RhiBuffer* IndexBuffer{ nullptr };
-		struct alignas(16) ModelPushConstant
-		{
-			Gpu::mat4 ModelView;
-			Gpu::mat4 NormalInvMatrixView;
-		}PushConstant;
-
-		for (const auto& DrawItem : DrawList)
-		{
-			std::visit(overloaded{
-				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
-					if (StaticMesh.ShaderProgram && ShaderProgram != StaticMesh.ShaderProgram)
-					{
-						ShaderProgram = StaticMesh.ShaderProgram;
-						cmd.BindProgram(*ShaderProgram);
-						cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
-					}
-
-					if (StaticMesh.MaterialDescriptor && MaterialDescriptor != StaticMesh.MaterialDescriptor)
-					{
-						MaterialDescriptor = StaticMesh.MaterialDescriptor;
-						const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
-						cmd.BindDescriptorSet(MaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
-					}
-					CommandList::DrawBuffers drawBuffer;
-					drawBuffer
-						.PushVertexBuffer(
-							*StaticMesh.VertexBuffer,
-							0ull)
-						.SetIndexBuffer(
-							*StaticMesh.IndexBuffer,
-							0ull,
-							StaticMesh.IndexFormat
-						);
-					const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
-
-					cmd.BindDrawBuffers(drawBuffer);
-					cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
-					cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
-				  },
-				  [&](const Rendering::DrawStaticMeshMeshlet& StaticMesh) {
-
-				  },
-				}, DrawItem.Data);
-		}
 	}
 
 }
