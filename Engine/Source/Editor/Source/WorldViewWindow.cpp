@@ -61,9 +61,7 @@ void WorldViewWindow::Update()
 
     if (resize)
     {
-        m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
-        m_Editor->Renderer.Build(m_View, std::bind(&WorldViewWindow::BuildRenderGraph, this, std::placeholders::_1));
-        UpdateImguiViewPort();
+        RebuildViewport();
     }
 
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
@@ -83,9 +81,7 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
 
 void WorldViewWindow::OnRenderModeDirty()
 {
-    m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
-    m_Editor->Renderer.Build(m_View, std::bind(&WorldViewWindow::BuildRenderGraph, this, std::placeholders::_1));
-    UpdateImguiViewPort();
+    RebuildViewport();
 }
 
 void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
@@ -93,19 +89,29 @@ void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
     // Default
     switch (m_Editor->editorData.ProjectSettings.RenderMode)
     {
-    case PC_CORE::RenderMode::TriangleBased:
+    case PC_CORE::Rendering::RenderMode::TriangleBased:
         Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
         Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
         break;
-    case PC_CORE::RenderMode::ClusterBased: 
+    case PC_CORE::Rendering::RenderMode::ClusterBased:
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
         break;
-    case PC_CORE::RenderMode::PathTracing:
+    case PC_CORE::Rendering::RenderMode::PathTracing:
         break;
     default:
         assert(false);
         break;
     }
-  
+    
+    Graph.SetRenderMode(m_Editor->editorData.ProjectSettings.RenderMode);
+}
+
+void WorldViewWindow::RebuildViewport()
+{
+    m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
+    m_Editor->Renderer.Build(m_View, std::bind(&WorldViewWindow::BuildRenderGraph, this, std::placeholders::_1));
+    UpdateImguiViewPort();
 }
 
 void WorldViewWindow::UpdateImguiViewPort()
@@ -126,3 +132,4 @@ void WorldViewWindow::UpdateImguiViewPort()
                                                     m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
                                                     imguiDescriptorSet.size());
 }
+

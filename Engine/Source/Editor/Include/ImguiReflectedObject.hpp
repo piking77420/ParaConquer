@@ -66,7 +66,7 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 
 	template <typename T>
 	requires (std::is_enum_v<T>)
-	void DrawEnumButtonExclusive(T* enumValue)
+	bool DrawEnumButtonExclusive(T* enumValue)
 	{
 		assert(enumValue);
 
@@ -78,15 +78,19 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
 
 		uint8_t underlying = std::to_underlying(*enumValue);
+		bool IsDirty = false;
 		for (const auto& EnumV : Renum.members)
 		{
 			ImGui::PushID(EnumV.name.c_str());
 			if (ImGui::RadioButton(EnumV.name.c_str(), underlying == EnumV.value))
 			{
+				IsDirty = *enumValue != static_cast<T>(EnumV.value);
 				*enumValue = static_cast<T>(EnumV.value);
 			}
 			ImGui::PopID();
 		}
+
+		return IsDirty;
 	}
 
 	template <typename T>

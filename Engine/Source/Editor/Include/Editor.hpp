@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <Atomic>
+#include <atomic>
 #include <future>
 #include <functional>
 #include <optional>
@@ -21,6 +21,7 @@
 #include "Reflection/Reflector.hpp"
 #include "ObjectPtr.hpp"
 #include "AssetsImporter.hpp"
+#include <Rendering/RenderingTypedef.h>
 
 BEGIN_EDITOR_PCCORE
     struct EditorFont
@@ -59,7 +60,7 @@ BEGIN_EDITOR_PCCORE
 
     struct ProjectSettings
     {
-        PC_CORE::RenderMode RenderMode = PC_CORE::RenderMode::TriangleBased;
+        PC_CORE::Rendering::RenderMode RenderMode = PC_CORE::Rendering::RenderMode::TriangleBased;
         std::optional<DebugView> DebugView;
     };
 

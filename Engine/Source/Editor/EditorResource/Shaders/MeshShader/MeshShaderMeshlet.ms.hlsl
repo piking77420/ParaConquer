@@ -5,10 +5,15 @@
 #include "MeshShaderDrawCall.hlsl"
 
 
-StructuredBuffer<Vertex> Vertices : register(t0, space0);
-StructuredBuffer<Meshlet> Meshlets : register(t1, space0);
-StructuredBuffer<uint> VertexIndices : register(t2, space0);
-StructuredBuffer<uint> TriangleIndices : register(t3, space0);
+#define CAMERA_BINDING b0
+#define CAMERA_SET space0
+#include "Camera.hlsl"
+
+
+StructuredBuffer<Vertex> Vertices : register(t0, space1);
+StructuredBuffer<Meshlet> Meshlets : register(t1, space1);
+StructuredBuffer<uint> VertexIndices : register(t2, space1);
+StructuredBuffer<uint> TriangleIndices : register(t3, space1);
 
 
 struct MeshOutput
@@ -54,7 +59,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
         uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
         float3 Verticies = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz;
         
-        vertices[gtid.x].Position = mul(float4(Verticies, 1.0), DrawCall.ModelViewProjection);
+        vertices[gtid.x].Position = mul(mul(float4(Verticies, 1.0), DrawCall.ModelView), Projection);
         float3 color = float3(
             float(gid.x & 1),
             float(gid.x & 3) / 4,

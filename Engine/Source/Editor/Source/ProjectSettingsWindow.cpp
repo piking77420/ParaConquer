@@ -30,7 +30,13 @@ namespace PC_EDITOR_CORE
                 ImGui::PopFont();
 
                 ImGui::PushFont(m_Editor->editorData.editorFont.small);
-                ImGuiReflection::DrawEnumButtonExclusive(&m_Editor->editorData.ProjectSettings.RenderMode);
+                if (ImGuiReflection::DrawEnumButtonExclusive(&m_Editor->editorData.ProjectSettings.RenderMode))
+                {
+                    for (auto& Window : m_Editor->EditorWindows)
+                    {
+                        Window->OnRenderModeDirty();
+                    }
+                }
                 ImGui::PopFont();
 
                 ImGui::EndTabItem();

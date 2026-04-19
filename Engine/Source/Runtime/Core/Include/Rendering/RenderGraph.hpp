@@ -2,10 +2,11 @@
 
 #include "MetaProgramming.hpp"
 
-#include "LowRenderer/RhiTypedef.h"
-#include "Reflection/DynamicReflectable.hpp"
-#include "RenderPasses/RenderPass.hpp"
-#include "LowRenderer/Rhi.hpp"
+#include <LowRenderer/RhiTypedef.h>
+#include <Rendering/RenderingTypedef.h>
+#include <Reflection/DynamicReflectable.hpp>
+#include <Rendering/RenderPasses/RenderPass.hpp>
+#include <LowRenderer/Rhi.hpp>
 
 namespace PC_CORE
 {
@@ -141,8 +142,19 @@ namespace PC_CORE::Rendering
 			return *m_OutputImage;
 		}
 
+		RenderMode GetRenderMode() const
+		{
+			return m_Mode;
+		}
+
+		void SetRenderMode(RenderMode RenderMode)
+		{
+			m_Mode = RenderMode;
+		}
 	private:
 		Rhi& m_Rhi;
+
+		RenderMode m_Mode;
 
 		std::unordered_map<std::string_view, std::shared_ptr<RhiResource>> m_RenderGraphResources;
 

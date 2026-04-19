@@ -18,7 +18,6 @@ namespace PC_CORE::Rendering
         std::vector<const Material*> Materials; // make an array with MAX
         const StaticMesh* StaticMesh;
         Tbx::Matrix4x4d WorldMatrix;
-        bool UseMeshlet;
     };
 
     struct DirLightData

@@ -28,15 +28,25 @@ namespace PC_CORE::Rendering::Pass
 			Gpu::mat4 NormalInvMatrixView;
 		};
 
+		struct MeshShaderDrawCall
+		{
+			Gpu::mat4 ModelView;
+			uint32_t SubMeshMeshletCount;
+			uint32_t SubMeshMesletOffset;
+			uint32_t SubMeshVertexOffset;
+			uint32_t SubMeshTriangleVertexOffset;
+			uint32_t SubMeshTriangleOffset;
+		};
+
 		bool m_DrawTransperant = false;
 
 		std::function<void(const Rendering::DrawStaticMeshTriangle&, PC_CORE::CommandList& _Cmd)> m_OnMeshDrawTriangle{};
 
 		std::function<void(const Rendering::DrawStaticMeshMeshlet&, PC_CORE::CommandList& _Cmd)> m_OnMeshDrawMeshlet{};
 
-		const RhiShaderProgram* m_LastShaderProgram{ nullptr };
-
 		const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
+
+		const RhiDescriptorSet* m_LastMeshletDescritptor{ nullptr };
 
 		void ProceedDrawList(const DrawList& _DrawList, PC_CORE::CommandList& _Cmd) const;
 	private:

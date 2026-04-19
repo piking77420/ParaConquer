@@ -21,7 +21,6 @@ namespace PC_CORE::Rendering
 		uint32_t IndexCount{ 0u };
 		uint32_t IndexOffset{ 0u };
 
-		double DitanceAABBToCam{ 0 };
 		Tbx::Matrix4x4f MatrixMV{};
 		Tbx::Matrix4x4f NormalInverMatrixMV{};
 	};
@@ -30,11 +29,15 @@ namespace PC_CORE::Rendering
 	{
 		const RhiShaderProgram* ShaderProgram{ nullptr };
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
-		const RhiBuffer* VertexBuffer{ nullptr };
-		const RhiBuffer* MeshletBuffer{ nullptr };
-		const RhiBuffer* MeshletAABBBuffer{ nullptr };
-		const RhiBuffer* MeshletTriangleBuffer{ nullptr };
-		const RhiBuffer* MeshletVertexTriangleIndexBuffer{ nullptr }; 
+		const RhiDescriptorSet* MeshletDescriptor{ nullptr };
+		uint32_t VertexOffset{ 0u };
+		uint32_t MeshletOffset{ 0u };
+		uint32_t MeshletCount{ 0u };
+		uint32_t SubMeshTriangleVertexOffset{ 0u };
+		uint32_t SubMeshTriangleOffset{ 0u };
+
+		Tbx::Matrix4x4f MatrixMV{};
+		Tbx::Matrix4x4f NormalInverMatrixMV{};
 	};
 
 	struct DrawItem

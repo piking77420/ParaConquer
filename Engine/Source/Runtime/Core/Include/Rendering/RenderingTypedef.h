@@ -9,6 +9,14 @@
 namespace PC_CORE::Rendering
 {
 
+    enum class RenderMode : uint8_t
+    {
+        TriangleBased,
+        ClusterBased,
+        PathTracing
+    };
+    REFLECT(RenderMode);
+
 namespace Gpu
 {
     struct mat4

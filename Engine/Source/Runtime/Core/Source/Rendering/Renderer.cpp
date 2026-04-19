@@ -42,7 +42,6 @@ namespace PC_CORE::Rendering
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-
        m_RenderGraph.Clear();
        InitRenderGraphFunction(m_RenderGraph);
        InitShaders(); // should be call in constructor however shader creation are build after app cronstructor
@@ -235,11 +234,11 @@ namespace PC_CORE::Rendering
 
        OpaqueList.Clear();
        TransparentList.Clear();
-       FillListStaicMesh(_view, RenderingWorldData);
+       FillListStaticMesh(_view, RenderingWorldData);
        SortList();
    }
 
-   void Renderer::FillListStaicMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
+   void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -252,15 +251,15 @@ namespace PC_CORE::Rendering
 
            // Pick Lod
            uint32_t LODIndex = 0;
-           MotionCore::Aabb<double> AABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
-           double DistanceToCamera = (AABBW.GetCenter() - _view.ViewPosition).Magnitude();
-           double BoundingSphereRadius = (AABBW.GetSize() * 0.5).Magnitude();
+           const MotionCore::Aabb<double> AABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
+           const double DistanceAABBToCamera = (AABBW.GetCenter() - _view.ViewPosition).Magnitude();
+           const double BoundingSphereRadius = (AABBW.GetSize() * 0.5).Magnitude();
 
            const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
   
            if (!StaticMesh->GetLodThreshold().empty())
            {
-               LODIndex = PickLodCount(StaticMesh->GetLodThreshold(), BoundingSphereRadius, DistanceToCamera, _view.Fov);
+               LODIndex = PickLodCount(StaticMesh->GetLodThreshold(), BoundingSphereRadius, DistanceAABBToCamera, _view.Fov);
            }
 
            const auto& Lod = StaticMeshData.MeshLods[LODIndex];
@@ -276,7 +275,9 @@ namespace PC_CORE::Rendering
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
-               if (!StaticMeshComponentData.UseMeshlet)
+               switch (m_RenderGraph.GetRenderMode())
+               {
+               case RenderMode::TriangleBased:
                {
                    DrawStaticMeshTriangle& Descritptor = item.Data.emplace<DrawStaticMeshTriangle>();
 
@@ -290,13 +291,12 @@ namespace PC_CORE::Rendering
                    Descritptor.IndexOffset = MeshSection.MeshDataDescriptor.IndicesOffset;
                    Descritptor.IndexCount = MeshSection.MeshDataDescriptor.IndicesCount;
                    Descritptor.IndexFormat = StaticMesh->GetIndexBuffer(LODIndex).GetIndexFormat();
-                   Descritptor.DitanceAABBToCam = DistanceToCamera;
                    Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
                    Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
 
                    const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
-                   const uint32_t depthKey = static_cast<uint32_t>(Descritptor.DitanceAABBToCam * FIXED_POINT_NUMBER);
+                   const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
 
                    if (isOpaque)
                    {
@@ -314,18 +314,42 @@ namespace PC_CORE::Rendering
                            (materialKey << 16) |
                            shaderKey;
                    }
-                   
                }
-               else
+                   break;
+               case RenderMode::ClusterBased:
                {
                    DrawStaticMeshMeshlet& Descritptor = item.Data.emplace<DrawStaticMeshMeshlet>();
 
-                   //Descritptor.DitanceAABBToCam = DistanceToCamera;
+                   Descritptor.ShaderProgram = meshShaderMeshlet.get();
+                   Descritptor.MaterialDescriptor = nullptr;
+                   Descritptor.MeshletDescriptor = StaticMesh->GetMeshletDescriptor(LODIndex);
+
+                   Descritptor.VertexOffset = MeshSection.MeshDataDescriptor.VertexOffset;
+                   Descritptor.MeshletOffset = MeshSection.MeshDataDescriptor.MeshetOffset;
+                   Descritptor.MeshletCount = MeshSection.MeshDataDescriptor.MeshetCount;
+                   Descritptor.SubMeshTriangleVertexOffset = MeshSection.MeshDataDescriptor.MeshletVertexTrianglesIndexOffset;
+                   Descritptor.SubMeshTriangleOffset = MeshSection.MeshDataDescriptor.MeshletTrianglesOffset;
+
+                   Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
+                   Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
+                   const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
+                   const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
+                   const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
+
+                   // all opaque for now
+                   item.SortKey =
+                       ((shaderKey & 0xFFFF) << 48) |
+                       ((materialKey & 0xFFFF) << 32) |
+                       depthKey; // depth is lsb
                }
-
-               
+                   break;
+               case RenderMode::PathTracing:
+                   break;
+               default:
+                   assert(false);
+                   break;
+               }
            }
-
        }
    }
 

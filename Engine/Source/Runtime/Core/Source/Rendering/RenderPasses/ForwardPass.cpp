@@ -67,13 +67,19 @@ namespace PC_CORE::Rendering::Pass
 			.SetName("Forward Pass Scene Set")
 			.Build();
 
+		m_MeshShaderDescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		m_MeshShaderDescriptorSet
+			->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.SetName("Forward Pass Scene Mesh Shader Set")
+			.Build();
+
+
 		m_OnMeshDrawTriangle = [&](const Rendering::DrawStaticMeshTriangle& StaticMesh, PC_CORE::CommandList& _Cmd)
 			{
-				if (StaticMesh.ShaderProgram && m_LastShaderProgram != StaticMesh.ShaderProgram)
+				if (_Cmd.BindProgram(*StaticMesh.ShaderProgram))
 				{
-					m_LastShaderProgram = StaticMesh.ShaderProgram;
-					_Cmd.BindProgram(*m_LastShaderProgram);
 					_Cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+					m_LastMaterialDescriptor = nullptr;
 				}
 
 				if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
@@ -97,6 +103,36 @@ namespace PC_CORE::Rendering::Pass
 				_Cmd.BindDrawBuffers(drawBuffer);
 				_Cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
 				_Cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
+		};
+
+
+		m_OnMeshDrawMeshlet = [&](const Rendering::DrawStaticMeshMeshlet& StaticMesh, PC_CORE::CommandList& _Cmd)
+			{
+				MeshShaderDrawCall MeshShaderDrawCall;
+				std::memcpy(MeshShaderDrawCall.ModelView.data.data(), StaticMesh.MatrixMV.data, 16 * sizeof(float));
+				MeshShaderDrawCall.SubMeshMeshletCount = StaticMesh.MeshletCount;
+				MeshShaderDrawCall.SubMeshMesletOffset = StaticMesh.MeshletOffset;
+				MeshShaderDrawCall.SubMeshVertexOffset = StaticMesh.VertexOffset;
+				MeshShaderDrawCall.SubMeshTriangleVertexOffset = StaticMesh.SubMeshTriangleVertexOffset;
+				MeshShaderDrawCall.SubMeshTriangleOffset = StaticMesh.SubMeshTriangleOffset;
+
+				if (_Cmd.BindProgram(*StaticMesh.ShaderProgram))
+				{
+					_Cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
+					m_LastMeshletDescritptor = nullptr;
+				}
+				
+				if (StaticMesh.MeshletDescriptor && m_LastMeshletDescritptor != StaticMesh.MeshletDescriptor)
+				{
+					m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
+					_Cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 1);
+				}
+
+				static constexpr auto GroupSize = 32;
+				
+				_Cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
+				const uint32_t DispachtSize = (StaticMesh.MeshletCount + GroupSize - 1) / GroupSize;
+				_Cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 		};
 
 	}

@@ -4,7 +4,7 @@
 
 struct MeshShaderDrawCall
 {
-	float4x4 ModelViewProjection; // 64
+	float4x4 ModelView; // 64
 	unsigned int SubMeshMeshletCount;
 	unsigned int SubMeshMesletOffset; // 4  68
 	unsigned int SubMeshVertexOffset;

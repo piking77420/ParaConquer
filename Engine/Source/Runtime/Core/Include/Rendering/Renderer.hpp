@@ -61,7 +61,7 @@ private:
 
     void BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
-    void FillListStaicMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+    void FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void SortList();
 
