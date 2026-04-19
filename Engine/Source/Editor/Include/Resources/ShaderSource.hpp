@@ -7,27 +7,46 @@
 
 
 BEGIN_EDITOR_PCCORE
+
+    enum ShaderFeatureFlagBits {
+        None = 0,
+        Lit = 1 << 0,
+        UseUV = 1 << 1,
+        UseNormalMap = 1 << 2,
+    };
+
+    using ShaderFeatureFlag = uint32_t;
+
     class ShaderSource : public PC_CORE::Resource
     {
     public:
+        explicit ShaderSource();
+
+        explicit ShaderSource(const std::string& _name, ShaderFeatureFlag _ShaderFeatureFlag = 0);
+
+        explicit ShaderSource(const std::string& _name, const std::filesystem::path& path, ShaderFeatureFlag _ShaderFeatureFlag = 0);
+
+        ~ShaderSource() override = default;
+
+        IMP_DYNAMIC_REFLECT()
+
         void Reload() override;
 
         bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
 
-        IMP_DYNAMIC_REFLECT()
-
-        explicit ShaderSource();
-
-        explicit ShaderSource(const std::string& _name);
-
-        explicit ShaderSource(const std::string& _name, const std::filesystem::path& path);
-
-        ~ShaderSource() override = default;
+        ShaderFeatureFlag GetShaderFeatures() const
+        {
+            return m_ShaderFeatureFlag;
+        }
 
     private:
         PC_CORE::RhiShaderProgram::ShaderStageTypeBits m_ShaderType;
 
         std::filesystem::path m_PathToSource;
+
+        ShaderFeatureFlag m_ShaderFeatureFlag = 0;
+
+        std::vector<std::wstring> GetDefineFromShaderFeatures() const;
 
         std::string GetShaderBinaryPath();
 

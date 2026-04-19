@@ -45,7 +45,7 @@ namespace Vulkan
             size_t firstSet,
             const std::span<const size_t>& dynamicOffset) override;
 
-        VULKAN_API void BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
+        VULKAN_API bool BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
 
         VULKAN_API void PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
                                      const void* _Data,

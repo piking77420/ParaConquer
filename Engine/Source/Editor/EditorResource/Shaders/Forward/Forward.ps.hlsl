@@ -1,16 +1,21 @@
+
 struct PSInput
 {
     float4 Position : SV_POSITION;
     float3 ViewSpacePosition : TEXCOORD0;
+#if defined(LIT)
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
-    float2 TexCoord : TEXCOORD1;
-};
+#endif
 
-/*
-#define CAMERA_BINDING b0
-#define CAMERA_SET space0
-#include "Camera.hlsl"*/
+#if defined(USE_UV)
+    float2 TexCoord : TEXCOORD1;
+#endif
+
+#if defined(USE_COLOR)
+    float3 color : COLOR0;
+#endif
+};
 
 #define LIGHT_BUFFER_BINDING t1
 #define LIGHT_BUFFER_SPACE space0
@@ -22,91 +27,77 @@ struct PSInput
 #define MATERIAL_SET space1
 #include "Material.hlsl"
 
-#define CAMERA_BINDING b0
-#define CAMERA_SET space0
-#include "Camera.hlsl"
-
 
 #include "PBR.hlsl"
 
 float3 SRGBToLinear(float3 c)
 {
     return lerp(c / 12.92,
-                pow((c + 0.055) / 1.055, Gamma),
+                pow((c + 0.055) / 1.055, 2.4),
                 step(0.04045, c));
 }
-
-/*
-float3 IntegrateDynamciLights()
-{
-    float3 Lo = float3(0, 0, 0);
-    
-    for (int i = 0; i < LightCount; i++)
-    {
-        switch (Lights[i].PositionType == 0.f) // 
-        {
-            
-        }
-
-        
-        
-    }
-
-    
-    return Lo;
-
-}*/
 
 float4 Main(PSInput input) : SV_Target
 {
     float4 FragAlbedo = AlbedoFactor;
+#if defined(LIT)
     float3 Normal = normalize(input.Normal);
     float Metallic = AORoughnessMetallicEmptyFactors.x;
     float Roughness = AORoughnessMetallicEmptyFactors.y;
     float3 Emissive = EmissiveFactor;
     float AO = AORoughnessMetallicEmptyFactors.z;
+#endif
 
     if (AlbedoNormalEmissiveDescriptor[ALBEDO_KEY] == 1)
     {
+#if defined(LIT) && defined(USE_UV)
         FragAlbedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord);
         if (FragAlbedo.a < 0.5)
             discard;
         
         FragAlbedo.xyz = SRGBToLinear(FragAlbedo.xyz);
+#endif
     }
         
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
     {
-        float3 T = normalize(input.Tangent);
-        float3 N = Normal;
+#if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP)
+            float3 T = normalize(input.Tangent);
+            float3 N = Normal;
 
-        T = normalize(T - dot(T, N) * N);
-        float3 B = normalize(cross(N, T));
+            T = normalize(T - dot(T, N) * N);
+            float3 B = normalize(cross(N, T));
 
-        float3x3 TBN = float3x3(T, B, N);
+            float3x3 TBN = float3x3(T, B, N);
 
-        float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb;
-        NormalTS = normalize(NormalTS * 2.0 - 1.0);
+            float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb;
+            NormalTS = normalize(NormalTS * 2.0 - 1.0);
 
-        Normal = normalize(mul(NormalTS, TBN));
+            Normal = normalize(mul(NormalTS, TBN));
+#endif
     }
     
     
     if (AlbedoNormalEmissiveDescriptor[EMMISIVE_KEY] == 1)
     {
+#if defined(LIT) && defined(USE_UV)
         Emissive += EmissiveTexture.Sample(EmmissiveSampler, input.TexCoord).rgb;
+#endif
     }
     
     if (ORMTextureDescriptor[METALLIC_ROUGNESS_AO_ANI_KEY] == 1)
     {
+ #if defined(LIT) && defined(USE_UV)
         float3 ORM = ORMTexture.Sample(ORMTextureSampler, input.TexCoord).rgb;
 
         AO = ORM.r;
         Roughness = ORM.g;
         Metallic = ORM.b;
+ #endif
     }
     
     float3 Lo = float3(0, 0, 0);
+#if defined(LIT)
     
     float3 N = Normal;
     float3 V = -normalize(input.ViewSpacePosition);
@@ -114,7 +105,7 @@ float4 Main(PSInput input) : SV_Target
     
     float keepAlive = Lights[0].PositionType.x;
 
-    // Mix it into output in a way that can’t be optimized away
+    // Mix it into output in a way that canï¿½t be optimized away
     Lo.r += (asuint(keepAlive) & 1) * 1e-6;
  
     // Dir Light 
@@ -136,9 +127,12 @@ float4 Main(PSInput input) : SV_Target
     }
     
     // Other
-
-    
     Lo += Emissive * 0.001;
+#endif
+
+#if defined(USE_COLOR)
+    Lo += input.color;
+#endif
         
     return float4(Lo, FragAlbedo.a);
 }

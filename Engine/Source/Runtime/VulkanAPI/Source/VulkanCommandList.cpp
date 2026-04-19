@@ -360,7 +360,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
 }
 
-void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
+bool Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -374,7 +374,11 @@ void Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _Rh
 
         m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
             vshadeProgram.GetPipeline());
+
+        return true;
     }
+
+    return false;
 }
 
 void Vulkan::VulkanCommandList::PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,

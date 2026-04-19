@@ -57,6 +57,8 @@ BEGIN_EDITOR_PCCORE
     private:
         void UpdateImguiViewPort();
 
+        void RebuildViewport();
+
         PC_CORE::Sampler m_ViewPortSampler;
 
         std::array<VkDescriptorSet, MaxFramesInFlight> imguiDescriptorSet;

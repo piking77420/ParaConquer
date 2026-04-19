@@ -524,7 +524,7 @@ void VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    std::unordered_map<const char*, vk::PushConstantRange> map;
+    std::unordered_map<std::string_view, vk::PushConstantRange> map;
 
     std::vector<vk::PushConstantRange>* pushConstantRanges = &_vulkanShaderProgramCreateContex.pushConstantRanges;
 
@@ -535,17 +535,17 @@ void VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex
         for (uint32_t j = 0; j < Module.push_constant_block_count; j++)
         {
             const SpvReflectBlockVariable& block = Module.push_constant_blocks[j];
-            if (auto it = map.find(block.name); it != map.end())
+            const std::string_view BlockName = block.name;
+            auto it = map.find(BlockName);
+            if (it != map.end())
             {
-                auto& pushConstant = map[block.name];
-                assert(pushConstant.size == block.size);
-                assert(pushConstant.offset == block.offset);
-
-                pushConstant.stageFlags |= static_cast<vk::ShaderStageFlags>(Module.shader_stage);
+                assert(it->second.size == block.size);
+                assert(it->second.offset == block.offset);
+                it->second.stageFlags |= static_cast<vk::ShaderStageFlags>(Module.shader_stage);
             }
             else
             {
-                auto& pushConstant = map[block.name];
+                auto& pushConstant = map[BlockName];
                 pushConstant.offset = block.offset;
                 pushConstant.size = block.size;
                 pushConstant.stageFlags = static_cast<vk::ShaderStageFlags>(Module.shader_stage);

@@ -187,13 +187,14 @@ void Editor::CompileShader()
 		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
 			ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
 				EDITOR_RESOURCE_PATH
-				"/Shaders/Forward/Forward.vs.hlsl");
+				"/Shaders/Forward/Forward.vs.hlsl",
+                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
 			}));
 
 		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
 			ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
-				EDITOR_RESOURCE_PATH
-				"/Shaders/Forward/Forward.ps.hlsl");
+				EDITOR_RESOURCE_PATH"/Shaders/Forward/Forward.ps.hlsl",
+                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
 			}));
 	}
 
@@ -478,15 +479,15 @@ void Editor::InitTestScene()
     
     TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
      
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
 
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
-    TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
+    //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
 }
   
 
@@ -538,12 +539,12 @@ void Editor::InitEditor()
 
     {
         PC_LOG("InitEditorWindows...")
+        m_ProjectSettingsWindow = EditorWindows.emplace_back(std::make_unique<ProjectSettingsWindow>(*this, "ProjectSettings")).get(); // order is important
         EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
         EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
         EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
         EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
         EditorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
-        m_ProjectSettingsWindow = EditorWindows.emplace_back(std::make_unique<ProjectSettingsWindow>(*this, "ProjectSettings")).get();
     }
 
 

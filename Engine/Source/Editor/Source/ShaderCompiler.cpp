@@ -156,7 +156,7 @@ static bool GetExtension(const wchar_t* _file, wchar_t* _buffer, size_t _bufferS
     return true;
 }
 
-std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _fileName)
+std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _fileName, const std::vector<std::wstring>& _Args)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -166,7 +166,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     uint32_t codePage = DXC_CP_ACP;
     ComPtr<IDxcBlobEncoding> sourceBlob;
     hres = GetContext().utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
-    if (FAILED(hres) || !sourceBlob) // V�rifie que le blob est valide
+    if (FAILED(hres) || !sourceBlob)
     {
         PC_LOGERROR("Failed to load file FromDisk = {}", hres);
         exit(-1);
@@ -200,6 +200,10 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         L"-I", INCLUDE_PATH,
         L"-Zpr",
     };
+    for (const auto& args : _Args)
+    {
+        arguments.push_back(args.c_str());
+    }
 
     switch (_api)
     {
@@ -275,15 +279,6 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     return shaderCode;
 }
 
-std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::string& _filename)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::EditorResource);
-
-    auto wfileName = std::wstring(_filename.begin(), _filename.end());
-
-    return CompileFile(_api, std::move(wfileName));
-}
 
 ShaderCompiler::ShaderCompiler()
 {
