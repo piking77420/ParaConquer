@@ -38,16 +38,15 @@ namespace PC_CORE::Rendering
         InitRhiRenderPasses();
     }
 
-   void Renderer::Build(const RenderView& _View)
+   void Renderer::Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction)
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
 
        m_RenderGraph.Clear();
-       m_RenderGraph.AddRenderPass<Pass::FowardPass>();
-       m_RenderGraph.AddRenderPass<Pass::ToneMapPass>();
-
-       InitShaders(_View);
+       InitRenderGraphFunction(m_RenderGraph);
+       InitShaders(); // should be call in constructor however shader creation are build after app cronstructor
+ 
        RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this);
        m_RenderGraph.Build(buildContext);
    }
@@ -123,7 +122,7 @@ namespace PC_CORE::Rendering
       
    }
 
-   void Renderer::InitShaders([[maybe_unsed]] const RenderView& _View)
+   void Renderer::InitShaders()
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);

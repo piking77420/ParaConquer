@@ -25,6 +25,14 @@ BEGIN_PCCORE
         GraphicAPI graphicAPI;
     };
 
+    enum class RenderMode : uint8_t
+    {
+        TriangleBased,
+        ClusterBased,
+        PathTracing
+    };
+    REFLECT(RenderMode);
+
     class App
     {
     public:

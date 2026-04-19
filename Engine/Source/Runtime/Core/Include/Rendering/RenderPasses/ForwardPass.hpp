@@ -13,7 +13,6 @@ namespace PC_CORE::Rendering::Pass
 
         ~FowardPass() override = default;
 
-
         IMP_DYNAMIC_REFLECT();
 
         const char* GetName() const

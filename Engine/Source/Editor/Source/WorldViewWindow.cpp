@@ -8,6 +8,9 @@
 #include "LowRenderer/CommandList.hpp"
 #include "Rendering/RenderSystem.hpp"
 
+#include <Rendering/RenderPasses/ForwardPass.hpp>
+#include <Rendering/RenderPasses/ToneMapPass.hpp>
+
 #undef near
 #undef far
 
@@ -59,7 +62,7 @@ void WorldViewWindow::Update()
     if (resize)
     {
         m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
-        m_Editor->Renderer.Build(m_View);
+        m_Editor->Renderer.Build(m_View, std::bind(&WorldViewWindow::BuildRenderGraph, this, std::placeholders::_1));
         UpdateImguiViewPort();
     }
 
@@ -76,6 +79,33 @@ void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
     const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::Rendering::RendererSystem>()->GetRenderRenderingWorldData(); // should be done once
 
     m_Editor->Renderer.Excute(m_View, worldData);
+}
+
+void WorldViewWindow::OnRenderModeDirty()
+{
+    m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
+    m_Editor->Renderer.Build(m_View, std::bind(&WorldViewWindow::BuildRenderGraph, this, std::placeholders::_1));
+    UpdateImguiViewPort();
+}
+
+void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
+{
+    // Default
+    switch (m_Editor->editorData.ProjectSettings.RenderMode)
+    {
+    case PC_CORE::RenderMode::TriangleBased:
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        break;
+    case PC_CORE::RenderMode::ClusterBased: 
+        break;
+    case PC_CORE::RenderMode::PathTracing:
+        break;
+    default:
+        assert(false);
+        break;
+    }
+  
 }
 
 void WorldViewWindow::UpdateImguiViewPort()

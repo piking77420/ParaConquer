@@ -49,3 +49,21 @@ bool EditorWindow::IsCursorInsideWindow() const
 
     return IsInsideWindow({static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y)});
 }
+
+void EditorWindow::Update()
+{
+    if (m_PushUpFrontAndFocus)
+    {
+        m_PushUpFrontAndFocus = false;
+
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        center.x *= 0.5f;
+        center.y *= 0.5f;
+
+        ImGui::SetWindowPos(center, ImGuiCond_Always);
+
+        // Set size
+        const Tbx::Vector2ui Size = m_Editor->MainWindow.GetWindowSize();
+        ImGui::SetWindowSize(ImVec2(static_cast<float>(Size.x / 2), static_cast<float>(Size.y / 2)), ImGuiCond_Always);
+    }
+}

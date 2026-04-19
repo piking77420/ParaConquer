@@ -386,7 +386,7 @@ void Vulkan::VulkanCommandList::PushConstant(RhiShaderStageTypeFlag _RhiShaderSt
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
 #ifdef _DEBUG
-    if (_size > VULKAN_MAX_PUSH_CONSTANTS)
+    if (_Size > VULKAN_MAX_PUSH_CONSTANTS)
     {
         throw std::runtime_error("VULKAN_MAX_PUSH_CONSTANTS have been exceeded");
     }

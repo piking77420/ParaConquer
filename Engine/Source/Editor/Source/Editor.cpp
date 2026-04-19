@@ -1,16 +1,14 @@
-﻿#include <Chrono>
+﻿#include "Editor.hpp"
+
+#include <Chrono>
 #include <Iostream>
 #include <thread>
-
-
 #include <imgui_internal.h>
 #include <PerfRegion.hpp>
+#include <ProjectSettingsWindow.hpp>
+#include <Resources/ResourceManager.hpp>
 
-
-#include "Editor.hpp"
 #include "Resources/ResourceManager.hpp"
-
-
 #include "EditWorldWindow.hpp"
 #include "Hierachy.hpp"
 #include "Inspector.hpp"
@@ -18,9 +16,8 @@
 #include "SceneButton.hpp"
 #include "Time/CoreTime.hpp"
 #include "WorldViewWindow.hpp"
-#include <Resources/ResourceManager.hpp>
-
 #include "EditorFiles.hpp"
+#include "ImguiHelper.h"
 #include "Io/CoreIo.hpp"
 #include "Io/ImguiContext.h"
 #include "Physics/RigidBody.hpp"
@@ -32,9 +29,8 @@
 #include "Serialize/JsonSerializer.hpp"
 #include "Serialize/Serializer.h"
 #include "SystemDialogue.hpp"
-#include "World/StaticMeshComponent.hpp"
 #include "Thread/ThreadUtils.hpp"
-#include "ImguiHelper.h"
+#include "World/StaticMeshComponent.hpp"
 
 #include "ImguiReflectedObject.hpp"
 
@@ -291,9 +287,13 @@ void Editor::Destroy()
 {
     PERF_REGION_SCOPED;
 
+    {
+        std::scoped_lock(AssetImportData._lock);
+        AssetImportData.Imports.clear();
+    }
     // editor window need core
-    for (auto& i : editorWindows)
-        i.reset();
+    for (auto& EditorWindow : EditorWindows)
+        EditorWindow.reset();
 
     IMGUIContext.Destroy();
 
@@ -323,17 +323,21 @@ void Editor::UpdateEditor()
                 Level& l = World::GetWorld()->level;
                 //Serializer::DeSerialize(&l,"TestScene.map");
             }
+
+            if (ImGui::MenuItem("ProjectSetting"))
+            {
+                m_ProjectSettingsWindow->isOpen = !m_ProjectSettingsWindow->isOpen;
+                if (m_ProjectSettingsWindow->isOpen)
+                    m_ProjectSettingsWindow->PushUpFrontAndFocus();
+            }
+
             ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("RenderSettings"))
         {
-            ImGui::Text("MSAA : ");
-            ImGui::SameLine();
-            {
-                ImGui::ScopedFont(editorData.editorFont.tiny);
-                ImGuiReflection::SelectEnum<decltype(PC_CORE::Rendering::RenderSettings::MSAASampleCount)>(&RenderSettings.MSAASampleCount);
-            }
+            ImGuiReflection::DrawEnumMenue("MSAA", &RenderSettings.MSAASampleCount);
+
             ImGui::EndMenu();
         }
         /*
@@ -357,28 +361,16 @@ void Editor::UpdateEditor()
         ImGui::EndMenuBar();
     }
 
-    /*if (testMaterial)
-    {
-
-
-        ImGui::Begin("TestUpdateMaterial");
-
-        auto& m = testMaterial->BeginUpdateMaterialData();
-        if (ImGui::ColorPicker4("Color", &m.AlbedoFactors.data[0]))
-        {
-            testMaterial->UpdateMaterialData();
-        }
-
-        ImGui::End();
-    }*/
-
     {
         PERF_REGION_SCOPED_NAMED("Update Windows");
-        for (auto& editorWindow : editorWindows)
+        for (auto& EditorWindow : EditorWindows)
         {
-            editorWindow->Begin();
-            editorWindow->Update();
-            editorWindow->End();
+            if (!EditorWindow->isOpen)
+                continue;
+            
+            EditorWindow->Begin();
+            EditorWindow->Update();
+            EditorWindow->End();
         }
     }
 
@@ -436,7 +428,10 @@ void Editor::TempImportModel(const std::filesystem::path& _path)
                             });
                         if (it != AssetImportData.Imports.end() && (*it)->GetSuccess())
                         {
-                            StaticMesh = (*it)->GetStaticMeshes();
+                            if (auto StaticMeshLocked = (*it)->GetStaticMeshes().Lock())
+                            {
+                                StaticMesh = StaticMeshLocked;
+                            }
                         }
                     }
 
@@ -503,8 +498,8 @@ void Editor::DestroyTestScene()
 
 void Editor::OnRender(PC_CORE::CommandList* _Cmd)
 {
-    for (auto& editorWindow : editorWindows)
-        editorWindow->Render(PrimaryCommandBuffer.get());
+    for (auto& EditorWindow : EditorWindows)
+        EditorWindow->Render(PrimaryCommandBuffer.get());
     for (auto& sub : editorSubSystems)
         sub->Render();
 
@@ -542,12 +537,13 @@ void Editor::InitEditor()
 
 
     {
-        PC_LOG("InitEditorWindow...")
-        editorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
-        editorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
-        editorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
-        editorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
-        editorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
+        PC_LOG("InitEditorWindows...")
+        EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+        EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
+        EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
+        EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
+        EditorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
+        m_ProjectSettingsWindow = EditorWindows.emplace_back(std::make_unique<ProjectSettingsWindow>(*this, "ProjectSettings")).get();
     }
 
 

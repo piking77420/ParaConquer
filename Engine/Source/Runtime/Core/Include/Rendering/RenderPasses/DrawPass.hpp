@@ -15,7 +15,7 @@ namespace PC_CORE::Rendering
 
 namespace PC_CORE::Rendering::Pass 
 {
-	class DrawPass : public RenderPass
+	class PC_CORE_API DrawPass : public RenderPass
 	{
 	public:
 		DrawPass();

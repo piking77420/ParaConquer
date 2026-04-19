@@ -8,7 +8,7 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 {
 	template <typename T>
 	requires (std::is_enum_v<T>)
-	void SelectEnum(T* enumValue)
+	void DrawEnumStepper(T* enumValue)
 	{
 		assert(enumValue);
 
@@ -62,5 +62,57 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 			ImGui::PopID();
 		}
 
+	}
+
+	template <typename T>
+	requires (std::is_enum_v<T>)
+	void DrawEnumButtonExclusive(T* enumValue)
+	{
+		assert(enumValue);
+
+		static_assert(std::is_same_v<std::underlying_type_t<T>, uint8_t>,
+			"Only support uint8_t for enum reflected");
+
+		static const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType<T>();
+
+		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
+
+		uint8_t underlying = std::to_underlying(*enumValue);
+		for (const auto& EnumV : Renum.members)
+		{
+			ImGui::PushID(EnumV.name.c_str());
+			if (ImGui::RadioButton(EnumV.name.c_str(), underlying == EnumV.value))
+			{
+				*enumValue = static_cast<T>(EnumV.value);
+			}
+			ImGui::PopID();
+		}
+	}
+
+	template <typename T>
+	requires std::is_enum_v<T>
+	void DrawEnumMenue(std::string_view _MenuName, T* _EnumValue)
+	{
+		assert(_EnumValue);
+
+		static_assert(std::is_same_v<std::underlying_type_t<T>, uint8_t>,
+			"Only support uint8_t for enum reflected");
+		static const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType<T>();
+		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
+		const uint8_t underlying = std::to_underlying(*_EnumValue);
+
+		if (ImGui::BeginMenu(_MenuName.data()))
+		{
+			for (const auto& EnumV : Renum.members)
+			{
+				ImGui::PushID(EnumV.name.c_str());
+				if (ImGui::MenuItem(EnumV.name.c_str()))
+				{
+					*_EnumValue = static_cast<T>(EnumV.value);
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndMenu();
+		}
 	}
 }

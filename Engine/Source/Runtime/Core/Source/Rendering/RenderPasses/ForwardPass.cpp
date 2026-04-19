@@ -97,7 +97,7 @@ namespace PC_CORE::Rendering::Pass
 				_Cmd.BindDrawBuffers(drawBuffer);
 				_Cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
 				_Cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
-			};
+		};
 
 	}
 

@@ -48,12 +48,28 @@ BEGIN_EDITOR_PCCORE
         DEFAULT_COPY_MOVE_OPERATIONS(ProjectData);
     };
 
+    enum class DebugView
+    {
+        Lit,
+        Unlit,
+        Normal,
+        UV,
+        AO,
+    };
+
+    struct ProjectSettings
+    {
+        PC_CORE::RenderMode RenderMode = PC_CORE::RenderMode::TriangleBased;
+        std::optional<DebugView> DebugView;
+    };
+
     struct EditorData
     {
         EditorFont editorFont{};
         EditorFont editorFontItalic{};
 
         ProjectData projectData{};
+        ProjectSettings ProjectSettings;
         std::filesystem::path projectPath{};
     };
 
@@ -102,7 +118,7 @@ BEGIN_EDITOR_PCCORE
 
         std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
 
-        std::vector<std::unique_ptr<EditorWindow>> editorWindows;
+        std::vector<std::unique_ptr<EditorWindow>> EditorWindows;
 
         std::vector<std::unique_ptr<EditorCommand>> editorCommands;
 
@@ -135,9 +151,9 @@ BEGIN_EDITOR_PCCORE
 
         std::vector<std::future<void>> m_FuturInits;
 
-        PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> testMaterial;
-
         PC_CORE::Thread::ThreadPool m_EditorThreadPool;
+
+        EditorWindow* m_ProjectSettingsWindow = nullptr;
     };
 
     template <EditorCommandDerived T, typename... Args>

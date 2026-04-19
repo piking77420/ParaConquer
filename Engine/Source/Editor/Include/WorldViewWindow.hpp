@@ -38,6 +38,8 @@ BEGIN_EDITOR_PCCORE
 
         void Render(PC_CORE::CommandList* _Cmd) override;
 
+        void OnRenderModeDirty() override;
+
         const PC_CORE::Camera& GetCamera() const
         {
             return m_Camera;
@@ -49,6 +51,8 @@ BEGIN_EDITOR_PCCORE
         bool m_CameraViewDirty = false;
 
         PC_CORE::Rendering::RenderView m_View;
+
+        virtual void BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph);
 
     private:
         void UpdateImguiViewPort();

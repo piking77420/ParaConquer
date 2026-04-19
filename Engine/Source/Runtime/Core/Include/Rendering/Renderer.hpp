@@ -17,7 +17,7 @@ public:
 
     DEFAULT_COPY_MOVE_OPERATIONS(Renderer)
 
-    PC_CORE_API void Build(const RenderView& _view);
+    PC_CORE_API void Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction);
 
     PC_CORE_API void Excute(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
@@ -57,7 +57,7 @@ private:
 
     void InitRhiRenderPasses();
 
-    void InitShaders(const RenderView& _View);
+    void InitShaders();
 
     void BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
