@@ -49,19 +49,21 @@ BEGIN_EDITOR_PCCORE
         DEFAULT_COPY_MOVE_OPERATIONS(ProjectData);
     };
 
-    enum class DebugView
+    enum class DebugView : uint8_t
     {
         Lit,
         Unlit,
         Normal,
         UV,
         AO,
+        Triangle,
+        Meshlet
     };
+    REFLECT(DebugView);
 
     struct ProjectSettings
     {
         PC_CORE::Rendering::RenderMode RenderMode = PC_CORE::Rendering::RenderMode::TriangleBased;
-        std::optional<DebugView> DebugView;
     };
 
     struct EditorData
@@ -71,6 +73,7 @@ BEGIN_EDITOR_PCCORE
 
         ProjectData projectData{};
         ProjectSettings ProjectSettings;
+        DebugView DebugView = DebugView::Lit;
         std::filesystem::path projectPath{};
     };
 
@@ -142,6 +145,8 @@ BEGIN_EDITOR_PCCORE
 
         void CompileShader();
 
+        void CompileShaderDebugView();
+
         void LookForEditorInit();
 
         void BasicOpenFile();
@@ -155,6 +160,8 @@ BEGIN_EDITOR_PCCORE
         PC_CORE::Thread::ThreadPool m_EditorThreadPool;
 
         EditorWindow* m_ProjectSettingsWindow = nullptr;
+
+        EditWorldWindow* m_EditorWorldWindow = nullptr;
     };
 
     template <EditorCommandDerived T, typename... Args>

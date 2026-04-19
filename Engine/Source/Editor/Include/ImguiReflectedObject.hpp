@@ -95,7 +95,7 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 
 	template <typename T>
 	requires std::is_enum_v<T>
-	void DrawEnumMenue(std::string_view _MenuName, T* _EnumValue)
+	bool DrawEnumMenue(std::string_view _MenuName, T* _EnumValue)
 	{
 		assert(_EnumValue);
 
@@ -104,19 +104,35 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 		static const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType<T>();
 		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
 		const uint8_t underlying = std::to_underlying(*_EnumValue);
+		bool IsDirty = false;
 
 		if (ImGui::BeginMenu(_MenuName.data()))
 		{
 			for (const auto& EnumV : Renum.members)
 			{
+				const bool selected = (underlying == EnumV.value);
+				if (selected)
+				{
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.3f, 0.6f, 1.0f, 0.8f));
+					ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
+				}
+
 				ImGui::PushID(EnumV.name.c_str());
-				if (ImGui::MenuItem(EnumV.name.c_str()))
+
+				if (ImGui::MenuItem(EnumV.name.c_str(), nullptr, selected))
 				{
 					*_EnumValue = static_cast<T>(EnumV.value);
+					IsDirty = true;
 				}
+
 				ImGui::PopID();
+
+				if (selected)
+					ImGui::PopStyleColor(2);
 			}
 			ImGui::EndMenu();
 		}
+
+		return IsDirty;
 	}
 }

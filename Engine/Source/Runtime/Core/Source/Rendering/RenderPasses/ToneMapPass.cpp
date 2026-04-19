@@ -25,7 +25,7 @@ namespace PC_CORE::Rendering::Pass
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 			.SetAttachments(&outPutImage)
-			.SetRenderPass(_RendererPassBuildContext.Renderer.drawTextureQuadPass.get())
+			.SetRenderPass(_RendererPassBuildContext.Renderer.colorLinearPass.get())
 			.SetName("ToneMap Framebuffer")
 			.Build();
 

@@ -97,9 +97,9 @@ namespace PC_CORE::Rendering
        }
 
        {
-           drawTextureQuadPass.reset(m_Rhi.CreateRenderPass());
+           colorLinearPass.reset(m_Rhi.CreateRenderPass());
 
-           const RenderPassAttachementDescriptor& renderTragetSlot = drawTextureQuadPass
+           const RenderPassAttachementDescriptor& renderTragetSlot = colorLinearPass
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
                .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
@@ -109,13 +109,47 @@ namespace PC_CORE::Rendering
                .SetInitialImageState(RhiResourceState::Undefined)
                .SetFinalImageState(RhiResourceState::FragmentShaderResource);
 
-           drawTextureQuadPass
+           colorLinearPass
                ->CreateSubPass()
                .SetType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
-           drawTextureQuadPass
-               ->SetName("ToneMap temp")
+           colorLinearPass
+               ->SetName("ColorLinearPass")
+               .Build();
+       }
+
+       {
+           colorLinearPassDepth.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = colorLinearPassDepth
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+
+           const RenderPassAttachementDescriptor& DepthAttachement = colorLinearPassDepth
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S01)
+               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::DepthStencilWrite);
+
+           colorLinearPassDepth
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
+               .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
+
+           colorLinearPassDepth
+               ->SetName("ColorLinearPassDepth")
                .Build();
        }
       
@@ -151,7 +185,7 @@ namespace PC_CORE::Rendering
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
-               .SetRenderPass(*drawTextureQuadPass)
+               .SetRenderPass(*colorLinearPass)
                .SetName("DrawQuadTriangle")
                .Build();
        }
@@ -223,6 +257,32 @@ namespace PC_CORE::Rendering
                .SetDepthWrite(true)
                .SetDepthTest(true)
                .SetName("Triangle MeshShader")
+               .Build();
+       }
+
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangle.vs.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangle.ps.hlsl.binary")->GetCode() },
+           };
+
+           DrawMeshTriangles.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawMeshTriangles
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(shaderModules)
+               .SetRenderPass(*colorLinearPassDepth)
+               .SetVertexAttributeDescriptions({ VertexAttributeDescription{
+                .Binding = 0,
+                .Location = 0,
+                .Format = RhiFormat::R32G32B32A32Sfloat,
+                .Offset = offsetof(StaticMeshVertex, Position)
+                } })
+               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
+               .SetDepthWrite(true)
+               .SetDepthTest(true)
+               .SetName("Draw Mesh Triangles")
                .Build();
        }
    }

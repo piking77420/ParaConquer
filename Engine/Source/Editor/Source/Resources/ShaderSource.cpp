@@ -167,6 +167,15 @@ std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
         Features.push_back(L"-DUSE_NORMAL_MAP=1");
     }
 
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseColor)
+    {
+        Features.push_back(L"-DUSE_COLOR=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::DrawTriangle)
+    {
+        Features.push_back(L"-DDRAW_TRIANGLE=1");
+    }
 
     return Features;
 }

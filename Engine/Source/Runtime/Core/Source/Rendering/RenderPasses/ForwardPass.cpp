@@ -74,65 +74,28 @@ namespace PC_CORE::Rendering::Pass
 			.Build();
 
 
-		m_OnMeshDrawTriangle = [&](const Rendering::DrawStaticMeshTriangle& StaticMesh, PC_CORE::CommandList& _Cmd)
+		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
+		{
+			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
-				if (_Cmd.BindProgram(*StaticMesh.ShaderProgram))
-				{
-					_Cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
-					m_LastMaterialDescriptor = nullptr;
-				}
+				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+				m_LastMaterialDescriptor = nullptr;
+			}
 
-				if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
-				{
-					m_LastMaterialDescriptor = StaticMesh.MaterialDescriptor;
-					const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
-					_Cmd.BindDescriptorSet(m_LastMaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
-				}
-				CommandList::DrawBuffers drawBuffer;
-				drawBuffer
-					.PushVertexBuffer(
-						*StaticMesh.VertexBuffer,
-						0ull)
-					.SetIndexBuffer(
-						*StaticMesh.IndexBuffer,
-						0ull,
-						StaticMesh.IndexFormat
-					);
-				const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
-
-				_Cmd.BindDrawBuffers(drawBuffer);
-				_Cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
-				_Cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
+			if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
+			{
+				m_LastMaterialDescriptor = StaticMesh.MaterialDescriptor;
+				const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
+				_Context.cmd.BindDescriptorSet(m_LastMaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
+			}
 		};
 
-
-		m_OnMeshDrawMeshlet = [&](const Rendering::DrawStaticMeshMeshlet& StaticMesh, PC_CORE::CommandList& _Cmd)
+		m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
+		{
+			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
-				MeshShaderDrawCall MeshShaderDrawCall;
-				std::memcpy(MeshShaderDrawCall.ModelView.data.data(), StaticMesh.MatrixMV.data, 16 * sizeof(float));
-				MeshShaderDrawCall.SubMeshMeshletCount = StaticMesh.MeshletCount;
-				MeshShaderDrawCall.SubMeshMesletOffset = StaticMesh.MeshletOffset;
-				MeshShaderDrawCall.SubMeshVertexOffset = StaticMesh.VertexOffset;
-				MeshShaderDrawCall.SubMeshTriangleVertexOffset = StaticMesh.SubMeshTriangleVertexOffset;
-				MeshShaderDrawCall.SubMeshTriangleOffset = StaticMesh.SubMeshTriangleOffset;
-
-				if (_Cmd.BindProgram(*StaticMesh.ShaderProgram))
-				{
-					_Cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
-					m_LastMeshletDescritptor = nullptr;
-				}
-				
-				if (StaticMesh.MeshletDescriptor && m_LastMeshletDescritptor != StaticMesh.MeshletDescriptor)
-				{
-					m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
-					_Cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 1);
-				}
-
-				static constexpr auto GroupSize = 32;
-				
-				_Cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
-				const uint32_t DispachtSize = (StaticMesh.MeshletCount + GroupSize - 1) / GroupSize;
-				_Cmd.DrawMeshTask(DispachtSize, 1u, 1u);
+				_Context.cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
+			}
 		};
 
 	}
@@ -163,8 +126,8 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetViewPort(viewPort);
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
-		ProceedDrawList(_RendererPassExecuteContext.Renderer.OpaqueList, cmd);
-		ProceedDrawList(_RendererPassExecuteContext.Renderer.TransparentList, cmd);
+		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
+		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
 		cmd.EndRenderPass();
 	}
 

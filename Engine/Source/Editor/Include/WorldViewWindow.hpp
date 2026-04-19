@@ -59,6 +59,10 @@ BEGIN_EDITOR_PCCORE
 
         void RebuildViewport();
 
+        void DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& Graph);
+
+        void DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Graph);
+
         PC_CORE::Sampler m_ViewPortSampler;
 
         std::array<VkDescriptorSet, MaxFramesInFlight> imguiDescriptorSet;

@@ -40,16 +40,16 @@ namespace PC_CORE::Rendering::Pass
 
 		bool m_DrawTransperant = false;
 
-		std::function<void(const Rendering::DrawStaticMeshTriangle&, PC_CORE::CommandList& _Cmd)> m_OnMeshDrawTriangle{};
+		std::function<void(const PC_CORE::Rendering::RendererPassExecuteContext&, const Rendering::DrawStaticMeshTriangle&)> m_OnMeshDrawTriangle;
 
-		std::function<void(const Rendering::DrawStaticMeshMeshlet&, PC_CORE::CommandList& _Cmd)> m_OnMeshDrawMeshlet{};
+		std::function<void(const PC_CORE::Rendering::RendererPassExecuteContext&, const Rendering::DrawStaticMeshMeshlet&)> m_OnMeshDrawMeshlet{};
 
 		const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
 
-		const RhiDescriptorSet* m_LastMeshletDescritptor{ nullptr };
+		void ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const;
 
-		void ProceedDrawList(const DrawList& _DrawList, PC_CORE::CommandList& _Cmd) const;
 	private:
+		mutable const RhiDescriptorSet* m_LastMeshletDescritptor{ nullptr };
 
 	};
 

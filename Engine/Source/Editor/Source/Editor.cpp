@@ -159,10 +159,59 @@ void Editor::SaveInitFiles()
 
 }
 
+void Editor::CompileShaderDebugView()
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
+
+    PC_LOG("CompileShaderDebugView...")
+
+    // Draw Triangle
+    { 
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("DrawMeshTriangle.vs.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Forward/Forward.vs.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("DrawMeshTriangle.ps.hlsl",
+                EDITOR_RESOURCE_PATH"/Shaders/Forward/Forward.ps.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+            }));
+    }
+
+
+    // Draw Meshlet
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.as.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl");
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ms.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl");
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl");
+            }));
+    }
+}
+
+
 void Editor::CompileShader()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Editor);
+
+    CompileShaderDebugView();
 
     PC_LOG("CompileShader...")
 
@@ -182,8 +231,6 @@ void Editor::CompileShader()
 	}
 
 	{
-
-        
 		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
 			ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
 				EDITOR_RESOURCE_PATH
@@ -207,26 +254,7 @@ void Editor::CompileShader()
             }));
     }
 
-    // Mesh Shader
-    {
-        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.as.hlsl",
-                EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl");
-            }));
 
-        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ms.hlsl",
-                EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl");
-            }));
-
-        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-            ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ps.hlsl",
-                EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl");
-            }));
-    }
     /*
     // sprite
     {
@@ -338,9 +366,13 @@ void Editor::UpdateEditor()
         if (ImGui::BeginMenu("RenderSettings"))
         {
             ImGuiReflection::DrawEnumMenue("MSAA", &RenderSettings.MSAASampleCount);
-
+            if (ImGuiReflection::DrawEnumMenue("DebugView", &editorData.DebugView))
+            {
+                m_EditorWorldWindow->OnRenderModeDirty();
+            }
             ImGui::EndMenu();
         }
+
         /*
         if (ImGui::BeginMenu("Rendering"))
         {
@@ -479,15 +511,15 @@ void Editor::InitTestScene()
     
     TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
      
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
 
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
-    //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
+    TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
 }
   
 
@@ -540,7 +572,9 @@ void Editor::InitEditor()
     {
         PC_LOG("InitEditorWindows...")
         m_ProjectSettingsWindow = EditorWindows.emplace_back(std::make_unique<ProjectSettingsWindow>(*this, "ProjectSettings")).get(); // order is important
-        EditorWindows.push_back(std::make_unique<EditWorldWindow>(*this, "Scene"));
+        auto WorldWindowPtr = std::make_unique<EditWorldWindow>(*this, "Scene");
+        m_EditorWorldWindow = WorldWindowPtr.get();
+        EditorWindows.emplace_back(std::move(WorldWindowPtr));
         EditorWindows.push_back(std::make_unique<Inspector>(*this, "Inspector"));
         EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
         EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));

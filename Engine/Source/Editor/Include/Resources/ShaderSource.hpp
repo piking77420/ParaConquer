@@ -8,14 +8,16 @@
 
 BEGIN_EDITOR_PCCORE
 
-    enum ShaderFeatureFlagBits {
+    enum ShaderFeatureFlagBits : size_t {
         None = 0,
         Lit = 1 << 0,
         UseUV = 1 << 1,
         UseNormalMap = 1 << 2,
+        UseColor = 1 << 3,
+        DrawTriangle = 1 << 4,
     };
 
-    using ShaderFeatureFlag = uint32_t;
+    using ShaderFeatureFlag = size_t;
 
     class ShaderSource : public PC_CORE::Resource
     {

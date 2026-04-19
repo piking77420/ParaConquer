@@ -13,7 +13,7 @@ struct PSInput
 #endif
 
 #if defined(USE_COLOR)
-    float3 color : COLOR0;
+    nointerpolation float3 Color : COLOR0;
 #endif
 };
 
@@ -39,8 +39,9 @@ float3 SRGBToLinear(float3 c)
 
 float4 Main(PSInput input) : SV_Target
 {
-    float4 FragAlbedo = AlbedoFactor;
+    float4 FragAlbedo = float4(0, 0, 0, 1);
 #if defined(LIT)
+    FragAlbedo = AlbedoFactor;
     float3 Normal = normalize(input.Normal);
     float Metallic = AORoughnessMetallicEmptyFactors.x;
     float Roughness = AORoughnessMetallicEmptyFactors.y;
@@ -48,20 +49,21 @@ float4 Main(PSInput input) : SV_Target
     float AO = AORoughnessMetallicEmptyFactors.z;
 #endif
 
+#if defined(LIT) && defined(USE_UV)
     if (AlbedoNormalEmissiveDescriptor[ALBEDO_KEY] == 1)
     {
-#if defined(LIT) && defined(USE_UV)
         FragAlbedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord);
         if (FragAlbedo.a < 0.5)
             discard;
         
         FragAlbedo.xyz = SRGBToLinear(FragAlbedo.xyz);
-#endif
+
     }
-        
+#endif   
+
+#if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP)
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
     {
-#if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP)
             float3 T = normalize(input.Tangent);
             float3 N = Normal;
 
@@ -74,27 +76,27 @@ float4 Main(PSInput input) : SV_Target
             NormalTS = normalize(NormalTS * 2.0 - 1.0);
 
             Normal = normalize(mul(NormalTS, TBN));
+        }
 #endif
-    }
     
     
+#if defined(LIT) && defined(USE_UV)
     if (AlbedoNormalEmissiveDescriptor[EMMISIVE_KEY] == 1)
     {
-#if defined(LIT) && defined(USE_UV)
         Emissive += EmissiveTexture.Sample(EmmissiveSampler, input.TexCoord).rgb;
-#endif
     }
+#endif
     
+#if defined(LIT) && defined(USE_UV)
     if (ORMTextureDescriptor[METALLIC_ROUGNESS_AO_ANI_KEY] == 1)
     {
- #if defined(LIT) && defined(USE_UV)
         float3 ORM = ORMTexture.Sample(ORMTextureSampler, input.TexCoord).rgb;
 
         AO = ORM.r;
         Roughness = ORM.g;
         Metallic = ORM.b;
- #endif
     }
+#endif
     
     float3 Lo = float3(0, 0, 0);
 #if defined(LIT)
@@ -131,7 +133,7 @@ float4 Main(PSInput input) : SV_Target
 #endif
 
 #if defined(USE_COLOR)
-    Lo += input.color;
+    Lo += input.Color;
 #endif
         
     return float4(Lo, FragAlbedo.a);

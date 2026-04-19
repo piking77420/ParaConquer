@@ -4,6 +4,7 @@
 #define CAMERA_SET space0
 #include "Camera.hlsl"
 
+#include "HashColor.hlsl"
 
 struct VsInput
 {
@@ -12,6 +13,8 @@ struct VsInput
     float4 Tangent : TEXCOORD0; // location 2
     float2 TexCoord : TEXCOORD1; // location 3
     float2 Pad : TEXCOORD2; // location 3
+    uint InstanceID : SV_InstanceID;
+    uint VertexID   : SV_VertexID;
 };
 
 struct VsOutput
@@ -25,6 +28,10 @@ struct VsOutput
 
 #if defined(USE_UV)
     float2 TexCoord : TEXCOORD3; // location 3
+#endif
+
+#if defined(USE_COLOR)
+    float3 Color : COLOR0;
 #endif
 };
 
@@ -59,11 +66,10 @@ VsOutput Main(VsInput input)
 #if defined(USE_COLOR)
 
 #if defined(DRAW_TRIANGLE)
-     output.color = float4(frac(instanceID * 0.37), frac(instanceID * 0.61), frac(instanceID * 0.83), 1.0);
+    uint combined = input.InstanceID * 73856093u ^ input.VertexID * 19349663u;
+    output.Color = float4(hash3(combined), 1.0);
 #endif
 
 #endif 
-
-
     return output;
 }

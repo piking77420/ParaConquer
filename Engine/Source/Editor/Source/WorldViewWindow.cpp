@@ -10,6 +10,7 @@
 
 #include <Rendering/RenderPasses/ForwardPass.hpp>
 #include <Rendering/RenderPasses/ToneMapPass.hpp>
+#include <DebugView/DrawTriangle.hpp>
 
 #undef near
 #undef far
@@ -65,8 +66,7 @@ void WorldViewWindow::Update()
     }
 
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
-    ImGui::Image(imguiDescriptorSet[currentImage], ImGui::GetContentRegionAvail(), ImVec2(0, 0),
-                 ImVec2(1, 1));
+    ImGui::Image(imguiDescriptorSet[currentImage], ImGui::GetContentRegionAvail());
 }
 
 void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
@@ -86,16 +86,13 @@ void WorldViewWindow::OnRenderModeDirty()
 
 void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
 {
-    // Default
     switch (m_Editor->editorData.ProjectSettings.RenderMode)
     {
     case PC_CORE::Rendering::RenderMode::TriangleBased:
-        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
-        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        DrawTriangledBasedGraph(Graph);
         break;
     case PC_CORE::Rendering::RenderMode::ClusterBased:
-        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
-        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        DrawMeshletBasedGraph(Graph);
         break;
     case PC_CORE::Rendering::RenderMode::PathTracing:
         break;
@@ -133,3 +130,52 @@ void WorldViewWindow::UpdateImguiViewPort()
                                                     imguiDescriptorSet.size());
 }
 
+void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
+{
+    switch (m_Editor->editorData.DebugView)
+    {
+    case DebugView::Lit:
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        break;
+    case DebugView::Unlit:
+        break;
+    case DebugView::Normal:
+        break;
+    case DebugView::UV:
+        break;
+    case DebugView::AO:
+        break;
+    case DebugView::Triangle:
+        Graph.AddRenderPass<PC_EDITOR::DebugView::Triangle>();
+        break;
+    case DebugView::Meshlet:
+    default:
+        break;
+    }
+}
+
+void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
+{
+    switch (m_Editor->editorData.DebugView)
+    {
+    case DebugView::Lit:
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        break;
+    case DebugView::Unlit:
+        break;
+    case DebugView::Normal:
+        break;
+    case DebugView::UV:
+        break;
+    case DebugView::AO:
+        break;
+    case DebugView::Triangle:
+        break;
+    case DebugView::Meshlet:
+        break;
+    default:
+        break;
+    }
+}

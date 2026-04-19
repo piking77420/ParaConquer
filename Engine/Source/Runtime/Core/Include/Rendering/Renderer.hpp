@@ -40,11 +40,15 @@ public:
 
     std::unique_ptr<RhiShaderProgram> meshShaderMeshlet;
 
+    std::unique_ptr<RhiShaderProgram> DrawMeshTriangles;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
 
-    std::unique_ptr<RhiRenderPass> drawTextureQuadPass;
+    std::unique_ptr<RhiRenderPass> colorLinearPass;
+
+    std::unique_ptr<RhiRenderPass> colorLinearPassDepth;
 
 private:
     Rhi& m_Rhi;

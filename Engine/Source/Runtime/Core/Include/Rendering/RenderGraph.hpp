@@ -60,7 +60,7 @@ namespace PC_CORE::Rendering
 		void AddRenderPass()
 		{
 			RenderGraphNode Node;
-			Node.RenderPassObject = std::make_unique<T>();
+			Node.RenderPassObject = std::move(std::make_unique<T>());
 			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
 			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
 			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;
