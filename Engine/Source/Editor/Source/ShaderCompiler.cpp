@@ -168,7 +168,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     hres = GetContext().utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
     if (FAILED(hres) || !sourceBlob)
     {
-        PC_LOGERROR("Failed to load file FromDisk = {}", hres);
+        PC_LOGERROR("Failed to load file FromDisk = {} file path {}", hres, std::string(_fileName.begin(), _fileName.end()));
         exit(-1);
     }
 

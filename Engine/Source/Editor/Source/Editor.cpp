@@ -177,7 +177,7 @@ void Editor::CompileShaderDebugView()
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshTriangle.ps.hlsl",
-                EDITOR_RESOURCE_PATH"/Shaders/Forward/Forward.ps.hlsl",
+                EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
                 ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
             }));
     }
@@ -267,7 +267,7 @@ void Editor::CompileShader()
 
 		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
 			ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
-				EDITOR_RESOURCE_PATH"/Shaders/Forward/Forward.ps.hlsl",
+				EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
                 ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
 			}));
 	}

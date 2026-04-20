@@ -3,7 +3,7 @@
 #include "Meshlet.hlsl"
 #include "StaticMeshVertex.hlsl"
 #include "MeshShaderDrawCall.hlsl"
-
+#include "HashColor.hlsl"
 
 #define CAMERA_BINDING b0
 #define CAMERA_SET space0
@@ -66,11 +66,15 @@ void Main(uint3 gtid : SV_GroupThreadID,
         float3 color = float3(0,0,0);
         uint id = 0;
 #if defined(DRAW_TRIANGLE)
-    color = float3(
+    uint InstanceID = 1;
+    uint VertexID = vertexIndex;
+    uint combined = InstanceID * 73856093u ^ VertexID * 19349663u;
+    vertices[gtid.x].Color = float4(hash3(combined), 1.0);
+    /*color = float3(
             float(gtid.x & 1 ),
             float(gtid.x & 3 ) / 4,
             float(gtid.x & 7 ) / 8);
-        vertices[gtid.x].Color = color;
+        vertices[gtid.x].Color = color;*/
 #else
     color = float3(
             float(gid.x & 1 ),
