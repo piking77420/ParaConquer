@@ -31,7 +31,7 @@ struct VsOutput
 #endif
 
 #if defined(USE_COLOR)
-    float3 Color : COLOR0;
+    nointerpolation float3 Color : COLOR0;
 #endif
 };
 

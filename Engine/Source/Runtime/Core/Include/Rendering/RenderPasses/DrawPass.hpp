@@ -50,7 +50,7 @@ namespace PC_CORE::Rendering::Pass
 
 		OnMeshDrawMeshletSignature m_OnMeshDrawMeshlet{};
 
-		const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
+		mutable const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
 
 		void ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const;
 

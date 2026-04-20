@@ -40,7 +40,7 @@ namespace PC_CORE::Rendering::Pass
 
         std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
 
-        std::unique_ptr<RhiDescriptorSet> m_MeshShaderDescriptorSet;
+        std::unique_ptr<RhiDescriptorSet> m_DescriptorMeshlet;
 
         RhiTexture* m_LightingImage = nullptr;
     };

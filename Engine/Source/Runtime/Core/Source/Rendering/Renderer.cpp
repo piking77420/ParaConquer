@@ -173,6 +173,8 @@ namespace PC_CORE::Rendering
                .Build();
        }
 
+       
+
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
@@ -190,56 +192,78 @@ namespace PC_CORE::Rendering
                .Build();
        }
 
+       auto InitShaderProgramForwardPass = [&]<bool IsTransparent>(std::unique_ptr<RhiShaderProgram>& Shader,
+           const std::vector<RhiShaderProgram::ShaderModule>& ShaderModules, std::string ShaderName)
+           {
+            std::vector<RhiShaderProgram::ShaderModule> shaderModules = ShaderModules;
+            shaderModules.push_back({ RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("ForwardLit.ps.hlsl.binary")->GetCode() });
+
+               constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
+               {
+                   .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
+                   .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+                   .ColorOp = PC_CORE::BlendOp::Add,
+
+                   .AlphaSrcFactor = PC_CORE::BlendFactor::One,
+                   .AlphaDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+                   .AlphaOp = PC_CORE::BlendOp::Add,
+
+                   .BlendMask = PC_CORE::ColorComponent::ColorComponentRGBA
+               };
+               Shader.reset(m_Rhi.CreateRhiShaderProgram());
+               Shader
+                   ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+                   .SetAttachementCount(1)
+                   .SetShaderModules(shaderModules)
+                   .SetRenderPass(*forwardPass)
+                   .SetDepthTest(true)
+                   .SetDepthWrite(true)
+                   .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
+                   .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
+                   .SetName(ShaderName);
+                    
+               if constexpr (IsTransparent)
+               {
+                   constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
+                   {
+                       .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
+                       .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+                       .ColorOp = PC_CORE::BlendOp::Add,
+
+                       .AlphaSrcFactor = PC_CORE::BlendFactor::One,
+                       .AlphaDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+                       .AlphaOp = PC_CORE::BlendOp::Add,
+
+                       .BlendMask = PC_CORE::ColorComponent::ColorComponentRGBA
+                   };
+                   Shader->SetBlendState(blenstate)
+                   .Build();
+                    
+               }
+               else
+               {
+                   Shader->Build();
+               }
+       };
+
+       const std::vector<RhiShaderProgram::ShaderModule> TriangleModules
        {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
-           {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Forward.ps.hlsl.binary")->GetCode() }
-           };
+           { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary")->GetCode() },
+       };
 
-           opaqueFowardShader.reset(m_Rhi.CreateRhiShaderProgram());
-           opaqueFowardShader
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetCullMode(RhiShaderProgram::CullModeFlagBits::CullBack)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*forwardPass)
-               .SetDepthTest(true)
-               .SetDepthWrite(true)
-               .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
-               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
-               .SetName("Opaque FowardShader")
-               .Build();
+       InitShaderProgramForwardPass.template operator()<false>(opaqueFowardShader, TriangleModules, "Opaque FowardShader");
+       InitShaderProgramForwardPass.template operator()<true>(transparentForwardShader, TriangleModules, "Transparent FowardShader");
 
+       const std::vector<RhiShaderProgram::ShaderModule> MeshetsModulesModules
+       {
+          { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("ForwardMeshlet.as.hlsl.binary")->GetCode() },
+          { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("ForwardMeshlet.ms.hlsl.binary")->GetCode() },
+       };
 
-           constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
-           {
-               .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
-               .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
-               .ColorOp = PC_CORE::BlendOp::Add,
+       InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
+       InitShaderProgramForwardPass.template operator() < true > (transparentForwardShaderMeshlet, MeshetsModulesModules,"Transparent FowardShader Meshlet");
 
-               .AlphaSrcFactor = PC_CORE::BlendFactor::One,
-               .AlphaDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
-               .AlphaOp = PC_CORE::BlendOp::Add,
-
-               .BlendMask = PC_CORE::ColorComponent::ColorComponentRGBA
-           };
-           transparentForwardShader.reset(m_Rhi.CreateRhiShaderProgram());
-           transparentForwardShader
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*forwardPass)
-               .SetDepthTest(true)
-               .SetDepthWrite(true)
-               .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
-               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
-               .SetName("Transparent FowardShader")
-               .SetBlendState(blenstate)
-               .Build();
-
-       }
-       
+       /*
        {
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
@@ -248,8 +272,8 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ps.hlsl.binary")->GetCode() }
            };
 
-           meshShaderMeshlet.reset(m_Rhi.CreateRhiShaderProgram());
-           meshShaderMeshlet
+           DrawMeshMeshet.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawMeshMeshet
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
@@ -311,7 +335,7 @@ namespace PC_CORE::Rendering
                .SetDepthTest(true)
                .SetName("Draw Mesh Triangle Meshlet")
                .Build();
-       }
+       }*/
    }
 
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
@@ -407,10 +431,11 @@ namespace PC_CORE::Rendering
                {
                    DrawStaticMeshMeshlet& Descritptor = item.Data.emplace<DrawStaticMeshMeshlet>();
 
-                   Descritptor.ShaderProgram = meshShaderMeshlet.get();
-                   Descritptor.MaterialDescriptor = nullptr;
+                   Descritptor.ShaderProgram = isOpaque ? opaqueFowardShaderMeshlet.get() : transparentForwardShaderMeshlet.get();
+                   Descritptor.MaterialDescriptor = Material->GetDescriptorSet();
                    Descritptor.MeshletDescriptor = StaticMesh->GetMeshletDescriptor(LODIndex);
 
+                   Descritptor.MaterialDescriptorOffset = Material->GetMaterialStride() * m_Rhi.GetFrameIndex();
                    Descritptor.VertexOffset = MeshSection.MeshDataDescriptor.VertexOffset;
                    Descritptor.MeshletOffset = MeshSection.MeshDataDescriptor.MeshetOffset;
                    Descritptor.MeshletCount = MeshSection.MeshDataDescriptor.MeshetCount;
@@ -423,11 +448,22 @@ namespace PC_CORE::Rendering
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
                    const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
 
-                   // all opaque for now
-                   item.SortKey =
-                       ((shaderKey & 0xFFFF) << 48) |
-                       ((materialKey & 0xFFFF) << 32) |
-                       depthKey; // depth is lsb
+                   if (isOpaque)
+                   {
+                       item.SortKey =
+                           ((shaderKey & 0xFFFF) << 48) |
+                           ((materialKey & 0xFFFF) << 32) |
+                           depthKey; // depth is lsb
+                   }
+                   else
+                   {
+                       // Reverse depth so that larger values correspond to closer objects.
+                       // When sorting ascending, this results in back-to-front ordering.
+                       item.SortKey =
+                           ((std::numeric_limits<uint32_t>::max() - depthKey) << 32) |
+                           (materialKey << 16) |
+                           shaderKey;
+                   }
                }
                    break;
                case RenderMode::PathTracing:
@@ -454,7 +490,7 @@ namespace PC_CORE::Rendering
        if (LodThreshold.empty())
            return 0;
 
-       double ScreenSize = BoundingSphereRadius / (AABBDistanceToCam * std::tan(FovRad * 0.5));
+       const double ScreenSize = BoundingSphereRadius / (AABBDistanceToCam * std::tan(FovRad * 0.5));
 
        for (size_t i = 0; i < LodThreshold.size(); i++)
        {

@@ -171,7 +171,7 @@ void Editor::CompileShaderDebugView()
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshTriangle.vs.hlsl",
                 EDITOR_RESOURCE_PATH
-                "/Shaders/Forward/Forward.vs.hlsl",
+                "/Shaders/TriangleBased.vs.hlsl",
                 ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
             }));
 
@@ -257,20 +257,39 @@ void Editor::CompileShader()
 			}));
 	}
 
+    // Lit Triangle
 	{
+        // only compile primite shader
 		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
 			ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
 				EDITOR_RESOURCE_PATH
-				"/Shaders/Forward/Forward.vs.hlsl",
-                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
-			}));
-
-		m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-			ResourceManager::Create<ShaderSource>("Forward.ps.hlsl",
-				EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
+				"/Shaders/TriangleBased.vs.hlsl",
                 ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
 			}));
 	}
+
+    // Lit Triangle meshelet
+    {
+        // only compile primite shader
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("ForwardMeshlet.as.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl");
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("ForwardMeshlet.ms.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl",
+                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
+            }));    
+    }
+
+    m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+        ResourceManager::Create<ShaderSource>("ForwardLit.ps.hlsl",
+            EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
+            ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
+        }));
 
 
     // Tone Map

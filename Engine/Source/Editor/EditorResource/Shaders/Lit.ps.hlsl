@@ -4,12 +4,12 @@ struct PSInput
     float4 Position : SV_POSITION;
     float3 ViewSpacePosition : TEXCOORD0;
 #if defined(LIT)
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
+    float3 Normal : TEXCOORD1;
+    float3 Tangent : TEXCOORD2;
 #endif
 
 #if defined(USE_UV)
-    float2 TexCoord : TEXCOORD1;
+    float2 TexCoord : TEXCOORD3;
 #endif
 
 #if defined(USE_COLOR)

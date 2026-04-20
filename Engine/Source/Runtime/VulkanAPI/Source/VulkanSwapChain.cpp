@@ -355,7 +355,7 @@ void Vulkan::VulkanSwapChain::Present(PC_CORE::Window* _window)
     waitPipelineStageImageAvailable[WaitSemaphoreCount] = vk::PipelineStageFlagBits::eColorAttachmentOutput;
     WaitSemaphoreCount++;
 
-    vk::Semaphore signalSemaphores[] = { context.syncObjects[m_SwapChainImageIndex].renderFinishedSemaphore };
+    vk::Semaphore signalSemaphores[] = { context.syncObjects[frameIndex].renderFinishedSemaphore };
     // Handle all user Command list
     context.SubmitInfoBuffer.clear();
     context.SubmitInfoBuffer.resize(context.flushedCommands.Commands.size());

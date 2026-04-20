@@ -32,6 +32,7 @@ namespace PC_CORE::Rendering::Pass
 	void DrawPass::ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const
 	{
 		m_LastMeshletDescritptor = nullptr;
+		m_LastMaterialDescriptor = nullptr;
 
 		for (const auto& DrawItem : _DrawList)
 		{
@@ -67,7 +68,7 @@ namespace PC_CORE::Rendering::Pass
 						if (StaticMesh.MeshletDescriptor && m_LastMeshletDescritptor != StaticMesh.MeshletDescriptor)
 						{
 							m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
-							_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 1);
+							_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
 						}
 						MeshShaderDrawCall MeshShaderDrawCall;
 						std::memcpy(MeshShaderDrawCall.ModelView.data.data(), StaticMesh.MatrixMV.data, 16 * sizeof(float));

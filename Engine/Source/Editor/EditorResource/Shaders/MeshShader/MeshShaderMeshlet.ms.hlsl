@@ -10,17 +10,28 @@
 #include "Camera.hlsl"
 
 
-StructuredBuffer<Vertex> Vertices : register(t0, space1);
-StructuredBuffer<Meshlet> Meshlets : register(t1, space1);
-StructuredBuffer<uint> VertexIndices : register(t2, space1);
-StructuredBuffer<uint> TriangleIndices : register(t3, space1);
+#define MESHLET_SPACE space2    
+StructuredBuffer<Vertex> Vertices : register(t0, MESHLET_SPACE);
+StructuredBuffer<Meshlet> Meshlets : register(t1, MESHLET_SPACE);
+StructuredBuffer<uint> VertexIndices : register(t2, MESHLET_SPACE);
+StructuredBuffer<uint> TriangleIndices : register(t3, MESHLET_SPACE);
 
 
 struct MeshOutput
 {
     float4 Position : SV_POSITION;
+    float3 ViewSpacePosition : TEXCOORD0;
+#if defined(LIT)
+    float3 Normal : TEXCOORD1;
+    float3 Tangent : TEXCOORD2;
+#endif
+
+#if defined(USE_UV)
+    float2 TexCoord : TEXCOORD3;
+#endif
+
 #if defined(USE_COLOR)
-    float3 Color : COLOR;
+    nointerpolation float3 Color : COLOR0;
 #endif
 };
 

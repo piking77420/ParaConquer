@@ -67,10 +67,12 @@ namespace PC_CORE::Rendering::Pass
 			.SetName("Forward Pass Scene Set")
 			.Build();
 
-		m_MeshShaderDescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
-		m_MeshShaderDescriptorSet
+		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		m_DescriptorMeshlet
 			->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-			.SetName("Forward Pass Scene Mesh Shader Set")
+			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 1, _RendererPassBuildContext.View.LightBuffer.get())
+			.BindUniformBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBufferHeader.get())
+			.SetName("Forward Pass Scene Set")
 			.Build();
 
 
@@ -94,7 +96,14 @@ namespace PC_CORE::Rendering::Pass
 		{
 			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
-				_Context.cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
+				_Context.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0);
+			}
+
+			if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
+			{
+				m_LastMaterialDescriptor = StaticMesh.MaterialDescriptor;
+				const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
+				_Context.cmd.BindDescriptorSet(m_LastMaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
 			}
 		};
 
