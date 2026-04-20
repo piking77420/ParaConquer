@@ -10,7 +10,7 @@
 
 #include <Rendering/RenderPasses/ForwardPass.hpp>
 #include <Rendering/RenderPasses/ToneMapPass.hpp>
-#include <DebugView/DrawTriangle.hpp>
+#include <DebugView/DebugPass.hpp>
 
 #undef near
 #undef far
@@ -132,6 +132,8 @@ void WorldViewWindow::UpdateImguiViewPort()
 
 void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
 {
+    namespace Pass = PC_CORE::Rendering::Pass;
+
     switch (m_Editor->editorData.DebugView)
     {
     case DebugView::Lit:
@@ -147,7 +149,20 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
     case DebugView::AO:
         break;
     case DebugView::Triangle:
-        Graph.AddRenderPass<PC_EDITOR::DebugView::Triangle>();
+    {
+        const std::string PassName = "DebuTriangle";
+        const std::array<float, 4> Color = 
+        {
+            0.5f,
+            0.8f,
+            0.1f,
+            1.f
+        };
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawMeshTriangle;
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
+
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
+    }
         break;
     case DebugView::Meshlet:
     default:
@@ -172,6 +187,20 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
     case DebugView::AO:
         break;
     case DebugView::Triangle:
+    {
+        const std::string PassName = "DebuTriangle";
+        const std::array<float, 4> Color =
+        {
+            0.5f,
+            0.8f,
+            0.1f,
+            1.f
+        };
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawMeshTriangle;
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
+
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
+    }
         break;
     case DebugView::Meshlet:
         break;

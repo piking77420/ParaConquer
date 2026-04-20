@@ -19,7 +19,9 @@ StructuredBuffer<uint> TriangleIndices : register(t3, space1);
 struct MeshOutput
 {
     float4 Position : SV_POSITION;
+#if defined(USE_COLOR)
     float3 Color : COLOR;
+#endif
 };
 
 [outputtopology("triangle")]
@@ -60,10 +62,16 @@ void Main(uint3 gtid : SV_GroupThreadID,
         float3 Verticies = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz;
         
         vertices[gtid.x].Position = mul(mul(float4(Verticies, 1.0), DrawCall.ModelView), Projection);
-        float3 color = float3(
+#if defined(USE_COLOR)
+        float3 color = float3(0,0,0);
+#if defined(DRAW_TRIANGLE)
+        color = float3(
             float(gid.x & 1 ),
             float(gid.x & 3 ) / 4,
             float(gid.x & 7 ) / 8);
+#endif // DRAW_TRIANGLE
         vertices[gtid.x].Color = color;
+
+#endif // USE_COLOR
     }
 }

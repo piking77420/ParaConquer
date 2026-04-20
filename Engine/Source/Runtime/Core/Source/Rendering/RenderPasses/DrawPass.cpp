@@ -20,6 +20,13 @@ namespace PC_CORE::Rendering::Pass
 		DYNAMIC_REFLECT_INIT
 	}
 
+	DrawPass::DrawPass(OnMeshDrawTriangleSignature _OnMeshDrawTriangleSignature, OnMeshDrawMeshletSignature _OnMeshDrawMeshlet)
+		: m_OnMeshDrawTriangle(_OnMeshDrawTriangleSignature)
+		, m_OnMeshDrawMeshlet(_OnMeshDrawMeshlet)
+	{
+
+	}
+
 	DrawPass::~DrawPass() = default;
 
 	void DrawPass::ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const

@@ -15,10 +15,16 @@ namespace PC_CORE::Rendering
 
 namespace PC_CORE::Rendering::Pass 
 {
+	using OnMeshDrawTriangleSignature = std::function<void(const PC_CORE::Rendering::RendererPassExecuteContext&, const Rendering::DrawStaticMeshTriangle&)>;
+	using OnMeshDrawMeshletSignature = std::function<void(const PC_CORE::Rendering::RendererPassExecuteContext&, const Rendering::DrawStaticMeshMeshlet&)>;
+
 	class PC_CORE_API DrawPass : public RenderPass
 	{
 	public:
 		DrawPass();
+
+		DrawPass(OnMeshDrawTriangleSignature _OnMeshDrawTriangleSignature, OnMeshDrawMeshletSignature _OnMeshDrawMeshlet);
+
 		virtual ~DrawPass();
 
 	protected:
@@ -40,9 +46,9 @@ namespace PC_CORE::Rendering::Pass
 
 		bool m_DrawTransperant = false;
 
-		std::function<void(const PC_CORE::Rendering::RendererPassExecuteContext&, const Rendering::DrawStaticMeshTriangle&)> m_OnMeshDrawTriangle;
+		OnMeshDrawTriangleSignature m_OnMeshDrawTriangle;
 
-		std::function<void(const PC_CORE::Rendering::RendererPassExecuteContext&, const Rendering::DrawStaticMeshMeshlet&)> m_OnMeshDrawMeshlet{};
+		OnMeshDrawMeshletSignature m_OnMeshDrawMeshlet{};
 
 		const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
 

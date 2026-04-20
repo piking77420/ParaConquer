@@ -182,25 +182,52 @@ void Editor::CompileShaderDebugView()
             }));
     }
 
+    // Draw Triangle Meshlet
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("DrawMeshTriangleMeshlet.as.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl", 
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("DrawMeshTriangleMeshlet.ms.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("DrawMeshTriangleMeshlet.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+            }));
+    }
+
 
     // Draw Meshlet
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.as.hlsl",
                 EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl");
+                "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl");
+                "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ps.hlsl",
                 EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl");
+                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl",
+                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
             }));
     }
 }
@@ -244,6 +271,7 @@ void Editor::CompileShader()
                 ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
 			}));
 	}
+
 
     // Tone Map
     {

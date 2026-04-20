@@ -1,4 +1,4 @@
-#include <DebugView/DrawTriangle.hpp>
+#include <DebugView/DebugPass.hpp>
 #include <Rendering/RenderGraph.hpp>
 #include <Rendering/RenderView.hpp>
 #include <Rendering/Renderer.hpp>
@@ -8,14 +8,27 @@ namespace PC_EDITOR::DebugView
 using namespace PC_CORE;
 using namespace PC_CORE::Rendering;
 
-Triangle::Triangle()
+DebugPass::DebugPass()
 {
 	DYNAMIC_REFLECT_INIT;
 }
 
-Triangle::~Triangle() = default;
+DebugPass::DebugPass(const std::string& _Name,
+	const std::array<float, 4>& _GpuColor,
+	std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramTriangle,
+	std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramMeshlet)
+	: DrawPass()
+	, m_Name(_Name)
+	, m_GpuDebugerColor(_GpuColor)
+	, m_ShaderProgramTriangle(_ShaderProgramTriangle)
+	, m_ShaderProgramMeshlet(_ShaderProgramMeshlet)
+{
+	DYNAMIC_REFLECT_INIT
+}
 
-void Triangle::Build(const PC_CORE::Rendering::RendererPassBuildContext& _RendererPassBuildContext)
+DebugPass::~DebugPass() = default;
+
+void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _RendererPassBuildContext)
 {
 	RhiTexture& outPutImage = _RendererPassBuildContext.RenderGraph.GetOutPutImage();
 
@@ -28,7 +41,7 @@ void Triangle::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Render
 		.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 		.SetTextureUsage(RhiTexture::TextureUsageFlagBits::DepthStencil)
 		.SetSamples(1)
-		.SetName("Depth Image")
+		.SetName(m_Name + "Depth Image")
 		.Build();
 
 	m_FrameBuffer.reset(_RendererPassBuildContext.RHI.CreateFrameBuffer());
@@ -38,24 +51,24 @@ void Triangle::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Render
 		.SetAttachments(&outPutImage)
 		.SetDepthAttachments(&DepthBuffer)
 		.SetRenderPass(_RendererPassBuildContext.Renderer.colorLinearPassDepth.get())
-		.SetName("Triangle Framebuffer")
+		.SetName(m_Name + "Framebuffer")
 		.Build();
 
 	m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 	m_DescriptorSet
 		->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-		.SetName("Triangle Pass Scene Set")
+		.SetName(m_Name + "Pass Scene Set")
 		.Build();
 
 	m_MeshShaderDescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 	m_MeshShaderDescriptorSet
 		->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-		.SetName("Triangle Pass Scene Mesh Shader Set")
+		.SetName(m_Name + "Pass Scene Mesh Shader Set")
 		.Build();
-
+	
 	m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
 		{
-			if (_Context.cmd.BindProgram(*_Context.Renderer.DrawMeshTriangles))
+			if (_Context.cmd.BindProgram(*m_ShaderProgramTriangle->get()))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 			}
@@ -63,14 +76,14 @@ void Triangle::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Render
 
 	m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
 		{
-			//if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
-			//{
-			//	_Context.cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
-			//}
+			if (_Context.cmd.BindProgram(*m_ShaderProgramMeshlet->get()))
+			{
+				_Context.cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
+			}
 		};
 }
 
-void Triangle::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext) const
+void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext) const
 {
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Rendering)

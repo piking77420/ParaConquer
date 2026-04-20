@@ -1,24 +1,34 @@
-#ifndef PC_EDITOR_DEBUG_VIEW_TRIANGLE
-#define PC_EDITOR_DEBUG_VIEW_TRIANGLE
+#ifndef PC_EDITOR_DEBUG_PASS
+#define PC_EDITOR_DEBUG_PASS
 
 #include <memory>
 #include <Rendering/RenderPasses/DrawPass.hpp>
 #include <LowRenderer/RhiFrameBuffer.hpp>
 #include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiShaderProgram.hpp>
+
 
 namespace PC_EDITOR::DebugView
 {
-	class Triangle final: public PC_CORE::Rendering::Pass::DrawPass
+    namespace Pass = PC_CORE::Rendering::Pass;
+
+	class DebugPass final : public Pass::DrawPass
 	{
 	public:
-		Triangle();
-		~Triangle() override;
+        DebugPass();
+
+		DebugPass(const std::string& _Name,
+            const std::array<float, 4>& _GpuColor,
+            std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramTriangle,
+            std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramMeshlet);
+
+		~DebugPass() override;
 
 		IMP_DYNAMIC_REFLECT()
 
         const char* GetName() const
         {
-            return "DebugView Triangle";
+            return m_Name.c_str();
         }
 
         std::array<float, 4> GetColor() const
@@ -42,10 +52,18 @@ namespace PC_EDITOR::DebugView
         std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DescriptorSet;
 
         std::unique_ptr<PC_CORE::RhiDescriptorSet> m_MeshShaderDescriptorSet;
+
+        std::string m_Name;
+
+        std::array<float, 4> m_GpuDebugerColor;
+
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* m_ShaderProgramTriangle{ nullptr };
+
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* m_ShaderProgramMeshlet{ nullptr };
 	};
 
-    REFLECT(Triangle, PC_CORE::Rendering::Pass::DrawPass);
+    REFLECT(DebugPass, PC_CORE::Rendering::Pass::DrawPass);
 
 } // namespace PC_EDITOR::DebugView
 
-#endif // PC_EDITOR_DEBUG_VIEW_TRIANGLE
+#endif // PC_EDITOR_DEBUG_PASS

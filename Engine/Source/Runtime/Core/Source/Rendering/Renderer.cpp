@@ -267,8 +267,8 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangle.ps.hlsl.binary")->GetCode() },
            };
 
-           DrawMeshTriangles.reset(m_Rhi.CreateRhiShaderProgram());
-           DrawMeshTriangles
+           DrawMeshTriangle.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawMeshTriangle
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
@@ -282,7 +282,34 @@ namespace PC_CORE::Rendering
                .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
                .SetDepthWrite(true)
                .SetDepthTest(true)
-               .SetName("Draw Mesh Triangles")
+               .SetName("Draw Mesh Triangle")
+               .Build();
+       }
+
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.as.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.ms.hlsl.binary")->GetCode() },
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.ps.hlsl.binary")->GetCode() }
+           };
+
+           DrawMeshTriangleMeshlet.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawMeshTriangleMeshlet
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(shaderModules)
+               .SetRenderPass(*colorLinearPassDepth)
+               .SetVertexAttributeDescriptions({ VertexAttributeDescription{
+                .Binding = 0,
+                .Location = 0,
+                .Format = RhiFormat::R32G32B32A32Sfloat,
+                .Offset = offsetof(StaticMeshVertex, Position)
+                } })
+               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
+               .SetDepthWrite(true)
+               .SetDepthTest(true)
+               .SetName("Draw Mesh Triangle Meshlet")
                .Build();
        }
    }
