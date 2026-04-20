@@ -64,14 +64,21 @@ void Main(uint3 gtid : SV_GroupThreadID,
         vertices[gtid.x].Position = mul(mul(float4(Verticies, 1.0), DrawCall.ModelView), Projection);
 #if defined(USE_COLOR)
         float3 color = float3(0,0,0);
+        uint id = 0;
 #if defined(DRAW_TRIANGLE)
-        color = float3(
+    color = float3(
+            float(gtid.x & 1 ),
+            float(gtid.x & 3 ) / 4,
+            float(gtid.x & 7 ) / 8);
+        vertices[gtid.x].Color = color;
+#else
+    color = float3(
             float(gid.x & 1 ),
             float(gid.x & 3 ) / 4,
             float(gid.x & 7 ) / 8);
-#endif // DRAW_TRIANGLE
         vertices[gtid.x].Color = color;
-
+#endif // DRAW_TRIANGLE
+        
 #endif // USE_COLOR
     }
 }

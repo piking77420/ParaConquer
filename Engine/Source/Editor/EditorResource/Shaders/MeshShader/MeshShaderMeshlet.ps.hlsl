@@ -2,6 +2,10 @@ struct PSInput
 {
     float4 Position : SV_POSITION;
 #if defined(USE_COLOR)
+
+#if defined(DRAW_TRIANGLE)
+nointerpolation
+#endif 
     float3 Color : COLOR;
 #endif
 };

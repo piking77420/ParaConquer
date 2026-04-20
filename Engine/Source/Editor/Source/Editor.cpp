@@ -213,21 +213,21 @@ void Editor::CompileShaderDebugView()
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.as.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/MeshShader/MeshShaderMeshlet.as.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeatureFlagBits::UseColor);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/MeshShader/MeshShaderMeshlet.ms.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeatureFlagBits::UseColor);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("MeshShaderMeshlet.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeatureFlagBits::UseColor);
             }));
     }
 }
