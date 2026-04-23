@@ -6,7 +6,7 @@ struct Vertex
 	float4 Position;
 	float4 Normal;
 	float4 Tangent;
-	float2 Uv;
+	float2 TexCoord;
     float2 pad;
 };
 

@@ -30,8 +30,7 @@ namespace PC_CORE::Rendering::Pass
 	protected:
 		struct MeshShaderDrawCall
 		{
-			Gpu::mat3 ModelView;
-			Gpu::mat3 NormalInvMatrixView;
+			uint32_t RenderInstanceID;
 			uint32_t SubMeshMeshletCount;
 			uint32_t SubMeshMesletOffset;
 			uint32_t SubMeshVertexOffset;

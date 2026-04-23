@@ -68,13 +68,14 @@ namespace PC_CORE::Rendering::Pass
 			.SetName("Forward Pass Scene Set")
 			.Build();
 
-		//m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
-		//m_DescriptorMeshlet
-		//	->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-		//	.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 1, _RendererPassBuildContext.View.LightBuffer.get())
-		//	.BindUniformBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBufferHeader.get())
-		//	.SetName("Forward Pass Scene Set")
-		//	.Build();
+		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		m_DescriptorMeshlet
+			->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
+			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
+			.SetName("Forward Pass Scene Set")
+			.Build();
 
 
 		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)

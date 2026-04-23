@@ -208,24 +208,22 @@ namespace PC_CORE::Rendering
                .Build();
        }
 
-       auto InitShaderProgramForwardPass = [&]<bool IsTransparent>(std::unique_ptr<RhiShaderProgram>& Shader,
-           const std::vector<RhiShaderProgram::ShaderModule>& ShaderModules, std::string ShaderName)
+       auto InitShaderProgramForwardPass = [&]<bool IsTransparent>(
+           std::unique_ptr<RhiShaderProgram>&Shader,
+           const std::vector < std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> &ShaderModulesQuery,
+           std::string ShaderName)
            {
-            std::vector<RhiShaderProgram::ShaderModule> shaderModules = ShaderModules;
-            shaderModules.push_back({ RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("ForwardLit.ps.hlsl.binary")->GetCode() });
+            std::vector<RhiShaderProgram::ShaderModule> shaderModules;
+            shaderModules.reserve(ShaderModulesQuery.size());
+            for (size_t i = 0; i < ShaderModulesQuery.size(); i++)
+            {
+                auto& module = shaderModules.emplace_back();
+                module.first = ShaderModulesQuery[i].first;
+                module.second = ResourceManager::Get<ShaderSourceBinary>(ShaderModulesQuery[i].second)->GetCode();
+            }
 
-               constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
-               {
-                   .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
-                   .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
-                   .ColorOp = PC_CORE::BlendOp::Add,
+            //shaderModules.push_back({ RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("ForwardLit.ps.hlsl.binary")->GetCode() });
 
-                   .AlphaSrcFactor = PC_CORE::BlendFactor::One,
-                   .AlphaDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
-                   .AlphaOp = PC_CORE::BlendOp::Add,
-
-                   .BlendMask = PC_CORE::ColorComponent::ColorComponentRGBA
-               };
                Shader.reset(m_Rhi.CreateRhiShaderProgram());
                Shader
                    ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
@@ -262,18 +260,20 @@ namespace PC_CORE::Rendering
                }
        };
 
-       const std::vector<RhiShaderProgram::ShaderModule> TriangleModules
+       const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> TriangleModules
        {
-           { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Forward.vs.hlsl.binary")->GetCode() },
+           { RhiShaderProgram::ShaderStageTypeBits::Vertex, "Forward.vs.hlsl.binary"},
+           { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"},
        };
 
-       InitShaderProgramForwardPass.template operator()<false>(opaqueFowardShader, TriangleModules, "Opaque FowardShader");
-       InitShaderProgramForwardPass.template operator()<true>(transparentForwardShader, TriangleModules, "Transparent FowardShader");
+       InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShader, TriangleModules, "Opaque FowardShader");
+       InitShaderProgramForwardPass.template operator() < true > (transparentForwardShader, TriangleModules, "Transparent FowardShader");
 
-       const std::vector<RhiShaderProgram::ShaderModule> MeshetsModulesModules
+       const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> MeshetsModulesModules
        {
-          { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("ForwardMeshlet.as.hlsl.binary")->GetCode() },
-          { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("ForwardMeshlet.ms.hlsl.binary")->GetCode() },
+          { RhiShaderProgram::ShaderStageTypeBits::Amp, "ForwardMeshlet.as.hlsl.binary"},
+          { RhiShaderProgram::ShaderStageTypeBits::Mesh, "ForwardMeshlet.ms.hlsl.binary"},
+          { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"}
        };
 
        InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
@@ -357,6 +357,9 @@ namespace PC_CORE::Rendering
 
    void Renderer::UploadRenderInstanceID()
    {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering)
+
        m_CommandList->BeginDebugLabel("Upload RenderInstanceID", { 1.0f,0.2f, 0.f,1.0 });
        PC_CORE::BufferStateTransition Transfert{};
        Transfert.Buffer = InstanceBuffer.get();
@@ -399,7 +402,7 @@ namespace PC_CORE::Rendering
        out[7] = static_cast<float>(_From[9]);
        out[8] = static_cast<float>(_From[10]);
 
-       return out.Transpose();
+       return out;
    }
 
    void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)

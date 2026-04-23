@@ -4,8 +4,7 @@
 
 struct MeshShaderDrawCall
 {
-	float4x4 ModelView;
-    float4x4 NormalInvMatrixView;
+	unsigned int RenderInstanceID;
 	unsigned int SubMeshMeshletCount; 
 	unsigned int SubMeshMesletOffset;
 	unsigned int SubMeshVertexOffset; 

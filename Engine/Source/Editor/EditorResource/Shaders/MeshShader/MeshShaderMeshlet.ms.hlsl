@@ -10,6 +10,12 @@
 #include "Camera.hlsl"
 
 
+#define RENDER_INSTANCE_BUFFER_BINDING t1
+#define RENDER_INSTANCE_BUFFER_SPACE space0
+#include "InstanceBuffer.hlsl"
+
+
+
 #define MESHLET_SPACE space2    
 StructuredBuffer<Vertex> Vertices : register(t0, MESHLET_SPACE);
 StructuredBuffer<Meshlet> Meshlets : register(t1, MESHLET_SPACE);
@@ -69,10 +75,28 @@ void Main(uint3 gtid : SV_GroupThreadID,
     if (gtid.x < m.VertexCount)
     {
         uint localVertexIndex = m.VertexOffset + gtid.x;
-        uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
-        float3 Verticies = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz;
+        RenderInstance renderInstance = RenderInstances[DrawCall.RenderInstanceID]; 
 
-        vertices[gtid.x].Position = mul(mul(float4(Verticies, 1.0), DrawCall.ModelView), Projection);
+        uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
+        Vertex input = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex];
+
+        float4 ViewPos = mul(float4(input.Position.xyz, 1.0), renderInstance.ModelView);
+        vertices[gtid.x].ViewSpacePosition = ViewPos.xyz; // View position
+        vertices[gtid.x].Position = mul(ViewPos, Projection);
+ 
+
+#if defined(LIT)
+    float3 NormalL = input.Normal.xyz;
+    float3 TangentL = input.Tangent.xyz;
+    vertices[gtid.x].Normal = normalize(mul(NormalL, (float3x3)renderInstance.NormalInverseMatrixView));
+    vertices[gtid.x].Tangent = normalize(mul(TangentL, (float3x3)renderInstance.NormalInverseMatrixView));
+#endif 
+
+    // Need uvs
+#if defined(USE_UV)
+    vertices[gtid.x].TexCoord = input.TexCoord;
+#endif
+
 
 #if defined(USE_COLOR)
         float3 color = float3(0,0,0);

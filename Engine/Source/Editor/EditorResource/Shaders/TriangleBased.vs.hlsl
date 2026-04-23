@@ -52,12 +52,13 @@ VsOutput Main(VsInput input)
     VsOutput output;
     
     RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
+    float4 ViewPos = mul(float4(input.Position.xyz, 1.0), renderInstance.ModelView); 
 
-    float3 PositionL = input.Position.xyz;
-
-    float4 ViewPos = mul(float4(PositionL, 1.0), renderInstance.ModelView); 
+    // Positions
     output.ViewSpacePosition = ViewPos.xyz; // View position
     output.Position = mul(ViewPos, Projection);
+
+    // Lit dependencies
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
@@ -65,10 +66,12 @@ VsOutput Main(VsInput input)
     output.Tangent = normalize(mul(TangentL, (float3x3)renderInstance.NormalInverseMatrixView));
 #endif 
 
+    // Need uvs
 #if defined(USE_UV)
     output.TexCoord = input.TexCoord;
 #endif
 
+    // Colors Passes
 #if defined(USE_COLOR)
 
 #if defined(DRAW_TRIANGLE)

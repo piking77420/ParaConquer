@@ -55,8 +55,8 @@ namespace PC_CORE::Rendering::Pass
 							);
 
 						const uint32_t RenderInstanceID = DrawItem.InstanceIndex;
-						_Context.cmd.BindDrawBuffers(drawBuffer);
 						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, &RenderInstanceID, 0u, sizeof(RenderInstanceID));
+						_Context.cmd.BindDrawBuffers(drawBuffer);
 						_Context.cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
 					}
 
@@ -64,7 +64,7 @@ namespace PC_CORE::Rendering::Pass
 				[&](const Rendering::DrawStaticMeshMeshlet& StaticMesh) {
 					if (m_OnMeshDrawMeshlet)
 					{
-						/*
+						
 						m_OnMeshDrawMeshlet(_Context, StaticMesh);
 
 						if (StaticMesh.MeshletDescriptor && m_LastMeshletDescritptor != StaticMesh.MeshletDescriptor)
@@ -73,7 +73,7 @@ namespace PC_CORE::Rendering::Pass
 							_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
 						}
 						MeshShaderDrawCall MeshShaderDrawCall;
-						std::memcpy(MeshShaderDrawCall.ModelView.data.data(), StaticMesh.MatrixMV.data, sizeof(Gpu::mat3) * 2);
+						MeshShaderDrawCall.RenderInstanceID = DrawItem.InstanceIndex;
 						MeshShaderDrawCall.SubMeshMeshletCount = StaticMesh.MeshletCount;
 						MeshShaderDrawCall.SubMeshMesletOffset = StaticMesh.MeshletOffset;
 						MeshShaderDrawCall.SubMeshVertexOffset = StaticMesh.VertexOffset;
@@ -83,7 +83,7 @@ namespace PC_CORE::Rendering::Pass
 						static constexpr auto GroupSize = 32;
 						_Context.cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
 						const uint32_t DispachtSize = (StaticMesh.MeshletCount + GroupSize - 1) / GroupSize;
-						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);*/
+						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 					}
 				  },
 				}, DrawItem.Data);

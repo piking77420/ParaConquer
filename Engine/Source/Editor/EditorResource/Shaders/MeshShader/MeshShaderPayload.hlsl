@@ -7,4 +7,4 @@ struct Payload
 	uint MeshletIndices[AS_GROUP_SIZE];
 };
 
-#endif
+#endif // MESH_SHADER_PAYLOAD_HEADER
