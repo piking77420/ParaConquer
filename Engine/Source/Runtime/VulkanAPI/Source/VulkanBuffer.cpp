@@ -53,12 +53,11 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
 {
     auto& context = GET_VK_CONTEXT;
 
-
-    for (auto& alloc : m_StagingBuffers)
-        FreeAlloc(context, alloc);
-
-    for (auto& alloc : m_Handle)
-        FreeAlloc(context, alloc);
+    for (size_t i = 0; i < m_StagingBuffers.size(); i++)
+        context.DefferdDestroy(m_StagingBuffers[i], static_cast<uint32_t>(i));
+    
+    for (size_t i = 0; i < m_Handle.size(); i++)
+        context.DefferdDestroy(m_Handle[i], static_cast<uint32_t>(i));
 }
 
 bool Vulkan::VulkanBuffer::Build()
@@ -187,7 +186,7 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
     {
         if (stagingBuffer.buffer)
         {
-            FreeAlloc(context, stagingBuffer);
+            context.DefferdDestroy(stagingBuffer, FrameIndex);
         }
         CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes, m_Name.c_str());
         m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] = _sizeInBytes;
@@ -314,16 +313,6 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
 #ifdef  DEBUG_GPU_ON
     _VkContext.GetInstance()->SetDebugName(device, &nameInfo);
 #endif
-}
-
-void Vulkan::VulkanBuffer::FreeAlloc(VulkanContext& _VkContext, BufferAndAlloc& _handle)
-{
-    if (_handle.buffer == VK_NULL_HANDLE || _handle.alloc == VK_NULL_HANDLE)
-        return;
-    
-    vmaDestroyBuffer(_VkContext.allocator, _handle.buffer, _handle.alloc);
-    _handle.buffer = VK_NULL_HANDLE;
-    _handle.alloc = VK_NULL_HANDLE;
 }
 
 const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetBufferAndAlloc(size_t _frameIndex) const

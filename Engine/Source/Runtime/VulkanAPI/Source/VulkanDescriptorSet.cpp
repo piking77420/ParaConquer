@@ -72,7 +72,7 @@ void Vulkan::VulkanDescriptorSet::CreateDescriptors()
     descriptorSetAllocateInfo.pSetLayouts = layouts.data();
 
     PC_LOG_VERBOSE("CreateDescritptor Set [{}]", GetName().data());
-    d.allocateDescriptorSets(&descriptorSetAllocateInfo, m_DescriptorSets.data());
+    VK_CALL(d.allocateDescriptorSets(&descriptorSetAllocateInfo, m_DescriptorSets.data()));
 
     for (const auto& descriptorSet : m_DescriptorSets)
     {

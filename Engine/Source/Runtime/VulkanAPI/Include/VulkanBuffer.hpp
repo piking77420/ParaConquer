@@ -40,9 +40,7 @@ namespace Vulkan
         char* BeginBufferUpdateForCurrentFrame() override;
     
         static void CreateStagingBufferForCopy(VulkanContext& _VkContext, BufferAndAlloc* bufferAndAlloc, size_t _sizeInBytes, const char* BufferName);
-    
-        static void FreeAlloc(VulkanContext& _VkContext, BufferAndAlloc& _handle);
-        
+            
         const BufferAndAlloc* GetBufferAndAlloc(size_t _frameIndex) const;
 
         BufferAndAlloc* GetBufferAndAlloc(size_t _frameIndex);

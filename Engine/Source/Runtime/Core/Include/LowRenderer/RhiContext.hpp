@@ -34,6 +34,8 @@ public:
 
     std::shared_ptr<RhiSwapChain> rhiSwapChain;
 
+    uint32_t DirtyFrameIndex = 0;
+
     PC_CORE_API RhiContext(Rhi& _Rhi);
 
     PC_CORE_API RhiContext() = delete;
@@ -45,6 +47,8 @@ public:
     PC_CORE_API virtual void SendEnqueuCommand(CommandList* _EnqueuCommands, PC_CORE::GpuPipelineStage waitStage) = 0;
 
     PC_CORE_API virtual void ProceedResourceUpdateBranch() = 0;
+
+    PC_CORE_API virtual void ProceedDefferdDestroy(uint32_t _FrameIndex) = 0;
 
     PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch();
 

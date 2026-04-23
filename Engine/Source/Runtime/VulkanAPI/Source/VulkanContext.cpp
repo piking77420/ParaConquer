@@ -14,6 +14,8 @@
 #include "VulkanSwapChain.hpp"
 #include "VulkanCommandList.hpp"
 #include "Utils/RhiToVulkan.hpp"
+#include "VulkanTexture.hpp"
+#include "VulkanBuffer.hpp"
 
 using namespace Vulkan;
 
@@ -79,6 +81,11 @@ VulkanContext::~VulkanContext()
 {
     PERF_REGION_SCOPED;
     auto device = GetDevice();
+
+    for (uint32_t i = 0; i < static_cast<uint32_t>(m_PendingDefferedDestroy.size()); i++)
+    {
+        ProceedDefferdDestroy(i);
+    }
 
     DestroySyncObjects();
     //descritptorManager.ClearCaches();
@@ -271,4 +278,58 @@ void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
 
         VK_CALL(mainQueue.submit(1u, &submitInfo, nullptr));
     }   
+}
+
+void VulkanContext::ProceedDefferdDestroy(uint32_t _FrameIndex)
+{
+    for (auto& v : m_PendingDefferedDestroy[_FrameIndex])
+    {
+        // TODO use visitor pattern
+        if (std::holds_alternative<DefferdDestroyBuffer>(v))
+        {
+            DefferdDestroyBuffer& operation = std::get<DefferdDestroyBuffer>(v);
+
+            if (operation.buffer == VK_NULL_HANDLE || operation.alloc == VK_NULL_HANDLE)
+                continue;
+
+            vmaDestroyBuffer(allocator, operation.buffer, operation.alloc);
+        }
+        else if (std::holds_alternative<DefferdDestroyBufferTexture>(v))
+        {
+            DefferdDestroyBufferTexture& operation = std::get<DefferdDestroyBufferTexture>(v);
+
+            vk::Device device = GetDevice()->GetDevice();
+
+            if (operation.alloc != VK_NULL_HANDLE)
+            {
+                if (operation.image != VK_NULL_HANDLE && operation.alloc != VK_NULL_HANDLE)
+                {
+                    device.destroyImageView(operation.imageView);
+                    vmaDestroyImage(allocator, operation.image, operation.alloc);
+                }
+            }
+            else if (operation.image != VK_NULL_HANDLE && operation.imageView != VK_NULL_HANDLE)
+            {
+                device.destroyImageView(operation.imageView);
+                device.destroyImage(operation.image);
+            }
+        }
+    }
+
+    m_PendingDefferedDestroy[_FrameIndex].clear();
+}
+
+void Vulkan::VulkanContext::DefferdDestroy(BufferAndAlloc& BufferAndAlloc, uint32_t _FrameIndex)
+{
+    if (BufferAndAlloc.buffer == VK_NULL_HANDLE || BufferAndAlloc.alloc == VK_NULL_HANDLE)
+        return;
+
+    m_PendingDefferedDestroy[_FrameIndex].emplace_back().emplace<DefferdDestroyBuffer>(BufferAndAlloc.buffer, BufferAndAlloc.alloc);
+    BufferAndAlloc = {};
+}
+
+void Vulkan::VulkanContext::DefferdDestroy(TextureAndAlloc& TextureAndAlloc, uint32_t _FrameIndex)
+{
+    m_PendingDefferedDestroy[_FrameIndex].emplace_back().emplace<DefferdDestroyBufferTexture>(TextureAndAlloc.Image, TextureAndAlloc.ImageView, TextureAndAlloc.Allocation);
+    TextureAndAlloc = {};
 }

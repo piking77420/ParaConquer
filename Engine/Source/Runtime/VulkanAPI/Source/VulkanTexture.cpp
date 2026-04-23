@@ -128,7 +128,7 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
 
     if (StagingBufferFrame.buffer != VK_NULL_HANDLE)
     {
-        VulkanBuffer::FreeAlloc(context, StagingBufferFrame);
+        context.DefferdDestroy(StagingBufferFrame, FrameIndex);
     }
     VulkanBuffer::CreateStagingBufferForCopy(context, &StagingBufferFrame, _DataSize, m_Name.c_str());
 
@@ -351,29 +351,7 @@ Vulkan::VulkanTexture::~VulkanTexture()
 {
     auto& context = GET_VK_CONTEXT;
 
-    VulkanBuffer::FreeAlloc(context, m_StagingBuffer);
-    FreeAlloc(m_Handle);
+    context.DefferdDestroy(m_StagingBuffer, context.DirtyFrameIndex);
+    context.DefferdDestroy(m_Handle, context.DirtyFrameIndex);
 }
 
-void Vulkan::VulkanTexture::FreeAlloc(TextureAndAlloc& _handle)
-{
-    auto& context = GET_VK_CONTEXT;
-    vk::Device device = context.GetDevice()->GetDevice();
-
-    if (_handle.Allocation != VK_NULL_HANDLE)
-    {
-        if (_handle.Image != VK_NULL_HANDLE && _handle.Allocation != VK_NULL_HANDLE)
-        {
-            device.destroyImageView(_handle.ImageView);
-            vmaDestroyImage(context.allocator, _handle.Image, _handle.Allocation);
-        }
-    }
-    else if (_handle.Image != VK_NULL_HANDLE && _handle.ImageView != VK_NULL_HANDLE)
-    {
-        device.destroyImageView(_handle.ImageView);
-        device.destroyImage(_handle.Image);
-    }
-    _handle.Allocation = VK_NULL_HANDLE;
-    _handle.ImageView = VK_NULL_HANDLE;
-    _handle.Image = VK_NULL_HANDLE;
-}

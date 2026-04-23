@@ -50,7 +50,5 @@ namespace Vulkan
         BufferAndAlloc m_StagingBuffer{};
 
         RhiResourceState m_ResourceState = RhiResourceState::Undefined;
-
-        void FreeAlloc(TextureAndAlloc& _handle);
     };
 }

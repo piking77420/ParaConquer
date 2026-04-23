@@ -109,7 +109,7 @@ void App::RenderFrame()
         0.5f,
     };
 
-
+    RenderHarwareInteface.GetRhiContext().ProceedDefferdDestroy(RenderHarwareInteface.GetFrameIndex());
     if (swapChain->GetSwapChainImageIndex(mainWindow))
     {
         RenderHarwareInteface.GetRhiContext().ProceedResourceUpdateBranch();
