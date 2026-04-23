@@ -36,6 +36,18 @@ namespace PC_CORE::Rendering
             .Build();
 
         InitRhiRenderPasses();
+
+        if (!InstanceBuffer)
+        {
+            InstanceBuffer.reset(m_Rhi.CreateBuffer());
+            InstanceBuffer
+                ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+                .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
+                .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+                .SetSizeInBytes(sizeof(Gpu::RenderInstance) * 4096 * 2)
+                .SetName("Instances Buffer")
+                .Build();
+        }
     }
 
    void Renderer::Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction)
@@ -52,10 +64,13 @@ namespace PC_CORE::Rendering
 
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
+       m_CommandList->BeginRecordCommands();
        BuildDrawLists(_View, RenderingWorldData);
-
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
        m_RenderGraph.Execute(executeContext, _View);
+
+       m_CommandList->EndRecordCommands();
+       m_Rhi.GetRhiContext().SendEnqueuCommand(m_CommandList.get(), GpuPipelineStage::ColorAttachmentOutput);
    }
 
    void Renderer::InitRhiRenderPasses()
@@ -337,18 +352,6 @@ namespace PC_CORE::Rendering
                .Build();
        }*/
 
-       if (!InstanceBuffer)
-       {
-           InstanceBuffer.reset(m_Rhi.CreateBuffer());
-           InstanceBuffer
-               ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
-               .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
-               .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
-               .SetSizeInBytes(sizeof(Gpu::RenderInstance))
-               .SetName("Instances Buffer")
-               .Build();
-       }
-
    }
 
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
@@ -364,14 +367,12 @@ namespace PC_CORE::Rendering
        PC_CORE::BufferStateTransition Transfert{};
        Transfert.Buffer = InstanceBuffer.get();
        Transfert.Offset = 0u;
-       Transfert.Size = InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]);
-
-       m_CommandList->Barrier(RhiResourceState::VertexShaderResource, RhiResourceState::CopyDst, {}, std::span(&Transfert, 1));
+       Transfert.Size = PC_CORE::WHOLE_SIZE;
 
        // Uppload Instance Buffer
        InstanceBuffer->UploadData(m_CommandList.get(), InstanceBufferCpu.data(), InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]));
        
-       m_CommandList->Barrier(RhiResourceState::Undefined, RhiResourceState::CopyDst, {}, std::span(&Transfert, 1));
+       //m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&Transfert, 1));
 
        SortList();
    }

@@ -35,6 +35,7 @@ public:
         DepthStencilWrite,
         DepthStencilRead,
 
+        // should replace with shader read or shader write 
         // Compute
         ComputeRead,
         ComputeWrite,

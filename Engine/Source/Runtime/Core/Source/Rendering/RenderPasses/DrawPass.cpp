@@ -40,6 +40,7 @@ namespace PC_CORE::Rendering::Pass
 				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
 					if (m_OnMeshDrawTriangle)
 					{
+						/*
 						m_OnMeshDrawTriangle(_Context, StaticMesh);
 
 						CommandList::DrawBuffers drawBuffer;
@@ -53,17 +54,17 @@ namespace PC_CORE::Rendering::Pass
 								StaticMesh.IndexFormat
 							);
 		
-						const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
 
 						_Context.cmd.BindDrawBuffers(drawBuffer);
 						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
-						_Context.cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
+						_Context.cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);*/
 					}
 
 				},
 				[&](const Rendering::DrawStaticMeshMeshlet& StaticMesh) {
 					if (m_OnMeshDrawMeshlet)
 					{
+						/*
 						m_OnMeshDrawMeshlet(_Context, StaticMesh);
 
 						if (StaticMesh.MeshletDescriptor && m_LastMeshletDescritptor != StaticMesh.MeshletDescriptor)
@@ -82,7 +83,7 @@ namespace PC_CORE::Rendering::Pass
 						static constexpr auto GroupSize = 32;
 						_Context.cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
 						const uint32_t DispachtSize = (StaticMesh.MeshletCount + GroupSize - 1) / GroupSize;
-						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
+						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);*/
 					}
 				  },
 				}, DrawItem.Data);

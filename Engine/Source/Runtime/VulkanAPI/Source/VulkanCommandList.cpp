@@ -627,7 +627,7 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
         bar.pNext = nullptr;
         bar.image = textureAndAlloc.Image;
         bar.srcAccessMask = OldAccesMask;
-        bar.dstAccessMask = OldAccesMask;
+        bar.dstAccessMask = NewAccesMask;
         bar.oldLayout = OldLayout;
         bar.newLayout = NewMayout;
         bar.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -664,7 +664,7 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
         m_VkBufferBarrier[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         m_VkBufferBarrier[i].buffer = bufferAndAlloc.buffer;
         m_VkBufferBarrier[i].offset = _BufferStateTransition[i].Offset;
-        m_VkBufferBarrier[i].size = _BufferStateTransition[i].Size;
+        m_VkBufferBarrier[i].size = _BufferStateTransition[i].Size == PC_CORE::WHOLE_SIZE ? VK_WHOLE_SIZE : _BufferStateTransition[i].Size;
 
 
         if (_BufferStateTransition[i].updateState)
@@ -675,7 +675,7 @@ VULKAN_API void Vulkan::VulkanCommandList::Barrier(RhiResourceState _OldState, R
     
 
     const vk::PipelineStageFlags SrcStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_OldState);
-    const vk::PipelineStageFlags DstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_OldState);
+    const vk::PipelineStageFlags DstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(_NewState);
 
     m_CommandBuffer[frameIndex].pipelineBarrier(SrcStageFlags, DstStageFlags, {},
         0, nullptr,

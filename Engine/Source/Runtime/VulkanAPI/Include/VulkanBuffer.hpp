@@ -62,6 +62,8 @@ namespace Vulkan
         std::vector<void*> m_CurrentFrameMappedData;
 
         std::vector<BufferAndAlloc> m_StagingBuffers;
+
+        std::vector<size_t> m_StaginBuffersSizes;
         
     };
 }

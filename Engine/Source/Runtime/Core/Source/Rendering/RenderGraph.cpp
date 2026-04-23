@@ -42,7 +42,6 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 
 void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext, PC_CORE::Rendering::RenderView& _View)
 {
-	_RendererPassExecuteContext.cmd.BeginRecordCommands();
 
 	_View.UpdaterRhiBuffers(_RendererPassExecuteContext.cmd, _RendererPassExecuteContext.RenderingWorldData); // may do the update in someWhereElse
 
@@ -51,10 +50,7 @@ void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecute
 		_RendererPassExecuteContext.cmd.BeginDebugLabel(Nodes.GetNameFunc(Nodes.RenderPassObject.get()), Nodes.GetColorFunc(Nodes.RenderPassObject.get()));
 		Nodes.ExecuteFunc(Nodes.RenderPassObject.get(), _RendererPassExecuteContext);
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
-	}
-	_RendererPassExecuteContext.cmd.EndRecordCommands();
-	
-	_RendererPassExecuteContext.RHI.GetRhiContext().SendEnqueuCommand(&_RendererPassExecuteContext.cmd, GpuPipelineStage::ColorAttachmentOutput);
+	}	
 }
 
 }

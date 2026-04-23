@@ -2,6 +2,7 @@
 
 #include <Variant>
 #include <Vector>
+#include <numeric>
 
 #include "CoreHeader.hpp"
 #include "Reflection/Reflector.hpp"
@@ -33,6 +34,8 @@ BEGIN_PCCORE
         MeshShader,
         Count
     };
+
+    static constexpr uint32_t WHOLE_SIZE = std::numeric_limits<uint32_t>::max();
 
     REFLECT(RhiExtension);
     inline std::string_view RhiExtensionToString(RhiExtension RhiExtension)

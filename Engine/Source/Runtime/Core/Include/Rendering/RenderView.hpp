@@ -64,9 +64,7 @@ namespace PC_CORE::Rendering
             InvRenderSize = Tbx::Vector2f(1.f /RenderSize.x, 1.f /RenderSize.y);
         }
 
-        void UpdaterRhiBuffers(PC_CORE::Rhi& _Rhi, CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
-
-        static constexpr size_t MAX_INSTANCE_DRAW_PER_FRAME = 128;
+        void UpdaterRhiBuffers(CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
 
         Tbx::Matrix4x4d View;
         Tbx::Matrix4x4d ViewInv;
