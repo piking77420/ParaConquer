@@ -67,7 +67,7 @@ RhiDescriptorSet& RhiDescriptorSet::BindTexture(RhiShaderStageTypeFlag _ShaderSt
 	{
 		.Texture = _RhiTexture,
 		.Sampler = _RhiSampler,
-		.ResourceState = _ShaderStageBits & RhiShaderStageBits::Compute ? RhiResourceState::ComputeRead : RhiResourceState::FragmentShaderResource 
+		.ResourceState = _ShaderStageBits & RhiShaderStageBits::Compute ? RhiResourceState::ComputeRead : RhiResourceState::PixelShaderResource 
 	};
 
 	DescriptorWrite Write

@@ -59,7 +59,7 @@ namespace PC_CORE::Rendering
         Fov = _Camera.GetFov();
 	}
 
-    void RenderView::UpdaterRhiBuffers(CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
+    void RenderView::UpdaterRhiBuffers(PC_CORE::Rhi& _Rhi, CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
     {
         assert(UniformBuffer);
         PERF_REGION_SCOPED;
@@ -117,8 +117,7 @@ namespace PC_CORE::Rendering
             }
             LightBufferHeader->EndBufferUpdate();
         }
-
-
+   
     }
 
 } // PC_CORE::Rendering

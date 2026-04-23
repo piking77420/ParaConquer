@@ -63,7 +63,7 @@ namespace PC_CORE::Rendering::Pass
 			.updateState = false
 		};
 
-		cmd.Barrier(RhiResourceState::FragmentShaderResource, RhiResourceState::ComputeRead, std::span(&ImageStateTransition, 1), {});
+		cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::ComputeRead, std::span(&ImageStateTransition, 1), {});
 		ImageStateTransition.Texture = m_OutPutImageRef;
 		cmd.Barrier(RhiResourceState::Undefined, RhiResourceState::ComputeReadWrite, std::span(&ImageStateTransition, 1), {});
 
@@ -78,7 +78,7 @@ namespace PC_CORE::Rendering::Pass
 		cmd.Dispatch(GroupCountX, GroupCountY, 1);
 
 		ImageStateTransition.Texture = m_OutPutImageRef;
-		cmd.Barrier(RhiResourceState::ComputeReadWrite, RhiResourceState::FragmentShaderResource, std::span(&ImageStateTransition, 1), {});
+		cmd.Barrier(RhiResourceState::ComputeReadWrite, RhiResourceState::PixelShaderResource, std::span(&ImageStateTransition, 1), {});
 
 		cmd.EndRenderPass();
 	}

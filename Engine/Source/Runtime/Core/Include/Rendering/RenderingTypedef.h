@@ -110,7 +110,10 @@ namespace Gpu
         uint32_t LightCount;
     };
 
+    struct GPU_ALIGN RenderInstance
+    {
+        mat4 ModelView;
+        mat4 NormalInvertMatrix;
+    };
 }
-
-
 }

@@ -71,7 +71,7 @@ namespace PC_CORE::Rendering
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
                .SetInitialImageState(RhiResourceState::Undefined)
-               .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
            // Set Depth
            const RenderPassAttachementDescriptor& DepthAttachement = forwardPass
@@ -107,7 +107,7 @@ namespace PC_CORE::Rendering
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
                .SetInitialImageState(RhiResourceState::Undefined)
-               .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
            colorLinearPass
                ->CreateSubPass()
@@ -130,7 +130,7 @@ namespace PC_CORE::Rendering
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
                .SetInitialImageState(RhiResourceState::Undefined)
-               .SetFinalImageState(RhiResourceState::FragmentShaderResource);
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
            const RenderPassAttachementDescriptor& DepthAttachement = colorLinearPassDepth
                ->CreateAttachment()
@@ -336,6 +336,19 @@ namespace PC_CORE::Rendering
                .SetName("Draw Mesh Triangle Meshlet")
                .Build();
        }*/
+
+       if (!InstanceBuffer)
+       {
+           InstanceBuffer.reset(m_Rhi.CreateBuffer());
+           InstanceBuffer
+               ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+               .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
+               .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+               .SetSizeInBytes(sizeof(Gpu::RenderInstance))
+               .SetName("Instances Buffer")
+               .Build();
+       }
+
    }
 
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
@@ -345,15 +358,50 @@ namespace PC_CORE::Rendering
 
        OpaqueList.Clear();
        TransparentList.Clear();
+       InstanceBufferCpu.clear();
+
        FillListStaticMesh(_view, RenderingWorldData);
+       PC_CORE::BufferStateTransition Transfert{};
+       Transfert.Buffer = InstanceBuffer.get();
+       Transfert.Offset = 0u;
+       Transfert.Size = InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]);
+
+       m_CommandList->Barrier(RhiResourceState::VertexShaderResource, RhiResourceState::CopyDst, {}, std::span(&Transfert, 1));
+
+       // Uppload Instance Buffer
+       InstanceBuffer->UploadData(m_CommandList.get(), InstanceBufferCpu.data(), InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]));
+       
+       m_CommandList->Barrier(RhiResourceState::Undefined, RhiResourceState::CopyDst, {}, std::span(&Transfert, 1));
+
        SortList();
+   }
+
+   inline Tbx::Matrix3x3f SquashMatrix(const Tbx::Matrix4x4d& _From)
+   {
+       Tbx::Matrix3x3f out;
+       // 1st coloms
+       out[0] = static_cast<float>(_From[0]);
+       out[1] = static_cast<float>(_From[1]);
+       out[2] = static_cast<float>(_From[2]);
+
+       // 2st coloms
+       out[3] = static_cast<float>(_From[4]);
+       out[4] = static_cast<float>(_From[5]);
+       out[5] = static_cast<float>(_From[6]);
+
+       // 3rd coloms
+       out[6] = static_cast<float>(_From[8]);
+       out[7] = static_cast<float>(_From[9]);
+       out[8] = static_cast<float>(_From[10]);
+
+       return out;
    }
 
    void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-
+       InstanceBufferCpu.reserve(RenderingWorldData.StaticMeshComponentData.size());
        for (const auto& StaticMeshComponentData : RenderingWorldData.StaticMeshComponentData)
        {
            const StaticMesh* StaticMesh = StaticMeshComponentData.StaticMesh;
@@ -386,6 +434,14 @@ namespace PC_CORE::Rendering
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
+               // Instance Matrix Update
+               item.InstanceIndex = InstanceBufferCpu.size();
+               auto ModelViewF = Tbx::Matrix4x4f(ModelView);
+               auto NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
+               auto& RenderInstance = InstanceBufferCpu.emplace_back();
+               std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(Gpu::mat4));
+               std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(Gpu::mat4));
+
                switch (m_RenderGraph.GetRenderMode())
                {
                case RenderMode::TriangleBased:
@@ -402,8 +458,6 @@ namespace PC_CORE::Rendering
                    Descritptor.IndexOffset = MeshSection.MeshDataDescriptor.IndicesOffset;
                    Descritptor.IndexCount = MeshSection.MeshDataDescriptor.IndicesCount;
                    Descritptor.IndexFormat = StaticMesh->GetIndexBuffer(LODIndex).GetIndexFormat();
-                   Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
-                   Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
 
                    const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
@@ -442,8 +496,8 @@ namespace PC_CORE::Rendering
                    Descritptor.SubMeshTriangleVertexOffset = MeshSection.MeshDataDescriptor.MeshletVertexTrianglesIndexOffset;
                    Descritptor.SubMeshTriangleOffset = MeshSection.MeshDataDescriptor.MeshletTrianglesOffset;
 
-                   Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
-                   Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
+                   //Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
+                   //Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
                    const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
                    const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);

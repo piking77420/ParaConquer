@@ -30,7 +30,7 @@ public:
 
         // Texture uses
         VertexShaderResource,
-        FragmentShaderResource,
+        PixelShaderResource,
         RenderTarget,
         DepthStencilWrite,
         DepthStencilRead,
@@ -39,6 +39,10 @@ public:
         ComputeRead,
         ComputeWrite,
         ComputeReadWrite,
+
+        // MeshShader
+        MeshShaderResource,
+        AmpShaderResource,
 
         // Presentation
         Present,

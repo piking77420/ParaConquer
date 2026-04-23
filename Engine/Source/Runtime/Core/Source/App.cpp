@@ -79,7 +79,7 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
 
     std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
     branch->
-        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::FragmentShaderResource);
+        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::PixelShaderResource);
 
 
     Time::Init();

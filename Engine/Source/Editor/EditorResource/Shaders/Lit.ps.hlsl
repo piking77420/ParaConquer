@@ -41,7 +41,7 @@ float4 Main(PSInput input) : SV_Target
 {
     float4 FragAlbedo = float4(0, 0, 0, 1);
 #if defined(LIT)
-    FragAlbedo = AlbedoFactor;
+    FragAlbedo.xyz = AlbedoFactor.xyz;
     float3 Normal = normalize(input.Normal);
     float Metallic = AORoughnessMetallicEmptyFactors.x;
     float Roughness = AORoughnessMetallicEmptyFactors.y;

@@ -792,7 +792,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 .GenerateMipmap(
                     _Texture,
                     PC_CORE::Filter::Linear,
-                    RhiResourceState::FragmentShaderResource);
+                    RhiResourceState::PixelShaderResource);
         }
         
         

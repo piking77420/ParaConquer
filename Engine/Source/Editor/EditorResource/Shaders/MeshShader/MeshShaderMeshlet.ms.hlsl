@@ -71,8 +71,9 @@ void Main(uint3 gtid : SV_GroupThreadID,
         uint localVertexIndex = m.VertexOffset + gtid.x;
         uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
         float3 Verticies = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex].Position.xyz;
-        
-        vertices[gtid.x].Position = mul(mul(float4(Verticies, 1.0), DrawCall.ModelView), Projection);
+
+        vertices[gtid.x].Position = mul(mul(float4(Verticies, 1.0), ModelView4), Projection);
+
 #if defined(USE_COLOR)
         float3 color = float3(0,0,0);
         uint id = 0;

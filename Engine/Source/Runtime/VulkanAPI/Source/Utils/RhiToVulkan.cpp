@@ -1139,7 +1139,7 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
     case RhiResourceState::CopyDst:
         return vk::ImageLayout::eTransferDstOptimal;
     // Shader
-    case RhiResourceState::FragmentShaderResource:
+    case RhiResourceState::PixelShaderResource:
         return vk::ImageLayout::eShaderReadOnlyOptimal;
     case RhiResourceState::RenderTarget:
         return vk::ImageLayout::eColorAttachmentOptimal;
@@ -1181,7 +1181,7 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
         return vk::AccessFlagBits::eIndexRead;
     case PC_CORE::RhiResource::State::UniformBuffer:
         return vk::AccessFlagBits::eUniformRead;
-    case PC_CORE::RhiResource::State::FragmentShaderResource:
+    case PC_CORE::RhiResource::State::PixelShaderResource:
         return vk::AccessFlagBits::eShaderRead;
     case PC_CORE::RhiResource::State::RenderTarget:
         return vk::AccessFlagBits::eColorAttachmentWrite;
@@ -1194,7 +1194,10 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
     case PC_CORE::RhiResource::State::ComputeWrite:
         return vk::AccessFlagBits::eShaderWrite;
     case PC_CORE::RhiResource::State::ComputeReadWrite:
-        return vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+    case PC_CORE::RhiResource::State::MeshShaderResource:
+        return vk::AccessFlagBits::eShaderRead;
+    case PC_CORE::RhiResource::State::AmpShaderResource:
+        return vk::AccessFlagBits::eShaderRead;
     case PC_CORE::RhiResource::State::Present:
     default:
         break;
@@ -1221,7 +1224,7 @@ RhiResourceState Vulkan::Utils::VulkanImageLayoutToResourceState(vk::ImageLayout
     case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
         return RhiResourceState::RenderTarget;
     case vk::ImageLayout::eShaderReadOnlyOptimal:
-        return RhiResourceState::FragmentShaderResource;
+        return RhiResourceState::PixelShaderResource;
     case vk::ImageLayout::eTransferSrcOptimal:
         return RhiResourceState::CopySrc;
     case vk::ImageLayout::eTransferDstOptimal:
@@ -1283,7 +1286,7 @@ vk::PipelineStageFlags Vulkan::Utils::PipelineStageFlagsFromRhiResourceState(
     case State::VertexShaderResource:
         return vk::PipelineStageFlagBits::eVertexShader;
 
-    case State::FragmentShaderResource:
+    case State::PixelShaderResource:
         return vk::PipelineStageFlagBits::eFragmentShader;
 
         // Render targets

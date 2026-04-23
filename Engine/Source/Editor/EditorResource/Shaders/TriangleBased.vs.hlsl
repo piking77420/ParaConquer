@@ -37,8 +37,8 @@ struct VsOutput
 
 struct PushConstant
 {
-    float4x4 modelView;
-    float4x4 normalInvMatrixView;
+    float4x4 ModelView;
+    float4x4 NormalInvMatrixView;
 };
 
 [[vk::push_constant]]
@@ -49,14 +49,15 @@ VsOutput Main(VsInput input)
     VsOutput output;
     
     float3 PositionL = input.Position.xyz;
-    float4 ViewPos = mul(float4(PositionL, 1.0), pushConstant.modelView); 
+
+    float4 ViewPos = mul(float4(PositionL, 1.0), pushConstant.ModelView); 
     output.ViewSpacePosition = ViewPos.xyz; // View position
     output.Position = mul(ViewPos, Projection);
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    output.Normal = normalize(mul(NormalL, (float3x3) pushConstant.normalInvMatrixView));
-    output.Tangent = normalize(mul(TangentL, (float3x3) pushConstant.normalInvMatrixView));
+    output.Normal = normalize(mul(NormalL, pushConstant.NormalInvMatrixView));
+    output.Tangent = normalize(mul(TangentL, pushConstant.NormalInvMatrixView));
 #endif 
 
 #if defined(USE_UV)

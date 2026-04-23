@@ -52,6 +52,7 @@ namespace PC_CORE::Rendering::Pass
 								0ull,
 								StaticMesh.IndexFormat
 							);
+		
 						const ModelPushConstant* Push = reinterpret_cast<const ModelPushConstant*>(&StaticMesh.MatrixMV); // hacks
 
 						_Context.cmd.BindDrawBuffers(drawBuffer);
@@ -71,7 +72,7 @@ namespace PC_CORE::Rendering::Pass
 							_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
 						}
 						MeshShaderDrawCall MeshShaderDrawCall;
-						std::memcpy(MeshShaderDrawCall.ModelView.data.data(), StaticMesh.MatrixMV.data, 16 * sizeof(float));
+						std::memcpy(MeshShaderDrawCall.ModelView.data.data(), StaticMesh.MatrixMV.data, sizeof(Gpu::mat3) * 2);
 						MeshShaderDrawCall.SubMeshMeshletCount = StaticMesh.MeshletCount;
 						MeshShaderDrawCall.SubMeshMesletOffset = StaticMesh.MeshletOffset;
 						MeshShaderDrawCall.SubMeshVertexOffset = StaticMesh.VertexOffset;

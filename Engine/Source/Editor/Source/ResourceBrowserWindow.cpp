@@ -52,7 +52,7 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
 
     rhi.GetRhiContext().
         ResourceUpdateBranch()
-        ->TextureUpload2D(*texture.Get(), image.GetData(), image.GetSizeInBytes(), RhiResourceState::FragmentShaderResource);
+        ->TextureUpload2D(*texture.Get(), image.GetData(), image.GetSizeInBytes(), RhiResourceState::PixelShaderResource);
 }
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
@@ -94,9 +94,11 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
     if (!asserR.empty())
     {
         PC_CORE::JsonSerializer s;
-        s.OpenFile(asserR, PC_CORE::Serializer::SerializeOperation::DeSerialize);
-        s.DeSerialize<AssetRegistery>(&m_AssetRegistery);
-        s.CloseFile();
+        if (s.OpenFile(asserR, PC_CORE::Serializer::SerializeOperation::DeSerialize))
+        {
+            s.DeSerialize<AssetRegistery>(&m_AssetRegistery);
+            s.CloseFile();
+        }
     }
 
     for (auto& it : m_AssetRegistery.pathToType)

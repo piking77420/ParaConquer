@@ -20,9 +20,6 @@ namespace PC_CORE::Rendering
 		uint32_t VertexOffset{ 0u };
 		uint32_t IndexCount{ 0u };
 		uint32_t IndexOffset{ 0u };
-
-		Tbx::Matrix4x4f MatrixMV{};
-		Tbx::Matrix4x4f NormalInverMatrixMV{};
 	};
 
 	struct DrawStaticMeshMeshlet
@@ -37,15 +34,12 @@ namespace PC_CORE::Rendering
 		uint32_t MeshletCount{ 0u };
 		uint32_t SubMeshTriangleVertexOffset{ 0u };
 		uint32_t SubMeshTriangleOffset{ 0u };
-
-		Tbx::Matrix4x4f MatrixMV{};
-		Tbx::Matrix4x4f NormalInverMatrixMV{};
 	};
 
 	struct DrawItem
 	{
 		uint64_t SortKey;
-
+		size_t InstanceIndex;
 		std::variant<
 			DrawStaticMeshTriangle,
 			DrawStaticMeshMeshlet

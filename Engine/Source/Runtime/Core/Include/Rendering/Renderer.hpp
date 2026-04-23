@@ -56,6 +56,10 @@ public:
 
     std::unique_ptr<RhiRenderPass> colorLinearPassDepth;
 
+    std::unique_ptr<RhiBuffer> InstanceBuffer;
+
+    std::vector<Gpu::RenderInstance> InstanceBufferCpu;
+
 private:
     Rhi& m_Rhi;
 

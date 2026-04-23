@@ -4,12 +4,13 @@
 
 struct MeshShaderDrawCall
 {
-	float4x4 ModelView; // 64
-	unsigned int SubMeshMeshletCount;
-	unsigned int SubMeshMesletOffset; // 4  68
-	unsigned int SubMeshVertexOffset;
-	unsigned int SubMeshTriangleVertexOffset;
-	unsigned int SubMeshTriangleOffset;
+	float4x4 ModelView;
+    float4x4 NormalInvMatrixView;
+	unsigned int SubMeshMeshletCount; 
+	unsigned int SubMeshMesletOffset;
+	unsigned int SubMeshVertexOffset; 
+	unsigned int SubMeshTriangleVertexOffset; 
+	unsigned int SubMeshTriangleOffset; 
 };
 [[vk::push_constant]]
 MeshShaderDrawCall DrawCall;
