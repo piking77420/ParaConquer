@@ -126,7 +126,7 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(context.rhiDevice)->GetDevice();
     auto& StagingBufferFrame = m_StagingBuffer;
 
-    if (StagingBufferFrame.buffer != VK_NULL_HANDLE)
+    if (StagingBufferFrame.buffer != VK_NULL_HANDLE) // TODO CACHE THOS DEPENDING ON SIZE
     {
         context.DefferdDestroy(StagingBufferFrame, FrameIndex);
     }

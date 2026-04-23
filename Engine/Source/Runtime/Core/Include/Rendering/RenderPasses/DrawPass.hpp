@@ -28,12 +28,6 @@ namespace PC_CORE::Rendering::Pass
 		virtual ~DrawPass();
 
 	protected:
-		struct alignas(16) ModelPushConstant
-		{
-			Gpu::mat4 ModelView;
-			Gpu::mat4 NormalInvMatrixView;
-		};
-
 		struct MeshShaderDrawCall
 		{
 			Gpu::mat3 ModelView;

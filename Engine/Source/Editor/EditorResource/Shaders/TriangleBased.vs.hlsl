@@ -6,6 +6,10 @@
 
 #include "HashColor.hlsl"
 
+#define RENDER_INSTANCE_BUFFER_BINDING t1
+#define RENDER_INSTANCE_BUFFER_SPACE space0
+#include "InstanceBuffer.hlsl"
+
 struct VsInput
 {
     float4 Position : POSITION; // location 0
@@ -37,8 +41,7 @@ struct VsOutput
 
 struct PushConstant
 {
-    float4x4 ModelView;
-    float4x4 NormalInvMatrixView;
+    uint RenderInstanceID;
 };
 
 [[vk::push_constant]]
@@ -48,16 +51,18 @@ VsOutput Main(VsInput input)
 {
     VsOutput output;
     
+    RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
+
     float3 PositionL = input.Position.xyz;
 
-    float4 ViewPos = mul(float4(PositionL, 1.0), pushConstant.ModelView); 
+    float4 ViewPos = mul(float4(PositionL, 1.0), renderInstance.ModelView); 
     output.ViewSpacePosition = ViewPos.xyz; // View position
     output.Position = mul(ViewPos, Projection);
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    output.Normal = normalize(mul(NormalL, pushConstant.NormalInvMatrixView));
-    output.Tangent = normalize(mul(TangentL, pushConstant.NormalInvMatrixView));
+    output.Normal = normalize(mul(NormalL, (float3x3)renderInstance.NormalInverseMatrixView));
+    output.Tangent = normalize(mul(TangentL, (float3x3)renderInstance.NormalInverseMatrixView));
 #endif 
 
 #if defined(USE_UV)
@@ -68,7 +73,7 @@ VsOutput Main(VsInput input)
 
 #if defined(DRAW_TRIANGLE)
     uint combined = input.InstanceID * 73856093u ^ input.VertexID * 19349663u;
-    output.Color = float4(hash3(combined), 1.0);
+    output.Color = hash3(combined);
 #endif
 
 #endif 

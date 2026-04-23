@@ -182,7 +182,7 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
 
     auto& stagingBuffer = *GetVkStagingBuffer(FrameIndex);
 
-    if (stagingBuffer.buffer == VK_NULL_HANDLE || m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] != _sizeInBytes)
+    if (stagingBuffer.buffer == VK_NULL_HANDLE || m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] < _sizeInBytes)
     {
         if (stagingBuffer.buffer)
         {

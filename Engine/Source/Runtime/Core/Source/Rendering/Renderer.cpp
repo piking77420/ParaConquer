@@ -66,6 +66,7 @@ namespace PC_CORE::Rendering
    {
        m_CommandList->BeginRecordCommands();
        BuildDrawLists(_View, RenderingWorldData);
+       UploadRenderInstanceID();
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
        m_RenderGraph.Execute(executeContext, _View);
 
@@ -354,6 +355,19 @@ namespace PC_CORE::Rendering
 
    }
 
+   void Renderer::UploadRenderInstanceID()
+   {
+       m_CommandList->BeginDebugLabel("Upload RenderInstanceID", { 1.0f,0.2f, 0.f,1.0 });
+       PC_CORE::BufferStateTransition Transfert{};
+       Transfert.Buffer = InstanceBuffer.get();
+       Transfert.Offset = 0u;
+       Transfert.Size = PC_CORE::WHOLE_SIZE;
+       // Uppload Instance Buffer
+       InstanceBuffer->UploadData(m_CommandList.get(), InstanceBufferCpu.data(), InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]));
+       m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&Transfert, 1));
+       m_CommandList->EndDebugLabel();
+   }
+
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
@@ -364,16 +378,6 @@ namespace PC_CORE::Rendering
        InstanceBufferCpu.clear();
 
        FillListStaticMesh(_view, RenderingWorldData);
-       PC_CORE::BufferStateTransition Transfert{};
-       Transfert.Buffer = InstanceBuffer.get();
-       Transfert.Offset = 0u;
-       Transfert.Size = PC_CORE::WHOLE_SIZE;
-
-       // Uppload Instance Buffer
-       InstanceBuffer->UploadData(m_CommandList.get(), InstanceBufferCpu.data(), InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]));
-       
-       //m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&Transfert, 1));
-
        SortList();
    }
 
@@ -395,7 +399,7 @@ namespace PC_CORE::Rendering
        out[7] = static_cast<float>(_From[9]);
        out[8] = static_cast<float>(_From[10]);
 
-       return out;
+       return out.Transpose();
    }
 
    void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
@@ -437,11 +441,11 @@ namespace PC_CORE::Rendering
 
                // Instance Matrix Update
                item.InstanceIndex = InstanceBufferCpu.size();
-               auto ModelViewF = Tbx::Matrix4x4f(ModelView);
-               auto NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
+               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView);
+               const Tbx::Matrix4x4f NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
                auto& RenderInstance = InstanceBufferCpu.emplace_back();
-               std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(Gpu::mat4));
-               std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(Gpu::mat4));
+               std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
+               std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertMatrix));
 
                switch (m_RenderGraph.GetRenderMode())
                {

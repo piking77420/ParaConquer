@@ -17,10 +17,10 @@ struct PSInput
 #endif
 };
 
-#define LIGHT_BUFFER_BINDING t1
+#define LIGHT_BUFFER_BINDING t2
 #define LIGHT_BUFFER_SPACE space0
 
-#define LIGHT_HEADER_BUFFER_BINDING b2
+#define LIGHT_HEADER_BUFFER_BINDING b3
 #define LIGHT_HEADER_BUFFER_SPACE space0
 #include "Light.hlsl"
 

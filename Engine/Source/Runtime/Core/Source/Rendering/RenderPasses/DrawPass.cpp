@@ -40,7 +40,7 @@ namespace PC_CORE::Rendering::Pass
 				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
 					if (m_OnMeshDrawTriangle)
 					{
-						/*
+						
 						m_OnMeshDrawTriangle(_Context, StaticMesh);
 
 						CommandList::DrawBuffers drawBuffer;
@@ -53,11 +53,11 @@ namespace PC_CORE::Rendering::Pass
 								0ull,
 								StaticMesh.IndexFormat
 							);
-		
 
+						const uint32_t RenderInstanceID = DrawItem.InstanceIndex;
 						_Context.cmd.BindDrawBuffers(drawBuffer);
-						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, Push, 0u, sizeof(ModelPushConstant));
-						_Context.cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);*/
+						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, &RenderInstanceID, 0u, sizeof(RenderInstanceID));
+						_Context.cmd.DrawIndexed(StaticMesh.IndexCount, 1, StaticMesh.IndexOffset, StaticMesh.VertexOffset, 0);
 					}
 
 				},
