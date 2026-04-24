@@ -57,12 +57,14 @@ void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Rende
 	m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 	m_DescriptorSet
 		->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+		.BindShaderStorageBuffer(RhiShaderStageBits::Vertex, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 		.SetName(m_Name + "Pass Scene Set")
 		.Build();
 
 	m_MeshShaderDescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 	m_MeshShaderDescriptorSet
 		->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+		.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 		.SetName(m_Name + "Pass Scene Mesh Shader Set")
 		.Build();
 	

@@ -222,8 +222,6 @@ namespace PC_CORE::Rendering
                 module.second = ResourceManager::Get<ShaderSourceBinary>(ShaderModulesQuery[i].second)->GetCode();
             }
 
-            //shaderModules.push_back({ RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("ForwardLit.ps.hlsl.binary")->GetCode() });
-
                Shader.reset(m_Rhi.CreateRhiShaderProgram());
                Shader
                    ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
@@ -260,73 +258,57 @@ namespace PC_CORE::Rendering
                }
        };
 
-       const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> TriangleModules
        {
-           { RhiShaderProgram::ShaderStageTypeBits::Vertex, "Forward.vs.hlsl.binary"},
-           { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"},
-       };
-
-       InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShader, TriangleModules, "Opaque FowardShader");
-       InitShaderProgramForwardPass.template operator() < true > (transparentForwardShader, TriangleModules, "Transparent FowardShader");
-
-       const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> MeshetsModulesModules
-       {
-          { RhiShaderProgram::ShaderStageTypeBits::Amp, "ForwardMeshlet.as.hlsl.binary"},
-          { RhiShaderProgram::ShaderStageTypeBits::Mesh, "ForwardMeshlet.ms.hlsl.binary"},
-          { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"}
-       };
-
-       InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
-       InitShaderProgramForwardPass.template operator() < true > (transparentForwardShaderMeshlet, MeshetsModulesModules,"Transparent FowardShader Meshlet");
-
-       /*
-       {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           // Foward
+           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> TriangleModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.as.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ms.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("MeshShaderMeshlet.ps.hlsl.binary")->GetCode() }
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, "Forward.vs.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"},
            };
 
-           DrawMeshMeshet.reset(m_Rhi.CreateRhiShaderProgram());
-           DrawMeshMeshet
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*forwardPass)
-               .SetDepthWrite(true)
-               .SetDepthTest(true)
-               .SetName("Triangle MeshShader")
-               .Build();
+           InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShader, TriangleModules, "Opaque FowardShader");
+           InitShaderProgramForwardPass.template operator() < true > (transparentForwardShader, TriangleModules, "Transparent FowardShader");
        }
-
+       
        {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           // Forward but with meshsahder
+           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> MeshetsModulesModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangle.vs.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangle.ps.hlsl.binary")->GetCode() },
+              { RhiShaderProgram::ShaderStageTypeBits::Amp, "ForwardMeshlet.as.hlsl.binary"},
+              { RhiShaderProgram::ShaderStageTypeBits::Mesh, "ForwardMeshlet.ms.hlsl.binary"},
+              { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"}
            };
 
-           DrawMeshTriangle.reset(m_Rhi.CreateRhiShaderProgram());
-           DrawMeshTriangle
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*colorLinearPassDepth)
-               .SetVertexAttributeDescriptions({ VertexAttributeDescription{
-                .Binding = 0,
-                .Location = 0,
-                .Format = RhiFormat::R32G32B32A32Sfloat,
-                .Offset = offsetof(StaticMeshVertex, Position)
-                } })
-               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
-               .SetDepthWrite(true)
-               .SetDepthTest(true)
-               .SetName("Draw Mesh Triangle")
-               .Build();
+           InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
+           InitShaderProgramForwardPass.template operator() < true > (transparentForwardShaderMeshlet, MeshetsModulesModules, "Transparent FowardShader Meshlet");
+       }
+       
+       
+       {
+           // DrawTriangle MeshShader
+           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshTriangleMeshlet.as.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "DrawMeshTriangleMeshlet.ms.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshTriangleMeshlet.ps.hlsl.binary"}
+           };
+
+           InitShaderProgramForwardPass.template operator() < false > (DrawMeshTriangleMeshlet, shaderModules, "DrawMeshTriangleMeshlet");
+
+       }
+       
+       {
+           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, "DrawMeshTriangle.vs.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshTriangle.ps.hlsl.binary"},
+           };
+           InitShaderProgramForwardPass.template operator() < false > (DrawMeshTriangle, shaderModules, "DrawMeshTriangle");
+
        }
 
-       {
+       /*{
+           
            const std::vector<RhiShaderProgram::ShaderModule> shaderModules
            {
                { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.as.hlsl.binary")->GetCode() },

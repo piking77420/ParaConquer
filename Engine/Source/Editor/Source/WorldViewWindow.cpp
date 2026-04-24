@@ -150,7 +150,7 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
         break;
     case DebugView::Triangle:
     {
-        const std::string PassName = "DebuTriangle";
+        const std::string PassName = "DebugTriangle";
         const std::array<float, 4> Color = 
         {
             0.5f,
@@ -188,7 +188,7 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
         break;
     case DebugView::Triangle:
     {
-        const std::string PassName = "DebuTriangle";
+        const std::string PassName = "DebugTriangle";
         const std::array<float, 4> Color =
         {
             0.5f,

@@ -201,12 +201,12 @@ void Editor::CompileShaderDebugView()
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshTriangleMeshlet.ps.hlsl",
                 EDITOR_RESOURCE_PATH
-                "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl",
+                "/Shaders/Lit.ps.hlsl",
                 ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
             }));
     }
 
-
+    /*
     // Draw Meshlet
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
@@ -229,7 +229,7 @@ void Editor::CompileShaderDebugView()
                 "/Shaders/MeshShader/MeshShaderMeshlet.ps.hlsl",
                 ShaderFeatureFlagBits::UseColor);
             }));
-    }
+    }*/
 }
 
 
