@@ -1,8 +1,8 @@
 #include "StaticMeshVertex.hlsl"
-#include "MeshShaderPayload.hlsl"
+#include "MeshletPayload.hlsl"
 #include "Meshlet.hlsl"
 #include "StaticMeshVertex.hlsl"
-#include "MeshShaderDrawCall.hlsl"
+#include "MeshletDrawCall.hlsl"
 #include "HashColor.hlsl"
 
 #define CAMERA_BINDING b0

@@ -42,9 +42,9 @@ public:
 
     std::unique_ptr<RhiShaderProgram> transparentForwardShaderMeshlet;
 
-    std::unique_ptr<RhiShaderProgram> DrawMeshMeshet;
+    std::unique_ptr<RhiShaderProgram> DrawMeshletColor;
 
-    std::unique_ptr<RhiShaderProgram> DrawMeshTriangle;
+    std::unique_ptr<RhiShaderProgram> DrawTriangle;
 
     std::unique_ptr<RhiShaderProgram> DrawMeshTriangleMeshlet;
 

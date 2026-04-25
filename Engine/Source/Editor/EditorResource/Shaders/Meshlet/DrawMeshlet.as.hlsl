@@ -1,5 +1,5 @@
-#include "MeshShaderPayload.hlsl"
-#include "MeshShaderDrawCall.hlsl"
+#include "MeshletPayload.hlsl"
+#include "MeshletDrawCall.hlsl"
 
 groupshared Payload sPayload;
 

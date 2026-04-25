@@ -158,7 +158,7 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
             0.1f,
             1.f
         };
-        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawMeshTriangle;
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
         std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
 
         Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
@@ -196,13 +196,26 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
             0.1f,
             1.f
         };
-        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawMeshTriangle;
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
         std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
 
         Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
     }
         break;
     case DebugView::Meshlet:
+    {
+        const std::string PassName = "DrawMeshlet";
+        const std::array<float, 4> Color =
+        {
+            0.5f,
+            0.8f,
+            0.1f,
+            1.f
+        };
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshletColor;
+
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangleMeshlet, shaderPtrTriangleMeshlet);
+    } 
         break;
     default:
         break;

@@ -50,6 +50,34 @@ namespace PC_CORE::Rendering
         }
     }
 
+    uint64_t ComputeSortKey(bool _IsOpaque,
+        const uint64_t& _DepthKey, 
+        const uint64_t& _MaterialKey, 
+        const uint64_t& _PipelineKey)
+    {
+
+        uint64_t Key = 0;
+
+        if (_IsOpaque)
+        {
+            Key =
+                ((_PipelineKey & 0xFFFF) << 48) |
+                ((_MaterialKey & 0xFFFF) << 32) |
+                _DepthKey; // depth is lsb
+        }
+        else
+        {
+            // Reverse depth so that larger values correspond to closer objects.
+            // When sorting ascending, this results in back-to-front ordering.
+            Key =
+                ((std::numeric_limits<uint64_t>::max() - _DepthKey) << 32) |
+                (_MaterialKey << 16) |
+                static_cast<uint64_t>(_PipelineKey);
+        }
+
+        return Key;
+    }
+
    void Renderer::Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction)
    {
        PERF_REGION_SCOPED;
@@ -209,6 +237,7 @@ namespace PC_CORE::Rendering
        }
 
        auto InitShaderProgramForwardPass = [&]<bool IsTransparent>(
+           RhiRenderPass& RhiRenderPass,
            std::unique_ptr<RhiShaderProgram>&Shader,
            const std::vector < std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> &ShaderModulesQuery,
            std::string ShaderName)
@@ -227,7 +256,7 @@ namespace PC_CORE::Rendering
                    ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                    .SetAttachementCount(1)
                    .SetShaderModules(shaderModules)
-                   .SetRenderPass(*forwardPass)
+                   .SetRenderPass(RhiRenderPass)
                    .SetDepthTest(true)
                    .SetDepthWrite(true)
                    .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
@@ -266,35 +295,21 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"},
            };
 
-           InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShader, TriangleModules, "Opaque FowardShader");
-           InitShaderProgramForwardPass.template operator() < true > (transparentForwardShader, TriangleModules, "Transparent FowardShader");
+           InitShaderProgramForwardPass.template operator() < false > (*forwardPass, opaqueFowardShader, TriangleModules, "Opaque FowardShader");
+           InitShaderProgramForwardPass.template operator() < true > (*forwardPass, transparentForwardShader, TriangleModules, "Transparent FowardShader");
        }
        
        {
            // Forward but with meshsahder
            const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> MeshetsModulesModules
            {
-              { RhiShaderProgram::ShaderStageTypeBits::Amp, "ForwardMeshlet.as.hlsl.binary"},
+              { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "ForwardMeshlet.ms.hlsl.binary"},
               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"}
            };
 
-           InitShaderProgramForwardPass.template operator() < false > (opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
-           InitShaderProgramForwardPass.template operator() < true > (transparentForwardShaderMeshlet, MeshetsModulesModules, "Transparent FowardShader Meshlet");
-       }
-       
-       
-       {
-           // DrawTriangle MeshShader
-           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
-           {
-               { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshTriangleMeshlet.as.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "DrawMeshTriangleMeshlet.ms.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshTriangleMeshlet.ps.hlsl.binary"}
-           };
-
-           InitShaderProgramForwardPass.template operator() < false > (DrawMeshTriangleMeshlet, shaderModules, "DrawMeshTriangleMeshlet");
-
+           InitShaderProgramForwardPass.template operator() < false > (*forwardPass, opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
+           InitShaderProgramForwardPass.template operator() < true > (*forwardPass, transparentForwardShaderMeshlet, MeshetsModulesModules, "Transparent FowardShader Meshlet");
        }
        
        {
@@ -303,37 +318,33 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Vertex, "DrawMeshTriangle.vs.hlsl.binary"},
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshTriangle.ps.hlsl.binary"},
            };
-           InitShaderProgramForwardPass.template operator() < false > (DrawMeshTriangle, shaderModules, "DrawMeshTriangle");
+           InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawTriangle, shaderModules, "DrawMeshTriangle");
 
        }
 
-       /*{
-           
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+       {
+           // DrawTriangle MeshShader
+           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.as.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.ms.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DrawMeshTriangleMeshlet.ps.hlsl.binary")->GetCode() }
+               { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "DrawTriangleMeshlet.ms.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawTriangleMeshlet.ps.hlsl.binary"}
            };
 
-           DrawMeshTriangleMeshlet.reset(m_Rhi.CreateRhiShaderProgram());
-           DrawMeshTriangleMeshlet
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*colorLinearPassDepth)
-               .SetVertexAttributeDescriptions({ VertexAttributeDescription{
-                .Binding = 0,
-                .Location = 0,
-                .Format = RhiFormat::R32G32B32A32Sfloat,
-                .Offset = offsetof(StaticMeshVertex, Position)
-                } })
-               .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
-               .SetDepthWrite(true)
-               .SetDepthTest(true)
-               .SetName("Draw Mesh Triangle Meshlet")
-               .Build();
-       }*/
+           InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawMeshTriangleMeshlet, shaderModules, "DrawMeshTriangleMeshlet");
+       }
+
+       {
+           
+           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "DrawMeshletColor.ms.hlsl.binary"},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshletColor.ps.hlsl.binary"}
+           };
+
+           InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawMeshletColor, shaderModules, "DrawMeshMeshelet");
+       }
 
    }
 
@@ -451,24 +462,9 @@ namespace PC_CORE::Rendering
 
                    const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
-                   const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
+                   const uint64_t depthKey = static_cast<uint64_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
 
-                   if (isOpaque)
-                   {
-                       item.SortKey =
-                           ((shaderKey & 0xFFFF) << 48) |
-                           ((materialKey & 0xFFFF) << 32) |
-                           depthKey; // depth is lsb
-                   }
-                   else
-                   {
-                       // Reverse depth so that larger values correspond to closer objects.
-                       // When sorting ascending, this results in back-to-front ordering.
-                       item.SortKey =
-                           ((std::numeric_limits<uint32_t>::max() - depthKey) << 32) |
-                           (materialKey << 16) |
-                           shaderKey;
-                   }
+                   item.SortKey = ComputeSortKey(isOpaque, depthKey, materialKey, shaderKey);
                }
                    break;
                case RenderMode::ClusterBased:
@@ -491,23 +487,8 @@ namespace PC_CORE::Rendering
                    const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
                    const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
+                   item.SortKey = ComputeSortKey(isOpaque, depthKey, materialKey, shaderKey);
 
-                   if (isOpaque)
-                   {
-                       item.SortKey =
-                           ((shaderKey & 0xFFFF) << 48) |
-                           ((materialKey & 0xFFFF) << 32) |
-                           depthKey; // depth is lsb
-                   }
-                   else
-                   {
-                       // Reverse depth so that larger values correspond to closer objects.
-                       // When sorting ascending, this results in back-to-front ordering.
-                       item.SortKey =
-                           ((std::numeric_limits<uint32_t>::max() - depthKey) << 32) |
-                           (materialKey << 16) |
-                           shaderKey;
-                   }
                }
                    break;
                case RenderMode::PathTracing:
