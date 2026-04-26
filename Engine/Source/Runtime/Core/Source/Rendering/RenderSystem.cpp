@@ -229,10 +229,7 @@ void RendererSystem::PopulateDebugDraws()
     PERF_REGION_SCOPED
     PERF_REGION_COLOR(PerfRegion::Game);
 
-
-    m_GameRenderingWorldData.RayDraws = debugDrawContext.GetRayDraws();
-    m_GameRenderingWorldData.DrawBoxs = debugDrawContext.GetDrawBoxs();
-    m_GameRenderingWorldData.DrawDrawSphere = debugDrawContext.GetDrawSpheres();
+    m_GameRenderingWorldData.DebugDrawPrimitives = debugDrawContext.DebugDrawPrimitives();
 }
 
 }

@@ -28,11 +28,11 @@ BEGIN_PCCORE
         enum class PrimitiveType
         {
             Sphere,
-            Box,
-            Capsule,
             WireSphere,
+            Box,
             WireBox,
-            WireCapsule,
+            //Capsule, // TODO
+            //WireCapsule,
             Count,
         };
 
@@ -44,23 +44,14 @@ BEGIN_PCCORE
             Tbx::Vector3f Color;
         };
 
-        struct DrawBox
+        struct DrawPrimitive
         {
             Tbx::Vector3d Origin;
             Tbx::Vector3d Euler;
             Tbx::Vector3d Size;
             Tbx::Vector3f Color;
-            bool isWireFrame;
         };
 
-        struct DrawSphere
-        {
-            Tbx::Vector3d Origin;
-            Tbx::Vector3d Euler;
-            Tbx::Vector3d Size;
-            Tbx::Vector3f Color;
-            bool isWireFrame;
-        };
 
 
         void PushRay(const Tbx::Vector3d& _P1, const Tbx::Vector3d& _Dir, const float _Distance, const Tbx::Vector3f _Color);
@@ -77,33 +68,20 @@ BEGIN_PCCORE
         
         void ClearForNextFrame();
 
-        const std::vector<RayDraw>& GetRayDraws() const
-        {
-            return m_RayDraws;
-        }
-
-        const std::vector<DrawBox>& GetDrawBoxs() const
-        {
-            return m_DrawBoxs;
-        }
-
-        const std::vector<DrawSphere>& GetDrawSpheres() const
-        {
-            return m_DrawSpheres;
-        }
 
         static std::pair<std::vector<Tbx::Vector3f>, std::vector<uint32_t>> GenerateBasePrimitve(PrimitiveType _primitiveType);
  
         static std::string PrimitiveTypeToString(PrimitiveType _primitiveType);
 
+        const std::array<std::vector<DrawPrimitive>, static_cast<size_t>(PrimitiveType::Count)>& DebugDrawPrimitives()
+        {
+            return m_DebugDrawPrimitives;
+        }
+
     private:
         std::vector<RayDraw> m_RayDraws;
 
-        std::vector<DrawBox> m_DrawBoxs;
-
-        std::vector<DrawSphere> m_DrawSpheres;
-
-
+        std::array<std::vector<DrawPrimitive>, static_cast<size_t>(PrimitiveType::Count)> m_DebugDrawPrimitives;
     };
 
 

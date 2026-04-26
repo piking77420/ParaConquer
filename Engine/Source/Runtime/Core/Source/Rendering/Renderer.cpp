@@ -251,7 +251,7 @@ namespace PC_CORE::Rendering
                .SetRhiFormat(RhiFormat::D24UnormS8Uint)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Load)
-               .SetStoreOp(StoreOperation::DontCare)
+               .SetStoreOp(StoreOperation::Store)
                .SetInitialImageState(RhiResourceState::DepthStencilWrite)
                .SetFinalImageState(RhiResourceState::DepthStencilRead);
 
@@ -429,7 +429,7 @@ namespace PC_CORE::Rendering
                .SetShaderModules(shaderModules)
                .SetRenderPass(*colorLinearLoadDepth)
                .SetDepthTest(true)
-               .SetDepthWrite(false)
+               .SetDepthWrite(true)
                .SetVertexAttributeDescriptions({ VertexAttributeDescription{
                 .Binding = 0,
                 .Location = 0,
@@ -604,43 +604,72 @@ namespace PC_CORE::Rendering
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-       DebugInstanceBuffer.clear();
-       DebugInstanceBuffer.reserve(RenderingWorldData.DrawBoxs.size());
 
-       for (const auto& Box : RenderingWorldData.DrawBoxs)
+       auto FillPrimitive = [&](const std::vector<DebugDrawContext::DrawPrimitive>& DrawBoxs, size_t PrimitiveIndex, bool isWired)
+           {
+               DebugInstanceBuffer.clear();
+               if (DrawBoxs.empty())
+                   return;
+
+               DebugInstanceBuffer.reserve(DrawBoxs.size());
+
+               for (const auto& Primitive : DrawBoxs)
+               {
+                   Color Color(FloatRGBA{
+                       Primitive.Color.x, Primitive.Color.y, Primitive.Color.z, 1.0f
+                       });
+                   Tbx::Matrix4x4f trsV = Tbx::Matrix4x4f(_view.View * Tbx::Trs4x4(Primitive.Origin, Primitive.Euler, Primitive.Size));
+                   trsV[15] = std::bit_cast<float>(Color.ToPackedRGBA());
+                   DebugInstanceBuffer.emplace_back() = Tbx::Matrix4x4f(trsV);
+               }
+
+               auto& InstanceBufferBox = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]);
+
+               InstanceBufferBox->UploadData(m_CommandList.get(), DebugInstanceBuffer.data(), DebugInstanceBuffer.size() * sizeof(DebugInstanceBuffer[0]));
+
+               BufferStateTransition bufferTransition =
+               {
+                   .Buffer = InstanceBufferBox.get() ,
+                   .Offset = 0,
+                   .Size = PC_CORE::WHOLE_SIZE,
+                   .updateState = false
+               };
+
+               m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&bufferTransition, 1));
+
+               auto& item = DebugDrawList.EmplaceBack();
+               auto& InstanceDebugDraw = item.Data.emplace<DrawDebugInstanced>();
+               InstanceDebugDraw.ShaderProgram = nullptr;
+               InstanceDebugDraw.VertexBuffer = std::get<0>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
+               InstanceDebugDraw.IndexBuffer = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
+               InstanceDebugDraw.InstanceBuffer = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]).get();
+               InstanceDebugDraw.IndexFormat = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexFormat();
+               InstanceDebugDraw.IndexCount = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexCount();
+               InstanceDebugDraw.InstanceCount = DrawBoxs.size();
+               InstanceDebugDraw.isWired = isWired;
+               item.SortKey = 0;
+           };
+
+       for (size_t i = 0; i < RenderingWorldData.DebugDrawPrimitives.size(); i++)
        {
-           Color Color(FloatRGBA{
-               Box.Color.x, Box.Color.y, Box.Color.z, 1.0f
-               });
-           Tbx::Matrix4x4f trsV = Tbx::Matrix4x4f(_view.View * Tbx::Trs4x4(Box.Origin, Box.Euler, Box.Size));
-           trsV[15] = std::bit_cast<float>(Color.ToPackedRGBA());
-           DebugInstanceBuffer.emplace_back() = Tbx::Matrix4x4f(trsV);
+           const DebugDrawContext::PrimitiveType CurrentPrimitive = static_cast<DebugDrawContext::PrimitiveType>(i);
+           const auto& data = RenderingWorldData.DebugDrawPrimitives[i];
+           bool IsWired = false;
+           switch (CurrentPrimitive)
+           {
+           case DebugDrawContext::PrimitiveType::WireSphere:
+           case DebugDrawContext::PrimitiveType::WireBox:
+           //case DebugDrawContext::PrimitiveType::WireCapsule:
+               IsWired = true;
+               break;
+           default:
+               break;
+           }
+
+
+           FillPrimitive(data, i, IsWired);
        }
-
-       auto& InstanceBufferBox = std::get<2>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]);
-
-       InstanceBufferBox->UploadData(m_CommandList.get(), DebugInstanceBuffer.data(), DebugInstanceBuffer.size() * sizeof(DebugInstanceBuffer[0]));
-
-       BufferStateTransition bufferTransition =
-       {
-           .Buffer = InstanceBufferBox.get() ,
-           .Offset = 0,
-           .Size = PC_CORE::WHOLE_SIZE,
-           .updateState = false
-       };
-
-       m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&bufferTransition, 1));
-
-       auto& item = DebugDrawList.EmplaceBack();
-       auto& InstanceDrawBox = item.Data.emplace<DrawDebugInstanced>();
-       InstanceDrawBox.ShaderProgram = nullptr;
-       InstanceDrawBox.VertexBuffer = std::get<0>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).Get();
-       InstanceDrawBox.IndexBuffer = std::get<1>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).Get();
-       InstanceDrawBox.InstanceBuffer = std::get<2>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).get();
-       InstanceDrawBox.IndexFormat = std::get<1>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).GetIndexFormat();
-       InstanceDrawBox.IndexCount = std::get<1>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).GetIndexCount();
-       InstanceDrawBox.InstanceCount = RenderingWorldData.DrawBoxs.size();
-       item.SortKey = 0;
+       
    }
 
    void Renderer::SortList()
@@ -729,9 +758,11 @@ namespace PC_CORE::Rendering
    {
        m_InstanceBufferCpu.clear();
        const size_t StaticMeshCount = RenderingWorldData.StaticMeshComponentData.size();
-       const size_t DebugCount = RenderingWorldData.RayDraws.size() + RenderingWorldData.RayDraws.size()
-           + RenderingWorldData.DrawDrawSphere.size();
 
+       size_t DebugCount = 0;
+       for (size_t i = 0; i < RenderingWorldData.DebugDrawPrimitives.size(); i++)
+           DebugCount += RenderingWorldData.DebugDrawPrimitives[i].size();
+       
        m_InstanceBufferCpu.reserve(StaticMeshCount + DebugCount);
    }
 

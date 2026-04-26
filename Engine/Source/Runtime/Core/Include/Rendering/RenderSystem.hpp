@@ -64,9 +64,8 @@ namespace PC_CORE::Rendering
         std::optional<DirLightData> DirLightData;
 
         // Debug
-        std::vector<DebugDrawContext::RayDraw> RayDraws;
-        std::vector<DebugDrawContext::DrawBox> DrawBoxs;
-        std::vector<DebugDrawContext::DrawSphere> DrawDrawSphere;
+        std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;
+
     };
 
     class RendererSystem : public EcsSystem

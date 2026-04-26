@@ -106,7 +106,7 @@ void World::DrawCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& _euler, f
     if (!m_DebugDrawContext)
         return;
 
-    m_DebugDrawContext->PushCapsuleGizmo(DebugDrawContext::PrimitiveType::Capsule, _p1, _euler, _radius, _height, _color);
+    //m_DebugDrawContext->PushCapsuleGizmo(DebugDrawContext::PrimitiveType::Capsule, _p1, _euler, _radius, _height, _color);
 
 }
 
@@ -116,6 +116,6 @@ void World::DrawWireCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler
     if (!m_DebugDrawContext)
         return;
 
-    m_DebugDrawContext->PushCapsuleGizmo(DebugDrawContext::PrimitiveType::WireCapsule, _p1, euler, _radius, _height, _color);
+    //m_DebugDrawContext->PushCapsuleGizmo(DebugDrawContext::PrimitiveType::WireCapsule, _p1, euler, _radius, _height, _color);
 
 }

@@ -44,6 +44,7 @@ namespace PC_CORE::Rendering
 		const RhiBuffer* IndexBuffer{ nullptr };
 		const RhiBuffer* InstanceBuffer{ nullptr };
 		RhiBuffer::IndexFormat IndexFormat;
+		bool isWired = false;
 
 		uint32_t IndexCount{ 0 };
 		uint32_t InstanceCount{ 0 };

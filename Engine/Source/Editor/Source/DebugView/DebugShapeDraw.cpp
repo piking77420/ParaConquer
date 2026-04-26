@@ -39,17 +39,21 @@ namespace PC_EDITOR::DebugView
 			.SetName("DebugShapeDraw Framebuffer")
 			.Build();
 
-		
-		const auto& BoxData = _RendererPassBuildContext.Renderer.m_DebugPrimitiveBuffer[static_cast<size_t>(PC_CORE::DebugDrawContext::PrimitiveType::Box)];
-		auto& InstanceBuffer = std::get<2>(BoxData);
-		auto& Descriptor = m_DescriptorSets[InstanceBuffer.get()];
+		for (size_t i = 0; i < static_cast<size_t>(PC_CORE::DebugDrawContext::PrimitiveType::Count); i++)
+		{
+			const auto& PrimitiveData = _RendererPassBuildContext.Renderer.m_DebugPrimitiveBuffer[i];
+			auto& InstanceBuffer = std::get<2>(PrimitiveData);
+			auto& Descriptor = m_DescriptorSets[InstanceBuffer.get()];
 
-		Descriptor.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
-		Descriptor
-			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-			.BindShaderStorageBuffer(RhiShaderStageBits::Vertex, 1, InstanceBuffer.get())
-			.SetName("DebugShapeDraw Set BoxData")
-			.Build();
+			Descriptor.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+			Descriptor
+				->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+				.BindShaderStorageBuffer(RhiShaderStageBits::Vertex, 1, InstanceBuffer.get())
+				.SetName("DebugShapeDraw " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
+				.Build();
+		}
+
+		
 	}
 
 	void DebugView::DebugShapeDraw::Execute(const Rendering::RendererPassExecuteContext & _RendererPassExecuteContext) const
@@ -68,7 +72,6 @@ namespace PC_EDITOR::DebugView
 		cmd.BeginRenderPass(beginRenderPassInfo);
 		ViewportInfo viewPort(beginRenderPassInfo.Extent);
 		cmd.SetViewPort(viewPort);
-		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 		
 		for (auto& debugDraw : _RendererPassExecuteContext.Renderer.DebugDrawList)
 		{
@@ -81,6 +84,16 @@ namespace PC_EDITOR::DebugView
 					cmd.BindProgram(*_RendererPassExecuteContext.Renderer.DrawDebugShapeInstanced);
 					// bind programm etc
 					cmd.BindDescriptorSet(Descriptor->second.get(), 0);
+
+					if (DrawDebugInstanced.isWired)
+					{
+						cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+						cmd.SetLineWidth(1.f);
+					}
+					else
+					{
+						cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+					}
 
 					CommandList::DrawBuffers drawBuffer;
 					drawBuffer

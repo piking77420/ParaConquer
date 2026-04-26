@@ -41,43 +41,19 @@ void PC_CORE::DebugDrawContext::PushRay(const Tbx::Vector3d& _p1, const Tbx::Vec
 void PC_CORE::DebugDrawContext::PushBoxGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler,
     const Tbx::Vector3d& _size, Tbx::Vector3f _color)
 {
-    m_DrawBoxs.emplace_back(_p1, euler, _size, _color);
+    m_DebugDrawPrimitives[static_cast<size_t>(_primitiveType)].emplace_back(_p1, euler, _size, _color);
 }
 
 void PC_CORE::DebugDrawContext::PushSphereGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, float _radius,
     Tbx::Vector3f _color)
 {
-    const auto p1 = static_cast<Tbx::Vector3f>(_p1);
-
-    const auto matrix = Tbx::Matrix4x4f
-    (_radius, 0.f, 0.f, _color.x,
-        0.f, _radius, 0.f, _color.y,
-        0.f, 0.f, _radius, _color.z,
-        p1.x, p1.y, p1.z, 1.f
-    );
-    //m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(matrix);
+    m_DebugDrawPrimitives[static_cast<size_t>(_primitiveType)].emplace_back(_p1, Tbx::Vector3d(0.0f, 0.0f, 0.0f), Tbx::Vector3d(_radius, _radius, _radius), _color);
 }
 
 
 void PC_CORE::DebugDrawContext::PushCapsuleGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler,
     float _radius, float _height, Tbx::Vector3f _color)
 {
-    auto p1 = static_cast<Tbx::Vector3f>(_p1);
-
-    Tbx::Matrix3x3f rotMatrix = Tbx::Rotation3x3<float>(static_cast<Tbx::Vector3f>(euler));
-
-
-    const Tbx::Matrix3x3f matrix3 = rotMatrix * Tbx::Matrix3x3f
-    (_radius, 0.f, 0.f,
-        0.f, _height, 0.f,
-        0.f, 0.f, _radius);
-
-    const auto m = Tbx::Matrix4x4f
-    (matrix3.data[0], matrix3.data[1], matrix3.data[2], _color.x,
-        matrix3.data[3], matrix3.data[4], matrix3.data[5], _color.y,
-        matrix3.data[6], matrix3.data[7], matrix3.data[8], _color.z,
-        p1.x, p1.y, p1.z, 1.f
-    );
 
     //m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(m);
 }
@@ -169,9 +145,9 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
         };
 
         break;
-    case PrimitiveType::Capsule:
-        GenerateCapsule(&vertices, &indices);
-        break;
+    //case PrimitiveType::Capsule:
+      //  GenerateCapsule(&vertices, &indices);
+        //break;
     case PrimitiveType::WireSphere:
         {
             constexpr size_t segments = 24;
@@ -252,9 +228,9 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
             3, 7 // Edge 12
         };
         break;
-    case PrimitiveType::WireCapsule:
-        GenerateWireCapsule(&vertices, &indices);
-        break;
+    //case PrimitiveType::WireCapsule:
+      //  GenerateWireCapsule(&vertices, &indices);
+       // break;
     case PrimitiveType::Count:
     default:
         assert(false);
@@ -266,9 +242,8 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
 
 void PC_CORE::DebugDrawContext::ClearForNextFrame()
 {
-    m_RayDraws.clear();
-    m_DrawBoxs.clear();
-    m_DrawSpheres.clear();
+    for (auto& primitives : m_DebugDrawPrimitives)
+        primitives.clear();
 }
 
 std::string PC_CORE::DebugDrawContext::PrimitiveTypeToString(PrimitiveType _primitiveType)
@@ -279,14 +254,14 @@ std::string PC_CORE::DebugDrawContext::PrimitiveTypeToString(PrimitiveType _prim
         return "Sphere";
     case PrimitiveType::Box:
         return "Box";
-    case PrimitiveType::Capsule:
-        return "Capsule";
+    //case PrimitiveType::Capsule:
+      //  return "Capsule";
     case PrimitiveType::WireSphere:
         return "WireSphere";
     case PrimitiveType::WireBox:
         return "WireBox";
-    case PrimitiveType::WireCapsule:
-        return "WireCapsule";
+    //case PrimitiveType::WireCapsule:
+        //return "WireCapsule";
     case PrimitiveType::Count:
         break;
     }
