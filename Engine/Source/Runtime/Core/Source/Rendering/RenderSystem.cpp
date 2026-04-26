@@ -38,9 +38,6 @@ RendererSystem::RendererSystem()
     m_SpothLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_SpothLightSignature.set(l.GetComponentTypeBit<SpotLight>(), true);
     AddSignature(m_SpothLightSignature);
-
-    PC_CORE::App& app = *PC_CORE::App::Instance;
-    PC_CORE::Rhi& rhi = app.RenderHarwareInteface;
 }
 
 void RendererSystem::RenderingTick(double deltatime)
@@ -53,6 +50,8 @@ void RendererSystem::RenderingTick(double deltatime)
     m_GameRenderingWorldData.Clear();
     PopulateStaticMeshes(l);
     PopulateLight(l);
+    PopulateDebugDraws();
+    debugDrawContext.ClearForNextFrame();
 }
 
 const Rendering::RenderingWorldData& RendererSystem::GetRenderRenderingWorldData() const
@@ -223,6 +222,17 @@ void RendererSystem::PopulateLight(const Level& _level)
         }
     }
     
+}
+
+void RendererSystem::PopulateDebugDraws()
+{
+    PERF_REGION_SCOPED
+    PERF_REGION_COLOR(PerfRegion::Game);
+
+
+    m_GameRenderingWorldData.RayDraws = debugDrawContext.GetRayDraws();
+    m_GameRenderingWorldData.DrawBoxs = debugDrawContext.GetDrawBoxs();
+    m_GameRenderingWorldData.DrawDrawSphere = debugDrawContext.GetDrawSpheres();
 }
 
 }

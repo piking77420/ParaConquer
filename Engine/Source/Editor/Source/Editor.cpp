@@ -58,6 +58,12 @@ Editor::Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo)
     CompileShader();
 
     IMGUIContext.Init(RenderHarwareInteface, MainWindow.GetHandle());
+    Renderer.OnSwapchainPass = [&](PC_CORE::CommandList& List) {
+        IMGUIContext.Render(&List);
+    };
+    Renderer.OnRender = [&](PC_CORE::CommandList& List) {
+        OnRender(&List);
+        };
     InitTestScene();
     InitEditor();
 
@@ -159,6 +165,25 @@ void Editor::SaveInitFiles()
 
 }
 
+void Editor::EditorOnlyShader()
+{
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Editor);
+
+    PC_LOG("EditorOnlyShader...")
+    m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+    ResourceManager::Create<ShaderSource>("DebugInstancedDraw.vs.hlsl",
+        EDITOR_RESOURCE_PATH
+        "/Shaders/DebugDraw/DebugInstancedDraw.vs.hlsl");
+        }));
+
+    m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+        ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl",
+            EDITOR_RESOURCE_PATH
+            "/Shaders/DebugDraw/DebugDraw.ps.hlsl");
+        }));
+}
+
 void Editor::CompileShaderDebugView()
 {
     PERF_REGION_SCOPED;
@@ -228,6 +253,7 @@ void Editor::CompileShader()
 
 
     PC_LOG("CompileShader...")
+    EditorOnlyShader();
 
 	{
         auto task = []()->void {
@@ -440,6 +466,10 @@ void Editor::UpdateEditor()
     }
 
     {
+        ImGui::Begin("Color Pick");
+        ImGui::ColorPicker4("Color Box", &m_Color.x);
+        ImGui::End();
+
         PERF_REGION_SCOPED_NAMED("Update Windows");
         for (auto& EditorWindow : EditorWindows)
         {
@@ -577,11 +607,10 @@ void Editor::DestroyTestScene()
 void Editor::OnRender(PC_CORE::CommandList* _Cmd)
 {
     for (auto& EditorWindow : EditorWindows)
-        EditorWindow->Render(PrimaryCommandBuffer.get());
+        EditorWindow->Render();
     for (auto& sub : editorSubSystems)
         sub->Render();
 
-    IMGUIContext.Render(PrimaryCommandBuffer.get());
 }
 
 void Editor::Run(bool* _appShouldClose)
@@ -594,15 +623,16 @@ void Editor::Run(bool* _appShouldClose)
 
         CoreIo.PoolEvent();
         MainWindow.PoolEvents();
-        Time::UpdateTime();
-
-
         IMGUIContext.NewFrame();
+        Time::UpdateTime();
         DequeuMainThreadTask();
+        {
+            // Test
+            World.DrawBox(Tbx::Vector3d(0, 25, 0), Tbx::Vector3d(0, 0, 0), Tbx::Vector3d(10, 10, 10), m_Color);
+        }
         WorldTick(Time::DeltaTime());
         UpdateEditor();
-        RenderFrame();
-        
+        Renderer.RenderFrame();
         PERF_FRAME_MARK;
     }
     RenderHarwareInteface.GetRhiContext().WaitIdle();

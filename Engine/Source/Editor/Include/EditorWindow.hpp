@@ -48,7 +48,7 @@ BEGIN_EDITOR_PCCORE
         bool IsCursorInsideWindow() const;
 
 
-        virtual void Render([[maybe_unsed]] PC_CORE::CommandList* _Cmd)
+        virtual void Render()
         {
         };
 

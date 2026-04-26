@@ -5,6 +5,7 @@
 #include <LowRenderer/RhiBuffer.h>
 #include <LowRenderer/RhiShaderProgram.hpp>
 #include <LowRenderer/RhiDescriptorSet.hpp>
+#include <DebugHelper/DebugDrawContext.hpp>
 
 namespace PC_CORE::Rendering
 {
@@ -36,13 +37,27 @@ namespace PC_CORE::Rendering
 		uint32_t SubMeshTriangleOffset{ 0u };
 	};
 
+	struct DrawDebugInstanced
+	{
+		const RhiShaderProgram* ShaderProgram{ nullptr };
+		const RhiBuffer* VertexBuffer{ nullptr };
+		const RhiBuffer* IndexBuffer{ nullptr };
+		const RhiBuffer* InstanceBuffer{ nullptr };
+		RhiBuffer::IndexFormat IndexFormat;
+
+		uint32_t IndexCount{ 0 };
+		uint32_t InstanceCount{ 0 };
+	};
+
+
 	struct DrawItem
 	{
 		uint64_t SortKey;
 		size_t InstanceIndex;
 		std::variant<
 			DrawStaticMeshTriangle,
-			DrawStaticMeshMeshlet
+			DrawStaticMeshMeshlet,
+			DrawDebugInstanced
 		>Data;
 	};
 

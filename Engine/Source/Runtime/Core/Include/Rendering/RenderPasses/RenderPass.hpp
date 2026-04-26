@@ -24,7 +24,6 @@ namespace PC_CORE::Rendering
 
     struct RendererPassBuildContext
     {
-        CommandList& cmd;
         Rhi& RHI;
         RenderGraph& RenderGraph;
         const RenderView& View;

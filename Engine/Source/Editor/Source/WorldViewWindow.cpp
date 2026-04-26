@@ -11,6 +11,7 @@
 #include <Rendering/RenderPasses/ForwardPass.hpp>
 #include <Rendering/RenderPasses/ToneMapPass.hpp>
 #include <DebugView/DebugPass.hpp>
+#include <DebugView/DebugShapeDraw.hpp>
 
 #undef near
 #undef far
@@ -69,10 +70,10 @@ void WorldViewWindow::Update()
     ImGui::Image(imguiDescriptorSet[currentImage], ImGui::GetContentRegionAvail());
 }
 
-void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
+void WorldViewWindow::Render()
 {
     PERF_REGION_SCOPED;
-    EditorWindow::Render(_Cmd);
+    EditorWindow::Render();
 
     const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::Rendering::RendererSystem>()->GetRenderRenderingWorldData(); // should be done once
 
@@ -101,6 +102,7 @@ void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
         break;
     }
     
+    Graph.AddRenderPass<PC_EDITOR::DebugView::DebugShapeDraw>();
     Graph.SetRenderMode(m_Editor->editorData.ProjectSettings.RenderMode);
 }
 

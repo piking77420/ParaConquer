@@ -36,7 +36,7 @@ BEGIN_EDITOR_PCCORE
 
         void Update() override;
 
-        void Render(PC_CORE::CommandList* _Cmd) override;
+        void Render() override;
 
         void OnRenderModeDirty() override;
 

@@ -58,7 +58,7 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::GetSurfaceFormat()
 }
 
 
-bool Vulkan::VulkanSwapChain::GetSwapChainImageIndex(PC_CORE::Window* windowHandle)
+bool Vulkan::VulkanSwapChain::AcquireSwapChainImageIndex(PC_CORE::Window* windowHandle)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);

@@ -4,6 +4,7 @@
 #include "Ecs/EcsSystem.h"
 #include "Resources/StaticMesh.hpp"
 #include "Rendering/Material.hpp"
+#include <DebugHelper/DebugDrawContext.hpp>
 
 
 namespace PC_CORE
@@ -61,6 +62,11 @@ namespace PC_CORE::Rendering
         std::vector<Rendering::StaticMeshComponentData> StaticMeshComponentData;
         std::vector<LightData> LightsData;
         std::optional<DirLightData> DirLightData;
+
+        // Debug
+        std::vector<DebugDrawContext::RayDraw> RayDraws;
+        std::vector<DebugDrawContext::DrawBox> DrawBoxs;
+        std::vector<DebugDrawContext::DrawSphere> DrawDrawSphere;
     };
 
     class RendererSystem : public EcsSystem
@@ -86,6 +92,7 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API const Rendering::RenderingWorldData& GetRenderRenderingWorldData() const;
 
+        DebugDrawContext debugDrawContext; // use if def editor
 
     private:
         Rendering::RenderingWorldData m_GameRenderingWorldData;
@@ -102,6 +109,7 @@ namespace PC_CORE::Rendering
 
         void PopulateLight(const Level& _level);
 
+        void PopulateDebugDraws();
 
         REFLECT(RendererSystem)
         REFLECT_MEMBER(RendererSystem, m_StaticMeshSignature);

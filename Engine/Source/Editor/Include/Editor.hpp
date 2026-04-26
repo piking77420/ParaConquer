@@ -131,6 +131,8 @@ BEGIN_EDITOR_PCCORE
         EditorData editorData;
 
         AssetImportData AssetImportData;
+
+        Tbx::Vector3f m_Color = Tbx::Vector3f(1.f, 1.f, 1.f);
     protected:
         void OnRender(PC_CORE::CommandList* _Cmd) override;
 
@@ -146,6 +148,8 @@ BEGIN_EDITOR_PCCORE
         void CompileShader();
 
         void CompileShaderDebugView();
+
+        void EditorOnlyShader();
 
         void LookForEditorInit();
 

@@ -78,7 +78,7 @@ namespace PC_CORE::Rendering::Pass
 		cmd.Dispatch(GroupCountX, GroupCountY, 1);
 
 		ImageStateTransition.Texture = m_OutPutImageRef;
-		cmd.Barrier(RhiResourceState::ComputeReadWrite, RhiResourceState::PixelShaderResource, std::span(&ImageStateTransition, 1), {});
+		cmd.Barrier(RhiResourceState::ComputeReadWrite, RhiResourceState::RenderTarget, std::span(&ImageStateTransition, 1), {});
 
 		cmd.EndRenderPass();
 	}

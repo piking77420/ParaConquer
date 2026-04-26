@@ -86,6 +86,10 @@ namespace PC_CORE::Rendering::Pass
 						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 					}
 				  },
+				[&](auto&&) 
+				{
+
+				},
 				}, DrawItem.Data);
 		}
 	}

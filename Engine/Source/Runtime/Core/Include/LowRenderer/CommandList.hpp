@@ -156,6 +156,22 @@ BEGIN_PCCORE
 
         };
 
+        class DebugLabelScope
+        {
+            DebugLabelScope(PC_CORE::CommandList& _List,
+                const char* _Name,
+                const std::array<float, 4>& _Color)
+                : m_List(_List)
+            {
+                _List.BeginDebugLabel(_Name, _Color);
+            }
+            ~DebugLabelScope()
+            {
+                m_List.EndDebugLabel();
+            }
+        private:
+            PC_CORE::CommandList& m_List;
+        };
 
         DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 

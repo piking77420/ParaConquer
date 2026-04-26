@@ -23,12 +23,10 @@ public:
         CopySrc,
         CopyDst,
 
-        // Buffer uses
+        // Buffer and Texture uses
         VertexBuffer,
         IndexBuffer,
         UniformBuffer,
-
-        // Texture uses
         VertexShaderResource,
         PixelShaderResource,
         RenderTarget,

@@ -48,8 +48,6 @@ BEGIN_PCCORE
 
         PC_CORE::Rendering::Renderer Renderer; //  TODO HANDLE MULIPTLE VIEW PORT
 
-        std::unique_ptr<CommandList> PrimaryCommandBuffer;
-
         std::unique_ptr<RhiSampler> SamplerLinearReapet;
 
         std::unique_ptr<RhiSampler> SamplerLinearClamp;
@@ -65,8 +63,6 @@ BEGIN_PCCORE
         PC_CORE_API virtual void Run(bool* _appShouldClose) = 0;
 
         PC_CORE_API void WorldTick(double _tick);
-
-        PC_CORE_API void RenderFrame();
 
         template<typename F, typename... Args>
         [[nodiscard]] auto Enqueue(F&& f, Args&&... args)

@@ -16,7 +16,6 @@ BEGIN_PCCORE
 
         PC_CORE_API ~VertexBuffer() override = default;
 
-
         VertexBuffer(const VertexBuffer&) = delete;
 
         VertexBuffer& operator=(const VertexBuffer&) = delete;

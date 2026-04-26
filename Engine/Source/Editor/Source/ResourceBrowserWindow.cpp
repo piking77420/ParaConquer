@@ -138,9 +138,9 @@ ResourceBrowserWindow::~ResourceBrowserWindow()
 }
 
 
-void ResourceBrowserWindow::Render([[maybe_unsed]] PC_CORE::CommandList* _Cmd)
+void ResourceBrowserWindow::Render()
 {
-    EditorWindow::Render(_Cmd);
+    EditorWindow::Render();
 }
 
 void ResourceBrowserWindow::Update()

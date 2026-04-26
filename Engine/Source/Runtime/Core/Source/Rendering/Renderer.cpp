@@ -3,6 +3,7 @@
 #include <PerfRegion.hpp>
 #include <Thread>
 
+#include "Color.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
 
@@ -16,8 +17,9 @@
 
 namespace PC_CORE::Rendering
 {
-    Renderer::Renderer(Rhi& _Rhi)
+    Renderer::Renderer(Rhi& _Rhi, PC_CORE::Window& Window)
         : m_Rhi(_Rhi)
+        , m_Window(Window)
         , m_RenderGraph(m_Rhi)
     {
         m_CommandList.reset(m_Rhi.CreateCommandList());
@@ -78,6 +80,41 @@ namespace PC_CORE::Rendering
         return Key;
     }
 
+    void Renderer::RenderFrame()
+    {
+        m_Rhi.GetRhiContext().ProceedDefferdDestroy(m_Rhi.GetFrameIndex());
+
+        if (!m_Rhi.GetRhiContext().rhiSwapChain->AcquireSwapChainImageIndex(&m_Window))
+        {
+            return;
+        }
+        m_Rhi.GetRhiContext().ProceedResourceUpdateBranch();
+
+        m_CommandList->BeginRecordCommands();
+        if (OnRender)
+            OnRender(*m_CommandList);
+
+        auto& swapChain = m_Rhi.GetRhiContext().rhiSwapChain;
+        constexpr std::array<float, 4> Color = {0.5f, 0.5f, 0.5f, 0.5f,};
+
+        m_CommandList->BeginDebugLabel("SwapChain", Color);
+        swapChain->BeginSwapChainRenderPass(m_CommandList.get());
+        if (OnSwapchainPass)
+            OnSwapchainPass(*m_CommandList);
+        swapChain->EndSwapChainRenderPass(m_CommandList.get());
+        m_CommandList->EndDebugLabel();
+
+        m_CommandList->EndRecordCommands();
+        m_Rhi.GetRhiContext().SendEnqueuCommand(m_CommandList.get(), GpuPipelineStage::ColorAttachmentOutput);
+        swapChain->Present(&m_Window);
+        m_Rhi.NextFrame();
+    }
+
+    void Renderer::EndFrame()
+    {
+        
+    }
+
    void Renderer::Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction)
    {
        PERF_REGION_SCOPED;
@@ -85,21 +122,19 @@ namespace PC_CORE::Rendering
        m_RenderGraph.Clear();
        InitRenderGraphFunction(m_RenderGraph);
        InitShaders(); // should be call in constructor however shader creation are build after app cronstructor
- 
-       RendererPassBuildContext buildContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this);
+       InitDebugResource();
+
+       RendererPassBuildContext buildContext(m_Rhi, m_RenderGraph, _View, *this);
        m_RenderGraph.Build(buildContext);
    }
 
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
-       m_CommandList->BeginRecordCommands();
+       PrepareInstanceBuffer(RenderingWorldData);
        BuildDrawLists(_View, RenderingWorldData);
        UploadRenderInstanceID();
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
-       m_RenderGraph.Execute(executeContext, _View);
-
-       m_CommandList->EndRecordCommands();
-       m_Rhi.GetRhiContext().SendEnqueuCommand(m_CommandList.get(), GpuPipelineStage::ColorAttachmentOutput);
+       m_RenderGraph.Execute(executeContext, _View);     
    }
 
    void Renderer::InitRhiRenderPasses()
@@ -194,6 +229,40 @@ namespace PC_CORE::Rendering
 
            colorLinearPassDepth
                ->SetName("ColorLinearPassDepth")
+               .Build();
+       }
+
+       {
+           colorLinearLoadDepth.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = colorLinearLoadDepth
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Load)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::RenderTarget)
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
+
+           const RenderPassAttachementDescriptor& DepthAttachement = colorLinearLoadDepth
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S01)
+               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Load)
+               .SetStoreOp(StoreOperation::DontCare)
+               .SetInitialImageState(RhiResourceState::DepthStencilWrite)
+               .SetFinalImageState(RhiResourceState::DepthStencilRead);
+
+           colorLinearLoadDepth
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
+               .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilRead));
+
+           colorLinearLoadDepth
+               ->SetName("colorLinearLoadDepth")
                .Build();
        }
       
@@ -346,20 +415,50 @@ namespace PC_CORE::Rendering
            InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawMeshletColor, shaderModules, "DrawMeshMeshelet");
        }
 
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugInstancedDraw.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+           };
+
+           DrawDebugShapeInstanced.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawDebugShapeInstanced
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(shaderModules)
+               .SetRenderPass(*colorLinearLoadDepth)
+               .SetDepthTest(true)
+               .SetDepthWrite(false)
+               .SetVertexAttributeDescriptions({ VertexAttributeDescription{
+                .Binding = 0,
+                .Location = 0,
+                .Format = RhiFormat::R32G32B32Sfloat,
+                .Offset = offsetof(StaticMeshVertex, Position)
+                } })
+               .SetVertexInputBindingDescritions({
+                                                {
+                                                .Binding = 0,
+                                                .Stride = sizeof(Tbx::Vector3f),
+                                                .VertexInputRate = VertexInputRate::Vertex
+                                                } })
+               .SetName("DebugInstanceDraw")
+               .Build();
+       }
+
    }
 
    void Renderer::UploadRenderInstanceID()
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering)
-
        m_CommandList->BeginDebugLabel("Upload RenderInstanceID", { 1.0f,0.2f, 0.f,1.0 });
        PC_CORE::BufferStateTransition Transfert{};
        Transfert.Buffer = InstanceBuffer.get();
        Transfert.Offset = 0u;
        Transfert.Size = PC_CORE::WHOLE_SIZE;
        // Uppload Instance Buffer
-       InstanceBuffer->UploadData(m_CommandList.get(), InstanceBufferCpu.data(), InstanceBufferCpu.size() * sizeof(InstanceBufferCpu[0]));
+       InstanceBuffer->UploadData(m_CommandList.get(), m_InstanceBufferCpu.data(), m_InstanceBufferCpu.size() * sizeof(m_InstanceBufferCpu[0]));
        m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&Transfert, 1));
        m_CommandList->EndDebugLabel();
    }
@@ -371,9 +470,10 @@ namespace PC_CORE::Rendering
 
        OpaqueList.Clear();
        TransparentList.Clear();
-       InstanceBufferCpu.clear();
+       DebugDrawList.Clear();
 
        FillListStaticMesh(_view, RenderingWorldData);
+       FillListDebugDraw(_view, RenderingWorldData);
        SortList();
    }
 
@@ -402,7 +502,6 @@ namespace PC_CORE::Rendering
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-       InstanceBufferCpu.reserve(RenderingWorldData.StaticMeshComponentData.size());
        for (const auto& StaticMeshComponentData : RenderingWorldData.StaticMeshComponentData)
        {
            const StaticMesh* StaticMesh = StaticMeshComponentData.StaticMesh;
@@ -436,10 +535,10 @@ namespace PC_CORE::Rendering
                DrawItem& item = DrawList.EmplaceBack();
 
                // Instance Matrix Update
-               item.InstanceIndex = InstanceBufferCpu.size();
+               item.InstanceIndex = m_InstanceBufferCpu.size();
                const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView);
                const Tbx::Matrix4x4f NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
-               auto& RenderInstance = InstanceBufferCpu.emplace_back();
+               auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
                std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertMatrix));
 
@@ -501,6 +600,49 @@ namespace PC_CORE::Rendering
        }
    }
 
+   void Renderer::FillListDebugDraw(const RenderView& _view, const RenderingWorldData& RenderingWorldData)
+   {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+       DebugInstanceBuffer.clear();
+       DebugInstanceBuffer.reserve(RenderingWorldData.DrawBoxs.size());
+
+       for (const auto& Box : RenderingWorldData.DrawBoxs)
+       {
+           Color Color(FloatRGBA{
+               Box.Color.x, Box.Color.y, Box.Color.z, 1.0f
+               });
+           Tbx::Matrix4x4f trsV = Tbx::Matrix4x4f(_view.View * Tbx::Trs4x4(Box.Origin, Box.Euler, Box.Size));
+           trsV[15] = std::bit_cast<float>(Color.ToPackedRGBA());
+           DebugInstanceBuffer.emplace_back() = Tbx::Matrix4x4f(trsV);
+       }
+
+       auto& InstanceBufferBox = std::get<2>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]);
+
+       InstanceBufferBox->UploadData(m_CommandList.get(), DebugInstanceBuffer.data(), DebugInstanceBuffer.size() * sizeof(DebugInstanceBuffer[0]));
+
+       BufferStateTransition bufferTransition =
+       {
+           .Buffer = InstanceBufferBox.get() ,
+           .Offset = 0,
+           .Size = PC_CORE::WHOLE_SIZE,
+           .updateState = false
+       };
+
+       m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&bufferTransition, 1));
+
+       auto& item = DebugDrawList.EmplaceBack();
+       auto& InstanceDrawBox = item.Data.emplace<DrawDebugInstanced>();
+       InstanceDrawBox.ShaderProgram = nullptr;
+       InstanceDrawBox.VertexBuffer = std::get<0>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).Get();
+       InstanceDrawBox.IndexBuffer = std::get<1>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).Get();
+       InstanceDrawBox.InstanceBuffer = std::get<2>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).get();
+       InstanceDrawBox.IndexFormat = std::get<1>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).GetIndexFormat();
+       InstanceDrawBox.IndexCount = std::get<1>(m_DebugPrimitiveBuffer[static_cast<size_t>(DebugDrawContext::PrimitiveType::Box)]).GetIndexCount();
+       InstanceDrawBox.InstanceCount = RenderingWorldData.DrawBoxs.size();
+       item.SortKey = 0;
+   }
+
    void Renderer::SortList()
    {
        PERF_REGION_SCOPED;
@@ -508,6 +650,7 @@ namespace PC_CORE::Rendering
 
        OpaqueList.Sort(std::ranges::less{}, &DrawItem::SortKey);
        TransparentList.Sort(std::ranges::greater{}, &DrawItem::SortKey);
+       DebugDrawList.Sort(std::ranges::greater{}, &DrawItem::SortKey);
    }
 
    size_t Renderer::PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const
@@ -525,6 +668,71 @@ namespace PC_CORE::Rendering
            }
        }
        return LodThreshold.size();
+   }
+
+
+   void Renderer::InitDebugResource()
+   {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
+       for (size_t i = 0; i < m_DebugPrimitiveBuffer.size(); i++)
+       {
+           auto& DebugLayer = m_DebugPrimitiveBuffer[i];
+           if (std::get<0>(DebugLayer).Get() && std::get<1>(DebugLayer).Get() && std::get<2>(DebugLayer).get())
+               continue;
+
+           std::get<0>(DebugLayer) = VertexBuffer(m_Rhi);
+           std::get<1>(DebugLayer) = IndexBuffer(m_Rhi);
+           std::get<2>(DebugLayer).reset(m_Rhi.CreateBuffer());
+
+           auto [verticies, indicies] = PC_CORE::DebugDrawContext::GenerateBasePrimitve(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i));
+
+           if (verticies.empty() || indicies.empty())
+               continue;
+
+           std::get<0>(DebugLayer)
+               .SetVerticiesCount(verticies.size())
+               .SetVerticiesSize(sizeof(verticies[0]))
+               ->SetSizeInBytes(verticies.size() * sizeof(verticies[0]))
+               .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+               .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
+               .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
+               .SetName("Vertex Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
+               .Build();
+
+           std::get<1>(DebugLayer)
+               .SetIndexCount(indicies.size())
+               .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
+                ->SetSizeInBytes(indicies.size() * sizeof(indicies[0]))
+               .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+               .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
+               .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
+               .SetName("Index Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
+               .Build();
+
+           std::get<2>(DebugLayer)
+               ->SetSizeInBytes(sizeof(Tbx::Matrix4x4f) * MAX_DEBUG_INSTANCE)
+               .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+               .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
+               .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
+               .SetName("Instance Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
+               .Build();
+
+           std::scoped_lock _(m_Rhi.GetRhiContext().lock);
+           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*std::get<0>(DebugLayer).Get(), verticies.data(), std::get<0>(DebugLayer)->GetSizeInByte());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*std::get<1>(DebugLayer).Get(), indicies.data(), std::get<1>(DebugLayer)->GetSizeInByte());
+       }
+   }
+
+   void Renderer::PrepareInstanceBuffer(const RenderingWorldData& RenderingWorldData)
+   {
+       m_InstanceBufferCpu.clear();
+       const size_t StaticMeshCount = RenderingWorldData.StaticMeshComponentData.size();
+       const size_t DebugCount = RenderingWorldData.RayDraws.size() + RenderingWorldData.RayDraws.size()
+           + RenderingWorldData.DrawDrawSphere.size();
+
+       m_InstanceBufferCpu.reserve(StaticMeshCount + DebugCount);
    }
 
 }

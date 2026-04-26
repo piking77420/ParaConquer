@@ -27,7 +27,7 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
         _AppCreateInfo.appName.data(),
         _AppCreateInfo.enableGpuDebug
     ))
-    , Renderer(RenderHarwareInteface)
+    , Renderer(RenderHarwareInteface, MainWindow)
     , ThreadPool("Main Thread Pool")
 {
     Instance = this;
@@ -36,11 +36,6 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
     PC_LOG("App Init")
         // Can init without any depedancies
     MainWindow.SetIcon(_AppCreateInfo.appLogoPath.data());
-
-    PrimaryCommandBuffer.reset(RenderHarwareInteface.CreateCommandList());
-    PrimaryCommandBuffer
-        ->SetName("PrimaryCommandBuffer")
-        .Build();
 
     SamplerLinearReapet.reset(RenderHarwareInteface.CreateSampler());
     SamplerLinearReapet
@@ -94,41 +89,6 @@ void App::WorldTick(double _tick)
     World.Begin();
     World.Update(_tick);
     World.RenderingTick(_tick);
-}
-
-void App::RenderFrame()
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Core);
-    PC_CORE::RhiSwapChain* swapChain = RenderHarwareInteface.GetRhiContext().rhiSwapChain.get();
-    PC_CORE::Window* mainWindow = &MainWindow;
-    constexpr std::array<float, 4> Color = {
-        0.5f,
-        0.5f,
-        0.5f,
-        0.5f,
-    };
-
-    RenderHarwareInteface.GetRhiContext().ProceedDefferdDestroy(RenderHarwareInteface.GetFrameIndex());
-    if (swapChain->GetSwapChainImageIndex(mainWindow))
-    {
-        RenderHarwareInteface.GetRhiContext().ProceedResourceUpdateBranch();
-
-        PrimaryCommandBuffer->BeginRecordCommands();
-        {
-            PrimaryCommandBuffer->BeginDebugLabel("SwapChain", Color);
-            swapChain->BeginSwapChainRenderPass(PrimaryCommandBuffer.get());
-            OnRender(PrimaryCommandBuffer.get());
-            swapChain->EndSwapChainRenderPass(PrimaryCommandBuffer.get());
-            PrimaryCommandBuffer->EndDebugLabel();
-        }
-        PrimaryCommandBuffer->EndRecordCommands();
-
-        RenderHarwareInteface.GetRhiContext().SendEnqueuCommand(PrimaryCommandBuffer.get(), PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
-        swapChain->Present(&MainWindow);
-        RenderHarwareInteface.NextFrame();
-    }
-
 }
 
 void App::DequeuMainThreadTask()

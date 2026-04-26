@@ -2,6 +2,9 @@
 #include <Rendering/DrawList.hpp>
 #include "RenderingTypedef.h"
 #include "RenderGraph.hpp"
+#include <Rendering/Buffer/IndexBuffer.hpp>
+#include <Rendering/Buffer/VertexBuffer.hpp>
+#include <DebugHelper/DebugDrawContext.hpp>
 
 namespace PC_CORE::Rendering
 {
@@ -11,11 +14,15 @@ class RenderView;
 class Renderer
 {
 public:
-    PC_CORE_API explicit Renderer(Rhi& _Rhi);
+    PC_CORE_API explicit Renderer(Rhi& _Rhi, PC_CORE::Window& Window);
 
     PC_CORE_API ~Renderer() = default;
 
     DEFAULT_COPY_MOVE_OPERATIONS(Renderer)
+
+    PC_CORE_API void RenderFrame();
+
+    PC_CORE_API void EndFrame();
 
     PC_CORE_API void Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction);
 
@@ -26,9 +33,15 @@ public:
         return m_RenderGraph;
     }
 
+    std::function<void(CommandList&)> OnSwapchainPass;
+
+    std::function<void(CommandList&)> OnRender;
+
     DrawList OpaqueList;
 
     DrawList TransparentList;
+
+    DrawList DebugDrawList;
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
@@ -48,6 +61,8 @@ public:
 
     std::unique_ptr<RhiShaderProgram> DrawMeshTriangleMeshlet;
 
+    std::unique_ptr<RhiShaderProgram> DrawDebugShapeInstanced;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
@@ -56,18 +71,27 @@ public:
 
     std::unique_ptr<RhiRenderPass> colorLinearPassDepth;
 
+    std::unique_ptr<RhiRenderPass> colorLinearLoadDepth;
+
     std::unique_ptr<RhiBuffer> InstanceBuffer;
 
-    std::vector<Gpu::RenderInstance> InstanceBufferCpu;
-
+    std::array<std::tuple<VertexBuffer, IndexBuffer, std::unique_ptr<RhiBuffer>>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> m_DebugPrimitiveBuffer;
 private:
     Rhi& m_Rhi;
+
+    PC_CORE::Window& m_Window;
 
     RenderGraph m_RenderGraph; // TODO SET IT OUTSIT ThE CLASS
 
     std::unique_ptr<CommandList> m_CommandList;
 
     static constexpr double FIXED_POINT_NUMBER = 1000.0f;
+
+    static constexpr size_t MAX_DEBUG_INSTANCE = 4096;
+
+    std::vector<Tbx::Matrix4x4f> DebugInstanceBuffer;
+
+    std::vector<Gpu::RenderInstance> m_InstanceBufferCpu;
 
     void InitRhiRenderPasses();
 
@@ -77,9 +101,15 @@ private:
 
     void UploadRenderInstanceID();
 
+    void PrepareInstanceBuffer(const RenderingWorldData& RenderingWorldData);
+
     void FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
+    void FillListDebugDraw(const RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
     void SortList();
+
+    void InitDebugResource();
 
     size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const;
     

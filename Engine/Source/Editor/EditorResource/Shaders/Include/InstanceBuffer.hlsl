@@ -1,5 +1,5 @@
-#ifndef InstanceBuffer
-#define InstanceBuffer
+#ifndef INSTANCE_BUFFER_INC
+#define INSTANCE_BUFFER_INC
 
 struct RenderInstance
 {
@@ -10,4 +10,4 @@ struct RenderInstance
 StructuredBuffer<RenderInstance> RenderInstances : register(RENDER_INSTANCE_BUFFER_BINDING, RENDER_INSTANCE_BUFFER_SPACE);
 
 
-#endif // InstanceBuffer
+#endif // INSTANCE_BUFFER_INC
