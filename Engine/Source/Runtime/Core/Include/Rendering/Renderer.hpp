@@ -61,6 +61,8 @@ public:
 
     std::unique_ptr<RhiShaderProgram> DrawMeshTriangleMeshlet;
 
+    std::unique_ptr<RhiShaderProgram> DrawDebugShapeFrustum;
+
     std::unique_ptr<RhiShaderProgram> DrawDebugShapeInstanced;
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;

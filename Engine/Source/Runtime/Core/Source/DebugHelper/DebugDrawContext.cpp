@@ -58,6 +58,11 @@ void PC_CORE::DebugDrawContext::PushCapsuleGizmo(PrimitiveType _primitiveType, c
     //m_Instance->m_PrimitiveData[static_cast<size_t>(_primitiveType)].matrixBuffer.push_back(m);
 }
 
+void PC_CORE::DebugDrawContext::PushFrustum(const Tbx::Matrix4x4d& _FrustumToWorld, bool _IsWired, Tbx::Vector3f _Color)
+{
+    m_Frustums.emplace_back(Frustum{ _FrustumToWorld, _Color, _IsWired });
+}
+
 std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveType)
 {
     std::vector<Tbx::Vector3f> vertices;
@@ -244,6 +249,8 @@ void PC_CORE::DebugDrawContext::ClearForNextFrame()
 {
     for (auto& primitives : m_DebugDrawPrimitives)
         primitives.clear();
+
+    m_Frustums.clear();
 }
 
 std::string PC_CORE::DebugDrawContext::PrimitiveTypeToString(PrimitiveType _primitiveType)

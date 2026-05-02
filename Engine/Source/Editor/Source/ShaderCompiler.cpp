@@ -208,6 +208,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     switch (_api)
     {
     case PC_CORE::GraphicAPI::Vulkan:
+        arguments.push_back(L"-DVULKAN=1");
         arguments.push_back(L"-spirv");
         arguments.push_back(L"-fspv-target-env=vulkan1.3");
         arguments.push_back(L"-fspv-extension=SPV_EXT_mesh_shader");

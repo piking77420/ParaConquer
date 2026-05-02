@@ -177,6 +177,16 @@ std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
         Features.push_back(L"-DDRAW_TRIANGLE=1");
     }
 
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Instanced)
+    {
+        Features.push_back(L"-DINSTANCED=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Frustum)
+    {
+        Features.push_back(L"-DFRUSTUM=1");
+    }
+
     return Features;
 }
 

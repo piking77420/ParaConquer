@@ -37,6 +37,14 @@ namespace PC_CORE::Rendering
 		uint32_t SubMeshTriangleOffset{ 0u };
 	};
 
+	struct DrawDebug
+	{
+		const RhiShaderProgram* ShaderProgram{ nullptr };
+		Tbx::Matrix4x4f VP;
+		bool isWired = false;
+		uint32_t IndexCount{ 0 };
+	};
+
 	struct DrawDebugInstanced
 	{
 		const RhiShaderProgram* ShaderProgram{ nullptr };
@@ -55,9 +63,10 @@ namespace PC_CORE::Rendering
 	{
 		uint64_t SortKey;
 		size_t InstanceIndex;
-		std::variant<
+		std::variant <
 			DrawStaticMeshTriangle,
 			DrawStaticMeshMeshlet,
+			DrawDebug,
 			DrawDebugInstanced
 		>Data;
 	};

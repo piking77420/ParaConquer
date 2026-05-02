@@ -119,3 +119,19 @@ void World::DrawWireCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler
     //m_DebugDrawContext->PushCapsuleGizmo(DebugDrawContext::PrimitiveType::WireCapsule, _p1, euler, _radius, _height, _color);
 
 }
+
+void World::DrawFrustum(const Tbx::Matrix4x4d& _FrustumToWorld, Tbx::Vector3f _Color)
+{
+    if (!m_DebugDrawContext)
+        return;
+
+    m_DebugDrawContext->PushFrustum(_FrustumToWorld, false, _Color);
+}
+
+void World::DrawWireFrustum(const Tbx::Matrix4x4d& _FrustumToWorld, Tbx::Vector3f _Color)
+{
+    if (!m_DebugDrawContext)
+        return;
+
+    m_DebugDrawContext->PushFrustum(_FrustumToWorld, true, _Color);
+}

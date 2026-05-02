@@ -58,6 +58,7 @@ void WorldViewWindow::Update()
         const float aspect = size.x / size.y;
         m_Camera.SetAspect(aspect);
         m_View.SetRenderSize(size);
+
         m_View.FromCamera(m_Camera);
     }
 

@@ -239,6 +239,7 @@ void RendererSystem::PopulateDebugDraws()
     PERF_REGION_COLOR(PerfRegion::Game);
 
     m_GameRenderingWorldData.DebugDrawPrimitives = debugDrawContext.DebugDrawPrimitives();
+    m_GameRenderingWorldData.DebugFrustums = debugDrawContext.DebugDrawFrustums();
 }
 
 }

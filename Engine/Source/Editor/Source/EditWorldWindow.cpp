@@ -48,6 +48,21 @@ void EditWorldWindow::MoveCameraUpdate()
     RotateCamera(deltatime);
     ScroolWheelMovement(deltatime);
     UpdatePosition(deltatime);
+
+    static Tbx::Matrix4x4d FrustumToWorld = m_View.ViewProjectionInv;
+    if (!m_Editor->editorData.FreezeFrustum)
+    {
+        FrustumToWorld = m_View.ViewProjectionInv;
+    }
+
+    if (m_Editor->editorData.DrawFrustum)
+    {
+        m_Editor->World.DrawWireFrustum(
+            FrustumToWorld,
+            Tbx::Vector3f(1, 1, 1)
+        );
+    }
+  
 }
 
 void EditWorldWindow::RotateCamera(float _deltatime)

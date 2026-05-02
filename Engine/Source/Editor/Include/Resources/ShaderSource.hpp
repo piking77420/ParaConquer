@@ -15,6 +15,8 @@ BEGIN_EDITOR_PCCORE
         UseNormalMap = 1 << 2,
         UseColor = 1 << 3,
         DrawTriangle = 1 << 4,
+        Instanced = 1 << 5,
+        Frustum = 1 << 6,
     };
 
     using ShaderFeatureFlag = size_t;

@@ -26,10 +26,14 @@ StructuredBuffer<uint> TriangleIndices : register(t3, MESHLET_SPACE);
 struct MeshOutput
 {
     float4 Position : SV_POSITION;
+#if defined(LIT) || defined(VIEWPOS)
+    #if defined(VIEWPOS)
     float3 ViewSpacePosition : TEXCOORD0;
-#if defined(LIT)
+    #elif defined(LIT)
+    float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
     float3 Tangent : TEXCOORD2;
+    #endif
 #endif
 
 #if defined(USE_UV)
@@ -81,7 +85,9 @@ void Main(uint3 gtid : SV_GroupThreadID,
         Vertex input = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex];
 
         float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
+#if defined(LIT) || defined(VIEWPOS)
         vertices[gtid.x].ViewSpacePosition = ViewPos.xyz; // View position
+#endif
         vertices[gtid.x].Position = mul(Projection, ViewPos);
  
 

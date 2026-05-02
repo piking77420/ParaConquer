@@ -39,6 +39,8 @@ namespace PC_EDITOR::DebugView
 
         std::unordered_map<const PC_CORE::RhiBuffer*, std::unique_ptr<PC_CORE::RhiDescriptorSet>> m_DescriptorSets;
 
+        std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DescriptorSet;
+
 	};
 
 	REFLECT(DebugShapeDraw, PC_CORE::Rendering::RenderPass);

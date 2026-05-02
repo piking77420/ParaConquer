@@ -24,7 +24,6 @@ BEGIN_PCCORE
 
         ~DebugDrawContext() = default;
 
-
         enum class PrimitiveType
         {
             Sphere,
@@ -52,7 +51,12 @@ BEGIN_PCCORE
             Tbx::Vector3f Color;
         };
 
-
+        struct Frustum
+        {
+            Tbx::Matrix4x4d FrustumToWorld;
+            Tbx::Vector3f Color;
+            bool IsWired = false;
+        };
 
         void PushRay(const Tbx::Vector3d& _P1, const Tbx::Vector3d& _Dir, const float _Distance, const Tbx::Vector3f _Color);
 
@@ -65,9 +69,10 @@ BEGIN_PCCORE
 
         void PushCapsuleGizmo(PrimitiveType _primitiveType, const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler,
             float _radius, float _height, Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
+
+        void PushFrustum(const Tbx::Matrix4x4d& _FrustumToWorld, bool _IsWired, Tbx::Vector3f _Color = Tbx::Vector3f(1.f, 1.f, 1.f));
         
         void ClearForNextFrame();
-
 
         static std::pair<std::vector<Tbx::Vector3f>, std::vector<uint32_t>> GenerateBasePrimitve(PrimitiveType _primitiveType);
  
@@ -78,10 +83,17 @@ BEGIN_PCCORE
             return m_DebugDrawPrimitives;
         }
 
+        const std::vector<Frustum>& DebugDrawFrustums()
+        {
+            return m_Frustums;
+        }
+
     private:
         std::vector<RayDraw> m_RayDraws;
 
         std::array<std::vector<DrawPrimitive>, static_cast<size_t>(PrimitiveType::Count)> m_DebugDrawPrimitives;
+
+        std::vector<Frustum> m_Frustums;
     };
 
 

@@ -53,6 +53,12 @@ namespace PC_EDITOR::DebugView
 				.Build();
 		}
 
+
+		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		m_DescriptorSet
+			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.SetName("DebugShapeDraw Base")
+			.Build();
 		
 	}
 
@@ -73,11 +79,11 @@ namespace PC_EDITOR::DebugView
 		ViewportInfo viewPort(beginRenderPassInfo.Extent);
 		cmd.SetViewPort(viewPort);
 		
-		for (auto& debugDraw : _RendererPassExecuteContext.Renderer.DebugDrawList)
+		for (auto& DebugDrawInstanced: _RendererPassExecuteContext.Renderer.DebugDrawList)
 		{
-			if (std::holds_alternative<PC_CORE::Rendering::DrawDebugInstanced>(debugDraw.Data))
+			if (std::holds_alternative<PC_CORE::Rendering::DrawDebugInstanced>(DebugDrawInstanced.Data))
 			{
-				const PC_CORE::Rendering::DrawDebugInstanced& DrawDebugInstanced = std::get<PC_CORE::Rendering::DrawDebugInstanced>(debugDraw.Data);
+				const PC_CORE::Rendering::DrawDebugInstanced& DrawDebugInstanced = std::get<PC_CORE::Rendering::DrawDebugInstanced>(DebugDrawInstanced.Data);
 				auto Descriptor = m_DescriptorSets.find(DrawDebugInstanced.InstanceBuffer);
 				if (Descriptor != m_DescriptorSets.end())
 				{
@@ -108,6 +114,27 @@ namespace PC_EDITOR::DebugView
 					cmd.BindDrawBuffers(drawBuffer);
 					cmd.DrawIndexed(DrawDebugInstanced.IndexCount, DrawDebugInstanced.InstanceCount, 0, 0, 0);
 				}
+			}
+			
+			else if (std::holds_alternative<PC_CORE::Rendering::DrawDebug>(DebugDrawInstanced.Data))
+			{
+				const PC_CORE::Rendering::DrawDebug& DrawDebug = std::get<PC_CORE::Rendering::DrawDebug>(DebugDrawInstanced.Data);
+				cmd.BindProgram(*DrawDebug.ShaderProgram);
+				cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+
+				if (DrawDebug.isWired)
+				{
+					cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+					cmd.SetLineWidth(1.f);
+				}
+				else
+				{
+					cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+				}
+				cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawDebug.VP, 0, sizeof(DrawDebug.VP));
+				static constexpr size_t FrustumIndexCount = 24;
+				assert(DrawDebug.IndexCount == FrustumIndexCount);
+				cmd.Draw(DrawDebug.IndexCount, 1, 0, 0);
 			}
 		}
 		

@@ -54,6 +54,10 @@ class DebugDrawContext;
         PC_CORE_API void DrawWireCapsule(const Tbx::Vector3d& _p1, const Tbx::Vector3d& euler, float _radius, float _height,
             Tbx::Vector3f _color = Tbx::Vector3f(1.f, 1.f, 1.f));
 
+        PC_CORE_API void DrawFrustum(const Tbx::Matrix4x4d& _FrustumToWorld, Tbx::Vector3f _Color);
+
+        PC_CORE_API void DrawWireFrustum(const Tbx::Matrix4x4d& _FrustumToWorld, Tbx::Vector3f _Color);
+
         bool begin = false;
 
         bool run = false;

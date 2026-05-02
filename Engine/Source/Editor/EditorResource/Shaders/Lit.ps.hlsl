@@ -2,10 +2,14 @@
 struct PSInput
 {
     float4 Position : SV_POSITION;
+#if defined(LIT) || defined(VIEWPOS)
+    #if defined(VIEWPOS)
     float3 ViewSpacePosition : TEXCOORD0;
-#if defined(LIT)
+    #elif defined(LIT)
+    float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
     float3 Tangent : TEXCOORD2;
+    #endif
 #endif
 
 #if defined(USE_UV)

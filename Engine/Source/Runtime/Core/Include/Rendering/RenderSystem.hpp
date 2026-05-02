@@ -65,7 +65,7 @@ namespace PC_CORE::Rendering
 
         // Debug
         std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;
-
+        std::vector<DebugDrawContext::Frustum> DebugFrustums;
     };
 
     class RendererSystem : public EcsSystem

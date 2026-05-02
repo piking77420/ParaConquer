@@ -259,7 +259,7 @@ namespace PC_CORE::Rendering
                ->CreateSubPass()
                .SetType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
-               .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilRead));
+               .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
            colorLinearLoadDepth
                ->SetName("colorLinearLoadDepth")
@@ -416,34 +416,61 @@ namespace PC_CORE::Rendering
        }
 
        {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
-           {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugInstancedDraw.vs.hlsl.binary")->GetCode()},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
-           };
+           auto DebugDrawShader = [&](std::unique_ptr<RhiShaderProgram>& Program, 
+               const std::vector<RhiShaderProgram::ShaderModule>& ShaderModules,
+               std::string ShaderName,
+               bool UseVertexBinding) {
+               Program.reset(m_Rhi.CreateRhiShaderProgram());
+               Program
+                   ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+                   .SetAttachementCount(1)
+                   .SetShaderModules(ShaderModules)
+                   .SetRenderPass(*colorLinearLoadDepth)
+                   .SetDepthTest(true)
+                   .SetDepthWrite(true);
 
-           DrawDebugShapeInstanced.reset(m_Rhi.CreateRhiShaderProgram());
-           DrawDebugShapeInstanced
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
-               .SetAttachementCount(1)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*colorLinearLoadDepth)
-               .SetDepthTest(true)
-               .SetDepthWrite(true)
-               .SetVertexAttributeDescriptions({ VertexAttributeDescription{
-                .Binding = 0,
-                .Location = 0,
-                .Format = RhiFormat::R32G32B32Sfloat,
-                .Offset = offsetof(StaticMeshVertex, Position)
-                } })
-               .SetVertexInputBindingDescritions({
-                                                {
-                                                .Binding = 0,
-                                                .Stride = sizeof(Tbx::Vector3f),
-                                                .VertexInputRate = VertexInputRate::Vertex
-                                                } })
-               .SetName("DebugInstanceDraw")
-               .Build();
+               if (UseVertexBinding)
+               {
+                   Program->SetVertexAttributeDescriptions({ VertexAttributeDescription{
+                    .Binding = 0,
+                    .Location = 0,
+                    .Format = RhiFormat::R32G32B32Sfloat,
+                    .Offset = offsetof(StaticMeshVertex, Position)
+                    } })
+                       .SetVertexInputBindingDescritions({
+                                                        {
+                                                        .Binding = 0,
+                                                        .Stride = sizeof(Tbx::Vector3f),
+                                                        .VertexInputRate = VertexInputRate::Vertex
+                                                        } });
+               }
+
+
+               Program
+                   ->SetName(ShaderName)
+                   .Build();
+               };
+
+
+           {
+               const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+               {
+                   { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugDrawInstanced.vs.hlsl.binary")->GetCode()},
+                   { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+               };
+
+               DebugDrawShader(DrawDebugShapeInstanced, shaderModules, "DebugInstanceDraw", true);
+           }
+
+           {
+               const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+               {
+                   { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugDrawFrustum.vs.hlsl.binary")->GetCode()},
+                   { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+               };
+
+               DebugDrawShader(DrawDebugShapeFrustum, shaderModules, "DebugDrawFrustum", false);
+           }
        }
 
    }
@@ -605,69 +632,90 @@ namespace PC_CORE::Rendering
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
 
-       auto FillPrimitive = [&](const std::vector<DebugDrawContext::DrawPrimitive>& DrawBoxs, size_t PrimitiveIndex, bool isWired)
-           {
-               DebugInstanceBuffer.clear();
-               if (DrawBoxs.empty())
-                   return;
-
-               DebugInstanceBuffer.reserve(DrawBoxs.size());
-
-               for (const auto& Primitive : DrawBoxs)
+       // Instanced 
+       {
+           auto FillPrimitive = [&](const std::vector<DebugDrawContext::DrawPrimitive>& DrawBoxs, size_t PrimitiveIndex, bool isWired)
                {
-                   Color Color(FloatRGBA{
-                       Primitive.Color.x, Primitive.Color.y, Primitive.Color.z, 1.0f
-                       });
-                   Tbx::Matrix4x4f trsV = Tbx::Matrix4x4f(_view.View * Tbx::Trs4x4(Primitive.Origin, Primitive.Euler, Primitive.Size));
-                   trsV[15] = std::bit_cast<float>(Color.ToPackedRGBA());
-                   DebugInstanceBuffer.emplace_back() = Tbx::Matrix4x4f(trsV);
-               }
+                   DebugInstanceBuffer.clear();
+                   if (DrawBoxs.empty())
+                       return;
 
-               auto& InstanceBufferBox = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]);
+                   DebugInstanceBuffer.reserve(DrawBoxs.size());
 
-               InstanceBufferBox->UploadData(m_CommandList.get(), DebugInstanceBuffer.data(), DebugInstanceBuffer.size() * sizeof(DebugInstanceBuffer[0]));
+                   for (const auto& Primitive : DrawBoxs)
+                   {
+                       Color Color(FloatRGBA{
+                           Primitive.Color.x, Primitive.Color.y, Primitive.Color.z, 1.0f
+                           });
+                       Tbx::Matrix4x4f trsV = Tbx::Matrix4x4f(_view.View * Tbx::Trs4x4(Primitive.Origin, Primitive.Euler, Primitive.Size));
+                       trsV[15] = std::bit_cast<float>(Color.ToPackedRGBA());
+                       DebugInstanceBuffer.emplace_back() = Tbx::Matrix4x4f(trsV);
+                   }
 
-               BufferStateTransition bufferTransition =
-               {
-                   .Buffer = InstanceBufferBox.get() ,
-                   .Offset = 0,
-                   .Size = PC_CORE::WHOLE_SIZE,
-                   .updateState = false
+                   auto& InstanceBufferBox = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]);
+
+                   InstanceBufferBox->UploadData(m_CommandList.get(), DebugInstanceBuffer.data(), DebugInstanceBuffer.size() * sizeof(DebugInstanceBuffer[0]));
+
+                   BufferStateTransition bufferTransition =
+                   {
+                       .Buffer = InstanceBufferBox.get() ,
+                       .Offset = 0,
+                       .Size = PC_CORE::WHOLE_SIZE,
+                       .updateState = false
+                   };
+
+                   m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&bufferTransition, 1));
+
+                   auto& item = DebugDrawList.EmplaceBack();
+                   auto& InstanceDebugDraw = item.Data.emplace<DrawDebugInstanced>();
+                   InstanceDebugDraw.ShaderProgram = nullptr;
+                   InstanceDebugDraw.VertexBuffer = std::get<0>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
+                   InstanceDebugDraw.IndexBuffer = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
+                   InstanceDebugDraw.InstanceBuffer = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]).get();
+                   InstanceDebugDraw.IndexFormat = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexFormat();
+                   InstanceDebugDraw.IndexCount = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexCount();
+                   InstanceDebugDraw.InstanceCount = DrawBoxs.size();
+                   InstanceDebugDraw.isWired = isWired;
+                   item.SortKey = 0;
                };
 
-               m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&bufferTransition, 1));
-
-               auto& item = DebugDrawList.EmplaceBack();
-               auto& InstanceDebugDraw = item.Data.emplace<DrawDebugInstanced>();
-               InstanceDebugDraw.ShaderProgram = nullptr;
-               InstanceDebugDraw.VertexBuffer = std::get<0>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
-               InstanceDebugDraw.IndexBuffer = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
-               InstanceDebugDraw.InstanceBuffer = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]).get();
-               InstanceDebugDraw.IndexFormat = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexFormat();
-               InstanceDebugDraw.IndexCount = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexCount();
-               InstanceDebugDraw.InstanceCount = DrawBoxs.size();
-               InstanceDebugDraw.isWired = isWired;
-               item.SortKey = 0;
-           };
-
-       for (size_t i = 0; i < RenderingWorldData.DebugDrawPrimitives.size(); i++)
-       {
-           const DebugDrawContext::PrimitiveType CurrentPrimitive = static_cast<DebugDrawContext::PrimitiveType>(i);
-           const auto& data = RenderingWorldData.DebugDrawPrimitives[i];
-           bool IsWired = false;
-           switch (CurrentPrimitive)
+           for (size_t i = 0; i < RenderingWorldData.DebugDrawPrimitives.size(); i++)
            {
-           case DebugDrawContext::PrimitiveType::WireSphere:
-           case DebugDrawContext::PrimitiveType::WireBox:
-           //case DebugDrawContext::PrimitiveType::WireCapsule:
-               IsWired = true;
-               break;
-           default:
-               break;
+               const DebugDrawContext::PrimitiveType CurrentPrimitive = static_cast<DebugDrawContext::PrimitiveType>(i);
+               const auto& data = RenderingWorldData.DebugDrawPrimitives[i];
+               bool IsWired = false;
+               switch (CurrentPrimitive)
+               {
+               case DebugDrawContext::PrimitiveType::WireSphere:
+               case DebugDrawContext::PrimitiveType::WireBox:
+                   //case DebugDrawContext::PrimitiveType::WireCapsule:
+                   IsWired = true;
+                   break;
+               default:
+                   break;
+               }
+               FillPrimitive(data, i, IsWired);
            }
+       }
+       
+       // None Instanced
+       {
+           for (const auto& F : RenderingWorldData.DebugFrustums)
+           {
+               auto& item = DebugDrawList.EmplaceBack();
+               auto& InstanceDebugDraw = item.Data.emplace<DrawDebug>();
+               InstanceDebugDraw.IndexCount = 24; // yes
+               InstanceDebugDraw.isWired = F.IsWired;
+               InstanceDebugDraw.VP = Tbx::Matrix4x4f(F.FrustumToWorld);
+               InstanceDebugDraw.ShaderProgram = DrawDebugShapeFrustum.get();
+               /*
+               const Color Color(FloatRGBA{
+                           F.Color.x, F.Color.y, F.Color.z, 1.0f
+                   });
+               InstanceDebugDraw.VP[15] = std::bit_cast<float>(Color.ToPackedRGBA());
+              */
 
-
-           FillPrimitive(data, i, IsWired);
+           }
        }
        
    }

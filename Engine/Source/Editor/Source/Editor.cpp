@@ -172,15 +172,24 @@ void Editor::EditorOnlyShader()
 
     PC_LOG("EditorOnlyShader...")
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
-    ResourceManager::Create<ShaderSource>("DebugInstancedDraw.vs.hlsl",
+    ResourceManager::Create<ShaderSource>("DebugDrawInstanced.vs.hlsl",
         EDITOR_RESOURCE_PATH
-        "/Shaders/DebugDraw/DebugInstancedDraw.vs.hlsl");
+        "/Shaders/DebugDraw/DebugDraw.vs.hlsl",
+        ShaderFeatureFlagBits::Instanced);
+        }));
+
+    m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+        ResourceManager::Create<ShaderSource>("DebugDrawFrustum.vs.hlsl",
+            EDITOR_RESOURCE_PATH
+            "/Shaders/DebugDraw/DebugDraw.vs.hlsl",
+            ShaderFeatureFlagBits::Frustum);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl",
             EDITOR_RESOURCE_PATH
-            "/Shaders/DebugDraw/DebugDraw.ps.hlsl");
+            "/Shaders/Lit.ps.hlsl"
+            , ShaderFeatureFlagBits::UseColor);
         }));
 }
 
@@ -441,6 +450,10 @@ void Editor::UpdateEditor()
 
                 m_EditorWorldWindow->OnRenderModeDirty();
             }
+
+            ImGui::Checkbox("FreezeCameraFrustum", &editorData.FreezeFrustum);
+            ImGui::Checkbox("DrawCameraFrustum", &editorData.DrawFrustum);
+
             ImGui::EndMenu();
         }
 

@@ -24,10 +24,15 @@ struct VsInput
 struct VsOutput
 {
     float4 Position : SV_POSITION;
-    float3 ViewSpacePosition : TEXCOORD0; // location 0
-#if defined(LIT)
-    float3 Normal : TEXCOORD1; // location 1
-    float3 Tangent : TEXCOORD2; // location 2
+#if defined(LIT) || defined(VIEWPOS)
+
+#if defined(VIEWPOS)
+    float3 ViewSpacePosition : TEXCOORD0;
+#elif defined(LIT)
+    float3 ViewSpacePosition : TEXCOORD0;
+    float3 Normal : TEXCOORD1;
+    float3 Tangent : TEXCOORD2;
+    #endif
 #endif
 
 #if defined(USE_UV)
@@ -55,7 +60,9 @@ VsOutput Main(VsInput input)
     float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0)); 
 
     // Positions
+#if defined(LIT) || defined(VIEWPOS)
     output.ViewSpacePosition = ViewPos.xyz; // View position
+#endif
     output.Position = mul(Projection, ViewPos);
 
     // Lit dependencies

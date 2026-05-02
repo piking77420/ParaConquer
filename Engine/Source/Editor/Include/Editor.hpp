@@ -68,6 +68,8 @@ BEGIN_EDITOR_PCCORE
 
     struct EditorData
     {
+        bool FreezeFrustum = false;
+        bool DrawFrustum = false;
         EditorFont editorFont{};
         EditorFont editorFontItalic{};
 
