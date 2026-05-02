@@ -466,10 +466,6 @@ void Editor::UpdateEditor()
     }
 
     {
-        ImGui::Begin("Color Pick");
-        ImGui::ColorPicker4("Color Box", &m_Color.x);
-        ImGui::End();
-
         PERF_REGION_SCOPED_NAMED("Update Windows");
         for (auto& EditorWindow : EditorWindows)
         {

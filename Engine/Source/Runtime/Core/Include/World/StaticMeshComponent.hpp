@@ -11,10 +11,17 @@ BEGIN_PCCORE
         WeakObjectPtr<StaticMesh> staticMesh;
 
         std::vector<WeakObjectPtr<Rendering::Material>> materials;
+
+#ifdef WITH_EDITOR
+        bool ShowBound;
+#endif
     };
 
     REFLECT(StaticMeshComponent, Component)
     REFLECT_MEMBER(StaticMeshComponent, staticMesh)
     REFLECT_MEMBER(StaticMeshComponent, materials)
+#ifdef WITH_EDITOR
+    REFLECT_MEMBER(StaticMeshComponent, ShowBound)
+#endif
 
 END_PCCORE

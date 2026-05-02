@@ -114,6 +114,15 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
             };
 
             m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
+
+#ifdef WITH_EDITOR
+            if (staticMeshComponent.ShowBound)
+            {
+                MotionCore::Aabb<double> aabbx = mesh->GetAabb();
+                aabbx = aabbx.GetTransformed(m);
+                debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.f, 0.f));
+            }
+#endif
         }
     }
 }
