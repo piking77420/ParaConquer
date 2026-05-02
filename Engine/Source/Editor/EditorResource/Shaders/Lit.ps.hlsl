@@ -64,19 +64,20 @@ float4 Main(PSInput input) : SV_Target
 #if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP)
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
     {
-            float3 T = normalize(input.Tangent);
-            float3 N = Normal;
+        float3 T = normalize(input.Tangent);
+        float3 N = Normal;
 
-            T = normalize(T - dot(T, N) * N);
-            float3 B = normalize(cross(N, T));
+        T = normalize(T - dot(T, N) * N);
+        float3 B = normalize(cross(N, T));
 
-            float3x3 TBN = float3x3(T, B, N);
+        float3x3 TBN = transpose(float3x3(T, B, N));
 
-            float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb;
-            NormalTS = normalize(NormalTS * 2.0 - 1.0);
+        float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb;
+        NormalTS = normalize(NormalTS * 2.0 - 1.0);
 
-            Normal = normalize(mul(NormalTS, TBN));
-        }
+        Normal = normalize(mul(TBN, NormalTS));
+    
+    }
 #endif
     
     

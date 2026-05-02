@@ -28,8 +28,8 @@ VSOutput Main(VSInput vSInput,
     float4 color = FromPackedRGB(asuint(Matrix[3][3]));
     Matrix[3][3] = 1.0f;
 
-    float4 worldPos = mul(float4(vSInput.Position, 1.0), Matrix);
-    vsOutPut.Pos = mul(worldPos, Projection);
+    float4 worldPos = mul(Matrix, float4(vSInput.Position, 1.0));
+    vsOutPut.Pos = mul(Projection, worldPos);
 
     vsOutPut.Color = color;
     return vsOutPut;

@@ -41,8 +41,8 @@ PushConstant pushConstants;
 VS_OUT Main(uint vertexID : SV_VertexID)
 {
     VS_OUT output;
-    float4 worldPos = mul(float4(positions[vertexID], 0.0, 1.0), pushConstants.model);
+    float4 worldPos = mul(pushConstants.model, float4(positions[vertexID], 0.0, 1.0));
     output.texCoord = coords[vertexID];
-    output.position = mul(worldPos, vp);
+    output.position = mul(vp, worldPos);
     return output;
 }

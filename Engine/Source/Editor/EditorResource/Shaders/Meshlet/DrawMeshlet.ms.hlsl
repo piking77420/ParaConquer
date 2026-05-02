@@ -80,16 +80,16 @@ void Main(uint3 gtid : SV_GroupThreadID,
         uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
         Vertex input = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex];
 
-        float4 ViewPos = mul(float4(input.Position.xyz, 1.0), renderInstance.ModelView);
+        float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
         vertices[gtid.x].ViewSpacePosition = ViewPos.xyz; // View position
-        vertices[gtid.x].Position = mul(ViewPos, Projection);
+        vertices[gtid.x].Position = mul(Projection, ViewPos);
  
 
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    vertices[gtid.x].Normal = normalize(mul(NormalL, (float3x3)renderInstance.NormalInverseMatrixView));
-    vertices[gtid.x].Tangent = normalize(mul(TangentL, (float3x3)renderInstance.NormalInverseMatrixView));
+    vertices[gtid.x].Normal = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, NormalL));
+    vertices[gtid.x].Tangent = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, TangentL));
 #endif 
 
     // Need uvs

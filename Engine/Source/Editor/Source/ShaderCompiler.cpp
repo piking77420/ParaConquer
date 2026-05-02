@@ -198,7 +198,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         L"-E", L"Main", // Entry point
         L"-T", targetProfile, // Target profile
         L"-I", INCLUDE_PATH,
-        L"-Zpr",
+        L"-Zpc",
     };
     for (const auto& args : _Args)
     {
@@ -208,13 +208,11 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     switch (_api)
     {
     case PC_CORE::GraphicAPI::Vulkan:
-        arguments.push_back(L"-Zpr");
         arguments.push_back(L"-spirv");
         arguments.push_back(L"-fspv-target-env=vulkan1.3");
         arguments.push_back(L"-fspv-extension=SPV_EXT_mesh_shader");
         break;
     case PC_CORE::GraphicAPI::D3d12:
-        arguments.push_back(L"-Zpc");
         break;
     case PC_CORE::GraphicAPI::None:
     case PC_CORE::GraphicAPI::Count:

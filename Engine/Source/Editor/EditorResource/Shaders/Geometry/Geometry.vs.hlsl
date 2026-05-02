@@ -39,10 +39,10 @@ VsOutPut Main(VsInput input)
     VsOutPut output;
     
     // position * model * view 
-    float4 viewSpacePos = mul(mul(float4(input.Position, 1.0), pushConstant.model), view);
+    float4 viewSpacePos = mul(view, mul(pushConstant.model, float4(input.Position, 1.0)));
     
     // Ready For rasterization
-    output.Position = mul(viewSpacePos, proj);
+    output.Position = mul(proj, viewSpacePos);
     
      // Position in view space
     output.ViewSpacePosition = viewSpacePos.xyz;
@@ -50,8 +50,8 @@ VsOutPut Main(VsInput input)
     // Normal 
     float3x3 view3x3 = (float3x3) view;
     float3x3 normalInv3x3 = (float3x3) pushConstant.normalInvMatrix;
-    output.Normal = normalize(mul(mul(input.Normal, normalInv3x3), view3x3));
-    output.Tangent = normalize(mul(mul(input.Tangent, normalInv3x3), view3x3));
+    output.Normal = normalize(mul(view3x3, mul(input.Normal, normalInv3x3)));
+    output.Tangent = normalize(mul(view3x3, mul(normalInv3x3, input.Tangent)));
     
     // UV
     output.TexCoord = input.TexCoord;
