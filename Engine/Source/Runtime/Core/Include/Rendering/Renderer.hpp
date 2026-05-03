@@ -5,6 +5,7 @@
 #include <Rendering/Buffer/IndexBuffer.hpp>
 #include <Rendering/Buffer/VertexBuffer.hpp>
 #include <DebugHelper/DebugDrawContext.hpp>
+#include <Frustum.hpp>
 
 namespace PC_CORE::Rendering
 {
@@ -84,6 +85,8 @@ private:
     PC_CORE::Window& m_Window;
 
     RenderGraph m_RenderGraph; // TODO SET IT OUTSIT ThE CLASS
+
+    Frustum m_Frustum;
 
     std::unique_ptr<CommandList> m_CommandList;
 

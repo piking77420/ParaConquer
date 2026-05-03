@@ -52,6 +52,8 @@ namespace PC_CORE::Rendering
         enum RenderViewFlagBits : uint8_t
         {
             DebugGeometry = 1 << 0,
+            DrawFrustum = 1 << 1,
+            DrawBounds = 1 << 2
         };
         using RenderViewFlag = uint8_t;
 
@@ -95,6 +97,8 @@ namespace PC_CORE::Rendering
         std::unique_ptr<RhiBuffer> LightBufferHeader;
 
         Tbx::Vector3d ViewPosition;
+
+        Tbx::Matrix4x4d FrustumToWorld;
 
         double Fov;
     };

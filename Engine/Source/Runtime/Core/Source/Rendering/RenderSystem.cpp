@@ -120,7 +120,18 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
             {
                 MotionCore::Aabb<double> aabbx = mesh->GetAabb();
                 aabbx = aabbx.GetTransformed(m);
-                debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.f, 0.f));
+                debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.0f, 0.f));
+            }
+
+            if (staticMeshComponent.ShowDrawCommandsBounds)
+            {
+                auto& Data = mesh.get()->GetStaticMeshData();
+                for (size_t i = 0; i < Data.DrawCommands.size(); i++)
+                {
+                    MotionCore::Aabb<double> aabbx = Data.DrawCommands[i].GlobalModelAABB;
+                    aabbx = aabbx.GetTransformed(m);
+                    debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.0f, 0.f));
+                }
             }
 #endif
         }

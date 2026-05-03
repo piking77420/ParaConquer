@@ -14,6 +14,8 @@ BEGIN_PCCORE
 
 #ifdef WITH_EDITOR
         bool ShowBound;
+
+        bool ShowDrawCommandsBounds;
 #endif
     };
 
@@ -22,6 +24,7 @@ BEGIN_PCCORE
     REFLECT_MEMBER(StaticMeshComponent, materials)
 #ifdef WITH_EDITOR
     REFLECT_MEMBER(StaticMeshComponent, ShowBound)
+    REFLECT_MEMBER(StaticMeshComponent, ShowDrawCommandsBounds)
 #endif
 
 END_PCCORE

@@ -20,15 +20,23 @@ void EditWorldWindow::Update()
 {
     PERF_REGION_SCOPED;
 
-    if (resize)
-    {
-      
-    }
-
     if (ImGui::IsWindowFocused())
         MoveCameraUpdate();
 
+    if (!m_Editor->editorData.FreezeFrustum)
+    {
+        m_View.FrustumToWorld = m_View.ViewProjectionInv;
+    }
+
     WorldViewWindow::Update();
+
+    if (m_Editor->editorData.DrawFrustum)
+    {
+        m_Editor->World.DrawWireFrustum(
+            m_View.FrustumToWorld,
+            Tbx::Vector3f(1, 1, 1)
+        );
+    }
 }
 
 void EditWorldWindow::MoveCameraUpdate()
@@ -42,27 +50,10 @@ void EditWorldWindow::MoveCameraUpdate()
 
     HideCursor();
     CameraChangeSpeed(deltatime);
-
-    
     CameratMovment(deltatime);
     RotateCamera(deltatime);
     ScroolWheelMovement(deltatime);
     UpdatePosition(deltatime);
-
-    static Tbx::Matrix4x4d FrustumToWorld = m_View.ViewProjectionInv;
-    if (!m_Editor->editorData.FreezeFrustum)
-    {
-        FrustumToWorld = m_View.ViewProjectionInv;
-    }
-
-    if (m_Editor->editorData.DrawFrustum)
-    {
-        m_Editor->World.DrawWireFrustum(
-            FrustumToWorld,
-            Tbx::Vector3f(1, 1, 1)
-        );
-    }
-  
 }
 
 void EditWorldWindow::RotateCamera(float _deltatime)

@@ -1,8 +1,8 @@
 #include "AssetsImporter.hpp"
 
+#include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include <assimp/scene.h>
 
 #include <filesystem>
 #include <string_view>
@@ -312,7 +312,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
                 MeshSection = 
                 {
-                    .AABB = MeshDescriptor[MeshIndex].Aabb,
+                    .LocalAABB = MeshDescriptor[MeshIndex].Aabb,
                     .MeshDataDescriptor = 
                     {
                         // Vertex
@@ -349,21 +349,40 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         }
     }
 
-    void AssetsImporter::ProcessDrawCommand(std::vector<PC_CORE::MeshDrawCommand>& DrawCommands, const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, const aiScene* Scene, const aiNode* Node)
+
+
+    void AssetsImporter::ProcessDrawCommand(std::vector<PC_CORE::MeshDrawCommand>& DrawCommands, 
+        const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, 
+        const aiScene* Scene, 
+        const aiNode* Node, 
+        const aiMatrix4x4& ParentTransform)
     {
         if (Node == nullptr)
             return;
         
+        const aiMatrix4x4 NodeModelTransform = ParentTransform * Node->mTransformation;
+        Tbx::Matrix4x4d CoreTransfrom;
+        for (size_t i = 0; i < 16; i++)
+            CoreTransfrom[i] = static_cast<double>(*(NodeModelTransform[0] + i));
+
+        CoreTransfrom = CoreTransfrom.Transpose(); // row to coloms
+        CoreTransfrom[15] = 1.0; // just in case
+
         if (Node->mNumMeshes > 0u)
         {            
             for (size_t i = 0; i < Node->mNumMeshes; i++)
             {
-                DrawCommands.push_back(PC_CORE::MeshDrawCommand{ AssimpMeshIndexToCoreIndex.at(Node->mMeshes[i]) });
+                auto& AABB = Scene->mMeshes[Node->mMeshes[i]]->mAABB;
+                MotionCore::Aabb<double> CoreAABB = MotionCore::Aabb<double>(Tbx::Vector3d(AABB.mMin.x, AABB.mMin.y, AABB.mMin.z),
+                    Tbx::Vector3d(AABB.mMax.x, AABB.mMax.y, AABB.mMax.z));
+                
+                CoreAABB = CoreAABB.GetTransformed(CoreTransfrom);
+                DrawCommands.push_back(PC_CORE::MeshDrawCommand{ CoreAABB, CoreTransfrom, AssimpMeshIndexToCoreIndex.at(Node->mMeshes[i])});
             }
         }
         
         for (size_t i = 0; i < Node->mNumChildren; i++)
-            ProcessDrawCommand(DrawCommands, AssimpMeshIndexToCoreIndex, Scene, Node->mChildren[i]);
+            ProcessDrawCommand(DrawCommands, AssimpMeshIndexToCoreIndex, Scene, Node->mChildren[i], NodeModelTransform);
         
     }
 
@@ -419,11 +438,21 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
         // Now we proceed to each local lods
         PC_CORE::StaticMeshData StaticMeshData;
-        StaticMeshData.AABB = Meshs.Aabb;
         std::unordered_map<uint32_t, uint32_t> AssimpMeshIndexToCore;
         ProcessLod(AssimpMeshIndexToCore, StaticMeshData.MeshLods, Meshs.MeshDescriptor, StaticMeshRenderData, Scene);
+
+        // Compute Nodes Data
+        // Global AABB 
+        Tbx::Matrix4x4d CoreTransfrom;
+        for (size_t i = 0; i < 16; i++)
+            CoreTransfrom[i] = static_cast<double>(*(Scene->mRootNode->mTransformation[0] + i));
+        StaticMeshData.AABB = Meshs.Aabb.GetTransformed(CoreTransfrom.Transpose()); // aimatrix are row major
+
+        // Draw Commands
         std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
-        ProcessDrawCommand(DrawCommands, AssimpMeshIndexToCore, Scene, Scene->mRootNode);
+        const auto Transform = aiMatrix4x4();
+        assert(Transform.IsIdentity());
+        ProcessDrawCommand(DrawCommands, AssimpMeshIndexToCore, Scene, Scene->mRootNode, Transform);
 
         StaticMeshData.RenderData = std::move(StaticMeshRenderData);
         StaticMeshData.DrawCommands = std::move(DrawCommands);

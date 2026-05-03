@@ -2,10 +2,6 @@
 
 #include "App.hpp"
 
-#if WITH_EDITOR
-#include "../Editor/Include/Editor.hpp"
-#endif
-
 // the variant to visit
 using value_t = std::variant<PC_CORE::Thread::ThreadPool*, PC_CORE::Thread::TaskNode::Thread>;
 

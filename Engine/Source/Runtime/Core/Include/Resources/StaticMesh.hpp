@@ -118,7 +118,7 @@ struct MeshDataDescriptor
 
 struct MeshSection
 {
-	MotionCore::Aabb<double> AABB;
+	MotionCore::Aabb<double> LocalAABB;
 	MeshDataDescriptor MeshDataDescriptor;
 	uint32_t MaterialIndex;
 };
@@ -153,6 +153,8 @@ struct StaticMeshRenderData
 
 struct MeshDrawCommand
 {
+	MotionCore::Aabb<double> GlobalModelAABB;
+	Tbx::Matrix4x4d GlobalModelMatrix;
 	uint32_t MeshSectionIndex;
 };
 

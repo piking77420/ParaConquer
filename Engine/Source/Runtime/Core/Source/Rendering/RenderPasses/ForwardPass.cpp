@@ -118,7 +118,7 @@ namespace PC_CORE::Rendering::Pass
 
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
 
-		std::array<float, 4> Color = GetColor();
+		std::array<float, 4> Color = { 0.0f, 0.0f, 0.0f, 0.0f };
 		
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{

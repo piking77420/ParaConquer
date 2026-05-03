@@ -499,6 +499,8 @@ namespace PC_CORE::Rendering
        TransparentList.Clear();
        DebugDrawList.Clear();
 
+       
+       m_Frustum = Frustum(Frustum::VulkanNdc, _view.FrustumToWorld); // TODO use ViewProjectionInv after psp
        FillListStaticMesh(_view, RenderingWorldData);
        FillListDebugDraw(_view, RenderingWorldData);
        SortList();
@@ -535,12 +537,18 @@ namespace PC_CORE::Rendering
            const StaticMeshData& StaticMeshData = StaticMesh->GetStaticMeshData();
            const std::vector<MeshDrawCommand>& DrawCommands = StaticMeshData.DrawCommands;
 
+           const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
+           const auto MeshAABBCenter = MeshAABBW.GetCenter();
+           const auto MeshAABBExtend = MeshAABBW.GetExtend();
+           const bool MeshIsOnFrustum = m_Frustum.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
+
+           if (!MeshIsOnFrustum)
+            continue;
+
            // Pick Lod
            uint32_t LODIndex = 0;
-           const MotionCore::Aabb<double> AABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
-           const double DistanceAABBToCamera = (AABBW.GetCenter() - _view.ViewPosition).Magnitude();
-           const double BoundingSphereRadius = (AABBW.GetSize() * 0.5).Magnitude();
-
+           const double DistanceAABBToCamera = (MeshAABBExtend - _view.ViewPosition).Magnitude();
+           const double BoundingSphereRadius = (MeshAABBExtend).Magnitude();
            const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
   
            if (!StaticMesh->GetLodThreshold().empty())
@@ -557,13 +565,20 @@ namespace PC_CORE::Rendering
                if (!Material)
                    continue; // to do get dummy mat
 
+               const MotionCore::Aabb<double> MeshSectionAABBW = Dcmd.GlobalModelAABB.GetTransformed(StaticMeshComponentData.WorldMatrix);
+               const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
+               const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
+
+               if (!m_Frustum.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
+                   continue;
+
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
                // Instance Matrix Update
                item.InstanceIndex = m_InstanceBufferCpu.size();
-               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView);
+               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
                const Tbx::Matrix4x4f NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
@@ -715,6 +730,16 @@ namespace PC_CORE::Rendering
                InstanceDebugDraw.VP[15] = std::bit_cast<float>(Color.ToPackedRGBA());
               */
 
+           }
+
+           if (_view.Flag & RenderView::RenderViewFlagBits::DrawFrustum)
+           {
+               auto& item = DebugDrawList.EmplaceBack();
+               auto& InstanceDebugDraw = item.Data.emplace<DrawDebug>();
+               InstanceDebugDraw.IndexCount = 24; // yes
+               InstanceDebugDraw.isWired = true;
+               InstanceDebugDraw.VP = Tbx::Matrix4x4f(_view.ViewProjectionInv);
+               InstanceDebugDraw.ShaderProgram = DrawDebugShapeFrustum.get();
            }
        }
        

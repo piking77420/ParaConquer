@@ -204,7 +204,7 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
         _Branch->BufferUpload(*MeshSectionGpu.MeshletBuffer, MeshletStart, MeshSectionGpu.MeshletBuffer->GetSizeInByte());
 
 
-        // AABB
+        // LocalAABB
         struct alignas(16) GPUAABB
         {
             float min[4];
