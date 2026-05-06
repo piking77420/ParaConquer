@@ -84,6 +84,7 @@ namespace PC_CORE::Rendering
 
             ptr->Gamma = static_cast<float>(Gamma);
             ptr->Exposure = static_cast<float>(Exposure);
+            ptr->MeshletCulling = false;
 
             std::memcpy(&ptr->RenderSize, &RenderSize, 2 * sizeof(float));
             std::memcpy(&ptr->InvRenderSize, &InvRenderSize, 2 * sizeof(float));

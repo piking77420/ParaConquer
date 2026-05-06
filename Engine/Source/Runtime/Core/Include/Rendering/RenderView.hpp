@@ -36,6 +36,8 @@ namespace PC_CORE::Rendering
 
             vec2 RenderSize;
             vec2 InvRenderSize;
+
+            bool MeshletCulling;
         };
 
     }
@@ -89,6 +91,8 @@ namespace PC_CORE::Rendering
         Tbx::Vector2f InvRenderSize{};
 
         RenderViewFlag Flag{};
+
+        bool MeshletCulling = false;
 
         std::unique_ptr<RhiBuffer> UniformBuffer;
 

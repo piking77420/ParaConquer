@@ -27,6 +27,12 @@ struct Meshlet
 	uint32_t TriangleCount;
 };
 
+struct MeshletBound
+{
+	Tbx::Vector3f center;
+	float radius;
+};
+
 struct StaticMeshVertex
 {
 	Tbx::Vector4f Position;
@@ -148,7 +154,7 @@ struct StaticMeshRenderData
 	std::vector<uint32_t> MeshletVertexTrianglesIndex;
 	std::vector<uint32_t> MeshletTriangles;
 	std::vector<MeshDataDescriptor> BaseMeshDescriptor;
-	std::vector<MotionCore::Aabb<double>> MeshletAABB;
+	std::vector<MeshletBound> MeshletBound;
 };
 
 struct MeshDrawCommand
@@ -252,24 +258,24 @@ public:
 	const std::vector<WeakObjectPtr<PC_CORE::Rendering::Material>>& GetBaseMaterial() const;
 
 private:
-		struct MeshSectionGpu
-		{
-			VertexBuffer VertexBuffer;
+	struct MeshSectionGpu
+	{
+		VertexBuffer VertexBuffer;
 
-			IndexBuffer IndexBuffer;
+		IndexBuffer IndexBuffer;
 
-			std::shared_ptr<RhiBuffer> MeshletBuffer;
+		std::shared_ptr<RhiBuffer> MeshletBuffer;
 
-			std::shared_ptr<RhiBuffer> MeshletAABBBuffer;
+		std::shared_ptr<RhiBuffer> MeshletBoundsBuffer;
 
-			std::shared_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
+		std::shared_ptr<RhiBuffer> MeshletVertexTriangleIndexBuffer;
 
-			std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
+		std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
 
-			std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
+		std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
 
-			size_t MeshLetCount{ 0 };
-		};
+		size_t MeshLetCount{ 0 };
+	};
 
 	std::vector<MeshSectionGpu> m_MeshSectionGpu;
 

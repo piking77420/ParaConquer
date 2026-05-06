@@ -145,7 +145,7 @@ namespace PC_EDITOR_CORE
             MeshletOutPutData.Meshlets.append_range(Data.Meshlets);
             MeshletOutPutData.MeshletVertexTrianglesIndex.append_range(Data.MeshletVertexTrianglesIndex);
             MeshletOutPutData.MeshletTrianglesU32.append_range(Data.MeshletTrianglesU32);
-            MeshletOutPutData.MeshletsAABBS.append_range(Data.AABBs);
+            MeshletOutPutData.MeshletsBound.append_range(Data.Bounds);
         }
     }
 
@@ -238,8 +238,8 @@ namespace PC_EDITOR_CORE
         MeshletsOpt.resize(meshletCount);
 
 
-        std::vector<MotionCore::Aabb<double>> AABBS;
-        AABBS.reserve(MeshletsOpt.size());
+        std::vector<PC_CORE::MeshletBound> MeshletBounds;
+        MeshletBounds.reserve(MeshletsOpt.size());
         {
             PERF_REGION_SCOPED;
             PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "meshopt_computeMeshletBounds");
@@ -254,13 +254,7 @@ namespace PC_EDITOR_CORE
                     sizeof(PC_CORE::StaticMeshVertex)
                 );
 
-                const Tbx::Vector3d Center = Tbx::Vector3d(static_cast<double>(AabbMeshOpt.center[0]), static_cast<double>(AabbMeshOpt.center[1]), static_cast<double>(AabbMeshOpt.center[2]));
-                const Tbx::Vector3d Extend = Tbx::Vector3d(static_cast<double>(AabbMeshOpt.radius), static_cast<double>(AabbMeshOpt.radius), static_cast<double>(AabbMeshOpt.radius));
-
-                MotionCore::Aabb<double> AABB;
-                AABB.FromCenterExtend(Center, Extend);
-
-                AABBS.emplace_back(AABB);
+                MeshletBounds.emplace_back(Tbx::Vector3f(AabbMeshOpt.center[0], AabbMeshOpt.center[1], AabbMeshOpt.center[2]), AabbMeshOpt.radius);
             }
         }
         
@@ -298,7 +292,7 @@ namespace PC_EDITOR_CORE
         Out.Meshlets = std::move(MeshletsOpt);
         Out.MeshletVertexTrianglesIndex = std::move(MeshletVertexTrianglesIndex);
         Out.MeshletTrianglesU32 = std::move(MeshletTrianglesU32);
-        Out.AABBs = std::move(AABBS);
+        Out.Bounds = std::move(MeshletBounds);
 
         return Out;
     }

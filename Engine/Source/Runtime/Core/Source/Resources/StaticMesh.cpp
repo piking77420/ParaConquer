@@ -203,41 +203,16 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
         const Meshlet* MeshletStart = RenderData.Meshlets.data() + MeshLodDescritptor.MeshetOffset;
         _Branch->BufferUpload(*MeshSectionGpu.MeshletBuffer, MeshletStart, MeshSectionGpu.MeshletBuffer->GetSizeInByte());
 
-
-        // LocalAABB
-        struct alignas(16) GPUAABB
-        {
-            float min[4];
-            float max[4];
-        };
-
-        std::vector<GPUAABB> GPUAabbs;
-        GPUAabbs.reserve(MeshLodDescritptor.MeshetCount);
-        std::span CpuAABBs(RenderData.MeshletAABB.data() + MeshLodDescritptor.MeshetOffset, MeshLodDescritptor.MeshetCount);
-        for (const auto& CpuAABB : CpuAABBs)
-        {
-            GPUAABB GPUAABB;
-            GPUAABB.min[0] = static_cast<float>(CpuAABB.min.x);
-            GPUAABB.min[1] = static_cast<float>(CpuAABB.min.y);
-            GPUAABB.min[2] = static_cast<float>(CpuAABB.min.z);
-
-            GPUAABB.max[0] = static_cast<float>(CpuAABB.max.x);
-            GPUAABB.max[1] = static_cast<float>(CpuAABB.max.y);
-            GPUAABB.max[2] = static_cast<float>(CpuAABB.max.z);
-
-            GPUAabbs.emplace_back(GPUAABB);
-        }
-
-        MeshSectionGpu.MeshletAABBBuffer.reset(rhi.CreateBuffer());
-        MeshSectionGpu.MeshletAABBBuffer
+        MeshSectionGpu.MeshletBoundsBuffer.reset(rhi.CreateBuffer());
+        MeshSectionGpu.MeshletBoundsBuffer
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage)
-            .SetSizeInBytes(GPUAabbs.size() * sizeof(GPUAABB))
-            .SetName(Name + std::format("Meshlet AABB Buffer LOD {}", LodIndex))
+            .SetSizeInBytes(RenderData.MeshletBound.size() * sizeof(RenderData.MeshletBound[0]))
+            .SetName(Name + std::format("Meshlet Bound Buffer LOD {}", LodIndex))
             .Build();
 
-        _Branch->BufferUpload(*MeshSectionGpu.MeshletAABBBuffer, GPUAabbs.data(), MeshSectionGpu.MeshletAABBBuffer->GetSizeInByte());
+        _Branch->BufferUpload(*MeshSectionGpu.MeshletBoundsBuffer, RenderData.MeshletBound.data(), MeshSectionGpu.MeshletBoundsBuffer->GetSizeInByte());
 
         MeshSectionGpu.MeshletDescriptor.reset(rhi.CreateDescriptorSet());
         MeshSectionGpu.MeshletDescriptor
@@ -245,6 +220,7 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             .BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 1, MeshSectionGpu.MeshletBuffer.get())
             .BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 2, MeshSectionGpu.MeshletVertexTriangleIndexBuffer.get())
             .BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 3, MeshSectionGpu.MeshletTriangleBuffer.get())
+            .BindShaderStorageBuffer(RhiShaderStageBits::Amp, 4, MeshSectionGpu.MeshletBoundsBuffer.get())
             .SetName(Name + std::format("Meshlet Bindings LOD {}", LodIndex))
             .Build();
 

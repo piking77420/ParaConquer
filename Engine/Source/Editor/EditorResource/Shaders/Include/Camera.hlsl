@@ -20,6 +20,8 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     
     float2 RenderSize;
     float2 InvRenderSize;
+
+    bool MeshletCulling;
 };
 
 #endif // CAMERA_HEADER_HLSL

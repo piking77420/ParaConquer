@@ -404,6 +404,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         StaticMeshRenderData.Meshlets = std::move(Meshelets.Meshlets);
         StaticMeshRenderData.MeshletVertexTrianglesIndex = std::move(Meshelets.MeshletVertexTrianglesIndex);
         StaticMeshRenderData.MeshletTriangles = std::move(Meshelets.MeshletTrianglesU32);
+        StaticMeshRenderData.MeshletBound = std::move(Meshelets.MeshletsBound);
 
         assert(Meshs.MeshDescriptor.size() == Meshelets.MeshletDescriptor.size()); // there is meshelet build
         StaticMeshRenderData.BaseMeshDescriptor.reserve(Meshs.MeshDescriptor.size());
@@ -434,7 +435,6 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     .MeshletTrianglesCount = BuildMeshlet ? MeshletDescriptor->MeshletTrianglesCount : 0u,
                 });
         }
-        StaticMeshRenderData.MeshletAABB = std::move(Meshelets.MeshletsAABBS);
 
         // Now we proceed to each local lods
         PC_CORE::StaticMeshData StaticMeshData;
