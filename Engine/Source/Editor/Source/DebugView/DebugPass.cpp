@@ -50,7 +50,7 @@ void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Rende
 		.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 		.SetAttachments(&outPutImage)
 		.SetDepthAttachments(&DepthBuffer)
-		.SetRenderPass(_RendererPassBuildContext.Renderer.colorLinearPassDepth.get())
+		.SetRenderPass(_RendererPassBuildContext.Renderer.LinearClearColorClearStoreDepth.get())
 		.SetName(m_Name + "Framebuffer")
 		.Build();
 
@@ -96,7 +96,7 @@ void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _
 
 	const BeginRenderPassInfo beginRenderPassInfo =
 	{
-		.RenderPass = _RendererPassExecuteContext.Renderer.colorLinearPassDepth.get(),
+		.RenderPass = _RendererPassExecuteContext.Renderer.LinearClearColorClearStoreDepth.get(),
 		.FrameBuffer = m_FrameBuffer.get(),
 		.RenderOffSet = {0, 0},
 		.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},

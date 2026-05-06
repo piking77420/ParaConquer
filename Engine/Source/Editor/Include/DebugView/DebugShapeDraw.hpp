@@ -37,7 +37,7 @@ namespace PC_EDITOR::DebugView
 	private:
         std::unique_ptr<PC_CORE::RhiFrameBuffer> m_FrameBuffer;
 
-        std::unordered_map<const PC_CORE::RhiBuffer*, std::unique_ptr<PC_CORE::RhiDescriptorSet>> m_DescriptorSets;
+        std::unordered_map<std::string_view, std::unique_ptr<PC_CORE::RhiDescriptorSet>> m_DescriptorSets;
 
         std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DescriptorSet;
 

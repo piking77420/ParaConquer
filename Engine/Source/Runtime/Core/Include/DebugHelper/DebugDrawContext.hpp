@@ -74,7 +74,7 @@ BEGIN_PCCORE
         
         void ClearForNextFrame();
 
-        static std::pair<std::vector<Tbx::Vector3f>, std::vector<uint32_t>> GenerateBasePrimitve(PrimitiveType _primitiveType);
+        static std::pair<std::vector<Tbx::Vector4f>, std::vector<uint32_t>> GenerateBasePrimitve(PrimitiveType _primitiveType);
  
         static std::string PrimitiveTypeToString(PrimitiveType _primitiveType);
 

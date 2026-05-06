@@ -25,7 +25,7 @@ BEGIN_EDITOR_PCCORE
     protected:
         void MoveCameraUpdate();
 
-        float m_BaseCameraSpeed = 25.0f;
+        float m_BaseCameraSpeed = 1.f;
 
         float m_CameraSpeedValue = m_BaseCameraSpeed;
 
@@ -43,7 +43,7 @@ BEGIN_EDITOR_PCCORE
 
         static constexpr float AccTime = 10.0f; 
 
-        static constexpr float ScrolWheelForce = 50.f;
+        static constexpr float ScrolWheelForce = 10.0f;
 
         void RotateCamera(float _deltatime);
 

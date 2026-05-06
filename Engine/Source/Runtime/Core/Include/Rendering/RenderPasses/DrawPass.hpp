@@ -21,6 +21,8 @@ namespace PC_CORE::Rendering::Pass
 	class PC_CORE_API DrawPass : public RenderPass
 	{
 	public:
+		static constexpr uint32_t GroupSize = 32u;
+
 		DrawPass();
 
 		DrawPass(OnMeshDrawTriangleSignature _OnMeshDrawTriangleSignature, OnMeshDrawMeshletSignature _OnMeshDrawMeshlet);
@@ -40,16 +42,17 @@ namespace PC_CORE::Rendering::Pass
 
 		bool m_DrawTransperant = false;
 
+		bool m_OnlyBindMeshletBound = false;
+
 		OnMeshDrawTriangleSignature m_OnMeshDrawTriangle;
 
 		OnMeshDrawMeshletSignature m_OnMeshDrawMeshlet{};
 
-		mutable const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
-
 		void ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const;
 
-	private:
+		mutable const RhiDescriptorSet* m_LastMaterialDescriptor{ nullptr };
 		mutable const RhiDescriptorSet* m_LastMeshletDescritptor{ nullptr };
+	private:
 
 	};
 

@@ -199,9 +199,9 @@ namespace PC_CORE::Rendering
        }
 
        {
-           colorLinearPassDepth.reset(m_Rhi.CreateRenderPass());
+           LinearClearColorClearStoreDepth.reset(m_Rhi.CreateRenderPass());
 
-           const RenderPassAttachementDescriptor& renderTragetSlot = colorLinearPassDepth
+           const RenderPassAttachementDescriptor& renderTragetSlot = LinearClearColorClearStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
                .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
@@ -211,7 +211,7 @@ namespace PC_CORE::Rendering
                .SetInitialImageState(RhiResourceState::Undefined)
                .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
-           const RenderPassAttachementDescriptor& DepthAttachement = colorLinearPassDepth
+           const RenderPassAttachementDescriptor& DepthAttachement = LinearClearColorClearStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S01)
                .SetRhiFormat(RhiFormat::D24UnormS8Uint)
@@ -221,21 +221,21 @@ namespace PC_CORE::Rendering
                .SetInitialImageState(RhiResourceState::Undefined)
                .SetFinalImageState(RhiResourceState::DepthStencilWrite);
 
-           colorLinearPassDepth
+           LinearClearColorClearStoreDepth
                ->CreateSubPass()
                .SetType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
-           colorLinearPassDepth
-               ->SetName("ColorLinearPassDepth")
+           LinearClearColorClearStoreDepth
+               ->SetName("LinearClearColorClearStoreDepth")
                .Build();
        }
 
        {
-           colorLinearLoadDepth.reset(m_Rhi.CreateRenderPass());
+           LoadLinearColorLoadStoreDepth.reset(m_Rhi.CreateRenderPass());
 
-           const RenderPassAttachementDescriptor& renderTragetSlot = colorLinearLoadDepth
+           const RenderPassAttachementDescriptor& renderTragetSlot = LoadLinearColorLoadStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
                .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
@@ -245,7 +245,7 @@ namespace PC_CORE::Rendering
                .SetInitialImageState(RhiResourceState::RenderTarget)
                .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
-           const RenderPassAttachementDescriptor& DepthAttachement = colorLinearLoadDepth
+           const RenderPassAttachementDescriptor& DepthAttachement = LoadLinearColorLoadStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S01)
                .SetRhiFormat(RhiFormat::D24UnormS8Uint)
@@ -255,14 +255,14 @@ namespace PC_CORE::Rendering
                .SetInitialImageState(RhiResourceState::DepthStencilWrite)
                .SetFinalImageState(RhiResourceState::DepthStencilRead);
 
-           colorLinearLoadDepth
+           LoadLinearColorLoadStoreDepth
                ->CreateSubPass()
                .SetType(RhiShaderProgram::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
-           colorLinearLoadDepth
-               ->SetName("colorLinearLoadDepth")
+           LoadLinearColorLoadStoreDepth
+               ->SetName("LoadLinearColorLoadStoreDepth")
                .Build();
        }
       
@@ -387,7 +387,7 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Vertex, "DrawMeshTriangle.vs.hlsl.binary"},
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshTriangle.ps.hlsl.binary"},
            };
-           InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawTriangle, shaderModules, "DrawMeshTriangle");
+           InitShaderProgramForwardPass.template operator() < false > (*LinearClearColorClearStoreDepth, DrawTriangle, shaderModules, "DrawMeshTriangle");
 
        }
 
@@ -400,7 +400,7 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawTriangleMeshlet.ps.hlsl.binary"}
            };
 
-           InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawMeshTriangleMeshlet, shaderModules, "DrawMeshTriangleMeshlet");
+           InitShaderProgramForwardPass.template operator() < false > (*LinearClearColorClearStoreDepth, DrawMeshTriangleMeshlet, shaderModules, "DrawMeshTriangleMeshlet");
        }
 
        {
@@ -412,7 +412,7 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshletColor.ps.hlsl.binary"}
            };
 
-           InitShaderProgramForwardPass.template operator() < false > (*colorLinearPassDepth, DrawMeshletColor, shaderModules, "DrawMeshMeshelet");
+           InitShaderProgramForwardPass.template operator() < false > (*LinearClearColorClearStoreDepth, DrawMeshletColor, shaderModules, "DrawMeshMeshelet");
        }
 
        {
@@ -425,7 +425,7 @@ namespace PC_CORE::Rendering
                    ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
                    .SetAttachementCount(1)
                    .SetShaderModules(ShaderModules)
-                   .SetRenderPass(*colorLinearLoadDepth)
+                   .SetRenderPass(*LoadLinearColorLoadStoreDepth)
                    .SetDepthTest(true)
                    .SetDepthWrite(true);
 
@@ -434,13 +434,13 @@ namespace PC_CORE::Rendering
                    Program->SetVertexAttributeDescriptions({ VertexAttributeDescription{
                     .Binding = 0,
                     .Location = 0,
-                    .Format = RhiFormat::R32G32B32Sfloat,
+                    .Format = RhiFormat::R32G32B32A32Sfloat,
                     .Offset = offsetof(StaticMeshVertex, Position)
                     } })
                        .SetVertexInputBindingDescritions({
                                                         {
                                                         .Binding = 0,
-                                                        .Stride = sizeof(Tbx::Vector3f),
+                                                        .Stride = sizeof(Tbx::Vector4f),
                                                         .VertexInputRate = VertexInputRate::Vertex
                                                         } });
                }
@@ -470,6 +470,17 @@ namespace PC_CORE::Rendering
                };
 
                DebugDrawShader(DrawDebugShapeFrustum, shaderModules, "DebugDrawFrustum", false);
+           }
+
+           {
+               const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+               {
+                   { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("DrawMeshletBound.as.hlsl.binary")->GetCode()},
+                   { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("DrawMeshletBound.ms.hlsl.binary")->GetCode()},
+                   { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+               };
+
+               DebugDrawShader(DrawDebugMeshletBound, shaderModules, "DrawDebugMeshletBound", false);
            }
        }
 
@@ -615,6 +626,7 @@ namespace PC_CORE::Rendering
                    Descritptor.ShaderProgram = isOpaque ? opaqueFowardShaderMeshlet.get() : transparentForwardShaderMeshlet.get();
                    Descritptor.MaterialDescriptor = Material->GetDescriptorSet();
                    Descritptor.MeshletDescriptor = StaticMesh->GetMeshletDescriptor(LODIndex);
+                   Descritptor.MeshletBoundDescriptor = StaticMesh->GetMeshletBoundsDescriptor(LODIndex);
 
                    Descritptor.MaterialDescriptorOffset = Material->GetMaterialStride() * m_Rhi.GetFrameIndex();
                    Descritptor.VertexOffset = MeshSection.MeshDataDescriptor.VertexOffset;
@@ -667,7 +679,7 @@ namespace PC_CORE::Rendering
                        DebugInstanceBuffer.emplace_back() = Tbx::Matrix4x4f(trsV);
                    }
 
-                   auto& InstanceBufferBox = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]);
+                   auto& InstanceBufferBox = m_DebugPrimitiveBuffer[PrimitiveIndex].InstanceBuffer;
 
                    InstanceBufferBox->UploadData(m_CommandList.get(), DebugInstanceBuffer.data(), DebugInstanceBuffer.size() * sizeof(DebugInstanceBuffer[0]));
 
@@ -684,11 +696,11 @@ namespace PC_CORE::Rendering
                    auto& item = DebugDrawList.EmplaceBack();
                    auto& InstanceDebugDraw = item.Data.emplace<DrawDebugInstanced>();
                    InstanceDebugDraw.ShaderProgram = nullptr;
-                   InstanceDebugDraw.VertexBuffer = std::get<0>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
-                   InstanceDebugDraw.IndexBuffer = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).Get();
-                   InstanceDebugDraw.InstanceBuffer = std::get<2>(m_DebugPrimitiveBuffer[PrimitiveIndex]).get();
-                   InstanceDebugDraw.IndexFormat = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexFormat();
-                   InstanceDebugDraw.IndexCount = std::get<1>(m_DebugPrimitiveBuffer[PrimitiveIndex]).GetIndexCount();
+                   InstanceDebugDraw.VertexBuffer = m_DebugPrimitiveBuffer[PrimitiveIndex].VertexBuffer.Get();
+                   InstanceDebugDraw.IndexBuffer = m_DebugPrimitiveBuffer[PrimitiveIndex].IndexBuffer.Get();
+                   InstanceDebugDraw.InstanceBuffer = m_DebugPrimitiveBuffer[PrimitiveIndex].InstanceBuffer.get();
+                   InstanceDebugDraw.IndexFormat = m_DebugPrimitiveBuffer[PrimitiveIndex].IndexBuffer.GetIndexFormat();
+                   InstanceDebugDraw.IndexCount = m_DebugPrimitiveBuffer[PrimitiveIndex].IndexBuffer.GetIndexCount();
                    InstanceDebugDraw.InstanceCount = DrawBoxs.size();
                    InstanceDebugDraw.isWired = isWired;
                    item.SortKey = 0;
@@ -781,39 +793,39 @@ namespace PC_CORE::Rendering
        for (size_t i = 0; i < m_DebugPrimitiveBuffer.size(); i++)
        {
            auto& DebugLayer = m_DebugPrimitiveBuffer[i];
-           if (std::get<0>(DebugLayer).Get() && std::get<1>(DebugLayer).Get() && std::get<2>(DebugLayer).get())
+           if (DebugLayer.VertexBuffer.Get() && DebugLayer.IndexBuffer.Get() && DebugLayer.InstanceBuffer.get())
                continue;
 
-           std::get<0>(DebugLayer) = VertexBuffer(m_Rhi);
-           std::get<1>(DebugLayer) = IndexBuffer(m_Rhi);
-           std::get<2>(DebugLayer).reset(m_Rhi.CreateBuffer());
+           DebugLayer.VertexBuffer = VertexBuffer(m_Rhi);
+           DebugLayer.IndexBuffer = IndexBuffer(m_Rhi);
+           DebugLayer.InstanceBuffer.reset(m_Rhi.CreateBuffer());
 
            auto [verticies, indicies] = PC_CORE::DebugDrawContext::GenerateBasePrimitve(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i));
 
            if (verticies.empty() || indicies.empty())
                continue;
 
-           std::get<0>(DebugLayer)
+           DebugLayer.VertexBuffer
                .SetVerticiesCount(verticies.size())
                .SetVerticiesSize(sizeof(verticies[0]))
                ->SetSizeInBytes(verticies.size() * sizeof(verticies[0]))
                .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
                .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-               .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex)
+               .SetUsage(RhiBuffer::BufferUsageFlagBits::Vertex | RhiBuffer::BufferUsageFlagBits::ShaderStorage)
                .SetName("Vertex Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
                .Build();
 
-           std::get<1>(DebugLayer)
+           DebugLayer.IndexBuffer
                .SetIndexCount(indicies.size())
                .SetIndexFormat(RhiBuffer::IndexFormat::Uint32)
                 ->SetSizeInBytes(indicies.size() * sizeof(indicies[0]))
                .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
                .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::Static)
-               .SetUsage(RhiBuffer::BufferUsageFlagBits::Index)
+               .SetUsage(RhiBuffer::BufferUsageFlagBits::Index | RhiBuffer::BufferUsageFlagBits::ShaderStorage)
                .SetName("Index Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
                .Build();
 
-           std::get<2>(DebugLayer)
+           DebugLayer.InstanceBuffer
                ->SetSizeInBytes(sizeof(Tbx::Matrix4x4f) * MAX_DEBUG_INSTANCE)
                .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
                .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
@@ -822,8 +834,8 @@ namespace PC_CORE::Rendering
                .Build();
 
            std::scoped_lock _(m_Rhi.GetRhiContext().lock);
-           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*std::get<0>(DebugLayer).Get(), verticies.data(), std::get<0>(DebugLayer)->GetSizeInByte());
-           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*std::get<1>(DebugLayer).Get(), indicies.data(), std::get<1>(DebugLayer)->GetSizeInByte());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.VertexBuffer.Get(), verticies.data(), DebugLayer.VertexBuffer->GetSizeInByte());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.IndexBuffer.Get(), indicies.data(), DebugLayer.IndexBuffer->GetSizeInByte());
        }
    }
 

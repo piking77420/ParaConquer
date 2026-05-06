@@ -191,6 +191,22 @@ void Editor::EditorOnlyShader()
             "/Shaders/Lit.ps.hlsl"
             , ShaderFeatureFlagBits::UseColor);
         }));
+
+
+    // Draw Meshlet Bound
+    m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+        ResourceManager::Create<ShaderSource>("DrawMeshletBound.as.hlsl",
+            EDITOR_RESOURCE_PATH
+            "/Shaders/Meshlet/DrawMeshletBound.as.hlsl"
+            , ShaderFeatureFlagBits::UseColor);
+        }));
+
+    m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+        ResourceManager::Create<ShaderSource>("DrawMeshletBound.ms.hlsl",
+            EDITOR_RESOURCE_PATH
+            "/Shaders/Meshlet/DrawMeshletBound.ms.hlsl"
+            , ShaderFeatureFlagBits::UseColor);
+        }));
 }
 
 void Editor::CompileShaderDebugView()
@@ -454,6 +470,14 @@ void Editor::UpdateEditor()
             ImGui::Checkbox("FreezeCameraFrustum", &editorData.FreezeFrustum);
             ImGui::Checkbox("DrawCameraFrustum", &editorData.DrawFrustum);
 
+            if (editorData.ProjectSettings.RenderMode == PC_CORE::Rendering::RenderMode::ClusterBased)
+            {
+                if (ImGui::Checkbox("DrawMeshletBounds", &editorData.DrawMesheltBounds))
+                {
+                    m_EditorWorldWindow->OnRenderModeDirty();
+                }
+            }
+
             ImGui::EndMenu();
         }
 
@@ -593,17 +617,17 @@ void Editor::InitTestScene()
         p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
     
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
      
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
     TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
 
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
-    TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
+    //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
 }
   
 
@@ -637,7 +661,7 @@ void Editor::Run(bool* _appShouldClose)
         DequeuMainThreadTask();
         {
             // Test
-            World.DrawBox(Tbx::Vector3d(0, 25, 0), Tbx::Vector3d(0, 0, 0), Tbx::Vector3d(10, 10, 10), m_Color);
+            World.DrawWireSphere(Tbx::Vector3d(0, 0, 0), 15.f);
         }
         WorldTick(Time::DeltaTime());
         UpdateEditor();

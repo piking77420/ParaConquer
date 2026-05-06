@@ -69,8 +69,17 @@ namespace PC_CORE::Rendering::Pass
 
 						if (StaticMesh.MeshletDescriptor && m_LastMeshletDescritptor != StaticMesh.MeshletDescriptor)
 						{
-							m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
-							_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
+							if (m_OnlyBindMeshletBound)
+							{
+ 								m_LastMeshletDescritptor = StaticMesh.MeshletBoundDescriptor;
+								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletBoundDescriptor, 1); // dirty hack
+							}
+							else
+							{
+								m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
+								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
+							}
+							
 						}
 						MeshShaderDrawCall MeshShaderDrawCall;
 						MeshShaderDrawCall.RenderInstanceID = DrawItem.InstanceIndex;

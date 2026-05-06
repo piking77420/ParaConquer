@@ -12,6 +12,7 @@
 #include <Rendering/RenderPasses/ToneMapPass.hpp>
 #include <DebugView/DebugPass.hpp>
 #include <DebugView/DebugShapeDraw.hpp>
+#include <DebugView/DebugDrawMeshletBounds.hpp>
 
 #undef near
 #undef far
@@ -222,5 +223,10 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
         break;
     default:
         break;
+    }
+
+    if (m_Editor->editorData.DrawMesheltBounds)
+    {
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugDrawMeshletBounds>();
     }
 }

@@ -250,6 +250,11 @@ public:
 		return m_MeshSectionGpu[LodIndex].MeshletDescriptor.get();
 	}
 
+	RhiDescriptorSet* GetMeshletBoundsDescriptor(uint32_t LodIndex) const
+	{
+		return m_MeshSectionGpu[LodIndex].MeshletBoundOnlyDecriptor.get();
+	}
+
 	const std::vector<double>& GetLodThreshold() const
 	{
 		return m_LODThreshold;
@@ -273,6 +278,8 @@ private:
 		std::shared_ptr<RhiBuffer> MeshletTriangleBuffer;
 
 		std::shared_ptr<RhiDescriptorSet> MeshletDescriptor;
+
+		std::shared_ptr<RhiDescriptorSet> MeshletBoundOnlyDecriptor;
 
 		size_t MeshLetCount{ 0 };
 	};

@@ -35,15 +35,16 @@ namespace PC_EDITOR::DebugView
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 			.SetAttachments(&outPutImage)
 			.SetDepthAttachments(DepthBuffer)
-			.SetRenderPass(_RendererPassBuildContext.Renderer.colorLinearLoadDepth.get())
+			.SetRenderPass(_RendererPassBuildContext.Renderer.LoadLinearColorLoadStoreDepth.get())
 			.SetName("DebugShapeDraw Framebuffer")
 			.Build();
 
 		for (size_t i = 0; i < static_cast<size_t>(PC_CORE::DebugDrawContext::PrimitiveType::Count); i++)
 		{
 			const auto& PrimitiveData = _RendererPassBuildContext.Renderer.m_DebugPrimitiveBuffer[i];
-			auto& InstanceBuffer = std::get<2>(PrimitiveData);
-			auto& Descriptor = m_DescriptorSets[InstanceBuffer.get()];
+			auto& InstanceBuffer = PrimitiveData.InstanceBuffer;
+			
+			auto& Descriptor = m_DescriptorSets[InstanceBuffer->GetName()];
 
 			Descriptor.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 			Descriptor
@@ -70,7 +71,7 @@ namespace PC_EDITOR::DebugView
 
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
-			.RenderPass = _RendererPassExecuteContext.Renderer.colorLinearLoadDepth.get(),
+			.RenderPass = _RendererPassExecuteContext.Renderer.LoadLinearColorLoadStoreDepth.get(),
 			.FrameBuffer = m_FrameBuffer.get(),
 			.RenderOffSet = {0, 0},
 			.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},
@@ -84,7 +85,7 @@ namespace PC_EDITOR::DebugView
 			if (std::holds_alternative<PC_CORE::Rendering::DrawDebugInstanced>(DebugDrawInstanced.Data))
 			{
 				const PC_CORE::Rendering::DrawDebugInstanced& DrawDebugInstanced = std::get<PC_CORE::Rendering::DrawDebugInstanced>(DebugDrawInstanced.Data);
-				auto Descriptor = m_DescriptorSets.find(DrawDebugInstanced.InstanceBuffer);
+				auto Descriptor = m_DescriptorSets.find(DrawDebugInstanced.InstanceBuffer->GetName());
 				if (Descriptor != m_DescriptorSets.end())
 				{
 					cmd.BindProgram(*_RendererPassExecuteContext.Renderer.DrawDebugShapeInstanced);

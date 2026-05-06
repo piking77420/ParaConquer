@@ -63,9 +63,9 @@ void PC_CORE::DebugDrawContext::PushFrustum(const Tbx::Matrix4x4d& _FrustumToWor
     m_Frustums.emplace_back(Frustum{ _FrustumToWorld, _Color, _IsWired });
 }
 
-std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveType)
+std::pair< std::vector<Tbx::Vector4f>, std::vector<uint32_t>> PC_CORE::DebugDrawContext::GenerateBasePrimitve(PrimitiveType _primitiveType)
 {
-    std::vector<Tbx::Vector3f> vertices;
+    std::vector<Tbx::Vector4f> vertices;
     std::vector<uint32_t> indices;
 
     switch (_primitiveType)
@@ -84,10 +84,11 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
                     float sinPhi = std::sin(phi);
                     float cosPhi = std::cos(phi);
 
-                    Tbx::Vector3f vertex;
+                    Tbx::Vector4f vertex;
                     vertex.x = cosPhi * sinTheta;
                     vertex.y = cosTheta;
                     vertex.z = sinPhi * sinTheta;
+                    vertex.w = 1.f;
                     vertices.push_back(vertex);
                 }
             }
@@ -117,14 +118,14 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
     case PrimitiveType::Box:
         vertices =
         {
-            Tbx::Vector3f{-0.5f, -0.5f, -0.5f}, // 0
-            Tbx::Vector3f{0.5f, -0.5f, -0.5f}, // 1
-            Tbx::Vector3f{0.5f, 0.5f, -0.5f}, // 2
-            Tbx::Vector3f{-0.5f, 0.5f, -0.5f}, // 3
-            Tbx::Vector3f{-0.5f, -0.5f, 0.5f}, // 4
-            Tbx::Vector3f{0.5f, -0.5f, 0.5f}, // 5
-            Tbx::Vector3f{0.5f, 0.5f, 0.5f}, // 6
-            Tbx::Vector3f{-0.5f, 0.5f, 0.5f} // 7
+            Tbx::Vector4f{-0.5f, -0.5f, -0.5f, 1.0f}, // 0
+            Tbx::Vector4f{0.5f, -0.5f, -0.5f, 1.0f}, // 1
+            Tbx::Vector4f{0.5f, 0.5f, -0.5f, 1.0f}, // 2
+            Tbx::Vector4f{-0.5f, 0.5f, -0.5f, 1.0f}, // 3
+            Tbx::Vector4f{-0.5f, -0.5f, 0.5f, 1.0f}, // 4
+            Tbx::Vector4f{0.5f, -0.5f, 0.5f, 1.0f}, // 5
+            Tbx::Vector4f{0.5f, 0.5f, 0.5f, 1.0f}, // 6
+            Tbx::Vector4f{-0.5f, 0.5f, 0.5f, 1.0f} // 7
         };
 
         indices =
@@ -165,16 +166,16 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
                 const size_t offset = i * 6;
 
                 // Circle XY
-                vertices[offset + 0] = Tbx::Vector3f{std::cos(theta0), std::sin(theta0), 0.0f};
-                vertices[offset + 1] = Tbx::Vector3f{std::cos(theta1), std::sin(theta1), 0.0f};
+                vertices[offset + 0] = Tbx::Vector4f{std::cos(theta0), std::sin(theta0), 0.0f, 1.f};
+                vertices[offset + 1] = Tbx::Vector4f{std::cos(theta1), std::sin(theta1), 0.0f, 1.f};
 
                 // Circle XZ
-                vertices[offset + 2] = Tbx::Vector3f{std::cos(theta0), 0.0f, std::sin(theta0)};
-                vertices[offset + 3] = Tbx::Vector3f{std::cos(theta1), 0.0f, std::sin(theta1)};
+                vertices[offset + 2] = Tbx::Vector4f{std::cos(theta0), 0.0f, std::sin(theta0), 1.f};
+                vertices[offset + 3] = Tbx::Vector4f{std::cos(theta1), 0.0f, std::sin(theta1), 1.f};
 
                 // Circle YZ
-                vertices[offset + 4] = Tbx::Vector3f{0.0f, std::cos(theta0), std::sin(theta0)};
-                vertices[offset + 5] = Tbx::Vector3f{0.0f, std::cos(theta1), std::sin(theta1)};
+                vertices[offset + 4] = Tbx::Vector4f{0.0f, std::cos(theta0), std::sin(theta0), 1.f};
+                vertices[offset + 5] = Tbx::Vector4f{0.0f, std::cos(theta1), std::sin(theta1), 1.f};
             }
 
             // Generate indices for LineList
@@ -208,14 +209,14 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
     case PrimitiveType::WireBox:
         vertices =
         {
-            Tbx::Vector3f{-0.5f, -0.5f, -0.5f}, // 0
-            Tbx::Vector3f{0.5f, -0.5f, -0.5f}, // 1
-            Tbx::Vector3f{0.5f, 0.5f, -0.5f}, // 2
-            Tbx::Vector3f{-0.5f, 0.5f, -0.5f}, // 3
-            Tbx::Vector3f{-0.5f, -0.5f, 0.5f}, // 4
-            Tbx::Vector3f{0.5f, -0.5f, 0.5f}, // 5
-            Tbx::Vector3f{0.5f, 0.5f, 0.5f}, // 6
-            Tbx::Vector3f{-0.5f, 0.5f, 0.5f} // 7
+            Tbx::Vector4f{-0.5f, -0.5f, -0.5f, 1.f}, // 0
+            Tbx::Vector4f{0.5f, -0.5f, -0.5f, 1.f}, // 1
+            Tbx::Vector4f{0.5f, 0.5f, -0.5f, 1.f}, // 2
+            Tbx::Vector4f{-0.5f, 0.5f, -0.5f, 1.f}, // 3
+            Tbx::Vector4f{-0.5f, -0.5f, 0.5f, 1.f}, // 4
+            Tbx::Vector4f{0.5f, -0.5f, 0.5f, 1.f}, // 5
+            Tbx::Vector4f{0.5f, 0.5f, 0.5f, 1.f}, // 6
+            Tbx::Vector4f{-0.5f, 0.5f, 0.5f, 1.f} // 7
         };
         indices =
         {
@@ -242,7 +243,7 @@ std::pair< std::vector<Tbx::Vector3f>, std::vector<uint32_t>> PC_CORE::DebugDraw
         break;
     }
 
-    return std::pair<std::vector<Tbx::Vector3f>, std::vector<uint32_t>>(vertices, indices);
+    return std::pair<std::vector<Tbx::Vector4f>, std::vector<uint32_t>>(vertices, indices);
 }
 
 void PC_CORE::DebugDrawContext::ClearForNextFrame()

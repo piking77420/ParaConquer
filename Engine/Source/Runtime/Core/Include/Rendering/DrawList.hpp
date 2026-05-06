@@ -28,6 +28,7 @@ namespace PC_CORE::Rendering
 		const RhiShaderProgram* ShaderProgram{ nullptr };
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
 		const RhiDescriptorSet* MeshletDescriptor{ nullptr };
+		const RhiDescriptorSet* MeshletBoundDescriptor{ nullptr };
 		uint32_t MaterialDescriptorOffset{ 0u };
 
 		uint32_t VertexOffset{ 0u };

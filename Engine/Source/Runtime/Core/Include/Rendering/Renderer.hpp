@@ -15,6 +15,13 @@ class RenderView;
 class Renderer
 {
 public:
+    struct DebugPrimitive
+    {
+        VertexBuffer VertexBuffer;
+        IndexBuffer IndexBuffer;
+        std::unique_ptr<RhiBuffer> InstanceBuffer;
+    };
+
     PC_CORE_API explicit Renderer(Rhi& _Rhi, PC_CORE::Window& Window);
 
     PC_CORE_API ~Renderer() = default;
@@ -66,19 +73,21 @@ public:
 
     std::unique_ptr<RhiShaderProgram> DrawDebugShapeInstanced;
 
+    std::unique_ptr<RhiShaderProgram> DrawDebugMeshletBound;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
 
     std::unique_ptr<RhiRenderPass> colorLinearPass;
 
-    std::unique_ptr<RhiRenderPass> colorLinearPassDepth;
+    std::unique_ptr<RhiRenderPass> LinearClearColorClearStoreDepth;
 
-    std::unique_ptr<RhiRenderPass> colorLinearLoadDepth;
+    std::unique_ptr<RhiRenderPass> LoadLinearColorLoadStoreDepth;
 
     std::unique_ptr<RhiBuffer> InstanceBuffer;
 
-    std::array<std::tuple<VertexBuffer, IndexBuffer, std::unique_ptr<RhiBuffer>>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> m_DebugPrimitiveBuffer;
+    std::array<DebugPrimitive, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> m_DebugPrimitiveBuffer;
 private:
     Rhi& m_Rhi;
 

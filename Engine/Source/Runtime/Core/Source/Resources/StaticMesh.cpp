@@ -224,6 +224,12 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
             .SetName(Name + std::format("Meshlet Bindings LOD {}", LodIndex))
             .Build();
 
+        MeshSectionGpu.MeshletBoundOnlyDecriptor.reset(rhi.CreateDescriptorSet());
+        MeshSectionGpu.MeshletBoundOnlyDecriptor
+            ->BindShaderStorageBuffer(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, 0, MeshSectionGpu.MeshletBoundsBuffer.get())
+            .SetName(Name + std::format("Meshlet BoundDescriptor LOD {}", LodIndex))
+            .Build();
+
         MeshSectionGpu.MeshLetCount = RenderData.Meshlets.size();
     }
 
