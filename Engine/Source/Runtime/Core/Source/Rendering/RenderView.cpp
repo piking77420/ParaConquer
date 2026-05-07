@@ -48,6 +48,10 @@ namespace PC_CORE::Rendering
         ProjectionInv = Projection.Invert();
         ViewProjection = _Camera.GetViewProjection();
         ViewProjectionInv = ViewInv * ProjectionInv;
+
+        FrustumWorld = Frustum(Frustum::VulkanNdc, FrustumToWorld);
+        FrustumView = Frustum(Frustum::VulkanNdc, FrustumToViewSpace);
+
         Gamma = 2.2f;
         Exposure = 1.f;
 
@@ -76,15 +80,18 @@ namespace PC_CORE::Rendering
 
             Gpu::StreamDoubleToFloat(&ptr->ViewProjection, &ViewProjection);
             Gpu::StreamDoubleToFloat(&ptr->ViewProjectionInv, &ViewProjectionInv);
+            Gpu::StreamDoubleToFloat(&ptr->FrustumToViewSpace, &FrustumToViewSpace);
+
+            FrustumView.StreamPlanes(ptr->FrustumPlanesView[0].data.data());
 
             ptr->CameraNear = static_cast<float>(CameraNear);
             ptr->CameraFar = static_cast<float>(CameraFar);
 
-            ptr->Deltatime = static_cast<float>(Deltatime);
+            ptr->DeltaTime = static_cast<float>(Deltatime);
 
             ptr->Gamma = static_cast<float>(Gamma);
             ptr->Exposure = static_cast<float>(Exposure);
-            ptr->MeshletCulling = false;
+            ptr->MeshletCulling = MeshletCulling;
 
             std::memcpy(&ptr->RenderSize, &RenderSize, 2 * sizeof(float));
             std::memcpy(&ptr->InvRenderSize, &InvRenderSize, 2 * sizeof(float));

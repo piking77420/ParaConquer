@@ -52,11 +52,10 @@ void Main(uint3 gtid : SV_GroupThreadID,
          in payload Payload payload,
          out indices uint3 triangles[128],
          out vertices MeshOutput vertices[64])
-{
-    uint SubmeshMeshlet = payload.MeshletIndices[gid.x];
-    
-    uint MeshletID = DrawCall.SubMeshMesletOffset + SubmeshMeshlet;
+{    
+    uint MeshletID = payload.MeshletIndices[gid.x];
     Meshlet m = Meshlets[MeshletID];
+
     SetMeshOutputCounts(m.VertexCount, m.TriangleCount);
        
     if (gtid.x < m.TriangleCount)

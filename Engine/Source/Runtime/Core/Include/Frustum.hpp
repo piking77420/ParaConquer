@@ -45,7 +45,7 @@ namespace PC_CORE
 		~Frustum() = default;
 
 		[[nodiscard]] bool IsOnFrustum(const Tbx::Vector3d& _Center, const Tbx::Vector3d& _Extend) const;
-
+		void StreamPlanes(float* _Planes) const;
 	private:
 		enum Planes
 		{

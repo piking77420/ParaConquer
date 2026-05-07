@@ -42,6 +42,15 @@ namespace PC_CORE
 		return true;
 	}
 
+	void Frustum::StreamPlanes(float* _Planes) const
+	{
+		for (size_t i = 0; i < m_Planes.size(); ++i)
+		{
+			Tbx::Vector4f* planeVec4 = reinterpret_cast<Tbx::Vector4f*>(&_Planes[i * 4]);
+			*planeVec4 = Tbx::Vector4f(static_cast<float>(m_Planes[i].Normal.x), static_cast<float>(m_Planes[i].Normal.y), static_cast<float>(m_Planes[i].Normal.z), static_cast<float>(m_Planes[i].Distance));
+		}
+	}
+
 	Frustum::Plane::Plane(const Tbx::Vector4d& _P1, const Tbx::Vector4d& _P2, const Tbx::Vector4d& _P3)
 	{
 		PERF_REGION_SCOPED;

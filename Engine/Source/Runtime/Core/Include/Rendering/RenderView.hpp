@@ -3,6 +3,7 @@
 #include "Rendering/RenderingTypedef.h"
 #include "Math/ToolBoxTypeDef.hpp"
 #include "Rendering/RenderSystem.hpp"
+#include <Frustum.hpp>
 
 namespace PC_CORE
 {
@@ -26,18 +27,22 @@ namespace PC_CORE::Rendering
             mat4 ViewProjection;
             mat4 ViewProjectionInv;
 
+            mat4 FrustumToViewSpace;
+
+            vec4 FrustumPlanesView[6];
+
             float CameraNear;
             float CameraFar;
-
-            float Deltatime;
-
+            float DeltaTime;
             float Gamma;
+
             float Exposure;
-
             vec2 RenderSize;
-            vec2 InvRenderSize;
+            float pad00;
 
-            bool MeshletCulling;
+            vec2 InvRenderSize;
+            uint32_t MeshletCulling;
+            float pad01;
         };
 
     }
@@ -79,6 +84,12 @@ namespace PC_CORE::Rendering
         Tbx::Matrix4x4d ViewProjection;
         Tbx::Matrix4x4d ViewProjectionInv;
 
+        Tbx::Matrix4x4d FrustumToViewSpace;
+        Tbx::Matrix4x4d FrustumToWorld;
+
+        Frustum FrustumView;
+        Frustum FrustumWorld;
+
         double CameraNear;
         double CameraFar;
 
@@ -101,8 +112,6 @@ namespace PC_CORE::Rendering
         std::unique_ptr<RhiBuffer> LightBufferHeader;
 
         Tbx::Vector3d ViewPosition;
-
-        Tbx::Matrix4x4d FrustumToWorld;
 
         double Fov;
     };

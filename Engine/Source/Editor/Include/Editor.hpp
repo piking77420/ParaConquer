@@ -71,6 +71,7 @@ BEGIN_EDITOR_PCCORE
         bool FreezeFrustum = false;
         bool DrawFrustum = false;
         bool DrawMesheltBounds = false;
+        bool CullMeshlet = false;
         EditorFont editorFont{};
         EditorFont editorFontItalic{};
 

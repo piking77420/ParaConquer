@@ -510,8 +510,7 @@ namespace PC_CORE::Rendering
        TransparentList.Clear();
        DebugDrawList.Clear();
 
-       
-       m_Frustum = Frustum(Frustum::VulkanNdc, _view.FrustumToWorld); // TODO use ViewProjectionInv after psp
+
        FillListStaticMesh(_view, RenderingWorldData);
        FillListDebugDraw(_view, RenderingWorldData);
        SortList();
@@ -550,7 +549,7 @@ namespace PC_CORE::Rendering
            const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
            const auto MeshAABBCenter = MeshAABBW.GetCenter();
            const auto MeshAABBExtend = MeshAABBW.GetExtend();
-           const bool MeshIsOnFrustum = m_Frustum.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
+           const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
 
            if (!MeshIsOnFrustum)
             continue;
@@ -579,7 +578,7 @@ namespace PC_CORE::Rendering
                const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
                const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
 
-               if (!m_Frustum.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
+               if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
                    continue;
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;

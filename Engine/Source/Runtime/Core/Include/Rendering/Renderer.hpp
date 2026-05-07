@@ -97,8 +97,6 @@ private:
 
     RenderGraph m_RenderGraph; // TODO SET IT OUTSIT ThE CLASS
 
-    Frustum m_Frustum;
-
     std::unique_ptr<CommandList> m_CommandList;
 
     static constexpr double FIXED_POINT_NUMBER = 1000.0f;

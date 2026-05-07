@@ -17,18 +17,20 @@ void Main(
     uint3 gid : SV_GroupID
 )
 {
-    if (MeshletCulling)
+
+    uint keepCulling = MeshletCulling;
+    float4 keepBounds = MeshletBounds[0];
+
+    sPayload.MeshletIndices[gtid.x] = dtid.x + DrawCall.SubMeshMesletOffset;
+
+    uint remaining = DrawCall.SubMeshMeshletCount - gid.x * AS_GROUP_SIZE;
+    uint dispatchCount = min(remaining, (uint)AS_GROUP_SIZE);
+
+    if (keepCulling == 0xFFFFFFFFu || any(isnan(keepBounds)))
     {
-        DispatchMesh(MeshletBounds[0].x, MeshletBounds[0].y, MeshletBounds[0].z, sPayload);
+        dispatchCount = 0;
     }
-    else
-    {
-        sPayload.MeshletIndices[gtid.x] = dtid.x;
-        // Last group may have fewer meshlets
-        uint remaining = DrawCall.SubMeshMeshletCount - gid.x * AS_GROUP_SIZE;
-        uint dispatchCount = min(remaining, (uint) AS_GROUP_SIZE);
-        DispatchMesh(dispatchCount, 1, 1, sPayload);
-    }
-    
-    
+
+    DispatchMesh(dispatchCount, 1, 1, sPayload);
+
 }

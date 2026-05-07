@@ -23,11 +23,12 @@ void EditWorldWindow::Update()
     if (ImGui::IsWindowFocused())
         MoveCameraUpdate();
 
+    m_View.MeshletCulling = m_Editor->editorData.CullMeshlet;
     if (!m_Editor->editorData.FreezeFrustum)
     {
+        m_View.FrustumToViewSpace = m_View.ProjectionInv;
         m_View.FrustumToWorld = m_View.ViewProjectionInv;
     }
-
     WorldViewWindow::Update();
 
     if (m_Editor->editorData.DrawFrustum)

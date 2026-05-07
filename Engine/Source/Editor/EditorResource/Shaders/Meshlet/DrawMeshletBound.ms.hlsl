@@ -45,8 +45,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
          out indices uint2 lines[WIRE_SPHERE_LINE_COUNT],
          out vertices MeshOutput vertices[WIRE_SPHERE_VERTEX_COUNT])
 {
-    uint SubmeshMeshlet = payload.MeshletIndices[gid.x];
-    uint MeshletIndex = DrawCall.SubMeshMesletOffset + SubmeshMeshlet;
+    uint MeshletIndex = payload.MeshletIndices[gid.x];
     float4 MeshletBound = MeshletBounds[MeshletIndex];
     
     SetMeshOutputCounts(WIRE_SPHERE_VERTEX_COUNT, WIRE_SPHERE_LINE_COUNT);

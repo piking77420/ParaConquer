@@ -45,7 +45,7 @@ namespace PC_EDITOR::DebugView
 		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorSet
 			->BindUniformBuffer(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 2, WireSphereDebugPrimitive.VertexBuffer.Get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 3, WireSphereDebugPrimitive.IndexBuffer.Get())
 			.SetName("DebugDrawMeshletBounds Pass Scene Set")
@@ -86,6 +86,7 @@ namespace PC_EDITOR::DebugView
 
 		ViewportInfo viewPort(beginRenderPassInfo.Extent);
 		cmd.SetViewPort(viewPort);
+		cmd.SetLineWidth(1.0f);
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
 		cmd.EndRenderPass();

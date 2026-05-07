@@ -476,6 +476,11 @@ void Editor::UpdateEditor()
                 {
                     m_EditorWorldWindow->OnRenderModeDirty();
                 }
+
+                if (ImGui::Checkbox("CullMeshlet", &editorData.CullMeshlet))
+                {
+
+                }
             }
 
             ImGui::EndMenu();
@@ -617,16 +622,16 @@ void Editor::InitTestScene()
         p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
     
-    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), false);
      
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), false);
 
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), false);
+    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), false);
+    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), false);
     TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
 }
   

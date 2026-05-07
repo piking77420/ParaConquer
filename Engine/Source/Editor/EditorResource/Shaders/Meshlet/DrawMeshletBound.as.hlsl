@@ -6,6 +6,10 @@
 #define CAMERA_SET space0
 #include "Camera.hlsl"
 
+#define RENDER_INSTANCE_BUFFER_BINDING t1
+#define RENDER_INSTANCE_BUFFER_SPACE space0
+#include "InstanceBuffer.hlsl"
+
 StructuredBuffer<float4> MeshletBounds : register(t0, space1);
 
 groupshared Payload sPayload;
@@ -19,18 +23,40 @@ void Main(
 {
     if (MeshletCulling)
     {
-       sPayload.MeshletIndices[gtid.x] = dtid.x;
-        // Last group may have fewer meshlets
-        uint remaining = DrawCall.SubMeshMeshletCount - gid.x * AS_GROUP_SIZE;
-        uint dispatchCount = min(remaining, (uint) AS_GROUP_SIZE);
-        DispatchMesh(dispatchCount, 1, 1, sPayload);
+        uint LocalMeshletIndex = gid.x * AS_GROUP_SIZE + gtid.x;
+        bool Valid = LocalMeshletIndex < DrawCall.SubMeshMeshletCount;
+        bool isVisible = false;
+        uint MeshletIndex = DrawCall.SubMeshMesletOffset + LocalMeshletIndex;
+        if (Valid)
+        {
+            RenderInstance renderInstance = RenderInstances[DrawCall.RenderInstanceID];
+            float3 BoudingSpherePos = mul(renderInstance.ModelView, float4(MeshletBounds[MeshletIndex].xyz, 1.0)).xyz;
+
+            // TODO
+            
+            float Sx = length(float3(renderInstance.ModelView[0].xyz)); // transformed local X axis
+            float Sy = length(float3(renderInstance.ModelView[1].xyz)); // transformed local Y axis
+            float Sz = length(float3(renderInstance.ModelView[2].xyz)); // transformed local Z axis
+            float RadiusView = MeshletBounds[MeshletIndex].w * max(Sx, max(Sy, Sz));
+
+            isVisible = IsInsideOrIntersects(Frustum, BoudingSpherePos, RadiusView); 
+        }
+
+        uint index = WavePrefixCountBits(isVisible);
+        if (isVisible)
+        {
+            sPayload.MeshletIndices[index] = MeshletIndex;
+        }
+
+        uint VisibleCount = WaveActiveCountBits(isVisible);    
+        DispatchMesh(VisibleCount, 1, 1, sPayload);
     }
     else
     {
-        sPayload.MeshletIndices[gtid.x] = dtid.x;
-        // Last group may have fewer meshlets
+        sPayload.MeshletIndices[gtid.x] = dtid.x + DrawCall.SubMeshMesletOffset;
+
         uint remaining = DrawCall.SubMeshMeshletCount - gid.x * AS_GROUP_SIZE;
-        uint dispatchCount = min(remaining, (uint) AS_GROUP_SIZE);
+        uint dispatchCount = min(remaining, (uint)AS_GROUP_SIZE);
         DispatchMesh(dispatchCount, 1, 1, sPayload);
     }
     
