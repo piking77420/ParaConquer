@@ -222,16 +222,16 @@ namespace PC_EDITOR_CORE
             PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "meshopt_computeMeshletBounds");
             for (const auto& m : MeshletsOpt)
             {
-                const auto AabbMeshOpt = meshopt_computeMeshletBounds(
+                const auto Bounds = meshopt_computeMeshletBounds(
                     &MeshletVertexTrianglesIndex[m.VertexOffset],
                     &meshletTriangles[m.TriangleOffset],
                     m.TriangleCount,
-                    &MeshBuilderData.Verticies[0].Position.x,
-                    static_cast<uint32_t>(MeshBuilderData.Verticies.size()),
+                    &_Verticies[0].Position.x,
+                    static_cast<uint32_t>(_Verticies.size()),
                     sizeof(PC_CORE::StaticMeshVertex)
                 );
 
-                MeshletBounds.emplace_back(Tbx::Vector3f(AabbMeshOpt.center[0], AabbMeshOpt.center[1], AabbMeshOpt.center[2]), AabbMeshOpt.radius);
+                MeshletBounds.emplace_back(Tbx::Vector3f(Bounds.center[0], Bounds.center[1], Bounds.center[2]), Bounds.radius);
             }
         }
         
