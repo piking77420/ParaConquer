@@ -546,7 +546,6 @@ namespace PC_CORE::Rendering
        {
            const StaticMesh* StaticMesh = StaticMeshComponentData.StaticMesh;
            const StaticMeshData& StaticMeshData = StaticMesh->GetStaticMeshData();
-           const std::vector<MeshDrawCommand>& DrawCommands = StaticMeshData.DrawCommands;
 
            const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
            const auto MeshAABBCenter = MeshAABBW.GetCenter();
@@ -568,7 +567,7 @@ namespace PC_CORE::Rendering
            }
 
            const auto& Lod = StaticMeshData.MeshLods[LODIndex];
-
+           const std::vector<MeshDrawCommand>& DrawCommands = Lod.DrawCommands;
            for (const auto& Dcmd : DrawCommands)
            {
                const MeshSection& MeshSection = Lod.MeshesSections[Dcmd.MeshSectionIndex];
@@ -767,7 +766,7 @@ namespace PC_CORE::Rendering
        DebugDrawList.Sort(std::ranges::greater{}, &DrawItem::SortKey);
    }
 
-   size_t Renderer::PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const
+   size_t Renderer::PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad)
    {
        if (LodThreshold.empty())
            return 0;

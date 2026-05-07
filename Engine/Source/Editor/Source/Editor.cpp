@@ -531,7 +531,7 @@ void Editor::RewindCommand()
     editorCommands.pop_back();
 }
 
-void Editor::TempImportModel(const std::filesystem::path& _path)
+void Editor::TempImportModel(const std::filesystem::path& _path, bool _CreateStaticMesh)
 {
     // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR
     Guid importesGuid{};
@@ -553,7 +553,7 @@ void Editor::TempImportModel(const std::filesystem::path& _path)
                 Importer->ImportModel(RenderHarwareInteface, ThreadPool, path);
             });
 
-        if (importesGuid != Guid::Empty())
+        if (importesGuid != Guid::Empty() && _CreateStaticMesh)
         {
             TaskHandle CreateStaticMesh = TaskScheduler.NewTask(TaskThread::MainThread,
                 [this, impGuid = importesGuid]()
@@ -617,17 +617,17 @@ void Editor::InitTestScene()
         p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
     
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
+    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), false);
      
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"));
-    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"));
 
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"));
-    //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"));
+    TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), false);
 }
   
 

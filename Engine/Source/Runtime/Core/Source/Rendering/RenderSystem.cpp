@@ -106,15 +106,12 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
                 static_cast<Tbx::Quaterniond>(transform.Rotation.Quaternion),
                 transform.Scale);
 
-            const Rendering::StaticMeshComponentData staticMeshData =
-            {
-                .Materials = std::move(material),
-                .StaticMesh = mesh.get(),
-                .WorldMatrix = m,
-            };
-
-            m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
-
+            const Rendering::StaticMeshComponentData StaticMeshComponentData = m_GameRenderingWorldData.StaticMeshComponentData.emplace_back(
+                std::move(material),
+                mesh.get(),
+                m
+            );
+      
 #ifdef WITH_EDITOR
             if (staticMeshComponent.ShowBound)
             {
@@ -126,9 +123,9 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
             if (staticMeshComponent.ShowDrawCommandsBounds)
             {
                 auto& Data = mesh.get()->GetStaticMeshData();
-                for (size_t i = 0; i < Data.DrawCommands.size(); i++)
+                for (size_t i = 0; i < Data.MeshLods[0].DrawCommands.size(); i++)
                 {
-                    MotionCore::Aabb<double> aabbx = Data.DrawCommands[i].GlobalModelAABB;
+                    MotionCore::Aabb<double> aabbx = Data.MeshLods[0].DrawCommands[i].GlobalModelAABB;
                     aabbx = aabbx.GetTransformed(m);
                     debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.0f, 0.f));
                 }

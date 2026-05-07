@@ -55,7 +55,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
     {
            lines[gtid.x] = uint2(
             Indicies[gtid.x * 2 + 0],
-            Indicies[(gtid.x * 2 + 1) % WIRE_SPHERE_INDICIES_COUNT]
+            Indicies[(gtid.x * 2 + 1)]
         );
     }
 
@@ -65,6 +65,12 @@ void Main(uint3 gtid : SV_GroupThreadID,
         float3 LocalPos = Vertices[gtid.x].xyz * MeshletBound.w + MeshletBound.xyz;
         float4 ViewPos = mul(renderInstance.ModelView, float4(LocalPos, 1.0f));
         vertices[gtid.x].Position = mul(Projection, ViewPos);
-        vertices[gtid.x].Color = float4(0.0f, 100000.0f, 0.0f, 1.0f);
+        #if defined(USE_COLOR)
+        float3 color = float3(
+            float(gid.x & 1 ),
+            float(gid.x & 3 ) / 4,
+            float(gid.x & 7 ) / 8);
+            vertices[gtid.x].Color = float4(color.xyz, 1.0f);
+        #endif
     }
 }

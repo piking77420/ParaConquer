@@ -124,15 +124,22 @@ struct MeshDataDescriptor
 
 struct MeshSection
 {
-	MotionCore::Aabb<double> LocalAABB;
 	MeshDataDescriptor MeshDataDescriptor;
 	uint32_t MaterialIndex;
+};
+
+struct MeshDrawCommand
+{
+	MotionCore::Aabb<double> GlobalModelAABB;
+	Tbx::Matrix4x4d GlobalModelMatrix;
+	uint32_t MeshSectionIndex;
 };
 
 // LOD Strategie
 // Currently each lod are separte in buffers  
 struct MeshLOD
 {
+	std::vector<MeshDrawCommand> DrawCommands;
 	std::vector<MeshSection> MeshesSections;
 	MeshDataDescriptor Descriptor;
 
@@ -157,16 +164,10 @@ struct StaticMeshRenderData
 	std::vector<MeshletBound> MeshletBound;
 };
 
-struct MeshDrawCommand
-{
-	MotionCore::Aabb<double> GlobalModelAABB;
-	Tbx::Matrix4x4d GlobalModelMatrix;
-	uint32_t MeshSectionIndex;
-};
+
 
 struct StaticMeshData
 {
-	std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
 	std::vector<MeshLOD> MeshLods;
 	MotionCore::Aabb<double> AABB;
 	StaticMeshRenderData RenderData;

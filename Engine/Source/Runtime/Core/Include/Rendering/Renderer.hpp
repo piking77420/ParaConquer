@@ -41,6 +41,8 @@ public:
         return m_RenderGraph;
     }
 
+    static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);
+
     std::function<void(CommandList&)> OnSwapchainPass;
 
     std::function<void(CommandList&)> OnRender;
@@ -123,10 +125,7 @@ private:
 
     void SortList();
 
-    void InitDebugResource();
-
-    size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad) const;
-    
+    void InitDebugResource();    
 };
 
 } // PC_CORE::Rendering

@@ -312,7 +312,6 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
                 MeshSection = 
                 {
-                    .LocalAABB = MeshDescriptor[MeshIndex].Aabb,
                     .MeshDataDescriptor = 
                     {
                         // Vertex
@@ -349,22 +348,58 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         }
     }
 
+    static void ExpandAABB(aiAABB& box, const aiVector3D& p) {
+        box.mMin.x = std::min(box.mMin.x, p.x);
+        box.mMin.y = std::min(box.mMin.y, p.y);
+        box.mMin.z = std::min(box.mMin.z, p.z);
 
+        box.mMax.x = std::max(box.mMax.x, p.x);
+        box.mMax.y = std::max(box.mMax.y, p.y);
+        box.mMax.z = std::max(box.mMax.z, p.z);
+    }
 
-    void AssetsImporter::ProcessDrawCommand(std::vector<PC_CORE::MeshDrawCommand>& DrawCommands, 
+    static aiAABB transformAABB(const aiAABB& localBox, const aiMatrix4x4& transform) {
+        aiAABB worldBox;
+
+        const float inf = std::numeric_limits<float>::infinity();
+        worldBox.mMin = aiVector3D(inf, inf, inf);
+        worldBox.mMax = aiVector3D(-inf, -inf, -inf);
+
+        const aiVector3D corners[8] = {
+            {localBox.mMin.x, localBox.mMin.y, localBox.mMin.z},
+            {localBox.mMax.x, localBox.mMin.y, localBox.mMin.z},
+            {localBox.mMin.x, localBox.mMax.y, localBox.mMin.z},
+            {localBox.mMax.x, localBox.mMax.y, localBox.mMin.z},
+
+            {localBox.mMin.x, localBox.mMin.y, localBox.mMax.z},
+            {localBox.mMax.x, localBox.mMin.y, localBox.mMax.z},
+            {localBox.mMin.x, localBox.mMax.y, localBox.mMax.z},
+            {localBox.mMax.x, localBox.mMax.y, localBox.mMax.z},
+        };
+
+        for (const aiVector3D& c : corners) {
+            aiVector3D p = transform * c;
+            ExpandAABB(worldBox, p);
+        }
+
+        return worldBox;
+    }
+
+    void AssetsImporter::ProcessDrawCommand(std::vector<PC_CORE::MeshLOD>& MeshLods,
         const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, 
         const aiScene* Scene, 
         const aiNode* Node, 
+        aiAABB* SceneGlobalBound,
         const aiMatrix4x4& ParentTransform)
     {
         if (Node == nullptr)
             return;
         
         const aiMatrix4x4 NodeModelTransform = ParentTransform * Node->mTransformation;
+
         Tbx::Matrix4x4d CoreTransfrom;
         for (size_t i = 0; i < 16; i++)
             CoreTransfrom[i] = static_cast<double>(*(NodeModelTransform[0] + i));
-
         CoreTransfrom = CoreTransfrom.Transpose(); // row to coloms
         CoreTransfrom[15] = 1.0; // just in case
 
@@ -372,17 +407,28 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         {            
             for (size_t i = 0; i < Node->mNumMeshes; i++)
             {
+                const aiMesh* Mesh = Scene->mMeshes[Node->mMeshes[i]];
+                const uint32_t LodIndex = LODFromMeshName(Mesh->mName.C_Str());
+
+                const aiAABB TransformedNodeAABB = transformAABB(Mesh->mAABB, NodeModelTransform);
+                ExpandAABB(*SceneGlobalBound, TransformedNodeAABB.mMin);
+                ExpandAABB(*SceneGlobalBound, TransformedNodeAABB.mMax);
+
                 auto& AABB = Scene->mMeshes[Node->mMeshes[i]]->mAABB;
                 MotionCore::Aabb<double> CoreAABB = MotionCore::Aabb<double>(Tbx::Vector3d(AABB.mMin.x, AABB.mMin.y, AABB.mMin.z),
                     Tbx::Vector3d(AABB.mMax.x, AABB.mMax.y, AABB.mMax.z));
                 
                 CoreAABB = CoreAABB.GetTransformed(CoreTransfrom);
-                DrawCommands.push_back(PC_CORE::MeshDrawCommand{ CoreAABB, CoreTransfrom, AssimpMeshIndexToCoreIndex.at(Node->mMeshes[i])});
+                MeshLods[LodIndex].DrawCommands.emplace_back(
+                    CoreAABB,
+                    CoreTransfrom,
+                    AssimpMeshIndexToCoreIndex.at(Node->mMeshes[i])
+                );
             }
         }
         
         for (size_t i = 0; i < Node->mNumChildren; i++)
-            ProcessDrawCommand(DrawCommands, AssimpMeshIndexToCoreIndex, Scene, Node->mChildren[i], NodeModelTransform);
+            ProcessDrawCommand(MeshLods, AssimpMeshIndexToCoreIndex, Scene, Node->mChildren[i], SceneGlobalBound, NodeModelTransform);
         
     }
 
@@ -441,21 +487,15 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         std::unordered_map<uint32_t, uint32_t> AssimpMeshIndexToCore;
         ProcessLod(AssimpMeshIndexToCore, StaticMeshData.MeshLods, Meshs.MeshDescriptor, StaticMeshRenderData, Scene);
 
-        // Compute Nodes Data
-        // Global AABB 
-        Tbx::Matrix4x4d CoreTransfrom;
-        for (size_t i = 0; i < 16; i++)
-            CoreTransfrom[i] = static_cast<double>(*(Scene->mRootNode->mTransformation[0] + i));
-        StaticMeshData.AABB = Meshs.Aabb.GetTransformed(CoreTransfrom.Transpose()); // aimatrix are row major
-
-        // Draw Commands
-        std::vector<PC_CORE::MeshDrawCommand> DrawCommands;
         const auto Transform = aiMatrix4x4();
         assert(Transform.IsIdentity());
-        ProcessDrawCommand(DrawCommands, AssimpMeshIndexToCore, Scene, Scene->mRootNode, Transform);
+        aiAABB AABBBase{};
+        ProcessDrawCommand(StaticMeshData.MeshLods, AssimpMeshIndexToCore, Scene, Scene->mRootNode, &AABBBase, Transform);
+
+        StaticMeshData.AABB.min = Tbx::Vector3d(static_cast<double>(AABBBase.mMin.x), static_cast<double>(AABBBase.mMin.y), static_cast<double>(AABBBase.mMin.z));
+        StaticMeshData.AABB.max = Tbx::Vector3d(static_cast<double>(AABBBase.mMax.x), static_cast<double>(AABBBase.mMax.y), static_cast<double>(AABBBase.mMax.z));
 
         StaticMeshData.RenderData = std::move(StaticMeshRenderData);
-        StaticMeshData.DrawCommands = std::move(DrawCommands);
         {
             std::scoped_lock _(m_mutex);
             m_StaticMeshs = PC_CORE::ResourceManager::Create<PC_CORE::StaticMesh>(m_ImportObjectName, StaticMeshData, &m_ResourceUpdateBranchs.emplace_back());

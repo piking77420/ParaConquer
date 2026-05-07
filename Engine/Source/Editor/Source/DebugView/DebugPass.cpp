@@ -92,7 +92,7 @@ void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _
 
 	CommandList& cmd = _RendererPassExecuteContext.cmd;
 
-	std::array<float, 4> Color = GetColor();
+	std::array<float, 4> Color{};
 
 	const BeginRenderPassInfo beginRenderPassInfo =
 	{

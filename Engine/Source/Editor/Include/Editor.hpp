@@ -142,7 +142,7 @@ BEGIN_EDITOR_PCCORE
 
     private:
 
-        void TempImportModel(const std::filesystem::path& _path);
+        void TempImportModel(const std::filesystem::path& _path, bool _CreateStaticMesh);
 
         void LoadFromInitFiles();
 

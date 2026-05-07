@@ -39,6 +39,7 @@ struct aiNode;
 struct aiMesh;
 enum aiTextureType;
 struct aiMaterial;
+struct aiAABB;
 
 BEGIN_EDITOR_PCCORE
     class AssetsImporter : private MeshBuilder
@@ -119,7 +120,7 @@ BEGIN_EDITOR_PCCORE
 
         void ProcessLod(std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, std::vector<PC_CORE::MeshLOD>& meshLods, const std::vector<MeshBuilder::MeshDescriptor>& MeshDescriptor, const PC_CORE::StaticMeshRenderData& RenderData, const aiScene* scene);
 
-        void ProcessDrawCommand(std::vector<PC_CORE::MeshDrawCommand>& DrawCommands, const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, const aiScene* Scene, const aiNode* Node, const aiMatrix4x4& ParentModelTransform);
+        void ProcessDrawCommand(std::vector<PC_CORE::MeshLOD>& MeshLods, const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, const aiScene* Scene, const aiNode* Node, aiAABB* SceneGlobalBound, const aiMatrix4x4& ParentModelTransform);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 

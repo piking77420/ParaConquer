@@ -28,8 +28,6 @@ namespace PC_EDITOR_CORE
 			uint32_t VertexCount;
 			uint32_t IndicesOffset;
 			uint32_t IndicesCount;
-
-			MotionCore::Aabb<double> Aabb;
 		};
 
 		struct MeshBuilderData
@@ -37,8 +35,6 @@ namespace PC_EDITOR_CORE
 			std::vector<PC_CORE::StaticMeshVertex> Verticies;
 			std::vector<uint32_t> Indicies;
 			std::vector<MeshDescriptor> MeshDescriptor;
-
-			MotionCore::Aabb<double> Aabb;
 		};
 
 		struct MeshletDescriptor
