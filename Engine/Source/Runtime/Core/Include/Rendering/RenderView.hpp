@@ -27,7 +27,7 @@ namespace PC_CORE::Rendering
             mat4 ViewProjection;
             mat4 ViewProjectionInv;
 
-            mat4 FrustumToViewSpace;
+            mat4 FrustumViewMatrix; // psp
 
             vec4 FrustumPlanesView[6];
 
@@ -84,7 +84,8 @@ namespace PC_CORE::Rendering
         Tbx::Matrix4x4d ViewProjection;
         Tbx::Matrix4x4d ViewProjectionInv;
 
-        Tbx::Matrix4x4d FrustumToViewSpace;
+        Tbx::Matrix4x4d FrustumToView;
+        Tbx::Matrix4x4d FrustumViewMatrix;
         Tbx::Matrix4x4d FrustumToWorld;
 
         Frustum FrustumView;

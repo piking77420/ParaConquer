@@ -30,16 +30,18 @@ void Main(
         if (Valid)
         {
             RenderInstance renderInstance = RenderInstances[DrawCall.RenderInstanceID];
-            float3 BoudingSpherePos = mul(renderInstance.ModelView, float4(MeshletBounds[MeshletIndex].xyz, 1.0)).xyz;
+            float4 MeshletBound = MeshletBounds[MeshletIndex];
+            float4x4 LocalToView = mul(FrustumViewMatrix, mul(ViewInv, renderInstance.ModelView));          // ModelCamera to -> Model -> to frustum view space
 
-            // TODO
+            float3 SphereCenterView = mul(LocalToView, float4(MeshletBound.xyz, 1.0f)).xyz;
             
-            float Sx = length(float3(renderInstance.ModelView[0].xyz)); // transformed local X axis
-            float Sy = length(float3(renderInstance.ModelView[1].xyz)); // transformed local Y axis
-            float Sz = length(float3(renderInstance.ModelView[2].xyz)); // transformed local Z axis
-            float RadiusView = MeshletBounds[MeshletIndex].w * max(Sx, max(Sy, Sz));
+            float Sx = length(float3(LocalToView[0].xyz)); // transformed local X axis
+            float Sy = length(float3(LocalToView[1].xyz)); // transformed local Y axis
+            float Sz = length(float3(LocalToView[2].xyz)); // transformed local Z axis
+            float RadiusView = MeshletBound.w * max(Sx, max(Sy, Sz));
 
-            isVisible = IsInsideOrIntersects(Frustum, BoudingSpherePos, RadiusView); 
+            isVisible = IsInsideOrIntersects(Frustum, SphereCenterView, RadiusView); 
+            //isVisible = dtid.x % 2; 
         }
 
         uint index = WavePrefixCountBits(isVisible);

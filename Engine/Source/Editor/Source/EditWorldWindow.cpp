@@ -26,7 +26,8 @@ void EditWorldWindow::Update()
     m_View.MeshletCulling = m_Editor->editorData.CullMeshlet;
     if (!m_Editor->editorData.FreezeFrustum)
     {
-        m_View.FrustumToViewSpace = m_View.ProjectionInv;
+        m_View.FrustumViewMatrix = m_View.View;
+        m_View.FrustumToView = m_View.ProjectionInv;
         m_View.FrustumToWorld = m_View.ViewProjectionInv;
     }
     WorldViewWindow::Update();

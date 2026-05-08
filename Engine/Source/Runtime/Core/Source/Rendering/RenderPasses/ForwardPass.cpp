@@ -70,8 +70,8 @@ namespace PC_CORE::Rendering::Pass
 
 		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorMeshlet
-			->BindUniformBuffer(RhiShaderStageBits::Mesh, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
+			->BindUniformBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
 			.SetName("Forward Pass Scene Set")
