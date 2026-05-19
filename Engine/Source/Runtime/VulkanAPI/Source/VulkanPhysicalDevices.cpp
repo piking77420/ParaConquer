@@ -122,6 +122,7 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
         throw std::runtime_error("failed to find suitable GPU!");
     }
     m_PhysicalDeviceIndex = deviceBestScoreIndex;
+    PC_LOG("Selected Device {}", m_PhysicalDevices[m_PhysicalDeviceIndex]->name);
 }
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
@@ -166,11 +167,12 @@ std::set<std::string> Vulkan::VulkanPhysicalDevices::GetVulkanRequestExtensions(
             out.emplace(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
             out.emplace(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
             out.emplace(VK_EXT_MESH_SHADER_EXTENSION_NAME);
-
             break;
         default:
             break;
         }
+
+        PC_LOG("Request Extension {}", RhiExtensionToString(rhiExt));
     }
 
 #ifdef PROFILING
@@ -256,15 +258,13 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
 
     LookForSuitableDevices(vkPhysicalDevices, requestVulkanExtensions);
     *_extensionToEnable = requestVulkanExtensions;
-
-    PC_LOG("Successfully created physical devices : {}", GetPhysicalDevice().name);
 }
 
 int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& _physicalDevice,
                                                       const std::set<std::string>& _requestExtensions,
                                                       size_t _deviceIndex)
 {
-    auto myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
+    VulkanPhysicalDevice* myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
     myPhysicalDevice->physicalDevice = _physicalDevice;
 
     size_t score = 0;
@@ -278,10 +278,11 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
             availableExtensions.data()));
     std::set<std::string> requiredExtensions(_requestExtensions.begin(), _requestExtensions.end());
 
+    PC_LOGERROR("Enumerate Device : {}", myPhysicalDevice->name);
     if (!CheckDeviceExtensionSupport(availableExtensions, requiredExtensions))
     {
         score = std::numeric_limits<size_t>::min();
-        PC_LOGERROR("Unsuported extension!")
+        PC_LOGERROR("Unsuported extension!");
 
         for (const auto& extension : requiredExtensions)
         PC_LOGERROR("Extension requiered: {} ", extension);

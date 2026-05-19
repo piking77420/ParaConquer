@@ -425,8 +425,6 @@ vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
         return vk::PipelineBindPoint::eCompute;
     case PC_CORE::RhiShaderProgram::PipelineType::RayTracing:
         return vk::PipelineBindPoint::eRayTracingKHR;
-    case PC_CORE::RhiShaderProgram::PipelineType::MeshShader:
-        return vk::PipelineBindPoint::eCompute;
     case PC_CORE::RhiShaderProgram::PipelineType::Count:
         return {};
     }
@@ -673,7 +671,7 @@ vk::ShaderStageFlags Vulkan::Utils::RhiToShaderStage(RhiShaderStageTypeFlag _Rhi
         ShaderStageFlag |= vk::ShaderStageFlagBits::eMissKHR;
     if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Callable)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eCallableKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Task)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Amp)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eTaskEXT;
     if (_RhiShaderStageTypeFlag & PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Mesh)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eMeshEXT;
@@ -709,7 +707,7 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStageBits(RhiShaderStageBits _
         ShaderStageFlag = vk::ShaderStageFlagBits::eMissKHR;
     if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Callable)
         ShaderStageFlag = vk::ShaderStageFlagBits::eCallableKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Task)
+    if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Amp)
         ShaderStageFlag = vk::ShaderStageFlagBits::eTaskEXT;
     if (_RhiShaderStageBits == PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Mesh)
         ShaderStageFlag = vk::ShaderStageFlagBits::eMeshEXT;
@@ -1141,7 +1139,9 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
     case RhiResourceState::CopyDst:
         return vk::ImageLayout::eTransferDstOptimal;
     // Shader
-    case RhiResourceState::FragmentShaderResource:
+    case RhiResourceState::VertexShaderResource:
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+    case RhiResourceState::PixelShaderResource:
         return vk::ImageLayout::eShaderReadOnlyOptimal;
     case RhiResourceState::RenderTarget:
         return vk::ImageLayout::eColorAttachmentOptimal;
@@ -1152,9 +1152,8 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
 
     // Compute
     case RhiResourceState::ComputeRead:
-        return vk::ImageLayout::eReadOnlyOptimal;
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
     case RhiResourceState::ComputeWrite:
-        return vk::ImageLayout::eGeneral;
     case RhiResourceState::ComputeReadWrite:
         return vk::ImageLayout::eGeneral;
     // Present 
@@ -1166,49 +1165,6 @@ vk::ImageLayout Vulkan::Utils::RhiResourceStateToVulkanImageLayout(RhiResourceSt
     }
 
     return vk::ImageLayout::eUndefined;
-}
-
-RhiResourceState Vulkan::Utils::VulkanImageLayoutToResourceState(vk::ImageLayout layout)
-{
-    switch (layout)
-    {
-    case vk::ImageLayout::eUndefined:
-        return RhiResourceState::Undefined;
-    case vk::ImageLayout::eGeneral:
-        return RhiResourceState::ComputeReadWrite;
-    case vk::ImageLayout::eColorAttachmentOptimal:
-        return RhiResourceState::RenderTarget;
-    case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
-        return RhiResourceState::RenderTarget;
-    case vk::ImageLayout::eShaderReadOnlyOptimal:
-        return RhiResourceState::FragmentShaderResource;
-    case vk::ImageLayout::eTransferSrcOptimal:
-        return RhiResourceState::CopySrc;
-    case vk::ImageLayout::eTransferDstOptimal:
-        return RhiResourceState::CopyDst;
-    case vk::ImageLayout::ePreinitialized:
-        break;
-    case vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal:
-        return RhiResourceState::DepthStencilRead;
-    case vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal:
-        return RhiResourceState::DepthStencilRead;;
-    //case vk::ImageLayout::eDepthAttachmentOptimal:
-    //case vk::ImageLayout::eDepthReadOnlyOptimal:
-    //case vk::ImageLayout::eStencilAttachmentOptimal:
-    //case vk::ImageLayout::eStencilReadOnlyOptimal:
-      //  break;
-    case vk::ImageLayout::eReadOnlyOptimal:
-        return RhiResourceState::ComputeRead;
-    case vk::ImageLayout::eAttachmentOptimal:
-        return RhiResourceState::RenderTarget;
-    case vk::ImageLayout::ePresentSrcKHR:
-        return RhiResourceState::Present;
-    default:
-        break;
-    }
-
-    PC_LOG("Unsupported VulkanImageLayoutToResourceState layout {}", string_VkImageLayout(static_cast<VkImageLayout>(layout)));
-    return RhiResourceState::Undefined;
 }
 
 vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _RhiResourceState)
@@ -1227,7 +1183,8 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
         return vk::AccessFlagBits::eIndexRead;
     case PC_CORE::RhiResource::State::UniformBuffer:
         return vk::AccessFlagBits::eUniformRead;
-    case PC_CORE::RhiResource::State::FragmentShaderResource:
+    case PC_CORE::RhiResource::State::VertexShaderResource:
+    case PC_CORE::RhiResource::State::PixelShaderResource:
         return vk::AccessFlagBits::eShaderRead;
     case PC_CORE::RhiResource::State::RenderTarget:
         return vk::AccessFlagBits::eColorAttachmentWrite;
@@ -1241,6 +1198,10 @@ vk::AccessFlags Vulkan::Utils::RhiResourceStateToAccesFlag(RhiResourceState _Rhi
         return vk::AccessFlagBits::eShaderWrite;
     case PC_CORE::RhiResource::State::ComputeReadWrite:
         return vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+    case PC_CORE::RhiResource::State::MeshShaderResource:
+        return vk::AccessFlagBits::eShaderRead;
+    case PC_CORE::RhiResource::State::AmpShaderResource:
+        return vk::AccessFlagBits::eShaderRead;
     case PC_CORE::RhiResource::State::Present:
     default:
         break;
@@ -1280,11 +1241,9 @@ vk::PipelineStageFlags Vulkan::Utils::PipelineStageFlagsFromRhiResourceState(
             vk::PipelineStageFlagBits::eFragmentShader |
             vk::PipelineStageFlagBits::eComputeShader;
 
-        // Shader resources
     case State::VertexShaderResource:
         return vk::PipelineStageFlagBits::eVertexShader;
-
-    case State::FragmentShaderResource:
+    case State::PixelShaderResource:
         return vk::PipelineStageFlagBits::eFragmentShader;
 
         // Render targets
@@ -1307,6 +1266,11 @@ vk::PipelineStageFlags Vulkan::Utils::PipelineStageFlagsFromRhiResourceState(
         // Presentation
     case State::Present:
         return vk::PipelineStageFlagBits::eBottomOfPipe;
+
+    case State::MeshShaderResource:
+        return vk::PipelineStageFlagBits::eMeshShaderEXT;
+    case State::AmpShaderResource:
+        return vk::PipelineStageFlagBits::eTaskShaderEXT;
 
     default:
         PC_LOGERROR("Unsupported PC_CORE::RhiResource::State");

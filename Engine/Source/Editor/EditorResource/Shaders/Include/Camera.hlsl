@@ -1,6 +1,8 @@
 #ifndef CAMERA_HEADER_HLSL
 #define CAMERA_HEADER_HLSL
 
+#include "Frustum.hlsl"
+
 cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
 {
     float4x4 View;
@@ -10,6 +12,10 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     float4x4 ViewProjection;
     float4x4 ViewProjectionInv;
     
+    float4x4 FrustumViewMatrix; // psp
+
+    Frustum Frustum;
+
     float CameraNear;
     float CameraFar;
     
@@ -20,6 +26,8 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     
     float2 RenderSize;
     float2 InvRenderSize;
+
+    bool MeshletCulling;
 };
 
 #endif // CAMERA_HEADER_HLSL

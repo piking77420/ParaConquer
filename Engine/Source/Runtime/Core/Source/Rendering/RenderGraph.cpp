@@ -30,7 +30,7 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 		.SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
 		.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 		.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-		.SetTextureUsage(RhiTexture::TextureUsageFlagBits::RenderTarget | RhiTexture::TextureUsageFlagBits::Sampled)
+		.SetTextureUsage(RhiTexture::TextureUsageFlagBits::RenderTarget | RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::LoadAndStore)
 		.SetName("Output Image")
 		.Build();
 
@@ -42,18 +42,15 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 
 void RenderGraph::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext, PC_CORE::Rendering::RenderView& _View)
 {
-	_View.UpdaterRhiBuffers(_RendererPassExecuteContext.RenderingWorldData); // may do the update in someWhereElse
 
-	_RendererPassExecuteContext.cmd.BeginRecordCommands();
+	_View.UpdaterRhiBuffers(_RendererPassExecuteContext.cmd, _RendererPassExecuteContext.RenderingWorldData); // may do the update in someWhereElse
+
 	for (const auto& Nodes : m_Nodes)
 	{
 		_RendererPassExecuteContext.cmd.BeginDebugLabel(Nodes.GetNameFunc(Nodes.RenderPassObject.get()), Nodes.GetColorFunc(Nodes.RenderPassObject.get()));
 		Nodes.ExecuteFunc(Nodes.RenderPassObject.get(), _RendererPassExecuteContext);
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
-	}
-	_RendererPassExecuteContext.cmd.EndRecordCommands();
-	
-	_RendererPassExecuteContext.RHI.GetRhiContext().SendEnqueuCommand(&_RendererPassExecuteContext.cmd, GpuPipelineStage::ColorAttachmentOutput);
+	}	
 }
 
 }

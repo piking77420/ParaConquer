@@ -14,7 +14,7 @@ namespace PC_CORE::Rendering
             ->SetMemoryUsage(RhiMemoryUsage::CPUVisible)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
-            .SetSize(sizeof(Gpu::RenderViewViewUniformBuffer))
+            .SetSizeInBytes(sizeof(Gpu::RenderViewViewUniformBuffer))
             .SetName("RenderViewUniformBuffer")
             .Build();
 
@@ -23,7 +23,7 @@ namespace PC_CORE::Rendering
             ->SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::ShaderStorage | RhiBuffer::BufferUsageFlagBits::TransferDst)
-            .SetSize(sizeof(Gpu::Light) * Gpu::MAX_LIGHT)
+            .SetSizeInBytes(sizeof(Gpu::Light) * Gpu::MAX_LIGHT)
             .SetName("Light Buffer")
             .Build();
 
@@ -32,7 +32,7 @@ namespace PC_CORE::Rendering
             ->SetMemoryUsage(RhiMemoryUsage::CPUVisible)
             .SetBufferUpdateRate(RhiBuffer::BufferUpdateRate::PerFrame)
             .SetUsage(RhiBuffer::BufferUsageFlagBits::Uniform)
-            .SetSize(sizeof(Gpu::LightHeader))
+            .SetSizeInBytes(sizeof(Gpu::LightHeader))
             .SetName("Light Header Buffer")
             .Build();
 
@@ -49,14 +49,21 @@ namespace PC_CORE::Rendering
         ViewProjection = _Camera.GetViewProjection();
         ViewProjectionInv = ViewInv * ProjectionInv;
 
+        FrustumView = Frustum(Frustum::VulkanNdc, FrustumToView);
+        FrustumWorld = Frustum(Frustum::VulkanNdc, FrustumToWorld);
+
+        Gamma = 2.2f;
+        Exposure = 1.f;
+
         CameraNear = _Camera.GetNear();
         CameraFar = _Camera.GetFar();
 
 
         ViewPosition = _Camera.Position;
+        Fov = _Camera.GetFov();
 	}
 
-    void RenderView::UpdaterRhiBuffers(const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
+    void RenderView::UpdaterRhiBuffers(CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData)
     {
         assert(UniformBuffer);
         PERF_REGION_SCOPED;
@@ -73,14 +80,18 @@ namespace PC_CORE::Rendering
 
             Gpu::StreamDoubleToFloat(&ptr->ViewProjection, &ViewProjection);
             Gpu::StreamDoubleToFloat(&ptr->ViewProjectionInv, &ViewProjectionInv);
+            Gpu::StreamDoubleToFloat(&ptr->FrustumViewMatrix, &FrustumViewMatrix);
+
+            FrustumView.StreamPlanes(ptr->FrustumPlanesView[0].data.data());
 
             ptr->CameraNear = static_cast<float>(CameraNear);
             ptr->CameraFar = static_cast<float>(CameraFar);
 
-            ptr->Deltatime = static_cast<float>(Deltatime);
+            ptr->DeltaTime = static_cast<float>(Deltatime);
 
             ptr->Gamma = static_cast<float>(Gamma);
             ptr->Exposure = static_cast<float>(Exposure);
+            ptr->MeshletCulling = MeshletCulling;
 
             std::memcpy(&ptr->RenderSize, &RenderSize, 2 * sizeof(float));
             std::memcpy(&ptr->InvRenderSize, &InvRenderSize, 2 * sizeof(float));
@@ -88,9 +99,10 @@ namespace PC_CORE::Rendering
             UniformBuffer->EndBufferUpdate();
         }
 
+        // Update Light Header
         if (Gpu::LightHeader* ptr = reinterpret_cast<Gpu::LightHeader*>(LightBufferHeader->BeginBufferUpdateForCurrentFrame()))
         {
-            ptr->LightCount = 0;
+            ptr->LightCount = static_cast<uint32_t>(_RenderingWorldData.LightsData.size());
             if (_RenderingWorldData.DirLightData)
             {
                 // shoul be 3x3
@@ -113,8 +125,7 @@ namespace PC_CORE::Rendering
             }
             LightBufferHeader->EndBufferUpdate();
         }
-
-
+   
     }
 
 } // PC_CORE::Rendering

@@ -25,9 +25,7 @@ BEGIN_EDITOR_PCCORE
     protected:
         void MoveCameraUpdate();
 
-        PC_CORE::LowPassFilter<Tbx::Vector2f, 7> deltass;
-
-        float m_BaseCameraSpeed = 25.0f;
+        float m_BaseCameraSpeed = 1.f;
 
         float m_CameraSpeedValue = m_BaseCameraSpeed;
 
@@ -41,9 +39,11 @@ BEGIN_EDITOR_PCCORE
 
         Tbx::Vector3d m_CameraVelocity = Tbx::Vector3d::Zero();
 
+        Tbx::Quaternionf m_Orientation = Tbx::Quaternionf::Identity();
+
         static constexpr float AccTime = 10.0f; 
 
-        static constexpr float ScrolWheelForce = 50.f;
+        static constexpr float ScrolWheelForce = 10.0f;
 
         void RotateCamera(float _deltatime);
 

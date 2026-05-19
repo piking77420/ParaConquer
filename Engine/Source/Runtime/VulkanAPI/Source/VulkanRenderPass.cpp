@@ -599,7 +599,7 @@ std::pair<vk::AccessFlags, vk::PipelineStageFlags> VulkanRenderPass::Attachement
         accesFlag |= vk::AccessFlagBits::eShaderRead;
         stage |= vk::PipelineStageFlagBits::eVertexShader;
         break;
-    case PC_CORE::RhiResource::State::FragmentShaderResource:
+    case PC_CORE::RhiResource::State::PixelShaderResource:
     {
         accesFlag |= vk::AccessFlagBits::eShaderRead;
         stage |= vk::PipelineStageFlagBits::eFragmentShader;

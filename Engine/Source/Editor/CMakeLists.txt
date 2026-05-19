@@ -29,6 +29,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC Inline)
 
 ## Assimp
 target_link_libraries(${PROJECT_NAME} PUBLIC assimp)
+target_link_libraries(${PROJECT_NAME} PUBLIC meshoptimizer)
 
 # Begin Dependicies
 

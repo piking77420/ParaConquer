@@ -23,22 +23,25 @@ public:
         CopySrc,
         CopyDst,
 
-        // Buffer uses
+        // Buffer and Texture uses
         VertexBuffer,
         IndexBuffer,
         UniformBuffer,
-
-        // Texture uses
         VertexShaderResource,
-        FragmentShaderResource,
+        PixelShaderResource,
         RenderTarget,
         DepthStencilWrite,
         DepthStencilRead,
 
+        // should replace with shader read or shader write 
         // Compute
         ComputeRead,
         ComputeWrite,
         ComputeReadWrite,
+
+        // MeshShader
+        MeshShaderResource,
+        AmpShaderResource,
 
         // Presentation
         Present,

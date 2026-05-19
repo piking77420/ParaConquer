@@ -3,6 +3,7 @@
 #include "Rendering/RenderingTypedef.h"
 #include "Math/ToolBoxTypeDef.hpp"
 #include "Rendering/RenderSystem.hpp"
+#include <Frustum.hpp>
 
 namespace PC_CORE
 {
@@ -26,16 +27,22 @@ namespace PC_CORE::Rendering
             mat4 ViewProjection;
             mat4 ViewProjectionInv;
 
+            mat4 FrustumViewMatrix; // psp
+
+            vec4 FrustumPlanesView[6];
+
             float CameraNear;
             float CameraFar;
-
-            float Deltatime;
-
+            float DeltaTime;
             float Gamma;
-            float Exposure;
 
+            float Exposure;
             vec2 RenderSize;
+            float pad00;
+
             vec2 InvRenderSize;
+            uint32_t MeshletCulling;
+            float pad01;
         };
 
     }
@@ -52,6 +59,8 @@ namespace PC_CORE::Rendering
         enum RenderViewFlagBits : uint8_t
         {
             DebugGeometry = 1 << 0,
+            DrawFrustum = 1 << 1,
+            DrawBounds = 1 << 2
         };
         using RenderViewFlag = uint8_t;
 
@@ -64,7 +73,7 @@ namespace PC_CORE::Rendering
             InvRenderSize = Tbx::Vector2f(1.f /RenderSize.x, 1.f /RenderSize.y);
         }
 
-        void UpdaterRhiBuffers(const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
+        void UpdaterRhiBuffers(CommandList& cmd, const PC_CORE::Rendering::RenderingWorldData& _RenderingWorldData);
 
         Tbx::Matrix4x4d View;
         Tbx::Matrix4x4d ViewInv;
@@ -74,6 +83,13 @@ namespace PC_CORE::Rendering
 
         Tbx::Matrix4x4d ViewProjection;
         Tbx::Matrix4x4d ViewProjectionInv;
+
+        Tbx::Matrix4x4d FrustumToView;
+        Tbx::Matrix4x4d FrustumViewMatrix;
+        Tbx::Matrix4x4d FrustumToWorld;
+
+        Frustum FrustumView;
+        Frustum FrustumWorld;
 
         double CameraNear;
         double CameraFar;
@@ -88,6 +104,8 @@ namespace PC_CORE::Rendering
 
         RenderViewFlag Flag{};
 
+        bool MeshletCulling = false;
+
         std::unique_ptr<RhiBuffer> UniformBuffer;
 
         std::unique_ptr<RhiBuffer> LightBuffer;
@@ -95,6 +113,8 @@ namespace PC_CORE::Rendering
         std::unique_ptr<RhiBuffer> LightBufferHeader;
 
         Tbx::Vector3d ViewPosition;
+
+        double Fov;
     };
 }
 

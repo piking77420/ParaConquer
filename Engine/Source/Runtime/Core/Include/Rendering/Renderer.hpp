@@ -1,7 +1,11 @@
 #pragma once
+#include <Rendering/DrawList.hpp>
 #include "RenderingTypedef.h"
 #include "RenderGraph.hpp"
-
+#include <Rendering/Buffer/IndexBuffer.hpp>
+#include <Rendering/Buffer/VertexBuffer.hpp>
+#include <DebugHelper/DebugDrawContext.hpp>
+#include <Frustum.hpp>
 
 namespace PC_CORE::Rendering
 {
@@ -11,13 +15,24 @@ class RenderView;
 class Renderer
 {
 public:
-    PC_CORE_API explicit Renderer(Rhi& _Rhi);
+    struct DebugPrimitive
+    {
+        VertexBuffer VertexBuffer;
+        IndexBuffer IndexBuffer;
+        std::unique_ptr<RhiBuffer> InstanceBuffer;
+    };
+
+    PC_CORE_API explicit Renderer(Rhi& _Rhi, PC_CORE::Window& Window);
 
     PC_CORE_API ~Renderer() = default;
 
     DEFAULT_COPY_MOVE_OPERATIONS(Renderer)
 
-    PC_CORE_API void Build(const RenderView& _view);
+    PC_CORE_API void RenderFrame();
+
+    PC_CORE_API void EndFrame();
+
+    PC_CORE_API void Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction);
 
     PC_CORE_API void Excute(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
@@ -25,6 +40,18 @@ public:
     {
         return m_RenderGraph;
     }
+
+    static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);
+
+    std::function<void(CommandList&)> OnSwapchainPass;
+
+    std::function<void(CommandList&)> OnRender;
+
+    DrawList OpaqueList;
+
+    DrawList TransparentList;
+
+    DrawList DebugDrawList;
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
@@ -34,23 +61,69 @@ public:
 
     std::unique_ptr<RhiShaderProgram> transparentForwardShader;
 
+    std::unique_ptr<RhiShaderProgram> opaqueFowardShaderMeshlet;
+
+    std::unique_ptr<RhiShaderProgram> transparentForwardShaderMeshlet;
+
+    std::unique_ptr<RhiShaderProgram> DrawMeshletColor;
+
+    std::unique_ptr<RhiShaderProgram> DrawTriangle;
+
+    std::unique_ptr<RhiShaderProgram> DrawMeshTriangleMeshlet;
+
+    std::unique_ptr<RhiShaderProgram> DrawDebugShapeFrustum;
+
+    std::unique_ptr<RhiShaderProgram> DrawDebugShapeInstanced;
+
+    std::unique_ptr<RhiShaderProgram> DrawDebugMeshletBound;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
 
-    std::unique_ptr<RhiRenderPass> drawTextureQuadPass;
+    std::unique_ptr<RhiRenderPass> colorLinearPass;
 
+    std::unique_ptr<RhiRenderPass> LinearClearColorClearStoreDepth;
+
+    std::unique_ptr<RhiRenderPass> LoadLinearColorLoadStoreDepth;
+
+    std::unique_ptr<RhiBuffer> InstanceBuffer;
+
+    std::array<DebugPrimitive, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> m_DebugPrimitiveBuffer;
 private:
     Rhi& m_Rhi;
+
+    PC_CORE::Window& m_Window;
 
     RenderGraph m_RenderGraph; // TODO SET IT OUTSIT ThE CLASS
 
     std::unique_ptr<CommandList> m_CommandList;
 
-    void InitRhiRenderPasses(const RenderView& _View);
+    static constexpr double FIXED_POINT_NUMBER = 1000.0f;
 
-    void InitShaders(const RenderView& _View);
-    
+    static constexpr size_t MAX_DEBUG_INSTANCE = 4096;
+
+    std::vector<Tbx::Matrix4x4f> DebugInstanceBuffer;
+
+    std::vector<Gpu::RenderInstance> m_InstanceBufferCpu;
+
+    void InitRhiRenderPasses();
+
+    void InitShaders();
+
+    void BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void UploadRenderInstanceID();
+
+    void PrepareInstanceBuffer(const RenderingWorldData& RenderingWorldData);
+
+    void FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void FillListDebugDraw(const RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void SortList();
+
+    void InitDebugResource();    
 };
 
 } // PC_CORE::Rendering

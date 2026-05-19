@@ -38,12 +38,9 @@ BEGIN_PCCORE
             TransferSrc   = 1 << 4,
             TransferDst   = 1 << 5,
             RayTracing    = 1 << 6,
-            MeshShader    = 1 << 7,
         };
         using BufferUsageFlag = uint32_t;
 
-        static_assert(MeshShader <= (1u << 31),
-              "BufferUsage flags exceed uint32_t bit capacity");
     
         REFLECT(BufferUsageFlagBits)
 
@@ -74,7 +71,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual char* BeginBufferUpdateForCurrentFrame() = 0;
 
-        RhiBuffer& SetSize(size_t _SizeInByte)
+        RhiBuffer& SetSizeInBytes(size_t _SizeInByte)
         {
             m_SizeInByte = _SizeInByte;
             return *this;
@@ -104,7 +101,7 @@ BEGIN_PCCORE
             return *this;
         }
 
-        size_t GetSize() const
+        size_t GetSizeInByte() const
         {
             return m_SizeInByte;
         }

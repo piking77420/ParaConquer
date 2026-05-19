@@ -53,12 +53,11 @@ Vulkan::VulkanBuffer::~VulkanBuffer()
 {
     auto& context = GET_VK_CONTEXT;
 
-
-    for (auto& alloc : m_StagingBuffers)
-        FreeAlloc(context, alloc);
-
-    for (auto& alloc : m_Handle)
-        FreeAlloc(context, alloc);
+    for (size_t i = 0; i < m_StagingBuffers.size(); i++)
+        context.DefferdDestroy(m_StagingBuffers[i], static_cast<uint32_t>(i));
+    
+    for (size_t i = 0; i < m_Handle.size(); i++)
+        context.DefferdDestroy(m_Handle[i], static_cast<uint32_t>(i));
 }
 
 bool Vulkan::VulkanBuffer::Build()
@@ -77,7 +76,10 @@ bool Vulkan::VulkanBuffer::Build()
     }
     m_Handle.resize(nbrOfHandle);
     if (m_MemoryUsage != MemoryUsage::CPUVisible)
+    {
         m_StagingBuffers.resize(m_Handle.size());
+        m_StaginBuffersSizes.resize(m_Handle.size());
+    }
     m_CurrentFrameMappedData.resize(m_Handle.size());
 
     vk::BufferCreateInfo bufferCreate{};
@@ -158,6 +160,9 @@ bool Vulkan::VulkanBuffer::Build()
 
 bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes)
 {
+    if (_sizeInBytes == 0)
+        return false;
+
     assert(
         m_MemoryUsage == RhiResource::MemoryUsage::StaticGPU &&
         "UploadData is only valid for GPU-only buffers (staged upload)"
@@ -177,9 +182,15 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
 
     auto& stagingBuffer = *GetVkStagingBuffer(FrameIndex);
 
-    if (stagingBuffer.buffer != VK_NULL_HANDLE)
-        FreeAlloc(context, stagingBuffer);
-    CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes, m_Name.c_str());
+    if (stagingBuffer.buffer == VK_NULL_HANDLE || m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] < _sizeInBytes)
+    {
+        if (stagingBuffer.buffer)
+        {
+            context.DefferdDestroy(stagingBuffer, FrameIndex);
+        }
+        CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes, m_Name.c_str());
+        m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] = _sizeInBytes;
+    }
     
     // Copy Data to stagingBuffer
     void* mappedData;
@@ -195,6 +206,7 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
 
     BufferAndAlloc& buffer = *GetBufferAndAlloc(FrameIndex);
     GET_VK_COMMAND_BUFFER(_commandList, FrameIndex);
+    
     
     cmb.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
 
@@ -278,9 +290,7 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
     bufferCreate.size = vk::DeviceSize{_sizeInBytes};
     bufferCreate.usage = vk::BufferUsageFlagBits::eTransferSrc;
     bufferCreate.sharingMode = vk::SharingMode::eExclusive;
-    
-    VmaAllocationInfo VmaAllocationInfo;
-    VmaAllocationInfo.pName = BufferName;
+
     
     VmaAllocationCreateInfo aCreateInfo{};
     aCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -289,26 +299,20 @@ void Vulkan::VulkanBuffer::CreateStagingBufferForCopy(VulkanContext& _VkContext,
     const vk::Device device = _VkContext.GetDevice()->GetDevice();
 
     VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(_VkContext.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate),
-                   &aCreateInfo, reinterpret_cast<VkBuffer*>(bufferAndAlloc), &bufferAndAlloc->alloc, &VmaAllocationInfo)));
+                   &aCreateInfo, reinterpret_cast<VkBuffer*>(bufferAndAlloc), &bufferAndAlloc->alloc, nullptr)));
+
+    const std::string StagingBufferName = (std::string(BufferName) + " Staging");
     
     vk::DebugUtilsObjectNameInfoEXT nameInfo;
     nameInfo.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
     nameInfo.pNext = nullptr;
     nameInfo.objectType = vk::ObjectType::eBuffer;
     nameInfo.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkBuffer>(bufferAndAlloc->buffer));
-    nameInfo.pObjectName = BufferName;
-    
+    nameInfo.pObjectName = StagingBufferName.c_str();
+    vmaSetAllocationName(_VkContext.allocator, bufferAndAlloc->alloc, StagingBufferName.c_str());
+#ifdef  DEBUG_GPU_ON
     _VkContext.GetInstance()->SetDebugName(device, &nameInfo);
-}
-
-void Vulkan::VulkanBuffer::FreeAlloc(VulkanContext& _VkContext, BufferAndAlloc& _handle)
-{
-    if (_handle.buffer == VK_NULL_HANDLE || _handle.alloc == VK_NULL_HANDLE)
-        return;
-    
-    vmaDestroyBuffer(_VkContext.allocator, _handle.buffer, _handle.alloc);
-    _handle.buffer = VK_NULL_HANDLE;
-    _handle.alloc = VK_NULL_HANDLE;
+#endif
 }
 
 const Vulkan::BufferAndAlloc* Vulkan::VulkanBuffer::GetBufferAndAlloc(size_t _frameIndex) const

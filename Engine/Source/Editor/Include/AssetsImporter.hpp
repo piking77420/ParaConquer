@@ -4,13 +4,15 @@
 #include <string>
 #include <unordered_map>
 #include <future>
+#include <utility>
 
 #include "EditorHeader.hpp"
 #include "ObjectPtr.hpp"
 #include "LowRenderer/RhiTexture.hpp"
 #include "LowRenderer/RhiResourceUpdate.hpp"
-#include "Resources/StaticMesh.hpp"
+#include "Builder/MeshBuilder.hpp"
 #include "Resources/Texture2D.hpp"
+#include <assimp/types.h>
 
 namespace PC_CORE
 {
@@ -32,18 +34,30 @@ namespace PC_CORE::Rendering
 
 struct aiScene;
 struct aiTexture;
+struct aiString;
+struct aiNode;
+struct aiMesh;
 enum aiTextureType;
 struct aiMaterial;
+struct aiAABB;
 
 BEGIN_EDITOR_PCCORE
-    class AssetsImporter
+    class AssetsImporter : private MeshBuilder
     {
     public:
+        enum class ImportFormat
+        {
+            None,
+            Gltf,
+            Fbc,
+            Obj
+        };
+
         [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path);
 
         const std::string& GetName() const;
 
-        const PC_CORE::ObjectPtr<PC_CORE::StaticMesh>& GetStaticMeshes() const
+        const PC_CORE::WeakObjectPtr<PC_CORE::StaticMesh>& GetStaticMeshes() const
         {
             return m_StaticMeshs;
         }
@@ -53,13 +67,27 @@ BEGIN_EDITOR_PCCORE
             return m_TextureMaps;
         }
 
-    private:
-        enum class ImportFormat
+        bool GetSuccess() const
         {
-            None,
-            Gltf,
-            Fbc,
-            Obj
+            return m_Succes;
+        }
+
+        const PC_CORE::Guid& GetGuid() const
+        {
+            return m_Guid;
+        }
+
+        bool operator==(const AssetsImporter& AssetsImporter) const
+        {
+            return m_Guid == AssetsImporter.m_Guid;
+        }
+
+    private:
+        struct MeshLetBuildOut
+        {
+            std::vector<PC_CORE::Meshlet> MeshletsOpt;
+            std::vector<uint32_t> MeshletVertexTrianglesIndex;
+            std::vector<uint32_t> MeshletTrianglesU32;
         };
 
         bool m_Succes = false;
@@ -70,19 +98,19 @@ BEGIN_EDITOR_PCCORE
 
         ImportFormat m_ImportFormat;
 
+        PC_CORE::Guid m_Guid = PC_CORE::Guid::New();
+
         std::mutex m_mutex;
 
         std::map<std::string, std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>>> m_TextureMaps;
 
-        PC_CORE::ObjectPtr<PC_CORE::StaticMesh> m_StaticMeshs;
+        PC_CORE::WeakObjectPtr<PC_CORE::StaticMesh> m_StaticMeshs;
 
         std::unordered_map<size_t, std::vector<std::string>> m_MaterialsMap;
 
         std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
 
-        ImportFormat FindImportFormat(const std::filesystem::path& path);
-
-        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, const aiScene* scene);
+        bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* scene);
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
 
@@ -90,15 +118,16 @@ BEGIN_EDITOR_PCCORE
 
         void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
 
+        void ProcessLod(std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, std::vector<PC_CORE::MeshLOD>& meshLods, const std::vector<MeshBuilder::MeshDescriptor>& MeshDescriptor, const PC_CORE::StaticMeshRenderData& RenderData, const aiScene* scene);
+
+        void ProcessDrawCommand(std::vector<PC_CORE::MeshLOD>& MeshLods, const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, const aiScene* Scene, const aiNode* Node, aiAABB* SceneGlobalBound, const aiMatrix4x4& ParentModelTransform);
+
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromPath(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 
         [[nodiscard]] void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, aiTextureType textureType , bool _UseApha);
 
-        //bool ImportMaterial(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
-
-        //bool ImportMaterialGltf(const aiScene* scene, std::vector<PC_CORE::Rendering::Material>* _Material);
 
     };
 

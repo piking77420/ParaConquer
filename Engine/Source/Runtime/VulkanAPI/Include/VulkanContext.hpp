@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <variant>
+#include <vector>
 #include <vma/vk_mem_alloc.h>
 
 #include "VulkanDescritptorManager.hpp"
@@ -10,6 +12,8 @@
 namespace Vulkan
 {
     class VulkanCommandList;
+    struct TextureAndAlloc;
+    struct BufferAndAlloc;
 
     struct SyncObject
     {
@@ -70,13 +74,36 @@ namespace Vulkan
 
         VULKAN_API void ProceedResourceUpdateBranch() override;
 
+        VULKAN_API void ProceedDefferdDestroy(uint32_t _FrameIndex) override final;
+
         VULKAN_API std::shared_ptr<VulkanInstance> GetInstance();
 
         VULKAN_API std::shared_ptr<VulkanDevice> GetDevice();
 
         VULKAN_API std::shared_ptr<VulkanPhysicalDevices> GetPhysicalDevices();
 
+        VULKAN_API void DefferdDestroy(BufferAndAlloc& BufferAndAlloc, uint32_t _FrameIndex);
+
+        VULKAN_API void DefferdDestroy(TextureAndAlloc& TextureAndAlloc, uint32_t _FrameIndex);
+
     private:
+        struct DefferdDestroyBuffer
+        {
+            vk::Buffer buffer = VK_NULL_HANDLE;
+            VmaAllocation alloc = VK_NULL_HANDLE;
+        };
+
+        struct DefferdDestroyBufferTexture
+        {
+            vk::Image image = VK_NULL_HANDLE;
+            vk::ImageView imageView = VK_NULL_HANDLE;
+            VmaAllocation alloc = VK_NULL_HANDLE;
+        };
+
+        using DefferedDestroyOperation = std::variant<DefferdDestroyBuffer, DefferdDestroyBufferTexture>;
+
+        std::array<std::vector<DefferedDestroyOperation>, MaxFramesInFlight> m_PendingDefferedDestroy;
+
         VULKAN_API void CreateMemoryAllocator();
 
         VULKAN_API void CreateCommandPools();

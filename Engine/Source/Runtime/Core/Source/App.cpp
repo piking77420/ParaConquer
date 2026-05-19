@@ -12,28 +12,30 @@
 
 using namespace PC_CORE;
 
-
-void App::Init(const AppCreateInfo& _appCreateInfo)
+void App::Destroy()
 {
+    ResourceManager::Destroy();
+    PC_LOG("App Destroy")
+}
+
+App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
+    : MainWindow(_AppCreateInfo.appName.data())
+    , RenderHarwareInteface(RenderHardwareInterfaceCreateInfo
+    (
+        GraphicAPI::Vulkan,
+        &MainWindow,
+        _AppCreateInfo.appName.data(),
+        _AppCreateInfo.enableGpuDebug
+    ))
+    , Renderer(RenderHarwareInteface, MainWindow)
+    , ThreadPool("Main Thread Pool")
+{
+    Instance = this;
+
     PERF_REGION_SCOPED;
     PC_LOG("App Init")
-    // Can init without any depedancies
-    MainWindow = Window(_appCreateInfo.appName.data());
-    MainWindow.SetIcon(_appCreateInfo.appLogoPath.data());
-
-    const RenderHardwareInterfaceCreateInfo createInfo =
-    {
-        .GraphicsAPI = GraphicAPI::Vulkan,
-        .window = &MainWindow,
-        .appName = _appCreateInfo.appName.data(),
-        .gpuDebug = _appCreateInfo.enableGpuDebug
-    };
-
-    RenderHarwareInteface.Init(createInfo);
-    PrimaryCommandBuffer.reset(RenderHarwareInteface.CreateCommandList());
-    PrimaryCommandBuffer
-        ->SetName("PrimaryCommandBuffer")
-        .Build();
+        // Can init without any depedancies
+    MainWindow.SetIcon(_AppCreateInfo.appLogoPath.data());
 
     SamplerLinearReapet.reset(RenderHarwareInteface.CreateSampler());
     SamplerLinearReapet
@@ -72,24 +74,12 @@ void App::Init(const AppCreateInfo& _appCreateInfo)
 
     std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
     branch->
-        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::FragmentShaderResource);
-        
+        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::PixelShaderResource);
+
 
     Time::Init();
 }
 
-void App::Destroy()
-{
-    ResourceManager::Destroy();
-    PC_LOG("App Destroy")
-}
-
-App::App()
-    : Renderer(RenderHarwareInteface)
-    , ThreadPool()
-{
-    Instance = this;
-}
 
 void App::WorldTick(double _tick)
 {
@@ -101,38 +91,21 @@ void App::WorldTick(double _tick)
     World.RenderingTick(_tick);
 }
 
-void App::RenderFrame()
+void App::DequeuMainThreadTask()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Core);
-    PC_CORE::RhiSwapChain* swapChain = RenderHarwareInteface.GetRhiContext().rhiSwapChain.get();
-    PC_CORE::Window* mainWindow = &MainWindow;
-    constexpr std::array<float, 4> Color = {
-        0.5f,
-        0.5f,
-        0.5f,
-        0.5f,
-    };
 
-
-    if (swapChain->GetSwapChainImageIndex(mainWindow))
+    while (!m_MainThreadQueue.empty())
     {
-        RenderHarwareInteface.GetRhiContext().ProceedResourceUpdateBranch();
-
-        PrimaryCommandBuffer->BeginRecordCommands();
+        std::function<void()> func;
         {
-            PrimaryCommandBuffer->BeginDebugLabel("SwapChain", Color);
-            swapChain->BeginSwapChainRenderPass(PrimaryCommandBuffer.get());
-            OnRender(PrimaryCommandBuffer.get());
-            swapChain->EndSwapChainRenderPass(PrimaryCommandBuffer.get());
-            PrimaryCommandBuffer->EndDebugLabel();
+            std::scoped_lock _(m_MainThreadMutex);
+            if (m_MainThreadQueue.empty())
+                break;
+            func = m_MainThreadQueue.front();
+            m_MainThreadQueue.pop();
         }
-        PrimaryCommandBuffer->EndRecordCommands();
-
-        RenderHarwareInteface.GetRhiContext().SendEnqueuCommand(PrimaryCommandBuffer.get(), PC_CORE::GpuPipelineStage::ColorAttachmentOutput);
-        swapChain->Present(&MainWindow);
-        RenderHarwareInteface.NextFrame();
+        func();
     }
-
 }
-

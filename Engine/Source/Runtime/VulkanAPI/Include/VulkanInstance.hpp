@@ -28,6 +28,9 @@ namespace Vulkan
         }
 
 #ifdef DEBUG_GPU_ON
+        void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* _pNameInfo) const;
+
+
         PFN_vkCmdBeginDebugUtilsLabelEXT GetPFN_vkCmdBeginDebugUtilsLabelEXT() const
         {
             return m_BeginDebugLabel;
@@ -37,8 +40,6 @@ namespace Vulkan
         {
             return m_EndDebugLabel;
         }
-
-        void SetDebugName(vk::Device _device, const vk::DebugUtilsObjectNameInfoEXT* _pNameInfo) const ;
 #endif
 
 #ifdef  PROFILING
@@ -48,6 +49,11 @@ namespace Vulkan
         }
 #endif
 
+        PFN_vkCmdDrawMeshTasksEXT GetPFN_vkCmdDrawMeshTasksEXT() const
+        {
+            return m_DrawMeshTasksTExt;
+        }
+
     private:
         vk::Instance m_Instance;
 
@@ -56,6 +62,8 @@ namespace Vulkan
         void InitSurface(GLFWwindow* _window);
 
         void GetDebugFunc();
+
+        PFN_vkCmdDrawMeshTasksEXT m_DrawMeshTasksTExt = nullptr;
 
 #ifdef DEBUG_GPU_ON
 

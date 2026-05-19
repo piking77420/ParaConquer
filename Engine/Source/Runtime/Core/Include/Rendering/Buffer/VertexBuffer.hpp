@@ -10,13 +10,19 @@ BEGIN_PCCORE
     {
     public:
     
-        DEFAULT_COPY_MOVE_OPERATIONS(VertexBuffer)
-
-        PC_CORE_API explicit VertexBuffer(PC_CORE::Rhi& rhi);
-    
         PC_CORE_API VertexBuffer() = default;
+    
+        PC_CORE_API explicit VertexBuffer(PC_CORE::Rhi& rhi);
 
         PC_CORE_API ~VertexBuffer() override = default;
+
+        VertexBuffer(const VertexBuffer&) = delete;
+
+        VertexBuffer& operator=(const VertexBuffer&) = delete;
+
+        VertexBuffer(VertexBuffer&&) noexcept = default;
+
+        VertexBuffer& operator=(VertexBuffer&&) noexcept = default;
 
         VertexBuffer& SetVerticiesCount(size_t _VerticiesCount)
         {
@@ -39,7 +45,6 @@ BEGIN_PCCORE
         {
             return m_VerticiesSize;
         }
-
 
     private:
         size_t m_VerticiesCount = 0;

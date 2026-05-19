@@ -36,7 +36,9 @@ BEGIN_EDITOR_PCCORE
 
         void Update() override;
 
-        void Render(PC_CORE::CommandList* _Cmd) override;
+        void Render() override;
+
+        void OnRenderModeDirty() override;
 
         const PC_CORE::Camera& GetCamera() const
         {
@@ -50,8 +52,16 @@ BEGIN_EDITOR_PCCORE
 
         PC_CORE::Rendering::RenderView m_View;
 
+        virtual void BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph);
+
     private:
         void UpdateImguiViewPort();
+
+        void RebuildViewport();
+
+        void DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& Graph);
+
+        void DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Graph);
 
         PC_CORE::Sampler m_ViewPortSampler;
 

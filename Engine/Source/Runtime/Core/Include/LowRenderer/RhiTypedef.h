@@ -2,6 +2,7 @@
 
 #include <Variant>
 #include <Vector>
+#include <numeric>
 
 #include "CoreHeader.hpp"
 #include "Reflection/Reflector.hpp"
@@ -34,7 +35,20 @@ BEGIN_PCCORE
         Count
     };
 
+    static constexpr uint32_t WHOLE_SIZE = std::numeric_limits<uint32_t>::max();
+
     REFLECT(RhiExtension);
+    inline std::string_view RhiExtensionToString(RhiExtension RhiExtension)
+    {
+        switch (RhiExtension)
+        {
+        case PC_CORE::RhiExtension::RayTracing:
+            return "RayTracing";
+        case PC_CORE::RhiExtension::MeshShader:
+            return "MeshShader";;
+        }
+        return "Invalid Rhi Extension";
+    }
 
 
     struct ALIGNAS_16 DrawObjectBufferGPU

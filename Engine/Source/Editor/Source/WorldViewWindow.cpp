@@ -8,6 +8,12 @@
 #include "LowRenderer/CommandList.hpp"
 #include "Rendering/RenderSystem.hpp"
 
+#include <Rendering/RenderPasses/ForwardPass.hpp>
+#include <Rendering/RenderPasses/ToneMapPass.hpp>
+#include <DebugView/DebugPass.hpp>
+#include <DebugView/DebugShapeDraw.hpp>
+#include <DebugView/DebugDrawMeshletBounds.hpp>
+
 #undef near
 #undef far
 
@@ -53,34 +59,65 @@ void WorldViewWindow::Update()
         const float aspect = size.x / size.y;
         m_Camera.SetAspect(aspect);
         m_View.SetRenderSize(size);
+
         m_View.FromCamera(m_Camera);
     }
 
     if (resize)
     {
-        m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
-        m_Editor->Renderer.Build(m_View);
-        UpdateImguiViewPort();
+        RebuildViewport();
     }
 
     uint32_t currentImage = m_Editor->RenderHarwareInteface.GetFrameIndex();
-    ImGui::Image(imguiDescriptorSet[currentImage], ImGui::GetContentRegionAvail(), ImVec2(0, 0),
-                 ImVec2(1, 1));
+    ImGui::Image(imguiDescriptorSet[currentImage], ImGui::GetContentRegionAvail());
 }
 
-void WorldViewWindow::Render(PC_CORE::CommandList* _Cmd)
+void WorldViewWindow::Render()
 {
     PERF_REGION_SCOPED;
-    EditorWindow::Render(_Cmd);
+    EditorWindow::Render();
 
-    const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::RendererSystem>()->GetRenderRenderingWorldData();
+    const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::Rendering::RendererSystem>()->GetRenderRenderingWorldData(); // should be done once
 
     m_Editor->Renderer.Excute(m_View, worldData);
 }
 
+void WorldViewWindow::OnRenderModeDirty()
+{
+    RebuildViewport();
+}
+
+void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
+{
+    switch (m_Editor->editorData.ProjectSettings.RenderMode)
+    {
+    case PC_CORE::Rendering::RenderMode::TriangleBased:
+        DrawTriangledBasedGraph(Graph);
+        break;
+    case PC_CORE::Rendering::RenderMode::ClusterBased:
+        DrawMeshletBasedGraph(Graph);
+        break;
+    case PC_CORE::Rendering::RenderMode::PathTracing:
+        break;
+    default:
+        assert(false);
+        break;
+    }
+    
+    Graph.AddRenderPass<PC_EDITOR::DebugView::DebugShapeDraw>();
+    Graph.SetRenderMode(m_Editor->editorData.ProjectSettings.RenderMode);
+}
+
+void WorldViewWindow::RebuildViewport()
+{
+    m_Editor->RenderHarwareInteface.GetRhiContext().WaitIdle(); // TO DO to remove thos implement vulkan deffered destroy
+    m_Editor->Renderer.Build(m_View, std::bind(&WorldViewWindow::BuildRenderGraph, this, std::placeholders::_1));
+    UpdateImguiViewPort();
+}
+
 void WorldViewWindow::UpdateImguiViewPort()
 {
-    
+
     bool needFree = false;
     for (auto& it : imguiDescriptorSet)
         if (it != VK_NULL_HANDLE)
@@ -95,4 +132,101 @@ void WorldViewWindow::UpdateImguiViewPort()
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(&m_Editor->Renderer.GetRenderGraph().GetOutPutImage(),
                                                     m_ViewPortSampler.Get(), imguiDescriptorSet.data(),
                                                     imguiDescriptorSet.size());
+}
+
+void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
+{
+    namespace Pass = PC_CORE::Rendering::Pass;
+
+    switch (m_Editor->editorData.DebugView)
+    {
+    case DebugView::Lit:
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        break;
+    case DebugView::Unlit:
+        break;
+    case DebugView::Normal:
+        break;
+    case DebugView::UV:
+        break;
+    case DebugView::AO:
+        break;
+    case DebugView::Triangle:
+    {
+        const std::string PassName = "DebugTriangle";
+        const std::array<float, 4> Color = 
+        {
+            0.5f,
+            0.8f,
+            0.1f,
+            1.f
+        };
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
+
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
+    }
+        break;
+    case DebugView::Meshlet:
+    default:
+        break;
+    }
+}
+
+void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
+{
+    switch (m_Editor->editorData.DebugView)
+    {
+    case DebugView::Lit:
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::FowardPass>();
+        Graph.AddRenderPass<PC_CORE::Rendering::Pass::ToneMapPass>();
+        break;
+    case DebugView::Unlit:
+        break;
+    case DebugView::Normal:
+        break;
+    case DebugView::UV:
+        break;
+    case DebugView::AO:
+        break;
+    case DebugView::Triangle:
+    {
+        const std::string PassName = "DebugTriangle";
+        const std::array<float, 4> Color =
+        {
+            0.5f,
+            0.8f,
+            0.1f,
+            1.f
+        };
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
+
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
+    }
+        break;
+    case DebugView::Meshlet:
+    {
+        const std::string PassName = "DrawMeshlet";
+        const std::array<float, 4> Color =
+        {
+            0.5f,
+            0.8f,
+            0.1f,
+            1.f
+        };
+        std::unique_ptr<PC_CORE::RhiShaderProgram>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshletColor;
+
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangleMeshlet, shaderPtrTriangleMeshlet);
+    } 
+        break;
+    default:
+        break;
+    }
+
+    if (m_Editor->editorData.DrawMesheltBounds)
+    {
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugDrawMeshletBounds>();
+    }
 }

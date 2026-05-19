@@ -2,10 +2,11 @@
 
 #include "MetaProgramming.hpp"
 
-#include "LowRenderer/RhiTypedef.h"
-#include "Reflection/DynamicReflectable.hpp"
-#include "RenderPasses/RenderPass.hpp"
-#include "LowRenderer/Rhi.hpp"
+#include <LowRenderer/RhiTypedef.h>
+#include <Rendering/RenderingTypedef.h>
+#include <Reflection/DynamicReflectable.hpp>
+#include <Rendering/RenderPasses/RenderPass.hpp>
+#include <LowRenderer/Rhi.hpp>
 
 namespace PC_CORE
 {
@@ -59,7 +60,19 @@ namespace PC_CORE::Rendering
 		void AddRenderPass()
 		{
 			RenderGraphNode Node;
-			Node.RenderPassObject = std::make_unique<T>();
+			Node.RenderPassObject = std::move(std::make_unique<T>());
+			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
+			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
+			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;
+			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<true, void, const RendererPassExecuteContext&>::Call<T, &T::Execute>;
+			m_Nodes.emplace_back(std::move(Node));
+		}
+
+		template <RenderPassT T, typename ...U>
+		void AddRenderPass(U&&... _Args)
+		{
+			RenderGraphNode Node;
+			Node.RenderPassObject = std::move(std::make_unique<T>(std::forward<U>(_Args)...));
 			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
 			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
 			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;
@@ -141,8 +154,19 @@ namespace PC_CORE::Rendering
 			return *m_OutputImage;
 		}
 
+		RenderMode GetRenderMode() const
+		{
+			return m_Mode;
+		}
+
+		void SetRenderMode(RenderMode RenderMode)
+		{
+			m_Mode = RenderMode;
+		}
 	private:
 		Rhi& m_Rhi;
+
+		RenderMode m_Mode;
 
 		std::unordered_map<std::string_view, std::shared_ptr<RhiResource>> m_RenderGraphResources;
 

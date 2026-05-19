@@ -4,29 +4,50 @@
 #include "Ecs/EcsSystem.h"
 #include "Resources/StaticMesh.hpp"
 #include "Rendering/Material.hpp"
+#include <DebugHelper/DebugDrawContext.hpp>
+
+
+namespace PC_CORE
+{
+    class Level;
+}
 
 namespace PC_CORE::Rendering
 {
     struct StaticMeshComponentData
     {
-        MaterialType MaterialType;
         std::vector<const Material*> Materials; // make an array with MAX
         const StaticMesh* StaticMesh;
-
         Tbx::Matrix4x4d WorldMatrix;
-        // TO DO PASS IT TO MAT3
-        Tbx::Matrix4x4d NormalInvertMatrix;
     };
 
     struct DirLightData
     {
-        Tbx::Vector3f LightDirW;
         Tbx::Vector3f LightColor;
         float LightIntensity;
+        Tbx::Vector3f LightDirW;
+    };
+
+    struct LightData
+    {
+        enum LightType
+        {
+            PointLight,
+            SpotLight
+        };
+        LightType LightType;
+        Tbx::Vector3f LightColor; //  can be pack to 4 bit
+        float LightIntensity;
+        Tbx::Vector3d LightPosition;
+        float Radius;
+        Tbx::Vector3f LightDirection;
+        float OuterAngle;
+        float InnerAngle;
     };
 
     struct RenderingWorldData
     {
+
         DEFAULT_CONSTRUCTOR_DESTRUCTOR(RenderingWorldData);
 
         DEFAULT_COPY_MOVE_OPERATIONS(RenderingWorldData);
@@ -34,17 +55,18 @@ namespace PC_CORE::Rendering
         void Clear()
         {
             StaticMeshComponentData.clear();
+            LightsData.clear();
+            DirLightData.reset();
         }
 
         std::vector<Rendering::StaticMeshComponentData> StaticMeshComponentData;
+        std::vector<LightData> LightsData;
         std::optional<DirLightData> DirLightData;
 
+        // Debug
+        std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;
+        std::vector<DebugDrawContext::Frustum> DebugFrustums;
     };
-
-}
-
-BEGIN_PCCORE
-    class Level;
 
     class RendererSystem : public EcsSystem
     {
@@ -69,10 +91,10 @@ BEGIN_PCCORE
 
         PC_CORE_API const Rendering::RenderingWorldData& GetRenderRenderingWorldData() const;
 
+        DebugDrawContext debugDrawContext; // use if def editor
+
     private:
         Rendering::RenderingWorldData m_GameRenderingWorldData;
-
-        Rendering::RenderingWorldData m_RenderRenderingWorldData;
 
         Signature m_StaticMeshSignature;
 
@@ -80,14 +102,17 @@ BEGIN_PCCORE
 
         Signature m_PointLightSignature;
 
+        Signature m_SpothLightSignature;
+
         void PopulateStaticMeshes(const Level& _level);
 
         void PopulateLight(const Level& _level);
 
+        void PopulateDebugDraws();
 
         REFLECT(RendererSystem)
         REFLECT_MEMBER(RendererSystem, m_StaticMeshSignature);
         REFLECT_MEMBER(RendererSystem, m_DirLightSignature);
     };
 
-END_PCCORE
+}

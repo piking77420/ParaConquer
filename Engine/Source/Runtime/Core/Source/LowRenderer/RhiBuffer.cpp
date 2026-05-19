@@ -125,7 +125,7 @@ void PC_CORE::RhiBuffer::ChooseBackingStrategy()
         m_NbrOfBackendObject = MaxFramesInFlight;
         break;
     case BufferBackingStrategy::StagedUpload:
-        m_NbrOfBackendObject = 1; // GPU buffer only
+        m_NbrOfBackendObject = MaxFramesInFlight; // GPU buffer only
         break;
     case BufferBackingStrategy::Readback:
         m_NbrOfBackendObject = 1;

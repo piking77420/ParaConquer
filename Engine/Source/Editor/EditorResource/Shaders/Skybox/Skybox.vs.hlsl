@@ -17,7 +17,7 @@ struct VSOutput
 VSOutput Main(VSInput input, uint VertexID : SV_VertexID)
 {
     VSOutput output;
-    float4 clipPos = mul(float4(input.Position, 1.0f), vp);
+    float4 clipPos = mul(vp, float4(input.Position, 1.0f));
     output.Pos = clipPos.xyww;
     output.dir = input.Position;
     return output;

@@ -7,7 +7,7 @@
 #include "Rendering/RenderGraph.hpp"
 #include "Rendering/RenderView.hpp"
 #include "Rendering/RenderSystem.hpp"
-
+#include "App.hpp"
 
 namespace PC_CORE::Rendering::Pass
 {
@@ -15,6 +15,8 @@ namespace PC_CORE::Rendering::Pass
 	FowardPass::FowardPass()
 	{
 		DYNAMIC_REFLECT_INIT;
+
+		m_DrawTransperant = true;
 	}
 
 	void FowardPass::Build(const RendererPassBuildContext& _RendererPassBuildContext)
@@ -60,11 +62,52 @@ namespace PC_CORE::Rendering::Pass
 		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorSet
 			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
-			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 1, _RendererPassBuildContext.View.LightBuffer.get())
-			.BindUniformBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBufferHeader.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Vertex, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
+			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
 			.SetName("Forward Pass Scene Set")
 			.Build();
-			
+
+		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
+		m_DescriptorMeshlet
+			->BindUniformBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
+			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
+			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
+			.SetName("Forward Pass Scene Set")
+			.Build();
+
+
+		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
+		{
+			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
+			{
+				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+				m_LastMaterialDescriptor = nullptr;
+			}
+
+			if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
+			{
+				m_LastMaterialDescriptor = StaticMesh.MaterialDescriptor;
+				const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
+				_Context.cmd.BindDescriptorSet(m_LastMaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
+			}
+		};
+
+		m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
+		{
+			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
+			{
+				_Context.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0);
+			}
+
+			if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
+			{
+				m_LastMaterialDescriptor = StaticMesh.MaterialDescriptor;
+				const uint32_t MaterialStride = StaticMesh.MaterialDescriptorOffset;
+				_Context.cmd.BindDescriptorSet(m_LastMaterialDescriptor, 1, static_cast<size_t>(MaterialStride));
+			}
+		};
 
 	}
 
@@ -75,7 +118,7 @@ namespace PC_CORE::Rendering::Pass
 
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
 
-		std::array<float, 4> Color = GetColor();
+		std::array<float, 4> Color = { 0.0f, 0.0f, 0.0f, 0.0f };
 		
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
@@ -94,103 +137,8 @@ namespace PC_CORE::Rendering::Pass
 		cmd.SetViewPort(viewPort);
 		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 
-
-		const auto& DrawObjects = _RendererPassExecuteContext.RenderingWorldData.StaticMeshComponentData;
-		for (const auto& DrawObject : DrawObjects)
-		{
-			const StaticMesh& mesh = *DrawObject.StaticMesh;
-			const StaticMeshRenderData& Data = mesh.GetStaticMeshRenderData();
-
-			Tbx::Matrix4x4d ModelView = _RendererPassExecuteContext.View.View * DrawObject.WorldMatrix;
-			Tbx::Matrix4x4d NormalInvMatrixView = _RendererPassExecuteContext.View.View * DrawObject.NormalInvertMatrix;
-
-			
-
-			CommandList::DrawBuffers drawBuffer;
-			drawBuffer
-				.PushVertexBuffer(
-					*mesh.GetVertexBuffer()
-					, 0ull)
-				.SetIndexBuffer(
-					*mesh.GetIndexBuffer()
-					, 0ull
-					, mesh.GetIndexBuffer().GetIndexFormat()
-				);
-			cmd.BindDrawBuffers(drawBuffer);
-
-			// material have the the same 
-			const size_t MaterialStride = DrawObject.Materials[0]->GetMaterialStride() * _RendererPassExecuteContext.RHI.GetFrameIndex();
-
-			// TODO SORT SUBMESH SECTION BY METRIAL ID
-			struct ModelPushConstant
-			{
-				Gpu::mat4 ModelView;
-				Gpu::mat4 NormalInvMatrixView;
-			}PushConstant;
-
-			cmd.BindProgram(*_RendererPassExecuteContext.Renderer.opaqueFowardShader);
-			for (const auto& SubMesh : Data.SubMeshes)
-			{
-				PC_CORE::Rendering::MaterialType type = DrawObject.Materials[SubMesh.MaterialIndex]->GetMaterialType();
-
-				if (type != PC_CORE::Rendering::MaterialType::Opaque)
-					continue;
-				// TODO MOVE THIS per mesh or subsidvce submesh -> static mehs
-				
-				Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
-				Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-				cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
-
-
-				cmd.BindDescriptorSet(DrawObject.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
-				cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
-
-				cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
-			}
-
-			cmd.BindProgram(*_RendererPassExecuteContext.Renderer.transparentForwardShader);
-			m_TransparentSubMeshDistanceV.clear();
-			m_TransparentSubMeshDistanceV.reserve(Data.SubMeshes.size());
-
-			{
-				uint32_t Index = 0;
-				for (const auto& SubMesh : Data.SubMeshes)
-				{
-					const PC_CORE::Rendering::MaterialType type = DrawObject.Materials[SubMesh.MaterialIndex]->GetMaterialType();
-
-					if (type == PC_CORE::Rendering::MaterialType::Transparent)
-					{
-						const Tbx::Vector3d aabbCenterL = (SubMesh.AABB.max - SubMesh.AABB.min);
-						const Tbx::Vector4d aabbCenter4V = (ModelView * Tbx::Vector4d(aabbCenterL.x, aabbCenterL.y, aabbCenterL.z, 1.0));
-						const Tbx::Vector3d aabbCenterV = Tbx::Vector3d(aabbCenter4V.x, aabbCenter4V.y, aabbCenter4V.z);
-						m_TransparentSubMeshDistanceV.emplace_back(std::make_pair(aabbCenterV.MagnitudeSquare(), Index));
-					}
-					Index++;
-				}
-			}
-			
-			// Sort Transparent object based on their view distance
-			// Draw farest item first
-			std::ranges::sort(m_TransparentSubMeshDistanceV, [](std::pair<double, uint32_t>& _Left, const std::pair<double, uint32_t>& _Right) 
-				{
-					return _Left.first > _Right.first;
-				});
-
-			for (const auto& item : m_TransparentSubMeshDistanceV)
-			{
-				const auto& SubMesh = Data.SubMeshes[item.second];
-
-				Gpu::StreamDoubleToFloat(&PushConstant.ModelView, &ModelView);
-				Gpu::StreamDoubleToFloat(&PushConstant.NormalInvMatrixView, &NormalInvMatrixView);
-				cmd.PushConstant("pushConstant", &PushConstant, sizeof(ModelPushConstant));
-				cmd.BindDescriptorSet(DrawObject.Materials[SubMesh.MaterialIndex]->GetDescriptorSet(), 1, MaterialStride);
-				cmd.BindDescriptorSet(m_DescriptorSet.get(), 0ull);
-
-				cmd.DrawIndexed(SubMesh.IndiciesCount, 1, SubMesh.IndexOffset, SubMesh.VertexOffSet, 0);
-			}
-
-		}
-
+		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
+		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
 		cmd.EndRenderPass();
 	}
 

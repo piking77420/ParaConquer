@@ -6,6 +6,9 @@
 #include "Reflection/DynamicReflectable.hpp"
 
 BEGIN_PCCORE
+
+class CommandList;
+
     class EcsSystem : public DynamicReflectable
     {
     public:

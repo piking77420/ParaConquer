@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <String>
 #include <Imgui.h>
 #include <Math/ToolboxTypedef.hpp>
+#include <String>
 
 #include "EditorHeader.hpp"
 
@@ -48,13 +48,11 @@ BEGIN_EDITOR_PCCORE
         bool IsCursorInsideWindow() const;
 
 
-        virtual void Render([[maybe_unsed]] PC_CORE::CommandList* _Cmd)
+        virtual void Render()
         {
         };
 
-        virtual void Update()
-        {
-        }
+        virtual void Update();
 
         virtual void OnPlayButton()
         {
@@ -63,10 +61,20 @@ BEGIN_EDITOR_PCCORE
         virtual void OnResetScene()
         {
         }
+        
+        virtual void OnRenderModeDirty() {};
+
+        void PushUpFrontAndFocus()
+        {
+            isOpen = true;
+            m_PushUpFrontAndFocus = true;
+        }
 
     protected:
         Editor* m_Editor = nullptr;
 
+    private:
+        bool m_PushUpFrontAndFocus = false;
     };
 
 END_EDITOR_PCCORE

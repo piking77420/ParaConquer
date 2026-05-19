@@ -47,8 +47,8 @@ const std::array<std::pair<std::wstring, std::wstring>, 14> ShaderFormats =
         {L".call", L"lib_6_3"}, // Callable
 
         // Mesh shaders (DirectX 12 Ultimate)
-        {L".task", L"as_6_5"}, // Amplification Shader
-        {L".mesh", L"ms_6_5"} // Mesh Shader
+        {L".as", L"as_6_5"}, // Amplification Shader
+        {L".ms", L"ms_6_5"} // Mesh Shader
     }
 };
 
@@ -156,7 +156,7 @@ static bool GetExtension(const wchar_t* _file, wchar_t* _buffer, size_t _bufferS
     return true;
 }
 
-std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _fileName)
+std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _fileName, const std::vector<std::wstring>& _Args)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -166,9 +166,9 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     uint32_t codePage = DXC_CP_ACP;
     ComPtr<IDxcBlobEncoding> sourceBlob;
     hres = GetContext().utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
-    if (FAILED(hres) || !sourceBlob) // V�rifie que le blob est valide
+    if (FAILED(hres) || !sourceBlob)
     {
-        PC_LOGERROR("Failed to load file FromDisk = {}", hres);
+        PC_LOGERROR("Failed to load file FromDisk = {} file path {}", hres, std::string(_fileName.begin(), _fileName.end()));
         exit(-1);
     }
 
@@ -193,24 +193,27 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     if (!targetProfile)
         return {};
 
-    auto testInclude = std::wstring(INCLUDE_PATH) + L"Camera.hlsl";
-
     std::vector<LPCWSTR> arguments = {
         _fileName.c_str(), // Shader path
         L"-E", L"Main", // Entry point
         L"-T", targetProfile, // Target profile
         L"-I", INCLUDE_PATH,
-        L"-Zpr"
+        L"-Zpc",
     };
+    for (const auto& args : _Args)
+    {
+        arguments.push_back(args.c_str());
+    }
 
     switch (_api)
     {
     case PC_CORE::GraphicAPI::Vulkan:
-        arguments.push_back(L"-Zpr");
+        arguments.push_back(L"-DVULKAN=1");
         arguments.push_back(L"-spirv");
+        arguments.push_back(L"-fspv-target-env=vulkan1.3");
+        arguments.push_back(L"-fspv-extension=SPV_EXT_mesh_shader");
         break;
     case PC_CORE::GraphicAPI::D3d12:
-        arguments.push_back(L"-Zpc");
         break;
     case PC_CORE::GraphicAPI::None:
     case PC_CORE::GraphicAPI::Count:
@@ -275,15 +278,6 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     return shaderCode;
 }
 
-std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::string& _filename)
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::EditorResource);
-
-    auto wfileName = std::wstring(_filename.begin(), _filename.end());
-
-    return CompileFile(_api, std::move(wfileName));
-}
 
 ShaderCompiler::ShaderCompiler()
 {

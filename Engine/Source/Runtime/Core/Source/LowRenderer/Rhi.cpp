@@ -22,30 +22,30 @@ Rhi::~Rhi()
 
 }
 
-void Rhi::Init(const RenderHardwareInterfaceCreateInfo& _createInfo)
+Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _CreateInfo)
+	: m_GraphicsApi(_CreateInfo.GraphicsAPI)
 {
 	PERF_REGION_SCOPED;
 	PC_LOG("Rhi Initialize");
-	m_GraphicsApi = _createInfo.GraphicsAPI;
 
 	RenderInstanceCreateInfo renderInstanceCreateInfo =
 	{
-		.appName = _createInfo.appName,
-		.gpuDebug = _createInfo.gpuDebug
+		.appName = _CreateInfo.appName,
+		.gpuDebug = _CreateInfo.gpuDebug
 	};
 
 	const PhysicalDevicesCreateInfo physicalDevicesCreateInfo =
 	{
 		{
 			// RhiExtension::RayTracing,
-			//RhiExtension::MeshShader
+			RhiExtension::MeshShader
 		},
 
 	};
 
 	const RhiContextCreateInfo renderContextCreateInfo =
 	{
-		_createInfo.window->GetHandle(),
+		_CreateInfo.window->GetHandle(),
 		&renderInstanceCreateInfo,
 		&physicalDevicesCreateInfo
 	};
@@ -335,6 +335,7 @@ const RhiContext& Rhi::GetRhiContext() const
 void Rhi::NextFrame()
 {
 	m_CurrentFrame = (m_CurrentFrame + 1) % MaxFramesInFlight;
+	m_RhiContext->DirtyFrameIndex = m_CurrentFrame;
 }
 
 

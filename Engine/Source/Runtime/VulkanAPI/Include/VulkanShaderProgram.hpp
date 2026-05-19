@@ -38,9 +38,6 @@ namespace Vulkan
         
         bool Build() override;
         
-        void PushConstant(vk::CommandBuffer _commandBuffer, const std::string& _pushConstantKey, const void* data,
-                          size_t _size) const;
-        
         vk::PipelineBindPoint GetPipelineBindPoint() const;
 
         vk::Pipeline GetPipeline() const;
@@ -49,19 +46,6 @@ namespace Vulkan
     
 
     protected:
-        static constexpr std::array<vk::DynamicState, 10> DynamicStateArray =
-        {
-            vk::DynamicState::eViewport,
-            vk::DynamicState::eScissor,
-            vk::DynamicState::eLineWidth,
-            vk::DynamicState::eDepthBias,
-            vk::DynamicState::eDepthBounds,
-            vk::DynamicState::eStencilCompareMask,
-            vk::DynamicState::eStencilWriteMask,
-            vk::DynamicState::eStencilReference,
-            vk::DynamicState::ePrimitiveTopology,
-            vk::DynamicState::eBlendConstants,
-        };
         
         size_t m_DescriptorId = std::numeric_limits<size_t>::max();
 
@@ -69,7 +53,7 @@ namespace Vulkan
 
         vk::Pipeline m_Pipeline = VK_NULL_HANDLE;
 
-        std::unordered_map<std::string, PushConstantField> m_PushConstantMap;
+        std::vector<vk::DynamicState> GetDynamicState() const;
 
         bool CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 
@@ -82,8 +66,6 @@ namespace Vulkan
 
         void CreatePipelineLayout(vk::Device _device,
                                   const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
-
-        void CreatePushConstantMapFromReflection(const std::vector<SpvReflectShaderModule>& _spvReflectShaderModule);
 
 #pragma region ParseRegion
 

@@ -6,11 +6,12 @@
 #include <mutex>
 #include <future>
 
+#include "CoreHeader.hpp"
 #include "PerfRegion.hpp"
 
 namespace PC_CORE::Thread
 {
-	class ThreadPool
+	class PC_CORE_API ThreadPool
 	{
 	public:
 
@@ -20,7 +21,7 @@ namespace PC_CORE::Thread
 		ThreadPool& operator=(ThreadPool&&) = delete;
 		ThreadPool& operator=(const ThreadPool&) = delete;
 
-		explicit ThreadPool(std::size_t nr_threads = std::thread::hardware_concurrency());
+		explicit ThreadPool(const char* ThreadPoolName, std::size_t nr_threads = std::thread::hardware_concurrency());
 
 		~ThreadPool();
 

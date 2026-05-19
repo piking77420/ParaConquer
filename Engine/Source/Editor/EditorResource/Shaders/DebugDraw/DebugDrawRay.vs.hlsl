@@ -27,7 +27,7 @@ VSOutput Main(VSInput vSInput, uint VertexID : SV_VertexID)
     float4 currentPoint = VertexID == 0 ? vSInput.Point1 : vSInput.Point2;
     float4 vertexCameraSpace = float4(currentPoint.x - cameraPos.x, currentPoint.y - cameraPos.y, currentPoint.z - cameraPos.z, 1);
     
-    vSOutput.Pos = mul(vertexCameraSpace, vp);
+    vSOutput.Pos = mul(vp, vertexCameraSpace);
     vSOutput.Color = vSInput.Color.rgb;
     
     return vSOutput;

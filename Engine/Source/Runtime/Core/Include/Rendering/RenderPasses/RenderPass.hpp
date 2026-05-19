@@ -4,6 +4,7 @@
 #include "Guid.hpp"
 #include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
+#include "Primitive/AABB.hpp"
 
 namespace PC_CORE 
 {
@@ -19,10 +20,10 @@ namespace PC_CORE::Rendering
     class RenderingWorldData;
     class Renderer;
     class RenderGraph;
+    class DrawList;
 
     struct RendererPassBuildContext
     {
-        CommandList& cmd;
         Rhi& RHI;
         RenderGraph& RenderGraph;
         const RenderView& View;
@@ -58,7 +59,9 @@ public:
 
     bool IsDisable = false;
 
+
 protected:
+
 };
 
 template <typename Derived>

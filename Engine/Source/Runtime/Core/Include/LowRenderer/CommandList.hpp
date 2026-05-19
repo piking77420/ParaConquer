@@ -1,10 +1,11 @@
 ﻿#pragma once
 
-#include <Array>
-#include <String>
-#include <Memory>
-#include <Functional>
+#include <array>
+#include <string>
+#include <memory>
+#include <functional>
 #include <span>
+#include <tuple>
 
 #include "CoreHeader.hpp"
 #include "Math/ToolboxTypedef.hpp"
@@ -30,8 +31,6 @@ BEGIN_PCCORE
     };
 
     using ClearValueFlag = uint32_t;
-
-
 
     struct BeginRenderPassInfo
     {
@@ -157,6 +156,22 @@ BEGIN_PCCORE
 
         };
 
+        class DebugLabelScope
+        {
+            DebugLabelScope(PC_CORE::CommandList& _List,
+                const char* _Name,
+                const std::array<float, 4>& _Color)
+                : m_List(_List)
+            {
+                _List.BeginDebugLabel(_Name, _Color);
+            }
+            ~DebugLabelScope()
+            {
+                m_List.EndDebugLabel();
+            }
+        private:
+            PC_CORE::CommandList& m_List;
+        };
 
         DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 
@@ -174,24 +189,28 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo);
 
+        PC_CORE_API virtual void BeginComputePasss();
+
         PC_CORE_API virtual void EndRenderPass() = 0;
 
         PC_CORE_API virtual void NextSubPass() = 0;
 
-        PC_CORE_API virtual void BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;
+        PC_CORE_API virtual bool BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;
 
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
                                                    size_t _Set,
-                                                   size_t _DynamicOffset = std::numeric_limits<size_t>::max()) = 0;
+                                                   std::optional<size_t> _DynamicOffset = {}) = 0;
 
         PC_CORE_API virtual void BindDescriptorSets(
             const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,
             size_t firstSet,
             const std::span<const size_t>& dynamicOffset = {}) = 0;
 
-        PC_CORE_API virtual void PushConstant(const std::string& _pushConstantKey,
-                                              const void* _data, size_t _size) = 0;
+        PC_CORE_API virtual void PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
+                                              const void* _Data,
+                                              uint32_t _Offset,
+                                              uint32_t _Size) = 0;
 
         PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
@@ -208,6 +227,8 @@ BEGIN_PCCORE
                                              int32_t _vertexOffset, size_t _firstInstance) = 0;
 
         PC_CORE_API virtual void Dispatch(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
+
+        PC_CORE_API virtual void DrawMeshTask(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) = 0;
 
         PC_CORE_API virtual void BindDrawBuffers(const DrawBuffers& _DrawBuffers) = 0;
 
@@ -253,17 +274,28 @@ BEGIN_PCCORE
         }
 
     protected:
-        BufferType m_BufferType { BufferType::Primary };
+        enum RecordRenderPassType
+        {
+            None,
+            Graphic,
+            Compute,
+        };
 
-        PoolFamily m_PoolFamily { PoolFamily::Graphics };
+        struct RecordState {
+            RecordRenderPassType RecordRenderPassType = RecordRenderPassType::None;
+            const RhiShaderProgram* lastBindProgram = nullptr;
+            DrawBuffers lastDrawBuffersState;
+        }m_RecordState;
 
-        std::vector<std::function<void(CommandList*)>> m_FetchCommands;
+		BufferType m_BufferType{ BufferType::Primary };
 
-        DrawBuffers m_LastDrawBuffersState;
+		PoolFamily m_PoolFamily{ PoolFamily::Graphics };
 
-       const RhiShaderProgram* m_LastBindProgram = nullptr;
+		std::vector<std::function<void(CommandList*)>> m_FetchCommands;
 
-       bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
+		bool DrawBufferStateChanged(const DrawBuffers& _DrawBuffers);
+
+        bool IsInRenderPass(RecordRenderPassType Type) const;
 
      private:
 

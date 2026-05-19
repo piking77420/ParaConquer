@@ -9,6 +9,14 @@
 namespace PC_CORE::Rendering
 {
 
+    enum class RenderMode : uint8_t
+    {
+        TriangleBased,
+        ClusterBased,
+        PathTracing
+    };
+    REFLECT(RenderMode);
+
 namespace Gpu
 {
     struct mat4
@@ -58,7 +66,15 @@ namespace Gpu
         _Dst->data[3] = static_cast<float>(_Src->w);
     }
 
-    static inline void StreamDoubleToFloat(mat4* _Dst, Tbx::Matrix4x4d* _Src)
+    static inline void StreamDoubleToFloat(mat3* _Dst, const Tbx::Matrix3x3d* _Src)
+    {
+        for (size_t i = 0; i < 9; i++)
+        {
+            _Dst->data[i] = static_cast<float>(_Src->data[i]);
+        }
+    }
+
+    static inline void StreamDoubleToFloat(mat4* _Dst, const Tbx::Matrix4x4d* _Src)
     {
         for (size_t i = 0; i < 16; i++)
         {
@@ -91,10 +107,13 @@ namespace Gpu
 
     struct GPU_ALIGN LightHeader {
         DirLight DirLight;
-        int LightCount;
+        uint32_t LightCount;
     };
 
+    struct GPU_ALIGN RenderInstance
+    {
+        mat4 ModelView;
+        mat4 NormalInvertMatrix;
+    };
 }
-
-
 }

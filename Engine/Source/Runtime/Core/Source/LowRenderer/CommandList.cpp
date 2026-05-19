@@ -11,9 +11,6 @@ namespace PC_CORE
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Rhi);
-
-        m_LastDrawBuffersState = {};
-        m_LastBindProgram = nullptr;
     }
 
     void CommandList::EndRecordCommands()
@@ -23,7 +20,14 @@ namespace PC_CORE
 
     void PC_CORE::CommandList::BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo)
     {
-        m_LastBindProgram = nullptr;
+        m_RecordState = {};
+        m_RecordState.RecordRenderPassType = RecordRenderPassType::Graphic;
+    }
+
+    void CommandList::BeginComputePasss()
+    {
+        m_RecordState = {};
+        m_RecordState.RecordRenderPassType = RecordRenderPassType::Compute;
     }
 
     void PC_CORE::CommandList::RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction)
@@ -42,11 +46,16 @@ namespace PC_CORE
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Rhi);
 
-        const bool changed = m_LastDrawBuffersState != _DrawBuffers;
+        const bool changed = m_RecordState.lastDrawBuffersState != _DrawBuffers;
         if (changed)
-            m_LastDrawBuffersState = _DrawBuffers;
+            m_RecordState.lastDrawBuffersState = _DrawBuffers;
 
         return changed;
+    }
+
+    bool CommandList::IsInRenderPass(RecordRenderPassType Type) const
+    {
+        return m_RecordState.RecordRenderPassType == Type;
     }
 
 } // namespace PC_CORE

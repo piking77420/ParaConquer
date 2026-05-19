@@ -30,23 +30,27 @@ namespace Vulkan
 
         VULKAN_API void BeginRenderPass(const PC_CORE::BeginRenderPassInfo& _BeginRenderPassInfo) override;
 
+        VULKAN_API void BeginComputePasss() override;
+
         VULKAN_API void NextSubPass() override;
 
         VULKAN_API void EndRenderPass() override;
 
         VULKAN_API void BindDescriptorSet(const PC_CORE::RhiDescriptorSet* _shaderProgramDescriptorSets,
                                           size_t _FirstSet,
-                                          size_t _DynamicOffset) override;
+                                          std::optional<size_t> _DynamicOffset) override;
 
         VULKAN_API void BindDescriptorSets(
             const std::span<const PC_CORE::RhiDescriptorSet*>& descriptorSets,
             size_t firstSet,
             const std::span<const size_t>& dynamicOffset) override;
 
-        VULKAN_API void BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
+        VULKAN_API bool BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
 
-        VULKAN_API void PushConstant(const std::string& _pushConstantKey,
-                                     const void* _data, size_t _size) override;
+        VULKAN_API void PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
+                                     const void* _Data,
+                                     uint32_t _Offset,
+                                     uint32_t _Size) override;
 
         VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;
 
@@ -65,6 +69,7 @@ namespace Vulkan
 
         VULKAN_API void Dispatch(uint32_t, uint32_t, uint32_t) override;
 
+        VULKAN_API void DrawMeshTask(uint32_t _groupCountX, uint32_t _groupCountY, uint32_t _groupCountZ) override;
 
         VULKAN_API void BindDrawBuffers(const DrawBuffers& _DrawBuffers) override;
 

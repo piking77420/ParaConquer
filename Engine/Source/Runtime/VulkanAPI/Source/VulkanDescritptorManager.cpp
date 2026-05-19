@@ -9,19 +9,36 @@
 
 struct DescriptorVkBindingHash {
 
-    inline [[nodiscard]] std::size_t hash_combine(std::size_t seed, std::size_t h) const noexcept {
-        // classic combine
-        seed ^= h + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+    static inline std::size_t hash_combine(std::size_t seed, std::size_t h) noexcept
+    {
+        seed ^= h + 0x9e3779b97f4a7c15ull + (seed << 6) + (seed >> 2);
         return seed;
     }
 
-    size_t operator()(const vk::DescriptorSetLayoutBinding& w) const noexcept {
-        size_t h = 0;
-        h = hash_combine(h, static_cast<size_t>(w.binding));
-        h = hash_combine(h, static_cast<size_t>(w.descriptorCount));
-        h = hash_combine(h, static_cast<size_t>(w.descriptorType));
-        h = hash_combine(h, static_cast<size_t>(static_cast<uint32_t>(w.stageFlags)));
-        assert(w.pImmutableSamplers == nullptr);
+    std::size_t operator()(const vk::DescriptorSetLayoutBinding& b) const noexcept
+    {
+        std::size_t h = 0;
+
+        h = hash_combine(h, std::hash<uint32_t>{}(b.binding));
+        h = hash_combine(h, std::hash<uint32_t>{}(b.descriptorCount));
+        h = hash_combine(h, std::hash<int>{}(static_cast<int>(b.descriptorType)));
+
+        h = hash_combine(h, std::hash<VkShaderStageFlags>{}(
+            static_cast<VkShaderStageFlags>(b.stageFlags)
+            ));
+
+        if (b.pImmutableSamplers != nullptr)
+        {
+            for (uint32_t i = 0; i < b.descriptorCount; ++i)
+            {
+                h = hash_combine(
+                    h,
+                    std::hash<VkSampler>{}(
+                        static_cast<VkSampler>(b.pImmutableSamplers[i])
+                        )
+                );
+            }
+        }
 
         return h;
     }

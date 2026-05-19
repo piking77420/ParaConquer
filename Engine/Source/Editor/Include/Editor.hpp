@@ -1,9 +1,10 @@
 ﻿#pragma once
 
-#include <Atomic>
+#include <atomic>
 #include <future>
 #include <functional>
 #include <optional>
+#include <memory>
 
 #include "App.hpp"
 #include "DockSpace.hpp"
@@ -20,6 +21,7 @@
 #include "Reflection/Reflector.hpp"
 #include "ObjectPtr.hpp"
 #include "AssetsImporter.hpp"
+#include <Rendering/RenderingTypedef.h>
 
 BEGIN_EDITOR_PCCORE
     struct EditorFont
@@ -47,12 +49,35 @@ BEGIN_EDITOR_PCCORE
         DEFAULT_COPY_MOVE_OPERATIONS(ProjectData);
     };
 
+    enum class DebugView : uint8_t
+    {
+        Lit,
+        Unlit,
+        Normal,
+        UV,
+        AO,
+        Triangle,
+        Meshlet
+    };
+    REFLECT(DebugView);
+
+    struct ProjectSettings
+    {
+        PC_CORE::Rendering::RenderMode RenderMode = PC_CORE::Rendering::RenderMode::TriangleBased;
+    };
+
     struct EditorData
     {
+        bool FreezeFrustum = false;
+        bool DrawFrustum = false;
+        bool DrawMesheltBounds = false;
+        bool CullMeshlet = false;
         EditorFont editorFont{};
         EditorFont editorFontItalic{};
 
         ProjectData projectData{};
+        ProjectSettings ProjectSettings;
+        DebugView DebugView = DebugView::Lit;
         std::filesystem::path projectPath{};
     };
 
@@ -61,12 +86,16 @@ BEGIN_EDITOR_PCCORE
     class Editor : public PC_CORE::App
     {
     public:
+        struct AssetImportData
+        {
+            std::vector<std::unique_ptr<AssetsImporter>> Imports;
+
+            std::mutex _lock;
+        };
     
-        Editor();
+        Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo);
 
         ~Editor() override;
-
-        void Init(const PC_CORE::AppCreateInfo& _appCreateInfo) override;
 
         void Destroy() override;
 
@@ -97,22 +126,34 @@ BEGIN_EDITOR_PCCORE
 
         std::vector<std::unique_ptr<EditorSubSystem>> editorSubSystems;
 
-        std::vector<std::unique_ptr<EditorWindow>> editorWindows;
+        std::vector<std::unique_ptr<EditorWindow>> EditorWindows;
 
         std::vector<std::unique_ptr<EditorCommand>> editorCommands;
 
         EditableSelectedObj selectedObject;
 
         EditorData editorData;
+
+        AssetImportData AssetImportData;
+
+        Tbx::Vector3f m_Color = Tbx::Vector3f(1.f, 1.f, 1.f);
     protected:
         void OnRender(PC_CORE::CommandList* _Cmd) override;
 
+
     private:
+
+        void TempImportModel(const std::filesystem::path& _path, bool _CreateStaticMesh);
+
         void LoadFromInitFiles();
 
         void SaveInitFiles();
 
         void CompileShader();
+
+        void CompileShaderDebugView();
+
+        void EditorOnlyShader();
 
         void LookForEditorInit();
 
@@ -120,21 +161,15 @@ BEGIN_EDITOR_PCCORE
 
         void ReloadShaders();
 
-        void HandleAsyncTask();
-
         EditorRenderer m_EditorRenderer;
-
-        std::optional<AssetsImporter> AssetsImporter;
-
-        std::function<void()> m_AfterImportFunc;
-
-        std::atomic<bool> m_HasFinish;
-
-        std::unique_ptr<std::jthread> m_ImportThread;
 
         std::vector<std::future<void>> m_FuturInits;
 
-        PC_CORE::ObjectPtr<PC_CORE::Rendering::Material> testMaterial;
+        PC_CORE::Thread::ThreadPool m_EditorThreadPool;
+
+        EditorWindow* m_ProjectSettingsWindow = nullptr;
+
+        EditWorldWindow* m_EditorWorldWindow = nullptr;
     };
 
     template <EditorCommandDerived T, typename... Args>

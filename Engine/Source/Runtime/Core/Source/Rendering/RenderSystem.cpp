@@ -7,15 +7,21 @@
 #include "World/World.hpp"
 #include "Rendering/Renderer.hpp"
 #include "Rendering/Material.hpp"
+#include "LowRenderer/Rhi.hpp"
+#include "LowRenderer/RhiBuffer.h"
+#include "App.hpp"
 
-PC_CORE::RendererSystem::RendererSystem()
+namespace PC_CORE::Rendering
+{
+
+RendererSystem::RendererSystem()
 {
     DYNAMIC_REFLECT_INIT
 
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Game);
 
-    Level& l = World::GetWorld()->level;
+    Level& l = PC_CORE::World::GetWorld()->level;
 
     m_StaticMeshSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_StaticMeshSignature.set(l.GetComponentTypeBit<StaticMeshComponent>(), true);
@@ -28,9 +34,13 @@ PC_CORE::RendererSystem::RendererSystem()
     m_PointLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
     m_PointLightSignature.set(l.GetComponentTypeBit<PointLight>(), true);
     AddSignature(m_PointLightSignature);
+
+    m_SpothLightSignature.set(l.GetComponentTypeBit<Transform>(), true);
+    m_SpothLightSignature.set(l.GetComponentTypeBit<SpotLight>(), true);
+    AddSignature(m_SpothLightSignature);
 }
 
-void PC_CORE::RendererSystem::RenderingTick(double deltatime)
+void RendererSystem::RenderingTick(double deltatime)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Game);
@@ -40,17 +50,16 @@ void PC_CORE::RendererSystem::RenderingTick(double deltatime)
     m_GameRenderingWorldData.Clear();
     PopulateStaticMeshes(l);
     PopulateLight(l);
-
-    // Make a copy
-    m_RenderRenderingWorldData = m_GameRenderingWorldData;
+    PopulateDebugDraws();
+    debugDrawContext.ClearForNextFrame();
 }
 
-const PC_CORE::Rendering::RenderingWorldData& PC_CORE::RendererSystem::GetRenderRenderingWorldData() const
+const Rendering::RenderingWorldData& RendererSystem::GetRenderRenderingWorldData() const
 {
-    return m_RenderRenderingWorldData;
+    return m_GameRenderingWorldData;
 }
 
-void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
+void RendererSystem::PopulateStaticMeshes(const Level& _level)
 {
     PERF_REGION_SCOPED
     PERF_REGION_COLOR(PerfRegion::Game);
@@ -97,42 +106,148 @@ void PC_CORE::RendererSystem::PopulateStaticMeshes(const Level& _level)
                 static_cast<Tbx::Quaterniond>(transform.Rotation.Quaternion),
                 transform.Scale);
 
-            const Rendering::StaticMeshComponentData staticMeshData =
+            const Rendering::StaticMeshComponentData StaticMeshComponentData = m_GameRenderingWorldData.StaticMeshComponentData.emplace_back(
+                std::move(material),
+                mesh.get(),
+                m
+            );
+      
+#ifdef WITH_EDITOR
+            if (staticMeshComponent.ShowBound)
             {
-                .MaterialType = {},
-                .Materials = std::move(material),
-                .StaticMesh = mesh.get(),
-                .WorldMatrix = m,
-                .NormalInvertMatrix = m.Invert().Transpose(),
-            };
+                MotionCore::Aabb<double> aabbx = mesh->GetAabb();
+                aabbx = aabbx.GetTransformed(m);
+                debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.0f, 0.f));
+            }
 
-            m_GameRenderingWorldData.StaticMeshComponentData.push_back(staticMeshData);
+            if (staticMeshComponent.ShowDrawCommandsBounds)
+            {
+                auto& Data = mesh.get()->GetStaticMeshData();
+                for (size_t i = 0; i < Data.MeshLods[0].DrawCommands.size(); i++)
+                {
+                    MotionCore::Aabb<double> aabbx = Data.MeshLods[0].DrawCommands[i].GlobalModelAABB;
+                    aabbx = aabbx.GetTransformed(m);
+                    debugDrawContext.PushBoxGizmo(DebugDrawContext::PrimitiveType::WireBox, aabbx.GetCenter(), Tbx::Vector3d(0.0, 0.0, 0.0), aabbx.GetSize(), Tbx::Vector3f(0.f, 1.0f, 0.f));
+                }
+            }
+#endif
         }
-
-        
     }
 }
 
-void PC_CORE::RendererSystem::PopulateLight(const Level& _level)
+Tbx::Vector3f KelvinToRGB(float kelvin)
+{
+    float temp = kelvin / 100.0;
+
+    float r, g, b;
+
+    // Red
+    if (temp <= 66.0)
+        r = 1.0;
+    else
+        r = std::clamp(1.292936186062745 * pow(temp - 60.0, -0.1332047592), 0.0, 1.0);
+
+    // Green
+    if (temp <= 66.0)
+        g = std::clamp(0.3900815787690196 * log(temp) - 0.6318414437886275, 0.0, 1.0);
+    else
+        g = std::clamp(1.129890860895294 * pow(temp - 60.0, -0.0755148492), 0.0, 1.0);
+
+    // Blue
+    if (temp >= 66.0)
+        b = 1.0;
+    else if (temp <= 19.0)
+        b = 0.0;
+    else
+        b = std::clamp(0.543206789110196 * log(temp - 10.0) - 1.19625408914, 0.0, 1.0);
+
+    return Tbx::Vector3f(r, g, b);
+}
+
+void RendererSystem::PopulateLight(const Level& _level)
 {
     PERF_REGION_SCOPED
     PERF_REGION_COLOR(PerfRegion::Game);
 
-    std::set<EntityId>& staticMeshes = *GetEntitySet(m_DirLightSignature);
-    for (auto& ent : staticMeshes)
+
+    constexpr float SunMinKelvin = 2000.0;
+    constexpr float SunMaxKelvin = 6500.0;
     {
-        const DirLight& Dir = _level.GetComponent<DirLight>(ent);
-        const Transform& transform = _level.GetComponent<Transform>(ent);
+        std::set<EntityId>& Dirls = *GetEntitySet(m_DirLightSignature);
+        for (auto& ent : Dirls)
+        {
+            const DirLight& Dir = _level.GetComponent<DirLight>(ent);
+            const Transform& transform = _level.GetComponent<Transform>(ent);
 
-        constexpr Tbx::Vector3f WorldUp = Tbx::Vector3f(0.0f, 1.0f, 0.0f);
-        const Tbx::Matrix3x3f rot = Tbx::Rotation3x3<float>(transform.Rotation.Quaternion);
-        const Tbx::Vector3f WorldUpRot = rot * WorldUp;
+            constexpr Tbx::Vector3f WorldUp = Tbx::Vector3f(0.0f, 1.0f, 0.0f);
+            const Tbx::Matrix3x3f rot = Tbx::Rotation3x3<float>(transform.Rotation.Quaternion);
+            const Tbx::Vector3f WorldUpRot = rot * WorldUp;
 
-        m_GameRenderingWorldData.DirLightData.emplace(PC_CORE::Rendering::DirLightData
-            {
-                .LightDirW = WorldUpRot,
-                .LightColor = Dir.color,
-                .LightIntensity = Dir.intensity
-            });
+            /*const float elevation = std::clamp(Tbx::Vector3f::Dot(WorldUpRot, Tbx::Vector3f::UnitY()), 0.f, 1.0f);
+            float kelvin = std::lerp(SunMinKelvin, SunMaxKelvin, elevation);
+            float sunIntensity = std::lerp(0.2, 1.2, elevation);*/
+
+            m_GameRenderingWorldData.DirLightData.emplace(PC_CORE::Rendering::DirLightData
+                {
+                    .LightColor = Dir.color,
+                    .LightIntensity = Dir.intensity,
+                    .LightDirW = WorldUpRot
+                });
+        }
     }
+
+    {
+        std::set<EntityId>& pointLights = *GetEntitySet(m_PointLightSignature);
+        for (auto& ent : pointLights)
+        {
+            const PointLight& Point = _level.GetComponent<PointLight>(ent);
+            const Transform& transform = _level.GetComponent<Transform>(ent);
+
+            m_GameRenderingWorldData.LightsData.emplace_back(
+                Rendering::LightData::LightType::PointLight, // LightType
+                Point.color, // LightColor
+                Point.intensity, // LightIntensity
+                transform.Position, // Radius
+                Point.Radius, // Radius
+                Tbx::Vector3f(), // LightDirection
+                0.f, // OuterAngle
+                0.f); //InnerAngle
+        }
+    }
+
+
+    {
+        std::set<EntityId>& SpothLights = *GetEntitySet(m_PointLightSignature);
+        for (auto& ent : SpothLights)
+        {
+            const SpotLight& Spoth = _level.GetComponent<SpotLight>(ent);
+            const Transform& transform = _level.GetComponent<Transform>(ent);
+
+            constexpr Tbx::Vector3f WorldFoward = Tbx::Vector3f::UnitZ();
+            const Tbx::Matrix3x3f rot = Tbx::Rotation3x3<float>(transform.Rotation.Quaternion);
+            const Tbx::Vector3f WorldForward = rot * WorldFoward;
+
+            m_GameRenderingWorldData.LightsData.emplace_back(
+                Rendering::LightData::LightType::SpotLight, // LightType
+                Spoth.color, // LightColor
+                Spoth.intensity, // LightIntensity
+                transform.Position, // Radius
+                Spoth.Radius, // Radius
+                WorldForward, // LightDirection
+                Spoth.OuterAngle, // OuterAngle
+                Spoth.InnerAngle); //InnerAngle
+        }
+    }
+    
+}
+
+void RendererSystem::PopulateDebugDraws()
+{
+    PERF_REGION_SCOPED
+    PERF_REGION_COLOR(PerfRegion::Game);
+
+    m_GameRenderingWorldData.DebugDrawPrimitives = debugDrawContext.DebugDrawPrimitives();
+    m_GameRenderingWorldData.DebugFrustums = debugDrawContext.DebugDrawFrustums();
+}
+
 }

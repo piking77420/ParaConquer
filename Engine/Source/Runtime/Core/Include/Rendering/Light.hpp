@@ -6,43 +6,46 @@
 #include "Ecs/EcsFront.h"
 
 BEGIN_PCCORE
-    struct Light : Component
+    struct Light : public Component
     {
-        bool isDirty = true;
         Tbx::Vector3f color = Tbx::Vector3f(1.f, 1.f, 1.f);
         float intensity = 1.f;
 
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(Light);
     };
 
     REFLECT(Light, Component)
-    REFLECT_MEMBER(Light, isDirty)
     REFLECT_MEMBER(Light, color, Members::EnumFlag::Color);
     REFLECT_MEMBER(Light, intensity)
 
-    struct DirLight : Light
+    struct DirLight : public Light
     {
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(DirLight);
+
     };
 
     REFLECT(DirLight, Light)
 
-    struct SpotLight : Light
+   struct WorldLight : public Light
+   {
+        float Radius;
+   };
+    REFLECT(WorldLight, Light)
+    REFLECT_MEMBER(WorldLight, Radius)
+
+    struct SpotLight : public WorldLight
     {
-        float outerCutOff;
-        float innerCutOff;
+        float OuterAngle;
+        float InnerAngle;
     };
 
     REFLECT(SpotLight, Light)
-    REFLECT_MEMBER(SpotLight, outerCutOff)
-    REFLECT_MEMBER(SpotLight, innerCutOff)
+    REFLECT_MEMBER(SpotLight, OuterAngle)
+    REFLECT_MEMBER(SpotLight, InnerAngle)
 
 
-    struct PointLight : Light
+    struct PointLight : public  WorldLight
     {
-        DEFAULT_CONSTRUCTOR_DESTRUCTOR(PointLight);
     };
 
-    REFLECT(PointLight, Light)
+    REFLECT(PointLight, WorldLight)
 
 END_PCCORE

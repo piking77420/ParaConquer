@@ -20,13 +20,25 @@ void EditWorldWindow::Update()
 {
     PERF_REGION_SCOPED;
 
-    if (resize)
-        deltass.Reset();
-
     if (ImGui::IsWindowFocused())
         MoveCameraUpdate();
 
+    m_View.MeshletCulling = m_Editor->editorData.CullMeshlet;
+    if (!m_Editor->editorData.FreezeFrustum)
+    {
+        m_View.FrustumViewMatrix = m_View.View;
+        m_View.FrustumToView = m_View.ProjectionInv;
+        m_View.FrustumToWorld = m_View.ViewProjectionInv;
+    }
     WorldViewWindow::Update();
+
+    if (m_Editor->editorData.DrawFrustum)
+    {
+        m_Editor->World.DrawWireFrustum(
+            m_View.FrustumToWorld,
+            Tbx::Vector3f(1, 1, 1)
+        );
+    }
 }
 
 void EditWorldWindow::MoveCameraUpdate()
@@ -35,13 +47,11 @@ void EditWorldWindow::MoveCameraUpdate()
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
-        deltass.Reset();
+
     }
 
     HideCursor();
     CameraChangeSpeed(deltatime);
-
-    
     CameratMovment(deltatime);
     RotateCamera(deltatime);
     ScroolWheelMovement(deltatime);
@@ -54,7 +64,6 @@ void EditWorldWindow::RotateCamera(float _deltatime)
 
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
     {
-        deltass.Reset();
         return;
     }
 
@@ -66,20 +75,28 @@ void EditWorldWindow::RotateCamera(float _deltatime)
         return;
     }
 
-    deltass.AddSample(delta);
-    const Tbx::Vector2f average = deltass.GetAvarage<Tbx::Vector2f>();
-    yaw += average.x * cameraSensitivity;
-    pitch += average.y * cameraSensitivity;
-
+    yaw -= delta.x * cameraSensitivity;
+    pitch += delta.y * cameraSensitivity;
     constexpr float MaxPitch = 89.0f;
     pitch = std::clamp(pitch, -MaxPitch, MaxPitch);
 
-    Tbx::Vector3d forward;
-    forward.x = std::cos(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
-    forward.y = std::sin(pitch * Tbx::dDeg2Rad);
-    forward.z = std::sin(yaw * Tbx::dDeg2Rad) * std::cos(pitch * Tbx::dDeg2Rad);
 
-    m_Camera.LookAt(m_Camera.Position + forward);
+    const Tbx::Quaternionf qYaw = Tbx::Quaternionf::FromAxisAngle(Tbx::Vector3f(0.f, 1.f, 0.f), yaw * Tbx::fDeg2Rad);
+    const Tbx::Quaternionf qPitch = Tbx::Quaternionf::FromAxisAngle(Tbx::Vector3f(1.f, 0.f, 0.f), pitch * Tbx::fDeg2Rad);
+    const Tbx::Quaternionf qTarget = qYaw * qPitch;
+
+    //const float rotationSmoothness = 7.0f; // tweak to taste
+    //float t = 1.0f - std::exp(-rotationSmoothness * io.DeltaTime);
+    //t = std::clamp(t, 0.f, 1.f);
+
+    m_Orientation = qTarget;/*Tbx::Quaternionf::Nlerp(m_Orientation, qTarget, t);*/
+
+    m_Orientation.Normalize();
+    
+
+    Tbx::Vector3f Forward = m_Orientation * Tbx::Vector3f(0.f, 0.f, -1.f );
+
+    m_Camera.LookAt(m_Camera.Position + Tbx::Vector3d(static_cast<double>(Forward.x), static_cast<double>(Forward.y), static_cast<double>(Forward.z)));
 
     m_CameraViewDirty = true;
 }

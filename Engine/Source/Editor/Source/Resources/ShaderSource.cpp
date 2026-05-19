@@ -70,12 +70,16 @@ ShaderSource::ShaderSource() : Resource()
     DYNAMIC_REFLECT_INIT
 }
 
-ShaderSource::ShaderSource(const std::string& _name) : Resource(_name)
+ShaderSource::ShaderSource(const std::string& _name, ShaderFeatureFlag _ShaderFeatureFlag) 
+    : Resource(_name)
+    , m_ShaderFeatureFlag(_ShaderFeatureFlag)
 {
     DYNAMIC_REFLECT_INIT
 }
 
-ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path) : Resource(_name)
+ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path, ShaderFeatureFlag _ShaderFeatureFlag) 
+    : Resource(_name)
+    , m_ShaderFeatureFlag(_ShaderFeatureFlag)
 {
     DYNAMIC_REFLECT_INIT
 
@@ -135,13 +139,55 @@ bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
 
     assert(Editor::instance != nullptr);
     std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(
-        Editor::instance->editorData.projectData.graphicApi, m_PathToSource);
+        Editor::instance->editorData.projectData.graphicApi, m_PathToSource, GetDefineFromShaderFeatures());
 
     if (code.empty())
         return false;
 
     *_buffer = std::move(code);
     return true;
+}
+
+std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
+{
+    std::vector<std::wstring> Features;
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Lit)
+    {
+        Features.push_back(L"-DLIT=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseUV)
+    {
+        Features.push_back(L"-DUSE_UV=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseUV)
+    {
+        Features.push_back(L"-DUSE_NORMAL_MAP=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseColor)
+    {
+        Features.push_back(L"-DUSE_COLOR=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::DrawTriangle)
+    {
+        Features.push_back(L"-DDRAW_TRIANGLE=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Instanced)
+    {
+        Features.push_back(L"-DINSTANCED=1");
+    }
+
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Frustum)
+    {
+        Features.push_back(L"-DFRUSTUM=1");
+    }
+
+    return Features;
 }
 
 std::string ShaderSource::GetShaderBinaryPath()

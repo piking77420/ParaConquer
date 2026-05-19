@@ -1,51 +1,66 @@
-#define CAMERA_BINDING b0
-#define CAMERA_SPACE space0
+#include "Color.hlsl"
+#include "NDC.hlsl"
 
+#define CAMERA_BINDING b0
+#define CAMERA_SET space0
 #include "Camera.hlsl"
+
+#if defined(INSTANCED)
+StructuredBuffer<float4x4> RenderInstances : register(t1, space0);
+#else 
+struct DebugDrawCall
+{
+	float4x4 ModelView;
+};
+[[vk::push_constant]]
+DebugDrawCall DrawCall;
+#endif // defined(INSTANCED)
 
 struct VSInput
 {
     [[vk::location(0)]] float3 Position : POSITION0;
-
-    // Per-instance transform matrix columns
-    [[vk::location(1)]] float4 InstanceMatrixColums0 : POSITION1;
-    [[vk::location(2)]] float4 InstanceMatrixColums1 : POSITION2;
-    [[vk::location(3)]] float4 InstanceMatrixColums2 : POSITION3;
-    [[vk::location(4)]] float4 InstanceMatrixColums3 : POSITION4;
 };
 
 struct VSOutput
 {
     float4 Pos : SV_POSITION;
-    [[vk::location(0)]] float3 Color : COLOR0;
+    float4 Color : COLOR0;
 };
 
-VSOutput Main(VSInput vSInput, uint VertexID : SV_VertexID)
+
+VSOutput Main(VSInput vSInput, 
+    uint VertexID : SV_VertexID,
+    uint InstanceID : SV_InstanceID)
 {
     VSOutput vsOutPut = (VSOutput)0;
-    
-    float4x4 instanceMatrix = float4x4(
-        vSInput.InstanceMatrixColums0,
-        vSInput.InstanceMatrixColums1,
-        vSInput.InstanceMatrixColums2,
-        vSInput.InstanceMatrixColums3
-    );
 
-    float3 color = float3(
-        instanceMatrix[0].w,
-        instanceMatrix[1].w,
-        instanceMatrix[2].w
-    );
+    // Get Matrix
+    float4x4 Matrix =
+#if defined(INSTANCED) 
+    RenderInstances[InstanceID];
+#else
+    DrawCall.ModelView;
+#endif // defined(INSTANCED) 
 
-    instanceMatrix[0].w = 0.0;
-    instanceMatrix[1].w = 0.0;
-    instanceMatrix[2].w = 0.0;
+#if defined(INSTANCED)
+    float3 VertexPos = vSInput.Position;
+     // Get Color
+    float4 color = FromPackedRGB(asuint(Matrix[3][3]));
+    color.w = 1.0f;
+    Matrix[3][3] = 1.0f;
 
 
-    instanceMatrix[3].xyz -= cameraPos.xyz;
+    float4 ViewPos = mul(Matrix, float4(VertexPos, 1.0));
+    vsOutPut.Pos = mul(Projection, ViewPos);
 
-    float4 worldPos = mul(float4(vSInput.Position, 1.0), instanceMatrix);
-    vsOutPut.Pos = mul(worldPos, vp);
+#elif defined(FRUSTUM)
+    float4 FrustumWorldPos = mul(Matrix, float4(NdcCorner[FrustumIndices[VertexID]], 1.0));
+    FrustumWorldPos.xyz /= FrustumWorldPos.w;
+    FrustumWorldPos.w = 1.0;
+
+    vsOutPut.Pos = mul(ViewProjection, FrustumWorldPos);
+    float4 color = float4(1,1,1,1);
+#endif
 
     vsOutPut.Color = color;
     return vsOutPut;

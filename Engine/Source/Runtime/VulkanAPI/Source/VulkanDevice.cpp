@@ -7,7 +7,8 @@ vk::Device Vulkan::VulkanDevice::GetDevice() const
     return m_Device;
 }
 
-Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices,
+Vulkan::VulkanDevice::VulkanDevice(const std::vector<PC_CORE::RhiExtension>& RhiExtension, 
+                                    const std::shared_ptr<VulkanPhysicalDevices>& _vulkanPhysicalDevices,
                                    const std::set<std::string>& _extensionToEnable,
                                    vk::Queue* _graphicQueue)
 {
@@ -65,26 +66,63 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
 #endif // PROFILING
 
     vk::PhysicalDeviceExtendedDynamicState2FeaturesEXT extendedFeatures2{};
-    extendedFeatures2.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState2FeaturesEXT;
-    extendedFeatures2.pNext = nullptr;
+    extendedFeatures2.sType =
+        vk::StructureType::ePhysicalDeviceExtendedDynamicState2FeaturesEXT;
 
     vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT extendedFeatures3{};
-    extendedFeatures3.sType = vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
+    extendedFeatures3.sType =
+        vk::StructureType::ePhysicalDeviceExtendedDynamicState3FeaturesEXT;
     extendedFeatures3.pNext = &extendedFeatures2;
 
+    vk::PhysicalDeviceVulkan13Features v13 = {
+ 
+    };
+    VkBaseOutStructure* chainHead =
+        reinterpret_cast<VkBaseOutStructure*>(&extendedFeatures3);
+
+    vk::PhysicalDeviceMeshShaderFeaturesEXT meshFeatures{};
+    for (auto ext : RhiExtension)
+    {
+        switch (ext)
+        {
+        case PC_CORE::RhiExtension::MeshShader:
+            meshFeatures.sType = vk::StructureType::ePhysicalDeviceMeshShaderFeaturesEXT;
+            meshFeatures.meshShader = vk::True;
+            meshFeatures.taskShader = vk::True;
+
+            meshFeatures.pNext = chainHead;
+            chainHead = reinterpret_cast<VkBaseOutStructure*>(&meshFeatures);
+
+            v13.sType = vk::StructureType::ePhysicalDeviceVulkan13Features;
+            v13.shaderDemoteToHelperInvocation = VK_TRUE;
+
+            v13.pNext = chainHead;
+            chainHead = reinterpret_cast<VkBaseOutStructure*>(&v13);
+
+            break;
+
+        default:
+            break;
+        }
+    }
 
 #ifdef PROFILING
-    extendedFeatures2.pNext = &hostQueryResetFeatures;
+    hostQueryResetFeatures.pNext = chainHead;
+    chainHead =
+        reinterpret_cast<VkBaseOutStructure*>(&hostQueryResetFeatures);
 #endif
 
     vk::DeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
+    deviceCreateInfo.pNext = chainHead; // ✅ CORRECT
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfo.data();
-    deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfo.size());
+    deviceCreateInfo.queueCreateInfoCount =
+        static_cast<uint32_t>(queueCreateInfo.size());
     deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
-    deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensionNames.size());
-    deviceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames.data();
-    deviceCreateInfo.pNext = &extendedFeatures3;
+    deviceCreateInfo.enabledExtensionCount =
+        static_cast<uint32_t>(enabledExtensionNames.size());
+    deviceCreateInfo.ppEnabledExtensionNames =
+        enabledExtensionNames.data();
 
 #ifdef _DEBUG
     if constexpr (ENABLE_VALIDATION_LAYERS)
@@ -103,13 +141,6 @@ Vulkan::VulkanDevice::VulkanDevice(const std::shared_ptr<VulkanPhysicalDevices>&
 
     if (_graphicQueue != nullptr)
         *_graphicQueue = m_Device.getQueue(QueuIndex, 0);
-
-    /*
-    if (_presentQueue != nullptr)
-        *_presentQueue = m_Device.getQueue(QueuIndex, 1);
-
-    if (_transferQueue != nullptr)
-        *_transferQueue = m_Device.getQueue(QueuIndex, 2);*/
 }
 
 Vulkan::VulkanDevice::~VulkanDevice()
