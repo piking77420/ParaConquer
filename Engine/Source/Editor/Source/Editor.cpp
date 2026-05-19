@@ -407,7 +407,7 @@ void Editor::Destroy()
     PERF_REGION_SCOPED;
 
     {
-        std::scoped_lock(AssetImportData._lock);
+        std::scoped_lock _(AssetImportData._lock);
         AssetImportData.Imports.clear();
     }
     // editor window need core
@@ -623,15 +623,15 @@ void Editor::InitTestScene()
     }
     
      
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), false);
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), false);
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), false);
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), false);
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), true);
 
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), false);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), false);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
     TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
 }
   
@@ -664,10 +664,6 @@ void Editor::Run(bool* _appShouldClose)
         IMGUIContext.NewFrame();
         Time::UpdateTime();
         DequeuMainThreadTask();
-        {
-            // Test
-            World.DrawWireSphere(Tbx::Vector3d(0, 0, 0), 15.f);
-        }
         WorldTick(Time::DeltaTime());
         UpdateEditor();
         Renderer.RenderFrame();

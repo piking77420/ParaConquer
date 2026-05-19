@@ -514,7 +514,6 @@ void Vulkan::VulkanCommandList::DrawMeshTask(uint32_t _groupCountX, uint32_t _gr
         PC_LOGERROR("DrawMeshTask was call but Commandlist was not in graphic record state, CommandList Name : {}", m_Name);
         return;
     }
-
     // Should not be static but id does the job
     static PFN_vkCmdDrawMeshTasksEXT func = GET_VK_INSTANCE->GetPFN_vkCmdDrawMeshTasksEXT();
     assert(func && "Misssing function");
