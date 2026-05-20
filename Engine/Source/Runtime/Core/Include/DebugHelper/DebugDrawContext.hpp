@@ -10,7 +10,6 @@
 #include "Rendering/Buffer/UniformBuffer.hpp"
 #include "Rendering/RenderingTypedef.h"
 #include "Resources/GraphicShader.hpp"
-#include "Resources/Mesh.hpp"
 #include "Scripting/ScriptingLua.hpp"
 
 

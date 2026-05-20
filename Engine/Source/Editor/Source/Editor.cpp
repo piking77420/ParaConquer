@@ -536,10 +536,10 @@ void Editor::RewindCommand()
     editorCommands.pop_back();
 }
 
-void Editor::TempImportModel(const std::filesystem::path& _path, bool _CreateStaticMesh)
+void Editor::TempImportModel(const std::filesystem::path& _path, 
+    const std::optional<std::function<void()>>& AfterImportTask)
 {
-    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR
-    Guid importesGuid{};
+    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR    
     AssetsImporter* ptr = nullptr;
     {
         std::scoped_lock _(AssetImportData._lock);
@@ -548,7 +548,7 @@ void Editor::TempImportModel(const std::filesystem::path& _path, bool _CreateSta
 
     if (!ptr)
         return;
-    importesGuid = ptr->GetGuid();
+    Guid importesGuid = ptr->GetGuid();
 
     {
         TaskHandle ImportMesh = TaskScheduler.NewTask(m_EditorThreadPool,
@@ -558,8 +558,9 @@ void Editor::TempImportModel(const std::filesystem::path& _path, bool _CreateSta
                 Importer->ImportModel(RenderHarwareInteface, ThreadPool, path);
             });
 
-        if (importesGuid != Guid::Empty() && _CreateStaticMesh)
+        /*if (importesGuid != Guid::Empty())
         {
+            
             TaskHandle CreateStaticMesh = TaskScheduler.NewTask(TaskThread::MainThread,
                 [this, impGuid = importesGuid]()
                 {
@@ -579,22 +580,26 @@ void Editor::TempImportModel(const std::filesystem::path& _path, bool _CreateSta
                                 StaticMesh = StaticMeshLocked;
                             }
                         }
+
+                        auto& level = World::GetWorld()->level;
+                        if (StaticMesh)
+                        {
+                            EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
+                            level.AddComponent<Transform>(staticMesh);
+                            level.AddComponent<StaticMeshComponent>(staticMesh);
+                            Transform* t = &level.GetComponent<Transform>(staticMesh);
+                            t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
+                            t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
+                            StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
+                            s->staticMesh = StaticMesh;
+                        }
                     }
 
-                    auto& level = World::GetWorld()->level;
-                    if (StaticMesh)
-                    {
-                        EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
-                        level.AddComponent<Transform>(staticMesh);
-                        level.AddComponent<StaticMeshComponent>(staticMesh);
-                        Transform* t = &level.GetComponent<Transform>(staticMesh);
-                        t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-                        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-                        StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
-                        s->staticMesh = StaticMesh;
-                    }
                 }, { ImportMesh });
-        }
+        }*/
+
+        if (AfterImportTask)
+            TaskScheduler.NewTask(TaskThread::MainThread, *AfterImportTask, { ImportMesh });
 
         TaskScheduler.Lauch(ImportMesh);
     }
@@ -621,7 +626,46 @@ void Editor::InitTestScene()
         p.intensity = 1.f;
         p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
-    
+
+    static constexpr size_t SphereCountPerAxis = 10;
+    static constexpr double SpaceBetweenSphere = 50.0;
+
+    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), [&]()
+        {
+            auto& level = World::GetWorld()->level;
+            for (size_t i = 0; i < SphereCountPerAxis; i++)
+            {
+                const float Roughness = i / static_cast<float>(SphereCountPerAxis - 1);
+
+                for (size_t j = 0; j < SphereCountPerAxis; j++)
+                {
+                    const float Metallic = j / static_cast<float>(SphereCountPerAxis - 1);
+                    std::string MaterialFormat = std::format("Roughness {}, Mettalic {}", Roughness, Metallic);
+
+                    const EntityId id = level.CreateEntity(std::string("Sphere") 
+                        + MaterialFormat);
+                    level.AddComponent<Transform>(id);
+                    Transform& t = level.GetComponent<Transform>(id);
+                    t.Position = Tbx::Vector3d(Roughness * SpaceBetweenSphere, Metallic * SpaceBetweenSphere, 0.0);
+
+                    level.AddComponent<StaticMeshComponent>(id);
+                    StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                    smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
+
+                    // Material Block
+                    ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
+                        std::string("Pbr Material") + MaterialFormat);
+
+                    Material->SetRoughnessFactor(Roughness);
+                    Material->SetMetallicFactor(Metallic);
+                    Material->SetAlbedoFactor(Tbx::Vector4f(1.f, 0.f, 0.f, 1.f));
+
+                    Material->Build();
+
+                    smc.materials.emplace_back() = Material;
+                }
+            }
+        });
      
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), true);
@@ -629,10 +673,9 @@ void Editor::InitTestScene()
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), true);
 
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
-    TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
+    //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
 }
   
 
