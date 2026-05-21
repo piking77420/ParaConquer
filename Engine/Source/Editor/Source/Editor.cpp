@@ -629,7 +629,7 @@ void Editor::InitTestScene()
 
     static constexpr size_t SphereCountPerAxis = 10;
     static constexpr double SpaceBetweenSphere = 50.0;
-
+/*
     TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), [&]()
         {
             auto& level = World::GetWorld()->level;
@@ -666,7 +666,7 @@ void Editor::InitTestScene()
                 }
             }
         });
-     
+     */
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), true);
@@ -676,6 +676,7 @@ void Editor::InitTestScene()
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
     //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
+    TempImportModel((editorData.projectPath / "Assets/Meshs/Bistro_v5_2/BistroExterior.fbx"));
 }
   
 
