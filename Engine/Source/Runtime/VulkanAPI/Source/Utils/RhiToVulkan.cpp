@@ -403,12 +403,26 @@ vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
     case PC_CORE::RhiFormat::D32SfloatS8Uint:
         return vk::Format::eD32SfloatS8Uint;
 
+    case PC_CORE::RhiFormat::BC1_RGBA_UNORM_BLOCK:
+        return vk::Format::eBc1RgbaUnormBlock;
+
+    case PC_CORE::RhiFormat::BC2_UNORM_BLOCK:
+        return vk::Format::eBc2UnormBlock;
+
+    case PC_CORE::RhiFormat::BC3_UNORM_BLOCK:
+        return vk::Format::eBc3UnormBlock;
+
+    case PC_CORE::RhiFormat::BC4_UNORM_BLOCK:
+        return vk::Format::eBc4UnormBlock;
+
+    case PC_CORE::RhiFormat::BC5_UNORM_BLOCK:
+        return vk::Format::eBc5UnormBlock;
     default:
         break;
     }
 
+    PC_LOGCRITICAL("Unsupported Enum type")
     assert(false);
-
     return format;
 }
 #pragma endregion Format

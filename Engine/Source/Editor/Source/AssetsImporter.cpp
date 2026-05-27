@@ -10,7 +10,7 @@
 #include "Rendering/Material.hpp"
 
 #include "LowRenderer/Rhi.hpp"
-#include "Resources/FileLoader.hpp"
+#include <Io/FileLoader.hpp>
 #include "Resources/ResourceManager.hpp"
 #include "Resources/StaticMesh.hpp"
 #include "Serialize/Serializer.h"
@@ -543,15 +543,15 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     {
                         std::string pathString = texturePath.generic_string();
                         PC_CORE::Image image(pathString.c_str(), PC_CORE::RhiChannel::Rgba);
-                        std::unique_ptr<PC_CORE::RhiTexture> texture(Rhi->CreateTexture());
 
-                        if (!texture || !image)
+                        if (!image || image.GetSizeInBytes() == 0)
                             return;
                         
+                        std::unique_ptr<PC_CORE::RhiTexture> texture(Rhi->CreateTexture());
                         texture->SetName(textureName.C_Str());
                         BuildRhiTextureFromImage(*Rhi, *texture, &image, type, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
-                        PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
+                        PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
                         pair.first = type;
                         pair.second = texture2D;
 

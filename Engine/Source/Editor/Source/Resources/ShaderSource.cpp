@@ -4,8 +4,6 @@
 #include <fstream>
 #include <iostream>
 #include <PerfRegion.hpp>
-
-#include "Io/InOut.h"
 #include "Resources/ResourceManager.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
 #include "Editor.hpp"

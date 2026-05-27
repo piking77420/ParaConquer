@@ -1,7 +1,7 @@
 ﻿#include "Resources/Texture3d.hpp"
 
 #include "LowRenderer/Rhi.hpp"
-#include "Resources/FileLoader.hpp"
+#include <Io/FileLoader.hpp>
 
 
 PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const std::array<std::string, 6>& _maps)

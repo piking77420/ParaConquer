@@ -252,6 +252,13 @@ BEGIN_PCCORE
         D16UnormS8Uint = 128,
         D24UnormS8Uint = 129,
         D32SfloatS8Uint = 130,
+
+        // BC
+        BC1_RGBA_UNORM_BLOCK,
+        BC2_UNORM_BLOCK,
+        BC3_UNORM_BLOCK,
+        BC4_UNORM_BLOCK,
+        BC5_UNORM_BLOCK,
     };
     REFLECT(RhiFormat)
 
@@ -462,6 +469,8 @@ BEGIN_PCCORE
         default:
             return static_cast<uint32_t>(-1);
         }
+
+        PC_LOGCRITICAL("Unsupported Enum type")
 
         return static_cast<uint32_t>(-1);
     }

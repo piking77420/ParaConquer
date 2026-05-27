@@ -335,7 +335,6 @@ const RhiContext& Rhi::GetRhiContext() const
 void Rhi::NextFrame()
 {
 	m_CurrentFrame = (m_CurrentFrame + 1) % MaxFramesInFlight;
-	m_RhiContext->DirtyFrameIndex = m_CurrentFrame;
 }
 
 

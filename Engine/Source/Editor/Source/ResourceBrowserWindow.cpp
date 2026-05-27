@@ -12,7 +12,7 @@
 
 #include "Resources/StaticMesh.hpp"
 
-#include "Resources/FileLoader.hpp"
+#include <Io/FileLoader.hpp>
 #include <Fstream>
 #include <ImguiHelper.h>
 #include <Serialize/JsonSerializer.hpp>

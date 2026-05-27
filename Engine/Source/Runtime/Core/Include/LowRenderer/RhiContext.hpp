@@ -34,8 +34,6 @@ public:
 
     std::shared_ptr<RhiSwapChain> rhiSwapChain;
 
-    uint32_t DirtyFrameIndex = 0;
-
     PC_CORE_API RhiContext(Rhi& _Rhi);
 
     PC_CORE_API RhiContext() = delete;

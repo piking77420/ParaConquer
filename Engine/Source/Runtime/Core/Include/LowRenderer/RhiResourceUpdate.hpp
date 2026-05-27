@@ -4,7 +4,7 @@
 #include <variant>
 #include <deque>
 
-#include "Resources/FileLoader.hpp"
+#include <Io/Image.hpp>
 #include "LowRenderer/RhiBuffer.h"
 #include "LowRenderer/RhiTexture.hpp"
 

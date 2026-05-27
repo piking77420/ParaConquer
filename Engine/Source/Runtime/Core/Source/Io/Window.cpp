@@ -1,12 +1,9 @@
 ﻿#include "io/window.hpp"
 
 #include <Glfw/Glfw3.h>
-
-#include "Resources/FileLoader.hpp"
+#include <PerfRegion.hpp>
+#include <Io/FileLoader.hpp>
 #include <Log.hpp>
-
-#include "PerfRegion.hpp"
-
 
 using namespace PC_CORE;
 

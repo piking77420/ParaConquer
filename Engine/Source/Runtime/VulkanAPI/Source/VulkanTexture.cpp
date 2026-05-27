@@ -351,7 +351,7 @@ Vulkan::VulkanTexture::~VulkanTexture()
 {
     auto& context = GET_VK_CONTEXT;
 
-    context.DefferdDestroy(m_StagingBuffer, context.DirtyFrameIndex);
-    context.DefferdDestroy(m_Handle, context.DirtyFrameIndex);
+    context.DefferdDestroy(m_StagingBuffer, m_Rhi.GetFrameIndex());
+    context.DefferdDestroy(m_Handle, m_Rhi.GetFrameIndex());
 }
 

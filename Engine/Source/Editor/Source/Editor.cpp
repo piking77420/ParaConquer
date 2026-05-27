@@ -33,6 +33,7 @@
 #include "World/StaticMeshComponent.hpp"
 
 #include "ImguiReflectedObject.hpp"
+#include <Io/DDSImageLoader.hpp>
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -71,6 +72,11 @@ Editor::Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo)
     {
         f.wait();
     }
+
+    // test dds
+    //DDSImageLoader dds("C:/Project/ParaConquerGame/Assets/Meshs/Bistro_v5_2/Textures/MASTER_Roofing_Shingle_Grey_BaseColor.dds");
+
+
 }
 
 Editor::~Editor()
@@ -293,7 +299,7 @@ void Editor::CompileShader()
 				EDITOR_RESOURCE_PATH
 				"/Shaders/SampleSingleTexture.ps.hlsl");
 			}));
-	}
+	}   
 
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
@@ -673,7 +679,7 @@ void Editor::InitTestScene()
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), true);
 
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), true);
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
     //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
     TempImportModel((editorData.projectPath / "Assets/Meshs/Bistro_v5_2/BistroExterior.fbx"));

@@ -3,7 +3,7 @@
 #include "Editor.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "DebugHelper/DebugDrawContext.hpp"
-#include "Resources/FileLoader.hpp"
+#include <Io/FileLoader.hpp>    
 #include "LowRenderer/RhiShaderProgram.hpp"
 
 PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_editor)

@@ -7,24 +7,6 @@
 #include "LowRenderer/RhiTypedef.h"
 
 BEGIN_PCCORE
-
-
-    class PC_CORE_API FileLoader
-    {
-    public:
-        FileLoader() = delete;
-
-        ~FileLoader() = delete;
-
-        static uint8_t* LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _channel);
-
-        static uint8_t* LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp);
-
-        static void FreeData(uint8_t* _file);
-
-        static bool IsHdr(const char* _filename);
-    };
-
     class Image
     {
     public:
@@ -34,11 +16,8 @@ BEGIN_PCCORE
             ImageDeleter(ImageDeleter&&) noexcept = default;
             ImageDeleter& operator=(ImageDeleter&&) noexcept = default;
 
-            void operator()(uint8_t* p) const noexcept {
-                FileLoader::FreeData(p);
-            }
+            PC_CORE_API void operator()(uint8_t* p);
         };
-
 
         DEFAULT_COPY_MOVE_OPERATIONS(Image);
 
@@ -118,6 +97,8 @@ BEGIN_PCCORE
         bool m_IsHDR = false;
 
         PC_CORE_API void ComputeDataSize();
+
+        PC_CORE_API void LoadFromPath(const std::string_view& _view, PC_CORE::RhiChannel _desireChannel);
     };
 
 END_PCCORE
