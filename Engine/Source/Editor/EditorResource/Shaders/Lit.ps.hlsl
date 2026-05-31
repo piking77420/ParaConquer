@@ -8,7 +8,7 @@ struct PSInput
     #elif defined(LIT)
     float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float3 Tangent : TEXCOORD2;
+    float4 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -68,11 +68,12 @@ float4 Main(PSInput input) : SV_Target
 #if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP)
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
     {
-        float3 T = normalize(input.Tangent);
+        float3 T = normalize(input.Tangent.xyz);
         float3 N = Normal;
-
         T = normalize(T - dot(T, N) * N);
-        float3 B = normalize(cross(N, T));
+        float tangentSign = input.Tangent.w;
+
+        float3 B = normalize(cross(N, T)) * tangentSign;;
 
         float3x3 TBN = transpose(float3x3(T, B, N));
 
@@ -102,10 +103,13 @@ float4 Main(PSInput input) : SV_Target
         Metallic = ORM.b;
     }
 #endif
+
+    // temp
     
     float3 Lo = float3(0, 0, 0);
 #if defined(LIT)
-    
+    float3 Ambient = float3(0.03, 0.03, 0.03) * FragAlbedo.xyz * AO;
+
     float3 N = Normal;
     float3 V = -normalize(input.ViewSpacePosition);
     float NoV = saturate(dot(N, V)) + 1e-5;
@@ -135,6 +139,7 @@ float4 Main(PSInput input) : SV_Target
     
     // Other
     Lo += Emissive * 0.001;
+    Lo += Ambient;
 #endif
 
 #if defined(USE_COLOR)

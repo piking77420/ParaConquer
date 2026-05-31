@@ -44,21 +44,20 @@ namespace Gpu
         std::array<float, 2> data;
     };
 
-    static inline void StreamDoubleToFloat(vec2* _Dst, Tbx::Vector2d* _Src)
+    static inline void StreamDoubleToFloat(vec2* _Dst, const Tbx::Vector2d* _Src)
     {
         _Dst->data[0] = static_cast<float>(_Src->x);
         _Dst->data[1] = static_cast<float>(_Src->y);
     }
 
-    static inline void StreamDoubleToFloat(vec3* _Dst, Tbx::Vector3d* _Src)
+    static inline void StreamDoubleToFloat(vec3* _Dst, const Tbx::Vector3d* _Src)
     {
         _Dst->data[0] = static_cast<float>(_Src->x);
         _Dst->data[1] = static_cast<float>(_Src->y);
         _Dst->data[2] = static_cast<float>(_Src->z);
-
     }
 
-    static inline void StreamDoubleToFloat(vec4* _Dst, Tbx::Vector4d* _Src)
+    static inline void StreamDoubleToFloat(vec4* _Dst, const Tbx::Vector4d* _Src)
     {
         _Dst->data[0] = static_cast<float>(_Src->x);
         _Dst->data[1] = static_cast<float>(_Src->y);

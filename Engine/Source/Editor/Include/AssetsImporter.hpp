@@ -55,6 +55,8 @@ BEGIN_EDITOR_PCCORE
 
         [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path);
 
+        [[nodiscard]] PC_CORE::ObjectPtr<PC_CORE::Texture2D> ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path);
+
         const std::string& GetName() const;
 
         const PC_CORE::WeakObjectPtr<PC_CORE::StaticMesh>& GetStaticMeshes() const
@@ -110,6 +112,10 @@ BEGIN_EDITOR_PCCORE
 
         std::vector<PC_CORE::RHI::ResourceUpdateBranch> m_ResourceUpdateBranchs;
 
+        PC_CORE::ObjectPtr<PC_CORE::Texture2D> TextureFromPath(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path);
+
+        void FetchResourcesUpdates(PC_CORE::Rhi& _Rhi);
+
         bool ImportMeshesFromScene(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* scene);
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
@@ -122,11 +128,11 @@ BEGIN_EDITOR_PCCORE
 
         void ProcessDrawCommand(std::vector<PC_CORE::MeshLOD>& MeshLods, const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, const aiScene* Scene, const aiNode* Node, aiAABB* SceneGlobalBound, const aiMatrix4x4& ParentModelTransform);
 
-        [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType);
+        [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromPath(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 
-        [[nodiscard]] void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, aiTextureType textureType , bool _UseApha);
+        [[nodiscard]] void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha);
 
 
     };

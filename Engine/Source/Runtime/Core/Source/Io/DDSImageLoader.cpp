@@ -64,16 +64,16 @@ namespace PC_CORE
         size_t size;
     };
 
-    /*
-    static size_t mipSizeBytes(VkFormat format, uint32_t w, uint32_t h) {
-        if (isBCFormat(format)) {
+    
+    static size_t mipSizeBytes(RhiFormat format, uint32_t w, uint32_t h) {
+        if (IsBcFormat(format)) {
             uint32_t bw = std::max(1u, (w + 3) / 4);
             uint32_t bh = std::max(1u, (h + 3) / 4);
-            return size_t(bw) * size_t(bh) * blockSizeBytes(format);
+            return size_t(bw) * size_t(bh) * GetBytePerPixel(format);
         }
 
-        return size_t(w) * size_t(h) * blockSizeBytes(format);
-    }*/
+        return size_t(w) * size_t(h) * GetBytePerPixel(format);
+    }
 
     
     static RhiFormat dxgiToVkFormat(uint32_t dxgi) {
@@ -139,6 +139,8 @@ namespace PC_CORE
 
 	DDSImageLoader::DDSImageLoader(const std::filesystem::path& _Path)
 	{
+        std::vector<char> File;
+
 		if (!std::filesystem::exists(_Path))
 		{
 			PC_LOGERROR("This path dont exist {}", _Path.generic_string());
@@ -185,6 +187,45 @@ namespace PC_CORE
         {
             PC_LOGERROR("Failed parse dds texture unsuported format {}", _Path.generic_string());
         }
+
+        if (dataOffset >= File.size()) {
+            PC_LOGERROR("DDS has no pixel data {}", _Path.generic_string());
+        }
+        
+        const size_t pixelSize = File.end() - (File.begin() + dataOffset);
+        
+        pixels = std::make_unique<uint8_t[]>(pixelSize);
+        std::memcpy(pixels.get(), File.data() + dataOffset, pixelSize);
+
+        size_t offset = 0;
+        uint32_t w = out.width;
+        uint32_t h = out.height;
+
+        out.mips.reserve(out.mipLevels);
+        for (uint32_t mip = 0; mip < out.mipLevels; ++mip) {
+            const size_t size = mipSizeBytes(out.format, w, h);
+
+            if (offset + size > pixelSize) {
+                PC_LOGERROR("DDS mip data is truncated {}", _Path.generic_string())
+                return;
+            }
+
+            out.mips.emplace_back(DdsMip{
+                w,
+                h,
+                offset,
+                size
+                });
+
+            offset += size;
+            w = std::max(1u, w / 2);
+            h = std::max(1u, h / 2);
+        }
+
 	}
+    const DDSImageLoader::DdsTexture& DDSImageLoader::GetDDSTexture() const
+    {
+        return m_DdsTexture;
+    }
 }
 

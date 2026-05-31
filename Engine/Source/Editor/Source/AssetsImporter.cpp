@@ -142,6 +142,8 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
     default:
         break;
     }
+
+    return "?";
 }
 
 
@@ -211,33 +213,67 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 }
 
                 ResolveMaterial(scene);
-
             }
 
-            {
-                PERF_REGION_SCOPED;
-                PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Fetch ResourceUpdateBranchs");
-
-                std::scoped_lock _(_Rhi.GetRhiContext().lock);
-                for (auto& it : m_ResourceUpdateBranchs)
-                {
-                    *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
-                }
-            }
+            FetchResourcesUpdates(_Rhi);
 
             m_Succes = true;
         }
 
-        
-
         return m_Succes;
+    }
+
+    PC_CORE::ObjectPtr<PC_CORE::Texture2D> AssetsImporter::ImportTexture(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path)
+    {
+        PC_CORE::ObjectPtr<PC_CORE::Texture2D> Texure2D = TextureFromPath(_Rhi, _path);
+        if (!Texure2D)
+            return Texure2D;
+
+        FetchResourcesUpdates(_Rhi);
+        return Texure2D;
+    }
+
+    PC_CORE::ObjectPtr<PC_CORE::Texture2D> AssetsImporter::TextureFromPath(PC_CORE::Rhi& _Rhi, const std::filesystem::path& _path)
+    {
+        std::string pathString = _path.generic_string();
+        PC_CORE::Image image(pathString.c_str(), PC_CORE::RhiChannel::Rgba);
+        PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D;
+
+        if (!image || image.GetSizeInBytes() == 0)
+        {
+        error:
+            PC_LOGERROR("Failed to import Texture {} ", _path.generic_string());
+            return texture2D;
+        }
+
+        std::unique_ptr<PC_CORE::RhiTexture> texture(_Rhi.CreateTexture());
+        texture->SetName(_path.filename().generic_string());
+        BuildRhiTextureFromImage(_Rhi, *texture, &image, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
+
+        texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
+
+        if (!texture2D)
+        {
+            goto error;
+        }
+
+        return texture2D;
+    }
+
+    void AssetsImporter::FetchResourcesUpdates(PC_CORE::Rhi& _Rhi)
+    {
+        PERF_REGION_SCOPED;
+        PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Fetch ResourceUpdateBranchs");
+
+        std::scoped_lock _(_Rhi.GetRhiContext().lock);
+        for (auto& it : m_ResourceUpdateBranchs)
+            *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
     }
 
     const std::string& AssetsImporter::GetName() const
     {
         return m_ImportObjectName;
     }
-
 
     void PopuplateLodMeshMap(std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, std::unordered_map<uint32_t, std::vector<std::pair<uint32_t, uint32_t>>>& Map, const aiScene* Scene, uint32_t* LodMaxIndex)
     {
@@ -523,6 +559,8 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
                 if (embeded) // HandleEmbeded Texture
                 {
+                    assert(false && "Not supported");
+                    /*
                     std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(*Rhi, textureName.C_Str(), *embeded, type));
                     PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
@@ -534,26 +572,15 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     {
                         std::scoped_lock _(m_mutex);
                         m_TextureMaps[textureName.C_Str()] = std::move(pair);
-                    }
+                    }*/
                 }
                 else // FROM PATH
                 {
                     const auto texturePath = m_filePath.parent_path() / std::filesystem::u8path(textureName.C_Str());
                     if (std::filesystem::exists(texturePath))
                     {
-                        std::string pathString = texturePath.generic_string();
-                        PC_CORE::Image image(pathString.c_str(), PC_CORE::RhiChannel::Rgba);
-
-                        if (!image || image.GetSizeInBytes() == 0)
-                            return;
-                        
-                        std::unique_ptr<PC_CORE::RhiTexture> texture(Rhi->CreateTexture());
-                        texture->SetName(textureName.C_Str());
-                        BuildRhiTextureFromImage(*Rhi, *texture, &image, type, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
-
-                        PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
                         pair.first = type;
-                        pair.second = texture2D;
+                        pair.second = TextureFromPath(*Rhi, texturePath);
 
                         {
                             std::scoped_lock _(m_mutex);
@@ -797,7 +824,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         }
     }
 
-    PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture, aiTextureType textureType)
+    PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture)
     {
         PC_CORE::RhiTexture* RhiTexturePtr = _Rhi.CreateTexture();
 
@@ -806,7 +833,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
             PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName, PC_CORE::RhiChannel::Rgba);
             RhiTexturePtr->SetName(TextureName);
 
-            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, textureType, false); // TODO ALPHA
+            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, false); // TODO ALPHA
             return RhiTexturePtr;
         }
         else
@@ -817,7 +844,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         return nullptr;
     }
 
-    void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, aiTextureType textureType, bool _UseApha)
+    void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha)
     {
         assert(!_Image->IsHdr());
 
@@ -836,11 +863,9 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         {
         case PC_CORE::RhiChannel::Rgb:
         case PC_CORE::RhiChannel::Rgba:
-
                 _Texture.SetRhiFormat(_Image->IsHdr()
                     ? PC_CORE::RhiFormat::R16G16B16A16Sfloat
                     : PC_CORE::RhiFormat::R8G8B8A8Unorm);
-
             break;
         default:
             assert(false && "NotSupported");

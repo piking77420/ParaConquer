@@ -25,12 +25,16 @@ namespace PC_CORE
 			uint32_t height = 0;
 			uint32_t mipLevels = 1;
 			RhiFormat format;
-			std::vector<uint8_t> pixels;   // contiguous image data, no DDS header
 			std::vector<DdsMip> mips;
 		};
 
+		const DdsTexture& GetDDSTexture() const;
+
+
 	private:
-		std::vector<char> File;
+		std::unique_ptr<uint8_t[]> pixels;
+
+		DdsTexture m_DdsTexture;
 	};
 
 

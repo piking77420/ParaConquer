@@ -31,7 +31,7 @@ struct VsOutput
 #elif defined(LIT)
     float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float3 Tangent : TEXCOORD2;
+    float4 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -70,7 +70,7 @@ VsOutput Main(VsInput input)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
     output.Normal = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, NormalL));
-    output.Tangent = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, TangentL));
+    output.Tangent = normalize(mul(renderInstance.ModelView, TangentL));
 #endif 
 
     // Need uvs

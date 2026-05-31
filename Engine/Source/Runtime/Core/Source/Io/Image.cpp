@@ -55,7 +55,10 @@ namespace PC_CORE
 
         if (_view.find(".dds") != std::string::npos) // dirty do an enum
         {
-            DDSImageLoader image(_view.data());
+            DDSImageLoader ddsLader(_view.data());
+
+            const auto& ddsTexture = ddsLader.GetDDSTexture();
+            
         }
         else
         {

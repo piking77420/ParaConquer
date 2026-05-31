@@ -19,13 +19,21 @@ BEGIN_PCCORE
             PC_CORE_API void operator()(uint8_t* p);
         };
 
+        struct MipsDescriptor
+        {
+            uint32_t width;
+            uint32_t height;
+            size_t offset;
+            size_t size;
+        };
+
         DEFAULT_COPY_MOVE_OPERATIONS(Image);
 
-        PC_CORE_API Image(const std::string& _path, PC_CORE::RhiChannel _desireChannel);
+        PC_CORE_API Image(const std::string& _path, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
 
-        PC_CORE_API Image(const char* _path, PC_CORE::RhiChannel _desireChannel);
+        PC_CORE_API Image(const char* _path, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
 
-        PC_CORE_API Image(const uint8_t* _ptr, size_t _size, const char* _name, PC_CORE::RhiChannel _Channel);
+        PC_CORE_API Image(const uint8_t* _ptr, size_t _size, const char* _name, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
 
         Image() = default;
 
@@ -81,7 +89,6 @@ BEGIN_PCCORE
 
 
     private:
-       
         REFLECT(Image);
 
         uint32_t m_Width = 0;
@@ -95,6 +102,8 @@ BEGIN_PCCORE
         std::unique_ptr<uint8_t[], ImageDeleter> m_Data;
 
         bool m_IsHDR = false;
+
+        bool m_HasMips = false;
 
         PC_CORE_API void ComputeDataSize();
 

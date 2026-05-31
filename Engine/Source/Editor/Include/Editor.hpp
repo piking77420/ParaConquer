@@ -142,9 +142,9 @@ BEGIN_EDITOR_PCCORE
 
 
     private:
+        void TempImport(const std::filesystem::path& _path);
 
-        void TempImportModel(const std::filesystem::path& _path,
-            const std::optional<std::function<void()>>& AfterImportTask = {});
+        AssetsImporter* NewAssetsImporter();
 
         void LoadFromInitFiles();
 

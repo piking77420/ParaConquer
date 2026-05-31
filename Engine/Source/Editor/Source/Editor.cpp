@@ -542,73 +542,38 @@ void Editor::RewindCommand()
     editorCommands.pop_back();
 }
 
-void Editor::TempImportModel(const std::filesystem::path& _path, 
-    const std::optional<std::function<void()>>& AfterImportTask)
+AssetsImporter* Editor::NewAssetsImporter()
 {
-    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR    
     AssetsImporter* ptr = nullptr;
     {
         std::scoped_lock _(AssetImportData._lock);
         ptr = AssetImportData.Imports.emplace_back(new AssetsImporter()).get();
     }
 
-    if (!ptr)
+    return ptr;
+}
+
+void Editor::TempImport(const std::filesystem::path& _path)
+{
+    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR    
+    AssetsImporter* AssetsImporter = NewAssetsImporter();
+
+    if (!AssetsImporter)
         return;
-    Guid importesGuid = ptr->GetGuid();
-
+    const std::string ext = _path.extension().generic_string();
+    if (ext == ".fbx" || ext == ".gltf" || ext == ".obj")
     {
-        TaskHandle ImportMesh = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&, Importer = ptr, path = _path]
-            ()
-            {
-                Importer->ImportModel(RenderHarwareInteface, ThreadPool, path);
-            });
-
-        /*if (importesGuid != Guid::Empty())
-        {
-            
-            TaskHandle CreateStaticMesh = TaskScheduler.NewTask(TaskThread::MainThread,
-                [this, impGuid = importesGuid]()
-                {
-                    ObjectPtr<PC_CORE::StaticMesh> StaticMesh;
-
-                    PERF_REGION_SCOPED;
-                    PERF_REGION_COLOR(PerfRegion::EditorResource);
-                    {
-                        std::scoped_lock _(AssetImportData._lock);
-                        auto it = std::ranges::find_if(AssetImportData.Imports, [&](const std::unique_ptr<AssetsImporter>& _Importer) {
-                            return _Importer->GetGuid() == impGuid;
-                            });
-                        if (it != AssetImportData.Imports.end() && (*it)->GetSuccess())
-                        {
-                            if (auto StaticMeshLocked = (*it)->GetStaticMeshes().Lock())
-                            {
-                                StaticMesh = StaticMeshLocked;
-                            }
-                        }
-
-                        auto& level = World::GetWorld()->level;
-                        if (StaticMesh)
-                        {
-                            EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
-                            level.AddComponent<Transform>(staticMesh);
-                            level.AddComponent<StaticMeshComponent>(staticMesh);
-                            Transform* t = &level.GetComponent<Transform>(staticMesh);
-                            t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-                            t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-                            StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
-                            s->staticMesh = StaticMesh;
-                        }
-                    }
-
-                }, { ImportMesh });
-        }*/
-
-        if (AfterImportTask)
-            TaskScheduler.NewTask(TaskThread::MainThread, *AfterImportTask, { ImportMesh });
-
-        TaskScheduler.Lauch(ImportMesh);
+        AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
     }
+    else if (ext == ".png" || ext == ".jpg" || ext == ".dds")
+    {
+        AssetsImporter->ImportTexture(RenderHarwareInteface, _path);
+    }
+    else
+    {
+        PC_LOGERROR("Invalid path extension for this path {}", _path.generic_string());
+    }
+
 }
 
 
@@ -673,6 +638,55 @@ void Editor::InitTestScene()
             }
         });
      */
+
+    auto taskHandle = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteAlbedo.png"); });
+    auto taskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+        TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteNormal-ogl.png");
+        }, { taskHandle });
+    auto taskHandle3 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+        TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
+        }, { taskHandle2 });
+
+    auto taskHandle4 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+        TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
+        }, { taskHandle3 });
+    auto taskHandle5 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+        TempImport(editorData.projectPath / "Assets/Meshs/obj/sphere.obj");
+        }, { taskHandle4 });
+
+    auto taskHandle6 = TaskScheduler.NewTask(m_EditorThreadPool,
+        [&]()
+            {
+                auto& level = World::GetWorld()->level;
+
+                const EntityId id = level.CreateEntity(std::string("Sphere"));
+                level.AddComponent<Transform>(id);
+                Transform& t = level.GetComponent<Transform>(id);
+                t.Position = Tbx::Vector3d(0.0, 0.0, 0.0);
+
+                level.AddComponent<StaticMeshComponent>(id);
+                StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
+
+
+
+                // Material Block
+                ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
+                    std::string("Pbr Material"));
+
+                Material->SetAlbedoTexture(ResourceManager::Get<PC_CORE::Texture2D>("Painted-damaged-concreteAlbedo.png"));
+                Material->SetNormalTexture(ResourceManager::Get<PC_CORE::Texture2D>("Painted-damaged-concreteNormal-ogl.png"));
+                Material->SetMetallicRoughnessAOTexture(ResourceManager::Get<PC_CORE::Texture2D>("Packed_Texture_ORM.png"));
+
+
+                Material->Build();
+
+                smc.materials.emplace_back() = Material;
+
+        }, { taskHandle5 });
+    
+    TaskScheduler.Lauch(taskHandle);
+        
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), true);
@@ -682,7 +696,7 @@ void Editor::InitTestScene()
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
     //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
-    TempImportModel((editorData.projectPath / "Assets/Meshs/Bistro_v5_2/BistroExterior.fbx"));
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Bistro_v5_2/BistroExterior.fbx"));
 }
   
 
