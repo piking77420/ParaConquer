@@ -68,13 +68,17 @@ float3 BRDF(float3 BaseColor, float Metallic, float Roughness, float NoV, float 
     // Specular F0 from metallic workflow
     float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
 
+    // Normal Distrubution Function 
+    // Approximate the amout of surface microfacet that are alligned with H
     float D = D_GGX(NoH, Roughness);
-    float3 F = F_Schlick(LoH, F0);
+    // Self shadowing property of the microfacets 
+    // how other microfacets shadow themselft
     float V = V_SmithGGXCorrelated(NoV, NoL, Roughness); // G / (4 * NoV * NoL)
+    float3 F = F_Schlick(LoH, F0);
 
     float3 Fr = D * V * F; 
 
-    float3 kD = (1.0 - F) * (1.0 - Metallic);
+    float3 kD = (1.0 - F) * (1.0 - Metallic); // diffuse coefficient kf is equal to F and F varies to 0 to 1
     float3 Fd = kD * BaseColor * Fd_Burley(NoV, NoL, LoH, Roughness);
 
     return Fr + Fd;

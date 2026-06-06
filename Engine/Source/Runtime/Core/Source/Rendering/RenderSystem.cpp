@@ -135,43 +135,11 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
     }
 }
 
-Tbx::Vector3f KelvinToRGB(float kelvin)
-{
-    float temp = kelvin / 100.0;
-
-    float r, g, b;
-
-    // Red
-    if (temp <= 66.0)
-        r = 1.0;
-    else
-        r = std::clamp(1.292936186062745 * pow(temp - 60.0, -0.1332047592), 0.0, 1.0);
-
-    // Green
-    if (temp <= 66.0)
-        g = std::clamp(0.3900815787690196 * log(temp) - 0.6318414437886275, 0.0, 1.0);
-    else
-        g = std::clamp(1.129890860895294 * pow(temp - 60.0, -0.0755148492), 0.0, 1.0);
-
-    // Blue
-    if (temp >= 66.0)
-        b = 1.0;
-    else if (temp <= 19.0)
-        b = 0.0;
-    else
-        b = std::clamp(0.543206789110196 * log(temp - 10.0) - 1.19625408914, 0.0, 1.0);
-
-    return Tbx::Vector3f(r, g, b);
-}
-
 void RendererSystem::PopulateLight(const Level& _level)
 {
     PERF_REGION_SCOPED
     PERF_REGION_COLOR(PerfRegion::Game);
 
-
-    constexpr float SunMinKelvin = 2000.0;
-    constexpr float SunMaxKelvin = 6500.0;
     {
         std::set<EntityId>& Dirls = *GetEntitySet(m_DirLightSignature);
         for (auto& ent : Dirls)
@@ -182,10 +150,6 @@ void RendererSystem::PopulateLight(const Level& _level)
             constexpr Tbx::Vector3f WorldUp = Tbx::Vector3f(0.0f, 1.0f, 0.0f);
             const Tbx::Matrix3x3f rot = Tbx::Rotation3x3<float>(transform.Rotation.Quaternion);
             const Tbx::Vector3f WorldUpRot = rot * WorldUp;
-
-            /*const float elevation = std::clamp(Tbx::Vector3f::Dot(WorldUpRot, Tbx::Vector3f::UnitY()), 0.f, 1.0f);
-            float kelvin = std::lerp(SunMinKelvin, SunMaxKelvin, elevation);
-            float sunIntensity = std::lerp(0.2, 1.2, elevation);*/
 
             m_GameRenderingWorldData.DirLightData.emplace(PC_CORE::Rendering::DirLightData
                 {

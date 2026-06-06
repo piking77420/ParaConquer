@@ -32,7 +32,7 @@ struct MeshOutput
     #elif defined(LIT)
     float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float3 Tangent : TEXCOORD2;
+    float4 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -94,7 +94,8 @@ void Main(uint3 gtid : SV_GroupThreadID,
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
     vertices[gtid.x].Normal = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, NormalL));
-    vertices[gtid.x].Tangent = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, TangentL));
+    float3 TangentV = normalize(mul((float3x3)renderInstance.ModelView, input.Tangent.xyz));
+    vertices[gtid.x].Tangent = float4(TangentV, input.Tangent.w);
 #endif 
 
     // Need uvs

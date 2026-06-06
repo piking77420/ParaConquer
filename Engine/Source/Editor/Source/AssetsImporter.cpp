@@ -239,7 +239,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         PC_CORE::Image image(pathString.c_str(), PC_CORE::RhiChannel::Rgba);
         PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D;
 
-        if (!image || image.GetSizeInBytes() == 0)
+        if (!image)
         {
         error:
             PC_LOGERROR("Failed to import Texture {} ", _path.generic_string());
@@ -556,32 +556,30 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 const aiTexture* embeded = Scene->GetEmbeddedTexture(textureName.C_Str());
 
                 std::pair<aiTextureType, PC_CORE::WeakObjectPtr<PC_CORE::Texture2D>> pair{};
+                pair.first = type;
 
                 if (embeded) // HandleEmbeded Texture
                 {
-                    assert(false && "Not supported");
-                    /*
-                    std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(*Rhi, textureName.C_Str(), *embeded, type));
+                    std::unique_ptr<PC_CORE::RhiTexture> texture(RhiTextureFromAiTexture(*Rhi, textureName.C_Str(), *embeded));
+                    
                     PC_CORE::ObjectPtr<PC_CORE::Texture2D> texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
 
-                    if (!texture || !texture2D)
+                    if (!texture2D)
                         return;
 
-                    pair.first = type;
                     pair.second = texture2D;
                     {
                         std::scoped_lock _(m_mutex);
                         m_TextureMaps[textureName.C_Str()] = std::move(pair);
-                    }*/
+                    }
                 }
                 else // FROM PATH
                 {
                     const auto texturePath = m_filePath.parent_path() / std::filesystem::u8path(textureName.C_Str());
                     if (std::filesystem::exists(texturePath))
                     {
-                        pair.first = type;
                         pair.second = TextureFromPath(*Rhi, texturePath);
-
+                    
                         {
                             std::scoped_lock _(m_mutex);
                             m_TextureMaps[textureName.C_Str()] = std::move(pair);
@@ -602,7 +600,6 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 const size_t TextureCount = _Scene->mMaterials[i]->GetTextureCount(type);
                 for (size_t k = 0; k < TextureCount; k++)
                 {
-
                     aiString str;
                     if (_Scene->mMaterials[i]->GetTexture(type, k, &str) != aiReturn::aiReturn_SUCCESS)
                     {
@@ -611,8 +608,6 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
                     if (str.length == 0)
                         continue;
-
-                            
                     {
                         std::scoped_lock _(m_mutex);
                         if (m_TextureMaps.contains(str.C_Str()))
@@ -773,6 +768,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 break;
             case aiTextureType_GLTF_METALLIC_ROUGHNESS:
             case aiTextureType_SPECULAR:
+                break;
             case aiTextureType_HEIGHT:
             case aiTextureType_SHININESS:
             case aiTextureType_DISPLACEMENT:
@@ -785,6 +781,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 break;
             }
 
+            
             aiString textureName;
 
             const size_t TextureCount = Material.GetTextureCount(type);
@@ -808,7 +805,9 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
                     if (type == aiTextureType_METALNESS ||
                         type == aiTextureType_DIFFUSE_ROUGHNESS ||
-                        type == aiTextureType_AMBIENT_OCCLUSION)
+                        type == aiTextureType_AMBIENT_OCCLUSION || 
+                        type == aiTextureType_GLTF_METALLIC_ROUGHNESS || 
+                        type == aiTextureType_SPECULAR)
                     {
                         CoreMaterial.SetMetallicRoughnessAOTexture(Texture);
                     }
@@ -830,63 +829,119 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
         if (aiTexture.mHeight == 0) // Compressed
         {
-            PC_CORE::Image image(reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName, PC_CORE::RhiChannel::Rgba);
+            std::string_view view(TextureName);
+            PC_CORE::Image image(view, reinterpret_cast<const uint8_t*>(aiTexture.pcData), static_cast<size_t>(aiTexture.mWidth), TextureName, PC_CORE::RhiChannel::Rgba);
             RhiTexturePtr->SetName(TextureName);
 
-            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, false); // TODO ALPHA
+            BuildRhiTextureFromImage(_Rhi, *RhiTexturePtr, &image, view.find(".png") != std::string::npos);
             return RhiTexturePtr;
         }
         else
         {
+            assert(false);
             PC_LOGERROR("Dont support raw texture")
         }
-
+        delete RhiTexturePtr;
         return nullptr;
     }
 
     void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha)
     {
-        assert(!_Image->IsHdr());
+        const auto& ImageLevel = _Image->GetMipDescriptor();
+        assert(!_Image->IsHdr() && !_Image->GetMipDescriptor().empty());
+        
+        const uint32_t Level = (ImageLevel.size() == 1) ? static_cast<uint32_t>(std::floor(std::log2(std::max(ImageLevel[0].width, ImageLevel[0].height)))) + 1 : _Image->GetMipDescriptor().size();
 
         _Texture
             .SetMemoryUsage(RhiMemoryUsage::StaticGPU)
             .SetTextureUsage(PC_CORE::RhiTexture::TextureUsageFlagBits::Sampled | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferDst
                 | PC_CORE::RhiTexture::TextureUsageFlagBits::LoadAndStore | PC_CORE::RhiTexture::TextureUsageFlagBits::TransferSrc)
             .SetTextureType(PC_CORE::RhiTexture::Type::Texture2D)
-            .SetWidth(_Image->GetWidht())
-            .SetHeight(_Image->GetHeight())
-            .SetLevel(static_cast<uint32_t>(std::floor(std::log2(std::max(_Image->GetWidht(), _Image->GetHeight())))) + 1)
+            .SetWidth(ImageLevel[0].width)
+            .SetHeight(ImageLevel[0].height)
+            .SetLevel(Level)
             .SetUseAlpha(_UseApha);
 
    
-        switch (_Image->GetChannel())
+        std::optional<PC_CORE::RhiFormat> BuildInFormat = _Image->GetBuildInFormat();
+
+        if (BuildInFormat)
         {
-        case PC_CORE::RhiChannel::Rgb:
-        case PC_CORE::RhiChannel::Rgba:
+            _Texture.SetRhiFormat(*BuildInFormat);
+        }
+        else
+        {
+            switch (_Image->GetChannel())
+            {
+            case PC_CORE::RhiChannel::Rgb:
+            case PC_CORE::RhiChannel::Rgba:
+            {
                 _Texture.SetRhiFormat(_Image->IsHdr()
                     ? PC_CORE::RhiFormat::R16G16B16A16Sfloat
                     : PC_CORE::RhiFormat::R8G8B8A8Unorm);
+            }
             break;
-        default:
-            assert(false && "NotSupported");
-            break;
+            default:
+                assert(false && "NotSupported");
+                break;
+            }
         }
-
+        
         _Texture.Build();
-
-
         {
+            const std::vector<PC_CORE::Image::MipsDescriptor>& ImageMipDescriptor = _Image->GetMipDescriptor();
+            std::vector<PC_CORE::RhiTexture::LevelUploadOperation> LevelUploadOperations;
+            LevelUploadOperations.reserve(ImageMipDescriptor.size());
+
+            for (size_t i = 0; i < ImageMipDescriptor.size(); i++)
+            {
+                auto& LevelOp = LevelUploadOperations.emplace_back();
+                LevelOp.Width = ImageMipDescriptor[i].width;
+                LevelOp.Height = ImageMipDescriptor[i].height;
+                LevelOp.Offset = ImageMipDescriptor[i].offset;
+                LevelOp.Size = ImageMipDescriptor[i].size;
+            }
+
             std::scoped_lock _(m_mutex);
             PC_CORE::RHI::ResourceUpdateBranch* updateBranch(&m_ResourceUpdateBranchs.emplace_back());
-            updateBranch
-                ->TextureUpload2D(_Texture,
-                    _Image->Release(),
-                    _Image->GetSizeInBytes(),
-                    RhiResourceState::CopyDst)
-                .GenerateMipmap(
-                    _Texture,
-                    PC_CORE::Filter::Linear,
-                    RhiResourceState::PixelShaderResource);
+        
+            if (_Texture.GetLevel() == 1)
+            {
+                updateBranch
+                    ->TextureUpload2D(_Texture,
+                        _Image->Release(),
+                        LevelUploadOperations,
+                        RhiResourceState::PixelShaderResource);
+            }
+            else
+            {
+                if (_Image->GetMipDescriptor().size() == 1)
+                {
+                    if (PC_CORE::IsBcFormat(_Texture.GetRhiFormat()))
+                        __debugbreak();
+
+                    updateBranch
+                        ->TextureUpload2D(_Texture,
+                            _Image->Release(),
+                            LevelUploadOperations,
+                            RhiResourceState::CopyDst).
+                        GenerateMipmap(
+                            _Texture,
+                            PC_CORE::Filter::Linear,
+                            RhiResourceState::PixelShaderResource);
+                    
+                }
+                else
+                {
+                    updateBranch
+                        ->TextureUpload2D(_Texture,
+                            _Image->Release(),
+                            LevelUploadOperations,
+                            RhiResourceState::PixelShaderResource);
+                }
+                
+            }
+                
         }
         
         

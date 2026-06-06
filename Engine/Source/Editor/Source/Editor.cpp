@@ -561,7 +561,7 @@ void Editor::TempImport(const std::filesystem::path& _path)
     if (!AssetsImporter)
         return;
     const std::string ext = _path.extension().generic_string();
-    if (ext == ".fbx" || ext == ".gltf" || ext == ".obj")
+    if (ext == ".fbx" || ext == ".gltf" || ext == ".glb" || ext == ".obj")
     {
         AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
     }
@@ -639,23 +639,25 @@ void Editor::InitTestScene()
         });
      */
 
-    auto taskHandle = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteAlbedo.png"); });
-    auto taskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-        TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteNormal-ogl.png");
-        }, { taskHandle });
-    auto taskHandle3 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-        TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
-        }, { taskHandle2 });
+#if 0
+    {
+        auto taskHandle = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteAlbedo.png"); });
+        auto taskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+            TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteNormal-ogl.png");
+            }, { taskHandle });
+        auto taskHandle3 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+            TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
+            }, { taskHandle2 });
 
-    auto taskHandle4 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-        TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
-        }, { taskHandle3 });
-    auto taskHandle5 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-        TempImport(editorData.projectPath / "Assets/Meshs/obj/sphere.obj");
-        }, { taskHandle4 });
+        auto taskHandle4 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+            TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
+            }, { taskHandle3 });
+        auto taskHandle5 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
+            TempImport(editorData.projectPath / "Assets/Meshs/obj/sphere.obj");
+            }, { taskHandle4 });
 
-    auto taskHandle6 = TaskScheduler.NewTask(m_EditorThreadPool,
-        [&]()
+        auto taskHandle6 = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
+            [&]()
             {
                 auto& level = World::GetWorld()->level;
 
@@ -668,8 +670,6 @@ void Editor::InitTestScene()
                 StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
                 smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
 
-
-
                 // Material Block
                 ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
                     std::string("Pbr Material"));
@@ -677,15 +677,53 @@ void Editor::InitTestScene()
                 Material->SetAlbedoTexture(ResourceManager::Get<PC_CORE::Texture2D>("Painted-damaged-concreteAlbedo.png"));
                 Material->SetNormalTexture(ResourceManager::Get<PC_CORE::Texture2D>("Painted-damaged-concreteNormal-ogl.png"));
                 Material->SetMetallicRoughnessAOTexture(ResourceManager::Get<PC_CORE::Texture2D>("Packed_Texture_ORM.png"));
-
-
                 Material->Build();
 
                 smc.materials.emplace_back() = Material;
 
-        }, { taskHandle5 });
-    
-    TaskScheduler.Lauch(taskHandle);
+            }, { taskHandle5 });
+
+        TaskScheduler.Lauch(taskHandle);
+    }
+#endif
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool, 
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
+
+        auto CreateStaticMesh = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() 
+            {
+                auto& level = World::GetWorld()->level;
+
+                const EntityId id = level.CreateEntity(std::string("Bistro"));
+                level.AddComponent<Transform>(id);
+                Transform& t = level.GetComponent<Transform>(id);
+                t.Position = Tbx::Vector3d(0.0, 0.0, 0.0);
+
+                level.AddComponent<StaticMeshComponent>(id);
+                StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("BistroExterior.glb");
+                if (auto l = smc.staticMesh.Lock())
+                    smc.materials = l->GetBaseMaterial();
+
+            }, { TaskHandle });
+
+        TaskScheduler.Lauch(TaskHandle);
+    }
+
+
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+        auto TaskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/cube.obj")); });
+        TaskScheduler.Lauch(TaskHandle);
+        TaskScheduler.Lauch(TaskHandle2);
+    }
+
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+   
+
         
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), true);
@@ -693,10 +731,8 @@ void Editor::InitTestScene()
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), true);
 
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
     //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
     //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Bistro_v5_2/BistroExterior.fbx"));
 }
   
 

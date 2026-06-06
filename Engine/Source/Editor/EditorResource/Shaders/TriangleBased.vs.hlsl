@@ -70,7 +70,8 @@ VsOutput Main(VsInput input)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
     output.Normal = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, NormalL));
-    output.Tangent = normalize(mul(renderInstance.ModelView, TangentL));
+    float3 TangentV = normalize(mul((float3x3)renderInstance.ModelView, input.Tangent.xyz));
+    output.Tangent = float4(TangentV, input.Tangent.w);
 #endif 
 
     // Need uvs

@@ -110,7 +110,7 @@ namespace PC_CORE
         return RhiFormat::Undefined;
     }
 
-    static RhiFormat ddsFormatToVkFormat(const DDS_PIXELFORMAT& pf, const char* dx10HeaderOrNull) {
+    static RhiFormat ddsFormatToVkFormat(const DDS_PIXELFORMAT& pf, const uint8_t* dx10HeaderOrNull) {
 
         if ((pf.flags & DDPF_FOURCC) && pf.fourCC == DDS_FOURCC('D', 'X', '1', '0')) {
             auto* dx10 = reinterpret_cast<const DDS_HEADER_DXT10*>(dx10HeaderOrNull);
@@ -137,7 +137,12 @@ namespace PC_CORE
         return RhiFormat::Undefined;
     }
 
-	DDSImageLoader::DDSImageLoader(const std::filesystem::path& _Path)
+    DDSImageLoader::~DDSImageLoader()
+    {
+        assert(pixels == nullptr);
+    }
+
+    DDSImageLoader::DDSImageLoader(const std::filesystem::path& _Path)
 	{
         std::vector<char> File;
 
@@ -157,60 +162,82 @@ namespace PC_CORE
             PC_LOGERROR("DDS file too small");
             return;
         }
-        uint32_t magic = *reinterpret_cast<const uint32_t*>(File.data());
-        const DDS_HEADER* header = reinterpret_cast<const DDS_HEADER*>(File.data() + 4);
+       
+        if (!FromMemory(reinterpret_cast<uint8_t*>(File.data()), File.size()))
+        {
+            PC_LOGERROR("Failed parse dds texture {}", _Path.generic_string());
+        }
+	}
+
+    DDSImageLoader::DDSImageLoader(const uint8_t* _Ptr, uint32_t _Size, std::string_view _Name)
+    {
+        assert(_Ptr);
+        if (!FromMemory(_Ptr, _Size))
+        {
+            PC_LOGERROR("Failed parse dds texture {}", _Name);
+        }
+    }
+
+    const DDSImageLoader::DdsTexture& DDSImageLoader::GetDDSTexture() const
+    {
+        return m_DdsTexture;
+    }
+
+    bool DDSImageLoader::FromMemory(const uint8_t* _Ptr, uint32_t _Size)
+    {
+        uint32_t magic = *reinterpret_cast<const uint32_t*>(_Ptr);
+        const DDS_HEADER* header = reinterpret_cast<const DDS_HEADER*>(_Ptr + 4);
 
         if (header->size != 124 || header->ddspf.size != 32) {
             PC_LOGERROR("Invalid DDS header");
         }
 
         size_t dataOffset = 4 + sizeof(DDS_HEADER);
-        const char* dx10 = nullptr;
+        const uint8_t* dx10 = nullptr;
 
         if ((header->ddspf.flags & DDPF_FOURCC) &&
             header->ddspf.fourCC == DDS_FOURCC('D', 'X', '1', '0')) {
-            if (File.size() < dataOffset + sizeof(DDS_HEADER_DXT10)) {
+            if (_Size < dataOffset + sizeof(DDS_HEADER_DXT10)) {
                 PC_LOGERROR("DDS DX10 header missing");
             }
-            dx10 = File.data() + dataOffset;
+            dx10 = _Ptr + dataOffset;
             dataOffset += sizeof(DDS_HEADER_DXT10);
         }
 
 
-        DdsTexture out;
-        out.width = header->width;
-        out.height = header->height;
-        out.mipLevels = std::max(1u, header->mipMapCount);
-        out.format = ddsFormatToVkFormat(header->ddspf, dx10);
+        m_DdsTexture.width = header->width;
+        m_DdsTexture.height = header->height;
+        m_DdsTexture.mipLevels = std::max(1u, header->mipMapCount);
+        m_DdsTexture.format = ddsFormatToVkFormat(header->ddspf, dx10);
 
-        if (out.format == RhiFormat::Undefined)
+        if (m_DdsTexture.format == RhiFormat::Undefined)
         {
-            PC_LOGERROR("Failed parse dds texture unsuported format {}", _Path.generic_string());
+            return false;
         }
 
-        if (dataOffset >= File.size()) {
-            PC_LOGERROR("DDS has no pixel data {}", _Path.generic_string());
+        if (dataOffset >= _Size) {
+            return false;
         }
-        
-        const size_t pixelSize = File.end() - (File.begin() + dataOffset);
-        
-        pixels = std::make_unique<uint8_t[]>(pixelSize);
-        std::memcpy(pixels.get(), File.data() + dataOffset, pixelSize);
+
+        const uint8_t* end = _Ptr + _Size;
+        const size_t pixelSize = end - (_Ptr + dataOffset);
+
+        pixels = static_cast<uint8_t*>(std::malloc(pixelSize));
+        std::memcpy(pixels, _Ptr + dataOffset, pixelSize);
 
         size_t offset = 0;
-        uint32_t w = out.width;
-        uint32_t h = out.height;
+        uint32_t w = m_DdsTexture.width;
+        uint32_t h = m_DdsTexture.height;
 
-        out.mips.reserve(out.mipLevels);
-        for (uint32_t mip = 0; mip < out.mipLevels; ++mip) {
-            const size_t size = mipSizeBytes(out.format, w, h);
+        m_DdsTexture.mips.reserve(m_DdsTexture.mipLevels);
+        for (uint32_t mip = 0; mip < m_DdsTexture.mipLevels; ++mip) {
+            const size_t size = mipSizeBytes(m_DdsTexture.format, w, h);
 
             if (offset + size > pixelSize) {
-                PC_LOGERROR("DDS mip data is truncated {}", _Path.generic_string())
-                return;
+                return false;
             }
 
-            out.mips.emplace_back(DdsMip{
+            m_DdsTexture.mips.emplace_back(DdsMip{
                 w,
                 h,
                 offset,
@@ -221,11 +248,6 @@ namespace PC_CORE
             w = std::max(1u, w / 2);
             h = std::max(1u, h / 2);
         }
-
-	}
-    const DDSImageLoader::DdsTexture& DDSImageLoader::GetDDSTexture() const
-    {
-        return m_DdsTexture;
     }
 }
 

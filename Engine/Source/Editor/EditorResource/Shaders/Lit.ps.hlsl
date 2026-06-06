@@ -48,7 +48,7 @@ float4 Main(PSInput input) : SV_Target
     FragAlbedo.xyz = AlbedoFactor.xyz;
     float3 Normal = normalize(input.Normal);
     float Metallic = AORoughnessMetallicEmptyFactors.x;
-    float Roughness = AORoughnessMetallicEmptyFactors.y;
+    float PerceptualRoughness = AORoughnessMetallicEmptyFactors.y;
     float3 Emissive = EmissiveFactor;
     float AO = AORoughnessMetallicEmptyFactors.z;
 #endif
@@ -75,13 +75,14 @@ float4 Main(PSInput input) : SV_Target
 
         float3 B = normalize(cross(N, T)) * tangentSign;;
 
-        float3x3 TBN = transpose(float3x3(T, B, N));
-
-        float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb;
-        NormalTS = normalize(NormalTS * 2.0 - 1.0);
-
-        Normal = normalize(mul(TBN, NormalTS));
-    
+        float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb; // TODO be careful with BC textures
+        NormalTS = NormalTS * 2.0 - 1.0; // 0...1 to -1 ... 1
+        float3x3 TBN = float3x3(
+            T.x, B.x, N.x,
+            T.y, B.y, N.y,
+            T.z, B.z, N.z
+        );
+        Normal = normalize(mul(TBN, NormalTS));    
     }
 #endif
     
@@ -89,7 +90,7 @@ float4 Main(PSInput input) : SV_Target
 #if defined(LIT) && defined(USE_UV)
     if (AlbedoNormalEmissiveDescriptor[EMMISIVE_KEY] == 1)
     {
-        Emissive += EmissiveTexture.Sample(EmmissiveSampler, input.TexCoord).rgb;
+        Emissive *= SRGBToLinear(EmissiveTexture.Sample(EmmissiveSampler, input.TexCoord).rgb);
     }
 #endif
     
@@ -99,7 +100,7 @@ float4 Main(PSInput input) : SV_Target
         float3 ORM = ORMTexture.Sample(ORMTextureSampler, input.TexCoord).rgb;
 
         AO = ORM.r;
-        Roughness = ORM.g;
+        PerceptualRoughness = ORM.g;
         Metallic = ORM.b;
     }
 #endif
@@ -109,6 +110,8 @@ float4 Main(PSInput input) : SV_Target
     float3 Lo = float3(0, 0, 0);
 #if defined(LIT)
     float3 Ambient = float3(0.03, 0.03, 0.03) * FragAlbedo.xyz * AO;
+    float Roughness = PerceptualRoughness * PerceptualRoughness; // remap PerceptualRoughness toRoughness ;
+    Roughness = saturate(Roughness); // 0..1
 
     float3 N = Normal;
     float3 V = -normalize(input.ViewSpacePosition);
@@ -129,7 +132,7 @@ float4 Main(PSInput input) : SV_Target
             float NoH = saturate(dot(N, H));
             float LoH = saturate(dot(L, H));
                     
-            float3 Radiance = DirLight.ColorIntensity.xyz * DirLight.ColorIntensity.w;
+            float3 Radiance = SRGBToLinear(DirLight.ColorIntensity.xyz) * DirLight.ColorIntensity.w;
             float3 DiffuseColor = FragAlbedo.xyz;
         
             float3 Brdf = BRDF(DiffuseColor, Metallic, Roughness,  NoV, NoL, NoH, LoH);

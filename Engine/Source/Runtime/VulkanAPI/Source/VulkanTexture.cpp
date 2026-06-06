@@ -110,9 +110,8 @@ bool Vulkan::VulkanTexture::Build()
     return true;
 }
 
-bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, const void* _Data, size_t _DataSize)
+bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, const void* _Data, const std::vector<LevelUploadOperation>& _LevelUpload)
 {
-
     assert(_CommandList != nullptr);
 
     if (GetTextureType() != Type::Texture2D)
@@ -130,12 +129,17 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
     {
         context.DefferdDestroy(StagingBufferFrame, FrameIndex);
     }
-    VulkanBuffer::CreateStagingBufferForCopy(context, &StagingBufferFrame, _DataSize, m_Name.c_str());
+
+    uint32_t TotalSize = 0;
+    if (!_LevelUpload.empty())
+        TotalSize = _LevelUpload.back().Offset + _LevelUpload.back().Size;
+
+    VulkanBuffer::CreateStagingBufferForCopy(context, &StagingBufferFrame, TotalSize, m_Name.c_str());
 
     void* mappedData;
     vmaMapMemory(context.allocator, StagingBufferFrame.alloc, &mappedData);
     assert(mappedData != nullptr);
-    std::memcpy(mappedData, _Data, _DataSize);
+    std::memcpy(mappedData, _Data, TotalSize);
     vmaUnmapMemory(context.allocator, StagingBufferFrame.alloc);
 
 
@@ -146,32 +150,36 @@ bool Vulkan::VulkanTexture::UploadData2D(PC_CORE::CommandList* _CommandList, con
 
     VkDeviceSize size = allocInfo.size;
 
-    assert(_DataSize <= size);
+    assert(TotalSize <= size);
 
-    vk::BufferImageCopy region{};
-    region.bufferOffset = 0;
-    region.bufferRowLength = 0;
-    region.bufferImageHeight = 0;
-    region.imageSubresource.aspectMask = VkImageAspectFlags;
-    region.imageSubresource.mipLevel = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
+    uint32_t Offset = 0;
+    for (size_t i = 0; i < _LevelUpload.size(); i++)
+    {
+        vk::BufferImageCopy region{};
+        region.bufferOffset = _LevelUpload[i].Offset;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = VkImageAspectFlags;
+        region.imageSubresource.mipLevel = i;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
 
-    region.imageOffset = VkOffset3D{ 0, 0, 0 };
+        region.imageOffset = VkOffset3D{ 0, 0, 0 };
 
-    region.imageExtent = vk::Extent3D{
-        m_Width,
-        m_Height,
-        1
-    };
+        region.imageExtent = vk::Extent3D{
+            _LevelUpload[i].Width,
+            _LevelUpload[i].Height,
+            1
+        };
 
-    cmb.copyBufferToImage(
+        cmb.copyBufferToImage(
             StagingBufferFrame.buffer,
             m_Handle.Image,
             vk::ImageLayout::eTransferDstOptimal,
             region
-        );    
-
+        );
+        Offset += _LevelUpload[i].Size;
+    }
 
     return true;  
 }

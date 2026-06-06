@@ -72,9 +72,16 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
 
     RHI::ResourceUpdateBranch* branch = RenderHarwareInteface.GetRhiContext().ResourceUpdateBranch();
 
+
+    const PC_CORE::RhiTexture::LevelUploadOperation op = {
+        .Width = DummyTexture->GetWidth(),
+        .Height = DummyTexture->GetHeight(),
+        .Offset = 0u,
+        .Size = DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4,
+    };
     std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
     branch->
-        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::PixelShaderResource);
+        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), { op }, RhiResourceState::PixelShaderResource);
 
 
     Time::Init();

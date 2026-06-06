@@ -23,8 +23,8 @@ BEGIN_PCCORE
         {
             uint32_t width;
             uint32_t height;
-            size_t offset;
-            size_t size;
+            uint32_t offset;
+            uint32_t size;
         };
 
         DEFAULT_COPY_MOVE_OPERATIONS(Image);
@@ -33,22 +33,11 @@ BEGIN_PCCORE
 
         PC_CORE_API Image(const char* _path, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
 
-        PC_CORE_API Image(const uint8_t* _ptr, size_t _size, const char* _name, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
+        PC_CORE_API Image(std::string_view _ImageName, const uint8_t* _ptr, size_t _size, const char* _name, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
 
         Image() = default;
 
         ~Image() = default;
-
-
-        uint32_t GetWidht() const
-        {
-            return m_Width;
-        }
-
-        uint32_t GetHeight() const
-        {
-            return m_Height;
-        }
 
         PC_CORE::RhiChannel GetChannel() const
         {
@@ -75,11 +64,6 @@ BEGIN_PCCORE
             return m_Data.get() != nullptr;
         }
 
-        size_t GetSizeInBytes() const
-        {
-            return m_SizeInBytes;
-        }
-
         [[nodiscard]] std::unique_ptr<uint8_t[], ImageDeleter> Release() noexcept
         {
             auto tmp = std::move(m_Data);
@@ -87,27 +71,31 @@ BEGIN_PCCORE
             return tmp;
         }
 
+        const std::vector<MipsDescriptor>& GetMipDescriptor() const
+        {
+            return m_MipsDescriptor;
+        }
+
+        std::optional<RhiFormat> GetBuildInFormat() const
+        {
+            return m_BuildInFormat;
+        }
 
     private:
         REFLECT(Image);
 
-        uint32_t m_Width = 0;
-
-        uint32_t m_Height = 0;
-
         PC_CORE::RhiChannel m_Channel{};
-
-        uint32_t m_SizeInBytes = 0;
 
         std::unique_ptr<uint8_t[], ImageDeleter> m_Data;
 
+        std::vector<MipsDescriptor> m_MipsDescriptor;
+
+        std::optional<RhiFormat> m_BuildInFormat;
+
         bool m_IsHDR = false;
 
-        bool m_HasMips = false;
-
-        PC_CORE_API void ComputeDataSize();
-
         PC_CORE_API void LoadFromPath(const std::string_view& _view, PC_CORE::RhiChannel _desireChannel);
+
     };
 
 END_PCCORE

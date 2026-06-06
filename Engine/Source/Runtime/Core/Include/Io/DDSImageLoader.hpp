@@ -11,8 +11,9 @@ namespace PC_CORE
 	{
 	public:
 		explicit DDSImageLoader() = default;
-		~DDSImageLoader() = default;
+		~DDSImageLoader();
 		DDSImageLoader(const std::filesystem::path& _Path);
+		DDSImageLoader(const uint8_t* _Ptr, uint32_t _Size, std::string_view _Name);
 		struct DdsMip {
 			uint32_t width;
 			uint32_t height;
@@ -30,11 +31,20 @@ namespace PC_CORE
 
 		const DdsTexture& GetDDSTexture() const;
 
+		uint8_t* GetPixel() {
+
+			uint8_t* outPixel = pixels;
+			pixels = nullptr;
+			return outPixel;
+		}
+		
 
 	private:
-		std::unique_ptr<uint8_t[]> pixels;
+		uint8_t* pixels = nullptr;
 
 		DdsTexture m_DdsTexture;
+
+		 bool FromMemory(const uint8_t* _Ptr, uint32_t _Size);
 	};
 
 

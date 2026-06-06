@@ -90,13 +90,14 @@ namespace PC_CORE::RHI
 		class PC_CORE_API TextureUpload2D
 		{
 		public:
-			explicit TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _DataSize, RhiResourceState _AfterUploadState);
+			explicit TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& LevelUploadsOps, RhiResourceState _AfterUploadState);
 
 			template <UploadBufferType T>
-			explicit TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, size_t _DataSize, RhiResourceState _AfterUploadState)
+			explicit TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& LevelUploadsOps, RhiResourceState _AfterUploadState)
 				: m_RhiTexture(&_RhiTexture)
-				, m_UploadOperation(std::forward<T>(_Data), _DataSize)
+				, m_UploadOperation(std::forward<T>(_Data), LevelUploadsOps.empty() ? 0 : LevelUploadsOps.back().Offset + LevelUploadsOps.back().Size)
 				, m_AfterUploadState(_AfterUploadState)
+				, m_LevelOperations(LevelUploadsOps)
 			{
 
 			}
@@ -113,6 +114,8 @@ namespace PC_CORE::RHI
 			UploadOperation m_UploadOperation;
 
 			RhiResourceState m_AfterUploadState{ RhiResourceState::Undefined };
+
+			std::vector<PC_CORE::RhiTexture::LevelUploadOperation> m_LevelOperations;
 		};
 
 		
@@ -162,13 +165,13 @@ namespace PC_CORE::RHI
 		}
 
 
-		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _DataSize, RhiResourceState _AfterUploadState);
+		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& _LeveOperations, RhiResourceState _AfterUploadState);
 
 		template <ResourceUpdateOperation::UploadBufferType T>
-		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, size_t _DataSize, RhiResourceState _AfterUploadState)
+		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, T&& _Data, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& _LeveOperations, RhiResourceState _AfterUploadState)
 		{
 			m_UpdateBranchs.emplace_back();
-			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _DataSize, _AfterUploadState);
+			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::TextureUpload2D>(_RhiTexture, std::forward<T>(_Data), _LeveOperations, _AfterUploadState);
 			return *this;
 		}
 

@@ -1075,7 +1075,9 @@ vk::ImageAspectFlags Vulkan::Utils::RhiTextureFormatToImageAspectFlagFlags(PC_CO
 {
     using namespace PC_CORE;
     
-    
+    if (IsBcFormat(_format))
+        return vk::ImageAspectFlagBits::eColor;
+
     switch (_format)
     {
     // Color

@@ -41,18 +41,27 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
 {
     using namespace PC_CORE;
 
+    const auto& ImageLevel = image.GetMipDescriptor();
+
     texture = PC_CORE::Texture2D(rhi, name);
     texture
-        ->SetWidth(image.GetWidht())
-        .SetHeight(image.GetHeight())
+        ->SetWidth(ImageLevel[0].width)
+        .SetHeight(ImageLevel[0].height)
         .SetMemoryUsage(RhiResource::MemoryUsage::StaticGPU)
         .SetTextureUsage(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::TransferDst)
         .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
         .Build();
 
+    const PC_CORE::RhiTexture::LevelUploadOperation op = {
+        .Width = ImageLevel[0].width,
+        .Height = ImageLevel[0].height,
+        .Offset = 0u,
+        .Size = ImageLevel[0].size,
+    };
+
     rhi.GetRhiContext().
         ResourceUpdateBranch()
-        ->TextureUpload2D(*texture.Get(), image.GetData(), image.GetSizeInBytes(), RhiResourceState::PixelShaderResource);
+        ->TextureUpload2D(*texture.Get(), image.GetData(), { op }, RhiResourceState::PixelShaderResource);
 }
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
