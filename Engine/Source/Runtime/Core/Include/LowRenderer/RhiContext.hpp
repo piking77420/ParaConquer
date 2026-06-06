@@ -48,18 +48,23 @@ public:
 
     PC_CORE_API virtual void ProceedDefferdDestroy(uint32_t _FrameIndex) = 0;
 
+    PC_CORE_API std::mutex& ResourceUpdateLock()
+    {
+        return m_ResourceUpdateLock;
+    }
+
     PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch();
 
     PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch_AssumeLock();
 
     PC_CORE_API bool PendingTransferOperation() const;
 
-    std::mutex lock;
 protected:
     Rhi& m_Rhi;
 
     bool m_PendingTransferOperation = false;
 
+    std::mutex m_ResourceUpdateLock;
     // TO DO FIND A WAY TO REUSE THE ALLOCATION
     std::vector<std::unique_ptr<RHI::ResourceUpdateBranch>> m_ResourceUpdate;
 };

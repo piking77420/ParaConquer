@@ -17,7 +17,7 @@ PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const
 
     RhiChannel channel;
     for (size_t i = 0; i < 6; i++)
-        datas[i] = FileLoader::LoadImage(_maps[i].c_str(), &width, &height, &channel, RhiChannel::Rgba);
+        datas[i] = FileLoader::LoadImage(_maps[i].c_str(), &width, &height, &channel, RhiChannel::Rgba, false);
 
 
     const uint32_t Width = static_cast<uint32_t>(width);
@@ -34,7 +34,7 @@ PC_CORE::Texture3D::Texture3D(PC_CORE::Rhi& rhi, const std::string& _name, const
         .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
         .Build();
 
-    m_RhiTexture->UploadDataLayer(nullptr, datas, width, height, m_RhiTexture->GetLayer());
+    //m_RhiTexture->UploadDataLayer(nullptr, datas, width, height, m_RhiTexture->GetLayer());
     /*rhi.PushResourceUpdate(
         [&](CommandList* list)
         {

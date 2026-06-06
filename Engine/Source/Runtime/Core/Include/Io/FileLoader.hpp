@@ -18,9 +18,9 @@ namespace PC_CORE
 		static bool WriteFile(const std::filesystem::path& _path, const void* _data, size_t _size,
 			bool _createDirectories);
 
-		static uint8_t* LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _channel);
+		static uint8_t* LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _channel, bool _isHdr);
 
-		static uint8_t* LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp);
+		static uint8_t* LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp, bool _isHdr);
 
 		static void FreeData(uint8_t* _file);
 

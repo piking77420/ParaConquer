@@ -32,7 +32,7 @@ namespace Vulkan
     
         VULKAN_API bool UploadData2D(PC_CORE::CommandList* _CommandList, const void* _ImageData, const std::vector<LevelUploadOperation>& _LevelUpload) override;
     
-        VULKAN_API void UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layerCount) override;
+        VULKAN_API void UploadDataLayer(PC_CORE::CommandList* commandList, const std::vector<void*>& _imageDatas, const std::vector<std::vector<PC_CORE::RhiTexture::LevelUploadOperation>>& _LayerUploads) override;
         
         VULKAN_API bool GenerateMipMap(PC_CORE::CommandList* _CommandList, PC_CORE::Filter _Filter, RhiResourceState _StateAfterOperation) override;
 

@@ -32,6 +32,7 @@ void Vulkan::VulkanContext::Init(const PC_CORE::RhiContextCreateInfo& rhiContext
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    std::scoped_lock _(VulkanContextMutex());
 
     std::set<std::string> extensionToEnable;
 
@@ -231,7 +232,7 @@ void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuComma
 
 void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
 {
-    std::scoped_lock _(lock);
+    std::scoped_lock _(m_ResourceUpdateLock);
 
     const size_t CurrentFrameIndex = m_Rhi.GetFrameIndex();
     

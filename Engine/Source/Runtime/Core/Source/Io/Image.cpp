@@ -42,7 +42,7 @@ namespace PC_CORE
         {
             int x = -1;
             int y = -1;
-            m_Data.reset(FileLoader::LoadImageFromMemory(_ptr, _size, &x, &y, &m_Channel, _Channel));
+            m_Data.reset(FileLoader::LoadImageFromMemory(_ptr, _size, &x, &y, &m_Channel, _Channel, m_IsHDR));
 
             if (x != -1 && y != -1)
             {
@@ -87,7 +87,7 @@ namespace PC_CORE
         {
             int x = -1;
             int y = -1;
-            m_Data.reset(FileLoader::LoadImage(_view.data(), &x, &y, &m_Channel, _desireChannel));
+            m_Data.reset(FileLoader::LoadImage(_view.data(), &x, &y, &m_Channel, _desireChannel, m_IsHDR));
             if (x != -1 && y != -1)
             {
                 auto& mip = m_MipsDescriptor.emplace_back();

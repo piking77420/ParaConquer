@@ -82,46 +82,47 @@ bool Vulkan::VulkanCommandList::Build()
 
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_CommandBuffer.size());
 
-    std::vector<vk::CommandBuffer> vec = device.allocateCommandBuffers(commandBufferAllocateInfo);
-
-    for (uint32_t i = 0; i < m_CommandBuffer.size(); i++)
     {
-        m_CommandBuffer[i] = vec[i];
+        std::scoped_lock _(vulkanContext.VulkanContextMutex());
+        std::vector<vk::CommandBuffer> vec = device.allocateCommandBuffers(commandBufferAllocateInfo);
+        for (uint32_t i = 0; i < m_CommandBuffer.size(); i++)
+        {
+            m_CommandBuffer[i] = vec[i];
 
-        vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
-        nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
-        nameInfoImageView.pNext = nullptr;
-        nameInfoImageView.objectType = vk::ObjectType::eCommandBuffer;
-        nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkCommandBuffer>(m_CommandBuffer[i]));
-        nameInfoImageView.pObjectName = GetName().data();
-        SET_VK_DEBUG_NAME(nameInfoImageView);
-    }
+            vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
+            nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+            nameInfoImageView.pNext = nullptr;
+            nameInfoImageView.objectType = vk::ObjectType::eCommandBuffer;
+            nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkCommandBuffer>(m_CommandBuffer[i]));
+            nameInfoImageView.pObjectName = GetName().data();
+            SET_VK_DEBUG_NAME(nameInfoImageView);
+        }
 
-    vk::SemaphoreCreateInfo sCreateInfo;
-    sCreateInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+        vk::SemaphoreCreateInfo sCreateInfo;
+        sCreateInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
 
 #if DEBUG_GPU_ON
-    m_SemaphoreDebugName = std::move(std::string(GetName()) + " Semaphore");
-    for (auto& s : m_Semaphore)
-    {
-        s = device.createSemaphore(sCreateInfo);
-        vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
-        nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
-        nameInfoImageView.pNext = nullptr;
-        nameInfoImageView.objectType = vk::ObjectType::eSemaphore;
-        nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkSemaphore>(s));
-        nameInfoImageView.pObjectName = m_SemaphoreDebugName.c_str();
-        SET_VK_DEBUG_NAME(nameInfoImageView);
-    }
+        m_SemaphoreDebugName = std::move(std::string(GetName()) + " Semaphore");
+        for (auto& s : m_Semaphore)
+        {
+            s = device.createSemaphore(sCreateInfo);
+            vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
+            nameInfoImageView.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+            nameInfoImageView.pNext = nullptr;
+            nameInfoImageView.objectType = vk::ObjectType::eSemaphore;
+            nameInfoImageView.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkSemaphore>(s));
+            nameInfoImageView.pObjectName = m_SemaphoreDebugName.c_str();
+            SET_VK_DEBUG_NAME(nameInfoImageView);
+        }
 #else 
-    for (auto& s : m_Semaphore)
-        s = device.createSemaphore(sCreateInfo);
+        for (auto& s : m_Semaphore)
+            s = device.createSemaphore(sCreateInfo);
 #endif
 
 #ifdef PROFILING
-    vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
-    VulkanInstance& instance = *std::reinterpret_pointer_cast<VulkanInstance>(vulkanContext.renderInstance).get();
-    VulkanDevice& vulkanDevice = *std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice).get();
+        vk::PhysicalDevice physDv = vulkanContext.GetPhysicalDevices()->GetVulkanDevice();
+        VulkanInstance& instance = *std::reinterpret_pointer_cast<VulkanInstance>(vulkanContext.renderInstance).get();
+        VulkanDevice& vulkanDevice = *std::reinterpret_pointer_cast<VulkanDevice>(vulkanContext.rhiDevice).get();
 
         /*
     tracyContext = tracy::CreateVkContext(physDv, device,
@@ -130,6 +131,8 @@ bool Vulkan::VulkanCommandList::Build()
         vulkanDevice.GetPFN_vkGetCalibratedTimestampsEXT());*/
 
 #endif
+    }
+   
 
     return true;
 }

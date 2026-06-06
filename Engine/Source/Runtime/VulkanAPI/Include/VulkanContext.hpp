@@ -86,6 +86,11 @@ namespace Vulkan
 
         VULKAN_API void DefferdDestroy(TextureAndAlloc& TextureAndAlloc, uint32_t _FrameIndex);
 
+        VULKAN_API std::recursive_mutex& VulkanContextMutex()
+        {
+            return m_VulkanMutex;
+        }
+
     private:
         struct DefferdDestroyBuffer
         {
@@ -104,6 +109,10 @@ namespace Vulkan
 
         std::array<std::vector<DefferedDestroyOperation>, MaxFramesInFlight> m_PendingDefferedDestroy;
 
+        std::unique_ptr<VulkanCommandList> m_TransferCommandList;
+
+        std::recursive_mutex m_VulkanMutex;
+
         VULKAN_API void CreateMemoryAllocator();
 
         VULKAN_API void CreateCommandPools();
@@ -111,8 +120,6 @@ namespace Vulkan
         VULKAN_API void CreateSyncObjects();
 
         VULKAN_API void DestroySyncObjects();
-
-        std::unique_ptr<VulkanCommandList> m_TransferCommandList;
     };
 
 #define GET_VK_CONTEXT \

@@ -85,28 +85,46 @@ namespace PC_CORE
     }
 
 
-    uint8_t* FileLoader::LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp)
+    uint8_t* FileLoader::LoadImage(const char* _filename, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _channel, bool _isHdr)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Core);
 
         int channel = 0;
-        uint8_t* memory = stbi_load(_filename, _x, _y, &channel, static_cast<int>(_req_comp));
-        *_comp = (_req_comp != RhiChannel::Default)
-            ? _req_comp
+        if (_isHdr)
+        {
+            float* memory = stbi_loadf(_filename, _x, _y, &channel, static_cast<int>(_channel));
+            *_comp = (_channel != RhiChannel::Default)
+                ? _channel
+                : static_cast<RhiChannel>(channel);
+            return reinterpret_cast<uint8_t*>(memory);
+        }
+        
+        uint8_t* memory = stbi_load(_filename, _x, _y, &channel, static_cast<int>(_channel));
+        *_comp = (_channel != RhiChannel::Default)
+            ? _channel
             : static_cast<RhiChannel>(channel);
         return memory;
     }
 
-    uint8_t* FileLoader::LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _req_comp)
+    uint8_t* FileLoader::LoadImageFromMemory(const uint8_t* _ptr, size_t _size, int* _x, int* _y, PC_CORE::RhiChannel* _comp, PC_CORE::RhiChannel _channel, bool _isHdr)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Core);
 
         int channel = 0;
-        uint8_t* memory = stbi_load_from_memory(_ptr, static_cast<int>(_size), _x, _y, &channel, static_cast<int>(_req_comp));
-        *_comp = (_req_comp != RhiChannel::Default)
-            ? _req_comp
+        if (_isHdr)
+        {
+            float* memory = stbi_loadf_from_memory(_ptr, static_cast<int>(_size), _x, _y, &channel, static_cast<int>(_channel));
+            *_comp = (_channel != RhiChannel::Default)
+                ? _channel
+                : static_cast<RhiChannel>(channel);
+            return reinterpret_cast<uint8_t*>(memory);
+        }
+
+        uint8_t* memory = stbi_load_from_memory(_ptr, static_cast<int>(_size), _x, _y, &channel, static_cast<int>(_channel));
+        *_comp = (_channel != RhiChannel::Default)
+            ? _channel
             : static_cast<RhiChannel>(channel);
         return memory;
     }

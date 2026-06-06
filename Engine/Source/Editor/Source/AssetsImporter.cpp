@@ -265,7 +265,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR_NAME(PerfRegion::EditorResource, "Fetch ResourceUpdateBranchs");
 
-        std::scoped_lock _(_Rhi.GetRhiContext().lock);
+        std::scoped_lock _(_Rhi.GetRhiContext().ResourceUpdateLock());
         for (auto& it : m_ResourceUpdateBranchs)
             *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
     }
@@ -848,7 +848,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
     void AssetsImporter::BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha)
     {
         const auto& ImageLevel = _Image->GetMipDescriptor();
-        assert(!_Image->IsHdr() && !_Image->GetMipDescriptor().empty());
+        assert(!_Image->GetMipDescriptor().empty());
         
         const uint32_t Level = (ImageLevel.size() == 1) ? static_cast<uint32_t>(std::floor(std::log2(std::max(ImageLevel[0].width, ImageLevel[0].height)))) + 1 : _Image->GetMipDescriptor().size();
 
@@ -877,7 +877,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
             case PC_CORE::RhiChannel::Rgba:
             {
                 _Texture.SetRhiFormat(_Image->IsHdr()
-                    ? PC_CORE::RhiFormat::R16G16B16A16Sfloat
+                    ? PC_CORE::RhiFormat::R32G32B32A32Sfloat
                     : PC_CORE::RhiFormat::R8G8B8A8Unorm);
             }
             break;

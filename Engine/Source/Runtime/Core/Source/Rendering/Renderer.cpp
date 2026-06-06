@@ -831,7 +831,7 @@ namespace PC_CORE::Rendering
                .SetName("Instance Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
                .Build();
 
-           std::scoped_lock _(m_Rhi.GetRhiContext().lock);
+           std::scoped_lock _(m_Rhi.GetRhiContext().ResourceUpdateLock());
            m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.VertexBuffer.Get(), verticies.data(), DebugLayer.VertexBuffer->GetSizeInByte());
            m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.IndexBuffer.Get(), indicies.data(), DebugLayer.IndexBuffer->GetSizeInByte());
        }

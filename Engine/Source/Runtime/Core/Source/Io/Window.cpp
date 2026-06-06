@@ -141,7 +141,7 @@ void Window::SetIcon(const char* _iconPath)
 
     int x, y;
     auto channel = RhiChannel::Default;
-    uint8_t* rawData = FileLoader::LoadImage(_iconPath, &x, &y, &channel, RhiChannel::Default);
+    uint8_t* rawData = FileLoader::LoadImage(_iconPath, &x, &y, &channel, RhiChannel::Default, false);
 
     if (!rawData || x <= 0 || y <= 0)
     {
@@ -149,7 +149,11 @@ void Window::SetIcon(const char* _iconPath)
         return;
     }
 
-    std::unique_ptr<uint8_t[]> data(rawData);
+    auto deleter = [](uint8_t* p) {
+        FileLoader::FreeData(p);
+        };
+
+    std::unique_ptr<uint8_t[], decltype(deleter)> data(rawData, deleter);
 
     GLFWimage image;
     image.pixels = data.get();

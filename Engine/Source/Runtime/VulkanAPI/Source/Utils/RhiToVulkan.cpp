@@ -1090,6 +1090,7 @@ vk::ImageAspectFlags Vulkan::Utils::RhiTextureFormatToImageAspectFlagFlags(PC_CO
     case PC_CORE::RhiFormat::R16G16B16A16Sfloat:
     case PC_CORE::RhiFormat::R32Sfloat:
     case PC_CORE::RhiFormat::R16G16Snorm:
+    case PC_CORE::RhiFormat::R32G32B32A32Sfloat:
         return vk::ImageAspectFlagBits::eColor;
         // Depth and STENCIL
     case PC_CORE::RhiFormat::D32Sfloat:

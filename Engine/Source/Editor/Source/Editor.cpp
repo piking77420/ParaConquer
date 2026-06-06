@@ -565,7 +565,7 @@ void Editor::TempImport(const std::filesystem::path& _path)
     {
         AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
     }
-    else if (ext == ".png" || ext == ".jpg" || ext == ".dds")
+    else if (ext == ".png" || ext == ".jpg" || ext == ".dds" || ext == ".hdr")
     {
         AssetsImporter->ImportTexture(RenderHarwareInteface, _path);
     }
@@ -685,13 +685,19 @@ void Editor::InitTestScene()
 
         TaskScheduler.Lauch(taskHandle);
     }
-#endif
+#else 
+
     {
-        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool, 
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); });
+        TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
+    }
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
 
         auto CreateStaticMesh = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&]() 
+            [&]()
             {
                 auto& level = World::GetWorld()->level;
 
@@ -712,6 +718,8 @@ void Editor::InitTestScene()
     }
 
 
+
+
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
@@ -720,6 +728,9 @@ void Editor::InitTestScene()
         TaskScheduler.Lauch(TaskHandle);
         TaskScheduler.Lauch(TaskHandle2);
     }
+#endif
+
+    
 
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
    
