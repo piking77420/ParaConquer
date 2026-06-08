@@ -33,8 +33,8 @@ namespace PC_EDITOR::DebugView
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetAttachments(&outPutImage)
-			.SetDepthAttachments(DepthBuffer)
+			.SetAttachement(&outPutImage)
+			.SetDepthAttachment(DepthBuffer)
 			.SetRenderPass(_RendererPassBuildContext.Renderer.LoadLinearColorLoadStoreDepth.get())
 			.SetName("DebugShapeDraw Framebuffer")
 			.Build();
@@ -63,7 +63,7 @@ namespace PC_EDITOR::DebugView
 		
 	}
 
-	void DebugView::DebugShapeDraw::Execute(const Rendering::RendererPassExecuteContext & _RendererPassExecuteContext) const
+	void DebugView::DebugShapeDraw::Execute(const Rendering::RendererPassExecuteContext & _RendererPassExecuteContext)
 	{
 		using namespace PC_CORE;
 

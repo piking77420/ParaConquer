@@ -1,8 +1,8 @@
 
 [[vk::combinedImageSampler]]
-Texture2D equirectangularMapTexture : register(t0, MATERIAL_SET);
+Texture2D equirectangularMapTexture : register(t0, space0);
 [[vk::combinedImageSampler]]
-SamplerState equirectangularMapSampler : register(s0, MATERIAL_SET);
+SamplerState equirectangularMapSampler : register(s0, space0);
 
 struct PushConstant
 {
@@ -15,22 +15,31 @@ PushConstant pushConstant;
 struct PsInput
 {
     float4 Position : SV_POSITION;
+    float3 TexCoord : TEXCOORD0;
 };
 
-float2 SampleSphericalMap(vec3 v)
+struct PsOutput
 {
-    const float2 invAtan = vec2(0.1591, 0.3183);
+    float4 Color : SV_TARGET;
+};
 
-    float2 uv = vec2(atan(v.z, v.x), asin(v.y));
+float2 SampleSphericalMap(float3 v)
+{
+    const float2 invAtan = float2(0.1591, 0.3183);
+
+    float2 uv = float2(atan2(v.z, v.x), asin(v.y));
     uv *= invAtan;
     uv += 0.5;
     return uv;
 }
 
-float4 Main(PsInput input) : SV_TARGET
+PsOutput Main(PsInput input) : SV_TARGET
 {
-    float2 uv = SampleSphericalMap(normalize(input.Position)); // make sure to normalize localPos
-    float3 color = equirectangularMapSampler.Sample(equirectangularMapTexture, uv).rgb;
-    
-    return vec4(color, 1.0);
+    PsOutput outPut; 
+
+    float2 UV = SampleSphericalMap(normalize(input.TexCoord));
+    float3 Color = equirectangularMapTexture.Sample(equirectangularMapSampler, UV).rgb;
+    outPut.Color = float4(Color, 1.0);
+
+    return outPut;
 }

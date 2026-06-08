@@ -1,18 +1,6 @@
 #include "Thread/Tasks.hpp"
 
 #include "App.hpp"
-
-// the variant to visit
-using value_t = std::variant<PC_CORE::Thread::ThreadPool*, PC_CORE::Thread::TaskNode::Thread>;
-
-// helper type for the visitor #4
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
-
 namespace PC_CORE::Thread
 {
 	// Task Nodes

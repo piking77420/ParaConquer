@@ -9,6 +9,7 @@
 #include "Rendering/Material.hpp"
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiBuffer.h"
+#include <Resources/Texture2d.hpp>
 #include "App.hpp"
 
 namespace PC_CORE::Rendering
@@ -48,6 +49,7 @@ void RendererSystem::RenderingTick(double deltatime)
     const Level& l = World::GetWorld()->level;
 
     m_GameRenderingWorldData.Clear();
+    PopulateEnvironementLighting(*World::GetWorld());
     PopulateStaticMeshes(l);
     PopulateLight(l);
     PopulateDebugDraws();
@@ -212,6 +214,33 @@ void RendererSystem::PopulateDebugDraws()
 
     m_GameRenderingWorldData.DebugDrawPrimitives = debugDrawContext.DebugDrawPrimitives();
     m_GameRenderingWorldData.DebugFrustums = debugDrawContext.DebugDrawFrustums();
+}
+
+void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
+{
+    PERF_REGION_SCOPED
+    PERF_REGION_COLOR(PerfRegion::Game);
+
+    std::visit(
+        overloaded{
+            [&](WORLD::Environement::ImageBaseLighting& ibl)
+            {  
+                if (auto lock = ibl.EnvironementTexture.Lock())
+                {
+                    if (ibl.Skybox)
+                    {
+                        auto& env = m_GameRenderingWorldData.CaptureEnvironement.emplace();
+                        env = {
+                            .Environement = lock.Get()->Get(),
+                            .SkyBox = ibl.Skybox.get(),
+                            .isDirty = ibl.isDiry,
+                        };
+                        //ibl.isDiry = false;
+                    }
+                }
+            }
+        }, World.Environement.GetEnvironementLighting());
+
 }
 
 }

@@ -64,7 +64,7 @@ namespace PC_CORE::Rendering
 			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
 			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
 			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;
-			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<true, void, const RendererPassExecuteContext&>::Call<T, &T::Execute>;
+			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassExecuteContext&>::Call<T, &T::Execute>;
 			m_Nodes.emplace_back(std::move(Node));
 		}
 
@@ -76,7 +76,7 @@ namespace PC_CORE::Rendering
 			Node.GetNameFunc = &MetaProgramming::TrampolineMemberFunc<true, const char*, void>::Call<T, &T::GetName>;
 			Node.GetColorFunc = &MetaProgramming::TrampolineMemberFunc <true, std::array<float, 4>, void> ::Call<T, &T::GetColor>;
 			Node.BuildFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassBuildContext&>::Call<T, &T::Build>;
-			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<true, void, const RendererPassExecuteContext&>::Call<T, &T::Execute>;
+			Node.ExecuteFunc = &MetaProgramming::TrampolineMemberFunc<false, void, const RendererPassExecuteContext&>::Call<T, &T::Execute>;
 			m_Nodes.emplace_back(std::move(Node));
 		}
 

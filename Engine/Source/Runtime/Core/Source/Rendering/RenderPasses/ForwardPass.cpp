@@ -52,8 +52,8 @@ namespace PC_CORE::Rendering::Pass
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetAttachments(m_LightingImage)
-			.SetDepthAttachments(&DepthBuffer)
+			.SetAttachement(m_LightingImage)
+			.SetDepthAttachment(&DepthBuffer)
 			.SetRenderPass(_RendererPassBuildContext.Renderer.forwardPass.get())
 			.SetName("Forward Framebuffer")
 			.Build();
@@ -111,7 +111,7 @@ namespace PC_CORE::Rendering::Pass
 
 	}
 
-	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
+	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Rendering)

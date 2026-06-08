@@ -53,6 +53,7 @@ public:
 
     DrawList DebugDrawList;
 
+
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
     std::unique_ptr<RhiShaderProgram> toneMapAces;
@@ -77,11 +78,15 @@ public:
 
     std::unique_ptr<RhiShaderProgram> DrawDebugMeshletBound;
 
+    std::unique_ptr<RhiShaderProgram> EquilateralToSkyBox;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
 
     std::unique_ptr<RhiRenderPass> colorLinearPass;
+
+    std::unique_ptr<RhiRenderPass> colorHDRPass;
 
     std::unique_ptr<RhiRenderPass> LinearClearColorClearStoreDepth;
 

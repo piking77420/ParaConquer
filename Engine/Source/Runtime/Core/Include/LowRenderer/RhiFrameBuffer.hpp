@@ -15,6 +15,16 @@ public:
 
     PC_CORE_API ~RhiFrameBuffer() override = default;
 
+    struct AttachementDescriptor
+    {
+        const RhiTexture* Texture = nullptr;
+        RhiTexture::Type ViewType = {};
+        uint32_t BaseLayer = 1;
+        uint32_t LayerCount = 1;
+        uint32_t BaseLevel = 1;
+        uint32_t LevelCount = 1;
+    };
+
     // Setter
     RhiFrameBuffer& SetWidth(uint32_t _Widht)
     {
@@ -28,28 +38,40 @@ public:
         return *this;
     }
 
-    RhiFrameBuffer& SetAttachments(std::vector<const RhiTexture*> _Attachements)
+    RhiFrameBuffer& SeLayers(uint32_t _Layer)
     {
-        m_Attachments = std::move(_Attachements);
+        m_Layer = _Layer;
         return *this;
     }
 
-    template<typename... Attachments>
-    RhiFrameBuffer& SetAttachments(Attachments*... textures)
+    RhiFrameBuffer& ClearAttachement()
     {
         m_Attachments.clear();
-        (m_Attachments.emplace_back(textures), ...);
-
+        m_DepthAttachement.reset();
         return *this;
     }
 
-    
-    RhiFrameBuffer& SetDepthAttachments(const RhiTexture* _DepthAttvachement)
+    RhiFrameBuffer& SetAttachement(const RhiTexture* Texture)
     {
-        m_DepthAttachement = _DepthAttvachement;
+        return SetAttachement(Texture, Texture->GetTextureType(), 0, Texture->GetLayer(), 0, Texture->GetLevel());
+    }
+
+    RhiFrameBuffer& SetAttachement(const RhiTexture* Texture, RhiTexture::Type ViewType, uint32_t BaseLayer, uint32_t LayerCount, uint32_t BaseLevel, uint32_t LevelCount)
+    {
+        m_Attachments.emplace_back(Texture, ViewType, BaseLayer, LayerCount, BaseLevel, LevelCount);
         return *this;
     }
 
+    RhiFrameBuffer& SetDepthAttachment(const RhiTexture* Texture)
+    {
+        return SetAttachement(Texture, Texture->GetTextureType(), 0, Texture->GetLayer(), 0, Texture->GetLevel());
+    }
+
+    RhiFrameBuffer& SetDepthAttachment(const RhiTexture* Texture, RhiTexture::Type ViewType, uint32_t BaseLayer, uint32_t LayerCount, uint32_t BaseLevel, uint32_t LevelCount)
+    {
+        m_DepthAttachement.emplace(Texture, ViewType, BaseLayer, LayerCount, BaseLevel, LevelCount);
+        return *this;
+    }
 
     RhiFrameBuffer& SetRenderPass(RhiRenderPass* _RhiRenderPass)
     {
@@ -69,17 +91,22 @@ public:
         return m_Height;
     }
 
+    PC_CORE_API uint32_t GetLayer() const
+    {
+        return m_Layer;
+    }
+
     PC_CORE_API Tbx::Vector2ui Size() const
     {
         return {m_Width, m_Height};
     }
 
-    PC_CORE_API const std::vector<const RhiTexture*>& GetAttachments() const
+    PC_CORE_API const std::vector<AttachementDescriptor>& GetAttachments() const
     {
         return m_Attachments;
     }
 
-    PC_CORE_API const RhiTexture* GetDepthAttachements() const
+    PC_CORE_API const std::optional<AttachementDescriptor>& GetDepthAttachements() const
     {
         return m_DepthAttachement;
     }
@@ -91,13 +118,16 @@ public:
 
 
 protected:
+    
     uint32_t m_Width{ 0 };
 
     uint32_t m_Height{ 0 };
 
-    std::vector<const RhiTexture*> m_Attachments;
+    uint32_t m_Layer{ 1 };
 
-    const RhiTexture* m_DepthAttachement{ nullptr };
+    std::vector<AttachementDescriptor> m_Attachments;
+
+    std::optional<AttachementDescriptor> m_DepthAttachement;
 
     RhiRenderPass* m_RenderPass{ nullptr };
 };

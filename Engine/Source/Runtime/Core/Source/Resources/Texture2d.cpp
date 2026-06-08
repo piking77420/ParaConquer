@@ -42,6 +42,13 @@ Texture2D::Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture)
     DYNAMIC_REFLECT_INIT
 }
 
+Texture2D::Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture, const std::filesystem::path& _Path)
+    : Texture(std::move(_Texture))
+    , m_Path(std::filesystem::exists(_Path) ? _Path.generic_string() : std::string())
+{
+    DYNAMIC_REFLECT_INIT
+}
+
 
 void Texture2D::AfterSerialize(Serializer* _serializer) const
 {

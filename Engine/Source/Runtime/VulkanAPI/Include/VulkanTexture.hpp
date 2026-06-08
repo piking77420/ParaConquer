@@ -39,6 +39,8 @@ namespace Vulkan
         const TextureAndAlloc* GetTextureAndAlloc() const;
         
         TextureAndAlloc* GetTextureAndAlloc();
+
+        vk::ImageViewCreateInfo GetImageViewCreateInfo(vk::ImageViewType _ViewType, uint32_t _BaseArrayLayer, uint32_t _LayerCount, uint32_t _BaseMipLevel, uint32_t _LevelCount) const;
         
         vk::ImageAspectFlags VkImageAspectFlags{};
         

@@ -250,7 +250,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         texture->SetName(_path.filename().generic_string());
         BuildRhiTextureFromImage(_Rhi, *texture, &image, pathString.find(".png") != std::string::npos); // jpg dont use alpha 
 
-        texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture));
+        texture2D = PC_CORE::ResourceManager::Create<PC_CORE::Texture2D>(std::move(texture), _path);
 
         if (!texture2D)
         {
@@ -267,7 +267,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
         std::scoped_lock _(_Rhi.GetRhiContext().ResourceUpdateLock());
         for (auto& it : m_ResourceUpdateBranchs)
-            *_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock() = std::move(it);
+            *_Rhi.GetRhiContext().ResourceUpdateBranch() = std::move(it);
     }
 
     const std::string& AssetsImporter::GetName() const

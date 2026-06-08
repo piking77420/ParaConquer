@@ -40,6 +40,7 @@ BEGIN_PCCORE
         Tbx::Vector2ui Extent;
 
         ClearValueFlag ClearValueFlag;
+        // TODO to const
         std::array<float, 4>* ClearColor;
         size_t ClearValueCount;
         float ClearDepth = 0.f;

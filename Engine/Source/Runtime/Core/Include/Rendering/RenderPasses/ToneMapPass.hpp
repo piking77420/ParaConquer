@@ -39,7 +39,7 @@ namespace PC_CORE::Rendering::Pass
 
         void Build(const RendererPassBuildContext& _RendererPassBuildContext);
 
-        void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
+        void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
     private:
         RhiTexture* m_LightingImageRef{ nullptr };
@@ -51,7 +51,7 @@ namespace PC_CORE::Rendering::Pass
 
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
 
-        void ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
+        void ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext);
     };
 
     REFLECT(ToneMapPass, PC_CORE::Rendering::RenderPass);

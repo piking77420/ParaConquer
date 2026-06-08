@@ -24,7 +24,7 @@ namespace PC_CORE::Rendering::Pass
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetAttachments(&outPutImage)
+			.SetAttachement(&outPutImage)
 			.SetRenderPass(_RendererPassBuildContext.Renderer.colorLinearPass.get())
 			.SetName("ToneMap Framebuffer")
 			.Build();
@@ -40,14 +40,14 @@ namespace PC_CORE::Rendering::Pass
 		m_OutPutImageRef = &outPutImage;
 	}
 
-	void ToneMapPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
+	void ToneMapPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
 
 		ToneMapPassExecute(_RendererPassExecuteContext);
 	}
 
-	void ToneMapPass::ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
+	void ToneMapPass::ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		CommandList& cmd = _RendererPassExecuteContext.cmd;
 		cmd.BeginComputePasss();

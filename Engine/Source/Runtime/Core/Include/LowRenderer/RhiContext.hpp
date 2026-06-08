@@ -52,10 +52,7 @@ public:
     {
         return m_ResourceUpdateLock;
     }
-
     PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch();
-
-    PC_CORE_API RHI::ResourceUpdateBranch* ResourceUpdateBranch_AssumeLock();
 
     PC_CORE_API bool PendingTransferOperation() const;
 

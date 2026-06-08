@@ -59,9 +59,13 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
         .Size = ImageLevel[0].size,
     };
 
-    rhi.GetRhiContext().
-        ResourceUpdateBranch()
-        ->TextureUpload2D(*texture.Get(), image.GetData(), { op }, RhiResourceState::PixelShaderResource);
+    {
+        std::scoped_lock _(rhi.GetRhiContext().ResourceUpdateLock());
+        rhi.GetRhiContext().
+            ResourceUpdateBranch()
+            ->TextureUpload2D(*texture.Get(), image.GetData(), { op }, RhiResourceState::PixelShaderResource);
+    }
+    
 }
 
 ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)

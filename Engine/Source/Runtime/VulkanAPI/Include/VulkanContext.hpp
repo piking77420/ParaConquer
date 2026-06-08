@@ -86,6 +86,8 @@ namespace Vulkan
 
         VULKAN_API void DefferdDestroy(TextureAndAlloc& TextureAndAlloc, uint32_t _FrameIndex);
 
+        VULKAN_API void DefferdDestroy(vk::ImageView& imageView, uint32_t _FrameIndex);
+
         VULKAN_API std::recursive_mutex& VulkanContextMutex()
         {
             return m_VulkanMutex;
@@ -105,7 +107,7 @@ namespace Vulkan
             VmaAllocation alloc = VK_NULL_HANDLE;
         };
 
-        using DefferedDestroyOperation = std::variant<DefferdDestroyBuffer, DefferdDestroyBufferTexture>;
+        using DefferedDestroyOperation = std::variant<DefferdDestroyBuffer, DefferdDestroyBufferTexture, vk::ImageView>;
 
         std::array<std::vector<DefferedDestroyOperation>, MaxFramesInFlight> m_PendingDefferedDestroy;
 

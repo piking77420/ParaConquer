@@ -29,7 +29,7 @@ namespace PC_CORE::Rendering::Pass
 
 	DrawPass::~DrawPass() = default;
 
-	void DrawPass::ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const
+	void DrawPass::ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList)
 	{
 		m_LastMeshletDescritptor = nullptr;
 		m_LastMaterialDescriptor = nullptr;
@@ -40,7 +40,6 @@ namespace PC_CORE::Rendering::Pass
 				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
 					if (m_OnMeshDrawTriangle)
 					{
-						
 						m_OnMeshDrawTriangle(_Context, StaticMesh);
 
 						CommandList::DrawBuffers drawBuffer;

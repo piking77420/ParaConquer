@@ -48,8 +48,8 @@ void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Rende
 	m_FrameBuffer
 		->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 		.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-		.SetAttachments(&outPutImage)
-		.SetDepthAttachments(&DepthBuffer)
+		.SetAttachement(&outPutImage)
+		.SetDepthAttachment(&DepthBuffer)
 		.SetRenderPass(_RendererPassBuildContext.Renderer.LinearClearColorClearStoreDepth.get())
 		.SetName(m_Name + "Framebuffer")
 		.Build();
@@ -85,7 +85,7 @@ void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Rende
 		};
 }
 
-void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext) const
+void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext)
 {
 	PERF_REGION_SCOPED;
 	PERF_REGION_COLOR(PerfRegion::Rendering)

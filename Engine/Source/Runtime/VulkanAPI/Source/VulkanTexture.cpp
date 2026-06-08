@@ -64,6 +64,7 @@ bool Vulkan::VulkanTexture::Build()
         std::shared_ptr<VulkanInstance> instance = context.GetInstance();
 
         std::scoped_lock _(context.VulkanContextMutex()); // we need to lock it because multiple theread can create device
+        assert(nbrOfObjectHandle == 1);
         for (size_t i = 0; i < nbrOfObjectHandle; i++)
         {
             VmaAllocationCreateInfo allocInfo = {};
@@ -81,20 +82,9 @@ bool Vulkan::VulkanTexture::Build()
             nameInfoImage.objectHandle = reinterpret_cast<uint64_t>(static_cast<VkImage>(m_Handle.Image));
             nameInfoImage.pObjectName = GetName().data();
 
-
             SET_VK_DEBUG_NAME(nameInfoImage);
 
-            vk::ImageViewCreateInfo imageviewInfo{};
-            imageviewInfo.sType = vk::StructureType::eImageViewCreateInfo;
-            imageviewInfo.image = m_Handle.Image;
-            imageviewInfo.viewType = Utils::RhiImageToVkImageViewType(GetTextureType());
-            imageviewInfo.format = imageInfo.format;
-            imageviewInfo.subresourceRange.aspectMask = VkImageAspectFlags;
-            imageviewInfo.subresourceRange.baseMipLevel = 0;
-            imageviewInfo.subresourceRange.baseArrayLayer = 0;
-            imageviewInfo.subresourceRange.levelCount = GetLevel();
-            imageviewInfo.subresourceRange.layerCount = GetLayer();
-
+            vk::ImageViewCreateInfo imageviewInfo = GetImageViewCreateInfo(Utils::RhiImageToVkImageViewType(GetTextureType()), 0, GetLayer(), 0, GetLevel());
             VK_CALL(device.createImageView(&imageviewInfo, nullptr, &m_Handle.ImageView));
 
             vk::DebugUtilsObjectNameInfoEXT nameInfoImageView;
@@ -366,6 +356,25 @@ Vulkan::TextureAndAlloc* Vulkan::VulkanTexture::GetTextureAndAlloc()
     return &m_Handle;
 }
 
+vk::ImageViewCreateInfo Vulkan::VulkanTexture::GetImageViewCreateInfo(vk::ImageViewType _ViewType, uint32_t _BaseArrayLayer, uint32_t _LayerCount,  uint32_t _BaseMipLevel, uint32_t _LevelCount) const
+{
+    vk::ImageViewCreateInfo imageviewInfo{};
+    imageviewInfo.sType = vk::StructureType::eImageViewCreateInfo;
+    imageviewInfo.image = m_Handle.Image;
+    imageviewInfo.viewType = _ViewType;
+    imageviewInfo.format = Utils::RhiFormatToVkFormat(GetRhiFormat());
+
+    imageviewInfo.subresourceRange.aspectMask = VkImageAspectFlags;
+    imageviewInfo.subresourceRange.baseMipLevel = _BaseMipLevel;
+    imageviewInfo.subresourceRange.levelCount = _LevelCount;
+    imageviewInfo.subresourceRange.baseArrayLayer = _BaseArrayLayer;
+    imageviewInfo.subresourceRange.layerCount = _LayerCount;
+
+    if (imageviewInfo.subresourceRange.baseMipLevel >= imageviewInfo.subresourceRange.levelCount)
+        __debugbreak();
+
+    return imageviewInfo;
+}
 
 Vulkan::VulkanTexture::~VulkanTexture()
 {

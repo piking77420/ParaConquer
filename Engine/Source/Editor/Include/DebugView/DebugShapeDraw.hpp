@@ -32,7 +32,7 @@ namespace PC_EDITOR::DebugView
 
         void Build(const PC_CORE::Rendering::RendererPassBuildContext& _RendererPassBuildContext);
 
-        void Execute(const PC_CORE::Rendering::RendererPassExecuteContext& _RendererPassExecuteContext) const;
+        void Execute(const PC_CORE::Rendering::RendererPassExecuteContext& _RendererPassExecuteContext);
 
 	private:
         std::unique_ptr<PC_CORE::RhiFrameBuffer> m_FrameBuffer;

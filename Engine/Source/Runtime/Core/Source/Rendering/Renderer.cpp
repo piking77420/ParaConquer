@@ -199,6 +199,29 @@ namespace PC_CORE::Rendering
        }
 
        {
+           colorHDRPass.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = colorHDRPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R32G32B32A32Sfloat)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
+
+           colorHDRPass
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
+
+           colorHDRPass
+               ->SetName("colorHDRPass")
+               .Build();
+       }
+
+       {
            LinearClearColorClearStoreDepth.reset(m_Rhi.CreateRenderPass());
 
            const RenderPassAttachementDescriptor& renderTragetSlot = LinearClearColorClearStoreDepth
@@ -482,6 +505,25 @@ namespace PC_CORE::Rendering
 
                DebugDrawShader(DrawDebugMeshletBound, shaderModules, "DrawDebugMeshletBound", false);
            }
+       }
+
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("EquirectangularToCubeMap.ps.hlsl.binary")->GetCode()}
+           };
+
+           EquilateralToSkyBox.reset(m_Rhi.CreateRhiShaderProgram());
+           EquilateralToSkyBox
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*colorHDRPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("EquilateralToSkyBox")
+               .Build();
        }
 
    }
@@ -832,8 +874,8 @@ namespace PC_CORE::Rendering
                .Build();
 
            std::scoped_lock _(m_Rhi.GetRhiContext().ResourceUpdateLock());
-           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.VertexBuffer.Get(), verticies.data(), DebugLayer.VertexBuffer->GetSizeInByte());
-           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.IndexBuffer.Get(), indicies.data(), DebugLayer.IndexBuffer->GetSizeInByte());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch()->BufferUpload(*DebugLayer.VertexBuffer.Get(), verticies.data(), DebugLayer.VertexBuffer->GetSizeInByte());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch()->BufferUpload(*DebugLayer.IndexBuffer.Get(), indicies.data(), DebugLayer.IndexBuffer->GetSizeInByte());
        }
    }
 

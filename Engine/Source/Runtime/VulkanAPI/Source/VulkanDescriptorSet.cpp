@@ -15,6 +15,13 @@ Vulkan::VulkanDescriptorSet::VulkanDescriptorSet(PC_CORE::Rhi& _Rhi)
 }
 
 
+Vulkan::VulkanDescriptorSet::~VulkanDescriptorSet()
+{
+    VulkanContext& VkContext = static_cast<VulkanContext&>(m_Rhi.GetRhiContext());
+    vk::Device d = GET_VK_DEVICE;
+    d.freeDescriptorSets(VkContext.descritptorManager.GetVkDesciptorPool(), MaxFramesInFlight, m_DescriptorSets.data());
+}
+
 bool Vulkan::VulkanDescriptorSet::Build()
 {
     PERF_REGION_SCOPED;
@@ -40,13 +47,6 @@ vk::DescriptorSet Vulkan::VulkanDescriptorSet::GetVkDescriptorSet() const
     return GetVkDescriptorSet(m_Rhi.GetFrameIndex());
 }
 
-
-Vulkan::VulkanDescriptorSet::~VulkanDescriptorSet()
-{
-    VulkanContext& VkContext = static_cast<VulkanContext&>(m_Rhi.GetRhiContext());
-    vk::Device d = GET_VK_DEVICE;
-    d.freeDescriptorSets(VkContext.descritptorManager.GetVkDesciptorPool(), MaxFramesInFlight, m_DescriptorSets.data());
-}
 
 void Vulkan::VulkanDescriptorSet::GetDescriptorSetLayout()
 {

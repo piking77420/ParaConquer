@@ -76,7 +76,6 @@ Editor::Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo)
     // test dds
     //DDSImageLoader dds("C:/Project/ParaConquerGame/Assets/Meshs/Bistro_v5_2/Textures/MASTER_Roofing_Shingle_Grey_BaseColor.dds");
 
-
 }
 
 Editor::~Editor()
@@ -347,6 +346,26 @@ void Editor::CompileShader()
                 "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
             }));
     }
+
+    // Cube Map
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("CubeMap.vs.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/CubeMap.vs.hlsl",
+                ShaderFeatureFlagBits::UseUV);
+            }));
+    }
+
+    // Equirectacular to skybox
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("EquirectangularToCubeMap.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/EquirectangularToCubeMap.ps.hlsl");
+            }));
+    }
+
 
 
     /*
@@ -690,6 +709,10 @@ void Editor::InitTestScene()
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); });
+        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
+            [&]() {
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("san_giuseppe_bridge_4k.hdr")); },
+            { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
     }
     {
