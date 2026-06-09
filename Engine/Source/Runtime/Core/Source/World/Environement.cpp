@@ -67,6 +67,12 @@ namespace PC_CORE::WORLD
 		env.EnvironementTexture = _Texture;
 		env.Skybox = std::move(EnvironementMap);
 		env.isDiry = true;
+		env.SkyBoxDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
+
+		env.SkyBoxDescriptorSet
+			->BindTexture(RhiShaderStageBits::Pixel, 0, env.Skybox.get(), _App.SamplerLinearClamp.get())
+			.SetName("Skybox DescriptorSet")
+			.Build();
 		
 		return true;
 	}

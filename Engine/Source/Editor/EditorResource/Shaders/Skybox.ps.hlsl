@@ -1,31 +1,26 @@
-
+#include "Func.hlsl"
 
 [[vk::combinedImageSampler]]
-TextureCube<float4> SkyboxTex : register(t0,space1);
+TextureCube<float4> skyboxTex : register(t0, space0);
 [[vk::combinedImageSampler]]
-SamplerState SkyboxSampler : register(s0, space1); 
+SamplerState skyboxSampler : register(s0, space0); 
+//https://github.com/microsoft/DirectXShaderCompiler/wiki/Vulkan-combined-image-sampler-type
 
-struct PushConstant
-{
-    float4x4 ViewProjection;
-};
-
-[[vk::push_constant]]
-PushConstant pushConstant;
-
-struct PsInput
+struct PSInput
 {
     float4 Position : SV_POSITION;
-    #if defined(USE_UV)
-    float3 TexCoord : TEXCOORD0;
-    #endif
+#if defined(USE_UV)
+    float3 Dir : TEXCOORD0;
+#endif
 };
 
+#include "Func.hlsl"
 
-
-float4 Main(PsInput input) : SV_TARGET
+float4 Main(PSInput input) : SV_TARGET
 {
-    float3 Color = SkyboxSampler.Sample(SkyboxTex, TexCoord).rgb;
-    
-    return vec4(color, 1.0);
+    float3 dir = normalize(input.Dir);
+
+    float3 color = skyboxTex.Sample(skyboxSampler, dir).rgb;
+
+    return float4(color, 1.0f);
 }

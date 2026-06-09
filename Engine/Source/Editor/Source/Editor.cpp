@@ -366,7 +366,22 @@ void Editor::CompileShader()
             }));
     }
 
+    // Skybox
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/CubeMap.vs.hlsl",
+                ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::SkyboxForceFarDepth);
+            }));
 
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Skybox.ps.hlsl",
+                ShaderFeatureFlagBits::UseUV);
+            }));
+    }
 
     /*
     // sprite

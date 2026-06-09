@@ -1,3 +1,6 @@
+
+#include "Func.hlsl"
+
 Texture2D<float4> HdrImage : register(t0, space0);
 
 
@@ -24,16 +27,7 @@ static const float3x3 ACESOutputMat = float3x3(
    -0.00327, -0.07276, 1.07602
 );
 
-float3 LinearToSRGB(float3 x)
-{
-    x = max(x, 0.0);
 
-    return select(
-        x * 12.92,
-        1.055 * pow(x, 1.0 / 2.4) - 0.055,
-        x > 0.0031308
-    );
-}
 
 [numthreads(16, 16, 1)]
 void Main(uint3 DTid : SV_DispatchThreadID)
@@ -48,12 +42,12 @@ void Main(uint3 DTid : SV_DispatchThreadID)
         return;
 
     // Read HDR color (linear)
-    float4 hdr = HdrImage[gid] * exposure;
+    float4 hdr = HdrImage[gid]  * exposure;
 
     float3 color = mul(ACESInputMat, hdr.rgb); // Linear sRGB -> AP1
     color = RRTAndODTFit(color); // RRT+ODT in AP1 space
     color = mul(ACESOutputMat, color); // AP1 -> Linear sRGB
-    color = LinearToSRGB(color); // Clamp + gamma correction
+    color = ApplyGammaCorrection(color, 2.2);
 
     RgbImage[gid] = float4(color, hdr.a);
 }

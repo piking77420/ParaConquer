@@ -117,7 +117,7 @@ namespace PC_CORE::Rendering
 			}
 			else
 			{
-				static_assert(false);
+				std::unreachable();
 			}
 			assert(resource != nullptr);
 			

@@ -526,6 +526,27 @@ namespace PC_CORE::Rendering
                .Build();
        }
 
+       {
+           // Skybox
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")->GetCode()}
+           };
+
+           DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawSkyBoxPipeline
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*forwardPass)
+               .SetDepthTest(true)
+               .SetDepthCompareOp(CompareOp::LessOrEqual)
+               .SetDepthWrite(false)
+               .SetName("Skybox")
+               .Build();
+       }
+
    }
 
    void Renderer::UploadRenderInstanceID()
@@ -551,10 +572,12 @@ namespace PC_CORE::Rendering
        OpaqueList.Clear();
        TransparentList.Clear();
        DebugDrawList.Clear();
+       Skybox.Clear();
 
 
        FillListStaticMesh(_view, RenderingWorldData);
        FillListDebugDraw(_view, RenderingWorldData);
+       FillSkyBox(_view, RenderingWorldData);
        SortList();
    }
 
@@ -795,6 +818,24 @@ namespace PC_CORE::Rendering
            }
        }
        
+   }
+
+   void Renderer::FillSkyBox(const RenderView& _view, const RenderingWorldData& _RenderingWorldData)
+   {
+       if (!_RenderingWorldData.SkyBox)
+           return;
+
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
+
+       auto& item = Skybox.EmplaceBack();
+       Tbx::Matrix4x4f view = Tbx::Matrix4x4f(_view.View);
+       view[15] = 1.f;
+       view[14] = 0.f;
+       view[13] = 0.f;
+       view[12] = 0.f;
+       item.Data.emplace<DrawSkyBox>(*_RenderingWorldData.SkyBox, Tbx::Matrix4x4f(_view.Projection) * view);
    }
 
    void Renderer::SortList()

@@ -139,6 +139,7 @@ namespace PC_CORE::Rendering::Pass
 
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
+		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.Skybox);
 		cmd.EndRenderPass();
 	}
 

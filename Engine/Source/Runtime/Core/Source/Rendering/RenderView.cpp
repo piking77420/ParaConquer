@@ -45,6 +45,7 @@ namespace PC_CORE::Rendering
         View = _Camera.GetViewMatrix();
         ViewInv = View.Invert();
         Projection = _Camera.GetProjection();
+        ProjectionNative = _Camera.GetProjectionNative();
         ProjectionInv = Projection.Invert();
         ViewProjection = _Camera.GetViewProjection();
         ViewProjectionInv = ViewInv * ProjectionInv;

@@ -225,19 +225,27 @@ void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
         overloaded{
             [&](WORLD::Environement::ImageBaseLighting& ibl)
             {  
-                if (auto lock = ibl.EnvironementTexture.Lock())
+                if (ibl.isDiry)
                 {
-                    if (ibl.Skybox)
+                    if (auto lock = ibl.EnvironementTexture.Lock())
                     {
-                        auto& env = m_GameRenderingWorldData.CaptureEnvironement.emplace();
-                        env = {
-                            .Environement = lock.Get()->Get(),
-                            .SkyBox = ibl.Skybox.get(),
-                            .isDirty = ibl.isDiry,
-                        };
-                        //ibl.isDiry = false;
+                        if (ibl.Skybox)
+                        {
+                            auto& env = m_GameRenderingWorldData.CaptureEnvironement.emplace();
+                            env = {
+                                .Environement = lock.Get()->Get(),
+                                .SkyBox = ibl.Skybox.get(),
+                                .isDirty = ibl.isDiry,
+                            };
+                            ibl.isDiry = false;
+                        }
                     }
                 }
+
+                if (ibl.Skybox && ibl.SkyBoxDescriptorSet)
+                {
+                    m_GameRenderingWorldData.SkyBox.emplace(ibl.SkyBoxDescriptorSet.get());
+                } 
             }
         }, World.Environement.GetEnvironementLighting());
 

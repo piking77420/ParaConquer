@@ -53,6 +53,7 @@ public:
 
     DrawList DebugDrawList;
 
+    DrawList Skybox;
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
@@ -79,6 +80,8 @@ public:
     std::unique_ptr<RhiShaderProgram> DrawDebugMeshletBound;
 
     std::unique_ptr<RhiShaderProgram> EquilateralToSkyBox;
+
+    std::unique_ptr<RhiShaderProgram> DrawSkyBoxPipeline;
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
@@ -125,6 +128,8 @@ private:
     void FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void FillListDebugDraw(const RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void FillSkyBox(const RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void SortList();
 

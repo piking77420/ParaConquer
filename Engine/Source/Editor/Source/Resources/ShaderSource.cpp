@@ -185,6 +185,11 @@ std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
         Features.push_back(L"-DFRUSTUM=1");
     }
 
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::SkyboxForceFarDepth)
+    {
+        Features.push_back(L"-DSKYBOX_FORCE_FAR_DEPTH=1");
+    }
+
     return Features;
 }
 

@@ -1,5 +1,5 @@
 
-#include "Func.hlsl";
+#include "Func.hlsl"
 
 struct PSInput
 {
@@ -57,7 +57,6 @@ float4 Main(PSInput input) : SV_Target
             discard;
         
         FragAlbedo.xyz = SRGBToLinear(FragAlbedo.xyz);
-
     }
 #endif   
 

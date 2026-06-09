@@ -61,7 +61,8 @@ namespace PC_CORE::Rendering
 
 	struct DrawSkyBox
 	{
-		RhiTexture* SkyBox = nullptr;
+		RhiDescriptorSet* SkyBoxSet;
+		Tbx::Matrix4x4f ViewMatrix;
 	};
 
 

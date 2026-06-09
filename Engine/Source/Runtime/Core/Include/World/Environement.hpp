@@ -7,6 +7,7 @@
 #include <ObjectPtr.hpp>
 #include <LowRenderer/RhiBuffer.h>
 #include <Resources/Texture2d.hpp>
+#include <LowRenderer/RhiDescriptorSet.hpp>
 
 namespace PC_CORE
 {
@@ -32,6 +33,8 @@ namespace PC_CORE::WORLD
 			std::unique_ptr<RhiTexture> Skybox = nullptr;
 
 			std::unique_ptr<RhiBuffer> IrradianceSH9Buffer = nullptr;
+
+			std::unique_ptr<RhiDescriptorSet> SkyBoxDescriptorSet;
 		};
 
 		using EnvironementLighting = std::variant<ImageBaseLighting>;

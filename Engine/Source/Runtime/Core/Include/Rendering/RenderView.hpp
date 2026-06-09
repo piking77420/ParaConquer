@@ -79,6 +79,7 @@ namespace PC_CORE::Rendering
         Tbx::Matrix4x4d ViewInv;
 
         Tbx::Matrix4x4d Projection;
+        Tbx::Matrix4x4d ProjectionNative;
         Tbx::Matrix4x4d ProjectionInv;
 
         Tbx::Matrix4x4d ViewProjection;

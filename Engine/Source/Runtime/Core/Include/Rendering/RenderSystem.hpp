@@ -76,7 +76,7 @@ namespace PC_CORE::Rendering
         std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;
         std::vector<DebugDrawContext::Frustum> DebugFrustums;
         std::optional<CaptureEnvironement> CaptureEnvironement;
-        std::optional<RhiTexture*> SkyBox;
+        std::optional<RhiDescriptorSet*> SkyBox;
     };
 
     class RendererSystem : public EcsSystem

@@ -152,6 +152,18 @@ void Camera::ComputeProjection()
             static_cast<double>(m_BottomTopScreen.x),
             static_cast<double>(m_BottomTopScreen.y), Near, Far);
 
+    m_ProjectionNative = m_ProjectionType == ProjectionType::Perspective
+        ? Tbx::PerspectiveMatrix(
+            static_cast<double>(m_Fov),
+            Aspect,
+            Near,
+            Far)
+        : Tbx::OrthoGraphicMatrix(
+            static_cast<double>(m_LeftRightScreen.x),
+            static_cast<double>(m_LeftRightScreen.y),
+            static_cast<double>(m_BottomTopScreen.x),
+            static_cast<double>(m_BottomTopScreen.y), Near, Far);
+
 }
 
 void Camera::ComputeViewProjection()

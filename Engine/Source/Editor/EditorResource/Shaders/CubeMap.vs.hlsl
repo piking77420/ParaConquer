@@ -23,6 +23,9 @@ VsOutPut Main(uint vertexIndex : SV_VertexID)
     uint index = CubeIndices[vertexIndex];
     float3 position = CubeVertices[index];
     output.Position = mul(pushConstant.ViewProjection, float4(position, 1.0));
+#if defined (SKYBOX_FORCE_FAR_DEPTH)
+output.Position.z = output.Position.w;
+#endif
 #if defined(USE_UV)
     output.TexCoord = normalize(position);
 #endif

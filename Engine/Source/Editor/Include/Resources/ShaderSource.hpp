@@ -17,6 +17,7 @@ BEGIN_EDITOR_PCCORE
         DrawTriangle = 1 << 4,
         Instanced = 1 << 5,
         Frustum = 1 << 6,
+        SkyboxForceFarDepth = 1 << 7
     };
 
     using ShaderFeatureFlag = size_t;

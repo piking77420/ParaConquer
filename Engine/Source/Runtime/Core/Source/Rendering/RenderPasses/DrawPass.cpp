@@ -94,6 +94,15 @@ namespace PC_CORE::Rendering::Pass
 						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 					}
 				  },
+				[&](const DrawSkyBox& DrawSkyBox) {
+					if (_Context.cmd.BindProgram(*_Context.Renderer.DrawSkyBoxPipeline))
+					{
+						_Context.cmd.BindDescriptorSet(DrawSkyBox.SkyBoxSet, 0);
+						_Context.cmd.PushConstant(RhiShaderStageBits::Pixel, &DrawSkyBox.ViewMatrix, 0, sizeof(DrawSkyBox.ViewMatrix));
+						_Context.cmd.Draw(36, 1, 0, 0);
+					}
+
+				},
 				[&](auto&&) 
 				{
 
