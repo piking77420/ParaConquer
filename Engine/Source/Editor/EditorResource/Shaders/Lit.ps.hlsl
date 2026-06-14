@@ -60,8 +60,12 @@ SamplerState BRDFLUTSampler : register(s2, IMAGE_BASE_LIGHTING_SPACE);
 
 float3 PrefilteredReflection(float3 R, float PerceptualRoughness)
 {
-    const float MAX_REFLECTION_LOD = 4.0;
-    float LOD = PerceptualRoughness * MAX_REFLECTION_LOD;
+    uint Width;
+    uint Height;
+    uint MipCount;
+    PrefilterMap.GetDimensions(0, Width, Height, MipCount);
+
+    float LOD = PerceptualRoughness * MipCount;
     float LODF = floor(LOD);
 	float LODC = ceil(LOD);
     float3 a = PrefilterMap.SampleLevel(PrefilterMapSampler, R, LODF).rgb;
@@ -104,10 +108,10 @@ float4 Main(PSInput input) : SV_Target
     float3 NormalNormlize = normalize(input.Normal);
     float3 Normal_V = NormalNormlize;
     // 
-    float Metallic = AORoughnessMetallicEmptyFactors.x;
+    float AO = AORoughnessMetallicEmptyFactors.x;
     float PerceptualRoughness = AORoughnessMetallicEmptyFactors.y;
+    float Metallic = AORoughnessMetallicEmptyFactors.z;
     float3 Emissive = EmissiveFactor;
-    float AO = AORoughnessMetallicEmptyFactors.z;
 
     float3 V = -normalize(input.ViewSpacePosition);
     float3 V_W = mul((float3x3)ViewInv, V);
@@ -201,7 +205,8 @@ float4 Main(PSInput input) : SV_Target
 
     // Ambiant
     float3 DiffuseIBLColorIBL = FragAlbedo.xyz * (1.0 - Metallic);
-    float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV, DiffuseIBLColorIBL, PerceptualRoughness, F0) * AO;
+    float NoV_W = max(dot(Normal_W, V_W), 1e-5);
+    float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV_W, DiffuseIBLColorIBL, PerceptualRoughness, F0) * AO;
 
     
     // Other

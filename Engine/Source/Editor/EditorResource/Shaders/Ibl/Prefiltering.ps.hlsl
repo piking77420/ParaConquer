@@ -40,6 +40,15 @@ PsOutput Main(PsInput input) : SV_TARGET
     float TotalWeight = 0.0;
     float3 PrefilteredColor = float3(0.0, 0.0, 0.0);    
     float Roughness = pushConstant.Metadata;
+
+    uint Width;
+    uint Height;
+    uint MipCount;
+    EnvironementMap.GetDimensions(0, Width, Height, MipCount);
+
+    // Solid angle of 1 pixel across all cube faces
+    float SaTexel  = 4.0 * PI / (6.0 * Width * Height);
+
     for(uint i = 0u; i < SAMPLE_COUNT; ++i)
     {
         float2 Xi = Hammersley2d(i, SAMPLE_COUNT);
@@ -54,14 +63,7 @@ PsOutput Main(PsInput input) : SV_TARGET
 
             float D = D_GGX(NoH, Roughness);
             float Pdf = (D * NoH / (4.0 * HoV)) + 0.0001;
-
-            uint Width;
-            uint Height;
-            uint MipCount;
-            EnvironementMap.GetDimensions(0, Width, Height, MipCount);
-
-            // Solid angle of 1 pixel across all cube faces
-            float SaTexel  = 4.0 * PI / (6.0 * Width * Height);
+            
             // Biased (+1.0) mip level for better result
             float SaSample = 1.0 / (float(SAMPLE_COUNT) * Pdf + 0.0001);
             float MipLevel = Roughness == 0.0 ? 0.0 : 0.5 * log2(SaSample / SaTexel); 

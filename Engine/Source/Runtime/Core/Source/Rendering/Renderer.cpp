@@ -738,7 +738,7 @@ namespace PC_CORE::Rendering
                const Tbx::Matrix4x4f NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
-               std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertMatrix));
+               std::memcpy(RenderInstance.NormalInvertViewMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertViewMatrix));
 
                switch (m_RenderGraph.GetRenderMode())
                {

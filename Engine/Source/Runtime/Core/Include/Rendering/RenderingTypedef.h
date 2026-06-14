@@ -112,7 +112,7 @@ namespace Gpu
     struct GPU_ALIGN RenderInstance
     {
         mat4 ModelView;
-        mat4 NormalInvertMatrix;
+        mat4 NormalInvertViewMatrix;
     };
 }
 }

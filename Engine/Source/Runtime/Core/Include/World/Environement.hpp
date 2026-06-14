@@ -54,6 +54,7 @@ namespace PC_CORE::WORLD
 		PC_CORE_API Environement();
 		PC_CORE_API ~Environement() = default;
 
+
 	private:
 		Method m_Method;
 
@@ -61,7 +62,7 @@ namespace PC_CORE::WORLD
 
 		static constexpr uint32_t Size = 1024;
 
-		static constexpr uint32_t IrradianceSize = 32;
+		static constexpr uint32_t IrradianceSize = 64;
 
 		static constexpr uint32_t PrefilterMapSize = 512;
 

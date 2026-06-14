@@ -705,20 +705,22 @@ void Editor::InitTestScene()
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread, [&]()
             {
                 auto& level = World::GetWorld()->level;
+
+
                 for (size_t i = 0; i < SphereCountPerAxis; i++)
                 {
-                    const float Roughness = i / static_cast<float>(SphereCountPerAxis - 1);
+                    const float Metallic = std::clamp((float)i / (float)SphereCountPerAxis, 0.005f, 1.0f);
+                    const float Roughness = 1.0f - Metallic;
 
-                    for (size_t j = 0; j < SphereCountPerAxis; j++)
+                    for (size_t j = 0; j < 1; j++)
                     {
-                        const float Metallic = j / static_cast<float>(SphereCountPerAxis - 1);
                         std::string MaterialFormat = std::format("Roughness {}, Mettalic {}", Roughness, Metallic);
 
                         const EntityId id = level.CreateEntity(std::string("Sphere")
                             + MaterialFormat);
                         level.AddComponent<Transform>(id);
                         Transform& t = level.GetComponent<Transform>(id);
-                        t.Position = Tbx::Vector3d(Roughness * SpaceBetweenSphere, Metallic * SpaceBetweenSphere, 0.0);
+                        t.Position = Tbx::Vector3d(float(i - (SphereCountPerAxis / 2.0f)) * 2.15f, 0.0, 0.0);
 
                         level.AddComponent<StaticMeshComponent>(id);
                         StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
@@ -730,7 +732,7 @@ void Editor::InitTestScene()
 
                         Material->SetRoughnessFactor(Roughness);
                         Material->SetMetallicFactor(Metallic);
-                        Material->SetAlbedoFactor(Tbx::Vector4f(1.f, 0.f, 0.f, 1.f));
+                        Material->SetAlbedoFactor(Tbx::Vector4f(0.f, 0.f, 0.f, 1.f));
 
                         Material->Build();
 
