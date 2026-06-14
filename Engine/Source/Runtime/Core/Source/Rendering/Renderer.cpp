@@ -654,11 +654,10 @@ namespace PC_CORE::Rendering
            const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
            const auto MeshAABBCenter = MeshAABBW.GetCenter();
            const auto MeshAABBExtend = MeshAABBW.GetExtend();
-           //  TODO FIX FRUSTUM
-           //const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
+           const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
 
-           //if (!MeshIsOnFrustum)
-            //continue;
+           if (!MeshIsOnFrustum)
+             continue;
 
            // Pick Lod
            uint32_t LODIndex = 0;
@@ -683,9 +682,8 @@ namespace PC_CORE::Rendering
                const MotionCore::Aabb<double> MeshSectionAABBW = Dcmd.GlobalModelAABB.GetTransformed(StaticMeshComponentData.WorldMatrix);
                const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
                const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
-               //  TODO FIX FRUSTUM
-               //if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
-                 //  continue;
+               if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
+                 continue;
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;

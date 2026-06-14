@@ -51,8 +51,8 @@ namespace PC_CORE::Rendering
         ViewProjection = _Camera.GetViewProjection();
         ViewProjectionInv = ViewInv * ProjectionInv;
 
-        FrustumView = Frustum(Frustum::VulkanNdc, FrustumToView);
-        FrustumWorld = Frustum(Frustum::VulkanNdc, FrustumToWorld);
+        FrustumView = Frustum(Frustum::OpenglNdc, FrustumToView);
+        FrustumWorld = Frustum(Frustum::OpenglNdc, FrustumToWorld);
 
         Gamma = 2.2f;
         Exposure = 1.f;
@@ -85,8 +85,7 @@ namespace PC_CORE::Rendering
             Gpu::StreamDoubleToFloat(&ptr->ViewProjectionInv, &ViewProjectionInv);
             Gpu::StreamDoubleToFloat(&ptr->FrustumViewMatrix, &FrustumViewMatrix);
 
-            // TODO FIX FRUSTUM
-            //FrustumView.StreamPlanes(ptr->FrustumPlanesView[0].data.data());
+            FrustumView.StreamPlanes(ptr->FrustumPlanesView[0].data.data());
 
             ptr->CameraNear = static_cast<float>(CameraNear);
             ptr->CameraFar = static_cast<float>(CameraFar);

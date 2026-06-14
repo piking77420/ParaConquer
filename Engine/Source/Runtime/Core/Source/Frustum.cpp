@@ -20,15 +20,19 @@ namespace PC_CORE
 			CornerWorld[i] /= CornerWorld[i].w;
 		} 
 		
-		// Normals are facing outside
-		m_Planes[Planes::Near] = Plane(CornerWorld[Corner::NearBottomLeft], CornerWorld[Corner::NearTopLeft], CornerWorld[Corner::NearBottomRight]);
-		m_Planes[Planes::Far] = Plane(CornerWorld[Corner::FarBottomLeft], CornerWorld[Corner::FarBottomRight], CornerWorld[Corner::FarTopLeft]);
+		// Normals are facing outside - OpenGL / RH camera looking down -Z
 
-		m_Planes[Planes::Left] = Plane(CornerWorld[Corner::NearBottomLeft], CornerWorld[Corner::FarBottomLeft], CornerWorld[Corner::FarTopLeft]);
-		m_Planes[Planes::Right] = Plane(CornerWorld[Corner::NearBottomRight], CornerWorld[Corner::FarTopRight], CornerWorld[Corner::FarBottomRight]);
+		m_Planes[Planes::Near] = Plane(CornerWorld[Corner::NearBottomLeft], CornerWorld[Corner::NearBottomRight], CornerWorld[Corner::NearTopLeft]);
 
-		m_Planes[Planes::Top] = Plane(CornerWorld[Corner::NearTopLeft], CornerWorld[Corner::FarTopLeft], CornerWorld[Corner::FarTopRight]);
-		m_Planes[Planes::Bottom] = Plane(CornerWorld[Corner::NearBottomLeft], CornerWorld[Corner::FarBottomRight], CornerWorld[Corner::FarBottomLeft]);
+		m_Planes[Planes::Far] = Plane(CornerWorld[Corner::FarBottomLeft], CornerWorld[Corner::FarTopLeft], CornerWorld[Corner::FarBottomRight]);
+
+		m_Planes[Planes::Left] = Plane(CornerWorld[Corner::NearBottomLeft], CornerWorld[Corner::FarTopLeft], CornerWorld[Corner::FarBottomLeft]);
+
+		m_Planes[Planes::Right] = Plane(CornerWorld[Corner::NearBottomRight], CornerWorld[Corner::FarBottomRight], CornerWorld[Corner::FarTopRight]);
+
+		m_Planes[Planes::Top] = Plane(CornerWorld[Corner::NearTopLeft], CornerWorld[Corner::FarTopRight], CornerWorld[Corner::FarTopLeft]);
+
+		m_Planes[Planes::Bottom] = Plane(CornerWorld[Corner::NearBottomLeft], CornerWorld[Corner::FarBottomLeft], CornerWorld[Corner::FarBottomRight]);
 	}
 
 	bool Frustum::IsOnFrustum(const Tbx::Vector3d& _Center, const Tbx::Vector3d& _Extend) const
