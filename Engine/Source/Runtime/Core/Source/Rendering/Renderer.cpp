@@ -288,6 +288,29 @@ namespace PC_CORE::Rendering
                ->SetName("LoadLinearColorLoadStoreDepth")
                .Build();
        }
+
+       {
+           BRDFLutPass.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = BRDFLutPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R16G16Sfloat)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Load)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::RenderTarget)
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
+
+           BRDFLutPass
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
+
+           BRDFLutPass
+               ->SetName("BRDF LUT Pass")
+               .Build();
+       }
       
    }
 
@@ -584,6 +607,26 @@ namespace PC_CORE::Rendering
                .SetDepthTest(false)
                .SetDepthWrite(false)
                .SetName("PrefilterEnvironement")
+               .Build();
+       }
+
+       // BRDFLutPipeline
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("BRDFLUT.ps.hlsl.binary")->GetCode()}
+           };
+
+           BRDFLutPipeline.reset(m_Rhi.CreateRhiShaderProgram());
+           BRDFLutPipeline
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*BRDFLutPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("BRDFLutPipeline")
                .Build();
        }
 

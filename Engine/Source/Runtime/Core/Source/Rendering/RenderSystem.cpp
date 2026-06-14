@@ -237,6 +237,7 @@ void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
                                 .Environement = lock.Get()->Get(),
                                 .IrradianceMap = ibl.IrradianceMap.get(),
                                 .PrefilterMap = ibl.PrefilterMap.get(),
+                                .BRDF = ibl.BRDFLUT.get(),
                                 .SkyBox = ibl.Skybox.get(),
                                 .isDirty = ibl.isDiry,
                             };

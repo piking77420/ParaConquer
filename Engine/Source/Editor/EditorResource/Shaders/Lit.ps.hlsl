@@ -40,33 +40,56 @@ struct PSInput
 #define IMAGE_BASE_LIGHTING_SPACE space3
 
 [[vk::combinedImageSampler]]
-TextureCube<float4> IrradianceDiffuse : register(t0, IMAGE_BASE_LIGHTING_SPACE);
+TextureCube<float4> IrradianceMap : register(t0, IMAGE_BASE_LIGHTING_SPACE);
 [[vk::combinedImageSampler]]
-SamplerState IrradianceDiffuseSampler : register(s0, IMAGE_BASE_LIGHTING_SPACE); 
+SamplerState IrradianceMapSampler : register(s0, IMAGE_BASE_LIGHTING_SPACE); 
 
-/*
 [[vk::combinedImageSampler]]
-TextureCube<float4> PrefilterMap : register(t0, IMAGE_BASE_LIGHTING_SPACE);
+TextureCube<float4> PrefilterMap : register(t1, IMAGE_BASE_LIGHTING_SPACE);
 [[vk::combinedImageSampler]]
-SamplerState PrefilterMapSampler : register(s0, IMAGE_BASE_LIGHTING_SPACE); 
-*/
+SamplerState PrefilterMapSampler : register(s1, IMAGE_BASE_LIGHTING_SPACE); 
+
+[[vk::combinedImageSampler]]
+Texture2D<float4> BRDFLUTTexture : register(t2, IMAGE_BASE_LIGHTING_SPACE);
+[[vk::combinedImageSampler]]
+SamplerState BRDFLUTSampler : register(s2, IMAGE_BASE_LIGHTING_SPACE); 
+
 
 #include "PBR.hlsl"
 
 
-float3 EvaluateIBL(float3 N, float3 DiffuseColor)
+float3 PrefilteredReflection(float3 R, float PerceptualRoughness)
 {
-   // float NoV = max(dot(N, V), 0.0);
-    //float3 r = reflect(-V, N); // V could be ViewSpacePosition but whatever
+    const float MAX_REFLECTION_LOD = 4.0;
+    float LOD = PerceptualRoughness * MAX_REFLECTION_LOD;
+    float LODF = floor(LOD);
+	float LODC = ceil(LOD);
+    float3 a = PrefilterMap.SampleLevel(PrefilterMapSampler, R, LODF).rgb;
+	float3 b = PrefilterMap.SampleLevel(PrefilterMapSampler, R, LODC).rgb;
+    return lerp(a, b, LOD - LODF);
+}
 
-    //vec3 indirectSpecular = evaluateSpecularIBL(r, perceptualRoughness);
-    //vec2 env = prefilteredDFG_LUT(perceptualRoughness, NoV);
-    //vec3 specularColor = f0 * env.x + f90 * env.y;
+float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 DiffuseColor, float PerceptualRoughness, float3 F0)
+{
+    float3 R_W = reflect(-V, N);   
 
-    float3 irradiance = IrradianceDiffuse.Sample(IrradianceDiffuseSampler, N).rgb;
-    float3 indirectDiffuse = max(irradiance, 0.0);
+    // Reflection
+    float3 PFR = PrefilteredReflection(R_W, PerceptualRoughness);
 
-    return DiffuseColor * indirectDiffuse;
+    // Diffuse
+    float3 Irradiance = IrradianceMap.Sample(IrradianceMapSampler, N).rgb;
+    float3 Diffuse = DiffuseColor * Irradiance;
+
+    // Specular
+    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), saturate(PerceptualRoughness))).rg;
+    float3 F = F_SchlickR(max(NoV, 0.0), F0, PerceptualRoughness);
+	float3 Specular = PFR * (F * BRDF.x + BRDF.y);
+
+    // Component
+    // KS => 1
+    float3 kD = 1.0 - F;
+
+    return (kD * Diffuse) + Specular;
 }
 
 
@@ -80,12 +103,14 @@ float4 Main(PSInput input) : SV_Target
     // Normal
     float3 NormalNormlize = normalize(input.Normal);
     float3 Normal_V = NormalNormlize;
-    float3 Normal_W = mul((float3x3)ViewInv, NormalNormlize);
     // 
     float Metallic = AORoughnessMetallicEmptyFactors.x;
     float PerceptualRoughness = AORoughnessMetallicEmptyFactors.y;
     float3 Emissive = EmissiveFactor;
     float AO = AORoughnessMetallicEmptyFactors.z;
+
+    float3 V = -normalize(input.ViewSpacePosition);
+    float3 V_W = mul((float3x3)ViewInv, V);
 #endif
 
 #if defined(LIT) && defined(USE_UV)
@@ -141,17 +166,20 @@ float4 Main(PSInput input) : SV_Target
 
     float3 Lo = float3(0, 0, 0);
 #if defined(LIT)
-    float Roughness = PerceptualRoughness * PerceptualRoughness; // remap PerceptualRoughness toRoughness ;
+
+
+    float Roughness = PerceptualRoughness; // remap PerceptualRoughness toRoughness ;
     Roughness = saturate(Roughness); // 0..1
     float3 BaseColor = FragAlbedo.xyz;
+    float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
 
+    // Normal Computing
     float3 N = Normal_V;
-    float3 V = -normalize(input.ViewSpacePosition);
-    float NoV = saturate(dot(N, V)) + 1e-5;
-    
-    float keepAlive = Lights[0].PositionType.x;
+    float NoV = max(saturate(dot(N, V)), 1e-5);;
+    float3 Normal_W = mul((float3x3)ViewInv, Normal_V);
 
     // Mix it into output in a way that can�t be optimized away
+    float keepAlive = Lights[0].PositionType.x;
     Lo.r += (asuint(keepAlive) & 1) * 1e-6;
  
     // Dir Light 
@@ -163,21 +191,21 @@ float4 Main(PSInput input) : SV_Target
             float3 H = normalize(V + L);
             float NoH = saturate(dot(N, H));
             float LoH = saturate(dot(L, H));
-                    
+
             float3 Radiance = SRGBToLinear(DirLight.ColorIntensity.xyz) * DirLight.ColorIntensity.w;
         
-            float3 Brdf = BRDF(BaseColor, Metallic, Roughness,  NoV, NoL, NoH, LoH);
+            float3 Brdf = BRDF(BaseColor, Metallic, Roughness, NoV, NoL, NoH, LoH, F0);
             Lo += Brdf * Radiance * NoL;
         }
     }
 
     // Ambiant
-    float3 DiffuseIBLColor = FragAlbedo.xyz * (1.0 - Metallic);
-    float3 Ambient = EvaluateIBL(Normal_W, DiffuseIBLColor) * AO;
+    float3 DiffuseIBLColorIBL = FragAlbedo.xyz * (1.0 - Metallic);
+    float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV, DiffuseIBLColorIBL, PerceptualRoughness, F0) * AO;
 
     
     // Other
-    Lo += Emissive * 0.001;
+    Lo += Emissive;
     Lo += Ambient;
 #endif
 

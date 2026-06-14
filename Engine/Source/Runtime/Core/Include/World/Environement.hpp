@@ -36,6 +36,8 @@ namespace PC_CORE::WORLD
 
 			std::unique_ptr<RhiTexture> PrefilterMap = nullptr;
 
+			std::unique_ptr<RhiTexture> BRDFLUT = nullptr;
+
 			std::unique_ptr<RhiDescriptorSet> SkyBoxDescriptorSet;
 
 			std::unique_ptr<RhiDescriptorSet> EnvironemementDescriptorSet;
@@ -62,6 +64,8 @@ namespace PC_CORE::WORLD
 		static constexpr uint32_t IrradianceSize = 32;
 
 		static constexpr uint32_t PrefilterMapSize = 512;
+
+		static constexpr uint32_t BRDFLUTSize = 512;
 	};
 
 	REFLECT(Environement);

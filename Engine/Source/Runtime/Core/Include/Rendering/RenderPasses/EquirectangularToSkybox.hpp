@@ -56,6 +56,8 @@ namespace PC_CORE::Rendering::Pass
         PassResource m_IrradianceConvolution;
 
         PassResource m_PrefilterMap;
+
+        std::unique_ptr<RhiFrameBuffer> m_BRDFLUTFrameBuffer = nullptr;
         
         void ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext);
 
@@ -72,6 +74,8 @@ namespace PC_CORE::Rendering::Pass
         void ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
         void ExecutePrefilter(const RendererPassExecuteContext& _RendererPassExecuteContext);
+
+        void ExecuteBRDFLUT(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
     };
 

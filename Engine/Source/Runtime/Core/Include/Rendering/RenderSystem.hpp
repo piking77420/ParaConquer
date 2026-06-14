@@ -51,6 +51,7 @@ namespace PC_CORE::Rendering
         RhiTexture* Environement{ nullptr };
         RhiTexture* IrradianceMap{ nullptr };
         RhiTexture* PrefilterMap{ nullptr };
+        RhiTexture* BRDF{ nullptr };
         RhiTexture* SkyBox{ nullptr };
         bool isDirty = false;
     };

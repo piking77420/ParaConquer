@@ -27,41 +27,6 @@ struct PsOutput
     float4 Color : SV_TARGET;
 };
 
-float2 Hammersley2d(uint i, uint N) 
-{
-	// Radical inverse based on http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
-	uint bits = (i << 16u) | (i >> 16u);
-	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-	bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-	bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-	bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-	float rdi = float(bits) * 2.3283064365386963e-10;
-	return float2(float(i) /float(N), rdi);
-}
-
-float3 ImportanceSampleGGX(float2 Xi, float3 N, float Roughness)
-{
-    float A = Roughness * Roughness;
-	
-    float Phi = 2.0 * PI * Xi.x;
-    float CosTheta = sqrt((1.0 - Xi.y) / (1.0 + (A * A - 1.0) * Xi.y));
-    float SinTheta = sqrt(1.0 - CosTheta* CosTheta);
-	
-    // from spherical coordinates to cartesian coordinates
-    float3 H;
-    H.x = cos(Phi) * SinTheta;
-    H.y = sin(Phi) * SinTheta;
-    H.z = CosTheta;
-	
-    // from tangent-space vector to world-space sample vector
-    float3 Up        = abs(N.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(1.0, 0.0, 0.0);
-    float3 Tangent   = normalize(cross(Up, N));
-    float3 Bitangent = cross(N, Tangent);
-	
-    float3 SampleVec = Tangent * H.x + Bitangent * H.y + N * H.z;
-    return normalize(SampleVec);
-}  
-
 PsOutput Main(PsInput input) : SV_TARGET
 {
     PsOutput outPut; 

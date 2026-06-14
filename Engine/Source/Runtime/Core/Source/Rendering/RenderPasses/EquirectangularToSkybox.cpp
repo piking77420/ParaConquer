@@ -12,6 +12,9 @@ namespace PC_CORE::Rendering::Pass
 
 	void EquirectangularToSkybox::Build(const RendererPassBuildContext& _RendererPassBuildContext)
 	{
+		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Rendering);
+
 		ComputeViewMatricies(_RendererPassBuildContext);
 	}
 
@@ -27,16 +30,22 @@ namespace PC_CORE::Rendering::Pass
 		if (!captureRenderPass->isDirty)
 			return;
 
-		if (!m_EquilateralToCubeMapResource.DescriptorSet)
-			m_EquilateralToCubeMapResource = EquilateralToCubemapResource(_RendererPassExecuteContext, *captureRenderPass);
+		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Rendering);
 
-		if (!m_IrradianceConvolution.DescriptorSet && captureRenderPass->IrradianceMap)
-			m_IrradianceConvolution = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->IrradianceMap);
-
-		if (!m_PrefilterMap.DescriptorSet)
-		{
-			m_PrefilterMap = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->PrefilterMap);
-		}
+		m_EquilateralToCubeMapResource = EquilateralToCubemapResource(_RendererPassExecuteContext, *captureRenderPass);
+		m_IrradianceConvolution = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->IrradianceMap);
+		m_PrefilterMap = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->PrefilterMap);
+		
+		auto& BRDFLUT = captureRenderPass->BRDF;
+		m_BRDFLUTFrameBuffer.reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
+		m_BRDFLUTFrameBuffer
+			->SetWidth(BRDFLUT->GetWidth())
+			.SetHeight(BRDFLUT->GetHeight())
+			.SetAttachement(BRDFLUT)
+			.SetRenderPass(_RendererPassExecuteContext.Renderer.BRDFLutPass.get())
+			.SetName("BRDFLUT Framebuffer")
+			.Build();
 
 		// Set Base state
 		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
@@ -57,6 +66,10 @@ namespace PC_CORE::Rendering::Pass
 
 		{
 			ExecutePrefilter(_RendererPassExecuteContext);
+		}
+
+		{
+			ExecuteBRDFLUT(_RendererPassExecuteContext);
 		}
 		
 	}
@@ -246,6 +259,28 @@ namespace PC_CORE::Rendering::Pass
 			}
 		}
 
+	}
+
+	void EquirectangularToSkybox::ExecuteBRDFLUT(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	{
+		auto& FrameBuffer = m_BRDFLUTFrameBuffer;
+		auto c = GetColor();
+		const BeginRenderPassInfo beginRenderPassInfo =
+		{
+			.RenderPass = _RendererPassExecuteContext.Renderer.BRDFLutPass.get(),
+			.FrameBuffer = FrameBuffer.get(),
+			.RenderOffSet = {0, 0},
+			.Extent = {FrameBuffer->GetWidth(), FrameBuffer->GetHeight()},
+			.ClearValueFlag = ClearValueFlagBits::ClearValueColor,
+			.ClearColor = &c,
+			.ClearValueCount = 1,
+			.ClearDepth = 1.f
+		};
+		_RendererPassExecuteContext.cmd.SetViewPort(PC_CORE::ViewportInfo(FrameBuffer->GetWidth(), FrameBuffer->GetHeight()));
+		_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
+		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.BRDFLutPipeline.get());
+		_RendererPassExecuteContext.cmd.Draw(3, 1, 0, 0);
+		_RendererPassExecuteContext.cmd.EndRenderPass();
 	}
 
 } // namespace PC_CORE::Rendering::Pass

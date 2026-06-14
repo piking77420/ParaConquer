@@ -400,6 +400,15 @@ void Editor::CompileShader()
             }));
     }
 
+    // BRDFLUT
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("BRDFLUT.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/BRDFLUT.ps.hlsl");
+            }));
+    }
+
     /*
     // sprite
     {
@@ -676,6 +685,7 @@ void Editor::InitTestScene()
         __debugbreak();*/
 
     {
+
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
@@ -687,6 +697,7 @@ void Editor::InitTestScene()
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
     }
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
@@ -729,56 +740,14 @@ void Editor::InitTestScene()
                 }, { TaskHandle });
                 TaskScheduler.Lauch(TaskHandle);    
             }
-/*
-#if 1
-    {
-        auto taskHandle = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteAlbedo.png"); });
-        auto taskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-            TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteNormal-ogl.png");
-            }, { taskHandle });
+#endif
 
-        auto taskHandle3 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-            TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
-            }, { taskHandle2 });
-        auto taskHandle5 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-            TempImport(editorData.projectPath / "Assets/Meshs/obj/sphere.obj");
-            }, { taskHandle3 });
-
-        auto taskHandle6 = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
-            [&]()
-            {
-                auto& level = World::GetWorld()->level;
-
-                const EntityId id = level.CreateEntity(std::string("Sphere"));
-                level.AddComponent<Transform>(id);
-                Transform& t = level.GetComponent<Transform>(id);
-                t.Position = Tbx::Vector3d(0.0, 0.0, 0.0);
-
-                level.AddComponent<StaticMeshComponent>(id);
-                StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
-                smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
-
-                // Material Block
-                ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
-                    std::string("Pbr Material"));
-
-                Material->SetAlbedoTexture(ResourceManager::Get<PC_CORE::Texture2D>("Painted-damaged-concreteAlbedo.png"));
-                Material->SetNormalTexture(ResourceManager::Get<PC_CORE::Texture2D>("Painted-damaged-concreteNormal-ogl.png"));
-                Material->SetMetallicRoughnessAOTexture(ResourceManager::Get<PC_CORE::Texture2D>("Packed_Texture_ORM.png"));
-                Material->Build();
-
-                smc.materials.emplace_back() = Material;
-
-            }, { taskHandle5 });
-
-        TaskScheduler.Lauch(taskHandle);
-    }
-#else 
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
 
-        auto CreateStaticMesh = TaskScheduler.NewTask(m_EditorThreadPool,
+        auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
             [&]()
             {
                 auto& level = World::GetWorld()->level;
@@ -799,8 +768,41 @@ void Editor::InitTestScene()
         TaskScheduler.Lauch(TaskHandle);
     }
 
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+        auto TaskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/cube.obj")); });
+        TaskScheduler.Lauch(TaskHandle);
+        TaskScheduler.Lauch(TaskHandle2);
+    }
+#endif
 
+#if 1
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });
 
+        auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
+            [&]()
+            {
+                auto& level = World::GetWorld()->level;
+
+                const EntityId id = level.CreateEntity(std::string("Bistro"));
+                level.AddComponent<Transform>(id);
+                Transform& t = level.GetComponent<Transform>(id);
+                t.Position = Tbx::Vector3d(0.0, 0.0, 0.0);
+
+                level.AddComponent<StaticMeshComponent>(id);
+                StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("Sponza.gltf");
+                if (auto l = smc.staticMesh.Lock())
+                    smc.materials = l->GetBaseMaterial();
+
+            }, { TaskHandle });
+
+        TaskScheduler.Lauch(TaskHandle);
+    }
 
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
@@ -811,7 +813,7 @@ void Editor::InitTestScene()
         TaskScheduler.Lauch(TaskHandle2);
     }
 #endif
-*/
+
     
 
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));

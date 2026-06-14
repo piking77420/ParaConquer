@@ -87,6 +87,8 @@ public:
 
     std::unique_ptr<RhiShaderProgram> PrefilterEnvironement;
 
+    std::unique_ptr<RhiShaderProgram> BRDFLutPipeline;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
@@ -94,6 +96,8 @@ public:
     std::unique_ptr<RhiRenderPass> colorLinearPass;
 
     std::unique_ptr<RhiRenderPass> colorHDRPass;
+
+    std::unique_ptr<RhiRenderPass> BRDFLutPass;
 
     std::unique_ptr<RhiRenderPass> LinearClearColorClearStoreDepth;
 

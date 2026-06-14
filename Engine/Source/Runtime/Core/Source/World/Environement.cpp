@@ -47,8 +47,9 @@ namespace PC_CORE::WORLD
 		std::unique_ptr<RhiTexture> EnvironementMap(_App.RenderHarwareInteface.CreateTexture());
 		std::unique_ptr<RhiTexture> IrradianceMap(_App.RenderHarwareInteface.CreateTexture());
 		std::unique_ptr<RhiTexture> PrefilterMap(_App.RenderHarwareInteface.CreateTexture());
+		std::unique_ptr<RhiTexture> BRDFLUT(_App.RenderHarwareInteface.CreateTexture());
 
-		if (!EnvironementMap || !IrradianceMap || !PrefilterMap)
+		if (!EnvironementMap || !IrradianceMap || !PrefilterMap || !BRDFLUT)
 		{
 			PC_LOGERROR("Failed to create EnvironementMap {}", BaseTexture->Name);
 			return false;
@@ -95,10 +96,22 @@ namespace PC_CORE::WORLD
 			.SetName("Environement Irradiance" + std::string(Path.data()))
 			.Build();
 
+		BRDFLUT->
+			SetRhiFormat(PC_CORE::RhiFormat::R16G16Sfloat)
+			.SetWidth(BRDFLUTSize)
+			.SetHeight(BRDFLUTSize)
+			.SetLevel(1)
+			.SetTextureType(RhiTexture::Type::Texture2D)
+			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+			.SetTextureUsage(flags)
+			.SetName("BRDF LUT" + std::string(Path.data()))
+			.Build();
+
 		env.EnvironementTexture = _Texture;
 		env.Skybox = std::move(EnvironementMap);
 		env.IrradianceMap = std::move(IrradianceMap);
 		env.PrefilterMap = std::move(PrefilterMap);
+		env.BRDFLUT = std::move(BRDFLUT);
 		env.isDiry = true;
 		env.SkyBoxDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
 		env.EnvironemementDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
@@ -109,8 +122,9 @@ namespace PC_CORE::WORLD
 			.Build();
 
 		env.EnvironemementDescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, env.PrefilterMap.get(), _App.SamplerLinearClamp.get())
-			//->BindTexture(RhiShaderStageBits::Pixel, 1, env.PrefilterMap.get(), _App.SamplerLinearClamp.get())
+			->BindTexture(RhiShaderStageBits::Pixel, 0, env.IrradianceMap.get(), _App.SamplerLinearClamp.get())
+			.BindTexture(RhiShaderStageBits::Pixel, 1, env.PrefilterMap.get(), _App.SamplerLinearClamp.get())
+			.BindTexture(RhiShaderStageBits::Pixel, 2, env.BRDFLUT.get(), _App.SamplerLinearClamp.get())
 			.SetName("Environemement DescriptorSet")
 			.Build();
 		
