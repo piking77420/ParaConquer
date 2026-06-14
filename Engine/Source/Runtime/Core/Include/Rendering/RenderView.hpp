@@ -23,6 +23,7 @@ namespace PC_CORE::Rendering
 
             mat4 Projection;
             mat4 ProjectionInv;
+            mat4 ClipSpaceCorrection;
 
             mat4 ViewProjection;
             mat4 ViewProjectionInv;
@@ -42,6 +43,8 @@ namespace PC_CORE::Rendering
 
             vec2 InvRenderSize;
             uint32_t MeshletCulling;
+            bool isYUpFrameBuffer;
+            bool isYUpNdc;
             float pad01;
         };
 
@@ -79,8 +82,8 @@ namespace PC_CORE::Rendering
         Tbx::Matrix4x4d ViewInv;
 
         Tbx::Matrix4x4d Projection;
-        Tbx::Matrix4x4d ProjectionNative;
         Tbx::Matrix4x4d ProjectionInv;
+        Tbx::Matrix4x4d ClipSpaceCorrection;
 
         Tbx::Matrix4x4d ViewProjection;
         Tbx::Matrix4x4d ViewProjectionInv;

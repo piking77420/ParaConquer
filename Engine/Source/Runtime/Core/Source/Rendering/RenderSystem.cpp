@@ -157,7 +157,8 @@ void RendererSystem::PopulateLight(const Level& _level)
                 {
                     .LightColor = Dir.color,
                     .LightIntensity = Dir.intensity,
-                    .LightDirW = WorldUpRot
+                    // Direction light travels
+                    .LightDirW = -WorldUpRot
                 });
         }
     }
@@ -234,6 +235,7 @@ void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
                             auto& env = m_GameRenderingWorldData.CaptureEnvironement.emplace();
                             env = {
                                 .Environement = lock.Get()->Get(),
+                                .IrradianceMap = ibl.IrradianceMap.get(),
                                 .SkyBox = ibl.Skybox.get(),
                                 .isDirty = ibl.isDiry,
                             };
@@ -245,7 +247,12 @@ void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
                 if (ibl.Skybox && ibl.SkyBoxDescriptorSet)
                 {
                     m_GameRenderingWorldData.SkyBox.emplace(ibl.SkyBoxDescriptorSet.get());
-                } 
+                }
+
+                if (ibl.IrradianceMap && ibl.EnvironemementDescriptorSet)
+                {
+                    m_GameRenderingWorldData.EnvironemementDescriptorSet.emplace(ibl.EnvironemementDescriptorSet.get());
+                }
             }
         }, World.Environement.GetEnvironementLighting());
 

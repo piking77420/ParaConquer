@@ -533,7 +533,7 @@ namespace PC_CORE::Rendering
                { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")->GetCode()},
                { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")->GetCode()}
            };
-
+          
            DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiShaderProgram());
            DrawSkyBoxPipeline
                ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
@@ -544,6 +544,26 @@ namespace PC_CORE::Rendering
                .SetDepthCompareOp(CompareOp::LessOrEqual)
                .SetDepthWrite(false)
                .SetName("Skybox")
+               .Build();
+       }
+
+       {
+           // IrradianceConvolution
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("IrradianceConvolution.ps.hlsl.binary")->GetCode()}
+           };
+
+           IrradianceConvolution.reset(m_Rhi.CreateRhiShaderProgram());
+           IrradianceConvolution
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*colorHDRPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("IrradianceConvolution")
                .Build();
        }
 
@@ -614,10 +634,11 @@ namespace PC_CORE::Rendering
            const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
            const auto MeshAABBCenter = MeshAABBW.GetCenter();
            const auto MeshAABBExtend = MeshAABBW.GetExtend();
-           const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
+           //  TODO FIX FRUSTUM
+           //const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
 
-           if (!MeshIsOnFrustum)
-            continue;
+           //if (!MeshIsOnFrustum)
+            //continue;
 
            // Pick Lod
            uint32_t LODIndex = 0;
@@ -642,9 +663,9 @@ namespace PC_CORE::Rendering
                const MotionCore::Aabb<double> MeshSectionAABBW = Dcmd.GlobalModelAABB.GetTransformed(StaticMeshComponentData.WorldMatrix);
                const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
                const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
-
-               if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
-                   continue;
+               //  TODO FIX FRUSTUM
+               //if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
+                 //  continue;
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
@@ -835,7 +856,8 @@ namespace PC_CORE::Rendering
        view[14] = 0.f;
        view[13] = 0.f;
        view[12] = 0.f;
-       item.Data.emplace<DrawSkyBox>(*_RenderingWorldData.SkyBox, Tbx::Matrix4x4f(_view.Projection) * view);
+       const Tbx::Matrix4x4f ViewProjectionCorrected = Tbx::Matrix4x4f(_view.ClipSpaceCorrection) * Tbx::Matrix4x4f(_view.Projection) * view;
+       item.Data.emplace<DrawSkyBox>(*_RenderingWorldData.SkyBox, ViewProjectionCorrected);
    }
 
    void Renderer::SortList()
@@ -865,7 +887,7 @@ namespace PC_CORE::Rendering
        return LodThreshold.size();
    }
 
-
+  
    void Renderer::InitDebugResource()
    {
        PERF_REGION_SCOPED;

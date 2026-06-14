@@ -32,9 +32,11 @@ namespace PC_CORE::WORLD
 
 			std::unique_ptr<RhiTexture> Skybox = nullptr;
 
-			std::unique_ptr<RhiBuffer> IrradianceSH9Buffer = nullptr;
+			std::unique_ptr<RhiTexture> IrradianceMap = nullptr;
 
 			std::unique_ptr<RhiDescriptorSet> SkyBoxDescriptorSet;
+
+			std::unique_ptr<RhiDescriptorSet> EnvironemementDescriptorSet;
 		};
 
 		using EnvironementLighting = std::variant<ImageBaseLighting>;
@@ -53,7 +55,9 @@ namespace PC_CORE::WORLD
 
 		EnvironementLighting m_EnvironementRenderingData;
 
-		static constexpr uint32_t Size = 512;
+		static constexpr uint32_t Size = 1024;
+
+		static constexpr uint32_t IrradianceSize = 32;
 	};
 
 	REFLECT(Environement);

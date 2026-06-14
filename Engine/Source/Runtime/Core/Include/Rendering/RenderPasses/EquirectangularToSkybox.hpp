@@ -6,6 +6,7 @@
 namespace PC_CORE::Rendering
 {
     class Renderer;
+    struct CaptureEnvironement;
 }
 
 namespace PC_CORE::Rendering::Pass
@@ -42,8 +43,28 @@ namespace PC_CORE::Rendering::Pass
         void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
     private:
-        std::unique_ptr<RhiDescriptorSet> m_DescriptorSet;
-        std::array<std::unique_ptr<RhiFrameBuffer>, 6> m_FrameBuffer;
+        struct PassResource
+        {
+            std::unique_ptr<RhiDescriptorSet> DescriptorSet;
+            std::array<std::unique_ptr<RhiFrameBuffer>, 6> FrameBuffer;
+        };
+        
+        std::array<Tbx::Matrix4x4f, 6> m_ViewMatricies;
+
+        PassResource m_EquilateralToCubeMapResource;
+
+        PassResource m_IrradianceConvolution;
+        
+        void ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext);
+
+        [[nodiscard]] PassResource EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement);
+
+        [[nodiscard]] PassResource IrradianceConvolutionResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement);
+
+        void ExecuteEquilateralToCubeMap(const RendererPassExecuteContext& _RendererPassExecuteContext);
+
+        void ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext);
+
     };
 
     REFLECT(EquirectangularToSkybox, PC_CORE::Rendering::RenderPass);

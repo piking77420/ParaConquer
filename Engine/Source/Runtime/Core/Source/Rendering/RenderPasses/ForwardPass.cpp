@@ -61,7 +61,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorSet
-			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			->BindUniformBuffer(RhiShaderStageBits::Vertex | RhiShaderStageBits::Pixel, 0, _RendererPassBuildContext.View.UniformBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Vertex, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
@@ -70,7 +70,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorMeshlet
-			->BindUniformBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			->BindUniformBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp | RhiShaderStageBits::Pixel, 0, _RendererPassBuildContext.View.UniformBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
@@ -83,6 +83,8 @@ namespace PC_CORE::Rendering::Pass
 			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+				if (_Context.RenderingWorldData.EnvironemementDescriptorSet)
+					_Context.cmd.BindDescriptorSet(*_Context.RenderingWorldData.EnvironemementDescriptorSet, 3);
 				m_LastMaterialDescriptor = nullptr;
 			}
 

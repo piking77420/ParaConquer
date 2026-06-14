@@ -75,6 +75,51 @@ public:
         return m_CurrentFrame;
     }
 
+    Tbx::Matrix4x4d ClipSpaceCorrectionMatrixd() const
+    {
+        return Tbx::Matrix4x4d(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, -1.0, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.0, 0.0, 0.5, 1.0
+        );
+    }
+
+    Tbx::Matrix4x4f ClipSpaceCorrectionMatrixf() const
+    {
+        return Tbx::Matrix4x4f(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, -1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.0f,
+            0.0f, 0.0f, 0.5f, 1.0f
+        );
+    }
+
+    Tbx::Matrix4x4d DepthCorrectionMatrixd() const
+    {
+        return Tbx::Matrix4x4d(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.0, 0.0, 0.5, 1.0
+        );
+    }
+
+    Tbx::Matrix4x4f DepthCorrectionMatrixf() const
+    {
+        return Tbx::Matrix4x4f(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.0f,
+            0.0f, 0.0f, 0.5f, 1.0f
+        );
+    }
+
+    PC_CORE_API bool IsYUpNdc() const;
+
+    PC_CORE_API bool IsYUpFrameBuffer() const;
+
+    PC_CORE_API uint32_t ComputeTextureLevel(uint32_t Width, uint32_t Height) const;
 
 private:
     GraphicAPI m_GraphicsApi{};

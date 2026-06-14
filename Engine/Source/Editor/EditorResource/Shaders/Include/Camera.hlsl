@@ -7,8 +7,11 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
 {
     float4x4 View;
     float4x4 ViewInv;
+
     float4x4 Projection;
     float4x4 ProjectionInv;
+    float4x4 ClipSpaceCorrection;
+
     float4x4 ViewProjection;
     float4x4 ViewProjectionInv;
     
@@ -28,6 +31,8 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     float2 InvRenderSize;
 
     bool MeshletCulling;
+    bool IsYUpFrameBuffer;
+    bool IsYUpNdc;
 };
 
 #endif // CAMERA_HEADER_HLSL

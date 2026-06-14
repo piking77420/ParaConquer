@@ -51,14 +51,14 @@ VSOutput Main(VSInput vSInput,
 
 
     float4 ViewPos = mul(Matrix, float4(VertexPos, 1.0));
-    vsOutPut.Pos = mul(Projection, ViewPos);
+    vsOutPut.Pos = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
 
 #elif defined(FRUSTUM)
     float4 FrustumWorldPos = mul(Matrix, float4(NdcCorner[FrustumIndices[VertexID]], 1.0));
     FrustumWorldPos.xyz /= FrustumWorldPos.w;
     FrustumWorldPos.w = 1.0;
 
-    vsOutPut.Pos = mul(ViewProjection, FrustumWorldPos);
+    vsOutPut.Pos = mul(ClipSpaceCorrection, mul(ViewProjection, FrustumWorldPos));
     float4 color = float4(1,1,1,1);
 #endif
 

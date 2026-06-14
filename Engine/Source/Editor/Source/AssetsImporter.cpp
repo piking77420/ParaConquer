@@ -850,7 +850,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         const auto& ImageLevel = _Image->GetMipDescriptor();
         assert(!_Image->GetMipDescriptor().empty());
         
-        const uint32_t Level = (ImageLevel.size() == 1) ? static_cast<uint32_t>(std::floor(std::log2(std::max(ImageLevel[0].width, ImageLevel[0].height)))) + 1 : _Image->GetMipDescriptor().size();
+        const uint32_t Level = (ImageLevel.size() == 1) ? _Rhi.ComputeTextureLevel(ImageLevel[0].width, ImageLevel[0].height): _Image->GetMipDescriptor().size();
 
         _Texture
             .SetMemoryUsage(RhiMemoryUsage::StaticGPU)

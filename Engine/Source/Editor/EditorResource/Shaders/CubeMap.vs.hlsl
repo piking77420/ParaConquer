@@ -2,7 +2,7 @@
 
 struct PushConstant
 {
-    float4x4 ViewProjection;
+    float4x4 ViewProjectionCorr;
 };
 
 [[vk::push_constant]]
@@ -22,7 +22,7 @@ VsOutPut Main(uint vertexIndex : SV_VertexID)
     VsOutPut output;
     uint index = CubeIndices[vertexIndex];
     float3 position = CubeVertices[index];
-    output.Position = mul(pushConstant.ViewProjection, float4(position, 1.0));
+    output.Position = mul(pushConstant.ViewProjectionCorr, float4(position, 1.0));
 #if defined (SKYBOX_FORCE_FAR_DEPTH)
 output.Position.z = output.Position.w;
 #endif

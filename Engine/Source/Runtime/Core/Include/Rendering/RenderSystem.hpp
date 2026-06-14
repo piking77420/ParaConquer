@@ -49,6 +49,7 @@ namespace PC_CORE::Rendering
     struct CaptureEnvironement
     {
         RhiTexture* Environement{ nullptr };
+        RhiTexture* IrradianceMap{ nullptr };
         RhiTexture* SkyBox{ nullptr };
         bool isDirty = false;
     };
@@ -72,11 +73,13 @@ namespace PC_CORE::Rendering
         std::vector<LightData> LightsData;
         std::optional<DirLightData> DirLightData;
 
+        std::optional<CaptureEnvironement> CaptureEnvironement;
+        std::optional<RhiDescriptorSet*> SkyBox;
+        std::optional<RhiDescriptorSet*> EnvironemementDescriptorSet;
+
         // Debug
         std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;
         std::vector<DebugDrawContext::Frustum> DebugFrustums;
-        std::optional<CaptureEnvironement> CaptureEnvironement;
-        std::optional<RhiDescriptorSet*> SkyBox;
     };
 
     class RendererSystem : public EcsSystem

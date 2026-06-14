@@ -45,33 +45,58 @@ namespace PC_CORE::WORLD
 		PC_CORE::Image image(Path.data(), PC_CORE::RhiChannel::Rgba);
 
 		std::unique_ptr<RhiTexture> EnvironementMap(_App.RenderHarwareInteface.CreateTexture());
+		std::unique_ptr<RhiTexture> IrradianceMap(_App.RenderHarwareInteface.CreateTexture());
 
-		if (!EnvironementMap)
+		if (!EnvironementMap || !IrradianceMap)
 		{
 			PC_LOGERROR("Failed to create EnvironementMap {}", BaseTexture->Name);
 			return false;
 		}
 
-		
+		static constexpr RhiTexture::TextureUsageFlag flags = RhiTexture::TextureUsageFlagBits::Sampled |
+			RhiTexture::TextureUsageFlagBits::RenderTarget
+			| RhiTexture::TextureUsageFlagBits::LoadAndStore;
+
 		EnvironementMap->
 			SetRhiFormat(BaseTexture->Get()->GetRhiFormat())
 			.SetWidth(Size)
 			.SetHeight(Size)
+			.SetLevel(_App.RenderHarwareInteface.ComputeTextureLevel(EnvironementMap->GetWidth(), EnvironementMap->GetHeight()))
 			.SetLayer(6)
 			.SetTextureType(RhiTexture::Type::CubeMap)
 			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
-			.SetTextureUsage(RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::RenderTarget | RhiTexture::TextureUsageFlagBits::LoadAndStore)
+			.SetTextureUsage(flags 
+				| RhiTexture::TextureUsageFlagBits::TransferSrc
+				| RhiTexture::TextureUsageFlagBits::TransferDst)
 			.SetName("Environement " + std::string(Path.data()))
+			.Build();
+
+		IrradianceMap->
+			SetRhiFormat(BaseTexture->Get()->GetRhiFormat())
+			.SetWidth(IrradianceSize)
+			.SetHeight(IrradianceSize)
+			.SetLayer(6)
+			.SetTextureType(RhiTexture::Type::CubeMap)
+			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+			.SetTextureUsage(flags)
+			.SetName("Environement Irradiance" + std::string(Path.data()))
 			.Build();
 
 		env.EnvironementTexture = _Texture;
 		env.Skybox = std::move(EnvironementMap);
+		env.IrradianceMap = std::move(IrradianceMap);
 		env.isDiry = true;
 		env.SkyBoxDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
+		env.EnvironemementDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
 
 		env.SkyBoxDescriptorSet
 			->BindTexture(RhiShaderStageBits::Pixel, 0, env.Skybox.get(), _App.SamplerLinearClamp.get())
 			.SetName("Skybox DescriptorSet")
+			.Build();
+
+		env.EnvironemementDescriptorSet
+			->BindTexture(RhiShaderStageBits::Pixel, 0, env.IrradianceMap.get(), _App.SamplerLinearClamp.get())
+			.SetName("Environemement DescriptorSet")
 			.Build();
 		
 		return true;

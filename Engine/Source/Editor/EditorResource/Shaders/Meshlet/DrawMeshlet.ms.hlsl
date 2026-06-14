@@ -87,7 +87,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
 #if defined(LIT) || defined(VIEWPOS)
         vertices[gtid.x].ViewSpacePosition = ViewPos.xyz; // View position
 #endif
-        vertices[gtid.x].Position = mul(Projection, ViewPos);
+        vertices[gtid.x].Position = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
  
 
 #if defined(LIT)

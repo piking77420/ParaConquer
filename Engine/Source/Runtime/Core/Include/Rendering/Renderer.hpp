@@ -41,7 +41,7 @@ public:
         return m_RenderGraph;
     }
 
-    static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);
+    static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);  
 
     std::function<void(CommandList&)> OnSwapchainPass;
 
@@ -82,6 +82,8 @@ public:
     std::unique_ptr<RhiShaderProgram> EquilateralToSkyBox;
 
     std::unique_ptr<RhiShaderProgram> DrawSkyBoxPipeline;
+
+    std::unique_ptr<RhiShaderProgram> IrradianceConvolution;
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 

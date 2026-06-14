@@ -63,7 +63,7 @@ VsOutput Main(VsInput input)
 #if defined(LIT) || defined(VIEWPOS)
     output.ViewSpacePosition = ViewPos.xyz; // View position
 #endif
-    output.Position = mul(Projection, ViewPos);
+    output.Position = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
 
     // Lit dependencies
 #if defined(LIT)

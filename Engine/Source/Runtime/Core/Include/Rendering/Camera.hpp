@@ -54,11 +54,6 @@ BEGIN_PCCORE
             return m_Projection;
         }
 
-        PC_CORE_API const Tbx::Matrix4x4d& GetProjectionNative() const
-        {
-            return m_ProjectionNative;
-        }
-
         PC_CORE_API const Tbx::Matrix4x4d& GetViewProjection() const
         {
             return m_ViewProjection;
@@ -88,7 +83,6 @@ BEGIN_PCCORE
         double m_Far = 10000.0;
 
         Tbx::Matrix4x4d m_View = Tbx::Matrix4x4d::Identity();
-        Tbx::Matrix4x4d m_ProjectionNative = Tbx::Matrix4x4d::Identity();
         Tbx::Matrix4x4d m_Projection = Tbx::Matrix4x4d::Identity();
         Tbx::Matrix4x4d m_ViewProjection = Tbx::Matrix4x4d::Identity();
 

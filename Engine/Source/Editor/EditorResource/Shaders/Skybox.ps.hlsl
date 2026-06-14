@@ -18,7 +18,7 @@ struct PSInput
 
 float4 Main(PSInput input) : SV_TARGET
 {
-    float3 dir = normalize(input.Dir);
+    float3 dir = normalize(input.Dir);  
 
     float3 color = skyboxTex.Sample(skyboxSampler, dir).rgb;
 

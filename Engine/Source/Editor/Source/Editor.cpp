@@ -1,8 +1,6 @@
 ﻿#include "Editor.hpp"
 
-#include <Chrono>
-#include <Iostream>
-#include <thread>
+#include <numbers>
 #include <imgui_internal.h>
 #include <PerfRegion.hpp>
 #include <ProjectSettingsWindow.hpp>
@@ -366,6 +364,15 @@ void Editor::CompileShader()
             }));
     }
 
+    // Irradiance Convolution
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("IrradianceConvolution.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/IrradianceConvolution.ps.hlsl");
+            }));
+    }
+
     // Skybox
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
@@ -634,61 +641,98 @@ void Editor::InitTestScene()
 
     static constexpr size_t SphereCountPerAxis = 10;
     static constexpr double SpaceBetweenSphere = 50.0;
-/*
-    TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), [&]()
+
+    /*
+    constexpr float sampleDelta = 0.025;
+    float nrSamples = 0.0;
+    Tbx::Vector3f irradiance = Tbx::Vector3f::Zero();
+    for (float phi = 0.0; phi < 2.0 * std::numbers::pi; phi += sampleDelta)
+    {
+        for (float theta = 0.0; theta < 0.5 * std::numbers::pi; theta += sampleDelta)
         {
-            auto& level = World::GetWorld()->level;
-            for (size_t i = 0; i < SphereCountPerAxis; i++)
+            // spherical to cartesian (in tangent space)
+            //Tbx::Vector3f tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+            // tangent space to world
+            //Tbx::Vector3f sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+
+            //irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+            nrSamples++;
+        }
+    }
+
+    constexpr float nrSampleC = (2.0 * std::numbers::pi) * (0.5 * std::numbers::pi) / (sampleDelta * sampleDelta);
+
+    if (nrSamples == nrSampleC)
+        __debugbreak();*/
+
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {
+                TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
+                //TempImport((editorData.projectPath / "Assets/Textures/newport_loft.hdr"));
+            });
+        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
+            [&]() {
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("san_giuseppe_bridge_4k.hdr")); },
+            { TaskHandle });
+        TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
+    }
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+
+        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread, [&]()
             {
-                const float Roughness = i / static_cast<float>(SphereCountPerAxis - 1);
-
-                for (size_t j = 0; j < SphereCountPerAxis; j++)
+                auto& level = World::GetWorld()->level;
+                for (size_t i = 0; i < SphereCountPerAxis; i++)
                 {
-                    const float Metallic = j / static_cast<float>(SphereCountPerAxis - 1);
-                    std::string MaterialFormat = std::format("Roughness {}, Mettalic {}", Roughness, Metallic);
+                    const float Roughness = i / static_cast<float>(SphereCountPerAxis - 1);
 
-                    const EntityId id = level.CreateEntity(std::string("Sphere") 
-                        + MaterialFormat);
-                    level.AddComponent<Transform>(id);
-                    Transform& t = level.GetComponent<Transform>(id);
-                    t.Position = Tbx::Vector3d(Roughness * SpaceBetweenSphere, Metallic * SpaceBetweenSphere, 0.0);
+                    for (size_t j = 0; j < SphereCountPerAxis; j++)
+                    {
+                        const float Metallic = j / static_cast<float>(SphereCountPerAxis - 1);
+                        std::string MaterialFormat = std::format("Roughness {}, Mettalic {}", Roughness, Metallic);
 
-                    level.AddComponent<StaticMeshComponent>(id);
-                    StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
-                    smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
+                        const EntityId id = level.CreateEntity(std::string("Sphere")
+                            + MaterialFormat);
+                        level.AddComponent<Transform>(id);
+                        Transform& t = level.GetComponent<Transform>(id);
+                        t.Position = Tbx::Vector3d(Roughness * SpaceBetweenSphere, Metallic * SpaceBetweenSphere, 0.0);
 
-                    // Material Block
-                    ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
-                        std::string("Pbr Material") + MaterialFormat);
+                        level.AddComponent<StaticMeshComponent>(id);
+                        StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                        smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
 
-                    Material->SetRoughnessFactor(Roughness);
-                    Material->SetMetallicFactor(Metallic);
-                    Material->SetAlbedoFactor(Tbx::Vector4f(1.f, 0.f, 0.f, 1.f));
+                        // Material Block
+                        ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
+                            std::string("Pbr Material") + MaterialFormat);
 
-                    Material->Build();
+                        Material->SetRoughnessFactor(Roughness);
+                        Material->SetMetallicFactor(Metallic);
+                        Material->SetAlbedoFactor(Tbx::Vector4f(1.f, 0.f, 0.f, 1.f));
 
-                    smc.materials.emplace_back() = Material;
+                        Material->Build();
+
+                        smc.materials.emplace_back() = Material;
+                    }
                 }
+                }, { TaskHandle });
+                TaskScheduler.Lauch(TaskHandle);    
             }
-        });
-     */
-
-#if 0
+/*
+#if 1
     {
         auto taskHandle = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteAlbedo.png"); });
         auto taskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
             TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Painted-damaged-concreteNormal-ogl.png");
             }, { taskHandle });
+
         auto taskHandle3 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
             TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
             }, { taskHandle2 });
-
-        auto taskHandle4 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
-            TempImport(editorData.projectPath / "Assets/Textures/Painted-damaged-concrete-bl/Packed_Texture_ORM.png");
-            }, { taskHandle3 });
         auto taskHandle5 = TaskScheduler.NewTask(m_EditorThreadPool, [&]() {
             TempImport(editorData.projectPath / "Assets/Meshs/obj/sphere.obj");
-            }, { taskHandle4 });
+            }, { taskHandle3 });
 
         auto taskHandle6 = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
             [&]()
@@ -720,16 +764,6 @@ void Editor::InitTestScene()
         TaskScheduler.Lauch(taskHandle);
     }
 #else 
-
-    {
-        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); });
-        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
-            [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("san_giuseppe_bridge_4k.hdr")); },
-            { TaskHandle });
-        TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
-    }
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
@@ -767,7 +801,7 @@ void Editor::InitTestScene()
         TaskScheduler.Lauch(TaskHandle2);
     }
 #endif
-
+*/
     
 
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));

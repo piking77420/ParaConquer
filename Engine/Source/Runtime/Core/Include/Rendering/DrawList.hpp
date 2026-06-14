@@ -62,7 +62,7 @@ namespace PC_CORE::Rendering
 	struct DrawSkyBox
 	{
 		RhiDescriptorSet* SkyBoxSet;
-		Tbx::Matrix4x4f ViewMatrix;
+		Tbx::Matrix4x4f ViewProjectionCorrectedMatrix;
 	};
 
 

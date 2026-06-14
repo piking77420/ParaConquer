@@ -337,6 +337,26 @@ void Rhi::NextFrame()
 	m_CurrentFrame = (m_CurrentFrame + 1) % MaxFramesInFlight;
 }
 
+bool Rhi::IsYUpNdc() const
+{
+	switch (m_GraphicsApi)
+	{
+	case PC_CORE::GraphicAPI::Vulkan:
+		return false;
+	}
+
+	return true;
+}
+
+bool Rhi::IsYUpFrameBuffer() const
+{
+	return false;
+}
+
+uint32_t Rhi::ComputeTextureLevel(uint32_t Width, uint32_t Height) const
+{
+	return static_cast<uint32_t>(std::floor(std::log2(std::max(Width, Height)))) + 1;
+}
 
 void Rhi::VulkanInitialize(const RhiContextCreateInfo& _CreateInfo)
 {

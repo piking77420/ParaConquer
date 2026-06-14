@@ -12,7 +12,7 @@ namespace PC_CORE::Rendering::Pass
 
 	void EquirectangularToSkybox::Build(const RendererPassBuildContext& _RendererPassBuildContext)
 	{
-
+		ComputeViewMatricies(_RendererPassBuildContext);
 	}
 
 	void EquirectangularToSkybox::Execute(const RendererPassExecuteContext & _RendererPassExecuteContext)
@@ -27,39 +27,95 @@ namespace PC_CORE::Rendering::Pass
 		if (!captureRenderPass->isDirty)
 			return;
 
-		m_DescriptorSet.reset(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
-		m_DescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, captureRenderPass->Environement, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
+		if (!m_EquilateralToCubeMapResource.DescriptorSet)
+			m_EquilateralToCubeMapResource = EquilateralToCubemapResource(_RendererPassExecuteContext, *captureRenderPass);
+
+		if (!m_IrradianceConvolution.DescriptorSet)
+			m_IrradianceConvolution = IrradianceConvolutionResource(_RendererPassExecuteContext, *captureRenderPass);
+		// Set Base state
+		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+		
+		// UGLYYYYY
+		PC_CORE::ViewportInfo ViewPortSkyBox(*captureRenderPass->SkyBox);
+		_RendererPassExecuteContext.cmd.SetViewPort(ViewPortSkyBox);
+		ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
+		captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
+
+
+		PC_CORE::ViewportInfo ViewPortIrradiance(*captureRenderPass->IrradianceMap);
+		_RendererPassExecuteContext.cmd.SetViewPort(ViewPortIrradiance);
+		ExecuteIrradiance(_RendererPassExecuteContext);
+	}
+
+	void EquirectangularToSkybox::ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext)
+	{
+		const Tbx::Matrix4x4f Proj = _RendererPassBuildContext.RHI.DepthCorrectionMatrixf() * Tbx::PerspectiveMatrixMinusOneToOne<float>(90.f * Tbx::dDeg2Rad, 1.0f, 0.1f, 10.f);
+		for (size_t i = 0; i < m_ViewMatricies.size(); i++)
+			m_ViewMatricies[i] = Proj * GetLookAtMatrixFromCubeMapIndicies(i, Tbx::Vector3f::Zero());
+	}
+
+	EquirectangularToSkybox::PassResource EquirectangularToSkybox::EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement)
+	{
+		PassResource Resource;
+		Resource.DescriptorSet = std::unique_ptr<RhiDescriptorSet>(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
+		Resource.DescriptorSet
+			->BindTexture(RhiShaderStageBits::Pixel, 0, _CaptureEnvironement.Environement, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
 			.SetName("EquirectangularToSkybox DescriptorSet")
 			.Build();
 
-		for (size_t i = 0; i < m_FrameBuffer.size(); i++)
+		for (size_t i = 0; i < Resource.FrameBuffer.size(); i++)
 		{
-			m_FrameBuffer[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
-			m_FrameBuffer[i]
-				->SetWidth(captureRenderPass->SkyBox->GetWidth())
-				.SetHeight(captureRenderPass->SkyBox->GetHeight())
-				.SetAttachement(captureRenderPass->SkyBox, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
+			Resource.FrameBuffer[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
+			Resource.FrameBuffer[i]
+				->SetWidth(_CaptureEnvironement.SkyBox->GetWidth())
+				.SetHeight(_CaptureEnvironement.SkyBox->GetHeight())
+				.SetAttachement(_CaptureEnvironement.SkyBox, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
 				.SetRenderPass(_RendererPassExecuteContext.Renderer.colorHDRPass.get())
 				.SetName("EquirectangularToSkybox Framebuffer" + std::to_string(i))
 				.Build();
 		}
 
-		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+		return Resource;
+	}
 
-		PC_CORE::ViewportInfo ViewPort(*captureRenderPass->SkyBox);
+	EquirectangularToSkybox::PassResource EquirectangularToSkybox::IrradianceConvolutionResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement)
+	{
+		PassResource Resource;
+		Resource.DescriptorSet = std::unique_ptr<RhiDescriptorSet>(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
+		Resource.DescriptorSet
+			->BindTexture(RhiShaderStageBits::Pixel, 0, _CaptureEnvironement.SkyBox, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
+			.SetName("IrradianceConvolution DescriptorSet")
+			.Build();
 
-		_RendererPassExecuteContext.cmd.SetViewPort(ViewPort);
-		const Tbx::Matrix4x4f Proj = Tbx::PerspectiveMatrixFlipYAxis<float>(90.f * Tbx::dDeg2Rad, 1.0f, 0.1f, 10.f);
-		for (size_t i = 0; i < m_FrameBuffer.size(); i++)
+		for (size_t i = 0; i < Resource.FrameBuffer.size(); i++)
 		{
-			auto c = GetColor();
+			Resource.FrameBuffer[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
+			Resource.FrameBuffer[i]
+				->SetWidth(_CaptureEnvironement.IrradianceMap->GetWidth())
+				.SetHeight(_CaptureEnvironement.IrradianceMap->GetHeight())
+				.SetAttachement(_CaptureEnvironement.IrradianceMap, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
+				.SetRenderPass(_RendererPassExecuteContext.Renderer.colorHDRPass.get())
+				.SetName("IrradianceConvolution Framebuffer" + std::to_string(i))
+				.Build();
+		}
+
+		return Resource;
+	}
+
+	void EquirectangularToSkybox::ExecuteEquilateralToCubeMap(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	{
+		auto c = GetColor();
+		auto& DescriptorSet = m_EquilateralToCubeMapResource.DescriptorSet;
+
+		for (size_t i = 0; i < m_EquilateralToCubeMapResource.FrameBuffer.size(); i++)
+		{
+			auto& FrameBuffer = m_EquilateralToCubeMapResource.FrameBuffer[i];
 			const BeginRenderPassInfo beginRenderPassInfo =
 			{
 				.RenderPass = _RendererPassExecuteContext.Renderer.colorHDRPass.get(),
-				.FrameBuffer = m_FrameBuffer[i].get(),
+				.FrameBuffer = FrameBuffer.get(),
 				.RenderOffSet = {0, 0},
-				.Extent = {m_FrameBuffer[i]->GetWidth(), m_FrameBuffer[i]->GetHeight()},
+				.Extent = {FrameBuffer->GetWidth(), FrameBuffer->GetHeight()},
 				.ClearValueFlag = ClearValueFlagBits::ClearValueColor,
 				.ClearColor = &c,
 				.ClearValueCount = 1,
@@ -67,10 +123,9 @@ namespace PC_CORE::Rendering::Pass
 			};
 			_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
 			_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.EquilateralToSkyBox.get());
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+			_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
-			const Tbx::Matrix4x4f ViewProjection = Proj * GetLookAtMatrixFromCubeMapIndicies(i, Tbx::Vector3f::Zero());
-			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Pixel, &ViewProjection, 0, sizeof(ViewProjection));
+			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
 
 			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
 			_RendererPassExecuteContext.cmd.EndRenderPass();
@@ -78,6 +133,33 @@ namespace PC_CORE::Rendering::Pass
 
 	}
 
+	void EquirectangularToSkybox::ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	{
+		auto c = GetColor();
+		auto& DescriptorSet = m_IrradianceConvolution.DescriptorSet;
+		for (size_t i = 0; i < m_IrradianceConvolution.FrameBuffer.size(); i++)
+		{
+			auto& FrameBuffer = m_IrradianceConvolution.FrameBuffer[i];
+			const BeginRenderPassInfo beginRenderPassInfo =
+			{
+				.RenderPass = _RendererPassExecuteContext.Renderer.colorHDRPass.get(),
+				.FrameBuffer = FrameBuffer.get(),
+				.RenderOffSet = {0, 0},
+				.Extent = {FrameBuffer->GetWidth(), FrameBuffer->GetHeight()},
+				.ClearValueFlag = ClearValueFlagBits::ClearValueColor,
+				.ClearColor = &c,
+				.ClearValueCount = 1,
+				.ClearDepth = 1.f
+			};
+			_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
+			_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.IrradianceConvolution.get());
+			_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
+			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
+
+			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+			_RendererPassExecuteContext.cmd.EndRenderPass();
+		}
+	}
 
 } // namespace PC_CORE::Rendering::Pass

@@ -338,7 +338,8 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, P
                                 m_Width,
                                 m_Height, 
                                 Utils::RhiFormatToVkFormat(m_RhiFormat), 
-                                m_Level, 
+                                m_Level,
+                                GetLayer(),
                                 VkImageAspectFlags);
 
     m_ResourceState = _StateAfterOperation;

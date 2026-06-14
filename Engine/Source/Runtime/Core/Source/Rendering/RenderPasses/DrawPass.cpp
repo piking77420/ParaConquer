@@ -89,7 +89,7 @@ namespace PC_CORE::Rendering::Pass
 						MeshShaderDrawCall.SubMeshTriangleOffset = StaticMesh.SubMeshTriangleOffset;
 
 						static constexpr auto GroupSize = 32;
-						_Context.cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
+						_Context.cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh | RhiShaderStageBits::Pixel, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
 						const uint32_t DispachtSize = (StaticMesh.MeshletCount + GroupSize - 1) / GroupSize;
 						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 					}
@@ -98,7 +98,7 @@ namespace PC_CORE::Rendering::Pass
 					if (_Context.cmd.BindProgram(*_Context.Renderer.DrawSkyBoxPipeline))
 					{
 						_Context.cmd.BindDescriptorSet(DrawSkyBox.SkyBoxSet, 0);
-						_Context.cmd.PushConstant(RhiShaderStageBits::Pixel, &DrawSkyBox.ViewMatrix, 0, sizeof(DrawSkyBox.ViewMatrix));
+						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawSkyBox.ViewProjectionCorrectedMatrix, 0, sizeof(DrawSkyBox.ViewProjectionCorrectedMatrix));
 						_Context.cmd.Draw(36, 1, 0, 0);
 					}
 

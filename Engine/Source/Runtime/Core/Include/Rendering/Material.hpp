@@ -205,7 +205,7 @@ namespace PC_CORE::Rendering
 
         Tbx::Vector3f m_Emmisive = Tbx::Vector3f(0.f, 0.f, 0.f);
 
-        float m_AmbiantOcclusion = 0.f;
+        float m_AmbiantOcclusion = 1.f;
 
         bool m_UseAlpha = false;
 
