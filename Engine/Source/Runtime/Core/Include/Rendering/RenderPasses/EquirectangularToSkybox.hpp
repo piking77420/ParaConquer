@@ -46,7 +46,7 @@ namespace PC_CORE::Rendering::Pass
         struct PassResource
         {
             std::unique_ptr<RhiDescriptorSet> DescriptorSet;
-            std::array<std::unique_ptr<RhiFrameBuffer>, 6> FrameBuffer;
+            std::vector<std::array<std::unique_ptr<RhiFrameBuffer>, 6>> FrameBuffers;
         };
         
         std::array<Tbx::Matrix4x4f, 6> m_ViewMatricies;
@@ -54,16 +54,24 @@ namespace PC_CORE::Rendering::Pass
         PassResource m_EquilateralToCubeMapResource;
 
         PassResource m_IrradianceConvolution;
+
+        PassResource m_PrefilterMap;
         
         void ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext);
 
         [[nodiscard]] PassResource EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement);
 
-        [[nodiscard]] PassResource IrradianceConvolutionResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement);
+        [[nodiscard]] PassResource EnvironementResource(
+            const RendererPassExecuteContext& _RendererPassExecuteContext, 
+            const CaptureEnvironement& _CaptureEnvironement,
+            const std::string& Name,
+            RhiTexture& _Attachement);
 
         void ExecuteEquilateralToCubeMap(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
         void ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext);
+
+        void ExecutePrefilter(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
     };
 

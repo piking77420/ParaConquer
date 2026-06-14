@@ -72,6 +72,12 @@ BEGIN_PCCORE
             ScissorsExtent = size;
         }
 
+        explicit ViewportInfo(uint32_t Width, uint32_t Height)
+        {
+            Size = Tbx::Vector2f(static_cast<float>(Width), static_cast<float>(Height));
+            ScissorsExtent = Tbx::Vector2ui(Width, Height);
+        }
+
         ViewportInfo() = default;
 
         ~ViewportInfo() = default;

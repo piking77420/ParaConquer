@@ -46,8 +46,9 @@ namespace PC_CORE::WORLD
 
 		std::unique_ptr<RhiTexture> EnvironementMap(_App.RenderHarwareInteface.CreateTexture());
 		std::unique_ptr<RhiTexture> IrradianceMap(_App.RenderHarwareInteface.CreateTexture());
+		std::unique_ptr<RhiTexture> PrefilterMap(_App.RenderHarwareInteface.CreateTexture());
 
-		if (!EnvironementMap || !IrradianceMap)
+		if (!EnvironementMap || !IrradianceMap || !PrefilterMap)
 		{
 			PC_LOGERROR("Failed to create EnvironementMap {}", BaseTexture->Name);
 			return false;
@@ -82,9 +83,22 @@ namespace PC_CORE::WORLD
 			.SetName("Environement Irradiance" + std::string(Path.data()))
 			.Build();
 
+		PrefilterMap->
+			SetRhiFormat(BaseTexture->Get()->GetRhiFormat())
+			.SetWidth(PrefilterMapSize)
+			.SetHeight(PrefilterMapSize)
+			.SetLevel(_App.RenderHarwareInteface.ComputeTextureLevel(PrefilterMapSize, PrefilterMapSize))
+			.SetLayer(6)
+			.SetTextureType(RhiTexture::Type::CubeMap)
+			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
+			.SetTextureUsage(flags)
+			.SetName("Environement Irradiance" + std::string(Path.data()))
+			.Build();
+
 		env.EnvironementTexture = _Texture;
 		env.Skybox = std::move(EnvironementMap);
 		env.IrradianceMap = std::move(IrradianceMap);
+		env.PrefilterMap = std::move(PrefilterMap);
 		env.isDiry = true;
 		env.SkyBoxDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
 		env.EnvironemementDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
@@ -95,7 +109,8 @@ namespace PC_CORE::WORLD
 			.Build();
 
 		env.EnvironemementDescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, env.IrradianceMap.get(), _App.SamplerLinearClamp.get())
+			->BindTexture(RhiShaderStageBits::Pixel, 0, env.PrefilterMap.get(), _App.SamplerLinearClamp.get())
+			//->BindTexture(RhiShaderStageBits::Pixel, 1, env.PrefilterMap.get(), _App.SamplerLinearClamp.get())
 			.SetName("Environemement DescriptorSet")
 			.Build();
 		

@@ -567,6 +567,26 @@ namespace PC_CORE::Rendering
                .Build();
        }
 
+       {
+           // PrefilterEnvironement
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("PrefilterEnvironement.ps.hlsl.binary")->GetCode()}
+           };
+
+           PrefilterEnvironement.reset(m_Rhi.CreateRhiShaderProgram());
+           PrefilterEnvironement
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*colorHDRPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("PrefilterEnvironement")
+               .Build();
+       }
+
    }
 
    void Renderer::UploadRenderInstanceID()

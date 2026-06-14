@@ -7,13 +7,6 @@ TextureCube<float4> EnvironementMap : register(t0, space0);
 SamplerState EnvironementMapSampler : register(s0, space0); 
 //https://github.com/microsoft/DirectXShaderCompiler/wiki/Vulkan-combined-image-sampler-type
 
-struct PushConstant
-{
-    float4x4 ViewProjection;
-};
-
-[[vk::push_constant]]
-PushConstant pushConstant;
 
 struct PsInput
 {

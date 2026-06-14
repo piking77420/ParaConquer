@@ -30,21 +30,35 @@ namespace PC_CORE::Rendering::Pass
 		if (!m_EquilateralToCubeMapResource.DescriptorSet)
 			m_EquilateralToCubeMapResource = EquilateralToCubemapResource(_RendererPassExecuteContext, *captureRenderPass);
 
-		if (!m_IrradianceConvolution.DescriptorSet)
-			m_IrradianceConvolution = IrradianceConvolutionResource(_RendererPassExecuteContext, *captureRenderPass);
+		if (!m_IrradianceConvolution.DescriptorSet && captureRenderPass->IrradianceMap)
+			m_IrradianceConvolution = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->IrradianceMap);
+
+		if (!m_PrefilterMap.DescriptorSet)
+		{
+			m_PrefilterMap = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->PrefilterMap);
+		}
+
 		// Set Base state
 		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 		
-		// UGLYYYYY
-		PC_CORE::ViewportInfo ViewPortSkyBox(*captureRenderPass->SkyBox);
-		_RendererPassExecuteContext.cmd.SetViewPort(ViewPortSkyBox);
-		ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
-		captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
 
+		{
+			PC_CORE::ViewportInfo ViewPortSkyBox(*captureRenderPass->SkyBox);
+			_RendererPassExecuteContext.cmd.SetViewPort(ViewPortSkyBox);
+			ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
+			captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
+		}
+		
+		{
+			PC_CORE::ViewportInfo ViewPortIrradiance(*captureRenderPass->IrradianceMap);
+			_RendererPassExecuteContext.cmd.SetViewPort(ViewPortIrradiance);
+			ExecuteIrradiance(_RendererPassExecuteContext);
+		}
 
-		PC_CORE::ViewportInfo ViewPortIrradiance(*captureRenderPass->IrradianceMap);
-		_RendererPassExecuteContext.cmd.SetViewPort(ViewPortIrradiance);
-		ExecuteIrradiance(_RendererPassExecuteContext);
+		{
+			ExecutePrefilter(_RendererPassExecuteContext);
+		}
+		
 	}
 
 	void EquirectangularToSkybox::ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext)
@@ -63,10 +77,12 @@ namespace PC_CORE::Rendering::Pass
 			.SetName("EquirectangularToSkybox DescriptorSet")
 			.Build();
 
-		for (size_t i = 0; i < Resource.FrameBuffer.size(); i++)
+		auto& Level1 = Resource.FrameBuffers.emplace_back();
+
+		for (size_t i = 0; i < Level1.size(); i++)
 		{
-			Resource.FrameBuffer[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
-			Resource.FrameBuffer[i]
+			Level1[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
+			Level1[i]
 				->SetWidth(_CaptureEnvironement.SkyBox->GetWidth())
 				.SetHeight(_CaptureEnvironement.SkyBox->GetHeight())
 				.SetAttachement(_CaptureEnvironement.SkyBox, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
@@ -78,25 +94,37 @@ namespace PC_CORE::Rendering::Pass
 		return Resource;
 	}
 
-	EquirectangularToSkybox::PassResource EquirectangularToSkybox::IrradianceConvolutionResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement)
+	EquirectangularToSkybox::PassResource EquirectangularToSkybox::EnvironementResource(
+		const RendererPassExecuteContext& _RendererPassExecuteContext,
+		const CaptureEnvironement& _CaptureEnvironement,
+		const std::string& Name,
+		RhiTexture& _Attachement)
 	{
 		PassResource Resource;
 		Resource.DescriptorSet = std::unique_ptr<RhiDescriptorSet>(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
 		Resource.DescriptorSet
 			->BindTexture(RhiShaderStageBits::Pixel, 0, _CaptureEnvironement.SkyBox, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
-			.SetName("IrradianceConvolution DescriptorSet")
+			.SetName(Name + " DescriptorSet")
 			.Build();
 
-		for (size_t i = 0; i < Resource.FrameBuffer.size(); i++)
+		for (size_t Level = 0; Level < _Attachement.GetLevel(); Level++)
 		{
-			Resource.FrameBuffer[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
-			Resource.FrameBuffer[i]
-				->SetWidth(_CaptureEnvironement.IrradianceMap->GetWidth())
-				.SetHeight(_CaptureEnvironement.IrradianceMap->GetHeight())
-				.SetAttachement(_CaptureEnvironement.IrradianceMap, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
-				.SetRenderPass(_RendererPassExecuteContext.Renderer.colorHDRPass.get())
-				.SetName("IrradianceConvolution Framebuffer" + std::to_string(i))
-				.Build();
+			auto& FrameBuffers = Resource.FrameBuffers.emplace_back();
+
+			for (size_t i = 0; i < FrameBuffers.size(); i++)
+			{
+				const uint32_t MipWidth = _Attachement.GetWidth() * std::pow(0.5, Level);
+				const uint32_t MipHeight = _Attachement.GetHeight() * std::pow(0.5, Level);
+
+				FrameBuffers[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
+				FrameBuffers[i]
+					->SetWidth(MipWidth)
+					.SetHeight(MipHeight)
+					.SetAttachement(&_Attachement, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, static_cast<uint32_t>(Level), 1)
+					.SetRenderPass(_RendererPassExecuteContext.Renderer.colorHDRPass.get())
+					.SetName(Name + "Framebuffer" + std::to_string(i))
+					.Build();
+			}
 		}
 
 		return Resource;
@@ -107,9 +135,17 @@ namespace PC_CORE::Rendering::Pass
 		auto c = GetColor();
 		auto& DescriptorSet = m_EquilateralToCubeMapResource.DescriptorSet;
 
-		for (size_t i = 0; i < m_EquilateralToCubeMapResource.FrameBuffer.size(); i++)
+		if (m_EquilateralToCubeMapResource.FrameBuffers.empty())
 		{
-			auto& FrameBuffer = m_EquilateralToCubeMapResource.FrameBuffer[i];
+			PC_LOGERROR("Failed To EquilateralTexture to cube map");
+			return;
+		}
+
+		assert(m_EquilateralToCubeMapResource.FrameBuffers.size() == 1);
+
+		for (size_t i = 0; i < m_EquilateralToCubeMapResource.FrameBuffers[0].size(); i++)
+		{
+			auto& FrameBuffer = m_EquilateralToCubeMapResource.FrameBuffers[0][i];
 			const BeginRenderPassInfo beginRenderPassInfo =
 			{
 				.RenderPass = _RendererPassExecuteContext.Renderer.colorHDRPass.get(),
@@ -137,9 +173,12 @@ namespace PC_CORE::Rendering::Pass
 	{
 		auto c = GetColor();
 		auto& DescriptorSet = m_IrradianceConvolution.DescriptorSet;
-		for (size_t i = 0; i < m_IrradianceConvolution.FrameBuffer.size(); i++)
+		assert(m_IrradianceConvolution.FrameBuffers.size() == 1);
+
+
+		for (size_t i = 0; i < m_IrradianceConvolution.FrameBuffers[0].size(); i++)
 		{
-			auto& FrameBuffer = m_IrradianceConvolution.FrameBuffer[i];
+			auto& FrameBuffer = m_IrradianceConvolution.FrameBuffers[0][i];
 			const BeginRenderPassInfo beginRenderPassInfo =
 			{
 				.RenderPass = _RendererPassExecuteContext.Renderer.colorHDRPass.get(),
@@ -160,6 +199,53 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
 			_RendererPassExecuteContext.cmd.EndRenderPass();
 		}
+	}
+
+	void EquirectangularToSkybox::ExecutePrefilter(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	{
+		auto c = GetColor();
+		auto& DescriptorSet = m_PrefilterMap.DescriptorSet;
+
+		for (size_t Level = 0; Level < m_PrefilterMap.FrameBuffers.size(); Level++)
+		{
+			auto& CubeMapLevel = m_PrefilterMap.FrameBuffers[Level];
+			for (size_t Layer = 0; Layer < CubeMapLevel.size(); Layer++)
+			{
+				auto& CubeMapFace = CubeMapLevel[Layer];
+
+				const BeginRenderPassInfo beginRenderPassInfo =
+				{
+					.RenderPass = _RendererPassExecuteContext.Renderer.colorHDRPass.get(),
+					.FrameBuffer = CubeMapFace.get(),
+					.RenderOffSet = {0, 0},
+					.Extent = {CubeMapFace->GetWidth(), CubeMapFace->GetHeight()},
+					.ClearValueFlag = ClearValueFlagBits::ClearValueColor,
+					.ClearColor = &c,
+					.ClearValueCount = 1,
+					.ClearDepth = 1.f
+				};
+
+				GPU_ALIGN struct PrefilterData
+				{
+					Gpu::mat4 ViewProjectionCorr;
+					float Roughness;
+				}PrefilterData;
+				
+				std::memcpy(&PrefilterData.ViewProjectionCorr, m_ViewMatricies[Layer].data, sizeof(Gpu::mat4));
+				PrefilterData.Roughness = static_cast<float>(Level) / static_cast<float>(m_PrefilterMap.FrameBuffers.size() - 1);
+
+				PC_CORE::ViewportInfo ViewPortIrradiance(CubeMapFace->GetWidth(), CubeMapFace->GetHeight());
+
+				_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
+				_RendererPassExecuteContext.cmd.SetViewPort(ViewPortIrradiance);
+				_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.PrefilterEnvironement.get());
+				_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
+				_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex | RhiShaderStageBits::Pixel, &PrefilterData, 0, sizeof(PrefilterData));
+				_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+				_RendererPassExecuteContext.cmd.EndRenderPass();
+			}
+		}
+
 	}
 
 } // namespace PC_CORE::Rendering::Pass

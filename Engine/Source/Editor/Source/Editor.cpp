@@ -390,6 +390,16 @@ void Editor::CompileShader()
             }));
     }
 
+    // PrefilterMap
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("PrefilterEnvironement.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/Prefiltering.ps.hlsl",
+                ShaderFeatureFlagBits::UseUV);
+            }));
+    }
+
     /*
     // sprite
     {

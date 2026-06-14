@@ -44,6 +44,13 @@ TextureCube<float4> IrradianceDiffuse : register(t0, IMAGE_BASE_LIGHTING_SPACE);
 [[vk::combinedImageSampler]]
 SamplerState IrradianceDiffuseSampler : register(s0, IMAGE_BASE_LIGHTING_SPACE); 
 
+/*
+[[vk::combinedImageSampler]]
+TextureCube<float4> PrefilterMap : register(t0, IMAGE_BASE_LIGHTING_SPACE);
+[[vk::combinedImageSampler]]
+SamplerState PrefilterMapSampler : register(s0, IMAGE_BASE_LIGHTING_SPACE); 
+*/
+
 #include "PBR.hlsl"
 
 

@@ -371,9 +371,6 @@ vk::ImageViewCreateInfo Vulkan::VulkanTexture::GetImageViewCreateInfo(vk::ImageV
     imageviewInfo.subresourceRange.baseArrayLayer = _BaseArrayLayer;
     imageviewInfo.subresourceRange.layerCount = _LayerCount;
 
-    if (imageviewInfo.subresourceRange.baseMipLevel >= imageviewInfo.subresourceRange.levelCount)
-        __debugbreak();
-
     return imageviewInfo;
 }
 

@@ -3,6 +3,7 @@
 struct PushConstant
 {
     float4x4 ViewProjectionCorr;
+    float Metadata;
 };
 
 [[vk::push_constant]]

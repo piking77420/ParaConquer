@@ -85,6 +85,8 @@ public:
 
     std::unique_ptr<RhiShaderProgram> IrradianceConvolution;
 
+    std::unique_ptr<RhiShaderProgram> PrefilterEnvironement;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
