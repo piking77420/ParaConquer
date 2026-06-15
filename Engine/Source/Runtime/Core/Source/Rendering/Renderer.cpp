@@ -706,7 +706,9 @@ namespace PC_CORE::Rendering
            uint32_t LODIndex = 0;
            const double DistanceAABBToCamera = (MeshAABBExtend - _view.ViewPosition).Magnitude();
            const double BoundingSphereRadius = (MeshAABBExtend).Magnitude();
-           const Tbx::Matrix4x4d ModelView = StaticMeshComponentData.WorldMatrix;
+
+           const Tbx::Matrix4x4d& Model = StaticMeshComponentData.WorldMatrix;
+           const Tbx::Matrix4x4d ModelView = _view.View * Model;
   
            if (!StaticMesh->GetLodThreshold().empty())
            {
@@ -732,10 +734,15 @@ namespace PC_CORE::Rendering
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
+               // Compute Gpu Matrix
+               const Tbx::Matrix4x4f ModelD = Tbx::Matrix4x4f(Model * Dcmd.GlobalModelMatrix);
+               const Tbx::Matrix4x4f ModelF = Tbx::Matrix4x4f(ModelD);
+               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
+               const Tbx::Matrix4x4f NormalInverMatrixMVF = _view.View * ModelD.Invert().Transpose();
+
                // Instance Matrix Update
                item.InstanceIndex = m_InstanceBufferCpu.size();
-               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
-               const Tbx::Matrix4x4f NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
+               // Copy Data to gpu
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
                std::memcpy(RenderInstance.NormalInvertViewMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertViewMatrix));

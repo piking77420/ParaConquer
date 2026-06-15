@@ -57,25 +57,30 @@ VsOutput Main(VsInput input)
     VsOutput output;
     
     RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
-    float4 WorldPos =  mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
-    float4 Pos = mul(View, WorldPos); // model view is just a model in fact
+    float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
+    float4 WorldPos = mul(ViewInv, ViewPos);
 
     // Positions
 #if defined(LIT) || defined(VIEWPOS)
     output.WorldSpacePosition = WorldPos.xyz; // World position
 #endif
-    output.Position = mul(ClipSpaceCorrection, mul(Projection, Pos));
+    output.Position = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
 
     // Lit dependencies
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    float3x3 Model3 = (float3x3)renderInstance.ModelView;
 
-    float3x3 NormalInverseView = (float3x3)renderInstance.NormalInverseMatrixView; // no view component
-    output.Normal = normalize(mul(NormalInverseView, NormalL));
-    float3 TangentV = normalize(mul(Model3, TangentL));
-    output.Tangent = float4(TangentV, input.Tangent.w);
+    float3x3 ViewInv3 = (float3x3)ViewInv;
+    float3x3 NormalInverseMatrix = mul(ViewInv3, (float3x3)renderInstance.NormalInverseMatrixView);
+    float3x3 Model3 = mul(ViewInv3, (float3x3)renderInstance.ModelView);
+
+    float3 NormalW = normalize(mul(NormalInverseMatrix, NormalL));
+    float3 TangentW = normalize(mul(Model3, TangentL));
+    TangentW = normalize(TangentW - NormalW * dot(NormalW, TangentW));
+
+    output.Normal = NormalW;
+    output.Tangent = float4(TangentW, input.Tangent.w);
 #endif 
 
     // Need uvs
