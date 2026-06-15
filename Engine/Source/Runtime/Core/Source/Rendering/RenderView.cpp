@@ -54,6 +54,9 @@ namespace PC_CORE::Rendering
         FrustumView = Frustum(Frustum::OpenglNdc, FrustumToView);
         FrustumWorld = Frustum(Frustum::OpenglNdc, FrustumToWorld);
 
+        Tbx::Vector3f Posf = static_cast<Tbx::Vector3f>(_Camera.Position);
+        CameraPos = Tbx::Vector4f(Posf.x, Posf.y, Posf.z, 0.0f);
+
         Gamma = 2.2f;
         Exposure = 1.f;
 
@@ -86,6 +89,7 @@ namespace PC_CORE::Rendering
             Gpu::StreamDoubleToFloat(&ptr->FrustumViewMatrix, &FrustumViewMatrix);
 
             FrustumView.StreamPlanes(ptr->FrustumPlanesView[0].data.data());
+            std::memcpy(&ptr->CameraPos, &CameraPos.x, sizeof(float) * 4);
 
             ptr->CameraNear = static_cast<float>(CameraNear);
             ptr->CameraFar = static_cast<float>(CameraFar);
@@ -110,8 +114,7 @@ namespace PC_CORE::Rendering
             ptr->LightCount = static_cast<uint32_t>(_RenderingWorldData.LightsData.size());
             if (_RenderingWorldData.DirLightData)
             {
-                // shoul be 3x3
-                Tbx::Vector4d lightDirV = View * Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
+                Tbx::Vector4d lightDirV = Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
                 lightDirV = lightDirV.Normalize();
 
                 ptr->DirLight.Direction = { static_cast<float>(lightDirV.x) ,static_cast<float>(lightDirV.y),static_cast<float>(lightDirV.z) };

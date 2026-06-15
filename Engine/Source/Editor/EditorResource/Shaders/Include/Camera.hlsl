@@ -19,6 +19,8 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
 
     Frustum Frustum;
 
+    float4 CameraPos;
+
     float CameraNear;
     float CameraFar;
     

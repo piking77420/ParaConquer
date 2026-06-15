@@ -32,6 +32,8 @@ namespace PC_CORE::Rendering
 
             vec4 FrustumPlanesView[6];
 
+            vec4 CameraPos;
+
             float CameraNear;
             float CameraFar;
             float DeltaTime;
@@ -105,6 +107,8 @@ namespace PC_CORE::Rendering
 
         Tbx::Vector2f RenderSize{};
         Tbx::Vector2f InvRenderSize{};
+
+        Tbx::Vector4f CameraPos;
 
         RenderViewFlag Flag{};
 

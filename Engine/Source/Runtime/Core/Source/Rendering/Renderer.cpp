@@ -697,16 +697,16 @@ namespace PC_CORE::Rendering
            const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
            const auto MeshAABBCenter = MeshAABBW.GetCenter();
            const auto MeshAABBExtend = MeshAABBW.GetExtend();
-           const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
+           //const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
 
-           if (!MeshIsOnFrustum)
-             continue;
+           //if (!MeshIsOnFrustum)
+             //continue;
 
            // Pick Lod
            uint32_t LODIndex = 0;
            const double DistanceAABBToCamera = (MeshAABBExtend - _view.ViewPosition).Magnitude();
            const double BoundingSphereRadius = (MeshAABBExtend).Magnitude();
-           const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
+           const Tbx::Matrix4x4d ModelView = StaticMeshComponentData.WorldMatrix;
   
            if (!StaticMesh->GetLodThreshold().empty())
            {
@@ -725,8 +725,8 @@ namespace PC_CORE::Rendering
                const MotionCore::Aabb<double> MeshSectionAABBW = Dcmd.GlobalModelAABB.GetTransformed(StaticMeshComponentData.WorldMatrix);
                const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
                const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
-               if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
-                 continue;
+               //if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
+                 //continue;
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;

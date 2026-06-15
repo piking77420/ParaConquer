@@ -6,9 +6,9 @@ struct PSInput
     float4 Position : SV_POSITION;
 #if defined(LIT) || defined(VIEWPOS)
     #if defined(VIEWPOS)
-    float3 ViewSpacePosition : TEXCOORD0;
+    float3 WorldSpacePosition : TEXCOORD0;
     #elif defined(LIT)
-    float3 ViewSpacePosition : TEXCOORD0;
+    float3 WorldSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
     float4 Tangent : TEXCOORD2;
     #endif
@@ -85,7 +85,7 @@ float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 DiffuseColor, float Per
     float3 Diffuse = DiffuseColor * Irradiance;
 
     // Specular
-    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), saturate(PerceptualRoughness))).rg;
+    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), PerceptualRoughness)).rg;
     float3 F = F_SchlickR(max(NoV, 0.0), F0, PerceptualRoughness);
 	float3 Specular = PFR * (F * BRDF.x + BRDF.y);
 
@@ -106,15 +106,14 @@ float4 Main(PSInput input) : SV_Target
 
     // Normal
     float3 NormalNormlize = normalize(input.Normal);
-    float3 Normal_V = NormalNormlize;
+    float3 Normal_W = NormalNormlize;
     // 
     float AO = AORoughnessMetallicEmptyFactors.x;
     float PerceptualRoughness = AORoughnessMetallicEmptyFactors.y;
     float Metallic = AORoughnessMetallicEmptyFactors.z;
     float3 Emissive = EmissiveFactor;
 
-    float3 V = -normalize(input.ViewSpacePosition);
-    float3 V_W = mul((float3x3)ViewInv, V);
+    float3 V = normalize(CameraPos - input.WorldSpacePosition);
 #endif
 
 #if defined(LIT) && defined(USE_UV)
@@ -132,7 +131,7 @@ float4 Main(PSInput input) : SV_Target
     if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
     {
         float3 T = normalize(input.Tangent.xyz);
-        float3 N = Normal_V;
+        float3 N = Normal_W;
         T = normalize(T - dot(T, N) * N);
         float tangentSign = input.Tangent.w;
 
@@ -145,7 +144,7 @@ float4 Main(PSInput input) : SV_Target
             T.y, B.y, N.y,
             T.z, B.z, N.z
         );
-        Normal_V = normalize(mul(TBN, NormalTS));    
+        Normal_W = normalize(mul(TBN, NormalTS));    
     }
 #endif
     
@@ -178,9 +177,8 @@ float4 Main(PSInput input) : SV_Target
     float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
 
     // Normal Computing
-    float3 N = Normal_V;
+    float3 N = Normal_W;
     float NoV = max(saturate(dot(N, V)), 1e-5);;
-    float3 Normal_W = mul((float3x3)ViewInv, Normal_V);
 
     // Mix it into output in a way that can�t be optimized away
     float keepAlive = Lights[0].PositionType.x;
@@ -205,8 +203,7 @@ float4 Main(PSInput input) : SV_Target
 
     // Ambiant
     float3 DiffuseIBLColorIBL = FragAlbedo.xyz * (1.0 - Metallic);
-    float NoV_W = max(dot(Normal_W, V_W), 1e-5);
-    float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV_W, DiffuseIBLColorIBL, PerceptualRoughness, F0) * AO;
+    float3 Ambient = EvaluateIBL(N, V, NoV, DiffuseIBLColorIBL, PerceptualRoughness, F0) * AO;
 
     
     // Other
