@@ -29,7 +29,7 @@ struct MeshOutput
     float4 Position : SV_POSITION;
 
 #if defined(USE_COLOR)
-    nointerpolation float4 Color : COLOR0;
+    nointerpolation float3 Color : COLOR0;
 #endif
 };
 
@@ -69,7 +69,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
             float(gid.x & 1 ),
             float(gid.x & 3 ) / 4,
             float(gid.x & 7 ) / 8);
-            vertices[gtid.x].Color = float4(color.xyz, 1.0f);
+            vertices[gtid.x].Color = color.xyz;
         #endif
     }
 }

@@ -16,7 +16,7 @@ struct VsInput
     float4 Normal : NORMAL; // location 1
     float4 Tangent : TEXCOORD0; // location 2
     float2 TexCoord : TEXCOORD1; // location 3
-    float2 Pad : TEXCOORD2; // location 3r
+    //float2 Pad : TEXCOORD2; // location 4 // not used
     uint InstanceID : SV_InstanceID;
     uint VertexID   : SV_VertexID;
 };
