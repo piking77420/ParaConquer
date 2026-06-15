@@ -744,7 +744,7 @@ void Editor::InitTestScene()
             }
 #endif
 
-#if 0
+#if 1
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
@@ -780,7 +780,7 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 1
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });

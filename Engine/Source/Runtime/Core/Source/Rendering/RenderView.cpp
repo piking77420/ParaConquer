@@ -114,7 +114,7 @@ namespace PC_CORE::Rendering
             ptr->LightCount = static_cast<uint32_t>(_RenderingWorldData.LightsData.size());
             if (_RenderingWorldData.DirLightData)
             {
-                Tbx::Vector4d lightDirV = Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
+                Tbx::Vector4d lightDirV = View * Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
                 lightDirV = lightDirV.Normalize();
 
                 ptr->DirLight.Direction = { static_cast<float>(lightDirV.x) ,static_cast<float>(lightDirV.y),static_cast<float>(lightDirV.z) };

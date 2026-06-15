@@ -27,9 +27,9 @@ struct VsOutput
 #if defined(LIT) || defined(VIEWPOS)
 
 #if defined(VIEWPOS)
-    float3 WorldSpacePosition : TEXCOORD0;
+    float3 ViewSpacePosition : TEXCOORD0;
 #elif defined(LIT)
-    float3 WorldSpacePosition : TEXCOORD0;
+    float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
     float4 Tangent : TEXCOORD2;
     #endif
@@ -58,11 +58,10 @@ VsOutput Main(VsInput input)
     
     RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
     float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
-    float4 WorldPos = mul(ViewInv, ViewPos);
 
     // Positions
 #if defined(LIT) || defined(VIEWPOS)
-    output.WorldSpacePosition = WorldPos.xyz; // World position
+    output.ViewSpacePosition = ViewPos.xyz; // View position
 #endif
     output.Position = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
 
@@ -71,23 +70,22 @@ VsOutput Main(VsInput input)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
 
-    float3x3 ViewInv3 = (float3x3)ViewInv;
-    float3x3 NormalInverseMatrix = mul(ViewInv3, (float3x3)renderInstance.NormalInverseMatrixView);
-    float3x3 Model3 = mul(ViewInv3, (float3x3)renderInstance.ModelView);
+    float3x3 ModelViewNormalInverseMatrix3 = (float3x3)renderInstance.ModelViewNormalInverseMatrix;
+    float3x3 ModelView3 = (float3x3)renderInstance.ModelView;
+    
+    float3 NormalV = normalize(mul(ModelViewNormalInverseMatrix3, NormalL));
+    float3 TangentV = normalize(mul(ModelView3, TangentL));
+    TangentV = normalize(TangentV - NormalV * dot(NormalV, TangentV));
 
-    float3 NormalW = normalize(mul(NormalInverseMatrix, NormalL));
-    float3 TangentW = normalize(mul(Model3, TangentL));
-    TangentW = normalize(TangentW - NormalW * dot(NormalW, TangentW));
-
-    output.Normal = NormalW;
-    output.Tangent = float4(TangentW, input.Tangent.w);
+    output.Normal = NormalV;
+    output.Tangent = float4(TangentV, input.Tangent.w);
 #endif 
 
     // Need uvs
 #if defined(USE_UV)
     output.TexCoord = input.TexCoord;
 #endif
-
+    
     // Colors Passes
 #if defined(USE_COLOR)
 

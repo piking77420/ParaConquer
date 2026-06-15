@@ -71,12 +71,12 @@ namespace PC_CORE::Rendering::Pass
 							if (m_OnlyBindMeshletBound)
 							{
  								m_LastMeshletDescritptor = StaticMesh.MeshletBoundDescriptor;
-								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletBoundDescriptor, 1); // dirty hack
+								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletBoundDescriptor, 1);
 							}
 							else
 							{
 								m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
-								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
+								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 3);
 							}
 							
 						}
@@ -89,7 +89,7 @@ namespace PC_CORE::Rendering::Pass
 						MeshShaderDrawCall.SubMeshTriangleOffset = StaticMesh.SubMeshTriangleOffset;
 
 						static constexpr auto GroupSize = 32;
-						_Context.cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh | RhiShaderStageBits::Pixel, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
+						_Context.cmd.PushConstant(RhiShaderStageBits::Amp | RhiShaderStageBits::Mesh, &MeshShaderDrawCall, 0u, sizeof(MeshShaderDrawCall));
 						const uint32_t DispachtSize = (StaticMesh.MeshletCount + GroupSize - 1) / GroupSize;
 						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 					}

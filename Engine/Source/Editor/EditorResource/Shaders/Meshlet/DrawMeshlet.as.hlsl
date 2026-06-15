@@ -11,7 +11,7 @@
 #include "InstanceBuffer.hlsl"
 
 
-#define MESHLET_SPACE space2
+#define MESHLET_SPACE space3
 StructuredBuffer<float4> MeshletBounds : register(t4, MESHLET_SPACE);
 
 groupshared Payload sPayload;

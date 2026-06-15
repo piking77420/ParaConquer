@@ -685,6 +685,42 @@ namespace PC_CORE::Rendering
        return out;
    }
 
+   Tbx::Matrix3x3f ToM3(const Tbx::Matrix4x4f& m4)
+   {
+       Tbx::Matrix3x3f m = Tbx::Matrix3x3f::Identity();
+       m[0] = m4[0];
+       m[1] = m4[1];
+       m[2] = m4[2];
+
+       m[3] = m4[4];
+       m[4] = m4[5];
+       m[5] = m4[6];
+
+       m[6] = m4[8];
+       m[7] = m4[9];
+       m[8] = m4[10];
+
+       return m;
+   }
+
+   Tbx::Matrix4x4f ToM4(const Tbx::Matrix3x3f& m3)
+   {
+       Tbx::Matrix4x4f m4 = Tbx::Matrix4x4f::Identity();
+       m4[0] = m3[0];
+       m4[1] = m3[1];
+       m4[2] = m3[2];
+
+       m4[4] = m3[3];
+       m4[5] = m3[4];
+       m4[6] = m3[5];
+
+       m4[8] = m3[6];
+       m4[9] = m3[7];
+       m4[10] = m3[8];
+
+       return m4;
+   }
+
    void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
@@ -697,10 +733,10 @@ namespace PC_CORE::Rendering
            const MotionCore::Aabb<double> MeshAABBW = StaticMeshComponentData.StaticMesh->GetAabb().GetTransformed(StaticMeshComponentData.WorldMatrix);
            const auto MeshAABBCenter = MeshAABBW.GetCenter();
            const auto MeshAABBExtend = MeshAABBW.GetExtend();
-           //const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
+           const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
 
-           //if (!MeshIsOnFrustum)
-             //continue;
+           if (!MeshIsOnFrustum)
+             continue;
 
            // Pick Lod
            uint32_t LODIndex = 0;
@@ -727,25 +763,24 @@ namespace PC_CORE::Rendering
                const MotionCore::Aabb<double> MeshSectionAABBW = Dcmd.GlobalModelAABB.GetTransformed(StaticMeshComponentData.WorldMatrix);
                const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
                const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
-               //if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
-                 //continue;
+               if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
+                 continue;
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
                // Compute Gpu Matrix
-               const Tbx::Matrix4x4f ModelD = Tbx::Matrix4x4f(Model * Dcmd.GlobalModelMatrix);
-               const Tbx::Matrix4x4f ModelF = Tbx::Matrix4x4f(ModelD);
                const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
-               const Tbx::Matrix4x4f NormalInverMatrixMVF = _view.View * ModelD.Invert().Transpose();
+               Tbx::Matrix3x3f ModelViewF3 = ToM3(ModelViewF);
+               const Tbx::Matrix4x4f NormalInverMatrixV = ToM4(ModelViewF3.Invert().Transpose());
 
                // Instance Matrix Update
                item.InstanceIndex = m_InstanceBufferCpu.size();
                // Copy Data to gpu
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
-               std::memcpy(RenderInstance.NormalInvertViewMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertViewMatrix));
+               std::memcpy(RenderInstance.NormalInvertViewMatrix.data.data(), NormalInverMatrixV.data, sizeof(RenderInstance.NormalInvertViewMatrix));
 
                switch (m_RenderGraph.GetRenderMode())
                {

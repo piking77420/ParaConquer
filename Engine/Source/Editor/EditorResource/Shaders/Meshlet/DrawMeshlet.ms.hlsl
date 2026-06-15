@@ -14,9 +14,7 @@
 #define RENDER_INSTANCE_BUFFER_SPACE space0
 #include "InstanceBuffer.hlsl"
 
-
-
-#define MESHLET_SPACE space2    
+#define MESHLET_SPACE space3    
 StructuredBuffer<Vertex> Vertices : register(t0, MESHLET_SPACE);
 StructuredBuffer<Meshlet> Meshlets : register(t1, MESHLET_SPACE);
 StructuredBuffer<uint> VertexIndices : register(t2, MESHLET_SPACE);
@@ -93,8 +91,14 @@ void Main(uint3 gtid : SV_GroupThreadID,
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    vertices[gtid.x].Normal = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, NormalL));
-    float3 TangentV = normalize(mul((float3x3)renderInstance.ModelView, input.Tangent.xyz));
+    float3x3 ModelViewNormalInverseMatrix3 = (float3x3)renderInstance.ModelViewNormalInverseMatrix;
+    float3x3 ModelView3 = (float3x3)renderInstance.ModelView;
+    
+    float3 NormalV = normalize(mul(ModelViewNormalInverseMatrix3, NormalL));
+    float3 TangentV = normalize(mul(ModelView3, TangentL));
+    TangentV = normalize(TangentV - NormalV * dot(NormalV, TangentV));
+
+    vertices[gtid.x].Normal = NormalV;
     vertices[gtid.x].Tangent = float4(TangentV, input.Tangent.w);
 #endif 
 

@@ -4,7 +4,7 @@
 struct RenderInstance
 {
     float4x4 ModelView;
-    float4x4 NormalInverseMatrixView;
+    float4x4 ModelViewNormalInverseMatrix;
 };
 
 StructuredBuffer<RenderInstance> RenderInstances : register(RENDER_INSTANCE_BUFFER_BINDING, RENDER_INSTANCE_BUFFER_SPACE);

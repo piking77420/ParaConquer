@@ -332,10 +332,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
-
-
     const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
-
     vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(_malloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
 
     for (size_t i = 0; i < _DescriptorSets.size(); i++)
