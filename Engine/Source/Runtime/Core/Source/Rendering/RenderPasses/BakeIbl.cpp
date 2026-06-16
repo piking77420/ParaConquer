@@ -1,16 +1,16 @@
-#include <Rendering/RenderPasses/EquirectangularToSkybox.hpp>
+#include <Rendering/RenderPasses/BakeIbl.hpp>
 #include <Rendering/RenderSystem.hpp>
 #include <Rendering/Renderer.hpp>
 #include <Rendering/RenderView.hpp>
 
 namespace PC_CORE::Rendering::Pass
 {
-	EquirectangularToSkybox::EquirectangularToSkybox()
+	BakeIbl::BakeIbl()
 	{
 		DYNAMIC_REFLECT_INIT
 	}
 
-	void EquirectangularToSkybox::Build(const RendererPassBuildContext& _RendererPassBuildContext)
+	void BakeIbl::Build(const RendererPassBuildContext& _RendererPassBuildContext)
 	{
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Rendering);
@@ -18,7 +18,7 @@ namespace PC_CORE::Rendering::Pass
 		ComputeViewMatricies(_RendererPassBuildContext);
 	}
 
-	void EquirectangularToSkybox::Execute(const RendererPassExecuteContext & _RendererPassExecuteContext)
+	void BakeIbl::Execute(const RendererPassExecuteContext & _RendererPassExecuteContext)
 	{
 		auto& captureRenderPass = _RendererPassExecuteContext.RenderingWorldData.CaptureEnvironement;
 		if (!captureRenderPass)
@@ -57,7 +57,7 @@ namespace PC_CORE::Rendering::Pass
 			ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
 
 			// why only need to transition the first level
-			const ImageStateTransition ImageStateTransition
+			/*const ImageStateTransition ImageStateTransition
 			{
 				.Texture = captureRenderPass->SkyBox,
 				.FirstMipLevel = 0,
@@ -67,7 +67,7 @@ namespace PC_CORE::Rendering::Pass
 
 				.updateState = true
 			};
-			_RendererPassExecuteContext.cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::CopySrc, std::span(&ImageStateTransition, 1), {});
+			_RendererPassExecuteContext.cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::CopySrc, std::span(&ImageStateTransition, 1), {});*/
 			captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
 		}
 		
@@ -87,14 +87,14 @@ namespace PC_CORE::Rendering::Pass
 		
 	}
 
-	void EquirectangularToSkybox::ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext)
+	void BakeIbl::ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext)
 	{
 		const Tbx::Matrix4x4f Proj = _RendererPassBuildContext.RHI.DepthCorrectionMatrixf() * Tbx::PerspectiveMatrixMinusOneToOne<float>(90.f * Tbx::dDeg2Rad, 1.0f, 0.1f, 10.f);
 		for (size_t i = 0; i < m_ViewMatricies.size(); i++)
 			m_ViewMatricies[i] = Proj * GetLookAtMatrixFromCubeMapIndicies(i, Tbx::Vector3f::Zero());
 	}
 
-	EquirectangularToSkybox::PassResource EquirectangularToSkybox::EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement)
+	BakeIbl::PassResource BakeIbl::EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement)
 	{
 		PassResource Resource;
 		Resource.DescriptorSet = std::unique_ptr<RhiDescriptorSet>(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
@@ -120,7 +120,7 @@ namespace PC_CORE::Rendering::Pass
 		return Resource;
 	}
 
-	EquirectangularToSkybox::PassResource EquirectangularToSkybox::EnvironementResource(
+	BakeIbl::PassResource BakeIbl::EnvironementResource(
 		const RendererPassExecuteContext& _RendererPassExecuteContext,
 		const CaptureEnvironement& _CaptureEnvironement,
 		const std::string& Name,
@@ -156,7 +156,7 @@ namespace PC_CORE::Rendering::Pass
 		return Resource;
 	}
 
-	void EquirectangularToSkybox::ExecuteEquilateralToCubeMap(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	void BakeIbl::ExecuteEquilateralToCubeMap(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto c = GetColor();
 		auto& DescriptorSet = m_EquilateralToCubeMapResource.DescriptorSet;
@@ -195,7 +195,7 @@ namespace PC_CORE::Rendering::Pass
 
 	}
 
-	void EquirectangularToSkybox::ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	void BakeIbl::ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto c = GetColor();
 		auto& DescriptorSet = m_IrradianceConvolution.DescriptorSet;
@@ -227,7 +227,7 @@ namespace PC_CORE::Rendering::Pass
 		}
 	}
 
-	void EquirectangularToSkybox::ExecutePrefilter(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	void BakeIbl::ExecutePrefilter(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto c = GetColor();
 		auto& DescriptorSet = m_PrefilterMap.DescriptorSet;
@@ -274,7 +274,7 @@ namespace PC_CORE::Rendering::Pass
 
 	}
 
-	void EquirectangularToSkybox::ExecuteBRDFLUT(const RendererPassExecuteContext& _RendererPassExecuteContext)
+	void BakeIbl::ExecuteBRDFLUT(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto& FrameBuffer = m_BRDFLUTFrameBuffer;
 		auto c = GetColor();

@@ -12,13 +12,13 @@ namespace PC_CORE::Rendering
 namespace PC_CORE::Rendering::Pass
 {
 
-    class PC_CORE_API EquirectangularToSkybox : public PC_CORE::Rendering::RenderPass
+    class PC_CORE_API BakeIbl : public PC_CORE::Rendering::RenderPass
     {
     public:
 
-        EquirectangularToSkybox();
+        BakeIbl();
 
-        ~EquirectangularToSkybox() override = default;
+        ~BakeIbl() override = default;
 
         IMP_DYNAMIC_REFLECT();
 
@@ -79,7 +79,7 @@ namespace PC_CORE::Rendering::Pass
 
     };
 
-    REFLECT(EquirectangularToSkybox, PC_CORE::Rendering::RenderPass);
+    REFLECT(BakeIbl, PC_CORE::Rendering::RenderPass);
 }
 
 

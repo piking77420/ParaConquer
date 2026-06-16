@@ -8,7 +8,7 @@
 #include "LowRenderer/CommandList.hpp"
 #include "Rendering/RenderSystem.hpp"
 
-#include <Rendering/RenderPasses/EquirectangularToSkybox.hpp>
+#include <Rendering/RenderPasses/BakeIbl.hpp>
 #include <Rendering/RenderPasses/ForwardPass.hpp>
 #include <Rendering/RenderPasses/ToneMapPass.hpp>
 #include <DebugView/DebugPass.hpp>
@@ -90,7 +90,7 @@ void WorldViewWindow::OnRenderModeDirty()
 
 void WorldViewWindow::BuildRenderGraph(PC_CORE::Rendering::RenderGraph& Graph)
 {
-    Graph.AddRenderPass<PC_CORE::Rendering::Pass::EquirectangularToSkybox>();
+    Graph.AddRenderPass<PC_CORE::Rendering::Pass::BakeIbl>();
 
     switch (m_Editor->editorData.ProjectSettings.RenderMode)
     {
