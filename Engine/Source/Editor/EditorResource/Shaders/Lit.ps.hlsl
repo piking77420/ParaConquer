@@ -68,14 +68,14 @@ SamplerState BRDFLUTSampler : register(s2, space2);
 #include "PBR.hlsl"
 
 
-float3 PrefilteredReflection(float3 R, float PerceptualRoughness)
+float3 PrefilteredReflection(float3 R, float Roughness)
 {
     uint Width;
     uint Height;
     uint MipCount;
     PrefilterMap.GetDimensions(0, Width, Height, MipCount);
 
-    float LOD = PerceptualRoughness * (MipCount - 1);
+    float LOD = Roughness * (MipCount - 1);
     float LODF = floor(LOD);
 	float LODC = ceil(LOD);
     float3 a = PrefilterMap.SampleLevel(PrefilterMapSampler, R, LODF).rgb;
@@ -86,6 +86,7 @@ float3 PrefilteredReflection(float3 R, float PerceptualRoughness)
 float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 DiffuseColor, float PerceptualRoughness, float3 F0)
 {
     float3 R_W = reflect(-V, N);   
+    
 
     // Reflection
     float3 PFR = PrefilteredReflection(R_W, PerceptualRoughness);
@@ -95,8 +96,9 @@ float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 DiffuseColor, float Per
     float3 Diffuse = DiffuseColor * Irradiance;
 
     // Specular
-    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), PerceptualRoughness)).rg;
     float3 F = F_SchlickR(max(NoV, 0.0), F0, PerceptualRoughness);
+    //NoV = min(NoV , 0.999);
+    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(NoV, PerceptualRoughness)).rg;
 	float3 Specular = PFR * (F * BRDF.x + BRDF.y);
 
     // Component
@@ -166,29 +168,32 @@ float4 Main(PSInput input) : SV_Target
     }
 #endif
     
+
+    float3 Lo = float3(0, 0, 0);
 #if defined(LIT) && defined(USE_UV)
-    if (ORMTextureDescriptor[METALLIC_ROUGNESS_AO_ANI_KEY] == 1)
+    if (AlbedoNormalEmissiveDescriptor[AO_ROUGNESS_METALLIC_KEY] == 1)
     {
         float3 ORM = ORMTexture.Sample(ORMTextureSampler, input.TexCoord).rgb;
 
         AO = ORM.r;
         PerceptualRoughness = ORM.g;
         Metallic = ORM.b;
+        //Lo += float3(100000,10000, 0);
     }
 #endif
 
-    float3 Lo = float3(0, 0, 0);
 #if defined(LIT)
     float Roughness = PerceptualRoughness; // remap PerceptualRoughness toRoughness ;
     Roughness = saturate(Roughness); // 0..1
+
     float3 BaseColor = FragAlbedo.xyz;
     float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
 
     // Normal Computing
     float3 N = Normal_V;
-    float NoV = max(saturate(dot(N, V_V)), 1e-5);;
+    float NoV = max(saturate(dot(N, V_V)), 1e-5);
 
-    // Mix it into output in a way that can�t be optimized away
+    // Mix it into output in a way that cant be optimized away
     float keepAlive = Lights[0].PositionType.x;
     Lo.r += (asuint(keepAlive) & 1) * 1e-6;
  
@@ -210,18 +215,17 @@ float4 Main(PSInput input) : SV_Target
     }
 
     // Ambiant
-    float3 DiffuseIBLColorIBL = FragAlbedo.xyz * (1.0 - Metallic);
-    float3x3 ViewInv3 = (float3x3)ViewInv;
-    float3 N_W = normalize(mul(ViewInv3, Normal_V));
-    float3 V_W = normalize(mul(ViewInv3, V_V));
-    float NoV_W = max(saturate(dot(N_W, V_W)), 1e-5);
-
-    float3 Ambient = EvaluateIBL(N_W, V_W, NoV_W, DiffuseIBLColorIBL, PerceptualRoughness, F0) * AO;
+    float3 DiffuseIBLColorIBL = FragAlbedo.xyz;
+    float3 N_W = normalize(mul(View3Inv, Normal_V));
+    float3 V_W = normalize(mul(View3Inv, V_V));
+    float NoV_W = saturate(max(dot(N_W, V_W), 1e-5));
+    float3 Ambient = EvaluateIBL(N_W, V_W, NoV_W, DiffuseIBLColorIBL, Roughness, F0) * AO;
 
     
     // Other
     Lo += Emissive;
     Lo += Ambient;
+
 #endif
 
 #if defined(USE_COLOR)

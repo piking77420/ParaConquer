@@ -664,63 +664,6 @@ namespace PC_CORE::Rendering
        SortList();
    }
 
-   inline Tbx::Matrix3x3f SquashMatrix(const Tbx::Matrix4x4d& _From)
-   {
-       Tbx::Matrix3x3f out;
-       // 1st coloms
-       out[0] = static_cast<float>(_From[0]);
-       out[1] = static_cast<float>(_From[1]);
-       out[2] = static_cast<float>(_From[2]);
-
-       // 2st coloms
-       out[3] = static_cast<float>(_From[4]);
-       out[4] = static_cast<float>(_From[5]);
-       out[5] = static_cast<float>(_From[6]);
-
-       // 3rd coloms
-       out[6] = static_cast<float>(_From[8]);
-       out[7] = static_cast<float>(_From[9]);
-       out[8] = static_cast<float>(_From[10]);
-
-       return out;
-   }
-
-   Tbx::Matrix3x3f ToM3(const Tbx::Matrix4x4f& m4)
-   {
-       Tbx::Matrix3x3f m = Tbx::Matrix3x3f::Identity();
-       m[0] = m4[0];
-       m[1] = m4[1];
-       m[2] = m4[2];
-
-       m[3] = m4[4];
-       m[4] = m4[5];
-       m[5] = m4[6];
-
-       m[6] = m4[8];
-       m[7] = m4[9];
-       m[8] = m4[10];
-
-       return m;
-   }
-
-   Tbx::Matrix4x4f ToM4(const Tbx::Matrix3x3f& m3)
-   {
-       Tbx::Matrix4x4f m4 = Tbx::Matrix4x4f::Identity();
-       m4[0] = m3[0];
-       m4[1] = m3[1];
-       m4[2] = m3[2];
-
-       m4[4] = m3[3];
-       m4[5] = m3[4];
-       m4[6] = m3[5];
-
-       m4[8] = m3[6];
-       m4[9] = m3[7];
-       m4[10] = m3[8];
-
-       return m4;
-   }
-
    void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
@@ -772,8 +715,8 @@ namespace PC_CORE::Rendering
 
                // Compute Gpu Matrix
                const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
-               Tbx::Matrix3x3f ModelViewF3 = ToM3(ModelViewF);
-               const Tbx::Matrix4x4f NormalInverMatrixV = ToM4(ModelViewF3.Invert().Transpose());
+               Tbx::Matrix3x3f ModelViewF3 = Tbx::ToMatrix3x3(ModelViewF);
+               const Tbx::Matrix4x4f NormalInverMatrixV = Tbx::ToMatrix4x4(ModelViewF3.Invert().Transpose());
 
                // Instance Matrix Update
                item.InstanceIndex = m_InstanceBufferCpu.size();

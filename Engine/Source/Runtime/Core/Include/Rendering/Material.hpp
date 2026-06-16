@@ -30,7 +30,7 @@ namespace PC_CORE::Rendering
     {
         struct GPU_ALIGN MaterialBuffer
         {
-            std::array<int, 8> TextureDescriptor = {0};
+            std::array<int, 4> TextureDescriptor = {0};  // AlbedoTexture // Metallic // Emmisive // ORM
             Gpu::vec4 AlbedoFactors = {0.f};
             Gpu::vec4 AORoughnessMetallicFactors{ 0.f };
             Gpu::vec3 EmissiveFactor{ 0.f };

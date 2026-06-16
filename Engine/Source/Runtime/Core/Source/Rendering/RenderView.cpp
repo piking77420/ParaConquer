@@ -46,6 +46,8 @@ namespace PC_CORE::Rendering
 
         View = _Camera.GetViewMatrix();
         ViewInv = View.Invert();
+        View3 = Tbx::ToMatrix3x3(View);
+        View3Inv = View3.Invert();
         Projection = _Camera.GetProjection();
         ProjectionInv = Projection.Invert();
         ViewProjection = _Camera.GetViewProjection();
@@ -79,6 +81,9 @@ namespace PC_CORE::Rendering
         {
             Gpu::StreamDoubleToFloat(&ptr->View, &View);
             Gpu::StreamDoubleToFloat(&ptr->ViewInv, &ViewInv);
+
+            Gpu::StreamDoubleToFloat(&ptr->View3, &View3);
+            Gpu::StreamDoubleToFloat(&ptr->View3Inv, &View3Inv);
 
             Gpu::StreamDoubleToFloat(&ptr->Projection, &Projection);
             Gpu::StreamDoubleToFloat(&ptr->ProjectionInv, &ProjectionInv);

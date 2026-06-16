@@ -32,13 +32,14 @@ float2 IntegrateBRDF(float NoV, float Roughness)
         float3 L = normalize(2.0 * dot(V, H) * H - V);
 
         float NoL = max(L.z, 0.0);
+        float dotNV = max(dot(N, V), 0.0);
         float NoH = max(H.z, 0.0);
         float VoH = max(dot(V, H), 0.0);
 
         if(NoL > 0.0)
         {
-            float Vis = V_SmithGGXCorrelated(NoV, NoL, Roughness);
-            float G_Vis = 4.0 * Vis * NoL * VoH / max(NoH, 1e-5);
+            float G = G_SchlicksmithGGX_LUT(NoL, NoV, Roughness);
+			float G_Vis = (G * VoH) / max(NoH * dotNV, 0.0001);
             float Fc = pow(1.0 - VoH, 5.0);
 
             A += (1.0 - Fc) * G_Vis;
@@ -48,6 +49,10 @@ float2 IntegrateBRDF(float NoV, float Roughness)
 
     A /= float(SAMPLE_COUNT);
     B /= float(SAMPLE_COUNT);
+
+    // ....
+    A = clamp(A , EPSILON, 1);
+    B = clamp(B , EPSILON, 1);
     return float2(A, B);
 }
 
@@ -55,6 +60,5 @@ PsOutput Main(PsInput input) : SV_TARGET
 {
     PsOutput outPut; 
     outPut.Color = IntegrateBRDF(input.TexCoord.x, input.TexCoord.y);
-    //outPut.Color = float2(255,0);
     return outPut;
 }

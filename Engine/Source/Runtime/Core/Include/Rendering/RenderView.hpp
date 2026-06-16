@@ -21,6 +21,9 @@ namespace PC_CORE::Rendering
             mat4 View;
             mat4 ViewInv;
 
+            mat3 View3;
+            mat3 View3Inv;
+
             mat4 Projection;
             mat4 ProjectionInv;
             mat4 ClipSpaceCorrection;
@@ -82,6 +85,9 @@ namespace PC_CORE::Rendering
 
         Tbx::Matrix4x4d View;
         Tbx::Matrix4x4d ViewInv;
+
+        Tbx::Matrix3x3d View3;
+        Tbx::Matrix3x3d View3Inv;
 
         Tbx::Matrix4x4d Projection;
         Tbx::Matrix4x4d ProjectionInv;

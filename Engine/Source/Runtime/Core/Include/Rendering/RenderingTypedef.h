@@ -26,7 +26,7 @@ namespace Gpu
 
     struct mat3
     {
-        std::array<float, 9> data;
+        std::array<float, 12> data;
     };
 
     struct vec4
@@ -67,10 +67,17 @@ namespace Gpu
 
     static inline void StreamDoubleToFloat(mat3* _Dst, const Tbx::Matrix3x3d* _Src)
     {
-        for (size_t i = 0; i < 9; i++)
-        {
-            _Dst->data[i] = static_cast<float>(_Src->data[i]);
-        }
+        _Dst->data[0] = static_cast<float>(_Src->data[0]);
+        _Dst->data[1] = static_cast<float>(_Src->data[1]);
+        _Dst->data[2] = static_cast<float>(_Src->data[2]);
+        // pad 
+        _Dst->data[4] = static_cast<float>(_Src->data[3]);
+        _Dst->data[5] = static_cast<float>(_Src->data[4]);
+        _Dst->data[6] = static_cast<float>(_Src->data[5]);
+        // pad 
+        _Dst->data[8] = static_cast<float>(_Src->data[6]);
+        _Dst->data[9] = static_cast<float>(_Src->data[7]);
+        _Dst->data[10] = static_cast<float>(_Src->data[8]);
     }
 
     static inline void StreamDoubleToFloat(mat4* _Dst, const Tbx::Matrix4x4d* _Src)

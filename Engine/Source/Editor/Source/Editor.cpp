@@ -688,12 +688,12 @@ void Editor::InitTestScene()
 
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
-                TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
-                //TempImport((editorData.projectPath / "Assets/Textures/newport_loft.hdr"));
+                //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
+                TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("san_giuseppe_bridge_4k.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr")); },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
     }
@@ -720,7 +720,7 @@ void Editor::InitTestScene()
                             + MaterialFormat);
                         level.AddComponent<Transform>(id);
                         Transform& t = level.GetComponent<Transform>(id);
-                        t.Position = Tbx::Vector3d(float(i - (SphereCountPerAxis / 2.0f)) * 2.15f, 0.0, 0.0);
+                        t.Position = Tbx::Vector3d(0.0, 0.0, float(i - (SphereCountPerAxis / 2.0f)) * 2.15f);
 
                         level.AddComponent<StaticMeshComponent>(id);
                         StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);

@@ -8,6 +8,9 @@ cbuffer CameraBuffer : register(CAMERA_BINDING, CAMERA_SET)
     float4x4 View;
     float4x4 ViewInv;
 
+    float3x3 View3;
+    float3x3 View3Inv;
+
     float4x4 Projection;
     float4x4 ProjectionInv;
     float4x4 ClipSpaceCorrection;

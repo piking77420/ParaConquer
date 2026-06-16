@@ -53,9 +53,9 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
         ->SetMagFilter(Filter::Linear)
         .SetMinFilter(Filter::Linear)
         .SetMipmapMode(SamplerMipmapMode::Linear)
-        .SetU(SamplerAddressMode::ClampToBorder)
-        .SetV(SamplerAddressMode::ClampToBorder)
-        .SetW(SamplerAddressMode::ClampToBorder)
+        .SetU(SamplerAddressMode::ClampToEdge)
+        .SetV(SamplerAddressMode::ClampToEdge)
+        .SetW(SamplerAddressMode::ClampToEdge)
         .SetName("SamplerLinearClamp")
         .Build();
 
