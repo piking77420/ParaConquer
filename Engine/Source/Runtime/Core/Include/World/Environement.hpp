@@ -37,10 +37,6 @@ namespace PC_CORE::WORLD
 			std::unique_ptr<RhiTexture> PrefilterMap = nullptr;
 
 			std::unique_ptr<RhiTexture> BRDFLUT = nullptr;
-
-			std::unique_ptr<RhiDescriptorSet> SkyBoxDescriptorSet;
-
-			std::unique_ptr<RhiDescriptorSet> EnvironemementDescriptorSet;
 		};
 
 		using EnvironementLighting = std::variant<ImageBaseLighting>;

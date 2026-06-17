@@ -6,7 +6,7 @@
 namespace PC_CORE::Rendering
 {
     class Renderer;
-    struct CaptureEnvironement;
+    struct EnvironementData;
 }
 
 namespace PC_CORE::Rendering::Pass
@@ -61,11 +61,11 @@ namespace PC_CORE::Rendering::Pass
         
         void ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext);
 
-        [[nodiscard]] PassResource EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement);
+        [[nodiscard]] PassResource EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const EnvironementData& _EnvironementData);
 
         [[nodiscard]] PassResource EnvironementResource(
             const RendererPassExecuteContext& _RendererPassExecuteContext, 
-            const CaptureEnvironement& _CaptureEnvironement,
+            const EnvironementData& _EnvironementData,
             const std::string& Name,
             RhiTexture& _Attachement);
 

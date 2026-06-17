@@ -20,7 +20,7 @@ namespace PC_CORE::Rendering::Pass
 
 	void BakeIbl::Execute(const RendererPassExecuteContext & _RendererPassExecuteContext)
 	{
-		auto& captureRenderPass = _RendererPassExecuteContext.RenderingWorldData.CaptureEnvironement;
+		auto& captureRenderPass = _RendererPassExecuteContext.RenderingWorldData.Environement;
 		if (!captureRenderPass)
 			return;
 
@@ -50,24 +50,10 @@ namespace PC_CORE::Rendering::Pass
 		// Set Base state
 		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
 		
-
 		{
 			PC_CORE::ViewportInfo ViewPortSkyBox(*captureRenderPass->SkyBox);
 			_RendererPassExecuteContext.cmd.SetViewPort(ViewPortSkyBox);
 			ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
-
-			//why only need to transition the first level
-			//const ImageStateTransition ImageStateTransition
-			//{
-			//	.Texture = captureRenderPass->SkyBox,
-			//	.FirstMipLevel = 0,
-			//	.MipLevelsCount = 1,
-			//	.FirstLayer = 0,
-			//	.LayerCount = captureRenderPass->SkyBox->GetLayer(),
-
-			//	.updateState = true
-			//};
-			//_RendererPassExecuteContext.cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::CopySrc, std::span(&ImageStateTransition, 1), {});
 			captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
 		}
 		
@@ -94,12 +80,12 @@ namespace PC_CORE::Rendering::Pass
 			m_ViewMatricies[i] = Proj * GetLookAtMatrixFromCubeMapIndicies(i, Tbx::Vector3f::Zero());
 	}
 
-	BakeIbl::PassResource BakeIbl::EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const CaptureEnvironement& _CaptureEnvironement)
+	BakeIbl::PassResource BakeIbl::EquilateralToCubemapResource(const RendererPassExecuteContext& _RendererPassExecuteContext, const EnvironementData& _EnvironementData)
 	{
 		PassResource Resource;
 		Resource.DescriptorSet = std::unique_ptr<RhiDescriptorSet>(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
 		Resource.DescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, _CaptureEnvironement.Environement, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
+			->BindTexture(RhiShaderStageBits::Pixel, 0, _EnvironementData.Environement, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
 			.SetName("EquirectangularToSkybox DescriptorSet")
 			.Build();
 
@@ -109,9 +95,9 @@ namespace PC_CORE::Rendering::Pass
 		{
 			Level1[i].reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
 			Level1[i]
-				->SetWidth(_CaptureEnvironement.SkyBox->GetWidth())
-				.SetHeight(_CaptureEnvironement.SkyBox->GetHeight())
-				.SetAttachement(_CaptureEnvironement.SkyBox, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
+				->SetWidth(_EnvironementData.SkyBox->GetWidth())
+				.SetHeight(_EnvironementData.SkyBox->GetHeight())
+				.SetAttachement(_EnvironementData.SkyBox, RhiTexture::Type::Texture2D, static_cast<uint32_t>(i), 1, 0, 1)
 				.SetRenderPass(_RendererPassExecuteContext.Renderer.colorHDRPass.get())
 				.SetName("EquirectangularToSkybox Framebuffer" + std::to_string(i))
 				.Build();
@@ -122,14 +108,14 @@ namespace PC_CORE::Rendering::Pass
 
 	BakeIbl::PassResource BakeIbl::EnvironementResource(
 		const RendererPassExecuteContext& _RendererPassExecuteContext,
-		const CaptureEnvironement& _CaptureEnvironement,
+		const EnvironementData& _EnvironementData,
 		const std::string& Name,
 		RhiTexture& _Attachement)
 	{
 		PassResource Resource;
 		Resource.DescriptorSet = std::unique_ptr<RhiDescriptorSet>(_RendererPassExecuteContext.RHI.CreateDescriptorSet());
 		Resource.DescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, _CaptureEnvironement.SkyBox, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
+			->BindTexture(RhiShaderStageBits::Pixel, 0, _EnvironementData.SkyBox, _RendererPassExecuteContext.Renderer.linearClampToEdgeSampler.get())
 			.SetName(Name + " DescriptorSet")
 			.Build();
 

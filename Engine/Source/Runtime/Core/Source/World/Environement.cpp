@@ -17,7 +17,6 @@ namespace PC_CORE::WORLD
 
 	bool Environement::FromEnvironementMap(App& _App, const PC_CORE::WeakObjectPtr<Texture2D>& _Texture)
 	{
-		
 		if (m_Method != Method::ImageBased)
 		{
 			PC_LOGERROR("Environement must be in Method::ImageBased in order to be set from FromEnvironementMap");
@@ -111,20 +110,6 @@ namespace PC_CORE::WORLD
 		env.PrefilterMap = std::move(PrefilterMap);
 		env.BRDFLUT = std::move(BRDFLUT);
 		env.isDiry = true;
-		env.SkyBoxDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
-		env.EnvironemementDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
-
-		env.SkyBoxDescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, env.Skybox.get(), _App.SamplerLinearClampToEdge.get())
-			.SetName("Skybox DescriptorSet")
-			.Build();
-
-		env.EnvironemementDescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, env.IrradianceMap.get(), _App.SamplerLinearClampToEdge.get())
-			.BindTexture(RhiShaderStageBits::Pixel, 1, env.PrefilterMap.get(), _App.SamplerLinearClampToEdge.get())
-			.BindTexture(RhiShaderStageBits::Pixel, 2, env.BRDFLUT.get(), _App.SamplerLinearClampToEdge.get())
-			.SetName("Environemement DescriptorSet")
-			.Build();
 		
 		return true;
 	}

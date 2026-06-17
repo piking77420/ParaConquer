@@ -131,6 +131,7 @@ namespace PC_CORE::Rendering
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
        PrepareInstanceBuffer(RenderingWorldData);
+       UpdateEnvironement(_View, RenderingWorldData);
        BuildDrawLists(_View, RenderingWorldData);
        UploadRenderInstanceID();
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
@@ -647,6 +648,36 @@ namespace PC_CORE::Rendering
        m_CommandList->EndDebugLabel();
    }
 
+   void Renderer::UpdateEnvironement(RenderView& _view, const RenderingWorldData& RenderingWorldData)
+   {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
+       if (!RenderingWorldData.Environement || !RenderingWorldData.Environement->isDirty)
+           return;
+
+       if (!SkyBoxDescriptorSet)
+       {
+           SkyBoxDescriptorSet.reset(m_Rhi.CreateDescriptorSet());
+           SkyBoxDescriptorSet
+               ->BindTexture(RhiShaderStageBits::Pixel, 0, RenderingWorldData.Environement->SkyBox, linearClampToEdgeSampler.get())
+               .SetName("SkyBoxDescriptorSet")
+               .Build();
+       }
+
+       if (!EnvironementDescriptorSet)
+       {
+           EnvironementDescriptorSet.reset(m_Rhi.CreateDescriptorSet());
+           EnvironementDescriptorSet
+               ->BindTexture(RhiShaderStageBits::Pixel, 0, RenderingWorldData.Environement->IrradianceMap, linearClampToEdgeSampler.get())
+               .BindTexture(RhiShaderStageBits::Pixel, 1, RenderingWorldData.Environement->PrefilterMap, linearClampToEdgeSampler.get())
+               .BindTexture(RhiShaderStageBits::Pixel, 2, RenderingWorldData.Environement->BRDF, linearClampToEdgeSampler.get())
+               .SetName("Environemement DescriptorSet")
+               .Build();
+       }
+
+   }
+
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
@@ -889,13 +920,11 @@ namespace PC_CORE::Rendering
 
    void Renderer::FillSkyBox(const RenderView& _view, const RenderingWorldData& _RenderingWorldData)
    {
-       if (!_RenderingWorldData.SkyBox)
+       if (!SkyBoxDescriptorSet)
            return;
 
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-
-
        auto& item = Skybox.EmplaceBack();
        Tbx::Matrix4x4f view = Tbx::Matrix4x4f(_view.View);
        view[15] = 1.f;
@@ -903,7 +932,7 @@ namespace PC_CORE::Rendering
        view[13] = 0.f;
        view[12] = 0.f;
        const Tbx::Matrix4x4f ViewProjectionCorrected = Tbx::Matrix4x4f(_view.ClipSpaceCorrection) * Tbx::Matrix4x4f(_view.Projection) * view;
-       item.Data.emplace<DrawSkyBox>(*_RenderingWorldData.SkyBox, ViewProjectionCorrected);
+       item.Data.emplace<DrawSkyBox>(ViewProjectionCorrected);
    }
 
    void Renderer::SortList()

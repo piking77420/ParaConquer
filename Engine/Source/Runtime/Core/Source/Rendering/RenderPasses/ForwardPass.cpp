@@ -83,8 +83,8 @@ namespace PC_CORE::Rendering::Pass
 			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
-				if (_Context.RenderingWorldData.EnvironemementDescriptorSet)
-					_Context.cmd.BindDescriptorSet(*_Context.RenderingWorldData.EnvironemementDescriptorSet, 2);
+				if (_Context.Renderer.EnvironementDescriptorSet)
+					_Context.cmd.BindDescriptorSet(_Context.Renderer.EnvironementDescriptorSet.get(), 2);
 				m_LastMaterialDescriptor = nullptr;
 			}
 
@@ -101,8 +101,8 @@ namespace PC_CORE::Rendering::Pass
 			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0);
-				if (_Context.RenderingWorldData.EnvironemementDescriptorSet)
-					_Context.cmd.BindDescriptorSet(*_Context.RenderingWorldData.EnvironemementDescriptorSet, 2);
+				if (_Context.Renderer.EnvironementDescriptorSet)
+					_Context.cmd.BindDescriptorSet(_Context.Renderer.EnvironementDescriptorSet.get(), 2);
 			}
 
 			if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)

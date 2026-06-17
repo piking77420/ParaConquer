@@ -105,6 +105,10 @@ public:
 
     std::unique_ptr<RhiBuffer> InstanceBuffer;
 
+    std::unique_ptr<RhiDescriptorSet> SkyBoxDescriptorSet;
+
+    std::unique_ptr<RhiDescriptorSet> EnvironementDescriptorSet;
+
     std::array<DebugPrimitive, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> m_DebugPrimitiveBuffer;
 private:
     Rhi& m_Rhi;
@@ -130,6 +134,8 @@ private:
     void BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void UploadRenderInstanceID();
+
+    void UpdateEnvironement(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void PrepareInstanceBuffer(const RenderingWorldData& RenderingWorldData);
 

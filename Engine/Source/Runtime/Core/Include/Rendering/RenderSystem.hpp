@@ -46,7 +46,7 @@ namespace PC_CORE::Rendering
         float InnerAngle;
     };
 
-    struct CaptureEnvironement
+    struct EnvironementData
     {
         RhiTexture* Environement{ nullptr };
         RhiTexture* IrradianceMap{ nullptr };
@@ -68,16 +68,14 @@ namespace PC_CORE::Rendering
             StaticMeshComponentData.clear();
             LightsData.clear();
             DirLightData.reset();
-            CaptureEnvironement.reset();
+            Environement.reset();
         }
 
         std::vector<Rendering::StaticMeshComponentData> StaticMeshComponentData;
         std::vector<LightData> LightsData;
         std::optional<DirLightData> DirLightData;
 
-        std::optional<CaptureEnvironement> CaptureEnvironement;
-        std::optional<RhiDescriptorSet*> SkyBox;
-        std::optional<RhiDescriptorSet*> EnvironemementDescriptorSet;
+        std::optional<EnvironementData> Environement;
 
         // Debug
         std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;

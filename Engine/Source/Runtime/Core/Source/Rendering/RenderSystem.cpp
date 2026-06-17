@@ -232,7 +232,7 @@ void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
                     {
                         if (ibl.Skybox)
                         {
-                            auto& env = m_GameRenderingWorldData.CaptureEnvironement.emplace();
+                            auto& env = m_GameRenderingWorldData.Environement.emplace();
                             env = {
                                 .Environement = lock.Get()->Get(),
                                 .IrradianceMap = ibl.IrradianceMap.get(),
@@ -244,16 +244,6 @@ void RendererSystem::PopulateEnvironementLighting(PC_CORE::World& World)
                             ibl.isDiry = false;
                         }
                     }
-                }
-
-                if (ibl.Skybox && ibl.SkyBoxDescriptorSet)
-                {
-                    m_GameRenderingWorldData.SkyBox.emplace(ibl.SkyBoxDescriptorSet.get());
-                }
-
-                if (ibl.IrradianceMap && ibl.EnvironemementDescriptorSet)
-                {
-                    m_GameRenderingWorldData.EnvironemementDescriptorSet.emplace(ibl.EnvironemementDescriptorSet.get());
                 }
             }
         }, World.Environement.GetEnvironementLighting());
