@@ -297,9 +297,9 @@ namespace PC_CORE::Rendering
                .SetAttachementSlot(AttachementSlot::S00)
                .SetRhiFormat(RhiFormat::R16G16Sfloat)
                .SetSampleCount(1)
-               .SetLoadOp(LoadOperation::Load)
+               .SetLoadOp(LoadOperation::DontCare)
                .SetStoreOp(StoreOperation::Store)
-               .SetInitialImageState(RhiResourceState::RenderTarget)
+               .SetInitialImageState(RhiResourceState::Undefined)
                .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
            BRDFLutPass

@@ -41,7 +41,7 @@ void Vulkan::Utils::GenerateMipMapFunc(vk::CommandBuffer _CommandBuffer,
             //Destination mip must be TRANSFER_DST_OPTIMAL.
             barrier.subresourceRange.baseArrayLayer = layer;
             barrier.subresourceRange.baseMipLevel = mip;
-            barrier.oldLayout = (_OldImageLayout != vk::ImageLayout::eUndefined && layer == 0 && mip == 1) ? _OldImageLayout : vk::ImageLayout::eUndefined;
+            barrier.oldLayout = vk::ImageLayout::eUndefined;
             barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
             barrier.srcAccessMask = {};
             barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;

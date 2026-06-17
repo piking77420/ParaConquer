@@ -57,19 +57,18 @@ namespace PC_CORE::Rendering::Pass
 			ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
 
 			//why only need to transition the first level
-			/*const ImageStateTransition ImageStateTransition
-			{
-				.Texture = captureRenderPass->SkyBox,
-				.FirstMipLevel = 0,
-				.MipLevelsCount = 1,
-				.FirstLayer = 0,
-				.LayerCount = captureRenderPass->SkyBox->GetLayer(),
+			//const ImageStateTransition ImageStateTransition
+			//{
+			//	.Texture = captureRenderPass->SkyBox,
+			//	.FirstMipLevel = 0,
+			//	.MipLevelsCount = 1,
+			//	.FirstLayer = 0,
+			//	.LayerCount = captureRenderPass->SkyBox->GetLayer(),
 
-				.updateState = true
-			};
-			_RendererPassExecuteContext.cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::CopySrc, std::span(&ImageStateTransition, 1), {});*/
-			//captureRenderPass->SkyBox->SetResourceState(RhiResourceState::PixelShaderResource);
-			//captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
+			//	.updateState = true
+			//};
+			//_RendererPassExecuteContext.cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::CopySrc, std::span(&ImageStateTransition, 1), {});
+			captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
 		}
 		
 		{
@@ -160,6 +159,7 @@ namespace PC_CORE::Rendering::Pass
 	void BakeIbl::ExecuteEquilateralToCubeMap(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto c = GetColor();
+		_RendererPassExecuteContext.cmd.BeginDebugLabel("EquilateralToCubeMap", c);
 		auto& DescriptorSet = m_EquilateralToCubeMapResource.DescriptorSet;
 
 		if (m_EquilateralToCubeMapResource.FrameBuffers.empty())
@@ -193,12 +193,14 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
 			_RendererPassExecuteContext.cmd.EndRenderPass();
 		}
+		_RendererPassExecuteContext.cmd.EndDebugLabel();
 
 	}
 
 	void BakeIbl::ExecuteIrradiance(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto c = GetColor();
+		_RendererPassExecuteContext.cmd.BeginDebugLabel("Irradiance", c);
 		auto& DescriptorSet = m_IrradianceConvolution.DescriptorSet;
 		assert(m_IrradianceConvolution.FrameBuffers.size() == 1);
 
@@ -226,11 +228,13 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
 			_RendererPassExecuteContext.cmd.EndRenderPass();
 		}
+		_RendererPassExecuteContext.cmd.EndDebugLabel();
 	}
 
 	void BakeIbl::ExecutePrefilter(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto c = GetColor();
+		_RendererPassExecuteContext.cmd.BeginDebugLabel("Prefilter", c);
 		auto& DescriptorSet = m_PrefilterMap.DescriptorSet;
 
 		for (size_t Level = 0; Level < m_PrefilterMap.FrameBuffers.size(); Level++)
@@ -272,13 +276,14 @@ namespace PC_CORE::Rendering::Pass
 				_RendererPassExecuteContext.cmd.EndRenderPass();
 			}
 		}
-
+		_RendererPassExecuteContext.cmd.EndDebugLabel();
 	}
 
 	void BakeIbl::ExecuteBRDFLUT(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		auto& FrameBuffer = m_BRDFLUTFrameBuffer;
 		auto c = GetColor();
+		_RendererPassExecuteContext.cmd.BeginDebugLabel("BRDFLUT", c);
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
 			.RenderPass = _RendererPassExecuteContext.Renderer.BRDFLutPass.get(),
@@ -295,6 +300,8 @@ namespace PC_CORE::Rendering::Pass
 		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.BRDFLutPipeline.get());
 		_RendererPassExecuteContext.cmd.Draw(3, 1, 0, 0);
 		_RendererPassExecuteContext.cmd.EndRenderPass();
+
+		_RendererPassExecuteContext.cmd.EndDebugLabel();
 	}
 
 } // namespace PC_CORE::Rendering::Pass

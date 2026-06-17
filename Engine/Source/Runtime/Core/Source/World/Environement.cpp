@@ -42,8 +42,6 @@ namespace PC_CORE::WORLD
 			return false;
 		}
 
-		PC_CORE::Image image(Path.data(), PC_CORE::RhiChannel::Rgba);
-
 		std::unique_ptr<RhiTexture> EnvironementMap(_App.RenderHarwareInteface.CreateTexture());
 		std::unique_ptr<RhiTexture> IrradianceMap(_App.RenderHarwareInteface.CreateTexture());
 		std::unique_ptr<RhiTexture> PrefilterMap(_App.RenderHarwareInteface.CreateTexture());
@@ -81,7 +79,7 @@ namespace PC_CORE::WORLD
 			.SetTextureType(RhiTexture::Type::CubeMap)
 			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
 			.SetTextureUsage(flags)
-			.SetName("Environement Irradiance" + std::string(Path.data()))
+			.SetName("Environement Irradiance " + std::string(Path.data()))
 			.Build();
 
 		PrefilterMap->
@@ -93,7 +91,7 @@ namespace PC_CORE::WORLD
 			.SetTextureType(RhiTexture::Type::CubeMap)
 			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
 			.SetTextureUsage(flags)
-			.SetName("Environement Irradiance" + std::string(Path.data()))
+			.SetName("Environement PrefilterMap " + std::string(Path.data()))
 			.Build();
 
 		BRDFLUT->
@@ -104,7 +102,7 @@ namespace PC_CORE::WORLD
 			.SetTextureType(RhiTexture::Type::Texture2D)
 			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
 			.SetTextureUsage(flags)
-			.SetName("BRDF LUT" + std::string(Path.data()))
+			.SetName("BRDF LUT " + std::string(Path.data()))
 			.Build();
 
 		env.EnvironementTexture = _Texture;

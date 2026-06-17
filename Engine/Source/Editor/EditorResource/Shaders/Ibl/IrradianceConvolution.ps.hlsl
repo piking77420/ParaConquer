@@ -59,7 +59,6 @@ PsOutput Main(PsInput input) : SV_TARGET
     // PI because we integrate over (2.f * PI) and (0.5f * PI) => PI
     Irradiance *= PI / float(NumbOfSampleZenipth * NumbOfSampleAzimuth);
     outPut.Color = float4(Irradiance, 1.0);
-    outPut.Color += float4(255,255,255, 1);
 
     return outPut;
 }
