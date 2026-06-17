@@ -36,6 +36,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC meshoptimizer)
 # Core
 target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)  
 target_link_libraries(${PROJECT_NAME} PRIVATE Core)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:Core>"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+)
 
 ##DXC depencies
 if(WIN32)
@@ -46,14 +51,23 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan dxc_lib)
 endif()
 
 # End Dependencies
-if(WIN32)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+if(MSVC)
+    ## Copy each time the new dll and pdb
+    add_custom_target(CopyCoreRuntimeFiles
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        COMMAND_EXPAND_LISTS
-        COMMENT "Copying runtime DLLs to UnitTest output directory"
+            "$<TARGET_FILE:Core>"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_PDB_FILE:Core>"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        DEPENDS Core
+        VERBATIM
     )
+    add_dependencies(${PROJECT_NAME} CopyCoreRuntimeFiles)
 endif()
 
 # Secondary Data
