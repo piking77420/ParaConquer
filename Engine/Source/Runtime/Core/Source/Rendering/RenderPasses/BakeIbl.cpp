@@ -56,7 +56,7 @@ namespace PC_CORE::Rendering::Pass
 			_RendererPassExecuteContext.cmd.SetViewPort(ViewPortSkyBox);
 			ExecuteEquilateralToCubeMap(_RendererPassExecuteContext);
 
-			// why only need to transition the first level
+			//why only need to transition the first level
 			/*const ImageStateTransition ImageStateTransition
 			{
 				.Texture = captureRenderPass->SkyBox,
@@ -68,7 +68,8 @@ namespace PC_CORE::Rendering::Pass
 				.updateState = true
 			};
 			_RendererPassExecuteContext.cmd.Barrier(RhiResourceState::PixelShaderResource, RhiResourceState::CopySrc, std::span(&ImageStateTransition, 1), {});*/
-			captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
+			//captureRenderPass->SkyBox->SetResourceState(RhiResourceState::PixelShaderResource);
+			//captureRenderPass->SkyBox->GenerateMipMap(&_RendererPassExecuteContext.cmd, PC_CORE::Filter::Linear, RhiResourceState::PixelShaderResource);
 		}
 		
 		{

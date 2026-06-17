@@ -685,7 +685,9 @@ void Editor::InitTestScene()
         __debugbreak();*/
 
     {
-
+        TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
+        World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr"));
+        /*
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
@@ -695,9 +697,9 @@ void Editor::InitTestScene()
             [&]() {
                 World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr")); },
             { TaskHandle });
-        TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc
+        TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
-#if 0
+#if 1
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
@@ -744,7 +746,7 @@ void Editor::InitTestScene()
             }
 #endif
 
-#if 1
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });

@@ -117,14 +117,14 @@ namespace PC_CORE::WORLD
 		env.EnvironemementDescriptorSet.reset(_App.RenderHarwareInteface.CreateDescriptorSet());
 
 		env.SkyBoxDescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, env.Skybox.get(), _App.SamplerLinearClamp.get())
+			->BindTexture(RhiShaderStageBits::Pixel, 0, env.Skybox.get(), _App.SamplerLinearClampToEdge.get())
 			.SetName("Skybox DescriptorSet")
 			.Build();
 
 		env.EnvironemementDescriptorSet
-			->BindTexture(RhiShaderStageBits::Pixel, 0, env.IrradianceMap.get(), _App.SamplerLinearClamp.get())
-			.BindTexture(RhiShaderStageBits::Pixel, 1, env.PrefilterMap.get(), _App.SamplerLinearClamp.get())
-			.BindTexture(RhiShaderStageBits::Pixel, 2, env.BRDFLUT.get(), _App.SamplerLinearClamp.get())
+			->BindTexture(RhiShaderStageBits::Pixel, 0, env.IrradianceMap.get(), _App.SamplerLinearClampToEdge.get())
+			.BindTexture(RhiShaderStageBits::Pixel, 1, env.PrefilterMap.get(), _App.SamplerLinearClampToEdge.get())
+			.BindTexture(RhiShaderStageBits::Pixel, 2, env.BRDFLUT.get(), _App.SamplerLinearClampToEdge.get())
 			.SetName("Environemement DescriptorSet")
 			.Build();
 		

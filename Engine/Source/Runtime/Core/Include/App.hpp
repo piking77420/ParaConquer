@@ -50,7 +50,7 @@ BEGIN_PCCORE
 
         std::unique_ptr<RhiSampler> SamplerLinearReapet;
 
-        std::unique_ptr<RhiSampler> SamplerLinearClamp;
+        std::unique_ptr<RhiSampler> SamplerLinearClampToEdge;
 
         std::unique_ptr<RhiTexture> DummyTexture;
 

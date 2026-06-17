@@ -1,5 +1,6 @@
 #include "AssetsImporter.hpp"
 
+#include <assimp/types.h>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -421,7 +422,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         return worldBox;
     }
 
-    void AssetsImporter::ProcessDrawCommand(std::vector<PC_CORE::MeshLOD>& MeshLods,
+    void ProcessDrawCommand(std::vector<PC_CORE::MeshLOD>& MeshLods,
         const std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, 
         const aiScene* Scene, 
         const aiNode* Node, 

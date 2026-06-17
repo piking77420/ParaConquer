@@ -315,9 +315,9 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, P
     GET_VK_COMMAND_BUFFER(_CommandList, FrameIndex);
 
 
-    const vk::ImageLayout OldImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(m_ResourceState);
-    const vk::AccessFlags Oldflag = Vulkan::Utils::RhiResourceStateToAccesFlag(m_ResourceState);
-    const vk::PipelineStageFlags OldDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(m_ResourceState);
+    const vk::ImageLayout OldImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(m_RhiResourceState);
+    const vk::AccessFlags Oldflag = Vulkan::Utils::RhiResourceStateToAccesFlag(m_RhiResourceState);
+    const vk::PipelineStageFlags OldDstStageFlags = Utils::PipelineStageFlagsFromRhiResourceState(m_RhiResourceState);
 
     const vk::ImageLayout NewImageLayout = Vulkan::Utils::RhiResourceStateToVulkanImageLayout(_StateAfterOperation);
     const vk::AccessFlags Newflag = Vulkan::Utils::RhiResourceStateToAccesFlag(_StateAfterOperation);
@@ -342,7 +342,7 @@ bool Vulkan::VulkanTexture::GenerateMipMap(PC_CORE::CommandList* _CommandList, P
                                 GetLayer(),
                                 VkImageAspectFlags);
 
-    m_ResourceState = _StateAfterOperation;
+    m_RhiResourceState = _StateAfterOperation;
 
     return true;
 }

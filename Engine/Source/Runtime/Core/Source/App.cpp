@@ -48,8 +48,8 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
         .SetName("SamplerLinearReapet")
         .Build();
 
-    SamplerLinearClamp.reset(RenderHarwareInteface.CreateSampler());
-    SamplerLinearClamp
+    SamplerLinearClampToEdge.reset(RenderHarwareInteface.CreateSampler());
+    SamplerLinearClampToEdge
         ->SetMagFilter(Filter::Linear)
         .SetMinFilter(Filter::Linear)
         .SetMipmapMode(SamplerMipmapMode::Linear)
