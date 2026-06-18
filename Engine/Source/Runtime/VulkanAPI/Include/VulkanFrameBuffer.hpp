@@ -21,5 +21,7 @@ namespace Vulkan
 
     private:
         vk::Framebuffer m_FrameBufferHandle = VK_NULL_HANDLE;
+
+        std::vector<vk::ImageView> m_ImageViews;
     };
 }

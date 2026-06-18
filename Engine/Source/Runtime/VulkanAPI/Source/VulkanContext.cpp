@@ -32,6 +32,7 @@ void Vulkan::VulkanContext::Init(const PC_CORE::RhiContextCreateInfo& rhiContext
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
+    std::scoped_lock _(VulkanContextMutex());
 
     std::set<std::string> extensionToEnable;
 
@@ -231,7 +232,7 @@ void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuComma
 
 void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
 {
-    std::scoped_lock _(lock);
+    std::scoped_lock _(m_ResourceUpdateLock);
 
     const size_t CurrentFrameIndex = m_Rhi.GetFrameIndex();
     
@@ -314,6 +315,16 @@ void VulkanContext::ProceedDefferdDestroy(uint32_t _FrameIndex)
                 device.destroyImage(operation.image);
             }
         }
+        else if (std::holds_alternative<DefferdDestroyBufferTexture>(v))
+        {
+            vk::ImageView& imageView = std::get<vk::ImageView>(v);
+            vk::Device device = GetDevice()->GetDevice();
+
+            if (imageView != VK_NULL_HANDLE)
+            {
+                device.destroyImageView(imageView);
+            }
+        }
     }
 
     m_PendingDefferedDestroy[_FrameIndex].clear();
@@ -332,4 +343,9 @@ void Vulkan::VulkanContext::DefferdDestroy(TextureAndAlloc& TextureAndAlloc, uin
 {
     m_PendingDefferedDestroy[_FrameIndex].emplace_back().emplace<DefferdDestroyBufferTexture>(TextureAndAlloc.Image, TextureAndAlloc.ImageView, TextureAndAlloc.Allocation);
     TextureAndAlloc = {};
+}
+
+void Vulkan::VulkanContext::DefferdDestroy(vk::ImageView& imageView, uint32_t _FrameIndex)
+{
+    m_PendingDefferedDestroy[_FrameIndex].emplace_back().emplace<vk::ImageView>(imageView);
 }

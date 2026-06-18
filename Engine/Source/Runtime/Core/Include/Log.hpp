@@ -86,7 +86,7 @@ BEGIN_PCCORE
         static void Critical(int _lign, const char* _func, const char* _file, const std::string& unformatted, Args&&... args)
         {
             std::scoped_lock _(m_lock);
-
+            __debugbreak();
             std::cout << ANSI_COLOR_RED;
             PrintFormat(unformatted, std::forward<Args>(args)...);
             PrintMetaData(_lign, _func, _file);

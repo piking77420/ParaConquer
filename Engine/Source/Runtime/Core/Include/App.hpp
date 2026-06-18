@@ -38,19 +38,19 @@ BEGIN_PCCORE
 
         CoreIo CoreIo;
 
-        World World;
-
         Window MainWindow;
 
         Rhi RenderHarwareInteface;
 
         Rendering::RenderSettings RenderSettings;
 
-        PC_CORE::Rendering::Renderer Renderer; //  TODO HANDLE MULIPTLE VIEW PORT
+        PC_CORE::Rendering::Renderer Renderer;
+
+        World World;
 
         std::unique_ptr<RhiSampler> SamplerLinearReapet;
 
-        std::unique_ptr<RhiSampler> SamplerLinearClamp;
+        std::unique_ptr<RhiSampler> SamplerLinearClampToEdge;
 
         std::unique_ptr<RhiTexture> DummyTexture;
 

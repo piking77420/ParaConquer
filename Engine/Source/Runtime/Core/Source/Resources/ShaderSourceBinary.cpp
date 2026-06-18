@@ -1,10 +1,7 @@
 ﻿#include "Resources/ShaderSourceBinary.hpp"
 
-#include <fstream>
-
-#include "LowRenderer/Rhi.hpp"
-#include "Io/inOut.h"
-
+#include <Io/FileLoader.hpp>
+#include <LowRenderer/Rhi.hpp>
 
 void PC_CORE::ShaderSourceBinary::OnParentReload(const Guid& _parentGuid)
 {
@@ -39,7 +36,7 @@ void PC_CORE::ShaderSourceBinary::WriteSprivToFile(const std::vector<uint32_t>* 
     }
 
     std::string file = parentPath.generic_string() + Name;
-    if (InOut::WriteFile(file, _sprivCode->data(), _sprivCode->size() * sizeof(uint32_t), true))
+    if (FileLoader::WriteFile(file, _sprivCode->data(), _sprivCode->size() * sizeof(uint32_t), true))
     {
         m_Path = std::move(file);
     }
@@ -54,11 +51,10 @@ std::vector<char> PC_CORE::ShaderSourceBinary::GetCode() const
     }
 
     std::vector<char> code;
-    if (InOut::ReadFile(m_Path, &code))
+    if (FileLoader::ReadFile(m_Path, &code))
     {
         return code;
     }
-    return {};
 
     return {};
 }

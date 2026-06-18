@@ -33,7 +33,7 @@ namespace PC_CORE::Rendering::Pass
 
         void Build(const RendererPassBuildContext& _RendererPassBuildContext);
 
-        void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const;
+        void Execute(const RendererPassExecuteContext& _RendererPassExecuteContext);
 
     private:
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;

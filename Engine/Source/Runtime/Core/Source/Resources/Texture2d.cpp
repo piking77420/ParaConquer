@@ -2,7 +2,6 @@
 
 #include "Log.hpp"
 #include "LowRenderer/Rhi.hpp"
-#include "Resources/FileLoader.hpp"
 
 
 using namespace PC_CORE;
@@ -39,6 +38,13 @@ Texture2D::Texture2D(PC_CORE::Rhi& rhi, const std::filesystem::path& _Path)
 
 Texture2D::Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture)
     : Texture(std::move(_Texture))
+{
+    DYNAMIC_REFLECT_INIT
+}
+
+Texture2D::Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture, const std::filesystem::path& _Path)
+    : Texture(std::move(_Texture))
+    , m_Path(std::filesystem::exists(_Path) ? _Path.generic_string() : std::string())
 {
     DYNAMIC_REFLECT_INIT
 }

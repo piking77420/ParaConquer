@@ -48,14 +48,14 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
         .SetName("SamplerLinearReapet")
         .Build();
 
-    SamplerLinearClamp.reset(RenderHarwareInteface.CreateSampler());
-    SamplerLinearClamp
+    SamplerLinearClampToEdge.reset(RenderHarwareInteface.CreateSampler());
+    SamplerLinearClampToEdge
         ->SetMagFilter(Filter::Linear)
         .SetMinFilter(Filter::Linear)
         .SetMipmapMode(SamplerMipmapMode::Linear)
-        .SetU(SamplerAddressMode::ClampToBorder)
-        .SetV(SamplerAddressMode::ClampToBorder)
-        .SetW(SamplerAddressMode::ClampToBorder)
+        .SetU(SamplerAddressMode::ClampToEdge)
+        .SetV(SamplerAddressMode::ClampToEdge)
+        .SetW(SamplerAddressMode::ClampToEdge)
         .SetName("SamplerLinearClamp")
         .Build();
 
@@ -72,9 +72,16 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
 
     RHI::ResourceUpdateBranch* branch = RenderHarwareInteface.GetRhiContext().ResourceUpdateBranch();
 
+
+    const PC_CORE::RhiTexture::LevelUploadOperation op = {
+        .Width = DummyTexture->GetWidth(),
+        .Height = DummyTexture->GetHeight(),
+        .Offset = 0u,
+        .Size = DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4,
+    };
     std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
     branch->
-        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), static_cast<size_t>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4), RhiResourceState::PixelShaderResource);
+        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), { op }, RhiResourceState::PixelShaderResource);
 
 
     Time::Init();

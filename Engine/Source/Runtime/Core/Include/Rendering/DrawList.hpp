@@ -59,6 +59,11 @@ namespace PC_CORE::Rendering
 		uint32_t InstanceCount{ 0 };
 	};
 
+	struct DrawSkyBox
+	{
+		Tbx::Matrix4x4f ViewProjectionCorrectedMatrix;
+	};
+
 
 	struct DrawItem
 	{
@@ -67,6 +72,7 @@ namespace PC_CORE::Rendering
 		std::variant <
 			DrawStaticMeshTriangle,
 			DrawStaticMeshMeshlet,
+			DrawSkyBox,
 			DrawDebug,
 			DrawDebugInstanced
 		>Data;

@@ -260,7 +260,7 @@ vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
         return vk::Format::eUndefined;
 
     case PC_CORE::RhiFormat::R16G16Sfloat:
-        return vk::Format::eUndefined;
+        return vk::Format::eR16G16Sfloat;
 
     case PC_CORE::RhiFormat::R16G16B16Unorm:
         return vk::Format::eUndefined;
@@ -403,12 +403,26 @@ vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
     case PC_CORE::RhiFormat::D32SfloatS8Uint:
         return vk::Format::eD32SfloatS8Uint;
 
+    case PC_CORE::RhiFormat::BC1_RGBA_UNORM_BLOCK:
+        return vk::Format::eBc1RgbaUnormBlock;
+
+    case PC_CORE::RhiFormat::BC2_UNORM_BLOCK:
+        return vk::Format::eBc2UnormBlock;
+
+    case PC_CORE::RhiFormat::BC3_UNORM_BLOCK:
+        return vk::Format::eBc3UnormBlock;
+
+    case PC_CORE::RhiFormat::BC4_UNORM_BLOCK:
+        return vk::Format::eBc4UnormBlock;
+
+    case PC_CORE::RhiFormat::BC5_UNORM_BLOCK:
+        return vk::Format::eBc5UnormBlock;
     default:
         break;
     }
 
+    PC_LOGCRITICAL("Unsupported Enum type")
     assert(false);
-
     return format;
 }
 #pragma endregion Format
@@ -1061,17 +1075,23 @@ vk::ImageAspectFlags Vulkan::Utils::RhiTextureFormatToImageAspectFlagFlags(PC_CO
 {
     using namespace PC_CORE;
     
-    
+    if (IsBcFormat(_format))
+        return vk::ImageAspectFlagBits::eColor;
+
     switch (_format)
     {
     // Color
+    case PC_CORE::RhiFormat::R8G8B8Unorm:
     case PC_CORE::RhiFormat::R8G8B8A8Unorm:
     case PC_CORE::RhiFormat::R8G8B8A8Snorm:
     case PC_CORE::RhiFormat::B8G8R8A8Snorm:
     case PC_CORE::RhiFormat::R8G8B8A8Srgb:
+    case PC_CORE::RhiFormat::R16G16B16Sfloat:
     case PC_CORE::RhiFormat::R16G16B16A16Sfloat:
     case PC_CORE::RhiFormat::R32Sfloat:
     case PC_CORE::RhiFormat::R16G16Snorm:
+    case PC_CORE::RhiFormat::R16G16Sfloat:
+    case PC_CORE::RhiFormat::R32G32B32A32Sfloat:
         return vk::ImageAspectFlagBits::eColor;
         // Depth and STENCIL
     case PC_CORE::RhiFormat::D32Sfloat:

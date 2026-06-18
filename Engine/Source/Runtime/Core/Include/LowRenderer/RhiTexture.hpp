@@ -37,6 +37,14 @@ public:
         All = Sampled | RenderTarget | LoadAndStore | TransferSrc |TransferDst,
     };
 
+    struct LevelUploadOperation
+    {
+        uint32_t Width;
+        uint32_t Height;
+        uint32_t Offset;
+        uint32_t Size;
+    };
+
     using TextureUsageFlag = uint32_t;
        
     REFLECT(TextureUsageFlagBits)
@@ -49,9 +57,9 @@ public:
 
     PC_CORE_API virtual bool Build();
     
-    PC_CORE_API virtual bool UploadData2D(CommandList* _CommandList, const void* _ImageData, size_t _DataSize) = 0;
+    PC_CORE_API virtual bool UploadData2D(CommandList* _CommandList, const void* _ImageData, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& _LevelUpload) = 0;
     
-    PC_CORE_API virtual void UploadDataLayer(CommandList* commandList, const std::vector<void*>& _imageDatas, uint32_t _imageWidht, uint32_t _imageHeight, uint32_t _layer) = 0;
+    PC_CORE_API virtual void UploadDataLayer(CommandList* commandList, const std::vector<void*>& _imageDatas, const std::vector<std::vector<PC_CORE::RhiTexture::LevelUploadOperation>>& _LayerUploads) = 0;
     
     PC_CORE_API virtual bool GenerateMipMap(CommandList* commandList, PC_CORE::Filter _Filter, RhiResourceState _StateAfterOperation) = 0;
 

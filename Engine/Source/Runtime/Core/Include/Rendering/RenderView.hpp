@@ -21,8 +21,12 @@ namespace PC_CORE::Rendering
             mat4 View;
             mat4 ViewInv;
 
+            mat3 View3;
+            mat3 View3Inv;
+
             mat4 Projection;
             mat4 ProjectionInv;
+            mat4 ClipSpaceCorrection;
 
             mat4 ViewProjection;
             mat4 ViewProjectionInv;
@@ -30,6 +34,8 @@ namespace PC_CORE::Rendering
             mat4 FrustumViewMatrix; // psp
 
             vec4 FrustumPlanesView[6];
+
+            vec4 CameraPos;
 
             float CameraNear;
             float CameraFar;
@@ -42,6 +48,8 @@ namespace PC_CORE::Rendering
 
             vec2 InvRenderSize;
             uint32_t MeshletCulling;
+            bool isYUpFrameBuffer;
+            bool isYUpNdc;
             float pad01;
         };
 
@@ -78,8 +86,12 @@ namespace PC_CORE::Rendering
         Tbx::Matrix4x4d View;
         Tbx::Matrix4x4d ViewInv;
 
+        Tbx::Matrix3x3d View3;
+        Tbx::Matrix3x3d View3Inv;
+
         Tbx::Matrix4x4d Projection;
         Tbx::Matrix4x4d ProjectionInv;
+        Tbx::Matrix4x4d ClipSpaceCorrection;
 
         Tbx::Matrix4x4d ViewProjection;
         Tbx::Matrix4x4d ViewProjectionInv;
@@ -101,6 +113,8 @@ namespace PC_CORE::Rendering
 
         Tbx::Vector2f RenderSize{};
         Tbx::Vector2f InvRenderSize{};
+
+        Tbx::Vector4f CameraPos;
 
         RenderViewFlag Flag{};
 

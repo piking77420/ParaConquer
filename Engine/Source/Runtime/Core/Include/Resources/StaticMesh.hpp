@@ -1,9 +1,11 @@
 #pragma once
 #include <optional>
+#include <Primitive/AABB.hpp>
+#include <Rendering/Buffer/VertexBuffer.hpp>
+#include <Rendering/Buffer/IndexBuffer.hpp>
 
 #include "Resource.hpp"
 #include "ObjectPtr.hpp"
-#include "Mesh.hpp"
 #include "Rendering/Material.hpp"
 
 namespace PC_CORE::RHI

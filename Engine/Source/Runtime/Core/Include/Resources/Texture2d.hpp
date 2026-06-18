@@ -30,6 +30,8 @@ BEGIN_PCCORE
 
         PC_CORE_API explicit Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture);
 
+        PC_CORE_API explicit Texture2D(std::unique_ptr<PC_CORE::RhiTexture> _Texture, const std::filesystem::path& _Path);
+
         PC_CORE_API Texture2D();
 
         PC_CORE_API ~Texture2D() override = default;
@@ -39,9 +41,17 @@ BEGIN_PCCORE
         PC_CORE_API void AfterSerialize(Serializer* _serializer) const override;
 
         PC_CORE_API void AfterDeSerialize(Serializer* _serializer) override;
+
+        std::string_view GetPath() const
+        {
+            return std::string_view(m_Path);
+        }
     
     private:
+        std::string m_Path;
+
         REFLECT(Texture2D, Resource)
+        REFLECT_MEMBER(Texture2D, m_Path)
     };
 
 

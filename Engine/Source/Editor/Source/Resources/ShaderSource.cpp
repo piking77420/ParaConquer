@@ -4,8 +4,6 @@
 #include <fstream>
 #include <iostream>
 #include <PerfRegion.hpp>
-
-#include "Io/InOut.h"
 #include "Resources/ResourceManager.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
 #include "Editor.hpp"
@@ -187,6 +185,33 @@ std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
         Features.push_back(L"-DFRUSTUM=1");
     }
 
+    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::SkyboxForceFarDepth)
+    {
+        Features.push_back(L"-DSKYBOX_FORCE_FAR_DEPTH=1");
+    }
+
+    if (auto* AppInstance = App::Instance)
+    {
+        Rhi& rhi = AppInstance->RenderHarwareInteface;
+
+        if (rhi.IsYUpFrameBuffer())
+        {
+            Features.push_back(L"-DY_UP_FRAMEBUFFER=1");
+        }
+        else
+        {
+            Features.push_back(L"-DY_UP_FRAMEBUFFER=0");
+        }
+
+        if (rhi.IsYUpNdc())
+        {
+            Features.push_back(L"-DY_UP_NDC=1");
+        }
+        else
+        {
+            Features.push_back(L"-DY_UP_NDC=0");
+        }
+    }
     return Features;
 }
 

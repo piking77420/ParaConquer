@@ -1,44 +1,28 @@
+
+#include "Func.hlsl"
+
 Texture2D<float4> HdrImage : register(t0, space0);
 
 
 [[vk::image_format("rgba8")]]
 RWTexture2D<float4> RgbImage : register(u1, space0);
 
-// ACES RRT + ODT fit function
-float3 RRTAndODTFit(float3 v)
+// From http://filmicgames.com/archives/75
+float3 Uncharted2Tonemap(float3 x)
 {
-    float3 a = v * (v + 0.0245786f) - 0.000090537f;
-    float3 b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
-    return a / b;
-}
-
-static const float3x3 ACESInputMat = float3x3(
-    0.59719, 0.35458, 0.04823,
-    0.07600, 0.90834, 0.01566,
-    0.02840, 0.13383, 0.83777
-);
-
-static const float3x3 ACESOutputMat = float3x3(
-    1.60475, -0.53108, -0.07367,
-   -0.10208, 1.10813, -0.00605,
-   -0.00327, -0.07276, 1.07602
-);
-
-float3 LinearToSRGB(float3 x)
-{
-    x = max(x, 0.0);
-
-    return select(
-        x * 12.92,
-        1.055 * pow(x, 1.0 / 2.4) - 0.055,
-        x > 0.0031308
-    );
+	float A = 0.15;
+	float B = 0.50;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.02;
+	float F = 0.30;
+	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
 [numthreads(16, 16, 1)]
 void Main(uint3 DTid : SV_DispatchThreadID)
 {
-    const float exposure = 1.f; 
+    const float exposure = 4.5f; 
 
     uint2 gid = DTid.xy;
     uint2 size;
@@ -48,12 +32,10 @@ void Main(uint3 DTid : SV_DispatchThreadID)
         return;
 
     // Read HDR color (linear)
-    float4 hdr = HdrImage[gid] * exposure;
+    float4 hdr = HdrImage[gid]  * exposure;
 
-    float3 color = mul(ACESInputMat, hdr.rgb); // Linear sRGB -> AP1
-    color = RRTAndODTFit(color); // RRT+ODT in AP1 space
-    color = mul(ACESOutputMat, color); // AP1 -> Linear sRGB
-    color = LinearToSRGB(color); // Clamp + gamma correction
+    float3 color = Uncharted2Tonemap(hdr.rgb);
+    color = ApplyGammaCorrection(color, 2.2);
 
     RgbImage[gid] = float4(color, hdr.a);
 }

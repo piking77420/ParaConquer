@@ -12,14 +12,6 @@ namespace PC_CORE
 
     RHI::ResourceUpdateBranch* RhiContext::ResourceUpdateBranch()
     {
-        std::scoped_lock _(lock);
-
-        m_ResourceUpdate.push_back(std::make_unique<RHI::ResourceUpdateBranch>());
-        return m_ResourceUpdate.back().get();
-    }
-
-    RHI::ResourceUpdateBranch* RhiContext::ResourceUpdateBranch_AssumeLock()
-    {
         m_ResourceUpdate.push_back(std::make_unique<RHI::ResourceUpdateBranch>());
         return m_ResourceUpdate.back().get();
     }

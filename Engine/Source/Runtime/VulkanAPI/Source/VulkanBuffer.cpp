@@ -120,28 +120,29 @@ bool Vulkan::VulkanBuffer::Build()
     
 
     auto& context = GET_VK_CONTEXT;
-    std::scoped_lock _(context.lock);
-
-
-    auto instance = context.GetInstance();
-    const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
-    for (size_t i = 0; i < nbrOfHandle; i++)
     {
+        std::scoped_lock _(context.VulkanContextMutex());
+        auto instance = context.GetInstance();
+        const vk::Device device = std::reinterpret_pointer_cast<VulkanDevice>(m_Rhi.GetRhiContext().rhiDevice)->GetDevice();
+        for (size_t i = 0; i < nbrOfHandle; i++)
+        {
 
-         VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate), 
-                        &aCreateInfo, reinterpret_cast<VkBuffer*>(&m_Handle[i].buffer), &m_Handle[i].alloc, &VmaAllocationInfo)));
-        
-        vk::DebugUtilsObjectNameInfoEXT nameInfo;
-        nameInfo.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
-        nameInfo.pNext = nullptr;
-        nameInfo.objectType = vk::ObjectType::eBuffer;
-        nameInfo.objectHandle = reinterpret_cast<uint64_t>(
-            static_cast<VkBuffer>(m_Handle[i].buffer)
-            );       
-        nameInfo.pObjectName = GetName().data();
-        
-        SET_VK_DEBUG_NAME(nameInfo);
+            VK_CALL(static_cast<vk::Result>(vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&bufferCreate),
+                &aCreateInfo, reinterpret_cast<VkBuffer*>(&m_Handle[i].buffer), &m_Handle[i].alloc, &VmaAllocationInfo)));
+
+            vk::DebugUtilsObjectNameInfoEXT nameInfo;
+            nameInfo.sType = vk::StructureType::eDebugUtilsObjectNameInfoEXT;
+            nameInfo.pNext = nullptr;
+            nameInfo.objectType = vk::ObjectType::eBuffer;
+            nameInfo.objectHandle = reinterpret_cast<uint64_t>(
+                static_cast<VkBuffer>(m_Handle[i].buffer)
+                );
+            nameInfo.pObjectName = GetName().data();
+
+            SET_VK_DEBUG_NAME(nameInfo);
+        }
     }
+    
 
     /*
     if (m_BufferBackingStrategy == PC_CORE::RhiBuffer::CpuVisibleRing)
@@ -177,39 +178,42 @@ bool Vulkan::VulkanBuffer::UploadData(PC_CORE::CommandList* _commandList, const 
     if (_sizeInBytes > m_SizeInByte)
         return false;
 
-    auto& context = GET_VK_CONTEXT;
-    const size_t FrameIndex = m_Rhi.GetFrameIndex();
-
-    auto& stagingBuffer = *GetVkStagingBuffer(FrameIndex);
-
-    if (stagingBuffer.buffer == VK_NULL_HANDLE || m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] < _sizeInBytes)
     {
-        if (stagingBuffer.buffer)
+        auto& context = GET_VK_CONTEXT;
+        std::scoped_lock _(context.VulkanContextMutex());
+        const size_t FrameIndex = m_Rhi.GetFrameIndex();
+
+        auto& stagingBuffer = *GetVkStagingBuffer(FrameIndex);
+
+        if (stagingBuffer.buffer == VK_NULL_HANDLE || m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] < _sizeInBytes)
         {
-            context.DefferdDestroy(stagingBuffer, FrameIndex);
+            if (stagingBuffer.buffer)
+            {
+                context.DefferdDestroy(stagingBuffer, FrameIndex);
+            }
+            CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes, m_Name.c_str());
+            m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] = _sizeInBytes;
         }
-        CreateStagingBufferForCopy(context, &stagingBuffer, _sizeInBytes, m_Name.c_str());
-        m_StaginBuffersSizes[std::distance(&m_StagingBuffers[0], &stagingBuffer)] = _sizeInBytes;
+
+        // Copy Data to stagingBuffer
+        void* mappedData;
+        vmaMapMemory(context.allocator, stagingBuffer.alloc, &mappedData);
+        std::memcpy(mappedData, _data, _sizeInBytes);
+        vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
+
+        vk::BufferCopy copyRegion = {};
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0;
+        copyRegion.size = _sizeInBytes;
+
+
+        BufferAndAlloc& buffer = *GetBufferAndAlloc(FrameIndex);
+        GET_VK_COMMAND_BUFFER(_commandList, FrameIndex);
+
+
+        cmb.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
     }
-    
-    // Copy Data to stagingBuffer
-    void* mappedData;
-    vmaMapMemory(context.allocator, stagingBuffer.alloc, &mappedData);
-    std::memcpy(mappedData, _data, _sizeInBytes);
-    vmaUnmapMemory(context.allocator, stagingBuffer.alloc);
-    
-    vk::BufferCopy copyRegion = {};
-    copyRegion.srcOffset = 0;
-    copyRegion.dstOffset = 0;
-    copyRegion.size = _sizeInBytes;
-
-
-    BufferAndAlloc& buffer = *GetBufferAndAlloc(FrameIndex);
-    GET_VK_COMMAND_BUFFER(_commandList, FrameIndex);
-    
-    
-    cmb.copyBuffer(stagingBuffer.buffer, buffer.buffer, copyRegion);
-
+   
     return true;
 }
 
@@ -225,7 +229,7 @@ char* Vulkan::VulkanBuffer::BeginFullDynamicBufferUpdateForCurrentFrame()
     assert(m_CurrentFrameMappedData[index] == nullptr && "Data Aldready Map or forgot to call EndFullDynamicBufferUpdateForCurrentFrame");
 
     {
-        std::scoped_lock _(context.lock);
+        std::scoped_lock _(context.VulkanContextMutex());
         VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
             m_Handle[index].alloc, &m_CurrentFrameMappedData[index])));
     }
@@ -246,7 +250,7 @@ char* Vulkan::VulkanBuffer::BeginBufferUpdateForCurrentFrame()
 
 
     {
-        std::scoped_lock _(context.lock);
+        std::scoped_lock _(context.VulkanContextMutex());
         VK_CALL(static_cast<vk::Result>(vmaMapMemory(context.allocator,
             m_Handle[index].alloc, &m_CurrentFrameMappedData[index])));
     }
@@ -275,7 +279,7 @@ void Vulkan::VulkanBuffer::EndBufferUpdate()
     auto& context = GET_VK_CONTEXT;
     
     {
-        std::scoped_lock _(context.lock);
+        std::scoped_lock _(context.VulkanContextMutex());
         vmaUnmapMemory(context.allocator,
             m_Handle[index].alloc);
     }

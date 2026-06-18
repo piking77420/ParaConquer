@@ -3,7 +3,6 @@
 #include "CoreHeader.hpp"
 #include "GpuBuffer.hpp"
 #include "LowRenderer/RhiBuffer.h"
-#include "LowRenderer/Vertex.hpp"
 
 BEGIN_PCCORE
     class VertexBuffer final : public GpuBuffer

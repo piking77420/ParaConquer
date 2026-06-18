@@ -10,7 +10,6 @@
 #include "LowRenderer/RhiTypedef.h"
 #include "LowRenderer/RhiRenderPass.hpp"
 #include "LowRenderer/RhiShaderProgram.hpp"
-#include "LowRenderer/Vertex.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
 
 BEGIN_PCCORE

@@ -46,7 +46,7 @@ namespace PC_CORE::Rendering
 
     using RenderPassBuildFunc = void (*)(void*, const RendererPassBuildContext&);
 
-    using RenderPassExecuteFunc = void (*)(const void*, const RendererPassExecuteContext&);
+    using RenderPassExecuteFunc = void (*)(void*, const RendererPassExecuteContext&);
 
 class PC_CORE_API RenderPass : public DynamicReflectable
 {
@@ -59,8 +59,8 @@ public:
 
     bool IsDisable = false;
 
-
 protected:
+    static Tbx::Matrix4x4f GetLookAtMatrixFromCubeMapIndicies(size_t _Index, Tbx::Vector3f _Eye);
 
 };
 

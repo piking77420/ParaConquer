@@ -24,7 +24,7 @@ struct VSInput
 struct VSOutput
 {
     float4 Pos : SV_POSITION;
-    float4 Color : COLOR0;
+    float3 Color : COLOR0;
 };
 
 
@@ -45,21 +45,20 @@ VSOutput Main(VSInput vSInput,
 #if defined(INSTANCED)
     float3 VertexPos = vSInput.Position;
      // Get Color
-    float4 color = FromPackedRGB(asuint(Matrix[3][3]));
-    color.w = 1.0f;
+    float3 color = FromPackedRGB(asuint(Matrix[3][3])).xyz;
     Matrix[3][3] = 1.0f;
 
 
     float4 ViewPos = mul(Matrix, float4(VertexPos, 1.0));
-    vsOutPut.Pos = mul(Projection, ViewPos);
+    vsOutPut.Pos = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
 
 #elif defined(FRUSTUM)
     float4 FrustumWorldPos = mul(Matrix, float4(NdcCorner[FrustumIndices[VertexID]], 1.0));
     FrustumWorldPos.xyz /= FrustumWorldPos.w;
     FrustumWorldPos.w = 1.0;
 
-    vsOutPut.Pos = mul(ViewProjection, FrustumWorldPos);
-    float4 color = float4(1,1,1,1);
+    vsOutPut.Pos = mul(ClipSpaceCorrection, mul(ViewProjection, FrustumWorldPos));
+    float3 color = float3(1,1,1);
 #endif
 
     vsOutPut.Color = color;

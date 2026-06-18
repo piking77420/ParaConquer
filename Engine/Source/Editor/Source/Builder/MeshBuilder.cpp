@@ -82,28 +82,30 @@ namespace PC_EDITOR_CORE
         return MeshletOutPutData;
     }
 
-    void MeshBuilder::BuildMeshletsBase(PC_CORE::Thread::ThreadPool& ThreadPool, MeshBuilder::MeshletOutPutData& MeshletOutPutData, const MeshBuilderData& MeshBuilderData)
+    void MeshBuilder::BuildMeshletsBase(PC_CORE::Thread::ThreadPool& ThreadPool, MeshBuilder::MeshletOutPutData& MeshletOutPutData, const MeshBuilderData& _MeshBuilderData)
     {
-        std::vector<std::future<OutMeshletBuild>> Futures;
-
-        MeshletOutPutData.MeshletDescriptor.reserve(MeshBuilderData.MeshDescriptor.size());
-        Futures.reserve(MeshBuilderData.MeshDescriptor.size());
-
-        for (auto& Descriptor : MeshBuilderData.MeshDescriptor)
+       
+        std::vector<std::function<OutMeshletBuild()>> jobs;
+        jobs.reserve(_MeshBuilderData.MeshDescriptor.size());
+        for (auto& Descriptor : _MeshBuilderData.MeshDescriptor)
         {
-            std::span<const PC_CORE::StaticMeshVertex> spanV = std::span<const PC_CORE::StaticMeshVertex>(MeshBuilderData.Verticies.data() + Descriptor.VertexOffset, Descriptor.VertexCount);
-            std::span<const uint32_t> spaI = std::span<const uint32_t>(MeshBuilderData.Indicies.data() + Descriptor.IndicesOffset, Descriptor.IndicesCount);
-
-            Futures.emplace_back(
-                ThreadPool.Enqueue(
-                    BuildMeshelts,
-                    spanV,
-                    spaI,
-                    MeshBuilderData
-                )
+            std::span<const PC_CORE::StaticMeshVertex> spanV = std::span<const PC_CORE::StaticMeshVertex>(_MeshBuilderData.Verticies.data() + Descriptor.VertexOffset, Descriptor.VertexCount);
+            std::span<const uint32_t> spanI = std::span<const uint32_t>(_MeshBuilderData.Indicies.data() + Descriptor.IndicesOffset, Descriptor.IndicesCount);
+            jobs.emplace_back(
+                [spanV, spanI, &_MeshBuilderData]() -> OutMeshletBuild
+                {
+                    return BuildMeshelts(
+                        spanV,
+                        spanI,
+                        _MeshBuilderData
+                    );
+                }
             );
         }
 
+        auto Futures = ThreadPool.BatchEnqueu(std::span(jobs));    
+
+        MeshletOutPutData.MeshletDescriptor.reserve(_MeshBuilderData.MeshDescriptor.size());
         for (auto& f : Futures)
         {
             OutMeshletBuild Data = f.get();
@@ -124,6 +126,7 @@ namespace PC_EDITOR_CORE
             MeshletOutPutData.MeshletTrianglesU32.append_range(Data.MeshletTrianglesU32);
             MeshletOutPutData.MeshletsBound.append_range(Data.Bounds);
         }
+        
     }
 
     MeshBuilder::OutOptimiseBuild MeshBuilder::OptmiseMesh(const std::span<const PC_CORE::StaticMeshVertex>& Verticies, const std::span<const uint32_t>& Indices)

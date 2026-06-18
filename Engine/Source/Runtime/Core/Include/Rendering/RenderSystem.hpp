@@ -10,6 +10,7 @@
 namespace PC_CORE
 {
     class Level;
+    class World;
 }
 
 namespace PC_CORE::Rendering
@@ -45,6 +46,16 @@ namespace PC_CORE::Rendering
         float InnerAngle;
     };
 
+    struct EnvironementData
+    {
+        RhiTexture* Environement{ nullptr };
+        RhiTexture* IrradianceMap{ nullptr };
+        RhiTexture* PrefilterMap{ nullptr };
+        RhiTexture* BRDF{ nullptr };
+        RhiTexture* SkyBox{ nullptr };
+        bool isDirty = false;
+    };
+
     struct RenderingWorldData
     {
 
@@ -57,11 +68,14 @@ namespace PC_CORE::Rendering
             StaticMeshComponentData.clear();
             LightsData.clear();
             DirLightData.reset();
+            Environement.reset();
         }
 
         std::vector<Rendering::StaticMeshComponentData> StaticMeshComponentData;
         std::vector<LightData> LightsData;
         std::optional<DirLightData> DirLightData;
+
+        std::optional<EnvironementData> Environement;
 
         // Debug
         std::array<std::vector<DebugDrawContext::DrawPrimitive>, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> DebugDrawPrimitives;
@@ -109,6 +123,8 @@ namespace PC_CORE::Rendering
         void PopulateLight(const Level& _level);
 
         void PopulateDebugDraws();
+
+        void PopulateEnvironementLighting(PC_CORE::World& World);
 
         REFLECT(RendererSystem)
         REFLECT_MEMBER(RendererSystem, m_StaticMeshSignature);

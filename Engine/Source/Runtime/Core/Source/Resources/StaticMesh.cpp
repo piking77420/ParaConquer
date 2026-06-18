@@ -101,7 +101,6 @@ void StaticMesh::InitFromRenderData(const StaticMeshData& _StaticMeshData, RHI::
 
     for (size_t i = 0; i < m_MeshSectionGpu.size(); i++)
         InitMeshSectionGpu(_StaticMeshData, i, _Branch);
-    
 
     if (!m_HallowCpuAcces)
     {
@@ -232,8 +231,6 @@ void StaticMesh::InitMeshSectionGpu(const StaticMeshData& _StaticMeshData, size_
 
         MeshSectionGpu.MeshLetCount = RenderData.Meshlets.size();
     }
-
-  
 }
 
 StaticMesh::StaticMesh() 

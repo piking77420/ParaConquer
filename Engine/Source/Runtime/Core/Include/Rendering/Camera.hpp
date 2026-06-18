@@ -67,11 +67,11 @@ BEGIN_PCCORE
 
         PC_CORE_API void ComputeMatricies();
 
-        Tbx::Vector3d Position = Tbx::Vector3d(0, 0, -10);
+        Tbx::Vector3d Position = Tbx::Vector3d(0.55, 0.85, 12.0);
 
         Tbx::Vector3d Up = Tbx::Vector3d::UnitY();
 
-        Tbx::Vector3d Front = Tbx::Vector3d::UnitZ();
+        Tbx::Vector3d Front = -Tbx::Vector3d::UnitZ();
 
     private:
         ProjectionType m_ProjectionType = ProjectionType::Perspective;

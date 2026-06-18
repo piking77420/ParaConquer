@@ -252,8 +252,52 @@ BEGIN_PCCORE
         D16UnormS8Uint = 128,
         D24UnormS8Uint = 129,
         D32SfloatS8Uint = 130,
+
+        // BC
+        BC1_RGB_UNORM_BLOCK,
+        BC1_RGB_SRGB_BLOCK,
+        BC1_RGBA_UNORM_BLOCK,
+        BC1_RGBA_SRGB_BLOCK,
+        BC2_UNORM_BLOCK,
+        BC2_SRGB_BLOCK,
+        BC3_UNORM_BLOCK,
+        BC3_SRGB_BLOCK,
+        BC4_UNORM_BLOCK,
+        BC4_SNORM_BLOCK,
+        BC5_UNORM_BLOCK,
+        BC5_SNORM_BLOCK,
+        BC6H_UFLOAT_BLOCK,
+        BC6H_SFLOAT_BLOCK,
+        BC7_UNORM_BLOCK,
+        BC7_SRGB_BLOCK,
     };
     REFLECT(RhiFormat)
+
+    static inline bool IsBcFormat(RhiFormat _Format) 
+    {
+        switch (_Format)
+        {
+        case RhiFormat::BC1_RGB_UNORM_BLOCK:
+        case RhiFormat::BC1_RGB_SRGB_BLOCK:
+        case RhiFormat::BC1_RGBA_UNORM_BLOCK:
+        case RhiFormat::BC1_RGBA_SRGB_BLOCK:
+        case RhiFormat::BC2_UNORM_BLOCK:
+        case RhiFormat::BC2_SRGB_BLOCK:
+        case RhiFormat::BC3_UNORM_BLOCK:
+        case RhiFormat::BC3_SRGB_BLOCK:
+        case RhiFormat::BC4_UNORM_BLOCK:
+        case RhiFormat::BC4_SNORM_BLOCK:
+        case RhiFormat::BC5_UNORM_BLOCK:
+        case RhiFormat::BC5_SNORM_BLOCK:
+        case RhiFormat::BC6H_UFLOAT_BLOCK:
+        case RhiFormat::BC6H_SFLOAT_BLOCK:
+        case RhiFormat::BC7_UNORM_BLOCK:
+        case RhiFormat::BC7_SRGB_BLOCK:
+            return true;
+        }
+        
+        return false;
+    }
 
     enum struct SampleCount : uint8_t
     {
@@ -269,9 +313,9 @@ BEGIN_PCCORE
 
 
 #pragma region GetBytePerPixel
-    static inline size_t GetBytePerPixel(RhiFormat RhiFormat)
+    static inline size_t GetBytePerPixel(RhiFormat _RhiFormat)
     {
-        switch (RhiFormat)
+        switch (_RhiFormat)
         {
         case PC_CORE::RhiFormat::Undefined:
             return 0;
@@ -459,9 +503,31 @@ BEGIN_PCCORE
             return 4;
         case PC_CORE::RhiFormat::D32SfloatS8Uint:
             return 8;
+
+        case RhiFormat::BC1_RGB_UNORM_BLOCK:
+        case RhiFormat::BC1_RGB_SRGB_BLOCK:
+        case RhiFormat::BC1_RGBA_UNORM_BLOCK:
+        case RhiFormat::BC1_RGBA_SRGB_BLOCK:
+        case RhiFormat::BC4_UNORM_BLOCK:
+        case RhiFormat::BC4_SNORM_BLOCK:
+            return 8;
+
+        case RhiFormat::BC2_UNORM_BLOCK:
+        case RhiFormat::BC2_SRGB_BLOCK:
+        case RhiFormat::BC3_UNORM_BLOCK:
+        case RhiFormat::BC3_SRGB_BLOCK:
+        case RhiFormat::BC5_UNORM_BLOCK:
+        case RhiFormat::BC5_SNORM_BLOCK:
+        case RhiFormat::BC6H_UFLOAT_BLOCK:
+        case RhiFormat::BC6H_SFLOAT_BLOCK:
+        case RhiFormat::BC7_UNORM_BLOCK:
+        case RhiFormat::BC7_SRGB_BLOCK:
+            return 16;
         default:
             return static_cast<uint32_t>(-1);
         }
+
+        PC_LOGCRITICAL("Unsupported Enum type")
 
         return static_cast<uint32_t>(-1);
     }

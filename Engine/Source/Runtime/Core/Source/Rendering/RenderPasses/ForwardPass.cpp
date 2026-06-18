@@ -52,8 +52,8 @@ namespace PC_CORE::Rendering::Pass
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetAttachments(m_LightingImage)
-			.SetDepthAttachments(&DepthBuffer)
+			.SetAttachement(m_LightingImage)
+			.SetDepthAttachment(&DepthBuffer)
 			.SetRenderPass(_RendererPassBuildContext.Renderer.forwardPass.get())
 			.SetName("Forward Framebuffer")
 			.Build();
@@ -61,7 +61,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_DescriptorSet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorSet
-			->BindUniformBuffer(RhiShaderStageBits::Vertex, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			->BindUniformBuffer(RhiShaderStageBits::Vertex | RhiShaderStageBits::Pixel, 0, _RendererPassBuildContext.View.UniformBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Vertex, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
@@ -70,7 +70,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_DescriptorMeshlet.reset(_RendererPassBuildContext.RHI.CreateDescriptorSet());
 		m_DescriptorMeshlet
-			->BindUniformBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 0, _RendererPassBuildContext.View.UniformBuffer.get())
+			->BindUniformBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp | RhiShaderStageBits::Pixel, 0, _RendererPassBuildContext.View.UniformBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh | RhiShaderStageBits::Amp, 1, _RendererPassBuildContext.Renderer.InstanceBuffer.get())
 			.BindShaderStorageBuffer(RhiShaderStageBits::Pixel, 2, _RendererPassBuildContext.View.LightBuffer.get())
 			.BindUniformBuffer(RhiShaderStageBits::Pixel, 3, _RendererPassBuildContext.View.LightBufferHeader.get())
@@ -83,6 +83,8 @@ namespace PC_CORE::Rendering::Pass
 			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
+				if (_Context.Renderer.EnvironementDescriptorSet)
+					_Context.cmd.BindDescriptorSet(_Context.Renderer.EnvironementDescriptorSet.get(), 2);
 				m_LastMaterialDescriptor = nullptr;
 			}
 
@@ -99,6 +101,8 @@ namespace PC_CORE::Rendering::Pass
 			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0);
+				if (_Context.Renderer.EnvironementDescriptorSet)
+					_Context.cmd.BindDescriptorSet(_Context.Renderer.EnvironementDescriptorSet.get(), 2);
 			}
 
 			if (StaticMesh.MaterialDescriptor && m_LastMaterialDescriptor != StaticMesh.MaterialDescriptor)
@@ -111,7 +115,7 @@ namespace PC_CORE::Rendering::Pass
 
 	}
 
-	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext) const
+	void FowardPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext)
 	{
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Rendering)
@@ -139,6 +143,7 @@ namespace PC_CORE::Rendering::Pass
 
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
+		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.Skybox);
 		cmd.EndRenderPass();
 	}
 

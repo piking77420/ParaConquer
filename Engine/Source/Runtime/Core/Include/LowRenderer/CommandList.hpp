@@ -40,6 +40,7 @@ BEGIN_PCCORE
         Tbx::Vector2ui Extent;
 
         ClearValueFlag ClearValueFlag;
+        // TODO to const
         std::array<float, 4>* ClearColor;
         size_t ClearValueCount;
         float ClearDepth = 0.f;
@@ -69,6 +70,12 @@ BEGIN_PCCORE
         {
             Size = Tbx::Vector2f(static_cast<float>(size.x), static_cast<float>(size.y));
             ScissorsExtent = size;
+        }
+
+        explicit ViewportInfo(uint32_t Width, uint32_t Height)
+        {
+            Size = Tbx::Vector2f(static_cast<float>(Width), static_cast<float>(Height));
+            ScissorsExtent = Tbx::Vector2ui(Width, Height);
         }
 
         ViewportInfo() = default;

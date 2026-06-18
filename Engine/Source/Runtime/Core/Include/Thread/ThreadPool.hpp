@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include <future>
+#include <span>
 
 #include "CoreHeader.hpp"
 #include "PerfRegion.hpp"
@@ -14,6 +15,7 @@ namespace PC_CORE::Thread
 	class PC_CORE_API ThreadPool
 	{
 	public:
+		using Job = std::function<void()>;
 
 		ThreadPool(const ThreadPool&) = delete;
 		ThreadPool(ThreadPool&&) = delete;
@@ -57,6 +59,50 @@ namespace PC_CORE::Thread
 			}
 			m_Cv.notify_one();
 			return future;
+		}
+
+		template<typename T>
+		[[nodiscard]] auto BatchEnqueu(const std::span<T>& jobs)
+		{
+			using ReturnType = std::invoke_result_t<T&>;
+
+			PERF_REGION_SCOPED;
+			PERF_REGION_COLOR(PerfRegion::Core);
+
+			std::vector<std::future<ReturnType>> Futures;
+			std::vector<std::function<void()>> QueueJobs;
+
+			Futures.reserve(jobs.size());
+			QueueJobs.reserve(jobs.size());
+
+			for (auto& job : jobs)
+			{
+				auto task = std::make_shared<std::packaged_task<ReturnType()>>(
+					std::move(job)
+				);
+
+				Futures.emplace_back(task->get_future());
+
+				QueueJobs.emplace_back(
+					[task]() mutable
+					{
+						(*task)();
+					}
+				);
+			}
+
+			{
+				std::scoped_lock lock(m_Mutex);
+
+				for (auto& job : QueueJobs)
+				{
+					m_Queue.emplace(std::move(job));
+				}
+			}
+
+			m_Cv.notify_all();
+
+			return Futures;
 		}
 
 	private:

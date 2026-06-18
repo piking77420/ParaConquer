@@ -1,8 +1,6 @@
 ﻿#include "Editor.hpp"
 
-#include <Chrono>
-#include <Iostream>
-#include <thread>
+#include <numbers>
 #include <imgui_internal.h>
 #include <PerfRegion.hpp>
 #include <ProjectSettingsWindow.hpp>
@@ -33,6 +31,7 @@
 #include "World/StaticMeshComponent.hpp"
 
 #include "ImguiReflectedObject.hpp"
+#include <Io/DDSImageLoader.hpp>
 
 using namespace PC_EDITOR_CORE;
 using namespace PC_CORE;
@@ -71,6 +70,10 @@ Editor::Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo)
     {
         f.wait();
     }
+
+    // test dds
+    //DDSImageLoader dds("C:/Project/ParaConquerGame/Assets/Meshs/Bistro_v5_2/Textures/MASTER_Roofing_Shingle_Grey_BaseColor.dds");
+
 }
 
 Editor::~Editor()
@@ -293,7 +296,7 @@ void Editor::CompileShader()
 				EDITOR_RESOURCE_PATH
 				"/Shaders/SampleSingleTexture.ps.hlsl");
 			}));
-	}
+	}   
 
     {
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
@@ -342,6 +345,69 @@ void Editor::CompileShader()
             }));
     }
 
+    // Cube Map
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("CubeMap.vs.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/CubeMap.vs.hlsl",
+                ShaderFeatureFlagBits::UseUV);
+            }));
+    }
+
+    // Equirectacular to skybox
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("EquirectangularToCubeMap.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/EquirectangularToCubeMap.ps.hlsl");
+            }));
+    }
+
+    // Irradiance Convolution
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("IrradianceConvolution.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/IrradianceConvolution.ps.hlsl");
+            }));
+    }
+
+    // Skybox
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/CubeMap.vs.hlsl",
+                ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::SkyboxForceFarDepth);
+            }));
+
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Skybox.ps.hlsl",
+                ShaderFeatureFlagBits::UseUV);
+            }));
+    }
+
+    // PrefilterMap
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("PrefilterEnvironement.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/Prefiltering.ps.hlsl",
+                ShaderFeatureFlagBits::UseUV);
+            }));
+    }
+
+    // BRDFLUT
+    {
+        m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
+            ResourceManager::Create<ShaderSource>("BRDFLUT.ps.hlsl",
+                EDITOR_RESOURCE_PATH
+                "/Shaders/Ibl/BRDFLUT.ps.hlsl");
+            }));
+    }
 
     /*
     // sprite
@@ -536,68 +602,38 @@ void Editor::RewindCommand()
     editorCommands.pop_back();
 }
 
-void Editor::TempImportModel(const std::filesystem::path& _path, bool _CreateStaticMesh)
+AssetsImporter* Editor::NewAssetsImporter()
 {
-    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR
-    Guid importesGuid{};
     AssetsImporter* ptr = nullptr;
     {
         std::scoped_lock _(AssetImportData._lock);
         ptr = AssetImportData.Imports.emplace_back(new AssetsImporter()).get();
     }
 
-    if (!ptr)
+    return ptr;
+}
+
+void Editor::TempImport(const std::filesystem::path& _path)
+{
+    // TODO STORE ASYNC TASK FUSUTURE AND WIAT IN DESTRUCTOR    
+    AssetsImporter* AssetsImporter = NewAssetsImporter();
+
+    if (!AssetsImporter)
         return;
-    importesGuid = ptr->GetGuid();
-
+    const std::string ext = _path.extension().generic_string();
+    if (ext == ".fbx" || ext == ".gltf" || ext == ".glb" || ext == ".obj")
     {
-        TaskHandle ImportMesh = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&, Importer = ptr, path = _path]
-            ()
-            {
-                Importer->ImportModel(RenderHarwareInteface, ThreadPool, path);
-            });
-
-        if (importesGuid != Guid::Empty() && _CreateStaticMesh)
-        {
-            TaskHandle CreateStaticMesh = TaskScheduler.NewTask(TaskThread::MainThread,
-                [this, impGuid = importesGuid]()
-                {
-                    ObjectPtr<PC_CORE::StaticMesh> StaticMesh;
-
-                    PERF_REGION_SCOPED;
-                    PERF_REGION_COLOR(PerfRegion::EditorResource);
-                    {
-                        std::scoped_lock _(AssetImportData._lock);
-                        auto it = std::ranges::find_if(AssetImportData.Imports, [&](const std::unique_ptr<AssetsImporter>& _Importer) {
-                            return _Importer->GetGuid() == impGuid;
-                            });
-                        if (it != AssetImportData.Imports.end() && (*it)->GetSuccess())
-                        {
-                            if (auto StaticMeshLocked = (*it)->GetStaticMeshes().Lock())
-                            {
-                                StaticMesh = StaticMeshLocked;
-                            }
-                        }
-                    }
-
-                    auto& level = World::GetWorld()->level;
-                    if (StaticMesh)
-                    {
-                        EntityId staticMesh = level.CreateEntity(StaticMesh->Name);
-                        level.AddComponent<Transform>(staticMesh);
-                        level.AddComponent<StaticMeshComponent>(staticMesh);
-                        Transform* t = &level.GetComponent<Transform>(staticMesh);
-                        t->Position = Tbx::Vector3d(0.0f, 0.0f, 0.0f);
-                        t->Scale = Tbx::Vector3d(1.0f, 1.0f, 1.0f);
-                        StaticMeshComponent* s = &level.GetComponent<StaticMeshComponent>(staticMesh);
-                        s->staticMesh = StaticMesh;
-                    }
-                }, { ImportMesh });
-        }
-
-        TaskScheduler.Lauch(ImportMesh);
+        AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
     }
+    else if (ext == ".png" || ext == ".jpg" || ext == ".dds" || ext == ".hdr")
+    {
+        AssetsImporter->ImportTexture(RenderHarwareInteface, _path);
+    }
+    else
+    {
+        PC_LOGERROR("Invalid path extension for this path {}", _path.generic_string());
+    }
+
 }
 
 
@@ -621,18 +657,181 @@ void Editor::InitTestScene()
         p.intensity = 1.f;
         p.color = Tbx::Vector3f(1.f, 1.f, 1.f);
     }
+
+    static constexpr size_t SphereCountPerAxis = 10;
+    static constexpr double SpaceBetweenSphere = 50.0;
+
+    /*
+    constexpr float sampleDelta = 0.025;
+    float nrSamples = 0.0;
+    Tbx::Vector3f irradiance = Tbx::Vector3f::Zero();
+    for (float phi = 0.0; phi < 2.0 * std::numbers::pi; phi += sampleDelta)
+    {
+        for (float theta = 0.0; theta < 0.5 * std::numbers::pi; theta += sampleDelta)
+        {
+            // spherical to cartesian (in tangent space)
+            //Tbx::Vector3f tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+            // tangent space to world
+            //Tbx::Vector3f sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+
+            //irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+            nrSamples++;
+        }
+    }
+
+    constexpr float nrSampleC = (2.0 * std::numbers::pi) * (0.5 * std::numbers::pi) / (sampleDelta * sampleDelta);
+
+    if (nrSamples == nrSampleC)
+        __debugbreak();*/
+
+    {
+        TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
+        World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr"));
+        /*
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {
+                //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
+                TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
+            });
+        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
+            [&]() {
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr")); },
+            { TaskHandle });
+        TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
+    }
+#if 1
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+
+        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread, [&]()
+            {
+                auto& level = World::GetWorld()->level;
+
+
+                for (size_t i = 0; i < SphereCountPerAxis; i++)
+                {
+                    const float Metallic = std::clamp((float)i / (float)SphereCountPerAxis, 0.005f, 1.0f);
+                    const float Roughness = 1.0f - Metallic;
+
+                    for (size_t j = 0; j < 1; j++)
+                    {
+                        std::string MaterialFormat = std::format("Roughness {}, Mettalic {}", Roughness, Metallic);
+
+                        const EntityId id = level.CreateEntity(std::string("Sphere")
+                            + MaterialFormat);
+                        level.AddComponent<Transform>(id);
+                        Transform& t = level.GetComponent<Transform>(id);
+                        t.Position = Tbx::Vector3d(0.0, 0.0, float(i - (SphereCountPerAxis / 2.0f)) * 2.15f);
+
+                        level.AddComponent<StaticMeshComponent>(id);
+                        StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                        smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
+
+                        // Material Block
+                        ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
+                            std::string("Pbr Material") + MaterialFormat);
+
+                        Material->SetRoughnessFactor(Roughness);
+                        Material->SetMetallicFactor(Metallic);
+                        Material->SetAlbedoFactor(Tbx::Vector4f(0.f, 0.f, 0.f, 1.f));
+
+                        Material->Build();
+
+                        smc.materials.emplace_back() = Material;
+                    }
+                }
+                }, { TaskHandle });
+                TaskScheduler.Lauch(TaskHandle);    
+            }
+#endif
+
+#if 0
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
+
+        auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
+            [&]()
+            {
+                auto& level = World::GetWorld()->level;
+
+                const EntityId id = level.CreateEntity(std::string("Bistro"));
+                level.AddComponent<Transform>(id);
+                Transform& t = level.GetComponent<Transform>(id);
+                t.Position = Tbx::Vector3d(0.0, 0.0, 0.0);
+
+                level.AddComponent<StaticMeshComponent>(id);
+                StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("BistroExterior.glb");
+                if (auto l = smc.staticMesh.Lock())
+                    smc.materials = l->GetBaseMaterial();
+
+            }, { TaskHandle });
+
+        TaskScheduler.Lauch(TaskHandle);
+    }
+
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+        auto TaskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/cube.obj")); });
+        TaskScheduler.Lauch(TaskHandle);
+        TaskScheduler.Lauch(TaskHandle2);
+    }
+#endif
+
+#if 0
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });
+
+        auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
+            [&]()
+            {
+                auto& level = World::GetWorld()->level;
+
+                const EntityId id = level.CreateEntity(std::string("Bistro"));
+                level.AddComponent<Transform>(id);
+                Transform& t = level.GetComponent<Transform>(id);
+                t.Position = Tbx::Vector3d(0.0, 0.0, 0.0);
+
+                level.AddComponent<StaticMeshComponent>(id);
+                StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("Sponza.gltf");
+                if (auto l = smc.staticMesh.Lock())
+                    smc.materials = l->GetBaseMaterial();
+
+            }, { TaskHandle });
+
+        TaskScheduler.Lauch(TaskHandle);
+    }
+
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+        auto TaskHandle2 = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/cube.obj")); });
+        TaskScheduler.Lauch(TaskHandle);
+        TaskScheduler.Lauch(TaskHandle2);
+    }
+#endif
+
     
-     
+
+    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"));
+   
+
+        
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Entity_LionDog_high.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/Horse/horse_statue_01_4k.glb"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/dragon.fbx"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/chinesedragon.gltf"), true);
 
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/obj/sphere.obj"), true);
-    //TempImportModel((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf"), true);
     //TempImportModel((editorData.projectPath / "Assets/Meshs/StandfordBunny.obj"), true);
-    TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
+    //TempImportModel((editorData.projectPath / "Assets/SKM_Manny_Simple.FBX"), true);
 }
   
 

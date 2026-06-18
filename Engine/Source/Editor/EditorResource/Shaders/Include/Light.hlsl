@@ -22,7 +22,7 @@ StructuredBuffer<Light> Lights : register(LIGHT_BUFFER_BINDING, LIGHT_BUFFER_SPA
 
 cbuffer LightsHeader : register(LIGHT_HEADER_BUFFER_BINDING, LIGHT_HEADER_BUFFER_SPACE)
 {
-    DirLight DirLight;
+    DirLight DirLightV;
     uint LightCount;
 };
 

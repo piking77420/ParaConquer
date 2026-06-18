@@ -36,7 +36,9 @@ namespace PC_CORE::Rendering
             .SetName("Light Header Buffer")
             .Build();
 
+        ClipSpaceCorrection = _Rhi.ClipSpaceCorrectionMatrixd();
     }
+
     void PC_CORE::Rendering::RenderView::FromCamera(const PC_CORE::Camera& _Camera)
 	{
         PERF_REGION_SCOPED;
@@ -44,13 +46,18 @@ namespace PC_CORE::Rendering
 
         View = _Camera.GetViewMatrix();
         ViewInv = View.Invert();
+        View3 = Tbx::ToMatrix3x3(View);
+        View3Inv = View3.Invert();
         Projection = _Camera.GetProjection();
         ProjectionInv = Projection.Invert();
         ViewProjection = _Camera.GetViewProjection();
         ViewProjectionInv = ViewInv * ProjectionInv;
 
-        FrustumView = Frustum(Frustum::VulkanNdc, FrustumToView);
-        FrustumWorld = Frustum(Frustum::VulkanNdc, FrustumToWorld);
+        FrustumView = Frustum(Frustum::OpenglNdc, FrustumToView);
+        FrustumWorld = Frustum(Frustum::OpenglNdc, FrustumToWorld);
+
+        Tbx::Vector3f Posf = static_cast<Tbx::Vector3f>(_Camera.Position);
+        CameraPos = Tbx::Vector4f(Posf.x, Posf.y, Posf.z, 0.0f);
 
         Gamma = 2.2f;
         Exposure = 1.f;
@@ -75,14 +82,19 @@ namespace PC_CORE::Rendering
             Gpu::StreamDoubleToFloat(&ptr->View, &View);
             Gpu::StreamDoubleToFloat(&ptr->ViewInv, &ViewInv);
 
+            Gpu::StreamDoubleToFloat(&ptr->View3, &View3);
+            Gpu::StreamDoubleToFloat(&ptr->View3Inv, &View3Inv);
+
             Gpu::StreamDoubleToFloat(&ptr->Projection, &Projection);
             Gpu::StreamDoubleToFloat(&ptr->ProjectionInv, &ProjectionInv);
+            Gpu::StreamDoubleToFloat(&ptr->ClipSpaceCorrection, &ClipSpaceCorrection);
 
             Gpu::StreamDoubleToFloat(&ptr->ViewProjection, &ViewProjection);
             Gpu::StreamDoubleToFloat(&ptr->ViewProjectionInv, &ViewProjectionInv);
             Gpu::StreamDoubleToFloat(&ptr->FrustumViewMatrix, &FrustumViewMatrix);
 
             FrustumView.StreamPlanes(ptr->FrustumPlanesView[0].data.data());
+            std::memcpy(&ptr->CameraPos, &CameraPos.x, sizeof(float) * 4);
 
             ptr->CameraNear = static_cast<float>(CameraNear);
             ptr->CameraFar = static_cast<float>(CameraFar);
@@ -92,6 +104,8 @@ namespace PC_CORE::Rendering
             ptr->Gamma = static_cast<float>(Gamma);
             ptr->Exposure = static_cast<float>(Exposure);
             ptr->MeshletCulling = MeshletCulling;
+            ptr->isYUpFrameBuffer = UniformBuffer->GetRhi().IsYUpFrameBuffer();
+            ptr->isYUpNdc = UniformBuffer->GetRhi().IsYUpNdc();
 
             std::memcpy(&ptr->RenderSize, &RenderSize, 2 * sizeof(float));
             std::memcpy(&ptr->InvRenderSize, &InvRenderSize, 2 * sizeof(float));
@@ -105,12 +119,11 @@ namespace PC_CORE::Rendering
             ptr->LightCount = static_cast<uint32_t>(_RenderingWorldData.LightsData.size());
             if (_RenderingWorldData.DirLightData)
             {
-                // shoul be 3x3
                 Tbx::Vector4d lightDirV = View * Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
                 lightDirV = lightDirV.Normalize();
 
                 ptr->DirLight.Direction = { static_cast<float>(lightDirV.x) ,static_cast<float>(lightDirV.y),static_cast<float>(lightDirV.z) };
-
+                
 
                 ptr->DirLight.ColorIntensity.data[0] = _RenderingWorldData.DirLightData->LightColor.x;
                 ptr->DirLight.ColorIntensity.data[1] = _RenderingWorldData.DirLightData->LightColor.y;

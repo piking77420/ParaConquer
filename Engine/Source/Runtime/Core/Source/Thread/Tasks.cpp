@@ -1,27 +1,26 @@
 #include "Thread/Tasks.hpp"
 
 #include "App.hpp"
-
-// the variant to visit
-using value_t = std::variant<PC_CORE::Thread::ThreadPool*, PC_CORE::Thread::TaskNode::Thread>;
-
-// helper type for the visitor #4
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
-
 namespace PC_CORE::Thread
 {
+	// Task Nodes
+
 	TaskNode::TaskNode(Thread _Thread, std::function<void()>&& _Func, std::vector<TaskHandle> _Prerequire)
 		: m_Job(std::move(_Func))
 	{
 		m_ThreadDesciption.emplace<Thread>(_Thread);
 		for (auto& taskP : _Prerequire)
 			taskP->m_Dependents.push_back(this);
-		m_RemainsDepencies.store((int)_Prerequire.size(), std::memory_order_relaxed);
+		m_RemainsDepencies.store(static_cast<int>(_Prerequire.size()), std::memory_order_relaxed);
+	}
+
+	TaskNode::TaskNode(Thread _Thread, const std::function<void()>& _Func, std::vector<TaskNode*> _Prerequire)
+		: m_Job(_Func)
+	{
+		m_ThreadDesciption.emplace<Thread>(_Thread);
+		for (auto& taskP : _Prerequire)
+			taskP->m_Dependents.push_back(this);
+		m_RemainsDepencies.store(static_cast<int>(_Prerequire.size()), std::memory_order_relaxed);
 	}
 
 	TaskNode::TaskNode(ThreadPool& _ThreadPool, std::function<void()>&& _Func, std::vector<TaskHandle> _Prerequire)
@@ -31,12 +30,23 @@ namespace PC_CORE::Thread
 		for(auto& taskP : _Prerequire)
 		{
 			taskP->m_Dependents.push_back(this);
-
 		}
 		m_RemainsDepencies.store((int)_Prerequire.size(), std::memory_order_relaxed);
 	}
 
+	TaskNode::TaskNode(ThreadPool& _ThreadPool, const std::function<void()>& _Func, std::vector<TaskNode*> _Prerequire)
+		: m_Job(_Func)
+	{
+		m_ThreadDesciption.emplace<ThreadPool*>(&_ThreadPool);
+		for (auto& taskP : _Prerequire)
+		{
+			taskP->m_Dependents.push_back(this);
+		}
+		m_RemainsDepencies.store((int)_Prerequire.size(), std::memory_order_relaxed);
+	}
 
+	// TaskHandle
+	
 	TaskHandle TaskScheduler::NewTask(ThreadPool& _ThreadPool, std::function<void()>&& _Func, std::vector<TaskHandle> _Prerequire)
 	{
 		PERF_REGION_SCOPED
@@ -55,9 +65,20 @@ namespace PC_CORE::Thread
 		PERF_REGION_SCOPED
 		PERF_REGION_COLOR(PerfRegion::Core);
 
-
 		std::scoped_lock _(m_Lock);
 		std::unique_ptr Node = std::make_unique<TaskNode>(_Thread, std::forward<std::function<void()>&&>(_Func), _Prerequire);
+		auto ptr = Node.get();
+
+		m_Nodes.insert(std::move(Node));
+		return ptr;
+	}
+
+	TaskHandle TaskScheduler::NewTask(TaskNode::Thread _Thread, const std::function<void()>& _Func, std::vector<TaskHandle> _Prerequire)
+	{
+		PERF_REGION_SCOPED
+		PERF_REGION_COLOR(PerfRegion::Core);
+		std::scoped_lock _(m_Lock);
+		std::unique_ptr Node = std::make_unique<TaskNode>(_Thread, std::forward<const std::function<void()>&>(_Func), _Prerequire);
 		auto ptr = Node.get();
 
 		m_Nodes.insert(std::move(Node));

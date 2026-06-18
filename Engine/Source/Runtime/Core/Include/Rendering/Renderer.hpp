@@ -41,7 +41,7 @@ public:
         return m_RenderGraph;
     }
 
-    static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);
+    static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);  
 
     std::function<void(CommandList&)> OnSwapchainPass;
 
@@ -52,6 +52,8 @@ public:
     DrawList TransparentList;
 
     DrawList DebugDrawList;
+
+    DrawList Skybox;
 
     std::unique_ptr<RhiShaderProgram> drawTextureQuad;
 
@@ -77,17 +79,35 @@ public:
 
     std::unique_ptr<RhiShaderProgram> DrawDebugMeshletBound;
 
+    std::unique_ptr<RhiShaderProgram> EquilateralToSkyBox;
+
+    std::unique_ptr<RhiShaderProgram> DrawSkyBoxPipeline;
+
+    std::unique_ptr<RhiShaderProgram> IrradianceConvolution;
+
+    std::unique_ptr<RhiShaderProgram> PrefilterEnvironement;
+
+    std::unique_ptr<RhiShaderProgram> BRDFLutPipeline;
+
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
 
     std::unique_ptr<RhiRenderPass> colorLinearPass;
 
+    std::unique_ptr<RhiRenderPass> colorHDRPass;
+
+    std::unique_ptr<RhiRenderPass> BRDFLutPass;
+
     std::unique_ptr<RhiRenderPass> LinearClearColorClearStoreDepth;
 
     std::unique_ptr<RhiRenderPass> LoadLinearColorLoadStoreDepth;
 
     std::unique_ptr<RhiBuffer> InstanceBuffer;
+
+    std::unique_ptr<RhiDescriptorSet> SkyBoxDescriptorSet;
+
+    std::unique_ptr<RhiDescriptorSet> EnvironementDescriptorSet;
 
     std::array<DebugPrimitive, static_cast<size_t>(DebugDrawContext::PrimitiveType::Count)> m_DebugPrimitiveBuffer;
 private:
@@ -115,11 +135,15 @@ private:
 
     void UploadRenderInstanceID();
 
+    void UpdateEnvironement(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
     void PrepareInstanceBuffer(const RenderingWorldData& RenderingWorldData);
 
     void FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void FillListDebugDraw(const RenderView& _view, const RenderingWorldData& RenderingWorldData);
+
+    void FillSkyBox(const RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void SortList();
 

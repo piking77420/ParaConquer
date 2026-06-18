@@ -34,8 +34,8 @@ namespace PC_EDITOR::DebugView
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
-			.SetAttachments(&outPutImage)
-			.SetDepthAttachments(DepthBuffer)
+			.SetAttachement(&outPutImage)
+			.SetDepthAttachment(DepthBuffer)
 			.SetRenderPass(_RendererPassBuildContext.Renderer.LinearClearColorClearStoreDepth.get())
 			.SetName("DebugDrawMeshletBounds Framebuffer")
 			.Build();
@@ -66,7 +66,7 @@ namespace PC_EDITOR::DebugView
 			};
 	}
 
-	void DebugDrawMeshletBounds::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext) const
+	void DebugDrawMeshletBounds::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext)
 	{
 		PERF_REGION_SCOPED;
 		PERF_REGION_COLOR(PerfRegion::Rendering)

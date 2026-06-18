@@ -63,10 +63,11 @@ namespace ResourceUpdateOperation
 		return true;
 	}
 
-	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, size_t _Size, RhiResourceState _AfterUploadState)
+	TextureUpload2D::TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& LevelUploadsOps, RhiResourceState _AfterUploadState)
 		: m_RhiTexture(&_RhiTexture)
-		, m_UploadOperation(_Data, _Size)
+		, m_UploadOperation(_Data, LevelUploadsOps.empty() ? 0 : LevelUploadsOps.back().Offset + LevelUploadsOps.back().Size)
 		, m_AfterUploadState(_AfterUploadState)
+		, m_LevelOperations(LevelUploadsOps)
 	{
 	
 	}
@@ -96,7 +97,7 @@ namespace ResourceUpdateOperation
 			_CommandList.Barrier(m_RhiTexture->GetResourceState(), RequireState, std::span(&barrier, 1));
 		}
 
-		if (!m_RhiTexture->UploadData2D(&_CommandList, m_UploadOperation.GetData(), m_UploadOperation.m_DataSize))
+		if (!m_RhiTexture->UploadData2D(&_CommandList, m_UploadOperation.GetData(), m_LevelOperations))
 		{
 			_CommandList.Barrier(RequireState, m_AfterUploadState, std::span(&barrier, 1));
 			_CommandList.EndDebugLabel();
@@ -181,10 +182,10 @@ ResourceUpdateBranch& ResourceUpdateBranch::BufferUpload(RhiBuffer& _RhiBuffer, 
 
 ResourceUpdateBranch& ResourceUpdateBranch::TextureUpload2D(RhiTexture& _RhiTexture,
 	const void* _Data,
-	size_t _DataSize,
+	const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& _LeveOperations,
 	RhiResourceState _AfterUploadState)
 {
-	m_UpdateBranchs.emplace_back(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, _Data, _DataSize, _AfterUploadState));
+	m_UpdateBranchs.emplace_back(ResourceUpdateOperation::TextureUpload2D(_RhiTexture, _Data, _LeveOperations, _AfterUploadState));
 	return *this;
 }
 
@@ -219,6 +220,7 @@ bool ResourceUpdateBranch::Execute(CommandList& _CommandList, ResourceUpdate& _R
 	return std::visit(
 		Overload{
 			[&](std::monostate&) {
+				assert(false);
 				return false;
 			},
 			[&](ResourceUpdateOperation::BufferUpload& upload) {

@@ -32,7 +32,12 @@ namespace PC_CORE::Thread
 
 		TaskNode(Thread _Thread, std::function<void()>&& _Func, std::vector<TaskNode*> _Prerequire);
 
+		TaskNode(Thread _Thread, const std::function<void()>& _Func, std::vector<TaskNode*> _Prerequire);
+
 		TaskNode(ThreadPool& _ThreadPool, std::function<void()>&& _Func, std::vector<TaskNode*> _Prerequire);
+
+		TaskNode(ThreadPool& _ThreadPool, const std::function<void()>& _Func, std::vector<TaskNode*> _Prerequire);
+
 
 		const std::future<void>& GetFuture() const
 		{
@@ -62,6 +67,8 @@ namespace PC_CORE::Thread
 		TaskHandle NewTask(ThreadPool& _ThreadPool, std::function<void()>&& _Func, std::vector<TaskHandle> _Prerequire = {});
 
 		TaskHandle NewTask(TaskNode::Thread Thread, std::function<void()>&& _Func, std::vector<TaskHandle> _Prerequire = {});
+
+		TaskHandle NewTask(TaskNode::Thread Thread, const std::function<void()>& _Func, std::vector<TaskHandle> _Prerequire = {});
 
 		void Lauch(TaskHandle _Node);
 

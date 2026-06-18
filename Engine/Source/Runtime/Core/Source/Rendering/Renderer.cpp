@@ -131,6 +131,7 @@ namespace PC_CORE::Rendering
    void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
    {
        PrepareInstanceBuffer(RenderingWorldData);
+       UpdateEnvironement(_View, RenderingWorldData);
        BuildDrawLists(_View, RenderingWorldData);
        UploadRenderInstanceID();
        RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
@@ -199,6 +200,29 @@ namespace PC_CORE::Rendering
        }
 
        {
+           colorHDRPass.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = colorHDRPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R32G32B32A32Sfloat)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::Clear)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
+
+           colorHDRPass
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
+
+           colorHDRPass
+               ->SetName("colorHDRPass")
+               .Build();
+       }
+
+       {
            LinearClearColorClearStoreDepth.reset(m_Rhi.CreateRenderPass());
 
            const RenderPassAttachementDescriptor& renderTragetSlot = LinearClearColorClearStoreDepth
@@ -263,6 +287,29 @@ namespace PC_CORE::Rendering
 
            LoadLinearColorLoadStoreDepth
                ->SetName("LoadLinearColorLoadStoreDepth")
+               .Build();
+       }
+
+       {
+           BRDFLutPass.reset(m_Rhi.CreateRenderPass());
+
+           const RenderPassAttachementDescriptor& renderTragetSlot = BRDFLutPass
+               ->CreateAttachment()
+               .SetAttachementSlot(AttachementSlot::S00)
+               .SetRhiFormat(RhiFormat::R16G16Sfloat)
+               .SetSampleCount(1)
+               .SetLoadOp(LoadOperation::DontCare)
+               .SetStoreOp(StoreOperation::Store)
+               .SetInitialImageState(RhiResourceState::Undefined)
+               .SetFinalImageState(RhiResourceState::PixelShaderResource);
+
+           BRDFLutPass
+               ->CreateSubPass()
+               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
+
+           BRDFLutPass
+               ->SetName("BRDF LUT Pass")
                .Build();
        }
       
@@ -484,6 +531,106 @@ namespace PC_CORE::Rendering
            }
        }
 
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("EquirectangularToCubeMap.ps.hlsl.binary")->GetCode()}
+           };
+
+           EquilateralToSkyBox.reset(m_Rhi.CreateRhiShaderProgram());
+           EquilateralToSkyBox
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*colorHDRPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("EquilateralToSkyBox")
+               .Build();
+       }
+
+       {
+           // Skybox
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")->GetCode()}
+           };
+          
+           DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawSkyBoxPipeline
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*forwardPass)
+               .SetDepthTest(true)
+               .SetDepthCompareOp(CompareOp::LessOrEqual)
+               .SetDepthWrite(false)
+               .SetName("Skybox")
+               .Build();
+       }
+
+       {
+           // IrradianceConvolution
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("IrradianceConvolution.ps.hlsl.binary")->GetCode()}
+           };
+
+           IrradianceConvolution.reset(m_Rhi.CreateRhiShaderProgram());
+           IrradianceConvolution
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*colorHDRPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("IrradianceConvolution")
+               .Build();
+       }
+
+       {
+           // PrefilterEnvironement
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("PrefilterEnvironement.ps.hlsl.binary")->GetCode()}
+           };
+
+           PrefilterEnvironement.reset(m_Rhi.CreateRhiShaderProgram());
+           PrefilterEnvironement
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*colorHDRPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("PrefilterEnvironement")
+               .Build();
+       }
+
+       // BRDFLutPipeline
+       {
+           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           {
+               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode()},
+               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("BRDFLUT.ps.hlsl.binary")->GetCode()}
+           };
+
+           BRDFLutPipeline.reset(m_Rhi.CreateRhiShaderProgram());
+           BRDFLutPipeline
+               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               .SetAttachementCount(1)
+               .SetShaderModules(ShaderModules)
+               .SetRenderPass(*BRDFLutPass)
+               .SetDepthTest(false)
+               .SetDepthWrite(false)
+               .SetName("BRDFLutPipeline")
+               .Build();
+       }
+
    }
 
    void Renderer::UploadRenderInstanceID()
@@ -501,6 +648,36 @@ namespace PC_CORE::Rendering
        m_CommandList->EndDebugLabel();
    }
 
+   void Renderer::UpdateEnvironement(RenderView& _view, const RenderingWorldData& RenderingWorldData)
+   {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
+       if (!RenderingWorldData.Environement || !RenderingWorldData.Environement->isDirty)
+           return;
+
+       if (!SkyBoxDescriptorSet)
+       {
+           SkyBoxDescriptorSet.reset(m_Rhi.CreateDescriptorSet());
+           SkyBoxDescriptorSet
+               ->BindTexture(RhiShaderStageBits::Pixel, 0, RenderingWorldData.Environement->SkyBox, linearClampToEdgeSampler.get())
+               .SetName("SkyBoxDescriptorSet")
+               .Build();
+       }
+
+       if (!EnvironementDescriptorSet)
+       {
+           EnvironementDescriptorSet.reset(m_Rhi.CreateDescriptorSet());
+           EnvironementDescriptorSet
+               ->BindTexture(RhiShaderStageBits::Pixel, 0, RenderingWorldData.Environement->IrradianceMap, linearClampToEdgeSampler.get())
+               .BindTexture(RhiShaderStageBits::Pixel, 1, RenderingWorldData.Environement->PrefilterMap, linearClampToEdgeSampler.get())
+               .BindTexture(RhiShaderStageBits::Pixel, 2, RenderingWorldData.Environement->BRDF, linearClampToEdgeSampler.get())
+               .SetName("Environemement DescriptorSet")
+               .Build();
+       }
+
+   }
+
    void Renderer::BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData)
    {
        PERF_REGION_SCOPED;
@@ -509,32 +686,13 @@ namespace PC_CORE::Rendering
        OpaqueList.Clear();
        TransparentList.Clear();
        DebugDrawList.Clear();
+       Skybox.Clear();
 
 
        FillListStaticMesh(_view, RenderingWorldData);
        FillListDebugDraw(_view, RenderingWorldData);
+       FillSkyBox(_view, RenderingWorldData);
        SortList();
-   }
-
-   inline Tbx::Matrix3x3f SquashMatrix(const Tbx::Matrix4x4d& _From)
-   {
-       Tbx::Matrix3x3f out;
-       // 1st coloms
-       out[0] = static_cast<float>(_From[0]);
-       out[1] = static_cast<float>(_From[1]);
-       out[2] = static_cast<float>(_From[2]);
-
-       // 2st coloms
-       out[3] = static_cast<float>(_From[4]);
-       out[4] = static_cast<float>(_From[5]);
-       out[5] = static_cast<float>(_From[6]);
-
-       // 3rd coloms
-       out[6] = static_cast<float>(_From[8]);
-       out[7] = static_cast<float>(_From[9]);
-       out[8] = static_cast<float>(_From[10]);
-
-       return out;
    }
 
    void Renderer::FillListStaticMesh(RenderView& _view, const RenderingWorldData& RenderingWorldData)
@@ -552,13 +710,15 @@ namespace PC_CORE::Rendering
            const bool MeshIsOnFrustum = _view.FrustumWorld.IsOnFrustum(MeshAABBCenter, MeshAABBExtend);
 
            if (!MeshIsOnFrustum)
-            continue;
+             continue;
 
            // Pick Lod
            uint32_t LODIndex = 0;
            const double DistanceAABBToCamera = (MeshAABBExtend - _view.ViewPosition).Magnitude();
            const double BoundingSphereRadius = (MeshAABBExtend).Magnitude();
-           const Tbx::Matrix4x4d ModelView = _view.View * StaticMeshComponentData.WorldMatrix;
+
+           const Tbx::Matrix4x4d& Model = StaticMeshComponentData.WorldMatrix;
+           const Tbx::Matrix4x4d ModelView = _view.View * Model;
   
            if (!StaticMesh->GetLodThreshold().empty())
            {
@@ -577,21 +737,24 @@ namespace PC_CORE::Rendering
                const MotionCore::Aabb<double> MeshSectionAABBW = Dcmd.GlobalModelAABB.GetTransformed(StaticMeshComponentData.WorldMatrix);
                const auto MeshSectionAABBCenter = MeshSectionAABBW.GetCenter();
                const auto MeshSectionAABBExtend = MeshSectionAABBW.GetExtend();
-
                if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
-                   continue;
+                 continue;
 
                const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
+               // Compute Gpu Matrix
+               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
+               Tbx::Matrix3x3f ModelViewF3 = Tbx::ToMatrix3x3(ModelViewF);
+               const Tbx::Matrix4x4f NormalInverMatrixV = Tbx::ToMatrix4x4(ModelViewF3.Invert().Transpose());
+
                // Instance Matrix Update
                item.InstanceIndex = m_InstanceBufferCpu.size();
-               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
-               const Tbx::Matrix4x4f NormalInverMatrixMVF = ModelViewF.Invert().Transpose();
+               // Copy Data to gpu
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
-               std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrixMVF.data, sizeof(RenderInstance.NormalInvertMatrix));
+               std::memcpy(RenderInstance.NormalInvertViewMatrix.data.data(), NormalInverMatrixV.data, sizeof(RenderInstance.NormalInvertViewMatrix));
 
                switch (m_RenderGraph.GetRenderMode())
                {
@@ -755,6 +918,23 @@ namespace PC_CORE::Rendering
        
    }
 
+   void Renderer::FillSkyBox(const RenderView& _view, const RenderingWorldData& _RenderingWorldData)
+   {
+       if (!SkyBoxDescriptorSet)
+           return;
+
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+       auto& item = Skybox.EmplaceBack();
+       Tbx::Matrix4x4f view = Tbx::Matrix4x4f(_view.View);
+       view[15] = 1.f;
+       view[14] = 0.f;
+       view[13] = 0.f;
+       view[12] = 0.f;
+       const Tbx::Matrix4x4f ViewProjectionCorrected = Tbx::Matrix4x4f(_view.ClipSpaceCorrection) * Tbx::Matrix4x4f(_view.Projection) * view;
+       item.Data.emplace<DrawSkyBox>(ViewProjectionCorrected);
+   }
+
    void Renderer::SortList()
    {
        PERF_REGION_SCOPED;
@@ -782,7 +962,7 @@ namespace PC_CORE::Rendering
        return LodThreshold.size();
    }
 
-
+  
    void Renderer::InitDebugResource()
    {
        PERF_REGION_SCOPED;
@@ -831,9 +1011,9 @@ namespace PC_CORE::Rendering
                .SetName("Instance Buffer " + PC_CORE::DebugDrawContext::PrimitiveTypeToString(static_cast<PC_CORE::DebugDrawContext::PrimitiveType>(i)))
                .Build();
 
-           std::scoped_lock _(m_Rhi.GetRhiContext().lock);
-           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.VertexBuffer.Get(), verticies.data(), DebugLayer.VertexBuffer->GetSizeInByte());
-           m_Rhi.GetRhiContext().ResourceUpdateBranch_AssumeLock()->BufferUpload(*DebugLayer.IndexBuffer.Get(), indicies.data(), DebugLayer.IndexBuffer->GetSizeInByte());
+           std::scoped_lock _(m_Rhi.GetRhiContext().ResourceUpdateLock());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch()->BufferUpload(*DebugLayer.VertexBuffer.Get(), verticies.data(), DebugLayer.VertexBuffer->GetSizeInByte());
+           m_Rhi.GetRhiContext().ResourceUpdateBranch()->BufferUpload(*DebugLayer.IndexBuffer.Get(), indicies.data(), DebugLayer.IndexBuffer->GetSizeInByte());
        }
    }
 

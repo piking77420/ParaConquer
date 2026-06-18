@@ -29,7 +29,7 @@ namespace PC_CORE::Rendering::Pass
 
 	DrawPass::~DrawPass() = default;
 
-	void DrawPass::ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList) const
+	void DrawPass::ProceedDrawList(const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const DrawList& _DrawList)
 	{
 		m_LastMeshletDescritptor = nullptr;
 		m_LastMaterialDescriptor = nullptr;
@@ -40,7 +40,6 @@ namespace PC_CORE::Rendering::Pass
 				  [&](const Rendering::DrawStaticMeshTriangle& StaticMesh) {
 					if (m_OnMeshDrawTriangle)
 					{
-						
 						m_OnMeshDrawTriangle(_Context, StaticMesh);
 
 						CommandList::DrawBuffers drawBuffer;
@@ -72,12 +71,12 @@ namespace PC_CORE::Rendering::Pass
 							if (m_OnlyBindMeshletBound)
 							{
  								m_LastMeshletDescritptor = StaticMesh.MeshletBoundDescriptor;
-								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletBoundDescriptor, 1); // dirty hack
+								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletBoundDescriptor, 1);
 							}
 							else
 							{
 								m_LastMeshletDescritptor = StaticMesh.MeshletDescriptor;
-								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 2);
+								_Context.cmd.BindDescriptorSet(StaticMesh.MeshletDescriptor, 3);
 							}
 							
 						}
@@ -95,6 +94,15 @@ namespace PC_CORE::Rendering::Pass
 						_Context.cmd.DrawMeshTask(DispachtSize, 1u, 1u);
 					}
 				  },
+				[&](const DrawSkyBox& DrawSkyBox) {
+					if (_Context.cmd.BindProgram(*_Context.Renderer.DrawSkyBoxPipeline))
+					{
+						_Context.cmd.BindDescriptorSet(_Context.Renderer.SkyBoxDescriptorSet.get(), 0);
+						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawSkyBox.ViewProjectionCorrectedMatrix, 0, sizeof(DrawSkyBox.ViewProjectionCorrectedMatrix));
+						_Context.cmd.Draw(36, 1, 0, 0);
+					}
+
+				},
 				[&](auto&&) 
 				{
 

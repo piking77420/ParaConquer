@@ -141,8 +141,8 @@ void FileSystemWatcher::RecordFileModifycation(void* _notifyPtr, const wchar_t* 
 {
     PERF_REGION_SCOPED;
 
-    const FILE_NOTIFY_INFORMATION* pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(_notifyPtr);
-    const auto file = std::string(_filePath, _filePath + _fileNameLenght);
+   // const FILE_NOTIFY_INFORMATION* pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(_notifyPtr);
+   // const auto file = std::string(_filePath, _filePath + _fileNameLenght);
     /*
     switch (pNotify->Action)
     {
@@ -184,7 +184,7 @@ void FileSystemWatcher::RecordFileModifycation(void* _notifyPtr, const wchar_t* 
         assert(false);
     }*/
 
-    m_Worker.filePendingActions[std::wstring(_filePath)].push_back(pNotify->Action);
+   // m_Worker.filePendingActions[std::wstring(_filePath)].push_back(pNotify->Action);
 }
 
 void FileSystemWatcher::HandleModifcation()

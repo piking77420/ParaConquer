@@ -125,8 +125,8 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
             break;
         case MaterialAttribute::AoRoughnessMetallic:
             _MaterialBuffer.AORoughnessMetallicFactors.data[0] = m_AmbiantOcclusion;
-            _MaterialBuffer.AORoughnessMetallicFactors.data[1] = m_Metallic;
-            _MaterialBuffer.AORoughnessMetallicFactors.data[2] = m_Roughness;
+            _MaterialBuffer.AORoughnessMetallicFactors.data[1] = m_Roughness;
+            _MaterialBuffer.AORoughnessMetallicFactors.data[2] = m_Metallic;
             break;
         default:
             break;

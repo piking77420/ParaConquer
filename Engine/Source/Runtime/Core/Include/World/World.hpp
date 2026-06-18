@@ -4,6 +4,7 @@
 #include "Ecs/ComponentsManager.hpp"
 #include "Ecs/SystemManager.hpp"
 #include "Level.hpp"
+#include <World/Environement.hpp>
 
 BEGIN_PCCORE
 
@@ -63,6 +64,8 @@ class DebugDrawContext;
         bool run = false;
 
         Level level;
+
+        WORLD::Environement Environement;
 
     private:
         PC_CORE_API static inline World* m_World = nullptr;

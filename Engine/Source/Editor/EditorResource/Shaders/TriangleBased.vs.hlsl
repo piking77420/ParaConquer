@@ -16,7 +16,7 @@ struct VsInput
     float4 Normal : NORMAL; // location 1
     float4 Tangent : TEXCOORD0; // location 2
     float2 TexCoord : TEXCOORD1; // location 3
-    float2 Pad : TEXCOORD2; // location 3
+    //float2 Pad : TEXCOORD2; // location 4 // not used
     uint InstanceID : SV_InstanceID;
     uint VertexID   : SV_VertexID;
 };
@@ -31,7 +31,7 @@ struct VsOutput
 #elif defined(LIT)
     float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float3 Tangent : TEXCOORD2;
+    float4 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -57,27 +57,35 @@ VsOutput Main(VsInput input)
     VsOutput output;
     
     RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
-    float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0)); 
+    float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
 
     // Positions
 #if defined(LIT) || defined(VIEWPOS)
     output.ViewSpacePosition = ViewPos.xyz; // View position
 #endif
-    output.Position = mul(Projection, ViewPos);
+    output.Position = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
 
     // Lit dependencies
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    output.Normal = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, NormalL));
-    output.Tangent = normalize(mul((float3x3)renderInstance.NormalInverseMatrixView, TangentL));
+
+    float3x3 ModelViewNormalInverseMatrix3 = (float3x3)renderInstance.ModelViewNormalInverseMatrix;
+    float3x3 ModelView3 = (float3x3)renderInstance.ModelView;
+    
+    float3 NormalV = normalize(mul(ModelViewNormalInverseMatrix3, NormalL));
+    float3 TangentV = normalize(mul(ModelView3, TangentL));
+    TangentV = normalize(TangentV - NormalV * dot(NormalV, TangentV));
+
+    output.Normal = NormalV;
+    output.Tangent = float4(TangentV, input.Tangent.w);
 #endif 
 
     // Need uvs
 #if defined(USE_UV)
     output.TexCoord = input.TexCoord;
 #endif
-
+    
     // Colors Passes
 #if defined(USE_COLOR)
 
@@ -87,5 +95,6 @@ VsOutput Main(VsInput input)
 #endif
 
 #endif 
+
     return output;
 }

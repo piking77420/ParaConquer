@@ -3,7 +3,6 @@
 #include "stb_image.h"
 #include "Rendering/Material.hpp"
 #include "Rendering/Sampler.hpp"
-#include "Resources/Mesh.hpp"
 #include "Resources/Texture2d.hpp"
 
 #include "Serialize/Serializer.h"

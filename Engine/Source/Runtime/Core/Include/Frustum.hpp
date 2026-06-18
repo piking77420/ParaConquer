@@ -24,13 +24,13 @@ namespace PC_CORE
 			FarBottomLeft,
 		};
 
-		static constexpr std::array<Tbx::Vector4d, 8> VulkanNdc =
+		static constexpr std::array<Tbx::Vector4d, 8> OpenglNdc =
 		{
 			// Near plane, z = 0
-			Tbx::Vector4d(-1.0,  1.0, 0.0, 1.0), // 0 Near top left
-			Tbx::Vector4d(1.0,  1.0, 0.0, 1.0), // 1 Near top right
-			Tbx::Vector4d(1.0, -1.0, 0.0, 1.0), // 2 Near bottom right
-			Tbx::Vector4d(-1.0, -1.0, 0.0, 1.0), // 3 Near bottom left
+			Tbx::Vector4d(-1.0,  1.0, -1.0, 1.0), // 0 Near top left
+			Tbx::Vector4d(1.0,  1.0, -1.0, 1.0), // 1 Near top right
+			Tbx::Vector4d(1.0, -1.0, -1.0, 1.0), // 2 Near bottom right
+			Tbx::Vector4d(-1.0, -1.0, -1.0, 1.0), // 3 Near bottom left
 
 			// Far plane, z = 1
 			Tbx::Vector4d(-1.0,  1.0, 1.0, 1.0), // 4 Far top left
