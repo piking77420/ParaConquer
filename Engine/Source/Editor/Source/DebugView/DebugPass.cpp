@@ -15,8 +15,8 @@ DebugPass::DebugPass()
 
 DebugPass::DebugPass(const std::string& _Name,
 	const std::array<float, 4>& _GpuColor,
-	std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramTriangle,
-	std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramMeshlet)
+	std::unique_ptr<PC_CORE::RhiPipeline>*& _ShaderProgramTriangle,
+	std::unique_ptr<PC_CORE::RhiPipeline>*& _ShaderProgramMeshlet)
 	: DrawPass()
 	, m_Name(_Name)
 	, m_GpuDebugerColor(_GpuColor)
@@ -109,7 +109,7 @@ void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _
 
 	ViewportInfo viewPort(beginRenderPassInfo.Extent);
 	cmd.SetViewPort(viewPort);
-	cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+	cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
 	ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 	ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
 	cmd.EndRenderPass();

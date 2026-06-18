@@ -3,7 +3,7 @@
 
 #include <variant>
 #include <LowRenderer/RhiBuffer.h>
-#include <LowRenderer/RhiShaderProgram.hpp>
+#include <LowRenderer/RhiPipeline.hpp>
 #include <LowRenderer/RhiDescriptorSet.hpp>
 #include <DebugHelper/DebugDrawContext.hpp>
 
@@ -11,7 +11,7 @@ namespace PC_CORE::Rendering
 {
 	struct DrawStaticMeshTriangle
 	{
-		const RhiShaderProgram* ShaderProgram{ nullptr };
+		const RhiPipeline* ShaderProgram{ nullptr };
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
 		const RhiBuffer* VertexBuffer{ nullptr };
 		const RhiBuffer* IndexBuffer{ nullptr };
@@ -25,7 +25,7 @@ namespace PC_CORE::Rendering
 
 	struct DrawStaticMeshMeshlet
 	{
-		const RhiShaderProgram* ShaderProgram{ nullptr };
+		const RhiPipeline* ShaderProgram{ nullptr };
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
 		const RhiDescriptorSet* MeshletDescriptor{ nullptr };
 		const RhiDescriptorSet* MeshletBoundDescriptor{ nullptr };
@@ -40,7 +40,7 @@ namespace PC_CORE::Rendering
 
 	struct DrawDebug
 	{
-		const RhiShaderProgram* ShaderProgram{ nullptr };
+		const RhiPipeline* ShaderProgram{ nullptr };
 		Tbx::Matrix4x4f VP;
 		bool isWired = false;
 		uint32_t IndexCount{ 0 };
@@ -48,7 +48,7 @@ namespace PC_CORE::Rendering
 
 	struct DrawDebugInstanced
 	{
-		const RhiShaderProgram* ShaderProgram{ nullptr };
+		const RhiPipeline* ShaderProgram{ nullptr };
 		const RhiBuffer* VertexBuffer{ nullptr };
 		const RhiBuffer* IndexBuffer{ nullptr };
 		const RhiBuffer* InstanceBuffer{ nullptr };

@@ -94,12 +94,12 @@ namespace PC_EDITOR::DebugView
 
 					if (DrawDebugInstanced.isWired)
 					{
-						cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+						cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineList);
 						cmd.SetLineWidth(1.f);
 					}
 					else
 					{
-						cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+						cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
 					}
 
 					CommandList::DrawBuffers drawBuffer;
@@ -125,12 +125,12 @@ namespace PC_EDITOR::DebugView
 
 				if (DrawDebug.isWired)
 				{
-					cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyLineList);
+					cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineList);
 					cmd.SetLineWidth(1.f);
 				}
 				else
 				{
-					cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+					cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
 				}
 				cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawDebug.VP, 0, sizeof(DrawDebug.VP));
 				static constexpr size_t FrustumIndexCount = 24;

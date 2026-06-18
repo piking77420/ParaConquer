@@ -48,7 +48,7 @@ namespace PC_CORE::Rendering::Pass
 			.Build();
 
 		// Set Base state
-		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
 		
 		{
 			PC_CORE::ViewportInfo ViewPortSkyBox(*captureRenderPass->SkyBox);

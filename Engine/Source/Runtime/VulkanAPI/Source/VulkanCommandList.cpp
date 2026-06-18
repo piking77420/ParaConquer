@@ -7,18 +7,17 @@
 #include <alloca.h>
 #endif
 
-#include "PerfRegion.hpp"
-
-#include "LowRenderer/Rhi.hpp"
-#include "VulkanBuffer.hpp"
-#include "VulkanContext.hpp"
-#include "VulkanDescriptorSet.hpp"
-#include "VulkanFence.hpp"
-#include "VulkanFrameBuffer.hpp"
-#include "VulkanRenderPass.hpp"
-#include "VulkanShaderProgram.hpp"
-#include "VulkanTexture.hpp"
-#include "Utils/RhiToVulkan.hpp"
+#include <PerfRegion.hpp>
+#include <LowRenderer/Rhi.hpp>
+#include <VulkanBuffer.hpp>
+#include <VulkanContext.hpp>
+#include <VulkanDescriptorSet.hpp>
+#include <VulkanFence.hpp>
+#include <VulkanFrameBuffer.hpp>
+#include <VulkanRenderPass.hpp>
+#include <VulkanPipeline.hpp>
+#include <VulkanTexture.hpp>
+#include <Utils/RhiToVulkan.hpp>
 
 Vulkan::VulkanCommandList::VulkanCommandList(PC_CORE::Rhi& _Rhi)
     : CommandList(_Rhi)
@@ -332,7 +331,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
-    const VulkanShaderProgram& shaderProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
+    const VulkanPipeline& shaderProgram = reinterpret_cast<const VulkanPipeline&>(*m_RecordState.lastBindProgram);
     vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(_malloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
 
     for (size_t i = 0; i < _DescriptorSets.size(); i++)
@@ -360,7 +359,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
 }
 
-bool Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram)
+bool Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiPipeline& _RhiShaderProgram)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -370,7 +369,7 @@ bool Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiShaderProgram& _Rh
     if (m_RecordState.lastBindProgram != &_RhiShaderProgram)
     {
         m_RecordState.lastBindProgram = &_RhiShaderProgram;
-        const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
+        const VulkanPipeline& vshadeProgram = reinterpret_cast<const VulkanPipeline&>(*m_RecordState.lastBindProgram);
 
         m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
             vshadeProgram.GetPipeline());
@@ -395,7 +394,7 @@ void Vulkan::VulkanCommandList::PushConstant(RhiShaderStageTypeFlag _RhiShaderSt
         throw std::runtime_error("VULKAN_MAX_PUSH_CONSTANTS have been exceeded");
     }
 #endif
-    const VulkanShaderProgram& vshadeProgram = reinterpret_cast<const VulkanShaderProgram&>(*m_RecordState.lastBindProgram);
+    const VulkanPipeline& vshadeProgram = reinterpret_cast<const VulkanPipeline&>(*m_RecordState.lastBindProgram);
     GetVulkanCommandBufferHandle().pushConstants(vshadeProgram.GetPipelineLayout(), Utils::RhiToShaderStage(_RhiShaderStageTypeFlag),
         _Offset, _Size, _Data);
 }
@@ -420,7 +419,7 @@ void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPo
     m_CommandBuffer[m_Rhi.GetFrameIndex()].setScissor(0, 1, &scissor);
 }
 
-void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology)
+void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);

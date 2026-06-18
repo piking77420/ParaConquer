@@ -17,7 +17,7 @@
 BEGIN_PCCORE
     class RhiFrameBuffer;
     class RhiFence;
-    class RhiShaderProgram;
+    class RhiPipeline;
     class RhiDescriptorSet;
 
 
@@ -202,7 +202,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void NextSubPass() = 0;
 
-        PC_CORE_API virtual bool BindProgram(const RhiShaderProgram& _RhiShaderProgram) = 0;
+        PC_CORE_API virtual bool BindProgram(const RhiPipeline& _RhiShaderProgram) = 0;
 
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
@@ -221,7 +221,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
-        PC_CORE_API virtual void SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology) = 0;
+        PC_CORE_API virtual void SetPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology) = 0;
 
         PC_CORE_API virtual void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) = 0;
 
@@ -290,7 +290,7 @@ BEGIN_PCCORE
 
         struct RecordState {
             RecordRenderPassType RecordRenderPassType = RecordRenderPassType::None;
-            const RhiShaderProgram* lastBindProgram = nullptr;
+            const RhiPipeline* lastBindProgram = nullptr;
             DrawBuffers lastDrawBuffersState;
         }m_RecordState;
 

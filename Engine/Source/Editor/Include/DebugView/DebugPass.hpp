@@ -5,7 +5,7 @@
 #include <Rendering/RenderPasses/DrawPass.hpp>
 #include <LowRenderer/RhiFrameBuffer.hpp>
 #include <LowRenderer/RhiDescriptorSet.hpp>
-#include <LowRenderer/RhiShaderProgram.hpp>
+#include <LowRenderer/RhiPipeline.hpp>
 
 
 namespace PC_EDITOR::DebugView
@@ -19,8 +19,8 @@ namespace PC_EDITOR::DebugView
 
 		DebugPass(const std::string& _Name,
             const std::array<float, 4>& _GpuColor,
-            std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramTriangle,
-            std::unique_ptr<PC_CORE::RhiShaderProgram>*& _ShaderProgramMeshlet);
+            std::unique_ptr<PC_CORE::RhiPipeline>*& _ShaderProgramTriangle,
+            std::unique_ptr<PC_CORE::RhiPipeline>*& _ShaderProgramMeshlet);
 
 		~DebugPass() override;
 
@@ -57,9 +57,9 @@ namespace PC_EDITOR::DebugView
 
         std::array<float, 4> m_GpuDebugerColor;
 
-        std::unique_ptr<PC_CORE::RhiShaderProgram>* m_ShaderProgramTriangle{ nullptr };
+        std::unique_ptr<PC_CORE::RhiPipeline>* m_ShaderProgramTriangle{ nullptr };
 
-        std::unique_ptr<PC_CORE::RhiShaderProgram>* m_ShaderProgramMeshlet{ nullptr };
+        std::unique_ptr<PC_CORE::RhiPipeline>* m_ShaderProgramMeshlet{ nullptr };
 	};
 
     REFLECT(DebugPass, PC_CORE::Rendering::Pass::DrawPass);

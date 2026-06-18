@@ -55,39 +55,39 @@ public:
 
     DrawList Skybox;
 
-    std::unique_ptr<RhiShaderProgram> drawTextureQuad;
+    std::unique_ptr<RhiPipeline> drawTextureQuad;
 
-    std::unique_ptr<RhiShaderProgram> toneMapAces;
+    std::unique_ptr<RhiPipeline> toneMapAces;
 
-    std::unique_ptr<RhiShaderProgram> opaqueFowardShader;
+    std::unique_ptr<RhiPipeline> opaqueFowardShader;
 
-    std::unique_ptr<RhiShaderProgram> transparentForwardShader;
+    std::unique_ptr<RhiPipeline> transparentForwardShader;
 
-    std::unique_ptr<RhiShaderProgram> opaqueFowardShaderMeshlet;
+    std::unique_ptr<RhiPipeline> opaqueFowardShaderMeshlet;
 
-    std::unique_ptr<RhiShaderProgram> transparentForwardShaderMeshlet;
+    std::unique_ptr<RhiPipeline> transparentForwardShaderMeshlet;
 
-    std::unique_ptr<RhiShaderProgram> DrawMeshletColor;
+    std::unique_ptr<RhiPipeline> DrawMeshletColor;
 
-    std::unique_ptr<RhiShaderProgram> DrawTriangle;
+    std::unique_ptr<RhiPipeline> DrawTriangle;
 
-    std::unique_ptr<RhiShaderProgram> DrawMeshTriangleMeshlet;
+    std::unique_ptr<RhiPipeline> DrawMeshTriangleMeshlet;
 
-    std::unique_ptr<RhiShaderProgram> DrawDebugShapeFrustum;
+    std::unique_ptr<RhiPipeline> DrawDebugShapeFrustum;
 
-    std::unique_ptr<RhiShaderProgram> DrawDebugShapeInstanced;
+    std::unique_ptr<RhiPipeline> DrawDebugShapeInstanced;
 
-    std::unique_ptr<RhiShaderProgram> DrawDebugMeshletBound;
+    std::unique_ptr<RhiPipeline> DrawDebugMeshletBound;
 
-    std::unique_ptr<RhiShaderProgram> EquilateralToSkyBox;
+    std::unique_ptr<RhiPipeline> EquilateralToSkyBox;
 
-    std::unique_ptr<RhiShaderProgram> DrawSkyBoxPipeline;
+    std::unique_ptr<RhiPipeline> DrawSkyBoxPipeline;
 
-    std::unique_ptr<RhiShaderProgram> IrradianceConvolution;
+    std::unique_ptr<RhiPipeline> IrradianceConvolution;
 
-    std::unique_ptr<RhiShaderProgram> PrefilterEnvironement;
+    std::unique_ptr<RhiPipeline> PrefilterEnvironement;
 
-    std::unique_ptr<RhiShaderProgram> BRDFLutPipeline;
+    std::unique_ptr<RhiPipeline> BRDFLutPipeline;
 
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 

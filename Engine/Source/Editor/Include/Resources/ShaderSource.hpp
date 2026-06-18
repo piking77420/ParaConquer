@@ -45,7 +45,7 @@ BEGIN_EDITOR_PCCORE
         }
 
     private:
-        PC_CORE::RhiShaderProgram::ShaderStageTypeBits m_ShaderType;
+        PC_CORE::RhiPipeline::ShaderStageTypeBits m_ShaderType;
 
         std::filesystem::path m_PathToSource;
 

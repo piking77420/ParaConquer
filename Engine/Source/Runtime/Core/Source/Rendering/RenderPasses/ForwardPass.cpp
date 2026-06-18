@@ -139,7 +139,7 @@ namespace PC_CORE::Rendering::Pass
 
 		ViewportInfo viewPort(beginRenderPassInfo.Extent);
 		cmd.SetViewPort(viewPort);
-		cmd.SetPrimitiveTopology(RhiShaderProgram::PrimitiveTopologyTriangleList);
+		cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
 
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);

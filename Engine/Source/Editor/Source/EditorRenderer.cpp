@@ -1,10 +1,10 @@
-﻿#include "EditorRenderer.hpp"
+﻿#include <EditorRenderer.hpp>
 
-#include "Editor.hpp"
-#include "Resources/ResourceManager.hpp"
-#include "DebugHelper/DebugDrawContext.hpp"
+#include <Editor.hpp>
+#include <Resources/ResourceManager.hpp>
+#include <DebugHelper/DebugDrawContext.hpp>
 #include <Io/FileLoader.hpp>    
-#include "LowRenderer/RhiShaderProgram.hpp"
+#include <LowRenderer/RhiPipeline.hpp>
 
 PC_EDITOR_CORE::EditorRenderer::EditorRenderer(Editor& _editor) : m_Editor(&_editor)
 {
@@ -96,7 +96,7 @@ void PC_EDITOR_CORE::EditorRenderer::DrawLightGizmo(PC_CORE::Renderer& _renderer
 
     {
         _commandList->BindProgram(*m_DrawSpriteShader);
-        _commandList->SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
+        _commandList->SetPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyTriangleStrip);
         _commandList->BindDescriptorSet(*m_DrawSpriteShader, m_CameraSet.get(), SCENE_DESCRIPTOR_SET, 1);
 
         // Dir light
@@ -178,21 +178,21 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
     m_SpriteSampler = PC_CORE::Sampler(m_Editor->gameApp.RenderHarwareInteface, "SpriteSampler", info);
     m_SpriteSampler->Build();
 
-    constexpr PC_CORE::RhiShaderProgram::RasterizerInfo rasterizerInfo =
+    constexpr PC_CORE::RhiPipeline::RasterizerInfo rasterizerInfo =
     {
-        .polygonMode = PC_CORE::RhiShaderProgram::PolygonMode::Fill,
-        .cullModeFlag = PC_CORE::RhiShaderProgram::CullModeFlagBit::None,
-        .frontFace = PC_CORE::RhiShaderProgram::FrontFace::CounterClockwise,
+        .polygonMode = PC_CORE::RhiPipeline::PolygonMode::Fill,
+        .cullModeFlag = PC_CORE::RhiPipeline::CullModeFlagBit::None,
+        .frontFace = PC_CORE::RhiPipeline::FrontFace::CounterClockwise,
         .multiSampleRasterization = 1
     };
 
-    constexpr PC_CORE::RhiShaderProgram::DephStencilInfo dephStencilInfo =
+    constexpr PC_CORE::RhiPipeline::DephStencilInfo dephStencilInfo =
     {
         .depthCompareOp = PC_CORE::CompareOp::Less,
         .enableDepthTest = true
     };
 
-    constexpr PC_CORE::RhiShaderProgram::BlendState blendInfo = {
+    constexpr PC_CORE::RhiPipeline::BlendState blendInfo = {
         .enabled = true,
         .srcColorBlendFactor = PC_CORE::BlendFactor::SrcAlpha,
         .dstColorBlendFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
@@ -207,7 +207,7 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
             PC_CORE::ColorComponent::ColorComponentB |
             PC_CORE::ColorComponent::ColorComponentA)
     };
-    PC_CORE::RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo =
+    PC_CORE::RhiPipeline::ShaderGraphicPointInfo shaderGraphicPointInfo =
     {
         .rasterizerInfo = rasterizerInfo,
         .dephInfo = dephStencilInfo,
@@ -216,25 +216,25 @@ void PC_EDITOR_CORE::EditorRenderer::InitResources()
         .vertexAttributeDescriptions = {}
     };
 
-    std::vector<PC_CORE::RhiShaderProgram::ShaderModule> sourceList =
+    std::vector<PC_CORE::RhiPipeline::ShaderModule> sourceList =
     {
         {
-            PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Vertex,
+            PC_CORE::RhiPipeline::ShaderStageTypeBits::Vertex,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.vs.hlsl.binary")->GetCode(),
         },
         {
-            PC_CORE::RhiShaderProgram::ShaderStageTypeBits::Pixel,
+            PC_CORE::RhiPipeline::ShaderStageTypeBits::Pixel,
             PC_CORE::ResourceManager::Get<PC_CORE::ShaderSourceBinary>("DrawSprite.ps.hlsl.binary")->GetCode()
         }
     };
 
-    PC_CORE::RhiShaderProgram::ShaderInfo shaderInfo =
+    PC_CORE::RhiPipeline::ShaderInfo shaderInfo =
     {
-        .type = PC_CORE::RhiShaderProgram::PipelineType::Graphic,
+        .type = PC_CORE::RhiPipeline::PipelineType::Graphic,
         .shaderInfoData = shaderGraphicPointInfo
     };
 
-    PC_CORE::RhiShaderProgram::ProgramShaderCreateInfo graphicShaderProgramCreateInfo =
+    PC_CORE::RhiPipeline::ProgramShaderCreateInfo graphicShaderProgramCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = m_Editor->gameApp.Renderer.RenderPasses.ForwardPass.get(),

@@ -2,14 +2,13 @@
 
 #include <Vector>
 
-#include "RhiShaderProgram.hpp"
+#include <LowRenderer/RhiPipeline.hpp>
 
 BEGIN_PCCORE
 
 class RhiTexture;
 class RhiSampler;
 class RhiBuffer;
-
 
 enum class DescriptorType : uint8_t
 {

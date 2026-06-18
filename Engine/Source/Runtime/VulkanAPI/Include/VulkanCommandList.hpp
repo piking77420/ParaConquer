@@ -45,7 +45,7 @@ namespace Vulkan
             size_t firstSet,
             const std::span<const size_t>& dynamicOffset) override;
 
-        VULKAN_API bool BindProgram(const PC_CORE::RhiShaderProgram& _RhiShaderProgram) override;
+        VULKAN_API bool BindProgram(const PC_CORE::RhiPipeline& _RhiShaderProgram) override;
 
         VULKAN_API void PushConstant(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag,
                                      const void* _Data,
@@ -54,7 +54,7 @@ namespace Vulkan
 
         VULKAN_API void SetViewPort(const PC_CORE::ViewportInfo& _viewPort) override;
 
-        VULKAN_API void SetPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology) override;
+        VULKAN_API void SetPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology) override;
 
         VULKAN_API void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) override;
 

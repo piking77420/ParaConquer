@@ -8,7 +8,7 @@ BEGIN_PCCORE
 
 class RhiRenderPass;
 
-class RhiShaderProgram : public RhiObjectT<RhiShaderProgram>
+class RhiPipeline : public RhiObjectT<RhiPipeline>
 {
 public:
     enum class PipelineType
@@ -196,39 +196,39 @@ protected:
     };
 
 public:
-    PC_CORE_API RhiShaderProgram(Rhi& _Rhi);
+    PC_CORE_API RhiPipeline(Rhi& _Rhi);
 
-    PC_CORE_API ~RhiShaderProgram() override = default;
+    PC_CORE_API ~RhiPipeline() override = default;
 
     // Setter 
 
-    PC_CORE_API RhiShaderProgram& SetPipelineType(PipelineType _Type);
+    PC_CORE_API RhiPipeline& SetPipelineType(PipelineType _Type);
 
-    PC_CORE_API RhiShaderProgram& SetPolygonMode(PolygonMode _PolygonMode)
+    PC_CORE_API RhiPipeline& SetPolygonMode(PolygonMode _PolygonMode)
     {
         std::get<GraphicPipelineData>(m_PipelineData).PolygonMode = _PolygonMode;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetCullMode(CullModeFlag _CullMode)
+    PC_CORE_API RhiPipeline& SetCullMode(CullModeFlag _CullMode)
     {
         std::get<GraphicPipelineData>(m_PipelineData).CullMode = _CullMode;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetSamples(uint32_t _Sample)
+    PC_CORE_API RhiPipeline& SetSamples(uint32_t _Sample)
     {
         std::get<GraphicPipelineData>(m_PipelineData).Sample = _Sample;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetFrontFace(FrontFace _FrontFace)
+    PC_CORE_API RhiPipeline& SetFrontFace(FrontFace _FrontFace)
     {
         std::get<GraphicPipelineData>(m_PipelineData).FrontFace = _FrontFace;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetDepthTest(bool _DepthTest)
+    PC_CORE_API RhiPipeline& SetDepthTest(bool _DepthTest)
     {
         if (!std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.has_value())
         {
@@ -240,7 +240,7 @@ public:
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetDepthWrite(bool _DepthWrite)
+    PC_CORE_API RhiPipeline& SetDepthWrite(bool _DepthWrite)
     {
         if (!std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.has_value())
         {
@@ -250,7 +250,7 @@ public:
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetDepthCompareOp(CompareOp _CompareOp)
+    PC_CORE_API RhiPipeline& SetDepthCompareOp(CompareOp _CompareOp)
     {
         if (!std::get<GraphicPipelineData>(m_PipelineData).DephStencilInfo.has_value())
         {
@@ -261,43 +261,43 @@ public:
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetBlendState(BlendState _BlendInfo)
+    PC_CORE_API RhiPipeline& SetBlendState(BlendState _BlendInfo)
     {
         std::get<GraphicPipelineData>(m_PipelineData).BlendState.emplace(_BlendInfo);
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetRenderPass(RhiRenderPass& _RhiRenderPass)
+    PC_CORE_API RhiPipeline& SetRenderPass(RhiRenderPass& _RhiRenderPass)
     {
         std::get<GraphicPipelineData>(m_PipelineData).RenderPass = &_RhiRenderPass;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetAttachementCount(uint32_t _AttachementCount)
+    PC_CORE_API RhiPipeline& SetAttachementCount(uint32_t _AttachementCount)
     {
         std::get<GraphicPipelineData>(m_PipelineData).attachementCount = _AttachementCount;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetSubPassIndex(uint32_t _SubPassIndex)
+    PC_CORE_API RhiPipeline& SetSubPassIndex(uint32_t _SubPassIndex)
     {
         std::get<GraphicPipelineData>(m_PipelineData).subPassIndex = _SubPassIndex;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
+    PC_CORE_API RhiPipeline& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
     {
         std::get<GraphicPipelineData>(m_PipelineData).vertexInputBindingDescritions = _VertexInputBindingDescritions;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
+    PC_CORE_API RhiPipeline& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
     {
         std::get<GraphicPipelineData>(m_PipelineData).vertexAttributeDescriptions = _VertexAttributeDescriptions;
         return *this;
     }
 
-    PC_CORE_API RhiShaderProgram& SetShaderModules(const std::vector<ShaderModule>& _ShaderModules);
+    PC_CORE_API RhiPipeline& SetShaderModules(const std::vector<ShaderModule>& _ShaderModules);
 
 
     // Getter
@@ -318,10 +318,10 @@ protected:
     std::variant<std::monostate, GraphicPipelineData, ComputePipelineData> m_PipelineData;
 };
 
-REFLECT(RhiShaderProgram, RhiResource);
+REFLECT(RhiPipeline, RhiResource);
 
 END_PCCORE
 
-using RhiShader = PC_CORE::RhiShaderProgram;
-using RhiShaderStageBits = PC_CORE::RhiShaderProgram::ShaderStageTypeBits;
+using RhiShader = PC_CORE::RhiPipeline;
+using RhiShaderStageBits = PC_CORE::RhiPipeline::ShaderStageTypeBits;
 using RhiShaderStageTypeFlag = uint16_t;

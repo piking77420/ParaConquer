@@ -167,7 +167,7 @@ namespace PC_CORE::Rendering
            // SubPass 0
            forwardPass
                ->CreateSubPass()
-               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(ColorAttachement, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
@@ -191,7 +191,7 @@ namespace PC_CORE::Rendering
 
            colorLinearPass
                ->CreateSubPass()
-               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
            colorLinearPass
@@ -214,7 +214,7 @@ namespace PC_CORE::Rendering
 
            colorHDRPass
                ->CreateSubPass()
-               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
            colorHDRPass
@@ -247,7 +247,7 @@ namespace PC_CORE::Rendering
 
            LinearClearColorClearStoreDepth
                ->CreateSubPass()
-               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
@@ -281,7 +281,7 @@ namespace PC_CORE::Rendering
 
            LoadLinearColorLoadStoreDepth
                ->CreateSubPass()
-               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
@@ -305,7 +305,7 @@ namespace PC_CORE::Rendering
 
            BRDFLutPass
                ->CreateSubPass()
-               .SetType(RhiShaderProgram::PipelineType::Graphic)
+               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
            BRDFLutPass
@@ -321,13 +321,13 @@ namespace PC_CORE::Rendering
        PERF_REGION_COLOR(PerfRegion::Rendering);
 
        {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           const std::vector<RhiPipeline::ShaderModule> shaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Compute, ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")->GetCode() },
+               { RhiPipeline::ShaderStageTypeBits::Compute, ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary")->GetCode() },
            };
            toneMapAces.reset(m_Rhi.CreateRhiShaderProgram());
            toneMapAces
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Compute)
+               ->SetPipelineType(RhiPipeline::PipelineType::Compute)
                .SetShaderModules(shaderModules)
                .SetName("ToneMapAces")
                .Build();
@@ -336,15 +336,15 @@ namespace PC_CORE::Rendering
        
 
        {
-           const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+           const std::vector<RhiPipeline::ShaderModule> shaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode() },
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")->GetCode() }
+               { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode() },
+               { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary")->GetCode() }
            };
 
            drawTextureQuad.reset(m_Rhi.CreateRhiShaderProgram());
            drawTextureQuad
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
                .SetRenderPass(*colorLinearPass)
@@ -354,11 +354,11 @@ namespace PC_CORE::Rendering
 
        auto InitShaderProgramForwardPass = [&]<bool IsTransparent>(
            RhiRenderPass& RhiRenderPass,
-           std::unique_ptr<RhiShaderProgram>&Shader,
-           const std::vector < std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> &ShaderModulesQuery,
+           std::unique_ptr<RhiPipeline>&Shader,
+           const std::vector < std::pair < RhiPipeline::ShaderStageTypeBits, std::string>> &ShaderModulesQuery,
            std::string ShaderName)
            {
-            std::vector<RhiShaderProgram::ShaderModule> shaderModules;
+            std::vector<RhiPipeline::ShaderModule> shaderModules;
             shaderModules.reserve(ShaderModulesQuery.size());
             for (size_t i = 0; i < ShaderModulesQuery.size(); i++)
             {
@@ -369,7 +369,7 @@ namespace PC_CORE::Rendering
 
                Shader.reset(m_Rhi.CreateRhiShaderProgram());
                Shader
-                   ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+                   ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                    .SetAttachementCount(1)
                    .SetShaderModules(shaderModules)
                    .SetRenderPass(RhiRenderPass)
@@ -381,7 +381,7 @@ namespace PC_CORE::Rendering
                     
                if constexpr (IsTransparent)
                {
-                   constexpr PC_CORE::RhiShaderProgram::BlendState blenstate =
+                   constexpr PC_CORE::RhiPipeline::BlendState blenstate =
                    {
                        .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
                        .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
@@ -405,10 +405,10 @@ namespace PC_CORE::Rendering
 
        {
            // Foward
-           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> TriangleModules
+           const std::vector< std::pair < RhiPipeline::ShaderStageTypeBits, std::string>> TriangleModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, "Forward.vs.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Vertex, "Forward.vs.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"},
            };
 
            InitShaderProgramForwardPass.template operator() < false > (*forwardPass, opaqueFowardShader, TriangleModules, "Opaque FowardShader");
@@ -417,11 +417,11 @@ namespace PC_CORE::Rendering
        
        {
            // Forward but with meshsahder
-           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> MeshetsModulesModules
+           const std::vector< std::pair < RhiPipeline::ShaderStageTypeBits, std::string>> MeshetsModulesModules
            {
-              { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
-              { RhiShaderProgram::ShaderStageTypeBits::Mesh, "ForwardMeshlet.ms.hlsl.binary"},
-              { RhiShaderProgram::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"}
+              { RhiPipeline::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
+              { RhiPipeline::ShaderStageTypeBits::Mesh, "ForwardMeshlet.ms.hlsl.binary"},
+              { RhiPipeline::ShaderStageTypeBits::Pixel, "ForwardLit.ps.hlsl.binary"}
            };
 
            InitShaderProgramForwardPass.template operator() < false > (*forwardPass, opaqueFowardShaderMeshlet, MeshetsModulesModules, "Opaque FowardShader Meshlet");
@@ -429,10 +429,10 @@ namespace PC_CORE::Rendering
        }
        
        {
-           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
+           const std::vector< std::pair < RhiPipeline::ShaderStageTypeBits, std::string>> shaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, "DrawMeshTriangle.vs.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshTriangle.ps.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Vertex, "DrawMeshTriangle.vs.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, "DrawMeshTriangle.ps.hlsl.binary"},
            };
            InitShaderProgramForwardPass.template operator() < false > (*LinearClearColorClearStoreDepth, DrawTriangle, shaderModules, "DrawMeshTriangle");
 
@@ -440,11 +440,11 @@ namespace PC_CORE::Rendering
 
        {
            // DrawTriangle MeshShader
-           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
+           const std::vector< std::pair < RhiPipeline::ShaderStageTypeBits, std::string>> shaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "DrawTriangleMeshlet.ms.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawTriangleMeshlet.ps.hlsl.binary"}
+               { RhiPipeline::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Mesh, "DrawTriangleMeshlet.ms.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, "DrawTriangleMeshlet.ps.hlsl.binary"}
            };
 
            InitShaderProgramForwardPass.template operator() < false > (*LinearClearColorClearStoreDepth, DrawMeshTriangleMeshlet, shaderModules, "DrawMeshTriangleMeshlet");
@@ -452,24 +452,24 @@ namespace PC_CORE::Rendering
 
        {
            
-           const std::vector< std::pair < RhiShaderProgram::ShaderStageTypeBits, std::string>> shaderModules
+           const std::vector< std::pair < RhiPipeline::ShaderStageTypeBits, std::string>> shaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Mesh, "DrawMeshletColor.ms.hlsl.binary"},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, "DrawMeshletColor.ps.hlsl.binary"}
+               { RhiPipeline::ShaderStageTypeBits::Amp, "DrawMeshlet.as.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Mesh, "DrawMeshletColor.ms.hlsl.binary"},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, "DrawMeshletColor.ps.hlsl.binary"}
            };
 
            InitShaderProgramForwardPass.template operator() < false > (*LinearClearColorClearStoreDepth, DrawMeshletColor, shaderModules, "DrawMeshMeshelet");
        }
 
        {
-           auto DebugDrawShader = [&](std::unique_ptr<RhiShaderProgram>& Program, 
-               const std::vector<RhiShaderProgram::ShaderModule>& ShaderModules,
+           auto DebugDrawShader = [&](std::unique_ptr<RhiPipeline>& Program, 
+               const std::vector<RhiPipeline::ShaderModule>& ShaderModules,
                std::string ShaderName,
                bool UseVertexBinding) {
                Program.reset(m_Rhi.CreateRhiShaderProgram());
                Program
-                   ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+                   ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                    .SetAttachementCount(1)
                    .SetShaderModules(ShaderModules)
                    .SetRenderPass(*LoadLinearColorLoadStoreDepth)
@@ -500,31 +500,31 @@ namespace PC_CORE::Rendering
 
 
            {
-               const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+               const std::vector<RhiPipeline::ShaderModule> shaderModules
                {
-                   { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugDrawInstanced.vs.hlsl.binary")->GetCode()},
-                   { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+                   { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugDrawInstanced.vs.hlsl.binary")->GetCode()},
+                   { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
                };
 
                DebugDrawShader(DrawDebugShapeInstanced, shaderModules, "DebugInstanceDraw", true);
            }
 
            {
-               const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+               const std::vector<RhiPipeline::ShaderModule> shaderModules
                {
-                   { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugDrawFrustum.vs.hlsl.binary")->GetCode()},
-                   { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+                   { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DebugDrawFrustum.vs.hlsl.binary")->GetCode()},
+                   { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
                };
 
                DebugDrawShader(DrawDebugShapeFrustum, shaderModules, "DebugDrawFrustum", false);
            }
 
            {
-               const std::vector<RhiShaderProgram::ShaderModule> shaderModules
+               const std::vector<RhiPipeline::ShaderModule> shaderModules
                {
-                   { RhiShaderProgram::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("DrawMeshletBound.as.hlsl.binary")->GetCode()},
-                   { RhiShaderProgram::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("DrawMeshletBound.ms.hlsl.binary")->GetCode()},
-                   { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
+                   { RhiPipeline::ShaderStageTypeBits::Amp, ResourceManager::Get<ShaderSourceBinary>("DrawMeshletBound.as.hlsl.binary")->GetCode()},
+                   { RhiPipeline::ShaderStageTypeBits::Mesh, ResourceManager::Get<ShaderSourceBinary>("DrawMeshletBound.ms.hlsl.binary")->GetCode()},
+                   { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("DebugDraw.ps.hlsl.binary")->GetCode()}
                };
 
                DebugDrawShader(DrawDebugMeshletBound, shaderModules, "DrawDebugMeshletBound", false);
@@ -532,15 +532,15 @@ namespace PC_CORE::Rendering
        }
 
        {
-           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           const std::vector<RhiPipeline::ShaderModule> ShaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("EquirectangularToCubeMap.ps.hlsl.binary")->GetCode()}
+               { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("EquirectangularToCubeMap.ps.hlsl.binary")->GetCode()}
            };
 
            EquilateralToSkyBox.reset(m_Rhi.CreateRhiShaderProgram());
            EquilateralToSkyBox
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*colorHDRPass)
@@ -552,15 +552,15 @@ namespace PC_CORE::Rendering
 
        {
            // Skybox
-           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           const std::vector<RhiPipeline::ShaderModule> ShaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")->GetCode()},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")->GetCode()}
+               { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("Skybox.vs.hlsl.binary")->GetCode()},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary")->GetCode()}
            };
           
            DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiShaderProgram());
            DrawSkyBoxPipeline
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*forwardPass)
@@ -573,15 +573,15 @@ namespace PC_CORE::Rendering
 
        {
            // IrradianceConvolution
-           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           const std::vector<RhiPipeline::ShaderModule> ShaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("IrradianceConvolution.ps.hlsl.binary")->GetCode()}
+               { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("IrradianceConvolution.ps.hlsl.binary")->GetCode()}
            };
 
            IrradianceConvolution.reset(m_Rhi.CreateRhiShaderProgram());
            IrradianceConvolution
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*colorHDRPass)
@@ -593,15 +593,15 @@ namespace PC_CORE::Rendering
 
        {
            // PrefilterEnvironement
-           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           const std::vector<RhiPipeline::ShaderModule> ShaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("PrefilterEnvironement.ps.hlsl.binary")->GetCode()}
+               { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("CubeMap.vs.hlsl.binary")->GetCode()},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("PrefilterEnvironement.ps.hlsl.binary")->GetCode()}
            };
 
            PrefilterEnvironement.reset(m_Rhi.CreateRhiShaderProgram());
            PrefilterEnvironement
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*colorHDRPass)
@@ -613,15 +613,15 @@ namespace PC_CORE::Rendering
 
        // BRDFLutPipeline
        {
-           const std::vector<RhiShaderProgram::ShaderModule> ShaderModules
+           const std::vector<RhiPipeline::ShaderModule> ShaderModules
            {
-               { RhiShaderProgram::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode()},
-               { RhiShaderProgram::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("BRDFLUT.ps.hlsl.binary")->GetCode()}
+               { RhiPipeline::ShaderStageTypeBits::Vertex, ResourceManager::Get<ShaderSourceBinary>("DrawQuadTriangle.vs.hlsl.binary")->GetCode()},
+               { RhiPipeline::ShaderStageTypeBits::Pixel, ResourceManager::Get<ShaderSourceBinary>("BRDFLUT.ps.hlsl.binary")->GetCode()}
            };
 
            BRDFLutPipeline.reset(m_Rhi.CreateRhiShaderProgram());
            BRDFLutPipeline
-               ->SetPipelineType(RhiShaderProgram::PipelineType::Graphic)
+               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*BRDFLutPass)

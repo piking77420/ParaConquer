@@ -5,7 +5,7 @@
 #include <Rendering/RenderPasses/DrawPass.hpp>
 #include <LowRenderer/RhiFrameBuffer.hpp>
 #include <LowRenderer/RhiDescriptorSet.hpp>
-#include <LowRenderer/RhiShaderProgram.hpp>
+#include <LowRenderer/RhiPipeline.hpp>
 
 
 namespace PC_EDITOR::DebugView

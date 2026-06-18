@@ -2,8 +2,7 @@
 
 #include <VulkanHeader.h>
 #include <spirv_reflect.h>
-
-#include "LowRenderer/RhiShaderProgram.hpp"
+#include <LowRenderer/RhiPipeline.hpp>
 
 namespace Vulkan
 {
@@ -28,13 +27,13 @@ namespace Vulkan
     };
 
 
-    class VULKAN_API VulkanShaderProgram : public PC_CORE::RhiShaderProgram
+    class VULKAN_API VulkanPipeline : public PC_CORE::RhiPipeline
     {
     public:
         
-        VulkanShaderProgram(PC_CORE::Rhi& _Rhi);
+        VulkanPipeline(PC_CORE::Rhi& _Rhi);
 
-        ~VulkanShaderProgram() override;
+        ~VulkanPipeline() override;
         
         bool Build() override;
         
@@ -73,7 +72,7 @@ namespace Vulkan
 
         void ParsePipelineColorAttachementBlendState(
             vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
-            const std::optional<RhiShaderProgram::BlendState>&);
+            const std::optional<RhiPipeline::BlendState>&);
 
         void ParsePipelineDepthStencilAttachmentState(
             vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
@@ -82,7 +81,7 @@ namespace Vulkan
         void ParseParsePipelineColorBlendState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo,
             const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
             size_t _PipelineColorBlendAttachmentSize,
-            const std::optional<RhiShaderProgram::BlendState>& _blendInfo);
+            const std::optional<RhiPipeline::BlendState>& _blendInfo);
 
         vk::VertexInputBindingDescription ParseVertexInputBindingDescription(
             const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition);

@@ -1,17 +1,17 @@
 ﻿#pragma once
 
-#include "VulkanHeader.h"
-#include "VulkanImageHelper.hpp"
-#include "LowRenderer/RhiTypedef.h"
-#include "LowRenderer/RhiDescriptorSet.hpp"
-#include "LowRenderer/RhiShaderProgram.hpp"
-#include "LowRenderer/RhiTexture.hpp"
+#include <VulkanHeader.h>
+#include <LowRenderer/RhiTypedef.h>
+#include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiPipeline.hpp>
+#include <LowRenderer/RhiTexture.hpp>
+#include <LowRenderer/RhiBuffer.h>
 
 namespace Vulkan::Utils
 {
     vk::Format RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat);
 
-    vk::PipelineBindPoint RhiPipelineBindPointToVulkan(PC_CORE::RhiShaderProgram::PipelineType _shaderProgramPipelineType);
+    vk::PipelineBindPoint RhiPipelineBindPointToVulkan(PC_CORE::RhiPipeline::PipelineType _shaderProgramPipelineType);
 
     vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
     
@@ -36,14 +36,13 @@ namespace Vulkan::Utils
 
     vk::BorderColor RhiToBorderColor(PC_CORE::BorderColor _borderColor);
 
-    vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::RhiShaderProgram::PolygonMode _polygonMode);
+    vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::RhiPipeline::PolygonMode _polygonMode);
 
-    vk::CullModeFlags RhiToCullMode(PC_CORE::RhiShaderProgram::CullModeFlag _cullModeFlagBit);
+    vk::CullModeFlags RhiToCullMode(PC_CORE::RhiPipeline::CullModeFlag _cullModeFlagBit);
 
     vk::ShaderStageFlags RhiToShaderStage(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag);
 
     vk::ShaderStageFlagBits RhiToShaderStageBits(RhiShaderStageBits _RhiShaderStageBits);
-
 
     vk::IndexType RhiToIndexType(PC_CORE::RhiBuffer::IndexFormat _format);
 
@@ -51,7 +50,7 @@ namespace Vulkan::Utils
 
     vk::SampleCountFlagBits RhSampleCountToVulkan(uint32_t _sampleCount);
 
-    vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::RhiShaderProgram::PrimitiveTopology _primitiveTopology);
+    vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology);
 
     vk::AttachmentLoadOp RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation);
 

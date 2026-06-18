@@ -4,16 +4,14 @@
 #include <vector>
 #include <string>
 
-#include "CoreHeader.hpp"
-#include "Objectptr.hpp"
-#include "Reflection/Reflector.hpp"
-#include "LowRenderer/RhiTypedef.h"
-#include "LowRenderer/RhiRenderPass.hpp"
-#include "LowRenderer/RhiShaderProgram.hpp"
-#include "Resources/ShaderSourceBinary.hpp"
+#include <Reflection/Reflector.hpp>
+#include <LowRenderer/RhiTypedef.h>
+#include <LowRenderer/RhiRenderPass.hpp>
+#include <LowRenderer/RhiPipeline.hpp>
+#include <Resources/ShaderSourceBinary.hpp>
 
 BEGIN_PCCORE
-    using SourceList = std::vector<std::pair<RhiShaderProgram::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>;
+    using SourceList = std::vector<std::pair<RhiPipeline::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>;
 
     class ShaderProgram : public Resource
     {
@@ -21,7 +19,7 @@ BEGIN_PCCORE
 
         PC_CORE_API void OnParentReload(const Guid& _parentGuid) override;
 
-        RhiShaderProgram::PipelineType GetPipelineType() const
+        RhiPipeline::PipelineType GetPipelineType() const
         {
             return m_ShaderProgramPipelineType;
         }
@@ -29,15 +27,15 @@ BEGIN_PCCORE
         IMP_DYNAMIC_REFLECT()
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
-                                  RhiShaderProgram::PipelineType _shaderProgramPipelineType,
-                                  const std::vector<std::pair<RhiShaderProgram::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
+                                  RhiPipeline::PipelineType _shaderProgramPipelineType,
+                                  const std::vector<std::pair<RhiPipeline::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
                                   _sources);
 
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
-                                  RhiShaderProgram::PipelineType _shaderProgramPipelineType,
+                                  RhiPipeline::PipelineType _shaderProgramPipelineType,
                                   const WeakObjectPtr<ShaderSourceBinary>& _source);
 
-        PC_CORE_API ShaderProgram(std::string&& _shaderName, RhiShaderProgram::PipelineType _shaderProgramPipelineType,
+        PC_CORE_API ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
                                   const WeakObjectPtr<ShaderSourceBinary>& _source);
 
         PC_CORE_API ShaderProgram()
@@ -56,32 +54,32 @@ BEGIN_PCCORE
             PC_LOG("Destroy ShaderProgram, {}", Name);
         }
 
-        RhiShaderProgram* Get()
+        RhiPipeline* Get()
         {
             return m_RhiShaderProgram.get();
         }
 
-        const RhiShaderProgram* Get() const
+        const RhiPipeline* Get() const
         {
             return m_RhiShaderProgram.get();
         }
 
-        RhiShaderProgram* operator->()
+        RhiPipeline* operator->()
         {
             return m_RhiShaderProgram.get();
         }
 
-        const RhiShaderProgram* operator->() const
+        const RhiPipeline* operator->() const
         {
             return m_RhiShaderProgram.get();
         }
 
     protected:
-        std::shared_ptr<RhiShaderProgram> m_RhiShaderProgram;
+        std::shared_ptr<RhiPipeline> m_RhiShaderProgram;
 
-        RhiShaderProgram::PipelineType m_ShaderProgramPipelineType;
+        RhiPipeline::PipelineType m_ShaderProgramPipelineType;
 
-        static std::vector<RhiShaderProgram::ShaderModule> SourceListToShaderModules(const SourceList& _sourceList);
+        static std::vector<RhiPipeline::ShaderModule> SourceListToShaderModules(const SourceList& _sourceList);
 
         REFLECT(ShaderProgram, Resource);
     };

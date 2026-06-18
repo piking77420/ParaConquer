@@ -28,7 +28,7 @@ BEGIN_EDITOR_PCCORE
     private:
         Editor* m_Editor = nullptr;
 
-        std::unique_ptr<PC_CORE::RhiShaderProgram> m_DrawSpriteShader;
+        std::unique_ptr<PC_CORE::RhiPipeline> m_DrawSpriteShader;
 
         std::weak_ptr<PC_CORE::Texture2D> m_DirectionalLightTexture;
 

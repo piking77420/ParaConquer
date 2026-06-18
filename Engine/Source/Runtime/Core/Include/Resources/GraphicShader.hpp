@@ -6,7 +6,7 @@ BEGIN_PCCORE
 /*
     struct GraphicShaderProgramCreateInfo
     {
-        RhiShaderProgram::ShaderGraphicPointInfo shaderGraphicPointInfo;
+        RhiPipeline::ShaderGraphicPointInfo shaderGraphicPointInfo;
         SourceList sourceList;
         RhiRenderPass* renderPass;
         uint32_t colorAttachementCount;
@@ -31,12 +31,12 @@ BEGIN_PCCORE
 
         PC_CORE_API ~GraphicShader() override = default;
 
-        RhiShaderProgram* const Get() const
+        RhiPipeline* const Get() const
         {
             return m_RhiShaderProgram.get();
         }
 
-        RhiShaderProgram* const operator->() const
+        RhiPipeline* const operator->() const
         {
             return m_RhiShaderProgram.operator->();
         }

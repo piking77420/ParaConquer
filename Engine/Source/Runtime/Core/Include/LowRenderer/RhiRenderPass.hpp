@@ -4,7 +4,7 @@
 
 #include "RhiTexture.hpp"
 #include "RhiBuffer.h"
-#include "RhiShaderProgram.hpp"
+#include <LowRenderer/RhiPipeline.hpp>
 
 BEGIN_PCCORE
 
@@ -129,7 +129,7 @@ std::same_as<std::remove_cvref_t<T>, AttachementRef>;
 
 struct SubPass
 {
-    RhiShaderProgram::PipelineType type{};
+    RhiPipeline::PipelineType type{};
 
     std::vector<AttachementRef> ColorAttachements{};
 
@@ -137,7 +137,7 @@ struct SubPass
 
     AttachementRef DepthAttachement{};
 
-    SubPass& SetType(RhiShaderProgram::PipelineType _Type)
+    SubPass& SetType(RhiPipeline::PipelineType _Type)
     {
         type = _Type;
         return *this;

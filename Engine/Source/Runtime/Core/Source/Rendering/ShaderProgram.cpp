@@ -14,7 +14,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 
     auto p = GetParentResource();
 
-    std::vector<RhiShaderProgram::ShaderModule> sources;
+    std::vector<RhiPipeline::ShaderModule> sources;
 
     for (auto& code : p)
     {
@@ -29,8 +29,8 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
         m_RhiShaderProgram->HotReload(sources);
 }
 
-ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiShaderProgram::PipelineType _shaderProgramPipelineType,
-                             const std::vector<std::pair<RhiShaderProgram::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
+ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
+                             const std::vector<std::pair<RhiPipeline::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
                              _sources) : Resource(_shaderName), m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     PERF_REGION_SCOPED;
@@ -47,7 +47,7 @@ ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiShaderProgram::P
     }
 }
 
-ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiShaderProgram::PipelineType _shaderProgramPipelineType,
+ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
                              const WeakObjectPtr<ShaderSourceBinary>& _source)
     : Resource(_shaderName)
     , m_ShaderProgramPipelineType(_shaderProgramPipelineType)
@@ -55,7 +55,7 @@ ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiShaderProgram::P
     LinkDependencies(_source.lock().get(), this);
 }
 
-ShaderProgram::ShaderProgram(std::string&& _shaderName, RhiShaderProgram::PipelineType _shaderProgramPipelineType,
+ShaderProgram::ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
                              const WeakObjectPtr<ShaderSourceBinary>& _source) : Resource(_shaderName),
     m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
@@ -63,12 +63,12 @@ ShaderProgram::ShaderProgram(std::string&& _shaderName, RhiShaderProgram::Pipeli
 }
 
 
-std::vector<RhiShaderProgram::ShaderModule> ShaderProgram::SourceListToShaderModules(
+std::vector<RhiPipeline::ShaderModule> ShaderProgram::SourceListToShaderModules(
     const SourceList& _sourceList)
 {
     PERF_REGION_SCOPED;
 
-    std::vector<RhiShaderProgram::ShaderModule> output;
+    std::vector<RhiPipeline::ShaderModule> output;
     output.reserve(_sourceList.size());
 
     for (size_t i = 0; i < _sourceList.size(); i++)

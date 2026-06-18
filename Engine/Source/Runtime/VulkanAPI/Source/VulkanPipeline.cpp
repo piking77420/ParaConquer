@@ -1,4 +1,4 @@
-﻿#include "VulkanShaderProgram.hpp"
+﻿#include "VulkanPipeline.hpp"
 
 #include <map>
 #include <string_view>
@@ -16,7 +16,7 @@
 
 using namespace Vulkan;
 
-VulkanShaderProgram::~VulkanShaderProgram()
+VulkanPipeline::~VulkanPipeline()
 {
     vk::Device device = GET_VK_DEVICE;
 
@@ -33,7 +33,7 @@ VulkanShaderProgram::~VulkanShaderProgram()
     }
 }
 
-vk::PipelineBindPoint VulkanShaderProgram::GetPipelineBindPoint() const
+vk::PipelineBindPoint VulkanPipeline::GetPipelineBindPoint() const
 {
     switch (m_Type)
     {
@@ -49,23 +49,23 @@ vk::PipelineBindPoint VulkanShaderProgram::GetPipelineBindPoint() const
     return {};
 }
 
-vk::Pipeline VulkanShaderProgram::GetPipeline() const
+vk::Pipeline VulkanPipeline::GetPipeline() const
 {
     return m_Pipeline;
 }
 
-vk::PipelineLayout VulkanShaderProgram::GetPipelineLayout() const
+vk::PipelineLayout VulkanPipeline::GetPipelineLayout() const
 {
     return m_PipelineLayout;
 }
 
-VulkanShaderProgram::VulkanShaderProgram(PC_CORE::Rhi& _Rhi) :
-    RhiShaderProgram(_Rhi)
+VulkanPipeline::VulkanPipeline(PC_CORE::Rhi& _Rhi) :
+    RhiPipeline(_Rhi)
 {
    
 }
 
-bool VulkanShaderProgram::Build()
+bool VulkanPipeline::Build()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -82,7 +82,7 @@ bool VulkanShaderProgram::Build()
 }
 
 
-std::vector<vk::DynamicState> Vulkan::VulkanShaderProgram::GetDynamicState() const
+std::vector<vk::DynamicState> Vulkan::VulkanPipeline::GetDynamicState() const
 {
     std::vector<vk::DynamicState> State;
 
@@ -114,7 +114,7 @@ std::vector<vk::DynamicState> Vulkan::VulkanShaderProgram::GetDynamicState() con
     return State;
 };
 
-bool Vulkan::VulkanShaderProgram::CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+bool Vulkan::VulkanPipeline::CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -143,7 +143,7 @@ bool Vulkan::VulkanShaderProgram::CreateFromContext(VulkanShaderProgramCreateCon
     return true;
 }
 
-VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateContext(const std::vector<ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources)
+VulkanShaderProgramCreateContex VulkanPipeline::CreateShaderProgramCreateContext(const std::vector<ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -202,7 +202,7 @@ VulkanShaderProgramCreateContex VulkanShaderProgram::CreateShaderProgramCreateCo
 }
 
 
-void VulkanShaderProgram::CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+void VulkanPipeline::CreateComputePipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -238,7 +238,7 @@ void VulkanShaderProgram::CreateComputePipeline(const VulkanShaderProgramCreateC
 }
 
 
-void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+void VulkanPipeline::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -352,7 +352,7 @@ void VulkanShaderProgram::CreatePipeLinePointGraphicsPipeline(const VulkanShader
     m_Pipeline = result.value;
 }
 
-void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
+void VulkanPipeline::CreatePipelineLayout(vk::Device _device,
                                                const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     std::vector<vk::DescriptorSetLayout> cache = GET_VK_CONTEXT.descritptorManager.GetDescriptorLayouts(_vulkanShaderProgramCreateContex.modulesReflected);
@@ -372,7 +372,7 @@ void VulkanShaderProgram::CreatePipelineLayout(vk::Device _device,
     m_PipelineLayout = _device.createPipelineLayout(pipelineLayoutInfo);
 }
 #pragma region ParseRegion
-void VulkanShaderProgram::ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo)
+void VulkanPipeline::ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _pipelineRasterizationStateCreateInfo)
 {
     const GraphicPipelineData& PipelineData = std::get<GraphicPipelineData>(m_PipelineData);
 
@@ -382,15 +382,15 @@ void VulkanShaderProgram::ParseRasterizer(vk::PipelineRasterizationStateCreateIn
     _pipelineRasterizationStateCreateInfo->lineWidth = 1.0f;
     _pipelineRasterizationStateCreateInfo->cullMode = Utils::RhiToCullMode(PipelineData.CullMode);
 
-    _pipelineRasterizationStateCreateInfo->frontFace = PipelineData.FrontFace == RhiShaderProgram::FrontFace::Clockwise
+    _pipelineRasterizationStateCreateInfo->frontFace = PipelineData.FrontFace == RhiPipeline::FrontFace::Clockwise
         ? vk::FrontFace::eClockwise
         : vk::FrontFace::eCounterClockwise;
 
     _pipelineRasterizationStateCreateInfo->depthBiasEnable = VK_FALSE;
 }
 
-void VulkanShaderProgram::ParsePipelineColorAttachementBlendState(
-    vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const std::optional<RhiShaderProgram::BlendState>& _blendInfo)
+void VulkanPipeline::ParsePipelineColorAttachementBlendState(
+    vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const std::optional<RhiPipeline::BlendState>& _blendInfo)
 {
     
     const bool enableBlend = _blendInfo.has_value();
@@ -425,9 +425,9 @@ void VulkanShaderProgram::ParsePipelineColorAttachementBlendState(
     _PipelineColorBlendAttachmentState->colorWriteMask = Utils::RhiColorComponent(_blendInfo->BlendMask);
 }
 
-void VulkanShaderProgram::ParsePipelineDepthStencilAttachmentState(
+void VulkanPipeline::ParsePipelineDepthStencilAttachmentState(
     vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
-    const RhiShaderProgram::DephStencilInfo& _dephInfo)
+    const RhiPipeline::DephStencilInfo& _dephInfo)
 {
     _PipelineDepthStencilStateCreateInfo->sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
     _PipelineDepthStencilStateCreateInfo->depthTestEnable = _dephInfo.enableDepthTest ? VK_TRUE : VK_FALSE;
@@ -440,10 +440,10 @@ void VulkanShaderProgram::ParsePipelineDepthStencilAttachmentState(
     _PipelineDepthStencilStateCreateInfo->back = vk::StencilOpState(); // Optional
 }
 
-void VulkanShaderProgram::ParseParsePipelineColorBlendState(
+void VulkanPipeline::ParseParsePipelineColorBlendState(
     vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo,
     const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState,
-    size_t _PipelineColorBlendAttachmentSize, const std::optional<RhiShaderProgram::BlendState>& _blendInfo)
+    size_t _PipelineColorBlendAttachmentSize, const std::optional<RhiPipeline::BlendState>& _blendInfo)
 {
     _PipelineColorBlendStateCreateInfo->logicOpEnable = VK_FALSE;
     _PipelineColorBlendStateCreateInfo->logicOp = vk::LogicOp::eCopy; // Optional
@@ -456,7 +456,7 @@ void VulkanShaderProgram::ParseParsePipelineColorBlendState(
 }
 
 
-vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDescription(
+vk::VertexInputBindingDescription VulkanPipeline::ParseVertexInputBindingDescription(
     const PC_CORE::VertexInputBindingDescrition& _vertexInputBindingDescrition)
 {
     vk::VertexInputBindingDescription vkvertexInputBindingDescription{};
@@ -468,7 +468,7 @@ vk::VertexInputBindingDescription VulkanShaderProgram::ParseVertexInputBindingDe
     return vkvertexInputBindingDescription;
 }
 
-vk::VertexInputAttributeDescription VulkanShaderProgram::ParseVertexInputAttributeDescription(
+vk::VertexInputAttributeDescription VulkanPipeline::ParseVertexInputAttributeDescription(
     const PC_CORE::VertexAttributeDescription& _vertexAttributeDescription)
 {
     vk::VertexInputAttributeDescription vkvertexInputAttributeDescription;
@@ -480,7 +480,7 @@ vk::VertexInputAttributeDescription VulkanShaderProgram::ParseVertexInputAttribu
     return vkvertexInputAttributeDescription;
 }
 
-vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputState(std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
+vk::PipelineVertexInputStateCreateInfo VulkanPipeline::ParseVertexInputState(std::vector<vk::VertexInputBindingDescription>* _vertexInputBindingDescriptions
     , std::vector<vk::VertexInputAttributeDescription>* _vertexInputAttributeDescriptions)
 {
     if (_vertexInputBindingDescriptions == nullptr || _vertexInputAttributeDescriptions == nullptr)
@@ -519,7 +519,7 @@ vk::PipelineVertexInputStateCreateInfo VulkanShaderProgram::ParseVertexInputStat
     return returnVertexInputStateCreateInfo;
 }
 
-void VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
+void VulkanPipeline::ParsePushConstantRange(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -561,7 +561,7 @@ void VulkanShaderProgram::ParsePushConstantRange(VulkanShaderProgramCreateContex
    
 }
 
-void VulkanShaderProgram::HotReload(const std::vector<RhiShaderProgram::ShaderModule>& _modules)
+void VulkanPipeline::HotReload(const std::vector<RhiPipeline::ShaderModule>& _modules)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);

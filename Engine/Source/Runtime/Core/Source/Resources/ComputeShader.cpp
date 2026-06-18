@@ -5,21 +5,21 @@
 /*
 PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, const std::string& _shaderName,
                                       const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
-    ShaderProgram(_shaderName, RhiShaderProgram::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
+    ShaderProgram(_shaderName, RhiPipeline::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
 {
     DYNAMIC_REFLECT_INIT
 
-    const RhiShaderProgram::ShaderInfo shaderInfo =
+    const RhiPipeline::ShaderInfo shaderInfo =
     {
-        .type = RhiShaderProgram::PipelineType::Compute,
+        .type = RhiPipeline::PipelineType::Compute,
         .shaderInfoData = _computeShaderProgramCreateInfo.shaderComputeInfo,
     };
 
-    const RhiShaderProgram::ProgramShaderCreateInfo programShaderCreateInfo =
+    const RhiPipeline::ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderModule = {{RhiShaderProgram::ShaderStageTypeBits::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
+        .shaderModule = {{RhiPipeline::ShaderStageTypeBits::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };
@@ -29,21 +29,21 @@ PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, const std::string& _shaderName,
 
 PC_CORE::ComputeShader::ComputeShader(Rhi& rhi, std::string&& _shaderName,
     const ComputeShaderProgramCreateInfo& _computeShaderProgramCreateInfo) :
-    ShaderProgram(std::move(_shaderName), RhiShaderProgram::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
+    ShaderProgram(std::move(_shaderName), RhiPipeline::PipelineType::Compute, _computeShaderProgramCreateInfo.source)
 {
     DYNAMIC_REFLECT_INIT
 
-        const RhiShaderProgram::ShaderInfo shaderInfo =
+        const RhiPipeline::ShaderInfo shaderInfo =
     {
-        .type = RhiShaderProgram::PipelineType::Compute,
+        .type = RhiPipeline::PipelineType::Compute,
         .shaderInfoData = _computeShaderProgramCreateInfo.shaderComputeInfo,
     };
 
-    const RhiShaderProgram::ProgramShaderCreateInfo programShaderCreateInfo =
+    const RhiPipeline::ProgramShaderCreateInfo programShaderCreateInfo =
     {
         .shaderInfo = shaderInfo,
         .renderPass = nullptr,
-        .shaderModule = {{RhiShaderProgram::ShaderStageTypeBits::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
+        .shaderModule = {{RhiPipeline::ShaderStageTypeBits::Compute, _computeShaderProgramCreateInfo.source.lock()->GetCode()}},
         .attachementCount = 0,
         .subPassIndex = 0,
     };

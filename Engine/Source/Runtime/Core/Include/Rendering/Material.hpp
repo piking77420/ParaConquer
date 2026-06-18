@@ -180,7 +180,7 @@ namespace PC_CORE::Rendering
             return m_UseAlpha;
         }
 
-        const RhiShaderProgram& GetProgram() const
+        const RhiPipeline& GetProgram() const
         {
             return *m_Program;
         }
@@ -213,7 +213,7 @@ namespace PC_CORE::Rendering
 
         std::unique_ptr<RhiBuffer> m_RhiMaterialBuffer = nullptr;
 
-        RhiShaderProgram* m_Program{ nullptr };
+        RhiPipeline* m_Program{ nullptr };
 
         void PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer);
     };

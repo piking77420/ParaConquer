@@ -86,12 +86,12 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
 
     uint32_t formatIndex = -1;
 
-    if (!PC_CORE::IsFormatValid(PC_CORE::RhiShaderProgram::ShaderSourceFormat, GetFullExtension(_path.generic_string()), &formatIndex))
+    if (!PC_CORE::IsFormatValid(PC_CORE::RhiPipeline::ShaderSourceFormat, GetFullExtension(_path.generic_string()), &formatIndex))
     {
         PC_LOGERROR("Shader invalid format")
     }
 
-    m_ShaderType = static_cast<PC_CORE::RhiShaderProgram::ShaderStageTypeBits>(formatIndex);
+    m_ShaderType = static_cast<PC_CORE::RhiPipeline::ShaderStageTypeBits>(formatIndex);
     m_PathToSource = _path;
 
 
