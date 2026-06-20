@@ -1,8 +1,7 @@
 ﻿#pragma once
 
-#include <Cmath>
-#include <Cstdint>
-
+#include <cstdint>
+#include <type_traits>
 
 #define BEGIN_PCCORE namespace PC_CORE {
 #define END_PCCORE }

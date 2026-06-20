@@ -7,5 +7,15 @@ namespace PC_CORE
 	{
 
 	}
+
+	const std::array<SubPass, RhiRenderPass::MaxSubPass>& RhiRenderPass::GetSubPasses() const
+	{
+		return m_SubPasses;
+	}
+
+	const std::array<RenderPassAttachementDescriptor, RhiRenderPass::MaxAttachementSlot>& RhiRenderPass::GetAttachementDescriptor() const
+	{
+		return m_Attachements;
+	}
 }
 

@@ -206,7 +206,9 @@ public:
         return m_SubPasses[m_SubPassCount++];
     }
 
-       
+    const std::array<SubPass, MaxSubPass>& GetSubPasses() const;
+
+    const std::array<RenderPassAttachementDescriptor, MaxAttachementSlot>& GetAttachementDescriptor() const;
 
 protected:
     size_t m_AttachementCount{ 0 };

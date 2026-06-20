@@ -296,13 +296,16 @@ void VulkanPipeline::CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgr
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
-    std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments(
-        Data.attachementCount);
+    assert(Data.RenderPass != nullptr);
+    
+    const PC_CORE::RhiRenderPass& RhiRenderPass = *Data.RenderPass;
+    const PC_CORE::SubPass& SubPass = RhiRenderPass.GetSubPasses()[Data.subPassIndex];
+    const uint32_t ColorAttachmentCount = static_cast<uint32_t>(SubPass.ColorAttachements.size());
 
-    for (size_t i = 0; i < colorBlendAttachments.size(); ++i)
-    {
+    std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments(ColorAttachmentCount);
+    for (size_t i = 0; i < colorBlendAttachments.size(); ++i)    
         ParsePipelineColorAttachementBlendState(&colorBlendAttachments[i], Data.BlendState);
-    }
+    
 
     vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
     if (Data.DephStencilInfo)
@@ -389,10 +392,9 @@ void VulkanPipeline::ParseRasterizer(vk::PipelineRasterizationStateCreateInfo* _
     _pipelineRasterizationStateCreateInfo->depthBiasEnable = VK_FALSE;
 }
 
-void VulkanPipeline::ParsePipelineColorAttachementBlendState(
-    vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const std::optional<RhiPipeline::BlendState>& _blendInfo)
-{
-    
+void VulkanPipeline::ParsePipelineColorAttachementBlendState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, 
+    const std::optional<RhiPipeline::BlendState>& _blendInfo)
+{ 
     const bool enableBlend = _blendInfo.has_value();
     _PipelineColorBlendAttachmentState->blendEnable = enableBlend ? VK_TRUE : VK_FALSE;
 

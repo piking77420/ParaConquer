@@ -345,7 +345,6 @@ namespace PC_CORE::Rendering
            drawTextureQuad.reset(m_Rhi.CreateRhiShaderProgram());
            drawTextureQuad
                ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetAttachementCount(1)
                .SetShaderModules(shaderModules)
                .SetRenderPass(*colorLinearPass)
                .SetName("DrawQuadTriangle")
@@ -370,7 +369,6 @@ namespace PC_CORE::Rendering
                Shader.reset(m_Rhi.CreateRhiShaderProgram());
                Shader
                    ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-                   .SetAttachementCount(1)
                    .SetShaderModules(shaderModules)
                    .SetRenderPass(RhiRenderPass)
                    .SetDepthTest(true)
@@ -470,7 +468,6 @@ namespace PC_CORE::Rendering
                Program.reset(m_Rhi.CreateRhiShaderProgram());
                Program
                    ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-                   .SetAttachementCount(1)
                    .SetShaderModules(ShaderModules)
                    .SetRenderPass(*LoadLinearColorLoadStoreDepth)
                    .SetDepthTest(true)
@@ -541,7 +538,6 @@ namespace PC_CORE::Rendering
            EquilateralToSkyBox.reset(m_Rhi.CreateRhiShaderProgram());
            EquilateralToSkyBox
                ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*colorHDRPass)
                .SetDepthTest(false)
@@ -561,7 +557,6 @@ namespace PC_CORE::Rendering
            DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiShaderProgram());
            DrawSkyBoxPipeline
                ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*forwardPass)
                .SetDepthTest(true)
@@ -582,7 +577,6 @@ namespace PC_CORE::Rendering
            IrradianceConvolution.reset(m_Rhi.CreateRhiShaderProgram());
            IrradianceConvolution
                ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*colorHDRPass)
                .SetDepthTest(false)
@@ -602,7 +596,6 @@ namespace PC_CORE::Rendering
            PrefilterEnvironement.reset(m_Rhi.CreateRhiShaderProgram());
            PrefilterEnvironement
                ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*colorHDRPass)
                .SetDepthTest(false)
@@ -622,7 +615,6 @@ namespace PC_CORE::Rendering
            BRDFLutPipeline.reset(m_Rhi.CreateRhiShaderProgram());
            BRDFLutPipeline
                ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetAttachementCount(1)
                .SetShaderModules(ShaderModules)
                .SetRenderPass(*BRDFLutPass)
                .SetDepthTest(false)

@@ -249,7 +249,6 @@ VulkanRenderPass::VulkanRenderPass(PC_CORE::Rhi& _Rhi, vk::Device device, vk::Fo
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    
     if (m_RenderPass == VK_NULL_HANDLE)
         return;
 

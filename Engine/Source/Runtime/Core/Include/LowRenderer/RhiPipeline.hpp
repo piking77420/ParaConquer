@@ -163,6 +163,7 @@ public:
         CompareOp depthCompareOp = CompareOp::Less;
     };
 
+
     struct LocalSize
     {
         uint32_t x;
@@ -170,20 +171,19 @@ public:
         uint32_t z;
     };
 
-protected:
 
+protected: 
     struct GraphicPipelineData
     {
         PolygonMode PolygonMode{ PolygonMode::Fill };
         CullModeFlag CullMode{ 0u };
         uint32_t Sample{ 1u };
         FrontFace FrontFace{ FrontFace::CounterClockwise };
-        std::optional< DephStencilInfo> DephStencilInfo;
+        std::optional<DephStencilInfo> DephStencilInfo;
         std::optional<BlendState> BlendState;
         PrimitiveTopology PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
 
         RhiRenderPass* RenderPass{ nullptr };
-        uint32_t attachementCount{ 0u };
         uint32_t subPassIndex{ 0u };
 
         std::vector<VertexInputBindingDescrition> vertexInputBindingDescritions;
@@ -195,13 +195,14 @@ protected:
         LocalSize LocalSize{};
     };
 
+    using PipelineData = std::variant<std::monostate, GraphicPipelineData, ComputePipelineData>;
+
 public:
     PC_CORE_API RhiPipeline(Rhi& _Rhi);
 
     PC_CORE_API ~RhiPipeline() override = default;
 
     // Setter 
-
     PC_CORE_API RhiPipeline& SetPipelineType(PipelineType _Type);
 
     PC_CORE_API RhiPipeline& SetPolygonMode(PolygonMode _PolygonMode)
@@ -273,12 +274,6 @@ public:
         return *this;
     }
 
-    PC_CORE_API RhiPipeline& SetAttachementCount(uint32_t _AttachementCount)
-    {
-        std::get<GraphicPipelineData>(m_PipelineData).attachementCount = _AttachementCount;
-        return *this;
-    }
-
     PC_CORE_API RhiPipeline& SetSubPassIndex(uint32_t _SubPassIndex)
     {
         std::get<GraphicPipelineData>(m_PipelineData).subPassIndex = _SubPassIndex;
@@ -307,15 +302,17 @@ public:
         return std::get<ComputePipelineData>(m_PipelineData).LocalSize;
     }
 
-
+    // TODO to remove
     PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
+
+    size_t Hash() const;
 
 protected:
     PipelineType m_Type;
 
     std::optional<std::vector<ShaderModule>> m_Modules;
 
-    std::variant<std::monostate, GraphicPipelineData, ComputePipelineData> m_PipelineData;
+    PipelineData m_PipelineData;
 };
 
 REFLECT(RhiPipeline, RhiResource);
