@@ -84,17 +84,13 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
 
-    uint32_t formatIndex = -1;
-
-    if (!PC_CORE::IsFormatValid(PC_CORE::RhiPipeline::ShaderSourceFormat, GetFullExtension(_path.generic_string()), &formatIndex))
+    if (!PC_CORE::RhiPipeline::FormatToShaderStageTypeBits(&m_ShaderType, GetFullExtension(_path.generic_string()))) // TO DO use SV
     {
-        PC_LOGERROR("Shader invalid format")
+        PC_LOGERROR("Shader invalid format");
+        return;
     }
 
-    m_ShaderType = static_cast<PC_CORE::RhiPipeline::ShaderStageTypeBits>(formatIndex);
     m_PathToSource = _path;
-
-
     PC_LOG("Compiling {} ", Name);
 
     std::vector<uint32_t> sourceSpriv;

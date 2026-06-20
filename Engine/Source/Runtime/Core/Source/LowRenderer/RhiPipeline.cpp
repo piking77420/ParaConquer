@@ -1,5 +1,6 @@
 ﻿#include <LowRenderer/RhiPipeline.hpp>
 #include <LowRenderer/RhiRenderPass.hpp>
+#include <Resources/ShaderSourceBinary.hpp>
 
 namespace PC_CORE
 {
@@ -32,7 +33,7 @@ RhiPipeline& RhiPipeline::SetPipelineType(PipelineType _Type)
     return *this;
 }
 
-RhiPipeline& RhiPipeline::SetShaderModules(const std::vector<ShaderModule>& _ShaderModules)
+RhiPipeline& RhiPipeline::SetShaderModules(const std::vector<const ShaderSourceBinary*>& _ShaderModules)
 {
     // TODO CHECK PER MODULES IF SUITABLE FOR PIPELINE TYPE
     m_Modules.emplace(_ShaderModules);

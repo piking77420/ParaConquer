@@ -61,16 +61,17 @@ std::vector<char> PC_CORE::ShaderSourceBinary::GetCode() const
 
 
 PC_CORE::ShaderSourceBinary::ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
-            RhiPipeline::ShaderStageTypeBits _shaderStageType, GraphicAPI _api) : Resource(_name),
-    m_ShaderStageType(_shaderStageType)
+    PC_CORE::RhiPipeline::ShaderStageTypeBits _ShaderStageTypeBits, GraphicAPI _api) : Resource(_name),
+    m_ShaderStageTypeBits(_ShaderStageTypeBits)
 {
     DYNAMIC_REFLECT_INIT
     WriteSprivToFile(_sprivCode, _api);
 }
 
 PC_CORE::ShaderSourceBinary::ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
-    RhiPipeline::ShaderStageTypeBits _shaderStageType, GraphicAPI _api) : Resource(std::move(_name)),
-                                                                   m_ShaderStageType(_shaderStageType)
+    PC_CORE::RhiPipeline::ShaderStageTypeBits _ShaderStageTypeBits, GraphicAPI _api)
+    : Resource(std::move(_name))
+    , m_ShaderStageTypeBits(_ShaderStageTypeBits)
 {
     DYNAMIC_REFLECT_INIT
 

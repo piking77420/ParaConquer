@@ -79,8 +79,6 @@ BEGIN_PCCORE
 
         RhiPipeline::PipelineType m_ShaderProgramPipelineType;
 
-        static std::vector<RhiPipeline::ShaderModule> SourceListToShaderModules(const SourceList& _sourceList);
-
         REFLECT(ShaderProgram, Resource);
     };
 

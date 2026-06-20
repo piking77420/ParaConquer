@@ -14,7 +14,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 
     auto p = GetParentResource();
 
-    std::vector<RhiPipeline::ShaderModule> sources;
+    /*std::vector<RhiPipeline::ShaderModule> sources;
 
     for (auto& code : p)
     {
@@ -24,9 +24,9 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
             sources.emplace_back(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetCode());
         }
     }
-
-    if (!sources.empty())
-        m_RhiShaderProgram->HotReload(sources);
+    */
+    //if (!sources.empty())
+        //m_RhiShaderProgram->HotReload(sources);
 }
 
 ShaderProgram::ShaderProgram(const std::string& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
@@ -60,24 +60,4 @@ ShaderProgram::ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineTyp
     m_ShaderProgramPipelineType(_shaderProgramPipelineType)
 {
     LinkDependencies(_source.lock().get(), this);
-}
-
-
-std::vector<RhiPipeline::ShaderModule> ShaderProgram::SourceListToShaderModules(
-    const SourceList& _sourceList)
-{
-    PERF_REGION_SCOPED;
-
-    std::vector<RhiPipeline::ShaderModule> output;
-    output.reserve(_sourceList.size());
-
-    for (size_t i = 0; i < _sourceList.size(); i++)
-    {
-        if (auto s = _sourceList[i].second.lock())
-        {
-            output.emplace_back(_sourceList[i].first, s->GetCode());
-        }
-    }
-
-    return output;
 }

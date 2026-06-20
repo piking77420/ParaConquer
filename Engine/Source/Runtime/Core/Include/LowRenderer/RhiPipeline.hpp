@@ -7,6 +7,7 @@
 BEGIN_PCCORE
 
 class RhiRenderPass;
+class ShaderSourceBinary;
 
 class RhiPipeline : public RhiObjectT<RhiPipeline>
 {
@@ -40,8 +41,7 @@ public:
         ShaderStageTypeCount = 14
     };
 
-    using ShaderModule = std::pair<ShaderStageTypeBits, std::vector<char>>;
-
+     
     static constexpr const std::array<std::string_view, static_cast<size_t>(ShaderStageTypeBits::ShaderStageTypeCount)> ShaderSourceFormat =
     {
         ".vs.hlsl",
@@ -59,6 +59,29 @@ public:
         ".as.hlsl",
         ".ms.hlsl",
     };
+
+    static constexpr bool FormatToShaderStageType(std::underlying_type_t<ShaderStageTypeBits>* _ShaderStageTypeBits, std::string_view _SvFormat)
+    {
+        auto it = std::ranges::find_if(ShaderSourceFormat, [&](const std::string_view& _Other) {return _Other == _SvFormat; });
+        if (it == ShaderSourceFormat.end())
+            return false;
+
+
+        const uint32_t Index = static_cast<uint32_t>(std::distance(ShaderSourceFormat.begin(), it));
+        *_ShaderStageTypeBits |= static_cast<std::underlying_type_t<ShaderStageTypeBits>>(1 << Index);
+        return true;
+    }
+
+    static constexpr bool FormatToShaderStageTypeBits(ShaderStageTypeBits* _ShaderStageTypeBits, std::string_view _SvFormat)
+    {
+        auto it = std::ranges::find_if(ShaderSourceFormat, [&](const std::string_view& _Other) {return _Other == _SvFormat; });
+        if (it == ShaderSourceFormat.end())
+            return false;
+
+        const uint32_t Index = static_cast<uint32_t>(std::distance(ShaderSourceFormat.begin(), it));
+        *_ShaderStageTypeBits = static_cast<ShaderStageTypeBits>(1 << Index);
+        return true;
+    }
 
     enum class PolygonMode
     {
@@ -317,7 +340,7 @@ public:
         return *this;
     }
 
-    PC_CORE_API RhiPipeline& SetShaderModules(const std::vector<ShaderModule>& _ShaderModules);
+    PC_CORE_API RhiPipeline& SetShaderModules(const std::vector<const ShaderSourceBinary*>& _ShaderModules);
 
 
     // Getter
@@ -328,14 +351,14 @@ public:
     }
 
     // TODO to remove
-    PC_CORE_API virtual void HotReload(const std::vector<ShaderModule>& _modules) = 0;
+    //PC_CORE_API virtual void HotReload(const std::vector<ShaderSourceBinary>& _modules) = 0;
 
     size_t Hash() const;
 
 protected:
     PipelineType m_Type;
 
-    std::optional<std::vector<ShaderModule>> m_Modules;
+    std::optional<std::vector<const ShaderSourceBinary*>> m_Modules;
 
     PipelineData m_PipelineData;
 };

@@ -6,6 +6,7 @@
 #include "LowRenderer/Rhi.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
 #include "Resources/ResourceFormat.hpp"
+#include <Resources/ShaderSourceBinary.hpp>
 #include "Utils/RhiToVulkan.hpp"
 #include "Utils/RhiToVulkan.hpp"
 #include "VulkanContext.hpp"
@@ -101,7 +102,8 @@ std::vector<vk::DynamicState> Vulkan::VulkanPipeline::GetDynamicState() const
     if (auto& Modules = m_Modules)
         for (const auto& it : *m_Modules)
         {
-            if (it.first & ShaderStageTypeBits::Mesh || it.first & ShaderStageTypeBits::Amp)
+            PC_CORE::RhiPipeline::ShaderStageTypeBits ShaderStageType = it->GetShaderStageTypeBits();
+            if (ShaderStageType == ShaderStageTypeBits::Mesh || ShaderStageType == ShaderStageTypeBits::Amp)
             {
                 isMeshShader = true;
                 break;
@@ -143,12 +145,12 @@ bool Vulkan::VulkanPipeline::CreateFromContext(VulkanShaderProgramCreateContex& 
     return true;
 }
 
-VulkanShaderProgramCreateContex VulkanPipeline::CreateShaderProgramCreateContext(const std::vector<ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources)
+VulkanShaderProgramCreateContex VulkanPipeline::CreateShaderProgramCreateContext(const std::vector<const PC_CORE::ShaderSourceBinary*>& _Modules, bool _createDescriptorResources)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    const size_t shaderStageCount = _programShaderCreateInfo.size();
+    const size_t shaderStageCount = _Modules.size();
 
     VulkanShaderProgramCreateContex vulkanShaderProgramCreateContex;
     vulkanShaderProgramCreateContex.device = std::reinterpret_pointer_cast<VulkanDevice>(
@@ -161,8 +163,7 @@ VulkanShaderProgramCreateContex VulkanPipeline::CreateShaderProgramCreateContext
 
     for (size_t i = 0; i < shaderStageCount; i++)
     {
-        const ShaderModule& shaderSource = _programShaderCreateInfo[i];
-        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = shaderSource.second;
+        vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = _Modules[i]->GetCode();
     }
 
     for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)
@@ -191,7 +192,7 @@ VulkanShaderProgramCreateContex VulkanPipeline::CreateShaderProgramCreateContext
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType =
             vk::StructureType::ePipelineShaderStageCreateInfo;
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = static_cast<vk::ShaderStageFlagBits>(Utils::RhiToShaderStageBits(
-            _programShaderCreateInfo[i].first));
+            _Modules[i]->GetShaderStageTypeBits()));
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.
             vkShaderModules[i];
         vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.
@@ -562,7 +563,7 @@ void VulkanPipeline::ParsePushConstantRange(VulkanShaderProgramCreateContex& _vu
     }
    
 }
-
+/*
 void VulkanPipeline::HotReload(const std::vector<RhiPipeline::ShaderModule>& _modules)
 {
     PERF_REGION_SCOPED;
@@ -590,6 +591,6 @@ void VulkanPipeline::HotReload(const std::vector<RhiPipeline::ShaderModule>& _mo
     {
         PC_LOGERROR("Failed to hot reaload {}", GetName());
     }
-}
+}*/
 
 #pragma endregion ParseRegion

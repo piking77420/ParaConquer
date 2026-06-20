@@ -7,17 +7,20 @@ BEGIN_PCCORE
     class PC_CORE_API ShaderSourceBinary : public Resource
     {
     public:
-        PC_CORE::RhiPipeline::ShaderStageTypeBits GetShaderStageType() const
-        {
-            return m_ShaderStageType;
-        }
-
-        IMP_DYNAMIC_REFLECT()
-
         ShaderSourceBinary()
         {
             DYNAMIC_REFLECT_INIT;
         }
+
+        ~ShaderSourceBinary() override = default;
+
+        ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
+            PC_CORE::RhiPipeline::ShaderStageTypeBits _ShaderStageTypeBits, GraphicAPI _api);
+
+        ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
+            PC_CORE::RhiPipeline::ShaderStageTypeBits _ShaderStageTypeBits, GraphicAPI _api);
+
+        IMP_DYNAMIC_REFLECT()
 
         void OnParentReload(const Guid& _parentGuid) override;
 
@@ -25,16 +28,13 @@ BEGIN_PCCORE
 
         std::vector<char> GetCode() const;
 
-        ShaderSourceBinary(const std::string& _name, const std::vector<uint32_t>* _sprivCode,
-            RhiPipeline::ShaderStageTypeBits _shaderStageType, GraphicAPI _api);
-
-        ShaderSourceBinary(std::string&& _name, const std::vector<uint32_t>* _sprivCode,
-            RhiPipeline::ShaderStageTypeBits _shaderStageType, GraphicAPI _api);
-
-        ~ShaderSourceBinary() override = default;
+        PC_CORE::RhiPipeline::ShaderStageTypeBits GetShaderStageTypeBits() const
+        {
+            return m_ShaderStageTypeBits;
+        }
 
     private:
-        RhiPipeline::ShaderStageTypeBits m_ShaderStageType;
+        PC_CORE::RhiPipeline::ShaderStageTypeBits m_ShaderStageTypeBits;
 
         std::string m_Path;
 

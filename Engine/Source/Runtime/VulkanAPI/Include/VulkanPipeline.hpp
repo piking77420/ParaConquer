@@ -57,7 +57,7 @@ namespace Vulkan
         bool CreateFromContext(VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 
         VulkanShaderProgramCreateContex CreateShaderProgramCreateContext(
-            const std::vector<ShaderModule>& _programShaderCreateInfo, bool _createDescriptorResources = true);
+            const std::vector<const PC_CORE::ShaderSourceBinary*>& _programShaderCreateInfo, bool _createDescriptorResources = true);
 
         void CreatePipeLinePointGraphicsPipeline(const VulkanShaderProgramCreateContex& _vulkanShaderProgramCreateContex);
 
@@ -96,7 +96,7 @@ namespace Vulkan
 
 #pragma endregion ParseRegion
 
-        void HotReload(const std::vector<ShaderModule>& _modules) override;
+        //void HotReload(const std::vector<ShaderModule>& _modules) override;
 
         
     };

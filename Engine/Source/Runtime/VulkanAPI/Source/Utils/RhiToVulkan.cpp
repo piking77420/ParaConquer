@@ -695,7 +695,7 @@ vk::ShaderStageFlags Vulkan::Utils::RhiToShaderStage(RhiShaderStageTypeFlag _Rhi
 
 vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStageBits(RhiShaderStageBits _RhiShaderStageBits)
 {
-    vk::ShaderStageFlagBits ShaderStageFlag;
+    vk::ShaderStageFlagBits ShaderStageFlag{};
 
     if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Vertex)
         ShaderStageFlag = vk::ShaderStageFlagBits::eVertex;
