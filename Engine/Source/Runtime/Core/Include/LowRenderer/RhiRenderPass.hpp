@@ -129,19 +129,11 @@ std::same_as<std::remove_cvref_t<T>, AttachementRef>;
 
 struct SubPass
 {
-    RhiPipeline::PipelineType type{};
-
     std::vector<AttachementRef> ColorAttachements{};
 
     std::vector<AttachementRef> InputAttachements{};
 
     AttachementRef DepthAttachement{};
-
-    SubPass& SetType(RhiPipeline::PipelineType _Type)
-    {
-        type = _Type;
-        return *this;
-    }
 
     template <AttachementT... Refs>
     SubPass& SetAttachementRef(Refs&&... _Args)
@@ -210,6 +202,7 @@ public:
 
     const std::array<RenderPassAttachementDescriptor, MaxAttachementSlot>& GetAttachementDescriptor() const;
 
+    uint32_t Hash() const;
 protected:
     size_t m_AttachementCount{ 0 };
 

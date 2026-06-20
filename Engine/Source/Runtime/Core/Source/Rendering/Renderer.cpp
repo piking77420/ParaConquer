@@ -167,7 +167,6 @@ namespace PC_CORE::Rendering
            // SubPass 0
            forwardPass
                ->CreateSubPass()
-               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(ColorAttachement, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
@@ -191,7 +190,6 @@ namespace PC_CORE::Rendering
 
            colorLinearPass
                ->CreateSubPass()
-               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
            colorLinearPass
@@ -214,7 +212,6 @@ namespace PC_CORE::Rendering
 
            colorHDRPass
                ->CreateSubPass()
-               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
            colorHDRPass
@@ -247,7 +244,6 @@ namespace PC_CORE::Rendering
 
            LinearClearColorClearStoreDepth
                ->CreateSubPass()
-               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
@@ -281,7 +277,6 @@ namespace PC_CORE::Rendering
 
            LoadLinearColorLoadStoreDepth
                ->CreateSubPass()
-               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
@@ -305,7 +300,6 @@ namespace PC_CORE::Rendering
 
            BRDFLutPass
                ->CreateSubPass()
-               .SetType(RhiPipeline::PipelineType::Graphic)
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget));
 
            BRDFLutPass

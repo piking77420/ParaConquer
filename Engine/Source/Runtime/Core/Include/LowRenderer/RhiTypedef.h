@@ -50,11 +50,10 @@ BEGIN_PCCORE
         return "Invalid Rhi Extension";
     }
 
-
-    struct ALIGNAS_16 DrawObjectBufferGPU
+    static inline void HashCombine(uint32_t& _Seed, uint32_t _Value)
     {
-        Tbx::Matrix4x4f Model;
-    };
+        _Seed ^= _Value + 0x9e3779b9 + (_Seed << 6) + (_Seed >> 2);
+    }
 
     struct ALIGNAS_16 PostProcessGpu
     {

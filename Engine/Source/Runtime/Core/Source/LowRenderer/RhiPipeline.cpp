@@ -1,4 +1,5 @@
 ﻿#include <LowRenderer/RhiPipeline.hpp>
+#include <LowRenderer/RhiRenderPass.hpp>
 
 namespace PC_CORE
 {
@@ -41,11 +42,12 @@ RhiPipeline& RhiPipeline::SetShaderModules(const std::vector<ShaderModule>& _Sha
 
 size_t RhiPipeline::Hash() const
 {
-    uint32_t seed = 0;
-    auto combine = [&seed](uint32_t h) {
-        seed ^= h + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    };
-    combine(static_cast<uint32_t>(m_Type));
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rhi);
+
+    uint32_t Seed = 0;
+
+    HashCombine(Seed, static_cast<uint32_t>(m_Type));
 
     switch (m_Type)
     {
@@ -54,13 +56,44 @@ size_t RhiPipeline::Hash() const
         if (std::holds_alternative<GraphicPipelineData>(m_PipelineData))
         {
             const auto& Data = std::get<GraphicPipelineData>(m_PipelineData);
-            combine(static_cast<uint32_t>(Data.PolygonMode));
-            combine(static_cast<uint32_t>(Data.CullMode));
-            combine(static_cast<uint32_t>(Data.Sample));
-            //combine(static_cast<uint32_t>(Data.DephStencilInfo));
-           // combine(static_cast<uint32_t>(Data.BlendState));
-            combine(static_cast<uint32_t>(Data.PrimitiveTopology));
-            //combine(static_cast<uint32_t>(Data.RenderPass)); // TODO
+            HashCombine(Seed, static_cast<uint32_t>(Data.PolygonMode));
+            HashCombine(Seed, static_cast<uint32_t>(Data.CullMode));
+            HashCombine(Seed, static_cast<uint32_t>(Data.Sample));
+
+            // Depht
+            const bool HasDepthState = Data.DephStencilInfo.has_value();
+            HashCombine(Seed, static_cast<uint32_t>(HasDepthState));
+            if (HasDepthState)
+                HashCombine(Seed, static_cast<uint32_t>((*Data.DephStencilInfo).Hash()));
+
+            // Blend
+            const bool HasBlendtate = Data.BlendState.has_value();
+            HashCombine(Seed, static_cast<uint32_t>(HasBlendtate));
+            if (HasBlendtate)
+            {
+                HashCombine(Seed, static_cast<uint32_t>((*Data.BlendState).Hash()));
+            }
+
+            HashCombine(Seed, static_cast<uint32_t>(Data.PrimitiveTopology));
+            assert(Data.RenderPass);
+            HashCombine(Seed, Data.RenderPass->Hash());
+            HashCombine(Seed, Data.subPassIndex);
+            HashCombine(Seed, static_cast<uint32_t>(Data.vertexInputBindingDescritions.size()));
+            for (const auto& VertexInputBindingDescrition : Data.vertexInputBindingDescritions)
+            {
+                HashCombine(Seed, static_cast<uint32_t>(VertexInputBindingDescrition.Binding));
+                HashCombine(Seed, static_cast<uint32_t>(VertexInputBindingDescrition.Stride));
+                HashCombine(Seed, static_cast<uint32_t>(VertexInputBindingDescrition.VertexInputRate));
+            }
+
+            HashCombine(Seed, static_cast<uint32_t>(Data.vertexAttributeDescriptions.size()));
+            for (const auto& VertexAttributeDescriptions : Data.vertexAttributeDescriptions)
+            {
+                HashCombine(Seed, static_cast<uint32_t>(VertexAttributeDescriptions.Binding));
+                HashCombine(Seed, static_cast<uint32_t>(VertexAttributeDescriptions.Location));
+                HashCombine(Seed, static_cast<uint32_t>(VertexAttributeDescriptions.Format));
+                HashCombine(Seed, static_cast<uint32_t>(VertexAttributeDescriptions.Offset));
+            }
 
         }
     }
@@ -74,7 +107,7 @@ size_t RhiPipeline::Hash() const
         break;
     }
 
-    return seed;
+    return Seed;
 }
 
 }

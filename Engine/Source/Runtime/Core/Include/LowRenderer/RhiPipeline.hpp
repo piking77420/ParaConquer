@@ -154,6 +154,22 @@ public:
             BlendMask = _BlendMask;
             return *this;
         }
+
+        uint32_t Hash() const
+        {
+            uint32_t Seed = 0;
+            HashCombine(Seed, static_cast<uint32_t>(ColorSrcFactor));
+            HashCombine(Seed, static_cast<uint32_t>(ColorDstFactor));
+            HashCombine(Seed, static_cast<uint32_t>(ColorOp));
+
+            HashCombine(Seed, static_cast<uint32_t>(AlphaSrcFactor));
+            HashCombine(Seed, static_cast<uint32_t>(AlphaDstFactor));
+            HashCombine(Seed, static_cast<uint32_t>(AlphaOp));
+
+            HashCombine(Seed, static_cast<uint32_t>(BlendMask));
+            return Seed;
+        }
+
     };
 
     struct DephStencilInfo
@@ -161,6 +177,15 @@ public:
         bool enableDepthTest = false;
         bool enableDepthWrite = false;
         CompareOp depthCompareOp = CompareOp::Less;
+
+        uint32_t Hash() const
+        {
+            uint32_t Seed = 0;
+            HashCombine(Seed, static_cast<uint32_t>(enableDepthTest));
+            HashCombine(Seed, static_cast<uint32_t>(enableDepthWrite));
+            HashCombine(Seed, static_cast<uint32_t>(depthCompareOp));
+            return Seed;
+        }
     };
 
 
