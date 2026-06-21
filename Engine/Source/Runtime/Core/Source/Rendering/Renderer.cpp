@@ -157,7 +157,7 @@ namespace PC_CORE::Rendering
            const RenderPassAttachementDescriptor& DepthAttachement = forwardPass
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S01)
-               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+               .SetRhiFormat(RhiFormat::D32SfloatS8Uint)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
@@ -268,7 +268,7 @@ namespace PC_CORE::Rendering
            const RenderPassAttachementDescriptor& DepthAttachement = LoadLinearColorLoadStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S01)
-               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
+               .SetRhiFormat(RhiFormat::D32SfloatS8Uint)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Load)
                .SetStoreOp(StoreOperation::Store)
@@ -382,6 +382,7 @@ namespace PC_CORE::Rendering
                }
                else
                {
+                   Shader->SetCullMode(RhiPipeline::CullModeFlagBits::CullBack);
                    Shader->Build();
                }
        };
@@ -695,7 +696,6 @@ namespace PC_CORE::Rendering
            const double BoundingSphereRadius = (MeshAABBExtend).Magnitude();
 
            const Tbx::Matrix4x4d& Model = StaticMeshComponentData.WorldMatrix;
-           const Tbx::Matrix4x4d ModelView = _view.View * Model;
   
            if (!StaticMesh->GetLodThreshold().empty())
            {
@@ -722,16 +722,20 @@ namespace PC_CORE::Rendering
                DrawItem& item = DrawList.EmplaceBack();
 
                // Compute Gpu Matrix
-               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(ModelView * Dcmd.GlobalModelMatrix);
-               Tbx::Matrix3x3f ModelViewF3 = Tbx::ToMatrix3x3(ModelViewF);
-               const Tbx::Matrix4x4f NormalInverMatrixV = Tbx::ToMatrix4x4(ModelViewF3.Invert().Transpose());
+               const Tbx::Matrix4x4d GlobleMatrixModel = Model * Dcmd.GlobalModelMatrix;
+               // Position
+               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(_view.View * GlobleMatrixModel);
+
+               // Normal
+               const Tbx::Matrix3x3d ModelD3 = Tbx::ToMatrix3x3(GlobleMatrixModel);
+               const Tbx::Matrix4x4f NormalInverMatrix = static_cast<Tbx::Matrix4x4f>(Tbx::ToMatrix4x4(ModelD3.Invert().Transpose()));
 
                // Instance Matrix Update
                item.InstanceIndex = m_InstanceBufferCpu.size();
                // Copy Data to gpu
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
                std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
-               std::memcpy(RenderInstance.NormalInvertViewMatrix.data.data(), NormalInverMatrixV.data, sizeof(RenderInstance.NormalInvertViewMatrix));
+               std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrix.data, sizeof(RenderInstance.NormalInvertMatrix));
 
                switch (m_RenderGraph.GetRenderMode())
                {
@@ -788,6 +792,9 @@ namespace PC_CORE::Rendering
                    assert(false);
                    break;
                }
+
+
+               int d = 0;
            }
        }
    }

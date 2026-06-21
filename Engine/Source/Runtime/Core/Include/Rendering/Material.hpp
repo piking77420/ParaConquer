@@ -74,12 +74,6 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
-        Material& SetSpecular(float _Specular)
-        {
-            m_Specular = _Specular;
-            return *this;
-        }
-
         Material& SetRoughnessFactor(float _Roughness)
         {
             m_Roughness = _Roughness;
@@ -158,11 +152,6 @@ namespace PC_CORE::Rendering
             return m_Metallic;
         }
 
-        float GetSpecular() const
-        {
-            return m_Specular;
-        }
-
         float GetRoughness() const
         {
             return m_Roughness;
@@ -203,11 +192,9 @@ namespace PC_CORE::Rendering
 
         Tbx::Vector4f m_Albedo = Tbx::Vector4f(1.f, 1.f, 1.f, 1.0f);
 
-        float m_Metallic = 0.f;
+        float m_Metallic = 1.f;
 
-        float m_Specular = 0.5f;
-
-        float m_Roughness = 0.5f;
+        float m_Roughness = 1.0f;
 
         float m_Anisotropy = 0.f;
 

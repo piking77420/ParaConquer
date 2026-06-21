@@ -9,6 +9,10 @@ namespace PC_CORE::WORLD
 		SetMethod(Environement::Method::ImageBased);
 	}
 
+	Environement::~Environement()
+	{
+	}
+
 	void Environement::SetMethod(Method _Method)
 	{
 		auto& env = m_EnvironementRenderingData.emplace<ImageBaseLighting>();

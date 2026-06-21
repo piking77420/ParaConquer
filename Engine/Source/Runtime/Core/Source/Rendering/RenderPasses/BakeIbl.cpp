@@ -34,8 +34,8 @@ namespace PC_CORE::Rendering::Pass
 		PERF_REGION_COLOR(PerfRegion::Rendering);
 
 		m_EquilateralToCubeMapResource = EquilateralToCubemapResource(_RendererPassExecuteContext, *captureRenderPass);
-		m_IrradianceConvolution = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->IrradianceMap);
-		m_PrefilterMap = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution", *captureRenderPass->PrefilterMap);
+		m_IrradianceConvolution = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution ", *captureRenderPass->IrradianceMap);
+		m_PrefilterMap = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Prefilter ", *captureRenderPass->PrefilterMap);
 		
 		auto& BRDFLUT = captureRenderPass->BRDF;
 		m_BRDFLUTFrameBuffer.reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());

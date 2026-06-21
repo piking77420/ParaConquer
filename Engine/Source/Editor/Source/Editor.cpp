@@ -621,7 +621,7 @@ void Editor::TempImport(const std::filesystem::path& _path)
     if (!AssetsImporter)
         return;
     const std::string ext = _path.extension().generic_string();
-    if (ext == ".fbx" || ext == ".gltf" || ext == ".glb" || ext == ".obj")
+    if (ext == ".fbx" || ext == ".gltf" || ext == ".glb" || ext == ".obj" || ext == ".FBX")
     {
         AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
     }
@@ -691,11 +691,11 @@ void Editor::InitTestScene()
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
-                TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
+                TempImport((editorData.projectPath / "Assets/Textures/newport_loft.hdr"));
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("newport_loft.hdr")); },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
@@ -708,33 +708,59 @@ void Editor::InitTestScene()
             {
                 auto& level = World::GetWorld()->level;
 
+                constexpr size_t RowCount = 6;     // Metallic steps
+                constexpr size_t ColumnCount = 6;  // Roughness steps
+                constexpr float Spacing = 2.15f;
 
-                for (size_t i = 0; i < SphereCountPerAxis; i++)
+                for (size_t row = 0; row < RowCount; row++)
                 {
-                    const float Metallic = std::clamp((float)i / (float)SphereCountPerAxis, 0.005f, 1.0f);
-                    const float Roughness = 1.0f - Metallic;
+                    const float Metallic = std::clamp(
+                        static_cast<float>(row) / static_cast<float>(RowCount - 1),
+                        0.0f,
+                        1.0f
+                    );
 
-                    for (size_t j = 0; j < 1; j++)
+                    for (size_t col = 0; col < ColumnCount; col++)
                     {
-                        std::string MaterialFormat = std::format("Roughness {}, Mettalic {}", Roughness, Metallic);
+                        const float Roughness = std::clamp(
+                            static_cast<float>(col) / static_cast<float>(ColumnCount - 1),
+                            0.005f,
+                            1.0f
+                        );
 
-                        const EntityId id = level.CreateEntity(std::string("Sphere")
-                            + MaterialFormat);
+                        std::string MaterialFormat = std::format(
+                            " Roughness {:.2f} Metallic {:.2f}",
+                            Roughness,
+                            Metallic
+                        );
+
+                        const EntityId id = level.CreateEntity(
+                            std::string("Sphere") + MaterialFormat
+                        );
+
                         level.AddComponent<Transform>(id);
                         Transform& t = level.GetComponent<Transform>(id);
-                        t.Position = Tbx::Vector3d(0.0, 0.0, float(i - (SphereCountPerAxis / 2.0f)) * 2.15f);
+
+                        t.Position = Tbx::Vector3d(
+                            static_cast<float>(col) - static_cast<float>(ColumnCount - 1) * 0.5f,
+                            0.0f,
+                            static_cast<float>(row) - static_cast<float>(RowCount - 1) * 0.5f
+                        ) * Spacing;
 
                         level.AddComponent<StaticMeshComponent>(id);
                         StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+
                         smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
 
-                        // Material Block
-                        ObjectPtr<PC_CORE::Rendering::Material> Material = ResourceManager::Create<PC_CORE::Rendering::Material>(
-                            std::string("Pbr Material") + MaterialFormat);
+                        ObjectPtr<PC_CORE::Rendering::Material> Material =
+                            ResourceManager::Create<PC_CORE::Rendering::Material>(
+                                std::string("PBR Material") + MaterialFormat
+                            );
 
                         Material->SetRoughnessFactor(Roughness);
                         Material->SetMetallicFactor(Metallic);
-                        Material->SetAlbedoFactor(Tbx::Vector4f(0.f, 0.f, 0.f, 1.f));
+
+                        Material->SetAlbedoFactor(Tbx::Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
 
                         Material->Build();
 
@@ -746,10 +772,10 @@ void Editor::InitTestScene()
             }
 #endif
 
-#if 0
+#if 1
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf")); });
 
         auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
             [&]()
@@ -763,7 +789,7 @@ void Editor::InitTestScene()
 
                 level.AddComponent<StaticMeshComponent>(id);
                 StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
-                smc.staticMesh = ResourceManager::Get<StaticMesh>("BistroExterior.glb");
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("DamagedHelmet.gltf");
                 if (auto l = smc.staticMesh.Lock())
                     smc.materials = l->GetBaseMaterial();
 
@@ -782,7 +808,7 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 1
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });

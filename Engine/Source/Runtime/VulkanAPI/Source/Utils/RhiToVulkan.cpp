@@ -649,9 +649,9 @@ vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::RhiPipeline::CullModeFla
 
     if (_cullModeFlagBit & Cull::CullFront)
         cullModeFlags |= vk::CullModeFlagBits::eFront;
-    else if (_cullModeFlagBit & Cull::CullFront)
+    else if (_cullModeFlagBit & Cull::CullBack)
         cullModeFlags |= vk::CullModeFlagBits::eBack;
-    else if (_cullModeFlagBit & Cull::CullFront)
+    else if (_cullModeFlagBit & Cull::CullFrontAndBack)
         cullModeFlags |= vk::CullModeFlagBits::eFrontAndBack;
 
     return cullModeFlags;

@@ -50,9 +50,6 @@ float2 IntegrateBRDF(float NoV, float Roughness)
     A /= float(SAMPLE_COUNT);
     B /= float(SAMPLE_COUNT);
 
-    // ....
-    A = clamp(A , EPSILON, 1);
-    B = clamp(B , EPSILON, 1);
     return float2(A, B);
 }
 

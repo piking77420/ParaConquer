@@ -315,7 +315,7 @@ void VulkanContext::ProceedDefferdDestroy(uint32_t _FrameIndex)
                 device.destroyImage(operation.image);
             }
         }
-        else if (std::holds_alternative<DefferdDestroyBufferTexture>(v))
+        else if (std::holds_alternative<vk::ImageView>(v))
         {
             vk::ImageView& imageView = std::get<vk::ImageView>(v);
             vk::Device device = GetDevice()->GetDevice();
@@ -325,6 +325,7 @@ void VulkanContext::ProceedDefferdDestroy(uint32_t _FrameIndex)
                 device.destroyImageView(imageView);
             }
         }
+
     }
 
     m_PendingDefferedDestroy[_FrameIndex].clear();

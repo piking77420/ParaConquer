@@ -133,7 +133,7 @@ namespace PC_EDITOR_CORE
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
-#if 1 
+#if 0
         const size_t NumIndicies = Indices.size();
         const size_t NumVerticies = Verticies.size();
         constexpr size_t SizeOfVertex = sizeof(std::remove_cv_t<std::remove_reference_t<decltype(Verticies)>>::value_type);

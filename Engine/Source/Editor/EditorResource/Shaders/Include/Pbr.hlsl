@@ -10,9 +10,9 @@
 static const float3 DIELECTRIC_F0 = float3(0.04, 0.04, 0.04);
 
 // D term (GGX / Trowbridge-Reitz)
-float D_GGX(float NoH, float Roughness)
+float D_GGX(float NoH, float AlphaRoughness)
 {
-    float alpha = Roughness * Roughness;
+    float alpha = AlphaRoughness;
     float a2 = alpha * alpha;
     float denom = NoH * NoH * (a2 - 1.0) + 1.0;
     return a2 / (PI * denom * denom);
@@ -22,6 +22,19 @@ float D_GGX(float NoH, float Roughness)
 float3 F_Schlick(float CosTheta, float3 F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - CosTheta, 5.0);
+}
+
+// Fresnel term
+float3 F_Fresnel(float CosTheta, float3 F0, float3 F90)
+{
+    return F0 + (F90 - F0) * pow(saturate(1.0 - CosTheta), 5.0);
+}
+
+
+float3 F_SchlickR(float CosTheta, float3 F0, float Roughness)
+{
+    float minus1Roughness = 1.0 - Roughness;
+	return F0 + (max(float3(minus1Roughness, minus1Roughness, minus1Roughness), F0) - F0) * pow(clamp(1.0 - CosTheta, 0, 1.0), 5.0);
 }
 
 // Geometry term helper (GGX)
@@ -71,13 +84,6 @@ float V_SmithGGXCorrelated(float NoL, float NoV, float Roughness)
     return 0.5 / (GV + GL);
 }
 
-float3 F_SchlickR(float CosTheta, float3 F0, float Roughness)
-{
-    float minus1Roughness = 1.0 - Roughness;
-	return F0 + (max(float3(minus1Roughness, minus1Roughness, minus1Roughness), F0) - F0) * pow(1.0 - CosTheta, 5.0);
-}
-
-
 
 float Fd_Burley(float NoV, float NoL, float LoH, float Roughness)
 {   
@@ -95,17 +101,17 @@ float Fd_Lambert()
 }
 
 // Full BRDF combining specular + diffuse
-float3 BRDF(float3 BaseColor, float Metallic, float PerceptualRoughness, float NoV, float NoL, float NoH, float LoH, float3 F0)
+float3 BRDF(float3 BaseColor, float Metallic, float AlphaRoughness, float NoV, float NoL, float NoH, float LoH, float3 F0, float3 F90)
 {
     // Specular F0 from metallic workflow
 
     // Normal Distrubution Function 
     // Approximate the amout of surface microfacet that are alligned with H
-    float D = D_GGX(NoH, PerceptualRoughness);
+    float D = D_GGX(NoH, AlphaRoughness);
     // Self shadowing property of the microfacets 
     // how other microfacets shadow themselft
-    float G = G_SmithGGX(NoL, NoV, PerceptualRoughness);
-    float3 F = F_Schlick(LoH, F0);
+    float G = G_SmithGGX(NoL, NoV, AlphaRoughness);
+    float3 F = F_Fresnel(LoH, F0, F90);
 
     float3 Fr = (D * G * F) / (4.0 * NoL * NoV + 0.001); 
 

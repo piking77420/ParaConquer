@@ -91,10 +91,10 @@ void Main(uint3 gtid : SV_GroupThreadID,
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
-    float3x3 ModelViewNormalInverseMatrix3 = (float3x3)renderInstance.ModelViewNormalInverseMatrix;
+    float3x3 ModelNormalInverseMatrix3 = (float3x3)renderInstance.ModelNormalInverseMatrix;
     float3x3 ModelView3 = (float3x3)renderInstance.ModelView;
     
-    float3 NormalV = normalize(mul(ModelViewNormalInverseMatrix3, NormalL));
+    float3 NormalV = normalize(mul(ModelNormalInverseMatrix3, NormalL));
     float3 TangentV = normalize(mul(ModelView3, TangentL));
     TangentV = normalize(TangentV - NormalV * dot(NormalV, TangentV));
 

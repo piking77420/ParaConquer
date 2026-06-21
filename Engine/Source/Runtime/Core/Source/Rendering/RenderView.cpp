@@ -48,6 +48,7 @@ namespace PC_CORE::Rendering
         ViewInv = View.Invert();
         View3 = Tbx::ToMatrix3x3(View);
         View3Inv = View3.Invert();
+        assert(View3 * View3Inv == Tbx::Matrix3x3d::Identity());
         Projection = _Camera.GetProjection();
         ProjectionInv = Projection.Invert();
         ViewProjection = _Camera.GetViewProjection();
@@ -119,10 +120,10 @@ namespace PC_CORE::Rendering
             ptr->LightCount = static_cast<uint32_t>(_RenderingWorldData.LightsData.size());
             if (_RenderingWorldData.DirLightData)
             {
-                Tbx::Vector4d lightDirV = View * Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
-                lightDirV = lightDirV.Normalize();
+                Tbx::Vector4d lightDirW = Tbx::Vector4d(_RenderingWorldData.DirLightData->LightDirW.x, _RenderingWorldData.DirLightData->LightDirW.y, _RenderingWorldData.DirLightData->LightDirW.z, 0.0);
+                lightDirW = lightDirW.Normalize();
 
-                ptr->DirLight.Direction = { static_cast<float>(lightDirV.x) ,static_cast<float>(lightDirV.y),static_cast<float>(lightDirV.z) };
+                ptr->DirLight.Direction = { static_cast<float>(lightDirW.x) ,static_cast<float>(lightDirW.y),static_cast<float>(lightDirW.z) };
                 
 
                 ptr->DirLight.ColorIntensity.data[0] = _RenderingWorldData.DirLightData->LightColor.x;

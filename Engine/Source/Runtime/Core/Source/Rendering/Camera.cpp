@@ -84,7 +84,7 @@ void Camera::LookAt(const Tbx::Vector3d& _point)
 
     Front = (_point - Position);
 
-    if (Front.MagnitudeSquare() < 1e-8)
+    if (Front.Magnitude() < 1e-8)
     {
         return;
     }

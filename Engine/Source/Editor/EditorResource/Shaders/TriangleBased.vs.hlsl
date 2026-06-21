@@ -27,9 +27,9 @@ struct VsOutput
 #if defined(LIT) || defined(VIEWPOS)
 
 #if defined(VIEWPOS)
-    float3 ViewSpacePosition : TEXCOORD0;
+    float3 WorldPosition : TEXCOORD0;
 #elif defined(LIT)
-    float3 ViewSpacePosition : TEXCOORD0;
+    float3 WorldPosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
     float4 Tangent : TEXCOORD2;
     #endif
@@ -57,28 +57,31 @@ VsOutput Main(VsInput input)
     VsOutput output;
     
     RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
-    float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
+    float4x4 Model = mul(ViewInv, renderInstance.ModelView);
 
     // Positions
 #if defined(LIT) || defined(VIEWPOS)
-    output.ViewSpacePosition = ViewPos.xyz; // View position
+    output.WorldPosition = mul(Model, float4(input.Position.xyz, 1.0)).xyz;
 #endif
-    output.Position = mul(ClipSpaceCorrection, mul(Projection, ViewPos));
+    output.Position = mul(
+        ClipSpaceCorrection,
+        mul(Projection, mul(View, mul(Model, float4(input.Position.xyz, 1.0))))
+    );
 
     // Lit dependencies
 #if defined(LIT)
     float3 NormalL = input.Normal.xyz;
     float3 TangentL = input.Tangent.xyz;
 
-    float3x3 ModelViewNormalInverseMatrix3 = (float3x3)renderInstance.ModelViewNormalInverseMatrix;
-    float3x3 ModelView3 = (float3x3)renderInstance.ModelView;
+    float3x3 ModelNormalInverseMatrix3 = (float3x3)renderInstance.ModelNormalInverseMatrix;
+    float3x3 Model3 = mul(View3Inv, (float3x3)renderInstance.ModelView);
     
-    float3 NormalV = normalize(mul(ModelViewNormalInverseMatrix3, NormalL));
-    float3 TangentV = normalize(mul(ModelView3, TangentL));
-    TangentV = normalize(TangentV - NormalV * dot(NormalV, TangentV));
+    float3 NormalW = normalize(mul(ModelNormalInverseMatrix3, NormalL));
+    float3 TangentW = normalize(mul(Model3, TangentL));
+    TangentW = normalize(TangentW - NormalW * dot(NormalW, TangentW));
 
-    output.Normal = NormalV;
-    output.Tangent = float4(TangentV, input.Tangent.w);
+    output.Normal = NormalW;
+    output.Tangent = float4(TangentW, input.Tangent.w);
 #endif 
 
     // Need uvs

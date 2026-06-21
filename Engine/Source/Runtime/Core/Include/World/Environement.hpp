@@ -48,7 +48,7 @@ namespace PC_CORE::WORLD
 		PC_CORE_API EnvironementLighting& GetEnvironementLighting();
 
 		PC_CORE_API Environement();
-		PC_CORE_API ~Environement() = default;
+		PC_CORE_API ~Environement();
 
 
 	private:
