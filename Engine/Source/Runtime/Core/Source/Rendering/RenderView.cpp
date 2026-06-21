@@ -127,10 +127,9 @@ namespace PC_CORE::Rendering
 
                 ptr->DirLight.ColorIntensity.data[0] = _RenderingWorldData.DirLightData->LightColor.x;
                 ptr->DirLight.ColorIntensity.data[1] = _RenderingWorldData.DirLightData->LightColor.y;
-                ptr->DirLight.ColorIntensity.data[2] = _RenderingWorldData.DirLightData->LightColor.y;
+                ptr->DirLight.ColorIntensity.data[2] = _RenderingWorldData.DirLightData->LightColor.z;
                 ptr->DirLight.Pad0 = 0xDEAD;
                 ptr->DirLight.ColorIntensity.data[3] = _RenderingWorldData.DirLightData->LightIntensity;
-
             }
             else
             {
