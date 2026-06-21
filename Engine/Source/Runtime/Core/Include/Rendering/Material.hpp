@@ -193,7 +193,7 @@ namespace PC_CORE::Rendering
 
         std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::AoRoughnessMetallic) + 1> m_Textures;
 
-        Tbx::Vector4f m_Albedo = Tbx::Vector4f(0.f, 0.f, 0.f, 1.0f);
+        Tbx::Vector4f m_Albedo = Tbx::Vector4f(1.f, 1.f, 1.f, 1.0f);
 
         float m_Metallic = 0.f;
 
