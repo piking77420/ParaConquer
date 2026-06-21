@@ -806,11 +806,15 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
                     if (type == aiTextureType_METALNESS ||
                         type == aiTextureType_DIFFUSE_ROUGHNESS ||
-                        type == aiTextureType_AMBIENT_OCCLUSION || 
                         type == aiTextureType_GLTF_METALLIC_ROUGHNESS || 
                         type == aiTextureType_SPECULAR)
                     {
                         CoreMaterial.SetMetallicRoughnessAOTexture(Texture);
+                    }
+
+                    if (type == aiTextureType_AMBIENT_OCCLUSION || type == aiTextureType_LIGHTMAP)
+                    {
+                        CoreMaterial.SetAoTexture(Texture);
                     }
 
                     if (type == aiTextureType_NORMAL_CAMERA || type == aiTextureType_NORMALS)

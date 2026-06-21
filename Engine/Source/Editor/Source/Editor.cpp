@@ -685,21 +685,21 @@ void Editor::InitTestScene()
         __debugbreak();*/
 
     {
-        TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
-        World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr"));
-        /*
+        //TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
+        //World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr"));
+        
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
-                TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
+                TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr")); },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
-#if 1
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
@@ -782,7 +782,7 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 0
+#if 1
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });

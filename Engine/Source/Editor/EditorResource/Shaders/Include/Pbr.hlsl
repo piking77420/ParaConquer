@@ -33,13 +33,23 @@ float GGX(float NdotV, float a2)
 }
 
 // Geometric Shadowing function --------------------------------------
-float G_SchlicksmithGGX(float NoL, float NoV, float Roughness)
+float G_SchlicksmithGGX_Approximation(float NoL, float NoV, float Roughness)
 {
 	float R = (Roughness + 1.0);
 	float K = (R*R) / 8.0;
 	float GL = NoL / (NoL * (1.0 - K) + K);
 	float GV = NoV / (NoV * (1.0 - K) + K);
 	return GL * GV;
+}
+
+float G_SmithGGX(float NoL, float NoV, float PerceptualRoughness)
+{
+    float alpha = PerceptualRoughness;
+    float a2 = alpha * alpha;
+    float GL = 2.0 * NoL / (NoL + sqrt(a2 + (1.0 - a2) * NoL * NoL));
+    float GV = 2.0 * NoV / (NoV + sqrt(a2 + (1.0 - a2) * NoV * NoV));
+
+    return GL * GV;
 }
 
 float G_SchlicksmithGGX_LUT(float NoL, float NoV, float Roughness)
@@ -85,16 +95,16 @@ float Fd_Lambert()
 }
 
 // Full BRDF combining specular + diffuse
-float3 BRDF(float3 BaseColor, float Metallic, float Roughness, float NoV, float NoL, float NoH, float LoH, float3 F0)
+float3 BRDF(float3 BaseColor, float Metallic, float PerceptualRoughness, float NoV, float NoL, float NoH, float LoH, float3 F0)
 {
     // Specular F0 from metallic workflow
 
     // Normal Distrubution Function 
     // Approximate the amout of surface microfacet that are alligned with H
-    float D = D_GGX(NoH, Roughness);
+    float D = D_GGX(NoH, PerceptualRoughness);
     // Self shadowing property of the microfacets 
     // how other microfacets shadow themselft
-    float G = G_SchlicksmithGGX(NoL, NoV, Roughness);
+    float G = G_SmithGGX(NoL, NoV, PerceptualRoughness);
     float3 F = F_Schlick(LoH, F0);
 
     float3 Fr = (D * G * F) / (4.0 * NoL * NoV + 0.001); 

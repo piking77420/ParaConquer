@@ -23,15 +23,22 @@ Texture2D ORMTexture : register(t4, MATERIAL_SET);
 [[vk::combinedImageSampler]]
 SamplerState ORMTextureSampler : register(s4, MATERIAL_SET);
 
+[[vk::combinedImageSampler]]
+Texture2D AoTexture : register(t5, MATERIAL_SET);
+[[vk::combinedImageSampler]]
+SamplerState AoTextureSampler : register(s5, MATERIAL_SET);
+
 
 #define ALBEDO_KEY 0
 #define NORMAL_KEY 1
 #define EMMISIVE_KEY 2
 #define AO_ROUGNESS_METALLIC_KEY 3
+#define AO_KEY 0
 
 cbuffer DynamicObjectMaterialBuffer : register(b0, MATERIAL_SET)
 {
     int4 AlbedoNormalEmissiveDescriptor; // AlbedoTexture // Metallic // Emmisive // ORM
+    int4 AoEmptyEmptyEmptyDescriptor; // AO
     float4 AlbedoFactor;  
     float4 AORoughnessMetallicEmptyFactors;
     float3 EmissiveFactor;

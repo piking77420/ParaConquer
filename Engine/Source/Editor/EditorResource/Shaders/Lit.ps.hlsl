@@ -83,29 +83,26 @@ float3 PrefilteredReflection(float3 R, float Roughness)
     return lerp(a, b, LOD - LODF);
 }
 
-float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 DiffuseColor, float PerceptualRoughness, float3 F0)
+float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 BaseColor, float Metallic, float PerceptualRoughness, float AO, float3 F0)
 {
     float3 R_W = reflect(-V, N);   
     
-
-    // Reflection
     float3 PFR = PrefilteredReflection(R_W, PerceptualRoughness);
-
-    // Diffuse
     float3 Irradiance = IrradianceMap.Sample(IrradianceMapSampler, N).rgb;
-    float3 Diffuse = DiffuseColor * Irradiance;
+    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), saturate(PerceptualRoughness))).rg;
 
     // Specular
     float3 F = F_SchlickR(max(NoV, 0.0), F0, PerceptualRoughness);
-    //NoV = min(NoV , 0.999);
-    float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(NoV, PerceptualRoughness)).rg;
-	float3 Specular = PFR * (F * BRDF.x + BRDF.y);
-
     // Component
     // KS => 1
-    float3 kD = 1.0 - F;
+    float3 kD = (1.0 - F) * (1.0 - Metallic);
 
-    return (kD * Diffuse) + Specular;
+    // Diffuse
+    float3 Diffuse = kD * BaseColor * Irradiance * AO;
+    // Specular
+	float3 Specular = PFR * (F * BRDF.x + BRDF.y);
+
+    return (Diffuse + Specular) * AO;
 }
 
 
@@ -121,7 +118,7 @@ float4 Main(PSInput input) : SV_Target
     float3 Normal_V = NormalNormlize;
     // 
     float AO = AORoughnessMetallicEmptyFactors.x;
-    float PerceptualRoughness = AORoughnessMetallicEmptyFactors.y;
+    float Roughness = AORoughnessMetallicEmptyFactors.y;
     float Metallic = AORoughnessMetallicEmptyFactors.z;
     float3 Emissive = EmissiveFactor;
 
@@ -131,11 +128,12 @@ float4 Main(PSInput input) : SV_Target
 #if defined(LIT) && defined(USE_UV)
     if (AlbedoNormalEmissiveDescriptor[ALBEDO_KEY] == 1)
     {
-        FragAlbedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord);
-        if (FragAlbedo.a < 0.5)
+        float4 TexAlbedo = AlbedoTexture.Sample(AlbedoSampler, input.TexCoord);
+        if (TexAlbedo.a < 0.5)
             discard;
         
-        FragAlbedo.xyz = SRGBToLinear(FragAlbedo.xyz);
+        TexAlbedo.xyz = SRGBToLinear(TexAlbedo.xyz);
+        FragAlbedo = AlbedoFactor * TexAlbedo;
     }
 #endif   
 
@@ -175,16 +173,23 @@ float4 Main(PSInput input) : SV_Target
     {
         float3 ORM = ORMTexture.Sample(ORMTextureSampler, input.TexCoord).rgb;
 
-        AO = ORM.r;
-        PerceptualRoughness = ORM.g;
-        Metallic = ORM.b;
-        //Lo += float3(100000,10000, 0);
+        //AO = ORM.r * AORoughnessMetallicEmptyFactors.x;
+        Roughness = ORM.g * AORoughnessMetallicEmptyFactors.y;
+        Metallic = ORM.b * AORoughnessMetallicEmptyFactors.z;
     }
 #endif
 
+#if defined(LIT) && defined(USE_UV)
+    if (AoEmptyEmptyEmptyDescriptor[AO_KEY] == 1)
+    {
+        float AoSampled = AoTexture.Sample(AoTextureSampler, input.TexCoord).rgb;
+        AO = AORoughnessMetallicEmptyFactors.x * AoSampled;
+    }
+#endif 
+
 #if defined(LIT)
-    float Roughness = PerceptualRoughness; // remap PerceptualRoughness toRoughness ;
-    Roughness = saturate(Roughness); // 0..1
+    float PerceptualRoughness = Roughness * Roughness; // remap PerceptualRoughness toRoughness ;
+    PerceptualRoughness = max(PerceptualRoughness, 0.045); // 0..1
 
     float3 BaseColor = FragAlbedo.xyz;
     float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
@@ -207,7 +212,7 @@ float4 Main(PSInput input) : SV_Target
             float NoH = saturate(dot(N, H));
             float LoH = saturate(dot(L, H));
 
-            float3 Radiance = SRGBToLinear(DirLightV.ColorIntensity.xyz) * DirLightV.ColorIntensity.w;
+            float3 Radiance = DirLightV.ColorIntensity.xyz * DirLightV.ColorIntensity.w;
         
             float3 Brdf = BRDF(BaseColor, Metallic, Roughness, NoV, NoL, NoH, LoH, F0);
             Lo += Brdf * Radiance * NoL;
@@ -215,11 +220,10 @@ float4 Main(PSInput input) : SV_Target
     }
 
     // Ambiant
-    float3 DiffuseIBLColorIBL = FragAlbedo.xyz;
     float3 N_W = normalize(mul(View3Inv, Normal_V));
     float3 V_W = normalize(mul(View3Inv, V_V));
     float NoV_W = saturate(max(dot(N_W, V_W), 1e-5));
-    float3 Ambient = EvaluateIBL(N_W, V_W, NoV_W, DiffuseIBLColorIBL, Roughness, F0) * AO;
+    float3 Ambient = EvaluateIBL(N_W, V_W, NoV_W, BaseColor, Metallic, Roughness, AO, F0);
 
     
     // Other

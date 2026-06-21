@@ -24,6 +24,7 @@ namespace PC_CORE::Rendering
         Normal,
         Emisive,
         AoRoughnessMetallic,
+        Ao,
     };
  
     namespace Gpu
@@ -31,6 +32,7 @@ namespace PC_CORE::Rendering
         struct GPU_ALIGN MaterialBuffer
         {
             std::array<int, 4> TextureDescriptor = {0};  // AlbedoTexture // Metallic // Emmisive // ORM
+            std::array<int, 4> TextureDescriptor2 = { 0 }; // AO
             Gpu::vec4 AlbedoFactors = {0.f};
             Gpu::vec4 AORoughnessMetallicFactors{ 0.f };
             Gpu::vec3 EmissiveFactor{ 0.f };
@@ -133,6 +135,12 @@ namespace PC_CORE::Rendering
             return *this;
         }
 
+        Material& SetAoTexture(const ObjectPtr<Texture2D>& _Texture)
+        {
+            m_Textures[static_cast<size_t>(MaterialAttribute::Ao)] = _Texture;
+            return *this;
+        }
+
         PC_CORE_API void Upload();
 
         MaterialType GetMaterialType() const
@@ -191,7 +199,7 @@ namespace PC_CORE::Rendering
     private:
         MaterialType m_MaterialType = MaterialType::Opaque;
 
-        std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::AoRoughnessMetallic) + 1> m_Textures;
+        std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_Textures;
 
         Tbx::Vector4f m_Albedo = Tbx::Vector4f(1.f, 1.f, 1.f, 1.0f);
 

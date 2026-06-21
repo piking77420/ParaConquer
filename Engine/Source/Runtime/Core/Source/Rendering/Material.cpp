@@ -109,7 +109,14 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
     {
         if (auto Text = m_Textures[i].Lock())
         {
-            _MaterialBuffer.TextureDescriptor[i] = 1;
+            if (i >= 4)
+            {
+                _MaterialBuffer.TextureDescriptor2[i - 4] = 1;
+            }
+            else
+            {
+                _MaterialBuffer.TextureDescriptor[i] = 1;
+            }
         }
 
         const MaterialAttribute att = static_cast<MaterialAttribute>(i);
@@ -127,6 +134,8 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
             _MaterialBuffer.AORoughnessMetallicFactors.data[0] = m_AmbiantOcclusion;
             _MaterialBuffer.AORoughnessMetallicFactors.data[1] = m_Roughness;
             _MaterialBuffer.AORoughnessMetallicFactors.data[2] = m_Metallic;
+            break;
+        case MaterialAttribute::Ao:
             break;
         default:
             break;
