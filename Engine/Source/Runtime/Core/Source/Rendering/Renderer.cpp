@@ -724,7 +724,7 @@ namespace PC_CORE::Rendering
                // Compute Gpu Matrix
                const Tbx::Matrix4x4d GlobleMatrixModel = Model * Dcmd.GlobalModelMatrix;
                // Position
-               const Tbx::Matrix4x4f ModelViewF = Tbx::Matrix4x4f(_view.View * GlobleMatrixModel);
+               const Tbx::Matrix4x4f Model = Tbx::Matrix4x4f(GlobleMatrixModel);
 
                // Normal
                const Tbx::Matrix3x3d ModelD3 = Tbx::ToMatrix3x3(GlobleMatrixModel);
@@ -734,7 +734,7 @@ namespace PC_CORE::Rendering
                item.InstanceIndex = m_InstanceBufferCpu.size();
                // Copy Data to gpu
                auto& RenderInstance = m_InstanceBufferCpu.emplace_back();
-               std::memcpy(RenderInstance.ModelView.data.data(), ModelViewF.data, sizeof(RenderInstance.ModelView));
+               std::memcpy(RenderInstance.Model.data.data(), Model.data, sizeof(RenderInstance.Model));
                std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrix.data, sizeof(RenderInstance.NormalInvertMatrix));
 
                switch (m_RenderGraph.GetRenderMode())

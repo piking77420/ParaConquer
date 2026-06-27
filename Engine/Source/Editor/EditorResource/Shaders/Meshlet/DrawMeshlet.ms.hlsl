@@ -30,7 +30,7 @@ struct MeshOutput
     #elif defined(LIT)
     float3 ViewSpacePosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float4 Tangent : TEXCOORD2;
+    float3 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -81,7 +81,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
         uint vertexIndex = VertexIndices[DrawCall.SubMeshTriangleVertexOffset + localVertexIndex];
         Vertex input = Vertices[DrawCall.SubMeshVertexOffset + vertexIndex];
 
-        float4 ViewPos = mul(renderInstance.ModelView, float4(input.Position.xyz, 1.0));
+        float4 ViewPos = mul(renderInstance.Model, float4(input.Position.xyz, 1.0));
 #if defined(LIT) || defined(VIEWPOS)
         vertices[gtid.x].ViewSpacePosition = ViewPos.xyz; // View position
 #endif
@@ -89,17 +89,15 @@ void Main(uint3 gtid : SV_GroupThreadID,
  
 
 #if defined(LIT)
-    float3 NormalL = input.Normal.xyz;
-    float3 TangentL = input.Tangent.xyz;
     float3x3 ModelNormalInverseMatrix3 = (float3x3)renderInstance.ModelNormalInverseMatrix;
-    float3x3 ModelView3 = (float3x3)renderInstance.ModelView;
+    float3x3 Model3 = (float3x3)renderInstance.Model;
     
-    float3 NormalV = normalize(mul(ModelNormalInverseMatrix3, NormalL));
-    float3 TangentV = normalize(mul(ModelView3, TangentL));
-    TangentV = normalize(TangentV - NormalV * dot(NormalV, TangentV));
+    float3 NormalW = normalize(mul(ModelNormalInverseMatrix3, input.Normal.xyz));
+    float3 TangentW = normalize(mul(Model3, input.Tangent.xyz));
+    TangentW = normalize(NormalW - NormalW * dot(TangentW, NormalW));
 
-    vertices[gtid.x].Normal = NormalV;
-    vertices[gtid.x].Tangent = float4(TangentV, input.Tangent.w);
+    vertices[gtid.x].Normal = NormalW;
+    vertices[gtid.x].Tangent = float3(TangentW);
 #endif 
 
     // Need uvs

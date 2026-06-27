@@ -62,7 +62,7 @@ void Main(uint3 gtid : SV_GroupThreadID,
     {
         RenderInstance renderInstance = RenderInstances[DrawCall.RenderInstanceID];
         float3 LocalPos = Vertices[gtid.x].xyz * MeshletBound.w + MeshletBound.xyz;
-        float4 ViewPos = mul(renderInstance.ModelView, float4(LocalPos, 1.0f));
+        float4 ViewPos = mul(renderInstance.Model, float4(LocalPos, 1.0f));
         vertices[gtid.x].Position = mul(Projection, ViewPos);
         #if defined(USE_COLOR)
         float3 color = float3(

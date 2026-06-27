@@ -31,7 +31,7 @@ struct VsOutput
 #elif defined(LIT)
     float3 WorldPosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float4 Tangent : TEXCOORD2;
+    float3 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -57,15 +57,14 @@ VsOutput Main(VsInput input)
     VsOutput output;
     
     RenderInstance renderInstance = RenderInstances[pushConstant.RenderInstanceID];
-    float4x4 Model = mul(ViewInv, renderInstance.ModelView);
 
     // Positions
 #if defined(LIT) || defined(VIEWPOS)
-    output.WorldPosition = mul(Model, float4(input.Position.xyz, 1.0)).xyz;
+    output.WorldPosition = mul(renderInstance.Model, float4(input.Position.xyz, 1.0)).xyz;
 #endif
     output.Position = mul(
         ClipSpaceCorrection,
-        mul(Projection, mul(View, mul(Model, float4(input.Position.xyz, 1.0))))
+        mul(Projection, mul(View, mul(renderInstance.Model, float4(input.Position.xyz, 1.0))))
     );
 
     // Lit dependencies
@@ -74,14 +73,16 @@ VsOutput Main(VsInput input)
     float3 TangentL = input.Tangent.xyz;
 
     float3x3 ModelNormalInverseMatrix3 = (float3x3)renderInstance.ModelNormalInverseMatrix;
-    float3x3 Model3 = mul(View3Inv, (float3x3)renderInstance.ModelView);
+    float3x3 Model3 = (float3x3)renderInstance.Model;
     
     float3 NormalW = normalize(mul(ModelNormalInverseMatrix3, NormalL));
     float3 TangentW = normalize(mul(Model3, TangentL));
-    TangentW = normalize(TangentW - NormalW * dot(NormalW, TangentW));
+
+       // Make T perpendicular to N again
+    TangentW = normalize(TangentW - dot(TangentW, NormalW) * NormalW);
 
     output.Normal = NormalW;
-    output.Tangent = float4(TangentW, input.Tangent.w);
+    output.Tangent = TangentW;
 #endif 
 
     // Need uvs

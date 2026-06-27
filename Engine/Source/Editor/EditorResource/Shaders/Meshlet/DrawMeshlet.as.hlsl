@@ -34,7 +34,8 @@ void Main(
         {
             RenderInstance renderInstance = RenderInstances[DrawCall.RenderInstanceID];
             float4 MeshletBound = MeshletBounds[MeshletIndex];
-            float4x4 LocalToView = mul(FrustumViewMatrix, mul(ViewInv, renderInstance.ModelView));          // ModelCamera to -> Model -> to frustum view space
+            // TODO to fix
+            float4x4 LocalToView = mul(FrustumViewMatrix, mul(ViewInv, renderInstance.Model));          // ModelCamera to -> Model -> to frustum view space
 
             float3 SphereCenterView = mul(LocalToView, float4(MeshletBound.xyz, 1.0f)).xyz;
             

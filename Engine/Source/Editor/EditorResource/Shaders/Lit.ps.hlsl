@@ -10,7 +10,7 @@
         #elif defined(LIT)
         float3 WorldPosition : TEXCOORD0;
         float3 Normal : TEXCOORD1;
-        float4 Tangent : TEXCOORD2;
+        float3 Tangent : TEXCOORD2;
         #endif
     #endif
 
@@ -142,23 +142,19 @@
     #endif   
 
     #if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP) || (defined(USE_UV) && defined(USE_NORMAL_MAP) && defined(NORMALW))
-        if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1 || false)
-        {
-            float3 T = normalize(input.Tangent.xyz);
-            float3 N = Normal_W;
-            T = normalize(T - dot(T, N) * N);
-            float tangentSign = input.Tangent.w;
-
-            float3 B = normalize(cross(N, T)) * tangentSign;
-
-            float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb; // TODO be careful with BC textures
-            NormalTS = NormalTS * 2.0 - 1.0; // 0...1 to -1 ... 1
+        if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
+        {            
+            float3 T = normalize(input.Tangent);
+            float3 N = normalize(Normal_W);
+            float3 B = cross(N, T);
             float3x3 TBN = float3x3(
                 T.x, B.x, N.x,
                 T.y, B.y, N.y,
                 T.z, B.z, N.z
             );
-            Normal_W = normalize(mul(TBN, NormalTS));    
+            float3 NormalTS = NormalTexture.Sample(NormalSampler, input.TexCoord).rgb; // TODO be careful with BC textures
+            NormalTS = NormalTS * 2.0 - 1.0;
+            Normal_W = normalize(mul(TBN, NormalTS));
         }
         
     #endif

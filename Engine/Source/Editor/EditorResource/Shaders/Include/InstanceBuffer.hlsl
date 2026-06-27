@@ -3,7 +3,7 @@
 
 struct RenderInstance
 {
-    float4x4 ModelView;
+    float4x4 Model;
     float4x4 ModelNormalInverseMatrix;
 };
 
