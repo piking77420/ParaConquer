@@ -56,6 +56,9 @@ void Material::Build()
     const RhiSampler& sampler = (m_MaterialType == MaterialType::Opaque) ? *App::Instance->SamplerLinearReapet.get() : *App::Instance->SamplerLinearReapet.get();
     for (size_t i = 0; i < m_Textures.size(); i++)
     {
+        const MaterialAttribute att = static_cast<MaterialAttribute>(i);
+
+        // + 1 because of uniform buffer
         if (auto Text = m_Textures[i].Lock())
         {
             m_RhiDescriptorSets
@@ -107,6 +110,7 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
 {
     for (size_t i = 0; i < m_Textures.size(); i++)
     {
+        const MaterialAttribute att = static_cast<MaterialAttribute>(i);
         if (auto Text = m_Textures[i].Lock())
         {
             if (i >= 4)
@@ -119,7 +123,6 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
             }
         }
 
-        const MaterialAttribute att = static_cast<MaterialAttribute>(i);
         switch (att)
         {
         case MaterialAttribute::AlbedoFactors:

@@ -19,7 +19,6 @@ namespace PC_CORE::Rendering::Pass
 		RhiTexture& lightingImage = *_RendererPassBuildContext.RenderGraph.GetResource<RhiTexture>("Lighting Image");
 		RhiTexture& outPutImage = _RendererPassBuildContext.RenderGraph.GetOutPutImage();
 
-
 		m_FrameBuffer.reset(_RendererPassBuildContext.RHI.CreateFrameBuffer());
 		m_FrameBuffer
 			->SetWidth(_RendererPassBuildContext.View.RenderSize.x)

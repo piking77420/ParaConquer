@@ -691,11 +691,11 @@ void Editor::InitTestScene()
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
-                TempImport((editorData.projectPath / "Assets/Textures/newport_loft.hdr"));
+                TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("newport_loft.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr")); },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
@@ -708,23 +708,19 @@ void Editor::InitTestScene()
             {
                 auto& level = World::GetWorld()->level;
 
-                constexpr size_t RowCount = 6;     // Metallic steps
-                constexpr size_t ColumnCount = 6;  // Roughness steps
-                constexpr float Spacing = 2.15f;
+                constexpr size_t RowCount = 7;     // Metallic steps
+                constexpr size_t ColumnCount = 7;  // Roughness steps
+                constexpr float Spacing = 2.5f;
 
                 for (size_t row = 0; row < RowCount; row++)
                 {
-                    const float Metallic = std::clamp(
-                        static_cast<float>(row) / static_cast<float>(RowCount - 1),
-                        0.0f,
-                        1.0f
-                    );
+                    const float Metallic = (float)row / (float)RowCount;
 
                     for (size_t col = 0; col < ColumnCount; col++)
                     {
                         const float Roughness = std::clamp(
-                            static_cast<float>(col) / static_cast<float>(ColumnCount - 1),
-                            0.005f,
+                            static_cast<float>(col) / static_cast<float>(ColumnCount),
+                            0.05f,
                             1.0f
                         );
 
@@ -742,10 +738,10 @@ void Editor::InitTestScene()
                         Transform& t = level.GetComponent<Transform>(id);
 
                         t.Position = Tbx::Vector3d(
-                            static_cast<float>(col) - static_cast<float>(ColumnCount - 1) * 0.5f,
-                            0.0f,
-                            static_cast<float>(row) - static_cast<float>(RowCount - 1) * 0.5f
-                        ) * Spacing;
+                            ((float)col - ((float)ColumnCount / 2.0f)) * Spacing,
+                            ((float)row - ((float)RowCount / 2.0f)) * Spacing,
+                            -2.0f
+                        );
 
                         level.AddComponent<StaticMeshComponent>(id);
                         StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
@@ -760,7 +756,7 @@ void Editor::InitTestScene()
                         Material->SetRoughnessFactor(Roughness);
                         Material->SetMetallicFactor(Metallic);
 
-                        Material->SetAlbedoFactor(Tbx::Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
+                        Material->SetAlbedoFactor(Tbx::Vector4f(1.f, 0.f, 0.f, 1.0f));
 
                         Material->Build();
 
@@ -772,7 +768,7 @@ void Editor::InitTestScene()
             }
 #endif
 
-#if 1
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf")); });
@@ -808,7 +804,7 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 0
+#if 1   
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });

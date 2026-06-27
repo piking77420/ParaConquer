@@ -131,7 +131,7 @@ vk::SurfaceFormatKHR Vulkan::VulkanSwapChain::ChooseSwapSurfaceFormat(
 {
     for (const auto& availableFormat : availableFormats)
     {
-        if (availableFormat.format == vk::Format::eR8G8B8A8Unorm && availableFormat.colorSpace ==
+        if (availableFormat.format == vk::Format::eR8G8B8A8Srgb && availableFormat.colorSpace ==
             vk::ColorSpaceKHR::eSrgbNonlinear)
         {
             return availableFormat;
