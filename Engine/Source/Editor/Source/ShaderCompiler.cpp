@@ -199,6 +199,10 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         L"-T", targetProfile, // Target profile
         L"-I", INCLUDE_PATH,
         L"-Zpc",
+        #if defined(_DEBUG)
+        L"-Od",                              // disable optimization
+        L"-fspv-debug=vulkan-with-source",   // source-level debug info
+        #endif
     };
     for (const auto& args : _Args)
     {
