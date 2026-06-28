@@ -27,7 +27,7 @@ void RenderGraph::Build(const RendererPassBuildContext& _RendererPassBuildContex
 	m_OutputImage
 		->SetTextureType(RhiTexture::Type::Texture2D)
 		.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
-		.SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+		.SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
 		.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 		.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 		.SetTextureUsage(RhiTexture::TextureUsageFlagBits::RenderTarget | RhiTexture::TextureUsageFlagBits::Sampled | RhiTexture::TextureUsageFlagBits::LoadAndStore)

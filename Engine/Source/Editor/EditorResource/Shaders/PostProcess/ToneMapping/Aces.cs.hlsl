@@ -2,7 +2,7 @@
 
 Texture2D<float4> HdrImage : register(t0, space0);
 
-[[vk::image_format("rgba8")]]
+[[vk::image_format("rgba16f")]]
 RWTexture2D<float4> RgbImage : register(u1, space0);
 
 // From http://filmicgames.com/archives/75
@@ -22,7 +22,7 @@ float3 Uncharted2Tonemap(float3 x)
 [numthreads(16, 16, 1)]
 void Main(uint3 DTid : SV_DispatchThreadID)
 {
-    const float exposure = 1.0f;
+    const float exposure = 4.5f;
     const float whitePoint = 11.2f;
 
     uint2 gid = DTid.xy;
