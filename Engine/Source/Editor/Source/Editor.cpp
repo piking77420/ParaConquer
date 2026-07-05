@@ -771,6 +771,66 @@ void Editor::InitTestScene()
 #if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/obj/sphere.obj")); });
+
+        auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread, [&]()
+            {
+                auto& level = World::GetWorld()->level;
+
+                constexpr size_t ObjectCount = 10;
+
+                for (size_t row = 0; row < ObjectCount; row++)
+                {
+                    const float Metallic = std::clamp((float)row / (float)ObjectCount, 0.005f, 1.0f);
+                    const float Roughness = 1.0f - std::clamp((float)row / (float)ObjectCount, 0.005f, 1.0f);
+
+                    std::string MaterialFormat = std::format(
+                        " Roughness {:.2f} Metallic {:.2f}",
+                        Roughness,
+                        Metallic
+                    );
+
+                    const EntityId id = level.CreateEntity(
+                        std::string("Sphere") + MaterialFormat
+                    );
+
+                    level.AddComponent<Transform>(id);
+                    Transform& t = level.GetComponent<Transform>(id);
+
+                    t.Position = Tbx::Vector3d(
+                        (float(row - (ObjectCount / 2.0f)) * 2.15f) ,
+                        0.0,
+                        -2.0
+                    );
+
+                    level.AddComponent<StaticMeshComponent>(id);
+                    StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
+
+                    smc.staticMesh = ResourceManager::Get<StaticMesh>("sphere.obj");
+
+                    ObjectPtr<PC_CORE::Rendering::Material> Material =
+                        ResourceManager::Create<PC_CORE::Rendering::Material>(
+                            std::string("PBR Material") + MaterialFormat
+                        );
+
+                    Material->SetRoughnessFactor(Roughness);
+                    Material->SetMetallicFactor(Metallic);
+
+                    Material->SetAlbedoFactor(Tbx::Vector4f(0.f, 0.f, 0.f, 1.0f));
+
+                    Material->Build();
+
+                    smc.materials.emplace_back() = Material;
+                    
+                }
+            }, { TaskHandle });
+        TaskScheduler.Lauch(TaskHandle);
+    }
+#endif
+
+#if 0
+    {
+        auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf")); });
 
         auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
@@ -804,7 +864,7 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 1   
+#if 1
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });
