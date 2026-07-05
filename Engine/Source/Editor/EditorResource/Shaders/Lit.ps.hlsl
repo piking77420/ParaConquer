@@ -70,24 +70,17 @@
 
     float3 PrefilteredReflection(float3 R, float Roughness)
     {
-        uint Width;
-        uint Height;
-        uint MipCount;
+        uint Width, Height, MipCount;
         PrefilterMap.GetDimensions(0, Width, Height, MipCount);
 
         float MaxMip = float(MipCount - 1);
         float LOD = saturate(Roughness) * MaxMip;
 
-        float LODF = floor(LOD);
-        float LODC = min(ceil(LOD), MaxMip);
+        return PrefilterMap.SampleLevel(PrefilterMapSampler, normalize(R), LOD).rgb;
 
-        float3 a = PrefilterMap.SampleLevel(PrefilterMapSampler, R, LODF).rgb;
-        float3 b = PrefilterMap.SampleLevel(PrefilterMapSampler, R, LODC).rgb;
-
-        return lerp(a, b, LOD - LODF);
     }
 
-    float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 BaseColor, float Metallic, float PerceptualRoughness, float AO, float3 F0)
+    float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 BaseColor, float Metallic, float PerceptualRoughness, float AO, float3 F0, float3 SpecularColor)
     {
         float3 R_W = reflect(-V, N);   
         
@@ -104,7 +97,7 @@
         // Diffuse
         float3 Diffuse = kD * BaseColor * Irradiance;
         // Specular
-        float3 Specular = PFR * (F * BRDF.x + BRDF.y);
+        float3 Specular = PFR * (SpecularColor * BRDF.x + BRDF.y);
 
         return (Diffuse + Specular) * AO;
     }
@@ -229,7 +222,7 @@
         }
 
         // Ambiant
-        float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV, BaseColor, Metallic, PerceptualRoughness, AO, F0);
+        float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV, BaseColor, Metallic, PerceptualRoughness, AO, F0, SpecularColor);
 
         
         // Other

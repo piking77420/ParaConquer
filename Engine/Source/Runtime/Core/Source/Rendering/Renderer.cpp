@@ -157,7 +157,7 @@ namespace PC_CORE::Rendering
            const RenderPassAttachementDescriptor& DepthAttachement = forwardPass
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S01)
-               .SetRhiFormat(RhiFormat::D32SfloatS8Uint)
+               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
@@ -181,7 +181,7 @@ namespace PC_CORE::Rendering
            const RenderPassAttachementDescriptor& renderTragetSlot = colorLinearPass
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
-               .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+               .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Clear)
                .SetStoreOp(StoreOperation::Store)
@@ -253,35 +253,35 @@ namespace PC_CORE::Rendering
        }
 
        {
-           LoadLinearColorLoadStoreDepth.reset(m_Rhi.CreateRenderPass());
+           LoadHdrColorLoadStoreDepth.reset(m_Rhi.CreateRenderPass());
 
-           const RenderPassAttachementDescriptor& renderTragetSlot = LoadLinearColorLoadStoreDepth
+           const RenderPassAttachementDescriptor& renderTragetSlot = LoadHdrColorLoadStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S00)
-               .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+               .SetRhiFormat(RhiFormat::R16G16B16A16Sfloat)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Load)
                .SetStoreOp(StoreOperation::Store)
                .SetInitialImageState(RhiResourceState::RenderTarget)
                .SetFinalImageState(RhiResourceState::PixelShaderResource);
 
-           const RenderPassAttachementDescriptor& DepthAttachement = LoadLinearColorLoadStoreDepth
+           const RenderPassAttachementDescriptor& DepthAttachement = LoadHdrColorLoadStoreDepth
                ->CreateAttachment()
                .SetAttachementSlot(AttachementSlot::S01)
-               .SetRhiFormat(RhiFormat::D32SfloatS8Uint)
+               .SetRhiFormat(RhiFormat::D24UnormS8Uint)
                .SetSampleCount(1)
                .SetLoadOp(LoadOperation::Load)
                .SetStoreOp(StoreOperation::Store)
                .SetInitialImageState(RhiResourceState::DepthStencilWrite)
                .SetFinalImageState(RhiResourceState::DepthStencilRead);
 
-           LoadLinearColorLoadStoreDepth
+           LoadHdrColorLoadStoreDepth
                ->CreateSubPass()
                .SetAttachementRef(AttachementRef(renderTragetSlot, RhiResourceState::RenderTarget))
                .SetDepthAttachementRef(AttachementRef(DepthAttachement, RhiResourceState::DepthStencilWrite));
 
-           LoadLinearColorLoadStoreDepth
-               ->SetName("LoadLinearColorLoadStoreDepth")
+           LoadHdrColorLoadStoreDepth
+               ->SetName("LoadHdrColorLoadStoreDepth")
                .Build();
        }
 
@@ -455,7 +455,7 @@ namespace PC_CORE::Rendering
                Program
                    ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
                    .SetShaderModules(ShaderModules)
-                   .SetRenderPass(*LoadLinearColorLoadStoreDepth)
+                   .SetRenderPass(*LoadHdrColorLoadStoreDepth)
                    .SetDepthTest(true)
                    .SetDepthWrite(true);
 

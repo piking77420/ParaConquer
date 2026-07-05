@@ -35,7 +35,7 @@ namespace PC_EDITOR::DebugView
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 			.SetAttachement(&outPutImage)
 			.SetDepthAttachment(DepthBuffer)
-			.SetRenderPass(_RendererPassBuildContext.Renderer.LoadLinearColorLoadStoreDepth.get())
+			.SetRenderPass(_RendererPassBuildContext.Renderer.LoadHdrColorLoadStoreDepth.get())
 			.SetName("DebugShapeDraw Framebuffer")
 			.Build();
 
@@ -71,7 +71,7 @@ namespace PC_EDITOR::DebugView
 
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
-			.RenderPass = _RendererPassExecuteContext.Renderer.LoadLinearColorLoadStoreDepth.get(),
+			.RenderPass = _RendererPassExecuteContext.Renderer.LoadHdrColorLoadStoreDepth.get(),
 			.FrameBuffer = m_FrameBuffer.get(),
 			.RenderOffSet = {0, 0},
 			.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},

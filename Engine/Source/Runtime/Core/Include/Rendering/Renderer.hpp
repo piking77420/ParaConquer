@@ -101,7 +101,7 @@ public:
 
     std::unique_ptr<RhiRenderPass> LinearClearColorClearStoreDepth;
 
-    std::unique_ptr<RhiRenderPass> LoadLinearColorLoadStoreDepth;
+    std::unique_ptr<RhiRenderPass> LoadHdrColorLoadStoreDepth;
 
     std::unique_ptr<RhiBuffer> InstanceBuffer;
 

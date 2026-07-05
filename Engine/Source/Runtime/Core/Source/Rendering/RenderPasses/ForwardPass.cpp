@@ -39,7 +39,7 @@ namespace PC_CORE::Rendering::Pass
 		DepthBuffer
 			.SetTextureType(RhiTexture::Type::Texture2D)
 			.SetMemoryUsage(RhiMemoryUsage::StaticGPU)
-			.SetRhiFormat(RhiFormat::D32SfloatS8Uint)
+			.SetRhiFormat(RhiFormat::D24UnormS8Uint)
 			.SetWidth(_RendererPassBuildContext.View.RenderSize.x)
 			.SetHeight(_RendererPassBuildContext.View.RenderSize.y)
 			.SetTextureUsage(RhiTexture::TextureUsageFlagBits::DepthStencil)

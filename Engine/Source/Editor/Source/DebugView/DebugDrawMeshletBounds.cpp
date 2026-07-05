@@ -77,7 +77,7 @@ namespace PC_EDITOR::DebugView
 
 		const BeginRenderPassInfo beginRenderPassInfo =
 		{
-			.RenderPass = _RendererPassExecuteContext.Renderer.LoadLinearColorLoadStoreDepth.get(),
+			.RenderPass = _RendererPassExecuteContext.Renderer.LoadHdrColorLoadStoreDepth.get(),
 			.FrameBuffer = m_FrameBuffer.get(),
 			.RenderOffSet = {0, 0},
 			.Extent = {m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight()},

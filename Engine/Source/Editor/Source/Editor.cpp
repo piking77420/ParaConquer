@@ -661,29 +661,6 @@ void Editor::InitTestScene()
     static constexpr size_t SphereCountPerAxis = 10;
     static constexpr double SpaceBetweenSphere = 50.0;
 
-    /*
-    constexpr float sampleDelta = 0.025;
-    float nrSamples = 0.0;
-    Tbx::Vector3f irradiance = Tbx::Vector3f::Zero();
-    for (float phi = 0.0; phi < 2.0 * std::numbers::pi; phi += sampleDelta)
-    {
-        for (float theta = 0.0; theta < 0.5 * std::numbers::pi; theta += sampleDelta)
-        {
-            // spherical to cartesian (in tangent space)
-            //Tbx::Vector3f tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-            // tangent space to world
-            //Tbx::Vector3f sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
-
-            //irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
-            nrSamples++;
-        }
-    }
-
-    constexpr float nrSampleC = (2.0 * std::numbers::pi) * (0.5 * std::numbers::pi) / (sampleDelta * sampleDelta);
-
-    if (nrSamples == nrSampleC)
-        __debugbreak();*/
-
     {
         //TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
         //World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr"));
@@ -691,11 +668,11 @@ void Editor::InitTestScene()
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
-                TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
+                TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr")); },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
@@ -798,9 +775,9 @@ void Editor::InitTestScene()
                     Transform& t = level.GetComponent<Transform>(id);
 
                     t.Position = Tbx::Vector3d(
-                        (float(row - (ObjectCount / 2.0f)) * 2.15f) ,
+                        -2.0,
                         0.0,
-                        -2.0
+                        (float(row - (ObjectCount / 2.0f)) * 2.15f)
                     );
 
                     level.AddComponent<StaticMeshComponent>(id);
@@ -816,7 +793,7 @@ void Editor::InitTestScene()
                     Material->SetRoughnessFactor(Roughness);
                     Material->SetMetallicFactor(Metallic);
 
-                    Material->SetAlbedoFactor(Tbx::Vector4f(0.f, 0.f, 0.f, 1.0f));
+                    Material->SetAlbedoFactor(Tbx::Vector4f(1.0f, 0.765557f, 0.336057f, 1.0f));
 
                     Material->Build();
 
