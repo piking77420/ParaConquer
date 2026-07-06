@@ -178,21 +178,21 @@ void Editor::EditorOnlyShader()
     ResourceManager::Create<ShaderSource>("DebugDrawInstanced.vs.hlsl",
         EDITOR_RESOURCE_PATH
         "/Shaders/DebugDraw/DebugDraw.vs.hlsl",
-        ShaderFeatureFlagBits::Instanced);
+        ShaderFeature::Instanced);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DebugDrawFrustum.vs.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/DebugDraw/DebugDraw.vs.hlsl",
-            ShaderFeatureFlagBits::Frustum);
+            ShaderFeature::Frustum);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/Lit.ps.hlsl"
-            , ShaderFeatureFlagBits::UseColor);
+            , ShaderFeature::UseColor);
         }));
 
 
@@ -201,14 +201,14 @@ void Editor::EditorOnlyShader()
         ResourceManager::Create<ShaderSource>("DrawMeshletBound.as.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/Meshlet/DrawMeshletBound.as.hlsl"
-            , ShaderFeatureFlagBits::UseColor);
+            , ShaderFeature::UseColor);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DrawMeshletBound.ms.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/Meshlet/DrawMeshletBound.ms.hlsl"
-            , ShaderFeatureFlagBits::UseColor);
+            , ShaderFeature::UseColor);
         }));
 }
 
@@ -225,13 +225,13 @@ void Editor::CompileShaderDebugView()
             ResourceManager::Create<ShaderSource>("DrawMeshTriangle.vs.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/TriangleBased.vs.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshTriangle.ps.hlsl",
                 EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
             }));
     }
 
@@ -242,14 +242,14 @@ void Editor::CompileShaderDebugView()
             ResourceManager::Create<ShaderSource>("DrawTriangleMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Meshlet/DrawMeshlet.ms.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawTriangleMeshlet.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Lit.ps.hlsl",
-                ShaderFeatureFlagBits::UseColor | ShaderFeatureFlagBits::DrawTriangle);
+                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
             }));
     }
 
@@ -261,14 +261,14 @@ void Editor::CompileShaderDebugView()
             ResourceManager::Create<ShaderSource>("DrawMeshletColor.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Meshlet/DrawMeshlet.ms.hlsl",
-                ShaderFeatureFlagBits::UseColor);
+                ShaderFeature::UseColor);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshletColor.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Lit.ps.hlsl",
-                ShaderFeatureFlagBits::UseColor);
+                ShaderFeature::UseColor);
             }));
     }
 }
@@ -313,9 +313,9 @@ void Editor::CompileShader()
 			ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
 				EDITOR_RESOURCE_PATH
 				"/Shaders/TriangleBased.vs.hlsl",
-                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
-			}));
-	}
+                ShaderFeature::Lit | ShaderFeature::UseUV | ShaderFeature::UseNormalMap);
+            }));
+    }
 
     // Lit Triangle meshelet
     {
@@ -323,17 +323,17 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("ForwardMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Meshlet/DrawMeshlet.ms.hlsl",
-                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
-            }));   
+                ShaderFeature::Lit | ShaderFeature::UseUV | ShaderFeature::UseNormalMap);
+            }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("ForwardLit.ps.hlsl",
                 EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
-                ShaderFeatureFlagBits::Lit | ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::UseNormalMap);
+                ShaderFeature::Lit | ShaderFeature::UseUV | ShaderFeature::UseNormalMap);
             }));
     }
 
-    
+
 
 
     // Tone Map
@@ -351,7 +351,7 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("CubeMap.vs.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/CubeMap.vs.hlsl",
-                ShaderFeatureFlagBits::UseUV);
+                ShaderFeature::UseUV);
             }));
     }
 
@@ -379,14 +379,14 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/CubeMap.vs.hlsl",
-                ShaderFeatureFlagBits::UseUV | ShaderFeatureFlagBits::SkyboxForceFarDepth);
+                ShaderFeature::UseUV | ShaderFeature::SkyboxForceFarDepth);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Skybox.ps.hlsl",
-                ShaderFeatureFlagBits::UseUV);
+                ShaderFeature::UseUV);
             }));
     }
 
@@ -396,7 +396,7 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("PrefilterEnvironement.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Ibl/Prefiltering.ps.hlsl",
-                ShaderFeatureFlagBits::UseUV);
+                ShaderFeature::UseUV);
             }));
     }
 

@@ -68,14 +68,14 @@ ShaderSource::ShaderSource() : Resource()
     DYNAMIC_REFLECT_INIT
 }
 
-ShaderSource::ShaderSource(const std::string& _name, ShaderFeatureFlag _ShaderFeatureFlag) 
+ShaderSource::ShaderSource(const std::string& _name, ShaderFeatureFlags _ShaderFeatureFlag)
     : Resource(_name)
     , m_ShaderFeatureFlag(_ShaderFeatureFlag)
 {
     DYNAMIC_REFLECT_INIT
 }
 
-ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path, ShaderFeatureFlag _ShaderFeatureFlag) 
+ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path, ShaderFeatureFlags _ShaderFeatureFlag)
     : Resource(_name)
     , m_ShaderFeatureFlag(_ShaderFeatureFlag)
 {
@@ -147,42 +147,42 @@ std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
 {
     std::vector<std::wstring> Features;
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Lit)
+    if (m_ShaderFeatureFlag & ShaderFeature::Lit)
     {
         Features.push_back(L"-DLIT=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseUV)
+    if (m_ShaderFeatureFlag & ShaderFeature::UseUV)
     {
         Features.push_back(L"-DUSE_UV=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseUV)
+    if (m_ShaderFeatureFlag & ShaderFeature::UseUV)
     {
         Features.push_back(L"-DUSE_NORMAL_MAP=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::UseColor)
+    if (m_ShaderFeatureFlag & ShaderFeature::UseColor)
     {
         Features.push_back(L"-DUSE_COLOR=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::DrawTriangle)
+    if (m_ShaderFeatureFlag & ShaderFeature::DrawTriangle)
     {
         Features.push_back(L"-DDRAW_TRIANGLE=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Instanced)
+    if (m_ShaderFeatureFlag & ShaderFeature::Instanced)
     {
         Features.push_back(L"-DINSTANCED=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::Frustum)
+    if (m_ShaderFeatureFlag & ShaderFeature::Frustum)
     {
         Features.push_back(L"-DFRUSTUM=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeatureFlagBits::SkyboxForceFarDepth)
+    if (m_ShaderFeatureFlag & ShaderFeature::SkyboxForceFarDepth)
     {
         Features.push_back(L"-DSKYBOX_FORCE_FAR_DEPTH=1");
     }
