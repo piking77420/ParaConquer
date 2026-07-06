@@ -93,14 +93,14 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
     m_PathToSource = _path;
     PC_LOG("Compiling {} ", Name);
 
+    std::string binaryName = GetShaderBinaryPath();
     std::vector<uint32_t> sourceSpriv;
-    if (!GetCompiledShaderSource(&sourceSpriv))
+    if (!GetCompiledShaderSource(&sourceSpriv, binaryName))
     {
         PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
         return;
     }
 
-    std::string binaryName = GetShaderBinaryPath();
     if (!ResourceManager::Exist(binaryName))
     {
         auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType,
@@ -114,7 +114,8 @@ void ShaderSource::Reload()
     Resource::Reload();
 
     std::vector<uint32_t> sourceSpriv;
-    if (!GetCompiledShaderSource(&sourceSpriv))
+    std::string binaryName = GetShaderBinaryPath();
+    if (!GetCompiledShaderSource(&sourceSpriv, binaryName))
     {
         PC_LOGERROR("Failed to read shader source file for writing shader spriv cache");
         return;
@@ -126,14 +127,14 @@ void ShaderSource::Reload()
 }
 
 
-bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer)
+bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer, const std::string& _BinaryShaderFileTarget)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
 
     assert(Editor::instance != nullptr);
     std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(
-        Editor::instance->editorData.projectData.graphicApi, m_PathToSource, GetDefineFromShaderFeatures());
+        Editor::instance->editorData.projectData.graphicApi, m_PathToSource, _BinaryShaderFileTarget, GetDefineFromShaderFeatures());
 
     if (code.empty())
         return false;

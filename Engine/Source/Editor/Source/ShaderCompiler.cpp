@@ -156,7 +156,7 @@ static bool GetExtension(const wchar_t* _file, wchar_t* _buffer, size_t _bufferS
     return true;
 }
 
-std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _fileName, const std::vector<std::wstring>& _Args)
+std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _fileName, const std::string& _targetVariantName, const std::vector<std::wstring>& _Args)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -249,7 +249,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         hres = result->GetErrorBuffer(&errorBlob);
         if (SUCCEEDED(hres) && errorBlob)
         {
-            PC_LOGERROR("Shader compilation failed, {} \n {}", std::string(_fileName.begin(), _fileName.end()),
+            PC_LOGERROR("Shader compilation failed, {} \n {}", _targetVariantName,
                         static_cast<const char*>(errorBlob->GetBufferPointer()));
             return {};
         }

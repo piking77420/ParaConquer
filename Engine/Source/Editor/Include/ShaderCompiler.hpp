@@ -10,7 +10,7 @@ BEGIN_EDITOR_PCCORE
     class ShaderCompiler
     {
     public:
-        std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _filename, const std::vector<std::wstring>& _Args);
+        std::vector<uint32_t> CompileFile(PC_CORE::GraphicAPI _api, const std::wstring& _filename, const std::string& _targetVariantName, const std::vector<std::wstring>& _Args);
 
         ShaderCompiler();
 

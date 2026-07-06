@@ -805,10 +805,10 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 0
+#if 1
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/DamagedHelmet/gltf/DamagedHelmet.gltf")); });
 
         auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
             [&]()
@@ -822,7 +822,7 @@ void Editor::InitTestScene()
 
                 level.AddComponent<StaticMeshComponent>(id);
                 StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
-                smc.staticMesh = ResourceManager::Get<StaticMesh>("BistroExterior.glb");
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("DamagedHelmet.gltf");
                 if (auto l = smc.staticMesh.Lock())
                     smc.materials = l->GetBaseMaterial();
 
@@ -841,7 +841,7 @@ void Editor::InitTestScene()
     }
 #endif
 
-#if 1
+#if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Sponza/glTF/Sponza.gltf")); });

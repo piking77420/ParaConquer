@@ -37,7 +37,7 @@ BEGIN_EDITOR_PCCORE
 
         void Reload() override;
 
-        bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer);
+        bool GetCompiledShaderSource(std::vector<uint32_t>* _buffer, const std::string& _BinaryShaderFileTarget);
 
         ShaderFeatureFlag GetShaderFeatures() const
         {
