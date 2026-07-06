@@ -31,7 +31,7 @@ struct VsOutput
 #elif defined(LIT)
     float3 WorldPosition : TEXCOORD0;
     float3 Normal : TEXCOORD1;
-    float3 Tangent : TEXCOORD2;
+    float4 Tangent : TEXCOORD2;
     #endif
 #endif
 
@@ -82,7 +82,7 @@ VsOutput Main(VsInput input)
     TangentW = normalize(TangentW - dot(TangentW, NormalW) * NormalW);
 
     output.Normal = NormalW;
-    output.Tangent = TangentW;
+    output.Tangent = float4(TangentW, input.Tangent.w);
 #endif 
 
     // Need uvs

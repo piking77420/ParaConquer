@@ -22,7 +22,7 @@ float3 Uncharted2Tonemap(float3 x)
 [numthreads(16, 16, 1)]
 void Main(uint3 DTid : SV_DispatchThreadID)
 {
-    const float exposure = 4.5f;
+    const float exposure = 1.f;
     const float whitePoint = 11.2f;
 
     uint2 gid = DTid.xy;

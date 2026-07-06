@@ -10,7 +10,7 @@
         #elif defined(LIT)
         float3 WorldPosition : TEXCOORD0;
         float3 Normal : TEXCOORD1;
-        float3 Tangent : TEXCOORD2;
+        float4 Tangent : TEXCOORD2;
         #endif
     #endif
 
@@ -80,26 +80,24 @@
 
     }
 
-    float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 BaseColor, float Metallic, float PerceptualRoughness, float AO, float3 F0, float3 SpecularColor)
+    float3 EvaluateIBL(float3 N, float3 V, float NoV, float3 DiffuseColor, float Metallic, float PerceptualRoughness, float3 F0, float3 F90)
     {
         float3 R_W = reflect(-V, N);   
         
-        float3 PFR = PrefilteredReflection(R_W, PerceptualRoughness);
-        float3 Irradiance = IrradianceMap.Sample(IrradianceMapSampler, N).rgb;
-        float2 BRDF = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), saturate(PerceptualRoughness))).rg;
-
-        // Specular
-        float3 F = F_SchlickR(max(NoV, 0.0), F0, PerceptualRoughness);
-        // Component
-        // KS => 1
-        float3 kD = (1.0 - F) * (1.0 - Metallic);
+        // Specular indirect
+        float3 IndirectSpecular = PrefilteredReflection(R_W, PerceptualRoughness);
+        float2 Env  = BRDFLUTTexture.Sample(BRDFLUTSampler, float2(saturate(NoV), saturate(PerceptualRoughness))).rg;
+        float3 SpecularColor = F0 * Env.x + F90 * Env.y;
 
         // Diffuse
-        float3 Diffuse = kD * BaseColor * Irradiance;
-        // Specular
-        float3 Specular = PFR * (SpecularColor * BRDF.x + BRDF.y);
+        float3 IndirectDiffuse = IrradianceMap.Sample(IrradianceMapSampler, N).rgb;
+        float3 F = F_SchlickR(max(NoV, 0.0), F0, PerceptualRoughness);
+        float3 kD = (1.0 - F) * (1.0 - Metallic);
 
-        return (Diffuse + Specular) * AO;
+        float3 DiffuseIbl = DiffuseColor * IndirectDiffuse;
+        float3 SpecularIbl =  IndirectSpecular * SpecularColor;
+
+        return  DiffuseIbl + SpecularIbl;
     }
 
 
@@ -111,8 +109,7 @@
         FragAlbedo.xyz = AlbedoFactor.xyz;
 
         // Normal
-        float3 NormalNormlize = normalize(input.Normal);
-        float3 Normal_W = NormalNormlize;
+        float3 Normal_W = normalize(input.Normal);
         // 
         float AO = AORoughnessMetallicEmptyFactors.x;
         float Roughness = AORoughnessMetallicEmptyFactors.y;
@@ -137,9 +134,9 @@
     #if defined(LIT) && defined(USE_UV) && defined(USE_NORMAL_MAP) || (defined(USE_UV) && defined(USE_NORMAL_MAP) && defined(NORMALW))
         if (AlbedoNormalEmissiveDescriptor[NORMAL_KEY] == 1)
         {            
-            float3 T = normalize(input.Tangent);
+            float3 T = normalize(input.Tangent.xyz);
             float3 N = normalize(Normal_W);
-            float3 B = cross(N, T);
+            float3 B = normalize(cross(N, T)) * input.Tangent.w;
             float3x3 TBN = float3x3(
                 T.x, B.x, N.x,
                 T.y, B.y, N.y,
@@ -189,16 +186,13 @@
         float3 DiffuseColor = BaseColor * (float3(1, 1, 1) - float3(DIELECTRIC_F0));
         DiffuseColor *= 1.f - Metallic;
 
-        float3 SpecularColor = lerp(DIELECTRIC_F0, BaseColor, Metallic);
-        float Reflectance = max(max(SpecularColor.r, SpecularColor.g), SpecularColor.b);
-
-        float3 F0 = SpecularColor;
+        float3 F0 = lerp(DIELECTRIC_F0, BaseColor, Metallic);
+        float Reflectance = max(max(F0.r, F0.g), F0.b);
 	    float3 F90 = clamp(Reflectance * 25.0, 0.0, 1.0);
-        float3 SpecularEnvironmentR90 = float3(1.0, 1.0, 1.0) * F90;
 
         // Normal Computing
         float3 N = Normal_W;
-        float NoV = saturate(dot(N, V_W));
+        float NoV = max(dot(N, V_W), 1e-4);
 
         // Mix it into output in a way that cant be optimized away
         float keepAlive = Lights[0].PositionType.x;
@@ -222,12 +216,12 @@
         }
 
         // Ambiant
-        float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV, BaseColor, Metallic, PerceptualRoughness, AO, F0, SpecularColor);
+        float3 Ambient = EvaluateIBL(Normal_W, V_W, NoV, DiffuseColor, Metallic, PerceptualRoughness, F0, F90);
 
         
         // Other
         Lo += Emissive;
-        Lo += Ambient;
+        Lo += Ambient * AO;
 
     #endif
 

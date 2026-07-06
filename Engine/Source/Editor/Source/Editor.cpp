@@ -668,11 +668,11 @@ void Editor::InitTestScene()
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
                 //TempImport((editorData.projectPath / "Assets/Meshs/Bistro/Bistro_v5_2/san_giuseppe_bridge_4k.hdr")); 
-                TempImport((editorData.projectPath / "Assets/Textures/pisa.hdr"));
+                TempImport((editorData.projectPath / "Assets/Textures/circus_arena_2k.hdr"));
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("pisa.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("circus_arena_2k.hdr")); },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
@@ -808,7 +808,7 @@ void Editor::InitTestScene()
 #if 0
     {
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
-            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/DamagedHelmet/glTF/DamagedHelmet.gltf")); });
+            [&]() {TempImport((editorData.projectPath / "Assets/Meshs/Bistro/gltf/BistroExterior.glb")); });
 
         auto CreateStaticMesh = TaskScheduler.NewTask(PC_CORE::Thread::TaskNode::Thread::MainThread,
             [&]()
@@ -822,7 +822,7 @@ void Editor::InitTestScene()
 
                 level.AddComponent<StaticMeshComponent>(id);
                 StaticMeshComponent& smc = level.GetComponent<StaticMeshComponent>(id);
-                smc.staticMesh = ResourceManager::Get<StaticMesh>("DamagedHelmet.gltf");
+                smc.staticMesh = ResourceManager::Get<StaticMesh>("BistroExterior.glb");
                 if (auto l = smc.staticMesh.Lock())
                     smc.materials = l->GetBaseMaterial();
 
