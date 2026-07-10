@@ -51,23 +51,20 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan dxc_lib)
 endif()
 
 # End Dependencies
-if(MSVC)
-    ## Copy each time the new dll and pdb
-    add_custom_target(CopyCoreRuntimeFiles
-        COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+# Copy all DLL dependencies beside Editor.exe
+if(WIN32)
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
 
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:Core>"
+            "$<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>"
             "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
 
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_PDB_FILE:Core>"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-        DEPENDS Core
+        COMMAND_EXPAND_LISTS
         VERBATIM
+        COMMENT "Copying runtime DLLs for ${PROJECT_NAME}"
     )
-    add_dependencies(${PROJECT_NAME} CopyCoreRuntimeFiles)
 endif()
 
 # Secondary Data
