@@ -8,7 +8,6 @@ set(CMAKE_MODULE_PATH
   )
 
 if(MSVC)
-   add_compile_options(/ZI)       ## Edit and Continue
    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} /INCREMENTAL")
     add_compile_options(/MP)
 endif()

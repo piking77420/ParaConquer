@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.26)
 project(Editor VERSION 0.1.0 LANGUAGES C CXX)
 
 if(MSVC)
-    add_compile_options(/ZI)     ## Edit and Continue
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} /INCREMENTAL")
     add_compile_options(/MP)
 
