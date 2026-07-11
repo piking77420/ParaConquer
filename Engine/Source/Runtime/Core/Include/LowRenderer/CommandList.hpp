@@ -13,6 +13,8 @@
 #include "RhiFrameBuffer.hpp"
 #include "RhiRenderPass.hpp"
 #include "Rendering/Buffer/VertexBuffer.hpp"
+#include <LowRenderer/RhiComputePipeline.hpp>
+#include <LowRenderer/RhiGraphicPipeline.hpp>
 
 BEGIN_PCCORE
     class RhiFrameBuffer;
@@ -180,6 +182,14 @@ BEGIN_PCCORE
             PC_CORE::CommandList& m_List;
         };
 
+        enum RecordRenderPassType
+        {
+            Graphic,
+            Compute,
+            RayTracing,
+        };
+
+
         DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
 
         PC_CORE_API explicit CommandList(Rhi& _Rhi);
@@ -202,8 +212,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void NextSubPass() = 0;
 
-        PC_CORE_API virtual bool BindProgram(const RhiPipeline& _RhiShaderProgram) = 0;
-
+        PC_CORE_API virtual bool BindRhiPipeline(const PC_CORE::RhiPipeline& _RhiPipeline) = 0;
 
         PC_CORE_API virtual void BindDescriptorSet(const RhiDescriptorSet* _shaderProgramDescriptorSets,
                                                    size_t _Set,
@@ -221,7 +230,7 @@ BEGIN_PCCORE
 
         PC_CORE_API virtual void SetViewPort(const ViewportInfo& _viewPort) = 0;
 
-        PC_CORE_API virtual void SetPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology) = 0;
+        PC_CORE_API virtual void SetPrimitiveTopology(PC_CORE::RhiGraphicPipeline::PrimitiveTopology _primitiveTopology) = 0;
 
         PC_CORE_API virtual void SetBlendEquation(uint32_t _firstAttachement, uint32_t _attachementCount) = 0;
 
@@ -281,15 +290,8 @@ BEGIN_PCCORE
         }
 
     protected:
-        enum RecordRenderPassType
-        {
-            None,
-            Graphic,
-            Compute,
-        };
-
         struct RecordState {
-            RecordRenderPassType RecordRenderPassType = RecordRenderPassType::None;
+            std::optional<RecordRenderPassType> RecordRenderPassType;
             const RhiPipeline* lastBindProgram = nullptr;
             DrawBuffers lastDrawBuffersState;
         }m_RecordState;

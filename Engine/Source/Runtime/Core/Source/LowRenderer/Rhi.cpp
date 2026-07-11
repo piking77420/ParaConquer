@@ -1,6 +1,9 @@
 ﻿#include "LowRenderer/Rhi.hpp"
 
 #include <Log.hpp>
+#include <VulkanSwapChain.hpp>
+#include <VulkanComputePipeline.hpp>
+#include <VulkanGraphicPipeline.hpp>
 #include <VulkanBuffer.hpp>
 #include <VulkanCommandList.hpp>
 #include <VulkanContext.hpp>
@@ -8,10 +11,8 @@
 #include <VulkanRenderPass.hpp>
 #include <VulkanFence.hpp>
 #include <VulkanTexture.hpp>
-#include <VulkanSwapChain.hpp>
 #include <VulkanDescriptorSet.hpp>
 #include <VulkanSampler.hpp>
-#include <VulkanPipeline.hpp>
 #include <Utils/HelperFunctions.hpp>
 
 using namespace PC_CORE;
@@ -112,14 +113,31 @@ RhiSwapChain* Rhi::CreateRhiSwapChain()
 }
 
 
-RhiPipeline* Rhi::CreateRhiShaderProgram()
+RhiGraphicPipeline* Rhi::CreateRhiGraphicPipeline()
 {
-
 	switch (m_GraphicsApi)
 	{
 		break;
 	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanPipeline(*this);
+		return new Vulkan::VulkanGraphicPipeline(*this);
+		break;
+	case GraphicAPI::D3d12:
+		break;
+	case GraphicAPI::None:
+	case GraphicAPI::Count:
+		break;
+	}
+
+	return nullptr;
+}
+
+RhiComputePipeline* Rhi::CreateRhiComputePipeline()
+{
+	switch (m_GraphicsApi)
+	{
+		break;
+	case GraphicAPI::Vulkan:
+		return new Vulkan::VulkanComputePipeline(*this);
 		break;
 	case GraphicAPI::D3d12:
 		break;

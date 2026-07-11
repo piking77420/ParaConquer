@@ -19,13 +19,8 @@ BEGIN_PCCORE
 
         PC_CORE_API void OnParentReload(const Guid& _parentGuid) override;
 
-        RhiPipeline::PipelineType GetPipelineType() const
-        {
-            return m_ShaderProgramPipelineType;
-        }
-
         IMP_DYNAMIC_REFLECT()
-
+            /*
         PC_CORE_API ShaderProgram(const std::string& _shaderName,
                                   RhiPipeline::PipelineType _shaderProgramPipelineType,
                                   const std::vector<std::pair<RhiPipeline::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
@@ -36,7 +31,7 @@ BEGIN_PCCORE
                                   const WeakObjectPtr<ShaderSourceBinary>& _source);
 
         PC_CORE_API ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
-                                  const WeakObjectPtr<ShaderSourceBinary>& _source);
+                                  const WeakObjectPtr<ShaderSourceBinary>& _source);*/
 
         PC_CORE_API ShaderProgram()
         {
@@ -77,7 +72,6 @@ BEGIN_PCCORE
     protected:
         std::shared_ptr<RhiPipeline> m_RhiShaderProgram;
 
-        RhiPipeline::PipelineType m_ShaderProgramPipelineType;
 
         REFLECT(ShaderProgram, Resource);
     };

@@ -150,4 +150,11 @@ namespace Vulkan
         return false;
     }
 
+    struct PushConstantField
+    {
+        size_t pushConstantSize;
+        size_t pushConstantOffSet;
+        vk::ShaderStageFlags shaderStage;
+    };
+
 }

@@ -11,28 +11,6 @@ PC_CORE::RhiPipeline::RhiPipeline(Rhi& _Rhi)
 
 }
 
-RhiPipeline& RhiPipeline::SetPipelineType(PipelineType _Type)
-{
-    m_Type = _Type;
-    switch (m_Type)
-    {
-    case PC_CORE::RhiPipeline::PipelineType::Graphic:
-        m_PipelineData = GraphicPipelineData();
-        break;
-    case PC_CORE::RhiPipeline::PipelineType::Compute:
-        m_PipelineData = ComputePipelineData();
-        break;
-    case PC_CORE::RhiPipeline::PipelineType::RayTracing:
-        break;
-    case PC_CORE::RhiPipeline::PipelineType::Count:
-        break;
-    default:
-        break;
-    }
-
-    return *this;
-}
-
 RhiPipeline& RhiPipeline::SetShaderModules(const std::vector<const ShaderSourceBinary*>& _ShaderModules)
 {
     // TODO CHECK PER MODULES IF SUITABLE FOR PIPELINE TYPE
@@ -43,6 +21,7 @@ RhiPipeline& RhiPipeline::SetShaderModules(const std::vector<const ShaderSourceB
 
 size_t RhiPipeline::Hash() const
 {
+    /*
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
@@ -108,7 +87,8 @@ size_t RhiPipeline::Hash() const
         break;
     }
 
-    return Seed;
+    return Seed;*/
+    return {};
 }
 
 }

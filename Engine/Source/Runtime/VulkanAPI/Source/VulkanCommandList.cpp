@@ -15,7 +15,8 @@
 #include <VulkanFence.hpp>
 #include <VulkanFrameBuffer.hpp>
 #include <VulkanRenderPass.hpp>
-#include <VulkanPipeline.hpp>
+#include <VulkanGraphicPipeline.hpp>
+#include <VulkanComputePipeline.hpp>
 #include <VulkanTexture.hpp>
 #include <Utils/RhiToVulkan.hpp>
 
@@ -212,6 +213,7 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
     CommandList::BeginRenderPass(_BeginRenderPassInfo);
+    m_RecordState.RecordRenderPassType.emplace(RecordRenderPassType::Graphic);
 
     const VulkanFrameBuffer& frameBuffer = *reinterpret_cast<const VulkanFrameBuffer*>(
         _BeginRenderPassInfo.FrameBuffer);
@@ -283,6 +285,7 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 void Vulkan::VulkanCommandList::BeginComputePasss()
 {
     CommandList::BeginComputePasss();
+    m_RecordState.RecordRenderPassType.emplace(RecordRenderPassType::Compute);
 }
 
 void Vulkan::VulkanCommandList::NextSubPass()
@@ -304,14 +307,18 @@ void Vulkan::VulkanCommandList::EndRenderPass()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    switch (m_RecordState.RecordRenderPassType)
+    if (m_RecordState.RecordRenderPassType)
     {
-    case RecordRenderPassType::Graphic:
-        m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
-        break;
-    default:
-        break;
+        switch (*m_RecordState.RecordRenderPassType)
+        {
+        case RecordRenderPassType::Graphic:
+            m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
+            break;
+        default:
+            break;
+        }
     }
+    m_RecordState.RecordRenderPassType.reset();
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
@@ -331,7 +338,6 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
-    const VulkanPipeline& shaderProgram = reinterpret_cast<const VulkanPipeline&>(*m_RecordState.lastBindProgram);
     vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(_malloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
 
     for (size_t i = 0; i < _DescriptorSets.size(); i++)
@@ -345,8 +351,8 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
     for (size_t i = 0; i < dynamicOffset.size(); i++)
         pDynamicOffsets[i] = static_cast<uint32_t>(dynamicOffset[i]);
 
-    m_CommandBuffer[currentFrame].bindDescriptorSets(shaderProgram.GetPipelineBindPoint(),
-        shaderProgram.GetPipelineLayout(),
+    m_CommandBuffer[currentFrame].bindDescriptorSets(GetCurrentRecordPipelineBindPoint(),
+        GetCurrentPipelineLayout(),
         static_cast<uint32_t>(_FirstSet),
         static_cast<uint32_t>(_DescriptorSets.size()),
         vkDescriptorSet,
@@ -359,20 +365,21 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
 }
 
-bool Vulkan::VulkanCommandList::BindProgram(const PC_CORE::RhiPipeline& _RhiShaderProgram)
+
+bool Vulkan::VulkanCommandList::BindRhiPipeline(const PC_CORE::RhiPipeline& _RhiPipeline)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
     const bool wasNull = !m_RecordState.lastBindProgram;
 
-    if (m_RecordState.lastBindProgram != &_RhiShaderProgram)
+    if (m_RecordState.lastBindProgram != &_RhiPipeline)
     {
-        m_RecordState.lastBindProgram = &_RhiShaderProgram;
-        const VulkanPipeline& vshadeProgram = reinterpret_cast<const VulkanPipeline&>(*m_RecordState.lastBindProgram);
+        m_RecordState.lastBindProgram = &_RhiPipeline;
 
-        m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(vshadeProgram.GetPipelineBindPoint(),
-            vshadeProgram.GetPipeline());
+        m_CommandBuffer[m_Rhi.GetFrameIndex()].bindPipeline(
+            GetCurrentRecordPipelineBindPoint(),
+            GetCurrentPipeline());
 
         return true;
     }
@@ -394,8 +401,7 @@ void Vulkan::VulkanCommandList::PushConstant(RhiShaderStageTypeFlag _RhiShaderSt
         throw std::runtime_error("VULKAN_MAX_PUSH_CONSTANTS have been exceeded");
     }
 #endif
-    const VulkanPipeline& vshadeProgram = reinterpret_cast<const VulkanPipeline&>(*m_RecordState.lastBindProgram);
-    GetVulkanCommandBufferHandle().pushConstants(vshadeProgram.GetPipelineLayout(), Utils::RhiToShaderStage(_RhiShaderStageTypeFlag),
+    GetVulkanCommandBufferHandle().pushConstants(GetCurrentPipelineLayout(), Utils::RhiToShaderStage(_RhiShaderStageTypeFlag),
         _Offset, _Size, _Data);
 }
 
@@ -419,7 +425,7 @@ void Vulkan::VulkanCommandList::SetViewPort(const PC_CORE::ViewportInfo& _viewPo
     m_CommandBuffer[m_Rhi.GetFrameIndex()].setScissor(0, 1, &scissor);
 }
 
-void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology)
+void Vulkan::VulkanCommandList::SetPrimitiveTopology(PC_CORE::RhiGraphicPipeline::PrimitiveTopology _primitiveTopology)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -695,6 +701,66 @@ VULKAN_API vk::CommandBuffer Vulkan::VulkanCommandList::GetVulkanCommandBufferHa
 VULKAN_API vk::Semaphore Vulkan::VulkanCommandList::GetVkSemaphore() const
 {
     return m_Semaphore[m_Rhi.GetFrameIndex()];
+}
+
+vk::PipelineBindPoint Vulkan::VulkanCommandList::GetCurrentRecordPipelineBindPoint() const
+{
+    return IsInRecordState() ? Utils::RhiRecordRenderPassTypeToPipelineBindPoint(*m_RecordState.RecordRenderPassType) : vk::PipelineBindPoint::eGraphics;
+}
+
+vk::PipelineLayout Vulkan::VulkanCommandList::GetCurrentPipelineLayout() const
+{
+    if (!IsInRecordState())
+        return VK_NULL_HANDLE;
+
+    if (!m_RecordState.lastBindProgram)
+    {
+        PC_LOGERROR("You are trying to use an pipiline without binding it do you forget to bind one ? Command list {}", m_Name);
+        return VK_NULL_HANDLE;
+    }
+
+    switch (*m_RecordState.RecordRenderPassType)
+    {
+    case RecordRenderPassType::Graphic:
+        return reinterpret_cast<const Vulkan::VulkanGraphicPipeline&>(*m_RecordState.lastBindProgram).GetPipelineLayout();
+    case RecordRenderPassType::Compute:
+        return reinterpret_cast<const Vulkan::VulkanComputePipeline&>(*m_RecordState.lastBindProgram).GetPipelineLayout();
+    default:
+        return VK_NULL_HANDLE;
+    }
+}
+
+vk::Pipeline Vulkan::VulkanCommandList::GetCurrentPipeline() const
+{
+    if (!IsInRecordState())
+        return VK_NULL_HANDLE;
+
+    if (!m_RecordState.lastBindProgram)
+    {
+        PC_LOGERROR("You are trying to use an pipiline without binding it do you forget to bind one ? Command list {}", m_Name);
+        return VK_NULL_HANDLE;
+    }
+
+    switch (*m_RecordState.RecordRenderPassType)
+    {
+    case RecordRenderPassType::Graphic:
+        return reinterpret_cast<const Vulkan::VulkanGraphicPipeline&>(*m_RecordState.lastBindProgram).GetPipeline();
+    case RecordRenderPassType::Compute:
+        return reinterpret_cast<const Vulkan::VulkanComputePipeline&>(*m_RecordState.lastBindProgram).GetPipeline();
+    default:
+        return VK_NULL_HANDLE;
+    }
+}
+
+bool Vulkan::VulkanCommandList::IsInRecordState() const
+{
+    if (!m_RecordState.RecordRenderPassType)
+    {
+        PC_LOGERROR("You are trying to use an command buffer that is not bound in an render pass Command list {} \n do you forgot to call begin render pass / compute / raytracing", m_Name);
+        return false;
+    }
+
+    return true;
 }
 
 void Vulkan::VulkanCommandList::BeginDebugLabel(const char* _debugLabel, const std::array<float, 4>& _color)

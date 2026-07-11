@@ -19,7 +19,8 @@ struct RenderHardwareInterfaceCreateInfo
 };
 
 class RhiSwapChain;
-class RhiPipeline;
+class RhiGraphicPipeline;
+class RhiComputePipeline;
 class CommandList;
 class RhiTexture;
 class RhiBuffer;
@@ -46,7 +47,9 @@ public:
 
     PC_CORE_API RhiSwapChain* CreateRhiSwapChain();
 
-    PC_CORE_API RhiPipeline* CreateRhiShaderProgram();
+    PC_CORE_API RhiGraphicPipeline* CreateRhiGraphicPipeline();
+
+    PC_CORE_API RhiComputePipeline* CreateRhiComputePipeline();
 
     PC_CORE_API RhiDescriptorSet* CreateDescriptorSet();
 

@@ -3,15 +3,16 @@
 #include <VulkanHeader.h>
 #include <LowRenderer/RhiTypedef.h>
 #include <LowRenderer/RhiDescriptorSet.hpp>
-#include <LowRenderer/RhiPipeline.hpp>
+#include <LowRenderer/RhiGraphicPipeline.hpp>
 #include <LowRenderer/RhiTexture.hpp>
 #include <LowRenderer/RhiBuffer.h>
+#include <LowRenderer/CommandList.hpp>
 
 namespace Vulkan::Utils
 {
     vk::Format RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat);
 
-    vk::PipelineBindPoint RhiPipelineBindPointToVulkan(PC_CORE::RhiPipeline::PipelineType _shaderProgramPipelineType);
+    vk::PipelineBindPoint RhiRecordRenderPassTypeToPipelineBindPoint(PC_CORE::CommandList::RecordRenderPassType _RecordRenderPassType);
 
     vk::VertexInputRate RhiInputRateToVkInputRate(PC_CORE::VertexInputRate _vertexInputRate);
     
@@ -36,9 +37,9 @@ namespace Vulkan::Utils
 
     vk::BorderColor RhiToBorderColor(PC_CORE::BorderColor _borderColor);
 
-    vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::RhiPipeline::PolygonMode _polygonMode);
+    vk::PolygonMode RhiPolygonModeToVulkan(PC_CORE::RhiGraphicPipeline::PolygonMode _polygonMode);
 
-    vk::CullModeFlags RhiToCullMode(PC_CORE::RhiPipeline::CullModeFlag _cullModeFlagBit);
+    vk::CullModeFlags RhiToCullMode(PC_CORE::RhiGraphicPipeline::CullModeFlag _cullModeFlagBit);
 
     vk::ShaderStageFlags RhiToShaderStage(RhiShaderStageTypeFlag _RhiShaderStageTypeFlag);
 
@@ -50,7 +51,7 @@ namespace Vulkan::Utils
 
     vk::SampleCountFlagBits RhSampleCountToVulkan(uint32_t _sampleCount);
 
-    vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology);
+    vk::PrimitiveTopology RhiPrimitiveTopology(PC_CORE::RhiGraphicPipeline::PrimitiveTopology _primitiveTopology);
 
     vk::AttachmentLoadOp RhiLoadOperationToVulkan(PC_CORE::LoadOperation _loadOperation);
 

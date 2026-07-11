@@ -5,7 +5,7 @@
 
 using namespace PC_CORE;
 
-
+/*
 PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 {
     PERF_REGION_SCOPED;
@@ -14,7 +14,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
 
     auto p = GetParentResource();
 
-    /*std::vector<RhiPipeline::ShaderModule> sources;
+    std::vector<RhiPipeline::ShaderModule> sources;
 
     for (auto& code : p)
     {
@@ -24,7 +24,7 @@ PC_CORE_API void ShaderProgram::OnParentReload(const Guid& _parentGuid)
             sources.emplace_back(shaderSourceBinary->GetShaderStageType(), shaderSourceBinary->GetCode());
         }
     }
-    */
+    
     //if (!sources.empty())
         //m_RhiShaderProgram->HotReload(sources);
 }
@@ -61,3 +61,4 @@ ShaderProgram::ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineTyp
 {
     LinkDependencies(_source.lock().get(), this);
 }
+*/

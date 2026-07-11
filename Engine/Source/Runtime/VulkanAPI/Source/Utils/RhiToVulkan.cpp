@@ -428,19 +428,16 @@ vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
 #pragma endregion Format
 
 
-vk::PipelineBindPoint Vulkan::Utils::RhiPipelineBindPointToVulkan(
-    PC_CORE::RhiPipeline::PipelineType _shaderProgramPipelineType)
+vk::PipelineBindPoint Vulkan::Utils::RhiRecordRenderPassTypeToPipelineBindPoint(PC_CORE::CommandList::RecordRenderPassType _RecordRenderPassType)
 {
-    switch (_shaderProgramPipelineType)
+    switch (_RecordRenderPassType)
     {
-    case PC_CORE::RhiPipeline::PipelineType::Graphic:
+    case PC_CORE::CommandList::RecordRenderPassType::Graphic:
         return vk::PipelineBindPoint::eGraphics;
-    case PC_CORE::RhiPipeline::PipelineType::Compute:
+    case PC_CORE::CommandList::RecordRenderPassType::Compute:
         return vk::PipelineBindPoint::eCompute;
-    case PC_CORE::RhiPipeline::PipelineType::RayTracing:
+    case PC_CORE::CommandList::RecordRenderPassType::RayTracing:
         return vk::PipelineBindPoint::eRayTracingKHR;
-    case PC_CORE::RhiPipeline::PipelineType::Count:
-        return {};
     }
     
     return {};
@@ -624,26 +621,26 @@ vk::BorderColor Vulkan::Utils::RhiToBorderColor(PC_CORE::BorderColor _borderColo
     throw std::runtime_error("Unknown BorderColor");
 }
 
-vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::RhiPipeline::PolygonMode _polygonMode)
+vk::PolygonMode Vulkan::Utils::RhiPolygonModeToVulkan(PC_CORE::RhiGraphicPipeline::PolygonMode _polygonMode)
 {
     switch (_polygonMode)
     {
-    case PC_CORE::RhiPipeline::PolygonMode::Fill:
+    case PC_CORE::RhiGraphicPipeline::PolygonMode::Fill:
         return vk::PolygonMode::eFill;
-    case PC_CORE::RhiPipeline::PolygonMode::Line:
+    case PC_CORE::RhiGraphicPipeline::PolygonMode::Line:
         return vk::PolygonMode::eLine;
-    case PC_CORE::RhiPipeline::PolygonMode::Point:
+    case PC_CORE::RhiGraphicPipeline::PolygonMode::Point:
         return vk::PolygonMode::ePoint;
-    case PC_CORE::RhiPipeline::PolygonMode::FillRectangleNV:
+    case PC_CORE::RhiGraphicPipeline::PolygonMode::FillRectangleNV:
         return vk::PolygonMode::eFillRectangleNV;
     }
 
     throw std::runtime_error("Unknown PolygonMode");
 }
 
-vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::RhiPipeline::CullModeFlag _cullModeFlagBit)
+vk::CullModeFlags Vulkan::Utils::RhiToCullMode(PC_CORE::RhiGraphicPipeline::CullModeFlag _cullModeFlagBit)
 {
-    using Cull = PC_CORE::RhiPipeline::CullModeFlagBits;
+    using Cull = PC_CORE::RhiGraphicPipeline::CullModeFlagBits;
 
     vk::CullModeFlags cullModeFlags = vk::CullModeFlagBits::eNone;
 
@@ -661,33 +658,33 @@ vk::ShaderStageFlags Vulkan::Utils::RhiToShaderStage(RhiShaderStageTypeFlag _Rhi
 {
     vk::ShaderStageFlags ShaderStageFlag;
 
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Vertex)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Vertex)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eVertex;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Hull)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Hull)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eTessellationControl;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Domain)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Domain)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eTessellationEvaluation;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Geometry)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Geometry)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eGeometry;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Pixel)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Pixel)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eFragment;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Compute)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Compute)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eCompute;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Raygen)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Raygen)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eRaygenKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Intersection)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Intersection)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eIntersectionKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Anyhit)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Anyhit)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eAnyHitKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Closesthit)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Closesthit)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eClosestHitKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Miss)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Miss)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eMissKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Callable)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Callable)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eCallableKHR;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Amp)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Amp)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eTaskEXT;
-    if (_RhiShaderStageTypeFlag & PC_CORE::RhiPipeline::ShaderStageTypeBits::Mesh)
+    if (_RhiShaderStageTypeFlag & PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Mesh)
         ShaderStageFlag |= vk::ShaderStageFlagBits::eMeshEXT;
 
     return ShaderStageFlag;
@@ -697,33 +694,33 @@ vk::ShaderStageFlagBits Vulkan::Utils::RhiToShaderStageBits(RhiShaderStageBits _
 {
     vk::ShaderStageFlagBits ShaderStageFlag{};
 
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Vertex)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Vertex)
         ShaderStageFlag = vk::ShaderStageFlagBits::eVertex;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Hull)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Hull)
         ShaderStageFlag = vk::ShaderStageFlagBits::eTessellationControl;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Domain)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Domain)
         ShaderStageFlag = vk::ShaderStageFlagBits::eTessellationEvaluation;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Geometry)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Geometry)
         ShaderStageFlag = vk::ShaderStageFlagBits::eGeometry;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Pixel)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Pixel)
         ShaderStageFlag = vk::ShaderStageFlagBits::eFragment;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Compute)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Compute)
         ShaderStageFlag = vk::ShaderStageFlagBits::eCompute;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Raygen)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Raygen)
         ShaderStageFlag = vk::ShaderStageFlagBits::eRaygenKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Intersection)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Intersection)
         ShaderStageFlag = vk::ShaderStageFlagBits::eIntersectionKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Anyhit)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Anyhit)
         ShaderStageFlag = vk::ShaderStageFlagBits::eAnyHitKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Closesthit)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Closesthit)
         ShaderStageFlag = vk::ShaderStageFlagBits::eClosestHitKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Miss)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Miss)
         ShaderStageFlag = vk::ShaderStageFlagBits::eMissKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Callable)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Callable)
         ShaderStageFlag = vk::ShaderStageFlagBits::eCallableKHR;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Amp)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Amp)
         ShaderStageFlag = vk::ShaderStageFlagBits::eTaskEXT;
-    if (_RhiShaderStageBits == PC_CORE::RhiPipeline::ShaderStageTypeBits::Mesh)
+    if (_RhiShaderStageBits == PC_CORE::RhiGraphicPipeline::ShaderStageTypeBits::Mesh)
         ShaderStageFlag = vk::ShaderStageFlagBits::eMeshEXT;
 
     return ShaderStageFlag;
@@ -801,34 +798,34 @@ vk::SampleCountFlagBits Vulkan::Utils::RhSampleCountToVulkan(uint32_t _sampleCou
     }
 }
 
-vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::RhiPipeline::PrimitiveTopology _primitiveTopology)
+vk::PrimitiveTopology Vulkan::Utils::RhiPrimitiveTopology(PC_CORE::RhiGraphicPipeline::PrimitiveTopology _primitiveTopology)
 {
     switch (_primitiveTopology)
     {
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyPointList:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyPointList:
         return vk::PrimitiveTopology::ePointList;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineList:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyLineList:
         return vk::PrimitiveTopology::eLineList;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineStrip:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyLineStrip:
         return vk::PrimitiveTopology::eLineStrip;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyTriangleList:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyTriangleList:
         return vk::PrimitiveTopology::eTriangleList;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyTriangleStrip:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyTriangleStrip:
         return vk::PrimitiveTopology::eTriangleStrip;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyTriangle_FAN:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyTriangle_FAN:
         return vk::PrimitiveTopology::eTriangleFan;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineListWithAdjacency:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyLineListWithAdjacency:
         return vk::PrimitiveTopology::eLineListWithAdjacency;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineStripWithAdjacency:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyLineStripWithAdjacency:
         return vk::PrimitiveTopology::eLineStripWithAdjacency;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyTriangleListWithAdjacency:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyTriangleListWithAdjacency:
         return vk::PrimitiveTopology::eTriangleListWithAdjacency;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyTriangleStripWithAdjacency:
         return vk::PrimitiveTopology::eTriangleStripWithAdjacency;
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyPathList:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyPathList:
         // Not directly supported in Vulkan; return something or assert
         throw std::runtime_error("PrimitiveTopologyPathList is not supported in Vulkan.");
-    case PC_CORE::RhiPipeline::PrimitiveTopology::PrimitiveTopologyCount:
+    case PC_CORE::RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyCount:
     default:
         throw std::runtime_error("Invalid or unsupported primitive topology.");
     }
