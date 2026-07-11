@@ -30,8 +30,6 @@ public:
 
     PC_CORE_API void RenderFrame();
 
-    PC_CORE_API void EndFrame();
-
     PC_CORE_API void Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction);
 
     PC_CORE_API void Excute(RenderView& _view, const RenderingWorldData& RenderingWorldData);

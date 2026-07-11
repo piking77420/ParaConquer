@@ -82,14 +82,6 @@ namespace PC_CORE::Rendering
 
     void Renderer::RenderFrame()
     {
-        m_Rhi.GetRhiContext().ProceedDefferdDestroy(m_Rhi.GetFrameIndex());
-
-        if (!m_Rhi.GetRhiContext().rhiSwapChain->AcquireSwapChainImageIndex(&m_Window))
-        {
-            return;
-        }
-        m_Rhi.GetRhiContext().ProceedResourceUpdateBranch();
-
         m_CommandList->BeginRecordCommands();
         if (OnRender)
             OnRender(*m_CommandList);
@@ -106,13 +98,6 @@ namespace PC_CORE::Rendering
 
         m_CommandList->EndRecordCommands();
         m_Rhi.GetRhiContext().SendEnqueuCommand(m_CommandList.get(), GpuPipelineStage::ColorAttachmentOutput);
-        swapChain->Present(&m_Window);
-        m_Rhi.NextFrame();
-    }
-
-    void Renderer::EndFrame()
-    {
-        
     }
 
    void Renderer::Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction)

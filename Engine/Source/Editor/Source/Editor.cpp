@@ -919,12 +919,14 @@ void Editor::Run(bool* _appShouldClose)
 
         CoreIo.PoolEvent();
         MainWindow.PoolEvents();
+        RenderHarwareInteface.BeginFrame(&MainWindow);
         IMGUIContext.NewFrame();
         Time::UpdateTime();
         DequeuMainThreadTask();
         WorldTick(Time::DeltaTime());
         UpdateEditor();
         Renderer.RenderFrame();
+        RenderHarwareInteface.EndFrame(&MainWindow);
         PERF_FRAME_MARK;
     }
     RenderHarwareInteface.GetRhiContext().WaitIdle();
