@@ -39,6 +39,8 @@ BEGIN_PCCORE
 
         static bool Exist(const std::string& _name);
 
+        static bool Exist(const std::string& _name, WeakObjectPtr<Resource>* outPtr);
+
         static bool Exist(const Guid& _guid);
 
         template <class ResourceDerived>

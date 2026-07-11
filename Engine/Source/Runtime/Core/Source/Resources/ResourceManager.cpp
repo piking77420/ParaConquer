@@ -61,11 +61,26 @@ bool ResourceManager::Exist(const std::string& _name)
     return instance.m_NameToGuid.contains(_name);
 }
 
+ bool ResourceManager::Exist(const std::string& _name, WeakObjectPtr<Resource>* outPtr)
+{
+    auto& instance = Instance();
+    std::scoped_lock _(instance.m_lock);
+    auto it = instance.m_NameToGuid.find(_name);
+    if (it == instance.m_NameToGuid.end())
+        return false;
+
+    auto itGuid = instance.m_ResourcesMap.find(it->second);
+    if (itGuid == instance.m_ResourcesMap.end())
+        return false;
+
+    *outPtr = itGuid->second;
+    return true;
+}
+
 bool ResourceManager::Exist(const Guid& _guid)
 {
     auto& instance = Instance();
     std::scoped_lock _(instance.m_lock);
-
 
     return instance.m_ResourcesMap.contains(_guid);
 }

@@ -634,14 +634,14 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
       
         for (size_t i = 0; i < Materials.size(); i++)
         {
-            std::string materialName;
+            std::string matName;
 
             aiString str = scene->mMaterials[i]->GetName();
             if (str.Empty())
             {
                 if (auto StaticMesh = m_StaticMeshs.Lock())
                 {
-                    materialName = StaticMesh->Name + " Material " + std::to_string(i);
+                    matName = StaticMesh->Name + " Material " + std::to_string(i);
                 }
             }
             else
@@ -650,16 +650,24 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                 {
                     if (std::strcmp(str.C_Str(), "DefaultMaterial") == 0)
                     {
-                        materialName = std::string(str.C_Str()) + "_" + StaticMesh->Name;
+                        matName = std::string(str.C_Str()) + "_" + StaticMesh->Name;
                     }
                     else
                     {
-                        materialName = std::string(str.C_Str());
+                        matName = std::string(str.C_Str());
                     }
                 }   
             }
-
-            Materials[i] = PC_CORE::ResourceManager::Create<PC_CORE::Rendering::Material>(materialName);
+            
+            if (PC_CORE::ResourceManager::Exist(matName))
+            {
+                Materials[i] = PC_CORE::ResourceManager::Get<PC_CORE::Rendering::Material>(matName);
+            }
+            else
+            {
+                Materials[i] = PC_CORE::ResourceManager::Create<PC_CORE::Rendering::Material>(matName);
+            }
+            
         }
 
         for (size_t i = 0; i < scene->mNumMaterials; i++)
