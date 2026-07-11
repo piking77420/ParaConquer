@@ -304,10 +304,9 @@ namespace PC_CORE::Rendering
            {
                { ResourceManager::Get<ShaderSourceBinary>("Aces.cs.hlsl.binary").Get() },
            };
-           toneMapAces.reset(m_Rhi.CreateRhiShaderProgram());
+           toneMapAces.reset(m_Rhi.CreateRhiComputePipeline());
            toneMapAces
-               ->SetPipelineType(RhiPipeline::PipelineType::Compute)
-               .SetShaderModules(shaderModules)
+               ->SetShaderModules(shaderModules)
                .SetName("ToneMapAces")
                .Build();
        }
@@ -321,35 +320,33 @@ namespace PC_CORE::Rendering
                { ResourceManager::Get<ShaderSourceBinary>("SampleSingleTexture.ps.hlsl.binary").Get() }
            };
 
-           drawTextureQuad.reset(m_Rhi.CreateRhiShaderProgram());
+           drawTextureQuad.reset(m_Rhi.CreateRhiGraphicPipeline());
            drawTextureQuad
-               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetShaderModules(shaderModules)
-               .SetRenderPass(*colorLinearPass)
+               ->SetRenderPass(*colorLinearPass)
                .SetName("DrawQuadTriangle")
+               .SetShaderModules(shaderModules)
                .Build();
        }
 
        auto InitShaderProgramForwardPass = [&]<bool IsTransparent>(
            RhiRenderPass& RhiRenderPass,
-           std::unique_ptr<RhiPipeline>&Shader,
+           std::unique_ptr<RhiGraphicPipeline>&Shader,
            const std::vector <const ShaderSourceBinary*> &ShaderModules,
            std::string ShaderName)
            {
-               Shader.reset(m_Rhi.CreateRhiShaderProgram());
+               Shader.reset(m_Rhi.CreateRhiGraphicPipeline());
                Shader
-                   ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-                   .SetShaderModules(ShaderModules)
-                   .SetRenderPass(RhiRenderPass)
+                   ->SetRenderPass(RhiRenderPass)
                    .SetDepthTest(true)
                    .SetDepthWrite(true)
                    .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
                    .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) })
+                   .SetShaderModules(ShaderModules)
                    .SetName(ShaderName);
                     
                if constexpr (IsTransparent)
                {
-                   constexpr PC_CORE::RhiPipeline::BlendState blenstate =
+                   constexpr PC_CORE::RhiGraphicPipeline::BlendState blenstate =
                    {
                        .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
                        .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
@@ -367,7 +364,7 @@ namespace PC_CORE::Rendering
                }
                else
                {
-                   Shader->SetCullMode(RhiPipeline::CullModeFlagBits::CullBack);
+                   Shader->SetCullMode(RhiGraphicPipeline::CullModeFlagBits::CullBack);
                    Shader->Build();
                }
        };
@@ -432,17 +429,16 @@ namespace PC_CORE::Rendering
        }
 
        {
-           auto DebugDrawShader = [&](std::unique_ptr<RhiPipeline>& Program, 
+           auto DebugDrawShader = [&](std::unique_ptr<RhiGraphicPipeline>& Program, 
                const std::vector<const ShaderSourceBinary*>& ShaderModules,
                std::string ShaderName,
                bool UseVertexBinding) {
-               Program.reset(m_Rhi.CreateRhiShaderProgram());
+               Program.reset(m_Rhi.CreateRhiGraphicPipeline());
                Program
-                   ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-                   .SetShaderModules(ShaderModules)
-                   .SetRenderPass(*LoadHdrColorLoadStoreDepth)
+                   ->SetRenderPass(*LoadHdrColorLoadStoreDepth)
                    .SetDepthTest(true)
-                   .SetDepthWrite(true);
+                   .SetDepthWrite(true)
+                   .SetShaderModules(ShaderModules);
 
                if (UseVertexBinding)
                {
@@ -506,14 +502,13 @@ namespace PC_CORE::Rendering
                { ResourceManager::Get<ShaderSourceBinary>("EquirectangularToCubeMap.ps.hlsl.binary").Get()}
            };
 
-           EquilateralToSkyBox.reset(m_Rhi.CreateRhiShaderProgram());
+           EquilateralToSkyBox.reset(m_Rhi.CreateRhiGraphicPipeline());
            EquilateralToSkyBox
-               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetShaderModules(ShaderModules)
-               .SetRenderPass(*colorHDRPass)
+               ->SetRenderPass(*colorHDRPass)
                .SetDepthTest(false)
                .SetDepthWrite(false)
                .SetName("EquilateralToSkyBox")
+               .SetShaderModules(ShaderModules)
                .Build();
        }
 
@@ -525,15 +520,14 @@ namespace PC_CORE::Rendering
                { ResourceManager::Get<ShaderSourceBinary>("Skybox.ps.hlsl.binary").Get()}
            };
 
-           DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiShaderProgram());
+           DrawSkyBoxPipeline.reset(m_Rhi.CreateRhiGraphicPipeline());
            DrawSkyBoxPipeline
-               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetShaderModules(ShaderModules)
-               .SetRenderPass(*forwardPass)
+               ->SetRenderPass(*forwardPass)
                .SetDepthTest(true)
                .SetDepthCompareOp(CompareOp::LessOrEqual)
                .SetDepthWrite(false)
                .SetName("Skybox")
+               .SetShaderModules(ShaderModules)
                .Build();
        }
 
@@ -545,14 +539,13 @@ namespace PC_CORE::Rendering
                { ResourceManager::Get<ShaderSourceBinary>("IrradianceConvolution.ps.hlsl.binary").Get()}
            };
 
-           IrradianceConvolution.reset(m_Rhi.CreateRhiShaderProgram());
+           IrradianceConvolution.reset(m_Rhi.CreateRhiGraphicPipeline());
            IrradianceConvolution
-               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetShaderModules(ShaderModules)
-               .SetRenderPass(*colorHDRPass)
+               ->SetRenderPass(*colorHDRPass)
                .SetDepthTest(false)
                .SetDepthWrite(false)
                .SetName("IrradianceConvolution")
+               .SetShaderModules(ShaderModules)
                .Build();
        }
 
@@ -564,14 +557,13 @@ namespace PC_CORE::Rendering
                { ResourceManager::Get<ShaderSourceBinary>("PrefilterEnvironement.ps.hlsl.binary").Get()}
            };
 
-           PrefilterEnvironement.reset(m_Rhi.CreateRhiShaderProgram());
+           PrefilterEnvironement.reset(m_Rhi.CreateRhiGraphicPipeline());
            PrefilterEnvironement
-               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetShaderModules(ShaderModules)
-               .SetRenderPass(*colorHDRPass)
+               ->SetRenderPass(*colorHDRPass)
                .SetDepthTest(false)
                .SetDepthWrite(false)
                .SetName("PrefilterEnvironement")
+               .SetShaderModules(ShaderModules)
                .Build();
        }
 
@@ -583,14 +575,13 @@ namespace PC_CORE::Rendering
                { ResourceManager::Get<ShaderSourceBinary>("BRDFLUT.ps.hlsl.binary").Get()}
            };
 
-           BRDFLutPipeline.reset(m_Rhi.CreateRhiShaderProgram());
+           BRDFLutPipeline.reset(m_Rhi.CreateRhiGraphicPipeline());
            BRDFLutPipeline
-               ->SetPipelineType(RhiPipeline::PipelineType::Graphic)
-               .SetShaderModules(ShaderModules)
-               .SetRenderPass(*BRDFLutPass)
+               ->SetRenderPass(*BRDFLutPass)
                .SetDepthTest(false)
                .SetDepthWrite(false)
                .SetName("BRDFLutPipeline")
+               .SetShaderModules(ShaderModules)
                .Build();
        }
 

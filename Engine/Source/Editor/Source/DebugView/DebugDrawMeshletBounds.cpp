@@ -60,7 +60,7 @@ namespace PC_EDITOR::DebugView
 			{
 				if (_Context.Renderer.DrawDebugMeshletBound)
 				{
-					_Context.cmd.BindProgram(*_Context.Renderer.DrawDebugMeshletBound);
+					_Context.cmd.BindRhiPipeline(*_Context.Renderer.DrawDebugMeshletBound);
 					_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 				}
 			};

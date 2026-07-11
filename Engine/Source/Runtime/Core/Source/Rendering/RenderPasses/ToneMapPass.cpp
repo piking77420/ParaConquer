@@ -72,7 +72,7 @@ namespace PC_CORE::Rendering::Pass
 		const uint32_t GroupCountX = (RenderSize.x + LocalSize.x - 1) / LocalSize.x;
 		const uint32_t GroupCountY = (RenderSize.y + LocalSize.y - 1) / LocalSize.y;
 
-		cmd.BindProgram(*_RendererPassExecuteContext.Renderer.toneMapAces);
+		cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.toneMapAces);
 		cmd.BindDescriptorSet(m_DesciptorSetToneMap.get(), 0);
 		cmd.Dispatch(GroupCountX, GroupCountY, 1);
 

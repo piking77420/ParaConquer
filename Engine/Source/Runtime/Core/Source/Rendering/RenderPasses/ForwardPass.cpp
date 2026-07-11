@@ -80,7 +80,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
 		{
-			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
+			if (_Context.cmd.BindRhiPipeline(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 				if (_Context.Renderer.EnvironementDescriptorSet)
@@ -98,7 +98,7 @@ namespace PC_CORE::Rendering::Pass
 
 		m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
 		{
-			if (_Context.cmd.BindProgram(*StaticMesh.ShaderProgram))
+			if (_Context.cmd.BindRhiPipeline(*StaticMesh.ShaderProgram))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0);
 				if (_Context.Renderer.EnvironementDescriptorSet)
@@ -139,7 +139,7 @@ namespace PC_CORE::Rendering::Pass
 
 		ViewportInfo viewPort(beginRenderPassInfo.Extent);
 		cmd.SetViewPort(viewPort);
-		cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
+		cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopologyTriangleList);
 
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 		ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);

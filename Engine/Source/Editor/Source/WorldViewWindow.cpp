@@ -165,8 +165,8 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
             0.1f,
             1.f
         };
-        std::unique_ptr<PC_CORE::RhiPipeline>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
-        std::unique_ptr<PC_CORE::RhiPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
+        std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
+        std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
 
         Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
     }
@@ -203,8 +203,8 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
             0.1f,
             1.f
         };
-        std::unique_ptr<PC_CORE::RhiPipeline>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
-        std::unique_ptr<PC_CORE::RhiPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
+        std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
+        std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
 
         Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
     }
@@ -219,7 +219,7 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
             0.1f,
             1.f
         };
-        std::unique_ptr<PC_CORE::RhiPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshletColor;
+        std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshletColor;
 
         Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangleMeshlet, shaderPtrTriangleMeshlet);
     } 

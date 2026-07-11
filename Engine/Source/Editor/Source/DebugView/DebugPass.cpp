@@ -15,8 +15,8 @@ DebugPass::DebugPass()
 
 DebugPass::DebugPass(const std::string& _Name,
 	const std::array<float, 4>& _GpuColor,
-	std::unique_ptr<PC_CORE::RhiPipeline>*& _ShaderProgramTriangle,
-	std::unique_ptr<PC_CORE::RhiPipeline>*& _ShaderProgramMeshlet)
+	std::unique_ptr<PC_CORE::RhiGraphicPipeline>*& _ShaderProgramTriangle,
+	std::unique_ptr<PC_CORE::RhiGraphicPipeline>*& _ShaderProgramMeshlet)
 	: DrawPass()
 	, m_Name(_Name)
 	, m_GpuDebugerColor(_GpuColor)
@@ -70,7 +70,7 @@ void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Rende
 	
 	m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
 		{
-			if (_Context.cmd.BindProgram(*m_ShaderProgramTriangle->get()))
+			if (_Context.cmd.BindRhiPipeline(*m_ShaderProgramTriangle->get()))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 			}
@@ -78,7 +78,7 @@ void DebugPass::Build(const PC_CORE::Rendering::RendererPassBuildContext& _Rende
 
 	m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
 		{
-			if (_Context.cmd.BindProgram(*m_ShaderProgramMeshlet->get()))
+			if (_Context.cmd.BindRhiPipeline(*m_ShaderProgramMeshlet->get()))
 			{
 				_Context.cmd.BindDescriptorSet(m_MeshShaderDescriptorSet.get(), 0);
 			}
@@ -109,7 +109,7 @@ void DebugPass::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _
 
 	ViewportInfo viewPort(beginRenderPassInfo.Extent);
 	cmd.SetViewPort(viewPort);
-	cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
+	cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopologyTriangleList);
 	ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.OpaqueList);
 	ProceedDrawList(_RendererPassExecuteContext, _RendererPassExecuteContext.Renderer.TransparentList);
 	cmd.EndRenderPass();

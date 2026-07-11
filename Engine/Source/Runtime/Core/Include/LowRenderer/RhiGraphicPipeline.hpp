@@ -139,31 +139,31 @@ namespace PC_CORE
             }
         };
 
-        PC_CORE_API RhiPipeline& SetPolygonMode(PolygonMode _PolygonMode)
+        PC_CORE_API RhiGraphicPipeline& SetPolygonMode(PolygonMode _PolygonMode)
         {
             m_PolygonMode = _PolygonMode;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetCullMode(CullModeFlag _CullMode)
+        PC_CORE_API RhiGraphicPipeline& SetCullMode(CullModeFlag _CullMode)
         {
             m_CullMode = _CullMode;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetSamples(uint32_t _Sample)
+        PC_CORE_API RhiGraphicPipeline& SetSamples(uint32_t _Sample)
         {
             m_Sample = _Sample;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetFrontFace(FrontFace _FrontFace)
+        PC_CORE_API RhiGraphicPipeline& SetFrontFace(FrontFace _FrontFace)
         {
             m_FrontFace = _FrontFace;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetDepthTest(bool _DepthTest)
+        PC_CORE_API RhiGraphicPipeline& SetDepthTest(bool _DepthTest)
         {
             if (!m_DephStencilInfo.has_value())
             {
@@ -175,7 +175,7 @@ namespace PC_CORE
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetDepthWrite(bool _DepthWrite)
+        PC_CORE_API RhiGraphicPipeline& SetDepthWrite(bool _DepthWrite)
         {
             if (!m_DephStencilInfo.has_value())
             {
@@ -185,7 +185,7 @@ namespace PC_CORE
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetDepthCompareOp(CompareOp _CompareOp)
+        PC_CORE_API RhiGraphicPipeline& SetDepthCompareOp(CompareOp _CompareOp)
         {
             if (!m_DephStencilInfo.has_value())
             {
@@ -196,31 +196,31 @@ namespace PC_CORE
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetBlendState(BlendState _BlendInfo)
+        PC_CORE_API RhiGraphicPipeline& SetBlendState(BlendState _BlendInfo)
         {
             m_BlendState.emplace(_BlendInfo);
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetRenderPass(RhiRenderPass& _RhiRenderPass)
+        PC_CORE_API RhiGraphicPipeline& SetRenderPass(RhiRenderPass& _RhiRenderPass)
         {
             m_RenderPass = &_RhiRenderPass;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetSubPassIndex(uint32_t _SubPassIndex)
+        PC_CORE_API RhiGraphicPipeline& SetSubPassIndex(uint32_t _SubPassIndex)
         {
             m_SubPassIndex = _SubPassIndex;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
+        PC_CORE_API RhiGraphicPipeline& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
         {
             m_VertexInputBindingDescritions = _VertexInputBindingDescritions;
             return *this;
         }
 
-        PC_CORE_API RhiPipeline& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
+        PC_CORE_API RhiGraphicPipeline& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
         {
             m_VertexAttributeDescriptions = _VertexAttributeDescriptions;
             return *this;

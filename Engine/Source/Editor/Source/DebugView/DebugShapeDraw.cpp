@@ -88,18 +88,18 @@ namespace PC_EDITOR::DebugView
 				auto Descriptor = m_DescriptorSets.find(DrawDebugInstanced.InstanceBuffer->GetName());
 				if (Descriptor != m_DescriptorSets.end())
 				{
-					cmd.BindProgram(*_RendererPassExecuteContext.Renderer.DrawDebugShapeInstanced);
+					cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.DrawDebugShapeInstanced);
 					// bind programm etc
 					cmd.BindDescriptorSet(Descriptor->second.get(), 0);
 
 					if (DrawDebugInstanced.isWired)
 					{
-						cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineList);
+						cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyLineList);
 						cmd.SetLineWidth(1.f);
 					}
 					else
 					{
-						cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
+						cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopologyTriangleList);
 					}
 
 					CommandList::DrawBuffers drawBuffer;
@@ -120,17 +120,17 @@ namespace PC_EDITOR::DebugView
 			else if (std::holds_alternative<PC_CORE::Rendering::DrawDebug>(DebugDrawInstanced.Data))
 			{
 				const PC_CORE::Rendering::DrawDebug& DrawDebug = std::get<PC_CORE::Rendering::DrawDebug>(DebugDrawInstanced.Data);
-				cmd.BindProgram(*DrawDebug.ShaderProgram);
+				cmd.BindRhiPipeline(*DrawDebug.ShaderProgram);
 				cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 
 				if (DrawDebug.isWired)
 				{
-					cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopology::PrimitiveTopologyLineList);
+					cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopology::PrimitiveTopologyLineList);
 					cmd.SetLineWidth(1.f);
 				}
 				else
 				{
-					cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
+					cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopologyTriangleList);
 				}
 				cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawDebug.VP, 0, sizeof(DrawDebug.VP));
 				static constexpr size_t FrustumIndexCount = 24;

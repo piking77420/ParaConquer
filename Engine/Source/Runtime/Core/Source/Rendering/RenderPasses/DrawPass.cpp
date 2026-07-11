@@ -95,7 +95,7 @@ namespace PC_CORE::Rendering::Pass
 					}
 				  },
 				[&](const DrawSkyBox& DrawSkyBox) {
-					if (_Context.cmd.BindProgram(*_Context.Renderer.DrawSkyBoxPipeline))
+					if (_Context.cmd.BindRhiPipeline(*_Context.Renderer.DrawSkyBoxPipeline))
 					{
 						_Context.cmd.BindDescriptorSet(_Context.Renderer.SkyBoxDescriptorSet.get(), 0);
 						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawSkyBox.ViewProjectionCorrectedMatrix, 0, sizeof(DrawSkyBox.ViewProjectionCorrectedMatrix));

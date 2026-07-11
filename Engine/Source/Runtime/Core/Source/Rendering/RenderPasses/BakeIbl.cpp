@@ -48,7 +48,7 @@ namespace PC_CORE::Rendering::Pass
 			.Build();
 
 		// Set Base state
-		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiPipeline::PrimitiveTopologyTriangleList);
+		_RendererPassExecuteContext.cmd.SetPrimitiveTopology(RhiGraphicPipeline::PrimitiveTopologyTriangleList);
 		
 		{
 			PC_CORE::ViewportInfo ViewPortSkyBox(*captureRenderPass->SkyBox);
@@ -171,7 +171,7 @@ namespace PC_CORE::Rendering::Pass
 				.ClearDepth = 1.f
 			};
 			_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
-			_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.EquilateralToSkyBox.get());
+			_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.EquilateralToSkyBox.get());
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
 			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
@@ -206,7 +206,7 @@ namespace PC_CORE::Rendering::Pass
 				.ClearDepth = 1.f
 			};
 			_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
-			_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.IrradianceConvolution.get());
+			_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.IrradianceConvolution.get());
 			_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
 			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
@@ -255,7 +255,7 @@ namespace PC_CORE::Rendering::Pass
 
 				_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
 				_RendererPassExecuteContext.cmd.SetViewPort(ViewPortIrradiance);
-				_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.PrefilterEnvironement.get());
+				_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.PrefilterEnvironement.get());
 				_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 				_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex | RhiShaderStageBits::Pixel, &PrefilterData, 0, sizeof(PrefilterData));
 				_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
@@ -283,7 +283,7 @@ namespace PC_CORE::Rendering::Pass
 		};
 		_RendererPassExecuteContext.cmd.SetViewPort(PC_CORE::ViewportInfo(FrameBuffer->GetWidth(), FrameBuffer->GetHeight()));
 		_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
-		_RendererPassExecuteContext.cmd.BindProgram(*_RendererPassExecuteContext.Renderer.BRDFLutPipeline.get());
+		_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.BRDFLutPipeline.get());
 		_RendererPassExecuteContext.cmd.Draw(3, 1, 0, 0);
 		_RendererPassExecuteContext.cmd.EndRenderPass();
 

@@ -62,3 +62,7 @@ ShaderProgram::ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineTyp
     LinkDependencies(_source.lock().get(), this);
 }
 */
+
+void ShaderProgram::OnParentReload(const Guid& _parentGuid)
+{
+}
