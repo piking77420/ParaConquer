@@ -232,33 +232,33 @@ void Vulkan::VulkanContext::SendEnqueuCommand(PC_CORE::CommandList* _EnqueuComma
 
 void Vulkan::VulkanContext::ProceedResourceUpdateBranch()
 {
-    std::scoped_lock _(m_ResourceUpdateLock);
 
     const size_t CurrentFrameIndex = m_Rhi.GetFrameIndex();
-    
-    m_PendingTransferOperation = false;
-
-    if (!m_ResourceUpdate.empty())
     {
-        m_TransferCommandList->BeginRecordCommands();
-        m_TransferCommandList->BeginDebugLabel("Resource Update", { 0.75f,0.5f, 0, 1.f });
-        for (auto it = m_ResourceUpdate.begin(); it != m_ResourceUpdate.end(); )
+        std::scoped_lock _(m_ResourceUpdateLock);
+        m_PendingTransferOperation = false;
+
+        if (!m_ResourceUpdate.empty())
         {
-            m_PendingTransferOperation = (*it)->Proceed(*m_TransferCommandList);
-            if ((*it)->IsEmpty())
+            m_TransferCommandList->BeginRecordCommands();
+            m_TransferCommandList->BeginDebugLabel("Resource Update", { 0.75f,0.5f, 0, 1.f });
+            for (auto it = m_ResourceUpdate.begin(); it != m_ResourceUpdate.end(); )
             {
-                it = m_ResourceUpdate.erase(it);
+                m_PendingTransferOperation = (*it)->Proceed(*m_TransferCommandList);
+                if ((*it)->IsEmpty())
+                {
+                    it = m_ResourceUpdate.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
             }
-            else
-            {
-                ++it;
-            }
+            m_TransferCommandList->EndDebugLabel();
+            m_TransferCommandList->EndRecordCommands();
         }
-        m_TransferCommandList->EndDebugLabel();
-        m_TransferCommandList->EndRecordCommands();
     }
     
-
     if (m_PendingTransferOperation)
     {
         vk::Semaphore signalSemaphores[] = {
