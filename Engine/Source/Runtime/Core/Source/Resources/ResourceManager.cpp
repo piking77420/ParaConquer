@@ -26,6 +26,7 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Destroy()
 {
+    // TODO make it to destructor
     auto& instance = Instance();
     std::scoped_lock _(instance.m_lock);
 

@@ -64,6 +64,4 @@ add_subdirectory(${RUNTIME_SOURCE_DIR}/VulkanAPI)
 # Editor
 add_subdirectory(${EDITOR_SOURCE_DIR})
 
-if(BUILD_TEST)
 add_subdirectory(${RUNTIME_SOURCE_DIR}/UnitTest)
-endif()

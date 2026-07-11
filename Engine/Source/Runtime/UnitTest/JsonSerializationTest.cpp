@@ -11,6 +11,9 @@
 using namespace PC_CORE;
 
 
+ResourceManager ResourceManagerInstance;
+
+
 enum TestEnum : uint8_t
 {
     Red,
