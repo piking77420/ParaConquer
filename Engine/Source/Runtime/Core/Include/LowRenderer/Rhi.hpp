@@ -38,9 +38,11 @@ public:
 
     GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
 
-    PC_CORE_API void BeginFrame(PC_CORE::Window* _Window);
+    PC_CORE_API [[nodiscard]] bool BeginFrame(PC_CORE::Window* _Window);
 
     PC_CORE_API void EndFrame(PC_CORE::Window* _Window);
+
+    PC_CORE_API void End();
 
     PC_CORE_API RhiSwapChain* CreateRhiSwapChain();
 

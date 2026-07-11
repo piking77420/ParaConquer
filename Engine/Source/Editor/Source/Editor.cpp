@@ -662,8 +662,8 @@ void Editor::InitTestScene()
     static constexpr double SpaceBetweenSphere = 50.0;
 
     {
-        //TempImport((editorData.projectPath / "Assets/Textures/papermill.hdr"));
-        //World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("papermill.hdr"));
+        //TempImport((editorData.projectPath / "Assets/Textures/circus_arena_2k.hdr"));
+        //World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("circus_arena_2k.hdr"));
         
         auto TaskHandle = TaskScheduler.NewTask(m_EditorThreadPool,
             [&]() {
@@ -672,7 +672,8 @@ void Editor::InitTestScene()
             });
         auto TaskHandle2 = TaskScheduler.NewTask(Thread::TaskNode::Thread::MainThread,
             [&]() {
-                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("circus_arena_2k.hdr")); },
+                World.Environement.FromEnvironementMap(*this, ResourceManager::Get<PC_CORE::Texture2D>("circus_arena_2k.hdr")); 
+            },
             { TaskHandle });
         TaskScheduler.Lauch(TaskHandle); // then ask to create a cube map "3D texture" and ask to render to create an cube map from it with barrier etc*/
     }
@@ -911,7 +912,6 @@ void Editor::OnRender(PC_CORE::CommandList* _Cmd)
 
 void Editor::Run(bool* _appShouldClose)
 {
-    // begin game thread
     while (!MainWindow.ShouldClose())
     {
         PERF_REGION_SCOPED;
@@ -919,17 +919,19 @@ void Editor::Run(bool* _appShouldClose)
 
         CoreIo.PoolEvent();
         MainWindow.PoolEvents();
-        RenderHarwareInteface.BeginFrame(&MainWindow);
-        IMGUIContext.NewFrame();
         Time::UpdateTime();
         DequeuMainThreadTask();
         WorldTick(Time::DeltaTime());
-        UpdateEditor();
-        Renderer.RenderFrame();
-        RenderHarwareInteface.EndFrame(&MainWindow);
+        if (RenderHarwareInteface.BeginFrame(&MainWindow))
+        {
+            IMGUIContext.NewFrame();
+            UpdateEditor();
+            Renderer.RenderFrame();
+            RenderHarwareInteface.EndFrame(&MainWindow);
+        }
         PERF_FRAME_MARK;
     }
-    RenderHarwareInteface.GetRhiContext().WaitIdle();
+    RenderHarwareInteface.End();
 }
 
 void Editor::InitEditor()

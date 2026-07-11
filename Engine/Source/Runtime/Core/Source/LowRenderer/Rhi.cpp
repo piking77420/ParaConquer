@@ -65,17 +65,18 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _CreateInfo)
 
 }
 
-void Rhi::BeginFrame(PC_CORE::Window* _Window)
+bool Rhi::BeginFrame(PC_CORE::Window* _Window)
 {
 	auto& context = GetRhiContext();
+	if (!context.rhiSwapChain->AcquireSwapChainImageIndex(_Window))
+	{
+		return false;
+	}
 
 	context.ProceedDefferdDestroy(GetFrameIndex());
 	context.ProceedResourceUpdateBranch();
 
-	if (!context.rhiSwapChain->AcquireSwapChainImageIndex(_Window)) 
-	{
-		return;
-	}
+	return true;
 }
 
 void Rhi::EndFrame(PC_CORE::Window* _Window)
@@ -84,6 +85,13 @@ void Rhi::EndFrame(PC_CORE::Window* _Window)
 
 	context.rhiSwapChain->Present(_Window);
 	NextFrame();
+}
+
+void Rhi::End() 
+{
+	auto& context = GetRhiContext();
+
+	context.WaitIdle();
 }
 
 RhiSwapChain* Rhi::CreateRhiSwapChain()
