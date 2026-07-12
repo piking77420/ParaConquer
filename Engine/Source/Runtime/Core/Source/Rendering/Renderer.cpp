@@ -11,6 +11,7 @@
 #include "Rendering/RenderPasses/ForwardPass.hpp"
 #include "Rendering/RenderPasses/ToneMapPass.hpp"
 #include "Rendering/RenderView.hpp"
+#include <Rendering/PipelineCache.hpp>
 #include "Resources/StaticMesh.hpp"
 #include "LowRenderer/RhiDescriptorSet.hpp"
 
@@ -50,6 +51,7 @@ namespace PC_CORE::Rendering
                 .SetName("Instances Buffer")
                 .Build();
         }
+
     }
 
     uint64_t ComputeSortKey(bool _IsOpaque,
@@ -113,14 +115,53 @@ namespace PC_CORE::Rendering
        m_RenderGraph.Build(buildContext);
    }
 
-   void Renderer::Excute(RenderView& _View, const RenderingWorldData& RenderingWorldData)
+   void Renderer::Excute(RenderView& _View, PipelineCache& PipelineCache, const RenderingWorldData& RenderingWorldData)
    {
        PrepareInstanceBuffer(RenderingWorldData);
        UpdateEnvironement(_View, RenderingWorldData);
        BuildDrawLists(_View, RenderingWorldData);
        UploadRenderInstanceID();
-       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, _View, *this, RenderingWorldData);
+
+
+       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, PipelineCache, _View, *this, RenderingWorldData);
+       PC_CORE::Rendering::PipelineCacheHandleID id{};
+       for (size_t i = 0; i < 2; i++)       
+       {
+           PipelineCache::ModuleEntryList list;
+           list.Reserve(2);
+           auto& vertexShader = list.Next();
+           vertexShader.ShaderSourcePath = "/Shaders/DrawQuadTriangle.vs.hlsl";
+
+           auto& fragmentShader = list.Next();
+           fragmentShader.ShaderSourcePath = "/Shaders/SampleSingleTexture.ps.hlsl";
+           RhiGraphicPipeline::Descriptor descriptor;
+           descriptor
+               .SetRenderPass(*colorLinearPass);
+
+           PipelineCache::PipelineQueryResult Result = executeContext.PipelineCache.CreateOrGetGraphicPipelineCache(&id, "DrawQuadTriangle", list, descriptor);
+           assert(Result);
+           RhiPipeline& Pipeline = Result->get();
+       }
+
+       PC_CORE::Rendering::PipelineCacheHandleID idCompute{};
+       for (size_t i = 0; i < 2; i++)
+       {
+           PipelineCache::ModuleEntryList list;
+           auto& compute = list.Next();
+           compute.ShaderSourcePath = "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl";
+
+           PipelineCache::PipelineQueryResult Result = executeContext.PipelineCache.CreateOrGetComputePipelineCache(&idCompute, "Aces", list);
+           assert(Result);
+           RhiPipeline& Pipeline = Result->get();
+       }
+        
        m_RenderGraph.Execute(executeContext, _View);     
+   }
+
+   void Renderer::SetPipelineCache(PC_CORE::Rendering::PipelineCache* _PipelineCache)
+   {
+       assert(_PipelineCache);
+       PipelinesCache = _PipelineCache;
    }
 
    void Renderer::InitRhiRenderPasses()
@@ -298,7 +339,7 @@ namespace PC_CORE::Rendering
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering);
-
+       /*
        {
            const std::vector<const ShaderSourceBinary*> shaderModules
            {
@@ -584,14 +625,15 @@ namespace PC_CORE::Rendering
                .SetShaderModules(ShaderModules)
                .Build();
        }
-
+       */
    }
 
    void Renderer::UploadRenderInstanceID()
    {
        PERF_REGION_SCOPED;
        PERF_REGION_COLOR(PerfRegion::Rendering)
-       m_CommandList->BeginDebugLabel("Upload RenderInstanceID", { 1.0f,0.2f, 0.f,1.0 });
+       DebugLabelScope _(*m_CommandList, "Upload RenderInstanceID", { 1.0f,0.2f, 0.f,1.0 });
+
        PC_CORE::BufferStateTransition Transfert{};
        Transfert.Buffer = InstanceBuffer.get();
        Transfert.Offset = 0u;
@@ -599,7 +641,6 @@ namespace PC_CORE::Rendering
        // Uppload Instance Buffer
        InstanceBuffer->UploadData(m_CommandList.get(), m_InstanceBufferCpu.data(), m_InstanceBufferCpu.size() * sizeof(m_InstanceBufferCpu[0]));
        m_CommandList->Barrier(RhiResourceState::CopyDst, RhiResourceState::VertexShaderResource, {}, std::span(&Transfert, 1));
-       m_CommandList->EndDebugLabel();
    }
 
    void Renderer::UpdateEnvironement(RenderView& _view, const RenderingWorldData& RenderingWorldData)

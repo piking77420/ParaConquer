@@ -28,7 +28,7 @@ ZoneName(x, strlen(x))
 #define PERF_REGION_COLOR(x) ZoneColor(x);
 #define PERF_REGION_COLOR_NAME(x, name) ZoneColor(x, name);
 
-
+#define PERF_MESSAGE(Text) TracyMessageL(Text)
 
 #define PERF_FRAME_MARK FrameMark
 #define PERF_FRAME_MARK_NAMED FrameMarkNamed(x)
@@ -50,6 +50,8 @@ ZoneName(x, strlen(x))
 
 #define PERF_REGION_COLOR(x) 
 #define PERF_REGION_COLOR_NAME(name, x)
+
+#define PERF_MESSAGE(Text)
 
 #define PERF_FRAME_MARK 
 #define PERF_FRAME_MARK_NAMED 

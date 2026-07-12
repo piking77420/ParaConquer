@@ -9,6 +9,7 @@ void PC_CORE::ShaderSourceBinary::OnParentReload(const Guid& _parentGuid)
 
 void PC_CORE::ShaderSourceBinary::WriteSprivToFile(const std::vector<uint32_t>* _sprivCode, GraphicAPI _api)
 {
+    /*
     PERF_REGION_SCOPED;
 
     std::string binaryFolder;
@@ -39,7 +40,7 @@ void PC_CORE::ShaderSourceBinary::WriteSprivToFile(const std::vector<uint32_t>* 
     if (FileLoader::WriteFile(file, _sprivCode->data(), _sprivCode->size() * sizeof(uint32_t), true))
     {
         m_Path = std::move(file);
-    }
+    }*/
 }
 
 std::vector<char> PC_CORE::ShaderSourceBinary::GetCode() const

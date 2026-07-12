@@ -5,6 +5,7 @@
 #include <PerfRegion.hpp>
 #include <ProjectSettingsWindow.hpp>
 #include <Resources/ResourceManager.hpp>
+#include <EditorPipelineCache.hpp>
 
 #include "Resources/ResourceManager.hpp"
 #include "EditWorldWindow.hpp"
@@ -29,6 +30,7 @@
 #include "SystemDialogue.hpp"
 #include "Thread/ThreadUtils.hpp"
 #include "World/StaticMeshComponent.hpp"
+#include <Rendering/RenderSystem.hpp>
 
 #include "ImguiReflectedObject.hpp"
 #include <Io/DDSImageLoader.hpp>
@@ -52,6 +54,7 @@ Editor::Editor(const PC_CORE::AppCreateInfo& _AppCreateInfo)
         exit(-1);
     }
     instance = this;
+    PipelineCache = std::make_unique<PC_EDITOR_CORE::EditorPipelineCache>(RenderHarwareInteface);
 
     LoadFromInitFiles();
     CompileShader();
@@ -172,27 +175,27 @@ void Editor::EditorOnlyShader()
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Editor);
-
+    /*
     PC_LOG("EditorOnlyShader...")
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
     ResourceManager::Create<ShaderSource>("DebugDrawInstanced.vs.hlsl",
         EDITOR_RESOURCE_PATH
         "/Shaders/DebugDraw/DebugDraw.vs.hlsl",
-        ShaderFeature::Instanced);
+        PC_CORE::Rendering::ShaderFeature::Instanced);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DebugDrawFrustum.vs.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/DebugDraw/DebugDraw.vs.hlsl",
-            ShaderFeature::Frustum);
+            PC_CORE::Rendering::ShaderFeature::FrustumCulling);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DebugDraw.ps.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/Lit.ps.hlsl"
-            , ShaderFeature::UseColor);
+            , PC_CORE::Rendering::ShaderFeature::UseColor);
         }));
 
 
@@ -201,15 +204,15 @@ void Editor::EditorOnlyShader()
         ResourceManager::Create<ShaderSource>("DrawMeshletBound.as.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/Meshlet/DrawMeshletBound.as.hlsl"
-            , ShaderFeature::UseColor);
+            , PC_CORE::Rendering::ShaderFeature::UseColor);
         }));
 
     m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
         ResourceManager::Create<ShaderSource>("DrawMeshletBound.ms.hlsl",
             EDITOR_RESOURCE_PATH
             "/Shaders/Meshlet/DrawMeshletBound.ms.hlsl"
-            , ShaderFeature::UseColor);
-        }));
+            , PC_CORE::Rendering::ShaderFeature::UseColor);
+        }));*/
 }
 
 void Editor::CompileShaderDebugView()
@@ -218,20 +221,20 @@ void Editor::CompileShaderDebugView()
     PERF_REGION_COLOR(PerfRegion::Editor);
 
     PC_LOG("CompileShaderDebugView...")
-
+    /*
     // Draw Triangle
     { 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshTriangle.vs.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/TriangleBased.vs.hlsl",
-                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
+                PC_CORE::Rendering::ShaderFeature::UseColor | PC_CORE::Rendering::ShaderFeature::DrawTriangle);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshTriangle.ps.hlsl",
                 EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
-                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
+                PC_CORE::Rendering::ShaderFeature::UseColor | PC_CORE::Rendering::ShaderFeature::DrawTriangle);
             }));
     }
 
@@ -242,14 +245,14 @@ void Editor::CompileShaderDebugView()
             ResourceManager::Create<ShaderSource>("DrawTriangleMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Meshlet/DrawMeshlet.ms.hlsl",
-                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
+                PC_CORE::Rendering::ShaderFeature::UseColor | PC_CORE::Rendering::ShaderFeature::DrawTriangle);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawTriangleMeshlet.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Lit.ps.hlsl",
-                ShaderFeature::UseColor | ShaderFeature::DrawTriangle);
+                PC_CORE::Rendering::ShaderFeature::UseColor | PC_CORE::Rendering::ShaderFeature::DrawTriangle);
             }));
     }
 
@@ -261,16 +264,16 @@ void Editor::CompileShaderDebugView()
             ResourceManager::Create<ShaderSource>("DrawMeshletColor.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Meshlet/DrawMeshlet.ms.hlsl",
-                ShaderFeature::UseColor);
+                PC_CORE::Rendering::ShaderFeature::UseColor);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("DrawMeshletColor.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Lit.ps.hlsl",
-                ShaderFeature::UseColor);
+                PC_CORE::Rendering::ShaderFeature::UseColor);
             }));
-    }
+    }*/
 }
 
 
@@ -282,7 +285,8 @@ void Editor::CompileShader()
 
     PC_LOG("CompileShader...")
     EditorOnlyShader();
-
+    
+    /*
 	{
         auto task = []()->void {
             ResourceManager::Create<ShaderSource>("DrawQuadTriangle.vs.hlsl",
@@ -313,7 +317,7 @@ void Editor::CompileShader()
 			ResourceManager::Create<ShaderSource>("Forward.vs.hlsl",
 				EDITOR_RESOURCE_PATH
 				"/Shaders/TriangleBased.vs.hlsl",
-                ShaderFeature::Lit | ShaderFeature::UseUV | ShaderFeature::UseNormalMap);
+                PC_CORE::Rendering::ShaderFeature::Lit | PC_CORE::Rendering::ShaderFeature::UseUV | PC_CORE::Rendering::ShaderFeature::UseNormalMap);
             }));
     }
 
@@ -323,13 +327,13 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("ForwardMeshlet.ms.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Meshlet/DrawMeshlet.ms.hlsl",
-                ShaderFeature::Lit | ShaderFeature::UseUV | ShaderFeature::UseNormalMap);
+                PC_CORE::Rendering::ShaderFeature::Lit | PC_CORE::Rendering::ShaderFeature::UseUV | PC_CORE::Rendering::ShaderFeature::UseNormalMap);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("ForwardLit.ps.hlsl",
                 EDITOR_RESOURCE_PATH"/Shaders/Lit.ps.hlsl",
-                ShaderFeature::Lit | ShaderFeature::UseUV | ShaderFeature::UseNormalMap);
+                PC_CORE::Rendering::ShaderFeature::Lit | PC_CORE::Rendering::ShaderFeature::UseUV | PC_CORE::Rendering::ShaderFeature::UseNormalMap);
             }));
     }
 
@@ -351,7 +355,7 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("CubeMap.vs.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/CubeMap.vs.hlsl",
-                ShaderFeature::UseUV);
+                PC_CORE::Rendering::ShaderFeature::UseUV);
             }));
     }
 
@@ -379,14 +383,14 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("Skybox.vs.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/CubeMap.vs.hlsl",
-                ShaderFeature::UseUV | ShaderFeature::SkyboxForceFarDepth);
+                PC_CORE::Rendering::ShaderFeature::UseUV | PC_CORE::Rendering::ShaderFeature::SkyboxForceFarDepth);
             }));
 
         m_FuturInits.emplace_back(ThreadPool.Enqueue([]()->void {
             ResourceManager::Create<ShaderSource>("Skybox.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Skybox.ps.hlsl",
-                ShaderFeature::UseUV);
+                PC_CORE::Rendering::ShaderFeature::UseUV);
             }));
     }
 
@@ -396,7 +400,7 @@ void Editor::CompileShader()
             ResourceManager::Create<ShaderSource>("PrefilterEnvironement.ps.hlsl",
                 EDITOR_RESOURCE_PATH
                 "/Shaders/Ibl/Prefiltering.ps.hlsl",
-                ShaderFeature::UseUV);
+                PC_CORE::Rendering::ShaderFeature::UseUV);
             }));
     }
 

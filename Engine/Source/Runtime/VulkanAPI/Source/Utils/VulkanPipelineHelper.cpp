@@ -51,7 +51,7 @@ namespace Vulkan::Utils
 
     }
 
-	VulkanShaderProgramCreateContext CreateContext(vk::Device _Device, const std::vector<const PC_CORE::ShaderSourceBinary*>& _programShaderCreateInfo)
+	VulkanShaderProgramCreateContext CreateContext(vk::Device _Device, const std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>& _programShaderCreateInfo)
 	{
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::Rhi);
@@ -67,7 +67,7 @@ namespace Vulkan::Utils
             shaderStageCount);
 
         for (size_t i = 0; i < shaderStageCount; i++)
-            vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = _programShaderCreateInfo[i]->GetCode();
+            vulkanShaderProgramCreateContex.spvModuleSourceCode[i] = _programShaderCreateInfo[i].Code;
         
 
         for (size_t i = 0; i < vulkanShaderProgramCreateContex.spvModuleSourceCode.size(); i++)
@@ -96,7 +96,7 @@ namespace Vulkan::Utils
             vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].sType =
                 vk::StructureType::ePipelineShaderStageCreateInfo;
             vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].stage = static_cast<vk::ShaderStageFlagBits>(Utils::RhiToShaderStageBits(
-                _programShaderCreateInfo[i]->GetShaderStageTypeBits()));
+                _programShaderCreateInfo[i].ShaderStage));
             vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].module = vulkanShaderProgramCreateContex.
                 vkShaderModules[i];
             vulkanShaderProgramCreateContex.pipelineShaderStageCreateInfos[i].pName = vulkanShaderProgramCreateContex.

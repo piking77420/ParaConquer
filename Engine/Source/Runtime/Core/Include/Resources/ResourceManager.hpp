@@ -66,7 +66,7 @@ BEGIN_PCCORE
 
         std::unordered_map<std::string, Guid> m_NameToGuid;
 
-        std::mutex m_lock;
+        std::recursive_mutex m_lock;
 
         REFLECT(ResourceManager);
         REFLECT(PC_CORE::ObjectPtr<PC_CORE::Resource>);

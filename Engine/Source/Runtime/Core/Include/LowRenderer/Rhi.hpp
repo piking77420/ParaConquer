@@ -39,6 +39,10 @@ public:
 
     GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
 
+    std::string_view GetShaderModulePath();
+
+    std::string_view GetShaderModuleBinarySuffix();
+
     PC_CORE_API [[nodiscard]] bool BeginFrame(PC_CORE::Window* _Window);
 
     PC_CORE_API void EndFrame(PC_CORE::Window* _Window);

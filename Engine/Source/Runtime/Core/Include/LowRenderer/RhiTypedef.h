@@ -11,7 +11,6 @@
 #define ALIGNAS_16 alignas(16)
 
 
-constexpr auto ShaderCachePath = "ShaderCache/";
 constexpr int MaxFramesInFlight = 3;
 
 BEGIN_PCCORE
@@ -25,9 +24,6 @@ BEGIN_PCCORE
 
     REFLECT(GraphicAPI);
 
-    constexpr auto ShaderCacheVulkanFolder = "SPRIV/";
-    constexpr auto ShaderCacheD3d12Folder = "DXIL/";
-
     enum struct RhiExtension
     {
         RayTracing,
@@ -36,7 +32,7 @@ BEGIN_PCCORE
     };
 
     static constexpr uint32_t WHOLE_SIZE = std::numeric_limits<uint32_t>::max();
-
+  
     REFLECT(RhiExtension);
     inline std::string_view RhiExtensionToString(RhiExtension RhiExtension)
     {
@@ -702,6 +698,16 @@ BEGIN_PCCORE
         uint32_t Binding = 0;
         uint32_t Stride = 0;
         VertexInputRate VertexInputRate = VertexInputRate::Vertex;
+
+        uint32_t Hash() const
+        {
+            uint32_t Seed = 0;
+            HashCombine(Seed, Binding);
+            HashCombine(Seed, Stride);
+            HashCombine(Seed, static_cast<uint32_t>(VertexInputRate));
+
+            return Seed;
+        }
     };
 
     struct VertexAttributeDescription
@@ -710,6 +716,17 @@ BEGIN_PCCORE
         uint32_t Location = 0;
         RhiFormat Format = RhiFormat::Undefined;
         uint32_t Offset = 0;
+
+        uint32_t Hash() const
+        {
+            uint32_t Seed = 0;
+            HashCombine(Seed, Binding);
+            HashCombine(Seed, Location);
+            HashCombine(Seed, static_cast<uint32_t>(Format));
+            HashCombine(Seed, static_cast<uint32_t>(Offset));
+
+            return Seed;
+        }
     };
 
 

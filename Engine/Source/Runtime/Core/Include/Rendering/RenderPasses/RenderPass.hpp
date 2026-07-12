@@ -21,6 +21,7 @@ namespace PC_CORE::Rendering
     class Renderer;
     class RenderGraph;
     class DrawList;
+    class PipelineCache;
 
     struct RendererPassBuildContext
     {
@@ -35,6 +36,7 @@ namespace PC_CORE::Rendering
         CommandList& cmd;
         Rhi& RHI;
         RenderGraph& RenderGraph;
+        PipelineCache& PipelineCache;
         const RenderView& View;
         const Renderer& Renderer;
         const RenderingWorldData& RenderingWorldData;

@@ -51,6 +51,12 @@ public:
         ".ms.hlsl",
     };
 
+    struct ShaderModuleBinary
+    {
+        std::vector<char> Code;
+        RhiPipeline::ShaderStageTypeBits ShaderStage;
+    };
+
     static constexpr bool FormatToShaderStageType(std::underlying_type_t<ShaderStageTypeBits>* _ShaderStageTypeBits, std::string_view _SvFormat)
     {
         auto it = std::ranges::find_if(ShaderSourceFormat, [&](const std::string_view& _Other) {return _Other == _SvFormat; });
@@ -79,12 +85,10 @@ public:
 
     PC_CORE_API ~RhiPipeline() override = default;
  
-    PC_CORE_API RhiPipeline& SetShaderModules(const std::vector<const ShaderSourceBinary*>& _ShaderModules);
-
-    size_t Hash() const;
+    PC_CORE_API RhiPipeline& SetShaderModules(const std::vector<ShaderModuleBinary>& _ShaderModules);
 
 protected:
-    std::optional<std::vector<const ShaderSourceBinary*>> m_Modules;
+    std::optional<const std::vector<ShaderModuleBinary>> m_Modules;
 };
 
 REFLECT(RhiPipeline, RhiResource);

@@ -1,98 +1,39 @@
 ﻿#include "Resources/ShaderSource.hpp"
 
-
-#include <fstream>
-#include <iostream>
-#include <PerfRegion.hpp>
-#include "Resources/ResourceManager.hpp"
-#include "Resources/ShaderSourceBinary.hpp"
-#include "Editor.hpp"
-
 #include <filesystem>
 
-#include "ShaderCompiler.hpp"
+#include <PerfRegion.hpp>
+#include <Editor.hpp>
+#include "Resources/ShaderSourceBinary.hpp"
+#include "Resources/ResourceManager.hpp"
+#include <ShaderCompiler.hpp>
+#include <Io/FileLoader.hpp>
+
 
 using namespace PC_CORE;
 using namespace PC_EDITOR_CORE;
-
-
-void ShaderSource::AddPreProcessorDefVulkan()
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Resource);
-
-    /*
-    shaderc::CompileOptions& options = shaderCompiler->options;
-    //lIGHT
-
-    options.AddMacroDefinition("MAX_DIRLIGHT", std::to_string(MAX_DIRLIGHT));
-    options.AddMacroDefinition("MAX_SPOTLIGHT", std::to_string(MAX_SPOTLIGHT));
-    options.AddMacroDefinition("MAX_POINTLIGHT", std::to_string(MAX_POINTLIGHT));
-
-    options.AddMacroDefinition("SCENE_DESCRIPTOR_SET", std::to_string(SCENE_DESCRIPTOR_SET));
-    options.AddMacroDefinition("CAMERA_BINDING", std::to_string(CAMERA_BINDING));
-    options.AddMacroDefinition("LIGHTDATA_BINDING", std::to_string(LIGHTDATA_BINDING));
-    options.AddMacroDefinition("FORWARD_SKYBOX_CUBEMAP", std::to_string(FORWARD_SKYBOX_CUBEMAP));
-
-
-    options.AddMacroDefinition("MATERIAL_DESCRIPTOR_SET", std::to_string(MATERIAL_DESCRIPTOR_SET));
-    options.AddMacroDefinition("ALBEDO_BINDING", std::to_string(ALBEDO_BINDING));
-
-    
-    options.AddMacroDefinition("ENVIRONEMENT_DESCRIPTOR_SET", std::to_string(ENVIRONEMENT_DESCRIPTOR_SET));
-    options.AddMacroDefinition("SKYBOX_BINDING", std::to_string(SKYBOX_BINDING));
-
-
-    // cam 
-    options.AddMacroDefinition("CAM_DEPTH_MAX", std::to_string(CAM_DEPTH_MAX));
-    options.AddMacroDefinition("CAM_DEPTH_MIN", std::to_string(CAM_DEPTH_MIN));
-
-    // Math
-    options.AddMacroDefinition("MAX_FLOAT", std::to_string(std::numeric_limits<float>::max()));
-
-
-    // SPRITE
-    options.AddMacroDefinition("SPRITE_SET", std::to_string(SPRITE_SET));
-    options.AddMacroDefinition("SPRITE_TEXTURE", std::to_string(SPRITE_TEXTURE));
-
-    //Deffered
-    options.AddMacroDefinition("GBUFFER_SET", std::to_string(GBUFFER_SET));
-    options.AddMacroDefinition("G_ALBEDO", std::to_string(G_ALBEDO));
-    options.AddMacroDefinition("G_NORMAL", std::to_string(G_NORMAL));
-    options.AddMacroDefinition("G_ROUGNESS_METALLIC_AO", std::to_string(G_ROUGNESS_METALLIC_AO));
-    options.AddMacroDefinition("G_WORLD_POSITION", std::to_string(G_WORLD_POSITION));*/
-}
 
 ShaderSource::ShaderSource() : Resource()
 {
     DYNAMIC_REFLECT_INIT
 }
 
-ShaderSource::ShaderSource(const std::string& _name, ShaderFeatureFlags _ShaderFeatureFlag)
+ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path)
     : Resource(_name)
-    , m_ShaderFeatureFlag(_ShaderFeatureFlag)
-{
-    DYNAMIC_REFLECT_INIT
-}
-
-ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path& _path, ShaderFeatureFlags _ShaderFeatureFlag)
-    : Resource(_name)
-    , m_ShaderFeatureFlag(_ShaderFeatureFlag)
+    , m_PathToSource((std::filesystem::path(EDITOR_RESOURCE_PATH) / _path.relative_path()).lexically_normal())
 {
     DYNAMIC_REFLECT_INIT
 
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
 
-    if (!PC_CORE::RhiPipeline::FormatToShaderStageTypeBits(&m_ShaderType, GetFullExtension(_path.generic_string()))) // TO DO use SV
+    if (!PC_CORE::RhiPipeline::FormatToShaderStageTypeBits(&m_ShaderType, GetFullExtension(m_PathToSource.generic_string()))) // TO DO use SV
     {
         PC_LOGERROR("Shader invalid format");
-        return;
+        m_ShaderType = {};
     }
-
-    m_PathToSource = _path;
+    /*
     PC_LOG("Compiling {} ", Name);
-
     std::string binaryName = GetShaderBinaryPath();
     std::vector<uint32_t> sourceSpriv;
     if (!GetCompiledShaderSource(&sourceSpriv, binaryName))
@@ -101,16 +42,18 @@ ShaderSource::ShaderSource(const std::string& _name, const std::filesystem::path
         return;
     }
 
+    
     if (!ResourceManager::Exist(binaryName))
     {
         auto s = ResourceManager::Create<ShaderSourceBinary>(std::move(binaryName), &sourceSpriv, m_ShaderType,
                                                              Editor::instance->editorData.projectData.graphicApi);
         LinkDependencies(this, s.get());
-    }
+    }*/
 }
 
 void ShaderSource::Reload()
 {
+    /*
     Resource::Reload();
 
     std::vector<uint32_t> sourceSpriv;
@@ -123,66 +66,67 @@ void ShaderSource::Reload()
     auto s = ResourceManager::Get<ShaderSourceBinary>(GetShaderBinaryPath());
 
     s->WriteSprivToFile(&sourceSpriv, App::Instance->RenderHarwareInteface.GetGraphicsApi());
-    BroadCastReload();
+    BroadCastReload();*/
 }
 
 
-bool ShaderSource::GetCompiledShaderSource(std::vector<uint32_t>* _buffer, const std::string& _BinaryShaderFileTarget)
+ShaderSource::GenerateVariantResult ShaderSource::GenerateVariant(const std::string& _VariantPath, PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlag)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);
+    PERF_MESSAGE("Generate New Variant");
 
     assert(Editor::instance != nullptr);
-    std::vector<uint32_t> code = Editor::instance->shaderCompiler.CompileFile(
-        Editor::instance->editorData.projectData.graphicApi, m_PathToSource, _BinaryShaderFileTarget, GetDefineFromShaderFeatures());
+    auto& Compiler = Editor::instance->shaderCompiler;
+    const auto GraphicApi = Editor::instance->editorData.projectData.graphicApi;
+    std::vector<uint32_t> Code = Compiler.CompileFile(GraphicApi, m_PathToSource, _VariantPath, GetDefineFromShaderFeatures(_ShaderFeatureFlag));
 
-    if (code.empty())
-        return false;
-
-    *_buffer = std::move(code);
-    return true;
+    // TODO handl async loading
+    return !Code.empty() && FileLoader::WriteFile(_VariantPath, Code.data(), sizeof(uint32_t) * Code.size(), true) ? ShaderSource::GenerateVariantResult::Sucess : ShaderSource::GenerateVariantResult::Failed;
 }
 
-std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
+std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures(PC_CORE::Rendering::ShaderFeatureFlags _Flags)
 {
     std::vector<std::wstring> Features;
 
-    if (m_ShaderFeatureFlag & ShaderFeature::Lit)
+    using namespace PC_CORE::Rendering;
+
+    if (_Flags & ShaderFeature::Lit)
     {
         Features.push_back(L"-DLIT=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::UseUV)
+    if (_Flags & ShaderFeature::UseUV)
     {
         Features.push_back(L"-DUSE_UV=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::UseUV)
+    if (_Flags & ShaderFeature::UseUV)
     {
         Features.push_back(L"-DUSE_NORMAL_MAP=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::UseColor)
+    if (_Flags & ShaderFeature::UseColor)
     {
         Features.push_back(L"-DUSE_COLOR=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::DrawTriangle)
+    if (_Flags & ShaderFeature::DrawTriangle)
     {
         Features.push_back(L"-DDRAW_TRIANGLE=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::Instanced)
+    if (_Flags & ShaderFeature::Instanced)
     {
         Features.push_back(L"-DINSTANCED=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::Frustum)
+    if (_Flags & ShaderFeature::FrustumCulling)
     {
         Features.push_back(L"-DFRUSTUM=1");
     }
 
-    if (m_ShaderFeatureFlag & ShaderFeature::SkyboxForceFarDepth)
+    if (_Flags & ShaderFeature::SkyboxForceFarDepth)
     {
         Features.push_back(L"-DSKYBOX_FORCE_FAR_DEPTH=1");
     }
@@ -212,10 +156,4 @@ std::vector<std::wstring> ShaderSource::GetDefineFromShaderFeatures() const
     return Features;
 }
 
-std::string ShaderSource::GetShaderBinaryPath()
-{
-    PERF_REGION_SCOPED;
-    PERF_REGION_COLOR(PerfRegion::Resource);
 
-    return std::filesystem::path(Name).filename().generic_string() + ".binary";
-}

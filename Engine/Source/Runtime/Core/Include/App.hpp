@@ -7,6 +7,7 @@
 #include <Singleton.hpp>
 #include "Io/Window.hpp"
 #include <Io/CoreIo.hpp>
+#include <Rendering/PipelineCache.hpp>
 
 #include "LowRenderer/Rhi.hpp"
 #include "Rendering/Renderer.hpp"
@@ -43,6 +44,8 @@ BEGIN_PCCORE
         Rhi RenderHarwareInteface;
 
         Rendering::RenderSettings RenderSettings;
+
+        std::unique_ptr<PC_CORE::Rendering::PipelineCache> PipelineCache;
 
         PC_CORE::Rendering::Renderer Renderer;
 

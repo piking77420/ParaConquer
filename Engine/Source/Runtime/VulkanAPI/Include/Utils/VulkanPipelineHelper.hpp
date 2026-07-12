@@ -5,6 +5,7 @@
 
 #include <VulkanHeader.h>
 #include <spirv_reflect.h>
+#include <LowRenderer/RhiPipeline.hpp>
 
 namespace PC_CORE
 {
@@ -30,7 +31,7 @@ namespace Vulkan::Utils
         vk::Device device;
     };
 
-    VulkanShaderProgramCreateContext CreateContext(vk::Device _Device, const std::vector<const PC_CORE::ShaderSourceBinary*>& _programShaderCreateInfo);
+    VulkanShaderProgramCreateContext CreateContext(vk::Device _Device, const std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>& _programShaderCreateInfo);
 
     void DestroyContext(VulkanShaderProgramCreateContext& _VulkanShaderProgramCreateContext);
 

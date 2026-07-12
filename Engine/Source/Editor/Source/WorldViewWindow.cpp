@@ -80,7 +80,7 @@ void WorldViewWindow::Render()
 
     const PC_CORE::Rendering::RenderingWorldData& worldData = m_Editor->World.level.GetSystem<PC_CORE::Rendering::RendererSystem>()->GetRenderRenderingWorldData(); // should be done once
 
-    m_Editor->Renderer.Excute(m_View, worldData);
+    m_Editor->Renderer.Excute(m_View, *m_Editor->PipelineCache, worldData);
 }
 
 void WorldViewWindow::OnRenderModeDirty()

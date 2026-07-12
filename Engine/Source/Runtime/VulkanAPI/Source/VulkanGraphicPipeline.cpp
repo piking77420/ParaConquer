@@ -57,7 +57,7 @@ namespace Vulkan
         if (auto& Modules = m_Modules)
             for (const auto& it : *m_Modules)
             {
-                PC_CORE::RhiPipeline::ShaderStageTypeBits ShaderStageType = it->GetShaderStageTypeBits();
+                PC_CORE::RhiPipeline::ShaderStageTypeBits ShaderStageType = it.ShaderStage;
                 if (ShaderStageType == ShaderStageTypeBits::Mesh || ShaderStageType == ShaderStageTypeBits::Amp)
                 {
                     isMeshShader = true;
@@ -103,7 +103,7 @@ namespace Vulkan
         inputAssembly.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo;
         inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
-
+       
 
         vk::Viewport viewport{};
         viewport.x = 0.0f;
@@ -128,7 +128,7 @@ namespace Vulkan
         rasterizer.sType = vk::StructureType::ePipelineRasterizationStateCreateInfo;
         ParseRasterizer(&rasterizer);
 
-        vk::SampleCountFlagBits sample = Utils::RhSampleCountToVulkan(m_Sample);
+        vk::SampleCountFlagBits sample = Utils::RhSampleCountToVulkan(m_Descriptor.Sample);
         vk::PipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
         multisampling.sampleShadingEnable = sample == vk::SampleCountFlagBits::e1 ? VK_FALSE : VK_TRUE;
@@ -138,27 +138,27 @@ namespace Vulkan
         multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
         multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
-        assert(m_RenderPass != nullptr);
+        assert(m_Descriptor.RenderPass != nullptr);
 
-        const PC_CORE::RhiRenderPass& RhiRenderPass = *m_RenderPass;
-        const PC_CORE::SubPass& SubPass = RhiRenderPass.GetSubPasses()[m_SubPassIndex];
+        const PC_CORE::RhiRenderPass& RhiRenderPass = *m_Descriptor.RenderPass;
+        const PC_CORE::SubPass& SubPass = RhiRenderPass.GetSubPasses()[m_Descriptor.SubPassIndex];
         const uint32_t ColorAttachmentCount = static_cast<uint32_t>(SubPass.ColorAttachements.size());
 
         std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments(ColorAttachmentCount);
         for (size_t i = 0; i < colorBlendAttachments.size(); ++i)
-            ParsePipelineColorAttachementBlendState(&colorBlendAttachments[i], m_BlendState);
+            ParsePipelineColorAttachementBlendState(&colorBlendAttachments[i], m_Descriptor.BlendState);
 
 
         vk::PipelineDepthStencilStateCreateInfo depthStencilState{};
-        if (m_DephStencilInfo)
-            ParsePipelineDepthStencilAttachmentState(&depthStencilState, *m_DephStencilInfo);
+        if (m_Descriptor.DephStencilInfo)
+            ParsePipelineDepthStencilAttachmentState(&depthStencilState, *m_Descriptor.DephStencilInfo);
 
         vk::PipelineColorBlendStateCreateInfo colorBlending{};
         colorBlending.sType = vk::StructureType::ePipelineColorBlendStateCreateInfo;
         colorBlending.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
         colorBlending.pAttachments = colorBlendAttachments.data();
 
-        ParseParsePipelineColorBlendState(&colorBlending, colorBlendAttachments.data(), colorBlendAttachments.size(), m_BlendState);
+        ParseParsePipelineColorBlendState(&colorBlending, colorBlendAttachments.data(), colorBlendAttachments.size(), m_Descriptor.BlendState);
 
         vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{};
         graphicsPipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
@@ -169,16 +169,16 @@ namespace Vulkan
         graphicsPipelineInfo.pInputAssemblyState = &inputAssembly;
         graphicsPipelineInfo.pViewportState = &viewportState;
         graphicsPipelineInfo.pRasterizationState = &rasterizer;
-        if (m_DephStencilInfo)
+        if (m_Descriptor.DephStencilInfo)
             graphicsPipelineInfo.pDepthStencilState = &depthStencilState;
         graphicsPipelineInfo.pMultisampleState = &multisampling;
         graphicsPipelineInfo.pColorBlendState = &colorBlending;
         graphicsPipelineInfo.pDynamicState = &dynamicState;
         graphicsPipelineInfo.layout = m_PipelineLayout;
 
-        const VulkanRenderPass& VulkanRenderPassObject = *reinterpret_cast<VulkanRenderPass*>(m_RenderPass);
+        const VulkanRenderPass& VulkanRenderPassObject = *reinterpret_cast<VulkanRenderPass*>(m_Descriptor.RenderPass);
         graphicsPipelineInfo.renderPass = VulkanRenderPassObject.GetVulkanRenderPass();
-        graphicsPipelineInfo.subpass = m_SubPassIndex;
+        graphicsPipelineInfo.subpass = m_Descriptor.SubPassIndex;
 
         auto result = device.createGraphicsPipeline(nullptr, graphicsPipelineInfo);
         VK_CALL(result.result);
@@ -198,11 +198,11 @@ namespace Vulkan
     {
         _pipelineRasterizationStateCreateInfo->depthClampEnable = VK_FALSE;
         _pipelineRasterizationStateCreateInfo->rasterizerDiscardEnable = VK_FALSE;
-        _pipelineRasterizationStateCreateInfo->polygonMode = Utils::RhiPolygonModeToVulkan(m_PolygonMode);
+        _pipelineRasterizationStateCreateInfo->polygonMode = Utils::RhiPolygonModeToVulkan(m_Descriptor.PolygonMode);
         _pipelineRasterizationStateCreateInfo->lineWidth = 1.0f;
-        _pipelineRasterizationStateCreateInfo->cullMode = Utils::RhiToCullMode(m_CullMode);
+        _pipelineRasterizationStateCreateInfo->cullMode = Utils::RhiToCullMode(m_Descriptor.CullMode);
 
-        _pipelineRasterizationStateCreateInfo->frontFace = m_FrontFace == RhiGraphicPipeline::FrontFace::Clockwise
+        _pipelineRasterizationStateCreateInfo->frontFace = m_Descriptor.FrontFace == RhiGraphicPipeline::FrontFace::Clockwise
             ? vk::FrontFace::eClockwise
             : vk::FrontFace::eCounterClockwise;
 
@@ -309,19 +309,19 @@ namespace Vulkan
         }
 
         // Parse vertexInputBindingDescriptions
-        _vertexInputBindingDescriptions->reserve(m_VertexInputBindingDescritions.size());
-        for (size_t i = 0; i < m_VertexInputBindingDescritions.size(); i++)
+        _vertexInputBindingDescriptions->reserve(m_Descriptor.VertexInputBindingDescritions.size());
+        for (size_t i = 0; i < m_Descriptor.VertexInputBindingDescritions.size(); i++)
         {
             _vertexInputBindingDescriptions->emplace_back(
-                ParseVertexInputBindingDescription(m_VertexInputBindingDescritions[i]));
+                ParseVertexInputBindingDescription(m_Descriptor.VertexInputBindingDescritions[i]));
         }
 
         // Parse verteixAttributes
-        _vertexInputAttributeDescriptions->reserve(m_VertexAttributeDescriptions.size());
-        for (size_t i = 0; i < m_VertexAttributeDescriptions.size(); i++)
+        _vertexInputAttributeDescriptions->reserve(m_Descriptor.VertexAttributeDescriptions.size());
+        for (size_t i = 0; i < m_Descriptor.VertexAttributeDescriptions.size(); i++)
         {
             _vertexInputAttributeDescriptions->emplace_back(
-                ParseVertexInputAttributeDescription(m_VertexAttributeDescriptions[i]));
+                ParseVertexInputAttributeDescription(m_Descriptor.VertexAttributeDescriptions[i]));
         }
 
         vk::PipelineVertexInputStateCreateInfo returnVertexInputStateCreateInfo{};

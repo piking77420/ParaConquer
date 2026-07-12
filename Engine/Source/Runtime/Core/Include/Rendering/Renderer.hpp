@@ -10,6 +10,7 @@
 namespace PC_CORE::Rendering
 {
 
+class PipelineCache;
 class RenderView;
 
 class Renderer
@@ -32,12 +33,13 @@ public:
 
     PC_CORE_API void Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction);
 
-    PC_CORE_API void Excute(RenderView& _view, const RenderingWorldData& RenderingWorldData);
+    PC_CORE_API void Excute(RenderView& _view, PipelineCache& PipelineCache, const RenderingWorldData& RenderingWorldData);
 
     const RenderGraph& GetRenderGraph() const
     {
         return m_RenderGraph;
     }
+    PC_CORE_API void SetPipelineCache(PC_CORE::Rendering::PipelineCache* _PipelineCache);
 
     static size_t PickLodCount(const std::vector<double>& LodThreshold, double BoundingSphereRadius, double AABBDistanceToCam, double FovRad);  
 
@@ -52,6 +54,8 @@ public:
     DrawList DebugDrawList;
 
     DrawList Skybox;
+
+    PipelineCache* PipelinesCache{nullptr};
 
     std::unique_ptr<RhiGraphicPipeline> drawTextureQuad;
 

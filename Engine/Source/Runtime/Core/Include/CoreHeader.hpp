@@ -84,3 +84,11 @@ struct overloaded : Ts... { using Ts::operator()...; };
 // explicit deduction guide (not needed as of C++20)
 template<class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
+
+#define ENUM_TO_STRING_MACRO(Value, Enum) \
+        if (Value == Enum) \
+            return #Enum; 
+
+#define ENUM_FLAG_TO_STRING_MACRO(Value, Enum) \
+        if (Value & Enum) \
+            s.append(#Enum); 

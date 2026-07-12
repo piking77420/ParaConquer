@@ -8,6 +8,7 @@ namespace PC_CORE
 	class RhiGraphicPipeline : public RhiPipeline
 	{
 	public:
+        struct Descriptor;
 		RhiGraphicPipeline(Rhi& _Rhi);
 		virtual ~RhiGraphicPipeline();
 
@@ -139,108 +140,190 @@ namespace PC_CORE
             }
         };
 
+
+        struct Descriptor
+        {
+            PolygonMode PolygonMode{ PolygonMode::Fill };
+            CullModeFlag CullMode{ 0u };
+            uint32_t Sample{ 1u };
+            FrontFace FrontFace{ FrontFace::CounterClockwise };
+            std::optional<DephStencilInfo> DephStencilInfo;
+            std::optional<BlendState> BlendState;
+            PrimitiveTopology PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
+
+            RhiRenderPass* RenderPass{ nullptr };
+            uint32_t SubPassIndex{ 0u };
+
+            std::vector<VertexInputBindingDescrition> VertexInputBindingDescritions;
+            std::vector<VertexAttributeDescription> VertexAttributeDescriptions;
+
+             PC_CORE_API Descriptor& SetPolygonMode(RhiGraphicPipeline::PolygonMode _PolygonMode)
+             {
+                 PolygonMode = _PolygonMode;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetCullMode(CullModeFlag _CullMode)
+             {
+                 CullMode = _CullMode;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetSamples(uint32_t _Sample)
+             {
+                 Sample = _Sample;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetFrontFace(RhiGraphicPipeline::FrontFace _FrontFace)
+             {
+                 FrontFace = _FrontFace;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetDepthTest(bool _DepthTest)
+             {
+                 if (!DephStencilInfo.has_value())
+                 {
+                     DephStencilInfo.emplace();
+                 }
+
+
+                 DephStencilInfo->enableDepthTest = _DepthTest;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetDepthWrite(bool _DepthWrite)
+             {
+                 if (!DephStencilInfo.has_value())
+                 {
+                     DephStencilInfo.emplace();
+                 }
+                 DephStencilInfo->enableDepthWrite = _DepthWrite;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetDepthCompareOp(CompareOp _CompareOp)
+             {
+                 if (!DephStencilInfo.has_value())
+                 {
+                     DephStencilInfo.emplace();
+                 }
+
+                 DephStencilInfo->depthCompareOp = _CompareOp;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetBlendState(RhiGraphicPipeline::BlendState _BlendInfo)
+             {
+                 BlendState.emplace(_BlendInfo);
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetRenderPass(RhiRenderPass& _RhiRenderPass)
+             {
+                 RenderPass = &_RhiRenderPass;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetSubPassIndex(uint32_t _SubPassIndex)
+             {
+                 SubPassIndex = _SubPassIndex;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
+             {
+                 VertexInputBindingDescritions = _VertexInputBindingDescritions;
+                 return *this;
+             }
+
+             PC_CORE_API Descriptor& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
+             {
+                VertexAttributeDescriptions = _VertexAttributeDescriptions;
+                return *this;
+             }
+
+             uint32_t Hash() const;
+        };
+
         PC_CORE_API RhiGraphicPipeline& SetPolygonMode(PolygonMode _PolygonMode)
         {
-            m_PolygonMode = _PolygonMode;
+            m_Descriptor.SetPolygonMode(_PolygonMode);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetCullMode(CullModeFlag _CullMode)
         {
-            m_CullMode = _CullMode;
+            m_Descriptor.SetCullMode(_CullMode);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetSamples(uint32_t _Sample)
         {
-            m_Sample = _Sample;
+            m_Descriptor.SetSamples(_Sample);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetFrontFace(FrontFace _FrontFace)
         {
-            m_FrontFace = _FrontFace;
+            m_Descriptor.SetFrontFace(_FrontFace);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetDepthTest(bool _DepthTest)
         {
-            if (!m_DephStencilInfo.has_value())
-            {
-                m_DephStencilInfo.emplace();
-            }
-
-
-            m_DephStencilInfo->enableDepthTest = _DepthTest;
+            m_Descriptor.SetDepthTest(_DepthTest);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetDepthWrite(bool _DepthWrite)
         {
-            if (!m_DephStencilInfo.has_value())
-            {
-                m_DephStencilInfo.emplace();
-            }
-            m_DephStencilInfo->enableDepthWrite = _DepthWrite;
+            m_Descriptor.SetDepthWrite(_DepthWrite);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetDepthCompareOp(CompareOp _CompareOp)
         {
-            if (!m_DephStencilInfo.has_value())
-            {
-                m_DephStencilInfo.emplace();
-            }
+            m_Descriptor.SetDepthCompareOp(_CompareOp);
 
-            m_DephStencilInfo->depthCompareOp = _CompareOp;
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetBlendState(BlendState _BlendInfo)
         {
-            m_BlendState.emplace(_BlendInfo);
+            m_Descriptor.SetBlendState(_BlendInfo);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetRenderPass(RhiRenderPass& _RhiRenderPass)
         {
-            m_RenderPass = &_RhiRenderPass;
+            m_Descriptor.SetRenderPass(_RhiRenderPass);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetSubPassIndex(uint32_t _SubPassIndex)
         {
-            m_SubPassIndex = _SubPassIndex;
+            m_Descriptor.SetSubPassIndex(_SubPassIndex);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetVertexInputBindingDescritions(const std::vector<VertexInputBindingDescrition>& _VertexInputBindingDescritions)
         {
-            m_VertexInputBindingDescritions = _VertexInputBindingDescritions;
+            m_Descriptor.SetVertexInputBindingDescritions(_VertexInputBindingDescritions);
             return *this;
         }
 
         PC_CORE_API RhiGraphicPipeline& SetVertexAttributeDescriptions(const std::vector<VertexAttributeDescription>& _VertexAttributeDescriptions)
         {
-            m_VertexAttributeDescriptions = _VertexAttributeDescriptions;
+            m_Descriptor.SetVertexAttributeDescriptions(_VertexAttributeDescriptions);
             return *this;
         }
 
+        PC_CORE_API RhiGraphicPipeline& FromDescriptor(const Descriptor& _Descriptor);
+
     protected:
-        PolygonMode m_PolygonMode{ PolygonMode::Fill };
-        CullModeFlag m_CullMode{ 0u };
-        uint32_t m_Sample{ 1u };
-        FrontFace m_FrontFace{ FrontFace::CounterClockwise };
-        std::optional<DephStencilInfo> m_DephStencilInfo;
-        std::optional<BlendState> m_BlendState;
-        PrimitiveTopology m_PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
-
-        RhiRenderPass* m_RenderPass{ nullptr };
-        uint32_t m_SubPassIndex{ 0u };
-
-        std::vector<VertexInputBindingDescrition> m_VertexInputBindingDescritions;
-        std::vector<VertexAttributeDescription> m_VertexAttributeDescriptions;
-
+        Descriptor m_Descriptor;
 	};
 
 } // namespace PC_CORE

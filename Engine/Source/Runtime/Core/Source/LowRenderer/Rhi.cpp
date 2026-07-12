@@ -66,6 +66,25 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _CreateInfo)
 
 }
 
+std::string_view Rhi::GetShaderModulePath()
+{
+	switch (GetGraphicsApi())
+	{
+	case GraphicAPI::Vulkan:
+		return "ShaderCache/SPRIV/";
+	case GraphicAPI::D3d12:
+		return "ShaderCache/DXIL/";
+	}
+
+	assert(false);
+	return ""sv;
+}
+
+std::string_view Rhi::GetShaderModuleBinarySuffix()
+{
+	return ".Binary";
+}
+
 bool Rhi::BeginFrame(PC_CORE::Window* _Window)
 {
 	auto& context = GetRhiContext();

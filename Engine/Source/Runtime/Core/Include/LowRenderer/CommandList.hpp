@@ -167,6 +167,7 @@ BEGIN_PCCORE
 
         class DebugLabelScope
         {
+        public:
             DebugLabelScope(PC_CORE::CommandList& _List,
                 const char* _Name,
                 const std::array<float, 4>& _Color)
@@ -306,9 +307,8 @@ BEGIN_PCCORE
 
         bool IsInRenderPass(RecordRenderPassType Type) const;
 
-     private:
-
     };
 
+    using DebugLabelScope = CommandList::DebugLabelScope;
 
 END_PCCORE
