@@ -150,21 +150,11 @@ BEGIN_EDITOR_PCCORE
 
         void SaveInitFiles();
 
-        void CompileShader();
-
-        void CompileShaderDebugView();
-
-        void EditorOnlyShader();
-
         void LookForEditorInit();
 
         void BasicOpenFile();
 
-        void ReloadShaders();
-
         EditorRenderer m_EditorRenderer;
-
-        std::vector<std::future<void>> m_FuturInits;
 
         PC_CORE::Thread::ThreadPool m_EditorThreadPool;
 
