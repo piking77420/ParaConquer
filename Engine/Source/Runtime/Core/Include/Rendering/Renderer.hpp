@@ -97,8 +97,6 @@ private:
 
     void InitRhiRenderPasses();
 
-    void InitShaders();
-
     void BuildDrawLists(RenderView& _view, const RenderingWorldData& RenderingWorldData);
 
     void UploadRenderInstanceID();
