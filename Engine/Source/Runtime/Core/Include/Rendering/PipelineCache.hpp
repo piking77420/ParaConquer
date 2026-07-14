@@ -136,19 +136,19 @@ namespace PC_CORE::Rendering
 			const std::string_view& _PipelineName, 
 			const ModuleEntryList& _ModuleEntryList, 
 			const RhiGraphicPipeline::Descriptor& _Descriptor, 
-			bool _Delayable = false);
+			bool _AsyncCompile = false);
 
 		ComputePipelineQueryResult CreateOrGetComputePipelineCache(PipelineCacheID* _PipilineCacheID,
 			const std::string_view& _PipelineName, 
 			const ModuleEntryList& _ModuleEntryList, 
-			bool _Delayable = false);	
+			bool _AsyncCompile = false);
 
 	protected:
 		virtual std::expected<bool, PipelineCache::PipelineCacheQueryResult> LookForModuleFile(
 			const std::string& _BaseShaderPath, 
 			const std::string& _VariantExpectedPath, 
 			PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags, 
-			bool _Delayable);
+			bool _AsyncCompile);
 
 	private:
 		Rhi& m_Rhi;

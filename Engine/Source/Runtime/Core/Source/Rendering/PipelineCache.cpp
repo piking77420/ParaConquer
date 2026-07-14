@@ -28,7 +28,7 @@ namespace PC_CORE::Rendering
 		const std::string_view& _PipelineName,
 		const ModuleEntryList& _ModuleEntryList,
 		const RhiGraphicPipeline::Descriptor& _Descriptor,
-		bool _Delayable)
+		bool _AsyncCompile)
 	{
 		
 		if (!_PipilineCacheID)
@@ -47,7 +47,7 @@ namespace PC_CORE::Rendering
 		if (query.error() != PipelineCache::PipelineCacheQueryResult::NoneInCache)
 			return query;	
 
-		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModule = QueryModules(_ModuleEntryList, _Delayable);
+		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModule = QueryModules(_ModuleEntryList, _AsyncCompile);
 
 		if (QueryModule)
 		{
@@ -90,7 +90,7 @@ namespace PC_CORE::Rendering
 	PipelineCache::ComputePipelineQueryResult PipelineCache::CreateOrGetComputePipelineCache(PipelineCacheID* _PipilineCacheID,
 		const std::string_view& _PipelineName,
 		const ModuleEntryList& _ModuleEntryList,
-		bool _Delayable)
+		bool _AsyncCompile)
 	{
 		if (!_PipilineCacheID)
 			return std::unexpected(PipelineCache::PipelineCacheQueryResult::InvalidCachePtr);
@@ -105,7 +105,7 @@ namespace PC_CORE::Rendering
 			return *query;
 		}
 
-		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModule = QueryModules(_ModuleEntryList, _Delayable);
+		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModule = QueryModules(_ModuleEntryList, _AsyncCompile);
 
 		if (QueryModule)
 		{
@@ -169,12 +169,12 @@ namespace PC_CORE::Rendering
 				_Delayable);
 			if (!FileQuery)
 			{
-				if (FileQuery.error() == PipelineCache::PipelineCacheQueryResult::ModuleMissing)
+				if (FileQuery.error() == PipelineCache::PipelineCacheQueryResult::ModuleMissing ||
+					FileQuery.error() == PipelineCache::PipelineCacheQueryResult::ModuleFailedToCompile)
 					return std::unexpected(FileQuery.error());
+
 				if (FileQuery.error() == PipelineCache::PipelineCacheQueryResult::ModuleCompiling)
 					isCompiling = true;
-				if (FileQuery.error() == PipelineCache::PipelineCacheQueryResult::ModuleFailedToCompile)
-					return std::unexpected(FileQuery.error());
 			}
 		}
 
@@ -217,7 +217,7 @@ namespace PC_CORE::Rendering
 		const std::string& _BaseShaderPath,
 		const std::string& _VariantExpectedPath,
 		PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
-		bool _Delayable)
+		bool _AsyncCompile)
 	{
 		if (!std::filesystem::exists(std::filesystem::path(_VariantExpectedPath)))
 			return std::unexpected(PipelineCache::PipelineCacheQueryResult::ModuleMissing);

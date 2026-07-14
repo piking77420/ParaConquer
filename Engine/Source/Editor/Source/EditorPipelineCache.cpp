@@ -18,7 +18,7 @@ namespace PC_EDITOR_CORE
 		const std::string& _BaseShaderPath,
 		const std::string& _VariantExpectedPath,
 		PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
-		bool _Delayable)
+		bool _AsyncCompile)
 	{
 		std::filesystem::path VariantPathp = std::filesystem::path(_VariantExpectedPath);
 		{

@@ -16,7 +16,7 @@ namespace PC_EDITOR_CORE
 			const std::string& _BaseShaderPath,
 			const std::string& _VariantExpectedPath,
 			PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
-			bool _Delayable) override;
+			bool _AsyncCompile) override;
 		
 	};
 } // namespace PC_EDITOR_CORE
