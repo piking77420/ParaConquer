@@ -114,7 +114,7 @@ Vulkan::VulkanDevice::VulkanDevice(const std::vector<PC_CORE::RhiExtension>& Rhi
 
     vk::DeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
-    deviceCreateInfo.pNext = chainHead; // ✅ CORRECT
+    deviceCreateInfo.pNext = chainHead;
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfo.data();
     deviceCreateInfo.queueCreateInfoCount =
         static_cast<uint32_t>(queueCreateInfo.size());
@@ -124,18 +124,6 @@ Vulkan::VulkanDevice::VulkanDevice(const std::vector<PC_CORE::RhiExtension>& Rhi
     deviceCreateInfo.ppEnabledExtensionNames =
         enabledExtensionNames.data();
 
-#ifdef _DEBUG
-    if constexpr (ENABLE_VALIDATION_LAYERS)
-    {
-        deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
-    }
-    else
-    {
-        deviceCreateInfo.enabledLayerCount = 0;
-    }
-
-#endif
     m_Device = vkPhysicalDevice.createDevice(deviceCreateInfo, nullptr);
     GetExtensionFunctions();
 
