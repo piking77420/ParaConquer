@@ -1,7 +1,9 @@
-﻿#include "rendering/material.hpp"
+﻿#include <Rendering/Material.hpp>
+#include <ScopeGuard.hpp>
 
 #include "App.hpp"
 #include "LowRenderer/Rhi.hpp"
+#include <LowRenderer/RhiRenderPass.hpp>
 
 namespace PC_CORE::Rendering
 {
@@ -26,17 +28,10 @@ void Material::Build()
 {
     PC_LOG_VERBOSE("Build Material Name {}", Name);
 
-    switch (m_MaterialType)
-    {
-    case PC_CORE::Rendering::MaterialType::Opaque:
-        m_Program = App::Instance->Renderer.opaqueFowardShader.get();
-        break;
-    case PC_CORE::Rendering::MaterialType::Transparent:
-        m_Program = App::Instance->Renderer.transparentForwardShader.get();
-        break;
-    default:
-        break;
-    }
+    PERF_REGION_SCOPED;
+    PERF_REGION_COLOR(PerfRegion::Rendering);
+
+    WritePso();
 
     m_RhiMaterialBuffer.reset(App::Instance->RenderHarwareInteface.CreateBuffer());
     m_RhiMaterialBuffer
@@ -53,7 +48,7 @@ void Material::Build()
     m_RhiDescriptorSets.reset(App::Instance->RenderHarwareInteface.CreateDescriptorSet());
     m_RhiDescriptorSets->BindUniformBuffer(RhiShaderStageBits::Pixel, 0, m_RhiMaterialBuffer.get());
 
-    const RhiSampler& sampler = (m_MaterialType == MaterialType::Opaque) ? *App::Instance->SamplerLinearReapet.get() : *App::Instance->SamplerLinearReapet.get();
+    const RhiSampler& sampler = (m_MaterialDomain == MaterialDomain::Opaque) ? *App::Instance->SamplerLinearReapet.get() : *App::Instance->SamplerLinearReapet.get();
     for (size_t i = 0; i < m_Textures.size(); i++)
     {
         const MaterialAttribute att = static_cast<MaterialAttribute>(i);
@@ -77,6 +72,61 @@ void Material::Build()
     Upload();
 }
 
+void Material::WritePso()
+{
+    for (auto& Pso : m_PipelineData)
+    {
+        MakeScopeGuard([&Pso]() {
+            Pso.SetNeedRebuild(true);
+            });
+
+        PC_CORE::Rendering::PipelineCache::ModuleEntryList& List = Pso.ModuleList;
+
+        List.Reserve(2);
+        auto& vertex = List.Next();
+        vertex.ShaderSourcePath = "/Shaders/TriangleBased.vs.hlsl";
+        vertex.FeaturesFlags =
+            PC_CORE::Rendering::ShaderFeature::Lit |
+            PC_CORE::Rendering::ShaderFeature::UseUV |
+            PC_CORE::Rendering::ShaderFeature::UseNormalMap;
+
+        auto& fragment = List.Next();
+        fragment.ShaderSourcePath = "/Shaders/Lit.ps.hlsl";
+        fragment.FeaturesFlags =
+            PC_CORE::Rendering::ShaderFeature::Lit |
+            PC_CORE::Rendering::ShaderFeature::UseUV |
+            PC_CORE::Rendering::ShaderFeature::UseNormalMap;
+
+
+        RhiGraphicPipeline::Descriptor& Descritptor = Pso.GraphicPipelineDescriptor;
+        constexpr PC_CORE::RhiGraphicPipeline::BlendState blenstate =
+        {
+            .ColorSrcFactor = PC_CORE::BlendFactor::SrcAlpha,
+            .ColorDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+            .ColorOp = PC_CORE::BlendOp::Add,
+
+            .AlphaSrcFactor = PC_CORE::BlendFactor::One,
+            .AlphaDstFactor = PC_CORE::BlendFactor::OneMinusSrcAlpha,
+            .AlphaOp = PC_CORE::BlendOp::Add,
+
+            .BlendMask = PC_CORE::ColorComponent::ColorComponentRGBA
+        };
+        switch (m_MaterialDomain)
+        {
+        case PC_CORE::Rendering::MaterialDomain::Opaque:
+            Descritptor
+                .SetCullMode(RhiGraphicPipeline::CullModeFlagBits::CullBack);
+            break;
+        case PC_CORE::Rendering::MaterialDomain::Transparent:
+            Descritptor
+                .SetBlendState(blenstate);
+            break;
+        default:
+            break;
+        }
+
+    }
+}
 
 void Material::Upload()
 {

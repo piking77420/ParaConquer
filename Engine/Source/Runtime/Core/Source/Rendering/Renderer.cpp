@@ -122,39 +122,7 @@ namespace PC_CORE::Rendering
        BuildDrawLists(_View, RenderingWorldData);
        UploadRenderInstanceID();
 
-
-       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, PipelineCache, _View, *this, RenderingWorldData);
-       PC_CORE::Rendering::PipelineCacheHandleID id{};
-       for (size_t i = 0; i < 2; i++)       
-       {
-           PipelineCache::ModuleEntryList list;
-           list.Reserve(2);
-           auto& vertexShader = list.Next();
-           vertexShader.ShaderSourcePath = "/Shaders/DrawQuadTriangle.vs.hlsl";
-
-           auto& fragmentShader = list.Next();
-           fragmentShader.ShaderSourcePath = "/Shaders/SampleSingleTexture.ps.hlsl";
-           RhiGraphicPipeline::Descriptor descriptor;
-           descriptor
-               .SetRenderPass(*colorLinearPass);
-
-           PipelineCache::PipelineQueryResult Result = executeContext.PipelineCache.CreateOrGetGraphicPipelineCache(&id, "DrawQuadTriangle", list, descriptor);
-           assert(Result);
-           RhiPipeline& Pipeline = Result->get();
-       }
-
-       PC_CORE::Rendering::PipelineCacheHandleID idCompute{};
-       for (size_t i = 0; i < 2; i++)
-       {
-           PipelineCache::ModuleEntryList list;
-           auto& compute = list.Next();
-           compute.ShaderSourcePath = "/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl";
-
-           PipelineCache::PipelineQueryResult Result = executeContext.PipelineCache.CreateOrGetComputePipelineCache(&idCompute, "Aces", list);
-           assert(Result);
-           RhiPipeline& Pipeline = Result->get();
-       }
-        
+       RendererPassExecuteContext executeContext(*m_CommandList, m_Rhi, m_RenderGraph, PipelineCache, _View, *this, RenderingWorldData);        
        m_RenderGraph.Execute(executeContext, _View);     
    }
 
@@ -166,6 +134,9 @@ namespace PC_CORE::Rendering
 
    void Renderer::InitRhiRenderPasses()
    {
+       PERF_REGION_SCOPED;
+       PERF_REGION_COLOR(PerfRegion::Rendering);
+
        {
            forwardPass.reset(m_Rhi.CreateRenderPass());
 
@@ -724,7 +695,8 @@ namespace PC_CORE::Rendering
            for (const auto& Dcmd : DrawCommands)
            {
                const MeshSection& MeshSection = Lod.MeshesSections[Dcmd.MeshSectionIndex];
-               const Material* Material = StaticMeshComponentData.Materials.at(MeshSection.MaterialIndex);
+               Rendering::Material* Material = StaticMeshComponentData.Materials.at(MeshSection.MaterialIndex);
+
                if (!Material)
                    continue; // to do get dummy mat
 
@@ -734,7 +706,7 @@ namespace PC_CORE::Rendering
                if (!_view.FrustumWorld.IsOnFrustum(MeshSectionAABBCenter, MeshSectionAABBExtend))
                  continue;
 
-               const bool isOpaque = Material->GetMaterialType() == MaterialType::Opaque;
+               const bool isOpaque = Material->GetMaterialDomain() == Rendering::MaterialDomain::Opaque;
                DrawList& DrawList = isOpaque ? OpaqueList : TransparentList;
                DrawItem& item = DrawList.EmplaceBack();
 
@@ -754,13 +726,15 @@ namespace PC_CORE::Rendering
                std::memcpy(RenderInstance.Model.data.data(), Model.data, sizeof(RenderInstance.Model));
                std::memcpy(RenderInstance.NormalInvertMatrix.data.data(), NormalInverMatrix.data, sizeof(RenderInstance.NormalInvertMatrix));
 
+               
+
                switch (m_RenderGraph.GetRenderMode())
                {
                case RenderMode::TriangleBased:
                {
                    DrawStaticMeshTriangle& Descritptor = item.Data.emplace<DrawStaticMeshTriangle>();
 
-                   Descritptor.ShaderProgram = isOpaque ? opaqueFowardShader.get() : transparentForwardShader.get();
+                   Descritptor.Psos = &Material->GetPso();
                    Descritptor.MaterialDescriptor = Material->GetDescriptorSet();
                    Descritptor.VertexBuffer = StaticMesh->GetVertexBuffer(LODIndex).Get();
                    Descritptor.IndexBuffer = StaticMesh->GetIndexBuffer(LODIndex).Get();
@@ -771,18 +745,18 @@ namespace PC_CORE::Rendering
                    Descritptor.IndexCount = MeshSection.MeshDataDescriptor.IndicesCount;
                    Descritptor.IndexFormat = StaticMesh->GetIndexBuffer(LODIndex).GetIndexFormat();
 
-                   const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
+                   const uint64_t pipelineKey = 0; // TODO
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
                    const uint64_t depthKey = static_cast<uint64_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
 
-                   item.SortKey = ComputeSortKey(isOpaque, depthKey, materialKey, shaderKey);
+                   item.SortKey = ComputeSortKey(isOpaque, depthKey, materialKey, pipelineKey);
                }
                    break;
                case RenderMode::ClusterBased:
                {
                    DrawStaticMeshMeshlet& Descritptor = item.Data.emplace<DrawStaticMeshMeshlet>();
 
-                   Descritptor.ShaderProgram = isOpaque ? opaqueFowardShaderMeshlet.get() : transparentForwardShaderMeshlet.get();
+                   Descritptor.Psos = &Material->GetPso();
                    Descritptor.MaterialDescriptor = Material->GetDescriptorSet();
                    Descritptor.MeshletDescriptor = StaticMesh->GetMeshletDescriptor(LODIndex);
                    Descritptor.MeshletBoundDescriptor = StaticMesh->GetMeshletBoundsDescriptor(LODIndex);
@@ -796,10 +770,10 @@ namespace PC_CORE::Rendering
 
                    //Descritptor.MatrixMV = Tbx::Matrix4x4f(ModelView);
                    //Descritptor.NormalInverMatrixMV = Descritptor.MatrixMV.Invert().Transpose();
-                   const uint64_t shaderKey = reinterpret_cast<uint64_t>(Descritptor.ShaderProgram) >> 4;
+                   const uint64_t pipelineKey = 0; // TODO
                    const uint64_t materialKey = reinterpret_cast<uint64_t>(Descritptor.MaterialDescriptor) >> 4;
                    const uint32_t depthKey = static_cast<uint32_t>(DistanceAABBToCamera * FIXED_POINT_NUMBER);
-                   item.SortKey = ComputeSortKey(isOpaque, depthKey, materialKey, shaderKey);
+                   item.SortKey = ComputeSortKey(isOpaque, depthKey, materialKey, pipelineKey);
 
                }
                    break;
@@ -809,9 +783,6 @@ namespace PC_CORE::Rendering
                    assert(false);
                    break;
                }
-
-
-               int d = 0;
            }
        }
    }
@@ -857,7 +828,7 @@ namespace PC_CORE::Rendering
 
                    auto& item = DebugDrawList.EmplaceBack();
                    auto& InstanceDebugDraw = item.Data.emplace<DrawDebugInstanced>();
-                   InstanceDebugDraw.ShaderProgram = nullptr;
+                   InstanceDebugDraw.Pipeline = nullptr;
                    InstanceDebugDraw.VertexBuffer = m_DebugPrimitiveBuffer[PrimitiveIndex].VertexBuffer.Get();
                    InstanceDebugDraw.IndexBuffer = m_DebugPrimitiveBuffer[PrimitiveIndex].IndexBuffer.Get();
                    InstanceDebugDraw.InstanceBuffer = m_DebugPrimitiveBuffer[PrimitiveIndex].InstanceBuffer.get();
@@ -896,7 +867,7 @@ namespace PC_CORE::Rendering
                InstanceDebugDraw.IndexCount = 24; // yes
                InstanceDebugDraw.isWired = F.IsWired;
                InstanceDebugDraw.VP = Tbx::Matrix4x4f(F.FrustumToWorld);
-               InstanceDebugDraw.ShaderProgram = DrawDebugShapeFrustum.get();
+               //InstanceDebugDraw.Pipeline = DrawDebugShapeFrustum.get();
                /*
                const Color Color(FloatRGBA{
                            F.Color.x, F.Color.y, F.Color.z, 1.0f
@@ -913,7 +884,7 @@ namespace PC_CORE::Rendering
                InstanceDebugDraw.IndexCount = 24; // yes
                InstanceDebugDraw.isWired = true;
                InstanceDebugDraw.VP = Tbx::Matrix4x4f(_view.ViewProjectionInv);
-               InstanceDebugDraw.ShaderProgram = DrawDebugShapeFrustum.get();
+              // InstanceDebugDraw.Pipeline = DrawDebugShapeFrustum.get();
            }
        }
        

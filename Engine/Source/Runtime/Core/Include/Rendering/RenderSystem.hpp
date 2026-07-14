@@ -17,7 +17,7 @@ namespace PC_CORE::Rendering
 {
     struct StaticMeshComponentData
     {
-        std::vector<const Material*> Materials; // make an array with MAX
+        std::vector<Material*> Materials; // make an array with MAX
         const StaticMesh* StaticMesh;
         Tbx::Matrix4x4d WorldMatrix;
     };

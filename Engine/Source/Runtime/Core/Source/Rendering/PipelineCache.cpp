@@ -24,7 +24,7 @@ namespace PC_CORE::Rendering
 	}
 
 	PipelineCache::PipelineQueryResult PipelineCache::CreateOrGetGraphicPipelineCache(
-		PipelineCacheHandleID* _PipilineCacheID,
+		PipelineCacheID* _PipilineCacheID,
 		const std::string_view& _PipelineName,
 		const ModuleEntryList& _ModuleEntryList,
 		const RhiGraphicPipeline::Descriptor& _Descriptor,
@@ -34,8 +34,11 @@ namespace PC_CORE::Rendering
 		if (!_PipilineCacheID)
 			return std::unexpected(PipelineCache::PipelineCacheQueryResult::InvalidCachePtr);
 
-		const PipelineCacheHandleID Id = *_PipilineCacheID;
-		PipelineQueryResult query = tryToFindInCache(_PipilineCacheID, m_GraphicPipelineCache);
+		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Rendering);
+
+		const PipelineCacheID Id = *_PipilineCacheID;
+		PipelineQueryResult query = tryToFindInCache(*_PipilineCacheID, m_GraphicPipelineCache);
 		if (query.has_value())
 		{
 			return *query;
@@ -45,7 +48,6 @@ namespace PC_CORE::Rendering
 			return query;
 
 		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModule = QueryModules(_ModuleEntryList, _Delayable);
-
 
 		if (QueryModule)
 		{
@@ -58,6 +60,7 @@ namespace PC_CORE::Rendering
 			}
 			HashCombine(Hash, _Descriptor.Hash());
 
+			PERF_MESSAGE("Enconter new Create or Get Pipeline");
 			std::unique_ptr<RhiGraphicPipeline> pipeline(m_Rhi.CreateRhiGraphicPipeline());
 			pipeline
 				->FromDescriptor(_Descriptor)
@@ -67,17 +70,21 @@ namespace PC_CORE::Rendering
 
 			RhiGraphicPipeline* pipelinePtr = pipeline.get();
 			_PipilineCacheID->FromUnderlying(static_cast<uint32_t>(Hash));
-			m_GraphicPipelineCache.emplace(
-				*_PipilineCacheID,
-				std::move(pipeline)
-			);
+			auto result = m_GraphicPipelineCache.Emplace(std::move(pipeline));
+
 			return *pipelinePtr;
 		}
 		
 		return std::unexpected(QueryModule.error());
 	}
 
-	PipelineCache::PipelineQueryResult PipelineCache::CreateOrGetComputePipelineCache(PipelineCacheHandleID* _PipilineCacheID,
+	PipelineCache::PipelineQueryResult PipelineCache::GetGraphicPipelineCache(const PipelineCacheID& _PipilineCacheID)
+	{
+		return tryToFindInCache(_PipilineCacheID, m_GraphicPipelineCache);
+	}
+
+
+	PipelineCache::PipelineQueryResult PipelineCache::CreateOrGetComputePipelineCache(PipelineCacheID* _PipilineCacheID,
 		const std::string_view& _PipelineName,
 		const ModuleEntryList& _ModuleEntryList,
 		bool _Delayable)
@@ -85,8 +92,11 @@ namespace PC_CORE::Rendering
 		if (!_PipilineCacheID)
 			return std::unexpected(PipelineCache::PipelineCacheQueryResult::InvalidCachePtr);
 
-		const PipelineCacheHandleID Id = *_PipilineCacheID;
-		PipelineQueryResult query = tryToFindInCache(_PipilineCacheID, m_ComputePipelineCache);
+		PERF_REGION_SCOPED;
+		PERF_REGION_COLOR(PerfRegion::Rendering);
+
+		const PipelineCacheID Id = *_PipilineCacheID;
+		PipelineQueryResult query = tryToFindInCache(*_PipilineCacheID, m_ComputePipelineCache);
 		if (query.has_value())
 		{
 			return *query;
@@ -96,7 +106,6 @@ namespace PC_CORE::Rendering
 			return query;
 
 		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModule = QueryModules(_ModuleEntryList, _Delayable);
-
 
 		if (QueryModule)
 		{
@@ -116,27 +125,25 @@ namespace PC_CORE::Rendering
 
 			RhiComputePipeline* pipelinePtr = pipeline.get();
 			_PipilineCacheID->FromUnderlying(static_cast<uint32_t>(Hash));
-			m_ComputePipelineCache.emplace(
-				*_PipilineCacheID,
-				std::move(pipeline)
-			);
-			return *pipelinePtr;
+			auto result = m_ComputePipelineCache.Emplace(std::move(pipeline));
+	
+			return *result.second->get();
 		}
 
-		return std::unexpected(QueryModule.error());
+		return std::unexpected(PipelineCache::PipelineCacheQueryResult::Error);
 	}
 
-	PipelineCache::PipelineQueryResult PipelineCache::tryToFindInCache(PipelineCacheHandleID* _PipilineCacheID, CacheMap& CacheMap)
+	PipelineCache::PipelineQueryResult PipelineCache::tryToFindInCache(const PipelineCacheID& _PipilineCacheID, Cache& _Cache)
 	{	
-		if (!_PipilineCacheID->IsValid())
+		if (!_PipilineCacheID.IsValid())
 		{
-			auto it = CacheMap.find(*_PipilineCacheID);
-			if (it == CacheMap.end())
+			auto it = _Cache.Get(_PipilineCacheID);
+			if (!it)
 			{
 				return std::unexpected(PipelineCache::PipelineCacheQueryResult::InvalidPipelineCache);
 			}
 
-			return *it->second;
+			return *it->get();
 		}
 		
 		return std::unexpected(PipelineCache::PipelineCacheQueryResult::NoneInCache);

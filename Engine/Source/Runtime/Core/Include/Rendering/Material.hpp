@@ -7,16 +7,13 @@
 #include "ObjectPtr.hpp"
 #include "Resources/Texture2d.hpp"
 #include "LowRenderer/RhiDescriptorSet.hpp"
-#include "Sampler.hpp"
+#include <Rendering/MaterialDomain.hpp>
+#include <Rendering/MeshPass.hpp>
+#include <Rendering/PipelineStateObject.hpp>
+
 
 namespace PC_CORE::Rendering
 {
-
-    enum class MaterialType
-    {
-        Opaque,
-        Transparent,
-    };
 
     enum struct MaterialAttribute : uint8_t
     {
@@ -40,7 +37,6 @@ namespace PC_CORE::Rendering
         };
     }
 
-
     class Material : public Resource
     {
     public:
@@ -56,9 +52,9 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API void Build();
 
-        Material& SetMaterialType(const MaterialType _Type)
+        Material& SetMaterialType(const MaterialDomain _Type)
         {
-            m_MaterialType = _Type;
+            m_MaterialDomain = _Type;
             return *this;
         }
 
@@ -137,9 +133,9 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API void Upload();
 
-        MaterialType GetMaterialType() const
+        MaterialDomain GetMaterialDomain() const
         {
-            return m_MaterialType;
+            return m_MaterialDomain;
         }
 
         const Tbx::Vector4f& GetAlbedo() const
@@ -177,16 +173,24 @@ namespace PC_CORE::Rendering
             return m_UseAlpha;
         }
 
-        const RhiPipeline& GetProgram() const
-        {
-            return *m_Program;
-        }
-
         const RhiDescriptorSet* GetDescriptorSet() const;
 
         size_t GetMaterialStride() const;
+
+        template <typename Self>
+        [[nodiscard]] auto GetPipelineStateObject(this Self&& self, MeshPass _Pass) noexcept
+        {
+            assert(_Pass != MeshPass::Count);
+
+            return std::forward<Self>(self).m_PipelineData[static_cast<std::size_t>(_Pass)];
+        }
+
+        std::array<PipelineStateObject, static_cast<size_t>(MeshPass::Count)>& GetPso()
+        {
+            return m_PipelineData;
+        }
     private:
-        MaterialType m_MaterialType = MaterialType::Opaque;
+        MaterialDomain m_MaterialDomain = MaterialDomain::Opaque;
 
         std::array<WeakObjectPtr<Texture2D>, static_cast<size_t>(MaterialAttribute::Ao) + 1> m_Textures;
 
@@ -208,9 +212,11 @@ namespace PC_CORE::Rendering
 
         std::unique_ptr<RhiBuffer> m_RhiMaterialBuffer = nullptr;
 
-        RhiPipeline* m_Program{ nullptr };
+        std::array<PipelineStateObject, static_cast<size_t>(MeshPass::Count)> m_PipelineData;
 
         void PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer);
+
+        void WritePso();
     };
 
     REFLECT(Material, Resource)

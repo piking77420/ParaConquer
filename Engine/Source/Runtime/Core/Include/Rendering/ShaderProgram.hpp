@@ -21,16 +21,16 @@ BEGIN_PCCORE
 
         IMP_DYNAMIC_REFLECT()
             /*
-        PC_CORE_API ShaderProgram(const std::string& _shaderName,
+        PC_CORE_API Pipeline(const std::string& _shaderName,
                                   RhiPipeline::PipelineType _shaderProgramPipelineType,
                                   const std::vector<std::pair<RhiPipeline::ShaderStageTypeBits, WeakObjectPtr<ShaderSourceBinary>>>&
                                   _sources);
 
-        PC_CORE_API ShaderProgram(const std::string& _shaderName,
+        PC_CORE_API Pipeline(const std::string& _shaderName,
                                   RhiPipeline::PipelineType _shaderProgramPipelineType,
                                   const WeakObjectPtr<ShaderSourceBinary>& _source);
 
-        PC_CORE_API ShaderProgram(std::string&& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
+        PC_CORE_API Pipeline(std::string&& _shaderName, RhiPipeline::PipelineType _shaderProgramPipelineType,
                                   const WeakObjectPtr<ShaderSourceBinary>& _source);*/
 
         PC_CORE_API ShaderProgram()
@@ -46,7 +46,7 @@ BEGIN_PCCORE
             }
 
 
-            PC_LOG("Destroy ShaderProgram, {}", Name);
+            PC_LOG("Destroy Pipeline, {}", Name);
         }
 
         RhiPipeline* Get()

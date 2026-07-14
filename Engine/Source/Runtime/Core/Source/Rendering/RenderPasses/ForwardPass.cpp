@@ -80,7 +80,14 @@ namespace PC_CORE::Rendering::Pass
 
 		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
 		{
-			if (_Context.cmd.BindRhiPipeline(*StaticMesh.ShaderProgram))
+			PipelineStateObject& Pso = StaticMesh.Psos->at(static_cast<size_t>(MeshPass::ForwardPass));
+			PipelineCache::PipelineQueryResult PipelieneQuery = Pso.UpdatePipelineData(_Context.PipelineCache,
+				*_Context.Renderer.forwardPass,
+				0);
+			if (!PipelieneQuery)
+				return;
+
+			if (_Context.cmd.BindRhiPipeline(*PipelieneQuery))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 				if (_Context.Renderer.EnvironementDescriptorSet)
@@ -98,7 +105,14 @@ namespace PC_CORE::Rendering::Pass
 
 		m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
 		{
-			if (_Context.cmd.BindRhiPipeline(*StaticMesh.ShaderProgram))
+			PipelineStateObject& Pso = StaticMesh.Psos->at(static_cast<size_t>(MeshPass::ForwardPass));
+			PipelineCache::PipelineQueryResult PipelieneQuery = Pso.UpdatePipelineData(_Context.PipelineCache,
+				*_Context.Renderer.forwardPass,
+				0);
+				if (!PipelieneQuery)
+					return;
+
+			if (_Context.cmd.BindRhiPipeline(*PipelieneQuery))
 			{
 				_Context.cmd.BindDescriptorSet(m_DescriptorMeshlet.get(), 0);
 				if (_Context.Renderer.EnvironementDescriptorSet)

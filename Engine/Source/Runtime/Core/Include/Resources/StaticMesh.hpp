@@ -6,7 +6,7 @@
 
 #include "Resource.hpp"
 #include "ObjectPtr.hpp"
-#include "Rendering/Material.hpp"
+#include <Rendering/Material.hpp>
 
 namespace PC_CORE::RHI
 {

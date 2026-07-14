@@ -15,6 +15,7 @@
 #include <LowRenderer/RhiGraphicPipeline.hpp>
 #include <LowRenderer/RhiComputePipeline.hpp>
 #include <Rendering/RenderingTypedef.h>
+#include <DataStructure/FreeList.hpp>
 
 namespace PC_CORE
 {
@@ -23,22 +24,22 @@ namespace PC_CORE
 
 namespace PC_CORE::Rendering
 {
-	class PipelineCacheHandleID
+	class PipelineCacheID
 	{
 	private:
 		static constexpr size_t MAX = std::numeric_limits<size_t>::max();
 	public:
 
-		explicit PipelineCacheHandleID() = default;
-		~PipelineCacheHandleID() = default;
-		DEFAULT_COPY_MOVE_OPERATIONS(PipelineCacheHandleID);
+		explicit PipelineCacheID() = default;
+		~PipelineCacheID() = default;
+		DEFAULT_COPY_MOVE_OPERATIONS(PipelineCacheID);
 
 		bool IsValid() const noexcept
 		{
 			return m_ID == MAX;
 		}
 
-		auto operator<=>(const PipelineCacheHandleID&) const = default;
+		auto operator<=>(const PipelineCacheID&) const = default;
 
 		[[nodiscard]] operator bool() const noexcept
 		{
@@ -58,15 +59,6 @@ namespace PC_CORE::Rendering
 	private:
 		size_t m_ID = MAX;
 	};
-
-	struct PipelineCacheHandleIDHash
-	{
-		std::size_t operator()(const PipelineCacheHandleID& _Value) const noexcept
-		{
-			return std::hash<size_t>{}(_Value.ToUnderlying());
-		}
-	};
-
 
 	class PC_CORE_API PipelineCache
 	{
@@ -133,16 +125,20 @@ namespace PC_CORE::Rendering
 		};
 
 
-		PipelineQueryResult CreateOrGetGraphicPipelineCache(PipelineCacheHandleID* _PipilineCacheID,
+		PipelineQueryResult CreateOrGetGraphicPipelineCache(PipelineCacheID* _PipilineCacheID,
 			const std::string_view& _PipelineName, 
 			const ModuleEntryList& _ModuleEntryList, 
 			const RhiGraphicPipeline::Descriptor& _Descriptor, 
 			bool _Delayable = false);
 
-		PipelineQueryResult CreateOrGetComputePipelineCache(PipelineCacheHandleID* _PipilineCacheID,
+		PipelineQueryResult GetGraphicPipelineCache(const PipelineCacheID& _PipilineCacheID);
+
+		PipelineQueryResult CreateOrGetComputePipelineCache(PipelineCacheID* _PipilineCacheID,
 			const std::string_view& _PipelineName, 
 			const ModuleEntryList& _ModuleEntryList, 
 			bool _Delayable = false);	
+
+		PipelineQueryResult GetComputePipelineCache(const PipelineCacheID& _PipilineCacheID);
 
 	protected:
 		virtual std::expected<bool, PipelineCache::PipelineCacheQueryResult> LookForModuleFile(
@@ -152,15 +148,15 @@ namespace PC_CORE::Rendering
 			bool _Delayable);
 
 	private:
-		using CacheMap = std::unordered_map<PipelineCacheHandleID, std::unique_ptr<RhiPipeline>, PipelineCacheHandleIDHash>;
+		using Cache = FreeList<std::unique_ptr<RhiPipeline>>;
 
 		Rhi& m_Rhi;
 
-		CacheMap m_GraphicPipelineCache;
+		Cache m_GraphicPipelineCache;
 
-		CacheMap m_ComputePipelineCache;
+		Cache m_ComputePipelineCache;
 
-		PipelineQueryResult tryToFindInCache(PipelineCacheHandleID* _PipilineCacheID, CacheMap& CacheMap);
+		PipelineQueryResult tryToFindInCache(const PipelineCacheID& _PipilineCacheID, Cache& CacheMap);
 
 		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModules(const ModuleEntryList& _ModuleEntryList, bool _Delayable);
 

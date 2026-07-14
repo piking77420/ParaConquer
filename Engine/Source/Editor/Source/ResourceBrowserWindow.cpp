@@ -72,9 +72,10 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
 {
     using namespace PC_CORE;
 
-    m_BasePathRelative = std::filesystem::relative(std::filesystem::current_path(),
-                                                   std::wstring(m_Editor->editorData.projectPath));
-    m_CurrenPath = normalizePath(std::wstring(m_Editor->editorData.projectPath));
+    auto path = std::filesystem::current_path();
+    std::wstring projecctPathW = m_Editor->editorData.projectPath.generic_wstring();
+    m_BasePathRelative = std::filesystem::relative(path, projecctPathW);
+    m_CurrenPath = normalizePath(projecctPathW);
     windowFlags |= ImGuiWindowFlags_MenuBar;
 
     m_NearestSampler.reset(m_Editor->RenderHarwareInteface.CreateSampler());

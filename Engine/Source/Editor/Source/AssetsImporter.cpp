@@ -730,7 +730,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
             if (AI_SUCCESS == Material.Get(AI_MATKEY_OPACITY, opacity)) {
                 if (opacity < 1.0f) {
                       // Material is transparent
-                    CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialType::Transparent);
+                    CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialDomain::Transparent);
                     CoreMaterial.SetUseAlpha(true);
                 }
             }
@@ -808,7 +808,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                         CoreMaterial.SetAlbedoTexture(Texture);
                         if (Texture->Get()->UseAlpha())
                         {
-                            CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialType::Transparent);
+                            CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialDomain::Transparent);
                         }
                     }
 

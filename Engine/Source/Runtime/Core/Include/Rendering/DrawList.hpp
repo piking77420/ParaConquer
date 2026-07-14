@@ -6,12 +6,15 @@
 #include <LowRenderer/RhiPipeline.hpp>
 #include <LowRenderer/RhiDescriptorSet.hpp>
 #include <DebugHelper/DebugDrawContext.hpp>
+#include <Rendering/MeshPass.hpp>
 
 namespace PC_CORE::Rendering
 {
+	class PipelineStateObject;
+
 	struct DrawStaticMeshTriangle
 	{
-		const RhiPipeline* ShaderProgram{ nullptr };
+		std::array<PipelineStateObject, static_cast<size_t>(MeshPass::Count)>* Psos{ nullptr }; // TODO join material descriptor and pso
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
 		const RhiBuffer* VertexBuffer{ nullptr };
 		const RhiBuffer* IndexBuffer{ nullptr };
@@ -25,7 +28,7 @@ namespace PC_CORE::Rendering
 
 	struct DrawStaticMeshMeshlet
 	{
-		const RhiPipeline* ShaderProgram{ nullptr };
+		std::array<PipelineStateObject, static_cast<size_t>(MeshPass::Count)>* Psos{ nullptr }; // TODO join material descriptor and pso
 		const RhiDescriptorSet* MaterialDescriptor{ nullptr };
 		const RhiDescriptorSet* MeshletDescriptor{ nullptr };
 		const RhiDescriptorSet* MeshletBoundDescriptor{ nullptr };
@@ -48,7 +51,7 @@ namespace PC_CORE::Rendering
 
 	struct DrawDebugInstanced
 	{
-		const RhiPipeline* ShaderProgram{ nullptr };
+		const RhiPipeline* Pipeline{ nullptr };
 		const RhiBuffer* VertexBuffer{ nullptr };
 		const RhiBuffer* IndexBuffer{ nullptr };
 		const RhiBuffer* InstanceBuffer{ nullptr };

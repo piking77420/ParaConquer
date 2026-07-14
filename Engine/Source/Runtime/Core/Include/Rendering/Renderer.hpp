@@ -57,40 +57,6 @@ public:
 
     PipelineCache* PipelinesCache{nullptr};
 
-    std::unique_ptr<RhiGraphicPipeline> drawTextureQuad;
-
-    std::unique_ptr<RhiComputePipeline> toneMapAces;
-
-    std::unique_ptr<RhiGraphicPipeline> opaqueFowardShader;
-
-    std::unique_ptr<RhiGraphicPipeline> transparentForwardShader;
-
-    std::unique_ptr<RhiGraphicPipeline> opaqueFowardShaderMeshlet;
-
-    std::unique_ptr<RhiGraphicPipeline> transparentForwardShaderMeshlet;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawMeshletColor;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawTriangle;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawMeshTriangleMeshlet;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawDebugShapeFrustum;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawDebugShapeInstanced;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawDebugMeshletBound;
-
-    std::unique_ptr<RhiGraphicPipeline> EquilateralToSkyBox;
-
-    std::unique_ptr<RhiGraphicPipeline> DrawSkyBoxPipeline;
-
-    std::unique_ptr<RhiGraphicPipeline> IrradianceConvolution;
-
-    std::unique_ptr<RhiGraphicPipeline> PrefilterEnvironement;
-
-    std::unique_ptr<RhiGraphicPipeline> BRDFLutPipeline;
-
     std::unique_ptr<RhiSampler> linearClampToEdgeSampler;
 
     std::unique_ptr<RhiRenderPass> forwardPass;
