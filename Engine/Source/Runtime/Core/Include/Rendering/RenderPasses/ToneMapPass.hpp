@@ -45,11 +45,13 @@ namespace PC_CORE::Rendering::Pass
         RhiTexture* m_LightingImageRef{ nullptr };
         RhiTexture* m_OutPutImageRef{ nullptr };
 
-        std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DesciptorSetDrawQuad;
-
         std::unique_ptr<PC_CORE::RhiDescriptorSet> m_DesciptorSetToneMap;
 
         std::unique_ptr<RhiFrameBuffer> m_FrameBuffer;
+
+        PipelineCache::ModuleEntryList m_ModuleEntryList;
+
+        PipelineCacheID m_PipelineCacheID;
 
         void ToneMapPassExecute(const RendererPassExecuteContext& _RendererPassExecuteContext);
     };

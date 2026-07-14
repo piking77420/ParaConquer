@@ -16,6 +16,25 @@ namespace PC_CORE::Rendering::Pass
 		PERF_REGION_COLOR(PerfRegion::Rendering);
 
 		ComputeViewMatricies(_RendererPassBuildContext);
+		
+		// BRDF
+		{
+			auto& ModuleList = m_BRDFPipiline.ModuleList;
+			ModuleList.Reserve(2);
+
+			auto& Vertex = ModuleList.Next();
+			Vertex.SetSourcePath("/Shaders/DrawQuadTriangle.vs.hlsl");
+
+			auto& Frag = ModuleList.Next();
+			Frag.SetSourcePath("/Shaders/Ibl/BRDFLUT.ps.hlsl")
+				.SetShaderFeaturesFlag(ShaderFeature::UseUV);
+
+			m_BRDFPipiline.GraphicPipelineDescriptor
+				.SetRenderPass(*_RendererPassBuildContext.Renderer.BRDFLutPass)
+				.SetDepthTest(false)
+				.SetDepthWrite(false);
+		}
+
 	}
 
 	void BakeIbl::Execute(const RendererPassExecuteContext & _RendererPassExecuteContext)
@@ -35,7 +54,44 @@ namespace PC_CORE::Rendering::Pass
 
 		m_EquilateralToCubeMapResource = EquilateralToCubemapResource(_RendererPassExecuteContext, *captureRenderPass);
 		m_IrradianceConvolution = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Irradiance Convolution ", *captureRenderPass->IrradianceMap);
+		// IrradianceConvolution
+		{
+			auto& ModuleList = m_IrradianceConvolution.ModuleList;
+			ModuleList.Reserve(2);
+
+			auto& Vertex = ModuleList.Next();
+			Vertex.SetSourcePath("/Shaders/CubeMap.vs.hlsl")
+				.SetShaderFeaturesFlag(ShaderFeature::UseUV);
+
+			auto& Frag = ModuleList.Next();
+			Frag.SetSourcePath("/Shaders/Ibl/IrradianceConvolution.ps.hlsl");
+
+			m_IrradianceConvolution.GraphicPipelineDescriptor
+				.SetRenderPass(*_RendererPassExecuteContext.Renderer.colorHDRPass)
+				.SetDepthTest(false)
+				.SetDepthWrite(false);
+		}
+		
+
 		m_PrefilterMap = EnvironementResource(_RendererPassExecuteContext, *captureRenderPass, "Prefilter ", *captureRenderPass->PrefilterMap);
+
+		{
+			auto& ModuleList = m_PrefilterMap.ModuleList;
+			ModuleList.Reserve(2);
+
+			auto& Vertex = ModuleList.Next();
+			Vertex.SetSourcePath("/Shaders/CubeMap.vs.hlsl")
+				.SetShaderFeaturesFlag(ShaderFeature::UseUV);
+
+			auto& Frag = ModuleList.Next();
+			Frag.SetSourcePath("/Shaders/Ibl/Prefiltering.ps.hlsl")
+				.SetShaderFeaturesFlag(ShaderFeature::UseUV);
+
+			m_PrefilterMap.GraphicPipelineDescriptor
+				.SetRenderPass(*_RendererPassExecuteContext.Renderer.colorHDRPass)
+				.SetDepthTest(false)
+				.SetDepthWrite(false);
+		}
 		
 		auto& BRDFLUT = captureRenderPass->BRDF;
 		m_BRDFLUTFrameBuffer.reset(_RendererPassExecuteContext.RHI.CreateFrameBuffer());
@@ -102,6 +158,21 @@ namespace PC_CORE::Rendering::Pass
 				.SetName("EquirectangularToSkybox Framebuffer" + std::to_string(i))
 				.Build();
 		}
+
+		auto& ModuleList = Resource.ModuleList;
+		ModuleList.Reserve(2);
+
+		auto& Vertex = ModuleList.Next();
+		Vertex.SetSourcePath("/Shaders/CubeMap.vs.hlsl")
+			.SetShaderFeaturesFlag(Rendering::ShaderFeature::UseUV);
+
+		auto& Frag = ModuleList.Next();
+		Frag.SetSourcePath("/Shaders/Ibl/EquirectangularToCubeMap.ps.hlsl");
+
+		Resource.GraphicPipelineDescriptor
+			.SetRenderPass(*_RendererPassExecuteContext.Renderer.colorHDRPass)
+			.SetDepthTest(false)
+			.SetDepthWrite(false);
 
 		return Resource;
 	}
@@ -171,12 +242,23 @@ namespace PC_CORE::Rendering::Pass
 				.ClearDepth = 1.f
 			};
 			_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
-			_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.EquilateralToSkyBox.get());
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
-			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
+			const auto Result = _RendererPassExecuteContext.PipelineCache.CreateOrGetGraphicPipelineCache(
+				&m_EquilateralToCubeMapResource.PipelineCacheID,
+				"m_EquilateralToCubeMap"sv,
+				m_EquilateralToCubeMapResource.ModuleList,
+				m_EquilateralToCubeMapResource.GraphicPipelineDescriptor
+			);
+			if (Result)
+			{
+				_RendererPassExecuteContext.cmd.BindRhiPipeline(*Result);
+				_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
-			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+				_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
+
+				_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+			}
+			
 			_RendererPassExecuteContext.cmd.EndRenderPass();
 		}
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
@@ -206,12 +288,23 @@ namespace PC_CORE::Rendering::Pass
 				.ClearDepth = 1.f
 			};
 			_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
-			_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.IrradianceConvolution.get());
-			_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
-			_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
+			const auto Result = _RendererPassExecuteContext.PipelineCache.CreateOrGetGraphicPipelineCache(
+				&m_IrradianceConvolution.PipelineCacheID,
+				"IrradianceConvolution"sv,
+				m_IrradianceConvolution.ModuleList,
+				m_IrradianceConvolution.GraphicPipelineDescriptor
+			);
+			if (Result)
+			{
+				_RendererPassExecuteContext.cmd.BindRhiPipeline(*Result);
+				_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
 
-			_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+				_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex, &m_ViewMatricies[i], 0, sizeof(m_ViewMatricies[i]));
+
+				_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+			}
+			
 			_RendererPassExecuteContext.cmd.EndRenderPass();
 		}
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
@@ -255,11 +348,22 @@ namespace PC_CORE::Rendering::Pass
 
 				_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
 				_RendererPassExecuteContext.cmd.SetViewPort(ViewPortIrradiance);
-				_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.PrefilterEnvironement.get());
-				_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
-				_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex | RhiShaderStageBits::Pixel, &PrefilterData, 0, sizeof(PrefilterData));
-				_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+
+				const auto Result = _RendererPassExecuteContext.PipelineCache.CreateOrGetGraphicPipelineCache(
+					&m_PrefilterMap.PipelineCacheID,
+					"PrefilterMap"sv,
+					m_PrefilterMap.ModuleList,
+					m_PrefilterMap.GraphicPipelineDescriptor
+				);
+				if (Result)
+				{
+					_RendererPassExecuteContext.cmd.BindRhiPipeline(*Result);
+					_RendererPassExecuteContext.cmd.BindDescriptorSet(DescriptorSet.get(), 0);
+					_RendererPassExecuteContext.cmd.PushConstant(RhiShaderStageBits::Vertex | RhiShaderStageBits::Pixel, &PrefilterData, 0, sizeof(PrefilterData));
+					_RendererPassExecuteContext.cmd.Draw(36, 1, 0, 0);
+				}
 				_RendererPassExecuteContext.cmd.EndRenderPass();
+				
 			}
 		}
 		_RendererPassExecuteContext.cmd.EndDebugLabel();
@@ -283,8 +387,19 @@ namespace PC_CORE::Rendering::Pass
 		};
 		_RendererPassExecuteContext.cmd.SetViewPort(PC_CORE::ViewportInfo(FrameBuffer->GetWidth(), FrameBuffer->GetHeight()));
 		_RendererPassExecuteContext.cmd.BeginRenderPass(beginRenderPassInfo);
-		_RendererPassExecuteContext.cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.BRDFLutPipeline.get());
-		_RendererPassExecuteContext.cmd.Draw(3, 1, 0, 0);
+
+		const auto Result = _RendererPassExecuteContext.PipelineCache.CreateOrGetGraphicPipelineCache(
+			&m_BRDFPipiline.PipelineCacheID,
+			"PrefilterMap"sv,
+			m_BRDFPipiline.ModuleList,
+			m_BRDFPipiline.GraphicPipelineDescriptor
+		);
+		if (Result)
+		{
+			_RendererPassExecuteContext.cmd.BindRhiPipeline(*Result);
+			_RendererPassExecuteContext.cmd.Draw(3, 1, 0, 0);
+		}
+		
 		_RendererPassExecuteContext.cmd.EndRenderPass();
 
 		_RendererPassExecuteContext.cmd.EndDebugLabel();

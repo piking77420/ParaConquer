@@ -111,7 +111,7 @@ namespace PC_CORE::Rendering
        InitShaders(); // should be call in constructor however shader creation are build after app cronstructor
        InitDebugResource();
 
-       RendererPassBuildContext buildContext(m_Rhi, m_RenderGraph, _View, *this);
+       RendererPassBuildContext buildContext(m_Rhi, m_RenderGraph, *PipelinesCache, _View, *this);
        m_RenderGraph.Build(buildContext);
    }
 

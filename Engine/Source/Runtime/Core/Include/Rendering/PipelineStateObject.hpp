@@ -23,13 +23,13 @@ namespace PC_CORE::Rendering
             if (m_NeedsRebuild == _NeedRebuild)
                 return;
 
+            // may be atomic in future
+            m_NeedsRebuild = _NeedRebuild;
+
             if (m_NeedsRebuild) {
                 PipelineCacheID = Rendering::PipelineCacheID{};
                 GraphicPipelineDescriptor = RhiGraphicPipeline::Descriptor{};
-            }
-
-            // may be atomic in future
-            m_NeedsRebuild = _NeedRebuild;
+            } 
         }
 
         [[nodiscard]] bool GetNeedRebuild() const
@@ -37,7 +37,9 @@ namespace PC_CORE::Rendering
             return m_NeedsRebuild;
         }
 
-        PipelineCache::PipelineQueryResult UpdatePipelineData(
+        void Reset();
+
+        PipelineCache::GraphicPipelineQueryResult UpdatePipelineData(
             PipelineCache& PipelineCache,
             PC_CORE::RhiRenderPass& _RenderPass,
             uint32_t _SubPassIndex);

@@ -11,7 +11,22 @@ namespace Vulkan
 
 	}
 
-	VulkanComputePipeline::~VulkanComputePipeline() = default;
+    VulkanComputePipeline::~VulkanComputePipeline()
+    {
+        vk::Device device = GET_VK_DEVICE;
+
+        if (m_PipelineLayout != VK_NULL_HANDLE)
+        {
+            device.destroyPipelineLayout(m_PipelineLayout);
+            m_PipelineLayout = VK_NULL_HANDLE;
+        }
+
+        if (m_Pipeline != VK_NULL_HANDLE)
+        {
+            device.destroyPipeline(m_Pipeline);
+            m_Pipeline = VK_NULL_HANDLE;
+        }
+    }
 
 	bool VulkanComputePipeline::Build()
 	{

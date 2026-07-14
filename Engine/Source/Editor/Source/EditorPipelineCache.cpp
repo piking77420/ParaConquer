@@ -32,7 +32,7 @@ namespace PC_EDITOR_CORE
 		{
 			const std::filesystem::path ShaderSourcePath = std::filesystem::path(_BaseShaderPath);
 			const std::string ShaderSourceName = ShaderSourcePath.filename().generic_string();
-			Source = !PC_CORE::ResourceManager::Exist(_BaseShaderPath) 
+			Source = !PC_CORE::ResourceManager::Exist(ShaderSourceName)
 				? PC_CORE::ResourceManager::Create<ShaderSource>(ShaderSourceName, ShaderSourcePath)
 				: Source = PC_CORE::ResourceManager::Get<ShaderSource>(ShaderSourceName);
 

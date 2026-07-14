@@ -74,7 +74,7 @@ void RendererSystem::PopulateStaticMeshes(const Level& _level)
         const Transform& transform = _level.GetComponent<Transform>(ent);
 
         ObjectPtr<StaticMesh> mesh = staticMeshComponent.staticMesh.lock();
-        std::vector<const Rendering::Material*> material;
+        std::vector<Rendering::Material*> material;
 
         {
             if (staticMeshComponent.materials.empty())

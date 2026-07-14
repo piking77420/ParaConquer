@@ -176,15 +176,15 @@ using ShaderFeatureFlags = uint64_t;
 static inline std::string ShaderFeatureToString(ShaderFeatureFlags _Features)
 {
     std::string s;
-
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::Lit)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::UseUV)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::UseNormalMap)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::UseColor)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::DrawTriangle)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::Instanced)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::FrustumCulling)
-    ENUM_FLAG_TO_STRING_MACRO(_Features, ShaderFeature::SkyboxForceFarDepth)
+     
+    ENUM_FLAG_TO_STRING_MACRO(_Features, Lit, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, UseUV, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, UseNormalMap, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, UseColor, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, DrawTriangle, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, Instanced, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, FrustumCulling, s.append("_");)
+    ENUM_FLAG_TO_STRING_MACRO(_Features, SkyboxForceFarDepth, s.append("_");)
 
     return s;
 }

@@ -45,10 +45,20 @@ namespace PC_CORE::Rendering::Pass
     private:
         struct PassResource
         {
+            PC_CORE::Rendering::PipelineCache::ModuleEntryList ModuleList;
+            PC_CORE::Rendering::PipelineCacheID PipelineCacheID;
+            RhiGraphicPipeline::Descriptor GraphicPipelineDescriptor;
+
             std::unique_ptr<RhiDescriptorSet> DescriptorSet;
             std::vector<std::array<std::unique_ptr<RhiFrameBuffer>, 6>> FrameBuffers;
         };
         
+        struct BRDFPipiline{
+            PC_CORE::Rendering::PipelineCache::ModuleEntryList ModuleList;
+            PC_CORE::Rendering::PipelineCacheID PipelineCacheID;
+            RhiGraphicPipeline::Descriptor GraphicPipelineDescriptor;
+        }m_BRDFPipiline;
+
         std::array<Tbx::Matrix4x4f, 6> m_ViewMatricies;
 
         PassResource m_EquilateralToCubeMapResource;

@@ -736,10 +736,14 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
             }
         }
 
+        // Build Only once
+        std::set<PC_CORE::ObjectPtr<PC_CORE::Rendering::Material>> UniqueMaterial;
         for (auto& m : Materials)
-        {
+            UniqueMaterial.emplace(m);    
+
+        for (auto& m : UniqueMaterial)
             m->Build();
-        }
+        
 
         if (auto StaticMesh = m_StaticMeshs.Lock())
         {

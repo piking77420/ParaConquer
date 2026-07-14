@@ -4,6 +4,7 @@
 #include "App.hpp"
 #include "LowRenderer/Rhi.hpp"
 #include <LowRenderer/RhiRenderPass.hpp>
+#include <Resources/StaticMesh.hpp>
 
 namespace PC_CORE::Rendering
 {
@@ -76,6 +77,7 @@ void Material::WritePso()
 {
     for (auto& Pso : m_PipelineData)
     {
+        Pso.Reset();
         MakeScopeGuard([&Pso]() {
             Pso.SetNeedRebuild(true);
             });
@@ -124,6 +126,12 @@ void Material::WritePso()
         default:
             break;
         }
+
+        Descritptor
+            .SetDepthTest(true)
+            .SetDepthWrite(true)
+            .SetVertexAttributeDescriptions(StaticMeshVertex::GetAttributeDescriptions(0))
+            .SetVertexInputBindingDescritions({ StaticMeshVertex::GetVertexBindingDescription(0) });
 
     }
 }

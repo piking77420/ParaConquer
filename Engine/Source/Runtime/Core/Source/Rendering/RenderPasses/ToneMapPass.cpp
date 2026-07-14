@@ -37,6 +37,10 @@ namespace PC_CORE::Rendering::Pass
 
 		m_LightingImageRef = &lightingImage;
 		m_OutPutImageRef = &outPutImage;
+
+		auto& AcesModule = m_ModuleEntryList.Next();
+		AcesModule
+			.SetSourcePath("/Shaders/PostProcess/ToneMapping/Aces.cs.hlsl");
 	}
 
 	void ToneMapPass::Execute(const RendererPassExecuteContext& _RendererPassExecuteContext)
@@ -66,15 +70,31 @@ namespace PC_CORE::Rendering::Pass
 		ImageStateTransition.Texture = m_OutPutImageRef;
 		cmd.Barrier(RhiResourceState::Undefined, RhiResourceState::ComputeReadWrite, std::span(&ImageStateTransition, 1), {});
 
-		const auto LocalSize = _RendererPassExecuteContext.Renderer.toneMapAces->GetLocalSize();
-		const auto RenderSize = _RendererPassExecuteContext.View.RenderSize;
+		PipelineCache::ComputePipelineQueryResult Result = _RendererPassExecuteContext.PipelineCache.CreateOrGetComputePipelineCache
+		(
+			&m_PipelineCacheID,
+			"Aces Pipeline"sv,
+			m_ModuleEntryList
+		);
+		if (Result)
+		{
+			RhiComputePipeline& ComputePipeline = Result->get();
 
-		const uint32_t GroupCountX = (RenderSize.x + LocalSize.x - 1) / LocalSize.x;
-		const uint32_t GroupCountY = (RenderSize.y + LocalSize.y - 1) / LocalSize.y;
+			const auto LocalSize = ComputePipeline.GetLocalSize();
+			const auto RenderSize = _RendererPassExecuteContext.View.RenderSize;
 
-		cmd.BindRhiPipeline(*_RendererPassExecuteContext.Renderer.toneMapAces);
-		cmd.BindDescriptorSet(m_DesciptorSetToneMap.get(), 0);
-		cmd.Dispatch(GroupCountX, GroupCountY, 1);
+			const uint32_t GroupCountX = (RenderSize.x + LocalSize.x - 1) / LocalSize.x;
+			const uint32_t GroupCountY = (RenderSize.y + LocalSize.y - 1) / LocalSize.y;
+
+			if (cmd.BindRhiPipeline(ComputePipeline))
+			{
+				cmd.BindDescriptorSet(m_DesciptorSetToneMap.get(), 0);
+				cmd.Dispatch(GroupCountX, GroupCountY, 1);
+			}
+		}
+
+
+		
 
 		ImageStateTransition.Texture = m_OutPutImageRef;
 		cmd.Barrier(RhiResourceState::ComputeReadWrite, RhiResourceState::RenderTarget, std::span(&ImageStateTransition, 1), {});

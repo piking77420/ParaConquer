@@ -140,6 +140,7 @@ void WorldViewWindow::UpdateImguiViewPort()
 void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
 {
     namespace Pass = PC_CORE::Rendering::Pass;
+    
 
     switch (m_Editor->editorData.DebugView)
     {
@@ -157,6 +158,7 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
         break;
     case DebugView::Triangle:
     {
+        /*
         const std::string PassName = "DebugTriangle";
         const std::array<float, 4> Color = 
         {
@@ -168,7 +170,7 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
         std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangle = &m_Editor->Renderer.DrawTriangle;
         std::unique_ptr<PC_CORE::RhiGraphicPipeline>* shaderPtrTriangleMeshlet = &m_Editor->Renderer.DrawMeshTriangleMeshlet;
 
-        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);
+        Graph.AddRenderPass<PC_EDITOR::DebugView::DebugPass>(PassName, Color, shaderPtrTriangle, shaderPtrTriangleMeshlet);*/
     }
         break;
     case DebugView::Meshlet:
@@ -179,6 +181,7 @@ void WorldViewWindow::DrawTriangledBasedGraph(PC_CORE::Rendering::RenderGraph& G
 
 void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Graph)
 {
+    /*
     switch (m_Editor->editorData.DebugView)
     {
     case DebugView::Lit:
@@ -231,5 +234,5 @@ void WorldViewWindow::DrawMeshletBasedGraph(PC_CORE::Rendering::RenderGraph& Gra
     if (m_Editor->editorData.DrawMesheltBounds)
     {
         Graph.AddRenderPass<PC_EDITOR::DebugView::DebugDrawMeshletBounds>();
-    }
+    }*/
 }

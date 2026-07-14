@@ -89,6 +89,9 @@ overloaded(Ts...) -> overloaded<Ts...>;
         if (Value == Enum) \
             return #Enum; 
 
-#define ENUM_FLAG_TO_STRING_MACRO(Value, Enum) \
+#define ENUM_FLAG_TO_STRING_MACRO(Value, Enum, Expression) \
         if (Value & Enum) \
-            s.append(#Enum); 
+        { \
+            Expression \
+            s.append(#Enum); \
+        } 

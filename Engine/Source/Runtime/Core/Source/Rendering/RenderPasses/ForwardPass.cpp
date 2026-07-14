@@ -81,7 +81,7 @@ namespace PC_CORE::Rendering::Pass
 		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
 		{
 			PipelineStateObject& Pso = StaticMesh.Psos->at(static_cast<size_t>(MeshPass::ForwardPass));
-			PipelineCache::PipelineQueryResult PipelieneQuery = Pso.UpdatePipelineData(_Context.PipelineCache,
+			PipelineCache::GraphicPipelineQueryResult PipelieneQuery = Pso.UpdatePipelineData(_Context.PipelineCache,
 				*_Context.Renderer.forwardPass,
 				0);
 			if (!PipelieneQuery)
@@ -106,7 +106,7 @@ namespace PC_CORE::Rendering::Pass
 		m_OnMeshDrawMeshlet = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshMeshlet& StaticMesh)
 		{
 			PipelineStateObject& Pso = StaticMesh.Psos->at(static_cast<size_t>(MeshPass::ForwardPass));
-			PipelineCache::PipelineQueryResult PipelieneQuery = Pso.UpdatePipelineData(_Context.PipelineCache,
+			PipelineCache::GraphicPipelineQueryResult PipelieneQuery = Pso.UpdatePipelineData(_Context.PipelineCache,
 				*_Context.Renderer.forwardPass,
 				0);
 				if (!PipelieneQuery)

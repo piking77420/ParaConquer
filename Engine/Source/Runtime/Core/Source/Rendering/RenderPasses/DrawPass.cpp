@@ -95,7 +95,40 @@ namespace PC_CORE::Rendering::Pass
 					}
 				  },
 				[&](const DrawSkyBox& DrawSkyBox) {
-					if (_Context.cmd.BindRhiPipeline(*_Context.Renderer.DrawSkyBoxPipeline))
+
+					// Dirty make a proper Pass
+					struct DrawSkyBoxPipelineData
+					{
+						PipelineCacheID Id;
+						PipelineCache::ModuleEntryList List;
+						RhiGraphicPipeline::Descriptor GraphicPipelineDescriptor;
+					};
+
+					static DrawSkyBoxPipelineData DrawSkyBoxPipelineData;
+
+					DrawSkyBoxPipelineData.List.Reserve(2);
+					auto& Vertex = DrawSkyBoxPipelineData.List.Next();
+					Vertex
+						.SetSourcePath("/Shaders/CubeMap.vs.hlsl")
+						.SetShaderFeaturesFlag(ShaderFeature::UseUV | ShaderFeature::SkyboxForceFarDepth);
+
+					auto& Frag = DrawSkyBoxPipelineData.List.Next();
+					Frag
+						.SetSourcePath("/Shaders/Skybox.ps.hlsl")
+						.SetShaderFeaturesFlag(ShaderFeature::UseUV);
+
+					DrawSkyBoxPipelineData.GraphicPipelineDescriptor.SetDepthTest(true)
+						.SetDepthCompareOp(CompareOp::LessOrEqual)
+						.SetDepthWrite(false)
+						.SetRenderPass(*_Context.Renderer.forwardPass);
+
+					PipelineCache::GraphicPipelineQueryResult Result = _Context.PipelineCache.CreateOrGetGraphicPipelineCache(
+						&DrawSkyBoxPipelineData.Id,
+						"Skybox",
+						DrawSkyBoxPipelineData.List, 
+						DrawSkyBoxPipelineData.GraphicPipelineDescriptor);
+
+					if (Result && _Context.cmd.BindRhiPipeline(*Result))
 					{
 						_Context.cmd.BindDescriptorSet(_Context.Renderer.SkyBoxDescriptorSet.get(), 0);
 						_Context.cmd.PushConstant(RhiShaderStageBits::Vertex, &DrawSkyBox.ViewProjectionCorrectedMatrix, 0, sizeof(DrawSkyBox.ViewProjectionCorrectedMatrix));

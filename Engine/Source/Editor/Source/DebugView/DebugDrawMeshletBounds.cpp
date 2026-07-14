@@ -50,7 +50,7 @@ namespace PC_EDITOR::DebugView
 			.BindShaderStorageBuffer(RhiShaderStageBits::Mesh, 3, WireSphereDebugPrimitive.IndexBuffer.Get())
 			.SetName("DebugDrawMeshletBounds Pass Scene Set")
 			.Build();
-
+		/*
 		m_OnMeshDrawTriangle = [&](const PC_CORE::Rendering::RendererPassExecuteContext& _Context, const Rendering::DrawStaticMeshTriangle& StaticMesh)
 			{
 				assert(false && "Shoudl not be used in regular pipeline");
@@ -63,7 +63,7 @@ namespace PC_EDITOR::DebugView
 					_Context.cmd.BindRhiPipeline(*_Context.Renderer.DrawDebugMeshletBound);
 					_Context.cmd.BindDescriptorSet(m_DescriptorSet.get(), 0);
 				}
-			};
+			};*/
 	}
 
 	void DebugDrawMeshletBounds::Execute(const PC_CORE::Rendering::RendererPassExecuteContext & _RendererPassExecuteContext)

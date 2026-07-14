@@ -5,6 +5,7 @@
 #include "Reflection/DynamicReflectable.hpp"
 #include "LowRenderer/RhiRenderPass.hpp"
 #include "Primitive/AABB.hpp"
+#include <Rendering/PipelineCache.hpp>
 
 namespace PC_CORE 
 {
@@ -21,12 +22,12 @@ namespace PC_CORE::Rendering
     class Renderer;
     class RenderGraph;
     class DrawList;
-    class PipelineCache;
 
     struct RendererPassBuildContext
     {
         Rhi& RHI;
         RenderGraph& RenderGraph;
+        PipelineCache& PipelineCache;
         const RenderView& View;
         const Renderer& Renderer;
     };

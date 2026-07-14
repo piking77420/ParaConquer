@@ -9,6 +9,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <flat_map>
 
 #include <CoreHeader.hpp>
 #include <ObjectPtr.hpp>
@@ -36,7 +37,7 @@ namespace PC_CORE::Rendering
 
 		bool IsValid() const noexcept
 		{
-			return m_ID == MAX;
+			return m_ID != MAX;
 		}
 
 		auto operator<=>(const PipelineCacheID&) const = default;
@@ -64,7 +65,7 @@ namespace PC_CORE::Rendering
 	{
 	public: 
 		PipelineCache(Rhi& Rhi);
-		~PipelineCache() = default;
+		virtual ~PipelineCache() = default;
 		PipelineCache(const PipelineCache&) = delete;
 		PipelineCache& operator=(const PipelineCache&) = delete;
 
@@ -81,9 +82,10 @@ namespace PC_CORE::Rendering
 			Error,
 		};
 
-		using PipelineQueryResult = std::expected<std::reference_wrapper<RhiPipeline>, PipelineCache::PipelineCacheQueryResult>;
+		using GraphicPipelineQueryResult = std::expected<std::reference_wrapper<RhiPipeline>, PipelineCache::PipelineCacheQueryResult>;
+		using ComputePipelineQueryResult = std::expected<std::reference_wrapper<RhiComputePipeline>, PipelineCache::PipelineCacheQueryResult>;
 
-		
+			// TODO make header	
 		class PC_CORE_API ModuleEntryList
 		{
 		public:
@@ -107,38 +109,39 @@ namespace PC_CORE::Rendering
 
 			ModuleEntry& Next()
 			{
-				return m_entries.emplace_back();
+				return m_Entries.emplace_back();
 			}
 
 			void Reserve(size_t _Count)
 			{
-				m_entries.reserve(_Count);
+				m_Entries.reserve(_Count);
 			}
 
 			const std::vector<ModuleEntry>& GetEntries() const
 			{
-				return m_entries;
+				return m_Entries;
+			}
+
+			void Clear()
+			{
+				m_Entries.clear();
 			}
 
 		private:
-			std::vector<ModuleEntry> m_entries;
+			std::vector<ModuleEntry> m_Entries;
 		};
 
 
-		PipelineQueryResult CreateOrGetGraphicPipelineCache(PipelineCacheID* _PipilineCacheID,
+		GraphicPipelineQueryResult CreateOrGetGraphicPipelineCache(PipelineCacheID* _PipilineCacheID,
 			const std::string_view& _PipelineName, 
 			const ModuleEntryList& _ModuleEntryList, 
 			const RhiGraphicPipeline::Descriptor& _Descriptor, 
 			bool _Delayable = false);
 
-		PipelineQueryResult GetGraphicPipelineCache(const PipelineCacheID& _PipilineCacheID);
-
-		PipelineQueryResult CreateOrGetComputePipelineCache(PipelineCacheID* _PipilineCacheID,
+		ComputePipelineQueryResult CreateOrGetComputePipelineCache(PipelineCacheID* _PipilineCacheID,
 			const std::string_view& _PipelineName, 
 			const ModuleEntryList& _ModuleEntryList, 
 			bool _Delayable = false);	
-
-		PipelineQueryResult GetComputePipelineCache(const PipelineCacheID& _PipilineCacheID);
 
 	protected:
 		virtual std::expected<bool, PipelineCache::PipelineCacheQueryResult> LookForModuleFile(
@@ -148,21 +151,50 @@ namespace PC_CORE::Rendering
 			bool _Delayable);
 
 	private:
-		using Cache = FreeList<std::unique_ptr<RhiPipeline>>;
-
 		Rhi& m_Rhi;
 
-		Cache m_GraphicPipelineCache;
+		using GraphicCache = std::flat_map<PipelineCacheID, std::unique_ptr<RhiGraphicPipeline>>;
+		using ComputeCache = std::flat_map<PipelineCacheID, std::unique_ptr<RhiComputePipeline>>;
 
-		Cache m_ComputePipelineCache;
+		GraphicCache m_GraphicPipelineCache;
 
-		PipelineQueryResult tryToFindInCache(const PipelineCacheID& _PipilineCacheID, Cache& CacheMap);
+		ComputeCache m_ComputePipelineCache;
+
+		template <typename QueryResult, typename CacheMapType>
+		QueryResult tryToFindInCache(const PipelineCacheID& _PipilineCacheID, const CacheMapType& _Cache, bool _CheckIfValid)
+		{
+			if (_CheckIfValid)
+			{
+				if (_PipilineCacheID.IsValid())
+				{
+					auto it = _Cache.find(_PipilineCacheID);
+					if (it == _Cache.end())
+					{
+						return std::unexpected(PipelineCache::PipelineCacheQueryResult::InvalidPipelineCache);
+					}
+
+					return *it->second;
+				}
+			}
+			else
+			{
+				auto it = _Cache.find(_PipilineCacheID);
+				if (it == _Cache.end())
+				{
+					return std::unexpected(PipelineCache::PipelineCacheQueryResult::InvalidPipelineCache);
+				}
+
+				return *it->second;
+			}
+			
+			return std::unexpected(PipelineCache::PipelineCacheQueryResult::NoneInCache);
+		}
 
 		std::expected<std::vector<PC_CORE::RhiPipeline::ShaderModuleBinary>, PipelineCache::PipelineCacheQueryResult> QueryModules(const ModuleEntryList& _ModuleEntryList, bool _Delayable);
 
 		std::expected<std::vector<char>, PipelineCache::PipelineCacheQueryResult> GetModuleCode(const std::string& _ExpectedPath, bool _Delayable);
 
-		std::string GetModuleExpectedPath(const ModuleEntryList::ModuleEntry& Entry);
+		std::string GetModuleExpectedPath(const ModuleEntryList::ModuleEntry& Entry, const std::string_view& ShaderFormat);
 	};
 
 } // namespace PC_CORE::Rendering

@@ -2,7 +2,7 @@
 
 namespace PC_CORE::Rendering
 {
-    PipelineCache::PipelineQueryResult PipelineStateObject::UpdatePipelineData(
+    PipelineCache::GraphicPipelineQueryResult PipelineStateObject::UpdatePipelineData(
         PipelineCache& PipelineCache, 
         PC_CORE::RhiRenderPass& _RenderPass, 
         const uint32_t _SubPassIndex)
@@ -16,7 +16,7 @@ namespace PC_CORE::Rendering
         }
         // Find name for pso ???
         const bool Delayable = false; // TODO handle async
-        PipelineCache::PipelineQueryResult Result = PipelineCache.CreateOrGetGraphicPipelineCache(&PipelineCacheID,
+        PipelineCache::GraphicPipelineQueryResult Result = PipelineCache.CreateOrGetGraphicPipelineCache(&PipelineCacheID,
             "TestPSO",
             ModuleList,
             GraphicPipelineDescriptor,
@@ -25,5 +25,13 @@ namespace PC_CORE::Rendering
         
         return Result;
 	}
+
+    void PipelineStateObject::Reset()
+    {
+        GraphicPipelineDescriptor = {};
+        ModuleList.Clear();
+        PipelineCacheID = PC_CORE::Rendering::PipelineCacheID();
+    }
+
 
 } // namespace PC_CORE::Rendering
