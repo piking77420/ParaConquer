@@ -36,11 +36,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE meshoptimizer)
 # Core
 target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)  
 target_link_libraries(${PROJECT_NAME} PRIVATE Core)
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_FILE:Core>"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-)
 
 ##DXC depencies
 if(WIN32)
@@ -52,24 +47,33 @@ endif()
 
 # End Dependencies
 if(MSVC)
-    add_custom_target(CopyCoreRuntimeFiles ALL
-        COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
 
-        COMMAND ${CMAKE_COMMAND} -E copy
-            "$<TARGET_FILE:Core>"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+function(CopyRuntimeDLL TargetName)
+    foreach(Dep ${ARGN})
+        if(NOT TARGET ${Dep})
+            message(WARNING "CopyRuntimeDLL: '${Dep}' is not a target, skipping")
+            continue()
+        endif()
 
-        COMMAND ${CMAKE_COMMAND} -E copy
-            "$<TARGET_PDB_FILE:Core>"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        add_custom_command(TARGET ${TargetName} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<$<STREQUAL:$<TARGET_PROPERTY:${Dep},TYPE>,SHARED_LIBRARY>:$<TARGET_FILE:${Dep}>>"
+                "$<TARGET_FILE_DIR:${TargetName}>"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<$<AND:$<BOOL:${MSVC}>,$<STREQUAL:$<TARGET_PROPERTY:${Dep},TYPE>,SHARED_LIBRARY>>:$<TARGET_PDB_FILE:${Dep}>>"
+                "$<TARGET_FILE_DIR:${TargetName}>"
+            COMMAND_EXPAND_LISTS
+            VERBATIM
+        )
+    endforeach()
+endfunction()
+   
+CopyRuntimeDLL(${PROJECT_NAME} Core assimp::assimp glfw)
 
-        DEPENDS Core
-        COMMENT "Copying Core runtime files"
-        VERBATIM
-    )
+if (PROFILING)
+CopyRuntimeDLL(${PROJECT_NAME} Profiler)
+endif()
 
-    add_dependencies(${PROJECT_NAME} CopyCoreRuntimeFiles)
 endif()
 
 # Secondary Data
