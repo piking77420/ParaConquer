@@ -145,10 +145,11 @@ namespace PC_CORE::Rendering
 
 	protected:
 		virtual std::expected<bool, PipelineCache::PipelineCacheQueryResult> LookForModuleFile(
-			const std::string& _BaseShaderPath, 
-			const std::string& _VariantExpectedPath, 
-			PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags, 
-			bool _AsyncCompile);
+			const std::string& _BaseShaderPath,
+			const std::string& _VariantExpectedPath,
+			PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
+			const std::span<std::pair<std::string, int>>& _MacroDefinitions = {},
+			bool _AsyncCompile = false);
 
 	private:
 		Rhi& m_Rhi;

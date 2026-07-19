@@ -183,7 +183,7 @@ void Material::PopulateGpuMaterial(Gpu::MaterialBuffer& _MaterialBuffer)
 
         switch (att)
         {
-        case MaterialAttribute::AlbedoFactors:
+        case MaterialAttribute::Albedo:
             std::memcpy(_MaterialBuffer.AlbedoFactors.data.data(), &m_Albedo.x, sizeof(_MaterialBuffer.AlbedoFactors.data));
             break;
         case MaterialAttribute::Normal:

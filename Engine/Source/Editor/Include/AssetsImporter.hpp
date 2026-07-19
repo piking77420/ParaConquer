@@ -7,10 +7,11 @@
 #include <utility>
 
 #include "EditorHeader.hpp"
+#include <Builder/MeshBuilder.hpp>
+#include <Builder/MaterialBuilder.hpp>
 #include "ObjectPtr.hpp"
 #include "LowRenderer/RhiTexture.hpp"
 #include "LowRenderer/RhiResourceUpdate.hpp"
-#include "Builder/MeshBuilder.hpp"
 #include "Resources/Texture2D.hpp"
 
 namespace PC_CORE
@@ -31,17 +32,15 @@ namespace PC_CORE::Rendering
     class Material;
 }
 
-struct aiScene;
 struct aiTexture;
 struct aiString;
 struct aiNode;
 struct aiMesh;
-enum aiTextureType;
 struct aiMaterial;
 struct aiAABB;
 
-BEGIN_EDITOR_PCCORE
-    class AssetsImporter : private MeshBuilder
+namespace PC_EDITOR_CORE {
+    class AssetsImporter
     {
     public:
         enum class ImportFormat
@@ -51,6 +50,10 @@ BEGIN_EDITOR_PCCORE
             Fbc,
             Obj
         };
+
+        AssetsImporter(Editor& _Editor);
+
+        ~AssetsImporter() = default;
 
         [[nodiscard]] bool ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path);
 
@@ -91,6 +94,12 @@ BEGIN_EDITOR_PCCORE
             std::vector<uint32_t> MeshletTrianglesU32;
         };
 
+        Editor& m_Editor;
+
+        MeshBuilder m_MeshBuilder;
+
+        MaterialBuilder m_MaterialBuilder;
+
         bool m_Succes = false;
 
         std::string m_ImportObjectName;
@@ -119,10 +128,6 @@ BEGIN_EDITOR_PCCORE
 
         bool ImportTextures(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, std::vector<std::future<void>>* Futures, const aiScene* scene);
 
-        void ResolveMaterial(const aiScene* scene);
-
-        void FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material);
-
         void ProcessLod(std::unordered_map<uint32_t, uint32_t>& AssimpMeshIndexToCoreIndex, std::vector<PC_CORE::MeshLOD>& meshLods, const std::vector<MeshBuilder::MeshDescriptor>& MeshDescriptor, const PC_CORE::StaticMeshRenderData& RenderData, const aiScene* scene);
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
@@ -134,4 +139,4 @@ BEGIN_EDITOR_PCCORE
 
     };
 
-END_EDITOR_PCCORE
+} // namespace PC_EDITOR_CORE

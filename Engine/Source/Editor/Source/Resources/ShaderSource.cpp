@@ -4,6 +4,7 @@
 
 #include <PerfRegion.hpp>
 #include <Editor.hpp>
+#include <Rendering/PipelineCache.hpp>
 #include "Resources/ShaderSourceBinary.hpp"
 #include "Resources/ResourceManager.hpp"
 #include <ShaderCompiler.hpp>
@@ -70,7 +71,7 @@ void ShaderSource::Reload()
 }
 
 
-ShaderSource::GenerateVariantResult ShaderSource::GenerateVariant(const std::string& _VariantPath, PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlag)
+ShaderSource::GenerateVariantResult ShaderSource::GenerateVariant(const std::string& _VariantPath, const std::span<std::pair<std::string, int>>& _MacroDefinitions, PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlag)
 {
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Resource);

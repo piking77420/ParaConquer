@@ -16,6 +16,7 @@ namespace PC_EDITOR_CORE
 			const std::string& _BaseShaderPath,
 			const std::string& _VariantExpectedPath,
 			PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
+			const std::span<std::pair<std::string, int>>& _MacroDefinitions,
 			bool _AsyncCompile) override;
 		
 	};

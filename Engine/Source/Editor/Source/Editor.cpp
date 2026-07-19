@@ -304,7 +304,7 @@ AssetsImporter* Editor::NewAssetsImporter()
     AssetsImporter* ptr = nullptr;
     {
         std::scoped_lock _(AssetImportData._lock);
-        ptr = AssetImportData.Imports.emplace_back(new AssetsImporter()).get();
+        ptr = AssetImportData.Imports.emplace_back(new AssetsImporter(*this)).get();
     }
 
     return ptr;

@@ -17,7 +17,7 @@ namespace PC_CORE::Rendering
 
     enum struct MaterialAttribute : uint8_t
     {
-        AlbedoFactors,
+        Albedo,
         Normal,
         Emisive,
         AoRoughnessMetallic,
@@ -102,7 +102,8 @@ namespace PC_CORE::Rendering
 
         Material& SetAlbedoTexture(const ObjectPtr<Texture2D>& _AlbedoTexture)
         {
-            m_Textures[static_cast<size_t>(MaterialAttribute::AlbedoFactors)] = _AlbedoTexture;
+            m_Textures[static_cast<size_t>(MaterialAttribute::Albedo)] = _AlbedoTexture;
+            m_BindingCount++;
             return SetUseAlpha(_AlbedoTexture->Get()->UseAlpha());
         }
 

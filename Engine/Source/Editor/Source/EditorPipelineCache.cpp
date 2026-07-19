@@ -18,7 +18,8 @@ namespace PC_EDITOR_CORE
 		const std::string& _BaseShaderPath,
 		const std::string& _VariantExpectedPath,
 		PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
-		bool _AsyncCompile)
+		[[maybe_unused]] const std::span<std::pair<std::string, int>>& _MacroDefinitions,
+		[[maybe_unused]] bool _AsyncCompile)
 	{
 		std::filesystem::path VariantPathp = std::filesystem::path(_VariantExpectedPath);
 		{
@@ -41,7 +42,7 @@ namespace PC_EDITOR_CORE
 				return std::unexpected(PC_CORE::Rendering::PipelineCache::PipelineCacheQueryResult::Error);
 		}
 
-		ShaderSource::GenerateVariantResult result = Source->GenerateVariant(_VariantExpectedPath, _ShaderFeatureFlags);
+		ShaderSource::GenerateVariantResult result = Source->GenerateVariant(_VariantExpectedPath, _MacroDefinitions, _ShaderFeatureFlags);
 		assert(result == ShaderSource::GenerateVariantResult::Sucess);
 
 		switch (result)

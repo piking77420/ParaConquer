@@ -1,13 +1,14 @@
 ﻿#pragma once
 
 #include <expected>
+#include <utility>
+#include <span>
 
 #include "EditorHeader.hpp"
 #include "Resources/Resource.hpp"
 #include "LowRenderer/RhiTypedef.h"
 #include <Rendering/RenderingTypedef.h>
 #include "Rendering/ShaderProgram.hpp"
-
 
 BEGIN_EDITOR_PCCORE
 
@@ -31,7 +32,7 @@ BEGIN_EDITOR_PCCORE
 
         void Reload() override;
 
-        GenerateVariantResult GenerateVariant(const std::string& _VariantPath, PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlag = 0);
+        GenerateVariantResult GenerateVariant(const std::string& _VariantPath, const std::span<std::pair<std::string, int>>& _MacroDefinition, PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlag = 0);
 
     private:
         PC_CORE::RhiPipeline::ShaderStageTypeBits m_ShaderType;

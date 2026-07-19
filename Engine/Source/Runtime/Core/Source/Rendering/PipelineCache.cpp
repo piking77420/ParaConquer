@@ -165,7 +165,8 @@ namespace PC_CORE::Rendering
 			std::expected<bool, PipelineCache::PipelineCacheQueryResult> FileQuery = LookForModuleFile(
 				entry.ShaderSourcePath,
 				ExpectedPathAndShaderStage.back().first,
-				entry.FeaturesFlags, 
+				entry.FeaturesFlags,
+				{},
 				_Delayable);
 			if (!FileQuery)
 			{
@@ -217,6 +218,7 @@ namespace PC_CORE::Rendering
 		const std::string& _BaseShaderPath,
 		const std::string& _VariantExpectedPath,
 		PC_CORE::Rendering::ShaderFeatureFlags _ShaderFeatureFlags,
+		const std::span<std::pair<std::string, int>>& _MacroDefinitions,
 		bool _AsyncCompile)
 	{
 		if (!std::filesystem::exists(std::filesystem::path(_VariantExpectedPath)))

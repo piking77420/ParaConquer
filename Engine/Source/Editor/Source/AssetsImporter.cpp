@@ -1,15 +1,12 @@
 #include "AssetsImporter.hpp"
 
-#include <assimp/types.h>
-#include <assimp/scene.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-
 #include <filesystem>
 #include <string_view>
 
 #include "Rendering/Material.hpp"
 
+#include <AssimpHelper.hpp>
+#include <Editor.hpp>
 #include "LowRenderer/Rhi.hpp"
 #include <Io/FileLoader.hpp>
 #include "Resources/ResourceManager.hpp"
@@ -77,78 +74,14 @@ AssetsImporter::ImportFormat FindImportFormat(const std::filesystem::path& path)
 
 }
 
-
-static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTextureType)
+AssetsImporter::AssetsImporter(Editor& _Editor)
+    : m_Editor(_Editor)
+    , m_MaterialBuilder(m_Editor)
 {
-    switch (aiTextureType)
-    {
-    case aiTextureType_NONE:
-        break;
-    case aiTextureType_DIFFUSE:
-        return "Diffuse"sv;
-    case aiTextureType_SPECULAR:
-        return "Specular"sv;
-    case aiTextureType_AMBIENT:
-        return "Ambient"sv;
-    case aiTextureType_EMISSIVE:
-        return "Ambient"sv;
-    case aiTextureType_HEIGHT:
-        return "Height"sv;
-    case aiTextureType_NORMALS:
-        return "Normals"sv;
-    case aiTextureType_SHININESS:
-        return "Shininess"sv;
-    case aiTextureType_OPACITY:
-        return "Opacity"sv;
-    case aiTextureType_DISPLACEMENT:
-        return "Displacement"sv;
-    case aiTextureType_LIGHTMAP:
-        return "LightMap"sv;
-    case aiTextureType_REFLECTION:
-        return "Reflection"sv;
-    case aiTextureType_BASE_COLOR:
-        return "Ambient"sv;
-    case aiTextureType_NORMAL_CAMERA:
-        return "Color"sv;
-    case aiTextureType_EMISSION_COLOR:
-        return "EmissionColor"sv;
-    case aiTextureType_METALNESS:
-        return "Metalness"sv;
-    case aiTextureType_DIFFUSE_ROUGHNESS:
-        return "Roughness"sv;
-    case aiTextureType_AMBIENT_OCCLUSION:
-        return "Ao"sv;
-    case aiTextureType_UNKNOWN:
-        return "UNKNOW"sv;
-    case aiTextureType_SHEEN:
-        return "Sheen"sv;
-    case aiTextureType_CLEARCOAT:
-        return "ClearnCoat"sv;
-    case aiTextureType_TRANSMISSION:
-        return "Transmission"sv;
-    case aiTextureType_MAYA_BASE:
-        return "MayaBase"sv;
-    case aiTextureType_MAYA_SPECULAR:
-        return "MayaSpecular"sv;
-    case aiTextureType_MAYA_SPECULAR_COLOR:
-        return "MayaSpecularColor"sv;
-    case aiTextureType_MAYA_SPECULAR_ROUGHNESS:
-        return "MayaSpecularRougness"sv;
-    case aiTextureType_ANISOTROPY:
-        return "Anisotropy"sv;
-    case aiTextureType_GLTF_METALLIC_ROUGHNESS:
-        return "Mettalic_roughness"sv;
-    case _aiTextureType_Force32Bit:
-        return "Force32bit"sv;
-    default:
-        break;
-    }
 
-    return "?";
 }
 
-
-    bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path)
+bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool& ThreadPool, const std::filesystem::path& _path)
     {
         PERF_REGION_SCOPED;
         PERF_REGION_COLOR(PerfRegion::EditorResource);
@@ -213,7 +146,8 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
                     futurs.clear();
                 }
 
-                ResolveMaterial(scene);
+                // we have wait the futurs so m_TextureMaps is lock free
+                m_MaterialBuilder.ResolveMaterials(*scene, *m_StaticMeshs.Lock(), m_TextureMaps);
             }
 
             FetchResourcesUpdates(_Rhi);
@@ -478,8 +412,8 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
             return false;
         
         constexpr bool BuildMeshlet = true;
-        MeshBuilder::MeshBuilderData Meshs = BuildMeshs(ThreadPool, Scene, true);
-        MeshBuilder::MeshletOutPutData Meshelets = BuildMeshlets(ThreadPool, Meshs);
+        MeshBuilder::MeshBuilderData Meshs = m_MeshBuilder.BuildMeshs(ThreadPool, Scene, true);
+        MeshBuilder::MeshletOutPutData Meshelets = m_MeshBuilder.BuildMeshlets(ThreadPool, Meshs);
 
         PC_CORE::StaticMeshRenderData StaticMeshRenderData;
         StaticMeshRenderData.Vertices = std::move(Meshs.Verticies);
@@ -494,8 +428,8 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
 
         for (size_t i = 0; i < Meshs.MeshDescriptor.size(); i++)
         {
-            const MeshDescriptor& MeshDescriptor = Meshs.MeshDescriptor[i];
-            const MeshletDescriptor* MeshletDescriptor = BuildMeshlet ? &Meshelets.MeshletDescriptor[i] : nullptr;
+            const MeshBuilder::MeshDescriptor& MeshDescriptor = Meshs.MeshDescriptor[i];
+            const MeshBuilder::MeshletDescriptor* MeshletDescriptor = BuildMeshlet ? &Meshelets.MeshletDescriptor[i] : nullptr;
 
             StaticMeshRenderData.BaseMeshDescriptor.emplace_back(PC_CORE::MeshDataDescriptor{
                     // Vertex
@@ -626,220 +560,7 @@ static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTexture
         return true;
     }
 
- 
-    void AssetsImporter::ResolveMaterial(const aiScene* scene)
-    {
-        std::vector<PC_CORE::ObjectPtr<PC_CORE::Rendering::Material>> Materials;
-        Materials.resize(scene->mNumMaterials);
-      
-        for (size_t i = 0; i < Materials.size(); i++)
-        {
-            std::string matName;
-
-            aiString str = scene->mMaterials[i]->GetName();
-            if (str.Empty())
-            {
-                if (auto StaticMesh = m_StaticMeshs.Lock())
-                {
-                    matName = StaticMesh->Name + " Material " + std::to_string(i);
-                }
-            }
-            else
-            {
-                if (auto StaticMesh = m_StaticMeshs.Lock())
-                {
-                    if (std::strcmp(str.C_Str(), "DefaultMaterial") == 0)
-                    {
-                        matName = std::string(str.C_Str()) + "_" + StaticMesh->Name;
-                    }
-                    else
-                    {
-                        matName = std::string(str.C_Str());
-                    }
-                }   
-            }
-            
-            if (PC_CORE::ResourceManager::Exist(matName))
-            {
-                Materials[i] = PC_CORE::ResourceManager::Get<PC_CORE::Rendering::Material>(matName);
-            }
-            else
-            {
-                Materials[i] = PC_CORE::ResourceManager::Create<PC_CORE::Rendering::Material>(matName);
-            }
-            
-        }
-
-        for (size_t i = 0; i < scene->mNumMaterials; i++)
-        {
-            if (scene->mMaterials[i] == nullptr)
-                continue;
-
-            aiMaterial& Material = *scene->mMaterials[i];
-            PC_CORE::Rendering::Material& CoreMaterial = *Materials[i];
-            FillMaterialTexture(CoreMaterial, *scene->mMaterials[i]);
-
-            {
-                aiColor4D color;
-                bool hasColor = false;
-
-                // Prefer PBR base color
-                if (Material.Get(AI_MATKEY_BASE_COLOR, color) == AI_SUCCESS)
-                {
-                    hasColor = true;
-                }
-                // Fallback to legacy diffuse
-                else if (Material.Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
-                {
-                    hasColor = true;
-                }
-
-                if (hasColor)
-                {
-                    CoreMaterial.SetAlbedoFactor(Tbx::Vector4f{
-                        color.r, color.g, color.b, color.a
-                        });
-                }
-            }
-            
-            float metallic = 0.0f;
-            if (Material.Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS)
-            {
-                CoreMaterial.SetMetallicFactor(metallic);
-            }
-
-            float roughness = 1.0f;
-            if (Material.Get(AI_MATKEY_METALLIC_FACTOR, roughness) == AI_SUCCESS)
-            {
-                CoreMaterial.SetRoughnessFactor(roughness);
-            }
-
-            float anisotropy = 1.0f;
-            if (Material.Get(AI_MATKEY_ANISOTROPY_FACTOR, anisotropy) == AI_SUCCESS)
-            {
-                CoreMaterial.SetRoughnessFactor(anisotropy);
-            }
-
-            aiColor3D emmisive;
-            if (Material.Get(AI_MATKEY_COLOR_EMISSIVE, emmisive) == AI_SUCCESS)
-            {
-                CoreMaterial.SetEmmisiveFactor(Tbx::Vector3f(emmisive.r, emmisive.g, emmisive.b));
-            }
-
-            float opacity = 1.0f;
-            if (AI_SUCCESS == Material.Get(AI_MATKEY_OPACITY, opacity)) {
-                if (opacity < 1.0f) {
-                      // Material is transparent
-                    CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialDomain::Transparent);
-                    CoreMaterial.SetUseAlpha(true);
-                }
-            }
-        }
-
-        // Build Only once
-        std::set<PC_CORE::ObjectPtr<PC_CORE::Rendering::Material>> UniqueMaterial;
-        for (auto& m : Materials)
-            UniqueMaterial.emplace(m);    
-
-        for (auto& m : UniqueMaterial)
-            m->Build();
-        
-
-        if (auto StaticMesh = m_StaticMeshs.Lock())
-        {
-            StaticMesh->SetBaseMaterials(Materials);
-        }
-    }
-
-    void AssetsImporter::FillMaterialTexture(PC_CORE::Rendering::Material& CoreMaterial, const aiMaterial& Material)
-    {
-
-        for (size_t j = 0; j < static_cast<size_t>(AI_TEXTURE_TYPE_MAX); j++)
-        {
-            const aiTextureType type = static_cast<aiTextureType>(j);
-
-            switch (type)
-            {
-            case aiTextureType_NONE:
-                continue;
-            case aiTextureType_BASE_COLOR:// PBR albedo
-            case aiTextureType_DIFFUSE:
-            case aiTextureType_OPACITY:
-                break;
-            case aiTextureType_METALNESS: // metallic
-                break;
-            case aiTextureType_DIFFUSE_ROUGHNESS: // Rouhness
-                break;
-            case aiTextureType_NORMAL_CAMERA:
-            case aiTextureType_NORMALS: // Normal
-                break;
-            case aiTextureType_EMISSION_COLOR:
-            case aiTextureType_EMISSIVE: // Emisive
-                break;
-            case aiTextureType_LIGHTMAP: // AO
-            case aiTextureType_AMBIENT_OCCLUSION:
-                break;
-            case aiTextureType_GLTF_METALLIC_ROUGHNESS:
-            case aiTextureType_SPECULAR:
-                break;
-            case aiTextureType_HEIGHT:
-            case aiTextureType_SHININESS:
-            case aiTextureType_DISPLACEMENT:
-            case aiTextureType_AMBIENT:
-            case aiTextureType_REFLECTION:
-            case aiTextureType_UNKNOWN:
-            default:
-                PC_LOG_VERBOSE("Ignore texture when build material {} type was {}", CoreMaterial.Name, AssimpTextureTypeToString(type).data());
-                continue;
-                break;
-            }
-
-            
-            aiString textureName;
-
-            const size_t TextureCount = Material.GetTextureCount(type);
-            for (size_t k = 0; k < TextureCount; k++)
-            {
-                if (Material.GetTexture(type, k, &textureName) == aiReturn::aiReturn_SUCCESS)
-                {
-                    auto& pair = m_TextureMaps[std::string(textureName.C_Str())].second;
-                    auto Texture = pair.Lock();
-                    if (!Texture)
-                        continue;
-
-                    if (type == aiTextureType_DIFFUSE)
-                    {
-                        CoreMaterial.SetAlbedoTexture(Texture);
-                        if (Texture->Get()->UseAlpha())
-                        {
-                            CoreMaterial.SetMaterialType(PC_CORE::Rendering::MaterialDomain::Transparent);
-                        }
-                    }
-
-                    if (type == aiTextureType_METALNESS ||
-                        type == aiTextureType_DIFFUSE_ROUGHNESS ||
-                        type == aiTextureType_GLTF_METALLIC_ROUGHNESS || 
-                        type == aiTextureType_SPECULAR)
-                    {
-                        CoreMaterial.SetMetallicRoughnessAOTexture(Texture);
-                    }
-
-                    if (type == aiTextureType_AMBIENT_OCCLUSION || type == aiTextureType_LIGHTMAP)
-                    {
-                        CoreMaterial.SetAoTexture(Texture);
-                    }
-
-                    if (type == aiTextureType_NORMAL_CAMERA || type == aiTextureType_NORMALS)
-                        CoreMaterial.SetNormalTexture(Texture);
-
-                    if (type == aiTextureType_EMISSIVE || type == aiTextureType_EMISSION_COLOR)
-                        CoreMaterial.SetEmissiveTexture(Texture);
-                }
-            }
-
-        }
-    }
-
+    
     PC_CORE::RhiTexture* AssetsImporter::RhiTextureFromAiTexture(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture)
     {
         PC_CORE::RhiTexture* RhiTexturePtr = _Rhi.CreateTexture();
