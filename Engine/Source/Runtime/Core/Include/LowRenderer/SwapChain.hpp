@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <Memory>
-#include <Vector>
+#include <memory>
+#include <vector>
 
 #include "CoreHeader.hpp"
 #include "RhiFrameBuffer.hpp"

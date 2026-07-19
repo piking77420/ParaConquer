@@ -2,14 +2,17 @@
 
 using namespace PC_EDITOR_CORE;
 
+#if _WIN32
 #include <Windows.h>
 #include <Winbase.h>
 #include <Cassert>
+#endif
 
 #include "Thread/ThreadUtils.hpp"
 
-
+#if _WIN32
 DWORD BytesReturned;
+
 
 size_t GetSizeOfNotify(const FILE_NOTIFY_INFORMATION* notify)
 {
@@ -21,6 +24,8 @@ size_t GetSizeOfNotify(const FILE_NOTIFY_INFORMATION* notify)
     }
     return end - notify;
 }
+
+#endif
 
 bool IsValidFormat(const wchar_t** _formats, size_t _formatCount, const wchar_t* _string, const wchar_t** _format)
 {
@@ -78,6 +83,8 @@ void FileSystemWatcher::Stop()
 
 void FileSystemWatcher::WorkerMainLoop()
 {
+
+    #if _WIN32
     m_Worker.fileHandle = CreateFile(m_WatchRoot, // pointer to the file name
                                      FILE_LIST_DIRECTORY, // access (read/write) mode
                                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, // share mode
@@ -134,6 +141,7 @@ void FileSystemWatcher::WorkerMainLoop()
             }
         }
     }
+    #endif
 }
 
 void FileSystemWatcher::RecordFileModifycation(void* _notifyPtr, const wchar_t* _filePath, size_t _fileNameLenght,
@@ -189,6 +197,7 @@ void FileSystemWatcher::RecordFileModifycation(void* _notifyPtr, const wchar_t* 
 
 void FileSystemWatcher::HandleModifcation()
 {
+    #if _WIN32
     for (auto& it : m_Worker.filePendingActions)
     {
         const auto& actions = it.second;
@@ -222,4 +231,5 @@ void FileSystemWatcher::HandleModifcation()
             break;
         }
     }
+     #endif
 }

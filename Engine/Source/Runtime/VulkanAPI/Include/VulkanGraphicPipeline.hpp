@@ -39,7 +39,7 @@ namespace Vulkan
 
 		void ParsePipelineColorAttachementBlendState(vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, const std::optional<RhiGraphicPipeline::BlendState>& _blendInfo);
 
-		void ParsePipelineDepthStencilAttachmentState(vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo, const RhiGraphicPipeline::DephStencilInfo& _dephInfo);
+		void ParsePipelineDepthStencilAttachmentState(vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo, const RhiGraphicPipeline::DephStencilState& _dephInfo);
 
 		void ParseParsePipelineColorBlendState(vk::PipelineColorBlendStateCreateInfo* _PipelineColorBlendStateCreateInfo, const vk::PipelineColorBlendAttachmentState* _PipelineColorBlendAttachmentState, size_t _PipelineColorBlendAttachmentSize, const std::optional<RhiGraphicPipeline::BlendState>& _blendInfo);
 

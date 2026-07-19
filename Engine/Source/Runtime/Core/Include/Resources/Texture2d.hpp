@@ -3,7 +3,7 @@
 #include "CoreHeader.hpp"
 #include "Resource.hpp"
 #include "Texture.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 #include "Reflection/Reflector.hpp"
 
 BEGIN_PCCORE

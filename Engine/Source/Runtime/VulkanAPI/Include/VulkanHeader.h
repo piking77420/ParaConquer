@@ -6,7 +6,7 @@
 
 #include "LowRenderer/RhiTypedef.h"
 
-#include <Vulkan/Vulkan.hpp>
+#include <vulkan/vulkan.hpp>
 
 #include "PerfRegion.hpp"
 

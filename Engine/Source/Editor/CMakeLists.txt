@@ -39,10 +39,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Core)
 
 ##DXC depencies
 if(WIN32)
-target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler.lib)
-else()
-find_package(Vulkan REQUIRED COMPONENTS Vulkan_dxc_LIBRARY)
-target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan dxc_lib)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler.lib)
+elseif(UNIX)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler)
 endif()
 
 # End Dependencies

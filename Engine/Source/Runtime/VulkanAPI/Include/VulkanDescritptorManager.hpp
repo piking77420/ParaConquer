@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <Map>
-#include <Stack>
+#include <map>
+#include <stack>
 #include <spirv_reflect.h>
 
 #include "VulkanHeader.h"

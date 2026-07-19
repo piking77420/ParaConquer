@@ -7,17 +7,20 @@
 #include "LowRenderer/RhiTypedef.h"
 
 BEGIN_PCCORE
+    struct ImageDeleter 
+    {
+
+        ImageDeleter() = default;
+        ImageDeleter(ImageDeleter&&) noexcept = default;
+        ImageDeleter& operator=(ImageDeleter&&) noexcept = default;
+
+        PC_CORE_API void operator()(uint8_t* p);
+    };
+
     class Image
     {
     public:
-        struct ImageDeleter {
-
-            ImageDeleter() = default;
-            ImageDeleter(ImageDeleter&&) noexcept = default;
-            ImageDeleter& operator=(ImageDeleter&&) noexcept = default;
-
-            PC_CORE_API void operator()(uint8_t* p);
-        };
+        
 
         struct MipsDescriptor
         {

@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "CoreHeader.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 #include "RhiFrameBuffer.hpp"
 #include "RhiRenderPass.hpp"

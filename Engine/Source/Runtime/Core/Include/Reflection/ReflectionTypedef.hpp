@@ -26,7 +26,7 @@ BEGIN_PCCORE
     {
         enum EnumFlag
         {
-            None = 0,
+            NoneMembersEnumFlag = 0,
             Serialize = 1 < 0,
             Color = 1 < 2,
             HideInInspector = 1 < 3,

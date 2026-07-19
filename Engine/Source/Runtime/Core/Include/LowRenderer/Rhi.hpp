@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <Memory>
-#include <Stack>
+#include <memory>
+#include <stack>
 
 #include "CoreHeader.hpp"
 #include "RhiTypedef.h"
@@ -43,7 +43,7 @@ public:
 
     std::string_view GetShaderModuleBinarySuffix();
 
-    PC_CORE_API [[nodiscard]] bool BeginFrame(PC_CORE::Window* _Window);
+    [[nodiscard]] PC_CORE_API bool BeginFrame(PC_CORE::Window* _Window);
 
     PC_CORE_API void EndFrame(PC_CORE::Window* _Window);
 

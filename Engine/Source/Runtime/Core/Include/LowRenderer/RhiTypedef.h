@@ -1,22 +1,21 @@
 ﻿#pragma once
 
-#include <Variant>
-#include <Vector>
+#include <variant>
+#include <vector>
 #include <numeric>
 
 #include "CoreHeader.hpp"
 #include "Reflection/Reflector.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 #define ALIGNAS_16 alignas(16)
-
 
 constexpr int MaxFramesInFlight = 3;
 
 BEGIN_PCCORE
     enum class GraphicAPI
     {
-        None,
+        NoneApi,
         Vulkan,
         D3d12,
         Count
@@ -104,7 +103,7 @@ BEGIN_PCCORE
 
     enum ColorComponent : uint8_t
     {
-        None = 0,
+        NoneColorComponent = 0,
         ColorComponentR = 1 << 0,
         ColorComponentG = 1 << 1,
         ColorComponentB = 1 << 2,

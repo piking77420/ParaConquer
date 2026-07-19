@@ -1,10 +1,12 @@
 ﻿#include "VulkanCommandList.hpp"
 
 #if defined(_MSC_VER)
-#include <malloc.h>
-#define alloca _alloca
+    #include <malloc.h>
+    #define alloca _alloca
+#elif defined(__GNUC__) || defined(__clang__)
+    #include <alloca.h>
 #else
-#include <alloca.h>
+    #include <stdlib.h>
 #endif
 
 #include <PerfRegion.hpp>
@@ -150,7 +152,7 @@ void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    assert(_count != 0);
+/*    assert(_count != 0);
     assert(this != _other);
     assert(m_BufferType == PC_CORE::CommandList::BufferType::Primary);
 
@@ -163,7 +165,7 @@ void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count
     }
 
     m_CommandBuffer[m_Rhi.GetFrameIndex()].executeCommands(static_cast<uint32_t>(_count), commandBuffers);
-    _freea(commandBuffers);
+    _freea(commandBuffers);*/
 }
 
 void Vulkan::VulkanCommandList::BeginRecordCommands()
@@ -334,6 +336,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
     size_t _FirstSet,
     const std::span<const size_t>& dynamicOffset)
 {
+    /*
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
@@ -361,7 +364,7 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
 
     if (pDynamicOffsets != nullptr)
         _freea(pDynamicOffsets);
-    _freea(vkDescriptorSet);
+    _freea(vkDescriptorSet);*/
 
 }
 

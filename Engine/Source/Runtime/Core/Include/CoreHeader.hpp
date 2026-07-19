@@ -7,10 +7,14 @@
 #define END_PCCORE }
 
 
-#ifdef PC_CORE_EXPORT
-#define PC_CORE_API __declspec(dllexport)
-#else PC_CORE_IMPORT
-#define PC_CORE_API __declspec(dllimport)
+#if defined(_WIN32)
+    #ifdef PC_CORE_EXPORTS
+        #define PC_CORE_API __declspec(dllexport)
+    #else
+        #define PC_CORE_API __declspec(dllimport)
+    #endif
+#else
+    #define PC_CORE_API __attribute__((visibility("default")))
 #endif
 
 #define PC_FORCE_INLINE __forceinline

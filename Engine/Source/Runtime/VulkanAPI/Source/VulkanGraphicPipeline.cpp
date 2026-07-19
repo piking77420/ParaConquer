@@ -261,7 +261,7 @@ namespace Vulkan
 
     void VulkanGraphicPipeline::ParsePipelineDepthStencilAttachmentState(
         vk::PipelineDepthStencilStateCreateInfo* _PipelineDepthStencilStateCreateInfo,
-        const RhiGraphicPipeline::DephStencilInfo& _dephInfo)
+        const RhiGraphicPipeline::DephStencilState& _dephInfo)
     {
         _PipelineDepthStencilStateCreateInfo->sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
         _PipelineDepthStencilStateCreateInfo->depthTestEnable = _dephInfo.enableDepthTest ? VK_TRUE : VK_FALSE;

@@ -1,11 +1,12 @@
 ﻿#pragma once
 
-#include <Iostream>
+#include <iostream>
 
-#include <String>
-#include <Format>
-#include <Ranges>
+#include <string>
+#include <format>
+#include <ranges>
 #include <mutex>
+#include <cstring>
 
 #include "CoreHeader.hpp"
 
@@ -19,18 +20,22 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define ANSI_COLOR_DARK_GRAY "\x1b[90m"
 
-#ifndef __FUNCTION_NAME__
-#ifdef WIN32   //WINDOWS
-#define FUNCTION_NAME  __FUNCTION__
-#else          //*NIX
-#define __FUNCTION_NAME__   __func__
+#ifndef FUNCTION_NAME
+#ifdef _WIN32
+    #define FUNCTION_NAME __FUNCTION__
+#else
+    #define FUNCTION_NAME __func__
 #endif
 #endif
 
-static inline const char* ExtractFileName(const char* _path)
+static inline const char* ExtractFileName(const char* _Path)
 {
-    const char* slash = strrchr(_path, '\\');
-    return slash ? slash + 1 : _path;
+    #if _WIN32
+    const char* slash = std::strrchr(_Path, '\\');
+    #else 
+    const char* slash = std::strrchr(_Path, '/');   // Linux/macOS
+    #endif
+    return slash ? slash + 1 : _Path;
 }
 
 #define FILENAME ExtractFileName(__FILE__)
@@ -86,8 +91,8 @@ BEGIN_PCCORE
         static void Critical(int _lign, const char* _func, const char* _file, const std::string& unformatted, Args&&... args)
         {
             std::scoped_lock _(m_lock);
-            __debugbreak();
             std::cout << ANSI_COLOR_RED;
+            exit(-1);
             PrintFormat(unformatted, std::forward<Args>(args)...);
             PrintMetaData(_lign, _func, _file);
         }

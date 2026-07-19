@@ -1,6 +1,8 @@
 #ifndef PC_RHI_RHIGRAPHIC_PIPELINE
 #define PC_RHI_RHIGRAPHIC_PIPELINE
 
+#include <optional>
+
 #include <LowRenderer/RhiPipeline.hpp>
 
 namespace PC_CORE
@@ -124,7 +126,7 @@ namespace PC_CORE
 
         };
 
-        struct DephStencilInfo
+        struct DephStencilState
         {
             bool enableDepthTest = false;
             bool enableDepthWrite = false;
@@ -147,7 +149,7 @@ namespace PC_CORE
             CullModeFlag CullMode{ 0u };
             uint32_t Sample{ 1u };
             FrontFace FrontFace{ FrontFace::CounterClockwise };
-            std::optional<DephStencilInfo> DephStencilInfo;
+            std::optional<DephStencilState> DephStencilInfo;
             std::optional<BlendState> BlendState;
             PrimitiveTopology PrimitiveTopology{ PrimitiveTopology::PrimitiveTopologyTriangleList };
 
@@ -185,7 +187,8 @@ namespace PC_CORE
              {
                  if (!DephStencilInfo.has_value())
                  {
-                     DephStencilInfo.emplace();
+                    DephStencilState DepthInfo;
+                    DephStencilInfo.emplace(DepthInfo);
                  }
 
 
@@ -197,7 +200,8 @@ namespace PC_CORE
              {
                  if (!DephStencilInfo.has_value())
                  {
-                     DephStencilInfo.emplace();
+                    DephStencilState DepthInfo;
+                    DephStencilInfo.emplace(DepthInfo);
                  }
                  DephStencilInfo->enableDepthWrite = _DepthWrite;
                  return *this;
@@ -207,7 +211,8 @@ namespace PC_CORE
              {
                  if (!DephStencilInfo.has_value())
                  {
-                     DephStencilInfo.emplace();
+                    DephStencilState DepthInfo;
+                    DephStencilInfo.emplace(DepthInfo);
                  }
 
                  DephStencilInfo->depthCompareOp = _CompareOp;

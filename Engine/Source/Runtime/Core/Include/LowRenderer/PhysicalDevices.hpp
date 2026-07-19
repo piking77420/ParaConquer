@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <String>
-#include <Vector>
+#include <string>
+#include <vector>
 
 #include "CoreHeader.hpp"
 #include "RhiTypedef.h"

@@ -24,8 +24,8 @@ namespace PC_CORE
         HashCombine(Seed, static_cast<uint32_t>(CullMode));
         HashCombine(Seed, static_cast<uint32_t>(Sample));
         HashCombine(Seed, static_cast<uint32_t>(FrontFace));
-        if (DephStencilInfo)
-            HashCombine(Seed, static_cast<uint32_t>(DephStencilInfo->Hash()));
+        if (DephStencilState)
+            HashCombine(Seed, static_cast<uint32_t>(DephStencilState->Hash()));
         if (BlendState)
             HashCombine(Seed, static_cast<uint32_t>(BlendState->Hash()));
         if (RenderPass)

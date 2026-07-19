@@ -16,7 +16,7 @@ namespace PC_CORE
 	class RhiBuffer;
 
 	class Image;
-	struct Image::ImageDeleter;
+	struct ImageDeleter;
 }
 
 namespace PC_CORE::RHI
@@ -31,7 +31,7 @@ namespace PC_CORE::RHI
 
 		struct PC_CORE_API UploadOperation
 		{
-			using UploadData = std::variant<std::unique_ptr<uint8_t[]>, std::unique_ptr<uint8_t[], Image::ImageDeleter>>;
+			using UploadData = std::variant<std::unique_ptr<uint8_t[]>, std::unique_ptr<uint8_t[], ImageDeleter>>;
 
 			DEFAULT_COPY_MOVE_OPERATIONS(UploadOperation)
 

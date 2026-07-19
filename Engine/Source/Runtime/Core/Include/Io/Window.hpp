@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <Glfw/Glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "CoreHeader.hpp"
-#include <Math/ToolboxTypedef.hpp>
+#include <Math/ToolBoxTypeDef.hpp>
 
 struct GLFWwindow;
 struct GLFWmonitor;

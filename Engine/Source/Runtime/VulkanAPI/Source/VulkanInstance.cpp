@@ -1,18 +1,24 @@
-﻿#define NOMINMAX
-#define VK_USE_PLATFORM_WIN32_KHR
-#include <Vulkan/Vulkan.hpp>
-#include <GLFW/glfw3.h>
-
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/Glfw3native.h>
-
-#include "VulkanInstance.hpp"
+﻿#include "VulkanInstance.hpp"
 
 #include "Io/Window.hpp"
-#include <Memory>
+#include <memory>
 
 #include "PerfRegion.hpp"
 
+#if defined(_WIN32)
+    #define VK_USE_PLATFORM_WIN32_KHR
+#elif defined(__linux__)
+    #define VK_USE_PLATFORM_XLIB_KHR
+#endif
+#include <vulkan/vulkan.hpp>
+#include <GLFW/glfw3.h>
+
+
+#if defined(_WIN32)
+    #define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined(__linux__)
+    #define GLFW_EXPOSE_NATIVE_X11
+#endif
 
 #ifdef DEBUG_GPU_ON
 

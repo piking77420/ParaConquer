@@ -1,7 +1,5 @@
 ﻿#include "Utils/RhiToVulkan.hpp"
 
-#include <Vulkan/vk_enum_string_helper.h>
-
 #pragma region Format
 vk::Format Vulkan::Utils::RhiFormatToVkFormat(PC_CORE::RhiFormat _rhiFormat)
 {

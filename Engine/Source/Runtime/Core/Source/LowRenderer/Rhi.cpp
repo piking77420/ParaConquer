@@ -60,7 +60,7 @@ Rhi::Rhi(const RenderHardwareInterfaceCreateInfo& _CreateInfo)
 		DX12Initialize(renderContextCreateInfo);
 		break;
 	case GraphicAPI::Count:
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	}
 
@@ -123,7 +123,7 @@ RhiSwapChain* Rhi::CreateRhiSwapChain()
 		break;
 	case GraphicAPI::D3d12:
 		break;
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 	case GraphicAPI::Count:
 		break;
 	}
@@ -142,7 +142,7 @@ RhiGraphicPipeline* Rhi::CreateRhiGraphicPipeline()
 		break;
 	case GraphicAPI::D3d12:
 		break;
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 	case GraphicAPI::Count:
 		break;
 	}
@@ -160,7 +160,7 @@ RhiComputePipeline* Rhi::CreateRhiComputePipeline()
 		break;
 	case GraphicAPI::D3d12:
 		break;
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 	case GraphicAPI::Count:
 		break;
 	}
@@ -178,7 +178,7 @@ RhiDescriptorSet* Rhi::CreateDescriptorSet()
 		break;
 	case GraphicAPI::D3d12:
 		break;
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 	case GraphicAPI::Count:
 		break;
 	}
@@ -196,7 +196,7 @@ CommandList* Rhi::CreateCommandList()
 		break;
 	case GraphicAPI::D3d12:
 		break;
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 	case GraphicAPI::Count:
 		throw std::runtime_error("Invalid GraphicAPI");
 	}
@@ -209,7 +209,7 @@ RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, RhiFormat _depthFor
 
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanRenderPass(*this, _colorFormat, _depthFormat);
@@ -230,7 +230,7 @@ RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat)
 
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanRenderPass(*this, _colorFormat);
@@ -249,7 +249,7 @@ PC_CORE_API RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, uint32_
 {
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanRenderPass(*this, _colorFormat, sampleCount);
@@ -268,7 +268,7 @@ RhiRenderPass* Rhi::CreateRenderPass()
 {
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanRenderPass(*this);
@@ -288,7 +288,7 @@ RhiFrameBuffer* Rhi::CreateFrameBuffer()
 {
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanFrameBuffer(*this);
@@ -310,7 +310,7 @@ RhiBuffer* Rhi::CreateBuffer()
 
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanBuffer(*this);
@@ -331,7 +331,7 @@ RhiTexture* Rhi::CreateTexture()
 
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanTexture(*this);
@@ -352,7 +352,7 @@ RhiSampler* Rhi::CreateSampler()
 
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanSampler(*this);
@@ -370,7 +370,7 @@ PC_CORE_API RhiFence* Rhi::CreateFence()
 {
 	switch (m_GraphicsApi)
 	{
-	case GraphicAPI::None:
+	case GraphicAPI::NoneApi:
 		break;
 	case GraphicAPI::Vulkan:
 		return new Vulkan::VulkanFence(*this);

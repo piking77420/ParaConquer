@@ -2,7 +2,7 @@
 
 #include <variant>
 #include <vector>
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 #include "VulkanDescritptorManager.hpp"
 #include "LowRenderer/RhiContext.hpp"

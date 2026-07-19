@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#if _WIN32
 #include <Windows.h>      // For common windows data types and function headers
 #define STRICT_TYPED_ITEMIDS
 #include <Objbase.h>      // For COM headers
@@ -15,10 +16,15 @@
 #include <Shtypes.h>      // for COMDLG_FILTERSPEC
 #include <New>
 #include <Shobjidl.h>  // For IFileDialogEvents
+#endif
+
+
 
 std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _options)
 {
     std::wstring path;
+
+#if _WIN32
     IFileOpenDialog* pFileOpen = nullptr;
     HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
                                   IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
@@ -66,27 +72,47 @@ std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _o
 
     pFileOpen->Release();
 
+#endif
+
     return path;
 }
 
 
 std::wstring SystemDialogue::SeletecFolder(const wchar_t* _caption)
 {
+    
     return GetFile(_caption, nullptr, FOS_PICKFOLDERS);
+    #else 
+    return {};
+    #endif
 }
 
 std::wstring SystemDialogue::SeletecFile(const wchar_t* _caption, const wchar_t* _basePath)
 {
+
+    #if _WIN32
     return GetFile(_caption, _basePath, 0);
+    #else 
+    return {};
+    #endif
+    
 }
 
 SystemDialogue::SystemDialogue()
 {
+    #if _WIN32
     const HRESULT hr = CoInitialize(nullptr);
     assert(hr == S_OK && "Faile to CoInitialize");
+    #else 
+    return {};
+    #endif
 }
 
 SystemDialogue::~SystemDialogue()
 {
+    #if _WIN32
     CoUninitialize();
+    #else 
+    return {};
+    #endif
 }

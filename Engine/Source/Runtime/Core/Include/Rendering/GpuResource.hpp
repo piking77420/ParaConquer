@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <Memory>
+#include <memory>
 
 #include "CoreHeader.hpp"
 

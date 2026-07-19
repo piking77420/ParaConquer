@@ -3,7 +3,7 @@
 #include "CoreHeader.hpp"
 
 #include "RhiRenderPass.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 #include "Resources/Texture2d.hpp"
 
 BEGIN_PCCORE

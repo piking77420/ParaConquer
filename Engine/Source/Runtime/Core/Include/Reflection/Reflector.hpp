@@ -80,7 +80,7 @@ BEGIN_PCCORE
 
         PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
 
-        template <typename Holder, typename MemberType, Members::EnumFlag enumFlag = Members::EnumFlag::None>
+        template <typename Holder, typename MemberType, Members::EnumFlag enumFlag = Members::EnumFlag::NoneMembersEnumFlag>
         static uint8_t ReflectMember(size_t _offset, const char* _memberName);
 
         template <typename Holder, typename BaseClass = void>
@@ -168,7 +168,7 @@ BEGIN_PCCORE
         template <typename T>
         static uintmax_t ProcessMetaData(ReflectedType* reflectedType)
         {
-            uintmax_t flags = Members::EnumFlag::None;
+            uintmax_t flags = Members::EnumFlag::NoneMembersEnumFlag;
             TypeMetaData* typeMetaData = &reflectedType->metaData;
 
             if constexpr (std::is_class_v<T>)
@@ -227,13 +227,13 @@ BEGIN_PCCORE
                 rm.value = GetTypeKey<typename T::mapped_type>();
 
                 using MapPair = std::pair<typename T::key_type, typename T::mapped_type>;
-                rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
+                //rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
                 using MapIterator = T::iterator;
                 using MapConstIterator = T::const_iterator;
 
                 using ReseverMapFunction = void (T::*)(size_t);
                 using InsertMapFunction = T::mapped_type& (T::*)(const typename T::key_type&);
-                using UnorderedMapUnrefConstIteratorFunc = const std::pair<const T::key_type, typename T::mapped_type>*
+                using UnorderedMapUnrefConstIteratorFunc = const std::pair<const typename T::key_type, typename T::mapped_type>*
                     (MapConstIterator::*)() const;
                 using IncrementMapIterator = MapIterator & (MapIterator::*)();
 
