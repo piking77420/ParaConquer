@@ -63,7 +63,7 @@ void Material::Build()
         else
         {
             m_RhiDescriptorSets
-                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i) + 1, App::Instance->DummyTexture.get(), &sampler);
+                ->BindTexture(RhiShaderStageBits::Pixel, static_cast<uint32_t>(i) + 1, App::Instance->BlackTexture.get(), &sampler);
         }
         
     }

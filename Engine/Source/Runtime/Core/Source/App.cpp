@@ -59,31 +59,40 @@ App::App(const PC_CORE::AppCreateInfo& _AppCreateInfo)
         .SetName("SamplerLinearClamp")
         .Build();
 
-    DummyTexture.reset(RenderHarwareInteface.CreateTexture());
-    DummyTexture
-        ->SetTextureType(RhiTexture::Type::Texture2D)
-        .SetMemoryUsage(RhiTexture::MemoryUsage::StaticGPU)
-        .SetTextureUsage(RhiTexture::TextureUsageFlagBits::All)
-        .SetWidth(64)
-        .SetHeight(64)
-        .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
-        .SetName("DummyTexture")
-        .Build();
+    // dummies Texture
+    {
+        std::scoped_lock _(RenderHarwareInteface.GetRhiContext().ResourceUpdateLock());
+        RHI::ResourceUpdateBranch* branch = RenderHarwareInteface.GetRhiContext().ResourceUpdateBranch();
+        auto InitDummyTexture = [&](std::unique_ptr<RhiTexture>& _Texture, const std::array<uint8_t, 4>& _Color, std::string_view _Name)
+            {
+                _Texture.reset(RenderHarwareInteface.CreateTexture());
+                _Texture
+                    ->SetTextureType(RhiTexture::Type::Texture2D)
+                    .SetMemoryUsage(RhiTexture::MemoryUsage::StaticGPU)
+                    .SetTextureUsage(RhiTexture::TextureUsageFlagBits::All)
+                    .SetWidth(1)
+                    .SetHeight(1)
+                    .SetRhiFormat(RhiFormat::R8G8B8A8Unorm)
+                    .SetName(_Name)
+                    .Build();
 
-    RHI::ResourceUpdateBranch* branch = RenderHarwareInteface.GetRhiContext().ResourceUpdateBranch();
+                const PC_CORE::RhiTexture::LevelUploadOperation op = {
+                    .Width = _Texture->GetWidth(),
+                    .Height = _Texture->GetHeight(),
+                    .Offset = 0u,
+                    .Size = _Texture->GetWidth() * _Texture->GetHeight() * 4,
+                };
+                std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(_Texture->GetWidth() * _Texture->GetHeight() * 4);
+                std::memcpy(dummyTextureData.get(), _Color.data(), sizeof(uint8_t) * 4);
+                branch->
+                    TextureUpload2D(*_Texture.get(), std::move(dummyTextureData), { op }, RhiResourceState::PixelShaderResource);
+            };
 
-
-    const PC_CORE::RhiTexture::LevelUploadOperation op = {
-        .Width = DummyTexture->GetWidth(),
-        .Height = DummyTexture->GetHeight(),
-        .Offset = 0u,
-        .Size = DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4,
-    };
-    std::unique_ptr<uint8_t[]> dummyTextureData = std::make_unique<uint8_t[]>(DummyTexture->GetWidth() * DummyTexture->GetHeight() * 4);
-    branch->
-        TextureUpload2D(*DummyTexture.get(), std::move(dummyTextureData), { op }, RhiResourceState::PixelShaderResource);
-
-
+        InitDummyTexture(PurpleTexture, std::array<uint8_t, 4>{255, 255, 0, 255}, "PurpleTexture"sv);
+        InitDummyTexture(WhiteTexture, std::array<uint8_t, 4>{255, 255, 255, 255}, "WhiteTexture"sv);
+        InitDummyTexture(BlackTexture, std::array<uint8_t, 4>{0, 0, 0, 255}, "BlackTexture"sv);
+    }
+    
     Time::Init();
 }
 

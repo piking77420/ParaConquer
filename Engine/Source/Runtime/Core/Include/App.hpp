@@ -55,7 +55,11 @@ BEGIN_PCCORE
 
         std::unique_ptr<RhiSampler> SamplerLinearClampToEdge;
 
-        std::unique_ptr<RhiTexture> DummyTexture;
+        std::unique_ptr<RhiTexture> PurpleTexture;
+
+        std::unique_ptr<RhiTexture> WhiteTexture;
+
+        std::unique_ptr<RhiTexture> BlackTexture;
 
         PC_CORE_API App(const PC_CORE::AppCreateInfo& _AppCreateInfo);
 
