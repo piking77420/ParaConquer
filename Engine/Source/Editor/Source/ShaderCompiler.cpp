@@ -219,7 +219,7 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         break;
     case PC_CORE::GraphicAPI::D3d12:
         break;
-    case PC_CORE::GraphicAPI::None:
+    case PC_CORE::GraphicAPI::NoneApi:
     case PC_CORE::GraphicAPI::Count:
         break;
     }

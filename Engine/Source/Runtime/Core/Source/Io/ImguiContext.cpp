@@ -54,7 +54,7 @@ void IMGUIContext::Init(Rhi& _Rhi, void* _glfwWindowPtr)
 
     switch (_Rhi.GetGraphicsApi())
     {
-    case GraphicAPI::None:
+    case GraphicAPI::NoneApi:
         break;
     case GraphicAPI::Vulkan:
         VulkanInitialize(_glfwWindowPtr);

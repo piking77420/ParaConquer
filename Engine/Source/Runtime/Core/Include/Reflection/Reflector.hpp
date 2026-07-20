@@ -227,7 +227,7 @@ BEGIN_PCCORE
                 rm.value = GetTypeKey<typename T::mapped_type>();
 
                 using MapPair = std::pair<typename T::key_type, typename T::mapped_type>;
-                //rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
+                rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
                 using MapIterator = T::iterator;
                 using MapConstIterator = T::const_iterator;
 

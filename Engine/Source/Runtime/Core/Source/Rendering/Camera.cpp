@@ -103,7 +103,7 @@ void Camera::SetScreenSize(int width, int height)
     SetAspect(static_cast<float>(width) / static_cast<float>(height));
 }
 
-PC_CORE_API void Camera::ComputeMatricies()
+void Camera::ComputeMatricies()
 {
     ComputeView();
     ComputeProjection();

@@ -104,7 +104,7 @@ namespace PC_CORE
         
     }
 
-    void Image::ImageDeleter::operator()(uint8_t* p)
+    void ImageDeleter::operator()(uint8_t* p)
     {
         FileLoader::FreeData(p);
     }

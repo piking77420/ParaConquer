@@ -1,14 +1,5 @@
 ﻿#include "VulkanCommandList.hpp"
 
-#if defined(_MSC_VER)
-    #include <malloc.h>
-    #define alloca _alloca
-#elif defined(__GNUC__) || defined(__clang__)
-    #include <alloca.h>
-#else
-    #include <stdlib.h>
-#endif
-
 #include <PerfRegion.hpp>
 #include <LowRenderer/Rhi.hpp>
 #include <VulkanBuffer.hpp>
@@ -152,20 +143,33 @@ void Vulkan::VulkanCommandList::MergeCommands(CommandList* _other, size_t _count
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-/*    assert(_count != 0);
-    assert(this != _other);
+    assert(_count != 0);
     assert(m_BufferType == PC_CORE::CommandList::BufferType::Primary);
+    assert(_other);
 
-    vk::CommandBuffer* commandBuffers = reinterpret_cast<vk::CommandBuffer*>(_malloca(sizeof(vk::CommandBuffer) * _count));
-
-    for (size_t i = 0; i < _count; i++)
+    if (m_BufferType != PC_CORE::CommandList::BufferType::Primary)
     {
-        auto otherVk = reinterpret_cast<VulkanCommandList*>(_other);
-        commandBuffers[i] = otherVk->m_CommandBuffer[m_Rhi.GetFrameIndex()];
+        PC_LOGCRITICAL("Only Primary Buffer can merge secondary buffer");
+        return;
     }
 
-    m_CommandBuffer[m_Rhi.GetFrameIndex()].executeCommands(static_cast<uint32_t>(_count), commandBuffers);
-    _freea(commandBuffers);*/
+    m_MergedCommandBufferBuffer.clear();
+    m_MergedCommandBufferBuffer.reserve(_count);
+    for (size_t i = 0; i < _count; i++)
+    {
+        const VulkanCommandList& otherVk = *reinterpret_cast<VulkanCommandList*>(_other);
+        if (otherVk.GetBufferType() != PC_CORE::CommandList::BufferType::Secondary)
+        {
+            PC_LOGCRITICAL("Only Secondary can be merged");
+            return;
+        }
+
+        vk::CommandBuffer CurrentOtherCmdBuffer = otherVk.m_CommandBuffer[m_Rhi.GetFrameIndex()];
+        assert(m_CommandBuffer[m_Rhi.GetFrameIndex()] != CurrentOtherCmdBuffer);
+        m_MergedCommandBufferBuffer.emplace_back(CurrentOtherCmdBuffer);
+    }
+    assert(m_MergedCommandBufferBuffer.size() == _count);
+    m_CommandBuffer[m_Rhi.GetFrameIndex()].executeCommands(static_cast<uint32_t>(m_MergedCommandBufferBuffer.size()), m_MergedCommandBufferBuffer.data());
 }
 
 void Vulkan::VulkanCommandList::BeginRecordCommands()
@@ -173,8 +177,6 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
     CommandList::BeginRecordCommands();
-
-
     const uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
     vk::CommandBufferInheritanceInfo inheritanceInfo;
@@ -189,7 +191,6 @@ void Vulkan::VulkanCommandList::BeginRecordCommands()
         inheritanceInfo.queryFlags = {};
         inheritanceInfo.pipelineStatistics = {};
     }
-
 
     vk::CommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
@@ -336,36 +337,35 @@ void Vulkan::VulkanCommandList::BindDescriptorSets(
     size_t _FirstSet,
     const std::span<const size_t>& dynamicOffset)
 {
-    /*
+    
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
+    m_VkDescriptorSetBuffer.clear();
+    m_DynamicOffsetBuffer.clear();
 
     const size_t currentFrame = m_Rhi.GetFrameIndex();
-    vk::DescriptorSet* vkDescriptorSet = static_cast<vk::DescriptorSet*>(_malloca(sizeof(vk::DescriptorSet) * _DescriptorSets.size()));
+    m_VkDescriptorSetBuffer.reserve(_DescriptorSets.size());
+    m_DynamicOffsetBuffer.reserve(dynamicOffset.size());
 
     for (size_t i = 0; i < _DescriptorSets.size(); i++)
     {
         const VulkanDescriptorSet& vulkanDescriptorSets = reinterpret_cast<const VulkanDescriptorSet&>(*_DescriptorSets[i]);
-        vkDescriptorSet[i] = vulkanDescriptorSets.GetVkDescriptorSet(currentFrame);
+        m_VkDescriptorSetBuffer.emplace_back(vulkanDescriptorSets.GetVkDescriptorSet(currentFrame));
     }
 
-    uint32_t* pDynamicOffsets = dynamicOffset.empty() ? nullptr : static_cast<uint32_t*>(_malloca(sizeof(vk::DescriptorSet) * dynamicOffset.size()));
-
     for (size_t i = 0; i < dynamicOffset.size(); i++)
-        pDynamicOffsets[i] = static_cast<uint32_t>(dynamicOffset[i]);
+        m_DynamicOffsetBuffer.emplace_back(static_cast<uint32_t>(dynamicOffset[i]));
+
+    assert(m_VkDescriptorSetBuffer.size() == _DescriptorSets.size());
+    assert(m_DynamicOffsetBuffer.size() == dynamicOffset.size());
 
     m_CommandBuffer[currentFrame].bindDescriptorSets(GetCurrentRecordPipelineBindPoint(),
         GetCurrentPipelineLayout(),
         static_cast<uint32_t>(_FirstSet),
-        static_cast<uint32_t>(_DescriptorSets.size()),
-        vkDescriptorSet,
-        static_cast<uint32_t>(dynamicOffset.size()),
-        pDynamicOffsets);
-
-    if (pDynamicOffsets != nullptr)
-        _freea(pDynamicOffsets);
-    _freea(vkDescriptorSet);*/
-
+        static_cast<uint32_t>(m_VkDescriptorSetBuffer.size()),
+        m_VkDescriptorSetBuffer.data(),
+        static_cast<uint32_t>(m_DynamicOffsetBuffer.size()),
+        m_DynamicOffsetBuffer.data());
 }
 
 

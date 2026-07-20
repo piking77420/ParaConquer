@@ -80,11 +80,11 @@ std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _o
 
 std::wstring SystemDialogue::SeletecFolder(const wchar_t* _caption)
 {
-    
+#if _WIN32
     return GetFile(_caption, nullptr, FOS_PICKFOLDERS);
-    #else 
-    return {};
-    #endif
+#else 
+return {};
+#endif
 }
 
 std::wstring SystemDialogue::SeletecFile(const wchar_t* _caption, const wchar_t* _basePath)

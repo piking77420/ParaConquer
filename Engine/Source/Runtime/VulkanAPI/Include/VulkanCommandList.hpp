@@ -101,6 +101,12 @@ namespace Vulkan
 
         std::vector<vk::BufferMemoryBarrier> m_VkBufferBarrier;
 
+        std::vector<vk::CommandBuffer> m_MergedCommandBufferBuffer;
+
+        std::vector<vk::DescriptorSet> m_VkDescriptorSetBuffer;
+
+        std::vector<uint32_t> m_DynamicOffsetBuffer;
+
         vk::PipelineBindPoint GetCurrentRecordPipelineBindPoint() const;
 
         vk::PipelineLayout GetCurrentPipelineLayout() const;

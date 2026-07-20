@@ -245,7 +245,7 @@ RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat)
 	return nullptr;
 }
 
-PC_CORE_API RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount)
+RhiRenderPass* Rhi::CreateRenderPass(RhiFormat _colorFormat, uint32_t sampleCount)
 {
 	switch (m_GraphicsApi)
 	{
@@ -366,7 +366,7 @@ RhiSampler* Rhi::CreateSampler()
 	return nullptr;
 }
 
-PC_CORE_API RhiFence* Rhi::CreateFence()
+RhiFence* Rhi::CreateFence()
 {
 	switch (m_GraphicsApi)
 	{

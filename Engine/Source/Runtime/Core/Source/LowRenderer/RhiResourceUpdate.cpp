@@ -147,7 +147,7 @@ namespace ResourceUpdateOperation
 				[&](const std::unique_ptr<uint8_t[]>& _Data) {
 					return _Data.operator bool();
 				},
-				[&](const std::unique_ptr<uint8_t[], Image::ImageDeleter>& _Data) {
+				[&](const std::unique_ptr<uint8_t[], ImageDeleter>& _Data) {
 					return _Data.operator bool();
 				},
 
@@ -163,7 +163,7 @@ namespace ResourceUpdateOperation
 				[&](const std::unique_ptr<uint8_t[]>& _Data) {
 					return _Data.get();
 				},
-				[&](const std::unique_ptr<uint8_t[], Image::ImageDeleter>& _Data) {
+				[&](const std::unique_ptr<uint8_t[], ImageDeleter>& _Data) {
 					return _Data.get();
 				},
 

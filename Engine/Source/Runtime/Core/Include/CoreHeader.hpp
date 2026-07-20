@@ -8,14 +8,18 @@
 
 
 #if defined(_WIN32)
-    #ifdef PC_CORE_EXPORTS
-        #define PC_CORE_API __declspec(dllexport)
-    #else
-        #define PC_CORE_API __declspec(dllimport)
-    #endif
+
+#ifdef PC_CORE_EXPORT
+#define PC_CORE_API __declspec(dllexport)
+#else PC_CORE_IMPORT
+#define PC_CORE_API __declspec(dllimport)
+#endif // PC_CORE_EXPORT
+
 #else
-    #define PC_CORE_API __attribute__((visibility("default")))
-#endif
+
+#define PC_CORE_API __attribute__((visibility("default")))
+
+#endif // _WIN32 _Unix
 
 #define PC_FORCE_INLINE __forceinline
 

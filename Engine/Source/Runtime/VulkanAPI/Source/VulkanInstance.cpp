@@ -1,11 +1,10 @@
-﻿#include "VulkanInstance.hpp"
+﻿#include <memory>
 
 #include "Io/Window.hpp"
-#include <memory>
-
 #include "PerfRegion.hpp"
 
 #if defined(_WIN32)
+#define NOMINMAX
     #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(__linux__)
     #define VK_USE_PLATFORM_XLIB_KHR
@@ -19,9 +18,11 @@
 #elif defined(__linux__)
     #define GLFW_EXPOSE_NATIVE_X11
 #endif
+#include <GLFW/glfw3native.h>
+
+#include "VulkanInstance.hpp"
 
 #ifdef DEBUG_GPU_ON
-
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallBack(
     vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

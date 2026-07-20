@@ -30,6 +30,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${RUNTIME_SOURCE_DIR}/Core/In
 #Dependencies
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)   
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+if(WIN32)
+target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/vma)
+endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
 target_link_libraries(${PROJECT_NAME} PUBLIC spirv-reflect-static)
 

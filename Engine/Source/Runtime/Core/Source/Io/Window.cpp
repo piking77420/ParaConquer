@@ -13,7 +13,7 @@ void Window::FramebufferResizeCallback(GLFWwindow* _window, int width, int heigh
     window->resizeDirty = true;
 }
 
-PC_CORE_API Window& Window::operator=(Window&& _other) noexcept
+Window& Window::operator=(Window&& _other) noexcept
 {
     m_WindowSize = _other.m_WindowSize;
     _other.m_WindowSize = {};
