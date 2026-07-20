@@ -41,7 +41,6 @@ if(WIN32)
     )
 endif()
 
-
 # Goole test
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME})

@@ -1,6 +1,6 @@
 #pragma once
-#include <Vector>
-#include <String>
+#include <vector>
+#include <string>
 
 #include "CoreHeader.hpp"
 

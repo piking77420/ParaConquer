@@ -33,12 +33,9 @@ namespace PC_CORE::RHI
 		{
 			using UploadData = std::variant<std::unique_ptr<uint8_t[]>, std::unique_ptr<uint8_t[], ImageDeleter>>;
 
-			DEFAULT_COPY_MOVE_OPERATIONS(UploadOperation)
-
 			UploadOperation() = default;
 
 			~UploadOperation() = default;
-
 
 			explicit UploadOperation(const void* _Data, size_t _Size);
 
@@ -49,6 +46,12 @@ namespace PC_CORE::RHI
 			{
 				assert(m_DataSize != 0);
 			}
+
+			UploadOperation(UploadOperation&&) noexcept = default;
+			UploadOperation& operator=(UploadOperation&&) noexcept = default;
+
+			UploadOperation(const UploadOperation&) = delete;
+			UploadOperation& operator=(const UploadOperation&) = delete;
 
 			operator bool() const;
 
@@ -72,10 +75,13 @@ namespace PC_CORE::RHI
 
 			}
 
-
 			~BufferUpload() = default;
 
-			DEFAULT_COPY_MOVE_OPERATIONS(BufferUpload)
+			BufferUpload(BufferUpload&&) noexcept = default;
+			BufferUpload& operator=(BufferUpload&&) noexcept = default;
+
+			BufferUpload(const BufferUpload&) = delete;
+			BufferUpload& operator=(const BufferUpload&) = delete;
 
 			[[nodiscard]] bool Execute(CommandList& _CommandList);
 
@@ -104,7 +110,11 @@ namespace PC_CORE::RHI
 
 			~TextureUpload2D() = default;
 
-			DEFAULT_COPY_MOVE_OPERATIONS(TextureUpload2D)
+			TextureUpload2D(TextureUpload2D&&) noexcept = default;
+			TextureUpload2D& operator=(TextureUpload2D&&) noexcept = default;
+
+			TextureUpload2D(const TextureUpload2D&) = delete;
+			TextureUpload2D& operator=(const TextureUpload2D&) = delete;
 
 			[[nodiscard]] bool Execute(CommandList& _CommandList);
 
@@ -163,7 +173,6 @@ namespace PC_CORE::RHI
 			m_UpdateBranchs.back().emplace<ResourceUpdateOperation::BufferUpload>(_RhiBuffer, std::forward<T>(_Data), _Size);
 			return *this;
 		}
-
 
 		ResourceUpdateBranch& TextureUpload2D(RhiTexture& _RhiTexture, const void* _Data, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& _LeveOperations, RhiResourceState _AfterUploadState);
 

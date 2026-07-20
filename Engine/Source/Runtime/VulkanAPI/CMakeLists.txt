@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
 # Collect source and header files
 file(GLOB_RECURSE SOURCE_FILES Source/*.c Source/*.cpp)
 file(GLOB_RECURSE HEADER_FILES Include/*.h Include/*.hpp Inline/*.inl Include/Source/.*h Include/Source/.*hpp 

@@ -171,7 +171,7 @@ public:
 
     PC_CORE_API explicit RhiRenderPass(Rhi& _Rhi);
 
-    PC_CORE_API ~RhiRenderPass() override = default;
+    PC_CORE_API virtual ~RhiRenderPass() = default;
     
     RhiRenderPass& ClearContext()
     {

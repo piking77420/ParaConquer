@@ -2,8 +2,8 @@
 #include "CoreHeader.hpp"
 #include "Reflection/Reflector.hpp"
 
-#include <Cassert>
-#include <Bitset>
+#include <cassert>
+#include <bitset>
 
 BEGIN_PCCORE
     using EntityId = uint32_t;

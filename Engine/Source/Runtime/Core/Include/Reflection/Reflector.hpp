@@ -226,8 +226,14 @@ BEGIN_PCCORE
                 rm.key = GetTypeKey<typename T::key_type>();
                 rm.value = GetTypeKey<typename T::mapped_type>();
 
-                using MapPair = std::pair<typename T::key_type, typename T::mapped_type>;
-                rm.offsetBetweenKeyAndValueInPair = offsetof(MapPair, MapPair::second);
+                struct MapPair
+                {
+                    typename T::key_type first;
+                    typename T::mapped_type second;
+                };
+
+                constexpr std::size_t offsetSecond = offsetof(MapPair, second);
+                rm.offsetBetweenKeyAndValueInPair = offsetSecond;
                 using MapIterator = T::iterator;
                 using MapConstIterator = T::const_iterator;
 

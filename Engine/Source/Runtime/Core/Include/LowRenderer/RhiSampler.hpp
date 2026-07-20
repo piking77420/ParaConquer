@@ -114,7 +114,7 @@ BEGIN_PCCORE
         SamplerAddressMode m_W{ SamplerAddressMode::Repeat };
 
         bool m_CompareEnable = false;
-        CompareOp m_CompareOp{ CompareOp::Always };
+        CompareOp m_CompareOp{ CompareOp::AlwaysPass };
     };
 
 END_PCCORE

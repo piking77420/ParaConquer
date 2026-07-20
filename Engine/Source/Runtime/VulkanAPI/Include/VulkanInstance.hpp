@@ -81,6 +81,6 @@ namespace Vulkan
 
         PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT m_Gpdctd = nullptr;
 
-#endif  DEBUG_GPU_ON
+#endif // DEBUG_GPU_ON
     };
 }

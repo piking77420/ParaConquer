@@ -253,6 +253,7 @@ void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
         throw std::invalid_argument("Window handle is null");
     }
 
+    #if defined(_WIN32)
     vk::Win32SurfaceCreateInfoKHR win32SurfaceCreate{};
     win32SurfaceCreate.sType = vk::StructureType::eWin32SurfaceCreateInfoKHR;
 
@@ -261,6 +262,10 @@ void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
 
     // Create the surface
     vk::Result r = m_Instance.createWin32SurfaceKHR(&win32SurfaceCreate, nullptr, &surface);
+#elif defined(__linux__)
+    // TODO
+    vk::Result r;
+# endif
 
     VK_CHECK_CALL(r);
 }

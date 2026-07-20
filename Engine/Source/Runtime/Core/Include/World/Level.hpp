@@ -164,7 +164,7 @@ BEGIN_PCCORE
 
         SystemManager m_SystemManagers;
 
-        void UpdateSignature(EntityId entity, TypeId typeId, bool hasComponent)
+        void UpdateSignature(PC_CORE::EntityId entity, TypeId typeId, bool hasComponent)
         {
             PERF_REGION_SCOPED;
 

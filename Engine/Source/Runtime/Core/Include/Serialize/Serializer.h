@@ -24,7 +24,6 @@ BEGIN_PCCORE
     public:
         enum class SerializeOperation : uint8_t
         {
-            None = 0,
             Serialize = 1,
             DeSerialize = 2
         };
@@ -60,8 +59,6 @@ BEGIN_PCCORE
 
         virtual bool OpenFile(const std::string& _path, SerializeOperation _operation)
         {
-            assert(_operation != SerializeOperation::None && "Invalid Enum");
-            assert(m_SerializeOperation == SerializeOperation::None && "Did you forget to call CloseFile");
             assert(m_CurrentFilePath == "" && "Did you forget to call CloseFile");
 
             m_SerializeOperation = _operation;
@@ -72,11 +69,9 @@ BEGIN_PCCORE
 
         virtual bool CloseFile()
         {
-            assert(m_SerializeOperation != SerializeOperation::None && "Did you forget to call OpenFile");
             assert(m_CurrentFilePath != "" && "Did you forget to call OpenFile");
 
             m_CurrentFilePath = "";
-            m_SerializeOperation = SerializeOperation::None;
 
             return true;
         }
@@ -185,7 +180,7 @@ BEGIN_PCCORE
 
         std::ofstream m_OutStream;
 
-        SerializeOperation m_SerializeOperation = SerializeOperation::None;
+        SerializeOperation m_SerializeOperation = SerializeOperation::Serialize;
 
         std::string m_CurrentFilePath;
     };

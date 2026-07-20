@@ -19,7 +19,7 @@ namespace Vulkan
 
         VULKAN_API VulkanRenderPass(PC_CORE::Rhi& _Rhi, vk::Device device, vk::Format format);
 
-        VULKAN_API ~VulkanRenderPass() override;
+        VULKAN_API virtual ~VulkanRenderPass();
 
         bool Build() override;
 

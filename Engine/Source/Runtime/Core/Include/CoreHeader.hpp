@@ -15,14 +15,19 @@
 #define PC_CORE_API __declspec(dllimport)
 #endif // PC_CORE_EXPORT
 
-#else
+#elif defined(__linux__)
 
 #define PC_CORE_API __attribute__((visibility("default")))
 
 #endif // _WIN32 _Unix
 
-#define PC_FORCE_INLINE __forceinline
-
+#if defined(_MSC_VER)
+    #define PC_FORCE_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+    #define PC_FORCE_INLINE inline __attribute__((always_inline))
+#else
+    #define PC_FORCE_INLINE inline
+#endif
 
 #define DEFAULT_COPY_MOVE_OPERATIONS(type)         \
 type(const type& other) noexcept = default;             \

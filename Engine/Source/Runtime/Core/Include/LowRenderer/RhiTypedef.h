@@ -600,7 +600,7 @@ BEGIN_PCCORE
         Greater = 4,
         NotEqual = 5,
         GreaterOrEqual = 6,
-        Always = 7,
+        AlwaysPass = 7,
     };
 
     REFLECT(CompareOp)
@@ -639,7 +639,7 @@ BEGIN_PCCORE
 
      enum class GpuPipelineStage : uint64_t
     {
-        None = 0,
+        NoneGpuPipelineStage = 0,
 
         // Core pipeline stages
         TopOfPipe = 1ULL << 0,

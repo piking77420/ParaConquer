@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <Array>
-#include <String>
-#include <Vector>
-#include <Queue>
+#include <array>
+#include <string>
+#include <vector>
+#include <queue>
 
 #include "Component.h"
 #include "EcsSystem.h"

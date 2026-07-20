@@ -46,7 +46,7 @@ public:
 
 	}
 
-	virtual bool Build() = 0;
+	bool Build() override = 0;
 
 
 	T& SetName(const char* _Name)

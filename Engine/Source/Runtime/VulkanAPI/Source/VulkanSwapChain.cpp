@@ -1,6 +1,5 @@
 ﻿#include "VulkanSwapChain.hpp"
 
-#include "Glfw/Glfw3.h"
 #include "LowRenderer/Rhi.hpp"
 #include "VulkanCommandList.hpp"
 #include "VulkanContext.hpp"
@@ -69,12 +68,13 @@ bool Vulkan::VulkanSwapChain::AcquireSwapChainImageIndex(PC_CORE::Window* window
     uint32_t frameIndex = m_Rhi.GetFrameIndex();
 
     // Wait for the CPU/GPU pacing fence (frame reuse)
-    device.waitForFences(
+    vk::Result resultFence = device.waitForFences(
         1,
         &context.syncObjects[frameIndex].inFlightFence,
         VK_TRUE,
         UINT64_MAX
     );
+    VK_CALL(resultFence);
 
     uint32_t imageIndex;
     vk::Result result = device.acquireNextImageKHR

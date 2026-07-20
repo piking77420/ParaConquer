@@ -30,7 +30,7 @@ BEGIN_PCCORE
     
         enum BufferUsageFlagBits : uint32_t
         {
-            None          = 0,
+            NoneBufferUsageFlag = 0,
             Uniform       = 1 << 0,
             Vertex        = 1 << 1,
             Index         = 1 << 2,
@@ -61,7 +61,7 @@ BEGIN_PCCORE
     
         PC_CORE_API ~RhiBuffer() override = default;
 
-        PC_CORE_API virtual bool Build();
+        PC_CORE_API virtual bool Build() override;
     
         PC_CORE_API virtual bool UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes) = 0;
     

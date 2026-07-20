@@ -13,7 +13,7 @@ public:
 
     enum class Type
     {
-        None,
+        NoneType,
         Texture1D,
         Texture2D,
         TextureArray2D,
@@ -25,7 +25,7 @@ public:
 
     enum TextureUsageFlagBits : uint32_t
     {
-        None = 0,
+        NoneTextureUsageFlag = 0,
         Sampled = 1 << 0, // Shader-readable (SRV)
         RenderTarget = 1 << 1, // Color attachment (ex: RGBA render target)
         LoadAndStore = 1 << 4, // Shader-writable (UAV)
@@ -55,7 +55,7 @@ public:
     
     PC_CORE_API ~RhiTexture() override = default;
 
-    PC_CORE_API virtual bool Build();
+    PC_CORE_API bool Build() override;
     
     PC_CORE_API virtual bool UploadData2D(CommandList* _CommandList, const void* _ImageData, const std::vector<PC_CORE::RhiTexture::LevelUploadOperation>& _LevelUpload) = 0;
     
@@ -211,7 +211,7 @@ protected:
 
     Type m_TextureType = Type::Texture2D;
 
-    TextureUsageFlag m_TextureUsage = TextureUsageFlagBits::None;
+    TextureUsageFlag m_TextureUsage = TextureUsageFlagBits::NoneTextureUsageFlag;
 
     RhiFormat m_RhiFormat = RhiFormat::Undefined;
 

@@ -28,7 +28,7 @@ namespace Vulkan
         
         explicit VulkanBuffer(PC_CORE::Rhi& _Rhi);
         
-        ~VulkanBuffer() override;
+        virtual ~VulkanBuffer();
         
         bool Build() override;
         

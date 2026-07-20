@@ -587,7 +587,7 @@ vk::CompareOp Vulkan::Utils::RhiToVulkanCompareOp(PC_CORE::CompareOp _compareOp)
         return vk::CompareOp::eNotEqual;
     case PC_CORE::CompareOp::GreaterOrEqual:
         return vk::CompareOp::eGreaterOrEqual;
-    case PC_CORE::CompareOp::Always:
+    case PC_CORE::CompareOp::AlwaysPass:
         return vk::CompareOp::eAlways;
     }
 
@@ -1107,7 +1107,7 @@ vk::ImageType Vulkan::Utils::RhiTextureTypeToVulkanImageType(PC_CORE::RhiTexture
     switch (_textureType) 
     {
     case PC_CORE::RhiTexture::Type::Count:
-    case PC_CORE::RhiTexture::Type::None:
+    case PC_CORE::RhiTexture::Type::NoneType:
         return {};
     case PC_CORE::RhiTexture::Type::Texture1D:
         return vk::ImageType::e1D;

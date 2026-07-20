@@ -14,7 +14,7 @@ namespace Vulkan
 
         VULKAN_API bool Build() override;
 
-        VULKAN_API void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) override;
+        VULKAN_API void WaitForFence(bool _waitAll, uint32_t _time = static_cast<uint32_t>(UINT64_MAX)) override;
 
         VULKAN_API void Reset() override;
 
