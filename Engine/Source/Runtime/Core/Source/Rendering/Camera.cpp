@@ -1,4 +1,4 @@
-﻿#include "rendering/camera.hpp"
+﻿#include <Rendering/Camera.hpp>
 
 #include "PerfRegion.hpp"
 #include "Math/MatrixTransformation.hpp"

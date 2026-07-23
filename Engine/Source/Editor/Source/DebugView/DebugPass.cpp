@@ -2,6 +2,8 @@
 #include <Rendering/RenderGraph.hpp>
 #include <Rendering/RenderView.hpp>
 #include <Rendering/Renderer.hpp>
+#include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiFrameBuffer.hpp>
 
 namespace PC_EDITOR::DebugView
 {

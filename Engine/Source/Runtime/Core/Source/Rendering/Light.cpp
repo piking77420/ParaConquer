@@ -1,4 +1,4 @@
-﻿#include "rendering/light.hpp"
+﻿#include <Rendering/Light.hpp>
 
-#include "Resources/ResourceManager.hpp"
-#include "World/World.hpp"
+#include <Resources/ResourceManager.hpp>
+#include <World/World.hpp>

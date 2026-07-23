@@ -6,10 +6,11 @@
 #include "RenderingTypedef.h"
 #include "ObjectPtr.hpp"
 #include "Resources/Texture2d.hpp"
-#include "LowRenderer/RhiDescriptorSet.hpp"
 #include <Rendering/MaterialDomain.hpp>
 #include <Rendering/MeshPass.hpp>
 #include <Rendering/PipelineStateObject.hpp>
+#include <LowRenderer/RhiBuffer.h>
+#include <LowRenderer/RhiDescriptorSet.hpp>
 
 
 namespace PC_CORE::Rendering

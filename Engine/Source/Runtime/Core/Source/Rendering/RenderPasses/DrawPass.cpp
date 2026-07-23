@@ -12,6 +12,8 @@
 #include <Rendering/RenderView.hpp>
 #include <Resources/StaticMesh.hpp>
 #include <World/StaticMeshComponent.hpp>
+#include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiFrameBuffer.hpp>
 
 namespace PC_CORE::Rendering::Pass
 {

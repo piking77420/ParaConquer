@@ -1,7 +1,9 @@
 ﻿#include <array>
 
-#include "Rendering/RenderPasses/Renderpass.hpp"
+#include <Rendering/RenderPasses/RenderPass.hpp>
 #include "Resources/ResourceManager.hpp"
+#include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiFrameBuffer.hpp>
 
 PC_CORE::Rendering::RenderPass::RenderPass()
 {

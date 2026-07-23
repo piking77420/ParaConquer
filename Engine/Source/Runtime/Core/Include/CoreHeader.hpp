@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <cstddef>
 
 #define BEGIN_PCCORE namespace PC_CORE {
 #define END_PCCORE }

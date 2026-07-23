@@ -3,6 +3,9 @@
 #include <Rendering/Renderer.hpp>
 #include <Rendering/RenderView.hpp>
 
+#include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiFrameBuffer.hpp>
+
 namespace PC_CORE::Rendering::Pass
 {
 	BakeIbl::BakeIbl()

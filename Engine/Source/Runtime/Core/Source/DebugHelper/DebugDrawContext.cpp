@@ -5,6 +5,8 @@
 #include "Resources/ResourceManager.hpp"
 #include "Resources/ShaderSourceBinary.hpp"
 #include "LowRenderer/Rhi.hpp"
+#include <LowRenderer/RhiDescriptorSet.hpp>
+#include <LowRenderer/RhiFrameBuffer.hpp>
 
 #define GIZMO_PASS {1.f, 0.0f, 1.f, 0.5f}
 

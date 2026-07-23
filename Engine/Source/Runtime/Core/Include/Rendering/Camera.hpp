@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreHeader.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 BEGIN_PCCORE
     enum class ProjectionType

@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 #include "Reflection/Reflector.hpp"
 #include "Ecs/EcsFront.h"
 

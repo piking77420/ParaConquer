@@ -1,9 +1,9 @@
-﻿#include "rendering/gbuffers.hpp"
+﻿#include <Rendering/Gbuffers.hpp>
 
-#include "App.hpp"
-#include "LowRenderer/Rhi.hpp"
-#include "Resources/ResourceManager.hpp"
-#include "Resources/ComputeShader.hpp"
+#include <App.hpp>
+#include <LowRenderer/Rhi.hpp>
+#include <Resources/ResourceManager.hpp>
+#include <Resources/ComputeShader.hpp>
 
 
 PC_CORE::Gbuffers::Gbuffers(PC_CORE::Rhi& _Rhi, Tbx::Vector2i _size)
