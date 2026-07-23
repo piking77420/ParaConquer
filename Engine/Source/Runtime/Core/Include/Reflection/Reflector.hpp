@@ -153,15 +153,16 @@ BEGIN_PCCORE
 
 
         template <typename T>
-        static void ReflectedCreateFunc(void* _class)
+        static void ReflectedCreateFunc(void* _Object)
         {
-            new(_class) T();
+            new(_Object) T();
         }
 
         template <typename T>
-        static void ReflectedDeleteFunc(void* _class)
+        static void ReflectedDeleteFunc(void* _Object)
         {
-            static_cast<T*>(_class)->~T();
+            if constexpr(!std::is_trivially_destructible_v<T>)
+                std::destroy_at(static_cast<T*>(_Object));
         }
 
 

@@ -1,1 +1,1 @@
-﻿#include "ecs/component.h"
+﻿#include <Ecs/Component.h>

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <Array>
+#include <array>
 
 #include "CoreHeader.hpp"
 

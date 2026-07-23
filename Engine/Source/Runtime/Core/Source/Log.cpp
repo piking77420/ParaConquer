@@ -1,6 +1,6 @@
-﻿#include "log.hpp"
+﻿#include "Log.hpp"
 
-#include <Print>
+#include <print>
 
 
 using namespace PC_CORE;

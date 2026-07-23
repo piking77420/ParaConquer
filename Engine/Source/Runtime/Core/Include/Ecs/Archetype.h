@@ -2,7 +2,7 @@
 
 #include "Component.h"
 #include "EcsHeader.h"
-#include <Array>
+#include <array>
 
 template <typename T, typename... Ts>
 struct get_index;

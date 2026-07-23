@@ -12,14 +12,13 @@ if(MSVC)
     add_compile_options(/MP)
 endif()
 
+
 # Set C++ version
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Collect source and header files
-
-
 file(GLOB_RECURSE SOURCE_FILES Source/*.c Source/*.cpp)
 file(GLOB_RECURSE HEADER_FILES Include/*.h Include/*.hpp Inline/*.inl)
 
@@ -60,6 +59,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC magic_enum)
 
 ## Profiler
 target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>)
+    target_link_options(${PROJECT_NAME} PUBLIC -stdlib=libc++)
+endif()
+
 
 # End Dependencies
 

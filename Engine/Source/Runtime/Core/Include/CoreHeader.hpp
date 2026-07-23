@@ -79,9 +79,9 @@ BEGIN_PCCORE
 
     template <typename T, typename M>
     // ReSharper disable once CppInconsistentNaming
-    static constexpr size_t offset_of(M T::* _member)
+    static constexpr std::size_t offset_of(M T::* _member)
     {
-        return reinterpret_cast<size_t>(&(reinterpret_cast<const volatile T*>(0)->*_member));
+        return reinterpret_cast<std::size_t>(&(reinterpret_cast<const volatile T*>(0)->*_member));
     }
 
     static inline uint32_t AlignUp(uint32_t value, uint32_t alignment)

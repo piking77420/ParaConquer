@@ -1,5 +1,5 @@
 #include "Io/CoreIo.hpp"
-#include <Glfw/Glfw3.h>
+#include <GLFW/glfw3.h>
 
 
 using namespace PC_CORE;

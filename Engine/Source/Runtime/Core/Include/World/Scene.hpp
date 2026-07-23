@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <Array>
-#include <Memory>
-#include <Vector>
-#include <Cassert>
+#include <array>
+#include <memory>
+#include <vector>
+#include <cassert>
 
 #include "CoreHeader.hpp"
 #include "Log.hpp"

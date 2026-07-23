@@ -3,7 +3,7 @@
 #include "CoreHeader.hpp"
 #include "Ecs/EcsFront.h"
 #include "Math/Quaternion.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 BEGIN_PCCORE
     struct Rotation

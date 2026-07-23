@@ -1,6 +1,6 @@
 #include "App.hpp"
 
-#include <Iostream>
+#include <iostream>
 
 #include "Log.hpp"
 #include "Physics/SphereCollider.hpp"

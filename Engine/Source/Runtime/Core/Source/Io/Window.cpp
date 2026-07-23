@@ -1,6 +1,6 @@
-﻿#include "io/window.hpp"
+﻿#include <Io/Window.hpp>
 
-#include <Glfw/Glfw3.h>
+#include <GLFW/glfw3.h>
 #include <PerfRegion.hpp>
 #include <Io/FileLoader.hpp>
 #include <Log.hpp>

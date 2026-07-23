@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <Chrono>
-#include <Stack>
-#include <Vector>
+#include <chrono>
+#include <stack>
+#include <vector>
 
 #include "CoreHeader.hpp"
 

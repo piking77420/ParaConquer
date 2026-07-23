@@ -1,6 +1,6 @@
-﻿#include "rendering/sampler.hpp"
+﻿#include <Rendering/Sampler.hpp>
 
-#include "LowRenderer/Rhi.hpp"
+#include <LowRenderer/Rhi.hpp>
 
 PC_CORE::Sampler::Sampler(Rhi& _rhi, const std::string& _name) 
     : Resource(_name)

@@ -1,6 +1,6 @@
 ﻿#include "Ecs/EntityManager.h"
 
-#include <Numbers>
+#include <numbers>
 
 #include "PerfRegion.hpp"
 #include "Log.hpp"

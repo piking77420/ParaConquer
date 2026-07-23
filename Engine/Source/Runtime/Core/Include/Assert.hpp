@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreHeader.hpp"
-#include <Cassert>
+#include <cassert>
 
 BEGIN_PCCORE
     class Assert
