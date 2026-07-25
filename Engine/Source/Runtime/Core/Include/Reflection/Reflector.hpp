@@ -108,9 +108,9 @@ BEGIN_PCCORE
         PC_CORE_API static bool GetPtrToTypeField(TypeId _id, const void* _object, const std::string& _fieldName,
                                                   const void** _outPtrToField);
 
-        PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_MapReflectFunction;
+        static std::unordered_map<TypeId, ReflectMapFunction>& MapReflectFunction();
 
-        PC_CORE_API static inline std::unordered_map<TypeId, ReflectMapFunction> m_UnordoredMapReflectFunction;
+        static std::unordered_map<TypeId, ReflectMapFunction>& UnordoredMapReflectFunction();
 
     private:
         constexpr PC_CORE_API static std::string GetCorrectNameFromTypeId(const std::string& _name)
@@ -140,10 +140,9 @@ BEGIN_PCCORE
             return out;
         }
 
-        PC_CORE_API static inline std::unordered_map<TypeId, ReflectedType> m_RelfectionMap;
+        static std::unordered_map<TypeId, ReflectedType>& ReflectionMap();
 
-        PC_CORE_API static inline std::unordered_map<size_t, TypeId> m_RttiToTypeId;
-
+        static std::unordered_map<size_t, TypeId>& RttiToTypeId();
 
         template <typename T>
         static void AddType();
@@ -260,7 +259,7 @@ BEGIN_PCCORE
                 };
 
                 typeMetaData->data = rm;
-                m_UnordoredMapReflectFunction.insert({GetTypeKey<T>(), reflectMapFunction});
+                UnordoredMapReflectFunction().insert({GetTypeKey<T>(), reflectMapFunction});
             }
 
             if constexpr (is_sparse_set<T>::value)
@@ -335,10 +334,10 @@ BEGIN_PCCORE
     const ReflectedType& Reflector::GetType()
     {
         constexpr TypeId tid = GetTypeKey<T>();
-        if (!m_RelfectionMap.contains(tid))
+        if (!ReflectionMap().contains(tid))
             AddType<T>();
 
-        return m_RelfectionMap.at(tid);
+        return ReflectionMap().at(tid);
     }
 
     template <typename T>
@@ -346,11 +345,11 @@ BEGIN_PCCORE
     {
         static_assert(std::is_enum_v<T>);
 
-        auto it = m_RelfectionMap.find(GetTypeKey<T>());
-        if (it == m_RelfectionMap.end())
+        auto it = ReflectionMap().find(GetTypeKey<T>());
+        if (it == ReflectionMap().end())
             AddType<T>();
 
-        return std::get<ReflectedEnum>(m_RelfectionMap.at(GetTypeKey<T>()).metaData.data);
+        return std::get<ReflectedEnum>(ReflectionMap().at(GetTypeKey<T>()).metaData.data);
     }
 
     template <typename T>
@@ -385,9 +384,6 @@ BEGIN_PCCORE
     uint8_t Reflector::ReflectMember(size_t _offset, const char* _memberName)
     {
         PERF_REGION_SCOPED;
-
-        std::unordered_map<uint32_t, ReflectedType>& memberMap = m_RelfectionMap;
-
         if (!ContaintType<Holder>())
         {
             PC_LOGERROR("ReflectMember Holder member not found")
@@ -398,6 +394,8 @@ BEGIN_PCCORE
         {
             AddType<MemberType>();
         }
+
+        std::unordered_map<uint32_t, ReflectedType>& memberMap = ReflectionMap();
         const auto& currentType = GetType<Holder>();
         for (const auto& member : currentType.metaData.members)
         {
@@ -448,10 +446,10 @@ BEGIN_PCCORE
                 AddType<BaseClass>();
             }
 
-            auto it = m_RelfectionMap.find(KeyHolder);
+            auto it = ReflectionMap().find(KeyHolder);
             const ReflectedType& baseType = Reflector::GetType<BaseClass>();
 
-            if (it != m_RelfectionMap.end())
+            if (it != ReflectionMap().end())
             {
                 it->second.metaData.baseClass = baseType.typeId;
 
@@ -474,7 +472,7 @@ BEGIN_PCCORE
         constexpr uint32_t hashCode = GetTypeKey<T>();
         std::vector<const ReflectedType*> types;
 
-        for (auto& type : m_RelfectionMap)
+        for (auto& type : ReflectionMap())
         {
             if (IsBaseOf<T>(type.second))
             {
@@ -512,14 +510,16 @@ BEGIN_PCCORE
         if (!ContaintType<T>())
         {
             // Create New Node in map
-            std::string name = GetCorrectNameFromTypeId(typeid(T).name());
+            std::string caca = "caca string";
+            const std::string RawName = typeid(T).name();
+            const std::string name = GetCorrectNameFromTypeId(RawName);
 
             TypeId typeId = GetTypeKey<T>();
 
             ReflectedType type{};
             type.typeId = typeId;
             type.typeFlags = {};
-            type.name = name;
+            type.name = std::move(name);
             type.size = sizeof(T);
             type.alignment = alignof(T);
             type.metaData = {};
@@ -527,8 +527,10 @@ BEGIN_PCCORE
 
 
             type.typeFlags = ProcessMetaData<T>(&type);
-            m_RttiToTypeId.insert({type.rttiTypeId, typeId});
-            m_RelfectionMap.insert({typeId, type});
+            const size_t size = RttiToTypeId().size();
+
+            RttiToTypeId().insert({type.rttiTypeId, typeId});
+            ReflectionMap().insert({typeId, type});
         }
     }
 

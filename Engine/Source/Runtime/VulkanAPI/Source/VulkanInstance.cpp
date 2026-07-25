@@ -17,6 +17,8 @@
     #define GLFW_EXPOSE_NATIVE_WIN32
 #elif defined(__linux__)
     #define GLFW_EXPOSE_NATIVE_X11
+    #define VK_USE_PLATFORM_XLIB_KHR
+    #include <X11/Xlib.h>
 #endif
 #include <GLFW/glfw3native.h>
 
@@ -263,8 +265,18 @@ void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
     // Create the surface
     vk::Result r = m_Instance.createWin32SurfaceKHR(&win32SurfaceCreate, nullptr, &surface);
 #elif defined(__linux__)
-    // TODO
-    vk::Result r;
+    Display* display = glfwGetX11Display();
+    ::Window window = glfwGetX11Window(_window);
+
+    vk::XlibSurfaceCreateInfoKHR createInfo {};
+    createInfo.dpy = display; 
+    createInfo.window = window;
+
+    const vk::Result r = m_Instance.createXlibSurfaceKHR(
+        &createInfo,
+        nullptr,
+        &surface
+    );
 # endif
 
     VK_CHECK_CALL(r);

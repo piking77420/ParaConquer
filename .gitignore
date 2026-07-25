@@ -555,3 +555,6 @@ Out/
 !assets/meshs/**
 !Logo/**
 !Core/src/Externals/Lib/**
+
+## for clang debbuging
+!.vscode/launch.json

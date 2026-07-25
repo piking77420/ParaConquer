@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Editor.hpp"
+#include <Editor.hpp>
 
 #define WAIT_DEBUG_GPU_INJECTION 0
 

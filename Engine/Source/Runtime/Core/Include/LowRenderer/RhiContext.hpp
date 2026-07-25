@@ -10,7 +10,6 @@
 #include "RhiDevice.hpp"
 #include "RhiSampler.hpp"
 #include "SwapChain.hpp"
-#include "RhiFence.hpp"
 #include "RhiResourceUpdate.hpp"
 
 BEGIN_PCCORE

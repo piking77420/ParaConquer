@@ -401,7 +401,7 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
 
                 const ReflectedType& keyType = Reflector::GetType(reflectedMap.key);
                 const ReflectedType& valueType = Reflector::GetType(reflectedMap.value);
-                const ReflectMapFunction& reflectMapFunction = Reflector::m_UnordoredMapReflectFunction.at(type.typeId);
+                const ReflectMapFunction& reflectMapFunction = Reflector::UnordoredMapReflectFunction().at(type.typeId);
 
 
                 const size_t mapSize = map->size();
@@ -697,7 +697,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
 
                 const ReflectedType& keyType = Reflector::GetType(reflectedMap.key);
                 const ReflectedType& valueType = Reflector::GetType(reflectedMap.value);
-                const ReflectMapFunction& reflectMapFunction = Reflector::m_UnordoredMapReflectFunction.at(type.typeId);
+                const ReflectMapFunction& reflectMapFunction = Reflector::UnordoredMapReflectFunction().at(type.typeId);
 
                 ReseverMapFunction rfunc = nullptr;
                 std::memcpy(&rfunc, &reflectMapFunction.reserveFunction, sizeof(ReseverMapFunction));

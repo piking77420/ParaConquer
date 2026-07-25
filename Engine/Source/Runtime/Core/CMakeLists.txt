@@ -65,6 +65,17 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_link_options(${PROJECT_NAME} PUBLIC -stdlib=libc++)
 endif()
 
+## FOR UUID linux
+if(UNIX AND NOT APPLE)
+find_library(UUID_LIBRARY NAMES uuid REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${UUID_LIBRARY})
+message("Find UUID_LIBRARY")
+
+find_package(X11 REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE X11::X11)
+message("Find X11")
+
+endif()
 
 # End Dependencies
 

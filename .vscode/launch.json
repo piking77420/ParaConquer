@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Editor — CodeLLDB",
+            "type": "lldb",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/out/build/Clang-linux-debug/Engine/Source/Editor/Editor",
+            "cwd": "${workspaceFolder}",
+
+            "args": [],
+            "env": {},
+
+            "terminal": "integrated",
+            "stopOnEntry": false,
+
+            "initCommands": [
+                "process handle SIGSEGV -s true -n true -p true",
+                "process handle SIGABRT -s true -n true -p true",
+                "process handle SIGBUS -s true -n true -p true"
+            ]
+        }
+    ]
+}

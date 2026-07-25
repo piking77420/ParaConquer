@@ -10,11 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(MSVC)
     add_compile_options(/Zc:__cplusplus)
 endif()
-
-file(
-    GLOB_RECURSE
-    SOURCE_FILES
-    ## source
+set(SOURCE_FILES
     ${THIRD_PARTY_DIR}/imgui/imgui.cpp
     ${THIRD_PARTY_DIR}/imgui/imgui_demo.cpp
     ${THIRD_PARTY_DIR}/imgui/imgui_draw.cpp
@@ -22,10 +18,7 @@ file(
     ${THIRD_PARTY_DIR}/imgui/imgui_tables.cpp
 )
 
-file(
-    GLOB_RECURSE
-    HEADER_FILES
-    ## include
+set(HEADER_FILES
     ${THIRD_PARTY_DIR}/imgui/imgui.h
     ${THIRD_PARTY_DIR}/imgui/imconfig.h
     ${THIRD_PARTY_DIR}/imgui/imgui_internal.h
@@ -34,47 +27,33 @@ file(
     ${THIRD_PARTY_DIR}/imgui/imstb_truetype.h
 )
 
+list(APPEND SOURCE_FILES
+    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_glfw.cpp
+    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp
+)
+
+list(APPEND HEADER_FILES
+    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_glfw.h
+    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.h
+)
+
 if(WIN32)
+    list(APPEND SOURCE_FILES
+        ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_dx12.cpp
+    )
 
-file(
-    GLOB_RECURSE
-    SOURCE_FILES
-    ## source
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_glfw.cpp
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_dx12.cpp
-)
-
-file(
-    GLOB_RECURSE
-    HEADER_FILES
-    ## include
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_glfw.h.h
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_dx12.cpp
-)
-
-elseif(UNIX)
-
-file(
-    GLOB_RECURSE
-    SOURCE_FILES
-    ## source
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_glfw.cpp
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp
-)
-
-file(
-    GLOB_RECURSE
-    HEADER_FILES
-    ## include
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_glfw.h.h
-    ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp
-)
-
+    list(APPEND HEADER_FILES
+        ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_dx12.h
+    )
 endif()
 
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${HEADER_FILES})
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+add_library(Imgui STATIC
+    ${SOURCE_FILES}
+    ${HEADER_FILES}
+)
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_BUILD_DLL)
 
 find_package(Vulkan REQUIRED)
@@ -88,4 +67,4 @@ if(WIN32)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
-target_include_directories(${PROJECT_NAME} PUBLIC ${THIRD_PARTY_DIR}/imgui)
+target_include_directories(${PROJECT_NAME} PUBLIC ${THIRD_PARTY_DIR}/imgui ${THIRD_PARTY_DIR}/imgui/backends)

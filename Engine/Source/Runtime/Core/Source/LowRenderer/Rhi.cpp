@@ -9,7 +9,6 @@
 #include <VulkanContext.hpp>
 #include <VulkanFrameBuffer.hpp>
 #include <VulkanRenderPass.hpp>
-#include <VulkanFence.hpp>
 #include <VulkanTexture.hpp>
 #include <VulkanDescriptorSet.hpp>
 #include <VulkanSampler.hpp>
@@ -358,25 +357,6 @@ RhiSampler* Rhi::CreateSampler()
 	case GraphicAPI::D3d12:
 		break;
 	case GraphicAPI::Count:
-		break;
-	default:;
-	}
-
-	return nullptr;
-}
-
-RhiFence* Rhi::CreateFence()
-{
-	switch (m_GraphicsApi)
-	{
-	case GraphicAPI::NoneApi:
-		break;
-	case GraphicAPI::Vulkan:
-		return new Vulkan::VulkanFence(*this);
-	case GraphicAPI::D3d12:
-
-	case GraphicAPI::Count:
-		assert(false);
 		break;
 	default:;
 	}

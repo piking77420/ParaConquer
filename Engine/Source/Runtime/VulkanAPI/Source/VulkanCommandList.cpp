@@ -5,7 +5,6 @@
 #include <VulkanBuffer.hpp>
 #include <VulkanContext.hpp>
 #include <VulkanDescriptorSet.hpp>
-#include <VulkanFence.hpp>
 #include <VulkanFrameBuffer.hpp>
 #include <VulkanRenderPass.hpp>
 #include <VulkanGraphicPipeline.hpp>

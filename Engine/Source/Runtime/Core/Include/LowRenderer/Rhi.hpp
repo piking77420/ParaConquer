@@ -25,7 +25,6 @@ class CommandList;
 class RhiTexture;
 class RhiBuffer;
 class RhiSampler;
-class RhiFence;
 class RhiDescriptorSet;
 
 class Rhi
@@ -76,8 +75,6 @@ public:
     PC_CORE_API RhiTexture* CreateTexture();
 
     PC_CORE_API RhiSampler* CreateSampler();
-
-    PC_CORE_API RhiFence* CreateFence();
 
     PC_CORE_API RhiContext& GetRhiContext();
 

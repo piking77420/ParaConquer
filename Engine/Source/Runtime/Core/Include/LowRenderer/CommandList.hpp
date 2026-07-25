@@ -18,7 +18,6 @@
 
 BEGIN_PCCORE
     class RhiFrameBuffer;
-    class RhiFence;
     class RhiPipeline;
     class RhiDescriptorSet;
 
