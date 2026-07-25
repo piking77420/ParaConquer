@@ -80,7 +80,7 @@ ShaderSource::GenerateVariantResult ShaderSource::GenerateVariant(const std::str
     assert(Editor::instance != nullptr);
     auto& Compiler = Editor::instance->shaderCompiler;
     const auto GraphicApi = Editor::instance->editorData.projectData.graphicApi;
-    std::vector<uint32_t> Code = Compiler.CompileFile(GraphicApi, m_PathToSource, _VariantPath, GetDefineFromShaderFeatures(_ShaderFeatureFlag));
+    std::vector<uint32_t> Code = Compiler.CompileFile(GraphicApi, m_PathToSource.generic_wstring(), _VariantPath, GetDefineFromShaderFeatures(_ShaderFeatureFlag));
 
     // TODO handl async loading
     return !Code.empty() && FileLoader::WriteFile(_VariantPath, Code.data(), sizeof(uint32_t) * Code.size(), true) ? ShaderSource::GenerateVariantResult::Sucess : ShaderSource::GenerateVariantResult::Failed;

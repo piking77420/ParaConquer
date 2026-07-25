@@ -13,7 +13,6 @@
 #include <VulkanTexture.hpp>
 #include <VulkanDescriptorSet.hpp>
 #include <VulkanSampler.hpp>
-#include <Utils/HelperFunctions.hpp>
 
 using namespace PC_CORE;
 
@@ -407,6 +406,8 @@ bool Rhi::IsYUpNdc() const
 	{
 	case PC_CORE::GraphicAPI::Vulkan:
 		return false;
+	default:
+		return true;
 	}
 
 	return true;

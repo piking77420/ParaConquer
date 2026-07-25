@@ -5,7 +5,6 @@
 #include "VulkanTexture.hpp"
 #include "VulkanCommandList.hpp"
 
-#include "Utils/HelperFunctions.hpp"
 #include "Utils/RhiToVulkan.hpp"
 #include "Utils/TransitionImageLayout.hpp"
 #include "Utils/VulkanImageHelper.hpp"

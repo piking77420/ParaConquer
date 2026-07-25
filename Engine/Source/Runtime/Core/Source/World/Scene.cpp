@@ -1,10 +1,4 @@
-﻿#include "world/scene.hpp"
-
-#include <Cassert>
-
-#include "Log.hpp"
-//#include "world/component.hpp"
-//#include "world/component_register.h"
+﻿#include <World/Scene.hpp>
 
 using namespace PC_CORE;
 

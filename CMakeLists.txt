@@ -16,6 +16,7 @@ set(PLUGINS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Source/Plugins")
 # Solution
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ## Assimp 
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE) ## Force Assimp to not build Unit test
 add_subdirectory(${THIRD_PARTY_DIR}/assimp)
@@ -39,6 +40,9 @@ add_subdirectory(${THIRD_PARTY_DIR}/magic_enum)
 
 ## MeshOpt
 add_subdirectory(${THIRD_PARTY_DIR}/meshoptimizer)
+
+## DXC
+set(DXC_SOURCE_DIR ${THIRD_PARTY_DIR}/DirectXShaderCompiler)
 
 add_subdirectory(${RUNTIME_SOURCE_DIR}/CoreDependencies)
 add_subdirectory(${RUNTIME_SOURCE_DIR}/Core)

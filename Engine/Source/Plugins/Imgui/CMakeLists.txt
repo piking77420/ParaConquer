@@ -75,7 +75,7 @@ file(
 endif()
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${HEADER_FILES})
-target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_API)
+target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_BUILD_DLL)
 
 find_package(Vulkan REQUIRED)
 if(Vulkan_FOUND)

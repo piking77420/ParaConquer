@@ -9,8 +9,6 @@ namespace Vulkan
     class VulkanSampler : public PC_CORE::RhiSampler
     {
     public:
-        DEFAULT_COPY_MOVE_OPERATIONS(VulkanSampler)
-
         VULKAN_API explicit VulkanSampler(PC_CORE::Rhi& _Rhi);
 
         VULKAN_API ~VulkanSampler() override;

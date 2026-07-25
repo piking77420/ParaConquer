@@ -16,8 +16,7 @@ namespace PC_CORE::Rendering::Pass
 
         ToneMapPass();
 
-        ~ToneMapPass() override = default;
-
+        ~ToneMapPass() override;
 
         IMP_DYNAMIC_REFLECT();
 

@@ -1,11 +1,10 @@
 ﻿#pragma once
+#include <string>
 
-#include <Imgui.h>
-#include <Math/ToolboxTypedef.hpp>
-#include <String>
+#include <imgui.h>
 
-#include "EditorHeader.hpp"
-
+#include <Math/ToolBoxTypeDef.hpp>
+#include <EditorHeader.hpp>
 
 namespace PC_CORE
 {

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <concepts>
 
 #include "EditorHeader.hpp"
 
@@ -20,7 +21,7 @@ BEGIN_EDITOR_PCCORE
     };
 
     template <class T>
-    concept EditorCommandDerived = std::is_base_of_v<EditorCommand, T>;
+    concept EditorCommandDerived = std::derived_from<T, EditorCommand>;
 
 
 END_EDITOR_PCCORE

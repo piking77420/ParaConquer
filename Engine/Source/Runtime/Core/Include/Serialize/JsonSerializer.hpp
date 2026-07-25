@@ -2,7 +2,7 @@
 
 #include "Serialize/Serializer.h"
 
-#include <String>
+#include <string>
 
 #define JSON_NOEXCEPTION
 #include <nlohmann/json.hpp>
@@ -14,6 +14,10 @@ BEGIN_PCCORE
     class PC_CORE_API JsonSerializer final : public Serializer
     {
     public:
+        explicit JsonSerializer() = default;
+
+        ~JsonSerializer() override = default;
+
         bool IsOpen() const override;
 
         bool OpenFile(const std::string& _path, SerializeOperation _operation) override;
@@ -23,13 +27,6 @@ BEGIN_PCCORE
         void SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer) override;
 
         void DeSerializeCompactBuffer(const char* _key, CompactBuffer* _compactBuffer) override;
-
-
-        DEFAULT_COPY_MOVE_OPERATIONS(JsonSerializer)
-
-        explicit JsonSerializer() = default;
-
-        ~JsonSerializer() override = default;
 
     private:
         static constexpr const char* CONTAINER_SIZE = "size";

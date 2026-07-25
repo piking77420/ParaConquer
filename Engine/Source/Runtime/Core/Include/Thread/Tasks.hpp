@@ -26,10 +26,6 @@ namespace PC_CORE::Thread
 			MainThread,
 			Workers,
 		};
-		DEFAULT_CONSTRUCTOR_DESTRUCTOR(TaskNode)
-
-		DEFAULT_COPY_MOVE_OPERATIONS(TaskNode)
-
 		TaskNode(Thread _Thread, std::function<void()>&& _Func, std::vector<TaskNode*> _Prerequire);
 
 		TaskNode(Thread _Thread, const std::function<void()>& _Func, std::vector<TaskNode*> _Prerequire);
@@ -38,6 +34,9 @@ namespace PC_CORE::Thread
 
 		TaskNode(ThreadPool& _ThreadPool, const std::function<void()>& _Func, std::vector<TaskNode*> _Prerequire);
 
+		TaskNode() = default;
+
+		~TaskNode() = default;
 
 		const std::future<void>& GetFuture() const
 		{

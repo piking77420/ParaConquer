@@ -51,8 +51,6 @@ public:
 
     PC_CORE_API virtual ~RhiResource() = default;
 
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiResource)
-
 protected:
     bool m_AllowCpuAcces = false;
 
@@ -68,17 +66,15 @@ template <typename T>
 class RhiResourceT : public RhiResource
 {
 public:
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiResourceT);
-
-    ~RhiResourceT() override = default;
 
     explicit RhiResourceT(Rhi& _Rhi)
         : RhiResource(_Rhi)
     {
     }
 
+    ~RhiResourceT() override = default;
+    
     // Setter
-
     T& SetMemoryUsage(MemoryUsage _MemoryUsage)
     {
         static_assert(std::is_base_of_v<RhiResource, T>, "T must be an RhiResource");

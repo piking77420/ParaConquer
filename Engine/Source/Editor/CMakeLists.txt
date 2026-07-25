@@ -38,13 +38,65 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE PC_CORE_IMPORT=1)
 target_link_libraries(${PROJECT_NAME} PRIVATE Core)
 
 ##DXC depencies
-if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler.lib)
-elseif(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE dxcompiler)
-endif()
 
-# End Dependencies
+## use same out folder for each config 
+## build one time 
+set(DXC_BINARY_DIR
+    "${CMAKE_SOURCE_DIR}/out/ThirdParty/DirectXShaderCompiler/${CMAKE_CXX_COMPILER_ID}"
+)
+set(DXC_LIBRARY
+    ${DXC_BINARY_DIR}/lib/libdxcompiler.so
+)
+ExternalProject_Add(DXCBuild
+    SOURCE_DIR "${DXC_SOURCE_DIR}"
+    BINARY_DIR "${DXC_BINARY_DIR}"
+
+    CONFIGURE_COMMAND
+        ${CMAKE_COMMAND}
+        -S "${DXC_SOURCE_DIR}"
+        -B "${DXC_BINARY_DIR}"
+        -G "${CMAKE_GENERATOR}"
+        -C "${DXC_SOURCE_DIR}/cmake/caches/PredefinedParams.cmake"
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DLLVM_INCLUDE_TESTS=OFF
+        -DHLSL_INCLUDE_TESTS=OFF
+        -DSPIRV_BUILD_TESTS=OFF
+        -DLLVM_BUILD_TESTS=OFF
+        -DLLVM_BUILD_EXAMPLES=OFF
+
+    BUILD_COMMAND
+        ${CMAKE_COMMAND}
+        --build "${DXC_BINARY_DIR}"
+        --target dxcompiler
+
+    INSTALL_COMMAND ""
+
+    BUILD_BYPRODUCTS
+        "${DXC_LIBRARY}"
+
+    USES_TERMINAL_CONFIGURE TRUE
+    USES_TERMINAL_BUILD TRUE
+)
+
+add_library(DXC::DXC SHARED IMPORTED GLOBAL)
+
+set_target_properties(DXC::DXC PROPERTIES
+    IMPORTED_LOCATION "${DXC_LIBRARY}"
+
+    INTERFACE_INCLUDE_DIRECTORIES
+        "${DXC_SOURCE_DIR}/include"
+)
+
+add_dependencies(DXC::DXC DXCBuild)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+    DXC::DXC
+)
+
+
 if(MSVC)
 
 function(CopyRuntimeDLL TargetName)

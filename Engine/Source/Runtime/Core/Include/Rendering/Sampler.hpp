@@ -8,9 +8,6 @@ BEGIN_PCCORE
     class PC_CORE_API Sampler : public Resource, public IGpuResource
     {
     public:
-    
-        DEFAULT_COPY_MOVE_OPERATIONS(Sampler);
-
         IMP_DYNAMIC_REFLECT()
 
         explicit Sampler(Rhi& _rhi, const std::string& _name);
@@ -23,6 +20,10 @@ BEGIN_PCCORE
         }
 
         ~Sampler() override = default;
+
+        Sampler(Sampler&&) = default;
+
+        Sampler& operator=(Sampler&&) = default;
     
         RhiSampler* const Get() const
         {

@@ -2,11 +2,11 @@
 #define ASSIMP_HELPER_H
 
 
+#include <assimp/material.h>
 #include <assimp/types.h>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-
 
 static inline std::string_view AssimpTextureTypeToString(aiTextureType aiTextureType)
 {

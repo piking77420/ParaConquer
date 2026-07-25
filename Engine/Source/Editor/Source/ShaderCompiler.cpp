@@ -9,22 +9,101 @@
 #include <Log.hpp>
 #include "LowRenderer/Rhi.hpp"
 
+template<typename T>
+class DxcPtr
+{
+public:
+    DxcPtr() noexcept = default;
 
+    ~DxcPtr()
+    {
+        Reset();
+    }
+
+    DxcPtr(const DxcPtr&) = delete;
+    DxcPtr& operator=(const DxcPtr&) = delete;
+
+    DxcPtr(DxcPtr&& other) noexcept
+        : m_Ptr(std::exchange(other.m_Ptr, nullptr))
+    {
+    }
+
+    DxcPtr& operator=(DxcPtr&& other) noexcept
+    {
+        if(this != &other) {
+            Reset();
+            m_Ptr = std::exchange(other.m_Ptr, nullptr);
+        }
+
+        return *this;
+    }
+
+    [[nodiscard]] T* Get() const noexcept
+    {
+        return m_Ptr;
+    }
+
+    // For COM output parameters.
+    [[nodiscard]] T** Put() noexcept
+    {
+        Reset();
+        return &m_Ptr;
+    }
+
+    [[nodiscard]] T* Detach() noexcept
+    {
+        return std::exchange(m_Ptr, nullptr);
+    }
+
+    void Reset(T* ptr = nullptr) noexcept
+    {
+        if(m_Ptr)
+            m_Ptr->Release();
+
+        m_Ptr = ptr;
+    }
+
+    [[nodiscard]] explicit operator bool() const noexcept
+    {
+        return m_Ptr != nullptr;
+    }
+
+    [[nodiscard]] T* operator->() const noexcept
+    {
+        return m_Ptr;
+    }
+
+private:
+    T* m_Ptr = nullptr;
+};
+
+#if _WIN32
 // Keep it here cringe windows headers
+#ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+
+#ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+
 #include <Windows.h>
 #include <dxc/dxcapi.h>
 #include <wrl.h>
-
 using Microsoft::WRL::ComPtr;
+#else 
+#include <dxc/dxcapi.h>
+#endif
+
 using namespace PC_EDITOR_CORE;
 
 constexpr auto INCLUDE_PATH = EDITOR_RESOURCE_PATH_W L"/Shaders/Include/";
 
 struct DXCContext
 {
-    ComPtr<IDxcLibrary> library;
-    ComPtr<IDxcCompiler3> compiler;
-    ComPtr<IDxcUtils> utils;
+    DxcPtr<IDxcLibrary> library;
+    DxcPtr<IDxcCompiler3> compiler;
+    DxcPtr<IDxcUtils> utils;
 };
 
 // TODO to regular code
@@ -60,9 +139,10 @@ static DXCContext& GetContext()
 
     if (!Context.library)
     {
+#if _WIN32
         CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-
-        hres = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&Context.library));
+#endif
+        hres = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(Context.library.Put()));
         if (FAILED(hres))
         {
             PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
@@ -72,7 +152,7 @@ static DXCContext& GetContext()
    
     if (!Context.compiler)
     {
-        hres = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&Context.compiler));
+        hres = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(Context.compiler.Put()));
         if (FAILED(hres))
         {
             PC_LOGERROR("Failed to create CLSID_DxcLibrary error = {}", hres);
@@ -81,7 +161,7 @@ static DXCContext& GetContext()
     }
     if (!Context.utils)
     {
-        hres = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&Context.utils));
+        hres = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(Context.compiler.Put()));
         if (FAILED(hres))
         {
             PC_LOGERROR("Failed to create CLSID_DxcUtils error = {}", hres);
@@ -99,18 +179,18 @@ public:
     HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename,
                                          _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
     {
-        ComPtr<IDxcBlobEncoding> pEncoding;
+        DxcPtr<IDxcBlobEncoding> pEncoding;
         auto path = std::string(&pFilename[0], pFilename + wcslen(pFilename));
         if (IncludedFiles.contains(path))
         {
             // Return empty string blob if this file has been included before
             static constexpr char nullStr[] = " ";
-            GetContext().utils->CreateBlobFromPinned(nullStr, ARRAYSIZE(nullStr), DXC_CP_ACP, pEncoding.GetAddressOf());
+            GetContext().utils->CreateBlobFromPinned(nullStr, ARRAYSIZE(nullStr), DXC_CP_ACP, pEncoding.Put());
             *ppIncludeSource = pEncoding.Detach();
             return S_OK;
         }
 
-        HRESULT hr = GetContext().utils->LoadFile(pFilename, nullptr, pEncoding.GetAddressOf());
+        HRESULT hr = GetContext().utils->LoadFile(pFilename, nullptr, pEncoding.Put());
         if (SUCCEEDED(hr))
         {
             IncludedFiles.insert(path);
@@ -119,10 +199,33 @@ public:
         return hr;
     }
 
+#if _WIN32
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override
     {
         return E_NOINTERFACE;
     }
+#else 
+
+HRESULT STDMETHODCALLTYPE QueryInterface(
+    REFIID riid,
+    void** ppvObject) override
+{
+    if(!ppvObject)
+        return E_POINTER;
+
+    *ppvObject = nullptr;
+
+    if(IsEqualIID(riid, __uuidof(IUnknown)) ||
+       IsEqualIID(riid, __uuidof(IDxcIncludeHandler))) {
+        *ppvObject = static_cast<IDxcIncludeHandler*>(this);
+        AddRef();
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+#endif
 
     ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
     ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
@@ -164,8 +267,8 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     HRESULT hres;
 
     uint32_t codePage = DXC_CP_ACP;
-    ComPtr<IDxcBlobEncoding> sourceBlob;
-    hres = GetContext().utils->LoadFile(_fileName.c_str(), &codePage, &sourceBlob);
+    DxcPtr<IDxcBlobEncoding> sourceBlob;
+    hres = GetContext().utils->LoadFile(_fileName.c_str(), &codePage, sourceBlob.Put());
     if (FAILED(hres) || !sourceBlob)
     {
         PC_LOGERROR("Failed to load file FromDisk = {} file path {}", hres, std::string(_fileName.begin(), _fileName.end()));
@@ -228,14 +331,20 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
     buffer.Ptr = sourceBlob->GetBufferPointer();
     buffer.Size = sourceBlob->GetBufferSize();
 
-    CustomIncludeHandler includer;
-    ComPtr<IDxcResult> result;
+
+    DxcPtr<IDxcIncludeHandler> includeHandler;
+
+    hres = GetContext().utils->CreateDefaultIncludeHandler(
+        includeHandler.Put()
+    );
+
+    DxcPtr<IDxcResult> result;
     hres = GetContext().compiler->Compile(
         &buffer,
         arguments.data(),
         static_cast<uint32_t>(arguments.size()),
-        &includer,
-        IID_PPV_ARGS(&result)
+        includeHandler.Get(),
+        IID_PPV_ARGS(result.Put())
     );
 
     if (SUCCEEDED(hres) && result)
@@ -245,8 +354,8 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
 
     if (FAILED(hres) && result)
     {
-        ComPtr<IDxcBlobEncoding> errorBlob;
-        hres = result->GetErrorBuffer(&errorBlob);
+        DxcPtr<IDxcBlobEncoding> errorBlob;
+        hres = result->GetErrorBuffer(errorBlob.Put());
         if (SUCCEEDED(hres) && errorBlob)
         {
             PC_LOGERROR("Shader compilation failed, {} \n {}", _targetVariantName,
@@ -255,10 +364,10 @@ std::vector<uint32_t> ShaderCompiler::CompileFile(PC_CORE::GraphicAPI _api, cons
         }
     }
 
-    ComPtr<IDxcBlob> code;
+    DxcPtr<IDxcBlob> code;
     if (result)
     {
-        hres = result->GetResult(&code);
+        hres = result->GetResult(code.Put());
         if (FAILED(hres) || !code)
         {
             PC_LOGERROR("Failed to get compiled shader code, HRESULT={}", hres);

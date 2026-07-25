@@ -19,12 +19,12 @@
 #endif
 
 
-
+#if _WIN32
 std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _options)
 {
     std::wstring path;
 
-#if _WIN32
+
     IFileOpenDialog* pFileOpen = nullptr;
     HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL,
                                   IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
@@ -72,11 +72,13 @@ std::wstring GetFile(const wchar_t* _caption, const wchar_t* _basePath, DWORD _o
 
     pFileOpen->Release();
 
-#endif
+
 
     return path;
 }
-
+#else 
+ 
+#endif
 
 std::wstring SystemDialogue::SeletecFolder(const wchar_t* _caption)
 {
@@ -104,7 +106,6 @@ SystemDialogue::SystemDialogue()
     const HRESULT hr = CoInitialize(nullptr);
     assert(hr == S_OK && "Faile to CoInitialize");
     #else 
-    return {};
     #endif
 }
 
@@ -113,6 +114,5 @@ SystemDialogue::~SystemDialogue()
     #if _WIN32
     CoUninitialize();
     #else 
-    return {};
     #endif
 }

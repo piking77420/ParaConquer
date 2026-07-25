@@ -107,7 +107,7 @@ namespace PC_CORE::Rendering
 
 		DrawItem& EmplaceBack(const DrawItem& DrawItem)
 		{
-			m_items.emplace_back(DrawItem);
+			return m_items.emplace_back(DrawItem);
 		}
 
 		DrawItem& EmplaceBack(DrawItem&& DrawItem)

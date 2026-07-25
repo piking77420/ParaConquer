@@ -10,7 +10,6 @@ class CommandList;
 class RhiTexture : public RhiResourceT<RhiTexture>
 {
 public:
-
     enum class Type
     {
         NoneType,
@@ -48,9 +47,7 @@ public:
     using TextureUsageFlag = uint32_t;
        
     REFLECT(TextureUsageFlagBits)
-    
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiTexture)
-    
+        
     PC_CORE_API RhiTexture(Rhi& _Rhi);
     
     PC_CORE_API ~RhiTexture() override = default;

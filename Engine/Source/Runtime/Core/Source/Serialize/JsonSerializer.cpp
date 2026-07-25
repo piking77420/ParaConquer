@@ -19,7 +19,7 @@ void JsonSerializer::SerializeTrivial(TypeId id, const uint8_t* objetPtr)
     if (Reflector::IsTypeIdIs<bool>(id))
     {
         auto b = reinterpret_cast<const bool*>(objetPtr);
-        WriteJson(*b) ? boolAlpha1s : boolAlpha0s;
+        WriteJson(*b ? boolAlpha1s : boolAlpha0s);
     }
     else if (Reflector::IsTypeIdIs<char>(id))
     {
@@ -419,19 +419,20 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
                 for (size_t i = 0; i < mapSize; i++)
                 {
                     indexs = std::to_string(i);
+                    UnordoredMapConstIterator& punnedIt =reinterpret_cast<UnordoredMapConstIterator&>(mapBegin);
+                    const uint8_t* pairBytes =reinterpret_cast<const uint8_t*>((punnedIt.*unrefFunf)());
 
-                    auto* pair = (mapBegin.*unrefFunf)();
+                    const uint8_t* keyPtr = pairBytes;
+                    const uint8_t* valPtr = pairBytes + reflectedMap.offsetBetweenKeyAndValueInPair;
+
                     if (auto* json = GetLastJson())
                     {
-                        auto keyPtr = reinterpret_cast<const uint8_t*>(pair);
-                        const uint8_t* valuePtr = keyPtr + reflectedMap.offsetBetweenKeyAndValueInPair;
-
                         m_JsonStack.push_back(&(*json)[indexs][KEY]);
                         SerializeType(keyPtr, keyType.typeId);
                         m_JsonStack.pop_back();
 
                         m_JsonStack.push_back(&(*json)[indexs][VALUE]);
-                        SerializeType(valuePtr, valueType.typeId);
+                        SerializeType(valPtr, valueType.typeId);
                         m_JsonStack.pop_back();
                     }
               
@@ -668,9 +669,10 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
                 {
                     if (rs.subType == Reflector::GetTypeKey<char>())
                     {
-                        auto s = reinterpret_cast<std::string*>(objetPtr);
+                        std::string* s = reinterpret_cast<std::string*>(objetPtr);
                         s->resize((*json)[CONTAINER_SIZE]);
-                        std::string_view v = (*json)["string"];
+                        const std::string& sFromJson = (*json)["string"].get_ref<const std::string&>();
+                        std::string_view v(sFromJson);
 
                         memcpy(s->data(), v.data(), s->size());
                     }
@@ -765,9 +767,10 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
                 if (auto* json = GetLastJson())
                 {
                     s.resize((*json)[CONTAINER_SIZE]);
-                    std::string_view v = (*json)["string"];
+                    const std::string& sFromJson = (*json)["string"].get_ref<const std::string&>();
+                    std::string_view v(sFromJson);
 
-                    memcpy(s.data(), v.data(), s.size());
+                    std::memcpy(s.data(), v.data(), s.size());
 
                     auto p = reinterpret_cast<std::filesystem::path*>(objetPtr);
                     *p = std::filesystem::path(std::move(s));

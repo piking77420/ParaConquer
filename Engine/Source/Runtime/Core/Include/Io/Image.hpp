@@ -29,9 +29,6 @@ BEGIN_PCCORE
             uint32_t offset;
             uint32_t size;
         };
-
-        DEFAULT_COPY_MOVE_OPERATIONS(Image);
-
         PC_CORE_API Image(const std::string& _path, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
 
         PC_CORE_API Image(const char* _path, PC_CORE::RhiChannel _desireChannel = RhiChannel::Default);
@@ -41,6 +38,10 @@ BEGIN_PCCORE
         Image() = default;
 
         ~Image() = default;
+
+        Image(Image&&) = default;
+
+        Image& operator=(Image&&) = default;
 
         PC_CORE::RhiChannel GetChannel() const
         {

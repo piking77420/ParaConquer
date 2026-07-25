@@ -1,4 +1,4 @@
-#include <Gtest/Gtest.h>
+#include <gtest/gtest.h>
 
 #include "Reflection/Reflector.hpp"
 #include "Rendering/Material.hpp"

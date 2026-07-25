@@ -154,8 +154,6 @@ BEGIN_EDITOR_PCCORE
 
         void BasicOpenFile();
 
-        EditorRenderer m_EditorRenderer;
-
         PC_CORE::Thread::ThreadPool m_EditorThreadPool;
 
         EditorWindow* m_ProjectSettingsWindow = nullptr;

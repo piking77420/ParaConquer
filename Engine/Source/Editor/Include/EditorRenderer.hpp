@@ -12,14 +12,16 @@ BEGIN_EDITOR_PCCORE
     // icon drawer 
     class EditorRenderer
     {
-    public:
-        DEFAULT_COPY_MOVE_OPERATIONS(EditorRenderer)
-        
+    public:        
         EditorRenderer(Editor& _editor);
 
         EditorRenderer() = default;
 
         ~EditorRenderer() = default;
+
+        EditorRenderer(EditorRenderer&&) noexcept = default;
+
+        EditorRenderer& operator=(EditorRenderer&&) noexcept = default;
 
         void PushCustomCommand();
 

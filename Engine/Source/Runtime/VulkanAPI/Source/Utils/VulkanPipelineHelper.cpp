@@ -116,7 +116,7 @@ namespace Vulkan::Utils
             _VulkanShaderProgramCreateContext.device.destroyShaderModule(vkShaderModule);
     }
 
-    vk::PipelineLayout Utils::CreatePipelineLayout(VulkanDescritptorManager& _VulkanDescritptorManager, vk::Device device, VulkanShaderProgramCreateContext& _VulkanShaderProgramCreateContext)
+    vk::PipelineLayout CreatePipelineLayout(VulkanDescritptorManager& _VulkanDescritptorManager, vk::Device device, VulkanShaderProgramCreateContext& _VulkanShaderProgramCreateContext)
     {
         std::vector<vk::DescriptorSetLayout> cache = _VulkanDescritptorManager.GetDescriptorLayouts(_VulkanShaderProgramCreateContext.modulesReflected);
 

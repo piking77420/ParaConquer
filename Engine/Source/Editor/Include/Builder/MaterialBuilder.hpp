@@ -5,10 +5,10 @@
 #include <EditorHeader.hpp>
 
 #include <Resources/StaticMesh.hpp>
+#include <assimp/material.h>
 
 struct aiScene;
 struct aiMaterial;
-enum aiTextureType;
 
 namespace PC_EDITOR_CORE 
 {

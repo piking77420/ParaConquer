@@ -47,8 +47,6 @@ namespace PC_CORE::Rendering
 
         PC_CORE_API ~Material() override;
 
-        DEFAULT_COPY_MOVE_OPERATIONS(Material)
-
         IMP_DYNAMIC_REFLECT();
 
         PC_CORE_API void Build();

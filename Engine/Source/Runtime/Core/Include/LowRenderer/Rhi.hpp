@@ -35,7 +35,9 @@ public:
 
     PC_CORE_API ~Rhi();
 
-    DEFAULT_COPY_MOVE_OPERATIONS(Rhi)
+    Rhi(Rhi&&) = default;
+
+    Rhi& operator=(Rhi&&) = default;
 
     GraphicAPI GetGraphicsApi() const { return m_GraphicsApi; }
 

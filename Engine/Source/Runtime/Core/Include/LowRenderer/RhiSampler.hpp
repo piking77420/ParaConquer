@@ -6,9 +6,6 @@ BEGIN_PCCORE
     class RhiSampler : public RhiObjectT<RhiSampler>
     {
     public:
-
-        DEFAULT_COPY_MOVE_OPERATIONS(RhiSampler)
-
         explicit RhiSampler(Rhi& _Rhi);
 
         ~RhiSampler() override = default;

@@ -12,7 +12,7 @@
 #include "ObjectPtr.hpp"
 #include "LowRenderer/RhiTexture.hpp"
 #include "LowRenderer/RhiResourceUpdate.hpp"
-#include "Resources/Texture2D.hpp"
+#include <Resources/Texture2d.hpp>
 
 namespace PC_CORE
 {
@@ -134,7 +134,7 @@ namespace PC_EDITOR_CORE {
 
         [[nodiscard]] PC_CORE::RhiTexture* RhiTextureFromPath(PC_CORE::Rhi& _Rhi, const char* TextureName, const aiTexture& aiTexture);
 
-        [[nodiscard]] void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha);
+        void BuildRhiTextureFromImage(PC_CORE::Rhi& _Rhi, PC_CORE::RhiTexture& _Texture, PC_CORE::Image* _Image, bool _UseApha);
 
 
     };

@@ -1,8 +1,6 @@
-#include "Thread/ThreadUtils.hpp"
-
-
 #pragma once
 
+#include "Thread/ThreadUtils.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #elif defined(_GNU_SOURCE)

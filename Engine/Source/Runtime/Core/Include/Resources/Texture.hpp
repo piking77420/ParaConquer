@@ -8,16 +8,8 @@
 BEGIN_PCCORE
     class Texture : public Resource, public IGpuResource
     {
-    public:
-    
-        DEFAULT_COPY_MOVE_OPERATIONS(Texture)
-    
-        IMP_DYNAMIC_REFLECT()
-
-        PC_CORE_API explicit Texture()
-        {
-            DYNAMIC_REFLECT_INIT;
-        }
+    public:    
+        
 
         explicit Texture(const std::string& _name) : Resource(_name)
         {
@@ -25,8 +17,19 @@ BEGIN_PCCORE
         }
 
         explicit Texture(std::unique_ptr<PC_CORE::RhiTexture> _Texture);
+
+        PC_CORE_API explicit Texture()
+        {
+            DYNAMIC_REFLECT_INIT;
+        }
     
         ~Texture() override = default;
+
+        Texture(Texture&&) noexcept = default;
+        
+        Texture& operator=(Texture&&) noexcept = default;
+
+        IMP_DYNAMIC_REFLECT()
     
         RhiTexture* const Get() const
         {

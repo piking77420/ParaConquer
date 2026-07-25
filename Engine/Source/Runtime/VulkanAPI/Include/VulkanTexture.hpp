@@ -22,8 +22,6 @@ namespace Vulkan
     class VulkanTexture : public PC_CORE::RhiTexture
     {
     public:
-        DEFAULT_COPY_MOVE_OPERATIONS(VulkanTexture)
-
         VULKAN_API VulkanTexture(PC_CORE::Rhi& _Rhi);
         
         VULKAN_API ~VulkanTexture() override;

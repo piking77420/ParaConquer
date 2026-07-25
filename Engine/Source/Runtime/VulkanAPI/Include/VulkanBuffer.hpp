@@ -23,9 +23,7 @@ namespace Vulkan
 
     class VULKAN_API VulkanBuffer : public PC_CORE::RhiBuffer
     {
-    public:
-        DEFAULT_COPY_MOVE_OPERATIONS(VulkanBuffer)
-        
+    public:        
         explicit VulkanBuffer(PC_CORE::Rhi& _Rhi);
         
         virtual ~VulkanBuffer();

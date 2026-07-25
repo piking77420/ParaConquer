@@ -27,7 +27,7 @@ WorldViewWindow::WorldViewWindow(Editor& _editor, const std::string& _name)
     for (auto& it : imguiDescriptorSet)
         it = VK_NULL_HANDLE;
 
-    m_ViewPortSampler = PC_CORE::Sampler(m_Editor->RenderHarwareInteface,"ViewPortImageSampler");
+    m_ViewPortSampler = std::move(PC_CORE::Sampler(m_Editor->RenderHarwareInteface,"ViewPortImageSampler"));
     m_ViewPortSampler
         ->SetMagFilter(PC_CORE::Filter::Linear)
         .SetMinFilter(PC_CORE::Filter::Linear)

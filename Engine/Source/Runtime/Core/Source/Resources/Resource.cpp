@@ -1,13 +1,13 @@
-﻿#include "resources/resource.hpp"
+﻿#include <Resources/Resource.hpp>
 
-#include <Fstream>
-#include <Utility>
+#include <fstream>
+#include <utility>
 
 #include "Resources/ResourceManager.hpp"
 
 using namespace PC_CORE;
 
-#include <Filesystem>
+#include <filesystem>
 
 
 void Resource::LinkDependencies(Resource* _resourceParent, Resource* _resourceChild)

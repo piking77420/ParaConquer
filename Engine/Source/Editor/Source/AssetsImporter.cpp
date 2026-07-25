@@ -1,5 +1,6 @@
 #include "AssetsImporter.hpp"
 
+#include <charconv>
 #include <filesystem>
 #include <string_view>
 
@@ -655,9 +656,6 @@ bool AssetsImporter::ImportModel(PC_CORE::Rhi& _Rhi, PC_CORE::Thread::ThreadPool
             {
                 if (_Image->GetMipDescriptor().size() == 1)
                 {
-                    if (PC_CORE::IsBcFormat(_Texture.GetRhiFormat()))
-                        __debugbreak();
-
                     updateBranch
                         ->TextureUpload2D(_Texture,
                             _Image->Release(),

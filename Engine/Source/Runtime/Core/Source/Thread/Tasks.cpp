@@ -123,7 +123,10 @@ namespace PC_CORE::Thread
 					node2->m_Job();
 					Decrement(node2);
 					std::scoped_lock _(m_Lock);
-					m_Nodes.erase(node2);
+					auto it = m_Nodes.find(node2);
+					if (it != m_Nodes.end())
+						m_Nodes.erase(it);
+						
 					});
 			},
 			[this, node = _Node](TaskNode::Thread _Thread)
@@ -136,7 +139,9 @@ namespace PC_CORE::Thread
 							node2->m_Job();
 							Decrement(node2);
 							std::scoped_lock _(m_Lock);
-							m_Nodes.erase(node2);
+							auto it = m_Nodes.find(node2);
+							if (it != m_Nodes.end())
+								m_Nodes.erase(it);
 						});
 					break;
 				case TaskNode::Thread::Workers:
@@ -144,7 +149,9 @@ namespace PC_CORE::Thread
 						{
 							node2->m_Job();
 							std::scoped_lock _(m_Lock);
-							m_Nodes.erase(node2);
+							auto it = m_Nodes.find(node2);
+							if (it != m_Nodes.end())
+								m_Nodes.erase(it);
 						});
 					break;
 					default:

@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include <String>
+#include <string>
 
 #include <imgui.h>
 
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 namespace ImGui
 {

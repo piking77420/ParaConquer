@@ -18,7 +18,7 @@ namespace PC_CORE::Rendering::Pass
 
         BakeIbl();
 
-        ~BakeIbl() override = default;
+        ~BakeIbl() override;
 
         IMP_DYNAMIC_REFLECT();
 
@@ -67,7 +67,7 @@ namespace PC_CORE::Rendering::Pass
 
         PassResource m_PrefilterMap;
 
-        std::unique_ptr<RhiFrameBuffer> m_BRDFLUTFrameBuffer = nullptr;
+        std::unique_ptr<RhiFrameBuffer> m_BRDFLUTFrameBuffer;
         
         void ComputeViewMatricies(const RendererPassBuildContext& _RendererPassBuildContext);
 

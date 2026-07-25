@@ -54,16 +54,18 @@ void FileSystemWatcher::LauchWatcher(const FileWatcherCreateInfo& _fileWatcherCr
     m_FileWatcherEvents = _fileWatcherCreateInfo.fileWatcherEvents;
 
     m_Worker.watch = true;
+    #if _WIN32
     m_Worker.asyncObj = std::make_unique<uint8_t[]>(sizeof(OVERLAPPED));
     m_Worker.systemBuffer = std::make_unique<uint8_t[]>(sizeof(FILE_NOTIFY_INFORMATION) * 1024);
     m_Worker.fileNameBuffer.resize(1024);
-
+    
     // Lauch Thread
     m_Worker.thread = std::thread([&, _fileWatcherCreateInfo]()
     {
         PC_CORE::Utils::SetThreadName(_fileWatcherCreateInfo.watcherName);
         WorkerMainLoop();
     });
+    #endif
 }
 
 FileSystemWatcher::~FileSystemWatcher()
@@ -73,12 +75,14 @@ FileSystemWatcher::~FileSystemWatcher()
 
 void FileSystemWatcher::Stop()
 {
+        #if _WIN32
     if (m_Worker.watch)
     {
         m_Worker.watch = false;
         CancelIoEx(m_Worker.fileHandle, reinterpret_cast<OVERLAPPED*>(&m_Worker.asyncObj[0]));
         m_Worker.thread.join();
     }
+    #endif
 }
 
 void FileSystemWatcher::WorkerMainLoop()

@@ -27,8 +27,6 @@ public:
 
     PC_CORE_API ~Renderer() = default;
 
-    DEFAULT_COPY_MOVE_OPERATIONS(Renderer)
-
     PC_CORE_API void RenderFrame();
 
     PC_CORE_API void Build(const RenderView& _View, const std::function<void(RenderGraph&)>& InitRenderGraphFunction);

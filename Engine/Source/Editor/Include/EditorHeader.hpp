@@ -1,8 +1,6 @@
 ﻿#pragma once
-
-
-#include <Cmath>
-#include <Cstdint>
+#include <cmath>
+#include <cstdint>
 
 #define BEGIN_EDITOR_PCCORE namespace PC_EDITOR_CORE {
 #define END_EDITOR_PCCORE }

@@ -13,6 +13,8 @@ namespace PC_CORE::Rendering::Pass
 		DYNAMIC_REFLECT_INIT
 	}
 
+	BakeIbl::~BakeIbl() = default;
+
 	void BakeIbl::Build(const RendererPassBuildContext& _RendererPassBuildContext)
 	{
 		PERF_REGION_SCOPED;

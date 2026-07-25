@@ -248,6 +248,8 @@ namespace PC_CORE
             w = std::max(1u, w / 2);
             h = std::max(1u, h / 2);
         }
+
+        return true;
     }
 }
 

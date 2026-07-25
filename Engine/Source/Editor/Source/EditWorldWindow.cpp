@@ -1,6 +1,6 @@
 ﻿#include "EditWorldWindow.hpp"
 
-#include <Imgui.h>
+#include <imgui.h>
 
 #include "App.hpp"
 #include "EasingFunction.hpp"

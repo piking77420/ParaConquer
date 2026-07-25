@@ -1,4 +1,4 @@
-﻿#include "resources/texture.hpp"
+﻿#include <Resources/Texture.hpp>
 
 #include "LowRenderer/RhiTexture.hpp"
 

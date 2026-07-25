@@ -23,8 +23,6 @@ namespace Vulkan
         VULKAN_API explicit VulkanSwapChain(PC_CORE::Rhi& _Rhi, uint32_t _Widht, uint32_t _Height, 
                                             VulkanPhysicalDevices& vulkanPhysicalDevices, VulkanDevice& _VulkanDevice,  vk::SurfaceKHR _Surface);
 
-        VULKAN_API explicit VulkanSwapChain() = default;
-
         VULKAN_API ~VulkanSwapChain() override;
 
         VULKAN_API vk::SurfaceFormatKHR GetSurfaceFormat();

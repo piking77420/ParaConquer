@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Imgui.h"
+#include "imgui.h"
 #include "EditorHeader.hpp"
 #include "Reflection/Reflector.hpp"
 

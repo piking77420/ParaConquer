@@ -1,4 +1,4 @@
-﻿#include "hierachy.hpp"
+﻿#include <Hierachy.hpp>
 
 #include "Editor.hpp"
 #include "Command/EditorCommandCreateEntity.hpp"

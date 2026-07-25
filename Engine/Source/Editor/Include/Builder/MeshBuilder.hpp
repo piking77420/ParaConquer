@@ -59,9 +59,9 @@ namespace PC_EDITOR_CORE
 			std::vector<PC_CORE::MeshletBound> MeshletsBound;
 		};
 
-		[[maybe_unsed]] MeshBuilderData BuildMeshs(PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* Scene, bool Optimise = true);
+		[[maybe_unused]] MeshBuilderData BuildMeshs(PC_CORE::Thread::ThreadPool& ThreadPool, const aiScene* Scene, bool Optimise = true);
 
-		[[maybe_unsed]] MeshletOutPutData BuildMeshlets(PC_CORE::Thread::ThreadPool& ThreadPool, const MeshBuilderData& MeshBuilderData);
+		[[maybe_unused]] MeshletOutPutData BuildMeshlets(PC_CORE::Thread::ThreadPool& ThreadPool, const MeshBuilderData& MeshBuilderData);
 
 		MeshBuilder() = default;
 

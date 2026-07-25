@@ -320,11 +320,11 @@ void Editor::TempImport(const std::filesystem::path& _path)
     const std::string ext = _path.extension().generic_string();
     if (ext == ".fbx" || ext == ".gltf" || ext == ".glb" || ext == ".obj" || ext == ".FBX")
     {
-        AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
+        std::ignore = AssetsImporter->ImportModel(RenderHarwareInteface, ThreadPool, _path);
     }
     else if (ext == ".png" || ext == ".jpg" || ext == ".dds" || ext == ".hdr")
     {
-        AssetsImporter->ImportTexture(RenderHarwareInteface, _path);
+        std::ignore = AssetsImporter->ImportTexture(RenderHarwareInteface, _path);
     }
     else
     {
@@ -647,13 +647,6 @@ void Editor::InitEditor()
         EditorWindows.push_back(std::make_unique<Hierachy>(*this, "Hierachy"));
         EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
         EditorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
-    }
-
-
-    {
-        PC_LOG("InitEditorSystem")
-        m_EditorRenderer = EditorRenderer(*this);
-        m_EditorRenderer.PushCustomCommand();
     }
 
     {

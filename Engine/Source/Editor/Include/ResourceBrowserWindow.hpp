@@ -1,8 +1,7 @@
 #pragma once
 
 #include <chrono>
-#include <Filesystem>
-#include <Vulkan/Vulkan.h>
+#include <filesystem>
 
 #include "Guid.hpp"
 
@@ -15,7 +14,6 @@
 
 #include "Singleton.hpp"
 #include "Rendering/Sampler.hpp"
-#include "Math/ToolboxHeaderfile.hpp"
 
 BEGIN_EDITOR_PCCORE
     constexpr auto MIN_MAX_FILE_SPACING = Tbx::Vector2f(1.f, 1000.f);
@@ -108,7 +106,7 @@ BEGIN_EDITOR_PCCORE
 
         std::string GetAssetRegisterPath() const;
 
-        std::time_t GetLastTimeModifyFile(const std::filesystem::path& _p) const;
+        std::time_t GetLastTimeModifyFile(const std::filesystem::path& _Path) const;
 
         void CreateAsset() const;
 

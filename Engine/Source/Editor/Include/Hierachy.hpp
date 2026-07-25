@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <Bitset>
+#include <bitset>
 
 #include "EditWorldWindow.hpp"
 #include "Ecs/EcsHeader.h"

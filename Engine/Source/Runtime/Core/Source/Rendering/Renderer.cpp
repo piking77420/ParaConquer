@@ -1,7 +1,7 @@
 #include "Rendering/Renderer.hpp"
 
 #include <PerfRegion.hpp>
-#include <Thread>
+#include <thread>
 
 #include "Color.hpp"
 #include "Resources/ResourceManager.hpp"

@@ -1,21 +1,21 @@
-#include <backends/imgui_impl_vulkan.h>
+#include <fstream>
 
-#include "ResourceBrowserWindow.hpp"
+#include <backends/imgui_impl_vulkan.h>
 
 #include "Editor.hpp"
 #include "EditorFiles.hpp"
 #include "LowRenderer/Rhi.hpp"
 #include "Serialize/JsonSerializer.hpp"
+#include "ResourceBrowserWindow.hpp"
 #include "SystemDialogue.hpp"
-#include "VulkanSampler.hpp"
 #include "World/World.hpp"
 
 #include "Resources/StaticMesh.hpp"
 
 #include <Io/FileLoader.hpp>
-#include <Fstream>
 #include <ImguiHelper.h>
 #include <Serialize/JsonSerializer.hpp>
+#include "VulkanSampler.hpp"
 
 using namespace PC_EDITOR_CORE;
 
@@ -43,7 +43,7 @@ void CreateTextureFromImage(PC_CORE::Rhi& rhi, const std::string& name, PC_CORE:
 
     const auto& ImageLevel = image.GetMipDescriptor();
 
-    texture = PC_CORE::Texture2D(rhi, name);
+    texture = std::move(PC_CORE::Texture2D(rhi, name));
     texture
         ->SetWidth(ImageLevel[0].width)
         .SetHeight(ImageLevel[0].height)
@@ -190,7 +190,7 @@ void ResourceBrowserWindow::Update()
     m_HasSelectedObject = false;
 
     ImGui::PushFont(m_Editor->editorData.editorFont.veryBig);
-    ImGui::Text(m_BasePathRelative.generic_string().c_str());
+    ImGui::TextUnformatted(m_BasePathRelative.generic_string().c_str());
     ImGui::PopFont();
     RenderDirectories();
 
@@ -353,7 +353,7 @@ void ResourceBrowserWindow::RenderDirectories()
             }
 
             ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
-            ImGui::TextWrapped(name.c_str());
+            ImGui::TextUnformatted(name.c_str());
             ImGui::PopTextWrapPos();
             ImGui::NextColumn();
         }
@@ -396,7 +396,7 @@ void ResourceBrowserWindow::RenderDirectories()
                     }
                 }
                 ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumbnailSize);
-                ImGui::TextWrapped(name.c_str());
+                ImGui::TextUnformatted(name.c_str());
                 ImGui::PopTextWrapPos();
                 ImGui::NextColumn();
             }
@@ -525,11 +525,13 @@ std::string ResourceBrowserWindow::GetAssetRegisterPath() const
     return p;
 }
 
-std::time_t ResourceBrowserWindow::GetLastTimeModifyFile(const std::filesystem::path& _p) const
+std::time_t ResourceBrowserWindow::GetLastTimeModifyFile(const std::filesystem::path& _Path) const
 {
-    auto ftime = std::filesystem::last_write_time(_p);
+    const auto fileTime = std::filesystem::last_write_time(_Path);
 
-    auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(ftime);
+    const auto systemTime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+        std::chrono::file_clock::to_sys(fileTime)
+    );
 
-    return std::chrono::system_clock::to_time_t(sctp);
+    return std::chrono::system_clock::to_time_t(systemTime);
 }

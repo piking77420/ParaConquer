@@ -11,9 +11,7 @@ struct MyTestComponent : public PC_CORE::Component
     std::string name;
     MyTestComponent() : x(0.f), y(0), name("") {}
 
-    bool operator==(const MyTestComponent&) const = default;
-
-    bool operator<=>(const MyTestComponent&) const = default;
+    auto operator<=>(const MyTestComponent&) const = default;
 
 };
 REFLECT(MyTestComponent, PC_CORE::Component)

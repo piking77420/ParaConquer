@@ -15,10 +15,15 @@ class Rhi;
 class RhiObject
 {
 public:
+	PC_CORE_API explicit RhiObject(Rhi& rhi);
 
 	PC_CORE_API virtual ~RhiObject();
 
-	PC_CORE_API explicit RhiObject(Rhi& rhi);
+	RhiObject(const RhiObject&) = delete;
+
+	RhiObject& operator=(const RhiObject&) = delete;
+
+	RhiObject(RhiObject&&) = default;
 
 	PC_CORE_API virtual bool Build() = 0;
 
@@ -36,18 +41,15 @@ template<typename T>
 class RhiObjectT : public RhiObject
 {
 public:
-	~RhiObjectT() override = default;
-
-	DEFAULT_COPY_MOVE_OPERATIONS(RhiObjectT);
-
 	explicit RhiObjectT(Rhi& rhi)
 		: RhiObject(rhi)
 	{
 
 	}
 
-	bool Build() override = 0;
+	~RhiObjectT() override = default;
 
+	bool Build() override = 0;
 
 	T& SetName(const char* _Name)
 	{

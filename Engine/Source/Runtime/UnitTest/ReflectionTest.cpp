@@ -1,7 +1,6 @@
-#include <Gtest/Gtest.h>
+#include <gtest/gtest.h>
+#include <Math/ToolBoxTypeDef.hpp>
 
-
-#include "Math/ToolboxTypedef.hpp"
 #include "Reflection/CompiletimeKey.hpp"
 #include "Rendering/Material.hpp"
 #include "Resources/Resource.hpp"

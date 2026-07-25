@@ -15,7 +15,6 @@ using InsertMapFunction = UnordoredByteMap::mapped_type& (UnordoredByteMap::*)(c
 using UnordoredMapConstIterator = UnordoredByteMap::const_iterator;
 using UnorderedMapUnrefConstIteratorFunc = const std::pair<
     const UnordoredByteMap::key_type, UnordoredByteMap::mapped_type>* (UnordoredMapConstIterator::*)() const;
-//
 
 
 BEGIN_PCCORE
@@ -152,8 +151,6 @@ BEGIN_PCCORE
         {
             return m_CurrentFilePath;
         }
-
-        DEFAULT_COPY_MOVE_OPERATIONS(Serializer)
 
         Serializer() = default;
 

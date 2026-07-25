@@ -1,4 +1,4 @@
-﻿#include "inspector.hpp"
+﻿#include <Inspector.hpp>
 
 #include "Editor.hpp"
 #include "ImguiHelper.h"

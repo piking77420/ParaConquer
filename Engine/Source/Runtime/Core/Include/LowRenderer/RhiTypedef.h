@@ -27,7 +27,6 @@ BEGIN_PCCORE
     {
         RayTracing,
         MeshShader,
-        Count
     };
 
     static constexpr uint32_t WHOLE_SIZE = std::numeric_limits<uint32_t>::max();
@@ -40,7 +39,7 @@ BEGIN_PCCORE
         case PC_CORE::RhiExtension::RayTracing:
             return "RayTracing";
         case PC_CORE::RhiExtension::MeshShader:
-            return "MeshShader";;
+            return "MeshShader";
         }
         return "Invalid Rhi Extension";
     }
@@ -288,6 +287,8 @@ BEGIN_PCCORE
         case RhiFormat::BC7_UNORM_BLOCK:
         case RhiFormat::BC7_SRGB_BLOCK:
             return true;
+        default:
+            return false;
         }
         
         return false;

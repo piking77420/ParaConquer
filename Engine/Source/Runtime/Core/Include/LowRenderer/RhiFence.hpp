@@ -8,15 +8,11 @@ BEGIN_PCCORE
 class RhiFence : public RhiObjectT<RhiFence>
 {
 public:
-    DEFAULT_COPY_MOVE_OPERATIONS(RhiFence);
-
     PC_CORE_API explicit RhiFence(Rhi& _Rhi);
-
-    PC_CORE_API RhiFence() = default;
 
     PC_CORE_API ~RhiFence() override = default;
 
-    PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = UINT64_MAX) = 0;
+    PC_CORE_API virtual void WaitForFence(bool _waitAll, uint32_t _time = std::numeric_limits<uint32_t>::max());
 
     PC_CORE_API virtual void Reset() = 0;
 

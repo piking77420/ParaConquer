@@ -9,7 +9,6 @@ BEGIN_PCCORE
     class RhiBuffer : public RhiResourceT<RhiBuffer>
     {
     public:
-
         enum struct BufferUpdateRate: uint8_t
         {
             Static,     // Written once
@@ -55,13 +54,11 @@ BEGIN_PCCORE
     
         static constexpr const char* DynamicBufferKey = "DynamicObject";
        
-        DEFAULT_COPY_MOVE_OPERATIONS(RhiBuffer)
-
         PC_CORE_API RhiBuffer(Rhi& _Rhi);
     
         PC_CORE_API ~RhiBuffer() override = default;
 
-        PC_CORE_API virtual bool Build() override;
+        PC_CORE_API virtual bool Build() override;  
     
         PC_CORE_API virtual bool UploadData(PC_CORE::CommandList* _commandList, const void* _data, size_t _sizeInBytes) = 0;
     

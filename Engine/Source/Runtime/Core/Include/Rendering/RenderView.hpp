@@ -62,8 +62,6 @@ namespace PC_CORE::Rendering
 
         ~RenderView() = default;
 
-        DEFAULT_COPY_MOVE_OPERATIONS(RenderView);
-
         enum RenderViewFlagBits : uint8_t
         {
             DebugGeometry = 1 << 0,

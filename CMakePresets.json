@@ -2,92 +2,226 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "windows-base",
+            "name": "base",
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "installDir": "${sourceDir}/out/install/${presetName}",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
-            },
+            "installDir": "${sourceDir}/out/install/${presetName}"
+        },
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "inherits": "base",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
-            }
-        },
-        {
-            "name": "x64-debug",
-            "displayName": "x64 Debug",
-            "inherits": "windows-base",
+            },
             "architecture": {
                 "value": "x64",
                 "strategy": "external"
             },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            }
+        },
+        {
+            "name": "linux-clang-base",
+            "hidden": true,
+            "inherits": "base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/clang",
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++"
+            }
+        },
+
+        {
+            "name": "linux-gcc-base",
+            "hidden": true,
+            "inherits": "base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/gcc",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++"
+            }
+        },
+
+        {
+            "name": "MSVC-x64-debug",
+            "displayName": "MSVC x64 Debug",
+            "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "x64-relwithdebinfo",
-            "displayName": "x64 RelWithDebInfo",
-            "inherits": "x64-debug",
+            "name": "MSVC-x64-relwithdebinfo",
+            "displayName": "MSVC x64 RelWithDebInfo",
+            "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
         },
         {
-            "name": "x64-release",
-            "displayName": "x64 Release",
-            "inherits": "x64-debug",
+            "name": "MSVC-x64-release",
+            "displayName": "MSVC x64 Release",
+            "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
+
         {
-            "name": "x64-debug-profiling",
-            "displayName": "x64 Debug",
+            "name": "MSVC-x64-debug-profiling",
+            "displayName": "MSVC x64 Debug with Profiling",
             "inherits": "windows-base",
-            "architecture": {
-                "value": "x64",
-                "strategy": "external"
-            },
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "PROFILING": "ON"
             }
         },
         {
-            "name": "x64-relwithdebinfo-profiling",
-            "displayName": "x64 RelWithDebInfo",
-            "inherits": "x64-debug",
+            "name": "MSVC-x64-relwithdebinfo-profiling",
+            "displayName": "MSVC x64 RelWithDebInfo with Profiling",
+            "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "PROFILING": "ON"
             }
         },
         {
-            "name": "x64-release-profiling",
-            "displayName": "x64 Release",
-            "inherits": "x64-debug",
+            "name": "MSVC-x64-release-profiling",
+            "displayName": "MSVC x64 Release with Profiling",
+            "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "PROFILING": "ON"
-                
+            }
+        },
+
+        {
+            "name": "Clang-linux-debug",
+            "displayName": "Linux Clang Debug",
+            "description": "Linux build using Clang and Ninja",
+            "inherits": "linux-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-        "name": "Clang 19.1.7 x86_64-pc-linux-gnu",
-        "displayName": "Clang 19.1.7 x86_64-pc-linux-gnu",
-        "description": "Using compilers: C = /usr/bin/clang, CXX = /usr/bin/clang++",
-        "binaryDir": "${sourceDir}/out/build/${presetName}",
-        "cacheVariables": {
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-            "CMAKE_C_COMPILER": "/usr/bin/clang",
-            "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
-            "CMAKE_BUILD_TYPE": "Debug"
+            "name": "Clang-linux-relwithdebinfo",
+            "displayName": "Linux Clang RelWithDebInfo",
+            "description": "Linux build using Clang and Ninja",
+            "inherits": "linux-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "Clang-linux-release",
+            "displayName": "Linux Clang Release",
+            "description": "Linux build using Clang and Ninja",
+            "inherits": "linux-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+
+        {
+            "name": "Clang-linux-debug-profiling",
+            "displayName": "Linux Clang Debug with Profiling",
+            "inherits": "linux-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "PROFILING": "ON"
+            }
+        },
+        {
+            "name": "Clang-linux-relwithdebinfo-profiling",
+            "displayName": "Linux Clang RelWithDebInfo with Profiling",
+            "inherits": "linux-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "PROFILING": "ON"
+            }
+        },
+        {
+            "name": "Clang-linux-release-profiling",
+            "displayName": "Linux Clang Release with Profiling",
+            "inherits": "linux-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "PROFILING": "ON"
+            }
+        },
+
+        {
+            "name": "GCC-linux-debug",
+            "displayName": "Linux GCC Debug",
+            "description": "Linux build using GCC and Ninja",
+            "inherits": "linux-gcc-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "GCC-linux-relwithdebinfo",
+            "displayName": "Linux GCC RelWithDebInfo",
+            "description": "Linux build using GCC and Ninja",
+            "inherits": "linux-gcc-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+
+        {
+            "name": "GCC-linux-release",
+            "displayName": "Linux GCC Release",
+            "description": "Linux build using GCC and Ninja",
+            "inherits": "linux-gcc-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+
+        {
+            "name": "GCC-linux-debug-profiling",
+            "displayName": "Linux GCC Debug with Profiling",
+            "inherits": "linux-gcc-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "PROFILING": "ON"
+            }
+        },
+
+        {
+            "name": "GCC-linux-relwithdebinfo-profiling",
+            "displayName": "Linux GCC RelWithDebInfo with Profiling",
+            "inherits": "linux-gcc-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "PROFILING": "ON"
+            }
+        },
+        
+        {
+            "name": "GCC-linux-release-profiling",
+            "displayName": "Linux GCC Release with Profiling",
+            "inherits": "linux-gcc-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "PROFILING": "ON"
+            }
         }
-    }
     ]
 }

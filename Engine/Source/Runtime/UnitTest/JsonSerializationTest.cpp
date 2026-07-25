@@ -1,12 +1,12 @@
-#include <Map>
-#include <Gtest/Gtest.h>
+#include <map>
+#include <gtest/gtest.h>
 
 #include "Reflection/Reflector.hpp"
 #include "Resources/Resource.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Serialize/JsonSerializer.hpp"
 #include "DataStructure/SpareSet.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 using namespace PC_CORE;
 

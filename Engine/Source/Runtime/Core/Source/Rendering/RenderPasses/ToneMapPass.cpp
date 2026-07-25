@@ -16,6 +16,8 @@ namespace PC_CORE::Rendering::Pass
 		DYNAMIC_REFLECT_INIT;
 	}
 
+	ToneMapPass::~ToneMapPass() = default;
+
 	void ToneMapPass::Build(const RendererPassBuildContext& _RendererPassBuildContext)
 	{
 		RhiTexture& lightingImage = *_RendererPassBuildContext.RenderGraph.GetResource<RhiTexture>("Lighting Image");

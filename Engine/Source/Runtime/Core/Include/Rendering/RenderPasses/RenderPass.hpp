@@ -56,7 +56,7 @@ class PC_CORE_API RenderPass : public DynamicReflectable
 public:
     RenderPass();
 
-    ~RenderPass() override = default;
+    ~RenderPass() override;
 
     IMP_DYNAMIC_REFLECT()
 

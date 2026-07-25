@@ -45,7 +45,7 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC VulkanAPI)
 
 # Imgui
-target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_API)
+target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_BUILD_DLL)
 target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)
 
 ## MotionCore

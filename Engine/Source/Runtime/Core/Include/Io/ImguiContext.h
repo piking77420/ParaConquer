@@ -8,10 +8,6 @@
 
 struct ImguiImage
 {
-    DEFAULT_CONSTRUCTOR_DESTRUCTOR(ImguiImage)
-
-    DEFAULT_COPY_MOVE_OPERATIONS(ImguiImage)
-
     VkDescriptorSet descritproSet;
     PC_CORE::Texture2D texure;
 };

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "EditorHeader.hpp"
-#include "Math/ToolboxTypedef.hpp"
+#include <Math/ToolBoxTypeDef.hpp>
 
 BEGIN_EDITOR_PCCORE
     // TODO 

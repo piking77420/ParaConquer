@@ -3,9 +3,7 @@
 #include "LowRenderer/Rhi.hpp"
 #include "VulkanCommandList.hpp"
 
-#include "Utils/HelperFunctions.hpp"
 #include "Utils/RhiToVulkan.hpp"
-#include "Utils/VmaHelper.hpp"
 
 
 VmaAllocationCreateFlags VmaAllocationCreateFlagsFromBuffer(PC_CORE::RhiResource::MemoryUsage _memoryUsage)
@@ -14,9 +12,7 @@ VmaAllocationCreateFlags VmaAllocationCreateFlagsFromBuffer(PC_CORE::RhiResource
     
     if (_memoryUsage == PC_CORE::RhiResource::MemoryUsage::CPUVisible)
         flag |= VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT; 
-    
-    // VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT for raytring
-    
+        
     return flag;
 }
 

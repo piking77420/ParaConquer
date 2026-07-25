@@ -18,10 +18,7 @@ BEGIN_PCCORE
 
     class Texture2D final : public Texture
     {
-    public:
-
-        DEFAULT_COPY_MOVE_OPERATIONS(Texture2D)
-        
+    public:        
         PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, const std::string& _name);
 
         PC_CORE_API explicit Texture2D(PC_CORE::Rhi& rhi, std::string&& _name);
@@ -35,6 +32,10 @@ BEGIN_PCCORE
         PC_CORE_API Texture2D();
 
         PC_CORE_API ~Texture2D() override = default;
+
+        PC_CORE_API Texture2D(Texture2D&&) noexcept = default;
+
+        PC_CORE_API Texture2D& operator=(Texture2D&&) noexcept = default;
 
         IMP_DYNAMIC_REFLECT()
         

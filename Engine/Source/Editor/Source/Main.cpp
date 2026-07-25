@@ -1,4 +1,4 @@
-#include <Iostream>
+#include <iostream>
 #include "Editor.hpp"
 
 #define WAIT_DEBUG_GPU_INJECTION 0

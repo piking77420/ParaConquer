@@ -190,9 +190,6 @@ BEGIN_PCCORE
             RayTracing,
         };
 
-
-        DEFAULT_COPY_MOVE_OPERATIONS(CommandList)
-
         PC_CORE_API explicit CommandList(Rhi& _Rhi);
 
         PC_CORE_API virtual ~CommandList() = default;
