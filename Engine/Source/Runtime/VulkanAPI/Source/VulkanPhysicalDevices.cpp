@@ -234,12 +234,14 @@ void Vulkan::VulkanPhysicalDevices::Initialize(const PC_CORE::PhysicalDevicesCre
 {
     // Get Vulkan Device NBR
     uint32_t physicalDeviceCount = 0;
-    VK_CHECK_CALL(m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, nullptr));
+    vk::Result PhysicalDeviceResult = m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, nullptr);
+    VK_CHECK_CALL(PhysicalDeviceResult);
 
     // Get Vulkan Device
     std::vector<vk::PhysicalDevice> vkPhysicalDevices;
     vkPhysicalDevices.resize(physicalDeviceCount);
-    VK_CHECK_CALL(m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data()));
+    PhysicalDeviceResult = m_VkInstance.enumeratePhysicalDevices(&physicalDeviceCount, vkPhysicalDevices.data());
+    VK_CHECK_CALL(PhysicalDeviceResult);
 
     // Get Extension as vulkna ext
     std::set<std::string> requestVulkanExtensions = GetVulkanRequestExtensions(
