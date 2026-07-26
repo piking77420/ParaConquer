@@ -140,16 +140,6 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE EDITOR_RESOURCE_PATH_W=L"${REL_PATH_FROM_TARGET}../../Engine/Source/Editor/EditorResource"
 )
 
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(${PROJECT_NAME} PUBLIC
-        $<$<CONFIG:Debug>:-O0>
-        $<$<CONFIG:Debug>:-g>
-        $<$<CONFIG:Debug>:-fstandalone-debug>
-    )
-endif()
-
-
 install(
     TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

@@ -17,6 +17,17 @@ set(PLUGINS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Source/Plugins")
 project(ParaConquer VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>
+    )
+
+    add_link_options(
+        -stdlib=libc++
+    )
+endif()
+
 ## Assimp 
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE) ## Force Assimp to not build Unit test
 add_subdirectory(${THIRD_PARTY_DIR}/assimp)

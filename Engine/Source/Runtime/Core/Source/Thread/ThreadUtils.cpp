@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Thread/ThreadUtils.hpp"
 #ifdef _WIN32
 #include <windows.h>

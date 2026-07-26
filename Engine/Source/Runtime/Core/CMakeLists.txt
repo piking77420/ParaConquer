@@ -60,11 +60,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC magic_enum)
 ## Profiler
 target_link_libraries(${PROJECT_NAME} PUBLIC Profiler)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>)
-    target_link_options(${PROJECT_NAME} PUBLIC -stdlib=libc++)
-endif()
-
 ## FOR UUID linux
 if(UNIX AND NOT APPLE)
 find_library(UUID_LIBRARY NAMES uuid REQUIRED)

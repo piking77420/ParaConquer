@@ -19,7 +19,7 @@ Vulkan::VulkanDescriptorSet::~VulkanDescriptorSet()
 {
     VulkanContext& VkContext = static_cast<VulkanContext&>(m_Rhi.GetRhiContext());
     vk::Device d = GET_VK_DEVICE;
-    d.freeDescriptorSets(VkContext.descritptorManager.GetVkDesciptorPool(), MaxFramesInFlight, m_DescriptorSets.data());
+    VK_CALL(d.freeDescriptorSets(VkContext.descritptorManager.GetVkDesciptorPool(), MaxFramesInFlight, m_DescriptorSets.data()));
 }
 
 bool Vulkan::VulkanDescriptorSet::Build()
