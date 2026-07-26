@@ -9,7 +9,7 @@ ComponentArray::ComponentArray()
 
 ComponentArray::ComponentArray(TypeId typeId) : m_ComponentType(typeId)
 {
-    const auto& type = Reflector::GetType(m_ComponentType);
+    const auto& type = ReflectorInstance().GetType(m_ComponentType);
 
     m_ComponentSize = static_cast<uint32_t>(type.size);
     constructor = type.metaData.createFunc;

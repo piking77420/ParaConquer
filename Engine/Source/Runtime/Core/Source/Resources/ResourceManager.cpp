@@ -89,7 +89,7 @@ void ResourceManager::ForEach(TypeId typeID, const std::function<void(std::share
 {
     std::scoped_lock _(Instance().m_lock);
 
-    if (!Reflector::Exist(typeID))
+    if (!ReflectorInstance().Exist(typeID))
         return;
     auto& instance = Instance();
     for (auto it = instance.m_ResourcesMap.begin(); it != instance.m_ResourcesMap.end(); ++it)

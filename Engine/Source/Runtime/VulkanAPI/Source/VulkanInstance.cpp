@@ -8,6 +8,8 @@
     #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(__linux__)
     #define VK_USE_PLATFORM_XLIB_KHR
+    #define VK_USE_PLATFORM_WAYLAND_KHR
+    #define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
@@ -225,7 +227,8 @@ Vulkan::VulkanInstance::VulkanInstance(const PC_CORE::RenderInstanceCreateInfo& 
   // instanceCreateInfo.pNext = &validationFeatures;
 
 #endif
-    VK_CHECK_CALL(vk::createInstance(&instanceCreateInfo, nullptr, &m_Instance));
+    vk::Result CreateInstanceResult = vk::createInstance(&instanceCreateInfo, nullptr, &m_Instance);
+    VK_CHECK_CALL(CreateInstanceResult);
 
 #ifdef DEBUG_GPU_ON
     SetupDebugMessenger();
@@ -265,18 +268,55 @@ void Vulkan::VulkanInstance::InitSurface(GLFWwindow* _window)
     // Create the surface
     vk::Result r = m_Instance.createWin32SurfaceKHR(&win32SurfaceCreate, nullptr, &surface);
 #elif defined(__linux__)
-    Display* display = glfwGetX11Display();
-    ::Window window = glfwGetX11Window(_window);
+    vk::Result r{};
 
-    vk::XlibSurfaceCreateInfoKHR createInfo {};
-    createInfo.dpy = display; 
-    createInfo.window = window;
+    const int platform = glfwGetPlatform();
+        switch (platform)
+    {
+    case GLFW_PLATFORM_X11:
+        {
+            Display* display = glfwGetX11Display();
+            ::Window window = glfwGetX11Window(_window);
 
-    const vk::Result r = m_Instance.createXlibSurfaceKHR(
-        &createInfo,
-        nullptr,
-        &surface
-    );
+            vk::XlibSurfaceCreateInfoKHR createInfo {};
+            createInfo.dpy = display; 
+            createInfo.window = window;
+
+            r = m_Instance.createXlibSurfaceKHR(
+                &createInfo,
+                nullptr,
+                &surface
+            );
+            PC_LOG("X11 Platfrom");
+        }
+        break;
+    case GLFW_PLATFORM_WAYLAND:
+    {
+        wl_display* display = glfwGetWaylandDisplay();
+        wl_surface* windowSurface = glfwGetWaylandWindow(_window);
+        auto createWaylandSurface = reinterpret_cast<PFN_vkCreateWaylandSurfaceKHR>(vkGetInstanceProcAddr((VkInstance&)m_Instance, "vkCreateWaylandSurfaceKHR"));
+        if (createWaylandSurface)
+        {
+            VkWaylandSurfaceCreateInfoKHR createInfo {};
+            createInfo.sType =
+                VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+            createInfo.display = display;
+            createInfo.surface = windowSurface;
+            reinterpret_cast<VkResult&>(r) = createWaylandSurface(
+                (VkInstance&)m_Instance, 
+                &createInfo,
+                nullptr,
+                (VkSurfaceKHR*) &surface);
+        }
+        
+ 
+        PC_LOG("Wayland Platfrom");
+    }
+        break;
+    default:
+        PC_LOGCRITICAL("Invalid glfw paltform");
+        break;
+    }
 # endif
 
     VK_CHECK_CALL(r);

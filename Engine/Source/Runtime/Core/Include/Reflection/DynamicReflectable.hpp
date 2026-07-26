@@ -20,7 +20,7 @@ BEGIN_PCCORE
             }
 #endif
 
-            return Reflector::GetType(m_TypeId);
+            return ReflectorInstance().GetType(m_TypeId);
         }
 
         const TypeId GetTypeKey() const
@@ -44,7 +44,7 @@ END_PCCORE
 #define IMP_DYNAMIC_REFLECT() \
 void QueryType() override \
 {\
-	m_TypeId = PC_CORE::Reflector::GetTypeFromRTTI(typeid(*this).hash_code()).typeId;\
+	m_TypeId = PC_CORE::ReflectorInstance().GetTypeFromRTTI(typeid(*this).hash_code()).typeId;\
 }
 #define DYNAMIC_REFLECT_INIT \
 QueryType();

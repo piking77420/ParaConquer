@@ -4,48 +4,18 @@
 
 using namespace PC_CORE;
 
-
-
-std::unordered_map<TypeId, ReflectedType>& Reflector::ReflectionMap()
-{
-    static auto map = std::unordered_map<TypeId, ReflectedType>();
-
-    return map;
-}
-
-std::unordered_map<size_t, TypeId>& Reflector::RttiToTypeId()
-{
-    static auto map = std::unordered_map<size_t, TypeId>();
-
-    return map;
-}
-
-std::unordered_map<TypeId, ReflectMapFunction>& Reflector::MapReflectFunction()
-{
-    static auto map = std::unordered_map<TypeId, ReflectMapFunction>();
-
-    return map;
-}
-
-std::unordered_map<TypeId, ReflectMapFunction>& Reflector::UnordoredMapReflectFunction()
-{
-    static auto map = std::unordered_map<TypeId, ReflectMapFunction>();
-
-    return map;
-}
-
 const ReflectedType& Reflector::GetTypeFromRTTI(size_t typeIdFromRtti)
 {
-    assert(RttiToTypeId().contains(typeIdFromRtti) && "Forgot to reflect your type ?");
+    assert(RttiToTypeIdMap.contains(typeIdFromRtti) && "Forgot to reflect your type ?");
 
-    const TypeId id = RttiToTypeId().at(typeIdFromRtti);
+    const TypeId id = RttiToTypeIdMap.at(typeIdFromRtti);
 
-    return ReflectionMap().at(id);
+    return m_ReflectionMap.at(id);
 }
 
 const ReflectedType& Reflector::GetType(uint32_t _hash)
 {
-    return ReflectionMap().at(_hash);
+    return m_ReflectionMap.at(_hash);
 }
 
 bool Reflector::isTrivialType(TypeId _id)
@@ -55,7 +25,7 @@ bool Reflector::isTrivialType(TypeId _id)
 
 bool Reflector::Exist(TypeId typeId)
 {
-    return ReflectionMap().contains(typeId);
+    return m_ReflectionMap.contains(typeId);
 }
 
 bool Reflector::GetPtrToTypeField(TypeId _id, void* _object, const std::string& _fieldName, void** _outPtrToField)

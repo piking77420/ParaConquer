@@ -3,9 +3,10 @@
 #include <type_traits>
 
 #include <filesystem>
-#include <functional> // For std::function
+#include <functional>
 #include <iostream>
 #include <optional>
+#include <cstdint>
 
 
 #include "CoreHeader.hpp"
@@ -54,66 +55,80 @@ BEGIN_PCCORE
     class Reflector
     {
     public:
-        Reflector() = delete;
-
-        ~Reflector() = delete;
+        template <typename T>
+        const ReflectedType& GetType();
 
         template <typename T>
-        static const ReflectedType& GetType();
+        const ReflectedEnum& GetEnum();
+
+        PC_CORE_API const ReflectedType& GetTypeFromRTTI(size_t typeIdFromRtti);
 
         template <typename T>
-        static const ReflectedEnum& GetEnum();
-
-        PC_CORE_API static const ReflectedType& GetTypeFromRTTI(size_t typeIdFromRtti);
-
-        template <typename T>
-        static bool IsTypeIdIs(TypeId typeId);
+        bool IsTypeIdIs(TypeId typeId);
 
         template <typename Base>
-        static bool IsBaseOf(const ReflectedType& type);
+        bool IsBaseOf(const ReflectedType& type);
 
         template <typename T>
-        constexpr static TypeId GetTypeKey()
+        static constexpr TypeId GetTypeKey()
         {
             return COMPILE_TIME_TYPE_KEY(T);
         }
 
-        PC_CORE_API static const ReflectedType& GetType(uint32_t _hash);
+        PC_CORE_API const ReflectedType& GetType(uint32_t _hash);
 
         template <typename Holder, typename MemberType, Members::EnumFlag enumFlag = Members::EnumFlag::NoneMembersEnumFlag>
-        static uint8_t ReflectMember(size_t _offset, const char* _memberName);
+        uint8_t ReflectMember(size_t _offset, const char* _memberName);
 
         template <typename Holder, typename BaseClass = void>
-        static uint8_t ReflectType();
+        uint8_t ReflectType();
 
         template <typename T>
-        static std::vector<const ReflectedType*> GetAllTypesFrom();
+        std::vector<const ReflectedType*> GetAllTypesFrom();
 
         template <typename T>
-        static bool isTrivialType();
+        bool isTrivialType();
 
-        static bool isTrivialType(TypeId _id);
+        bool isTrivialType(TypeId _id);
 
-        PC_CORE_API static bool Exist(TypeId typeId);
-
-        template <typename T, typename F>
-        static bool GetPtrToTypeField(T* _object, const std::string& _fieldName, F** _outPtrToField);
+        PC_CORE_API bool Exist(TypeId typeId);
 
         template <typename T, typename F>
-        static bool GetPtrToTypeField(const T& _object, const std::string& _fieldName, const F** _outPtrToField);
+        bool GetPtrToTypeField(T* _object, const std::string& _fieldName, F** _outPtrToField);
 
-        PC_CORE_API static bool GetPtrToTypeField(TypeId _id, void* _object, const std::string& _fieldName,
+        template <typename T, typename F>
+        bool GetPtrToTypeField(const T& _object, const std::string& _fieldName, const F** _outPtrToField);
+
+        PC_CORE_API bool GetPtrToTypeField(TypeId _id, void* _object, const std::string& _fieldName,
                                                   void** _outPtrToField);
 
-        PC_CORE_API static bool GetPtrToTypeField(TypeId _id, const void* _object, const std::string& _fieldName,
+        PC_CORE_API bool GetPtrToTypeField(TypeId _id, const void* _object, const std::string& _fieldName,
                                                   const void** _outPtrToField);
+    
+        
+                                                     
 
-        static std::unordered_map<TypeId, ReflectMapFunction>& MapReflectFunction();
-
-        static std::unordered_map<TypeId, ReflectMapFunction>& UnordoredMapReflectFunction();
-
+        std::unordered_map<TypeId, ReflectMapFunction>& MapReflectFunction()
+        {
+            return m_MapReflectFunction;
+        }
+    
+        std::unordered_map<TypeId, ReflectMapFunction>& UnordoredMapReflectFunction()
+        {
+            return m_UnordoredMapReflectFunction;
+        }
+        
     private:
-        constexpr PC_CORE_API static std::string GetCorrectNameFromTypeId(const std::string& _name)
+        std::unordered_map<TypeId, ReflectedType> m_ReflectionMap;
+
+        std::unordered_map<size_t, TypeId> RttiToTypeIdMap;
+
+        std::unordered_map<TypeId, ReflectMapFunction>  m_UnordoredMapReflectFunction;
+
+        std::unordered_map<TypeId, ReflectMapFunction> m_MapReflectFunction;
+
+
+        constexpr PC_CORE_API std::string GetCorrectNameFromTypeId(const std::string& _name)
         {
             // Search for "::" to remove namespace
             size_t firstIndex = _name.find("::");
@@ -140,15 +155,11 @@ BEGIN_PCCORE
             return out;
         }
 
-        static std::unordered_map<TypeId, ReflectedType>& ReflectionMap();
-
-        static std::unordered_map<size_t, TypeId>& RttiToTypeId();
+        template <typename T>
+        void AddType();
 
         template <typename T>
-        static void AddType();
-
-        template <typename T>
-        static bool ContaintType();
+        bool ContaintType();
 
 
         template <typename T>
@@ -164,9 +175,8 @@ BEGIN_PCCORE
                 std::destroy_at(static_cast<T*>(_Object));
         }
 
-
         template <typename T>
-        static uintmax_t ProcessMetaData(ReflectedType* reflectedType)
+        uintmax_t ProcessMetaData(ReflectedType* reflectedType)
         {
             uintmax_t flags = Members::EnumFlag::NoneMembersEnumFlag;
             TypeMetaData* typeMetaData = &reflectedType->metaData;
@@ -259,7 +269,7 @@ BEGIN_PCCORE
                 };
 
                 typeMetaData->data = rm;
-                UnordoredMapReflectFunction().insert({GetTypeKey<T>(), reflectMapFunction});
+                m_UnordoredMapReflectFunction.insert({GetTypeKey<T>(), reflectMapFunction});
             }
 
             if constexpr (is_sparse_set<T>::value)
@@ -287,9 +297,13 @@ BEGIN_PCCORE
                 typeMetaData->data = ReflectedBitSet();
             }
 
-            if constexpr (!std::is_abstract_v<T>)
+            if constexpr (!std::is_abstract_v<T> && std::is_default_constructible_v<T>)
             {
                 typeMetaData->createFunc = &ReflectedCreateFunc<T>;
+            }
+
+            if constexpr (std::is_destructible_v<T>)
+            {
                 typeMetaData->deleteFunc = &ReflectedDeleteFunc<T>;
             }
 
@@ -334,10 +348,10 @@ BEGIN_PCCORE
     const ReflectedType& Reflector::GetType()
     {
         constexpr TypeId tid = GetTypeKey<T>();
-        if (!ReflectionMap().contains(tid))
+        if (!m_ReflectionMap.contains(tid))
             AddType<T>();
 
-        return ReflectionMap().at(tid);
+        return m_ReflectionMap.at(tid);
     }
 
     template <typename T>
@@ -345,11 +359,11 @@ BEGIN_PCCORE
     {
         static_assert(std::is_enum_v<T>);
 
-        auto it = ReflectionMap().find(GetTypeKey<T>());
-        if (it == ReflectionMap().end())
+        auto it = m_ReflectionMap.find(GetTypeKey<T>());
+        if (it == m_ReflectionMap.end())
             AddType<T>();
 
-        return std::get<ReflectedEnum>(ReflectionMap().at(GetTypeKey<T>()).metaData.data);
+        return std::get<ReflectedEnum>(m_ReflectionMap.at(GetTypeKey<T>()).metaData.data);
     }
 
     template <typename T>
@@ -395,7 +409,6 @@ BEGIN_PCCORE
             AddType<MemberType>();
         }
 
-        std::unordered_map<uint32_t, ReflectedType>& memberMap = ReflectionMap();
         const auto& currentType = GetType<Holder>();
         for (const auto& member : currentType.metaData.members)
         {
@@ -419,7 +432,7 @@ BEGIN_PCCORE
         };
 
 
-        memberMap.at(currentType.typeId).metaData.members.push_back(members);
+        m_ReflectionMap.at(currentType.typeId).metaData.members.push_back(members);
         return 0;
     }
 
@@ -428,7 +441,7 @@ BEGIN_PCCORE
     {
         PERF_REGION_SCOPED;
 
-        constexpr uint32_t KeyHolder = GetTypeKey<Holder>();
+        uint32_t KeyHolder = GetTypeKey<Holder>();
 
         if (ContaintType<Holder>())
         {
@@ -446,10 +459,10 @@ BEGIN_PCCORE
                 AddType<BaseClass>();
             }
 
-            auto it = ReflectionMap().find(KeyHolder);
+            auto it = m_ReflectionMap.find(KeyHolder);
             const ReflectedType& baseType = Reflector::GetType<BaseClass>();
 
-            if (it != ReflectionMap().end())
+            if (it != m_ReflectionMap.end())
             {
                 it->second.metaData.baseClass = baseType.typeId;
 
@@ -472,7 +485,7 @@ BEGIN_PCCORE
         constexpr uint32_t hashCode = GetTypeKey<T>();
         std::vector<const ReflectedType*> types;
 
-        for (auto& type : ReflectionMap())
+        for (auto& type : m_ReflectionMap)
         {
             if (IsBaseOf<T>(type.second))
             {
@@ -527,10 +540,9 @@ BEGIN_PCCORE
 
 
             type.typeFlags = ProcessMetaData<T>(&type);
-            const size_t size = RttiToTypeId().size();
 
-            RttiToTypeId().insert({type.rttiTypeId, typeId});
-            ReflectionMap().insert({typeId, type});
+            RttiToTypeIdMap.insert({type.rttiTypeId, typeId});
+            m_ReflectionMap.insert({typeId, type});
         }
     }
 
@@ -541,16 +553,34 @@ BEGIN_PCCORE
         return Exist(GetTypeKey<T>());
     }
 
+    inline Reflector& ReflectorInstance()
+    {
+        static Reflector* R = new Reflector();
+
+        return *R;
+    }
+
     //https://isocpp.org/files/papers/P3384R0.html
 #define CONCAT_IMPL(x, y) x##y
 #define CONCAT(x, y) CONCAT_IMPL(x, y)
 #define NEW_VAR(name) CONCAT(name, __COUNTER__)
 
-#define REFLECT(CurrentType, ...) \
-static inline uint8_t CONCAT(reflectInfo,__COUNTER__) = PC_CORE::Reflector::ReflectType<CurrentType, ##__VA_ARGS__>();
-#define REFLECT_MEMBER(CurrentType, memberName, ...) \
-static inline uint8_t CurrentType##_##memberName##_reflected = \
-PC_CORE::Reflector::ReflectMember<CurrentType, decltype(CurrentType::memberName), ##__VA_ARGS__>( \
-PC_CORE::offset_of(&CurrentType::memberName), #memberName);
+#define REFLECT(CurrentType, ...)                                      \
+    [[maybe_unused]] static inline std::uint8_t NEW_VAR(reflectInfo_) = \
+        PC_CORE::ReflectorInstance()                                   \
+            .ReflectType<CurrentType __VA_OPT__(,) __VA_ARGS__>();
+
+#define REFLECT_MEMBER(CurrentType, memberName, ...)                         \
+    [[maybe_unused]] static inline std::uint8_t NEW_VAR(reflectMemberInfo_) = \
+        PC_CORE::ReflectorInstance()                                         \
+            .ReflectMember<                                                  \
+                CurrentType,                                                 \
+                decltype(CurrentType::memberName)                            \
+                __VA_OPT__(,) __VA_ARGS__                                    \
+            >(                                                               \
+                PC_CORE::offset_of(&CurrentType::memberName),                 \
+                #memberName                                                  \
+            );
+
 
 END_PCCORE

@@ -648,7 +648,7 @@ void Editor::InitEditor()
         EditorWindows.push_back(std::make_unique<SceneButton>(*this, "SceneButton"));
         EditorWindows.push_back(std::make_unique<ResourceBrowserWindow>(*this, "ResourceBrowser"));
     }
-
+    //PC_CORE::ReflectorInstance().ReflectType<int>()
     {
         ImGuiIO& io = ImGui::GetIO();
 

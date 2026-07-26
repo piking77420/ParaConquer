@@ -60,8 +60,8 @@ TEST(TestReflection, DynamicReflectable)
     DerivedTestDynamicReflectable derivedTestSeriaZable;
 
     EXPECT_TRUE(testSerialaZable.GetTypeKey() != derivedTestSeriaZable.GetTypeKey());
-    EXPECT_TRUE(testSerialaZable.GetTypeKey() == Reflector::GetTypeKey<TestDynamicReflectable>());
-    EXPECT_TRUE(derivedTestSeriaZable.GetTypeKey() == Reflector::GetTypeKey<DerivedTestDynamicReflectable>()); 
+    EXPECT_TRUE(testSerialaZable.GetTypeKey() == ReflectorInstance().GetTypeKey<TestDynamicReflectable>());
+    EXPECT_TRUE(derivedTestSeriaZable.GetTypeKey() == ReflectorInstance().GetTypeKey<DerivedTestDynamicReflectable>()); 
 }
 
 enum EnumTest0 : uint8_t
@@ -76,7 +76,7 @@ REFLECT(EnumTest0);
 
 TEST(TestReflection, EnumReflectionU8)
 {
-    const auto& t = PC_CORE::Reflector::GetEnum<EnumTest0>();
+    const auto& t = PC_CORE::ReflectorInstance().GetEnum<EnumTest0>();
     
     EXPECT_EQ("EnumTest0", t.name);
 
@@ -173,7 +173,7 @@ TEST(TestReflection, Polymorphism)
     // There is a vtable
 
     { // A
-        auto& atyper = Reflector::GetType<A>();
+        auto& atyper = ReflectorInstance().GetType<A>();
         EXPECT_TRUE(std::is_polymorphic<A>::value);
 
         EXPECT_EQ(atyper.GetMemberByName("valueai")->offset, 8);
@@ -182,7 +182,7 @@ TEST(TestReflection, Polymorphism)
     }
   
     { // B
-        auto& btyper = Reflector::GetType<B>();
+        auto& btyper = ReflectorInstance().GetType<B>();
         EXPECT_TRUE(std::is_polymorphic<B>::value);
 
         EXPECT_EQ(btyper.GetMemberByName("valuebi")->offset, 16);
@@ -191,7 +191,7 @@ TEST(TestReflection, Polymorphism)
     }
     
     { // C
-        auto& ctyper = Reflector::GetType<C>();
+        auto& ctyper = ReflectorInstance().GetType<C>();
         EXPECT_TRUE(std::is_polymorphic<C>::value);
 
 

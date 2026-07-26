@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <VulkanHeader.h>
-#include <LowRenderer/RhiTypedef.h>
 #include <LowRenderer/RhiDescriptorSet.hpp>
 #include <LowRenderer/RhiGraphicPipeline.hpp>
 #include <LowRenderer/RhiTexture.hpp>

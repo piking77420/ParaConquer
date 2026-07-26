@@ -121,7 +121,7 @@ BEGIN_PCCORE
                           "you shouldn't serialize a raw ptr");
 
             (SerializeType(reinterpret_cast<const uint8_t*>(std::addressof(_object)),
-                           Reflector::GetTypeKey<T>()), ...);
+                           ReflectorInstance().GetTypeKey<T>()), ...);
         }
 
         template <typename... T>
@@ -133,7 +133,7 @@ BEGIN_PCCORE
                           "You shouldn't deserialize a raw ptr");
 
             (DeserializeType(reinterpret_cast<uint8_t*>(std::addressof(_object)),
-                             Reflector::GetTypeKey<T>()), ...);
+                             ReflectorInstance().GetTypeKey<T>()), ...);
         }
 
         virtual void SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer) = 0;

@@ -35,7 +35,7 @@ BEGIN_PCCORE
         {
             std::array<const ReflectedType*, sizeof...(Components)> types;
             size_t i = 0;
-            ((types[i++] = &(Reflector::GetType<Components>())), ...);
+            ((types[i++] = &(ReflectorInstance().GetType<Components>())), ...);
             return types;
         }
 

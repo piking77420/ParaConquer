@@ -15,7 +15,7 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 		static_assert(std::is_same_v<std::underlying_type_t<T>, uint8_t>,
 			"Only support uint8_t for enum reflected");
 
-		static const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType<T>();
+		static const PC_CORE::ReflectedType& type = PC_CORE::ReflectorInstance().GetType<T>();
 
 		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
 
@@ -73,7 +73,7 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 		static_assert(std::is_same_v<std::underlying_type_t<T>, uint8_t>,
 			"Only support uint8_t for enum reflected");
 
-		static const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType<T>();
+		static const PC_CORE::ReflectedType& type = PC_CORE::ReflectorInstance().GetType<T>();
 
 		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
 
@@ -101,7 +101,7 @@ namespace PC_EDITOR_CORE::ImGuiReflection
 
 		static_assert(std::is_same_v<std::underlying_type_t<T>, uint8_t>,
 			"Only support uint8_t for enum reflected");
-		static const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType<T>();
+		static const PC_CORE::ReflectedType& type = PC_CORE::ReflectorInstance().GetType<T>();
 		const PC_CORE::ReflectedEnum& Renum = std::get<PC_CORE::ReflectedEnum>(type.metaData.data);
 		const uint8_t underlying = std::to_underlying(*_EnumValue);
 		bool IsDirty = false;

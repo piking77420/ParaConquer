@@ -16,67 +16,67 @@ using namespace PC_CORE;
 
 void JsonSerializer::SerializeTrivial(TypeId id, const uint8_t* objetPtr)
 {
-    if (Reflector::IsTypeIdIs<bool>(id))
+    if (ReflectorInstance().IsTypeIdIs<bool>(id))
     {
         auto b = reinterpret_cast<const bool*>(objetPtr);
         WriteJson(*b ? boolAlpha1s : boolAlpha0s);
     }
-    else if (Reflector::IsTypeIdIs<char>(id))
+    else if (ReflectorInstance().IsTypeIdIs<char>(id))
     {
         auto b = reinterpret_cast<const char*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<int8_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int8_t>(id))
     {
         auto b = reinterpret_cast<const int8_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<int16_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int16_t>(id))
     {
         auto b = reinterpret_cast<const int16_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<int32_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int32_t>(id))
     {
         auto b = reinterpret_cast<const int32_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<int64_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int64_t>(id))
     {
         auto b = reinterpret_cast<const int64_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<int>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int>(id))
     {
         auto b = reinterpret_cast<const int*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<uint8_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint8_t>(id))
     {
         auto b = objetPtr;
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<uint16_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint16_t>(id))
     {
         auto b = reinterpret_cast<const uint16_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<uint32_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint32_t>(id))
     {
         auto b = reinterpret_cast<const uint32_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<uint64_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint64_t>(id))
     {
         auto b = reinterpret_cast<const uint64_t*>(objetPtr);
         WriteJson(*b);
     }
-    else if (Reflector::IsTypeIdIs<float>(id))
+    else if (ReflectorInstance().IsTypeIdIs<float>(id))
     {
         auto f = reinterpret_cast<const float*>(objetPtr);
         WriteJson(*f);
     }
-    else if (Reflector::IsTypeIdIs<double>(id))
+    else if (ReflectorInstance().IsTypeIdIs<double>(id))
     {
         auto f = reinterpret_cast<const double*>(objetPtr);
         WriteJson(*f) ;
@@ -91,7 +91,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
 {
     PERF_REGION_SCOPED
 
-    if (Reflector::IsTypeIdIs<bool>(id))
+    if (ReflectorInstance().IsTypeIdIs<bool>(id))
     {
         auto b = reinterpret_cast<bool*>(objetPtr);
         std::string get;
@@ -104,7 +104,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
         
     }
-    else if (Reflector::IsTypeIdIs<char>(id))
+    else if (ReflectorInstance().IsTypeIdIs<char>(id))
     {
         auto b = reinterpret_cast<char*>(objetPtr);
         char get{}; 
@@ -114,7 +114,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<int8_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int8_t>(id))
     {
         auto b = reinterpret_cast<int8_t*>(objetPtr);
         int8_t get{}; 
@@ -124,7 +124,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<int16_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int16_t>(id))
     {
         auto b = reinterpret_cast<int16_t*>(objetPtr);
         int16_t get{}; 
@@ -135,7 +135,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<int32_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int32_t>(id))
     {
         auto b = reinterpret_cast<int32_t*>(objetPtr);
         int32_t get{}; 
@@ -145,7 +145,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<int64_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<int64_t>(id))
     {
         auto b = reinterpret_cast<int64_t*>(objetPtr);
         int64_t get{}; 
@@ -156,7 +156,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<uint8_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint8_t>(id))
     {
         auto b = objetPtr;
         uint8_t get{}; 
@@ -166,7 +166,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<uint16_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint16_t>(id))
     {
         auto b = reinterpret_cast<uint16_t*>(objetPtr);
         uint16_t get{}; 
@@ -176,7 +176,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<uint32_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint32_t>(id))
     {
         auto b = reinterpret_cast<uint32_t*>(objetPtr);
         uint32_t get{}; 
@@ -186,7 +186,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<uint64_t>(id))
+    else if (ReflectorInstance().IsTypeIdIs<uint64_t>(id))
     {
         auto b = reinterpret_cast<uint64_t*>(objetPtr);
         uint64_t get{}; 
@@ -196,7 +196,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<float>(id))
+    else if (ReflectorInstance().IsTypeIdIs<float>(id))
     {
         auto f = reinterpret_cast<float*>(objetPtr);
         float get{}; 
@@ -206,7 +206,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
         }
 
     }
-    else if (Reflector::IsTypeIdIs<double>(id))
+    else if (ReflectorInstance().IsTypeIdIs<double>(id))
     {
         auto f = reinterpret_cast<double*>(objetPtr);
         double get{}; 
@@ -221,7 +221,7 @@ void JsonSerializer::DeSerializeTrivial(TypeId id, uint8_t* objetPtr)
 void JsonSerializer::Serializing(const uint8_t* objetPtr, TypeId _typeKey)
 {
     PERF_REGION_SCOPED
-    const ReflectedType& type = Reflector::GetType(_typeKey);
+    const ReflectedType& type = ReflectorInstance().GetType(_typeKey);
     //Entry
     m_JsonStack.push_back(&m_MainJson[type.name]);
     SerializeType(objetPtr, _typeKey);
@@ -232,7 +232,7 @@ void JsonSerializer::DeSerializing(uint8_t* _objetPtr, TypeId _typeKey)
 {
     PERF_REGION_SCOPED
 
-    const ReflectedType& type = Reflector::GetType(_typeKey);
+    const ReflectedType& type = ReflectorInstance().GetType(_typeKey);
     //Entry
     m_JsonStack.push_back(&m_MainJson[type.name]);
     DeserializeType(_objetPtr, _typeKey);
@@ -264,7 +264,7 @@ void JsonSerializer::SerializeMember(const Members& member, const uint8_t* objet
 
     if (auto* json = GetLastJson())
     {
-        auto& type = Reflector::GetType(member.typeKey);
+        auto& type = ReflectorInstance().GetType(member.typeKey);
         m_JsonStack.push_back(&(*json)[type.name][member.membersName]);
         SerializeType(objetPtr, member.typeKey);
         m_JsonStack.pop_back();
@@ -274,7 +274,7 @@ void JsonSerializer::SerializeMember(const Members& member, const uint8_t* objet
 
 void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
 {
-    const ReflectedType& type = Reflector::GetType(_typeKey);
+    const ReflectedType& type = ReflectorInstance().GetType(_typeKey);
     PERF_REGION_SCOPED_NAME_DYNAMIC(("SerializeType : " + type.name).c_str());
 
     if (!std::holds_alternative<std::monostate>(type.metaData.data))
@@ -308,19 +308,19 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
                 {
                     const auto& guid = reinterpret_cast<const Guid&>(wobjectPtrR.Lock().get()->GetGuid());
                     m_JsonStack.push_back(&(*json)[GUID_KEY]);
-                    SerializeType(reinterpret_cast<const uint8_t*>(&guid), Reflector::GetTypeKey<Guid>());
+                    SerializeType(reinterpret_cast<const uint8_t*>(&guid), ReflectorInstance().GetTypeKey<Guid>());
                     m_JsonStack.pop_back();
                 }
             }
             else if constexpr (std::is_same_v<T, ReflectedArray>)
             {
                 const ReflectedArray& arr = std::get<ReflectedArray>(type.metaData.data);
-                const ReflectedType& underLineType = Reflector::GetType(arr.type);
+                const ReflectedType& underLineType = ReflectorInstance().GetType(arr.type);
                 if (auto* json = GetLastJson())
                 {
                     (*json)[CONTAINER_SIZE] = arr.size;
 
-                    if (Reflector::isTrivialType(underLineType.typeId))
+                    if (ReflectorInstance().isTrivialType(underLineType.typeId))
                     {
                         std::vector<uint8_t> data;
                         data.resize(arr.size * underLineType.size);
@@ -342,7 +342,7 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
             if constexpr (std::is_same_v<T, ReflectedVector>)
             {
                 const ReflectedVector& rVector = std::get<ReflectedVector>(type.metaData.data);
-                const ReflectedType& underLineType = Reflector::GetType(rVector.type);
+                const ReflectedType& underLineType = ReflectorInstance().GetType(rVector.type);
                 auto ver = reinterpret_cast<const std::vector<uint8_t>*>(objetPtr);
                 const size_t typeCount = ver->size() / underLineType.size;
 
@@ -350,7 +350,7 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
                 {
                     (*json)[CONTAINER_SIZE] = typeCount;
 
-                    if (Reflector::isTrivialType(underLineType.typeId))
+                    if (ReflectorInstance().isTrivialType(underLineType.typeId))
                     {
                         (*json)[DATA] = json::binary(*ver);
                     }
@@ -374,13 +374,13 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
                 const ReflectedString& rs = std::get<ReflectedString>(type.metaData.data);
                 if (auto* json = GetLastJson())
                 {
-                    if (rs.subType == Reflector::GetTypeKey<char>())
+                    if (rs.subType == ReflectorInstance().GetTypeKey<char>())
                     {
                         auto s = reinterpret_cast<const std::string*>(objetPtr);
                         (*json)[CONTAINER_SIZE] = s->size();
                         (*json)["string"] = s->c_str();
                     }
-                    else if (rs.subType == Reflector::GetTypeKey<wchar_t>())
+                    else if (rs.subType == ReflectorInstance().GetTypeKey<wchar_t>())
                     {
                         auto s = reinterpret_cast<const std::wstring*>(objetPtr);
                         (*json)[CONTAINER_SIZE] = s->size();
@@ -399,9 +399,9 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
                 auto dirtyPtr = const_cast<uint8_t*>(objetPtr);
                 auto map = reinterpret_cast<UnordoredByteMap*>(dirtyPtr);
 
-                const ReflectedType& keyType = Reflector::GetType(reflectedMap.key);
-                const ReflectedType& valueType = Reflector::GetType(reflectedMap.value);
-                const ReflectMapFunction& reflectMapFunction = Reflector::UnordoredMapReflectFunction().at(type.typeId);
+                const ReflectedType& keyType = ReflectorInstance().GetType(reflectedMap.key);
+                const ReflectedType& valueType = ReflectorInstance().GetType(reflectedMap.value);
+                const ReflectMapFunction& reflectMapFunction = ReflectorInstance().UnordoredMapReflectFunction().at(type.typeId);
 
 
                 const size_t mapSize = map->size();
@@ -528,7 +528,7 @@ void JsonSerializer::SerializeType(const uint8_t* objetPtr, TypeId _typeKey)
 
 void JsonSerializer::DeSerializeMember(const Members& member, uint8_t* objetPtr)
 {
-    auto& type = Reflector::GetType(member.typeKey);
+    auto& type = ReflectorInstance().GetType(member.typeKey);
     if (auto* json = GetLastJson())
     {
         m_JsonStack.push_back(&(*json)[type.name][member.membersName]);
@@ -539,7 +539,7 @@ void JsonSerializer::DeSerializeMember(const Members& member, uint8_t* objetPtr)
 
 void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
 {
-    const ReflectedType& type = Reflector::GetType(_typeKey);
+    const ReflectedType& type = ReflectorInstance().GetType(_typeKey);
     PERF_REGION_SCOPED_NAME_DYNAMIC(("DeserializeType : " + type.name).c_str());
 
     if (!std::holds_alternative<std::monostate>(type.metaData.data))
@@ -560,9 +560,9 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
 
                         const TypeId id = (*json)[OBJECT_TYPE].get<TypeId>();
 
-                        if (Reflector::Exist(id))
+                        if (ReflectorInstance().Exist(id))
                         {
-                            const ReflectedType& t = Reflector::GetType(id);
+                            const ReflectedType& t = ReflectorInstance().GetType(id);
                             const DeleteFunc deleteFunc = t.metaData.deleteFunc;
 
                             // Scary Ptr and Vtable manipaluation
@@ -595,7 +595,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
                     {
                         Guid guid;
                         m_JsonStack.push_back(&(*json)[GUID_KEY]);
-                        DeserializeType(reinterpret_cast<uint8_t*>(&guid), Reflector::GetTypeKey<Guid>());
+                        DeserializeType(reinterpret_cast<uint8_t*>(&guid), ReflectorInstance().GetTypeKey<Guid>());
                         m_JsonStack.pop_back();
                         if (ResourceManager::Exist(guid))
                         {
@@ -607,7 +607,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
             else if constexpr (std::is_same_v<T, ReflectedArray>)
             {
                 const ReflectedArray& arr = std::get<ReflectedArray>(type.metaData.data);
-                const ReflectedType& underLineType = Reflector::GetType(arr.type);
+                const ReflectedType& underLineType = ReflectorInstance().GetType(arr.type);
 
                 if (auto* json = GetLastJson())
                 {
@@ -617,7 +617,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
                         PC_LOGERROR("array size missmacht")
                             return;
                     }
-                    if (Reflector::isTrivialType(underLineType.typeId))
+                    if (ReflectorInstance().isTrivialType(underLineType.typeId))
                     {
                         auto bytes = (*json)["data"]["bytes"].get<std::vector<uint8_t>>();
                         std::memcpy(objetPtr, bytes.data(), arr.size * underLineType.size);
@@ -639,10 +639,10 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
             {
                 auto ver = reinterpret_cast<std::vector<uint8_t>*>(objetPtr);
                 const ReflectedVector& vector = std::get<ReflectedVector>(type.metaData.data);
-                const ReflectedType& underLineType = Reflector::GetType(vector.type);
+                const ReflectedType& underLineType = ReflectorInstance().GetType(vector.type);
                 if (auto* json = GetLastJson())
                 {
-                    if (Reflector::isTrivialType(underLineType.typeId))
+                    if (ReflectorInstance().isTrivialType(underLineType.typeId))
                     {
                         *ver = (*json)[DATA]["bytes"].get<std::vector<uint8_t>>();
                     }
@@ -667,7 +667,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
                 const ReflectedString& rs = std::get<ReflectedString>(type.metaData.data);
                 if (auto* json = GetLastJson())
                 {
-                    if (rs.subType == Reflector::GetTypeKey<char>())
+                    if (rs.subType == ReflectorInstance().GetTypeKey<char>())
                     {
                         std::string* s = reinterpret_cast<std::string*>(objetPtr);
                         s->resize((*json)[CONTAINER_SIZE]);
@@ -676,7 +676,7 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
 
                         memcpy(s->data(), v.data(), s->size());
                     }
-                    else if (rs.subType == Reflector::GetTypeKey<wchar_t>())
+                    else if (rs.subType == ReflectorInstance().GetTypeKey<wchar_t>())
                     {
                         auto s = reinterpret_cast<std::wstring*>(objetPtr);
                         s->resize((*json)[CONTAINER_SIZE]);
@@ -695,9 +695,9 @@ void JsonSerializer::DeserializeType(uint8_t* objetPtr, TypeId _typeKey)
                 UnordoredByteMap& map = *reinterpret_cast<UnordoredByteMap*>(objetPtr);
                 const ReflectedMap& reflectedMap = std::get<ReflectedMap>(type.metaData.data);
 
-                const ReflectedType& keyType = Reflector::GetType(reflectedMap.key);
-                const ReflectedType& valueType = Reflector::GetType(reflectedMap.value);
-                const ReflectMapFunction& reflectMapFunction = Reflector::UnordoredMapReflectFunction().at(type.typeId);
+                const ReflectedType& keyType = ReflectorInstance().GetType(reflectedMap.key);
+                const ReflectedType& valueType = ReflectorInstance().GetType(reflectedMap.value);
+                const ReflectMapFunction& reflectMapFunction = ReflectorInstance().UnordoredMapReflectFunction().at(type.typeId);
 
                 ReseverMapFunction rfunc = nullptr;
                 std::memcpy(&rfunc, &reflectMapFunction.reserveFunction, sizeof(ReseverMapFunction));
@@ -915,13 +915,13 @@ bool JsonSerializer::CloseFile()
 void JsonSerializer::SerializeCompactBuffer(const char* _key, const CompactBuffer& _compactBuffer)
 {
     m_JsonStack.push_back(&m_MainJson[_key]);
-    SerializeType(reinterpret_cast<const uint8_t*>(&_compactBuffer), Reflector::GetTypeKey<CompactBuffer>());
+    SerializeType(reinterpret_cast<const uint8_t*>(&_compactBuffer), ReflectorInstance().GetTypeKey<CompactBuffer>());
     m_JsonStack.pop_back();
 }
 
 void JsonSerializer::DeSerializeCompactBuffer(const char* _key, CompactBuffer* _compactBuffer)
 {
     m_JsonStack.push_back(&m_MainJson[_key]);
-    DeserializeType(reinterpret_cast<uint8_t*>(_compactBuffer), Reflector::GetTypeKey<CompactBuffer>());
+    DeserializeType(reinterpret_cast<uint8_t*>(_compactBuffer), ReflectorInstance().GetTypeKey<CompactBuffer>());
     m_JsonStack.pop_back();
 }

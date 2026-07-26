@@ -11,6 +11,7 @@ if(MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 endif()
 
+
 # Set C++ version
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -138,6 +139,15 @@ target_compile_definitions(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE EDITOR_RESOURCE_PATH_W=L"${REL_PATH_FROM_TARGET}../../Engine/Source/Editor/EditorResource"
 )
+
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${PROJECT_NAME} PUBLIC
+        $<$<CONFIG:Debug>:-O0>
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Debug>:-fstandalone-debug>
+    )
+endif()
 
 
 install(

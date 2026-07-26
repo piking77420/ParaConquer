@@ -99,9 +99,9 @@ ResourceBrowserWindow::ResourceBrowserWindow(Editor& _editor, const std::string&
     m_Editor->IMGUIContext.CreateImguiVulkanTexture(m_NullIcon.texure.Get(), &s,
                                                     &m_NullIcon.descritproSet, 1);
 
-    CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::Texture2D>(),
+    CreateAssetsBrowserIcon(PC_CORE::ReflectorInstance().GetTypeKey<PC_CORE::Texture2D>(),
                             EDITOR_RESOURCE_PATH "/Icons/PngIcon.png");
-    CreateAssetsBrowserIcon(PC_CORE::Reflector::GetTypeKey<PC_CORE::StaticMesh>(),
+    CreateAssetsBrowserIcon(PC_CORE::ReflectorInstance().GetTypeKey<PC_CORE::StaticMesh>(),
                             EDITOR_RESOURCE_PATH "/Icons/3DModel.png");
 
     const auto asserR = GetAssetRegisterPath();
@@ -266,18 +266,18 @@ bool ResourceBrowserWindow::AssetFromFile(const std::filesystem::path& _path)
 
     PC_CORE::Serializer::DeserializeEntry deserializeEntryHeader
     {
-        PC_CORE::Reflector::GetTypeKey<AssetHeader>(),
+        PC_CORE::ReflectorInstance().GetTypeKey<AssetHeader>(),
         &assetHeader
     };
     PC_CORE::Serializer::DeserializeEntry deserializeObjPtr
     {
-        PC_CORE::Reflector::GetTypeKey<PC_CORE::ObjectPtr<PC_CORE::Resource>>(),
+        PC_CORE::ReflectorInstance().GetTypeKey<PC_CORE::ObjectPtr<PC_CORE::Resource>>(),
         &robjPtr
     };
 
     jSerializer.DeSerializeEntries(deserializeEntryHeader, deserializeObjPtr);
 
-    const bool typeExist = PC_CORE::Reflector::Exist(assetHeader.typeId);
+    const bool typeExist = PC_CORE::ReflectorInstance().Exist(assetHeader.typeId);
     assert(typeExist);
     if (!typeExist)
     {
@@ -287,7 +287,7 @@ bool ResourceBrowserWindow::AssetFromFile(const std::filesystem::path& _path)
     }
 
     const auto& af = AssetFile(assetHeader.typeId, assetHeader.assetGuid, GetLastTimeModifyFile(_path));
-    const auto& t = PC_CORE::Reflector::GetType(assetHeader.typeId);
+    const auto& t = PC_CORE::ReflectorInstance().GetType(assetHeader.typeId);
 
     PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", _path.generic_string(), t.name,
                    timeToString(af.lastTimeModified));
@@ -376,7 +376,7 @@ void ResourceBrowserWindow::RenderDirectories()
                 type = iterator->second.typeId;
             }
 
-            if (type != PC_CORE::NullTypeId && PC_CORE::Reflector::Exist(type))
+            if (type != PC_CORE::NullTypeId && PC_CORE::ReflectorInstance().Exist(type))
             {
                 
                 auto it = m_TypeIconMap.find(type);
@@ -490,7 +490,7 @@ void ResourceBrowserWindow::OnImportButton()
     if (it == m_AssetRegistery.pathToType.end())
     {
         const auto& af = AssetFile(*r.get());
-        const auto& t = PC_CORE::Reflector::GetType(af.typeId);
+        const auto& t = PC_CORE::ReflectorInstance().GetType(af.typeId);
         PC_LOG_VERBOSE("Cached AssetFile {}, type = {}, last time modified {}", p.generic_string(), t.name,
                        timeToString(af.lastTimeModified));
         m_AssetRegistery.pathToType.emplace(pathToSerialize, af);

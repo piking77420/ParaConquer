@@ -42,14 +42,13 @@ BEGIN_PCCORE
         uint16_t data2 = 0;
         uint16_t data3 = 0;
         std::array<uint8_t, Data4Size> data4 = {};
+
+        REFLECT(Guid)
+        REFLECT_MEMBER(Guid, data1)
+        REFLECT_MEMBER(Guid, data2)
+        REFLECT_MEMBER(Guid, data3)
+        REFLECT_MEMBER(Guid, data4)
     };
-
-    REFLECT(Guid)
-    REFLECT_MEMBER(Guid, data1)
-    REFLECT_MEMBER(Guid, data2)
-    REFLECT_MEMBER(Guid, data3)
-    REFLECT_MEMBER(Guid, data4)
-
 
 END_PCCORE
 

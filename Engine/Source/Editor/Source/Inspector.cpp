@@ -28,48 +28,48 @@ void Inspector::Update()
 
 Inspector::Inspector(Editor& _editor, const std::string& _name) : EditorWindow(_editor, _name)
 {
-    m_ComponentReflected = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Component>();
-    m_ResourceReflected = PC_CORE::Reflector::GetAllTypesFrom<PC_CORE::Resource>();
+    m_ComponentReflected = PC_CORE::ReflectorInstance().GetAllTypesFrom<PC_CORE::Component>();
+    m_ResourceReflected = PC_CORE::ReflectorInstance().GetAllTypesFrom<PC_CORE::Resource>();
 
     m_SpecialType =
     {
-        &PC_CORE::Reflector::GetType<bool>(),
-        &PC_CORE::Reflector::GetType<char>(),
-        &PC_CORE::Reflector::GetType<wchar_t>(),
+        &PC_CORE::ReflectorInstance().GetType<bool>(),
+        &PC_CORE::ReflectorInstance().GetType<char>(),
+        &PC_CORE::ReflectorInstance().GetType<wchar_t>(),
 
-        &PC_CORE::Reflector::GetType<int>(),
-        &PC_CORE::Reflector::GetType<float>(),
-        &PC_CORE::Reflector::GetType<double>(),
+        &PC_CORE::ReflectorInstance().GetType<int>(),
+        &PC_CORE::ReflectorInstance().GetType<float>(),
+        &PC_CORE::ReflectorInstance().GetType<double>(),
 
-        &PC_CORE::Reflector::GetType<uint16_t>(),
-        &PC_CORE::Reflector::GetType<uint32_t>(),
-        &PC_CORE::Reflector::GetType<uint64_t>(),
+        &PC_CORE::ReflectorInstance().GetType<uint16_t>(),
+        &PC_CORE::ReflectorInstance().GetType<uint32_t>(),
+        &PC_CORE::ReflectorInstance().GetType<uint64_t>(),
 
-        &PC_CORE::Reflector::GetType<std::string>(),
-        &PC_CORE::Reflector::GetType<std::wstring>(),
+        &PC_CORE::ReflectorInstance().GetType<std::string>(),
+        &PC_CORE::ReflectorInstance().GetType<std::wstring>(),
 
-        &PC_CORE::Reflector::GetType<Tbx::Vector2f>(),
-        &PC_CORE::Reflector::GetType<Tbx::Vector3f>(),
-        &PC_CORE::Reflector::GetType<Tbx::Vector4f>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Vector2f>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Vector3f>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Vector4f>(),
 
-        &PC_CORE::Reflector::GetType<Tbx::Vector2<double>>(),
-        &PC_CORE::Reflector::GetType<Tbx::Vector3<double>>(),
-        &PC_CORE::Reflector::GetType<Tbx::Vector4<double>>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Vector2<double>>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Vector3<double>>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Vector4<double>>(),
 
-        &PC_CORE::Reflector::GetType<Tbx::Quaternionf>(),
-        &PC_CORE::Reflector::GetType<Tbx::Quaterniond>(),
-        &PC_CORE::Reflector::GetType<PC_CORE::Rotation>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Quaternionf>(),
+        &PC_CORE::ReflectorInstance().GetType<Tbx::Quaterniond>(),
+        &PC_CORE::ReflectorInstance().GetType<PC_CORE::Rotation>(),
     };
 
     PC_CORE::Level& lvl = PC_CORE::App::Instance->World.level;
 
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::Level, PC_CORE::EntityManager>(
+    PC_CORE::ReflectorInstance().GetPtrToTypeField<PC_CORE::Level, PC_CORE::EntityManager>(
         &lvl, "m_EntityManager", &m_EntityManagerPtr);
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::Level, PC_CORE::ComponentManager>(
+    PC_CORE::ReflectorInstance().GetPtrToTypeField<PC_CORE::Level, PC_CORE::ComponentManager>(
         &lvl, "m_ComponentManager", &m_ComponentManagerPtr);
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::ComponentManager, PC_CORE::ComponentArrayMap>(
+    PC_CORE::ReflectorInstance().GetPtrToTypeField<PC_CORE::ComponentManager, PC_CORE::ComponentArrayMap>(
         m_ComponentManagerPtr, "m_ComponentMapArray", &m_ComponentArrayMapPtr);
-    PC_CORE::Reflector::GetPtrToTypeField<PC_CORE::ComponentManager, std::unordered_map<
+    PC_CORE::ReflectorInstance().GetPtrToTypeField<PC_CORE::ComponentManager, std::unordered_map<
                                               PC_CORE::ComponentTypeBit, PC_CORE::TypeId>>(
         m_ComponentManagerPtr, "m_ComponentBitFlagToComponentType", &m_ComponentTypeBitToTypeId);
 
@@ -209,7 +209,7 @@ void Inspector::ShowReflectType(uint8_t* _typePtr, const PC_CORE::ReflectedType&
 
 void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
 {
-    const PC_CORE::ReflectedType& type = PC_CORE::Reflector::GetType(_member.typeKey);
+    const PC_CORE::ReflectedType& type = PC_CORE::ReflectorInstance().GetType(_member.typeKey);
     const uintmax_t typeFlag = type.typeFlags;
 
     if (IsShowable(type.typeId))
@@ -225,7 +225,7 @@ void Inspector::ShowMember(uint8_t* _memberPtr, const PC_CORE::Members& _member)
                        const PC_CORE::ReflectedWeakObjPtr& wkPtr = std::get<PC_CORE::ReflectedWeakObjPtr>(
                            type.metaData.data);
 
-                       if (PC_CORE::Reflector::IsBaseOf<PC_CORE::Resource>(PC_CORE::Reflector::GetType(wkPtr.typeId)))
+                       if (PC_CORE::ReflectorInstance().IsBaseOf<PC_CORE::Resource>(PC_CORE::ReflectorInstance().GetType(wkPtr.typeId)))
                        {
                            // only for little
                            uint64_t ptr = *reinterpret_cast<uint64_t*>(_memberPtr);
@@ -262,61 +262,61 @@ void Inspector::HandleShowAble(uint8_t* _ptr, const PC_CORE::ReflectedType& _typ
 {
     const PC_CORE::TypeId id = _type.typeId;
 
-    if (PC_CORE::Reflector::IsTypeIdIs<bool>(id))
+    if (PC_CORE::ReflectorInstance().IsTypeIdIs<bool>(id))
     {
         auto value = reinterpret_cast<bool*>(_ptr);
         ImGui::Checkbox(_typeAsMember.membersName.c_str(), value);
     }
-    if (PC_CORE::Reflector::IsTypeIdIs<wchar_t>(id))
+    if (PC_CORE::ReflectorInstance().IsTypeIdIs<wchar_t>(id))
     {
     }
-    if (PC_CORE::Reflector::IsTypeIdIs<int>(id))
+    if (PC_CORE::ReflectorInstance().IsTypeIdIs<int>(id))
     {
         const auto value = reinterpret_cast<int*>(_ptr);
         ImGui::DragInt(_typeAsMember.membersName.c_str(), value);
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<float>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<float>(id))
     {
         const auto value = reinterpret_cast<float*>(_ptr);
         ImGui::DragFloat(_typeAsMember.membersName.c_str(), value);
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<double>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<double>(id))
     {
         const auto value = reinterpret_cast<double*>(_ptr);
         ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_Double, value, sizeof(float), 0.1, &mind,
                            &maxf);
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<uint16_t>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<uint16_t>(id))
     {
         
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<uint32_t>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<uint32_t>(id))
     {
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<uint64_t>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<uint64_t>(id))
     {
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<std::string>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<std::string>(id))
     {
         auto value = reinterpret_cast<std::string*>(_ptr);
         ImGui::InputText("##EntityName", value->data(), value->size());
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<std::wstring>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<std::wstring>(id))
     {
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2f>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<Tbx::Vector2f>(id))
     {
         auto vec = reinterpret_cast<Tbx::Vector2f*>(_ptr);
         ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_Float, vec->GetPtr(),
                            sizeof(Tbx::Vector2d) / sizeof(float), 0.1f, &minf, &maxf);
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector2d>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<Tbx::Vector2d>(id))
     {
         auto vec = reinterpret_cast<Tbx::Vector2d*>(_ptr);
         ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_Double, vec->GetPtr(),
                            sizeof(Tbx::Vector2d) / sizeof(double), 0.1f, &mind, &maxd);
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3f>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<Tbx::Vector3f>(id))
     {
         auto vec = reinterpret_cast<Tbx::Vector3f*>(_ptr);
         if (_typeAsMember.memberFlag & PC_CORE::Members::EnumFlag::Color)
@@ -329,14 +329,14 @@ void Inspector::HandleShowAble(uint8_t* _ptr, const PC_CORE::ReflectedType& _typ
                                sizeof(Tbx::Vector3f) / sizeof(float), 0.1f, &minf, &maxf);
         }
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector3d>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<Tbx::Vector3d>(id))
     {
         auto vec = reinterpret_cast<Tbx::Vector3d*>(_ptr);
         // https://github.com/ocornut/imgui/issues/643
         ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_Double, vec->GetPtr(),
                            sizeof(Tbx::Vector3d) / sizeof(double), 0.1, &mind, &maxd);
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4f>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<Tbx::Vector4f>(id))
     {
         const auto vec = reinterpret_cast<Tbx::Vector4f*>(_ptr);
         if (_typeAsMember.memberFlag & PC_CORE::Members::EnumFlag::Color)
@@ -349,20 +349,20 @@ void Inspector::HandleShowAble(uint8_t* _ptr, const PC_CORE::ReflectedType& _typ
                                sizeof(Tbx::Vector4f) / sizeof(float), 0.1f, &minf, &maxf);
         }
     }
-    else if (PC_CORE::Reflector::IsTypeIdIs<Tbx::Vector4d>(id))
+    else if (PC_CORE::ReflectorInstance().IsTypeIdIs<Tbx::Vector4d>(id))
     {
         auto vec = reinterpret_cast<Tbx::Vector4d*>(_ptr);
         // https://github.com/ocornut/imgui/issues/643
         ImGui::DragScalarN(_typeAsMember.membersName.c_str(), ImGuiDataType_Double, vec->GetPtr(),
                            sizeof(Tbx::Vector4d) / sizeof(double), 0.1f, &mind, &maxd);
     }
-    else if (_type == PC_CORE::Reflector::GetType<Tbx::Quaternionf>())
+    else if (_type == PC_CORE::ReflectorInstance().GetType<Tbx::Quaternionf>())
     {
     }
-    else if (_type == PC_CORE::Reflector::GetType<Tbx::Quaterniond>())
+    else if (_type == PC_CORE::ReflectorInstance().GetType<Tbx::Quaterniond>())
     {
     }
-    else if (_type == PC_CORE::Reflector::GetType<PC_CORE::Rotation>())
+    else if (_type == PC_CORE::ReflectorInstance().GetType<PC_CORE::Rotation>())
     {
         PC_CORE::Rotation& rotation = *reinterpret_cast<PC_CORE::Rotation*>(_ptr);
 

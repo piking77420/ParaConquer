@@ -8,7 +8,7 @@ ComponentManager::ComponentManager()
 {
     PERF_REGION_SCOPED;
 
-    std::vector<const ReflectedType*> types = Reflector::GetAllTypesFrom<Component>();
+    std::vector<const ReflectedType*> types = ReflectorInstance().GetAllTypesFrom<Component>();
     m_ComponentMapArray.reserve(types.size());
     m_ComponentTypeToComponentBitFlag.reserve(types.size());
 
