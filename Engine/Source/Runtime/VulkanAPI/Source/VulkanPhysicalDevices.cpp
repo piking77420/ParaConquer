@@ -127,7 +127,7 @@ void Vulkan::VulkanPhysicalDevices::LookForSuitableDevices(const std::vector<vk:
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
                                                         const vk::PhysicalDeviceProperties& _physicalDeviceProperties,
-                                                        size_t* _score)
+                                                        int32_t* _score)
 {
     _physicalDevice->name = _physicalDeviceProperties.deviceName.data();
     _physicalDevice->driverVersion = _physicalDeviceProperties.driverVersion;
@@ -138,7 +138,7 @@ void Vulkan::VulkanPhysicalDevices::GetDeviceProperties(PC_CORE::PhysicalDevice*
 
 void Vulkan::VulkanPhysicalDevices::GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
                                                       const vk::PhysicalDeviceFeatures& _physicalDeviceProperties,
-                                                      size_t* _score)
+                                                      int32_t* _score)
 {
 }
 
@@ -269,9 +269,18 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     VulkanPhysicalDevice* myPhysicalDevice = reinterpret_cast<VulkanPhysicalDevice*>(m_PhysicalDevices[_deviceIndex]);
     myPhysicalDevice->physicalDevice = _physicalDevice;
 
-    size_t score = 0;
+    vk::PhysicalDeviceProperties2 deviceProperties = {};
+    deviceProperties.sType = vk::StructureType::ePhysicalDeviceProperties2;
+    myPhysicalDevice->physicalDevice.getProperties2(&deviceProperties);
+    m_PhysicalDevices[_deviceIndex]->name = std::string(deviceProperties.properties.deviceName);
+    m_PhysicalDevices[_deviceIndex]->driverVersion = deviceProperties.properties.driverVersion;
+    
+    int32_t score = 0;
+    if (deviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+        score += std::numeric_limits<int32_t>::max() / 2;
+    
 
-    uint32_t extensionCount;
+    uint32_t extensionCount = 0;
     VK_CALL(myPhysicalDevice->physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr));
 
     std::vector<vk::ExtensionProperties> availableExtensions(extensionCount);
@@ -283,11 +292,10 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
     PC_LOGERROR("Enumerate Device : {}", myPhysicalDevice->name);
     if (CheckDeviceExtensionSupport(availableExtensions, requiredExtensions))
     {
-        score += requiredExtensions.size();
+        score += static_cast<int32_t>(requiredExtensions.size());
     }
     else
     {
-        score = std::numeric_limits<size_t>::min();
         PC_LOGERROR("Unsuported extension!");
 
         for (const auto& extension : requiredExtensions)
@@ -296,17 +304,7 @@ int32_t Vulkan::VulkanPhysicalDevices::GetDeviceScore(const vk::PhysicalDevice& 
 
     vk::PhysicalDeviceFeatures2 deviceFeatures2 = {};
     deviceFeatures2.sType = vk::StructureType::ePhysicalDeviceFeatures2;
-
     myPhysicalDevice->physicalDevice.getFeatures2(&deviceFeatures2);
-
-    vk::PhysicalDeviceProperties2 deviceProperties = {};
-    deviceProperties.sType = vk::StructureType::ePhysicalDeviceProperties2;
-    myPhysicalDevice->physicalDevice.getProperties2(&deviceProperties);
-
-    if (deviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
-    {
-        score += std::numeric_limits<uint32_t>::max() / 2;
-    }
 
     GetDeviceProperties(myPhysicalDevice, deviceProperties.properties, &score);
     GetDeviceFeatures(myPhysicalDevice, deviceFeatures2.features, &score);

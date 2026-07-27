@@ -2,6 +2,7 @@
 #define CORE_FRUSTUM
 
 #include <array>
+#include <utility>
 #include <Math/ToolBoxTypeDef.hpp>
 
 namespace PC_CORE

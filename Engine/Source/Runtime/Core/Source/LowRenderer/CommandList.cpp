@@ -21,13 +21,13 @@ namespace PC_CORE
     void PC_CORE::CommandList::BeginRenderPass(const BeginRenderPassInfo& _beginRenderPassInfo)
     {
         m_RecordState = {};
-        m_RecordState.RecordRenderPassType = RecordRenderPassType::Graphic;
+        m_RecordState.RecordedRenderPassType = RecordRenderPassType::Graphic;
     }
 
     void CommandList::BeginComputePasss()
     {
         m_RecordState = {};
-        m_RecordState.RecordRenderPassType = RecordRenderPassType::Compute;
+        m_RecordState.RecordedRenderPassType = RecordRenderPassType::Compute;
     }
 
     void PC_CORE::CommandList::RecordFetchCommand(const std::function<void(CommandList*)>& _fectFunction)
@@ -55,7 +55,7 @@ namespace PC_CORE
 
     bool CommandList::IsInRenderPass(RecordRenderPassType Type) const
     {
-        return m_RecordState.RecordRenderPassType == Type;
+        return m_RecordState.RecordedRenderPassType == Type;
     }
 
 } // namespace PC_CORE

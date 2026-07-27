@@ -748,6 +748,19 @@ T* SafeCastReinterpreCast(U* _ptr)
 
 // PREPROCESSOR
 
+#if defined(_MSC_VER)
 #if defined(_DEBUG) || defined(PROFILING)
 #define DEBUG_GPU_ON 1
 #endif
+
+#elif defined(__clang__)
+
+#elif defined(__GNUC__)
+#if !defined(NDEBUG) || defined(PROFILING)
+#define DEBUG_GPU_ON 1
+#endif
+#else
+    #error Unsupported compiler
+#endif
+
+

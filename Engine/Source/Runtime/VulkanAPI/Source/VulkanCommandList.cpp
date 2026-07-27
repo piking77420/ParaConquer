@@ -215,7 +215,7 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
     CommandList::BeginRenderPass(_BeginRenderPassInfo);
-    m_RecordState.RecordRenderPassType.emplace(RecordRenderPassType::Graphic);
+    m_RecordState.RecordedRenderPassType.emplace(RecordRenderPassType::Graphic);
 
     const VulkanFrameBuffer& frameBuffer = *reinterpret_cast<const VulkanFrameBuffer*>(
         _BeginRenderPassInfo.FrameBuffer);
@@ -287,7 +287,7 @@ void Vulkan::VulkanCommandList::BeginRenderPass(const PC_CORE::BeginRenderPassIn
 void Vulkan::VulkanCommandList::BeginComputePasss()
 {
     CommandList::BeginComputePasss();
-    m_RecordState.RecordRenderPassType.emplace(RecordRenderPassType::Compute);
+    m_RecordState.RecordedRenderPassType.emplace(RecordRenderPassType::Compute);
 }
 
 void Vulkan::VulkanCommandList::NextSubPass()
@@ -309,9 +309,9 @@ void Vulkan::VulkanCommandList::EndRenderPass()
     PERF_REGION_SCOPED;
     PERF_REGION_COLOR(PerfRegion::Rhi);
 
-    if (m_RecordState.RecordRenderPassType)
+    if (m_RecordState.RecordedRenderPassType)
     {
-        switch (*m_RecordState.RecordRenderPassType)
+        switch (*m_RecordState.RecordedRenderPassType)
         {
         case RecordRenderPassType::Graphic:
             m_CommandBuffer[m_Rhi.GetFrameIndex()].endRenderPass();
@@ -320,7 +320,7 @@ void Vulkan::VulkanCommandList::EndRenderPass()
             break;
         }
     }
-    m_RecordState.RecordRenderPassType.reset();
+    m_RecordState.RecordedRenderPassType.reset();
 }
 
 void Vulkan::VulkanCommandList::BindDescriptorSet(const PC_CORE::RhiDescriptorSet*
@@ -707,7 +707,7 @@ VULKAN_API vk::Semaphore Vulkan::VulkanCommandList::GetVkSemaphore() const
 
 vk::PipelineBindPoint Vulkan::VulkanCommandList::GetCurrentRecordPipelineBindPoint() const
 {
-    return IsInRecordState() ? Utils::RhiRecordRenderPassTypeToPipelineBindPoint(*m_RecordState.RecordRenderPassType) : vk::PipelineBindPoint::eGraphics;
+    return IsInRecordState() ? Utils::RhiRecordRenderPassTypeToPipelineBindPoint(*m_RecordState.RecordedRenderPassType) : vk::PipelineBindPoint::eGraphics;
 }
 
 vk::PipelineLayout Vulkan::VulkanCommandList::GetCurrentPipelineLayout() const
@@ -721,7 +721,7 @@ vk::PipelineLayout Vulkan::VulkanCommandList::GetCurrentPipelineLayout() const
         return VK_NULL_HANDLE;
     }
 
-    switch (*m_RecordState.RecordRenderPassType)
+    switch (*m_RecordState.RecordedRenderPassType)
     {
     case RecordRenderPassType::Graphic:
         return reinterpret_cast<const Vulkan::VulkanGraphicPipeline&>(*m_RecordState.lastBindProgram).GetPipelineLayout();
@@ -730,6 +730,8 @@ vk::PipelineLayout Vulkan::VulkanCommandList::GetCurrentPipelineLayout() const
     default:
         return VK_NULL_HANDLE;
     }
+
+    return VK_NULL_HANDLE;
 }
 
 vk::Pipeline Vulkan::VulkanCommandList::GetCurrentPipeline() const
@@ -743,7 +745,7 @@ vk::Pipeline Vulkan::VulkanCommandList::GetCurrentPipeline() const
         return VK_NULL_HANDLE;
     }
 
-    switch (*m_RecordState.RecordRenderPassType)
+    switch (*m_RecordState.RecordedRenderPassType)
     {
     case RecordRenderPassType::Graphic:
         return reinterpret_cast<const Vulkan::VulkanGraphicPipeline&>(*m_RecordState.lastBindProgram).GetPipeline();
@@ -752,11 +754,13 @@ vk::Pipeline Vulkan::VulkanCommandList::GetCurrentPipeline() const
     default:
         return VK_NULL_HANDLE;
     }
+
+    return VK_NULL_HANDLE;
 }
 
 bool Vulkan::VulkanCommandList::IsInRecordState() const
 {
-    if (!m_RecordState.RecordRenderPassType)
+    if (!m_RecordState.RecordedRenderPassType)
     {
         PC_LOGERROR("You are trying to use an command buffer that is not bound in an render pass Command list {} \n do you forgot to call begin render pass / compute / raytracing", m_Name);
         return false;

@@ -104,6 +104,7 @@ namespace PC_CORE
         */
         default:
             //return VK_FORMAT_UNDEFINED;
+            break;
         }
 
         PC_LOG("Not supported dds format to rhi format");

@@ -90,7 +90,7 @@ namespace Gpu
 
     static constexpr size_t MAX_LIGHT = 1024;
 
-    struct GPU_ALIGN DirLight
+    struct GPU_ALIGN DirectionalLight
     {
         vec3 Direction;
         float Pad0;
@@ -112,7 +112,7 @@ namespace Gpu
     };
 
     struct GPU_ALIGN LightHeader {
-        DirLight DirLight;
+        DirectionalLight DirLight;
         uint32_t LightCount;
     };
 

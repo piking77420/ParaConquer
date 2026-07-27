@@ -80,10 +80,10 @@ namespace Vulkan
 
         VULKAN_API void GetDeviceProperties(PC_CORE::PhysicalDevice* _physicalDevice,
                                             const vk::PhysicalDeviceProperties& _physicalDeviceProperties,
-                                            size_t* _score);
+                                            int32_t* _score);
 
         VULKAN_API void GetDeviceFeatures(PC_CORE::PhysicalDevice* _physicalDevice,
-                                          const vk::PhysicalDeviceFeatures& _physicalDeviceProperties, size_t* _score);
+                                          const vk::PhysicalDeviceFeatures& _physicalDeviceProperties, int32_t* _score);
 
         VULKAN_API std::set<std::string> GetVulkanRequestExtensions(
             const std::vector<PC_CORE::RhiExtension>& _requestExtensions);

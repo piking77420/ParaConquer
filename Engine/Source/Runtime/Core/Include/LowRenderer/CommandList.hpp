@@ -288,7 +288,7 @@ BEGIN_PCCORE
 
     protected:
         struct RecordState {
-            std::optional<RecordRenderPassType> RecordRenderPassType;
+            std::optional<RecordRenderPassType> RecordedRenderPassType;
             const RhiPipeline* lastBindProgram = nullptr;
             DrawBuffers lastDrawBuffersState;
         }m_RecordState;

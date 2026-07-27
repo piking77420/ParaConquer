@@ -1,6 +1,7 @@
 #ifndef PC_CORE_COLOR
 #define PC_CORE_COLOR
 
+#include <cstdint>
 #include <array>
 #include <variant>
 

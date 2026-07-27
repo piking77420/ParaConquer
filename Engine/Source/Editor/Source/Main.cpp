@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     const PC_CORE::AppCreateInfo appCreateInfo =
     {
         .appName = "ParaConquerEditor",
-        .appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
+         .appLogoPath = EDITOR_RESOURCE_PATH "/logo/ParaConquerLogoBlack.png",
         .enableGpuDebug = true,
         .graphicAPI = PC_CORE::GraphicAPI::Vulkan
     };

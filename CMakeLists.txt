@@ -28,6 +28,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     )
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    ## remove compulier warning for rype and variable case sensitiv
+    add_compile_options(
+        $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-error=changes-meaning>)
+endif()
+
 ## Assimp 
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable Assimp tests" FORCE) ## Force Assimp to not build Unit test
 add_subdirectory(${THIRD_PARTY_DIR}/assimp)
